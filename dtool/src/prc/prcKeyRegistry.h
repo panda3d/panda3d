@@ -30,6 +30,9 @@
 #include "pvector.h"
 #include <openssl/evp.h>
 
+// Some versions of OpenSSL appear to define this as a macro.  Yucky.
+#undef set_key
+
 ////////////////////////////////////////////////////////////////////
 //       Class : PrcKeyRegistry
 // Description : This class records the set of public keys used to
