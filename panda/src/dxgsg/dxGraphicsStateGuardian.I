@@ -681,6 +681,19 @@ enable_blend(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::enable_blend
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void DXGraphicsStateGuardian::
+set_shademode(D3DSHADEMODE val) {
+  if (_CurShadeMode != val) {
+    _CurShadeMode = val;
+	_d3dDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, (DWORD)val);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::enable_fog
 //       Access:
 //  Description:
