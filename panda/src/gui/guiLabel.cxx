@@ -138,15 +138,19 @@ GuiLabel* GuiLabel::make_simple_texture_label(Texture* texture) {
   return ret;
 }
 
-GuiLabel* GuiLabel::make_simple_text_label(const string& text, Node* font) {
+GuiLabel* GuiLabel::make_simple_text_label(const string& text, Node* font,
+					   Texture* tex) {
   GuiLabel* ret = new GuiLabel();
   ret->_type = SIMPLE_TEXT;
   TextNode* n = new TextNode("GUI label");
   ret->_geom = n;
+  ret->_tex = tex;
   n->set_font(font);
   n->set_align(TM_ALIGN_CENTER);
   n->set_text_color(ret->get_foreground_color());
   n->set_text(text);
+  if (tex != (Texture*)0L)
+    n->set_card_texture(tex);
   ret->set_scale(1.);
   ret->set_pos(LVector3f(0., 0., 0.));
   ret->recompute_transform();

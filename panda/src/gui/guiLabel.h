@@ -51,7 +51,8 @@ public:
   virtual ~GuiLabel(void);
 
   static GuiLabel* make_simple_texture_label(Texture*);
-  static GuiLabel* make_simple_text_label(const string&, Node*);
+  static GuiLabel* make_simple_text_label(const string&, Node*,
+					  Texture* = (Texture*)0L);
 
   void get_extents(float&, float&, float&, float&);
   float get_width(void);
