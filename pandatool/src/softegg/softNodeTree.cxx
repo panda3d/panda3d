@@ -211,6 +211,9 @@ build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database) {
   // check the nodes that are pseudo joints
   _root->check_pseudo_joints(false);
 
+  // find _parentJoint for each node
+  _root->set_parentJoint(&scene, NULL);
+
   return all_ok;
 }
 #if 0
@@ -360,13 +363,13 @@ get_egg_group(SoftNodeDesc *node_desc) {
       egg_group->set_group_type(EggGroup::GT_joint);
     }
 
-    if (!node_desc->_parent || node_desc->_parent == _root) {
+    if (!node_desc->_parentJoint || node_desc->_parentJoint == _root) {
       // The parent is the root.
       softegg_cat.spam() << "came hereeeee\n";
       _egg_root->add_child(egg_group);
     } else {
       // The parent is another node.
-      EggGroup *parent_egg_group = get_egg_group(node_desc->_parent);
+      EggGroup *parent_egg_group = get_egg_group(node_desc->_parentJoint);
       parent_egg_group->add_child(egg_group);
     }
 
@@ -406,13 +409,13 @@ get_egg_table(SoftNodeDesc *node_desc) {
     node_desc->_anim->set_fps(_fps);
     egg_table->add_child(node_desc->_anim);
     
-    if (!node_desc->_parent || node_desc->_parent == _root) {
+    if (!node_desc->_parentJoint || node_desc->_parentJoint == _root) {
       //    if (!node_desc->_parent->is_joint()) {
       // The parent is not a joint; put it at the top.
       _skeleton_node->add_child(egg_table);
     } else {
       // The parent is another joint.
-      EggTable *parent_egg_table = get_egg_table(node_desc->_parent);
+      EggTable *parent_egg_table = get_egg_table(node_desc->_parentJoint);
       parent_egg_table->add_child(egg_table);
     }
 
@@ -441,7 +444,7 @@ get_egg_anim(SoftNodeDesc *node_desc) {
 //  Description: Sets joint information for MNILL node
 ////////////////////////////////////////////////////////////////////
 void SoftNodeTree::
-handle_null(SAA_Scene *scene, SoftNodeDesc *node_desc, char *node_name) {
+handle_null(SAA_Scene *scene, SoftNodeDesc *node_desc, const char *node_name) {
   const char *name = node_name;
   SAA_AlgorithmType    algo;
   SAA_Elem *model = node_desc->get_model();
@@ -473,6 +476,7 @@ handle_null(SAA_Scene *scene, SoftNodeDesc *node_desc, char *node_name) {
       //      MakeJoint( &scene, lastJoint, lastAnim, model, name );
       node_desc->set_joint();
       softegg_cat.spam() << " animating Standard null!!!\n";
+      softegg_cat.spam() << "isSkeleton: " << isSkeleton << endl;
     }
   }
   else
@@ -505,23 +509,25 @@ build_node(SAA_Scene *scene, SAA_Elem *model) {
   node_name = name;
 
   SoftNodeDesc *node_desc = r_build_node(NULL, node_name);
-  if (stec.notPseudoName && !strcmp(name, stec.notPseudoName)) {
-    node_desc->no_pseudo = true;
-    softegg_cat.debug() << "set no_pseudo" << endl;
-  }
+
   node_desc->fullname = fullname;
   node_desc->set_model(model);
   SAA_modelIsSkeleton( scene, model, &isSkeleton );
-  if (isSkeleton || (strstr(node_desc->get_name().c_str(), "joint") != NULL))
-    node_desc->set_joint();
-  
+
   // find out what type of node we're dealing with
   SAA_modelGetType( scene, node_desc->get_model(), &type );
+  
+  if (type == SAA_MJNT || isSkeleton || (strstr(node_desc->get_name().c_str(), "joint") != NULL))
+    node_desc->set_joint();
   
   // treat the MNILL differently, because it needs to detect and set some joints
   if (type == SAA_MNILL)
     handle_null(scene, node_desc, name);
-  
+
+  if (node_desc->is_joint())
+    softegg_cat.spam() << "type: " << type << " isSkeleton: " << isSkeleton << endl;
+
+  // get to the children
   SAA_modelGetNbChildren( scene, model, &numChildren );
   softegg_cat.spam() << " Model " << node_name << " children: " << numChildren << endl;
   
@@ -541,17 +547,23 @@ build_node(SAA_Scene *scene, SAA_Elem *model) {
       softegg_cat.spam() << " building child " << thisChild << "...";
       
       SoftNodeDesc *node_child = r_build_node(node_desc, node_name);
-      if (stec.notPseudoName && !strcmp(node_name.c_str(), stec.notPseudoName)) {
-        node_child->no_pseudo = true;
-        softegg_cat.debug() << "set no_pseudo" << endl;
-      }
+
       node_child->fullname = fullname;
       node_child->set_model(&children[thisChild]);
-      
-      //  if (strstr(name, "joint") != NULL)
       SAA_modelIsSkeleton( scene, &children[thisChild], &isSkeleton );
-      if (isSkeleton || (strstr(node_child->get_name().c_str(), "joint") != NULL))
+
+      // find out what type of node we're dealing with
+      SAA_modelGetType( scene, node_child->get_model(), &type );
+      
+      if (type == SAA_MJNT || isSkeleton || (strstr(node_child->get_name().c_str(), "joint") != NULL))
         node_child->set_joint();
+
+      // treat the MNILL differently, because it needs to detect and set some joints
+      if (type == SAA_MNILL)
+        handle_null(scene, node_child, node_name.c_str());
+
+      if (node_child->is_joint())
+        softegg_cat.spam() << "type: " << type << " isSkeleton: " << isSkeleton << endl;
     }
   }
   return node_desc;

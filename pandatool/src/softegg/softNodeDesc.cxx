@@ -42,12 +42,13 @@ SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
     _parent->_children.push_back(this);
   }
 
+  // set the _parentJoint to Null
+  _parentJoint = NULL;
+
   fullname = NULL;
 
   numTexLoc = 0;
   numTexGlb = 0;
-
-  no_pseudo = FALSE;
 
   uScale = NULL; 
   vScale = NULL;
@@ -146,7 +147,8 @@ get_model() const {
 ////////////////////////////////////////////////////////////////////
 bool SoftNodeDesc::
 is_joint() const {
-  return _joint_type == JT_joint || _joint_type == JT_pseudo_joint;
+  //  return _joint_type == JT_joint || _joint_type == JT_pseudo_joint;
+  return _joint_type == JT_joint;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -308,6 +310,47 @@ is_partial(char *search_prefix) {
   return true;
 }
 
+///////////////////////////////////////////////////////////////////////
+//     Function: SoftNodeTree::set_parentJoint
+//       Access: Public
+//  Description: Go through the ancestors and figure out who is the 
+//               immediate _parentJoint of this node
+///////////////////////////////////////////////////////////////////////
+void SoftNodeDesc::
+set_parentJoint(SAA_Scene *scene, SoftNodeDesc *lastJoint) {
+  if (is_junk())
+    return;
+  //set its parent joint to the lastJoint
+  _parentJoint = lastJoint;
+  softegg_cat.spam() << get_name() << ": parent joint set to :" << lastJoint;
+  if (lastJoint)
+    softegg_cat.spam() << "(" << lastJoint->get_name() << ")";
+  softegg_cat.spam() << endl;
+
+  // is this node a joint?
+  SAA_Boolean isSkeleton = false;
+  if (has_model())
+    SAA_modelIsSkeleton( scene, get_model(), &isSkeleton );
+  
+  // if name has "joint" in it
+  const char *name = get_name().c_str();
+  if (isSkeleton || strstr(name, "joint") != NULL) {
+    lastJoint = this;
+  }
+  if ( _parentJoint && strstr( _parentJoint->get_name().c_str(), "scale" ) != NULL ) {
+    _parentJoint = lastJoint = NULL;
+    //lastJoint = stec._tree._root;
+    softegg_cat.spam() << "scale joint flag set!\n";
+  }
+
+  // look in the children
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    SoftNodeDesc *child = (*ci);
+    child->set_parentJoint(scene, lastJoint);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftNodeDesc::check_pseudo_joints
 //       Access: Private
@@ -318,7 +361,7 @@ is_partial(char *search_prefix) {
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
 check_pseudo_joints(bool joint_above) {
-  if (_joint_type == JT_joint_parent && joint_above && !no_pseudo) {
+  if (_joint_type == JT_joint_parent && joint_above) {
     // This is one such node: it is the parent of a joint
     // (JT_joint_parent is set), and it is the child of a joint
     // (joint_above is set).
@@ -353,7 +396,7 @@ check_pseudo_joints(bool joint_above) {
       bool all_joints = true;
       for (ci = _children.begin(); ci != _children.end(); ++ci) {
         SoftNodeDesc *child = (*ci);
-        if (child->_joint_type == JT_joint_parent && !no_pseudo) {
+        if (child->_joint_type == JT_joint_parent) {
           child->_joint_type = JT_pseudo_joint;
           softegg_cat.debug() << "pseudo " << child->get_name() << " case2 by parent " << get_name() << "\n";
         } else if (child->_joint_type == JT_none || child->_joint_type == JT_junk) {
@@ -363,7 +406,7 @@ check_pseudo_joints(bool joint_above) {
 
       if (all_joints || any_joints) {
         // Finally, if all children or at least one is a joint, then we are too.
-        if (_joint_type == JT_joint_parent && !no_pseudo) {
+        if (_joint_type == JT_joint_parent) {
           _joint_type = JT_pseudo_joint;
           softegg_cat.debug() << "pseudo " << get_name() << " case3\n";
         }
@@ -386,13 +429,13 @@ get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global) {
   int scale_joint = 0;
 
   /*
-  if ( strstr( _parent->get_name().c_str(), "scale" ) != NULL ) {
+  if ( _parentJoint && strstr( _parentJoint->get_name().c_str(), "scale" ) != NULL ) {
     scale_joint = 1;
     softegg_cat.spam() << "scale joint flag set!\n";
   }
   */
 
-  if (!global && _parent->is_joint() && !stec.flatten && !scale_joint) {
+  if (!global && _parentJoint && !stec.flatten && !scale_joint) {
 
     SAA_modelGetMatrix( scene, get_model(), SAA_COORDSYS_LOCAL,  matrix );
     softegg_cat.debug() << get_name() << " using local matrix :parent ";
@@ -404,7 +447,11 @@ get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global) {
 
   }
 
-  softegg_cat.debug() << _parent->get_name() << endl;
+  if (_parentJoint)
+    softegg_cat.debug() << _parentJoint->get_name() << endl;
+  else
+    softegg_cat.debug() << _parentJoint << endl;
+    
 
   softegg_cat.spam() << "model matrix = " << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2] << " " << matrix[0][3] << "\n";
   softegg_cat.spam() << "model matrix = " << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2] << " " << matrix[1][3] << "\n";
@@ -447,9 +494,9 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
     float h,p,r;
     float x,y,z;
     int scale_joint = 0;
-    
-    /*
-    if ( strstr( _parent->get_name().c_str(), "scale" ) != NULL ) {
+
+    /*    
+    if ( _parentJoint && strstr( _parentJoint->get_name().c_str(), "scale" ) != NULL ) {
       scale_joint = 1;    
       softegg_cat.spam() << "scale joint flag set!\n";
     }
@@ -457,7 +504,7 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
 
     softegg_cat.spam() << "\n\nanimating child " << name << endl;
 
-    if (_parent->is_joint() && !stec.flatten && !scale_joint ) {
+    if (_parentJoint && !stec.flatten && !scale_joint ) {
       softegg_cat.debug() << "using local matrix\n";
 
       //get SAA orientation

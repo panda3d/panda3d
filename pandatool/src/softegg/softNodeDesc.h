@@ -64,6 +64,7 @@ public:
   bool is_partial(char *search_prefix);
 
   SoftNodeDesc *_parent;
+  SoftNodeDesc *_parentJoint; // keep track of who is your parent joint
   typedef pvector< PT(SoftNodeDesc) > Children;
   Children _children;
 
@@ -73,6 +74,8 @@ private:
   void check_joint_parent();
   void check_junk(bool parent_junk);
   void check_pseudo_joints(bool joint_above);
+
+  void set_parentJoint(SAA_Scene *scene, SoftNodeDesc *lastJoint);
 
   SAA_ModelType type;
 
@@ -99,8 +102,6 @@ public:
   float        matrix[4][4];
 
   const char *fullname;
-
-  bool no_pseudo;
 
   int numTri;
   //  int numShapes;

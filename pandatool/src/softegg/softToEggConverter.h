@@ -100,13 +100,13 @@ private:
   string _program_name;
   bool _from_selection;
 
-  SoftNodeTree _tree;
-
   SI_Error            result;
   SAA_Elem            model;
   SAA_Database        database;
 
 public:
+
+  SoftNodeTree _tree;
 
   SAA_Scene           scene;
 
@@ -128,7 +128,6 @@ public:
   char        *tex_path;
   char        *tex_filename;
   char        *search_prefix;
-  char        *notPseudoName;
 
   int                    nurbs_step;
   int                    anim_start;

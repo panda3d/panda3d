@@ -202,8 +202,7 @@ ShowOpts()
     "  -c         - Cancel morph conversion.\n"
     "  -C         - Cancel duv conversion.\n"
     "  -D         - Don't make the output model a character.\n"
-    "  -o <prefix>- Convert only models with given prefix.\n"
-    "  -E <name>  - Don't make the specified node a pseudo node.\n";
+    "  -o <prefix>- Convert only models with given prefix.\n";
 
   //  EggBase::ShowOpts();
 }
@@ -221,7 +220,6 @@ bool SoftToEggConverter::
 DoGetopts(int &argc, char **&argv) {
   bool okflag = true;
   int i = 0;
-  notPseudoName = NULL;
   softegg_cat.info() << "argc " << argc << "\n";
   if (argc <2) {
     Usage();
@@ -447,14 +445,6 @@ HandleGetopts(int &idx, int argc, char **argv)
       ++idx;
       break;
       
-    case 'E':     // Don't make this node pseudo.
-      if ( strcmp( argv[idx+1], "" ) ) {
-        notPseudoName = argv[idx+1];
-        softegg_cat.info() << "Don't make the following node pseudo:  " << notPseudoName << endl;
-      }
-      ++idx;
-      break;
-
     case 'f':     /// Set animation frame rate.
       if ( strcmp( argv[idx+1], "" ) ) {
         anim_rate = atoi(argv[idx+1]);
@@ -842,6 +832,11 @@ convert_char_chan() {
 
     for (i = 0; i < num_nodes; i++) {
       SoftNodeDesc *node_desc = _tree.get_node(i);
+
+      if (node_desc->is_partial(search_prefix)) {
+        softegg_cat.debug() << endl;
+        continue;
+      }
       if (node_desc->is_joint()) {
         softegg_cat.spam() << "-----joint " << node_desc->get_name() << "\n";
         EggXfmSAnim *anim = _tree.get_egg_anim(node_desc);
@@ -858,6 +853,9 @@ convert_char_chan() {
   // easier to read.
   for (i = 0; i < num_nodes; i++) {
     SoftNodeDesc *node_desc = _tree.get_node(i);
+    if (node_desc->is_partial(search_prefix))
+      continue;
+
     if (node_desc->is_joint()) {
       _tree.get_egg_anim(node_desc)->optimize();
     }
