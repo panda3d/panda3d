@@ -31,6 +31,7 @@
 #include <ddraw.h>
 #include <tchar.h>
 #include <map>
+#include <throw_event.h>
 
 #define WGL_WGLEXT_PROTOTYPES
 #include "wglext.h"
@@ -1221,6 +1222,8 @@ void wglGraphicsWindow::deactivate_window(void) {
      return;
    }
 
+   throw_event("PandaPaused"); // right now this is used to signal python event handler to disable audio
+
    if(!bResponsive_minimized_fullscreen_window) {
        if(wgldisplay_cat.is_spam())
            wgldisplay_cat.spam() << "WGL window deactivated, releasing gl context and waiting...\n";
@@ -1257,6 +1260,10 @@ void wglGraphicsWindow::deactivate_window(void) {
        if(_PandaPausedTimer!=PAUSED_TIMER_ID) {
            wgldisplay_cat.error() << "Error in SetTimer!\n";
        }
+   }
+
+   if(_props._fullscreen) {
+      throw_event("PandaRestarted");  // right now this is used to signal python event handler to re-enable audio
    }
 }
 
