@@ -1,24 +1,32 @@
 
 from PythonUtil import *
-from direct.directnotify.DirectNotifyGlobal import *
+from direct.directnotify import DirectNotifyGlobal
 import types
 
 class Messenger:
 
-    notify = None    
+    notify = DirectNotifyGlobal.directNotify.newCategory("Messenger")
 
     def __init__(self):
         """
-        One dictionary does it all. It has the following structure:
+        One is keyed off the event name. It has the following structure:
             {event1 : {object1: [method, extraArgs, persistent],
                        object2: [method, extraArgs, persistent]},
              event2 : {object1: [method, extraArgs, persistent],
                        object2: [method, extraArgs, persistent]}}
+                       
+        This dictionary allow for efficient callbacks when the messenger
+        hears an event.
+
+        A second dictionary remembers which objects are accepting which
+        events. This allows for efficient ignoreAll commands.
+
 
         Or, for an example with more real data:
             {'mouseDown' : {avatar : [avatar.jump, [2.0], 1]}}
         """
-        self.dict = {}
+        self.__callbacks = {}
+        self.__objectEvents = {}
 
         if __debug__:
             self.isWatching=0
@@ -29,11 +37,6 @@ class Messenger:
         # under __debug__.
         self.quieting={"NewFrame":1, "avatarMoving":1} # see def quiet()
 
-        if (Messenger.notify == None):
-            Messenger.notify = directNotify.newCategory("Messenger")
-
-        # Messenger.notify.setDebug(1)
-            
         
     def accept(self, event, object, method, extraArgs=[], persistent=1):
         """ accept(self, string, DirectObject, Function, List, Boolean)
@@ -52,8 +55,12 @@ class Messenger:
                                    + '\n extraArgs: ' + `extraArgs`
                                    + '\n persistent: ' + `persistent`)
             
-        acceptorDict = self.dict.setdefault(event, {})
+        acceptorDict = self.__callbacks.setdefault(event, {})
         acceptorDict[object] = [method, extraArgs, persistent]
+
+        # Remember that this object is listening for this event
+        eventDict = self.__objectEvents.setdefault(object, {})
+        eventDict.setdefault(event, None)
 
     def ignore(self, event, object):
         """ ignore(self, string, DirectObject)
@@ -64,41 +71,52 @@ class Messenger:
             Messenger.notify.debug(`object` + '\n now ignoring: ' + `event`)
 
         # Find the dictionary of all the objects accepting this event
-        acceptorDict = self.dict.get(event)
+        acceptorDict = self.__callbacks.get(event)
         # If this object is there, delete it from the dictionary
         if acceptorDict and acceptorDict.has_key(object):
             del acceptorDict[object]
             # If this dictionary is now empty, remove the event
             # entry from the Messenger alltogether
             if (len(acceptorDict) == 0):
-                del self.dict[event]
-    
-##     ### moved into DirectObject for speed
-##     ###
-##     def ignoreAll(self, object):
-##         """ ignoreAll(self, DirectObject)
-##         Make this object no longer respond to any events it was accepting
-##         Useful for cleanup
-##         """
-##         if Messenger.notify.getDebug():
-##             Messenger.notify.debug(`object` + '\n now ignoring all events')
-##         for event, acceptorDict in self.dict.items():
-##             # If this object is there, delete it from the dictionary
-##             if acceptorDict.has_key(object):
-##                 del acceptorDict[object]
-##                 # If this dictionary is now empty, remove the event
-##                 # entry from the Messenger alltogether
-##                 if (len(acceptorDict) == 0):
-##                     del self.dict[event]
+                del self.__callbacks[event]
+
+        # This object is no longer listening for this event
+        eventDict = self.__objectEvents.get(object)
+        if eventDict and eventDict.has_key(event):
+            del eventDict[event]
+            if (len(eventDict) == 0):
+                del self.__objectEvents[object]
+
+    def ignoreAll(self, object):
+        """ ignoreAll(self, DirectObject)
+        Make this object no longer respond to any events it was accepting
+        Useful for cleanup
+        """
+        if Messenger.notify.getDebug():
+            Messenger.notify.debug(`object` + '\n now ignoring all events')            
+        # Get the list of events this object is listening to
+        eventDict = self.__objectEvents.get(object)        
+        if eventDict:
+            for event in eventDict.keys():
+                # Find the dictionary of all the objects accepting this event
+                acceptorDict = self.__callbacks.get(event)
+                # If this object is there, delete it from the dictionary
+                if acceptorDict and acceptorDict.has_key(object):
+                    del acceptorDict[object]
+                    # If this dictionary is now empty, remove the event
+                    # entry from the Messenger alltogether
+                    if (len(acceptorDict) == 0):
+                        del self.__callbacks[event]
+            del self.__objectEvents[object]
 
     def isAccepting(self, event, object):
         """ isAccepting(self, string, DirectOject)        
         Is this object accepting this event?
         """
-        if self.dict.has_key(event):
-            if self.dict[event].has_key(object):
-                # Found it, return true
-                return 1
+        acceptorDict = self.__callbacks.get(event)
+        if acceptorDict and acceptorDict.has_key(object):
+            # Found it, return true
+            return 1
         # If we looked in both dictionaries and made it here
         # that object must not be accepting that event.
         return 0
@@ -107,7 +125,7 @@ class Messenger:
         """
         Return objects accepting the given event
         """
-        return self.dict.get(event, None)
+        return self.__callbacks.get(event)
         
     def isIgnoring(self, event, object):
         """ isIgnorning(self, string, DirectObject)
@@ -132,7 +150,7 @@ class Messenger:
                     if str(event).find(i) >= 0:
                         foundWatch=1
                         break
-        acceptorDict = self.dict.get(event)
+        acceptorDict = self.__callbacks.get(event)
         if not acceptorDict:
             if __debug__:
                 if foundWatch:
@@ -153,13 +171,18 @@ class Messenger:
                 # If this object was only accepting this event once,
                 # remove it from the dictionary
                 if not persistent:
-                    # notify the object that the event has been triggered
-                    object._INTERNAL_acceptOnceExpired(event)
+                    # This object is no longer listening for this event
+                    eventDict = self.__objectEvents.get(object)
+                    if eventDict and eventDict.has_key(event):
+                        del eventDict[event]
+                        if (len(eventDict) == 0):
+                            del self.__objectEvents[object]
+
                     del acceptorDict[object]
                     # If the dictionary at this event is now empty, remove
                     # the event entry from the Messenger altogether
-                    if (self.dict.has_key(event) and (len(self.dict[event]) == 0)):
-                        del self.dict[event]
+                    if (self.__callbacks.has_key(event) and (len(self.__callbacks[event]) == 0)):
+                        del self.__callbacks[event]
 
                 if __debug__:
                     if foundWatch:
@@ -178,8 +201,14 @@ class Messenger:
         """
         Start fresh with a clear dict
         """
-        self.dict.clear()
+        self.__callbacks.clear()
+        self.__objectEvents.clear()
 
+    def isEmpty(self):
+        return (len(self.__callbacks) == 0)
+
+    def getEvents(self):
+        return self.__callbacks.keys()
         
     def replaceMethod(self, oldMethod, newFunction):
         """
@@ -188,7 +217,7 @@ class Messenger:
         """
         import new
         retFlag = 0
-        for entry in self.dict.items():
+        for entry in self.__callbacks.items():
             event, objectDict = entry
             for objectEntry in objectDict.items():
                 object, params = objectEntry
@@ -263,12 +292,12 @@ class Messenger:
         return a matching event (needle) if found (in haystack).
         This is primarily a debugging tool.
         """
-        keys = self.dict.keys()
+        keys = self.__callbacks.keys()
         keys.sort()
         for event in keys:
             if `event`.find(needle) >= 0:
                 print self.__eventRepr(event),
-                return {event: self.dict[event]}
+                return {event: self.__callbacks[event]}
 
     def findAll(self, needle, limit=None):
         """
@@ -277,12 +306,12 @@ class Messenger:
         This is primarily a debugging tool.
         """
         matches = {}
-        keys = self.dict.keys()
+        keys = self.__callbacks.keys()
         keys.sort()
         for event in keys:
             if `event`.find(needle) >= 0:
                 print self.__eventRepr(event),
-                matches[event] = self.dict[event]
+                matches[event] = self.__callbacks[event]
                 # if the limit is not None, decrement and
                 # check for break:
                 if limit > 0:
@@ -306,7 +335,7 @@ class Messenger:
         Compact version of event, acceptor pairs
         """
         str = event.ljust(32) + '\t'
-        acceptorDict = self.dict[event]
+        acceptorDict = self.__callbacks[event]
         for object, (method, extraArgs, persistent) in acceptorDict.items():
             str = str + self.__methodRepr(method) + ' '
         str = str + '\n'
@@ -317,10 +346,17 @@ class Messenger:
         Compact version of event, acceptor pairs
         """
         str = "The messenger is currently handling:\n" + "="*64 + "\n"
-        keys = self.dict.keys()
+        keys = self.__callbacks.keys()
         keys.sort()
         for event in keys:
             str += self.__eventRepr(event)
+        # Print out the object : event dictionary too
+        str += "="*64 + "\n"
+        for object, eventDict in self.__objectEvents.items():
+            str += "%s:\n" % object
+            for event in eventDict.keys():
+                str += "     %s\n" % event
+            
         str += "="*64 + "\n" + "End of messenger info.\n"
         return str
 
@@ -331,10 +367,10 @@ class Messenger:
         import types
         str = 'Messenger\n'
         str = str + '='*50 + '\n'
-        keys = self.dict.keys()
+        keys = self.__callbacks.keys()
         keys.sort()
         for event in keys:
-            acceptorDict = self.dict[event]
+            acceptorDict = self.__callbacks[event]
             str = str + 'Event: ' + event + '\n'
             for object in acceptorDict.keys():
                 function, extraArgs, persistent = acceptorDict[object]
