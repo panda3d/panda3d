@@ -215,7 +215,6 @@ void GuiListBox::manage(GuiManager* mgr, EventHandler& eh) {
   if (_mgr == (GuiManager*)0L) {
     for (ItemVector::iterator i=_visible.begin(); i!=_visible.end(); ++i)
       (*i)->manage(mgr, eh);
-    _eh = &eh;
     GuiBehavior::manage(mgr, eh);
   } else
     gui_cat->warning() << "tried to manage listbox (0x" << (void*)this
