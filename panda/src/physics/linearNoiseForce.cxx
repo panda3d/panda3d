@@ -155,12 +155,27 @@ get_child_vector(const PhysicsObject *po) {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearNoiseForce::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<""<<"LinearNoiseForce";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearNoiseForce::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"LinearNoiseForce:";
-  out<<", _random_seed"<<_random_seed;
-  out<<", _initialized"<<_initialized;
-  out<<", _gradient_table"<<_gradient_table<<"\n";
-  out.width(indent+2); out<<""; out<<"_prn_table"<<_prn_table;
-  out<<endl;
+  out.width(indent+2); out<<""; out<<"_random_seed"<<_random_seed<<" (class)\n";
+  out.width(indent+2); out<<""; out<<"_initialized"<<_initialized<<" (class)\n";
+  out.width(indent+2); out<<""; out<<"_gradient_table"<<_gradient_table<<" (class)\n";
+  out.width(indent+2); out<<""; out<<"_prn_table"<<_prn_table<<" (class)\n";
+  LinearRandomForce::write(out, indent+2);
+  #endif //] NDEBUG
 }

@@ -21,7 +21,7 @@
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE ForceNode *BaseForce::
-get_force_node(void) const {
+get_force_node() const {
   return _force_node;
 }
 
@@ -39,6 +39,6 @@ set_active(bool active) {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE bool BaseForce::
-get_active(void) const {
+get_active() const {
   return _active;
 }

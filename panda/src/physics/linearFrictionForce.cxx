@@ -92,7 +92,23 @@ get_child_vector(const PhysicsObject* po) {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearFrictionForce::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"LinearFrictionForce";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearFrictionForce::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearFrictionForce:\n";
-  LinearForce::output(out, indent+2);
+  out.width(indent+2); out<<""; out<<"_coef "<<_coef<<":\n";
+  LinearForce::write(out, indent+2);
+  #endif //] NDEBUG
 }

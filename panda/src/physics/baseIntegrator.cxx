@@ -150,6 +150,61 @@ precompute_angular_matrices(Physical *physical,
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseIntegrator::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"BaseIntegrator";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write_precomputed_linear_matrices
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void BaseIntegrator::
+write_precomputed_linear_matrices(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent);
+  out<<""<<"_precomputed_linear_matrices\n";
+  for (MatrixVector::const_iterator i=_precomputed_linear_matrices.begin();
+       i != _precomputed_linear_matrices.end();
+       ++i) {
+    out.width(indent+2); out<<""; (*i).output(out); out<<"\n";
+  }
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write_precomputed_angular_matrices
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void BaseIntegrator::
+write_precomputed_angular_matrices(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent);
+  out<<""<<"_precomputed_angular_matrices\n";
+  for (MatrixVector::const_iterator i=_precomputed_angular_matrices.begin();
+       i != _precomputed_angular_matrices.end();
+       ++i) {
+    out.width(indent+2); out<<""; (*i).output(out); out<<"\n";
+  }
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void BaseIntegrator::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"BaseIntegrator:\n";
+  write_precomputed_linear_matrices(out, indent+2);
+  write_precomputed_angular_matrices(out, indent+2);
+  #endif //] NDEBUG
 }

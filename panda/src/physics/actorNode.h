@@ -40,7 +40,8 @@ public:
   // update the parent arc with PhysicsObject information
   void update_transform();
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
   // node hook if the client changes the node's transform.

@@ -30,15 +30,16 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS AngularIntegrator : public BaseIntegrator {
 public:
-  virtual ~AngularIntegrator(void);
+  virtual ~AngularIntegrator();
 
   void integrate(Physical *physical, pvector< PT(AngularForce) > &forces,
                  float dt);
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 protected:
-  AngularIntegrator(void);
+  AngularIntegrator();
 
 private:
   static const float _max_angular_dt;

@@ -27,7 +27,7 @@ TypeHandle LinearSinkForce::_type_handle;
 ////////////////////////////////////////////////////////////////////
 LinearSinkForce::
 LinearSinkForce(const LPoint3f& p, FalloffType f, float r, float a,
-          bool mass) :
+                bool mass) :
   LinearDistanceForce(p, f, r, a, mass) {
 }
 
@@ -37,9 +37,9 @@ LinearSinkForce(const LPoint3f& p, FalloffType f, float r, float a,
 // Description : Simple constructor
 ////////////////////////////////////////////////////////////////////
 LinearSinkForce::
-LinearSinkForce(void) :
+LinearSinkForce() :
   LinearDistanceForce(LPoint3f(0.0f, 0.0f, 0.0f), FT_ONE_OVER_R_SQUARED,
-                1.0f, 1.0f, true) {
+                      1.0f, 1.0f, true) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ LinearSinkForce(const LinearSinkForce &copy) :
 // Description : Simple destructor
 ////////////////////////////////////////////////////////////////////
 LinearSinkForce::
-~LinearSinkForce(void) {
+~LinearSinkForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ LinearSinkForce::
 // Description : copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearSinkForce::
-make_copy(void) {
+make_copy() {
   return new LinearSinkForce(*this);
 }
 
@@ -88,7 +88,22 @@ get_child_vector(const PhysicsObject *po) {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearSinkForce::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"LinearSinkForce";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearSinkForce::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearSinkForce:\n";
-  LinearDistanceForce::output(out, indent+2);
+  LinearDistanceForce::write(out, indent+2);
+  #endif //] NDEBUG
 }

@@ -32,7 +32,8 @@ PUBLISHED:
   LinearNoiseForce(const LinearNoiseForce &copy);
   virtual ~LinearNoiseForce();
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 public:
   static int _random_seed;

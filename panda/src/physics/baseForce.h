@@ -19,9 +19,9 @@
 #ifndef BASEFORCE_H
 #define BASEFORCE_H
 
-#include <pandabase.h>
-#include <typedReferenceCount.h>
-#include <luse.h>
+#include "pandabase.h"
+#include "typedReferenceCount.h"
+#include "luse.h"
 
 #include "physicsObject.h"
 
@@ -44,7 +44,8 @@ PUBLISHED:
 
   virtual LVector3f get_vector(const PhysicsObject *po) = 0;
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 protected:
   BaseForce(bool active = true);

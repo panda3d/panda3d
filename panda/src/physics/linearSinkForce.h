@@ -28,27 +28,28 @@
 class EXPCL_PANDAPHYSICS LinearSinkForce : public LinearDistanceForce {
 PUBLISHED:
   LinearSinkForce(const LPoint3f& p, FalloffType f, float r, float a = 1.0f,
-            bool m = true);
-  LinearSinkForce(void);
+                  bool m = true);
+  LinearSinkForce();
   LinearSinkForce(const LinearSinkForce &copy);
-  virtual ~LinearSinkForce(void);
+  virtual ~LinearSinkForce();
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
   virtual LVector3f get_child_vector(const PhysicsObject *po);
-  virtual LinearForce *make_copy(void);
+  virtual LinearForce *make_copy();
 
 public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LinearDistanceForce::init_type();
     register_type(_type_handle, "LinearSinkForce",
                   LinearDistanceForce::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}

@@ -122,74 +122,92 @@ Physical::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output_physics_objects
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
-void Physical::
-output_physics_objects(ostream &out, unsigned int indent) const {
-  out.width(indent);
-  out<<""<<"_physics_objects\n";
-  for (PhysicsObjectVector::const_iterator i=_physics_objects.begin();
-       i != _physics_objects.end();
-       ++i) {
-    (*i)->output(out, indent+2);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : output_linear_forces
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
-void Physical::
-output_linear_forces(ostream &out, unsigned int indent) const {
-  out.width(indent);
-  out<<""<<"_linear_forces\n";
-  for (LinearForceVector::const_iterator i=_linear_forces.begin();
-       i != _linear_forces.end();
-       ++i) {
-    (*i)->output(out, indent+2);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : output_angular_forces
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
-void Physical::
-output_angular_forces(ostream &out, unsigned int indent) const {
-  out.width(indent);
-  out<<""<<"_angular_forces\n";
-  for (AngularForceVector::const_iterator i=_angular_forces.begin();
-       i != _angular_forces.end();
-       ++i) {
-    (*i)->output(out, indent+2);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function : output
 //       Access : Public
 //  Description : Write a string representation of this instance to
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void Physical::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"Physical";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write_physics_objects
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void Physical::
+write_physics_objects(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent);
+  out<<""<<"_physics_objects\n";
+  for (PhysicsObjectVector::const_iterator i=_physics_objects.begin();
+       i != _physics_objects.end();
+       ++i) {
+    (*i)->write(out, indent+2);
+  }
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write_linear_forces
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void Physical::
+write_linear_forces(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent);
+  out<<""<<"_linear_forces\n";
+  for (LinearForceVector::const_iterator i=_linear_forces.begin();
+       i != _linear_forces.end();
+       ++i) {
+    (*i)->write(out, indent+2);
+  }
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write_angular_forces
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void Physical::
+write_angular_forces(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent);
+  out<<""<<"_angular_forces\n";
+  for (AngularForceVector::const_iterator i=_angular_forces.begin();
+       i != _angular_forces.end();
+       ++i) {
+    (*i)->write(out, indent+2);
+  }
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void Physical::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""<<"Physical:\n";
-  output_physics_objects(out, indent+2);
-  output_linear_forces(out, indent+2);
-  output_angular_forces(out, indent+2);
+  write_physics_objects(out, indent+2);
+  write_linear_forces(out, indent+2);
+  write_angular_forces(out, indent+2);
   if (_phys_body) {
-    _phys_body->output(out, indent+2);
+    _phys_body->write(out, indent+2);
   } else {
     out.width(indent+2); out<<""<<"_phys_body is null\n";
   }
+  #endif //] NDEBUG
 }
-
-
-

@@ -57,7 +57,7 @@ BaseParticleRenderer(const BaseParticleRenderer& copy) :
 // Description : Destructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleRenderer::
-~BaseParticleRenderer(void) {
+~BaseParticleRenderer() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ BaseParticleRenderer::
 //               enables alpha channeling.
 ////////////////////////////////////////////////////////////////////
 void BaseParticleRenderer::
-enable_alpha(void) {
+enable_alpha() {
   _render_state = RenderState::make(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
 }
 
@@ -77,7 +77,7 @@ enable_alpha(void) {
 // Description : kills the intermediate alpha node/arc
 ////////////////////////////////////////////////////////////////////
 void BaseParticleRenderer::
-disable_alpha(void) {
+disable_alpha() {
   _render_state = RenderState::make(TransparencyAttrib::make(TransparencyAttrib::M_none));
 }
 

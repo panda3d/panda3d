@@ -27,16 +27,17 @@
 //               physically modelable objects given a quantum dt.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS AngularEulerIntegrator : public AngularIntegrator {
+PUBLISHED:
+  AngularEulerIntegrator();
+  virtual ~AngularEulerIntegrator();
+  
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
+
 private:
   virtual void child_integrate(Physical *physical,
                                pvector< PT(AngularForce) >& forces,
                                float dt);
-  
-  virtual void output(ostream &out, unsigned int indent=0) const;
-
-PUBLISHED:
-  AngularEulerIntegrator(void);
-  virtual ~AngularEulerIntegrator(void);
 };
 
 #endif // EULERINTEGRATOR_H

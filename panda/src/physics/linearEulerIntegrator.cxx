@@ -65,7 +65,7 @@ child_integrate(Physical *physical,
   // another integrator, be sure to process your forces global, then local.
   // otherwise your transforms will be VERY bad.
   precompute_linear_matrices(physical, forces);
-  const VectorOfMatrices &matrices = get_precomputed_linear_matrices();
+  const MatrixVector &matrices = get_precomputed_linear_matrices();
 
   // Loop through each object in the set.  This processing occurs in O(pf) time,
   // where p is the number of physical objects and f is the number of
@@ -181,10 +181,25 @@ child_integrate(Physical *physical,
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearEulerIntegrator::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"LinearEulerIntegrator";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearEulerIntegrator::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"LinearEulerIntegrator:\n";
-  LinearIntegrator::output(out, indent+2);
+  LinearIntegrator::write(out, indent+2);
+  #endif //] NDEBUG
 }
 
 

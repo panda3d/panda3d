@@ -37,26 +37,27 @@ PUBLISHED:
   INLINE void set_vector(const LVector3f& v);
   INLINE void set_vector(float x, float y, float z);
 
-  INLINE LVector3f get_local_vector(void) const;
+  INLINE LVector3f get_local_vector() const;
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
   LVector3f _fvec;
 
-  virtual LinearForce *make_copy(void);
+  virtual LinearForce *make_copy();
   virtual LVector3f get_child_vector(const PhysicsObject *po);
 
 public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LinearForce::init_type();
     register_type(_type_handle, "LinearVectorForce",
                   LinearForce::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}

@@ -37,7 +37,7 @@ LinearSourceForce(const LPoint3f& p, FalloffType f, float r, float a,
 // Description : Simple constructor
 ////////////////////////////////////////////////////////////////////
 LinearSourceForce::
-LinearSourceForce(void) :
+LinearSourceForce() :
   LinearDistanceForce(LPoint3f(0.0f, 0.0f, 0.0f), FT_ONE_OVER_R_SQUARED,
                       1.0f, 1.0f, true) {
 }
@@ -58,7 +58,7 @@ LinearSourceForce(const LinearSourceForce &copy) :
 // Description : Simple destructor
 ////////////////////////////////////////////////////////////////////
 LinearSourceForce::
-~LinearSourceForce(void) {
+~LinearSourceForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,7 +88,22 @@ get_child_vector(const PhysicsObject *po) {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearSourceForce::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"LinearSourceForce";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearSourceForce::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearSourceForce:\n";
-  LinearDistanceForce::output(out, indent+2);
+  LinearDistanceForce::write(out, indent+2);
+  #endif //] NDEBUG
 }

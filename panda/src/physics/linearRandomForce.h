@@ -30,30 +30,31 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearRandomForce : public LinearForce {
 PUBLISHED:
-  virtual ~LinearRandomForce(void);
+  virtual ~LinearRandomForce();
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 protected:
-  static float bounded_rand(void);
-  static LVector3f random_unit_vector(void);
+  static float bounded_rand();
+  static LVector3f random_unit_vector();
 
   LinearRandomForce(float a = 1.0f, bool m = false);
   LinearRandomForce(const LinearRandomForce &copy);
 
   virtual LVector3f get_child_vector(const PhysicsObject *po) = 0;
-  virtual LinearForce *make_copy(void) = 0;
+  virtual LinearForce *make_copy() = 0;
 
 public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LinearForce::init_type();
     register_type(_type_handle, "LinearRandomForce",
                   LinearForce::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}

@@ -19,10 +19,10 @@
 #ifndef BASEINTEGRATOR_H
 #define BASEINTEGRATOR_H
 
-#include <pandabase.h>
-#include <pointerTo.h>
-#include <referenceCount.h>
-#include <luse.h>
+#include "pandabase.h"
+#include "pointerTo.h"
+#include "referenceCount.h"
+#include "luse.h"
 
 #include "linearForce.h"
 #include "angularForce.h"
@@ -39,17 +39,22 @@ class Physical;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS BaseIntegrator : public ReferenceCount {
 public:
-  typedef pvector< LMatrix4f > VectorOfMatrices;
+  typedef pvector< LMatrix4f > MatrixVector;
 
   virtual ~BaseIntegrator();
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write_precomputed_linear_matrices(ostream &out,
+                                                 unsigned int indent=0) const;
+  virtual void write_precomputed_angular_matrices(ostream &out,
+                                                  unsigned int indent=0) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 protected:
   BaseIntegrator();
 
-  INLINE const VectorOfMatrices &get_precomputed_linear_matrices() const;
-  INLINE const VectorOfMatrices &get_precomputed_angular_matrices() const;
+  INLINE const MatrixVector &get_precomputed_linear_matrices() const;
+  INLINE const MatrixVector &get_precomputed_angular_matrices() const;
 
   void precompute_linear_matrices(Physical *physical,
                                   const pvector< PT(LinearForce) > &forces);
@@ -61,8 +66,8 @@ private:
   // and however many forces will be the same among one physical,
   // the transformation matrices can be pulled out of the inner loop
   // and precomputed.
-  VectorOfMatrices _precomputed_linear_matrices;
-  VectorOfMatrices _precomputed_angular_matrices;
+  MatrixVector _precomputed_linear_matrices;
+  MatrixVector _precomputed_angular_matrices;
 };
 
 #include "baseIntegrator.I"

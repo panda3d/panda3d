@@ -129,13 +129,27 @@ do_physics(float dt) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output_physicals
+//     Function : output
 //       Access : Public
 //  Description : Write a string representation of this instance to
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
-output_physicals(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<""<<"PhysicsManager";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write_physicals
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PhysicsManager::
+write_physicals(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   if (indent>10) {
     return;
   }
@@ -145,76 +159,78 @@ output_physicals(ostream &out, unsigned int indent) const {
   for (pvector< Physical * >::const_iterator i=_physicals.begin();
        i != _physicals.end();
        ++i) {
-    (*i)->output(out, indent+2);
+    (*i)->write(out, indent+2);
   }
+  #endif //] NDEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : _linear_forces
+//     Function : write_forces
 //       Access : Public
 //  Description : Write a string representation of this instance to
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
-output_linear_forces(ostream &out, unsigned int indent) const {
-  if (indent>10) {
-    return;
-  }
+write_linear_forces(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_linear_forces ("<<_linear_forces.size()<<" forces)\n";
   for (pvector< PT(LinearForce) >::const_iterator i=_linear_forces.begin();
        i != _linear_forces.end();
        ++i) {
-    (*i)->output(out, indent+2);
+    (*i)->write(out, indent+2);
   }
+  #endif //] NDEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output_angular_forces
+//     Function : write_angular_forces
 //       Access : Public
 //  Description : Write a string representation of this instance to
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
-output_angular_forces(ostream &out, unsigned int indent) const {
-  if (indent>10) {
-    return;
-  }
+write_angular_forces(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_angular_forces ("<<_angular_forces.size()<<" forces)\n";
   for (pvector< PT(AngularForce) >::const_iterator i=_angular_forces.begin();
        i != _angular_forces.end();
        ++i) {
-    (*i)->output(out, indent+2);
+    (*i)->write(out, indent+2);
   }
+  #endif //] NDEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
+//     Function : write
 //       Access : Public
 //  Description : Write a string representation of this instance to
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
-output(ostream &out, unsigned int indent) const {
-  if (indent>10) {
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""<<"PhysicsManager:\n";
+  if (indent>20) {
+    // ...indent limit is arbitrary, it limits recursion.
+    out.width(indent+2); out<<""<<"...\n";
     return;
   }
-  out.width(indent);
-  out<<""<<"PhysicsManager:\n";
-  output_physicals(out, indent+2);
-  output_linear_forces(out, indent+2);
-  output_angular_forces(out, indent+2);
+  write_physicals(out, indent+2);
+  write_linear_forces(out, indent+2);
+  write_angular_forces(out, indent+2);
+  out.width(indent+2); out<<""<<"_linear_integrator:\n";
   if (_linear_integrator) {
-    _linear_integrator->output(out, indent+2);
+    _linear_integrator->write(out, indent+4);
   } else {
-    out.width(indent+2);
-    out<<""<<"_linear_integrator is null\n";
+    out.width(indent+4); out<<""<<"null\n";
   }
+  out.width(indent+2); out<<""<<"_angular_integrator:\n";
   if (_angular_integrator) {
-    _angular_integrator->output(out, indent+2);
+    _angular_integrator->write(out, indent+4);
   } else {
-    out.width(indent+2);
-    out<<""<<"_angular_integrator is null\n";
+    out.width(indent+4); out<<""<<"null\n";
   }
+  #endif //] NDEBUG
 }

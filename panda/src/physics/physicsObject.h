@@ -19,9 +19,9 @@
 #ifndef PHYSICS_OBJECT_H
 #define PHYSICS_OBJECT_H
 
-#include <pandabase.h>
-#include <typedReferenceCount.h>
-#include <luse.h>
+#include "pandabase.h"
+#include "typedReferenceCount.h"
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysicsObject
@@ -73,7 +73,8 @@ PUBLISHED:
   virtual LMatrix4f get_lcs() const;
   virtual PhysicsObject *make_copy() const;
   
-  void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
   // physical

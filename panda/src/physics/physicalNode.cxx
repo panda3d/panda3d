@@ -115,7 +115,22 @@ remove_physical(int index) {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicalNode::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"PhysicalNode";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PhysicalNode::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"PhysicalNode:\n";
-  //PandaNode::output(out, indent+2);
+  //PandaNode::write(out, indent+2);
+  #endif //] NDEBUG
 }

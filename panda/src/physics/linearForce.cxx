@@ -97,13 +97,27 @@ is_linear() const {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearForce::
-output(ostream &out, unsigned int indent) const {
-  out.width(indent); out<<"";
-  out<<"LinearForce:";
-  out<<" amplitude "<<_amplitude;
-  out<<", mass_dependent "<<_mass_dependent;
-  out<<", x_mask "<<_x_mask;
-  out<<", y_mask "<<_y_mask;
-  out<<", z_mask "<<_z_mask;
-  BaseForce::output(out, indent+2);
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"LinearForce";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearForce::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"LinearForce:\n";
+  out.width(indent+2); out<<""; out<<"_amplitude "<<_amplitude<<"\n";
+  out.width(indent+2); out<<""; out<<"_mass_dependent "<<_mass_dependent<<"\n";
+  out.width(indent+2); out<<""; out<<"_x_mask "<<_x_mask<<"\n";
+  out.width(indent+2); out<<""; out<<"_y_mask "<<_y_mask<<"\n";
+  out.width(indent+2); out<<""; out<<"_z_mask "<<_z_mask<<"\n";
+  BaseForce::write(out, indent+2);
+  #endif //] NDEBUG
 }

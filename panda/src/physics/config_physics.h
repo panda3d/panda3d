@@ -19,13 +19,21 @@
 #ifndef CONFIG_PHYSICS_H
 #define CONFIG_PHYSICS_H
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
-#include <dconfig.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
+#include "dconfig.h"
 
 ConfigureDecl(config_physics, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);
 NotifyCategoryDecl(physics, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);
 
 extern EXPCL_PANDAPHYSICS void init_libphysics();
+
+#ifndef NDEBUG //[
+  // Non-release build:
+  #define PHYSICS_DEBUG
+#else //][
+  // Release build:
+  #undef PHYSICS_DEBUG
+#endif //]
 
 #endif // CONFIG_PHYSICS_H

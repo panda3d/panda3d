@@ -31,30 +31,31 @@ PUBLISHED:
   AngularVectorForce(const LVector3f& vec);
   AngularVectorForce(float x = 0.0f, float y = 0.0f, float z = 0.0f);
   AngularVectorForce(const AngularVectorForce &copy);
-  virtual ~AngularVectorForce(void);
+  virtual ~AngularVectorForce();
 
   INLINE void set_vector(const LVector3f& v);
   INLINE void set_vector(float x, float y, float z);
-  INLINE LVector3f get_local_vector(void) const;
+  INLINE LVector3f get_local_vector() const;
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
   LVector3f _fvec;
 
-  virtual AngularForce *make_copy(void) const;
+  virtual AngularForce *make_copy() const;
   virtual LVector3f get_child_vector(const PhysicsObject *po);
 
 public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     AngularForce::init_type();
     register_type(_type_handle, "AngularVectorForce",
                   AngularForce::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}

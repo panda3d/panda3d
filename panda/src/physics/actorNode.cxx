@@ -56,7 +56,7 @@ ActorNode(const ActorNode &copy) :
 //  Description : destructor
 ////////////////////////////////////////////////////////////////////
 ActorNode::
-~ActorNode(void) {
+~ActorNode() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ ActorNode::
 //                Physical, moving the node and subsequent geometry.
 ////////////////////////////////////////////////////////////////////
 void ActorNode::
-update_transform(void) {
+update_transform() {
   LMatrix4f lcs = _mass_center->get_lcs();
 
   // lock the callback so that this doesn't call transform_changed.
@@ -93,7 +93,6 @@ transform_changed() {
   CPT(TransformState) transform = get_transform();
 
   // extract the position
-
   LPoint3f pos;
   transform->get_mat().get_row3(pos,3);
 
@@ -114,7 +113,24 @@ transform_changed() {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void ActorNode::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"ActorNode";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ActorNode::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"ActorNode:\n";
-  PhysicalNode::output(out, indent+2);
+  out.width(indent+2); out<<""; out<<"_mass_center "<<_mass_center<<"\n";
+  out.width(indent+2); out<<""; out<<"_ok_to_callback "<<_ok_to_callback<<"\n";
+  PhysicalNode::write(out, indent+2);
+  #endif //] NDEBUG
 }

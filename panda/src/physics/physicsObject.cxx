@@ -122,7 +122,21 @@ get_inertial_tensor() const {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicsObject::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"PhysicsObject";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PhysicsObject::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"PhysicsObject:\n";
   out.width(indent+2); out<<""; out<<"_position "<<_position<<"\n";
@@ -134,4 +148,5 @@ output(ostream &out, unsigned int indent) const {
   out.width(indent+2); out<<""; out<<"_mass "<<_mass<<"\n";
   out.width(indent+2); out<<""; out<<"_process_me "<<_process_me<<"\n";
   out.width(indent+2); out<<""; out<<"_oriented "<<_oriented<<"\n";
+  #endif //] NDEBUG
 }

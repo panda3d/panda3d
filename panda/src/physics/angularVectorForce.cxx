@@ -88,7 +88,23 @@ get_child_vector(const PhysicsObject *) {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void AngularVectorForce::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"AngularVectorForce";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void AngularVectorForce::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"AngularVectorForce:\n";
-  AngularForce::output(out, indent+2);
+  out.width(indent+2); out<<""; out<<"_fvec "<<_fvec<<"\n";
+  AngularForce::write(out, indent+2);
+  #endif //] NDEBUG
 }

@@ -39,6 +39,6 @@ set_vector(float x, float y, float z) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f AngularVectorForce::
-get_local_vector(void) const {
+get_local_vector() const {
   return _fvec;
 }

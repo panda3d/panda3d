@@ -46,7 +46,7 @@ LinearRandomForce(const LinearRandomForce &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 LinearRandomForce::
-~LinearRandomForce(void) {
+~LinearRandomForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ LinearRandomForce::
 //  Description : Returns a float in [0, 1]
 ////////////////////////////////////////////////////////////////////
 float LinearRandomForce::
-bounded_rand(void) {
+bounded_rand() {
   return ((float)rand() / (float)RAND_MAX);
 }
 
@@ -66,7 +66,22 @@ bounded_rand(void) {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearRandomForce::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"LinearRandomForce";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearRandomForce::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearRandomForce:\n";
-  LinearForce::output(out, indent+2);
+  LinearForce::write(out, indent+2);
+  #endif //] NDEBUG
 }

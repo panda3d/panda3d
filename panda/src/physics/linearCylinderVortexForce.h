@@ -39,37 +39,38 @@ PUBLISHED:
                       float a = 1.0f,
                       bool md = false);
   LinearCylinderVortexForce(const LinearCylinderVortexForce &copy);
-  virtual ~LinearCylinderVortexForce(void);
+  virtual ~LinearCylinderVortexForce();
 
   INLINE void set_coef(float coef);
-  INLINE float get_coef(void) const;
+  INLINE float get_coef() const;
 
   INLINE void set_radius(float radius);
-  INLINE float get_radius(void) const;
+  INLINE float get_radius() const;
 
   INLINE void set_length(float length);
-  INLINE float get_length(void) const;
+  INLINE float get_length() const;
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
   float _radius;
   float _length;
   float _coef;
 
-  virtual LinearForce *make_copy(void);
+  virtual LinearForce *make_copy();
   virtual LVector3f get_child_vector(const PhysicsObject *po);
 
 public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LinearForce::init_type();
     register_type(_type_handle, "LinearCylinderVortexForce",
                   LinearForce::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}

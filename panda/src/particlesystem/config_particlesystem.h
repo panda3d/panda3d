@@ -28,4 +28,12 @@ NotifyCategoryDecl(particlesystem, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);
 
 extern EXPCL_PANDAPHYSICS void init_libparticlesystem();
 
+#ifndef NDEBUG //[
+  // Non-release build:
+  #define PARTICLE_SYSTEM_DEBUG
+#else //][
+  // Release build:
+  #undef PARTICLE_SYSTEM_DEBUG
+#endif //]
+
 #endif // CONFIG_PARTICLESYSTEM_H

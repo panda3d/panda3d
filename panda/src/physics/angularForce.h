@@ -33,7 +33,8 @@ PUBLISHED:
   LVector3f get_vector(const PhysicsObject *po);
   virtual bool is_linear() const;
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 protected:
   AngularForce();

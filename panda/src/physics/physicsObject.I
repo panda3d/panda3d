@@ -115,7 +115,7 @@ set_terminal_velocity(float tv) {
 // Description : Mass Query
 ////////////////////////////////////////////////////////////////////
 INLINE float PhysicsObject::
-get_mass(void) const {
+get_mass() const {
   return _mass;
 }
 
@@ -125,7 +125,7 @@ get_mass(void) const {
 // Description : Position Query
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f PhysicsObject::
-get_position(void) const {
+get_position() const {
   return _position;
 }
 
@@ -135,7 +135,7 @@ get_position(void) const {
 // Description : Last position Query
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f PhysicsObject::
-get_last_position(void) const {
+get_last_position() const {
   return _last_position;
 }
 
@@ -145,7 +145,7 @@ get_last_position(void) const {
 // Description : Velocity Query
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f PhysicsObject::
-get_velocity(void) const {
+get_velocity() const {
   return _velocity;
 }
 
@@ -155,7 +155,7 @@ get_velocity(void) const {
 // Description : Process Flag Query
 ////////////////////////////////////////////////////////////////////
 INLINE bool PhysicsObject::
-get_active(void) const {
+get_active() const {
   return _process_me;
 }
 
@@ -165,7 +165,7 @@ get_active(void) const {
 // Description : tv query
 ////////////////////////////////////////////////////////////////////
 INLINE float PhysicsObject::
-get_terminal_velocity(void) const {
+get_terminal_velocity() const {
   return _terminal_velocity;
 }
 
@@ -195,7 +195,7 @@ set_rotation(const LVector3f &rotation) {
 // Description :
 ////////////////////////////////////////////////////////////////////
 INLINE LOrientationf PhysicsObject::
-get_orientation(void) const {
+get_orientation() const {
   return _orientation;
 }
 
@@ -205,7 +205,7 @@ get_orientation(void) const {
 // Description :
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f PhysicsObject::
-get_rotation(void) const {
+get_rotation() const {
   return _rotation;
 }
 
@@ -225,6 +225,6 @@ set_oriented(bool flag) {
 // Description :
 ////////////////////////////////////////////////////////////////////
 INLINE bool PhysicsObject::
-get_oriented(void) const {
+get_oriented() const {
   return _oriented;
 }

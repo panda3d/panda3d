@@ -33,8 +33,7 @@ TypeHandle LinearVectorForce::_type_handle;
 LinearVectorForce::
 LinearVectorForce(const LVector3f& vec, float a, bool mass) :
   LinearForce(a, mass),
-  _fvec(vec)
-{
+  _fvec(vec) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,7 +64,7 @@ LinearVectorForce(const LinearVectorForce &copy) :
 //  Description : Destructor
 ////////////////////////////////////////////////////////////////////
 LinearVectorForce::
-~LinearVectorForce(void) {
+~LinearVectorForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,7 +73,7 @@ LinearVectorForce::
 // Description : copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearVectorForce::
-make_copy(void) {
+make_copy() {
   return new LinearVectorForce(*this);
 }
 
@@ -95,7 +94,23 @@ get_child_vector(const PhysicsObject *) {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearVectorForce::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"LinearVectorForce";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearVectorForce::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearVectorForce:\n";
-  LinearForce::output(out, indent+2);
+  out.width(indent+2); out<<""; out<<"_fvec "<<_fvec<<"\n";
+  LinearForce::write(out, indent+2);
+  #endif //] NDEBUG
 }

@@ -50,12 +50,12 @@ PUBLISHED:
     PP_BLEND_CUBIC
   };
 
-  virtual ~BaseParticleRenderer(void);
+  virtual ~BaseParticleRenderer();
 
-  INLINE GeomNode *get_render_node(void) const;
+  INLINE GeomNode *get_render_node() const;
 
   INLINE void set_alpha_mode(ParticleRendererAlphaMode am);
-  INLINE ParticleRendererAlphaMode get_alpha_mode(void) const;
+  INLINE ParticleRendererAlphaMode get_alpha_mode() const;
 
   INLINE void set_user_alpha(float ua);
   INLINE float get_user_alpha(void) const;
@@ -70,8 +70,8 @@ protected:
 
   void update_alpha_mode(ParticleRendererAlphaMode am);
 
-  void enable_alpha(void);
-  void disable_alpha(void);
+  void enable_alpha();
+  void disable_alpha();
 
   INLINE float get_cur_alpha(BaseParticle* bp);
 
@@ -95,12 +95,12 @@ private:
   virtual void kill_particle(int index) = 0;
 
 
-  virtual void init_geoms(void) = 0;
+  virtual void init_geoms() = 0;
   virtual void render(pvector< PT(PhysicsObject) >& po_vector,
                       int ttl_particles) = 0;
 
 public:
-  virtual BaseParticleRenderer *make_copy(void) = 0;
+  virtual BaseParticleRenderer *make_copy() = 0;
 
   friend class ParticleSystem;
 };

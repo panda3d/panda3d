@@ -162,7 +162,22 @@ child_integrate(Physical *physical,
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void AngularEulerIntegrator::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"AngularEulerIntegrator";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void AngularEulerIntegrator::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"AngularEulerIntegrator:\n";
-  AngularIntegrator::output(out, indent+2);
+  AngularIntegrator::write(out, indent+2);
+  #endif //] NDEBUG
 }

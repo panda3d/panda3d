@@ -30,7 +30,7 @@ set_amplitude(float a) {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE float LinearForce::
-get_amplitude(void) const {
+get_amplitude() const {
   return _amplitude;
 }
 
@@ -39,7 +39,7 @@ get_amplitude(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE bool LinearForce::
-get_mass_dependent(void) const {
+get_mass_dependent() const {
   return _mass_dependent;
 }
 

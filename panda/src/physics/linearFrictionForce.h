@@ -34,7 +34,8 @@ PUBLISHED:
   INLINE void set_coef(float coef);
   INLINE float get_coef(void) const;
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
   float _coef;

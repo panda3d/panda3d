@@ -24,7 +24,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 AngularIntegrator::
-AngularIntegrator(void) {
+AngularIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@ AngularIntegrator(void) {
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 AngularIntegrator::
-~AngularIntegrator(void) {
+~AngularIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,7 +59,23 @@ integrate(Physical *physical, pvector< PT(AngularForce) >& forces,
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void AngularIntegrator::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"AngularIntegrator";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void AngularIntegrator::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"AngularIntegrator:\n";
-  BaseIntegrator::output(out, indent+2);
+  out.width(indent+2); out<<""; out<<"_max_angular_dt "<<_max_angular_dt<<" (class const)\n";
+  BaseIntegrator::write(out, indent+2);
+  #endif //] NDEBUG
 }

@@ -19,9 +19,9 @@
 #ifndef PHYSICAL_H
 #define PHYSICAL_H
 
-#include <pandabase.h>
-#include <pointerTo.h>
-#include <typedReferenceCount.h>
+#include "pandabase.h"
+#include "pointerTo.h"
+#include "typedReferenceCount.h"
 
 #include "pvector.h"
 #include "plist.h"
@@ -65,10 +65,11 @@ PUBLISHED:
   INLINE int get_num_angular_forces() const;
   INLINE PT(AngularForce) get_angular_force(int index) const;
   
-  void output_physics_objects(ostream &out, unsigned int indent=0) const;
-  void output_linear_forces(ostream &out, unsigned int indent=0) const;
-  void output_angular_forces(ostream &out, unsigned int indent=0) const;
-  void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  void write_physics_objects(ostream &out, unsigned int indent=0) const;
+  void write_linear_forces(ostream &out, unsigned int indent=0) const;
+  void write_angular_forces(ostream &out, unsigned int indent=0) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 public:
   typedef pvector< PT(PhysicsObject) > PhysicsObjectVector;

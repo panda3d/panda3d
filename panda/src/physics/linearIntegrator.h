@@ -36,7 +36,8 @@ public:
   void integrate(Physical *physical, pvector< PT(LinearForce) > &forces,
                  float dt);
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 protected:
   LinearIntegrator();

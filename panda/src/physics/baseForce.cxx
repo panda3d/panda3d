@@ -58,7 +58,24 @@ BaseForce::
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseForce::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"BaseForce";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void BaseForce::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"BaseForce:\n";
-  //TypedReferenceCount::output(out);
+  out.width(indent+2); out<<""; out<<"_force_node "<<_force_node<<"\n";
+  out.width(indent+2); out<<""; out<<"_active "<<_active<<"\n";
+  //TypedReferenceCount::write(out);
+  #endif //] NDEBUG
 }

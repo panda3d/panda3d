@@ -47,7 +47,7 @@ ForceNode(const ForceNode &copy) :
 //  Description : destructor
 ////////////////////////////////////////////////////////////////////
 ForceNode::
-~ForceNode(void) {
+~ForceNode() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ ForceNode::
 //  Description : dynamic child copy
 ////////////////////////////////////////////////////////////////////
 PandaNode *ForceNode::
-make_copy(void) const {
+make_copy() const {
   return new ForceNode(*this);
 }
 
@@ -115,7 +115,41 @@ remove_force(int index) {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void ForceNode::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"ForceNode";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write_linear_forces
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ForceNode::
+write_forces(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""<<"_forces\n";
+  for (ForceVector::const_iterator i=_forces.begin();
+       i != _forces.end();
+       ++i) {
+    (*i)->write(out, indent+2);
+  }
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ForceNode::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"ForceNode\n";
-  //PandaNode::output(out, indent+2);
+  write_forces(out, indent+2);
+  //PandaNode::write(out, indent+2);
+  #endif //] NDEBUG
 }

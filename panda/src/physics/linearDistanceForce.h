@@ -39,13 +39,14 @@ PUBLISHED:
   INLINE void set_falloff_type(FalloffType ft);
   INLINE void set_force_center(const LPoint3f& p);
 
-  INLINE float get_radius(void) const;
-  INLINE FalloffType get_falloff_type(void) const;
-  INLINE LPoint3f get_force_center(void) const;
+  INLINE float get_radius() const;
+  INLINE FalloffType get_falloff_type() const;
+  INLINE LPoint3f get_force_center() const;
 
-  INLINE float get_scalar_term(void) const;
+  INLINE float get_scalar_term() const;
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
   LPoint3f _force_center;
@@ -53,25 +54,25 @@ private:
   FalloffType _falloff;
   float _radius;
 
-  virtual LinearForce *make_copy(void) = 0;
+  virtual LinearForce *make_copy() = 0;
   virtual LVector3f get_child_vector(const PhysicsObject *po) = 0;
 
 protected:
   LinearDistanceForce(const LPoint3f& p, FalloffType ft, float r, float a,
                 bool m);
   LinearDistanceForce(const LinearDistanceForce &copy);
-  virtual ~LinearDistanceForce(void);
+  virtual ~LinearDistanceForce();
 
 public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LinearForce::init_type();
     register_type(_type_handle, "LinearDistanceForce",
                   LinearForce::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}

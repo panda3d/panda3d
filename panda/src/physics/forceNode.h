@@ -43,7 +43,9 @@ PUBLISHED:
   void remove_force(BaseForce *f);
   void remove_force(int index);
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write_forces(ostream &out, unsigned int indent=0) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 public:
   virtual ~ForceNode();
@@ -54,7 +56,8 @@ protected:
   ForceNode(const ForceNode &copy);
 
 private:
-  pvector< PT(BaseForce) > _forces;
+  typedef pvector< PT(BaseForce) > ForceVector;
+  ForceVector _forces;
 
 public:
   static TypeHandle get_class_type() {

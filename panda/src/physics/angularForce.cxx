@@ -26,7 +26,7 @@ TypeHandle AngularForce::_type_handle;
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 AngularForce::
-AngularForce(void) :
+AngularForce() :
   BaseForce() {
 }
 
@@ -46,7 +46,7 @@ AngularForce(const AngularForce &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 AngularForce::
-~AngularForce(void) {
+~AngularForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ get_vector(const PhysicsObject *po) {
 // Description : access query
 ////////////////////////////////////////////////////////////////////
 bool AngularForce::
-is_linear(void) const {
+is_linear() const {
   return false;
 }
 
@@ -77,7 +77,22 @@ is_linear(void) const {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void AngularForce::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"AngularForce";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void AngularForce::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"AngularForce:\n";
-  BaseForce::output(out, indent+2);
+  BaseForce::write(out, indent+2);
+  #endif //] NDEBUG
 }

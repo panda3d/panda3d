@@ -44,7 +44,8 @@ PUBLISHED:
   void remove_physical(Physical *physical);
   void remove_physical(int index);
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, unsigned int indent=0) const;
 
 public:
   virtual ~PhysicalNode();

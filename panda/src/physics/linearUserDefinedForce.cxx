@@ -80,7 +80,22 @@ get_child_vector(const PhysicsObject *po) {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearUserDefinedForce::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"LinearUserDefinedForce";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearUserDefinedForce::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearUserDefinedForce:\n";
-  LinearForce::output(out, indent+2);
+  LinearForce::write(out, indent+2);
+  #endif //] NDEBUG
 }
