@@ -34,7 +34,7 @@ TypeHandle GraphicsWindow::WindowPipe::_type_handle;
 
 GraphicsWindow::WindowFactory *GraphicsWindow::_factory = NULL;
 
-#ifndef CPPPARSER
+#if defined(DO_PSTATS) && !defined(CPPPARSER)
 PStatCollector GraphicsWindow::_app_pcollector("App");
 PStatCollector GraphicsWindow::_show_code_pcollector("App:Show code");
 PStatCollector GraphicsWindow::_swap_pcollector("Swap buffers");
@@ -138,7 +138,6 @@ GraphicsWindow(GraphicsPipe *pipe) : Configurable() {
 
   _draw_callback = NULL;
   _idle_callback = NULL;
-  _resize_callback = NULL;
   _frame_number = 0;
   _is_synced = false;
 }
@@ -157,7 +156,6 @@ GraphicsWindow(GraphicsPipe *pipe,
 
   _draw_callback = NULL;
   _idle_callback = NULL;
-  _resize_callback = NULL;
   _is_synced = false;
 }
 
@@ -369,16 +367,6 @@ register_idle_function(GraphicsWindow::vfn f) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::register_resize_function
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-register_resize_function(GraphicsWindow::vfnii f) {
-  _resize_function = f;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::main_loop
 //       Access: Public, Virtual
 //  Description: Yields the application over to the window entirely
@@ -450,7 +438,7 @@ end_frame() {
 //  Description: Called whenever the window gets the resize event.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
-resized(const int x, const int y) {
+resized(const unsigned int x, const unsigned int y) {
   Channels::iterator ci;
   for (ci = _channels.begin(); ci != _channels.end(); ++ci) {
     GraphicsChannel *chan = (*ci);
@@ -611,6 +599,31 @@ void GraphicsWindow::read_priorities(void) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 swap() {
+  display_cat.warning() << "swap() unimplemented by " << get_type() << endl;
+}
+
+void GraphicsWindow::
+resize(unsigned int xsize,unsigned int ysize) {
+  display_cat.warning() << "resize() unimplemented by " << get_type() << endl;  
+}
+
+
+unsigned int GraphicsWindow::
+verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
+  // see if window sizes are supported (i.e. in fullscrn mode)
+  // dimen is an array containing contiguous x,y pairs specifying
+  // possible display sizes, it is numsizes*2 long.  fn will zero
+  // out any invalid x,y size pairs.  return value is number of valid 
+  // sizes that were found.
+  // 
+  // note: it might be better to implement some sort of query
+  //       interface that returns an array of supported sizes,
+  //       but this way is somewhat simpler and will do the job 
+  //       on most cards, assuming they handle the std sizes the app
+  //       knows about.
+
+  display_cat.warning() << "verify_window_sizes() unimplemented by " << get_type() << endl; 
+  return numsizes;
 }
 
 void GraphicsWindow::deactivate_window(void) { return; }

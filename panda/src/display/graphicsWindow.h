@@ -124,10 +124,22 @@ PUBLISHED:
   INLINE void set_sync(const bool);
   INLINE bool get_sync() const;
 
+  // resize the window to the given size
+  virtual void resize(unsigned int xsize,unsigned int ysize);  
+
+  // see if window sizes are supported (i.e. in fullscrn mode)
+  // 
+  // note: it might be better to implement some sort of query
+  //       interface that returns an array of supported sizes,
+  //       but this way is somewhat simpler and will do the job 
+  //       on most cards, assuming they handle the std sizes the app
+  //       knows about.
+  virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
+
   virtual void swap();
 
 public:
-  virtual void resized(const int, const int);
+  virtual void resized(const unsigned int, const unsigned int);
 
   INLINE virtual void set_draw_callback(Callback *c);
   INLINE virtual void set_idle_callback(Callback *c);
@@ -164,7 +176,6 @@ PUBLISHED:
   virtual void flag_redisplay();
   virtual void register_draw_function(GraphicsWindow::vfn);
   virtual void register_idle_function(GraphicsWindow::vfn);
-  virtual void register_resize_function(GraphicsWindow::vfnii);
 
   virtual void main_loop();
   virtual bool supports_update() const;
@@ -207,7 +218,6 @@ protected:
 
   Callback *_draw_callback;
   Callback *_idle_callback;
-  Callback *_resize_callback;
 
 public:
   virtual GraphicsChannel *get_channel(int index);
