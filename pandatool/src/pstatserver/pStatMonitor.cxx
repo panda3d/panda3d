@@ -18,7 +18,7 @@
 
 #include "pStatMonitor.h"
 
-#include <pStatCollectorDef.h>
+#include "pStatCollectorDef.h"
 
 
 ////////////////////////////////////////////////////////////////////

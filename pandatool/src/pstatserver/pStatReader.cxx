@@ -20,13 +20,13 @@
 #include "pStatServer.h"
 #include "pStatMonitor.h"
 
-#include <pStatClientControlMessage.h>
-#include <pStatServerControlMessage.h>
-#include <pStatFrameData.h>
-#include <pStatProperties.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <connectionManager.h>
+#include "pStatClientControlMessage.h"
+#include "pStatServerControlMessage.h"
+#include "pStatFrameData.h"
+#include "pStatProperties.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "connectionManager.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatReader::Constructor

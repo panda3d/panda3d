@@ -27,7 +27,7 @@
 #include "connectionReader.h"
 #include "connectionWriter.h"
 #include "referenceCount.h"
-#include <circBuffer.h>
+#include "circBuffer.h"
 
 class PStatServer;
 class PStatMonitor;

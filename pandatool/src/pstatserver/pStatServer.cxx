@@ -19,7 +19,7 @@
 #include "pStatServer.h"
 #include "pStatReader.h"
 
-#include <config_pstats.h>
+#include "config_pstats.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatServer::Constructor

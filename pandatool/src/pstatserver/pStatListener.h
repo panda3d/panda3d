@@ -21,7 +21,7 @@
 
 #include "pandatoolbase.h"
 
-#include <connectionListener.h>
+#include "connectionListener.h"
 #include "referenceCount.h"
 
 class PStatServer;
