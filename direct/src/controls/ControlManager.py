@@ -127,11 +127,6 @@ class ControlManager:
         else:
             print "Unkown controls:", name
 
-    def delete(self):
-        assert self.notify.debugCall(id(self))
-        self.disable()
-        #self.monitorTask.remove()
-
     def setSpeeds(self, forwardSpeed, jumpForce,
             reverseSpeed, rotateSpeed):
         assert self.notify.debugCall(id(self))
