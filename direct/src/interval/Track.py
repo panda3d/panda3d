@@ -1,6 +1,7 @@
 """Track module: contains the Track class"""
 
 from Interval import *
+
 import types
 
 PREVIOUS_END = 1
@@ -17,14 +18,14 @@ class Track(Interval):
         """__init__(intervalList, name)
         """
 	if (name == None):
-	    self.name = 'Track-%d' % Track.trackNum
+	    n = 'Track-%d' % Track.trackNum
 	    Track.trackNum = Track.trackNum + 1
 	else:
-	    self.name = name
-
+	    n = name
 	self.__buildIlist(intervalList)
-	self.duration = self.__computeDuration(len(self.ilist))
+	duration = self.__computeDuration(len(self.ilist))
 	self.currentInterval = None
+	Interval.__init__(self, n, duration)
 
     def __buildIlist(self, intervalList):
 	self.ilist = []

@@ -2,6 +2,7 @@
 
 from Interval import *
 from Track import *
+
 import ClockObject
 import Task
 
@@ -15,16 +16,17 @@ class MultiTrack(Interval):
         """__init__(trackList, name)
         """
 	if (name == None):
-	    self.name = 'MultiTrack-%d' % MultiTrack.multiTrackNum
+	    n = 'MultiTrack-%d' % MultiTrack.multiTrackNum
 	    MultiTrack.multiTrackNum = MultiTrack.multiTrackNum + 1
 	else:
-	    self.name = name
+	    n = name
 	self.tlist = trackList
-	self.duration = self.getDuration()
+	duration = self.__computeDuration()
 	self.clock = ClockObject.ClockObject.getGlobalClock()
+	Interval.__init__(self, n, duration)
 
-    def getDuration(self):
-	""" getDuration()
+    def __computeDuration(self):
+	""" __computeDuration()
 	    Returns the duration of the longest Track 
 	"""
 	duration = 0.0

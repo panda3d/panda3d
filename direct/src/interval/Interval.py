@@ -33,6 +33,11 @@ class Interval(DirectObject):
 	"""
 	pass
 
+    def setFinalT(self):
+	""" setFinalT()
+	"""
+	self.setT(self.getDuration(), entry=1)
+
     def printParams(self, indent=0):
 	""" printParams(indent)
 	"""

@@ -1,20 +1,20 @@
 """MopathInterval module: contains the MopathInterval class"""
 
-import Interval
-import Mopath
-import PosHprInterval
+from Interval import *
 
-class MopathInterval(Interval.Interval):
+import Mopath
+
+class MopathInterval(Interval):
 
     # special methods
     
     def __init__(self, name, mopath, node):
         """__init__(name, mopath, node)
         """
-	self.name = name
 	self.node = node	
 	self.mopath = mopath 
-	self.duration = self.mopath.getMaxT()
+	duration = self.mopath.getMaxT()
+	Interval.__init__(self, name, duration)
 
     def setT(self, t, entry=0):
 	""" setT(t)

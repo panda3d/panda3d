@@ -1,11 +1,9 @@
 """SoundInterval module: contains the SoundInterval class"""
 
 from PandaModules import *
+from Interval import *
 
-import Interval
-import WaitInterval
-
-class SoundInterval(Interval.Interval):
+class SoundInterval(Interval):
 
     # special methods
     
@@ -14,13 +12,14 @@ class SoundInterval(Interval.Interval):
         """
 	self.name = name
 	self.sound = sound
-	self.duration = self.sound.length() 
-	if (self.duration == 0.0):
-	    Interval.Interval.notify.warning(
+	duration = self.sound.length() 
+	if (duration == 0.0):
+	    Interval.notify.warning(
 		'SoundInterval(): zero length sound - setting duration = 1.0')
-	self.duration = 1.0
+	    duration = 1.0
 	self.loop = loop
 	self.isPlaying = 0
+	Interval.__init__(self, name, duration)
 
     def setT(self, t, entry=0):
 	""" setT(t)

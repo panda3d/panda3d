@@ -1,18 +1,18 @@
 """LerpInterval module: contains the LerpInterval class"""
 
-import Interval
+from Interval import *
+
 import Lerp
 
-class LerpInterval(Interval.Interval):
+class LerpInterval(Interval):
 
     # special methods
     
     def __init__(self, name, duration, functor, blendType='noBlend'):
         """__init__(name, duration, functor, blendType)
         """
-	self.name = name
-	self.duration = duration
 	self.lerp = Lerp.Lerp(functor, duration, self.__getBlend(blendType))
+	Interval.__init__(self, name, duration)
 
     def setT(self, t, entry=0):
 	""" setT(t)
