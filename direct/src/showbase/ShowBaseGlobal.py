@@ -12,3 +12,12 @@ camera = base.camera
 loader = base.loader
 run = base.run
 tkroot = base.tkroot
+
+# Now create the DIRECT tools
+if base.wantDIRECT:
+    import DirectSession
+    direct = base.direct = DirectSession.DirectSession()
+    chanCenter = direct.chanCenter
+else:
+    direct = base.direct = None
+    chanCenter = None

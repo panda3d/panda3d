@@ -3,6 +3,12 @@
     of the NodePath class
     """
 
+    # For iterating over children
+    def getChildrenAsList(self):
+        childrenList = []
+        for childNum in range(self.getNumChildren()):
+            childrenList.append(self.getChild(childNum))
+        return childrenList
 
     # private methods
     

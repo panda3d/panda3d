@@ -21,6 +21,7 @@ class ShowBase:
         # Store dconfig variables
         self.wantTk = self.config.GetBool('want-tk', 0)
         self.wantSound = self.config.GetBool('want-sound', 1)
+        self.wantDIRECT = self.config.GetBool('want-directtools', 0)
         
         import Loader
 
@@ -72,7 +73,7 @@ class ShowBase:
 
         self.createAudioManager()
         self.createRootPanel()
-        
+
         self.restart()
 
     def createAudioManager(self):

@@ -3161,7 +3161,7 @@ These are Python temporary files awaiting execution."
   (end-of-buffer)
   (insert "run()")
   (newline 1)
-  (py-execute-string "try:\n\trun()\nexcept:\n\tpass"))
+  (py-execute-string "try:\n\trun()\nexcept NameError,e:\n\tif e.__str__() == 'run':\n\t\tpass\n\telse:\n\t\traise\nexcept:\n\traise"))
 
 (provide 'python-mode)
 ;;; python-mode.el ends here

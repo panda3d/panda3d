@@ -252,6 +252,8 @@ class TaskManager:
                 self.step()
             except KeyboardInterrupt:
                 self.stop()
+            except:
+                raise
 
     def stop(self):
         # Set a flag so we will stop before beginning next frame

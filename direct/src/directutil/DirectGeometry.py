@@ -2,10 +2,13 @@ from PandaObject import *
 import math
 
 class LineNodePath(NodePath):
-    def __init__(self, parent = hidden, **kw):
+    def __init__(self, parent = None, **kw):
 
         # Initialize the superclass
         NodePath.__init__(self)
+
+        if parent is None:
+            parent = hidden
 
         # Attach a geomNode to the parent and set self to be
         # the resulting node path
