@@ -46,7 +46,7 @@ public:
 
 
   enum Flags {
-    F_color        = 0x0001,
+    F_rgb          = 0x0001,
     F_diffuse      = 0x0002,
     F_luminosity   = 0x0004,
     F_specular     = 0x0008,
@@ -58,7 +58,7 @@ public:
   };
   
   int _flags;
-  RGBColorf _color;
+  RGBColorf _rgb;
   float _diffuse;
   float _luminosity;
   float _specular;
@@ -67,6 +67,8 @@ public:
   float _translucency;
   float _smooth_angle;
   bool _backface;
+
+  Colorf _color;
 
   LwoToEggConverter *_converter;
   CPT(LwoSurface) _surface;

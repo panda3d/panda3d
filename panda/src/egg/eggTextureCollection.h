@@ -10,6 +10,7 @@
 
 #include "eggTexture.h"
 #include "eggGroupNode.h"
+#include "vector_PT_EggTexture.h"
 
 #include <string>
 #include <map>
@@ -30,7 +31,7 @@ class EXPCL_PANDAEGG EggTextureCollection {
 
 private:
   typedef map<PT(EggTexture), int> Textures;
-  typedef vector< PT(EggTexture) > OrderedTextures;
+  typedef vector_PT_EggTexture OrderedTextures;
 
 public:
   typedef OrderedTextures::const_iterator iterator;

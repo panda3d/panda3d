@@ -17,13 +17,9 @@
 // Description : A collection of <Dxyz>'s or <Duv>'s or some such.
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
-class EXPCL_PANDAEGG EggMorphList : public set<MorphType> {
+class EggMorphList : public set<MorphType> {
 public:
-
   void write(ostream &out, int indent_level) const;
-
-private:
-  typedef set<MorphType> Morphs;
 };
 
 typedef EggMorphList<EggMorphVertex> EggMorphVertexList;

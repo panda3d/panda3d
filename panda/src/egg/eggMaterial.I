@@ -10,7 +10,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void EggMaterial::
-set_diff(const RGBColorf &diff) {
+set_diff(const Colorf &diff) {
   _diff = diff;
   _flags |= F_diff;
 }
@@ -42,12 +42,12 @@ has_diff() const {
 //               false.  If so, it simply returns the default diff
 //               color.
 ////////////////////////////////////////////////////////////////////
-INLINE RGBColorf EggMaterial::
+INLINE Colorf EggMaterial::
 get_diff() const {
   if (has_diff()) {
     return _diff;
   } else {
-    return RGBColorf(1.0, 1.0, 1.0);
+    return Colorf(1.0, 1.0, 1.0, 1.0);
   }
 }
 
@@ -57,7 +57,7 @@ get_diff() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void EggMaterial::
-set_amb(const RGBColorf &amb) {
+set_amb(const Colorf &amb) {
   _amb = amb;
   _flags |= F_amb;
 }
@@ -89,12 +89,12 @@ has_amb() const {
 //               false.  If so, it simply returns the default amb
 //               color.
 ////////////////////////////////////////////////////////////////////
-INLINE RGBColorf EggMaterial::
+INLINE Colorf EggMaterial::
 get_amb() const {
   if (has_amb()) {
     return _amb;
   } else {
-    return RGBColorf(1.0, 1.0, 1.0);
+    return Colorf(1.0, 1.0, 1.0, 1.0);
   }
 }
 
@@ -104,7 +104,7 @@ get_amb() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void EggMaterial::
-set_emit(const RGBColorf &emit) {
+set_emit(const Colorf &emit) {
   _emit = emit;
   _flags |= F_emit;
 }
@@ -136,12 +136,12 @@ has_emit() const {
 //               false.  If so, it simply returns the default emit
 //               color.
 ////////////////////////////////////////////////////////////////////
-INLINE RGBColorf EggMaterial::
+INLINE Colorf EggMaterial::
 get_emit() const {
   if (has_emit()) {
     return _emit;
   } else {
-    return RGBColorf(0.0, 0.0, 0.0);
+    return Colorf(0.0, 0.0, 0.0, 1.0);
   }
 }
 
@@ -151,7 +151,7 @@ get_emit() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void EggMaterial::
-set_spec(const RGBColorf &spec) {
+set_spec(const Colorf &spec) {
   _spec = spec;
   _flags |= F_spec;
 }
@@ -183,12 +183,12 @@ has_spec() const {
 //               false.  If so, it simply returns the default spec
 //               color.
 ////////////////////////////////////////////////////////////////////
-INLINE RGBColorf EggMaterial::
+INLINE Colorf EggMaterial::
 get_spec() const {
   if (has_spec()) {
     return _spec;
   } else {
-    return RGBColorf(0.0, 0.0, 0.0);
+    return Colorf(0.0, 0.0, 0.0, 1.0);
   }
 }
 

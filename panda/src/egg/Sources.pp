@@ -43,6 +43,10 @@
     eggVertexPool.I eggVertexPool.cxx eggVertexPool.h eggXfmAnimData.I \
     eggXfmAnimData.cxx eggXfmAnimData.h eggXfmSAnim.I eggXfmSAnim.cxx \
     eggXfmSAnim.h parserDefs.h parser.yxx lexerDefs.h lexer.lxx \
+    pt_EggMaterial.cxx pt_EggMaterial.h \
+    vector_PT_EggMaterial.cxx vector_PT_EggMaterial.h \
+    pt_EggTexture.cxx pt_EggTexture.h \
+    vector_PT_EggTexture.cxx vector_PT_EggTexture.h \
     pt_EggVertex.cxx pt_EggVertex.h \
     vector_PT_EggVertex.cxx vector_PT_EggVertex.h
 
@@ -67,6 +71,8 @@
     eggUtilities.I eggUtilities.h eggVertex.I eggVertex.h \
     eggVertexPool.I eggVertexPool.h eggXfmAnimData.I eggXfmAnimData.h \
     eggXfmSAnim.I eggXfmSAnim.h \
+    pt_EggMaterial.h vector_PT_EggMaterial.h \
+    pt_EggTexture.h vector_PT_EggTexture.h \
     pt_EggVertex.h vector_PT_EggVertex.h
 
 

@@ -21,7 +21,7 @@
 //               kinds of morphs are instantiated from this below.
 ////////////////////////////////////////////////////////////////////
 template<class Parameter>
-class EXPCL_PANDAEGG EggMorph : public Namable {
+class EggMorph : public Namable {
 public:
   INLINE EggMorph(const string &name, const Parameter &offset);
   INLINE void set_offset(const Parameter &offset);
@@ -34,6 +34,10 @@ public:
 private:
   Parameter _offset;
 };
+
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorph<LVector3d>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorph<LVector2d>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorph<LVector4f>);
 
 typedef EggMorph<LVector3d> EggMorphVertex;
 typedef EggMorph<LVector3d> EggMorphNormal;

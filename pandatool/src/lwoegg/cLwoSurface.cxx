@@ -29,7 +29,7 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
   _surface(surface)
 {
   _flags = 0;
-  _color.set(1.0, 1.0, 1.0);
+  _rgb.set(1.0, 1.0, 1.0);
   _checked_material = false;
   _checked_texture = false;
   _map_uvs = NULL;
@@ -42,8 +42,8 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
 
     if (chunk->is_of_type(LwoSurfaceColor::get_class_type())) {
       const LwoSurfaceColor *color = DCAST(LwoSurfaceColor, chunk);
-      _flags |= F_color;
-      _color = color->_color;
+      _flags |= F_rgb;
+      _rgb = color->_color;
 
     } else if (chunk->is_of_type(LwoSurfaceParameter::get_class_type())) {
       const LwoSurfaceParameter *param = DCAST(LwoSurfaceParameter, chunk);
@@ -112,6 +112,20 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
       }
     }      
   }
+
+  // Now get the four-component color, based on combining the RGB and
+  // the transparency.
+  _color.set(1.0, 1.0, 1.0, 1.0);
+
+  if ((_flags & F_rgb) != 0) {
+    _color[0] = _rgb[0];
+    _color[1] = _rgb[1];
+    _color[2] = _rgb[2];
+  }
+
+  if ((_flags & F_transparency) != 0) {
+    _color[3] = 1.0 - _transparency;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,43 +162,20 @@ apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
     }
   }
 
-  if (check_material()) {
+  bool has_texture = check_texture();
+  bool has_material = check_material();
+
+  egg_prim->set_color(_color);
+
+  if (has_material) {
     egg_prim->set_material(_egg_material);
   }
 
-  // We treat color and transparency separately, because Lightwave
-  // does, and this will allow us to treat inherited surfaces a little
-  // more robustly.
-  if ((_flags & F_color) != 0) {
-    Colorf color(1.0, 1.0, 1.0, 1.0);
-    if (egg_prim->has_color()) {
-      color = egg_prim->get_color();
-    }
-
-    color[0] = _color[0];
-    color[1] = _color[1];
-    color[2] = _color[2];
-
-    egg_prim->set_color(color);
-  }
-
-  if (check_texture()) {
-    // Texture overrides the primitive's natural color.
+  if (has_texture) {
     egg_prim->set_texture(_egg_texture);
-    egg_prim->clear_color();
 
     // Assign UV's to the vertices.
     generate_uvs(egg_vertices);
-  }
-
-  if ((_flags & F_transparency) != 0) {
-    Colorf color(1.0, 1.0, 1.0, 1.0);
-    if (egg_prim->has_color()) {
-      color = egg_prim->get_color();
-    }
-
-    color[3] = 1.0 - _transparency;
-    egg_prim->set_color(color);
   }
 
   if ((_flags & F_backface) != 0) {
@@ -272,6 +263,11 @@ check_texture() {
     break;
   };
 
+  // Texture overrides the primitive's natural color.
+  _color[0] = 1.0;
+  _color[1] = 1.0;
+  _color[2] = 1.0;
+
   return true;
 }
 
@@ -296,22 +292,16 @@ check_material() {
 
   _egg_material = new EggMaterial(get_name());
 
-  RGBColorf color = _color;
-  if (check_texture()) {
-    // Texturing overrides the color.
-    color.set(1.0, 1.0, 1.0);
-  }
-
   if ((_flags & F_diffuse) != 0) {
-    RGBColorf diffuse = color * _diffuse;
+    Colorf diffuse = _color * _diffuse;
     _egg_material->set_diff(diffuse);
   }
   if ((_flags & F_luminosity) != 0) {
-    RGBColorf luminosity = color * _luminosity;
+    Colorf luminosity = _color * _luminosity;
     _egg_material->set_emit(luminosity);
   }
   if ((_flags & F_specular) != 0) {
-    RGBColorf specular = color * _specular;
+    Colorf specular = _color * _specular;
     _egg_material->set_spec(specular);
   }
 

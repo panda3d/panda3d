@@ -31,25 +31,25 @@ public:
   bool is_equivalent_to(const EggMaterial &other, int eq) const;
   bool sorts_less_than(const EggMaterial &other, int eq) const;
 
-  INLINE void set_diff(const RGBColorf &diff);
+  INLINE void set_diff(const Colorf &diff);
   INLINE void clear_diff();
   INLINE bool has_diff() const;
-  INLINE RGBColorf get_diff() const;
+  INLINE Colorf get_diff() const;
 
-  INLINE void set_amb(const RGBColorf &amb);
+  INLINE void set_amb(const Colorf &amb);
   INLINE void clear_amb();
   INLINE bool has_amb() const;
-  INLINE RGBColorf get_amb() const;
+  INLINE Colorf get_amb() const;
 
-  INLINE void set_emit(const RGBColorf &emit);
+  INLINE void set_emit(const Colorf &emit);
   INLINE void clear_emit();
   INLINE bool has_emit() const;
-  INLINE RGBColorf get_emit() const;
+  INLINE Colorf get_emit() const;
 
-  INLINE void set_spec(const RGBColorf &spec);
+  INLINE void set_spec(const Colorf &spec);
   INLINE void clear_spec();
   INLINE bool has_spec() const;
-  INLINE RGBColorf get_spec() const;
+  INLINE Colorf get_spec() const;
 
   INLINE void set_shininess(double shininess);
   INLINE void clear_shininess();
@@ -71,10 +71,10 @@ private:
     F_local     = 0x020
   };
 
-  RGBColorf _diff;
-  RGBColorf _amb;
-  RGBColorf _emit;
-  RGBColorf _spec;
+  Colorf _diff;
+  Colorf _amb;
+  Colorf _emit;
+  Colorf _spec;
   double _shininess;
   bool _local;
   int _flags;

@@ -10,6 +10,7 @@
 
 #include "eggMaterial.h"
 #include "eggGroupNode.h"
+#include "vector_PT_EggMaterial.h"
 
 #include <string>
 #include <map>
@@ -30,7 +31,7 @@ class EXPCL_PANDAEGG EggMaterialCollection {
 
 private:
   typedef map<PT(EggMaterial), int> Materials;
-  typedef vector< PT(EggMaterial) > OrderedMaterials;
+  typedef vector_PT_EggMaterial OrderedMaterials;
 
 public:
   typedef OrderedMaterials::const_iterator iterator;

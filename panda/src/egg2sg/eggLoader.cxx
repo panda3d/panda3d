@@ -887,23 +887,19 @@ get_material_transition(const EggMaterial *egg_mat, bool bface) {
   // EggMaterial.  Create a new Material that matches it.
   PT(Material) mat = new Material;
   if (egg_mat->has_diff()) {
-    RGBColorf diff = egg_mat->get_diff();
-    mat->set_diffuse(Colorf(diff[0], diff[1], diff[2], 1.0));
+    mat->set_diffuse(egg_mat->get_diff());
     // By default, ambient is the same as diffuse, if diffuse is
     // specified but ambient is not.
-    mat->set_ambient(Colorf(diff[0], diff[1], diff[2], 1.0));
+    mat->set_ambient(egg_mat->get_diff());
   }
   if (egg_mat->has_amb()) {
-    RGBColorf amb = egg_mat->get_amb();
-    mat->set_ambient(Colorf(amb[0], amb[1], amb[2], 1.0));
+    mat->set_ambient(egg_mat->get_amb());
   }
   if (egg_mat->has_emit()) {
-    RGBColorf emit = egg_mat->get_emit();
-    mat->set_emission(Colorf(emit[0], emit[1], emit[2], 1.0));
+    mat->set_emission(egg_mat->get_emit());
   }
   if (egg_mat->has_spec()) {
-    RGBColorf spec = egg_mat->get_spec();
-    mat->set_specular(Colorf(spec[0], spec[1], spec[2], 1.0));
+    mat->set_specular(egg_mat->get_spec());
   }
   if (egg_mat->has_shininess()) {
     mat->set_shininess(egg_mat->get_shininess());

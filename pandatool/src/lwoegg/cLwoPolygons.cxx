@@ -247,7 +247,7 @@ make_faces() {
 	egg_vertex->set_pos(pos);
 
 	// Does the vertex used named UV's?
-	if (surface->has_named_uvs()) {
+	if (surface != (CLwoSurface *)NULL && surface->has_named_uvs()) {
 	  string uv_name = surface->get_uv_name();
 	  LPoint2f uv;
 	  if (get_uv(uv_name, pindex, vindex, uv)) {

@@ -54,6 +54,7 @@ public:
   EggGroupNode(const string &name = "") : EggNode(name) { }
   EggGroupNode(const EggGroupNode &copy);
   EggGroupNode &operator = (const EggGroupNode &copy);
+  virtual ~EggGroupNode();
 
   virtual void write(ostream &out, int indent_level) const;
 

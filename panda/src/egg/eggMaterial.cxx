@@ -53,6 +53,10 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> diffg { " << get_diff()[1] << " }\n";
     indent(out, indent_level + 2)
       << "<Scalar> diffb { " << get_diff()[2] << " }\n";
+    if (get_diff()[3] != 1.0) {
+      indent(out, indent_level + 2)
+	<< "<Scalar> diffa { " << get_diff()[3] << " }\n";
+    }
   }
 
   if (has_amb()) {
@@ -62,6 +66,10 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> ambg { " << get_amb()[1] << " }\n";
     indent(out, indent_level + 2)
       << "<Scalar> ambb { " << get_amb()[2] << " }\n";
+    if (get_amb()[3] != 1.0) {
+      indent(out, indent_level + 2)
+	<< "<Scalar> amba { " << get_amb()[3] << " }\n";
+    }
   }
 
   if (has_emit()) {
@@ -71,6 +79,10 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> emitg { " << get_emit()[1] << " }\n";
     indent(out, indent_level + 2)
       << "<Scalar> emitb { " << get_emit()[2] << " }\n";
+    if (get_emit()[3] != 1.0) {
+      indent(out, indent_level + 2)
+	<< "<Scalar> emita { " << get_emit()[3] << " }\n";
+    }
   }
 
   if (has_spec()) {
@@ -80,6 +92,10 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> specg { " << get_spec()[1] << " }\n";
     indent(out, indent_level + 2)
       << "<Scalar> specb { " << get_spec()[2] << " }\n";
+    if (get_spec()[3] != 1.0) {
+      indent(out, indent_level + 2)
+	<< "<Scalar> speca { " << get_spec()[3] << " }\n";
+    }
   }
 
   if (has_shininess()) {
