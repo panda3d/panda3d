@@ -177,8 +177,10 @@ client_file_version_correct(string mfname, string filename) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::
-client_file_crc_correct(string mfname, string filename) const {
-  return true;
+client_file_hash_correct(string mfname, string filename) const {
+  Hash client_hash = get_client_file_hash(mfname, filename);
+  Hash server_hash = get_server_file_hash(mfname, filename);
+  return (client_hash == server_hash);
 }
 
 // Operations on multifiles
@@ -309,9 +311,9 @@ server_add_multifile(string mfname, Phase phase, Version version, int size, int 
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-server_add_file(string mfname, string fname, Version version) {
+server_add_file(string mfname, string fname, Version version, Hash hash) {
   // Make the new file record
-  PT(FileRecord) fr = new FileRecord(fname, version);
+  PT(FileRecord) fr = new FileRecord(fname, version, hash);
 
   // Find the multifile with mfname
   vector<PT(MultifileRecord)>::iterator i = _server_db._mfile_records.begin();
@@ -664,7 +666,10 @@ parse_fr(uchar *start, int size) {
   fr->_version = di.get_int32();
   
   downloader_cat.debug()
-    << "Parsed file record: " << fr->_name << " version: " << fr->_version << endl;
+    << "Parsed file record: " << fr->_name 
+    << " version: " << fr->_version 
+    << " hash: " << fr->_hash 
+    << endl;
 
   // Return the new MultifileRecord
   return fr;
@@ -894,6 +899,7 @@ DownloadDb::FileRecord::
 FileRecord(void) {
   _name = "";
   _version = 0;
+  _hash = 0;
 }
 
 
@@ -903,9 +909,10 @@ FileRecord(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DownloadDb::FileRecord::
-FileRecord(string name, Version version) {
+FileRecord(string name, Version version, Hash hash) {
   _name = name;
   _version = version;
+  _hash = hash;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -915,7 +922,10 @@ FileRecord(string name, Version version) {
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::FileRecord::
 output(ostream &out) const {
-  out << " FileRecord: " << _name << "  version: " << _version << endl;
+  out << " FileRecord: " << _name 
+      << " version: " << _version 
+      << " hash: " << _hash
+      << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -924,7 +934,7 @@ output(ostream &out) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-add_version(const Filename &name, ulong hash, int version) {
+add_version(const Filename &name, Hash hash, Version version) {
   int name_code = atoi(name.get_fullpath().c_str());
   _versions[name_code][version] = hash;
 }
@@ -935,7 +945,7 @@ add_version(const Filename &name, ulong hash, int version) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-add_version(int name, ulong hash, int version) {
+add_version(int name, Hash hash, Version version) {
   _versions[name][version] = hash;
 }
 
@@ -945,7 +955,7 @@ add_version(int name, ulong hash, int version) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int DownloadDb::
-get_version(const Filename &name, ulong hash) {
+get_version(const Filename &name, Hash hash) {
   int name_code = atoi(name.get_fullpath().c_str());
   vector_ulong ulvec = _versions[name_code];
   vector_ulong::iterator i = find(ulvec.begin(), ulvec.end(), hash);

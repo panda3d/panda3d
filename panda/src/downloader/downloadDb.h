@@ -27,11 +27,11 @@
 magic_number
 number_of_multifiles
 header_length multifile_name phase version size status num_files
-  header_length file_name version
-  header_length file_name version
+  header_length file_name version hash
+  header_length file_name version hash
 header_length multifile_name phase version size status num_files
-  header_length file_name version
-  header_length file_name version
+  header_length file_name version hash 
+  header_length file_name version hash
   ...
 ...
 
@@ -40,6 +40,7 @@ A Db is a Vector<MultifileRecord>
 MultifileRecord is a Vector<FileRecord>
 */
 
+typedef ulong Hash;
 typedef int Version;
 typedef int Phase;
 
@@ -81,6 +82,7 @@ public:
   INLINE void set_client_multifile_size(string mfname, int size);
   INLINE void set_client_multifile_delta_size(string mfname, int size);
   INLINE int get_server_multifile_size(string mfname) const;
+  INLINE void set_server_multifile_size(string mfname, int size);
 
   INLINE int get_client_multifile_phase(string mfname) const;
   INLINE int get_server_multifile_phase(string mfname) const;
@@ -91,6 +93,9 @@ public:
 
   INLINE int get_client_num_files(string mfname) const;
   INLINE int get_server_num_files(string mfname) const;
+
+  INLINE Hash get_client_file_hash(string mfname, string fname) const;
+  INLINE Hash get_server_file_hash(string mfname, string fname) const;
 
   INLINE string get_client_file_name(string mfname, int index) const;
   INLINE string get_server_file_name(string mfname, int index) const;
@@ -109,7 +114,7 @@ public:
   bool client_multifile_expanded(string mfname) const;
   bool client_multifile_version_correct(string mfname) const;
   bool client_file_version_correct(string mfname, string filename) const;
-  bool client_file_crc_correct(string mfname, string filename) const;
+  bool client_file_hash_correct(string mfname, string filename) const;
 
   // Operations on multifiles
   void delete_client_multifile(string mfname);
@@ -119,17 +124,18 @@ public:
   // Server side operations to create multifile records
   void create_new_server_db();
   void server_add_multifile(string mfname, Phase phase, Version version, int size, int status);
-  void server_add_file(string mfname, string fname, Version version);
+  void server_add_file(string mfname, string fname, Version version, Hash hash);
 
 public:
 
   class EXPCL_PANDAEXPRESS FileRecord : public ReferenceCount {
   public:
     FileRecord(void);
-    FileRecord(string name, Version version);
+    FileRecord(string name, Version version, Hash hash);
     void output(ostream &out) const;
     string _name;
     Version _version;
+    Hash _hash;
   };
 
   typedef vector<PT(FileRecord)> FileRecords;
@@ -196,9 +202,9 @@ public:
 
   typedef vector<unsigned long> vector_ulong;
   typedef map<int, vector_ulong> VersionMap;
-  void add_version(const Filename &name, ulong hash, int version);
-  void add_version(int name, ulong hash, int version);
-  int get_version(const Filename &name, ulong hash);
+  void add_version(const Filename &name, Hash hash, Version version);
+  void add_version(int name, Hash hash, Version version);
+  int get_version(const Filename &name, Hash hash);
 
 protected:
   void write_version_map(ofstream &write_stream);
