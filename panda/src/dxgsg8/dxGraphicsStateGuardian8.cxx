@@ -904,7 +904,8 @@ init_shader(ShaderType stype,DXShaderHandle &hShader,string *pFname) {
 void DXGraphicsStateGuardian8::
 support_overlay_window(bool flag) {
   // How is this supposed to be done in DX8?
-
+  //_bDXisReady = !flag;
+  //dxgsg8_cat.debug() << "Set DxReady to " << _bDXisReady << "\n";
   /*
   if (_overlay_windows_supported && !flag) {
     // Disable support for overlay windows.

@@ -255,6 +255,17 @@ void wdxGraphicsWindow8::
 end_flip() {
   if (_dxgsg != (DXGraphicsStateGuardian8 *)NULL && is_active()) {
     //    wdxdisplay8_cat.debug() << "current swapchain from end_flip is " << _wcontext.pSwapChain << "\n";
+    //    if (DX_IS_READY || !is_fullscreen())
+    /* Test code
+    HWND ime_hwnd = get_ime_hwnd();
+    if (ime_hwnd) {
+      int t = SendMessage(ime_hwnd, WM_PAINT, (WPARAM)GetDC(_hWnd), PRF_CLIENT);
+      if (t)
+        wdxdisplay8_cat.debug() << "SendMessage failed for " << ime_hwnd << "\n";
+      else
+        wdxdisplay8_cat.debug() << "SendMessage succeeded for " << ime_hwnd << "\n";
+    }
+    */
     _dxgsg->show_frame();
   }
   GraphicsWindow::end_flip();
