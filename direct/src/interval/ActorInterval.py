@@ -85,7 +85,7 @@ class ActorInterval(Interval.Interval):
                 warned = 0
                 for i in range(1, len(self.controls)):
                     numFrames = self.controls[i].getNumFrames()
-                    if numFrames != maxFrames and not warned:
+                    if numFrames != maxFrames and numFrames != 1 and not warned:
                         self.notify.warning("Animations '%s' on %s have an inconsistent number of frames." % (animName, actor.getName()))
                         warned = 1
                     maxFrames = max(maxFrames, numFrames)
