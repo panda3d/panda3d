@@ -308,10 +308,7 @@ update_filters() {
 ////////////////////////////////////////////////////////////////////
 DynamicTextGlyph *DynamicTextFont::
 make_glyph(int glyph_index) {
-  int error = FT_Load_Glyph(_face, glyph_index, FT_LOAD_RENDER);
-  if (error) {
-    text_cat.error()
-      << "Unable to render glyph " << glyph_index << "\n";
+  if (!load_glyph(glyph_index)) {
     return (DynamicTextGlyph *)NULL;
   }
 
