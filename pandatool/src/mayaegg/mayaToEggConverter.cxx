@@ -84,6 +84,9 @@ MayaToEggConverter::
 MayaToEggConverter(const string &program_name) :
   _program_name(program_name)
 {
+  // Make sure the library is properly initialized.
+  init_libmayaegg();
+
   _from_selection = false;
   _polygon_output = false;
   _polygon_tolerance = 0.01;

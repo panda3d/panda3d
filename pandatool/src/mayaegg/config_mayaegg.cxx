@@ -35,12 +35,12 @@ ConfigureFn(config_mayaegg) {
 
 // Should we respect the Maya double-sided flag (true) or ignore it
 // and assume everything is single-sided (false)?
-const bool maya_default_double_sided = config_mayaegg.GetBool("maya-default-double-sided", false);
+bool maya_default_double_sided;
 
 // Should we apply vertex color even when a texture is applied (true)
 // or only when no texture is applied or the vertex-color egg flag is
 // set (false)?
-const bool maya_default_vertex_color = config_mayaegg.GetBool("maya-default-vertex-color", true);
+bool maya_default_vertex_color;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libmayaegg
@@ -60,5 +60,12 @@ init_libmayaegg() {
 
   MayaEggGroupUserData::init_type();
   MayaNodeDesc::init_type();
+
+  // For some reason, static init is not reliably running when this is
+  // loaded as a plug-in of a plug-in.  Initialize these explicitly
+  // here.
+  maya_default_double_sided = config_mayaegg.GetBool("maya-default-double-sided", false);
+  maya_default_vertex_color = config_mayaegg.GetBool("maya-default-vertex-color", true);
+
 }
 

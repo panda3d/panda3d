@@ -24,8 +24,8 @@
 
 NotifyCategoryDeclNoExport(mayaegg);
 
-extern const bool maya_default_double_sided;
-extern const bool maya_default_vertex_color;
+extern bool maya_default_double_sided;
+extern bool maya_default_vertex_color;
 
 extern void init_libmayaegg();
 
