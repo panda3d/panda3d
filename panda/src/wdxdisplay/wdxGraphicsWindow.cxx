@@ -1550,7 +1550,9 @@ special_check_fullscreen_resolution(UINT xsize,UINT ysize) {
     switch(VendorId) {
         case 0x8086:  // Intel
             // Intel i810,i815
-            if((DeviceId==0x7121)||(DeviceId==0x7121)||(DeviceId==0x1132)) {
+            if((DeviceId==0x7121)||(DeviceId==0x7123)||(DeviceId==0x7125)||
+               (DeviceId==0x1132)) {
+
                 if((xsize==800)&&(ysize==600))
                     return true;
                 if((xsize==1024)&&(ysize==768))
@@ -1729,7 +1731,7 @@ bool wdxGraphicsWindow::search_for_device(int devnum,DXDeviceInfo *pDevinfo) {
        DDDEVICEIDENTIFIER2 *pDevID=&_dxgsg->scrn.DXDeviceID;
        wdxdisplay_cat.info() << "GfxCard: " << pDevID->szDescription <<  "; DriverFile: '" << pDevID->szDriver  
                              << "'; VendorID: 0x" <<  (void*)pDevID->dwVendorId 
-                             << "'; DeviceID: 0x" <<  (void*)pDevID->dwDeviceId 
+                             << "; DeviceID: 0x" <<  (void*)pDevID->dwDeviceId 
                              << "; DriverVer: " 
                              << HIWORD(pDevID->liDriverVersion.HighPart) << "." 
                              << LOWORD(pDevID->liDriverVersion.HighPart) << "."

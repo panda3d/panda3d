@@ -1637,8 +1637,9 @@ special_check_fullscreen_resolution(UINT xsize,UINT ysize) {
     DWORD DeviceId=_dxgsg->scrn.DXDeviceID.DeviceId;
     switch(VendorId) {
         case 0x8086:  // Intel
-            // Intel i810,i815
-            if((DeviceId==0x7121)||(DeviceId==0x7121)||(DeviceId==0x1132)) {
+            // Intel i810,i815,82810
+            if((DeviceId==0x7121)||(DeviceId==0x7123)||(DeviceId==0x7125)||
+               (DeviceId==0x1132)) {
                 if((xsize==800)&&(ysize==600))
                     return true;
                 if((xsize==1024)&&(ysize==768))
