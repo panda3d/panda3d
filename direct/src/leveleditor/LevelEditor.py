@@ -4,6 +4,7 @@ from OnscreenText import *
 from whrandom import *
 from Tkinter import *
 from DirectGeometry import *
+from SceneGraphExplorer import *
 import Pmw
 import Dial
 import Floater
@@ -111,7 +112,7 @@ class LevelEditor(NodePath, PandaObject):
 
 	base.cam.node().setNear(5.0)
 	base.cam.node().setFar(10000)
-	self.direct.camera.setPos(0,0,10)
+	self.direct.camera.setPos(0,-10,10)
 
 	# Default is to use the toontown central color palette
 	self.editToontownCentral()
@@ -374,6 +375,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.ignore('createNewLevelGroup')
         self.ignore('setNodePathName')
         self.ignore('manipulateObjectCleanup')
+        self.ignore('SGESelectNodePath')
 	self.ignore('showAll')
 	self.ignore('p')
 	self.disableManipulation()
@@ -453,6 +455,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.accept('createNewLevelGroup', self.createNewLevelGroup)
 	self.accept('setNodePathName', self.setNodePathName)
         self.accept('manipulateObjectCleanup', self.updateSelectedPose)
+        self.accept('SGESelectNodePath', self.selectNodePath)
 	self.accept('showAll', self.showAll)
 	self.accept('p',self.plantSelectedNodePath)
 	self.enableManipulation()
@@ -3216,6 +3219,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         # suitBuildingsPage = notebook.add('Suit Buildings')
         propsPage = notebook.add('Props')
         colorPage = notebook.add('Set Color')
+        sceneGraphPage = notebook.add('SceneGraph')
 
         self.addStreetButton = Button(
             streetsPage,
@@ -3228,6 +3232,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             listheight = 200,
             labelpos = W,
             label_text = 'Street type:',
+            label_width = 12,
+            label_anchor = W,
             entry_width = 24,
             selectioncommand = self.setStreetModuleType,
             scrolledlist_items = map(lambda s: s[7:],
@@ -3236,7 +3242,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             )
         self.streetModuleType = levelEditor.getCatalogCode('street',0)
         self.streetSelector.selectitem(self.streetModuleType[7:])
-        self.streetSelector.pack(expand = 1, fill = 'x')
+        self.streetSelector.pack(expand = 1, fill = 'both')
 
         self.addToonBuildingButton = Button(
             toonBuildingsPage,
@@ -3248,7 +3254,9 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             dropdown = 0,
             listheight = 200,
             labelpos = W,
-            label_text = 'Toon building type:',
+            label_width = 12,
+            label_anchor = W,
+            label_text = 'Toon bldg type:',
             entry_width = 24,
             selectioncommand = self.setFlatBuildingType,
             scrolledlist_items = ('random20', 'random30',
@@ -3258,13 +3266,13 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             )
         self.toonBuildingType = 'random20'
         self.toonBuildingSelector.selectitem(self.toonBuildingType)
-        self.toonBuildingSelector.pack(expand = 0)
+        self.toonBuildingSelector.pack(expand = 1, fill = 'both')
         
         self.toonBuildingWidthScale = EntryScale.EntryScale(
             toonBuildingsPage, min = 1.0, max = 30.0,
             resolution = 0.01, text = 'Wall Width',
             command = self.updateSelectedWallWidth)
-        self.toonBuildingWidthScale.pack(side = TOP, fill = 'x')
+        self.toonBuildingWidthScale.pack(fill = 'x')
         
         self.addLandmarkBuildingButton = Button(
             landmarkBuildingsPage,
@@ -3276,6 +3284,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             dropdown = 0,
             listheight = 200,
             labelpos = W,
+            label_width = 12,
+            label_anchor = W,
             label_text = 'Landmark Building type:',
             entry_width = 24,
             selectioncommand = self.setLandmarkType,
@@ -3287,7 +3297,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             'toon_landmark',0)
         self.landmarkBuildingSelector.selectitem(
             levelEditor.getCatalogCode('toon_landmark',0)[14:])
-        self.landmarkBuildingSelector.pack(side = 'left', expand = 0)
+        self.landmarkBuildingSelector.pack(expand = 1, fill = 'both')
 
         self.addPropsButton = Button(
             propsPage,
@@ -3299,6 +3309,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             dropdown = 0,
             listheight = 200,
             labelpos = W,
+            label_width = 12,
+            label_anchor = W,
             label_text = 'Prop type:',
             entry_width = 24,
             selectioncommand = self.setPropType,
@@ -3308,7 +3320,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.propType = levelEditor.getCatalogCode('prop',0)
         self.propSelector.selectitem(
             levelEditor.getCatalogCode('prop',0)[5:])
-        self.propSelector.pack(side = 'left', expand = 0)
+        self.propSelector.pack(expand = 1, fill = 'both')
         # Compact down notebook
         notebook.setnaturalsize()
 
@@ -3336,7 +3348,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                                       variable = self.fHprSnap,
                                       command = self.toggleHprSnap)
         self.hprSnapButton.pack(side = 'left', fill = 'x')
-        buttonFrame.pack(fill = 'both')
+        buttonFrame.pack(expand = 1, fill = 'x')
 
         buttonFrame2 = Frame(hull)
         self.groupButton = Button(
@@ -3356,12 +3368,17 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                                       variable = self.fMapViz,
                                       command = self.toggleMapViz)
         self.mapSnapButton.pack(side = 'left', fill = 'x')
-        buttonFrame2.pack(fill = 'both')
+        buttonFrame2.pack(fill = 'x')
 
         self.colorEntry = VectorWidgets.ColorEntry(
             colorPage, text = 'Select Color',
             command = self.updateSelectedObjColor)
-        self.colorEntry.pack(fill = X)
+        self.colorEntry.pack(fill = 'x')
+
+        self.sceneGraphExplorer = SceneGraphExplorer(
+            parent = sceneGraphPage,
+            root = self.levelEditor.getLevelObjects())
+        self.sceneGraphExplorer.pack(expand = 1, fill = 'both')
         
     def toggleGrid(self):
         if self.fGrid.get():
@@ -3442,206 +3459,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         else:
             self.balloon.configure(state = 'none')
 
+
 """
-
-    def initializePropButtons(self):
-	# Initialize Hooks and Buttons for the wall type buttons
-	newPtopTypes = self.getCatalogCodes('prop')
-	methodArray = []
-        for
-		newPtopTypes collect: [ :prop | 
-			{ prop copyFrom: 5 to: prop size . prop asSymbol } ].
-
-	hooksSet = self.hooksDictionary['prop ifAbsent: [ Set new. ].
-	methodArray do: [ :pair | hooksSet add: (pair at: 2) ].
-	self.hooksDictionary['prop'] = hooksSet.
-
-	# Create wall module buttons
-	# First get rid of any existing buttons
-	self.clickBoxDictionary['prop ifPresent: [ :clickBoxList | clickBoxList disable ].
-	buttons = ClickBoxList new table: methodArray x: 0.95 y: 0.90.
-	buttons addButtonWithText: 'back' event: #mainMenuEnable.	
-	buttons alignRight.
-	buttons.setScale(0.06.
-	buttons.setColor(0.6 g: 0.6 b: 0.6 a: 0.8.
-	self.clickBoxDictionary['prop'] = buttons.
-
-	self.categorySet add: #prop.
-! !
-
-!Level methodsFor: 'initialization' stamp: 'panda 00/00/0000 00:00'!
-initializeStreetButtons
-	| streetTypes methodArray hooksSet buttons |
-	# Initialize Hooks and Buttons for the wall type buttons
-	streetTypes = self.getCatalogCodes(#street.	
-	methodArray = 
-		streetTypes collect: [ :street | { street copyFrom: 8 to: street size . street asSymbol } ].
-
-	hooksSet = self.hooksDictionary['street ifAbsent: [ Set new. ].
-	methodArray do: [ :pair | hooksSet add: (pair at: 2) ].
-	self.hooksDictionary['street'] = hooksSet.
-
-	# Create wall module buttons
-	# First get rid of any existing buttons
-	self.clickBoxDictionary['street ifPresent: [ :clickBoxList | clickBoxList disable ].
-	buttons = ClickBoxList new table: methodArray x: 0.95 y: 0.90.
-	buttons addButtonWithText: 'back' event: #mainMenuEnable.	
-	buttons alignRight.
-	buttons.setScale(0.06.
-	buttons.setColor(0.6 g: 0.6 b: 0.6 a: 0.8.
-	self.clickBoxDictionary['street'] = buttons.
-
-	self.categorySet add: #street.
-! !
-
-!Level methodsFor: 'initialization' stamp: 'panda 00/00/0000 00:00'!
-initializeWallButtons
-	| methodArray hooksSet buttons |
-
-	# Initialize Hooks and Buttons for the wall type buttons
-	methodArray = { 
-		{ 'Random 20' . #random20 } .
-		{ 'Random 30' . #random30 } .
-		{ '10-10' . #toonTenTen } .
-		{ '20' . #toonTwenty } .
-		{ '10-20' . #toonTenTwenty } .
-		{ '20-10' . #toonTwentyTen } .
-		{ '10-10-10' . #toonTenTenTen } .
-		{ '30' . #toonThirty } }.
-
-	hooksSet = self.hooksDictionary['wall ifAbsent: [ Set new. ].
-	methodArray do: [ :pair | hooksSet add: (pair at: 2) ].
-	self.hooksDictionary['wall'] = hooksSet.
-
-	# Create wall module buttons
-	# First get rid of any existing buttons
-	self.clickBoxDictionary['wall ifPresent: [ :clickBoxList | clickBoxList disable ].
-	buttons = ClickBoxList new table: methodArray x: 0.95 y: 0.90.
-	buttons addButtonWithText: 'back' event: #mainMenuEnable.	
-	buttons.setColor(0.6 g: 0.6 b: 0.6 a: 0.8.
-	buttons.setScale(0.06.
-	buttons alignRight.
-	buttons makeAllWideAsWidest.
-	self.clickBoxDictionary['wall'] = buttons.
-
-	# Initialize Hooks and Buttons for the wall width buttons
-	methodArray = { { '5 ft' . #fiveFt } .
-					{ '10 ft' . #tenFt } .
-					{ '15 ft' . #fifteenFt } .
-					{ '20 ft' . #twentyFt } .
-					{ '25 ft' . #twentyFiveFt } }.
-
-	hooksSet = self.hooksDictionary['wallWidths ifAbsent: [ Set new. ].
-	methodArray do: [ :pair | hooksSet add: (pair at: 2) ].
-	self.hooksDictionary['wallWidths'] = hooksSet.
-
-	# Create wall width buttons
-	# First get rid of any existing buttons
-	self.clickBoxDictionary['wallWidths ifPresent: [ :clickBoxList | clickBoxList disable ].
-	buttons = ClickBoxList new table: methodArray x: 0.95 y: -0.40.
-	buttons.setColor(0.6 g: 0.6 b: 0.6 a: 0.8.
-	buttons.setScale(0.06.
-	buttons alignRight.
-	self.clickBoxDictionary['wallWidths'] = buttons.
-
-	self.categorySet add: #wall.
-! !
-
-
-    def clearHighlightedObjects(self):
-	highlightedObjects getChildren forEachPathPerform: #removeNode.! !
-
-!Level methodsFor: 'object operations' stamp: 'panda 00/00/0000 00:00'!
-followMouse: aNodePath
-	# Plant target object on grid at cursor projection point
-	| roundVal |
-	roundVal = (self.grid gridSpacing roundTo: 1).
-	(self.grid getMouseIntersectionPoint: self.hitPt ) ifTrue: [ 
-		self.grid xyzSnap ifTrue: [
-			aNodePath setPos: self.grid 
-				x: (((self.hitPt at: 0) + (self.offset at: 0)) roundTo: roundVal)
-				y: (((self.hitPt at: 1) + (self.offset at: 1)) roundTo: roundVal)
-				z: (((self.hitPt at: 2) + (self.offset at: 2)) roundTo: roundVal).
-			]
-		ifFalse: [
-			aNodePath setPos: self.grid pos: (self.hitPt + self.offset).
-			].
-		]
-! !
-
-!Level methodsFor: 'object operations' stamp: 'panda 00/00/0000 00:00'!
-followMouseStart: aNodePath
-	| gridToObjectHandles hitPtToObjectHandles |
-
-	# Where is the mouse relative to the grid?
-	self.grid getMouseIntersectionPoint: self.hitPt.
-	
-	# Record crank origin
-	self.crankOrigin operatorAssign: (direct selectedNodePath getPos: self.grid).
-
-	# Record the offset
-	self.offset = self.crankOrigin - self.hitPt.
-	# Init crankDir
-	self.crankDir operatorAssign: self.offset negated.
-	self.crankDir normalize.
-	# Compute crankAngle
-	startAngle = self.getCrankAngle.
-	startH = direct selectedNodePath getH.
-
-	# Transform hitPt into object handles space to determine manipulation mode
-	# Where is the mouse relative to the widget? 
-	 Don't snap to grid since we want to test hitPt relative to widget
-	self.grid getMouseIntersectionPoint: self.hitPt xyzSnap: 0.
-	gridToObjectHandles = self.grid getMat: direct objectHandles.
-	hitPtToObjectHandles = (Vec3 new: (gridToObjectHandles xformPoint: self.hitPt)) length.
-
-	# Are we inside rotation ring?
-	((hitPtToObjectHandles > 0.8) and: [(hitPtToObjectHandles < 1.2)])	
-	ifTrue: [[[true] taskWhileTrue: [ self.mouseCrank: aNodePath]] 
-				spawnTaskNamed: #levelMouseCrank.]
-	ifFalse: [[[true] taskWhileTrue: [ self.followMouse: aNodePath]] 
-				spawnTaskNamed: #levelFollowMouse.]
-
-! !
-
-!Level methodsFor: 'object operations' stamp: 'panda 00/00/0000 00:00'!
-followMouseStop
-	| selectedNode |
-	# Stop moving object
-	Task removeTasksNamed: #levelFollowMouse.
-	Task removeTasksNamed: #levelMouseCrank.
-
-	# Move grid to line up with object
-	selectedNode = direct selectedNodePath.
-	selectedNode notNone ifTrue: [
-		self.updateDNAPosHpr: selectedNode.
-		# Position grid for placing next object
-		self.autoPositionGrid.
-	].
-
-! !
-
-!Level methodsFor: 'object operations' stamp: 'panda 00/00/0000 00:00'!
-getCrankAngle
-	| newAngle |
-	self.crankDir normalize.
-	# Just look at Y component (equiv to dot product with (0 1 0)
-	newAngle = (self.crankDir at: 1) arcCos radiansToDegrees.
-	((self.crankDir at: 0) > 0.0) ifTrue: [ newAngle = newAngle negated. ].
-	# Force it to 0 to 360.0 range
- 	return newAngle + 180.0.							
-! !
-
-!Level methodsFor: 'object operations' stamp: 'panda 00/00/0000 00:00'!
-highlightNodePath: aNodePath
-	| pose highlightedNode |
-	# First clear out old highlighted nodes
-	self.clearHighlightedObjects.
-	# Place an instance of the object under the highlightedObjects node	
-	highlightedNode = aNodePath instanceTo: highlightedObjects.
-	pose = aNodePath getMat: self.levelObjects.
-	highlightedNode setMat: self.levelObjects mat: pose.
-	! !
 
 !Level methodsFor: 'object operations' stamp: 'panda 00/00/0000 00:00'!
 keyboardRotateNodePath: aNodePath key: arrowDirection 
@@ -3750,154 +3569,6 @@ mouseCrank: aNodePath
     def keyboardXformNodePath(self,x):
         pass
 
-    def levelHandleMouse1(self):
-        selectedNodePath = self.direct.selected.last
-        if selectedNodePath:
-            self.followMouseStart(selectedNodePath)
-            
-    def levelHandleMouse1Up(self):
-	self.followMouseStop()
-
-        # MRM
-    def activateLandmarkButtons(self):
-	# Switch menus to reveal street menu
-	self.mainMenuDisable()
-	self.categoryEnable('toon_landmark')
-
-        # MRM
-    def activatePropButtons(self):
-	# Switch menus to reveal street menu
-	self.mainMenuDisable()
-	self.categoryEnable('prop')
-
-    def activateStreetModuleButtons(self):
-	# Switch menus to reveal street menu
-	self.mainMenuDisable()
-	self.categoryEnable('street')
-
-    def activateVizObjectsButtons(self):
-	# Switch menus to reveal viz region menu
-	#self.mainMenuDisable()
-	#self.clickBoxDictionary['vizRegionButtons'].enable()
-	self.accept('addVizRegion', self.addVizRegion)
-	self.accept('addCollisionSphere', self.addCollisionSphere)
-	self.grid.setGridSpacing(10.0)
-
-        # MRM
-    def activateWallModuleButtons(self):
-	# Switch menus to reveal street menu
-	self.mainMenuDisable()
-	self.categoryEnable('wall')
-
-
-
-    def addHook(self, hook, function):
-	self.accept(hook, function, [hook])
-
-    def allMenuDisable(self):
-	self.mainMenuDisable()
-	self.gridMenuDisable()
-	self.subMenuDisable()
-	self.dnaMenuDisable()
-
-    def categoryDisable(self, categoryName):
-        clickBoxList = self.clickBoxDictionary.set(categoryName,None)
-        if clickBoxList:
-            clickBoxList.disable()
-
-        hooks = self.hooksDictionary.get(categoryName, None)
-        if hooks:
-            for hook in hooks:
-                self.ignore(hook)
-
-	# Do any category specific disabilizaton here
-        if categoryName == 'wall':
-            clickBoxList = self.clickBoxDictionary.get('wallWidths',None)
-            if clickBoxList:
-                clickBoxList.disable()
-                hooks = self.hooksDictionary.get('wallWidths', None)
-                if hooks:
-                    for hook in hooks:
-                        self.ignore(hook)
-
-	# Clear out space and insert hooks
-	self.ignore('space')
-	self.ignore('insert')
-
-    def categoryEnable(self,categoryName):
-	# First activate this category's main buttons
-        clickBoxList = self.clickBoxDictionary.get(categoryName,None)
-        if clickBoxList:
-            clickBoxList.enable()
-	# Now activate hooks and any supplemental actions
-        if categoryName == 'street':
-            # activate street module hooks
-            hooks = self.hooksDictionary.get(categoryName,None)
-            if hooks:
-                for hook in hooks:
-                    self.addHook(hook,self.addStreetModule)
-        elif categoryName == 'wall':
-            # Activate wall module hooks	
-            hooks = self.hooksDictionary.get(categoryName,None)
-            if hooks:
-                for hook in hooks:
-                    self.addHook(hook, self.addFlatBuilding)
-            # Also activate wall width buttons and hooks
-            clickBoxList = self.clickBoxDictionary.get('wallWidths', None)
-            if clickBoxList:
-                clickBoxList.enable()
-            hooks = self.hooksDictionary.get('wallWidths',None)
-            if hooks:
-                for hook in hooks:
-                    self.addHook(hook,self.wallWidthSym)
-        elif categoryName == 'toon_landmark':
-            # activate landmark hooks
-            hooks = self.hooksDictionary.get(categoryName,None)
-            if hooks:
-                for hook in hooks:
-                    self.addHook(hook,self.addLandmark)
-        elif categoryName == 'prop':
-            # activate prop hooks
-            hooks = self.hooksDictionary.get(categoryName,None)
-            if hooks:
-                for hook in hooks:
-                    self.addHook(hook,self.addProp)
-
-    def getClickBoxDictionary(self):
-	return self.clickBoxDictionary
-
-    def dnaMenuDisable(self):
-	# Disable DNA menu
-	self.clickBoxDictionary['groupButton'].disable()
-	self.ignore('createNewLevelGroup')
-	self.clickBoxDictionary['saveButton'].disable()
-	self.ignore('outputDNA:')
-	self.clickBoxDictionary['mapButton'].disable()
-	self.ignore('toggleMapViz')
-
-    def dnaMenuEnable(self):
-	# Enable DNA menu
-	self.clickBoxDictionary['groupButton'].enable()
-	self.accept('createNewLevelGroup', self.createNewLevelGroup)
-	self.clickBoxDictionary['saveButton'].enable()
-	self.accept('outputDNA', self.outputDNA)
-	self.clickBoxDictionary['mapButton'].enable()
-	self.accept('toggleMapViz', self.toggleMapViz)
-
-
-    def gridMenuDisable(self):
-	self.clickBoxDictionary['gridMenuButtons'].disable()
-	self.ignore('showGrid')
-	self.ignore('xyzSnap')
-	self.ignore('hprSnap')
-
-    def gridMenuEnable(self):
-	# Enable grid menu
-	self.clickBoxDictionary['gridMenuButtons'].enable()
-	self.accept('showGrid', self.showGrid)
-	self.accept('xyzSnap', self.xyzSnap)
-	self.accept('hprSnap', self.hprSnap)
-
     def ignoreArrowKeys(self):
 	# Accept arrow key events for swinging piece around
 	self.ignore('left')
@@ -3905,85 +3576,5 @@ mouseCrank: aNodePath
 	self.ignore('up')
 	self.ignore('down')
 
-    def mainMenuDisable(self):
-	self.clickBoxDictionary['mainMenuButtons'].disable()
-	self.ignore('activateWallModuleButtons')
-	self.ignore('activateStreetModuleButtons')
-	self.ignore('activateLandmarkButtons')
-	self.ignore('activatePropButtons')
-
-    def mainMenuEnable(self):
-	# Make sure all submenus are hidden
-	self.subMenuDisable()
-	# Now enable main menu
-	self.clickBoxDictionary['mainMenuButtons'].enable
-	self.accept('activateWallModuleButtons', self.activateWallModuleButtons)
-	self.accept('activateStreetModuleButtons', self.activateStreetModuleButtons)
-	self.accept('activateLandmarkButtons', self.activateLandmarkButtons)
-	self.accept('activatePropButtons', self.activatePropButtons)
-
-    def subMenuDisable(self):
-        for category in self.categorySet:
-            self.categoryDisable(category)
-
-    def vizMenuDisable(self):
-	self.clickBoxDictionary['vizRegionButtons'].disable()
-	self.ignore('addVizRegion')
-	self.ignore('addCollisionSphere')
-	self.grid.setGridSpacing(5.0)
-
-    def initializeLevelEditorButtons(self):
-	newClickBoxObject = ToggleBoxList(
-            [('Show Grid', self.showGrid, 0)
-             ('XYZ Snap', self.xyzSnap, 1),
-             ('HPR Snap', self.hprSnap, 1)],
-            -0.95, 0.90)
-	newClickBoxObject.alignLeft()
-	newClickBoxObject.setScale(0.06)
-	newClickBoxObject.makeAllWideAsWidest()
-	newClickBoxObject.enable()
-	self.clickBoxDictionary['gridMenuButtons'] = newClickBoxObject
-
-	newClickBoxObject = ClickBoxList(
-            [('Street modules', self.activateStreetModuleButtons),
-             ('Toon Walls', self.activateWallModuleButtons),
-             ('Landmark bldgs', self.activateLandmarkButtons),
-             ('Props', self.activatePropButtons)],
-            0.95, 0.90)
-	newClickBoxObject.setColor(0.5, 0.5, 0.5, 0.5)
-	newClickBoxObject.setScale(0.06)
-	newClickBoxObject.alignRight()
-	self.clickBoxDictionary['mainMenuButtons'] = newClickBoxObject
-
-	newClickBoxObject = ClickBox(
-            'New Group', 0.3, 0.3, -0.95, -0.9,
-            self.createNewLevelGroup, 0)
-	newClickBoxObject.nodePath().node().setCardColor(Point4(1,1,1,.5))
-	newClickBoxObject.setScale(0.05)
-	self.clickBoxDictionary['groupButton'] = newClickBoxObject
-
-	newClickBoxObject = ClickBox(
-            'Save DNA', 0.3, 0.3, -0.7, -0.9,
-            self.outputDNA, ['toontown.dna'],0)
-	newClickBoxObject.nodePath().node().setCardColor(Point4(1,1,1,.5))
-	newClickBoxObject.setScale(0.05)
-	self.clickBoxDictionary['saveButton'] = newClickBoxObject
-
-	newClickBoxObject = ToggleBox(
-            'Level Map', 0.3, 0.3, -0.47, -0.9,
-            self.toggleMapViz, [], 0)
-	newClickBoxObject.nodePath().node().setCardColor(Point4(1,1,1,.5))
-	newClickBoxObject.setButtonState(0)
-	newClickBoxObject.setScale(0.05)
-	self.clickBoxDictionary['mapButton'] = newClickBoxObject
-
-	self.dnaMenuEnable()
-
-	# Initialize module Dictionary with pointers to module
-                                   # node paths and create module buttons
-	self.initializeStreetButtons()
-	self.initializeWallButtons()
-	self.initializeLandmarkButtons()
-	self.initializePropButtons()
 
 """
