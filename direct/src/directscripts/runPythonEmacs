@@ -1,129 +1,42 @@
-#! /bin/sh
+#! /bin/bash
 
-#debug=1
+# This script is designed to de-Cygwinify the project variables set by
+# the ctattach scripts.  If you aren't using ctattach (and you almost
+# certainly won't be, unless you're a member of the VR Studio),
+# there's no reason to use this script.
 
-# Under Windows/Cygwin, we have to de-cygwinify the semicolon 
-# separated PYTHONPATH
 
-# First, initialize the new path
-NEWPYTHONPATH=
+# First, de-Cygwinify the HOME variable.  Since this variable is
+# hardcoded, we can just do it.
 
-# To iterate, temporarily change the semicolons into spaces
-for path in `echo $PYTHONPATH | sed 'y/;/ /'`; do
-    # Then for each entry run it through the cygwin filter
-    NEWPYTHONPATH=$NEWPYTHONPATH\;`cygpath -w $path`
-done
-
-# Export the new PYTHONPATH
-PYTHONPATH=$NEWPYTHONPATH
-export PYTHONPATH
-
-# Lets also de-cygwinify the Project variables (so you can use file name 
-# completion)  This is hardcoded for the most popular trees
-if [ "$DTOOL" ]; then
-    if [ "$debug" ]; then echo "DTOOL     $DTOOL"; fi
-    DTOOL=`cygpath -w $DTOOL`
-    export DTOOL
-fi
-if [ "$PANDA" ]; then
-    if [ "$debug" ]; then echo "PANDA     $PANDA"; fi
-    PANDA=`cygpath -w $PANDA`
-    export PANDA
-fi
-if [ "$DIRECT" ]; then
-    if [ "$debug" ]; then echo "DIRECT    $DIRECT"; fi
-    DIRECT=`cygpath -w $DIRECT`
-    export DIRECT
-fi
-if [ "$OTP" ]; then
-    if [ "$debug" ]; then echo "OTP    $OTP"; fi
-    OTP=`cygpath -w $OTP`
-    export OTP
-fi
-if [ "$GATEWAY" ]; then
-    if [ "$debug" ]; then echo "GATEWAY    $GATEWAY"; fi
-    GATEWAY=`cygpath -w $GATEWAY`
-    export GATEWAY
-fi
-if [ "$TOONTOWN" ]; then
-    if [ "$debug" ]; then echo "TOONTOWN  $TOONTOWN"; fi
-    TOONTOWN=`cygpath -w $TOONTOWN`
-    export TOONTOWN
-fi
-if [ "$PIRATES" ]; then
-    if [ "$debug" ]; then echo "PIRATES  $PIRATES"; fi
-    PIRATES=`cygpath -w $PIRATES`
-    export PIRATES
-fi
-if [ "$FOURD" ]; then
-    if [ "$debug" ]; then echo "FOURD   $FOURD"; fi
-    FOURD=`cygpath -w $FOURD`
-    export FOURD
-fi
-if [ "$MRM" ]; then
-    if [ "$debug" ]; then echo "MRM   $MRM"; fi
-    MRM=`cygpath -w $MRM`
-    export MRM
-fi
-if [ "$KUKA" ]; then
-    if [ "$debug" ]; then echo "KUKA   $KUKA"; fi
-    KUKA=`cygpath -w $KUKA`
-    export KUKA
-fi
-if [ "$PARALLAX" ]; then
-    if [ "$debug" ]; then echo "PARALLAX   $PARALLAX"; fi
-    PARALLAX=`cygpath -w $PARALLAX`
-    export PARALLAX
-fi
-if [ "$WINTOOLS" ]; then
-    if [ "$debug" ]; then echo "WINTOOLS  $WINTOOLS"; fi
-    WINTOOLS=`cygpath -w $WINTOOLS`
-    export WINTOOLS
-fi
-if [ "$PANDATOOL" ]; then
-    if [ "$debug" ]; then echo "PANDATOOL $PANDATOOL"; fi
-    PANDATOOL=`cygpath -w $PANDATOOL`
-    export PANDATOOL
-fi
-if [ "$PANDAAPP" ]; then
-    if [ "$debug" ]; then echo "PANDAAPP  $PANDAAPP"; fi
-    PANDAAPP=`cygpath -w $PANDAAPP`
-    export PANDAAPP
-fi
-
-# Panda will now tolerate the colon in the de-cygpath version of the model trees
-if [ "$DMODELS" ]; then
-    if [ "$debug" ]; then echo "DMODELS   $DMODELS"; fi
-    DMODELS=`cygpath -w $DMODELS`
-    export DMODELS
-fi
-
-if [ "$TTMODELS" ]; then
-    if [ "$debug" ]; then echo "TTMODELS  $TTMODELS"; fi
-    TTMODELS=`cygpath -w $TTMODELS`
-    export TTMODELS
-fi
-
-# Pirates models
-if [ "$PMOCKUP" ]; then
-    if [ "$debug" ]; then echo "PMOCKUP  $PMOCKUP"; fi
-    PMOCKUP=`cygpath -w $PMOCKUP`
-    export PMOCKUP
-fi
-
-# Gateway models
-if [ "$GWMODELS" ]; then
-    if [ "$debug" ]; then echo "GWMODELS  $GWMODELS"; fi
-    GWMODELS=`cygpath -w $GWMODELS`
-    export GWMODELS
-fi
-
-# Export the proper home environment variable
 HOME=`cygpath -w $HOME`
 export HOME
 
-# Now start up emacs
-exec runemacs $@
+# Now de-Cygwinify the package variables for all of the trees we are
+# attached to, e.g. $DTOOL, $PANDA, $DIRECT, etc.  These variable
+# names are discovered by parsing the $CTPROJS variable, which is made
+# up of a series of words like "DIRECT:personal PANDA:personal
+# DIRECT:install"; we simply pull off each word and get the part
+# preceding the colon.
 
+# That gives us an indirect reference: we end up with a variable that
+# contains, e.g., the string "DTOOL": the name of the variable we want
+# to modify.  Bash provides a way to read the value of an indirect
+# reference: ${!varname} returns the variable named by the contents of
+# $varname.
 
+# However, bash doesn't provide a way to set the variable named by an
+# indirect reference.  But we can achieve this by using the env
+# command, which accepts as a parameter a list of variables that
+# should be reassigned, in the form "var1=value1 var2=value2 ...".  So
+# we just have to build up this string and pass it to the env command.
 
+assign=""
+for packageDef in $CTPROJS; do
+    packageVar=`echo $packageDef | sed 's/:.*$//'`
+    decyg=`cygpath -w ${!packageVar}`
+    assign="$assign $packageVar=$decyg"
+done
+
+# Now use the env command to pass all these assignments to emacs.
+exec env $assign runemacs "$@"
