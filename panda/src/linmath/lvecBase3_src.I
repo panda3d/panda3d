@@ -473,9 +473,13 @@ get_standardized_rotation(FLOATTYPE angle_in_degrees) {
 //               example is -90 and 270.
 //               Each element will be in the range -180.0 to 179.99999.
 //               The original usage of this function is for human
-//               readable output and asserting that foo_hpr is roughly
-//               equal to bar_hpr.
-//     See Also: get_standardized_rotation
+//               readable output.
+//
+//               It doesn't work so well for asserting that foo_hpr 
+//               is roughly equal to bar_hpr.  Try using
+//               LQuaternionf::is_same_direction() for that.
+//     See Also: get_standardized_rotation,
+//               LQuaternion::is_same_direction
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 get_standardized_hpr() const {
