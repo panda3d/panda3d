@@ -7,6 +7,8 @@ import inspect
 import os
 import sys
 import random
+if __debug__:
+    import traceback
 
 from direct.directutil import Verify
 
@@ -42,6 +44,33 @@ def writeFsmTree(instance, indent = 0):
             name = instance.fsm.state.name
         print "%s: %s"%(instance.fsm.name, name)
         
+
+
+
+if __debug__:
+    class StackTrace:
+        def __init__(self, label="", start=0, limit=None):
+            """
+            label is a string (or anything that be be a string)
+                that is printed as part of the trace back.
+                This is just to make it easier to tell what the
+                stack trace is referring to.
+            start is an integer number of stack frames back 
+                from the most recent.  (This is automatically
+                bumped up by one to skip the __init__ call
+                to the StackTrace).
+            limit is an integer number of stack frames
+                to record (or None for unlimited).
+            """
+            self.label = label
+            self.trace = traceback.extract_stack(sys._getframe(1+start), limit=10)
+
+        def __str__(self):
+            r = "Debug stack trace of %s (back %s frames):\n"%(
+                self.label, len(self.trace),)
+            for i in traceback.format_list(self.trace):
+                r+=i
+            return r
 
 
 
@@ -87,7 +116,6 @@ def printThisCall():
     return 1 # to allow "assert printThisCall()"
 
 
-
 def tron():
     sys.settrace(trace)
 def trace(frame, event, arg):
@@ -106,7 +134,6 @@ def troff():
 
 
 
-
 def apropos(obj, *args):
     """
     Obsolete, use pdir
