@@ -75,7 +75,7 @@ GuiRollover::GuiRollover(const string& name, GuiLabel* off, GuiLabel* on)
   _rgn = new MouseWatcherRegion("rollover-" + name, _left, _right, _bottom,
 				_top);
   _rgn->set_suppress_below(false);
-  rollovers[this->_rgn] = this;
+  rollovers[this->_rgn.p()] = this;
 }
 
 GuiRollover::~GuiRollover(void) {
@@ -84,7 +84,7 @@ GuiRollover::~GuiRollover(void) {
   // Remove the names from the rollovers map, so we don't end up with
   // an invalid pointer.
   string name = get_name();
-  rollovers.erase(this->_rgn);
+  rollovers.erase(this->_rgn.p());
   if ((rollovers.size() == 0) && added_hooks) {
     _eh->remove_hook("gui-enter", enter_rollover);
     _eh->remove_hook("gui-exit", exit_rollover);

@@ -77,7 +77,7 @@ static void exit_button(CPT_Event e) {
 static void click_button_down(CPT_Event e) {
   const MouseWatcherRegion* rgn = DCAST(MouseWatcherRegion, e->get_parameter(0).get_ptr());
   string button = e->get_parameter(1).get_string_value();
-  if ((button != "mouse1") && (button != "mouse2") && (button != "mouse3"))
+  if (!(button == "mouse1" || button == "mouse2" || button == "mouse3"))
     return;
   GuiButton* val = find_in_buttons_map(rgn);
   if (val == (GuiButton *)0L)
@@ -89,7 +89,7 @@ static void click_button_down(CPT_Event e) {
 static void click_button_up(CPT_Event e) {
   const MouseWatcherRegion* rgn = DCAST(MouseWatcherRegion, e->get_parameter(0).get_ptr());
   string button = e->get_parameter(1).get_string_value();
-  if ((button != "mouse1") && (button != "mouse2") && (button != "mouse3"))
+  if (!(button == "mouse1" || button == "mouse2" || button == "mouse3"))
     return;
   GuiButton* val = find_in_buttons_map(rgn);
   if (val == (GuiButton *)0L)
@@ -471,7 +471,7 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down)
   _rgn = new MouseWatcherRegion("button-" + name, _left, _right, _bottom,
 				_top);
   _rgn->set_suppress_below(true);
-  buttons[this->_rgn] = this;
+  buttons[this->_rgn.p()] = this;
 }
 
 GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down,
@@ -491,7 +491,7 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down,
   _rgn = new MouseWatcherRegion("button-" + name, _left, _right, _bottom,
 				_top);
   _rgn->set_suppress_below(true);
-  buttons[this->_rgn] = this;
+  buttons[this->_rgn.p()] = this;
 }
 
 GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
@@ -512,7 +512,7 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
   _rgn = new MouseWatcherRegion("button-" + name, _left, _right, _bottom,
 				_top);
   _rgn->set_suppress_below(true);
-  buttons[this->_rgn] = this;
+  buttons[this->_rgn.p()] = this;
 }
 
 GuiButton::~GuiButton(void) {
@@ -521,7 +521,7 @@ GuiButton::~GuiButton(void) {
   // Remove the names from the buttons map, so we don't end up with
   // an invalid pointer.
   string name = get_name();
-  buttons.erase(this->_rgn);
+  buttons.erase(this->_rgn.p());
   if ((buttons.size() == 0) && added_hooks) {
     _eh->remove_hook("gui-enter", enter_button);
     _eh->remove_hook("gui-exit" + get_name(), exit_button);
