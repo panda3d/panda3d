@@ -22,6 +22,9 @@ class Forces(DirectObject):
 
     def addForce(self, force):
 	"""addForce(self, force)"""
+	if (force.isLinear() == 0):
+	    # Physics manager will need an angular integrator
+	    base.addAngularIntegrator()
 	self.node.addForce(force)
 
     def removeForce(self, force):

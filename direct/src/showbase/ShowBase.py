@@ -13,6 +13,7 @@ import EventManager
 import math
 import sys
 import LinearEulerIntegrator
+import AngularEulerIntegrator
 import ClockObject
 
 globalClock = ClockObject.ClockObject.getGlobalClock()
@@ -117,15 +118,23 @@ class ShowBase:
 
 	# Physics manager
 	self.physicsMgr = physicsMgr
-	self.integrator = LinearEulerIntegrator.LinearEulerIntegrator()
-	self.physicsMgr.attachLinearIntegrator(self.integrator)
+	integrator = LinearEulerIntegrator.LinearEulerIntegrator()
+	self.physicsMgr.attachLinearIntegrator(integrator)
 	self.physicsMgrEnabled = 0
+	self.physicsMgrAngular = 0
 
         self.createAudioManager()
         self.createRootPanel()
         self.createStats()
 
         self.restart()
+
+    def addAngularIntegrator(self):
+	"""addAngularIntegrator(self)"""
+	if (self.physicsMgrAngular == 0):
+	    self.physicsMgrAngular = 1
+	    integrator = AngularEulerIntegrator.AngularEulerIntegrator()
+	    self.physicsMgr.attachAngularIntegrator(integrator)
 
     def enableParticles(self):
 	"""enableParticles(self)"""
