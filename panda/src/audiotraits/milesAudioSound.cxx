@@ -80,21 +80,26 @@ void MilesAudioSound::
 play() {
   #if 0
   if(_file_name.find(".mid")!=string::npos) {
-        miles_audio_debug("play() midi");
+     miles_audio_debug("play() midi");
   }
   #endif
-
+  
   miles_audio_debug("play()");
   if (_active) {
+    if(_manager->_bExclusive) {
+        // stop any other sound that parent mgr is playing
+        _manager->stop_all_sounds();
+    }
+
     // Start playing:
     if (AIL_quick_play(_audio, _loop_count)) {
-      audio_debug("  started sound");
+      audio_debug("  started sound " << _file_name );
     } else {
-      audio_debug("  failed to play sound "<<AIL_last_error());
+      audio_debug("  sound " << _file_name<<" failed to start, err: " <<AIL_last_error());
     }
   } else {
     // In case _loop_count gets set to forever (zero):
-    audio_debug("  paused");
+    audio_debug("  paused "<<_file_name );
     _paused=true;
   }
 }
@@ -106,7 +111,7 @@ stop() {
         miles_audio_debug("stop() midi");
   } 
   #endif
-  miles_audio_debug("stop()");
+  miles_audio_debug("stopping snd " << _file_name);
   _paused=false;
   AIL_quick_halt(_audio);
 }

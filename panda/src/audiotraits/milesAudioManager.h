@@ -51,6 +51,8 @@ public:
   
   void set_active(bool active);
   bool get_active();
+  void stop_all_sounds();
+  void forceMidiReset();
 
   // Optional Downloadable Sound field for software midi:
   // made public so C atexit fn can access it
@@ -60,12 +62,14 @@ private:
   // The sound cache:
   typedef pmap<string, HAUDIO > SoundMap;
   SoundMap _sounds;
+
+  typedef pset<MilesAudioSound* > AudioSet;
+  // The offspring of this manager:
+  AudioSet _soundsOnLoan;
+
   // The Least Recently Used mechanism:
   typedef pdeque<const string* > LRU;
   LRU _lru;
-  // The offspring of this manager:
-  typedef pset<MilesAudioSound* > AudioSet;
-  AudioSet _soundsOnLoan;
   // State:
   float _volume;
   bool _active;
@@ -74,6 +78,7 @@ private:
   static int _active_managers;
   
   bool _is_valid;
+  bool _bHasMidiSounds;
   
   HAUDIO load(Filename file_name);
   // Tell the manager that the sound dtor was called.
