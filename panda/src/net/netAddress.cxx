@@ -77,6 +77,8 @@ set_host(const string &hostname, int port) {
     PR_GetHostByName(hostname.c_str(), buf, PR_NETDB_BUF_SIZE, &host);
   if (result != PR_SUCCESS) {
     pprerror("PR_GetHostByName");
+    net_cat.error()
+      << "Unable to look up hostname " << hostname << ".\n";
     return false;
   }
 
