@@ -94,10 +94,10 @@
 #define EXTRA_CDEFS FORCE_INLINING $[EXTRA_CDEFS]
 #endif
 
-#defer CDEFINES_OPT1 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS]
-#defer CDEFINES_OPT2 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS]
-#defer CDEFINES_OPT3 $[dlink_all_static] $[EXTRA_CDEFS]
-#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT1 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT1]
+#defer CDEFINES_OPT2 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT2]
+#defer CDEFINES_OPT3 $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT3]
+#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT4]
 
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[OPT1FLAGS] $[DEBUGFLAGS]
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS]

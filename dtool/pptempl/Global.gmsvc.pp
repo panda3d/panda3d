@@ -110,10 +110,10 @@
 #define EXTRA_CDEFS FORCE_INLINING $[EXTRA_CDEFS]
 #endif
 
-#defer CDEFINES_OPT1 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS]
-#defer CDEFINES_OPT2 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS]
-#defer CDEFINES_OPT3 $[dlink_all_static] $[EXTRA_CDEFS]
-#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT1 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT1]
+#defer CDEFINES_OPT2 _DEBUG $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT2]
+#defer CDEFINES_OPT3 $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT3]
+#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[EXTRA_CDEFS] $[CDEFINES_OPT4]
 
 //  Opt1 /GZ disables OPT flags, so make sure its OPT1 only
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPT1FLAGS] 

@@ -11,7 +11,9 @@
   #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
   #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS]
   #define RELEASEFLAGS /MD
-  #define WARNING_LEVEL_FLAG /W3    
+  #define WARNING_LEVEL_FLAG /W3  
+  
+  #define CDEFINES_OPT4 UNKNOWN_ALLOCATOR
   
   #define MAPINFOFLAGS /MAPINFO:EXPORTS /MAPINFO:FIXUPS /MAPINFO:LINES
   
@@ -39,7 +41,7 @@
   #define LINKER link
   #define LIBBER lib
   
-  // this is too late it must be
+  // is it too late to turn this on?
   #define UNKNOWN_ALLOCATOR 1  
 
   #define COMMONFLAGS /DHAVE_DINKUM 
