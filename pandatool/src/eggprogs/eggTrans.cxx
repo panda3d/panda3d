@@ -1,6 +1,19 @@
 // Filename: eggTrans.cxx
 // Created by:  drose (14Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggTrans.h"
@@ -10,54 +23,54 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTrans::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggTrans::
 EggTrans() {
   add_normals_options();
   add_transform_options();
-  
+
   set_program_description
     ("egg-trans reads an egg file and writes an essentially equivalent "
      "egg file to the standard output, or to the file specified with -o.  "
-     "Some simple operations on the egg file are supported."); 
+     "Some simple operations on the egg file are supported.");
 
   add_option
-    ("F", "", 0, 
+    ("F", "", 0,
      "Flatten out transforms.",
      &EggTrans::dispatch_none, &_flatten_transforms);
 
   add_option
-    ("t", "", 0, 
+    ("t", "", 0,
      "Apply texture matrices to UV's.",
      &EggTrans::dispatch_none, &_apply_texmats);
 
   add_option
-    ("T", "", 0, 
+    ("T", "", 0,
      "Collapse equivalent texture references.",
      &EggTrans::dispatch_none, &_collapse_equivalent_textures);
 
   add_option
-    ("c", "", 0, 
+    ("c", "", 0,
      "Clean out degenerate polygons and unused vertices.",
      &EggTrans::dispatch_none, &_remove_invalid_primitives);
 
   add_option
-    ("C", "", 0, 
+    ("C", "", 0,
      "Clean out higher-order polygons by subdividing into triangles.",
      &EggTrans::dispatch_none, &_triangulate_polygons);
 
   add_option
-    ("N", "", 0, 
+    ("N", "", 0,
      "Standardize and uniquify group names.",
      &EggTrans::dispatch_none, &_standardize_names);
-  
+
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTrans::run
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggTrans::
 run() {

@@ -1,6 +1,19 @@
 // Filename: softCVS.cxx
 // Created by:  drose (10Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "softCVS.h"
@@ -12,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftCVS::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 SoftCVS::
 SoftCVS() {
@@ -36,13 +49,13 @@ SoftCVS() {
   add_runline("[opts]");
 
   add_option
-    ("nc", "", 80, 
+    ("nc", "", 80,
      "Do not attempt to add newly-created files to CVS.  The default "
      "is to add them.",
      &SoftCVS::dispatch_none, &_no_cvs);
 
   add_option
-    ("cvs", "cvs_binary", 80, 
+    ("cvs", "cvs_binary", 80,
      "Specify how to run the cvs program for adding newly-created files.  "
      "The default is simply \"cvs\".",
      &SoftCVS::dispatch_string, NULL, &_cvs_binary);
@@ -52,7 +65,7 @@ SoftCVS() {
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftCVS::run
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void SoftCVS::
 run() {
@@ -118,7 +131,7 @@ traverse_root() {
     if (subdir.is_directory() && subdir != "CVS") {
       traverse_subdir(subdir);
     }
-  }  
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -218,7 +231,7 @@ collapse_scene_files() {
   vi = versions.begin();
   while (vi != versions.end()) {
     SoftFilename &file = (*vi);
-    
+
     if (!file.is_1_0()) {
       // Here's a file that needs to be renamed.  But first, identify
       // all the other versions of the same file.
@@ -227,9 +240,9 @@ collapse_scene_files() {
       while (vi != versions.end() && (*vi).is_same_file(file)) {
         ++vi;
       }
-      
+
       rename_file(start_vi, vi);
-      
+
     } else {
       ++vi;
     }
@@ -308,7 +321,7 @@ remove_unused_elements() {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool SoftCVS::
-rename_file(SoftCVS::SceneFiles::iterator begin, 
+rename_file(SoftCVS::SceneFiles::iterator begin,
             SoftCVS::SceneFiles::iterator end) {
   int length = end - begin;
   nassertr(length > 0, false);
@@ -327,7 +340,7 @@ rename_file(SoftCVS::SceneFiles::iterator begin,
     }
 
   } else if (length == 2) {
-    nout << source_filename << " supercedes " 
+    nout << source_filename << " supercedes "
          << (*(begin + 1)).get_filename() << ".\n";
 
   } else {
@@ -513,7 +526,7 @@ cvs_add_or_remove(const string &cvs_command, const vector_string &paths) {
         // Fire off the command now.
         nout << command << "\n";
         int result = system(command.c_str());
-    
+
         if (result != 0) {
           nout << "Failure invoking cvs.\n";
           return false;
@@ -529,7 +542,7 @@ cvs_add_or_remove(const string &cvs_command, const vector_string &paths) {
     }
     nout << command << "\n";
     int result = system(command.c_str());
-    
+
     if (result != 0) {
       nout << "Failure invoking cvs.\n";
       return false;

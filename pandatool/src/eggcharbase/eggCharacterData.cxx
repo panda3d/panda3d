@@ -1,6 +1,19 @@
 // Filename: eggCharacterData.cxx
 // Created by:  drose (23Feb01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggCharacterData.h"
@@ -13,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggCharacterData::
 EggCharacterData(EggCharacterCollection *collection) {
@@ -24,7 +37,7 @@ EggCharacterData(EggCharacterCollection *collection) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggCharacterData::
 ~EggCharacterData() {
@@ -81,7 +94,7 @@ make_slider(const string &name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggCharacterData::
 write(ostream &out, int indent_level) const {

@@ -1,6 +1,19 @@
 // Filename: morphGrid.cxx
 // Created by:  drose (08Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "morphGrid.h"
@@ -64,20 +77,20 @@ void MorphGrid::Triangle::
 recompute() {
   for (int i = 0; i < (int)TT_num; i++) {
     for (int a = 0; a < 2; a++) {
-      _min_p[i][a] = min(min(_v[0]->_p[i][a], _v[1]->_p[i][a]), 
+      _min_p[i][a] = min(min(_v[0]->_p[i][a], _v[1]->_p[i][a]),
                          _v[2]->_p[i][a]);
-      _max_p[i][a] = max(max(_v[0]->_p[i][a], _v[1]->_p[i][a]), 
+      _max_p[i][a] = max(max(_v[0]->_p[i][a], _v[1]->_p[i][a]),
                          _v[2]->_p[i][a]);
     }
-  
+
     LPoint2d origin = _v[1]->_p[i];
     LVector2d yaxis = _v[0]->_p[i] - origin;
     LVector2d xaxis = _v[2]->_p[i] - origin;
-    
+
     _mat[i] = LMatrix3d(xaxis[0], xaxis[1], 0.0,
                         yaxis[0], yaxis[1], 0.0,
                         origin[0], origin[1], 1.0);
-    
+
     _inv[i] = invert(_mat[i]);
   }
 }
@@ -124,14 +137,14 @@ recompute() {
 
     for (int i = 0; i < (int)TT_num; i++) {
       for (int a = 0; a < 2; a++) {
-        _min_p[i][a] = 
+        _min_p[i][a] =
           min(_u._tree[0]->_min_p[i][a], _u._tree[1]->_min_p[i][a]);
         _max_p[i][a] =
           max(_u._tree[0]->_max_p[i][a], _u._tree[1]->_max_p[i][a]);
       }
     }
   }
-}    
+}
 
 MorphGrid::Triangle *MorphGrid::TriangleTree::
 find_triangle(const LPoint2d &p, TableType from) const {
@@ -195,7 +208,7 @@ init(int x_verts, int y_verts) {
   _triangles.clear();
   _last_triangle = NULL;
   _table.clear();
-  
+
   if (is_empty()) {
     return;
   }
@@ -349,8 +362,8 @@ fill_alpha() {
         _table[y][x]._alpha = 1.0;
 
       } else {
-        int dist_from_edge = 
-          min(min(x, y), 
+        int dist_from_edge =
+          min(min(x, y),
               min(_x_verts - 1 - x, _y_verts - 1 - y));
 
         assert(_table[y][x]._dist_from_interior >= 0);
@@ -358,7 +371,7 @@ fill_alpha() {
         // We subtract one from dist_from_interior to give us a bit of
         // comfort zone around the interior edge--we're not precisely
         // sure where the actual edge is.
-        int dist_from_interior = 
+        int dist_from_interior =
           max(_table[y][x]._dist_from_interior - 1, 0);
 
         // Now if dist_from_edge is 0, it must be transparent; if
@@ -380,7 +393,7 @@ fill_alpha() {
     }
   }
 }
-  
+
 LPoint2d MorphGrid::
 morph_point(const LPoint2d &p, TableType from, TableType to) {
   if (is_empty()) {

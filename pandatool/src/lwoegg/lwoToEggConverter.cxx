@@ -1,6 +1,19 @@
 // Filename: lwoToEggConverter.cxx
 // Created by:  drose (25Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "lwoToEggConverter.h"
@@ -26,7 +39,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: LwoToEggConverter::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 LwoToEggConverter::
 LwoToEggConverter() {
@@ -37,7 +50,7 @@ LwoToEggConverter() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LwoToEggConverter::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 LwoToEggConverter::
 LwoToEggConverter(const LwoToEggConverter &copy) :
@@ -48,7 +61,7 @@ LwoToEggConverter(const LwoToEggConverter &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: LwoToEggConverter::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 LwoToEggConverter::
 ~LwoToEggConverter() {
@@ -208,7 +221,7 @@ get_surface(const string &name) const {
 //               initial state.
 ////////////////////////////////////////////////////////////////////
 void LwoToEggConverter::
-cleanup() {  
+cleanup() {
   _lwo_header.clear();
 
   if (_generic_layer != (CLwoLayer *)NULL) {
@@ -263,7 +276,7 @@ cleanup() {
 //               creates wrapper objects for each relevant piece.
 ////////////////////////////////////////////////////////////////////
 void LwoToEggConverter::
-collect_lwo() {  
+collect_lwo() {
   CLwoLayer *last_layer = (CLwoLayer *)NULL;
   CLwoPoints *last_points = (CLwoPoints *)NULL;
   CLwoPolygons *last_polygons = (CLwoPolygons *)NULL;
@@ -334,7 +347,7 @@ collect_lwo() {
         nout << "Polygon chunk encountered without a preceding points chunk.\n";
       } else {
         const LwoPolygons *lwo_polygons = DCAST(LwoPolygons, chunk);
-        CLwoPolygons *polygons = 
+        CLwoPolygons *polygons =
           new CLwoPolygons(this, lwo_polygons, last_points);
         _polygons.push_back(polygons);
         last_polygons = polygons;
@@ -374,7 +387,7 @@ collect_lwo() {
 //               wrapper objects.
 ////////////////////////////////////////////////////////////////////
 void LwoToEggConverter::
-make_egg() {  
+make_egg() {
   if (_generic_layer != (CLwoLayer *)NULL) {
     _generic_layer->make_egg();
   }
@@ -406,7 +419,7 @@ make_egg() {
 //  Description: Connects together all of the egg structures.
 ////////////////////////////////////////////////////////////////////
 void LwoToEggConverter::
-connect_egg() {  
+connect_egg() {
   if (_generic_layer != (CLwoLayer *)NULL) {
     _generic_layer->connect_egg();
   }

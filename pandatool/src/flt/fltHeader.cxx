@@ -1,6 +1,19 @@
 // Filename: fltHeader.cxx
 // Created by:  drose (24Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltHeader.h"
@@ -19,7 +32,7 @@ TypeHandle FltHeader::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: FltHeader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltHeader::
 FltHeader() : FltBeadID(this) {
@@ -296,7 +309,7 @@ check_version() const {
       "correctly.\n";
     return false;
   }
-  
+
   if (version > max_flt_version()) {
     nout << "Warning!  The version number of this file appears to be "
          << version << ", which is newer than " << max_flt_version() / 100.0
@@ -322,16 +335,16 @@ get_units() const {
   switch (_vertex_units) {
   case FltHeader::U_meters:
     return DU_meters;
-    
+
   case FltHeader::U_kilometers:
     return DU_kilometers;
-    
+
   case FltHeader::U_feet:
     return DU_feet;
-    
+
   case FltHeader::U_inches:
     return DU_inches;
-    
+
   case FltHeader::U_nautical_miles:
     return DU_nautical_miles;
   }
@@ -527,14 +540,14 @@ get_num_colors() const {
 ////////////////////////////////////////////////////////////////////
 Colorf FltHeader::
 get_color(int color_index) const {
-  nassertr(color_index >= 0 && color_index < get_num_colors(), 
+  nassertr(color_index >= 0 && color_index < get_num_colors(),
            Colorf(0.0, 0.0, 0.0, 0.0));
   int num_color_shades = get_num_color_shades();
 
   int index = (color_index / num_color_shades);
   int level = (color_index % num_color_shades);
   nassertr(index >= 0 && index < (int)_colors.size(),
-           Colorf(0.0, 0.0, 0.0, 0.0));  
+           Colorf(0.0, 0.0, 0.0, 0.0));
 
   Colorf color = _colors[index].get_color();
   return color * ((double)level / (double)(num_color_shades - 1));
@@ -549,14 +562,14 @@ get_color(int color_index) const {
 ////////////////////////////////////////////////////////////////////
 RGBColorf FltHeader::
 get_rgb(int color_index) const {
-  nassertr(color_index >= 0 && color_index < get_num_colors(), 
+  nassertr(color_index >= 0 && color_index < get_num_colors(),
            RGBColorf(0.0, 0.0, 0.0));
   int num_color_shades = get_num_color_shades();
 
   int index = (color_index / num_color_shades);
   int level = (color_index % num_color_shades);
   nassertr(index >= 0 && index < (int)_colors.size(),
-           RGBColorf(0.0, 0.0, 0.0));  
+           RGBColorf(0.0, 0.0, 0.0));
 
   RGBColorf color = _colors[index].get_rgb();
   return color * ((double)level / (double)(num_color_shades - 1));
@@ -1203,19 +1216,19 @@ extract_record(FltRecordReader &reader) {
   iterator.skip_bytes(2);
   _next_road_id = iterator.get_be_int16();
   _next_cat_id = iterator.get_be_int16();
-  
+
   if (get_flt_version() >= 1520 && iterator.get_remaining_size() > 0) {
     iterator.skip_bytes(2 + 2 + 2 + 2);
     _earth_model = (EarthModel)iterator.get_be_int32();
 
     // Undocumented padding.
     iterator.skip_bytes(4);
-    
+
     if (get_flt_version() >= 1560 && iterator.get_remaining_size() > 0) {
       _next_adaptive_id = iterator.get_be_int16();
       _next_curve_id = iterator.get_be_int16();
       iterator.skip_bytes(4);
-      
+
       if (get_flt_version() >= 1570 && iterator.get_remaining_size() > 0) {
         _delta_z = iterator.get_be_float64();
         _radius = iterator.get_be_float64();
@@ -1347,14 +1360,14 @@ build_record(FltRecordWriter &writer) const {
     datagram.pad_bytes(2 + 2 + 2 + 2);
     datagram.add_be_int32(_earth_model);
 
-    datagram.pad_bytes(4);    
+    datagram.pad_bytes(4);
 
     if (get_flt_version() >= 1560) {
       // New with 15.6
       datagram.add_be_int16(_next_adaptive_id);
       datagram.add_be_int16(_next_curve_id);
       datagram.pad_bytes(4);
-      
+
       if (get_flt_version() >= 1570) {
         // New with 15.7
         datagram.add_be_float64(_delta_z);
@@ -1431,9 +1444,9 @@ extract_vertex(FltRecordReader &reader) {
   _offsets_by_vertex[vertex] = _current_vertex_offset;
   _vertices_by_offset[_current_vertex_offset] = vertex;
   _current_vertex_offset += reader.get_record_length();
-  
+
   // _vertex_lookups_stale remains false.
-  
+
   return true;
 }
 
@@ -1498,7 +1511,7 @@ extract_material(FltRecordReader &reader) {
     return false;
   }
   add_material(material);
-  
+
   return true;
 }
 
@@ -1548,7 +1561,7 @@ extract_texture(FltRecordReader &reader) {
     return false;
   }
   add_texture(texture);
-  
+
   return true;
 }
 
@@ -1570,7 +1583,7 @@ extract_texture_map(FltRecordReader &reader) {
     return false;
   }
   add_ancillary(rec);
-  
+
   return true;
 }
 
@@ -1586,7 +1599,7 @@ extract_light_source(FltRecordReader &reader) {
     return false;
   }
   add_light_source(light_source);
-  
+
   return true;
 }
 
@@ -1632,7 +1645,7 @@ FltError FltHeader::
 write_vertex_palette(FltRecordWriter &writer) const {
   FltError result;
 
-  int vertex_palette_length = 
+  int vertex_palette_length =
     ((FltHeader *)this)->update_vertex_lookups();
   Datagram vertex_palette;
   vertex_palette.add_be_int32(vertex_palette_length);

@@ -1,6 +1,19 @@
 // Filename: stitchCylindricalLens.cxx
 // Created by:  drose (09Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "stitchCylindricalLens.h"
@@ -44,7 +57,7 @@ get_hfov(double width_mm) const {
 
 double StitchCylindricalLens::
 get_vfov(double height_mm) const {
-  return 2.0 * rad_2_deg(atan(height_mm / 
+  return 2.0 * rad_2_deg(atan(height_mm /
                               (2.0 * get_focal_length(height_mm))));
 }
 
@@ -66,7 +79,7 @@ project(const LVector3d &vec, double width_mm) const {
   // the vertical direction.
 
   LVector3d v3 = vec * LMatrix4d::convert_mat(CS_default, CS_zup_right);
-  
+
   // To compute the x position on the frame, we only need to consider
   // the angle of the vector about the Z axis.  Project the vector
   // into the XY plane to do this.
@@ -76,7 +89,7 @@ project(const LVector3d &vec, double width_mm) const {
   // The x position is the angle about the Z axis.
   double x =
     rad_2_deg(atan2(xy[0], xy[1])) * get_focal_length(width_mm) / k;
-  
+
   // The y position is the Z height divided by the perspective
   // distance.
   double y = v3[2] / length(xy) * get_focal_length(width_mm);
@@ -95,7 +108,7 @@ project_left(const LVector3d &vec, double width_mm) const {
   double x =
     (rad_2_deg(atan2(-xy[0], -xy[1])) - 180.0) *
     get_focal_length(width_mm) / k;
-  
+
   double y = v3[2] / length(xy) * get_focal_length(width_mm);
   return LPoint2d(x, y);
 }
@@ -111,7 +124,7 @@ project_right(const LVector3d &vec, double width_mm) const {
   double x =
     (rad_2_deg(atan2(-xy[0], -xy[1])) + 180.0) *
     get_focal_length(width_mm) / k;
-  
+
   double y = v3[2] / length(xy) * get_focal_length(width_mm);
   return LPoint2d(x, y);
 }

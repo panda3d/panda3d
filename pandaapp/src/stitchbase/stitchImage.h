@@ -1,6 +1,19 @@
 // Filename: stitchImage.h
 // Created by:  drose (04Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef STITCHIMAGE_H
@@ -26,7 +39,7 @@ class LayeredImage;
 class StitchImage {
 public:
   StitchImage(const string &name, const string &filename,
-              StitchLens *lens, 
+              StitchLens *lens,
               const LVecBase2d &size_pixels,
               const LVecBase2d &pixels_per_mm,
               const LVecBase2d &film_offset_mm);
@@ -71,7 +84,7 @@ public:
   LVecBase2d get_size_mm() const;
 
   LVector3d extrude(const LPoint2d &point_uv) const;
-  LPoint2d project(const LVector3d &vec) const; 
+  LPoint2d project(const LVector3d &vec) const;
   double get_alpha(const LPoint2d &point_uv) const;
 
   void reset_singularity_detected();
@@ -81,8 +94,8 @@ public:
   // something special if the triangle crosses a seam or singularity
   // in the lens' coordinate space.
   void draw_triangle(TriangleRasterizer &rast,
-                     const RasterizerVertex *v0, 
-                     const RasterizerVertex *v1, 
+                     const RasterizerVertex *v0,
+                     const RasterizerVertex *v1,
                      const RasterizerVertex *v2);
 
   // This function is to be called after all triangles have been
@@ -128,7 +141,7 @@ public:
   // sort the images in order as they are specified in the command
   // file.
   int _index;
-  
+
 private:
   Filename _filename;
   string _name;

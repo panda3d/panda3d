@@ -1,6 +1,19 @@
 // Filename: pStatMonitor.cxx
 // Created by:  drose (09Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pStatMonitor.h"
@@ -11,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatMonitor::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatMonitor::
 PStatMonitor() {
@@ -21,7 +34,7 @@ PStatMonitor() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatMonitor::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatMonitor::
 ~PStatMonitor() {
@@ -119,7 +132,7 @@ get_collector_color(int collector_index) {
   }
 
   // Ask the client data about the color.
-  if (!_client_data.is_null() && 
+  if (!_client_data.is_null() &&
       _client_data->has_collector(collector_index)) {
     const PStatCollectorDef &def =
       _client_data->get_collector_def(collector_index);
@@ -175,7 +188,7 @@ get_level_view(int collector_index, int thread_index) {
     lvi = _level_views.insert(LevelViews::value_type(collector_index, Views())).first;
   }
   Views &views = (*lvi).second;
-  
+
   Views::iterator vi;
   vi = views.find(thread_index);
   if (vi == views.end()) {

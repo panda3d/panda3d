@@ -1,6 +1,19 @@
 // Filename: cvsSourceTree.h
 // Created by:  drose (31Oct00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef CVSSOURCETREE_H
@@ -51,7 +64,7 @@ private:
   prompt_user(const string &filename, CVSSourceDirectory *suggested_dir,
               const Directories &dirs, bool force, bool interactive);
 
-  CVSSourceDirectory *ask_existing(const string &filename, 
+  CVSSourceDirectory *ask_existing(const string &filename,
                                    CVSSourceDirectory *dir);
   CVSSourceDirectory *ask_existing(const string &filename,
                                    const Directories &dirs,

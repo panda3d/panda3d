@@ -1,6 +1,19 @@
 // Filename: withOutputFile.cxx
 // Created by:  drose (11Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "withOutputFile.h"
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: WithOutputFile::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 WithOutputFile::
 WithOutputFile(bool allow_last_param, bool allow_stdout,
@@ -25,7 +38,7 @@ WithOutputFile(bool allow_last_param, bool allow_stdout,
 ////////////////////////////////////////////////////////////////////
 //     Function: WithOutputFile::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 WithOutputFile::
 ~WithOutputFile() {
@@ -45,7 +58,7 @@ get_output() {
       // No filename given; use standard output.
       nassertr(_allow_stdout, _output_stream);
       _output_ptr = &cout;
-      
+
     } else {
       // Attempt to open the named file.
       unlink(_output_filename.c_str());
@@ -110,16 +123,16 @@ get_output_filename() const {
 ////////////////////////////////////////////////////////////////////
 bool WithOutputFile::
 check_last_arg(ProgramBase::Args &args, int minimum_args) {
-  if (_allow_last_param && !_got_output_filename && 
+  if (_allow_last_param && !_got_output_filename &&
       (int)args.size() > minimum_args) {
     Filename filename = args.back();
 
-    if (!_preferred_extension.empty() && 
+    if (!_preferred_extension.empty() &&
         ("." + filename.get_extension()) != _preferred_extension) {
       // This argument must not be an output filename.
       if (!_allow_stdout) {
-        nout << "Output filename " << filename 
-             << " does not end in " << _preferred_extension 
+        nout << "Output filename " << filename
+             << " does not end in " << _preferred_extension
              << ".  If this is really what you intended, "
           "use the -o output_file syntax.\n";
         return false;

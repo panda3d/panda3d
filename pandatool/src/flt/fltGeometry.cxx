@@ -1,6 +1,19 @@
 // Filename: fltGeometry.cxx
 // Created by:  drose (28Feb01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltGeometry.h"
@@ -14,7 +27,7 @@ TypeHandle FltGeometry::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: FltGeometry::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltGeometry::
 FltGeometry(FltHeader *header) : FltBeadID(header) {
@@ -178,7 +191,7 @@ extract_record(FltRecordReader &reader) {
   _light_mode = (LightMode)iterator.get_uint8();
   iterator.skip_bytes(1 + 4);
   iterator.skip_bytes(2); // Undocumented padding.
-  
+
   if (!_packed_color.extract_record(reader)) {
     return false;
   }

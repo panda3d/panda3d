@@ -1,6 +1,19 @@
 // Filename: pkFontFile.cxx
 // Created by:  drose (18Feb01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pkFontFile.h"
@@ -477,12 +490,12 @@ Raster data&D9&E2&97\cr
 #define PK_POST 245
 #define PK_NO_OP 246
 #define PK_PRE 247
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PkFontFile::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PkFontFile::
 PkFontFile() {
@@ -565,7 +578,7 @@ fetch_packed_int() {
   } else if (i <= _dyn_f) {
     return i;
 
-  } else if (i < 14) { 
+  } else if (i < 14) {
     return (i - _dyn_f - 1)*16 + fetch_nibble() + _dyn_f + 1;
 
   } else {
@@ -650,7 +663,7 @@ do_character(int flag_byte) {
   int prepend_length = (flag_byte & 0x3);
 
   bool use_long_form = ((flag_byte & 0x7) == 0x7);
-  
+
   unsigned int pl, cc, itfm, w, h;
   int hoff, voff;
   unsigned int idx = 0;
@@ -685,19 +698,19 @@ do_character(int flag_byte) {
   double dy = (double)idy / (double)(1 << 16);
   //  double di_width = tfm * _ppu * _hppp / _vppp;
 
-  if (_extract_all || 
+  if (_extract_all ||
       ((cc >= 33 && cc <= 127) &&
        (_extract_only.empty() || _extract_only.find((char)cc) != string::npos))) {
     nout << " " << cc;
 
     CharBitmap *bm = new CharBitmap(cc, w, h, hoff, voff, dx, dy);
-      
+
     if (_dyn_f == 14) {
       // A bitmapped character: this character has the actual w x h
       // bits stored directly in the pk file.  This kind of character
       // is quite rare, and the code is therefore untested.
       if (h > 0 && w > 0) {
-        nout 
+        nout
           << "\nA rare bitmapped character encountered!  You are now running\n"
           << "untested code.  If this works, change this line in the program\n"
           << "to indicate that the code is actually tested!\n\n";
@@ -715,14 +728,14 @@ do_character(int flag_byte) {
           bit >>= 1;
         }
       }
-      
+
     } else {
       // A normal, rle character.  This character has sequences of
       // black and white runs stored in the pk file.  Most characters
       // will be stored this way.
       bool black = first_black;
       _repeat_count = 0;
-      
+
       int count = fetch_packed_int();
       while (bm->paint(black, count, _repeat_count)) {
         /*
@@ -748,7 +761,7 @@ do_character(int flag_byte) {
       nout << "\n";
     }
     */
-    
+
     if (!_high) {
       _p++;
       _high = true;
@@ -765,7 +778,7 @@ do_character(int flag_byte) {
   _p = next_p;
   return true;
 }
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PkFontFile::do_xxx
@@ -829,7 +842,7 @@ do_pre() {
   _hppp = (double)hppp / (double)(1 << 16);
   _vppp = (double)vppp / (double)(1 << 16);
 
-  nout << "Font size is " << get_ds() << " points, rasterized at " 
+  nout << "Font size is " << get_ds() << " points, rasterized at "
        << get_dpi() << " DPI.\n";
 }
 
@@ -837,7 +850,7 @@ do_pre() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PkFontFile::read_pk
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool PkFontFile::
 read_pk() {
@@ -866,7 +879,7 @@ read_pk() {
       }
     } else {
       switch (cmd) {
-      case PK_XXX1: 
+      case PK_XXX1:
         do_xxx(1);
         break;
 

@@ -1,6 +1,19 @@
 // Filename: eggPalettize.cxx
 // Created by:  drose (28Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggPalettize.h"
@@ -20,7 +33,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPalettize::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggPalettize::
 EggPalettize() : EggMultiFilter(true) {
@@ -32,7 +45,7 @@ EggPalettize() : EggMultiFilter(true) {
      "placed on a palette, and can manage some "
      "simple texture properties, like mipmapping and rendering "
      "format.\n\n"
-     
+
      "egg-palettize reads a texture attributes file, usually named "
      "textures.txa, which contains instructions from the user about "
      "resizing particular textures.  Type egg-palettize -H for an "
@@ -55,24 +68,24 @@ EggPalettize() : EggMultiFilter(true) {
   _force_complete = true;
 
   add_option
-    ("a", "filename", 0, 
+    ("a", "filename", 0,
      "Read the indicated file as the .txa file.  The default is textures.txa.",
      &EggPalettize::dispatch_filename, &_got_txa_filename, &_txa_filename);
 
   add_option
-    ("pi", "", 0, 
+    ("pi", "", 0,
      "Do not process anything, but instead report the detailed palettization "
      "information.",
      &EggPalettize::dispatch_none, &_report_pi);
 
   add_option
-    ("s", "", 0, 
+    ("s", "", 0,
      "Do not process anything, but report statistics on palette "
      "and texture utilization.",
      &EggPalettize::dispatch_none, &_report_statistics);
 
   add_option
-    ("R", "", 0, 
+    ("R", "", 0,
      "Remove the named egg files from the previously-generated state data "
      "in textures.boo.",
      &EggPalettize::dispatch_none, &_remove_eggs);
@@ -80,14 +93,14 @@ EggPalettize() : EggMultiFilter(true) {
   // We redefine -d using add_option() instead of redescribe_option()
   // so it gets listed along with these other options that relate.
   add_option
-    ("d", "dirname", 0, 
+    ("d", "dirname", 0,
      "The directory in which to write the palettized egg files.  This is "
      "only necessary if more than one egg file is processed at the same "
      "time; if it is included, each egg file will be processed and written "
      "into the indicated directory.",
      &EggPalettize::dispatch_filename, &_got_output_dirname, &_output_dirname);
   add_option
-    ("dm", "dirname", 0, 
+    ("dm", "dirname", 0,
      "The directory in which to place all maps: generated palettes, "
      "as well as images which were not placed on palettes "
      "(but may have been resized).  If this contains the string %g, "
@@ -95,7 +108,7 @@ EggPalettize() : EggMultiFilter(true) {
      "palette group; see egg-palettize -H.",
      &EggPalettize::dispatch_string, &_got_map_dirname, &_map_dirname);
   add_option
-    ("ds", "dirname", 0, 
+    ("ds", "dirname", 0,
      "The directory to write palette shadow images to.  These are working "
      "copies of the palette images, useful when the palette image type is "
      "a lossy-compression type like JPEG; you can avoid generational loss "
@@ -105,40 +118,40 @@ EggPalettize() : EggMultiFilter(true) {
      "file.",
      &EggPalettize::dispatch_filename, &_got_shadow_dirname, &_shadow_dirname);
   add_option
-    ("dr", "dirname", 0, 
+    ("dr", "dirname", 0,
      "The directory to make map filenames relative to when writing egg "
      "files.  If specified, this should be an initial substring of -dm.",
      &EggPalettize::dispatch_filename, &_got_rel_dirname, &_rel_dirname);
   add_option
-    ("g", "group", 0, 
+    ("g", "group", 0,
      "The default palette group that egg files will be assigned to if they "
      "are not explicitly assigned to any other group.",
      &EggPalettize::dispatch_string, &_got_default_groupname, &_default_groupname);
   add_option
-    ("gdir", "name", 0, 
+    ("gdir", "name", 0,
      "The \"dir\" string to associate with the default palette group "
      "specified with -g, if no other dir name is given in the .txa file.",
      &EggPalettize::dispatch_string, &_got_default_groupdir, &_default_groupdir);
-  
+
   add_option
-    ("all", "", 0, 
+    ("all", "", 0,
      "Consider all the textures referenced in all egg files that have "
      "ever been palettized, not just the egg files that appear on "
      "the command line.",
      &EggPalettize::dispatch_none, &_all_textures);
   add_option
-    ("egg", "", 0, 
+    ("egg", "", 0,
      "Regenerate all egg files that need modification, even those that "
      "aren't named on the command line.",
      &EggPalettize::dispatch_none, &_redo_eggs);
   add_option
-    ("redo", "", 0, 
+    ("redo", "", 0,
      "Force a regeneration of each image from its original source(s).  "
      "When used in conjunction with -egg, this also forces each egg file to "
      "be regenerated.",
      &EggPalettize::dispatch_none, &_redo_all);
   add_option
-    ("opt", "", 0, 
+    ("opt", "", 0,
      "Force an optimal packing.  By default, textures are added to "
      "existing palettes without disturbing them, which can lead to "
      "suboptimal packing.  Including this switch forces the palettes "
@@ -151,7 +164,7 @@ EggPalettize() : EggMultiFilter(true) {
   // NFS/Samba and between multiple OS's.
   /*
   add_option
-    ("nolock", "", 0, 
+    ("nolock", "", 0,
      "Don't attempt to grab a file lock on the .txa file.  Use "
      "with extreme caution, as multiple processes running on the same "
      ".txa file may overwrite each other.  Use this only if the lock "
@@ -160,7 +173,7 @@ EggPalettize() : EggMultiFilter(true) {
   */
 
   add_option
-    ("H", "", 0, 
+    ("H", "", 0,
      "Describe the syntax of the attributes file.",
      &EggPalettize::dispatch_none, &_describe_input_file);
 
@@ -197,7 +210,7 @@ handle_args(ProgramBase::Args &args) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPalettize::describe_input_file
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggPalettize::
 describe_input_file() {
@@ -294,7 +307,7 @@ describe_input_file() {
             "used to specify general parameters for all files while still "
             "allowing the texture to match a more specific line below.\n\n");
 
-  nout << 
+  nout <<
     "The attributes file may also assign egg files to various "
     "named palette groups.  The syntax is similar to the above:\n\n"
 
@@ -438,7 +451,7 @@ describe_input_file() {
             "Each texture is assigned to one or more palette groups before "
             "being placed in any palette image; the palette images are "
             "tied to the groups.\n\n"
- 
+
             "The optional parameter 'dir' specifies a directory name to "
             "associate with this group.  This name is substituted in for "
             "the string '%g' when it appears in the map directory name "
@@ -651,7 +664,7 @@ run() {
 
   if (!state_file.open_write(temp_filename) ||
       !state_file.write_object(pal)) {
-    nout << "Unable to write palettization information to " 
+    nout << "Unable to write palettization information to "
          << FilenameUnifier::make_user_filename(temp_filename)
          << "\n";
     exit(1);
@@ -660,7 +673,7 @@ run() {
   state_file.close();
   state_filename.unlink();
   if (!temp_filename.rename_to(state_filename)) {
-    nout << "Unable to rename temporary file " 
+    nout << "Unable to rename temporary file "
          << FilenameUnifier::make_user_filename(temp_filename) << " to "
          << FilenameUnifier::make_user_filename(state_filename) << "\n";
     exit(1);
@@ -671,7 +684,7 @@ run() {
   }
 }
 
-int 
+int
 main(int argc, char *argv[]) {
   EggPalettize prog;
   prog.parse_command_line(argc, argv);

@@ -1,6 +1,19 @@
 // Filename: fltTrans.cxx
 // Created by:  drose (11Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltTrans.h"
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTrans::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltTrans::
 FltTrans() :
@@ -19,7 +32,7 @@ FltTrans() :
   // Indicate the extension name we expect the user to supply for
   // output files.
   _preferred_extension = ".flt";
-  
+
   set_program_description
     ("This program reads a MultiGen OpenFlight (.flt) file and writes an "
      "essentially equivalent .flt file, to the file specified with -o (or "
@@ -30,14 +43,14 @@ FltTrans() :
   add_runline("[opts] -o output.flt input.flt");
 
   add_option
-    ("tp", "path", 0, 
+    ("tp", "path", 0,
      "Add the indicated colon-delimited paths to the path that is searched "
      "for textures referenced by the flt file.  This "
      "option may also be repeated to add multiple paths.",
      &FltTrans::dispatch_search_path, NULL, &_texture_path);
 
   add_option
-    ("v", "version", 0, 
+    ("v", "version", 0,
      "Upgrade (or downgrade) the flt file to the indicated version.  This "
      "may not be completely correct for all version-to-version combinations.",
      &FltTrans::dispatch_double, &_got_new_version, &_new_version);
@@ -54,7 +67,7 @@ FltTrans() :
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTrans::run
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FltTrans::
 run() {
@@ -63,8 +76,8 @@ run() {
     if (new_version < FltHeader::min_flt_version() ||
         new_version > FltHeader::max_flt_version()) {
       nout << "Cannot write flt files of version " << new_version / 100.0
-           << ".  This program only understands how to write flt files between version " 
-           << FltHeader::min_flt_version() / 100.0 << " and " 
+           << ".  This program only understands how to write flt files between version "
+           << FltHeader::min_flt_version() / 100.0 << " and "
            << FltHeader::max_flt_version() / 100.0 << ".\n";
       exit(1);
     }
@@ -83,18 +96,18 @@ run() {
   if (header->check_version()) {
     nout << "Version is " << header->get_flt_version() / 100.0 << "\n";
   }
-  
+
   if (_got_new_version) {
     int new_version = (int)floor(_new_version * 100.0 + 0.5);
     header->set_flt_version(new_version);
   }
-  
+
   result = header->write_flt(get_output());
   if (result != FE_ok) {
     nout << "Unable to write: " << result << "\n";
     exit(1);
   }
-  
+
   nout << "Successfully written.\n";
 }
 
@@ -102,7 +115,7 @@ run() {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTrans::handle_args
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool FltTrans::
 handle_args(ProgramBase::Args &args) {

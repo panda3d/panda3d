@@ -1,6 +1,19 @@
 // Filename: fltLightSourceDefinition.cxx
 // Created by:  drose (26Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltLightSourceDefinition.h"
@@ -12,7 +25,7 @@ TypeHandle FltLightSourceDefinition::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: FltLightSourceDefinition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltLightSourceDefinition::
 FltLightSourceDefinition(FltHeader *header) : FltRecord(header) {
@@ -93,7 +106,7 @@ build_record(FltRecordWriter &writer) const {
   if (!FltRecord::build_record(writer)) {
     return false;
   }
-  
+
   writer.set_opcode(FO_light_definition);
   Datagram &datagram = writer.update_datagram();
 
@@ -124,6 +137,6 @@ build_record(FltRecordWriter &writer) const {
   datagram.add_be_float32(_quadratic_coefficient);
   datagram.add_be_int32(_modeling_light);
   datagram.pad_bytes(4*19);
-  
+
   return true;
 }

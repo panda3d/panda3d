@@ -1,6 +1,19 @@
 // Filename: eggCharacterFilter.cxx
 // Created by:  drose (23Feb01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggCharacterFilter.h"
@@ -11,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterFilter::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggCharacterFilter::
 EggCharacterFilter() : EggMultiFilter(false) {
@@ -21,7 +34,7 @@ EggCharacterFilter() : EggMultiFilter(false) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterFilter::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggCharacterFilter::
 ~EggCharacterFilter() {
@@ -34,7 +47,7 @@ EggCharacterFilter::
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterFilter::post_command_line
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool EggCharacterFilter::
 post_command_line() {
@@ -45,11 +58,11 @@ post_command_line() {
   if (!EggMultiFilter::post_command_line()) {
     return false;
   }
-  
+
   Eggs::iterator ei;
   for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
     EggData *data = (*ei);
-    
+
     if (_collection->add_egg(data) < 0) {
       nout << data->get_egg_filename().get_basename()
            << " does not contain a character model or animation channel.\n";

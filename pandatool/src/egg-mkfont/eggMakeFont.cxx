@@ -1,6 +1,19 @@
 // Filename: eggMakeFont.cxx
 // Created by:  drose (16Feb01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggMakeFont.h"
@@ -21,7 +34,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMakeFont::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggMakeFont::
 EggMakeFont() : EggWriter(true, false) {
@@ -42,13 +55,13 @@ EggMakeFont() : EggWriter(true, false) {
   add_runline("[opts] file.pk output.egg");
 
   add_option
-    ("i", "filename", 0, 
+    ("i", "filename", 0,
      "Name of the texture image to write.  The default if this is omitted "
      "is based on the name of the egg file.",
      &EggMakeFont::dispatch_filename, NULL, &_output_image_filename);
 
   add_option
-    ("c", "num", 0, 
+    ("c", "num", 0,
      "Specifies the number of channels of the output image.  This should "
      "either 1, 2, 3, or 4.  If the number is 1 or 3 a grayscale image is "
      "generated, with the text in white on black.  If the number is 2 or 4 "
@@ -58,14 +71,14 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_int, NULL, &_output_zsize);
 
   add_option
-    ("fg", "r,g,b[,a]", 0, 
+    ("fg", "r,g,b[,a]", 0,
      "Specifies the foreground color of the generated texture map.  The "
      "default is white: 1,1,1,1, which leads to the most flexibility "
      "as the color can be modulated at runtime to any suitable color.",
      &EggMakeFont::dispatch_color, NULL, &_fg[0]);
 
   add_option
-    ("bg", "r,g,b[,a]", 0, 
+    ("bg", "r,g,b[,a]", 0,
      "Specifies the background color of the generated texture map.  The "
      "default is transparent black: 0,0,0,0, which allows the text to be "
      "visible against any color background by placing a polygon of a "
@@ -73,7 +86,7 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_color, NULL, &_bg[0]);
 
   add_option
-    ("d", "x,y[,c]", 0, 
+    ("d", "x,y[,c]", 0,
      "Dimensions in pixels of the texture image, with an optional number of "
      "channels.  Normally, you should not specify this parameter, as "
      "egg-mkfont will choose an image size that yields a scale factor "
@@ -84,7 +97,7 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_dimensions, &_got_output_size);
 
   add_option
-    ("sf", "factor", 0, 
+    ("sf", "factor", 0,
 
      "The scale factor of the generated image.  This is the factor by which "
      "the font image is generated oversized, then reduced to its final size, "
@@ -96,7 +109,7 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_double, &_got_scale_factor, &_scale_factor);
 
   add_option
-    ("nr", "", 0, 
+    ("nr", "", 0,
      "No reduce.  After the oversized image is generated, rather than reducing "
      "it to its final size, just leave it as it is, and assume the user will "
      "reduce it later.  This may be desireable if you intend to adjust the "
@@ -104,24 +117,24 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_none, &_no_reduce);
 
   add_option
-    ("g", "radius", 0, 
+    ("g", "radius", 0,
      "The radius of the Gaussian filter used to antialias the letters. [1.2]",
      &EggMakeFont::dispatch_double, NULL, &_gaussian_radius);
 
   add_option
-    ("b", "n", 0, 
+    ("b", "n", 0,
      "The number of buffer pixels between two adjacent characters in "
      "the palette image. [4.0]",
      &EggMakeFont::dispatch_double, NULL, &_buffer_pixels);
 
   add_option
-    ("B", "n", 0, 
+    ("B", "n", 0,
      "The number of extra pixels around a single character in the "
      "generated polygon. [1.0]",
      &EggMakeFont::dispatch_double, NULL, &_poly_pixels);
 
   add_option
-    ("ds", "size", 0, 
+    ("ds", "size", 0,
      "Specify the design size of the resulting font.  The design size of "
      "a font is the height of a typical capital letter; it's the approximate "
      "height of a line of text.  This sets the size of the polygons "
@@ -129,7 +142,7 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_double, NULL, &_ds);
 
   add_option
-    ("scale", "size", 0, 
+    ("scale", "size", 0,
      "Specify an additional scale to the font, without changing its design "
      "size.  This makes the letters larger (or smaller) without changing "
      "the spacing between lines.  Usually you should use -ds instead of "
@@ -137,13 +150,13 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_double, NULL, &_scale);
 
   add_option
-    ("all", "", 0, 
+    ("all", "", 0,
      "Extract all the characters in the font.  Normally, only the "
      "ASCII characters in the range 33 .. 127 are extracted.",
      &EggMakeFont::dispatch_none, &_get_all);
 
   add_option
-    ("only", "'chars'", 0, 
+    ("only", "'chars'", 0,
      "Extract *only* the indicated characters from the font.  The parameter "
      "should be a quoted string of letters and symbols that are to be "
      "extracted.  If the hyphen appears, it indicates a range of characters, "
@@ -152,14 +165,14 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_string, NULL, &_only_chars);
 
   add_option
-    ("sc", "", 0, 
+    ("sc", "", 0,
      "Small caps: generate lowercase letters as small capitals.  This "
      "allows the lowercase and capital letters to share the same space "
      "on the texture map.",
      &EggMakeFont::dispatch_none, &_small_caps);
 
   add_option
-    ("scs", "", 0, 
+    ("scs", "", 0,
      "Small caps scale: the ratio of the size of a lowercase letter to "
      "its uppercase equivalent, when -sc is in effect.  [0.8]",
      &EggMakeFont::dispatch_double, NULL, &_small_caps_scale);
@@ -253,7 +266,7 @@ ns_dispatch_dimensions(const string &opt, const string &arg) {
 ////////////////////////////////////////////////////////////////////
 TexCoordd EggMakeFont::
 get_uv(double x, double y) {
-  return TexCoordd(x / (double)_working_xsize, 
+  return TexCoordd(x / (double)_working_xsize,
                    ((double)_working_ysize - y) / (double)_working_ysize);
 }
 
@@ -278,7 +291,7 @@ get_xy(double x, double y) {
 EggVertex *EggMakeFont::
 make_vertex(const LPoint2d &xy) {
   return
-    _vpool->make_new_vertex(LPoint3d::origin(_coordinate_system) + 
+    _vpool->make_new_vertex(LPoint3d::origin(_coordinate_system) +
                             LVector3d::rfu(xy[0], 0.0, xy[1], _coordinate_system));
 }
 
@@ -323,7 +336,7 @@ copy_character(const CharPlacement &pl) {
   }
 
   // Create the polygon that will have the character mapped onto it.
-    
+
   // b is the number of pixels bigger than the character in each
   // direction the polygon will be.  It needs to be larger than zero
   // just because when we filter the image down, we end up with some
@@ -333,7 +346,7 @@ copy_character(const CharPlacement &pl) {
   // need to.
 
   double b = _working_poly_pixels;
-    
+
   TexCoordd uv_ul = get_uv(xp - b, yp - b);
   TexCoordd uv_lr = get_uv(xp + width + b, yp + height + b);
   LPoint2d xy_ul = get_xy(-hoff - b, -voff - b);
@@ -354,11 +367,11 @@ copy_character(const CharPlacement &pl) {
   string group_name = format_string(character);
   PT(EggGroup) group = new EggGroup(group_name);
   _egg_defs[character] = group;
-    
+
   EggPolygon *poly = new EggPolygon();
   group->add_child(poly);
   poly->set_texture(_tref);
-    
+
   poly->add_vertex(v1);
   poly->add_vertex(v2);
   poly->add_vertex(v3);
@@ -385,7 +398,7 @@ copy_character(const CharPlacement &pl) {
     EggVertex *v2 = make_vertex(LPoint2d(xy_lr[0], xy_lr[1]));
     EggVertex *v3 = make_vertex(LPoint2d(xy_lr[0], xy_ul[1]));
     EggVertex *v4 = make_vertex(LPoint2d(xy_ul[0], xy_ul[1]));
-    
+
     v1->set_uv(TexCoordd(uv_ul[0], uv_lr[1]));
     v2->set_uv(TexCoordd(uv_lr[0], uv_lr[1]));
     v3->set_uv(TexCoordd(uv_lr[0], uv_ul[1]));
@@ -394,11 +407,11 @@ copy_character(const CharPlacement &pl) {
     string group_name = format_string(character);
     PT(EggGroup) group = new EggGroup(group_name);
     _egg_defs[character] = group;
-    
+
     EggPolygon *poly = new EggPolygon();
     group->add_child(poly);
     poly->set_texture(_tref);
-    
+
     poly->add_vertex(v1);
     poly->add_vertex(v2);
     poly->add_vertex(v3);
@@ -623,7 +636,7 @@ expand_hyphen(const string &str) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMakeFont::run
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggMakeFont::
 run() {
@@ -657,7 +670,7 @@ run() {
   // from tallest to shortest so we will hopefully get a more optimal
   // packing.
   _font->sort_chars_by_height();
- 
+
 
   // Choose a suitable image size and/or scale factor.
   if (_got_scale_factor && _got_output_size) {
@@ -690,7 +703,7 @@ run() {
 
   // If the user specified 1.0 for both foreground and background
   // alpha, we don't really want to use alpha.
-  _use_alpha = (_output_zsize != 3) && (_fg[3] != 1.0 || _bg[3] != 1.0); 
+  _use_alpha = (_output_zsize != 3) && (_fg[3] != 1.0 || _bg[3] != 1.0);
   if (_use_alpha && _output_zsize == 1) {
     // If we have only one channel and we're using alpha, then the
     // gray channel becomes the alpha channel.
@@ -698,7 +711,7 @@ run() {
     _bg[0] = _bg[3];
   }
 
-  _output_image.fill(_bg[0], _bg[1], _bg[2]); 
+  _output_image.fill(_bg[0], _bg[1], _bg[2]);
   if (_output_image.has_alpha()) {
     _output_image.alpha_fill(_bg[3]);
   }
@@ -774,8 +787,8 @@ run() {
       // If we have a transparent background, then everything in the
       // color channels is pointless--the color information is
       // completely replaced.  Might as well fill it white.
-      _output_image.fill(_fg[0], _fg[1], _fg[2]); 
-      
+      _output_image.fill(_fg[0], _fg[1], _fg[2]);
+
     } else if (_bg[3] == 1.0) {
       // Similarly if we have a transparent foreground.
       _output_image.fill(_bg[0], _bg[1], _bg[2]);
@@ -792,7 +805,7 @@ run() {
          << "; not reducing.\n";
     nout << "Generating " << _working_xsize << " by " << _working_ysize
          << " by " << _output_zsize << " image: "
-         << _output_image_filename << "\n";  
+         << _output_image_filename << "\n";
 
     _output_image.write(_output_image_filename);
 
@@ -801,7 +814,7 @@ run() {
     // Scaling unnecessary, because the scale factor is 1.0.
     nout << "Generating " << _output_xsize << " by " << _output_ysize
          << " by " << _output_zsize << " image: "
-         << _output_image_filename << "\n";  
+         << _output_image_filename << "\n";
     _output_image.write(_output_image_filename);
 
   } else {
@@ -809,18 +822,18 @@ run() {
     // antialias the letters.
     PNMImage small_image(_output_xsize, _output_ysize, _output_zsize);
     small_image.gaussian_filter_from(_gaussian_radius, _output_image);
-  
+
     // Fix antialiasing, if required.
     if (_use_alpha && _bg[3] != 0.0 && _bg[3] != 1.0) {
       // If we have some non-transparent background, we need to
       // compensate for the antialiasing.
       unsmooth_rgb(small_image);
     }
-    
-    
+
+
     nout << "Generating " << _output_xsize << " by " << _output_ysize
          << " by " << _output_zsize << " image: "
-         << _output_image_filename << "\n";  
+         << _output_image_filename << "\n";
     small_image.write(_output_image_filename);
   }
 

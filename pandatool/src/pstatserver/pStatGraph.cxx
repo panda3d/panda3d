@@ -1,6 +1,19 @@
 // Filename: pStatGraph.cxx
 // Created by:  drose (19Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pStatGraph.h"
@@ -15,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatGraph::GuideBar::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatGraph::GuideBar::
 GuideBar(float height, const string &label, bool is_target) :
@@ -28,7 +41,7 @@ GuideBar(float height, const string &label, bool is_target) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatGraph::GuideBar::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatGraph::GuideBar::
 GuideBar(const PStatGraph::GuideBar &copy) :
@@ -41,7 +54,7 @@ GuideBar(const PStatGraph::GuideBar &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatGraph::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatGraph::
 PStatGraph(PStatMonitor *monitor, int xsize, int ysize) :
@@ -58,7 +71,7 @@ PStatGraph(PStatMonitor *monitor, int xsize, int ysize) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatGraph::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatGraph::
 ~PStatGraph() {
@@ -152,7 +165,7 @@ format_number(float value, int guide_bar_units, const string &unit_name) {
         label += " ms";
       }
     }
-    
+
     if ((guide_bar_units & GBU_hz) != 0) {
       float hz = 1.0 / value;
 
@@ -180,7 +193,7 @@ public:
     _client_data(client_data) {
   }
   bool operator () (int a, int b) const {
-    return 
+    return
       _client_data->get_collector_def(a)._sort >
       _client_data->get_collector_def(b)._sort;
   }

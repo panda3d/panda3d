@@ -1,6 +1,19 @@
 // Filename: fltError.cxx
 // Created by:  drose (24Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltError.h"
@@ -28,16 +41,16 @@ operator << (ostream &out, FltError error) {
 
   case FE_extra_data:
     return out << "extra data at end of file";
-    
+
   case FE_write_error:
     return out << "write error on file";
-    
+
   case FE_bad_data:
     return out << "bad data";
-    
+
   case FE_not_implemented:
     return out << "not implemented";
-    
+
   case FE_internal:
     return out << "internal error";
 

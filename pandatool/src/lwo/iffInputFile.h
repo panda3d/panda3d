@@ -1,6 +1,19 @@
 // Filename: iffInputFile.h
 // Created by:  drose (24Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef IFFINPUTFILE_H
@@ -50,8 +63,8 @@ public:
 
   IffId get_id();
 
-  PT(IffChunk) get_chunk(); 
-  PT(IffChunk) get_subchunk(IffChunk *context); 
+  PT(IffChunk) get_chunk();
+  PT(IffChunk) get_subchunk(IffChunk *context);
 
   bool read_byte(char &byte);
   bool read_bytes(Datagram &datagram, size_t length);
@@ -91,4 +104,4 @@ private:
 
 #endif
 
-  
+

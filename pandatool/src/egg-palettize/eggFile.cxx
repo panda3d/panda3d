@@ -1,6 +1,19 @@
 // Filename: eggFile.cxx
 // Created by:  drose (29Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggFile.h"
@@ -26,7 +39,7 @@ TypeHandle EggFile::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggFile::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggFile::
 EggFile() {
@@ -45,7 +58,7 @@ EggFile() {
 ////////////////////////////////////////////////////////////////////
 void EggFile::
 from_command_line(EggData *data,
-                  const Filename &source_filename, 
+                  const Filename &source_filename,
                   const Filename &dest_filename) {
   _data = data;
 
@@ -323,7 +336,7 @@ choose_placements() {
       // We need to select a new TexturePlacement.
       PaletteGroups groups;
       groups.make_intersection(get_complete_groups(), texture->get_groups());
-      
+
       // Now groups is the set of groups that the egg file requires,
       // which also happen to include the texture.  It better not be
       // empty.

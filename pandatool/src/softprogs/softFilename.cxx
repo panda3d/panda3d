@@ -1,6 +1,19 @@
 // Filename: softFilename.cxx
 // Created by:  drose (10Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "softFilename.h"
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftFilename::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 SoftFilename::
 SoftFilename(const string &dirname, const string &filename) :
@@ -57,7 +70,7 @@ SoftFilename(const string &dirname, const string &filename) :
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftFilename::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 SoftFilename::
 SoftFilename(const SoftFilename &copy) :
@@ -76,7 +89,7 @@ SoftFilename(const SoftFilename &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftFilename::Copy Assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void SoftFilename::
 operator = (const SoftFilename &copy) {
@@ -94,7 +107,7 @@ operator = (const SoftFilename &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftFilename::get_dirname
 //       Access: Public
-//  Description: Returns the name of the directory this file was 
+//  Description: Returns the name of the directory this file was
 //               found in.
 ////////////////////////////////////////////////////////////////////
 const string &SoftFilename::

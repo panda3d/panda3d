@@ -1,6 +1,19 @@
 // Filename: cvsCopy.cxx
 // Created by:  drose (31Oct00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cvsCopy.h"
@@ -12,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CVSCopy::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CVSCopy::
 CVSCopy() {
@@ -41,26 +54,26 @@ CVSCopy() {
      &CVSCopy::dispatch_none, &_interactive);
 
   add_option
-    ("d", "dirname", 80, 
+    ("d", "dirname", 80,
      "Copy model files that are not already present somewhere in the tree "
      "to the indicated directory.  The default is the current directory.",
      &CVSCopy::dispatch_filename, &_got_model_dirname, &_model_dirname);
 
   add_option
-    ("m", "dirname", 80, 
+    ("m", "dirname", 80,
      "Copy texture map files to the indicated directory.  The default "
      "is src/maps from the root directory.",
      &CVSCopy::dispatch_filename, &_got_map_dirname, &_map_dirname);
 
   add_option
-    ("root", "dirname", 80, 
+    ("root", "dirname", 80,
      "Specify the root of the CVS source hierarchy.  The default is to "
      "use the ppremake convention of locating the directory above the -d "
      "directory that contains a file called Package.pp.",
      &CVSCopy::dispatch_filename, &_got_root_dirname, &_root_dirname);
 
   add_option
-    ("key", "filename", 80, 
+    ("key", "filename", 80,
      "Specify the name of the file that must exist in each directory for "
      "it to be considered part of the CVS source hierarchy.  The default "
      "is the ppremake convention, \"Sources.pp\".  Other likely candidates "
@@ -69,13 +82,13 @@ CVSCopy() {
      &CVSCopy::dispatch_filename, NULL, &_key_filename);
 
   add_option
-    ("nc", "", 80, 
+    ("nc", "", 80,
      "Do not attempt to add newly-created files to CVS.  The default "
      "is to add them.",
      &CVSCopy::dispatch_none, &_no_cvs);
 
   add_option
-    ("cvs", "cvs_binary", 80, 
+    ("cvs", "cvs_binary", 80,
      "Specify how to run the cvs program for adding newly-created files.  "
      "The default is simply \"cvs\".",
      &CVSCopy::dispatch_string, NULL, &_cvs_binary);
@@ -100,7 +113,7 @@ CVSCopy() {
 //               actually copied to.  On failure, returns NULL.
 ////////////////////////////////////////////////////////////////////
 CVSSourceDirectory *CVSCopy::
-import(const Filename &source, void *extra_data, 
+import(const Filename &source, void *extra_data,
        CVSSourceDirectory *suggested_dir) {
   CopiedFiles::const_iterator ci;
   ci = _copied_files.find(source);
@@ -116,7 +129,7 @@ import(const Filename &source, void *extra_data,
 
   string basename = source.get_basename();
 
-  CVSSourceDirectory *dir = 
+  CVSSourceDirectory *dir =
     _tree.choose_directory(basename, suggested_dir, _force, _interactive);
   nassertr(dir != (CVSSourceDirectory *)NULL, dir);
 

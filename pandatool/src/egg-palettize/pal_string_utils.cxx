@@ -1,6 +1,19 @@
 // Filename: pal_string_utils.cxx
 // Created by:  drose (30Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pal_string_utils.h"
@@ -11,7 +24,7 @@
 
 // Extracts the first word of the string into param, and the remainder
 // of the line into value.
-void 
+void
 extract_param_value(const string &str, string &param, string &value) {
   size_t i = 0;
 
@@ -55,7 +68,7 @@ parse_image_type_request(const string &word, PNMFileType *&color_type,
     color_name = word.substr(0, comma);
     alpha_name = word.substr(comma + 1);
   }
-  
+
   if (!color_name.empty()) {
     color_type = registry->get_type_from_extension(color_name);
     if (color_type == (PNMFileType *)NULL) {
@@ -63,7 +76,7 @@ parse_image_type_request(const string &word, PNMFileType *&color_type,
       return false;
     }
   }
-  
+
   if (!alpha_name.empty()) {
     alpha_type = registry->get_type_from_extension(alpha_name);
     if (alpha_type == (PNMFileType *)NULL) {

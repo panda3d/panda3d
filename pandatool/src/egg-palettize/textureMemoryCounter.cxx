@@ -1,6 +1,19 @@
 // Filename: textureMemoryCounter.cxx
 // Created by:  drose (19Dec00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "textureMemoryCounter.h"
@@ -58,11 +71,11 @@ add_placement(TexturePlacement *placement) {
     nassertv(image != (PaletteImage *)NULL);
     add_palette(image);
 
-    int bytes = count_bytes(image, placement->get_placed_x_size(), 
+    int bytes = count_bytes(image, placement->get_placed_x_size(),
                             placement->get_placed_y_size());
     add_texture(texture, bytes);
     _num_placed++;
-    
+
   } else {
     DestTextureImage *dest = placement->get_dest();
     nassertv(dest != (DestTextureImage *)NULL);
@@ -96,7 +109,7 @@ report(ostream &out, int indent_level) {
       format_memory_fraction(out, _unused_bytes, _bytes)
         << " is wasted because of unused palette space.\n";
     }
-    
+
     if (_coverage_bytes > 0) {
       indent(out, indent_level + 2);
       format_memory_fraction(out, _coverage_bytes, _bytes)
@@ -107,7 +120,7 @@ report(ostream &out, int indent_level) {
       format_memory_fraction(out, -_coverage_bytes, _bytes)
         << " is *saved* for palettizing partial textures.\n";
     }
-    
+
     if (_duplicate_bytes != 0) {
       indent(out, indent_level + 2);
       format_memory_fraction(out, _duplicate_bytes, _bytes)
@@ -152,7 +165,7 @@ add_palette(PaletteImage *image) {
   _bytes += bytes;
   _unused_bytes += (int)(unused * bytes);
   _coverage_bytes += (int)(coverage * bytes);
-  
+
   _num_palettes++;
 }
 
@@ -210,7 +223,7 @@ count_bytes(ImageFile *image, int x_size, int y_size) {
   case EggTexture::F_rgba12:
     bpp = 6;
     break;
-    
+
   case EggTexture::F_rgba:
   case EggTexture::F_rgbm:
   case EggTexture::F_rgba8:

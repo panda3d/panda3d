@@ -1,6 +1,19 @@
 // Filename: fltTransformRotateScale.cxx
 // Created by:  drose (30Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltTransformRotateScale.h"
@@ -15,7 +28,7 @@ TypeHandle FltTransformRotateScale::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformRotateScale::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltTransformRotateScale::
 FltTransformRotateScale(FltHeader *header) : FltTransformRecord(header) {
@@ -49,7 +62,7 @@ set(const LPoint3d &center, const LPoint3d &reference_point,
   LVector3d v1 = _reference_point - _center;
   LVector3d v2 = _to_point - _center;
 
-  _angle = 
+  _angle =
     acos(dot(normalize(v1), normalize(v2))) * 180.0 / MathNumbers::pi;
 
   if (axis_scale) {
@@ -66,7 +79,7 @@ set(const LPoint3d &center, const LPoint3d &reference_point,
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformRotateScale::get_center
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const LPoint3d &FltTransformRotateScale::
 get_center() const {
@@ -76,7 +89,7 @@ get_center() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformRotateScale::get_reference_point
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const LPoint3d &FltTransformRotateScale::
 get_reference_point() const {
@@ -86,7 +99,7 @@ get_reference_point() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformRotateScale::get_to_point
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const LPoint3d &FltTransformRotateScale::
 get_to_point() const {
@@ -127,7 +140,7 @@ get_angle() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformRotateScale::recompute_matrix
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FltTransformRotateScale::
 recompute_matrix() {
@@ -140,8 +153,8 @@ recompute_matrix() {
   // to the y-forward axis.
   LMatrix4d r1;
   look_at(r1, v1, rotate_axis, CS_zup_right);
-  
-  _matrix = 
+
+  _matrix =
     LMatrix4d::translate_mat(-_center) *
     r1 *
     LMatrix4d::scale_mat(1.0, _axis_scale, 1.0) *

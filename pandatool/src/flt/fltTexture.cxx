@@ -1,6 +1,19 @@
 // Filename: fltTexture.cxx
 // Created by:  drose (25Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltTexture.h"
@@ -13,7 +26,7 @@ TypeHandle FltTexture::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTexture::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltTexture::
 FltTexture(FltHeader *header) : FltRecord(header) {
@@ -231,7 +244,7 @@ build_record(FltRecordWriter &writer) const {
   if (!FltRecord::build_record(writer)) {
     return false;
   }
-  
+
   writer.set_opcode(FO_texture);
   Datagram &datagram = writer.update_datagram();
 
@@ -329,13 +342,13 @@ unpack_attr(const Datagram &datagram) {
     iterator.skip_bytes(13 * 4);
     iterator.skip_bytes(4);  // Undocumented padding.
     _file_version = iterator.get_be_int32();
-    
+
     // Now read the geospecific control points.
     _geospecific_control_points.clear();
     int num_points = iterator.get_be_int32();
     if (num_points > 0) {
       iterator.skip_bytes(4);
-      
+
       while (num_points > 0) {
         GeospecificControlPoint gcp;
         gcp._uv[0] = iterator.get_be_float64();
@@ -409,13 +422,13 @@ pack_attr(Datagram &datagram) const {
   datagram.add_be_int32(_mag_filter_color);
   datagram.pad_bytes(4 + 4 * 8);
   datagram.add_be_float64(_lambert_conic_central_meridian);
-  datagram.add_be_float64(_lambert_conic_upper_latitude); 
+  datagram.add_be_float64(_lambert_conic_upper_latitude);
   datagram.add_be_float64(_lambert_conic_lower_latitude);
   datagram.pad_bytes(8 + 4 * 5);
   datagram.add_be_int32(_use_detail);
-  datagram.add_be_int32(_detail_j);  
-  datagram.add_be_int32(_detail_k);  
-  datagram.add_be_int32(_detail_m);  
+  datagram.add_be_int32(_detail_j);
+  datagram.add_be_int32(_detail_k);
+  datagram.add_be_int32(_detail_m);
   datagram.add_be_int32(_detail_n);
   datagram.add_be_int32(_detail_scramble);
   datagram.add_be_int32(_use_tile);

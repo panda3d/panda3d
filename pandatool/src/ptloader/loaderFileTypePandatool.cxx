@@ -1,6 +1,19 @@
 // Filename: loaderFileTypePandatool.cxx
 // Created by:  drose (26Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "loaderFileTypePandatool.h"
@@ -15,7 +28,7 @@ TypeHandle LoaderFileTypePandatool::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: LoaderFileTypePandatool::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 LoaderFileTypePandatool::
 LoaderFileTypePandatool(SomethingToEggConverter *converter) :
@@ -27,7 +40,7 @@ LoaderFileTypePandatool(SomethingToEggConverter *converter) :
 ////////////////////////////////////////////////////////////////////
 //     Function: LoaderFileTypePandatool::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 LoaderFileTypePandatool::
 ~LoaderFileTypePandatool() {
@@ -36,7 +49,7 @@ LoaderFileTypePandatool::
 ////////////////////////////////////////////////////////////////////
 //     Function: LoaderFileTypePandatool::get_name
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string LoaderFileTypePandatool::
 get_name() const {
@@ -46,7 +59,7 @@ get_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LoaderFileTypePandatool::get_extension
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string LoaderFileTypePandatool::
 get_extension() const {
@@ -68,7 +81,7 @@ resolve_filename(Filename &path) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LoaderFileTypePandatool::load_file
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PT_Node LoaderFileTypePandatool::
 load_file(const Filename &path, bool) const {

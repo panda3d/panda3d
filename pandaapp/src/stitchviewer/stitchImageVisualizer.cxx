@@ -1,6 +1,19 @@
 // Filename: stitchImageVisualizer.cxx
 // Created by:  drose (05Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "stitchImageVisualizer.h"
@@ -69,10 +82,10 @@ Image(StitchImage *image, int index, bool scale) :
     new_ysize = to_power_2(new_ysize);
 
     if (new_xsize != old_xsize || new_ysize != old_ysize) {
-      nout << "Scaling " << image->get_name() << " from " 
+      nout << "Scaling " << image->get_name() << " from "
            << old_xsize << " " << old_ysize << " to "
            << new_xsize << " " << new_ysize << "\n";
-      
+
       PNMImage *n = new PNMImage(new_xsize, new_ysize);
       n->quick_filter_from(*image->_data);
       delete image->_data;
@@ -90,7 +103,7 @@ Image(const Image &copy) :
   _index(copy._index)
 {
 }
- 
+
 void StitchImageVisualizer::Image::
 operator = (const Image &copy) {
   _image = copy._image;
@@ -114,7 +127,7 @@ add_input_image(StitchImage *image) {
   int index = _images.size();
   char letter = index + 'a';
   _images.push_back(Image(image, index, true));
-  
+
   string event_name(1, letter);
   _event_handler.add_hook(event_name, static_handle_event);
 }
@@ -144,7 +157,7 @@ execute() {
     nout << "Done drawing frame\n";
   }
 }
-  
+
 void StitchImageVisualizer::
 setup() {
   ChanCfgOverrides override;
@@ -153,7 +166,7 @@ setup() {
 
   // load display modules
   GraphicsPipe::resolve_modules();
-  
+
   // Create a window
   TypeHandle want_pipe_type = InteractiveGraphicsPipe::get_class_type();
   if (!is_interactive()) {
@@ -201,7 +214,7 @@ setup() {
   PT(Transform2SG) tball2cam = new Transform2SG("tball2cam");
   tball2cam->set_arc(cam_trans);
   new DataRelation(_trackball, tball2cam);
-  
+
   // Create an ButtonThrower to throw events from the keyboard.
   PT(ButtonThrower) et = new ButtonThrower("kb-events");
   new DataRelation(_mak, et);
@@ -257,7 +270,7 @@ create_image_geometry(StitchImageVisualizer::Image &im) {
   TriangleMesh mesh(x_verts, y_verts);
 
   StitchLens *lens = im._image->_lens;
-  LVector3d center = 
+  LVector3d center =
     lens->extrude(LPoint2d(0.0, 0.0), im._image->_size_mm[0]);
   double scale = 10.0 / length(center);
 
@@ -303,7 +316,7 @@ idle() {
   // Initiate the data traversal, to send device data down its
   // respective pipelines.
   traverse_data_graph(_data_root);
-  
+
   // Throw any events generated recently.
   _static_siv = this;
   _event_handler.process_events();

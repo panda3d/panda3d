@@ -1,6 +1,19 @@
 // Filename: fltHeader.h
 // Created by:  drose (24Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef FLTHEADER_H
@@ -45,7 +58,7 @@ public:
     AU_if_missing,
     AU_always
   };
-  
+
   void set_auto_attr_update(AttrUpdate attr);
   AttrUpdate get_auto_attr_update() const;
 
@@ -171,7 +184,7 @@ public:
   // These functions are mainly used behind-the-scenes to decode the
   // strange forest of color options defined for faces and vertices.
   Colorf get_color(int color_index, bool use_packed_color,
-                   const FltPackedColor &packed_color, 
+                   const FltPackedColor &packed_color,
                    int transparency);
   RGBColorf get_rgb(int color_index, bool use_packed_color,
                     const FltPackedColor &packed_color);
@@ -210,7 +223,7 @@ public:
   void add_light_source(FltLightSourceDefinition *light_source);
   void remove_light_source(int light_index);
 
-  
+
   // Accessors into the eyepoint/trackplane palette.
   bool got_eyepoint_trackplane_palette() const;
   void set_eyepoint_trackplane_palette(bool flag);
@@ -244,7 +257,7 @@ private:
   UniqueVertices _unique_vertices;
   VerticesByOffset _vertices_by_offset;
   OffsetsByVertex _offsets_by_vertex;
-  
+
   bool _vertex_lookups_stale;
 
   // This is maintained while the header is being read, to map the

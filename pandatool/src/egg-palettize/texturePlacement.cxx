@@ -1,6 +1,19 @@
 // Filename: texturePlacement.cxx
 // Created by:  drose (30Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "texturePlacement.h"
@@ -42,7 +55,7 @@ TexturePlacement() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePlacement::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TexturePlacement::
 TexturePlacement(TextureImage *texture, PaletteGroup *group) :
@@ -67,7 +80,7 @@ TexturePlacement(TextureImage *texture, PaletteGroup *group) :
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePlacement::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TexturePlacement::
 ~TexturePlacement() {
@@ -237,7 +250,7 @@ determine_size() {
     if (reference->has_uvs()) {
       const TexCoordd &n = reference->get_min_uv();
       const TexCoordd &x = reference->get_max_uv();
-    
+
       if (_has_uvs) {
         min_uv.set(min(min_uv[0], n[0]), min(min_uv[1], n[1]));
         max_uv.set(max(max_uv[0], x[0]), max(max_uv[1], x[1]));
@@ -266,17 +279,17 @@ determine_size() {
   // This cuts down on unnecessary resizing of textures within the
   // palettes as the egg references change in trivial amounts.
   if (pal->_round_uvs) {
-    rounded_max_uv[0] = 
+    rounded_max_uv[0] =
       ceil((rounded_max_uv[0] - pal->_round_fuzz) / pal->_round_unit) *
       pal->_round_unit;
-    rounded_max_uv[1] = 
+    rounded_max_uv[1] =
       ceil((rounded_max_uv[1] - pal->_round_fuzz) / pal->_round_unit) *
       pal->_round_unit;
 
-    rounded_min_uv[0] = 
+    rounded_min_uv[0] =
       floor((rounded_min_uv[0] + pal->_round_fuzz) / pal->_round_unit) *
       pal->_round_unit;
-    rounded_min_uv[1] = 
+    rounded_min_uv[1] =
       floor((rounded_min_uv[1] + pal->_round_fuzz) / pal->_round_unit) *
       pal->_round_unit;
   }
@@ -296,9 +309,9 @@ determine_size() {
     force_replace();
     _omit_reason = OR_coverage;
 
-  } else if ((_position._x_size > pal->_pal_x_size || 
+  } else if ((_position._x_size > pal->_pal_x_size ||
               _position._y_size > pal->_pal_y_size) ||
-             (_position._x_size == pal->_pal_x_size && 
+             (_position._x_size == pal->_pal_x_size &&
               _position._y_size == pal->_pal_y_size)) {
     // If the texture exceeds the size of an empty palette image in
     // either dimension, or if it exactly equals the size of an empty
@@ -321,7 +334,7 @@ determine_size() {
     // It *can* be placed.  If it was already placed previously, can
     // we leave it where it is?
 
-    if (_position._x_size != _placed._x_size || 
+    if (_position._x_size != _placed._x_size ||
         _position._y_size != _placed._y_size ||
         _position._min_uv[0] < _placed._min_uv[0] ||
         _position._min_uv[1] < _placed._min_uv[1] ||
@@ -330,7 +343,7 @@ determine_size() {
       // If the texture was previously placed but is now the wrong
       // size, or if the area we need to cover is different, we need
       // to re-place it.
-      
+
       // However, we make a special exception: if it would have fit
       // without rounding up the UV's, then screw rounding it up and
       // just leave it alone.
@@ -615,11 +628,11 @@ intersects(int x, int y, int x_size, int y_size) {
 
   int hright = x + x_size;
   int hbot = y + y_size;
-  
+
   int mright = _placed._x + _placed._x_size;
   int mbot = _placed._y + _placed._y_size;
-  
-  return !(x >= mright || hright <= _placed._x || 
+
+  return !(x >= mright || hright <= _placed._x ||
            y >= mbot || hbot <= _placed._y);
 }
 
@@ -638,7 +651,7 @@ compute_tex_matrix(LMatrix3d &transform) {
 
   TexCoordd range = _placed._max_uv - _placed._min_uv;
   if (range[0] != 0.0 && range[1] != 0.0) {
-    source_uvs = 
+    source_uvs =
       LMatrix3d::translate_mat(-_placed._min_uv) *
       LMatrix3d::scale_mat(1.0 / range[0], 1.0 / range[1]);
   }
@@ -673,7 +686,7 @@ compute_tex_matrix(LMatrix3d &transform) {
 ////////////////////////////////////////////////////////////////////
 void TexturePlacement::
 write_placed(ostream &out, int indent_level) {
-  indent(out, indent_level) 
+  indent(out, indent_level)
     << get_texture()->get_name();
 
   if (is_placed()) {
@@ -907,7 +920,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   writer->write_pointer(datagram, _group);
   writer->write_pointer(datagram, _image);
   writer->write_pointer(datagram, _dest);
-  
+
   datagram.add_bool(_has_uvs);
   datagram.add_bool(_size_known);
   _position.write_datagram(writer, datagram);
@@ -939,7 +952,7 @@ complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   if (Palettizer::_read_pi_version >= 2) {
     nassertr((int)plist.size() >= 4 + _num_references, 0);
   }
-    
+
   int index = 0;
 
   if (plist[index] != (TypedWritable *)NULL) {
@@ -1035,13 +1048,13 @@ bool SortPlacementBySize::
 operator ()(TexturePlacement *a, TexturePlacement *b) const {
   if (a->get_y_size() < b->get_y_size()) {
     return false;
-    
+
   } else if (b->get_y_size() < a->get_y_size()) {
     return true;
-    
+
   } else if (a->get_x_size() < b->get_x_size()) {
     return false;
-    
+
   } else if (b->get_x_size() < a->get_x_size()) {
     return true;
   }

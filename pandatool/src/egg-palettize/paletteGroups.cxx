@@ -1,6 +1,19 @@
 // Filename: paletteGroups.cxx
 // Created by:  drose (30Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "paletteGroups.h"
@@ -77,7 +90,7 @@ make_complete(const PaletteGroups &a) {
 void PaletteGroups::
 make_union(const PaletteGroups &a, const PaletteGroups &b) {
   Groups u;
-  
+
   Groups::const_iterator ai, bi;
   ai = a._groups.begin();
   bi = b._groups.begin();
@@ -121,7 +134,7 @@ make_union(const PaletteGroups &a, const PaletteGroups &b) {
 void PaletteGroups::
 make_intersection(const PaletteGroups &a, const PaletteGroups &b) {
   Groups i;
-  
+
   Groups::const_iterator ai, bi;
   ai = a._groups.begin();
   bi = b._groups.begin();
@@ -196,7 +209,7 @@ end() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PaletteGroups::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PaletteGroups::
 output(ostream &out) const {
@@ -214,7 +227,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PaletteGroups::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PaletteGroups::
 write(ostream &out, int indent_level) const {

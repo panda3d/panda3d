@@ -1,6 +1,19 @@
 // Filename: gtkStatsPianoWindow.cxx
 // Created by:  drose (18Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "gtkStatsPianoWindow.h"
@@ -12,10 +25,10 @@ using Gtk::Menu_Helpers::SeparatorElem;
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsPianoWindow::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsPianoWindow::
-GtkStatsPianoWindow(GtkStatsMonitor *monitor, int thread_index, 
+GtkStatsPianoWindow(GtkStatsMonitor *monitor, int thread_index,
                     int chart_xsize, int chart_ysize) :
   GtkStatsWindow(monitor),
   _thread_index(thread_index)
@@ -42,7 +55,7 @@ mark_dead() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsPianoWindow::idle
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsPianoWindow::
 idle() {
@@ -53,7 +66,7 @@ idle() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsPianoWindow::setup_menu
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsPianoWindow::
 setup_menu() {
@@ -92,7 +105,7 @@ setup_menu() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsPianoWindow::menu_new_window
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsPianoWindow::
 menu_new_window() {
@@ -116,7 +129,7 @@ menu_hscale(float hz) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsPianoWindow::layout_window
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsPianoWindow::
 layout_window(int chart_xsize, int chart_ysize) {

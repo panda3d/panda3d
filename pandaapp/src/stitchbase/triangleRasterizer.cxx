@@ -1,6 +1,19 @@
 // Filename: triangleRasterizer.cxx
 // Created by:  drose (06Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "triangleRasterizer.h"
@@ -11,7 +24,7 @@ inline void TriangleRasterizer::
 filter_pixel(RGBColord &rgb, double &alpha,
              double s, double t,
              double dsdx, double dtdx, double dsdy, double dtdy) {
-  filter_pixel(rgb, alpha, s, t, 
+  filter_pixel(rgb, alpha, s, t,
                max(max(dsdx, dtdx), max(dsdy, dtdy)) / 2.0);
 }
 
@@ -35,8 +48,8 @@ TriangleRasterizer() {
 }
 
 void TriangleRasterizer::
-draw_triangle(const RasterizerVertex *v0, 
-              const RasterizerVertex *v1, 
+draw_triangle(const RasterizerVertex *v0,
+              const RasterizerVertex *v1,
               const RasterizerVertex *v2) {
   if ((v0->_visibility & v1->_visibility & v2->_visibility) != 0) {
     // All three vertices are out of bounds in the same direction, so
@@ -49,7 +62,7 @@ draw_triangle(const RasterizerVertex *v0,
   if (!_read_input) {
     read_input();
   }
-  
+
   double oneOverArea;
   const RasterizerVertex *vMin, *vMid, *vMax;
   /* Y(vMin)<=Y(vMid)<=Y(vMax) */
@@ -157,7 +170,7 @@ draw_triangle(const RasterizerVertex *v0,
     * By stepping rasterization parameters along the major edge,
     * we can avoid recomputing them at the discontinuity where
     * the top and bottom edges meet.  However, this forces us to
-    * be able to scan both left-to-right and right-to-left. 
+    * be able to scan both left-to-right and right-to-left.
     * Also, we must determine whether the major edge is at the
     * left or right side of the triangle.  We do this by
     * computing the magnitude of the cross-product of the major
@@ -190,7 +203,7 @@ draw_triangle(const RasterizerVertex *v0,
     FixedPoint fdtdx;
 
     // Set up values for texture coordinates.
-      
+
     double twidth, theight;
     if (_texture != NULL) {
       twidth = (double) _texture->get_x_size();
@@ -201,7 +214,7 @@ draw_triangle(const RasterizerVertex *v0,
     }
 
     ltor = (oneOverArea < 0.0);
-      
+
     // More alpha setup.
     {
       double eMaj_da, eBot_da;
@@ -255,7 +268,7 @@ draw_triangle(const RasterizerVertex *v0,
      * inside the triangle.
      *
      * Next we creep down the major edge until we reach that y,
-     * and compute the corresponding x coordinate on the edge. 
+     * and compute the corresponding x coordinate on the edge.
      * Then we find the half-integral x that lies on or just
      * inside the edge.  This is the first pixel that might lie in
      * the interior of the triangle.  (We won't know for sure
@@ -419,7 +432,7 @@ draw_triangle(const RasterizerVertex *v0,
 
             // Rasterize left to right at row iy.
             if (right > left) {
-              ffs -= FIXED_HALF; /* off-by-one error? */        
+              ffs -= FIXED_HALF; /* off-by-one error? */
               fft -= FIXED_HALF;
               ffa -= FIXED_HALF;
               for (int ix = left; ix < right; ix++) {
@@ -492,8 +505,8 @@ draw_pixel(const RasterizerVertex *v0, double radius) {
     if (_texture == NULL) {
       filter_pixel(rgb, alpha, v0->_uv[0], v0->_uv[1], radius);
     } else {
-      filter_pixel(rgb, alpha, 
-                   v0->_uv[0] * (_texture->get_x_size() - 1), 
+      filter_pixel(rgb, alpha,
+                   v0->_uv[0] * (_texture->get_x_size() - 1),
                    v0->_uv[1] * (_texture->get_y_size() - 1),
                    radius * (_texture->get_x_size() - 1));
     }
@@ -506,7 +519,7 @@ void TriangleRasterizer::
 filter_pixel(RGBColord &rgb, double &alpha,
              double s, double t, double radius) {
   if (_texture == NULL) {
-    rgb.set(_untextured_color[0], 
+    rgb.set(_untextured_color[0],
             _untextured_color[1],
             _untextured_color[2]);
     alpha = _untextured_color[3];
@@ -516,10 +529,10 @@ filter_pixel(RGBColord &rgb, double &alpha,
   int ri = (int)radius;
   int si = (int)(s + 0.5);
   int ti = _texture->get_y_size() - 1 - (int)(t + 0.5);
-  
+
   rgb.set(0.0, 0.0, 0.0);
   alpha = 0.0;
-  
+
   if (!_filter_output) {
     if (si >= 0 && si < _texture->get_x_size() &&
         ti >= 0 && ti < _texture->get_y_size()) {

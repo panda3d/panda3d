@@ -1,6 +1,19 @@
 // Filename: cLwoLayer.cxx
 // Created by:  drose (25Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cLwoLayer.h"
@@ -42,10 +55,10 @@ connect_egg() {
       return;
     }
 
-    nout << "No layer found with number " << _layer->_parent 
+    nout << "No layer found with number " << _layer->_parent
          << "; cannot parent layer " << _layer->_number << " properly.\n";
   }
-  
+
   _converter->get_egg_data().add_child(_egg_group.p());
 }
 

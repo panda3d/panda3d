@@ -1,6 +1,19 @@
 // Filename: eggConverter.cxx
 // Created by:  drose (15Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggConverter.h"
@@ -17,10 +30,10 @@
 //               leading dot.
 ////////////////////////////////////////////////////////////////////
 EggConverter::
-EggConverter(const string &format_name, 
+EggConverter(const string &format_name,
              const string &preferred_extension,
              bool allow_last_param,
-             bool allow_stdout) : 
+             bool allow_stdout) :
   EggFilter(allow_last_param, allow_stdout),
   _format_name(format_name)
 {

@@ -1,13 +1,26 @@
 // Filename: iffId.I
 // Created by:  drose (23Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: IffId::Default Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IffId::
 IffId() {
@@ -20,7 +33,7 @@ IffId() {
 ////////////////////////////////////////////////////////////////////
 //     Function: IffId::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IffId::
 IffId(const char id[4]) {
@@ -33,7 +46,7 @@ IffId(const char id[4]) {
 ////////////////////////////////////////////////////////////////////
 //     Function: IffId::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IffId::
 IffId(const IffId &copy) {
@@ -43,7 +56,7 @@ IffId(const IffId &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: IffId::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void IffId::
 operator = (const IffId &copy) {
@@ -53,7 +66,7 @@ operator = (const IffId &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: IffId::Equivalence Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool IffId::
 operator == (const IffId &other) const {
@@ -63,7 +76,7 @@ operator == (const IffId &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: IffId::Nonequivalence Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool IffId::
 operator != (const IffId &other) const {

@@ -1,6 +1,19 @@
 // Filename: gtkStatsGuide.cxx
 // Created by:  drose (16Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "gtkStatsGuide.h"
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsGuide::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsGuide::
 GtkStatsGuide(PStatStripChart *chart) :
@@ -20,7 +33,7 @@ GtkStatsGuide(PStatStripChart *chart) :
 
   // Choose a suitable minimum width.  This requires knowing what the
   // font will be.
-  Gdk_GC fg_gc = 
+  Gdk_GC fg_gc =
     get_style()->gtkobj()->fg_gc[GTK_WIDGET_STATE (GTK_WIDGET(gtkobj()))];
 
   Gdk_Font font = fg_gc.get_font();
@@ -49,9 +62,9 @@ configure_event_impl(GdkEventConfigure *) {
 ////////////////////////////////////////////////////////////////////
 gint GtkStatsGuide::
 expose_event_impl(GdkEventExpose *event) {
-  Gdk_GC fg_gc = 
+  Gdk_GC fg_gc =
     get_style()->gtkobj()->fg_gc[GTK_WIDGET_STATE (GTK_WIDGET(gtkobj()))];
-  Gdk_GC bg_gc = 
+  Gdk_GC bg_gc =
     get_style()->gtkobj()->bg_gc[GTK_WIDGET_STATE (GTK_WIDGET(gtkobj()))];
 
   Gdk_Window window = get_window();

@@ -1,6 +1,19 @@
 // Filename: eggToBam.cxx
 // Created by:  drose (28Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggToBam.h"
@@ -16,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggToBam::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggToBam::
 EggToBam() :
@@ -31,20 +44,20 @@ EggToBam() :
   remove_option("f");
 
   add_option
-    ("tp", "path", 0, 
+    ("tp", "path", 0,
      "Add the indicated colon-delimited paths to the texture-path.  This "
      "option may also be repeated to add multiple paths.",
      &EggToBam::dispatch_search_path, NULL, &get_texture_path());
 
   add_option
-    ("kp", "", 0, 
+    ("kp", "", 0,
      "Keep the texture paths exactly as they are specified in the egg file, "
      "as relative paths, rather than storing them as full paths or as "
      "whatever is specified by the bam-texture-mode Configrc variable.",
      &EggToBam::dispatch_none, &_keep_paths);
 
   add_option
-    ("fl", "flag", 0, 
+    ("fl", "flag", 0,
      "Specifies whether to flatten the egg hierarchy after it is loaded.  "
      "If flag is zero, the egg hierarchy will not be flattened, but will "
      "instead be written to the bam file exactly as it is.  If flag is "
@@ -90,7 +103,7 @@ EggToBam() :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggToBam::run
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggToBam::
 run() {

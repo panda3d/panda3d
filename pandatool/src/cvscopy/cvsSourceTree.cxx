@@ -1,6 +1,19 @@
 // Filename: cvsSourceTree.cxx
 // Created by:  drose (31Oct00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cvsSourceTree.h"
@@ -25,7 +38,7 @@ string CVSSourceTree::_start_fullpath;
 ////////////////////////////////////////////////////////////////////
 //     Function: CVSSourceTree::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CVSSourceTree::
 CVSSourceTree() {
@@ -36,7 +49,7 @@ CVSSourceTree() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CVSSourceTree::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CVSSourceTree::
 ~CVSSourceTree() {
@@ -319,7 +332,7 @@ prompt_user(const string &filename, CVSSourceDirectory *suggested_dir,
 CVSSourceDirectory *CVSSourceTree::
 ask_existing(const string &filename, CVSSourceDirectory *dir) {
   while (true) {
-    nout << filename << " found in tree at " 
+    nout << filename << " found in tree at "
          << dir->get_path() + "/" + filename << ".\n";
     string result = prompt("Overwrite this file (y/n)? ");
     nassertr(!result.empty(), (CVSSourceDirectory *)NULL);
@@ -349,7 +362,7 @@ ask_existing(const string &filename, const CVSSourceTree::Directories &dirs,
 
     bool any_suggested = false;
     for (int i = 0; i < (int)dirs.size(); i++) {
-      nout << "  " << (i + 1) << ". " 
+      nout << "  " << (i + 1) << ". "
            << dirs[i]->get_path() + "/" + filename << "\n";
       if (dirs[i] == suggested_dir) {
         any_suggested = true;
@@ -363,7 +376,7 @@ ask_existing(const string &filename, const CVSSourceTree::Directories &dirs,
       suggested_option = next_option;
       next_option++;
       nout << "\n" << suggested_option
-           << ". create " 
+           << ". create "
            << suggested_dir->get_path() + "/" + filename
            << "\n";
     }
@@ -469,7 +482,7 @@ prompt(const string &message) {
     while (p < response.length() && isspace(response[p])) {
       p++;
     }
-    
+
     size_t q = response.length();
     while (q > p && isspace(response[q - 1])) {
       q--;

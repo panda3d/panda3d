@@ -1,6 +1,19 @@
 // Filename: fltRecordReader.cxx
 // Created by:  drose (24Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltRecordReader.h"
@@ -15,7 +28,7 @@ static const int header_size = 4;
 ////////////////////////////////////////////////////////////////////
 //     Function: FltRecordReader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltRecordReader::
 FltRecordReader(istream &in) :
@@ -36,7 +49,7 @@ FltRecordReader(istream &in) :
 ////////////////////////////////////////////////////////////////////
 //     Function: FltRecordReader::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltRecordReader::
 ~FltRecordReader() {
@@ -137,8 +150,8 @@ advance(bool ok_eof) {
 
   if (flt_cat.is_debug()) {
     flt_cat.debug()
-      << "Reading " << _opcode 
-      << " of length " << _record_length << "\n"; 
+      << "Reading " << _opcode
+      << " of length " << _record_length << "\n";
   }
 
   // And now read the full record based on the length.
@@ -180,7 +193,7 @@ advance(bool ok_eof) {
     }
     _datagram.append_data(buffer, length);
     delete[] buffer;
-    
+
     if (_in.eof()) {
       _state = S_eof;
       assert(!flt_error_abort);

@@ -1,6 +1,19 @@
 // Filename: basicGtkWindow.cxx
 // Created by:  drose (14Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "basicGtkWindow.h"
@@ -25,7 +38,7 @@ BasicGtkWindow(bool free_store) : _free_store(free_store) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BasicGtkWindow::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 BasicGtkWindow::
 ~BasicGtkWindow() {
@@ -40,7 +53,7 @@ BasicGtkWindow::
 void BasicGtkWindow::
 setup() {
   _state = S_setup;
-  _destroy_connection = 
+  _destroy_connection =
     destroy.connect(slot(this, &BasicGtkWindow::window_destroyed));
   show();
 
@@ -75,7 +88,7 @@ destruct() {
       while (!_destroyed && _state == S_setup) {
         GtkBase::_gtk->iteration();
       }
-      
+
       if (!_destroyed) {
         hide();
       }
@@ -90,7 +103,7 @@ destruct() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BasicGtkWindow::delete_self
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void BasicGtkWindow::
 delete_self() {
@@ -100,7 +113,7 @@ delete_self() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BasicGtkWindow::window_destroyed
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void BasicGtkWindow::
 window_destroyed() {
@@ -115,7 +128,7 @@ window_destroyed() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BasicGtkWindow::idle_event
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 gint BasicGtkWindow::
 idle_event() {

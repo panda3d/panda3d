@@ -1,6 +1,19 @@
 // Filename: mayaFile.h
 // Created by:  drose (10Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef MAYAFILE_H
@@ -39,7 +52,7 @@ private:
   void make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface surface,
                           EggGroup *group);
   EggNurbsCurve *make_trim_curve(MFnNurbsCurve curve,
-                                 const string &nurbs_name, 
+                                 const string &nurbs_name,
                                  EggGroupNode *egg_group,
                                  int trim_curve_index);
   void make_nurbs_curve(const MDagPath &dag_path, MFnNurbsCurve curve,

@@ -1,6 +1,19 @@
 // Filename: showBase.cxx
 // Created by:  shochet (02Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "showBase.h"
@@ -72,15 +85,15 @@ public:
     _initial_state(initial_state),
     _app_traverser(RenderRelation::get_class_type()) { }
   virtual ~WindowCallback() { }
-  
+
   virtual void draw(bool) {
     _app_traverser.traverse(_render);
     render_frame(_pipe, *_initial_state);
   }
-  
+
   virtual void idle(void) {
   }
-  
+
   PT(GraphicsPipe) _pipe;
   PT(Node) _render;
   NodeAttributes *_initial_state;
@@ -90,7 +103,7 @@ public:
 
 PT(GraphicsPipe) make_graphics_pipe() {
   PT(GraphicsPipe) main_pipe;
-  
+
   // load display modules
   GraphicsPipe::resolve_modules();
 
@@ -111,7 +124,7 @@ PT(GraphicsPipe) make_graphics_pipe() {
   return main_pipe;
 }
 
-PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe, 
+PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe,
                                         NamedNode *render,
                                         NamedNode *camera,
                                         NodeAttributes &initial_state) {
@@ -137,7 +150,7 @@ PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe,
   main_win = ChanConfig(pipe, conf, camera, render, override);
   assert(main_win != (GraphicsWindow*)0L);
 
-  WindowCallback *wcb = 
+  WindowCallback *wcb =
     new WindowCallback(pipe, render, &initial_state);
 
   // Set draw and idle callbacks
@@ -153,7 +166,7 @@ PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe,
 NodePath
 setup_panda_2d(GraphicsWindow *win, const string &graph_name) {
   PT(Node) render2d_top;
-  
+
   render2d_top = new NamedNode(graph_name + "_top");
   Node *render2d = new NamedNode(graph_name);
   RenderRelation *render2d_arc = new RenderRelation(render2d_top, render2d);
@@ -219,7 +232,7 @@ toggle_wireframe(NodeAttributes &initial_state) {
     initial_state.set_attribute(CullFaceTransition::get_class_type(), cfa);
 
   } else {
-    // Set the initial state up for wireframe mode. 
+    // Set the initial state up for wireframe mode.
     RenderModeAttribute *rma = new RenderModeAttribute;
     rma->set_mode(RenderModeProperty::M_wireframe);
     CullFaceAttribute *cfa = new CullFaceAttribute;
@@ -276,8 +289,8 @@ void take_snapshot(GraphicsWindow *win, const string &name) {
 
   int width = dr->get_pixel_width();
   int height = dr->get_pixel_height();
-  
-  PixelBuffer p(width, height, 3, 1, PixelBuffer::T_unsigned_byte, 
+
+  PixelBuffer p(width, height, 3, 1, PixelBuffer::T_unsigned_byte,
                 PixelBuffer::F_rgb);
 
   p.copy(gsg, dr, rb);

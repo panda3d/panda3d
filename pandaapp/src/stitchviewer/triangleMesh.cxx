@@ -1,6 +1,19 @@
 // Filename: triangleMesh.cxx
 // Created by:  drose (06Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "triangleMesh.h"
@@ -66,15 +79,15 @@ build_mesh() const {
 
   assert(!_coords.empty());
   geom->set_coords(_coords, G_PER_VERTEX, vindex);
-  
+
   if (!_norms.empty()) {
     geom->set_normals(_norms, G_PER_VERTEX, vindex);
   }
-  
+
   if (!_colors.empty()) {
     geom->set_colors(_colors, G_PER_VERTEX, vindex);
   }
-  
+
   if (!_texcoords.empty()) {
     geom->set_texcoords(_texcoords, G_PER_VERTEX, vindex);
   }

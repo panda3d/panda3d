@@ -1,6 +1,19 @@
 // Filename: eggReader.cxx
 // Created by:  drose (14Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggReader.h"
@@ -8,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggReader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggReader::
 EggReader() {
@@ -22,7 +35,7 @@ EggReader() {
      "is the coordinate system of the input egg file.");
 
   add_option
-    ("f", "", 80, 
+    ("f", "", 80,
      "Force complete loading: load up the egg file along with all of its "
      "external references.",
      &EggReader::dispatch_none, &_force_complete);
@@ -48,7 +61,7 @@ as_reader() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggReader::handle_args
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool EggReader::
 handle_args(ProgramBase::Args &args) {

@@ -1,6 +1,19 @@
 // Filename: fltCopy.cxx
 // Created by:  drose (01Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltCopy.h"
@@ -14,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: FltCopy::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltCopy::
 FltCopy() {
@@ -33,11 +46,11 @@ FltCopy() {
   add_runline("[opts] file.flt [file.flt ... ]");
 
   add_option
-    ("s", "dirname", 0, 
+    ("s", "dirname", 0,
      "Specify the directory or directories that are to be searched for "
      "relative pathnames appearing in the flt file.  This may be a "
      "single directory name or a colon-delimited list of directories.  "
-     "It may also be " 
+     "It may also be "
      "repeated multiple times on the command line; each time it appears "
      "its named directories will be appended to the search path.",
      &FltCopy::dispatch_search_path, NULL, &_search_path);
@@ -46,7 +59,7 @@ FltCopy() {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltCopy::run
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FltCopy::
 run() {
@@ -89,7 +102,7 @@ copy_file(const Filename &source, const Filename &dest,
 ////////////////////////////////////////////////////////////////////
 //     Function: FltCopy::copy_flt_file
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool FltCopy::
 copy_flt_file(const Filename &source, const Filename &dest,
@@ -126,16 +139,16 @@ copy_flt_file(const Filename &source, const Filename &dest,
     } else {
       ExtraData ed;
       ed._type = FT_flt;
-      
+
       CVSSourceDirectory *ref_dir =
         import(ref_filename, &ed, _model_dir);
       if (ref_dir == (CVSSourceDirectory *)NULL) {
         return false;
       }
-      
+
       // Update the reference to point to the new flt filename, relative
       // to the base flt file.
-      ref->_filename = dir->get_rel_to(ref_dir) + "/" + 
+      ref->_filename = dir->get_rel_to(ref_dir) + "/" +
         ref_filename.get_basename();
     }
   }
@@ -157,16 +170,16 @@ copy_flt_file(const Filename &source, const Filename &dest,
       ExtraData ed;
       ed._type = FT_texture;
       ed._texture = tex;
-      
+
       CVSSourceDirectory *texture_dir =
         import(texture_filename, &ed, _map_dir);
       if (texture_dir == (CVSSourceDirectory *)NULL) {
         return false;
       }
-      
+
       // Update the texture reference to point to the new texture
       // filename, relative to the flt file.
-      tex->_filename = dir->get_rel_to(texture_dir) + "/" + 
+      tex->_filename = dir->get_rel_to(texture_dir) + "/" +
         texture_filename.get_basename();
       header->add_texture(tex);
     }
@@ -178,17 +191,17 @@ copy_flt_file(const Filename &source, const Filename &dest,
     nout << "Cannot write " << dest << "\n";
     return false;
   }
-  
+
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltCopy::copy_texture
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool FltCopy::
-copy_texture(const Filename &source, const Filename &dest, 
+copy_texture(const Filename &source, const Filename &dest,
              CVSSourceDirectory *dir, FltTexture *tex, bool new_file) {
   if (!copy_binary_file(source, dest)) {
     return false;

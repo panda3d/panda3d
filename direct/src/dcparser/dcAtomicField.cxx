@@ -1,6 +1,19 @@
 // Filename: dcAtomicField.cxx
 // Created by:  drose (05Oct00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "dcAtomicField.h"
@@ -32,7 +45,7 @@ operator << (ostream &out, const DCAtomicField::ElementType &et) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::ElementType::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DCAtomicField::ElementType::
 ElementType() {
@@ -157,13 +170,13 @@ end_array() {
       // We've accumulated all the elements of the array; now we must
       // prepend the array length.
       int length = _default_value.length();
-      _default_value = 
+      _default_value =
         string(1, (char)(length & 0xff)) +
         string(1, (char)((length >> 8) & 0xff)) +
         _default_value;
     }
     return true;
-    
+
   default:
     return false;
   }
@@ -193,7 +206,7 @@ format_default_value(double num, string &formatted) const {
   case ST_uint16:
   case ST_int16array:
   case ST_uint16array:
-    formatted = 
+    formatted =
       string(1, (char)(int_value & 0xff)) +
       string(1, (char)((int_value >> 8) & 0xff));
     break;
@@ -202,7 +215,7 @@ format_default_value(double num, string &formatted) const {
   case ST_uint32:
   case ST_int32array:
   case ST_uint32array:
-    formatted = 
+    formatted =
       string(1, (char)(int_value & 0xff)) +
       string(1, (char)((int_value >> 8) & 0xff)) +
       string(1, (char)((int_value >> 16) & 0xff)) +
@@ -212,7 +225,7 @@ format_default_value(double num, string &formatted) const {
   case ST_int64:
     // We don't fully support default values for int64.  The
     // high-order 32 bits cannot be specified.
-    formatted = 
+    formatted =
       string(1, (char)(int_value & 0xff)) +
       string(1, (char)((int_value >> 8) & 0xff)) +
       string(1, (char)((int_value >> 16) & 0xff)) +
@@ -223,7 +236,7 @@ format_default_value(double num, string &formatted) const {
   case ST_uint64:
     // We don't fully support default values for int64.  The
     // high-order 32 bits cannot be specified.
-    formatted = 
+    formatted =
       string(1, (char)(int_value & 0xff)) +
       string(1, (char)((int_value >> 8) & 0xff)) +
       string(1, (char)((int_value >> 16) & 0xff)) +
@@ -276,7 +289,7 @@ format_default_value(const string &str, string &formatted) const {
   case ST_blob:
     {
       int length = str.length();
-      formatted = 
+      formatted =
         string(1, (char)(length & 0xff)) +
         string(1, (char)((length >> 8) & 0xff)) +
         str;
@@ -473,7 +486,7 @@ is_ownsend() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DCAtomicField::
 DCAtomicField() {

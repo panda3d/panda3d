@@ -1,6 +1,19 @@
 // Filename: fltPackedColor.cxx
 // Created by:  drose (25Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltPackedColor.h"
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: FltPackedColor::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FltPackedColor::
 output(ostream &out) const {
@@ -20,7 +33,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltPackedColor::extract_record
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool FltPackedColor::
 extract_record(FltRecordReader &reader) {
@@ -37,7 +50,7 @@ extract_record(FltRecordReader &reader) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltPackedColor::build_record
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool FltPackedColor::
 build_record(FltRecordWriter &writer) const {

@@ -1,6 +1,19 @@
 // Filename: eggWriter.cxx
 // Created by:  drose (14Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggWriter.h"
@@ -104,24 +117,24 @@ add_normals_options() {
   static NormalsMode preserve = NM_preserve;
 
   add_option
-    ("no", "", 48, 
+    ("no", "", 48,
      "Strip all normals.",
      &EggWriter::dispatch_normals, NULL, &strip);
 
   add_option
-    ("np", "", 48, 
+    ("np", "", 48,
      "Strip existing normals and redefine polygon normals.",
      &EggWriter::dispatch_normals, NULL, &polygon);
 
   add_option
-    ("nv", "threshold", 48, 
+    ("nv", "threshold", 48,
      "Strip existing normals and redefine vertex normals.  Consider an edge "
      "between adjacent polygons to be smooth if the angle between them "
      "is less than threshold degrees.",
      &EggWriter::dispatch_normals, NULL, &vertex);
 
   add_option
-    ("nn", "", 48, 
+    ("nn", "", 48,
      "Preserve normals exactly as they are.  This is the default.",
      &EggWriter::dispatch_normals, NULL, &preserve);
 }
@@ -137,25 +150,25 @@ add_normals_options() {
 void EggWriter::
 add_transform_options() {
   add_option
-    ("TS", "sx[,sy,sz]", 49, 
+    ("TS", "sx[,sy,sz]", 49,
      "Scale the model uniformly by the given factor (if only one number "
      "is given) or in each axis by sx, sy, sz (if three numbers are given).",
      &EggWriter::dispatch_scale, &_got_transform, &_transform);
 
   add_option
-    ("TR", "x,y,z", 49, 
+    ("TR", "x,y,z", 49,
      "Rotate the model x degrees about the x axis, then y degrees about the "
      "y axis, and then z degrees about the z axis.",
      &EggWriter::dispatch_rotate_xyz, &_got_transform, &_transform);
 
   add_option
-    ("TA", "angle,x,y,z", 49, 
+    ("TA", "angle,x,y,z", 49,
      "Rotate the model angle degrees counterclockwise about the given "
      "axis.",
      &EggWriter::dispatch_rotate_axis, &_got_transform, &_transform);
 
   add_option
-    ("TT", "x,y,z", 49, 
+    ("TT", "x,y,z", 49,
      "Translate the model by the indicated amount.\n\n"
      "All transformation options (-TS, -TR, -TA, -TT) are cumulative and are "
      "applied in the order they are encountered on the command line.",
@@ -197,7 +210,7 @@ post_process_egg_file() {
     nout << "Applying transform matrix:\n";
     _transform.write(nout, 2);
     LVecBase3d scale, hpr, translate;
-    if (decompose_matrix(_transform, scale, hpr, translate, 
+    if (decompose_matrix(_transform, scale, hpr, translate,
                          _data.get_coordinate_system())) {
       nout << "(scale " << scale << ", hpr " << hpr << ", translate "
            << translate << ")\n";
@@ -272,7 +285,7 @@ handle_args(ProgramBase::Args &args) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggWriter::post_command_line
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool EggWriter::
 post_command_line() {
@@ -282,7 +295,7 @@ post_command_line() {
   }
 
   append_command_comment(_data);
-  
+
   return EggBase::post_command_line();
 }
 
@@ -315,7 +328,7 @@ ns_dispatch_normals(const string &opt, const string &arg, void *mode) {
 
   if (_normals_mode == NM_vertex) {
     if (!string_to_double(arg, _normals_threshold)) {
-      nout << "Invalid numeric parameter for -" << opt << ": " 
+      nout << "Invalid numeric parameter for -" << opt << ": "
            << arg << "\n";
       return false;
     }

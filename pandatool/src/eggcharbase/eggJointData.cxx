@@ -1,6 +1,19 @@
 // Filename: eggJointData.cxx
 // Created by:  drose (23Feb01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggJointData.h"
@@ -15,10 +28,10 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggJointData::
-EggJointData(EggCharacterCollection *collection, 
+EggJointData(EggCharacterCollection *collection,
              EggCharacterData *char_data) :
   EggComponentData(collection, char_data)
 {
@@ -188,7 +201,7 @@ add_back_pointer(int model_index, EggObject *egg_object) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggJointData::
 write(ostream &out, int indent_level) const {

@@ -1,6 +1,19 @@
 // Filename: fltRecordWriter.cxx
 // Created by:  drose (24Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltRecordWriter.h"
@@ -22,7 +35,7 @@ static const int max_write_length = 65532;
 ////////////////////////////////////////////////////////////////////
 //     Function: FltRecordWriter::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltRecordWriter::
 FltRecordWriter(ostream &out) :
@@ -33,7 +46,7 @@ FltRecordWriter(ostream &out) :
 ////////////////////////////////////////////////////////////////////
 //     Function: FltRecordWriter::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltRecordWriter::
 ~FltRecordWriter() {
@@ -84,7 +97,7 @@ update_datagram() {
 FltError FltRecordWriter::
 advance() {
   int start_byte = 0;
-  int write_length = 
+  int write_length =
     min((int)_datagram.get_length() - start_byte, max_write_length - header_size);
   FltOpcode opcode = _opcode;
 
@@ -116,7 +129,7 @@ advance() {
     }
 
     start_byte += write_length;
-    write_length = 
+    write_length =
       min((int)_datagram.get_length() - start_byte, max_write_length - header_size);
     opcode = FO_continuation;
   } while (write_length > 0);

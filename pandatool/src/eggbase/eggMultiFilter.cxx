@@ -1,6 +1,19 @@
 // Filename: eggMultiFilter.cxx
 // Created by:  drose (02Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggMultiFilter.h"
@@ -11,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMultiFilter::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggMultiFilter::
 EggMultiFilter(bool allow_empty) : _allow_empty(allow_empty) {
@@ -29,7 +42,7 @@ EggMultiFilter(bool allow_empty) : _allow_empty(allow_empty) {
      &EggMultiFilter::dispatch_filename, &_got_output_filename, &_output_filename);
 
   add_option
-    ("d", "dirname", 50, 
+    ("d", "dirname", 50,
      "Specify the name of the directory in which to write the resulting egg "
      "files.  If you are processing only one egg file, this may be omitted "
      "in lieu of the -o option.  If you are processing multiple egg files, "
@@ -37,7 +50,7 @@ EggMultiFilter(bool allow_empty) : _allow_empty(allow_empty) {
      &EggMultiFilter::dispatch_filename, &_got_output_dirname, &_output_dirname);
 
   add_option
-    ("inplace", "", 50, 
+    ("inplace", "", 50,
      "If this option is given, the input egg files will be rewritten in "
      "place with the results.  This obviates the need to specify -d "
      "for an output directory; however, it's risky because the original "
@@ -110,7 +123,7 @@ handle_args(ProgramBase::Args &args) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMultiFilter::post_command_line
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool EggMultiFilter::
 post_command_line() {
@@ -122,7 +135,7 @@ post_command_line() {
     }
     append_command_comment(*data);
   }
-  
+
   return EggMultiBase::post_command_line();
 }
 
@@ -138,7 +151,7 @@ get_output_filename(const Filename &source_filename) const {
   if (_got_output_filename) {
     nassertr(!_inplace && !_got_output_dirname && _eggs.size() == 1, Filename());
     return _output_filename;
-    
+
   } else if (_got_output_dirname) {
     nassertr(!_inplace, Filename());
     Filename result = source_filename;

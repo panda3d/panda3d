@@ -1,6 +1,19 @@
 // Filename: stitchFisheyeLens.cxx
 // Created by:  drose (09Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "stitchFisheyeLens.h"
@@ -70,11 +83,11 @@ extrude(const LPoint2d &point_mm, double width_mm) const {
   }
 
   v2 /= r;
-      
+
   // Now get the point r units around the circle in the YZ plane.
   double dist = r * k / get_focal_length(width_mm);
   LVector3d p(0.0, cos(deg_2_rad(dist)), sin(deg_2_rad(dist)));
-  
+
   // And rotate this point around the Y axis.
   LVector3d result = LVector3d::rfu(p[0]*v2[1] + p[2]*v2[0],
                                     p[1],
@@ -89,32 +102,32 @@ project(const LVector3d &vec, double width_mm) const {
   // proportional to the actual distance on the sphere along the great
   // circle.  Also, the angle to the point on the projection is equal
   // to the angle to the point on the sphere.
-    
+
   // First, discard the distance by normalizing the vector.
   LVector3d v2 = normalize(vec * LMatrix4d::convert_mat(CS_default,
                                                         CS_zup_right));
-    
+
   // Now, project the point into the XZ plane and measure its angle
   // to the Z axis.  This is the same angle it will have to the
   // vertical axis on the film.
   LVector2d y(v2[0], v2[2]);
   y = normalize(y);
-    
+
   if (y == LVector2d(0.0, 0.0)) {
     // Special case.  This point is either directly ahead or directly
     // behind.
     return LPoint2d(0.0, 0.0);
   }
-  
+
   // Now bring the vector into the YZ plane by rotating about the Y
   // axis.
   LVector2d x(v2[1], v2[0]*y[0]+v2[2]*y[1]);
   x = normalize(x);
-    
+
   // Now the angle of x to the forward vector represents the distance
   // along the great circle to the point.
   double r = 90.0 - rad_2_deg(atan2(x[0], x[1]));
-    
+
   return y * (r * get_focal_length(width_mm) / k);
 }
 
@@ -134,7 +147,7 @@ draw_triangle(TriangleRasterizer &rast, const LMatrix3d &,
   // with a user-specified angle (the _singularity_tolerance) from the
   // singularity point.
 
-  
+
   // Determine which quadrant each of the vertices is in.  The
   // triangle crosses the singularity if all vertices' y coordinate is
   // negative, and if the projection of the triangle into the x, z
@@ -154,7 +167,7 @@ draw_triangle(TriangleRasterizer &rast, const LMatrix3d &,
                  dot(v2->_space, LVector3d::up()));
 
     // This projection will reverse the vertex order.
-    if (triangle_contains_circle(LPoint2d(0.0, 0.0), 
+    if (triangle_contains_circle(LPoint2d(0.0, 0.0),
                                  _singularity_radius,
                                  xz0, xz2, xz1)) {
       // The triangle does cross the singularity!  Reject it.
@@ -173,7 +186,7 @@ draw_triangle(TriangleRasterizer &rast, const LMatrix3d &,
 }
 
 void StitchFisheyeLens::
-pick_up_singularity(TriangleRasterizer &rast, 
+pick_up_singularity(TriangleRasterizer &rast,
                     const LMatrix3d &mm_to_pixels,
                     const LMatrix3d &pixels_to_mm,
                     const LMatrix3d &rotate,
@@ -186,11 +199,11 @@ pick_up_singularity(TriangleRasterizer &rast,
     // represent points (180 - _singularity_tolerance * 2) degrees
     // from forward.
 
-    double outer_mm = 
+    double outer_mm =
       (180 * get_focal_length(width_mm) / k);
-    double inner_mm = 
+    double inner_mm =
       ((180 - _singularity_tolerance * 2) * get_focal_length(width_mm) / k);
-    
+
     int xsize = rast._output->get_x_size();
     int ysize = rast._output->get_y_size();
 
@@ -271,7 +284,7 @@ pick_up_singularity(TriangleRasterizer &rast,
       v0._p.set(left_x_1 + 1, yi);
       v0._space = extrude(v0._p * pixels_to_mm, width_mm) * rotate;
       v0._uv = input->project(v0._space);
-      
+
       for (xi = left_x_1; xi <= right_x_1; xi++) {
         double last_u = v0._uv[0];
 
@@ -285,7 +298,7 @@ pick_up_singularity(TriangleRasterizer &rast,
       v0._p.set(left_x_2 + 1, yi);
       v0._space = extrude(v0._p * pixels_to_mm, width_mm) * rotate;
       v0._uv = input->project(v0._space);
-      
+
       for (xi = left_x_2; xi <= right_x_2; xi++) {
         double last_u = v0._uv[0];
 

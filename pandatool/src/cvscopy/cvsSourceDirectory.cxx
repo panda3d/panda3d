@@ -1,6 +1,19 @@
 // Filename: cvsSourceDirectory.cxx
 // Created by:  drose (31Oct00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cvsSourceDirectory.h"
@@ -11,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CVSSourceDirectory::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CVSSourceDirectory::
 CVSSourceDirectory(CVSSourceTree *tree, CVSSourceDirectory *parent,
@@ -30,7 +43,7 @@ CVSSourceDirectory(CVSSourceTree *tree, CVSSourceDirectory *parent,
 ////////////////////////////////////////////////////////////////////
 //     Function: CVSSourceDirectory::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CVSSourceDirectory::
 ~CVSSourceDirectory() {
@@ -235,14 +248,14 @@ scan(const Filename &directory, const string &key_filename) {
     Filename next_path(directory, filename);
     Filename key(next_path, key_filename);
     if (key.exists()) {
-      CVSSourceDirectory *subdir = 
+      CVSSourceDirectory *subdir =
         new CVSSourceDirectory(_tree, this, filename);
       _children.push_back(subdir);
-      
+
       if (!subdir->scan(next_path, key_filename)) {
         return false;
       }
-      
+
     } else {
       // It's not a subdirectory; call it a regular file.
       _tree->add_file(filename, this);

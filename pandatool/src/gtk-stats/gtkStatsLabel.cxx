@@ -1,6 +1,19 @@
 // Filename: gtkStatsLabel.cxx
 // Created by:  drose (15Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "gtkStatsLabel.h"
@@ -28,7 +41,7 @@ GtkStatsLabel(PStatMonitor *monitor, int collector_index,
   _bg_color.set_rgb_p(rgb[0], rgb[1], rgb[2]);
 
   // Should our foreground be black or white?
-  float bright = 
+  float bright =
     rgb[0] * 0.299 +
     rgb[1] * 0.587 +
     rgb[2] * 0.114;
@@ -44,7 +57,7 @@ GtkStatsLabel(PStatMonitor *monitor, int collector_index,
 
   int text_width = _font.string_width(_text);
   int text_height = _font.height();
-  
+
   _height = text_height + 4;
   _width = text_width + 4;
 
@@ -108,7 +121,7 @@ expose_event_impl(GdkEventExpose *event) {
   Gdk_Window window = get_window();
 
   window.draw_rectangle(_reverse_gc, true, 0, 0, width(), height());
-  window.draw_string(_font, _gc, width() - text_width - 2, 
+  window.draw_string(_font, _gc, width() - text_width - 2,
                       height() - (height() - text_height) / 2 - _font.descent(),
                       _text);
   return false;
@@ -117,7 +130,7 @@ expose_event_impl(GdkEventExpose *event) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsLabel::button_press_event_impl
 //       Access: Private, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 gint GtkStatsLabel::
 button_press_event_impl(GdkEventButton *button) {

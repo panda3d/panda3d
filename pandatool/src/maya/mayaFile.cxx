@@ -1,6 +1,19 @@
 // Filename: mayaFile.cxx
 // Created by:  drose (10Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "mayaFile.h"
@@ -38,7 +51,7 @@
 #include <maya/MIntArray.h>
 #include <maya/MPxCommand.h>
 #include <maya/MStatus.h>
-#include <maya/MString.h> 
+#include <maya/MString.h>
 #include <maya/MTransformationMatrix.h>
 #include <maya/MVector.h>
 #include <maya/MTesselationParams.h>
@@ -117,7 +130,7 @@ traverse(EggData &data) {
   if (verbose == 1) {
     nout << "\nDone.\n";
   }
-  
+
   return true;
 }
 
@@ -142,14 +155,14 @@ process_node(const MDagPath &dag_path, EggData &data) {
     if (verbose >= 2) {
       nout << "Ignoring camera node " << dag_path.fullPathName() << "\n";
     }
-    
+
   } else if (dag_path.hasFn(MFn::kLight)) {
     if (verbose >= 2) {
       nout << "Ignoring light node " << dag_path.fullPathName() << "\n";
     }
-    
+
   } else if (dag_path.hasFn(MFn::kNurbsSurface)) {
-    EggGroup *egg_group = 
+    EggGroup *egg_group =
       get_egg_group(dag_path.fullPathName().asChar(), data);
 
     if (egg_group == (EggGroup *)NULL) {
@@ -168,9 +181,9 @@ process_node(const MDagPath &dag_path, EggData &data) {
         make_nurbs_surface(dag_path, surface, egg_group);
       }
     }
-    
+
   } else if (dag_path.hasFn(MFn::kNurbsCurve)) {
-    EggGroup *egg_group = 
+    EggGroup *egg_group =
       get_egg_group(dag_path.fullPathName().asChar(), data);
 
     if (egg_group == (EggGroup *)NULL) {
@@ -191,7 +204,7 @@ process_node(const MDagPath &dag_path, EggData &data) {
     }
 
   } else if (dag_path.hasFn(MFn::kMesh)) {
-    EggGroup *egg_group = 
+    EggGroup *egg_group =
       get_egg_group(dag_path.fullPathName().asChar(), data);
 
     if (egg_group == (EggGroup *)NULL) {
@@ -210,12 +223,12 @@ process_node(const MDagPath &dag_path, EggData &data) {
         make_polyset(dag_path, mesh, egg_group);
       }
     }
-    
+
   } else {
     // Get the translation/rotation/scale data
-    EggGroup *egg_group = 
+    EggGroup *egg_group =
       get_egg_group(dag_path.fullPathName().asChar(), data);
-    
+
     if (egg_group != (EggGroup *)NULL) {
       get_transform(dag_path, egg_group);
     }
@@ -249,7 +262,7 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
          << "\n";
     double d[3];
     MTransformationMatrix::RotationOrder rOrder;
-    
+
     matrix.getRotation(d, rOrder, MSpace::kWorld);
     nout << "  rotation: ["
          << d[0] << ", "
@@ -375,7 +388,7 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface surface,
   EggNurbsSurface *egg_nurbs = new EggNurbsSurface(name);
   egg_nurbs->setup(u_degree + 1, v_degree + 1,
                    u_knots + 2, v_knots + 2);
-  
+
   int i;
 
   egg_nurbs->set_u_knot(0, u_knot_array[0]);
@@ -417,7 +430,7 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface surface,
       egg_trim.push_back(EggNurbsSurface::Loop());
       EggNurbsSurface::Loop &egg_loop = egg_trim.back();
 
-      MFnNurbsSurface::BoundaryType type = 
+      MFnNurbsSurface::BoundaryType type =
         surface.boundaryType(ti, li, &status);
       bool keep_loop = false;
 
@@ -444,7 +457,7 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface surface,
                   nout << "Trim curve appears to be a nurbs curve, but isn't.\n";
                 } else {
                   // Finally, we have a valid curve!
-                  EggNurbsCurve *egg_curve = 
+                  EggNurbsCurve *egg_curve =
                     make_trim_curve(curve, name, egg_group, trim_curve_index);
                   trim_curve_index++;
                   if (egg_curve != (EggNurbsCurve *)NULL) {
@@ -471,7 +484,7 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface surface,
 }
 
 EggNurbsCurve *MayaFile::
-make_trim_curve(MFnNurbsCurve curve, const string &nurbs_name, 
+make_trim_curve(MFnNurbsCurve curve, const string &nurbs_name,
                 EggGroupNode *egg_group, int trim_curve_index) {
   if (verbose >= 3) {
     nout << "Trim curve:\n";
@@ -520,7 +533,7 @@ make_trim_curve(MFnNurbsCurve curve, const string &nurbs_name,
 
   EggNurbsCurve *egg_curve = new EggNurbsCurve(trim_name);
   egg_curve->setup(degree + 1, knots + 2);
-  
+
   int i;
 
   egg_curve->set_knot(0, knot_array[0]);
@@ -590,7 +603,7 @@ make_nurbs_curve(const MDagPath &, MFnNurbsCurve curve,
   EggNurbsCurve *egg_curve = new EggNurbsCurve(name);
   egg_group->add_child(egg_curve);
   egg_curve->setup(degree + 1, knots + 2);
-  
+
   int i;
 
   egg_curve->set_knot(0, knot_array[0]);
@@ -716,7 +729,7 @@ make_polyset(const MDagPath &dag_path, MFnMesh mesh,
     if (shader_index != -1) {
       assert(shader_index >= 0 && shader_index < shaders.length());
       MObject engine = shaders[shader_index];
-      MayaShader *shader = 
+      MayaShader *shader =
         _shaders.find_shader_for_shading_engine(engine);
       if (shader != (MayaShader *)NULL) {
         shader->set_attributes(*egg_poly, *this);

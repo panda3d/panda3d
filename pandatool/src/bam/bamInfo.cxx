@@ -1,6 +1,19 @@
 // Filename: bamInfo.cxx
 // Created by:  drose (02Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "bamInfo.h"
@@ -15,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: BamInfo::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 BamInfo::
 BamInfo() {
@@ -32,12 +45,12 @@ BamInfo() {
      &BamInfo::dispatch_none, &_ls);
 
   add_option
-    ("t", "", 0, 
+    ("t", "", 0,
      "List explicitly each transition in the hierarchy.",
      &BamInfo::dispatch_none, &_verbose_transitions);
 
   add_option
-    ("g", "", 0, 
+    ("g", "", 0,
      "Output verbose information about the each Geom in the Bam file.",
      &BamInfo::dispatch_none, &_verbose_geoms);
 
@@ -48,7 +61,7 @@ BamInfo() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BamInfo::run
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void BamInfo::
 run() {
@@ -77,7 +90,7 @@ run() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BamInfo::handle_args
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool BamInfo::
 handle_args(ProgramBase::Args &args) {

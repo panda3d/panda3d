@@ -1,6 +1,19 @@
 // Filename: cLwoSurface.cxx
 // Created by:  drose (25Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cLwoSurface.h"
@@ -21,7 +34,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CLwoSurface::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CLwoSurface::
 CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
@@ -114,7 +127,7 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
       } else {
         delete block;
       }
-    }      
+    }
   }
 
   // Now get the four-component color, based on combining the RGB and
@@ -137,7 +150,7 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CLwoSurface::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CLwoSurface::
 ~CLwoSurface() {
@@ -334,7 +347,7 @@ check_material() {
 
   return true;
 }
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLwoSurface::generate_uvs
@@ -353,7 +366,7 @@ generate_uvs(vector_PT_EggVertex &egg_vertices) {
   // the back seam and the poles of the spherical map), we will need
   // to know the polygon's centroid.
   LPoint3d centroid(0.0, 0.0, 0.0);
-  
+
   vector_PT_EggVertex::const_iterator vi;
   for (vi = egg_vertices.begin(); vi != egg_vertices.end(); ++vi) {
     EggVertex *egg_vertex = (*vi);
@@ -427,13 +440,13 @@ map_spherical(const LPoint3d &pos, const LPoint3d &centroid) const {
 
   // The U value is based on the longitude: the angle about the Y
   // axis.
-  double u = 
+  double u =
     (atan2(xz[0], -xz[1]) / (2.0 * MathNumbers::pi) + 0.5 + u_offset) * _block->_w_repeat;
 
   // Now rotate the vector into the YZ plane, and the V value is based
   // on the latitude: the angle about the X axis.
   LVector2d yz(pos[1], xz_orig.length());
-  double v = 
+  double v =
     (atan2(yz[0], yz[1]) / MathNumbers::pi + 0.5) * _block->_h_repeat;
 
   return LPoint2d(u, v);
@@ -465,7 +478,7 @@ map_cylindrical(const LPoint3d &pos, const LPoint3d &centroid) const {
     u_offset = (xz[0] < 0.0) ? 1.0 : -1.0;
   }
 
-  double u = 
+  double u =
     (atan2(xz[0], -xz[1]) / (2.0 * MathNumbers::pi) + 0.5 + u_offset) * _block->_w_repeat;
 
   // For a cylindrical mapping, the V value comes almost directly from
@@ -492,7 +505,7 @@ map_cubic(const LPoint3d &pos, const LPoint3d &centroid) const {
   double z = fabs(centroid[2]);
 
   double u, v;
-  
+
   if (x > y) {
     if (x > z) {
       // X is dominant.

@@ -1,6 +1,19 @@
 // Filename: stitcher.cxx
 // Created by:  drose (09Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "stitcher.h"
@@ -92,17 +105,17 @@ stitch() {
   if (_loose_points.empty()) {
     StitchImage *image = _images.front();
     assert(image != NULL);
-    
+
     StitchImage::Points::const_iterator pi;
     for (pi = image->_points.begin(); pi != image->_points.end(); ++pi) {
       string name = (*pi).first;
       LPoint2d uv = (*pi).second;
-      
+
       Points::iterator ppi;
       ppi = _points.find(name);
       assert(ppi != _points.end());
       StitchPoint *sp = (*ppi).second;
-      
+
       LVector3d space = normalize(image->extrude(uv));
       sp->set_space(space);
     }
@@ -190,12 +203,12 @@ score_image(StitchImage *image) {
   StitchImage::Points::const_iterator pi;
   for (pi = image->_points.begin(); pi != image->_points.end(); ++pi) {
     string name = (*pi).first;
-    
+
     Points::iterator ppi;
     ppi = _points.find(name);
     assert(ppi != _points.end());
     StitchPoint *sp = (*ppi).second;
-    
+
     if (sp->_space_known) {
       score++;
     }
@@ -219,12 +232,12 @@ stitch_image(StitchImage *image) {
   for (pi = image->_points.begin(); pi != image->_points.end(); ++pi) {
     string name = (*pi).first;
     LPoint2d uv = (*pi).second;
-    
+
     Points::iterator ppi;
     ppi = _points.find(name);
     assert(ppi != _points.end());
     StitchPoint *sp = (*ppi).second;
-    
+
     if (sp->_space_known) {
       mp.push_back(MatchingPoint(sp, uv));
     }
@@ -238,7 +251,7 @@ stitch_image(StitchImage *image) {
   }
 
   double best_score = 0.0;
-  
+
   if (mp.empty()) {
     // If we have no points, we can at least place it where the hpr says to.
     nout << *image << "placed explicitly.\n\n";
@@ -248,11 +261,11 @@ stitch_image(StitchImage *image) {
 
     // Reset the image's total transform, since we'll be changing it.
     image->clear_transform();
-    
+
     // Find the best match.
     int best_i = -1;
     int best_j = -1;
-    
+
     if (mp.size() < 2) {
       // If we don't have two points, there's nothing to choose.
       best_i = 0;
@@ -295,8 +308,8 @@ stitch_image(StitchImage *image) {
     // Now morph the image out the last few pixels so that all the
     // points will match up exactly.
 
-    int x_verts = image->get_x_verts(); 
-    int y_verts = image->get_y_verts(); 
+    int x_verts = image->get_x_verts();
+    int y_verts = image->get_y_verts();
     image->_morph.init(x_verts, y_verts);
     int x, y;
     for (y = 0; y < y_verts; y++) {
@@ -327,14 +340,14 @@ stitch_image(StitchImage *image) {
       }
     }
     image->_morph.recompute();
-    
+
 
   /*
 
   for (mi = mp.begin(); mi != mp.end(); ++mi) {
     LVector3d va = normalize(LVector3d(image->extrude((*mi)._got_uv)));
     LVector3d vb = (*mi)._p->_space;
-    nout << 1000.0 * (1.0 - dot(va, vb)) << " for " << (*mi)._p->_name 
+    nout << 1000.0 * (1.0 - dot(va, vb)) << " for " << (*mi)._p->_name
          << "\n   at " << va << " vs. " << vb << "\n";
   }
   nout << "\n";
@@ -343,7 +356,7 @@ stitch_image(StitchImage *image) {
   for (mi = mp.begin(); mi != mp.end(); ++mi) {
     (*mi)._need_uv = image->project((*mi)._p->_space);
     (*mi)._diff = (*mi)._need_uv - (*mi)._got_uv;
-    
+
     nout << (*mi)._p->_name
          << " "<< (*mi)._need_uv << " vs. " << (*mi)._got_uv
          << " diff is " << length((*mi)._diff * image->_uv_to_pixels)
@@ -356,12 +369,12 @@ stitch_image(StitchImage *image) {
     for (pi = image->_points.begin(); pi != image->_points.end(); ++pi) {
       string name = (*pi).first;
       LPoint2d uv = (*pi).second;
-      
+
       Points::iterator ppi;
       ppi = _points.find(name);
       assert(ppi != _points.end());
       StitchPoint *sp = (*ppi).second;
-      
+
       if (!sp->_space_known) {
         LVector3d space = normalize(image->extrude(uv));
         sp->set_space(space);
@@ -377,9 +390,9 @@ feather_image(StitchImage *image) {
   // Feather the edges of the image wherever it overlaps with an image
   // we have laid down previously.  We do this by first determining
   // which morph points overlap with some other image.
-  int x_verts = image->get_x_verts(); 
-  int y_verts = image->get_y_verts(); 
-  
+  int x_verts = image->get_x_verts();
+  int y_verts = image->get_y_verts();
+
   if (image->_morph.is_empty()) {
     image->_morph.init(x_verts, y_verts);
     image->_morph.recompute();
@@ -390,9 +403,9 @@ feather_image(StitchImage *image) {
     for (x = 0; x < x_verts; x++) {
       LVector3d space = image->get_grid_vector(x, y);
       Images::const_iterator ii;
-      for (ii = _placed.begin(); 
-           ii != _placed.end() && 
-             !image->_morph._table[y][x]._over_another; 
+      for (ii = _placed.begin();
+           ii != _placed.end() &&
+             !image->_morph._table[y][x]._over_another;
            ++ii) {
         StitchImage *other = (*ii);
         if (other->_index < image->_index) {
@@ -434,19 +447,19 @@ try_match(StitchImage *image, LMatrix3d &rot,
     // second pair of points comes as close as possible to coinciding.
     LVector3d v1a = normalize(image->extrude(mp[one]._got_uv));
     LVector3d v1b = mp[one]._p->_space;
-    
+
     v1a = v1a * rot;
-    
+
     // We need to determine the appropriate angle to roll.  This is the
     // angle between the plane that contains v0 and v1a, and the plane
     // that contains v0 and v1b.
-    
+
     LVector3d normal_a = normalize(cross(v0b, v1a));
     LVector3d normal_b = normalize(cross(v0b, v1b));
-    
+
     double cos_theta = dot(normal_a, normal_b);
     double theta = rad_2_deg(acos(cos_theta));
-    
+
     rot = rot * LMatrix3d::rotate_mat(-theta, v0b);
   }
 

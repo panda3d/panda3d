@@ -1,6 +1,19 @@
 // Filename: textMonitor.cxx
 // Created by:  drose (12Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "textMonitor.h"
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: TextMonitor::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TextMonitor::
 TextMonitor() {
@@ -36,7 +49,7 @@ get_monitor_name() {
 ////////////////////////////////////////////////////////////////////
 void TextMonitor::
 got_hello() {
-  nout << "Now connected to " << get_client_progname() << " on host " 
+  nout << "Now connected to " << get_client_progname() << " on host "
        << get_client_hostname() << "\n";
 }
 
@@ -79,9 +92,9 @@ new_data(int thread_index, int frame_number) {
 
   if (frame_number == thread_data->get_latest_frame_number()) {
     view.set_to_frame(frame_number);
-    
+
     if (view.all_collectors_known()) {
-      nout << "\rThread " 
+      nout << "\rThread "
            << get_client_data()->get_thread_name(thread_index)
            << " frame " << frame_number << ", "
            << view.get_net_value() * 1000.0 << " ms ("
@@ -94,7 +107,7 @@ new_data(int thread_index, int frame_number) {
     }
   }
 }
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextMonitor::lost_connection
@@ -128,7 +141,7 @@ is_thread_safe() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextMonitor::show_level
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void TextMonitor::
 show_level(const PStatViewLevel *level, int indent_level) {

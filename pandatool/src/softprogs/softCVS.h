@@ -1,6 +1,19 @@
 // Filename: softCVS.h
 // Created by:  drose (10Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef SOFTCVS_H
@@ -46,7 +59,7 @@ private:
   void scan_scene_file(istream &in);
 
   bool cvs_add(const string &path);
-  bool cvs_add_or_remove(const string &cvs_command, 
+  bool cvs_add_or_remove(const string &cvs_command,
                          const vector_string &paths);
 
   SceneFiles _scene_files;
@@ -54,7 +67,7 @@ private:
 
   vector_string _cvs_add;
   vector_string _cvs_remove;
-  
+
 protected:
   bool _no_cvs;
   string _cvs_binary;

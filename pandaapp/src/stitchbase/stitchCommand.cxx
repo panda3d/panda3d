@@ -1,6 +1,19 @@
 // Filename: stitchCommand.cxx
 // Created by:  drose (08Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "stitchCommand.h"
@@ -123,7 +136,7 @@ operator << (ostream &out, StitchCommand::Command c) {
   case StitchCommand::C_user_command:
     return out << "user_command";
     break;
-   
+
   default:
     return out << "(**unknown command**)";
   }
@@ -399,7 +412,7 @@ StitchCommand *StitchCommand::
 find_definition(const string &name) {
   Commands::const_iterator ci;
   for (ci = _nested.begin(); ci != _nested.end(); ++ci) {
-    if (((*ci)->_command == C_define || (*ci)->_command == C_lens) && 
+    if (((*ci)->_command == C_define || (*ci)->_command == C_lens) &&
         (*ci)->_name == name) {
       return (*ci);
     }
@@ -436,7 +449,7 @@ find_lens() {
   for (ci = _nested.begin(); ci != _nested.end(); ++ci) {
     if ((*ci)->_command == C_lens) {
       return (*ci)->make_lens();
-    }    
+    }
   }
   if (_parent != NULL) {
     return _parent->find_using_lens();
@@ -565,7 +578,7 @@ create_image() {
     nout << "Warning: No lens defined for " << filename << "\n";
     lens = make_lens();
   }
-  
+
   StitchCommand *cmd;
   cmd = find_command(C_image_size);
   if (cmd != NULL) {
@@ -598,7 +611,7 @@ create_image() {
     film_offset_mm = cmd->get_point2d();
   }
 
-  StitchImage *image = 
+  StitchImage *image =
     new StitchImage(get_name(), filename, lens, size_pixels, resolution,
                     film_offset_mm);
   image->setup_grid(50, 50);

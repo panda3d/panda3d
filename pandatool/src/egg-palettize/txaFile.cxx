@@ -1,6 +1,19 @@
 // Filename: txaFile.cxx
 // Created by:  drose (30Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "txaFile.h"
@@ -15,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: TxaFile::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TxaFile::
 TxaFile() {
@@ -245,7 +258,7 @@ parse_palette_line(const vector_string &words) {
   }
 
   if (pal->_pal_x_size <= 0 || pal->_pal_y_size <= 0) {
-    nout << "Invalid palette size: " << pal->_pal_x_size 
+    nout << "Invalid palette size: " << pal->_pal_x_size
          << " " << pal->_pal_y_size << "\n";
     return false;
   }
@@ -393,7 +406,7 @@ parse_round_line(const vector_string &words) {
   }
 
   if (pal->_round_unit <= 0.0 || pal->_round_fuzz < 0.0) {
-    nout << "Invalid rounding: " << pal->_round_unit 
+    nout << "Invalid rounding: " << pal->_round_unit
          << " " << pal->_round_fuzz << "\n";
     return false;
   }

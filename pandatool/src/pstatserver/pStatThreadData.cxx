@@ -1,6 +1,19 @@
 // Filename: pStatThreadData.cxx
 // Created by:  drose (09Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pStatThreadData.h"
@@ -15,7 +28,7 @@ PStatFrameData PStatThreadData::_null_frame;
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatThreadData::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatThreadData::
 PStatThreadData(const PStatClientData *client_data) :
@@ -28,7 +41,7 @@ PStatThreadData(const PStatClientData *client_data) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatThreadData::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatThreadData::
 ~PStatThreadData() {
@@ -80,7 +93,7 @@ get_oldest_frame_number() const {
 bool PStatThreadData::
 has_frame(int frame_number) const {
   int rel_frame = frame_number - _first_frame_number;
-  
+
   return (rel_frame >= 0 && rel_frame < (int)_frames.size() &&
           _frames[rel_frame] != (PStatFrameData *)NULL);
 }
@@ -96,24 +109,33 @@ has_frame(int frame_number) const {
 const PStatFrameData &PStatThreadData::
 get_frame(int frame_number) const {
   int rel_frame = frame_number - _first_frame_number;
-  if (rel_frame >= (int)_frames.size()) {
-    rel_frame = _frames.size() - 1;
+  int num_frames = _frames.size();
+  if (rel_frame >= num_frames) {
+    rel_frame = num_frames - 1;
   }
 
   while (rel_frame >= 0 && _frames[rel_frame] == (PStatFrameData *)NULL) {
     rel_frame--;
   }
-  if (rel_frame >= 0) {
-    return *_frames[rel_frame];
-  } else {
+  if (rel_frame < 0) {
     // No frame data that old.  Return the oldest frame we've got.
     rel_frame = 0;
-    while (rel_frame < (int)_frames.size() && 
+    while (rel_frame < num_frames &&
            _frames[rel_frame] == (PStatFrameData *)NULL) {
       rel_frame++;
     }
-    return (rel_frame < (int)_frames.size()) ? *_frames[rel_frame] : _null_frame;
   }
+
+  PStatFrameData * const *array = &_frames[0];
+
+  if (rel_frame >= 0 && rel_frame < num_frames) {
+    nassertr(_frames[rel_frame] != (PStatFrameData *)NULL, _null_frame);
+    nassertr(_frames[rel_frame]->get_start() >= 0.0, _null_frame);
+    return *_frames[rel_frame];
+  }
+
+  nassertr(_null_frame.get_start() >= 0.0, _null_frame);
+  return _null_frame;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -234,13 +256,16 @@ get_frame_rate(float time) const {
 
   int then_i = now_i;
   int last_good_i = now_i;
+  PStatFrameData * const *array = &_frames[0];
 
+  nassertr(then_i < 0 || _frames[then_i] != (PStatFrameData *)NULL, 0.0);
   while (then_i > 0 && _frames[then_i]->get_start() > then) {
     last_good_i = then_i;
     then_i--;
     while (then_i > 0 && _frames[then_i] == (PStatFrameData *)NULL) {
       then_i--;
     }
+    nassertr(then_i < 0 || _frames[then_i] != (PStatFrameData *)NULL, 0.0);
   }
   nassertr(last_good_i >= 0, 0.0);
   nassertr(_frames[last_good_i] != (PStatFrameData *)NULL, 0.0);
@@ -297,7 +322,7 @@ record_new_frame(int frame_number, PStatFrameData *frame_data) {
   // First, remove all the old frames that fall outside of our
   // history window.
   float oldest_allowable_time = time - _history;
-  while (!_frames.empty() && 
+  while (!_frames.empty() &&
          (_frames.front() == (PStatFrameData *)NULL ||
           _frames.front()->is_empty() ||
           _frames.front()->get_start() < oldest_allowable_time)) {

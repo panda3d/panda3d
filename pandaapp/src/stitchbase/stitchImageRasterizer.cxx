@@ -1,6 +1,19 @@
 // Filename: stitchImageRasterizer.cxx
 // Created by:  drose (06Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "stitchImageRasterizer.h"
@@ -68,14 +81,14 @@ execute() {
         }
       }
       output->close_layer(shown_points);
-      
+
       if (!output->close_output_file()) {
         nout << "Error in writing.\n";
       }
     }
   }
 }
-  
+
 void StitchImageRasterizer::
 draw_points(StitchImage *output, StitchImage *input,
             const Colord &color, double radius) {
@@ -85,19 +98,19 @@ draw_points(StitchImage *output, StitchImage *input,
     draw_spot(output, to * output->_uv_to_pixels, color, radius);
   }
 }
-  
+
 void StitchImageRasterizer::
 draw_points(StitchImage *output, Stitcher *input,
             const Colord &color, double radius) {
   Stitcher::LoosePoints::const_iterator pi;
-  for (pi = input->_loose_points.begin(); 
+  for (pi = input->_loose_points.begin();
        pi != input->_loose_points.end(); ++pi) {
     LPoint2d to = output->project((*pi)->_space);
     draw_spot(output, to * output->_uv_to_pixels, color, radius);
   }
 }
 
-  
+
 void StitchImageRasterizer::
 draw_image(StitchImage *output, StitchImage *input) {
   nout << "Rasterizing " << input->get_name() << "\n";
@@ -176,10 +189,10 @@ draw_spot(StitchImage *output,
           const LPoint2d pixel_center, const Colord &color, double radius) {
   LPoint2d minp = pixel_center - LPoint2d(radius, radius);
   LPoint2d maxp = pixel_center + LPoint2d(radius, radius);
-  
+
   int min_x = (int)floor(minp[0]);
   int max_x = (int)ceil(maxp[0]);
-  
+
   int min_y = (int)floor(minp[1]);
   int max_y = (int)ceil(maxp[1]);
 

@@ -1,6 +1,19 @@
 // Filename: pStatView.cxx
 // Created by:  drose (10Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pStatView.h"
@@ -22,9 +35,9 @@
 //               and boil it down to a list of elapsed times.
 ////////////////////////////////////////////////////////////////////
 class FrameSample {
-public: 
+public:
   typedef list<FrameSample *> Started;
-  
+
   FrameSample() {
     _touched = false;
     _is_started = false;
@@ -37,7 +50,7 @@ public:
     // We only consider events that change the start/stop state.
     // With two consecutive 'start' events, for instance, we ignore
     // the second one.
-    
+
     // *** That's not quite the right thing to do.  We should keep
     // track of the nesting level and bracket things correctly, so
     // that we ignore the second start and the *first* stop, but
@@ -49,13 +62,13 @@ public:
     nassertv(is_start != _is_started);
 
     _is_started = is_start;
-      
+
     if (_pushed) {
       nassertv(!_is_started);
       Started::iterator si = find(started.begin(), started.end(), this);
       nassertv(si != started.end());
       started.erase(si);
-      
+
     } else {
       if (_is_started) {
         _net_time -= time;
@@ -115,7 +128,7 @@ public:
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatView::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatView::
 PStatView() {
@@ -128,7 +141,7 @@ PStatView() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatView::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatView::
 ~PStatView() {
@@ -177,7 +190,7 @@ unconstrain() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatView::set_thread_data
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PStatView::
 set_thread_data(const PStatThreadData *thread_data) {
@@ -332,7 +345,7 @@ update_time_data(const PStatFrameData &frame_data) {
 
     } else {
       nassertv(collector_index >= 0 && collector_index < (int)samples.size());
-      
+
       if (_client_data->get_child_distance(_constraint, collector_index) >= 0) {
         // Here's a data point we care about: anything at constraint
         // level or below.
@@ -457,7 +470,7 @@ update_level_data(const PStatFrameData &frame_data) {
       collector_index = parent_index;
     }
   }
-      
+
 
   bool any_new_levels = false;
 
@@ -571,7 +584,7 @@ reset_level(PStatViewLevel *level) {
         level->_parent = NULL;
       }
 
-      PStatViewLevel::Children::iterator ci = 
+      PStatViewLevel::Children::iterator ci =
         find(old_parent_level->_children.begin(),
              old_parent_level->_children.end(),
              level);
@@ -584,5 +597,5 @@ reset_level(PStatViewLevel *level) {
 
   return any_changed;
 }
-      
-    
+
+

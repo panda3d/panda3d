@@ -1,6 +1,19 @@
 // Filename: txaLine.cxx
 // Created by:  drose (30Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "txaLine.h"
@@ -17,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: TxaLine::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TxaLine::
 TxaLine() {
@@ -161,7 +174,7 @@ parse(const string &line) {
         if (wi == words.end()) {
           nout << "Argument required for 'margin'.\n";
           return false;
-        } 
+        }
 
         const string &arg = (*wi);
         if (!string_to_int(arg, _margin)) {
@@ -235,7 +248,7 @@ match_egg(EggFile *egg_file) const {
 
   bool matched_any = false;
   Patterns::const_iterator pi;
-  for (pi = _egg_patterns.begin(); 
+  for (pi = _egg_patterns.begin();
        pi != _egg_patterns.end() && !matched_any;
        ++pi) {
     matched_any = (*pi).matches(name);
@@ -297,7 +310,7 @@ match_texture(TextureImage *texture) const {
 
   bool matched_any = false;
   Patterns::const_iterator pi;
-  for (pi = _texture_patterns.begin(); 
+  for (pi = _texture_patterns.begin();
        pi != _texture_patterns.end() && !matched_any;
        ++pi) {
     matched_any = (*pi).matches(name);
@@ -344,7 +357,7 @@ match_texture(TextureImage *texture) const {
   if (_got_coverage_threshold) {
     request._coverage_threshold = _coverage_threshold;
   }
-  
+
   if (_color_type != (PNMFileType *)NULL) {
     request._properties._color_type = _color_type;
     request._properties._alpha_type = _alpha_type;
@@ -353,7 +366,7 @@ match_texture(TextureImage *texture) const {
   if (_format != EggTexture::F_unspecified) {
     request._format = _format;
   }
-  
+
   bool got_cont = false;
   Keywords::const_iterator ki;
   for (ki = _keywords.begin(); ki != _keywords.end(); ++ki) {
@@ -402,7 +415,7 @@ match_texture(TextureImage *texture) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TxaLine::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void TxaLine::
 output(ostream &out) const {

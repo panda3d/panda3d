@@ -1,6 +1,19 @@
 // Filename: fltRecord.cxx
 // Created by:  drose (24Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltRecord.h"
@@ -32,7 +45,7 @@ TypeHandle FltRecord::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: FltRecord::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltRecord::
 FltRecord(FltHeader *header) :
@@ -43,7 +56,7 @@ FltRecord(FltHeader *header) :
 ////////////////////////////////////////////////////////////////////
 //     Function: FltRecord::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltRecord::
 ~FltRecord() {
@@ -560,7 +573,7 @@ read_record_and_children(FltRecordReader &reader) {
       if (result != FE_ok) {
         return result;
       }
-      
+
       while (reader.get_opcode() != FO_pop) {
         PT(FltRecord) child = create_new_record(reader.get_opcode());
         FltError result = child->read_record_and_children(reader);
@@ -590,7 +603,7 @@ read_record_and_children(FltRecordReader &reader) {
       if (result != FE_ok) {
         return result;
       }
-      
+
       while (reader.get_opcode() != FO_pop_face) {
         PT(FltRecord) subface = create_new_record(reader.get_opcode());
         FltError result = subface->read_record_and_children(reader);
@@ -610,7 +623,7 @@ read_record_and_children(FltRecordReader &reader) {
       if (result != FE_ok) {
         return result;
       }
-      
+
       while (reader.get_opcode() != FO_pop_extension) {
         PT(FltRecord) extension = create_new_record(reader.get_opcode());
         FltError result = extension->read_record_and_children(reader);

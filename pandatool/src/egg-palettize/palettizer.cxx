@@ -1,6 +1,19 @@
 // Filename: palettizer.cxx
 // Created by:  drose (01Dec00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "palettizer.h"
@@ -79,7 +92,7 @@ public:
 ////////////////////////////////////////////////////////////////////
 //     Function: Palettizer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Palettizer::
 Palettizer() {
@@ -111,7 +124,7 @@ Palettizer() {
 //               perusal.
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
-report_pi() const { 
+report_pi() const {
   // Start out with the cross links and back counts; some of these are
   // nice to report.
   EggFiles::const_iterator efi;
@@ -119,12 +132,12 @@ report_pi() const {
     (*efi).second->build_cross_links();
   }
 
-  cout 
+  cout
     << "\nparams\n"
     << "  map directory: " << _map_dirname << "\n"
-    << "  shadow directory: " 
+    << "  shadow directory: "
     << FilenameUnifier::make_user_filename(_shadow_dirname) << "\n"
-    << "  egg relative directory: " 
+    << "  egg relative directory: "
     << FilenameUnifier::make_user_filename(_rel_dirname) << "\n"
     << "  palettize size: " << _pal_x_size << " by " << _pal_y_size << "\n"
     << "  margin: " << _margin << "\n"
@@ -141,7 +154,7 @@ report_pi() const {
        << "  remap UV's for characters: " << _remap_char_uv << "\n";
 
   if (_color_type != (PNMFileType *)NULL) {
-    cout << "  generate image files of type: " 
+    cout << "  generate image files of type: "
          << _color_type->get_suggested_extension();
     if (_alpha_type != (PNMFileType *)NULL) {
       cout << "," << _alpha_type->get_suggested_extension();
@@ -150,7 +163,7 @@ report_pi() const {
   }
 
   if (_shadow_color_type != (PNMFileType *)NULL) {
-    cout << "  generate shadow palette files of type: " 
+    cout << "  generate shadow palette files of type: "
          << _shadow_color_type->get_suggested_extension();
     if (_shadow_alpha_type != (PNMFileType *)NULL) {
       cout << "," << _shadow_alpha_type->get_suggested_extension();
@@ -185,7 +198,7 @@ report_pi() const {
   }
   sort(sorted_groups.begin(), sorted_groups.end(),
        SortGroupsByPreference());
-       
+
   cout << "\npalette groups\n";
   vector<PaletteGroup *>::iterator si;
   for (si = sorted_groups.begin(); si != sorted_groups.end(); ++si) {
@@ -193,7 +206,7 @@ report_pi() const {
     if (si != sorted_groups.begin()) {
       cout << "\n";
     }
-    cout << "  " << group->get_name() << " (" 
+    cout << "  " << group->get_name() << " ("
          << group->get_dirname_order() << ","
          << group->get_dependency_order() << "): "
          << group->get_groups() << "\n";
@@ -240,7 +253,7 @@ report_statistics() const {
     sorted_groups.push_back((*gi).second);
   }
 
-  sort(sorted_groups.begin(), sorted_groups.end(), 
+  sort(sorted_groups.begin(), sorted_groups.end(),
        SortGroupsByDependencyOrder());
 
   Placements overall_placements;
@@ -266,7 +279,7 @@ report_statistics() const {
         Placements complete_placements;
         group->get_complete_placements(complete_placements);
         if (complete_placements.size() != placements.size()) {
-          cout << "\n" << group->get_name() 
+          cout << "\n" << group->get_name()
                << ", with dependents (" << complete << "):\n";
           compute_statistics(cout, 2, complete_placements);
         }
@@ -393,7 +406,7 @@ process_command_line_eggs(bool force_texture_read) {
   // Now match each of the textures mentioned in those egg files
   // against a line in the .txa file.
   CommandLineTextures::iterator ti;
-  for (ti = _command_line_textures.begin(); 
+  for (ti = _command_line_textures.begin();
        ti != _command_line_textures.end();
        ++ti) {
     TextureImage *texture = *ti;
@@ -413,7 +426,7 @@ process_command_line_eggs(bool force_texture_read) {
 
   // And now, assign each of the current set of textures to an
   // appropriate group or groups.
-  for (ti = _command_line_textures.begin(); 
+  for (ti = _command_line_textures.begin();
        ti != _command_line_textures.end();
        ++ti) {
     TextureImage *texture = *ti;
@@ -430,7 +443,7 @@ process_command_line_eggs(bool force_texture_read) {
 
   // Now that *that's* done, we need to make sure the various
   // TexturePlacements require the right size for their textures.
-  for (ti = _command_line_textures.begin(); 
+  for (ti = _command_line_textures.begin();
        ti != _command_line_textures.end();
        ++ti) {
     TextureImage *texture = *ti;
@@ -603,7 +616,7 @@ read_stale_eggs(bool redo_all) {
   EggFiles::iterator ei;
   for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
     EggFile *egg_file = (*ei).second;
-    if (!egg_file->has_data() && 
+    if (!egg_file->has_data() &&
         (egg_file->is_stale() || redo_all)) {
       if (!egg_file->read_egg()) {
         okflag = false;
@@ -853,9 +866,9 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_int32((int)_remap_char_uv);
 
   writer->write_pointer(datagram, _color_type);
-  writer->write_pointer(datagram, _alpha_type); 
+  writer->write_pointer(datagram, _alpha_type);
   writer->write_pointer(datagram, _shadow_color_type);
-  writer->write_pointer(datagram, _shadow_alpha_type); 
+  writer->write_pointer(datagram, _shadow_alpha_type);
 
   datagram.add_int32(_egg_files.size());
   EggFiles::const_iterator ei;

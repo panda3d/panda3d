@@ -1,6 +1,19 @@
 // Filename: iffId.cxx
 // Created by:  drose (23Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "iffId.h"
@@ -10,11 +23,11 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: IffId::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void IffId::
 output(ostream &out) const {
-  // If all of the characters are printable, just output them.  
+  // If all of the characters are printable, just output them.
   if (isprint(_id._c[0]) && isprint(_id._c[1]) &&
       isprint(_id._c[2]) && isprint(_id._c[3])) {
     out << _id._c[0] << _id._c[1] << _id._c[2] << _id._c[3];

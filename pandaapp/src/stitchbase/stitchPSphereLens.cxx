@@ -1,6 +1,19 @@
 // Filename: stitchPSphereLens.cxx
 // Created by:  drose (16Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "stitchPSphereLens.h"
@@ -61,7 +74,7 @@ project(const LVector3d &vec, double width_mm) const {
   // the horizontal and vertical directions.
 
   LVector3d v3 = vec * LMatrix4d::convert_mat(CS_default, CS_zup_right);
-  
+
   // To compute the x position on the frame, we only need to consider
   // the angle of the vector about the Z axis.  Project the vector
   // into the XY plane to do this.
@@ -71,7 +84,7 @@ project(const LVector3d &vec, double width_mm) const {
   // The x position is the angle about the Z axis.
   double x =
     rad_2_deg(atan2(xy[0], xy[1])) * get_focal_length(width_mm) / k;
-  
+
   // Unroll the Z angle, and the y position is the angle about the X
   // axis.
   xy = normalize(xy);
@@ -93,7 +106,7 @@ project_left(const LVector3d &vec, double width_mm) const {
   double x =
     (rad_2_deg(atan2(-xy[0], -xy[1])) - 180.0) *
     get_focal_length(width_mm) / k;
-  
+
   xy = normalize(xy);
   LVector2d yz(v3[0]*xy[0] + v3[1]*xy[1], v3[2]);
   double y =
@@ -113,7 +126,7 @@ project_right(const LVector3d &vec, double width_mm) const {
   double x =
     (rad_2_deg(atan2(-xy[0], -xy[1])) + 180.0) *
     get_focal_length(width_mm) / k;
-  
+
   xy = normalize(xy);
   LVector2d yz(v3[0]*xy[0] + v3[1]*xy[1], v3[2]);
   double y =
@@ -146,7 +159,7 @@ draw_triangle(TriangleRasterizer &rast, const LMatrix3d &mm_to_pixels,
   if (z0 < 0.0 && z1 < 0.0 && z2 < 0.0) {
     // A triangle on the southern hemisphere.  This projection will
     // reverse the vertex order.
-    if (triangle_contains_circle(LPoint2d(0.0, 0.0), 
+    if (triangle_contains_circle(LPoint2d(0.0, 0.0),
                                  _singularity_radius,
                                  xy0, xy2, xy1)) {
       // The triangle does cross the singularity!  Reject it.
@@ -156,7 +169,7 @@ draw_triangle(TriangleRasterizer &rast, const LMatrix3d &mm_to_pixels,
   } else if (z0 > 0.0 && z1 > 0.0 && z2 > 0.0) {
     // A triangle on the northern hemisphere.  This projection will
     // preserve the vertex order.
-    if (triangle_contains_circle(LPoint2d(0.0, 0.0), 
+    if (triangle_contains_circle(LPoint2d(0.0, 0.0),
                                  _singularity_radius,
                                  xy0, xy1, xy2)) {
       // The triangle does cross the singularity!  Reject it.
@@ -205,7 +218,7 @@ draw_triangle(TriangleRasterizer &rast, const LMatrix3d &mm_to_pixels,
 }
 
 void StitchPSphereLens::
-pick_up_singularity(TriangleRasterizer &rast, 
+pick_up_singularity(TriangleRasterizer &rast,
                     const LMatrix3d &mm_to_pixels,
                     const LMatrix3d &pixels_to_mm,
                     const LMatrix3d &rotate,
@@ -217,10 +230,10 @@ pick_up_singularity(TriangleRasterizer &rast,
     double d = deg_2_rad(_singularity_tolerance * 2.0);
     LPoint2d pmm = project(LVector3d(0.0, sin(d), cos(d)), width_mm);
     LPoint2d p = pmm * mm_to_pixels;
-    
+
     int xsize = rast._output->get_x_size();
     int ysize = rast._output->get_y_size();
-    
+
     int bot_y = min((int)ceil(p[1]), ysize - 1);
     RasterizerVertex v0;
     v0._p.set(0.0, 0.0);
@@ -228,14 +241,14 @@ pick_up_singularity(TriangleRasterizer &rast,
     v0._space.set(0.0, 0.0, 0.0);
     v0._alpha = 1.0;
     v0._visibility = 0;
-    
+
     int xi, yi;
     for (yi = 0; yi <= bot_y; yi++) {
       // Project xi point 1 to determine the radius.
       v0._p.set(xi, yi);
       v0._space = extrude(v0._p * pixels_to_mm, width_mm) * rotate;
       v0._uv = input->project(v0._space);
-      
+
       for (xi = 0; xi < xsize; xi++) {
         double last_u = v0._uv[0];
 
@@ -253,10 +266,10 @@ pick_up_singularity(TriangleRasterizer &rast,
     double d = deg_2_rad(_singularity_tolerance * 2.0);
     LPoint2d pmm = project(LVector3d(0.0, sin(d), -cos(d)), width_mm);
     LPoint2d p = pmm * mm_to_pixels;
-    
+
     int xsize = rast._output->get_x_size();
     int ysize = rast._output->get_y_size();
-    
+
     int top_y = max((int)floor(p[1]), 0);
     RasterizerVertex v0;
     v0._p.set(0.0, 0.0);
@@ -264,14 +277,14 @@ pick_up_singularity(TriangleRasterizer &rast,
     v0._space.set(0.0, 0.0, 0.0);
     v0._alpha = 1.0;
     v0._visibility = 0;
-    
+
     int xi, yi;
     for (yi = top_y; yi < ysize; yi++) {
       // Project xi point 1 to determine the radius.
       v0._p.set(xi, yi);
       v0._space = extrude(v0._p * pixels_to_mm, width_mm) * rotate;
       v0._uv = input->project(v0._space);
-      
+
       for (xi = 0; xi < xsize; xi++) {
         double last_u = v0._uv[0];
 

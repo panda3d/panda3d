@@ -1,6 +1,19 @@
 // Filename: pStatReader.cxx
 // Created by:  drose (09Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pStatReader.h"
@@ -18,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatReader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatReader::
 PStatReader(PStatServer *manager, PStatMonitor *monitor) :
@@ -35,7 +48,7 @@ PStatReader(PStatServer *manager, PStatMonitor *monitor) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatReader::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatReader::
 ~PStatReader() {
@@ -76,7 +89,7 @@ set_tcp_connection(Connection *tcp_connection) {
     _udp_port = _manager->get_udp_port();
     _udp_connection = _manager->open_UDP_connection(_udp_port);
   }
-  
+
   add_connection(_udp_connection);
 
   send_hello();
@@ -163,7 +176,7 @@ receive_datagram(const NetDatagram &datagram) {
 
     } else if (message._type == PStatClientControlMessage::T_datagram) {
       handle_client_udp_data(datagram);
-      
+
     } else {
       nout << "Got unexpected message from client.\n";
     }
@@ -172,7 +185,7 @@ receive_datagram(const NetDatagram &datagram) {
     handle_client_udp_data(datagram);
 
   } else {
-    nout << "Got datagram from unexpected socket.\n"; 
+    nout << "Got datagram from unexpected socket.\n";
   }
 }
 
@@ -274,4 +287,4 @@ handle_client_udp_data(const Datagram &datagram) {
   _client_data->record_new_frame(thread_index, frame_number, frame_data);
   _monitor->new_data(thread_index, frame_number);
 }
-  
+

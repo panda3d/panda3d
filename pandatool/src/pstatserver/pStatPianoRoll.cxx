@@ -1,6 +1,19 @@
 // Filename: pStatPianoRoll.cxx
 // Created by:  drose (18Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pStatPianoRoll.h"
@@ -73,7 +86,7 @@ finish(float time) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatPianoRoll::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatPianoRoll::
 PStatPianoRoll(PStatMonitor *monitor, int thread_index, int xsize, int ysize) :
@@ -91,7 +104,7 @@ PStatPianoRoll(PStatMonitor *monitor, int thread_index, int xsize, int ysize) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatPianoRoll::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatPianoRoll::
 ~PStatPianoRoll() {
@@ -110,7 +123,7 @@ update() {
   // something about the collectors and threads.
   if (client_data->get_num_collectors() != 0 &&
       client_data->get_num_threads() != 0) {
-    const PStatThreadData *thread_data = 
+    const PStatThreadData *thread_data =
       client_data->get_thread_data(_thread_index);
     if (!thread_data->is_empty()) {
       int frame_number = thread_data->get_latest_frame_number();
@@ -258,7 +271,7 @@ public:
     _client_data(client_data) {
   }
   bool operator () (int a, int b) const {
-    return 
+    return
       _client_data->get_collector_def(a)._sort >
       _client_data->get_collector_def(b)._sort;
   }
@@ -293,7 +306,7 @@ compute_page(const PStatFrameData &frame_data) {
     // If we added some new bars this time, we'll have to update our
     // list.
     const PStatClientData *client_data = _monitor->get_client_data();
-    
+
     _labels.clear();
     for (pi = _page_data.begin(); pi != _page_data.end(); ++pi) {
       int collector_index = (*pi).first;

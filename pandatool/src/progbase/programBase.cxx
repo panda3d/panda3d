@@ -1,6 +1,19 @@
 // Filename: programBase.cxx
 // Created by:  drose (13Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "programBase.h"
@@ -60,7 +73,7 @@ static void flush_nout() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ProgramBase::
 ProgramBase() {
@@ -79,19 +92,19 @@ ProgramBase() {
   _got_terminal_width = false;
   _got_option_indent = false;
 
-  add_option("h", "", 100, 
-             "Display this help page.", 
+  add_option("h", "", 100,
+             "Display this help page.",
              &ProgramBase::handle_help_option, NULL, (void *)this);
 
   // Should we report DConfig's debugging information?
   if (dconfig_cat.is_debug()) {
-    dconfig_cat.debug() 
-      << "DConfig took " << Config::get_total_time_config_init() 
-      << " CPU seconds initializing, and " 
+    dconfig_cat.debug()
+      << "DConfig took " << Config::get_total_time_config_init()
+      << " CPU seconds initializing, and "
       << Config::get_total_time_external_init()
       << " CPU seconds calling external initialization routines.\n";
     dconfig_cat.debug()
-      << "ConfigTable::GetSym() was called " 
+      << "ConfigTable::GetSym() was called "
       << Config::get_total_num_get() << " times.\n";
   }
 
@@ -102,7 +115,7 @@ ProgramBase() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ProgramBase::
 ~ProgramBase() {
@@ -168,13 +181,13 @@ show_options() {
 //               to stderr with the known _terminal_width.
 ////////////////////////////////////////////////////////////////////
 void ProgramBase::
-show_text(const string &prefix, int indent_width, string text) { 
+show_text(const string &prefix, int indent_width, string text) {
   get_terminal_width();
 
   // This is correct!  It goes go to cerr, not to nout.  Sending it to
   // nout would be cyclic, since nout is redefined to map back through
   // this function.
-  format_text(cerr, _last_newline, 
+  format_text(cerr, _last_newline,
               prefix, indent_width, text, _terminal_width);
 }
 
@@ -238,14 +251,14 @@ parse_command_line(int argc, char *argv[]) {
     // Now add it to the GNU data structures.
     struct option gopt;
     gopt.name = (char *)opt._option.c_str();
-    gopt.has_arg = (opt._parm_name.empty()) ? 
+    gopt.has_arg = (opt._parm_name.empty()) ?
       no_argument : required_argument;
     gopt.flag = (int *)NULL;
-    
+
     // Return an index into the _options_by_index array, offset by 256
     // so we don't confuse it with '?'.
     gopt.val = index;
-    
+
     long_options.push_back(gopt);
 
     options[index] = &opt;
@@ -266,7 +279,7 @@ parse_command_line(int argc, char *argv[]) {
   extern char *optarg;
   const struct option *long_opts = &long_options[0];
 
-  int flag = 
+  int flag =
     getopt_long_only(argc, argv, short_options.c_str(), long_opts, NULL);
   while (flag != EOF) {
     string arg;
@@ -315,7 +328,7 @@ parse_command_line(int argc, char *argv[]) {
       }
     }
 
-    flag = 
+    flag =
       getopt_long_only(argc, argv, short_options.c_str(), long_opts, NULL);
   }
 
@@ -454,7 +467,7 @@ clear_options() {
 ////////////////////////////////////////////////////////////////////
 void ProgramBase::
 add_option(const string &option, const string &parm_name,
-           int index_group, const string &description, 
+           int index_group, const string &description,
            OptionDispatchFunction option_function,
            bool *bool_var, void *option_data) {
   Option opt;
@@ -495,7 +508,7 @@ add_option(const string &option, const string &parm_name,
 ////////////////////////////////////////////////////////////////////
 void ProgramBase::
 add_option(const string &option, const string &parm_name,
-           int index_group, const string &description, 
+           int index_group, const string &description,
            OptionDispatchMethod option_method,
            bool *bool_var, void *option_data) {
   Option opt;
@@ -632,7 +645,7 @@ dispatch_int(const string &opt, const string &arg, void *var) {
   int *ip = (int *)var;
 
   if (!string_to_int(arg, *ip)) {
-    nout << "Invalid integer parameter for -" << opt << ": " 
+    nout << "Invalid integer parameter for -" << opt << ": "
          << arg << "\n";
     return false;
   }
@@ -682,7 +695,7 @@ dispatch_double(const string &opt, const string &arg, void *var) {
   double *ip = (double *)var;
 
   if (!string_to_double(arg, *ip)) {
-    nout << "Invalid numeric parameter for -" << opt << ": " 
+    nout << "Invalid numeric parameter for -" << opt << ": "
          << arg << "\n";
     return false;
   }
@@ -1095,12 +1108,12 @@ void ProgramBase::
 sort_options() {
   if (!_sorted_options) {
     _options_by_index.clear();
-    
+
     OptionsByName::const_iterator oi;
     for (oi = _options_by_name.begin(); oi != _options_by_name.end(); ++oi) {
       _options_by_index.push_back(&(*oi).second);
     }
-    
+
     sort(_options_by_index.begin(), _options_by_index.end(),
          SortOptionsByIndex());
     _sorted_options = true;

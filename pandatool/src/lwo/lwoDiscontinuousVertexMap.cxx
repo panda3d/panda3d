@@ -1,6 +1,19 @@
 // Filename: lwoDiscontinuousVertexMap.cxx
 // Created by:  drose (24Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "lwoDiscontinuousVertexMap.h"
@@ -81,7 +94,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
     }
 
     VMap &vmap = _vmad[polygon_index];
-    pair<VMap::iterator, bool> ir = 
+    pair<VMap::iterator, bool> ir =
       vmap.insert(VMap::value_type(vertex_index, value));
     if (!ir.second) {
       // This polygon/vertex pair was repeated in the vmad.  Is it
@@ -109,12 +122,12 @@ read_iff(IffInputFile *in, size_t stop_at) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LwoDiscontinuousVertexMap::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void LwoDiscontinuousVertexMap::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
-    << get_id() << " { map_type = " << _map_type 
+    << get_id() << " { map_type = " << _map_type
     << ", dimension = " << _dimension
     << ", name = \"" << _name << "\", "
     << _vmad.size() << " polygons }\n";

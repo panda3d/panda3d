@@ -1,6 +1,19 @@
 // Filename: gtkStatsStripWindow.h
 // Created by:  drose (14Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef GTKSTATSSTRIPWINDOW_H
@@ -20,7 +33,7 @@ class GtkStatsStripChart;
 ////////////////////////////////////////////////////////////////////
 class GtkStatsStripWindow : public GtkStatsWindow {
 public:
-  GtkStatsStripWindow(GtkStatsMonitor *monitor, int thread_index, 
+  GtkStatsStripWindow(GtkStatsMonitor *monitor, int thread_index,
                       int collector_index, bool show_level,
                       int chart_xsize, int chart_ysize);
 
@@ -48,7 +61,7 @@ private:
   bool _show_level;
   bool _title_unknown;
   bool _setup_scale_menu;
-  
+
   Gtk::Label *_title_label;
   Gtk::Label *_frame_rate_label;
   GtkStatsStripChart *_chart;

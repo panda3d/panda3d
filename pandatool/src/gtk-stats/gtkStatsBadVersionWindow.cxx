@@ -1,6 +1,19 @@
 // Filename: gtkStatsBadVersionWindow.cxx
 // Created by:  drose (18May01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "gtkStatsBadVersionWindow.h"
@@ -11,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsBadVersionWindow::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsBadVersionWindow::
 GtkStatsBadVersionWindow(GtkStatsMonitor *monitor,
@@ -24,14 +37,14 @@ GtkStatsBadVersionWindow(GtkStatsMonitor *monitor,
   box1->set_border_width(8);
   add(*manage(box1));
 
-  string message = 
+  string message =
     "Rejected connection by " +
-    monitor->get_client_progname() + " from " + 
+    monitor->get_client_progname() + " from " +
     monitor->get_client_hostname() + ".\nClient uses PStats version " +
     format_string(client_major) + "." + format_string(client_minor) +
     ",\nwhile server expects PStats version " +
     format_string(server_major) + "." + format_string(server_minor) + ".";
-      
+
   Gtk::Label *label = new Gtk::Label(message);
   label->show();
   box1->pack_start(*manage(label), true, false, 8);
@@ -52,7 +65,7 @@ GtkStatsBadVersionWindow(GtkStatsMonitor *monitor,
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsBadVersionWindow::close_clicked
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsBadVersionWindow::
 close_clicked() {

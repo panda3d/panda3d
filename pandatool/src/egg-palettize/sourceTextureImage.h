@@ -1,6 +1,19 @@
 // Filename: sourceTextureImage.h
 // Created by:  drose (28Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef SOURCETEXTUREIMAGE_H
@@ -29,7 +42,7 @@ public:
 
   void increment_egg_count();
   int get_egg_count() const;
-  
+
   bool get_size();
   bool read_header();
 
@@ -42,8 +55,8 @@ private:
   // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();
-  virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
-  virtual int complete_pointers(vector_typedWritable &plist, 
+  virtual void write_datagram(BamWriter *writer, Datagram &datagram);
+  virtual int complete_pointers(vector_typedWritable &plist,
                                 BamReader *manager);
 
 protected:

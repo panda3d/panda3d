@@ -1,6 +1,19 @@
 // Filename: textureProperties.cxx
 // Created by:  drose (29Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "textureProperties.h"
@@ -17,7 +30,7 @@ TypeHandle TextureProperties::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureProperties::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TextureProperties::
 TextureProperties() {
@@ -33,7 +46,7 @@ TextureProperties() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureProperties::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TextureProperties::
 TextureProperties(const TextureProperties &copy) :
@@ -50,7 +63,7 @@ TextureProperties(const TextureProperties &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureProperties::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void TextureProperties::
 operator = (const TextureProperties &copy) {
@@ -163,8 +176,8 @@ fully_define() {
     case EggTexture::F_rgba5:
       _num_channels = 4;
       break;
-    
-    case EggTexture::F_unspecified: 
+
+    case EggTexture::F_unspecified:
     case EggTexture::F_rgb:
     case EggTexture::F_rgb12:
     case EggTexture::F_rgb8:
@@ -225,7 +238,7 @@ fully_define() {
     case EggTexture::F_rgb332:
       break;
 
-    case EggTexture::F_rgba8:  
+    case EggTexture::F_rgba8:
       _format = EggTexture::F_rgb8;
       break;
 
@@ -298,7 +311,7 @@ update_egg_tex(EggTexture *egg_tex) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureProperties::Ordering Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool TextureProperties::
 operator < (const TextureProperties &other) const {
@@ -325,7 +338,7 @@ operator < (const TextureProperties &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureProperties::Equality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool TextureProperties::
 operator == (const TextureProperties &other) const {
@@ -340,7 +353,7 @@ operator == (const TextureProperties &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureProperties::Nonequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool TextureProperties::
 operator != (const TextureProperties &other) const {
@@ -437,17 +450,17 @@ get_filter_string(EggTexture::FilterType filter_type) {
 
   case EggTexture::FT_nearest_mipmap_nearest:
     return "m1";
-    
+
   case EggTexture::FT_linear_mipmap_nearest:
     return "m2";
-   
+
   case EggTexture::FT_nearest_mipmap_linear:
     return "m3";
-    
+
   case EggTexture::FT_linear_mipmap_linear:
     return "m";
   }
-  
+
   return "x";
 }
 

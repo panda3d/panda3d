@@ -1,6 +1,19 @@
 // Filename: cLwoSurfaceBlock.cxx
 // Created by:  drose (26Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cLwoSurfaceBlock.h"
@@ -17,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CLwoSurfaceBlock::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CLwoSurfaceBlock::
 CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
@@ -44,14 +57,14 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
   int num_hchunks = _block->_header->get_num_chunks();
   for (int hi = 0; hi < num_hchunks; hi++) {
     const IffChunk *hchunk = _block->_header->get_chunk(hi);
-    
+
     if (hchunk->is_of_type(LwoSurfaceBlockChannel::get_class_type())) {
-      const LwoSurfaceBlockChannel *bc = 
+      const LwoSurfaceBlockChannel *bc =
         DCAST(LwoSurfaceBlockChannel, hchunk);
       _channel_id = bc->_channel_id;
-      
+
     } else if (hchunk->is_of_type(LwoSurfaceBlockEnabled::get_class_type())) {
-      const LwoSurfaceBlockEnabled *ec = 
+      const LwoSurfaceBlockEnabled *ec =
         DCAST(LwoSurfaceBlockEnabled, hchunk);
       _enabled = ec->_enabled;
     }
@@ -115,7 +128,7 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
   // the dominant axis.)
   switch (_axis) {
   case LwoSurfaceBlockAxis::A_x:
-    _transform = LMatrix4d::rotate_mat(90.0, 
+    _transform = LMatrix4d::rotate_mat(90.0,
                                        LVecBase3d::unit_z(),
                                        CS_yup_left) * _transform;
     break;
@@ -124,7 +137,7 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
     break;
 
   case LwoSurfaceBlockAxis::A_z:
-    _transform = LMatrix4d::rotate_mat(-90.0, 
+    _transform = LMatrix4d::rotate_mat(-90.0,
                                        LVecBase3d::unit_x(),
                                        CS_yup_left) * _transform;
     break;
@@ -136,7 +149,7 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CLwoSurfaceBlock::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CLwoSurfaceBlock::
 ~CLwoSurfaceBlock() {

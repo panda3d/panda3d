@@ -1,6 +1,19 @@
 // Filename: eggTopstrip.cxx
 // Created by:  drose (23Feb01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggTopstrip.h"
@@ -15,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTopstrip::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggTopstrip::
 EggTopstrip() {
@@ -29,25 +42,25 @@ EggTopstrip() {
      "models that can stack one on top of the other in a sensible way.");
 
   add_option
-    ("t", "name", 0, 
+    ("t", "name", 0,
      "Specify the name of the 'top' joint, from which to draw the "
      "animation channels which will be applied to the entire animation.",
      &EggTopstrip::dispatch_string, NULL, &_top_joint_name);
 
   add_option
-    ("i", "", 0, 
+    ("i", "", 0,
      "Invert the matrix before applying.  This causes a subtractive "
      "effect.  This is the default unless -r is specified.",
      &EggTopstrip::dispatch_true, &_got_invert_transform, &_invert_transform);
 
   add_option
-    ("n", "", 0, 
+    ("n", "", 0,
      "Do not invert the matrix before applying.  This causes an "
      "additive effect.",
      &EggTopstrip::dispatch_false, &_got_invert_transform, &_invert_transform);
 
   add_option
-    ("s", "[ijkphrxyz]", 0, 
+    ("s", "[ijkphrxyz]", 0,
      "Specify the components of the transform that are to be applied.  Use "
      "any combination of the nine token letters: i, j, k represent the "
      "three scale axes; h, p, r represent rotation; and x, y, z represent "
@@ -55,7 +68,7 @@ EggTopstrip() {
      &EggTopstrip::dispatch_string, NULL, &_transform_channels);
 
   add_option
-    ("r", "file.egg", 0, 
+    ("r", "file.egg", 0,
      "Read the animation channel from the indicated egg file.  If this "
      "is not specified, the first egg file named on the command line is "
      "used.",
@@ -68,13 +81,13 @@ EggTopstrip() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTopstrip::run
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggTopstrip::
 run() {
   nassertv(_collection != (EggCharacterCollection *)NULL);
   nassertv(_collection->get_num_eggs() > 0);
-  
+
   check_transform_channels();
 
   // Get the number of characters first, in case adding the
@@ -224,24 +237,24 @@ strip_anim(EggJointData *joint_data, int from_model, EggJointData *top_joint) {
 
     if (joint_data->has_model(i)) {
       if (!top_joint->has_model(model)) {
-        nout << "Warning: Joint " << top_joint->get_name() 
+        nout << "Warning: Joint " << top_joint->get_name()
              << " is not defined in all models.\n";
         return;
       }
 
       int num_into_frames = joint_data->get_num_frames(i);
       int num_from_frames = top_joint->get_num_frames(model);
-      
+
       int num_frames = max(num_into_frames, num_from_frames);
-      
+
       EggBackPointer *back = joint_data->get_model(i);
       nassertv(back != (EggBackPointer *)NULL);
       EggJointPointer *joint;
       DCAST_INTO_V(joint, back);
-      
+
       // Compute and apply the new transforms.
       joint->begin_rebuild();
-      
+
       int f;
       for (f = 0; f < num_frames; f++) {
         LMatrix4d into = joint_data->get_frame(i, f % num_into_frames);
@@ -269,11 +282,11 @@ strip_anim(EggJointData *joint_data, int from_model, EggJointData *top_joint) {
 //               in model from_model to the vertices at egg_node.
 ////////////////////////////////////////////////////////////////////
 void EggTopstrip::
-strip_anim_vertices(EggNode *egg_node, int into_model, int from_model, 
+strip_anim_vertices(EggNode *egg_node, int into_model, int from_model,
                     EggJointData *top_joint) {
   int model = (from_model < 0) ? into_model : from_model;
   if (!top_joint->has_model(model)) {
-    nout << "Warning: Joint " << top_joint->get_name() 
+    nout << "Warning: Joint " << top_joint->get_name()
          << " is not defined in all models.\n";
     return;
   }

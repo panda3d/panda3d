@@ -1,6 +1,19 @@
 // Filename: mayaShader.cxx
 // Created by:  drose (01Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "mayaShader.h"
@@ -74,7 +87,7 @@ set_attributes(EggPrimitive &primitive, MayaFile &file) {
       tex.set_transform(mat);
     }
 
-    EggTexture *new_tex = 
+    EggTexture *new_tex =
       textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
 
     primitive.set_texture(new_tex);
@@ -92,7 +105,7 @@ compute_texture_matrix() {
                   _offset[1] - _translate_frame[1] / _coverage[1]);
 
   return
-    (LMatrix3d::translate_mat(LVector2d(-0.5, -0.5)) * 
+    (LMatrix3d::translate_mat(LVector2d(-0.5, -0.5)) *
      LMatrix3d::rotate_mat(_rotate_frame) *
      LMatrix3d::translate_mat(LVector2d(0.5, 0.5))) *
     LMatrix3d::scale_mat(scale) *
@@ -138,7 +151,7 @@ read_surface_shader(MObject shader) {
   if (!color_plug.isNull()) {
     MPlugArray color_pa;
     color_plug.connectedTo(color_pa, true, false);
-    
+
     for (size_t i = 0; i < color_pa.length(); i++) {
       read_surface_color(color_pa[0].node());
     }
@@ -157,7 +170,7 @@ read_surface_shader(MObject shader) {
 
   if (!_has_color && !_has_texture) {
     if (verbose >= 2) {
-      nout << "  Color definition not found.\n";    
+      nout << "  Color definition not found.\n";
     }
   }
   return true;
@@ -171,12 +184,12 @@ read_surface_color(MObject color) {
     get_vec2f_attribute(color, "coverage", _coverage);
     get_vec2f_attribute(color, "translateFrame", _translate_frame);
     get_angle_attribute(color, "rotateFrame", _rotate_frame);
-    
+
     get_bool_attribute(color, "mirror", _mirror);
     get_bool_attribute(color, "stagger", _stagger);
     get_bool_attribute(color, "wrapU", _wrap_u);
     get_bool_attribute(color, "wrapV", _wrap_v);
-    
+
     get_vec2f_attribute(color, "repeatUV", _repeat_uv);
     get_vec2f_attribute(color, "offset", _offset);
     get_angle_attribute(color, "rotateUV", _rotate_uv);

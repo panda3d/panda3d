@@ -1,6 +1,19 @@
 // Filename: fltTransformScale.cxx
 // Created by:  drose (30Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltTransformScale.h"
@@ -12,7 +25,7 @@ TypeHandle FltTransformScale::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformScale::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltTransformScale::
 FltTransformScale(FltHeader *header) : FltTransformRecord(header) {
@@ -36,7 +49,7 @@ set(const LPoint3d &center, const LVecBase3f &scale) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformScale::get_center
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const LPoint3d &FltTransformScale::
 get_center() const {
@@ -46,7 +59,7 @@ get_center() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformScale::get_scale
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const LVecBase3f &FltTransformScale::
 get_scale() const {
@@ -56,11 +69,11 @@ get_scale() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformScale::recompute_matrix
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FltTransformScale::
 recompute_matrix() {
-  _matrix = 
+  _matrix =
     LMatrix4d::translate_mat(-_center) *
     LMatrix4d::scale_mat(LCAST(double, _scale)) *
     LMatrix4d::translate_mat(_center);

@@ -1,6 +1,19 @@
 // Filename: eggTextureCards.cxx
 // Created by:  drose (21Feb01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggTextureCards.h"
@@ -17,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTextureCards::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggTextureCards::
 EggTextureCards() : EggWriter(true, true) {
@@ -37,7 +50,7 @@ EggTextureCards() : EggWriter(true, true) {
   add_runline("[opts] texture [texture ...] >output.egg");
 
   add_option
-    ("g", "left,right,bottom,top", 0, 
+    ("g", "left,right,bottom,top", 0,
      "Specifies the geometry of each polygon.  The default is a unit polygon "
      "centered on the origin: -0.5,0.5,-0.5,0.5.  Polygons are always created "
      "on the X-Y plane.  If -p is not also specified, all polygons will be "
@@ -45,7 +58,7 @@ EggTextureCards() : EggWriter(true, true) {
      &EggTextureCards::dispatch_double_quad, NULL, &_polygon_geometry[0]);
 
   add_option
-    ("p", "xpixels,ypixels", 0, 
+    ("p", "xpixels,ypixels", 0,
      "Indicates that polygons should be sized in proportion to the pixel "
      "size of the texture image.  This will potentially create a "
      "different size and shape polygon for each texture.  The coordinate "
@@ -57,7 +70,7 @@ EggTextureCards() : EggWriter(true, true) {
      &EggTextureCards::dispatch_double_pair, &_got_pixel_scale, &_pixel_scale[0]);
 
   add_option
-    ("c", "r,g,b[,a]", 0, 
+    ("c", "r,g,b[,a]", 0,
      "Specifies the color of each polygon.  The default is white: 1,1,1,1.",
      &EggTextureCards::dispatch_color, NULL, &_polygon_color[0]);
 
@@ -117,7 +130,7 @@ dispatch_wrap_mode(const string &opt, const string &arg, void *var) {
     } else if (arg == "c") {
       *wmp = EggTexture::WM_clamp;
     } else {
-      nout << "Invalid wrap mode parameter for -" << opt << ": " 
+      nout << "Invalid wrap mode parameter for -" << opt << ": "
            << arg << "\n";
       return false;
     }
@@ -180,7 +193,7 @@ make_vertices(const LPoint4d &geometry, EggVertexPool *vpool,
     (LPoint3d(geometry[1], geometry[2], 0.0));
   v4 = vpool->make_new_vertex
     (LPoint3d(geometry[1], geometry[3], 0.0));
-  
+
   v1->set_uv(TexCoordd(0.0, 1.0));
   v2->set_uv(TexCoordd(0.0, 0.0));
   v3->set_uv(TexCoordd(1.0, 0.0));
@@ -190,7 +203,7 @@ make_vertices(const LPoint4d &geometry, EggVertexPool *vpool,
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTextureCards::run
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggTextureCards::
 run() {
@@ -248,7 +261,7 @@ run() {
       sub_group->add_child(poly);
       poly->set_texture(tref);
       poly->set_color(_polygon_color);
-      
+
       poly->add_vertex(v1);
       poly->add_vertex(v2);
       poly->add_vertex(v3);

@@ -1,6 +1,19 @@
 // Filename: fltVertex.cxx
 // Created by:  drose (25Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltVertex.h"
@@ -13,7 +26,7 @@ TypeHandle FltVertex::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: FltVertex::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltVertex::
 FltVertex(FltHeader *header) : FltRecord(header) {
@@ -64,16 +77,16 @@ get_record_length() const {
     switch (get_opcode()) {
     case FO_vertex_c:
       return 36;
-      
+
     case FO_vertex_cn:
       return 48;
-      
+
     case FO_vertex_cnu:
       return 56;
-      
+
     case FO_vertex_cu:
       return 44;
-      
+
     default:
       nassertr(false, 0);
     }
@@ -83,16 +96,16 @@ get_record_length() const {
     switch (get_opcode()) {
     case FO_vertex_c:
       return 40;
-      
+
     case FO_vertex_cn:
       return 56;
-      
+
     case FO_vertex_cnu:
       return 64;
-      
+
     case FO_vertex_cu:
       return 48;
-      
+
     default:
       nassertr(false, 0);
     }
@@ -220,7 +233,7 @@ build_record(FltRecordWriter &writer) const {
   if (!FltRecord::build_record(writer)) {
     return false;
   }
-  
+
   writer.set_opcode(get_opcode());
   Datagram &datagram = writer.update_datagram();
 

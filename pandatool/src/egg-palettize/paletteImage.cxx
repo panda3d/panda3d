@@ -1,6 +1,19 @@
 // Filename: paletteImage.cxx
 // Created by:  drose (01Dec00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "paletteImage.h"
@@ -39,7 +52,7 @@ ClearedRegion() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PaletteImage::ClearedRegion::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PaletteImage::ClearedRegion::
 ClearedRegion(TexturePlacement *placement) {
@@ -52,7 +65,7 @@ ClearedRegion(TexturePlacement *placement) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PaletteImage::ClearedRegion::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PaletteImage::ClearedRegion::
 ClearedRegion(const PaletteImage::ClearedRegion &copy) :
@@ -66,7 +79,7 @@ ClearedRegion(const PaletteImage::ClearedRegion &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PaletteImage::ClearedRegion::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PaletteImage::ClearedRegion::
 operator = (const PaletteImage::ClearedRegion &copy) {
@@ -162,7 +175,7 @@ PaletteImage(PalettePage *page, int index) :
   _got_image = false;
 
   ostringstream name;
-  name << page->get_group()->get_name() << "_palette_" 
+  name << page->get_group()->get_name() << "_palette_"
        << page->get_name() << "_" << index + 1;
 
   _basename = name.str();
@@ -223,8 +236,8 @@ count_utilization() const {
   for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
     TexturePlacement *placement = (*pi);
 
-    int texture_pixels = 
-      placement->get_placed_x_size() * 
+    int texture_pixels =
+      placement->get_placed_x_size() *
       placement->get_placed_y_size();
     used_pixels += texture_pixels;
   }
@@ -256,11 +269,11 @@ count_coverage() const {
     TextureImage *texture = placement->get_texture();
     nassertr(texture != (TextureImage *)NULL, 0.0);
 
-    int orig_pixels = 
+    int orig_pixels =
       texture->get_x_size() *
       texture->get_y_size();
-    int placed_pixels = 
-      placement->get_placed_x_size() * 
+    int placed_pixels =
+      placement->get_placed_x_size() *
       placement->get_placed_y_size();
 
     coverage_pixels += placed_pixels - orig_pixels;
@@ -298,13 +311,13 @@ place(TexturePlacement *placement) {
 void PaletteImage::
 unplace(TexturePlacement *placement) {
   nassertv(placement->is_placed() && placement->get_image() == this);
-  
+
   Placements::iterator pi;
   pi = find(_placements.begin(), _placements.end(), placement);
   if (pi != _placements.end()) {
     _placements.erase(pi);
   }
-  
+
   _cleared_regions.push_back(ClearedRegion(placement));
 }
 
@@ -378,10 +391,10 @@ optimal_resize() {
   } while (success);
 
   if (resized_any) {
-    nout << "Resizing " 
+    nout << "Resizing "
          << FilenameUnifier::make_user_filename(get_filename()) << " to "
          << _x_size << " " << _y_size << "\n";
-  } 
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -435,7 +448,7 @@ resize_image(int x_size, int y_size) {
     // If it didn't work, phooey.  Put 'em all back.
     _x_size = saved_x_size;
     _y_size = saved_y_size;
-    
+
     Placements remove;
     remove.swap(_placements);
     for (pi = remove.begin(); pi != remove.end(); ++pi) {
@@ -469,7 +482,7 @@ write_placements(ostream &out, int indent_level) const {
     placement->write_placed(out, indent_level);
   }
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PaletteImage::reset_image
 //       Access: Public
@@ -502,7 +515,7 @@ void PaletteImage::
 setup_shadow_image() {
   _shadow_image.make_shadow_image(_basename);
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PaletteImage::update_image
 //       Access: Public
@@ -641,7 +654,7 @@ find_overlap(int x, int y, int x_size, int y_size) const {
   Placements::const_iterator pi;
   for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
     TexturePlacement *placement = (*pi);
-    if (placement->is_placed() && 
+    if (placement->is_placed() &&
         placement->intersects(x, y, x_size, y_size)) {
       return placement;
     }

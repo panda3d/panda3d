@@ -1,6 +1,19 @@
 // Filename: stitchImageProgram.cxx
 // Created by:  drose (16Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "stitchImageProgram.h"
@@ -9,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: StitchImageProgram::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 StitchImageProgram::
 StitchImageProgram() {
@@ -22,7 +35,7 @@ StitchImageProgram() {
      "algorithm (no graphics hardware is used).");
 
   add_option
-    ("f", "", 0, 
+    ("f", "", 0,
      "Apply a very simple filter in an attempt to smooth the results.",
      &StitchImageProgram::dispatch_none, &_filter_output);
 }
@@ -30,7 +43,7 @@ StitchImageProgram() {
 ////////////////////////////////////////////////////////////////////
 //     Function: StitchImageProgram::run
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void StitchImageProgram::
 run() {

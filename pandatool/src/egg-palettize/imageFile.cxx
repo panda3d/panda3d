@@ -1,6 +1,19 @@
 // Filename: imageFile.cxx
 // Created by:  drose (29Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "imageFile.h"
@@ -21,7 +34,7 @@ TypeHandle ImageFile::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: ImageFile::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ImageFile::
 ImageFile() {
@@ -54,7 +67,7 @@ make_shadow_image(const string &basename) {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool ImageFile::
-is_size_known() const { 
+is_size_known() const {
   return _size_known;
 }
 
@@ -66,7 +79,7 @@ is_size_known() const {
 //               is_size_known() returns true.
 ////////////////////////////////////////////////////////////////////
 int ImageFile::
-get_x_size() const { 
+get_x_size() const {
   nassertr(is_size_known(), 0);
   return _x_size;
 }
@@ -79,7 +92,7 @@ get_x_size() const {
 //               is_size_known() returns true.
 ////////////////////////////////////////////////////////////////////
 int ImageFile::
-get_y_size() const { 
+get_y_size() const {
   nassertr(is_size_known(), 0);
   return _y_size;
 }
@@ -91,7 +104,7 @@ get_y_size() const {
 //               is known, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool ImageFile::
-has_num_channels() const { 
+has_num_channels() const {
   return _properties.has_num_channels();
 }
 
@@ -103,7 +116,7 @@ has_num_channels() const {
 //               returns true.
 ////////////////////////////////////////////////////////////////////
 int ImageFile::
-get_num_channels() const { 
+get_num_channels() const {
   return _properties.get_num_channels();
 }
 
@@ -226,7 +239,7 @@ exists() const {
   if (!_filename.exists()) {
     return false;
   }
-  if (_properties._alpha_type != (PNMFileType *)NULL && 
+  if (_properties._alpha_type != (PNMFileType *)NULL &&
       _properties.uses_alpha() &&
       !_alpha_filename.empty()) {
     if (!_alpha_filename.exists()) {
@@ -291,7 +304,7 @@ bool ImageFile::
 write(const PNMImage &image) const {
   nassertr(!_filename.empty(), false);
 
-  if (!image.has_alpha() || 
+  if (!image.has_alpha() ||
       _properties._alpha_type == (PNMFileType *)NULL) {
     if (!_alpha_filename.empty() && _alpha_filename.exists()) {
       nout << "Deleting " << FilenameUnifier::make_user_filename(_alpha_filename) << "\n";

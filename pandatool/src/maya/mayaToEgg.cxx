@@ -1,6 +1,19 @@
 // Filename: mayaToEgg.cxx
 // Created by:  drose (15Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "mayaToEgg.h"
@@ -11,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaToEgg::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MayaToEgg::
 MayaToEgg() :
@@ -46,8 +59,8 @@ MayaToEgg() :
      &MayaToEgg::dispatch_none, &ignore_transforms);
 
   add_option
-    ("v", "", 0, 
-     "Increase verbosity.  More v's means more verbose.", 
+    ("v", "", 0,
+     "Increase verbosity.  More v's means more verbose.",
      &MayaToEgg::dispatch_count, NULL, &verbose);
   verbose = 0;
 }
@@ -55,7 +68,7 @@ MayaToEgg() :
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaToEgg::run
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MayaToEgg::
 run() {
@@ -64,7 +77,7 @@ run() {
     nout << "Unable to initialize Maya.\n";
     exit(1);
   }
-  
+
   if (!_maya.read(_input_filename.c_str())) {
     nout << "Error reading " << _input_filename << ".\n";
     exit(1);

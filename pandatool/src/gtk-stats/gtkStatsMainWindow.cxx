@@ -1,6 +1,19 @@
 // Filename: gtkStatsMainWindow.cxx
 // Created by:  drose (14Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "gtkStatsMainWindow.h"
@@ -22,7 +35,7 @@ static void signal_handler(int) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsMainWindow::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsMainWindow::
 GtkStatsMainWindow(int port) : _port(port) {
@@ -49,7 +62,7 @@ GtkStatsMainWindow(int port) : _port(port) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsMainWindow::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsMainWindow::
 ~GtkStatsMainWindow() {
@@ -60,7 +73,7 @@ GtkStatsMainWindow::
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsMainWindow::destruct
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GtkStatsMainWindow::
 destruct() {
@@ -75,7 +88,7 @@ destruct() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsMainWindow::layout_window
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsMainWindow::
 layout_window() {
@@ -86,7 +99,7 @@ layout_window() {
   box1->set_border_width(8);
   add(*manage(box1));
 
-  Gtk::Label *listening = 
+  Gtk::Label *listening =
     new Gtk::Label("Listening on port " + format_string(_port));
   listening->show();
   box1->pack_start(*manage(listening), true, false, 8);
@@ -105,7 +118,7 @@ layout_window() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsMainWindow::close_clicked
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsMainWindow::
 close_clicked() {
@@ -115,7 +128,7 @@ close_clicked() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsMainWindow::idle_callback
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 gint GtkStatsMainWindow::
 idle_callback() {

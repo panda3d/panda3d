@@ -1,6 +1,19 @@
 // Filename: gtkStatsWindow.cxx
 // Created by:  drose (14Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "gtkStatsWindow.h"
@@ -14,7 +27,7 @@ using Gtk::Menu_Helpers::SeparatorElem;
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsWindow::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsWindow::
 GtkStatsWindow(GtkStatsMonitor *monitor) : _monitor(monitor) {
@@ -32,7 +45,7 @@ GtkStatsWindow(GtkStatsMonitor *monitor) : _monitor(monitor) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsWindow::destruct
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GtkStatsWindow::
 destruct() {
@@ -87,7 +100,7 @@ new_collector() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsWindow::idle
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsWindow::
 idle() {
@@ -99,35 +112,35 @@ idle() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsWindow::setup_menu
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsWindow::
 setup_menu() {
   _file_menu = new Gtk::Menu;
 
   _file_menu->items().push_back
-    (MenuElem("New strip chart", 
+    (MenuElem("New strip chart",
               slot(this, &GtkStatsWindow::menu_open_strip_chart)));
   _file_menu->items().push_back
-    (MenuElem("New piano roll", 
+    (MenuElem("New piano roll",
               slot(this, &GtkStatsWindow::menu_open_piano_roll)));
 
   /*
   _file_menu->items().push_back
-    (MenuElem("New window", 
+    (MenuElem("New window",
               slot(this, &GtkStatsWindow::menu_new_window)));
   */
 
   _file_menu->items().push_back(SeparatorElem());
 
   _file_menu->items().push_back
-    (MenuElem("Disconnect from client", 
+    (MenuElem("Disconnect from client",
               slot(this, &GtkStatsWindow::menu_disconnect)));
   _file_menu->items().push_back
-    (MenuElem("Close window", 
+    (MenuElem("Close window",
               slot(this, &GtkStatsWindow::menu_close_window)));
   _file_menu->items().push_back
-    (MenuElem("Close all windows this client", 
+    (MenuElem("Close all windows this client",
               slot(this, &GtkStatsWindow::menu_close_all_windows)));
 
   _menu->items().push_back(MenuElem("File", *manage(_file_menu)));
@@ -160,7 +173,7 @@ menu_open_piano_roll() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsWindow::menu_new_window
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsWindow::
 menu_new_window() {
@@ -169,7 +182,7 @@ menu_new_window() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsWindow::menu_close_window
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsWindow::
 menu_close_window() {
@@ -179,7 +192,7 @@ menu_close_window() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsWindow::menu_close_all_windows
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsWindow::
 menu_close_all_windows() {
@@ -189,7 +202,7 @@ menu_close_all_windows() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsWindow::menu_disconnect
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsWindow::
 menu_disconnect() {

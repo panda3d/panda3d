@@ -1,6 +1,19 @@
 // Filename: textureImage.h
 // Created by:  drose (28Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef TEXTUREIMAGE_H
@@ -59,7 +72,7 @@ public:
   bool is_surprise() const;
   bool is_used() const;
 
-  SourceTextureImage *get_source(const Filename &filename, 
+  SourceTextureImage *get_source(const Filename &filename,
                                  const Filename &alpha_filename);
 
   SourceTextureImage *get_preferred_source();
@@ -78,7 +91,7 @@ private:
   typedef map<string, SourceTextureImage *> Sources;
   typedef map<string, DestTextureImage *> Dests;
 
-  static int compute_egg_count(PaletteGroup *group, 
+  static int compute_egg_count(PaletteGroup *group,
                                const WorkingEggs &egg_files);
 
   void assign_to_groups(const PaletteGroups &groups);
@@ -88,7 +101,7 @@ private:
   void remove_old_dests(const Dests &a, const Dests &b);
   void copy_new_dests(const Dests &a, const Dests &b);
 
-  string get_source_key(const Filename &filename, 
+  string get_source_key(const Filename &filename,
                         const Filename &alpha_filename);
 
 private:
@@ -96,7 +109,7 @@ private:
   TextureProperties _pre_txa_properties;
   SourceTextureImage *_preferred_source;
   bool _is_surprise;
- 
+
   bool _ever_read_image;
   bool _forced_grayscale;
   bool _forced_unalpha;
@@ -119,8 +132,8 @@ private:
   // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();
-  virtual void write_datagram(BamWriter *writer, Datagram &datagram); 
-  virtual int complete_pointers(vector_typedWritable &plist, 
+  virtual void write_datagram(BamWriter *writer, Datagram &datagram);
+  virtual int complete_pointers(vector_typedWritable &plist,
                                 BamReader *manager);
 
 protected:

@@ -1,6 +1,19 @@
 // Filename: eggToSomething.cxx
 // Created by:  drose (15Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggToSomething.h"
@@ -14,10 +27,10 @@
 //               in printing error messages and such.
 ////////////////////////////////////////////////////////////////////
 EggToSomething::
-EggToSomething(const string &format_name, 
+EggToSomething(const string &format_name,
                const string &preferred_extension,
-               bool allow_last_param, bool allow_stdout) : 
-  EggConverter(format_name, preferred_extension, allow_last_param, 
+               bool allow_last_param, bool allow_stdout) :
+  EggConverter(format_name, preferred_extension, allow_last_param,
                allow_stdout)
 {
   clear_runlines();
@@ -34,7 +47,7 @@ EggToSomething(const string &format_name,
   if (_allow_stdout) {
     if (_allow_last_param) {
       o_description =
-        "Specify the filename to which the resulting " + format_name + 
+        "Specify the filename to which the resulting " + format_name +
         " file will be written.  "
         "If this option is omitted, the last parameter name is taken to be the "
         "name of the output file, or standard output is used if there are no "
@@ -43,7 +56,7 @@ EggToSomething(const string &format_name,
       o_description =
         "Specify the filename to which the resulting " + format_name +
         " file will be written.  "
-        "If this option is omitted, the " + format_name + 
+        "If this option is omitted, the " + format_name +
         " file is written to standard output.";
     }
   } else {
@@ -55,7 +68,7 @@ EggToSomething(const string &format_name,
         "name of the output file.";
     } else {
       o_description =
-        "Specify the filename to which the resulting " + format_name + 
+        "Specify the filename to which the resulting " + format_name +
         " file will be written.";
     }
   }

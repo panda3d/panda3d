@@ -1,6 +1,19 @@
 // Filename: gtkStatsStripWindow.cxx
 // Created by:  drose (14Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "gtkStatsStripWindow.h"
@@ -19,10 +32,10 @@ using Gtk::Menu_Helpers::SeparatorElem;
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsStripWindow::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsStripWindow::
-GtkStatsStripWindow(GtkStatsMonitor *monitor, int thread_index, 
+GtkStatsStripWindow(GtkStatsMonitor *monitor, int thread_index,
                     int collector_index, bool show_level,
                     int chart_xsize, int chart_ysize) :
   GtkStatsWindow(monitor),
@@ -111,7 +124,7 @@ new_collector() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsStripWindow::idle
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripWindow::
 idle() {
@@ -122,7 +135,7 @@ idle() {
   if (!thread_data->is_empty()) {
     float frame_rate = thread_data->get_frame_rate();
     char buffer[128];
-    sprintf(buffer, "Frame rate: %0.1f Hz", frame_rate); 
+    sprintf(buffer, "Frame rate: %0.1f Hz", frame_rate);
     _frame_rate_label->set_text(buffer);
   }
 
@@ -134,14 +147,14 @@ idle() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsStripWindow::setup_menu
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripWindow::
 setup_menu() {
   GtkStatsWindow::setup_menu();
 
   Gtk::Menu *speed_menu = new Gtk::Menu;
-    
+
   speed_menu->items().push_back
     (MenuElem("1",  // 1 chart width scrolls by per minute.
               bind(slot(this, &GtkStatsStripWindow::menu_hscale), 1.0f)));
@@ -149,13 +162,13 @@ setup_menu() {
     (MenuElem("2",  // 2 chart widths scroll by per minute.
               bind(slot(this, &GtkStatsStripWindow::menu_hscale), 2.0f)));
   speed_menu->items().push_back
-    (MenuElem("3", 
+    (MenuElem("3",
               bind(slot(this, &GtkStatsStripWindow::menu_hscale), 3.0f)));
   speed_menu->items().push_back
-    (MenuElem("6", 
+    (MenuElem("6",
               bind(slot(this, &GtkStatsStripWindow::menu_hscale), 6.0f)));
   speed_menu->items().push_back
-    (MenuElem("12", 
+    (MenuElem("12",
               bind(slot(this, &GtkStatsStripWindow::menu_hscale), 12.0f)));
 
   _menu->items().push_back(MenuElem("Speed", *manage(speed_menu)));
@@ -233,7 +246,7 @@ setup_scale_menu() {
     } else {
       label = _chart->format_number(scale, PStatGraph::GBU_ms | PStatGraph::GBU_hz | PStatGraph::GBU_show_units);
     }
-    
+
     _scale_menu->items().push_back
       (MenuElem(label,
                 bind(slot(this, &GtkStatsStripWindow::menu_vscale), scale)));
@@ -245,11 +258,11 @@ setup_scale_menu() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsStripWindow::menu_new_window
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripWindow::
 menu_new_window() {
-  new GtkStatsStripWindow(_monitor, _thread_index, _collector_index, 
+  new GtkStatsStripWindow(_monitor, _thread_index, _collector_index,
                           _show_level,
                           _chart->get_xsize(), _chart->get_ysize());
 }
@@ -302,7 +315,7 @@ menu_auto_vscale() {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripWindow::
 menu_show_levels(int collector_index) {
-  new GtkStatsStripWindow(_monitor, _thread_index, collector_index, 
+  new GtkStatsStripWindow(_monitor, _thread_index, collector_index,
                           true,
                           _chart->get_xsize(), _chart->get_ysize());
 }
@@ -319,7 +332,7 @@ menu_show_levels(int collector_index) {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripWindow::
 open_subchart(int collector_index) {
-  new GtkStatsStripWindow(_monitor, _thread_index, collector_index, 
+  new GtkStatsStripWindow(_monitor, _thread_index, collector_index,
                           _show_level,
                           _chart->get_xsize(), _chart->get_ysize());
 }
@@ -327,7 +340,7 @@ open_subchart(int collector_index) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsStripWindow::layout_window
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripWindow::
 layout_window(int chart_xsize, int chart_ysize) {
@@ -342,7 +355,7 @@ layout_window(int chart_xsize, int chart_ysize) {
 
   Gtk::HBox *title_hbox = new Gtk::HBox;
   title_hbox->show();
-  chart_table->attach(*manage(title_hbox), 1, 2, 0, 1, 
+  chart_table->attach(*manage(title_hbox), 1, 2, 0, 1,
                       (GTK_FILL|GTK_EXPAND), 0);
 
   _title_label = new Gtk::Label(get_title_text());
@@ -365,13 +378,13 @@ layout_window(int chart_xsize, int chart_ysize) {
   chart_table->attach(*manage(frame), 1, 2, 1, 2);
 
   if (_show_level) {
-    _chart = new GtkStatsStripChart(_monitor, 
-                                    _monitor->get_level_view(_collector_index, _thread_index), 
+    _chart = new GtkStatsStripChart(_monitor,
+                                    _monitor->get_level_view(_collector_index, _thread_index),
                                     _collector_index,
                                     chart_xsize, chart_ysize);
   } else {
-    _chart = new GtkStatsStripChart(_monitor, 
-                                    _monitor->get_view(_thread_index), 
+    _chart = new GtkStatsStripChart(_monitor,
+                                    _monitor->get_view(_thread_index),
                                     _collector_index,
                                     chart_xsize, chart_ysize);
   }

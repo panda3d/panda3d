@@ -1,6 +1,19 @@
 // Filename: paletteGroup.cxx
 // Created by:  drose (30Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "paletteGroup.h"
@@ -307,12 +320,12 @@ get_dirname_order() const {
 ////////////////////////////////////////////////////////////////////
 bool PaletteGroup::
 is_preferred_over(const PaletteGroup &other) const {
-  if (get_dirname_order() != other.get_dirname_order()) { 
+  if (get_dirname_order() != other.get_dirname_order()) {
     return (get_dirname_order() > other.get_dirname_order());
-    
-  } else if (get_dependency_order() != other.get_dependency_order()) { 
+
+  } else if (get_dependency_order() != other.get_dependency_order()) {
     return (get_dependency_order() > other.get_dependency_order());
-    
+
   } else {
     return (get_egg_count() < other.get_egg_count());
   }
@@ -450,7 +463,7 @@ write_image_info(ostream &out, int indent_level) const {
   for (pli = _placements.begin(); pli != _placements.end(); ++pli) {
     TexturePlacement *placement = (*pli);
     if (placement->get_omit_reason() != OR_none) {
-      indent(out, indent_level) 
+      indent(out, indent_level)
         << placement->get_texture()->get_name()
         << " unplaced because ";
       switch (placement->get_omit_reason()) {
@@ -459,7 +472,7 @@ write_image_info(ostream &out, int indent_level) const {
         break;
 
       case OR_size:
-        out << "size (" << placement->get_x_size() << " " 
+        out << "size (" << placement->get_x_size() << " "
             << placement->get_y_size() << ")";
         break;
 

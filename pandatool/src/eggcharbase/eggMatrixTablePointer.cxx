@@ -1,6 +1,19 @@
 // Filename: eggMatrixTablePointer.cxx
 // Created by:  drose (26Feb01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggMatrixTablePointer.h"
@@ -13,7 +26,7 @@ TypeHandle EggMatrixTablePointer::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMatrixTablePointer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggMatrixTablePointer::
 EggMatrixTablePointer(EggObject *object) {
@@ -104,7 +117,7 @@ add_frame(const LMatrix4d &mat) {
   if (_xform == (EggXfmSAnim *)NULL) {
     return false;
   }
-   
+
   return _xform->add_data(mat);
 }
 
@@ -130,7 +143,7 @@ do_rebuild() {
   if (_xform == (EggXfmSAnim *)NULL) {
     return false;
   }
-   
+
   _xform->clear_data();
   RebuildFrames::const_iterator fi;
   for (fi = _rebuild_frames.begin(); fi != _rebuild_frames.end(); ++fi) {

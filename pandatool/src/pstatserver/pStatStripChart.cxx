@@ -1,6 +1,19 @@
 // Filename: pStatStripChart.cxx
 // Created by:  drose (15Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pStatStripChart.h"
@@ -17,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatStripChart::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatStripChart::
 PStatStripChart(PStatMonitor *monitor, PStatView &view,
@@ -53,7 +66,7 @@ PStatStripChart(PStatMonitor *monitor, PStatView &view,
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatStripChart::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatStripChart::
 ~PStatStripChart() {
@@ -88,19 +101,19 @@ update() {
     const PStatThreadData *thread_data = _view.get_thread_data();
     if (!thread_data->is_empty()) {
       int latest = thread_data->get_latest_frame_number();
-      
+
       if (latest > _next_frame) {
         draw_frames(_next_frame, latest);
       }
       _next_frame = latest;
-      
+
       // Clean out the old data.
-      float oldest_time = 
+      float oldest_time =
         thread_data->get_frame(latest).get_start() - _time_width;
-      
+
       Data::iterator di;
       di = _data.begin();
-      while (di != _data.end() && 
+      while (di != _data.end() &&
              thread_data->get_frame((*di).first).get_start() < oldest_time) {
         _data.erase(di);
         di = _data.begin();
@@ -137,7 +150,7 @@ void PStatStripChart::
 set_default_vertical_scale() {
   const PStatClientData *client_data = _monitor->get_client_data();
   if (client_data->has_collector(_collector_index)) {
-    const PStatCollectorDef &def = 
+    const PStatCollectorDef &def =
       client_data->get_collector_def(_collector_index);
     if (def._suggested_scale != 0.0) {
       set_vertical_scale(def._suggested_scale);
@@ -161,12 +174,12 @@ set_auto_vertical_scale() {
 
   for (int x = 0; x <= _xsize; x++) {
     float time = pixel_to_timestamp(x);
-    int frame_number = 
+    int frame_number =
       thread_data->get_frame_number_at_time(time, frame_number);
 
     if (thread_data->has_frame(frame_number)) {
       const FrameData &frame = get_frame_data(frame_number);
-      
+
       float overall_value = 0.0;
       FrameData::const_iterator fi;
       for (fi = frame.begin(); fi != frame.end(); ++fi) {
@@ -198,7 +211,7 @@ get_collector_under_pixel(int xpoint, int ypoint) {
   // First, we need to know what frame it was; to know that, we need
   // to determine the time corresponding to the x pixel.
   float time = pixel_to_timestamp(xpoint);
-  
+
   // Now use that time to determine the frame.
   const PStatThreadData *thread_data = _view.get_thread_data();
   int frame_number = thread_data->get_frame_number_at_time(time);
@@ -281,7 +294,7 @@ changed_size(int xsize, int ysize) {
     _cursor_pixel = xsize * _cursor_pixel / _xsize;
     _xsize = xsize;
     _ysize = ysize;
-    
+
     if (!_first_data) {
       if (_scroll_mode) {
         draw_pixels(0, _xsize);
@@ -432,7 +445,7 @@ public:
     _client_data(client_data) {
   }
   bool operator () (int a, int b) const {
-    return 
+    return
       _client_data->get_collector_def(a)._sort >
       _client_data->get_collector_def(b)._sort;
   }
@@ -448,7 +461,7 @@ void PStatStripChart::
 update_labels() {
   const PStatViewLevel *level = _view.get_level(_collector_index);
   _labels.clear();
-  
+
   int num_children = level->get_num_children();
   for (int i = 0; i < num_children; i++) {
     const PStatViewLevel *child = level->get_child(i);
@@ -491,7 +504,7 @@ draw_frames(int first_frame, int last_frame) {
 
   if (_first_data) {
     if (_scroll_mode) {
-      _start_time = 
+      _start_time =
         thread_data->get_frame(last_frame).get_start() - _time_width;
     } else {
       _start_time = thread_data->get_frame(first_frame).get_start();
@@ -507,7 +520,7 @@ draw_frames(int first_frame, int last_frame) {
     first_pixel = 0;
   }
 
-  int last_pixel = 
+  int last_pixel =
     timestamp_to_pixel(thread_data->get_frame(last_frame).get_start());
 
   if (_first_data && !_scroll_mode) {
@@ -522,7 +535,7 @@ draw_frames(int first_frame, int last_frame) {
     first_pixel = 0;
     last_pixel = _xsize;
   }
-    
+
   if (last_pixel <= _xsize) {
     // It all fits in one block.
     _cursor_pixel = last_pixel;
@@ -568,7 +581,7 @@ draw_pixels(int first_pixel, int last_pixel) {
     } else {
       float time = pixel_to_timestamp(x);
       frame_number = thread_data->get_frame_number_at_time(time, frame_number);
-      
+
       if (thread_data->has_frame(frame_number)) {
         draw_slice(x, frame_number);
       } else {

@@ -1,6 +1,19 @@
 // Filename: gtkStatsPianoRoll.cxx
 // Created by:  drose (18Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "gtkStatsPianoRoll.h"
@@ -18,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsPianoRoll::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsPianoRoll::
 GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index,
@@ -33,7 +46,7 @@ GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index,
 
   _label_box = NULL;
   pack_labels();
-  
+
   request_initial_size(*this, get_xsize(), get_ysize());
 }
 
@@ -106,7 +119,7 @@ void GtkStatsPianoRoll::
 begin_draw() {
   _pixmap.draw_rectangle(_white_gc, true, 0, 0, get_xsize(), get_ysize());
 
-  Gdk_GC fg_gc = 
+  Gdk_GC fg_gc =
     get_style()->gtkobj()->fg_gc[GTK_WIDGET_STATE (GTK_WIDGET(gtkobj()))];
   Gdk_Font font = fg_gc.get_font();
   int text_height = font.height();
@@ -154,7 +167,7 @@ end_draw() {
   // Draw in the labels for the guide bars.  We do this in end_draw()
   // instead of in begin_draw() so the labels will appear on top of
   // any of the color bars.
-  Gdk_GC fg_gc = 
+  Gdk_GC fg_gc =
     get_style()->gtkobj()->fg_gc[GTK_WIDGET_STATE (GTK_WIDGET(gtkobj()))];
   Gdk_Font font = fg_gc.get_font();
   int text_ascent = font.ascent();
@@ -199,36 +212,36 @@ idle() {
 ////////////////////////////////////////////////////////////////////
 gint GtkStatsPianoRoll::
 configure_event_impl(GdkEventConfigure *) {
-  if (width() != get_xsize() || height() != get_ysize() || 
+  if (width() != get_xsize() || height() != get_ysize() ||
       _pixmap.gdkobj() == (GdkDrawable *)NULL) {
     if (_pixmap) {
       _pixmap.release();
     }
-    
+
     _pixmap.create(get_window(), width(), height());
-    
+
     Gdk_Colormap system_colormap = Gdk_Colormap::get_system();
-    
+
     _white_gc = Gdk_GC(_pixmap);
     setup_white_gc();
 
     _black_gc = Gdk_GC(_pixmap);
     _black_gc.set_foreground(system_colormap.black());
-    
+
     _dark_gc = Gdk_GC(_pixmap);
     Gdk_Color dark;
     dark.set_grey_p(0.2);
     system_colormap.alloc(dark);
     _dark_gc.set_foreground(dark);
-    
+
     _light_gc = Gdk_GC(_pixmap);
     Gdk_Color light;
     light.set_grey_p(0.6);
     system_colormap.alloc(light);
     _light_gc.set_foreground(light);
-    
+
     _pixmap.draw_rectangle(_white_gc, true, 0, 0, width(), height());
-    
+
     changed_size(width(), height());
   }
   return true;
@@ -252,7 +265,7 @@ expose_event_impl(GdkEventExpose *event) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsPianoRoll::pack_labels
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsPianoRoll::
 pack_labels() {
@@ -264,7 +277,7 @@ pack_labels() {
   _label_box->show();
   _label_align->add(*_label_box);
 
-  Gdk_GC window_gc = 
+  Gdk_GC window_gc =
     get_style()->gtkobj()->fg_gc[GTK_WIDGET_STATE (GTK_WIDGET(gtkobj()))];
   Gdk_Font font = window_gc.get_font();
 
@@ -288,7 +301,7 @@ pack_labels() {
   }
 
   _labels_changed = false;
-}      
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsPianoRoll::setup_white_gc
@@ -305,7 +318,7 @@ setup_white_gc() {
     Gdk_Color death;
     death.set_grey_p(0.8);
     system_colormap.alloc(death);
-    
+
     _white_gc.set_foreground(death);
 
   } else {

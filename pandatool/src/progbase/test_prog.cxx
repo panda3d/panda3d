@@ -1,6 +1,19 @@
 // Filename: test_prog.cxx
 // Created by:  drose (14Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "programBase.h"
@@ -27,7 +40,7 @@ TestProgram() {
   add_runline("[opts]");
 
   add_option
-    ("bog", "", 90, 
+    ("bog", "", 90,
      "This is test option 'bog'.  It is a simple boolean toggle; if it appears "
      "at all, it sets a boolean flag to indicate that.  If it does not "
      "appear, it leaves the boolean flag alone.\r"
@@ -36,12 +49,12 @@ TestProgram() {
      &TestProgram::dispatch_none, &_bool_a);
 
   add_option
-    ("b", "", 90, "Test option b", 
+    ("b", "", 90, "Test option b",
      &TestProgram::dispatch_count, NULL, &_count_b);
   _count_b = 0;
 
   add_option
-    ("c", "integer_parameter", 90, 
+    ("c", "integer_parameter", 90,
      "This is test option 'c'.  It takes an integer parameter.",
      &TestProgram::dispatch_int, NULL, &_int_c);
   _int_c = 0;

@@ -1,6 +1,19 @@
 // Filename: somethingToEgg.cxx
 // Created by:  drose (15Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "somethingToEgg.h"
@@ -16,9 +29,9 @@
 //               in printing error messages and such.
 ////////////////////////////////////////////////////////////////////
 SomethingToEgg::
-SomethingToEgg(const string &format_name, 
+SomethingToEgg(const string &format_name,
                const string &preferred_extension,
-               bool allow_last_param, bool allow_stdout) : 
+               bool allow_last_param, bool allow_stdout) :
   EggConverter(format_name, preferred_extension, allow_last_param, allow_stdout)
 {
   clear_runlines();
@@ -58,13 +71,13 @@ SomethingToEgg(const string &format_name,
 void SomethingToEgg::
 add_units_options() {
   add_option
-    ("ui", "units", 40, 
+    ("ui", "units", 40,
      "Specify the units of the input " + _format_name +
      " file.  Normally, this can be inferred from the file itself.",
      &SomethingToEgg::dispatch_units, NULL, &_input_units);
 
   add_option
-    ("uo", "units", 40, 
+    ("uo", "units", 40,
      "Specify the units of the resulting egg file.  If this is "
      "specified, the vertices in the egg file will be scaled as "
      "necessary to make the appropriate units conversion; otherwise, "
@@ -187,7 +200,7 @@ void SomethingToEgg::
 add_search_path_options(bool append_to_sys_paths) {
   _append_to_sys_paths = append_to_sys_paths;
   add_option
-    ("rs", "path", 40, 
+    ("rs", "path", 40,
      "A search path for textures and external file references.  This "
      "is a colon-separated set of directories that will be searched "
      "for filenames that are not fully specified in the source file.  It "
@@ -205,7 +218,7 @@ add_search_path_options(bool append_to_sys_paths) {
 void SomethingToEgg::
 add_merge_externals_options() {
   add_option
-    ("f", "", 40, 
+    ("f", "", 40,
      "Follow and convert all external references in the source file.",
      &SomethingToEgg::dispatch_none, &_merge_externals);
 }
@@ -231,7 +244,7 @@ apply_units_scale(EggData &data) {
 ////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEgg::handle_args
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool SomethingToEgg::
 handle_args(Args &args) {
@@ -241,7 +254,7 @@ handle_args(Args &args) {
     args.pop_back();
 
     if (!(_output_filename.get_extension() == "egg")) {
-      nout << "Output filename " << _output_filename 
+      nout << "Output filename " << _output_filename
            << " does not end in .egg.  If this is really what you intended, "
         "use the -o output_file syntax.\n";
       return false;
@@ -253,13 +266,13 @@ handle_args(Args &args) {
   }
 
   if (args.empty()) {
-    nout << "You must specify the " << _format_name 
+    nout << "You must specify the " << _format_name
           << " file to read on the command line.\n";
     return false;
   }
 
   if (args.size() != 1) {
-    nout << "You may only specify one " << _format_name 
+    nout << "You may only specify one " << _format_name
          << " file to read on the command line.  "
          << "You specified: ";
     copy(args.begin(), args.end(), ostream_iterator<string>(nout, " "));

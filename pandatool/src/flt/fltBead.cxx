@@ -1,6 +1,19 @@
 // Filename: fltBead.cxx
 // Created by:  drose (24Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltBead.h"
@@ -22,7 +35,7 @@ TypeHandle FltBead::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: FltBead::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltBead::
 FltBead(FltHeader *header) : FltRecord(header) {
@@ -109,7 +122,7 @@ get_num_transform_steps() const {
 ////////////////////////////////////////////////////////////////////
 FltTransformRecord *FltBead::
 get_transform_step(int n) {
-  nassertr(n >= 0 && n < (int)_transform_steps.size(), 
+  nassertr(n >= 0 && n < (int)_transform_steps.size(),
            (FltTransformRecord *)NULL);
   return _transform_steps[n];
 }
@@ -282,7 +295,7 @@ write_ancillary(FltRecordWriter &writer) const {
       return result;
     }
   }
-    
+
 
   return FltRecord::write_ancillary(writer);
 }
@@ -350,7 +363,7 @@ write_transform(FltRecordWriter &writer) const {
       datagram.add_be_float32(_transform(r, c));
     }
   }
-  
+
   FltError result = writer.advance();
   if (result != FE_ok) {
     return result;
@@ -368,7 +381,7 @@ write_transform(FltRecordWriter &writer) const {
       return result;
     }
   }
-  
+
   return FE_ok;
 }
 
@@ -385,7 +398,7 @@ write_replicate_count(FltRecordWriter &writer) const {
 
     datagram.add_be_int16(_replicate_count);
     datagram.pad_bytes(2);
-  
+
     FltError result = writer.advance();
     if (result != FE_ok) {
       return result;

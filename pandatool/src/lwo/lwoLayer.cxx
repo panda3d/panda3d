@@ -1,6 +1,19 @@
 // Filename: lwoLayer.cxx
 // Created by:  drose (24Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "lwoLayer.h"
@@ -59,12 +72,12 @@ read_iff(IffInputFile *in, size_t stop_at) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LwoLayer::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void LwoLayer::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
-    << get_id() << " { number = " << _number << ", flags = 0x" 
+    << get_id() << " { number = " << _number << ", flags = 0x"
     << hex << _flags << dec << ", pivot = " << _pivot
     << ", _name = \"" << _name << "\", _parent = " << _parent << " }\n";
 }

@@ -1,6 +1,19 @@
 // Filename: layeredImage.cxx
 // Created by:  drose (29Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "layeredImage.h"
@@ -19,7 +32,7 @@
 
 LayeredImage::TileManager::
 TileManager(const PNMImage *image, int channel) :
-  _data(image), _channel(channel) 
+  _data(image), _channel(channel)
 {
   int width = image->get_x_size();
   int height = image->get_y_size();
@@ -39,7 +52,7 @@ TileManager(const PNMImage *image, int channel) :
 
   _levels.push_back(Level());
   Level &l = _levels.back();
-  
+
   l._width = width;
   l._height = height;
   l._ntile_rows = (height + TILE_HEIGHT - 1) / TILE_HEIGHT;
@@ -107,12 +120,12 @@ trim() {
   if (_data->has_alpha()) {
     int xsize = _data->get_x_size();
     int ysize = _data->get_y_size();
-    
+
     int top = xsize - 1;
     int left = ysize - 1;
     int bottom = 0;
     int right = 0;
-    
+
     for (int y = 0; y < ysize; y++) {
       for (int x = 0; x < xsize; x++) {
         if (_data->get_alpha_val(x, y) != 0) {
@@ -325,8 +338,8 @@ xcf_save_layer_props(const LayeredImage::Layer &layer) {
   xcf_save_prop(PROP_SHOW_MASK, 0);
   xcf_save_prop(PROP_MODE, 0);
 
-  xcf_save_prop(PROP_OFFSETS, 
-                (int32_t)layer._offset[0], 
+  xcf_save_prop(PROP_OFFSETS,
+                (int32_t)layer._offset[0],
                 (int32_t)layer._offset[1]);
   xcf_save_prop(PROP_END);
 }
@@ -352,7 +365,7 @@ xcf_save_prop(LayeredImage::PropType prop_type, ...) {
   switch (prop_type) {
   case PROP_END:
     size = 0;
-    
+
     xcf_write_int32((int32_t*)&prop_type, 1);
     xcf_write_int32(&size, 1);
     break;
@@ -634,7 +647,7 @@ xcf_save_hierarchy(const PNMImage *image, int channel) {
     // save the start offset of where we are writing
     // out the next level.
     int32_t offset = _pos;
-    
+
     // write out the level.
     xcf_save_level(tm, i);
 
@@ -649,7 +662,7 @@ xcf_save_hierarchy(const PNMImage *image, int channel) {
 
     // seek to the end of the file which is where
     // we will write out the next level.
-    xcf_seek_end();  
+    xcf_seek_end();
   }
 
   // write out a '0' offset position to indicate the end
@@ -676,7 +689,7 @@ xcf_save_level(const LayeredImage::TileManager &tm, int level) {
     // save the start offset of where we are writing
     // out the next tile.
     int32_t offset = _pos;
-    
+
     // write out the tile.
     xcf_save_tile(tm, level, i);
 
@@ -688,7 +701,7 @@ xcf_save_level(const LayeredImage::TileManager &tm, int level) {
     // increment the location we are to write out the
     // next offset.
     saved_pos = _pos;
-    
+
     xcf_seek_end();
   }
 

@@ -1,6 +1,19 @@
 // Filename: textureReference.cxx
 // Created by:  drose (29Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "textureReference.h"
@@ -32,7 +45,7 @@ TypeHandle TextureReference::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureReference::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TextureReference::
 TextureReference() {
@@ -53,7 +66,7 @@ TextureReference() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureReference::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TextureReference::
 ~TextureReference() {
@@ -101,13 +114,13 @@ from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
   EggRenderMode::AlphaMode alpha_mode = _egg_tex->get_alpha_mode();
   if (alpha_mode == EggRenderMode::AM_unspecified) {
     if (_source_texture->get_size()) {
-      _uses_alpha = 
+      _uses_alpha =
         _egg_tex->has_alpha_channel(_source_texture->get_num_channels());
     }
 
   } else if (alpha_mode == EggRenderMode::AM_off) {
     _uses_alpha = false;
-    
+
   } else {
     _uses_alpha = true;
   }
@@ -325,7 +338,7 @@ update_egg() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureReference::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void TextureReference::
 output(ostream &out) const {
@@ -335,11 +348,11 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureReference::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void TextureReference::
 write(ostream &out, int indent_level) const {
-  indent(out, indent_level) 
+  indent(out, indent_level)
     << get_texture()->get_name();
 
   if (_uses_alpha) {
@@ -470,7 +483,7 @@ get_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
             geom_min_uv += trans;
             geom_max_uv += trans;
           }
-          collect_uv(group_any_uvs, group_min_uv, group_max_uv, 
+          collect_uv(group_any_uvs, group_min_uv, group_max_uv,
                      geom_min_uv, geom_max_uv);
         }
       }
@@ -590,7 +603,7 @@ get_geom_uvs(EggPrimitive *geom,
       collect_uv(geom_any_uvs, geom_min_uv, geom_max_uv, uv, uv);
     }
   }
-  
+
   return geom_any_uvs;
 }
 
@@ -629,9 +642,9 @@ void TextureReference::
 collect_uv(bool &any_uvs, TexCoordd &min_uv, TexCoordd &max_uv,
            const TexCoordd &got_min_uv, const TexCoordd &got_max_uv) {
   if (any_uvs) {
-    min_uv.set(min(min_uv[0], got_min_uv[0]), 
+    min_uv.set(min(min_uv[0], got_min_uv[0]),
                min(min_uv[1], got_min_uv[1]));
-    max_uv.set(max(max_uv[0], got_max_uv[0]), 
+    max_uv.set(max(max_uv[0], got_max_uv[0]),
                max(max_uv[1], got_max_uv[1]));
   } else {
     // The first UV.

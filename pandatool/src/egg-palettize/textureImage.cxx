@@ -1,6 +1,19 @@
 // Filename: textureImage.cxx
 // Created by:  drose (29Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "textureImage.h"
@@ -24,7 +37,7 @@ TypeHandle TextureImage::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TextureImage::
 TextureImage() {
@@ -79,7 +92,7 @@ assign_groups() {
     // If we have no explicit group assignments, we must consider all
     // the egg files.
     copy(_egg_files.begin(), _egg_files.end(), back_inserter(needed_eggs));
-  
+
   } else {
     // Otherwise, we only need to consider the egg files that don't
     // have any groups in common with our explicit assignments.
@@ -116,7 +129,7 @@ assign_groups() {
     for (ei = needed_eggs.begin(); ei != needed_eggs.end(); ++ei) {
       total.make_union(total, (*ei)->get_complete_groups());
     }
-    
+
     // Now, find the group that will satisfy the most egg files.  If
     // two groups satisfy the same number of egg files, choose (a) the
     // most specific one, i.e. with the lowest dirname_level, or the
@@ -146,11 +159,11 @@ assign_groups() {
       }
       ++gi;
     }
-    
+
     // Okay, now we've picked the best group.  Eliminate all the eggs
     // from consideration that are satisfied by this group, and repeat.
     definitely_in.insert(best);
-    
+
     WorkingEggs next_needed_eggs;
     for (ei = needed_eggs.begin(); ei != needed_eggs.end(); ++ei) {
       if ((*ei)->get_complete_groups().count(best) == 0) {
@@ -272,7 +285,7 @@ post_txa_file() {
       (_properties._num_channels == 3 || _properties._num_channels == 4)) {
     consider_grayscale();
   }
-    
+
   // Also consider downgrading from alpha to non-alpha.
   if (_properties._got_num_channels &&
       (_properties._num_channels == 2 || _properties._num_channels == 4)) {
@@ -417,7 +430,7 @@ get_source(const Filename &filename, const Filename &alpha_filename) {
     return (*si).second;
   }
 
-  SourceTextureImage *source = 
+  SourceTextureImage *source =
     new SourceTextureImage(this, filename, alpha_filename);
   _sources.insert(Sources::value_type(key, source));
 
@@ -484,7 +497,7 @@ get_preferred_source() {
           best = source;
           best_size = source_size;
 
-        } else if (source_size == best_size && 
+        } else if (source_size == best_size &&
                    source->get_filename().compare_timestamps(best->get_filename()) > 0) {
           // Rule (3) passes.
           best = source;
@@ -631,7 +644,7 @@ write_source_pathnames(ostream &out, int indent_level) const {
         out << " (unknown size)";
 
       } else {
-        out << " " << source->get_x_size() << " " 
+        out << " " << source->get_x_size() << " "
             << source->get_y_size();
 
         if (source->get_properties().has_num_channels()) {
@@ -716,7 +729,7 @@ write_scale_info(ostream &out, int indent_level) {
 
     if (source != (SourceTextureImage *)NULL &&
         source->is_size_known()) {
-      double scale = 
+      double scale =
         100.0 * (((double)get_x_size() / (double)source->get_x_size()) +
                  ((double)get_y_size() / (double)source->get_y_size())) / 2.0;
       out << " scale " << scale << "%";
@@ -732,7 +745,7 @@ write_scale_info(ostream &out, int indent_level) {
       PaletteImage *image = placement->get_image();
       nassertv(image != (PaletteImage *)NULL);
       indent(out, indent_level + 2)
-        << "placed on " 
+        << "placed on "
         << FilenameUnifier::make_user_filename(image->get_filename())
         << "\n";
     } else {
@@ -743,11 +756,11 @@ write_scale_info(ostream &out, int indent_level) {
         << FilenameUnifier::make_user_filename(image->get_filename());
       if (image->get_x_size() != get_x_size() ||
           image->get_y_size() != get_y_size()) {
-        out << " at size " << image->get_x_size() << " " 
+        out << " at size " << image->get_x_size() << " "
             << image->get_y_size();
         if (source != (SourceTextureImage *)NULL &&
             source->is_size_known()) {
-          double scale = 
+          double scale =
             100.0 * (((double)image->get_x_size() / (double)source->get_x_size()) +
                      ((double)image->get_y_size() / (double)source->get_y_size())) / 2.0;
           out << " scale " << scale << "%";
@@ -766,7 +779,7 @@ write_scale_info(ostream &out, int indent_level) {
 //               the indicated group.
 ////////////////////////////////////////////////////////////////////
 int TextureImage::
-compute_egg_count(PaletteGroup *group, 
+compute_egg_count(PaletteGroup *group,
                   const TextureImage::WorkingEggs &egg_files) {
   int count = 0;
 
@@ -1124,7 +1137,7 @@ complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   for (i = 0; i < _num_sources; i++) {
     SourceTextureImage *source;
     DCAST_INTO_R(source, plist[index], index);
-    string key = get_source_key(source->get_filename(), 
+    string key = get_source_key(source->get_filename(),
                                 source->get_alpha_filename());
 
     bool inserted = _sources.insert(Sources::value_type(key, source)).second;

@@ -1,6 +1,19 @@
 // Filename: eggCharacterCollection.cxx
 // Created by:  drose (26Feb01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggCharacterCollection.h"
@@ -23,7 +36,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterCollection::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggCharacterCollection::
 EggCharacterCollection() {
@@ -33,7 +46,7 @@ EggCharacterCollection() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterCollection::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggCharacterCollection::
 ~EggCharacterCollection() {
@@ -80,12 +93,12 @@ add_egg(EggData *egg) {
     TopEggNodes &top_nodes = (*tni).second;
     EggCharacterData *char_data = make_character(character_name);
     EggJointData *root_joint = char_data->get_root_joint();
-    
+
     TopEggNodes::iterator ti;
     for (ti = top_nodes.begin(); ti != top_nodes.end(); ++ti) {
       EggNode *model_root = (*ti).first;
       EggNodeList &egg_nodes = (*ti).second;
-      
+
       int model_index = _next_model_index++;
       if (egg_info._models.empty()) {
         egg_info._first_model_index = model_index;
@@ -248,13 +261,13 @@ scan_hierarchy(EggNode *egg_node) {
 //               <Joint> nodes encountered.
 ////////////////////////////////////////////////////////////////////
 void EggCharacterCollection::
-scan_for_top_joints(EggNode *egg_node, EggNode *model_root, 
+scan_for_top_joints(EggNode *egg_node, EggNode *model_root,
                     const string &character_name) {
   if (egg_node->is_of_type(EggGroup::get_class_type())) {
     EggGroup *group = DCAST(EggGroup, egg_node);
 
     if (group->has_lod()) {
-      // This flag has an LOD specification. 
+      // This flag has an LOD specification.
       model_root = group;
     }
     if (group->get_group_type() == EggGroup::GT_joint) {
@@ -328,7 +341,7 @@ scan_for_morphs(EggNode *egg_node, int model_index,
       add_morph_back_pointers(vertex, vertex, model_index, char_data);
 
       EggMorphVertexList::const_iterator mvi;
-      for (mvi = vertex->_dxyzs.begin(); 
+      for (mvi = vertex->_dxyzs.begin();
            mvi != vertex->_dxyzs.end();
            ++mvi) {
         const EggMorphVertex &morph = (*mvi);
@@ -396,23 +409,23 @@ void EggCharacterCollection::
 add_morph_back_pointers(EggAttributes *attrib, EggObject *egg_object,
                         int model_index, EggCharacterData *char_data) {
   EggMorphNormalList::const_iterator mni;
-  for (mni = attrib->_dnormals.begin(); 
+  for (mni = attrib->_dnormals.begin();
        mni != attrib->_dnormals.end();
        ++mni) {
     const EggMorphNormal &morph = (*mni);
     char_data->make_slider(morph.get_name())->add_back_pointer(model_index, egg_object);
   }
-  
+
   EggMorphTexCoordList::const_iterator mti;
-  for (mti = attrib->_duvs.begin(); 
-       mti != attrib->_duvs.end(); 
+  for (mti = attrib->_duvs.begin();
+       mti != attrib->_duvs.end();
        ++mti) {
     const EggMorphTexCoord &morph = (*mti);
     char_data->make_slider(morph.get_name())->add_back_pointer(model_index, egg_object);
   }
 
   EggMorphColorList::const_iterator mci;
-  for (mci = attrib->_drgbas.begin(); 
+  for (mci = attrib->_drgbas.begin();
        mci != attrib->_drgbas.end();
        ++mci) {
     const EggMorphColor &morph = (*mci);
@@ -436,7 +449,7 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
   // Sort the list of egg_nodes in order by name.  This will make the
   // matching up by names easier and more reliable.
   sort(egg_nodes.begin(), egg_nodes.end(), IndirectCompareNames<Namable>());
-  
+
   if (joint_data->_children.empty()) {
     // If the EggJointData has no children yet, we must be the first.
     // Gleefully define all the joints.
@@ -455,10 +468,10 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
 
     EggNodeList extra_egg_nodes;
     EggJointData::Children extra_data;
-    
+
     EggNodeList::iterator ei;
     EggJointData::Children::iterator di;
-    
+
     ei = egg_nodes.begin();
     di = joint_data->_children.begin();
 
@@ -486,7 +499,7 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
 
     while (ei != egg_nodes.end()) {
       EggNode *egg_node = (*ei);
-      
+
       // Here's a joint in the egg file, unmatched in the data.
       extra_egg_nodes.push_back(egg_node);
       ++ei;
@@ -494,7 +507,7 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
 
     while (di != joint_data->_children.end()) {
       EggJointData *data = (*di);
-      
+
       // Here's a joint in the data, umatched by the egg file.
       extra_data.push_back(data);
       ++di;
@@ -503,7 +516,7 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
     if (!extra_egg_nodes.empty()) {
       // If we have some extra egg_nodes, we have to find a place to
       // match them.  (If we only had extra data, we don't care.)
-      
+
       // First, check to see if any of the names match any past-used
       // name.
 
@@ -512,8 +525,8 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
       for (ei = extra_egg_nodes.begin(); ei != extra_egg_nodes.end(); ++ei) {
         EggNode *egg_node = (*ei);
         bool matched = false;
-        for (di = extra_data.begin(); 
-             di != extra_data.end() && !matched; 
+        for (di = extra_data.begin();
+             di != extra_data.end() && !matched;
              ++di) {
           EggJointData *data = (*di);
           if (data->matches_name(egg_node->get_name())) {
@@ -559,7 +572,7 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
 
   // Now sort the generated joint data hierarchy by name, just to be
   // sure.
-  sort(joint_data->_children.begin(), joint_data->_children.end(), 
+  sort(joint_data->_children.begin(), joint_data->_children.end(),
        IndirectCompareNames<Namable>());
 }
 
@@ -580,7 +593,7 @@ found_egg_match(EggCharacterData *char_data, EggJointData *joint_data,
 
   if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
     EggGroupNode *group_node = DCAST(EggGroupNode, egg_node);
-    
+
     // Now consider all the children of egg_node that are themselves
     // joints or tables.
     EggNodeList egg_nodes;
@@ -616,7 +629,7 @@ found_egg_match(EggCharacterData *char_data, EggJointData *joint_data,
     }
 
     if (!egg_nodes.empty()) {
-      match_egg_nodes(char_data, joint_data, egg_nodes, 
+      match_egg_nodes(char_data, joint_data, egg_nodes,
                       egg_index, model_index);
     }
   }
@@ -625,7 +638,7 @@ found_egg_match(EggCharacterData *char_data, EggJointData *joint_data,
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterCollection::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggCharacterCollection::
 write(ostream &out, int indent_level) const {

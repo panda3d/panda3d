@@ -1,6 +1,19 @@
 // Filename: gtkStatsStripChart.cxx
 // Created by:  drose (14Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "gtkStatsStripChart.h"
@@ -18,10 +31,10 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsStripChart::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsStripChart::
-GtkStatsStripChart(GtkStatsMonitor *monitor, PStatView &view, 
+GtkStatsStripChart(GtkStatsMonitor *monitor, PStatView &view,
                    int collector_index, int xsize, int ysize) :
   PStatStripChart(monitor, view, collector_index, xsize, ysize)
 {
@@ -36,7 +49,7 @@ GtkStatsStripChart(GtkStatsMonitor *monitor, PStatView &view,
 
   _guide = manage(new GtkStatsGuide(this));
   _guide->show();
-  
+
   request_initial_size(*this, get_xsize(), get_ysize());
 }
 
@@ -136,7 +149,7 @@ clear_region() {
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripChart::
 copy_region(int start_x, int end_x, int dest_x) {
-  _pixmap.copy_area(_white_gc, 0, 0, 
+  _pixmap.copy_area(_white_gc, 0, 0,
                     _pixmap, start_x, 0,
                     end_x - start_x + 1, get_ysize());
 
@@ -147,7 +160,7 @@ copy_region(int start_x, int end_x, int dest_x) {
   // just as fast.
   /*
   Gdk_Window window = get_window();
-  window.copy_area(_white_gc, 0, 0, 
+  window.copy_area(_white_gc, 0, 0,
                    window, start_x, 0,
                    end_x - start_x + 1, get_ysize());
   */
@@ -189,7 +202,7 @@ draw_slice(int x, int frame_number) {
       // And we can consider ourselves done now.
       return;
     }
-      
+
     int top_y = height_to_pixel(overall_time);
     _pixmap.draw_line(get_collector_gc(cd._collector_index), x, y, x, top_y);
     y = top_y;
@@ -278,38 +291,38 @@ idle() {
 ////////////////////////////////////////////////////////////////////
 gint GtkStatsStripChart::
 configure_event_impl(GdkEventConfigure *) {
-  if (width() != get_xsize() || height() != get_ysize() || 
+  if (width() != get_xsize() || height() != get_ysize() ||
       _pixmap.gdkobj() == (GdkDrawable *)NULL) {
     bool is_initial = true;
     if (_pixmap) {
       is_initial = false;
       _pixmap.release();
     }
-    
+
     _pixmap.create(get_window(), width(), height());
-    
+
     Gdk_Colormap system_colormap = Gdk_Colormap::get_system();
-    
+
     _white_gc = Gdk_GC(_pixmap);
     setup_white_gc();
 
     _black_gc = Gdk_GC(_pixmap);
     _black_gc.set_foreground(system_colormap.black());
-    
+
     _dark_gc = Gdk_GC(_pixmap);
     Gdk_Color dark;
     dark.set_grey_p(0.2);
     system_colormap.alloc(dark);
     _dark_gc.set_foreground(dark);
-    
+
     _light_gc = Gdk_GC(_pixmap);
     Gdk_Color light;
     light.set_grey_p(0.6);
     system_colormap.alloc(light);
     _light_gc.set_foreground(light);
-    
+
     _pixmap.draw_rectangle(_white_gc, true, 0, 0, width(), height());
-    
+
     changed_size(width(), height());
   }
   return true;
@@ -333,7 +346,7 @@ expose_event_impl(GdkEventExpose *event) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsStripChart::button_press_event_impl
 //       Access: Private, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 gint GtkStatsStripChart::
 button_press_event_impl(GdkEventButton *button) {
@@ -349,7 +362,7 @@ button_press_event_impl(GdkEventButton *button) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsStripChart::pack_labels
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripChart::
 pack_labels() {
@@ -361,7 +374,7 @@ pack_labels() {
   _label_box->show();
   _label_align->add(*_label_box);
 
-  Gdk_GC window_gc = 
+  Gdk_GC window_gc =
     get_style()->gtkobj()->fg_gc[GTK_WIDGET_STATE (GTK_WIDGET(gtkobj()))];
   Gdk_Font font = window_gc.get_font();
 
@@ -378,7 +391,7 @@ pack_labels() {
   }
 
   _labels_changed = false;
-}      
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStatsStripChart::setup_white_gc
@@ -395,7 +408,7 @@ setup_white_gc() {
     Gdk_Color death;
     death.set_grey_p(0.8);
     system_colormap.alloc(death);
-    
+
     _white_gc.set_foreground(death);
 
   } else {

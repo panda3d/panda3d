@@ -1,6 +1,19 @@
 // Filename: cLwoPoints.cxx
 // Created by:  drose (25Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cLwoPoints.h"
@@ -24,11 +37,11 @@ add_vmap(const LwoVertexMap *lwo_vmap) {
 
   bool inserted;
   if (map_type == IffId("TXUV")) {
-    inserted = 
+    inserted =
       _txuv.insert(VMap::value_type(name, lwo_vmap)).second;
 
   } else if (map_type == IffId("PICK")) {
-    inserted = 
+    inserted =
       _pick.insert(VMap::value_type(name, lwo_vmap)).second;
 
   } else {
@@ -36,7 +49,7 @@ add_vmap(const LwoVertexMap *lwo_vmap) {
   }
 
   if (!inserted) {
-    nout << "Multiple vertex maps on the same points of type " 
+    nout << "Multiple vertex maps on the same points of type "
          << map_type << " named " << name << "\n";
   }
 }

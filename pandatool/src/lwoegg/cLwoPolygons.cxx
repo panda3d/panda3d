@@ -1,6 +1,19 @@
 // Filename: cLwoPolygons.cxx
 // Created by:  drose (25Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cLwoPolygons.h"
@@ -36,7 +49,7 @@ add_ptags(const LwoPolygonTags *lwo_ptags, const LwoTags *tags) {
 
   bool inserted = _ptags.insert(PTags::value_type(type, lwo_ptags)).second;
   if (!inserted) {
-    nout << "Multiple polygon tags on the same polygons of type " 
+    nout << "Multiple polygon tags on the same polygons of type "
          << type << "\n";
 
   } else {
@@ -61,7 +74,7 @@ add_vmad(const LwoDiscontinuousVertexMap *lwo_vmad) {
 
   bool inserted;
   if (map_type == IffId("TXUV")) {
-    inserted = 
+    inserted =
       _txuv.insert(VMad::value_type(name, lwo_vmad)).second;
 
   } else {
@@ -69,7 +82,7 @@ add_vmad(const LwoDiscontinuousVertexMap *lwo_vmad) {
   }
 
   if (!inserted) {
-    nout << "Multiple discontinous vertex maps on the same polygons of type " 
+    nout << "Multiple discontinous vertex maps on the same polygons of type "
          << map_type << " named " << name << "\n";
   }
 }
@@ -93,7 +106,7 @@ get_surface(int polygon_index) const {
   }
 
   int tag_index = _surf_ptags->get_tag(polygon_index);
-  if (_tags == (LwoTags *)NULL || tag_index < 0 || 
+  if (_tags == (LwoTags *)NULL || tag_index < 0 ||
       tag_index >= _tags->get_num_tags()) {
     // The tag index is out-of-bounds.
     nout << "Invalid polygon tag index " << tag_index << "\n";
@@ -210,7 +223,7 @@ make_faces() {
   for (int pindex = 0; pindex < num_polygons; pindex++) {
     LwoPolygons::Polygon *poly = _polygons->get_polygon(pindex);
     CLwoSurface *surface = get_surface(pindex);
-    
+
     bool is_valid = true;
 
     // Set up the vertices.
@@ -278,7 +291,7 @@ make_faces() {
         EggVertex *new_vertex = egg_vpool->create_unique_vertex(*egg_vertex);
         egg_prim->add_vertex(new_vertex);
       }
-      
+
       // And add the primitive to its parent.
       _egg_group->add_child(egg_prim.p());
     }

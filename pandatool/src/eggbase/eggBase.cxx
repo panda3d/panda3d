@@ -1,6 +1,19 @@
 // Filename: eggBase.cxx
 // Created by:  drose (14Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggBase.h"
@@ -10,15 +23,15 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggBase::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggBase::
 EggBase() {
   add_option
-    ("cs", "coordinate-system", 80, 
+    ("cs", "coordinate-system", 80,
      "Specify the coordinate system to operate in.  This may be one of "
      "'y-up', 'z-up', 'y-up-left', or 'z-up-left'.",
-     &EggBase::dispatch_coordinate_system, 
+     &EggBase::dispatch_coordinate_system,
      &_got_coordinate_system, &_coordinate_system);
 
   _coordinate_system = CS_yup_right;
@@ -61,14 +74,14 @@ as_writer() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggBase::post_command_line
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool EggBase::
 post_command_line() {
   if (_got_coordinate_system) {
     _data.set_coordinate_system(_coordinate_system);
   }
-  
+
   return ProgramBase::post_command_line();
 }
 

@@ -1,6 +1,19 @@
 // Filename: stitchImage.cxx
 // Created by:  drose (04Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "stitchImage.h"
@@ -32,7 +45,7 @@ StitchImage(const string &name, const string &filename,
 
   // UV's are used for doing most operations.  They range from (0, 0)
   // at the lower-left corner to (1, 1) at the upper-right.
-  
+
   // Pixels are used when interfacing with the user.  They range from
   // (0, 0) at the upper-left corner to (_size_pixels[0] - 1,
   // _size_pixels[1] - 1) at the lower-right.
@@ -44,7 +57,7 @@ StitchImage(const string &name, const string &filename,
 
   LVector2d pixels_per_uv(_size_pixels[0] - 1.0, _size_pixels[1] - 1.0);
 
-  _pixels_to_uv = 
+  _pixels_to_uv =
     LMatrix3d::translate_mat(LVector2d(0.0, -pixels_per_uv[1])) *
     LMatrix3d::scale_mat(1.0 / pixels_per_uv[0], -1.0 / pixels_per_uv[1]);
 
@@ -53,7 +66,7 @@ StitchImage(const string &name, const string &filename,
     LMatrix3d::translate_mat(LVector2d(0.0, pixels_per_uv[1]));
 
   /*
-  nout << "_pixels_to_uv * _uv_to_pixels is\n" 
+  nout << "_pixels_to_uv * _uv_to_pixels is\n"
        << _pixels_to_uv * _uv_to_pixels << "\n"
        << "Corners in pixels:\n"
        << "ll " << LPoint2d(0.0, 0.0) * _uv_to_pixels
@@ -65,7 +78,7 @@ StitchImage(const string &name, const string &filename,
 
   LVector2d mm_per_uv = get_size_mm();
 
-  _uv_to_mm = 
+  _uv_to_mm =
     LMatrix3d::translate_mat(LVector2d(-0.5, -0.5)) *
     LMatrix3d::scale_mat(mm_per_uv) *
     LMatrix3d::translate_mat(_film_offset_mm);
@@ -321,14 +334,14 @@ reset_singularity_detected() {
 }
 
 void StitchImage::
-draw_triangle(TriangleRasterizer &rast, const RasterizerVertex *v0, 
+draw_triangle(TriangleRasterizer &rast, const RasterizerVertex *v0,
               const RasterizerVertex *v1, const RasterizerVertex *v2) {
   _lens->draw_triangle(rast, _mm_to_pixels, _size_mm[0], v0, v1, v2);
 }
 
 void StitchImage::
 pick_up_singularity(TriangleRasterizer &rast, StitchImage *input) {
-  _lens->pick_up_singularity(rast, _mm_to_pixels, _pixels_to_mm, 
+  _lens->pick_up_singularity(rast, _mm_to_pixels, _pixels_to_mm,
                              _rotate, _size_mm[0], input);
 }
 

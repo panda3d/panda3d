@@ -1,6 +1,19 @@
 // Filename: fltTransformRotateAboutEdge.cxx
 // Created by:  drose (30Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltTransformRotateAboutEdge.h"
@@ -12,7 +25,7 @@ TypeHandle FltTransformRotateAboutEdge::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformRotateAboutEdge::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltTransformRotateAboutEdge::
 FltTransformRotateAboutEdge(FltHeader *header) : FltTransformRecord(header) {
@@ -39,7 +52,7 @@ set(const LPoint3d &point_a, const LPoint3d &point_b, float angle) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformRotateAboutEdge::get_point_a
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const LPoint3d &FltTransformRotateAboutEdge::
 get_point_a() const {
@@ -49,7 +62,7 @@ get_point_a() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformRotateAboutEdge::get_point_b
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const LPoint3d &FltTransformRotateAboutEdge::
 get_point_b() const {
@@ -70,7 +83,7 @@ get_angle() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformRotateAboutEdge::recompute_matrix
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FltTransformRotateAboutEdge::
 recompute_matrix() {
@@ -79,7 +92,7 @@ recompute_matrix() {
     _matrix = LMatrix4d::ident_mat();
   } else {
     LVector3d axis = _point_b - _point_a;
-    _matrix = 
+    _matrix =
       LMatrix4d::translate_mat(-_point_a) *
       LMatrix4d::rotate_mat(_angle, normalize(axis), CS_zup_right) *
       LMatrix4d::translate_mat(_point_a);

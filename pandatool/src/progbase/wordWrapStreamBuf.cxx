@@ -1,6 +1,19 @@
 // Filename: wordWrapStreamBuf.cxx
 // Created by:  drose (28Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "wordWrapStreamBuf.h"
@@ -17,12 +30,12 @@ typedef int streamsize;
 ////////////////////////////////////////////////////////////////////
 //     Function: WordWrapStreamBuf::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 WordWrapStreamBuf::
 WordWrapStreamBuf(WordWrapStream *owner, ProgramBase *program) :
   _owner(owner),
-  _program(program) 
+  _program(program)
 {
   _literal_mode = false;
 }
@@ -30,7 +43,7 @@ WordWrapStreamBuf(WordWrapStream *owner, ProgramBase *program) :
 ////////////////////////////////////////////////////////////////////
 //     Function: WordWrapStreamBuf::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 WordWrapStreamBuf::
 ~WordWrapStreamBuf() {
@@ -45,7 +58,7 @@ WordWrapStreamBuf::
 //               destruction).
 ////////////////////////////////////////////////////////////////////
 int WordWrapStreamBuf::
-sync() { 
+sync() {
   streamsize n = pptr() - pbase();
   write_chars(pbase(), n);
 
@@ -62,7 +75,7 @@ sync() {
 //               internal buffer is filled, plus one character.
 ////////////////////////////////////////////////////////////////////
 int WordWrapStreamBuf::
-overflow(int ch) { 
+overflow(int ch) {
   streamsize n = pptr() - pbase();
 
   if (n != 0 && sync() != 0) {

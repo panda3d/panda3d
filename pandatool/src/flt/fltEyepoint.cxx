@@ -1,6 +1,19 @@
 // Filename: fltEyepoint.cxx
 // Created by:  drose (26Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltEyepoint.h"
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: FltEyepoint::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltEyepoint::
 FltEyepoint() {
@@ -37,7 +50,7 @@ FltEyepoint() {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltEyepoint::extract_record
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool FltEyepoint::
 extract_record(FltRecordReader &reader) {
@@ -86,7 +99,7 @@ extract_record(FltRecordReader &reader) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltEyepoint::build_record
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool FltEyepoint::
 build_record(FltRecordWriter &writer) const {

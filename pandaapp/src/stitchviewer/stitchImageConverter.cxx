@@ -1,6 +1,19 @@
 // Filename: stitchImageConverter.cxx
 // Created by:  drose (06Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "stitchImageConverter.h"
@@ -33,7 +46,7 @@ override_chan_cfg(ChanCfgOverrides &override) {
   override.setField(ChanCfgOverrides::Title, "Stitch");
 
   LVecBase2d size = _output_image->get_size_pixels();
-  
+
   override.setField(ChanCfgOverrides::SizeX, (int)size[0]);
   override.setField(ChanCfgOverrides::SizeY, (int)size[1]);
 }
@@ -90,7 +103,7 @@ create_image_geometry(Image &im) {
 
   for (int xi = 0; xi < x_verts; xi++) {
     for (int yi = 0; yi < y_verts; yi++) {
-      LVector2d uvd = 
+      LVector2d uvd =
         _output_image->project(im._image->get_grid_vector(xi, yi));
 
       LVector3f p = LVector3f::rfu(2 * uvd[0] - 1,

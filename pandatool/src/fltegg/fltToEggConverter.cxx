@@ -1,6 +1,19 @@
 // Filename: fltToEggConverter.cxx
 // Created by:  drose (17Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltToEggConverter.h"
@@ -30,7 +43,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: FltToEggConverter::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltToEggConverter::
 FltToEggConverter() {
@@ -39,7 +52,7 @@ FltToEggConverter() {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltToEggConverter::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltToEggConverter::
 FltToEggConverter(const FltToEggConverter &copy) :
@@ -50,7 +63,7 @@ FltToEggConverter(const FltToEggConverter &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: FltToEggConverter::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltToEggConverter::
 ~FltToEggConverter() {
@@ -165,7 +178,7 @@ convert_flt(const FltHeader *flt_header) {
 //               initial state.
 ////////////////////////////////////////////////////////////////////
 void FltToEggConverter::
-cleanup() {  
+cleanup() {
   _flt_header.clear();
   _main_egg_vpool.clear();
   _textures.clear();
@@ -196,26 +209,26 @@ void FltToEggConverter::
 dispatch_record(const FltRecord *flt_record, FltToEggLevelState &state) {
   if (flt_record->is_of_type(FltLOD::get_class_type())) {
     convert_lod(DCAST(FltLOD, flt_record), state);
-    
+
   } else if (flt_record->is_of_type(FltGroup::get_class_type())) {
     convert_group(DCAST(FltGroup, flt_record), state);
-    
+
   } else if (flt_record->is_of_type(FltObject::get_class_type())) {
     convert_object(DCAST(FltObject, flt_record), state);
-    
+
   } else if (flt_record->is_of_type(FltFace::get_class_type())) {
     convert_face(DCAST(FltFace, flt_record), state);
-    
+
   } else if (flt_record->is_of_type(FltExternalReference::get_class_type())) {
     convert_ext_ref(DCAST(FltExternalReference, flt_record), state);
-    
+
     // Fallbacks.
   } else if (flt_record->is_of_type(FltBeadID::get_class_type())) {
     convert_bead_id(DCAST(FltBeadID, flt_record), state);
-    
+
   } else if (flt_record->is_of_type(FltBead::get_class_type())) {
     convert_bead(DCAST(FltBead, flt_record), state);
-    
+
   } else {
     convert_record(flt_record, state);
   }
@@ -389,7 +402,7 @@ convert_face(const FltFace *flt_face, FltToEggLevelState &state) {
 void FltToEggConverter::
 convert_ext_ref(const FltExternalReference *flt_ext, FltToEggLevelState &state) {
   // Get a group node to put the reference into.
-  EggGroupNode *egg_parent = 
+  EggGroupNode *egg_parent =
     state.get_synthetic_group("", flt_ext->get_transform());
 
   handle_external_reference(egg_parent,
@@ -411,7 +424,7 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
                const FltToEggConverter::EggVertices &vertices) {
 
   // Determine what the appropriate parent will be.
-  EggGroupNode *egg_parent = 
+  EggGroupNode *egg_parent =
     state.get_synthetic_group(flt_geom->get_id(), flt_geom->get_transform(),
                               flt_geom->_billboard_type);
 
@@ -502,7 +515,7 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
     for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
       (*vi)->clear_color();
     }
-  }    
+  }
 
   if (!keep_normals) {
     // If we're not to use the normals, then eliminate them.
@@ -529,7 +542,7 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
 //       Access: Public
 //  Description: Records all of the subfaces of the indicated group as
 //               coplanar polygons (i.e. decals) of the group.
-//               
+//
 //               If coplanar polygons exist, the state is modified so
 //               that _egg_parent is the new group to which the base
 //               polygons should be added.  Therefore, subfaces should
@@ -643,11 +656,11 @@ parse_comment(const string &comment, const string &name,
 
   size_t p;
   p = 0;
-  while (p < comment.length() && 
+  while (p < comment.length() &&
          cmp_nocase(comment.substr(p, 5), egg_str) != 0) {
     p++;
   }
-   
+
   if (p >= comment.length()) {
     // No "<egg>" in the comment.
     return true;
@@ -659,7 +672,7 @@ parse_comment(const string &comment, const string &name,
     ++p;
   }
   if (p >= comment.length() || comment[p] != '{') {
-    nout << "No opening brace in comment for " 
+    nout << "No opening brace in comment for "
          << name << "\n\n";
     _error = true;
     return false;
@@ -673,14 +686,14 @@ parse_comment(const string &comment, const string &name,
     --q;
   }
   if (q == p) {
-    nout << "No closing brace in comment for " 
+    nout << "No closing brace in comment for "
          << name << "\n\n";
     _error = true;
     return false;
   }
 
   string egg_syntax = comment.substr(p, q - p);
-  
+
   if (!egg_node->parse_egg(egg_syntax)) {
     nout << "Syntax error in comment for "
          << name << "\n\n";
@@ -737,7 +750,7 @@ make_egg_texture(const FltTexture *flt_texture) {
 
   // Create a new one.
   string tref_name = format_string(flt_texture->_pattern_index);
-  Filename filename = 
+  Filename filename =
     convert_texture_path(flt_texture->_filename,
                          _flt_header->get_texture_path());
 
@@ -781,7 +794,7 @@ make_egg_texture(const FltTexture *flt_texture) {
     // Not supported.
     break;
   }
- 
+
   switch (flt_texture->_mag_filter) {
   case FltTexture::MG_point:
     egg_texture->set_magfilter(EggTexture::FT_nearest);
@@ -887,7 +900,7 @@ make_egg_texture(const FltTexture *flt_texture) {
     egg_texture->set_format(EggTexture::F_rgb12);
     break;
   }
- 
+
   switch (flt_texture->_mag_filter_alpha) {
   case FltTexture::MG_point:
     egg_texture->set_magfilteralpha(EggTexture::FT_nearest);
@@ -908,7 +921,7 @@ make_egg_texture(const FltTexture *flt_texture) {
     // Not supported.
     break;
   }
- 
+
   switch (flt_texture->_mag_filter_color) {
   case FltTexture::MG_point:
     egg_texture->set_magfiltercolor(EggTexture::FT_nearest);

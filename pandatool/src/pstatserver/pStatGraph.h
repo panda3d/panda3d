@@ -1,6 +1,19 @@
 // Filename: pStatGraph.h
 // Created by:  drose (19Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef PSTATGRAPH_H
@@ -68,7 +81,7 @@ public:
   INLINE const string &get_guide_bar_unit_name() const;
 
   static string format_number(float value);
-  static string format_number(float value, int guide_bar_units, 
+  static string format_number(float value, int guide_bar_units,
                               const string &unit_name = string());
 
 protected:

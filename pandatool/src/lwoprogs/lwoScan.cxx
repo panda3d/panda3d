@@ -1,6 +1,19 @@
-// Filename: test_lwo.cxx
+// Filename: lwoScan.cxx
 // Created by:  drose (24Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "lwoScan.h"
@@ -12,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: LwoScan::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 LwoScan::
 LwoScan() {
@@ -22,13 +35,13 @@ LwoScan() {
   set_program_description
     ("This program simply reads a Lightwave object file and dumps its "
      "contents to standard output.  It's mainly useful for debugging "
-     "problems with lwo2egg."); 
+     "problems with lwo2egg.");
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LwoScan::run
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void LwoScan::
 run() {
@@ -52,7 +65,7 @@ run() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LwoScan::handle_args
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool LwoScan::
 handle_args(ProgramBase::Args &args) {

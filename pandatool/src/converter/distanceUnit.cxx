@@ -1,6 +1,19 @@
 // Filename: distanceUnit.cxx
 // Created by:  drose (17Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "distanceUnit.h"
@@ -94,7 +107,7 @@ format_long_unit(DistanceUnit unit) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DistanceUnit output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, DistanceUnit unit) {
@@ -120,22 +133,22 @@ string_distance_unit(const string &str) {
 
   } else if (cmp_nocase(str, "km") == 0 || cmp_nocase(str, "kilometers") == 0) {
     return DU_kilometers;
-  
+
   } else if (cmp_nocase(str, "yd") == 0 || cmp_nocase(str, "yards") == 0) {
     return DU_yards;
-  
+
   } else if (cmp_nocase(str, "ft") == 0 || cmp_nocase(str, "feet") == 0) {
     return DU_feet;
-  
+
   } else if (cmp_nocase(str, "in") == 0 || cmp_nocase(str, "inches") == 0) {
     return DU_inches;
-  
-  } else if (cmp_nocase(str, "nmi") == 0 || 
-             cmp_nocase(str, "nm") == 0 || 
+
+  } else if (cmp_nocase(str, "nmi") == 0 ||
+             cmp_nocase(str, "nm") == 0 ||
              cmp_nocase_uh(str, "nautical_miles") == 0) {
     return DU_nautical_miles;
-  
-  } else if (cmp_nocase(str, "mi") == 0 || 
+
+  } else if (cmp_nocase(str, "mi") == 0 ||
              cmp_nocase(str, "miles") == 0 ||
              cmp_nocase_uh(str, "statute_miles") == 0) {
     return DU_statute_miles;

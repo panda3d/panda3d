@@ -1,6 +1,19 @@
 // Filename: fltTransformPut.cxx
 // Created by:  drose (29Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fltTransformPut.h"
@@ -14,7 +27,7 @@ TypeHandle FltTransformPut::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformPut::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FltTransformPut::
 FltTransformPut(FltHeader *header) : FltTransformRecord(header) {
@@ -51,7 +64,7 @@ set(const LPoint3d &from_origin, const LPoint3d &from_align,
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformPut::get_from_origin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const LPoint3d &FltTransformPut::
 get_from_origin() const {
@@ -61,7 +74,7 @@ get_from_origin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformPut::get_from_align
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const LPoint3d &FltTransformPut::
 get_from_align() const {
@@ -71,7 +84,7 @@ get_from_align() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformPut::get_from_track
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const LPoint3d &FltTransformPut::
 get_from_track() const {
@@ -81,7 +94,7 @@ get_from_track() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformPut::get_to_origin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const LPoint3d &FltTransformPut::
 get_to_origin() const {
@@ -91,7 +104,7 @@ get_to_origin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformPut::get_to_align
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const LPoint3d &FltTransformPut::
 get_to_align() const {
@@ -101,7 +114,7 @@ get_to_align() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformPut::get_to_track
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const LPoint3d &FltTransformPut::
 get_to_track() const {
@@ -111,7 +124,7 @@ get_to_track() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltTransformPut::recompute_matrix
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FltTransformPut::
 recompute_matrix() {
@@ -119,7 +132,7 @@ recompute_matrix() {
   look_at(r1, _from_align - _from_origin, _from_track - _from_origin, CS_zup_right);
   look_at(r2, _to_align - _to_origin, _to_track - _to_origin, CS_zup_right);
 
-  _matrix = 
+  _matrix =
     LMatrix4d::translate_mat(-_from_origin) *
     invert(r1) *
     r2 *
