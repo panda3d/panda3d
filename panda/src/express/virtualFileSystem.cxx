@@ -79,7 +79,14 @@ mount(Multifile *multifile, const string &mount_point, int flags) {
 //               A given system directory may be mounted to multiple
 //               different mount point, and the same mount point may
 //               share multiple system directories.  In the case of
-//               ambiguities, the most-recently mounted system wins.
+//               ambiguities (that is, two different files with
+//               exactly the same full pathname), the most-recently
+//               mounted system wins.
+//
+//               Note that a mounted VirtualFileSystem directory is
+//               fully case-sensitive, unlike the native Windows file
+//               system, so you must refer to files within the virtual
+//               file system with exactly the right case.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
 mount(const Filename &physical_filename, const string &mount_point, 
