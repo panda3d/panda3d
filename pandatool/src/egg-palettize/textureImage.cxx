@@ -320,6 +320,7 @@ post_txa_file() {
 
   if (_request._format != EggTexture::F_unspecified) {
     _properties._format = _request._format;
+    _properties._force_format = _request._force_format;
   }
   if (_request._minfilter != EggTexture::FT_unspecified) {
     _properties._minfilter = _request._minfilter;

@@ -37,6 +37,7 @@ TextureProperties() {
   _got_num_channels = false;
   _num_channels = 0;
   _format = EggTexture::F_unspecified;
+  _force_format = false;
   _minfilter = EggTexture::FT_unspecified;
   _magfilter = EggTexture::FT_unspecified;
   _color_type = (PNMFileType *)NULL;
@@ -53,6 +54,7 @@ TextureProperties(const TextureProperties &copy) :
   _got_num_channels(copy._got_num_channels),
   _num_channels(copy._num_channels),
   _format(copy._format),
+  _force_format(copy._force_format),
   _minfilter(copy._minfilter),
   _magfilter(copy._magfilter),
   _color_type(copy._color_type),
@@ -70,6 +72,7 @@ operator = (const TextureProperties &copy) {
   _got_num_channels = copy._got_num_channels;
   _num_channels = copy._num_channels;
   _format = copy._format;
+  _force_format = copy._force_format;
   _minfilter = copy._minfilter;
   _magfilter = copy._magfilter;
   _color_type = copy._color_type;
@@ -107,8 +110,28 @@ get_num_channels() const {
 ////////////////////////////////////////////////////////////////////
 bool TextureProperties::
 uses_alpha() const {
-  return (_num_channels == 2 || _num_channels == 4 ||
-          _format == EggTexture::F_alpha);
+  switch (_format) {
+  case EggTexture::F_rgba:
+  case EggTexture::F_rgba12:
+  case EggTexture::F_rgba8:
+  case EggTexture::F_rgba4:
+  case EggTexture::F_rgba5:
+  case EggTexture::F_alpha:
+  case EggTexture::F_luminance_alpha:
+  case EggTexture::F_luminance_alphamask:
+    return true;
+
+  default:
+    return false;
+  }
+
+  /*
+  if (!_force_format) {
+    return (_num_channels == 2 || _num_channels == 4);
+  }
+
+  return false;
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,7 +171,14 @@ update_properties(const TextureProperties &other) {
     _got_num_channels = other._got_num_channels;
     _num_channels = other._num_channels;
   }
-  _format = union_format(_format, other._format);
+  if (_force_format) {
+    // If we've forced our own format, it doesn't change.
+  } else if (other._force_format) {
+    _format = other._format;
+  } else {
+    _format = union_format(_format, other._format);
+  }
+
   _minfilter = union_filter(_minfilter, other._minfilter);
   _magfilter = union_filter(_magfilter, other._magfilter);
 
@@ -166,7 +196,7 @@ update_properties(const TextureProperties &other) {
 ////////////////////////////////////////////////////////////////////
 void TextureProperties::
 fully_define() {
-  if (!_got_num_channels) {
+  if (!_got_num_channels || _force_format) {
     switch (_format) {
     case EggTexture::F_rgba:
     case EggTexture::F_rgbm:
@@ -203,67 +233,69 @@ fully_define() {
   }
 
   // Make sure the format reflects the number of channels.
-  switch (_num_channels) {
-  case 1:
-    switch (_format) {
-    case EggTexture::F_red:
-    case EggTexture::F_green:
-    case EggTexture::F_blue:
-    case EggTexture::F_alpha:
-    case EggTexture::F_luminance:
+  if (!_force_format) {
+    switch (_num_channels) {
+    case 1:
+      switch (_format) {
+      case EggTexture::F_red:
+      case EggTexture::F_green:
+      case EggTexture::F_blue:
+      case EggTexture::F_alpha:
+      case EggTexture::F_luminance:
+        break;
+        
+      default:
+        _format = EggTexture::F_luminance;
+      }
       break;
-
-    default:
-      _format = EggTexture::F_luminance;
-    }
-    break;
-
-  case 2:
-    switch (_format) {
-    case EggTexture::F_luminance_alpha:
-    case EggTexture::F_luminance_alphamask:
+      
+    case 2:
+      switch (_format) {
+      case EggTexture::F_luminance_alpha:
+      case EggTexture::F_luminance_alphamask:
+        break;
+        
+      default:
+        _format = EggTexture::F_luminance_alpha;
+      }
       break;
-
-    default:
-      _format = EggTexture::F_luminance_alpha;
-    }
-    break;
-
-  case 3:
-    switch (_format) {
-    case EggTexture::F_rgb:
-    case EggTexture::F_rgb12:
-    case EggTexture::F_rgb8:
-    case EggTexture::F_rgb5:
-    case EggTexture::F_rgb332:
+      
+    case 3:
+      switch (_format) {
+      case EggTexture::F_rgb:
+      case EggTexture::F_rgb12:
+      case EggTexture::F_rgb8:
+      case EggTexture::F_rgb5:
+      case EggTexture::F_rgb332:
+        break;
+        
+      case EggTexture::F_rgba8:
+        _format = EggTexture::F_rgb8;
+        break;
+        
+      case EggTexture::F_rgba5:
+      case EggTexture::F_rgba4:
+        _format = EggTexture::F_rgb5;
+        break;
+        
+      default:
+        _format = EggTexture::F_rgb;
+      }
       break;
-
-    case EggTexture::F_rgba8:
-      _format = EggTexture::F_rgb8;
-      break;
-
-    case EggTexture::F_rgba5:
-    case EggTexture::F_rgba4:
-      _format = EggTexture::F_rgb5;
-      break;
-
-    default:
-      _format = EggTexture::F_rgb;
-    }
-    break;
-
-  case 4:
-    switch (_format) {
-    case EggTexture::F_rgba:
-    case EggTexture::F_rgbm:
-    case EggTexture::F_rgba12:
-    case EggTexture::F_rgba8:
-    case EggTexture::F_rgba4:
-    case EggTexture::F_rgba5:
-      break;
-
-    default:
-      _format = EggTexture::F_rgba;
+      
+    case 4:
+      switch (_format) {
+      case EggTexture::F_rgba:
+      case EggTexture::F_rgbm:
+      case EggTexture::F_rgba12:
+      case EggTexture::F_rgba8:
+      case EggTexture::F_rgba4:
+      case EggTexture::F_rgba5:
+        break;
+        
+      default:
+        _format = EggTexture::F_rgba;
+      }
     }
   }
 
@@ -575,6 +607,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_bool(_got_num_channels);
   datagram.add_int32(_num_channels);
   datagram.add_int32((int)_format);
+  datagram.add_bool(_force_format);
   datagram.add_int32((int)_minfilter);
   datagram.add_int32((int)_magfilter);
   writer->write_pointer(datagram, _color_type);
@@ -639,6 +672,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _got_num_channels = scan.get_bool();
   _num_channels = scan.get_int32();
   _format = (EggTexture::Format)scan.get_int32();
+  if (Palettizer::_read_pi_version >= 5) {
+    _force_format = scan.get_bool();
+  } else {
+    _force_format = false;
+  }
   _minfilter = (EggTexture::FilterType)scan.get_int32();
   _magfilter = (EggTexture::FilterType)scan.get_int32();
   manager->read_pointer(scan, this);  // _color_type

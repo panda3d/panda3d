@@ -40,6 +40,7 @@ TxaLine() {
   _y_size = 0;
   _num_channels = 0;
   _format = EggTexture::F_unspecified;
+  _force_format = false;
   _got_margin = false;
   _margin = 0;
   _got_coverage_threshold = false;
@@ -205,11 +206,28 @@ parse(const string &line) {
         }
         _got_coverage_threshold = true;
 
-      } else {
-        // Maybe it's a format name.
-        EggTexture::Format format = EggTexture::string_format(word);
+      } else if (word.substr(0, 6) == "force-") {
+        // Force a particular format, despite the number of channels
+        // in the image.
+        string format_name = word.substr(6);
+        EggTexture::Format format = EggTexture::string_format(format_name);
         if (format != EggTexture::F_unspecified) {
           _format = format;
+          _force_format = true;
+        } else {
+          nout << "Unknown image format: " << format_name << "\n";
+          return false;
+        }
+
+      } else {
+        // Maybe it's a format name.  This suggests an image format,
+        // but may be overridden to reflect the number of channels in
+        // the image.
+        EggTexture::Format format = EggTexture::string_format(word);
+        if (format != EggTexture::F_unspecified) {
+          if (!_force_format) {
+            _format = format;
+          }
         } else {
           // Maybe it's a group name.
           PaletteGroup *group = pal->test_palette_group(word);
@@ -365,6 +383,7 @@ match_texture(TextureImage *texture) const {
 
   if (_format != EggTexture::F_unspecified) {
     request._format = _format;
+    request._force_format = _force_format;
   }
 
   bool got_cont = false;
@@ -485,6 +504,9 @@ output(ostream &out) const {
 
   if (_format != EggTexture::F_unspecified) {
     out << " " << _format;
+    if (_force_format) {
+      out << " (forced)";
+    }
   }
 
   if (_color_type != (PNMFileType *)NULL) {

@@ -32,6 +32,7 @@ TextureRequest() {
   _y_size = 0;
   _num_channels = 0;
   _format = EggTexture::F_unspecified;
+  _force_format = false;
   _minfilter = EggTexture::FT_unspecified;
   _magfilter = EggTexture::FT_unspecified;
   _omit = false;

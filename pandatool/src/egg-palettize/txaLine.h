@@ -68,6 +68,7 @@ private:
   int _y_size;
   int _num_channels;
   EggTexture::Format _format;
+  bool _force_format;
 
   bool _got_margin;
   int _margin;

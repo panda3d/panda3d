@@ -58,6 +58,7 @@ public:
   bool _got_num_channels;
   int _num_channels;
   EggTexture::Format _format;
+  bool _force_format;
   EggTexture::FilterType _minfilter, _magfilter;
   PNMFileType *_color_type;
   PNMFileType *_alpha_type;

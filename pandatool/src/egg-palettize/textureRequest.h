@@ -44,6 +44,7 @@ public:
   int _y_size;
   int _num_channels;
   EggTexture::Format _format;
+  bool _force_format;
   EggTexture::FilterType _minfilter;
   EggTexture::FilterType _magfilter;
   bool _omit;
