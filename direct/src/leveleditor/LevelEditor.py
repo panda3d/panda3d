@@ -33,10 +33,18 @@ DNA_TYPES = ['wall', 'window', 'sign', 'door', 'cornice', 'toon_landmark',
              'prop', 'street']
 BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10']
 # The list of neighborhoods to edit
-NEIGHBORHOODS = ['toontown_central', 'donalds_dock',
-                 'minnies_melody_land', 'the_burrrgh']
-NEIGHBORHOOD_CODES = {'toontown_central': 'TT', 'donalds_dock': 'DD',
-                      'minnies_melody_land': 'MM', 'the_burrrgh': 'BR'}
+NEIGHBORHOODS = ['toontown_central',
+                 'donalds_dock',
+                 'minnies_melody_land',
+                 'the_burrrgh',
+                 'daisys_garden'
+                 ]
+NEIGHBORHOOD_CODES = {'toontown_central': 'TT',
+                      'donalds_dock': 'DD',
+                      'minnies_melody_land': 'MM',
+                      'the_burrrgh': 'BR',
+                      'daisys_garden': 'DG'
+                      }
 OBJECT_SNAP_POINTS = {
     'street_5x20': [(Vec3(5.0,0,0), Vec3(0)),
                     (Vec3(0), Vec3(0))],
@@ -71,6 +79,8 @@ OBJECT_SNAP_POINTS = {
     'street_outer_corner': [(Vec3(20.0,0,0), Vec3(0)),
                             (Vec3(0), Vec3(0))],
     'street_full_corner': [(Vec3(40.0,0,0), Vec3(0)),
+                           (Vec3(0), Vec3(0))],
+    'street_curved_corner': [(Vec3(40.0,0,0), Vec3(0)),
                            (Vec3(0), Vec3(0))],
     'street_t_intersection': [(Vec3(40.0,0,0), Vec3(0)),
                               (Vec3(0), Vec3(0))],
@@ -126,10 +136,11 @@ except NameError:
     # Load the generic storage file
     loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
     # Load all the neighborhood specific storage files
-    loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_6/dna/storage_BR.dna', CSDefault, 1)
+    #loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
+    #loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
+    #loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
+    #loadDNAFile(DNASTORE, 'phase_8/dna/storage_BR.dna', CSDefault, 1)
+    loadDNAFile(DNASTORE, 'phase_8/dna/storage_DG.dna', CSDefault, 1)
     __builtin__.dnaLoaded = 1
 
 # Precompute class types for type comparisons
@@ -1465,17 +1476,19 @@ class LevelEditor(NodePath, PandaObject):
     def createMap(self, neighborhood):
         map = loader.loadModel('models/level_editor/' + neighborhood +
                                '_layout')
-        map.arc().setTransition(TransparencyTransition(1))
-        map.setColor(Vec4(1,1,1,.4))
-        self.mapDictionary[neighborhood] = map
-        # Make sure this item isn't pickable
-        direct.addUnpickable(neighborhood + '_layout')
+        if map:
+            map.arc().setTransition(TransparencyTransition(1))
+            map.setColor(Vec4(1,1,1,.4))
+            self.mapDictionary[neighborhood] = map
+            # Make sure this item isn't pickable
+            direct.addUnpickable(neighborhood + '_layout')
 
     def selectMap(self, neighborhood):
         if self.activeMap:
             self.activeMap.reparentTo(hidden)
-        self.activeMap = self.mapDictionary[neighborhood]
-        self.activeMap.reparentTo(self.levelMap)
+        if self.mapDictionary.has_key(neighborhood):
+            self.activeMap = self.mapDictionary[neighborhood]
+            self.activeMap.reparentTo(self.levelMap)
 
     def toggleMapVis(self, flag):
         if flag:
@@ -1856,6 +1869,8 @@ class LevelEditor(NodePath, PandaObject):
             self.outputDir = 'MinniesMelodyLand'
         elif neighborhood == 'the_burrgh':
             self.outputDir = 'TheBurrrgh'
+        elif neighborhood == 'daisys_garden':
+            self.outputDir = 'DaisysGarden'
         self.panel.editMenu.selectitem(neighborhood)
         self.styleManager.setEditMode(neighborhood)
         self.selectMap(neighborhood)
