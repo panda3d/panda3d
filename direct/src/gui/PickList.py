@@ -88,7 +88,6 @@ class PickList(PandaObject.PandaObject):
         # set up the frame
         self.frame.makeWideAsWidest()
         self.frame.makeVertical()
-        self.frame.recompute()
         
     def manage(self):
         self.frame.manage()

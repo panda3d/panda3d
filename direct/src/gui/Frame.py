@@ -81,7 +81,7 @@ class Frame:
     # convenience functions
     def makeVertical(self):
         # remove any previous packing
-        self.frame.clearAllPacking()
+        #self.frame.clearAllPacking()
         # make each item (except first) align under the last
         for itemNum in range(1, len(self.items)):            
             self.packItem(self.items[itemNum], GuiFrame.GuiFrame.UNDER,
@@ -92,7 +92,7 @@ class Frame:
             
     def makeHorizontal(self):
         # remove any previous packing
-        self.frame.clearAllPacking()
+        #self.frame.clearAllPacking()
         # make each item (except first) align right of the last
         for itemNum in range(1, len(self.items)):
             self.packItem(self.items[itemNum], GuiFrame.GuiFrame.RIGHT,
@@ -112,9 +112,6 @@ class Frame:
             if (thisWidth > widestWidth):
                 widest = self.items.index(item)
                 widestWidth = thisWidth
-
-        # re-pack based on new widths
-        self.frame.recompute()
 
         # make them all this wide
         for item in self.items:

@@ -18,7 +18,7 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.frame = Frame.Frame(name)
         self.frame.setOffset(0.015)
         self.item = 0
-        self.items = []
+        self.items = itemList
         self.keyFocus = 1
 
         # create the new title
@@ -27,30 +27,27 @@ class ScrollingLabel(PandaObject.PandaObject):
         label.setBackgroundColor(1., 1., 1., 0.)
         self.title = Sign.Sign(self.name, label)
         self.frame.addItem(self.title)
-        
-        # create a sign for each item in itemList
-        for item in itemList:
-            thisLabel = GuiLabel.GuiLabel.makeSimpleTextLabel(item, font)
-            thisLabel.setForegroundColor(0., 0., 0., 1.)
-            thisLabel.setBackgroundColor(1., 1., 1., 1.)
-            thisSign = Sign.Sign(item, thisLabel)
-            self.items.append(thisSign)
-            # add each item temporarily
-            self.frame.addItem(thisSign)
 
-        # make all labels the same width
-        self.frame.makeWideAsWidest()
-
-        # remove all labels except the first
-        for itemNum in range(1, len(self.items)):
-            self.frame.removeItem(self.items[itemNum])
-
+        longest = self.items[0]
+        for item in self.items:
+            if len(item) > len(longest):
+                longest = item
+                
+        label = GuiLabel.GuiLabel.makeSimpleTextLabel(longest, font)
+        label.setForegroundColor(0., 0., 0., 1.)
+        label.setBackgroundColor(1., 1., 1., 1.)
+        self.itemSign = Sign.Sign(longest, label)
+        self.frame.addItem(self.itemSign)
+            
         # pack the first label under the name 
-        self.frame.packItem(self.items[self.item], GuiFrame.GuiFrame.UNDER,
+        self.frame.packItem(self.itemSign, GuiFrame.GuiFrame.UNDER,
                             self.title)
-        self.frame.packItem(self.items[self.item], GuiFrame.GuiFrame.ALIGNLEFT,
+        self.frame.packItem(self.itemSign, GuiFrame.GuiFrame.ALIGNLEFT,
                             self.title)
 
+        # make the title and label the same length
+        self.frame.makeWideAsWidest()
+        
         # create the scroll buttons
         self.leftButton = Button.Button(self.name + "-left", " < ")
         self.leftButton.getGuiItem().setDownRolloverEvent(self.name + "-left")
@@ -75,6 +72,9 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.accept(self.name + "-right", self.handleRightButton)
         # listen for keyboard hits
         self.setKeyFocus(1)
+
+        # set list to first element
+        self.setItem(self.item)
         
         # refresh the frame
         self.frame.recompute()
@@ -83,8 +83,7 @@ class ScrollingLabel(PandaObject.PandaObject):
     def cleanup(self):
         # remove gui items
         del(self.frame)
-        for item in self.items:
-            del(item)
+        del(self.items)
 
         # ignore events
         self.ignore(self.name + "-left")
@@ -99,14 +98,16 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.name = name
         self.title.setText(name)
         self.frame.recompute()
-        
+
+    def getItemSign(self):
+        return self.itemSign
+    
     def getItem(self):
         return self.items[self.item]
 
     def setItem(self, item):
-        self.frame.removeItem(self.items[self.item])
+        self.itemSign.setText(self.items[self.item])
         self.item = item
-        self.addItem()
         
     def getEventName(self):
         return self.eventName
@@ -148,19 +149,19 @@ class ScrollingLabel(PandaObject.PandaObject):
         
     def handleLeftButton(self):
         # update the current item and the scroll label
-        self.frame.removeItem(self.items[self.item])
         self.item = self.item - 1
         if (self.item < 0):
             self.item = len(self.items) - 1
-        self.addItem()
+        self.setItem(self.item)
+        messenger.send(self.eventName, [self.item])
 
     def handleRightButton(self):
         # update the current item and the scroll label
-        self.frame.removeItem(self.items[self.item])
         self.item = self.item + 1
         if (self.item >= len(self.items)):
             self.item = 0
-        self.addItem()
+        self.setItem(self.item)
+        messenger.send(self.eventName, [self.item])
 
     def handleLeftArrow(self):
         # make the button toggle
@@ -185,15 +186,7 @@ class ScrollingLabel(PandaObject.PandaObject):
         taskMgr.spawnTaskNamed(Task.doLater(.035, task, "buttonUp-later"),
                                "doLater-buttonUp-later")
     
-    def addItem(self):
-        self.frame.addItem(self.items[self.item])
-        self.frame.packItem(self.items[self.item], GuiFrame.GuiFrame.UNDER,
-                            self.title)
-        self.frame.packItem(self.items[self.item], GuiFrame.GuiFrame.ALIGNLEFT,
-                            self.title)
-        self.items[self.item].manage()
-        self.frame.recompute()
-        messenger.send(self.eventName, [self.item])
+
 
     
 
