@@ -47,6 +47,11 @@ class DevWalker(DirectObject.DirectObject):
         #assert(self.debugPrint("getSpeeds()"))
         return (self.speed, self.rotationSpeed)
 
+    def setAvatar(self, avatar):
+        self.avatar = avatar
+        if avatar is not None:
+            pass # setup the avatar
+
     def initializeCollisions(self, collisionTraverser, avatarNodePath, 
             wallCollideMask, floorCollideMask,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):

@@ -97,7 +97,7 @@ class ControlManager:
         controls.setCollisionsActive(0)
         self.controls[name] = controls
 
-    def use(self, name="basic"):
+    def use(self, name, avatar):
         """
         name is a key (string) that was previously passed to add().
         
@@ -113,6 +113,7 @@ class ControlManager:
                     self.currentControls.disableAvatarControls()
                     self.currentControls.setCollisionsActive(0)
                 self.currentControls = controls
+                self.currentControls.setAvatar(avatar)
                 self.currentControls.setCollisionsActive(1)
                 if self.isEnabled:
                     self.currentControls.enableAvatarControls()

@@ -83,10 +83,10 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             #*# Debug:
             if not hasattr(ship, "acceleration"):
                 self.ship.acceleration = 60
-                self.ship.maxSpeed = 100
+                self.ship.maxSpeed = 12
                 self.ship.reverseAcceleration = 10
                 self.ship.maxReverseSpeed = 20
-                self.ship.turnRate = 30
+                self.ship.turnRate = 3
                 self.ship.maxTurn = 30
                 self.ship.anchorDrag = .9
                 self.ship.hullDrag = .9
@@ -229,8 +229,15 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.phys.attachLinearIntegrator(LinearEulerIntegrator())
         self.phys.attachPhysicalnode(physicsActor.node())
 
+        self.momentumForce=LinearVectorForce(0.0, 0.0, 0.0)
+        fn=ForceNode("ship momentum")
+        fnp=NodePath(fn)
+        fnp.reparentTo(render)
+        fn.addForce(self.momentumForce)
+        self.phys.addLinearForce(self.momentumForce)
+
         self.acForce=LinearVectorForce(0.0, 0.0, 0.0)
-        fn=ForceNode("ship vatarControls")
+        fn=ForceNode("ship avatarControls")
         fnp=NodePath(fn)
         fnp.reparentTo(render)
         fn.addForce(self.acForce)
@@ -263,7 +270,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.cTrav = collisionTraverser
         self.floorOffset = floorOffset = 7.0
         self.wallBitmask = wallBitmask
-        self.floorBitmask = floorBitmask
+        self.floorBitmask = BitMask32().allOff() #*#floorBitmask
         self.avatarRadius = avatarRadius
         self.floorOffset = floorOffset
         self.reach = reach
@@ -432,8 +439,27 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         slideRight = 0#inputState.isSet("slideRight")
         jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
-        self.__speed=(forward and self.ship.acceleration or 
-                reverse and -self.ship.reverseAcceleration)
+        
+        
+        if not hasattr(self, "sailsDeployed"):
+            self.sailsDeployed = 0.0
+        if forward and reverse:
+            # Way anchor:
+            self.__speed = 0.0
+            physObject.setVelocity(Vec3.zero())
+        elif forward:
+            self.sailsDeployed += 0.25
+            if self.sailsDeployed > 1.0:
+                self.sailsDeployed = 1.0
+        elif reverse:
+            self.sailsDeployed -= 0.25
+            if self.sailsDeployed < -1.0:
+                self.sailsDeployed = -1.0
+        self.__speed = self.ship.acceleration * self.sailsDeployed
+        
+        
+        #self.__speed=(forward and self.ship.acceleration or 
+        #        reverse and -self.ship.reverseAcceleration)
         avatarSlideSpeed=self.ship.acceleration*0.5
         #self.__slideSpeed=slide and (
         #        (turnLeft and -avatarSlideSpeed) or 
@@ -444,7 +470,20 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.__rotationSpeed=not slide and (
                 (turnLeft and self.ship.turnRate) or
                 (turnRight and -self.ship.turnRate))
-           
+
+
+        #*#
+        if not hasattr(self, "currentTurning"):
+            self.currentTurning = 0.0
+        self.currentTurning += self.__rotationSpeed
+        if self.currentTurning > self.ship.maxTurn:
+            self.currentTurning = self.ship.maxTurn
+        elif self.currentTurning < -self.ship.maxTurn:
+            self.currentTurning = -self.ship.maxTurn
+        self.currentTurning *= 0.9
+        self.__rotationSpeed = self.currentTurning
+
+
         if self.wantDebugIndicator:
             self.displayDebugInfo()
 
@@ -621,13 +660,18 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             if __debug__:       
                 onScreenDebug.add("phys", "off")
         # Check to see if we're moving at all:
-        if self.__speed or self.__slideSpeed or self.__rotationSpeed or moveToGround!=Vec3.zero():
+        if 1 or self.__speed or self.__slideSpeed or self.__rotationSpeed or moveToGround!=Vec3.zero():
             distance = dt * self.__speed
             slideDistance = dt * self.__slideSpeed
             rotation = dt * self.__rotationSpeed
 
             #debugTempH=self.avatarNodePath.getH()
-            assert self.avatarNodePath.getQuat().isSameDirection(physObject.getOrientation())
+            if __debug__:
+                q1=self.avatarNodePath.getQuat()
+                q2=physObject.getOrientation()
+                q1.normalize()
+                q2.normalize()
+                assert q1.isSameDirection(q2)
             assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
             
             # update pos:
@@ -641,16 +685,36 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
             step=rotMat.xform(self.__vel)
 
-            newVector = self.acForce.getLocalVector()+Vec3(step)
-            maxLen = self.ship.maxSpeed
+            #newVector = self.acForce.getLocalVector()+Vec3(step)
+            newVector = Vec3(step)
+            #newVector=Vec3(rotMat.xform(newVector))
+            #maxLen = self.ship.maxSpeed
+            maxLen = self.ship.acceleration
             if newVector.length() > maxLen:
                 newVector.normalize()
                 newVector *= maxLen
+
+
+            newVector.normalize()
+            newVector *= maxLen
             onScreenDebug.add("newVector",
                 newVector)
             onScreenDebug.add("newVector length",
                 newVector.length())
             self.acForce.setVector(Vec3(newVector))
+
+
+            #*#
+            speed = physObject.getVelocity()
+            speedLen = speed.length()
+            if speedLen > self.ship.maxSpeed:
+                speed.normalize()
+                speed *= self.ship.maxSpeed
+                physObject.setVelocity(speed)
+                #self.actorNode.updateTransform()
+
+
+            
             #physObject.setPosition(Point3(
             #    physObject.getPosition()+step+moveToGround))
 
@@ -663,7 +727,12 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             # sync the change:
             self.actorNode.updateTransform()
 
-            assert self.avatarNodePath.getQuat().isSameDirection(physObject.getOrientation())
+            if __debug__:
+                q1=self.avatarNodePath.getQuat()
+                q2=physObject.getOrientation()
+                q1.normalize()
+                q2.normalize()
+                assert q1.isSameDirection(q2)
             assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
             #assert self.avatarNodePath.getH()==debugTempH-rotation
             messenger.send("avatarMoving")

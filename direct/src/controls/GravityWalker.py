@@ -18,7 +18,7 @@ from direct.showbase.ShowBaseGlobal import *
 
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
-from pandac import PhysicsManager
+#from pandac import PhysicsManager
 import math
 
 
@@ -167,6 +167,11 @@ class GravityWalker(DirectObject.DirectObject):
     def getSpeeds(self):
         #assert(self.debugPrint("getSpeeds()"))
         return (self.speed, self.rotationSpeed)
+
+    def setAvatar(self, avatar):
+        self.avatar = avatar
+        if avatar is not None:
+            pass # setup the avatar
 
     def setupRay(self, bitmask, floorOffset, reach):
         assert self.notify.debugStateCall(self)

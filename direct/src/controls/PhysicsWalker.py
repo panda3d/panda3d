@@ -118,6 +118,11 @@ class PhysicsWalker(DirectObject.DirectObject):
         #assert(self.debugPrint("getSpeeds()"))
         return (self.__speed, self.__rotationSpeed)
 
+    def setAvatar(self, avatar):
+        self.avatar = avatar
+        if avatar is not None:
+            self.setupPhysics(avatar)
+
     def setupRay(self, floorBitmask, floorOffset):
         # This is a ray cast from your head down to detect floor polygons
         # A toon is about 4.0 feet high, so start it there
@@ -408,17 +413,18 @@ class PhysicsWalker(DirectObject.DirectObject):
         """
         onScreenDebug.add("w controls", "PhysicsWalker")
         
-        onScreenDebug.add("w airborneHeight", self.lifter.getAirborneHeight())
-        onScreenDebug.add("w falling", self.falling)
-        onScreenDebug.add("w isOnGround", self.lifter.isOnGround())
-        #onScreenDebug.add("w gravity", self.lifter.getGravity())
+        if self.useLifter:
+            onScreenDebug.add("w airborneHeight", self.lifter.getAirborneHeight())
+            onScreenDebug.add("w isOnGround", self.lifter.isOnGround())
+            #onScreenDebug.add("w gravity", self.lifter.getGravity())
+            onScreenDebug.add("w contact normal", self.lifter.getContactNormal().pPrintValues())
+            onScreenDebug.add("w impact", self.lifter.getImpactVelocity())
+            onScreenDebug.add("w velocity", self.lifter.getVelocity())
+            onScreenDebug.add("w hasContact", self.lifter.hasContact())
+        #onScreenDebug.add("w falling", self.falling)
         #onScreenDebug.add("w jumpForce", self.avatarControlJumpForce)
-        onScreenDebug.add("w contact normal", self.lifter.getContactNormal().pPrintValues())
-        onScreenDebug.add("w mayJump", self.mayJump)
-        onScreenDebug.add("w impact", self.lifter.getImpactVelocity())
-        onScreenDebug.add("w velocity", self.lifter.getVelocity())
+        #onScreenDebug.add("w mayJump", self.mayJump)
         onScreenDebug.add("w isAirborne", self.isAirborne)
-        onScreenDebug.add("w hasContact", self.lifter.hasContact())
 
     def handleAvatarControls(self, task):
         """
