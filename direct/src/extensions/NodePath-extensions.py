@@ -819,7 +819,9 @@
         import TkGlobal
         direct.deselect(self)
 
-
+    def setAlphaScale(self, alpha):
+        self.setColorScale(1, 1, 1, alpha)
+        
 
 
 
