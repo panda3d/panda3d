@@ -34,6 +34,9 @@ bool bResponsive_minimized_fullscreen_window = config_wdxdisplay.GetBool("respon
 bool dx_preserve_fpu_state = config_wdxdisplay.GetBool("dx-preserve-fpu-state", false);
 int dx_preferred_deviceID = config_wdxdisplay.GetInt("dx-preferred-device-id", -1);
 
+// if true, use ddraw's GetAvailVidMem to fail if driver says it has too little video mem
+bool dx_do_vidmemsize_check = config_wdxdisplay.GetBool("do-vidmemsize-check", true);
+
 extern void AtExitFn(void);
 
 ////////////////////////////////////////////////////////////////////

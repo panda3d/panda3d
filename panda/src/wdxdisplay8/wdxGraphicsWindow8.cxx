@@ -43,7 +43,7 @@ TypeHandle wdxGraphicsWindow::_type_handle;
 #define LAST_ERROR 0
 #define ERRORBOX_TITLE "Panda3D Error"
 #define WDX_WINDOWCLASSNAME "wdxDisplay"
-#define WDX_WINDOWCLASSNAME_NOCURSOR "wdxDisplay_NoCursor"
+#define WDX_WINDOWCLASSNAME_NOCURSOR WDX_WINDOWCLASSNAME "_NoCursor"
 #define DEFAULT_CURSOR IDC_ARROW
 
 typedef map<HWND,wdxGraphicsWindow *> HWND_PANDAWIN_MAP;
@@ -549,32 +549,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             }
             break;
 
-        case WM_DISPLAYCHANGE: {
-#ifdef _DEBUG
-            width = LOWORD(lparam);  height = HIWORD(lparam);
-            DWORD newbitdepth=wparam;
-            wdxdisplay_cat.spam() <<"WM_DISPLAYCHANGE received with width:" << width << "  height: " << height << " bpp: " << wparam<< endl;
-#endif
-
-            //    unfortunately this doesnt seem to work because RestoreAllSurfaces doesn't
-            //    seem to think we're back in the original displaymode even after I've received
-            //    the WM_DISPLAYCHANGE msg, and returns WRONGMODE error.  So the only way I can
-            //    think of to make this work is to have the timer periodically check for restored
-            //    coop level
-
-            //    if(_props._fullscreen && _window_inactive) {
-            //          if(_dxgsg!=NULL)
-            //              _dxgsg->CheckCooperativeLevel(DO_REACTIVATE_WINDOW);
-            //           else reactivate_window();
-            //    }
-
-            // does the windowed case handle displaychange properly?  no. need to recreate all devices
-          }
-          break;
-
         case WM_SIZE: {
 
-#ifdef _DEBUG
+            #ifdef _DEBUG
                 {
                     width = LOWORD(lparam);  height = HIWORD(lparam);
                     wdxdisplay_cat.spam() << "WM_SIZE received with width:" << width << "  height: " << height << " flags: " <<
@@ -582,7 +559,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                     ((wparam == SIZE_MINIMIZED)? "SIZE_MINIMIZED " : "") << ((wparam == SIZE_RESTORED)? "SIZE_RESTORED " : "") <<
                     ((wparam == SIZE_MAXIMIZED)? "SIZE_MAXIMIZED " : "") << endl;
                 }
-#endif
+            #endif
                 // old comment -- added SIZE_RESTORED to handle 3dfx case
                 if(_props._fullscreen || ((_dxgsg==NULL) || (_dxgsg->scrn.hWnd==NULL)) || ((wparam != SIZE_RESTORED) && (wparam != SIZE_MAXIMIZED)))
                     break;
@@ -605,6 +582,29 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
                 break;
             }
+
+        case WM_DISPLAYCHANGE: {
+         #ifdef _DEBUG
+            width = LOWORD(lparam);  height = HIWORD(lparam);
+            DWORD newbitdepth=wparam;
+            wdxdisplay_cat.spam() <<"WM_DISPLAYCHANGE received with width:" << width << "  height: " << height << " bpp: " << wparam<< endl;
+         #endif
+
+            //    unfortunately this doesnt seem to work because RestoreAllSurfaces doesn't
+            //    seem to think we're back in the original displaymode even after I've received
+            //    the WM_DISPLAYCHANGE msg, and returns WRONGMODE error.  So the only way I can
+            //    think of to make this work is to have the timer periodically check for restored
+            //    coop level
+
+            //    if(_props._fullscreen && _window_inactive) {
+            //          if(_dxgsg!=NULL)
+            //              _dxgsg->CheckCooperativeLevel(DO_REACTIVATE_WINDOW);
+            //           else reactivate_window();
+            //    }
+
+            // does the windowed case handle displaychange properly?  no. need to recreate all devices
+          }
+          break;
 
         case WM_SETFOCUS: {
             // wdxdisplay_cat.info() << "got WM_SETFOCUS\n";
@@ -787,13 +787,17 @@ bool wdxGraphicsWindow::handle_windowed_resize(HWND hWnd,bool bDoDxReset) {
     ClientToScreen( hWnd, (POINT*)&view_rect.left );   // translates top,left pnt
     ClientToScreen( hWnd, (POINT*)&view_rect.right );  // translates right,bottom pnt
 
-    bool bResizeSucceeded=true;
-
     _props._xorg = view_rect.left;  // _props origin should reflect upper left of view rectangle
     _props._yorg = view_rect.top;
 
     DWORD xsize= RECT_XSIZE(view_rect);
     DWORD ysize= RECT_YSIZE(view_rect);
+
+    if((xsize==0)||(ysize==0)) {
+      return false;
+    }
+
+    bool bResizeSucceeded=true;
 
 /*
    fail if resize fails, dont adjust size
@@ -1105,7 +1109,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
           if(wc.hCursor==NULL)
             wdxdisplay_cat.error() << "failed to create NULL cursor, error=" << GetLastError() << endl;
     
-          wc.lpszClassName  = WDX_WINDOWCLASSNAME_NOCURSOR;
+          wc.lpszClassName = WDX_WINDOWCLASSNAME_NOCURSOR;
     
           if(!RegisterClass(&wc)) {
             wdxdisplay_cat.error() << "could not register window class " << WDX_WINDOWCLASSNAME_NOCURSOR << endl;
@@ -1171,6 +1175,11 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
             pWindowClassName=WDX_WINDOWCLASSNAME;
         }
 
+        if((xsize==0) || (ysize==0)) {
+            wdxdisplay_cat.fatal() << "can't create window with zero area for device " << devnum << "!\n";
+            exit(1);
+        }
+
         // BUGBUG: this sets window posns based on desktop arrangement of monitors (that is what GetMonInfo is for). 
         // need to move to chancfg stuff instead (i.e. use the properties x/yorg's) when that is ready
         HWND hWin = CreateWindow(pWindowClassName, props->_title.c_str(),
@@ -1178,7 +1187,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
                                   _hParentWindow, NULL, hProgramInstance, 0);
 
         if(!hWin) {
-            wdxdisplay_cat.fatal() << "CreateWindow failed for monitor " << devnum << "!, LastError=" << GetLastError() << endl;
+            wdxdisplay_cat.fatal() << "CreateWindow failed for device " << devnum << "!, LastError=" << GetLastError() << endl;
             #ifdef _DEBUG
                PrintErrorMessage(LAST_ERROR);
             #endif
@@ -1617,7 +1626,14 @@ find_all_card_memavails(void) {
         }
     
         pDD->Release();  // release DD obj, since this is all we needed it for
-        
+
+        if(!dx_do_vidmemsize_check) {
+           // still calling the DD stuff to get deviceID, etc.  is this necessary?
+           (*g_pCardIDVec)[i].MaxAvailVidMem = UNKNOWN_VIDMEM_SIZE;
+           (*g_pCardIDVec)[i].bIsLowVidMemCard = false; 
+           continue;
+        } 
+
         if(dwVidMemTotal==0)   // unreliable driver
             dwVidMemTotal=UNKNOWN_VIDMEM_SIZE;
          else {
@@ -1785,12 +1801,14 @@ bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE
 void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT RequestedYsize,bool bWantZBuffer,bool bWantStencil,
                                                      UINT *pSupportedScreenDepthsMask,bool *pCouldntFindAnyValidZBuf,
                                                      D3DFORMAT *pSuggestedPixFmt) {
-    assert(!IsBadWritePtr(_dxgsg,sizeof(void*)));
-    assert(!IsBadWritePtr(_dxgsg->scrn.pD3D8,sizeof(void*)));
+    assert(IS_VALID_PTR(_dxgsg));
+    assert(IS_VALID_PTR(_dxgsg->scrn.pD3D8));
     HRESULT hr;
 
+    #ifndef NDEBUG
     if(_dxgsg->scrn.bIsLowVidMemCard)
         nassertv((RequestedXsize==640)&&(RequestedYsize==480));
+    #endif
 
     *pSuggestedPixFmt = D3DFMT_UNKNOWN;
                                                      
@@ -2342,6 +2360,8 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
 
 //  ========================================================
 
+    PRINT_REFCNT(wdxdisplay,_dxgsg->scrn.pD3DDevice);
+
     if(pPresParams->EnableAutoDepthStencil) {
         _dxgsg->_buffer_mask |= RenderBuffer::T_depth;
         if(IS_STENCIL_FORMAT(pPresParams->AutoDepthStencilFormat))
@@ -2778,6 +2798,7 @@ lookup_key(WPARAM wparam) const {
         case VK_MENU:
         case VK_LMENU:
         case VK_RMENU:
+            wdxdisplay_cat.debug() << "XXXX got alt-key event!\n";
             return KeyboardButton::alt();
 
         default:
