@@ -317,7 +317,8 @@ void runtest_fullscreen_sizes(GraphicsWindow *win) {
 
 bool query_fullscreen_testresult(unsigned int xsize,unsigned int ysize) {
     // stupid linear search that works ok as long as total tests are small
-    for(int i=0;i<num_fullscreen_testsizes;i++) {
+    unsigned int i;
+    for(i=0;i<num_fullscreen_testsizes;i++) {
         if((fullscreen_testsizes[i*2]==xsize) &&
            (fullscreen_testsizes[i*2+1]==ysize))
           return true;
