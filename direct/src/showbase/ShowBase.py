@@ -414,13 +414,11 @@ class ShowBase(DirectObject.DirectObject):
 
 
     def setupRender2d(self):
-        """setupRender2d(self)
-
+        """
         Creates the render2d scene graph, the primary scene graph for
         2-d objects and gui elements that are superimposed over the
         3-d geometry in the window.
         """
-
         self.render2d = NodePath('render2d')
 
         # Set up some overrides to turn off certain properties which
@@ -466,12 +464,10 @@ class ShowBase(DirectObject.DirectObject):
         self.a2dRight = self.aspectRatio
 
     def makeCamera2d(self, win, left, right, bottom, top):
-        """makeCamera2d(self)
-
+        """
         Makes a new camera2d associated with the indicated window, and
         assigns it to render the indicated subrectangle of render2d.
         """
-
         # First, we need to make a new layer on the window.
         chan = win.getChannel(0)
         layer = chan.makeLayer()
@@ -498,8 +494,7 @@ class ShowBase(DirectObject.DirectObject):
 
 
     def setupDataGraph(self):
-        """setupDataGraph(self)
-
+        """
         Creates the data graph and populates it with the basic input
         devices.
         """
@@ -510,8 +505,7 @@ class ShowBase(DirectObject.DirectObject):
 
 
     def setupMouse(self, win):
-        """setupMouse(self, win)
-
+        """
         Creates the structures necessary to monitor the mouse input,
         using the indicated window.  If the mouse has already been set
         up for a different window, this changes the mouse to reference
