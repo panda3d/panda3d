@@ -46,6 +46,7 @@ PUBLISHED:
   INLINE void set_cycle_rate(float cycle_rate);
   INLINE float get_cycle_rate() const;
 
+  INLINE void set_visible_child(int index);
   INLINE int get_visible_child() const;
 
 private:

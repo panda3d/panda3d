@@ -89,6 +89,23 @@ get_cycle_rate() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SequenceNode::set_visible_child
+//       Access: Published
+//  Description: Sets the particular child that this SequenceNode will
+//               display this frame.  Future frames will proceed from
+//               here.
+////////////////////////////////////////////////////////////////////
+INLINE void SequenceNode::
+set_visible_child(int index) {
+  int num_children = get_num_children();
+  if (num_children != 0) {
+    CDWriter cdata(_cycler);
+    float now = ClockObject::get_global_clock()->get_frame_time();
+    cdata->_frame_offset = (index - (now - cdata->_start_time) * cdata->_cycle_rate);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SequenceNode::get_visible_child
 //       Access: Published
 //  Description: Returns the index of the child that should be visible
