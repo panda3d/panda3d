@@ -4523,7 +4523,7 @@ flatten_medium() {
   nassertr_always(!is_empty(), 0);
   SceneGraphReducer gr;
   gr.apply_attribs(node());
-  int num_removed = gr.flatten(node(), false);
+  int num_removed = gr.flatten(node(), 0);
 
   return num_removed;
 }
@@ -4550,7 +4550,7 @@ flatten_strong() {
   nassertr_always(!is_empty(), 0);
   SceneGraphReducer gr;
   gr.apply_attribs(node());
-  int num_removed = gr.flatten(node(), true);
+  int num_removed = gr.flatten(node(), ~0);
 
   return num_removed;
 }

@@ -39,16 +39,17 @@
 //               candidate for removal if the node has no siblings and
 //               the node has no special properties.
 //
-//               If combine_siblings is true, sibling nodes may also
-//               be collapsed into a single node.  This will further
-//               reduce scene graph complexity, sometimes
-//               substantially, at the cost of reduced spatial
-//               separation.
+//               If combine_siblings_bits is nonzero, some sibling
+//               nodes (according to the bits set in
+//               combine_siblings_bits) may also be collapsed into a
+//               single node.  This will further reduce scene graph
+//               complexity, sometimes substantially, at the cost of
+//               reduced spatial separation.
 //
 //               Returns the number of nodes removed from the graph.
 ////////////////////////////////////////////////////////////////////
 int SceneGraphReducer::
-flatten(PandaNode *root, bool combine_siblings) {
+flatten(PandaNode *root, int combine_siblings_bits) {
   int num_total_nodes = 0;
   int num_pass_nodes;
 
@@ -63,22 +64,20 @@ flatten(PandaNode *root, bool combine_siblings) {
     int num_children = cr.get_num_children();
     for (int i = 0; i < num_children; i++) {
       PandaNode *child_node = cr.get_child(i);
-      num_pass_nodes += r_flatten(root, child_node, combine_siblings);
+      num_pass_nodes += r_flatten(root, child_node, combine_siblings_bits);
     }
 
-    if (combine_siblings && root->get_num_children() >= 2) {
-      num_pass_nodes += flatten_siblings(root);
+    if (combine_siblings_bits != 0 && root->get_num_children() >= 2) {
+      num_pass_nodes += flatten_siblings(root, combine_siblings_bits);
     }
 
     num_total_nodes += num_pass_nodes;
 
-    // If combine_siblings is true, we should repeat the above until
-    // we don't get any more benefit from flattening, because each
-    // pass could convert cousins into siblings, which may get
-    // flattened next pass.  If combine_siblings is not true, the
-    // first pass will be fully effective, and there's no point in
-    // trying again.
-  } while (combine_siblings && num_pass_nodes != 0);
+    // If combine_siblings_bits has CS_recurse set, we should repeat
+    // the above until we don't get any more benefit from flattening,
+    // because each pass could convert cousins into siblings, which
+    // may get flattened next pass.
+  } while ((combine_siblings_bits & CS_recurse) != 0 && num_pass_nodes != 0);
 
   return num_total_nodes;
 }
@@ -218,7 +217,7 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
 ////////////////////////////////////////////////////////////////////
 int SceneGraphReducer::
 r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
-          bool combine_siblings) {
+          int combine_siblings_bits) {
   int num_nodes = 0;
 
   // First, recurse on each of the children.
@@ -227,16 +226,22 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
     int num_children = cr.get_num_children();
     for (int i = 0; i < num_children; i++) {
       PandaNode *child_node = cr.get_child(i);
-      num_nodes += r_flatten(parent_node, child_node, combine_siblings);
+      num_nodes += r_flatten(parent_node, child_node, combine_siblings_bits);
     }
   }
 
   // Now that the above loop has removed some children, the child list
   // saved above is no longer accurate, so hereafter we must ask the
   // node for its real child list.
-  if (combine_siblings && parent_node->get_num_children() >= 2) {
+
+  // If we have CS_recurse set, then we flatten siblings before trying
+  // to flatten children.  Otherwise, we flatten children first, and
+  // then flatten siblings, which avoids overly enthusiastic
+  // flattening.
+  if ((combine_siblings_bits & CS_recurse) != 0 && 
+      parent_node->get_num_children() >= 2) {
     if (parent_node->safe_to_combine()) {
-      num_nodes += flatten_siblings(parent_node);
+      num_nodes += flatten_siblings(parent_node, combine_siblings_bits);
     }
   }
 
@@ -257,6 +262,14 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
         // Chicken out.
         parent_node->add_child(child_node, child_sort);
       }
+    }
+  }
+
+  if ((combine_siblings_bits & CS_recurse) == 0 &&
+      (combine_siblings_bits & ~CS_recurse) != 0 && 
+      parent_node->get_num_children() >= 2) {
+    if (parent_node->safe_to_combine()) {
+      num_nodes += flatten_siblings(parent_node, combine_siblings_bits);
     }
   }
 
@@ -295,7 +308,7 @@ operator () (const PandaNode *node1, const PandaNode *node2) const {
 //               of the indicated node that share the same properties.
 ////////////////////////////////////////////////////////////////////
 int SceneGraphReducer::
-flatten_siblings(PandaNode *parent_node) {
+flatten_siblings(PandaNode *parent_node, int combine_siblings_bits) {
   int num_nodes = 0;
 
   // First, collect the children into groups of nodes with common
@@ -312,7 +325,16 @@ flatten_siblings(PandaNode *parent_node) {
     int num_children = cr.get_num_children();
     for (int i = 0; i < num_children; i++) {
       PandaNode *child_node = cr.get_child(i);
-      if (child_node->safe_to_combine()) {
+      bool safe_to_combine = child_node->safe_to_combine();
+      if (safe_to_combine) {
+        if (child_node->is_geom_node()) {
+          safe_to_combine = (combine_siblings_bits & CS_geom_node) != 0;
+        } else {
+          safe_to_combine = (combine_siblings_bits & CS_other) != 0;
+        }
+      }
+
+      if (safe_to_combine) {
         collected[child_node].push_back(child_node);
       }
     }

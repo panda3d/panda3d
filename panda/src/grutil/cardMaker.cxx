@@ -131,7 +131,7 @@ rescale_source_geometry() {
   // Now flatten out the geometry as much as we can.
   SceneGraphReducer reducer;
   reducer.apply_attribs(root);
-  reducer.flatten(root, true);
+  reducer.flatten(root, ~0);
 
   return root;
 }

@@ -46,8 +46,17 @@ bool egg_ignore_clamp = config_egg2pg.GetBool("egg-ignore-clamp", false);
 bool egg_ignore_decals = config_egg2pg.GetBool("egg-ignore-decals", false);
 bool egg_flatten = config_egg2pg.GetBool("egg-flatten", true);
 
-// It is almost always a bad idea to set this true.
-bool egg_flatten_siblings = config_egg2pg.GetBool("egg-flatten-siblings", false);
+// Set this true to combine sibling GeomNodes into a single GeomNode,
+// when possible.  This is probably a good idea in general, but we
+// have it default to false for now for historical reasons (to avoid
+// breaking code that assumes this doesn't happen).  Eventually the
+// default will be set to true.
+bool egg_combine_geoms = config_egg2pg.GetBool("egg-combine-geoms", false);
+
+// Set this true to combine siblings of any combinable type into a
+// single Node when possible.  It is almost always a bad idea to set
+// this true.
+bool egg_combine_siblings = config_egg2pg.GetBool("egg-combine-siblings", false);
 
 bool egg_show_collision_solids = config_egg2pg.GetBool("egg-show-collision-solids", false);
 

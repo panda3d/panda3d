@@ -36,8 +36,16 @@ load_from_loader(EggLoader &loader) {
   }
 
   if (loader._root != (PandaNode *)NULL && egg_flatten) {
+    int combine_siblings_bits = 0;
+    if (egg_combine_geoms) {
+      combine_siblings_bits |= SceneGraphReducer::CS_geom_node;
+    }
+    if (egg_combine_siblings) {
+      combine_siblings_bits |= ~0;
+    }
+
     SceneGraphReducer gr;
-    int num_reduced = gr.flatten(loader._root, egg_flatten_siblings);
+    int num_reduced = gr.flatten(loader._root, combine_siblings_bits);
     egg2pg_cat.info() << "Flattened " << num_reduced << " nodes.\n";
   }
 

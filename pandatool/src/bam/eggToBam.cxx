@@ -52,9 +52,18 @@ EggToBam() :
      "instead be written to the bam file exactly as it is.  If flag is "
      "non-zero, the hierarchy will be flattened so that unnecessary nodes "
      "(usually group nodes with only one child) are eliminated.  The default "
-     "if this is not specified is taken from the egg-flatten Configrc "
+     "if this is not specified is taken from the egg-flatten Config.prc "
      "variable.",
      &EggToBam::dispatch_int, &_has_egg_flatten, &_egg_flatten);
+
+  add_option
+    ("combine-geoms", "flag", 0,
+     "Specifies whether to combine sibling GeomNodes into a common GeomNode "
+     "when possible.  This flag is only respected if flatten, above, is also "
+     "enabled (or implicitly true from the Config.prc file).  The default if "
+     "this is not specified is taken from the egg-combine-geoms Config.prc "
+     "variable.",
+     &EggToBam::dispatch_int, &_has_egg_combine_geoms, &_egg_combine_geoms);
 
   add_option
     ("suppress-hidden", "flag", 0,
@@ -78,7 +87,7 @@ EggToBam() :
      "inclusive, where higher numbers produce larger files with greater "
      "quality.  Generally, 95 is the highest useful quality level.  Use "
      "-NC (described below) to disable channel compression.  If neither "
-     "option is specified, the default comes from the Configrc file.",
+     "option is specified, the default comes from the Config.prc file.",
      &EggToBam::dispatch_int, &_has_compression_quality, &_compression_quality);
 
   add_option
@@ -107,6 +116,7 @@ EggToBam() :
 
   _force_complete = true;
   _egg_flatten = 0;
+  _egg_combine_geoms = 0;
   _egg_suppress_hidden = 1;
 }
 
@@ -119,8 +129,12 @@ void EggToBam::
 run() {
   if (_has_egg_flatten) {
     // If the user specified some -flatten, we need to set the
-    // corresponding Configrc variable.
+    // corresponding Config.prc variable.
     egg_flatten = (_egg_flatten != 0);
+  }
+  if (_has_egg_combine_geoms) {
+    // Ditto with -combine_geoms.
+    egg_combine_geoms = (_egg_combine_geoms != 0);
   }
 
   // We always set egg_suppress_hidden.
@@ -183,7 +197,7 @@ run() {
 bool EggToBam::
 handle_args(ProgramBase::Args &args) {
   // If the user specified a path store option, we need to set the
-  // bam-texture-mode Configrc variable directly to support this
+  // bam-texture-mode Config.prc variable directly to support this
   // (otherwise the bam code will do what it wants to do anyway).
   if (_tex_rawdata) {
     bam_texture_mode = BTM_rawdata;

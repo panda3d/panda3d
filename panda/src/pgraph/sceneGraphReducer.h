@@ -55,19 +55,26 @@ PUBLISHED:
     TT_other           = 0x010,
   };
 
+  enum CombineSiblings {
+    CS_other           = 0x001,
+    CS_geom_node       = 0x002,
+    CS_recurse         = 0x004,
+  };
+
   INLINE void apply_attribs(PandaNode *node, int attrib_types = ~0);
   INLINE void apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
                             int attrib_types, GeomTransformer &transformer);
 
-  int flatten(PandaNode *root, bool combine_siblings);
+  int flatten(PandaNode *root, int combine_siblings_bits);
 
 protected:
   void r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
                        int attrib_types, GeomTransformer &transformer);
 
   int r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
-                bool combine_siblings);
-  int flatten_siblings(PandaNode *parent_node);
+                int combine_siblings_bits);
+  int flatten_siblings(PandaNode *parent_node,
+                       int combine_siblings_bits);
 
   bool consider_child(PandaNode *grandparent_node,
                       PandaNode *parent_node, PandaNode *child_node);
