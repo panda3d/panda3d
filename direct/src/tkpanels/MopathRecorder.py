@@ -1633,7 +1633,8 @@ class MopathRecorder(AppShell, PandaObject):
             parent = self.parent)
         if mopathFilename:
             self.reset()
-            nodePath = loader.loadModel(Filename(mopathFilename))
+            nodePath = loader.loadModel(
+                Filename.fromOsSpecific(mopathFilename))
             self.curveCollection = ParametricCurveCollection()
             # MRM: Add error check
             self.curveCollection.addCurves(nodePath.node())
