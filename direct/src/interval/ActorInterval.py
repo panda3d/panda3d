@@ -71,6 +71,11 @@ class ActorInterval(Interval.Interval):
                 self.endFrame = endFrame
             elif endTime != None:
                 self.endFrame = int(math.floor(endTime * self.frameRate + 0.0001))
+            elif duration != None:
+                if startTime == None:
+                    startTime = float(self.startFrame) / float(self.frameRate)
+                endTime = startTime + duration
+                self.endFrame = int(math.floor(duration * self.frameRate + 0.0001))
             else:
                 # No end frame specified.  Choose the maximum of all
                 # of the controls' numbers of frames.
