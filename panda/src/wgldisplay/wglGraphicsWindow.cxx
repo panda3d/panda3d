@@ -21,8 +21,6 @@
 #include "config_wgldisplay.h"
 #include <keyboardButton.h>
 #include <mouseButton.h>
-//#include <throw_event.h>
-//#include <eventQueue.h>
 #include <glGraphicsStateGuardian.h>
 #include <errno.h>
 #include <time.h>
@@ -32,6 +30,8 @@
 #include <tchar.h>
 #include <map>
 #include <throw_event.h>
+//#include <eventQueue.h>
+#include <string.h>
 
 #define WGL_WGLEXT_PROTOTYPES
 #include "wglext.h"
@@ -145,6 +145,9 @@ void wglGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
   }
 
   if(_mwindow!=NULL) {
+    if(_bLoadedCustomCursor && _hMouseCursor!=NULL)
+      DestroyCursor(_hMouseCursor);
+
     DestroyWindow(_mwindow);
     hwnd_pandawin_map.erase(_mwindow);
     _mwindow = NULL;
@@ -327,7 +330,6 @@ void wglGraphicsWindow::config(void) {
     _mouse_motion_enabled = false;
     _mouse_passive_motion_enabled = false;
     _mouse_entry_enabled = false;
-    _entry_state = -1;
     _context = NULL;
     _hdc = NULL;
     _window_inactive = false;
@@ -345,7 +347,7 @@ void wglGraphicsWindow::config(void) {
     wc.hInstance   = hinstance;
 
     string windows_icon_filename = get_icon_filename_2().to_os_specific();
-    string windows_cursor_filename = get_cursor_filename_2().to_os_specific();
+    string windows_mono_cursor_filename = get_mono_cursor_filename_2().to_os_specific();
 
     if(!windows_icon_filename.empty()) {
         // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
@@ -361,16 +363,18 @@ void wglGraphicsWindow::config(void) {
         wc.hIcon = NULL; // use default app icon
     }
 
-    if(!windows_cursor_filename.empty()) {
+    _bLoadedCustomCursor = false;
+    if(!windows_mono_cursor_filename.empty()) {
         // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
         // if icon is more than 8bpp
 
         // loads a .cur fmt file
-        _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
+        _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_mono_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
 
         if(_hMouseCursor==NULL) {
-            wgldisplay_cat.warning() << "windows cursor filename '" << windows_cursor_filename << "' not found!!\n";
+            wgldisplay_cat.warning() << "windows cursor filename '" << windows_mono_cursor_filename << "' not found!!\n";
         }
+        _bLoadedCustomCursor = true;
     } else {
         _hMouseCursor = LoadCursor(NULL, IDC_ARROW);
     }
@@ -546,6 +550,8 @@ void wglGraphicsWindow::config(void) {
   make_current();
   make_gsg();
 
+  check_for_color_cursor_support();
+
 //  _glgsg = DCAST(GLGraphicsStateGuardian, _gsg);   dont need this now
 
   string tmpstr((char*)glGetString(GL_EXTENSIONS));
@@ -611,6 +617,57 @@ void wglGraphicsWindow::config(void) {
          wgldisplay_cat.info() << " glGetString(GL_VENDOR) returns NULL!!!\n";
       }
   }
+}
+
+void wglGraphicsWindow::
+check_for_color_cursor_support(void) {
+    // card support for non-black/white GDI cursors varies greatly.  if the cursor is not supported,
+    // it is rendered in software by GDI, which causes a flickering effect (because it's not synced 
+    // with flip?).  GDI transparently masks what's happening so there is no easy way for app to detect
+    // if HW cursor support exists.  alternatives are to tie cursor motion to frame rate using DDraw blts
+    // or overlays, or to have separate thread draw cursor (sync issues?).  instead we do mono cursor 
+    // unless card is known to support 256 color cursors
+
+    string windows_color_cursor_filename = get_color_cursor_filename_2().to_os_specific();
+    if(windows_color_cursor_filename.empty())
+       return;
+
+    bool bSupportsColorCursor=false;
+    const GLubyte *vendorname=glGetString(GL_VENDOR);
+    if(vendorname==NULL) {
+        return;
+    }
+    char vendorstr[500];
+    strncpy(vendorstr,(const char *)vendorname,sizeof(vendorstr));
+    _strlwr(vendorstr);
+    if(strstr(vendorstr,"nvidia")!=NULL) 
+        bSupportsColorCursor=true;  
+
+    // for now, just assume only nvidia supports color. need to add more checks for other cards
+    // like in DX l8r.
+
+    if(bSupportsColorCursor) {
+        // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
+        // if icon is more than 8bpp
+
+        // loads a .cur fmt file
+        HCURSOR hNewMouseCursor = (HCURSOR) LoadImage(NULL, windows_color_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
+
+        if(hNewMouseCursor==NULL) {
+            wgldisplay_cat.warning() << "windows color cursor filename '" << windows_color_cursor_filename << "' not found!!\n";
+            return;
+        }
+
+        SetClassLongPtr(_mwindow, GCLP_HCURSOR, (LONG_PTR) hNewMouseCursor);
+        SetCursor(hNewMouseCursor);
+
+        if(_bLoadedCustomCursor)
+           DestroyCursor(_hMouseCursor);
+        _hMouseCursor = hNewMouseCursor;
+
+        if(wgldisplay_cat.is_spam())
+            wgldisplay_cat.spam() << "loaded color cursor\n";
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1590,18 +1647,22 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     case WM_MBUTTONDOWN:
       if (button < 0)
         button = 1;
+
     case WM_RBUTTONDOWN:
       if (button < 0)
         button = 2;
       SetCapture(hwnd);
       // Win32 doesn't return the same numbers as X does when the mouse
       // goes beyond the upper or left side of the window
-      x = LOWORD(lparam);
-      y = HIWORD(lparam);
-      if (x & 1 << 15) 
-        x -= (1 << 16);
-      if (y & 1 << 15) 
-        y -= (1 << 16);
+      #define SET_MOUSE_COORD(iVal,VAL) { \
+            iVal = VAL;                   \
+            if(iVal & 0x8000)             \
+              iVal -= 0x10000;            \
+      }
+
+      SET_MOUSE_COORD(x,LOWORD(lparam));
+      SET_MOUSE_COORD(y,HIWORD(lparam));
+
       // make_current();  what does OGL have to do with mouse input??
       handle_keypress(MouseButton::button(button), x, y);
       break;
@@ -1615,24 +1676,17 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           button = 2;
       ReleaseCapture();
       #if 0
-          x = LOWORD(lparam);
-          y = HIWORD(lparam);
-          if (x & 1 << 15) 
-              x -= (1 << 16);
-          if (y & 1 << 15)
-              y -= (1 << 16);
+          SET_MOUSE_COORD(x,LOWORD(lparam));
+          SET_MOUSE_COORD(y,HIWORD(lparam));      
           // make_current();  what does OGL have to do with mouse input??
       #endif
       handle_keyrelease(MouseButton::button(button));
       break;
 
     case WM_MOUSEMOVE:
-        x = LOWORD(lparam);
-        y = HIWORD(lparam);
-        if (x & 1 << 15) 
-          x -= (1 << 16);
-        if (y & 1 << 15) 
-          y -= (1 << 16);
+        SET_MOUSE_COORD(x,LOWORD(lparam));
+        SET_MOUSE_COORD(y,HIWORD(lparam));    
+
         if (mouse_motion_enabled() &&
             (wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON))) {
             // make_current();  what does OGL have to do with mouse input??

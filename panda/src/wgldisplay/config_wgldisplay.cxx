@@ -78,7 +78,12 @@ Filename get_icon_filename_2() {
   return ExecutionEnvironment::expand_string(iconname);
 }
 
-Filename get_cursor_filename_2() {
-  string cursorname = config_wgldisplay.GetString("win32-cursor","");
+Filename get_color_cursor_filename_2() {
+  string cursorname = config_wgldisplay.GetString("win32-color-cursor","");
+  return ExecutionEnvironment::expand_string(cursorname);
+}
+
+Filename get_mono_cursor_filename_2() {
+  string cursorname = config_wgldisplay.GetString("win32-mono-cursor","");
   return ExecutionEnvironment::expand_string(cursorname);
 }

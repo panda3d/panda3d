@@ -118,6 +118,7 @@ private:
 
   DEVMODE           *_pCurrent_display_settings;
   bool              _bIsLowVidMemCard;
+  bool              _bLoadedCustomCursor;
 
   bool              _window_inactive;
   bool              _active_minimized_fullscreen;
@@ -128,10 +129,6 @@ private:
   bool              _mouse_motion_enabled;
   bool              _mouse_passive_motion_enabled;
   bool              _mouse_entry_enabled;
-  int               _entry_state;
-  bool              _ignore_key_repeat;
-  int               _full_height, _full_width;
-
 
   // vars for frames/sec meter
   DWORD _start_time;
@@ -157,13 +154,14 @@ public:
   virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
 
 protected:
-  virtual void do_close_window();
+  virtual void do_close_window(void);
+  void check_for_color_cursor_support(void);
 
 private:
   static TypeHandle _type_handle;
 };
 
-extern void set_global_parameters();
-extern void restore_global_parameters();
+extern void set_global_parameters(void);
+extern void restore_global_parameters(void);
 
 #endif

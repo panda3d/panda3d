@@ -94,6 +94,7 @@ protected:
   void enable_mouse_motion(bool val);
   void enable_mouse_passive_motion(bool val);
   void enable_mouse_entry(bool val);
+  void check_for_color_cursor_support(void);
   DDDEVICEIDENTIFIER2 _DXDeviceID;
 
 public:
@@ -107,14 +108,13 @@ private:
   typedef enum { NotAdjusting,MovingOrResizing,Resizing } WindowAdjustType;
   WindowAdjustType _WindowAdjustingType;
   bool              _bIsLowVidMemCard;
+  bool    _bLoadedCustomCursor;
   HCURSOR _hMouseCursor;
   bool    _bSizeIsMaximized;
   bool              _mouse_input_enabled;
   bool              _mouse_motion_enabled;
   bool              _mouse_passive_motion_enabled;
   bool              _mouse_entry_enabled;
-  int               _entry_state;
-  bool              _ignore_key_repeat;
   bool              _exiting_window;
   bool              _window_inactive;
   bool              _active_minimized_fullscreen;

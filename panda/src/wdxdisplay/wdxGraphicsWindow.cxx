@@ -202,6 +202,9 @@ void wdxGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
   }
 
   if(_mwindow!=NULL) {
+      if(_bLoadedCustomCursor && _hMouseCursor!=NULL)
+          DestroyCursor(_hMouseCursor);
+
     DestroyWindow(_mwindow);
     hwnd_pandawin_map.erase(_mwindow);
     _mwindow = NULL;
@@ -288,11 +291,18 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         case WM_MOUSEMOVE:
             if(!DXREADY)
                 break;
+        
+            // Win32 doesn't return the same numbers as X does when the mouse
+            // goes beyond the upper or left side of the window
+            #define SET_MOUSE_COORD(iVal,VAL) { \
+                    iVal = VAL;                   \
+                    if(iVal & 0x8000)             \
+                      iVal -= 0x10000;            \
+            }
+        
+            SET_MOUSE_COORD(x,LOWORD(lparam));
+            SET_MOUSE_COORD(y,HIWORD(lparam));
 
-            x = LOWORD(lparam);
-            y = HIWORD(lparam);
-            if(x & 1 << 15) x -= (1 << 16);
-            if(y & 1 << 15) y -= (1 << 16);
             if(mouse_motion_enabled()
                && wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) {
                 handle_mouse_motion(x, y);
@@ -371,12 +381,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             if(button < 0)
                 button = 2;
             SetCapture(hwnd);
-            // Win32 doesn't return the same numbers as X does when the mouse
-            // goes beyond the upper or left side of the window
-            x = LOWORD(lparam);
-            y = HIWORD(lparam);
-            if(x & 1 << 15) x -= (1 << 16);
-            if(y & 1 << 15) y -= (1 << 16);
+            SET_MOUSE_COORD(x,LOWORD(lparam));
+            SET_MOUSE_COORD(y,HIWORD(lparam));
             handle_keypress(MouseButton::button(button), x, y);
             return 0;
 
@@ -393,10 +399,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 button = 2;
             ReleaseCapture();
             #if 0
-               x = LOWORD(lparam);
-               y = HIWORD(lparam);
-               if(x & 1 << 15) x -= (1 << 16);
-               if(y & 1 << 15) y -= (1 << 16);
+               SET_MOUSE_COORD(x,LOWORD(lparam));
+               SET_MOUSE_COORD(y,HIWORD(lparam));           
             #endif
             handle_keyrelease(MouseButton::button(button));
             return 0;
@@ -876,14 +880,14 @@ void wdxGraphicsWindow::config(void) {
     wc.hInstance      = hinstance;
 
     string windows_icon_filename = get_icon_filename().to_os_specific();
-    string windows_cursor_filename = get_cursor_filename().to_os_specific();
+    string windows_mono_cursor_filename = get_mono_cursor_filename().to_os_specific();
 
     if(!windows_icon_filename.empty()) {
         // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
         // if icon is more than 8bpp
 
         // loads a .ico fmt file
-        wc.hIcon = (HICON) LoadImage(NULL, windows_icon_filename.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
+        wc.hIcon = (HICON) LoadImage(NULL, windows_icon_filename.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE );
 
         if(wc.hIcon==NULL) {
             wdxdisplay_cat.warning() << "windows icon filename '" << windows_icon_filename << "' not found!!\n";
@@ -892,16 +896,20 @@ void wdxGraphicsWindow::config(void) {
         wc.hIcon = NULL; // use default app icon
     }
 
-    if(!windows_cursor_filename.empty()) {
+    _bLoadedCustomCursor=false;
+
+    if(!windows_mono_cursor_filename.empty()) {
         // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
         // if icon is more than 8bpp
 
         // loads a .cur fmt file
-        _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
+        _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_mono_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
 
         if(_hMouseCursor==NULL) {
-            wdxdisplay_cat.warning() << "windows cursor filename '" << windows_cursor_filename << "' not found!!\n";
+            wdxdisplay_cat.warning() << "windows cursor filename '" << windows_mono_cursor_filename << "' not found!!\n";
+            _hMouseCursor = LoadCursor(NULL, IDC_ARROW);
         }
+        _bLoadedCustomCursor=true;
     } else {
         _hMouseCursor = LoadCursor(NULL, IDC_ARROW);
     }
@@ -967,12 +975,12 @@ void wdxGraphicsWindow::config(void) {
     _mouse_motion_enabled = false;
     _mouse_passive_motion_enabled = false;
     _mouse_entry_enabled = false;
-    _entry_state = -1;
 
     // Enable detection of mouse input
     enable_mouse_input(true);
     enable_mouse_motion(true);
     enable_mouse_passive_motion(true);
+    //  enable_mouse_entry(true);   re-enable this??
 
     // Now indicate that we have our keyboard/mouse device ready.
     GraphicsWindowInputDevice device = GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
@@ -1184,6 +1192,63 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
    return num_valid_modes;
 }
 
+// imperfect method to ID NVid? could also scan desc str, but that isnt fullproof either
+#define IS_NVIDIA(DDDEVICEID) ((DDDEVICEID.dwVendorId==0x10DE) || (DDDEVICEID.dwVendorId==0x12D2))
+#define IS_ATI(DDDEVICEID) (DDDEVICEID.dwVendorId==0x1002) 
+#define IS_MATROX(DDDEVICEID) (DDDEVICEID.dwVendorId==0x102B)
+
+void wdxGraphicsWindow::
+check_for_color_cursor_support(void) {
+    // card support for non-black/white GDI cursors varies greatly.  if the cursor is not supported,
+    // it is rendered in software by GDI, which causes a flickering effect (because it's not synced 
+    // with flip?).  GDI transparently masks what's happening so there is no easy way for app to detect
+    // if HW cursor support exists.  alternatives are to tie cursor motion to frame rate using DDraw blts
+    // or overlays, or to have separate thread draw cursor (sync issues?).  instead we do mono cursor 
+    // unless card is known to support 256 color cursors
+
+    string windows_color_cursor_filename = get_color_cursor_filename().to_os_specific();
+    if(windows_color_cursor_filename.empty())
+       return;
+
+    bool bSupportsColorCursor=false;
+
+    if(IS_NVIDIA(_DXDeviceID)) {    
+        // all nvidia seem to support 256 color
+        bSupportsColorCursor=true;
+    } else if(IS_ATI(_DXDeviceID)) {
+        // radeons seem to be in the 5100 range and support color, assume anything in 6000 or above 
+        // is newer than radeon and supports 256 color
+        if(((_DXDeviceID.dwDeviceId>=0x5100) && (_DXDeviceID.dwDeviceId<=0x5200)) ||
+           (_DXDeviceID.dwDeviceId>=0x6000))
+            bSupportsColorCursor=true;
+    } else if IS_MATROX(_DXDeviceID) {
+        if(_DXDeviceID.dwDeviceId==0x0525)   // G400 seems to support color cursors, havent tested other matrox
+            bSupportsColorCursor=true;
+    }
+
+    // TODO: add more cards as more testing is done
+
+    if(bSupportsColorCursor) {
+        // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
+        // if icon is more than 8bpp
+
+        // loads a .cur fmt file
+        HCURSOR hNewMouseCursor = (HCURSOR) LoadImage(NULL, windows_color_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
+
+        if(hNewMouseCursor==NULL) {
+            wdxdisplay_cat.warning() << "windows color cursor filename '" << windows_color_cursor_filename << "' not found!!\n";
+            return;
+        }
+
+        SetClassLongPtr(_mwindow, GCLP_HCURSOR, (LONG_PTR) hNewMouseCursor);
+        SetCursor(hNewMouseCursor);
+
+        if(_bLoadedCustomCursor)
+           DestroyCursor(_hMouseCursor);
+        _hMouseCursor = hNewMouseCursor;
+    }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: dx_setup
 //  Description: Set up the DirectX environment.  The size of the
@@ -1193,8 +1258,8 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow::
 dx_setup() {
-    LPDIRECT3D7           pD3DI;
-    LPDIRECTDRAW7         pDD;
+    LPDIRECT3D7   pD3DI;
+    LPDIRECTDRAW7 pDD;
     HRESULT hr;
     DX_DECLARE_CLEAN( DDSURFACEDESC2, SurfaceDesc );
 
@@ -1242,9 +1307,8 @@ dx_setup() {
 #ifdef _DEBUG
     wdxdisplay_cat.debug() << " GfxCard: " << _DXDeviceID.szDescription <<  "; DriverFile: '" << _DXDeviceID.szDriver  << "'; VendorID: " <<_DXDeviceID.dwVendorId <<"; DriverVer: " << HIWORD(_DXDeviceID.liDriverVersion.HighPart) << "." << LOWORD(_DXDeviceID.liDriverVersion.HighPart) << "." << HIWORD(_DXDeviceID.liDriverVersion.LowPart) << "." << LOWORD(_DXDeviceID.liDriverVersion.LowPart) << endl;
 #endif
-
-    // imperfect method to ID NVid, could also scan desc str, but that isnt fullproof either
-    #define ISNVIDIA(DDDEVICEID) ((DDDEVICEID.dwVendorId==0x10DE) || (DDDEVICEID.dwVendorId==0x12D2))
+    
+    check_for_color_cursor_support();
     
     // Query DirectDraw for access to Direct3D
 
@@ -1730,7 +1794,7 @@ CreateScreenBuffersAndDevice(DWORD dwRenderWidth, DWORD dwRenderHeight,LPDIRECTD
             exit(1);
         }
 
-        if(ISNVIDIA(_DXDeviceID)) {
+        if(IS_NVIDIA(_DXDeviceID)) {
            DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd_pri)
             pPrimaryDDSurf->GetSurfaceDesc(&ddsd_pri);
 
