@@ -1,0 +1,7 @@
+forcetype Frustumf
+renametype Frustumf Frustumf
+forcetype Frustumd
+renametype Frustumd Frustumd
+
+noinclude frustum_src.h
+noinclude look_at_src.h

@@ -1,0 +1,105 @@
+// Filename: lrotation_src.I
+// Created by:  frang, charles (23Jun00)
+// 
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: LRotation::Default Constructor
+//       Access: public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE FLOATNAME(LRotation)::
+FLOATNAME(LRotation)() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LRotation::Copy Constructor
+//       Access: public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE FLOATNAME(LRotation)::
+FLOATNAME(LRotation)(const FLOATNAME(LQuaternion)& c) : 
+  FLOATNAME(LQuaternion)(c) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LRotation::Constructor
+//       Access: public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE FLOATNAME(LRotation)::
+FLOATNAME(LRotation)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) : 
+  FLOATNAME(LQuaternion)(r, i, j, k) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LRotation::Constructor
+//       Access: public
+//  Description: lmatrix3
+////////////////////////////////////////////////////////////////////
+INLINE FLOATNAME(LRotation)::
+FLOATNAME(LRotation)(const FLOATNAME(LMatrix3) &m) {
+  set_from_matrix(m);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LRotation::Constructor
+//       Access: public
+//  Description: lmatrix4
+////////////////////////////////////////////////////////////////////
+INLINE FLOATNAME(LRotation)::
+FLOATNAME(LRotation)(const FLOATNAME(LMatrix4) &m) {
+  set_from_matrix(m);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LRotation::Constructor
+//       Access: public
+//  Description: axis + angle (in degrees)
+////////////////////////////////////////////////////////////////////
+INLINE FLOATNAME(LRotation)::
+FLOATNAME(LRotation)(const FLOATNAME(LVector3) &axis, FLOATTYPE angle) {
+  FLOATTYPE radians = angle * ((FLOATTYPE) MathNumbers::pi / (FLOATTYPE)180.0);
+  FLOATTYPE theta_over_2 = radians / (FLOATTYPE)2.0;
+  FLOATTYPE sin_to2 = csin(theta_over_2);
+
+  set_r(ccos(theta_over_2));
+  set_i(axis[0] * sin_to2);
+  set_j(axis[1] * sin_to2);
+  set_k(axis[2] * sin_to2);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LRotation::Constructor
+//       Access: public
+//  Description: Sets the rotation from the given Euler angles.
+////////////////////////////////////////////////////////////////////
+INLINE FLOATNAME(LRotation)::
+FLOATNAME(LRotation)(FLOATTYPE h, FLOATTYPE p, FLOATTYPE r) {
+  set_hpr(FLOATNAME(LVecBase3)(h, p, r));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LRotation::operator *
+//       Access: public
+//  Description: Rotation * Rotation = Rotation
+////////////////////////////////////////////////////////////////////
+INLINE FLOATNAME(LRotation) FLOATNAME(LRotation)::
+operator*(const FLOATNAME(LRotation)& other) const {
+  return multiply(other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LRotation::operator *
+//       Access: public
+//  Description: Rotation * Orientation = Orientation
+//               This is another meaningless operation, attempting
+//               to apply an orientation to a rotation.  It simply
+//               returns the rhs.
+////////////////////////////////////////////////////////////////////
+INLINE FLOATNAME(LQuaternion) FLOATNAME(LRotation)::
+operator*(const FLOATNAME(LQuaternion)& other) const {
+  return other;
+}
+
+
