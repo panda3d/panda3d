@@ -44,17 +44,12 @@ class EXPCL_PANDAEXPRESS base_thread {
 			 const priority_t pri = PRIORITY_NORMAL) :
 	_thread(thread_class::Null), _fn_void(fn), _fn_ret(0L), _mutex(),
 	_state(STATE_NEW), _priority(pri), _thread_arg(arg), _detached(true) {
-
-	
-	 printf("Base_thread constructor 1 called.\n");
 	 common_constructor();
       }
       INLINE base_thread(void* (*fn)(void*), void* arg = (void*)0L,
 			 const priority_t pri = PRIORITY_NORMAL) :
 	_thread(thread_class::Null), _fn_void(0L), _fn_ret(fn), _mutex(),
         _state(STATE_NEW), _priority(pri), _thread_arg(arg), _detached(false) {
-
-	printf("Base_thread constructor 2 called.\n");
 	 common_constructor();
       }
       // causes this thread to start executing
