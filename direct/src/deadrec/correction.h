@@ -19,6 +19,7 @@ PUBLISHED:
 
   virtual void step(void);
   virtual void new_target(LPoint3f&, LVector3f&);
+  virtual void force_target(LPoint3f&, LVector3f&);
 
   LPoint3f get_pos(void) const;
   LVector3f get_vel(void) const;
@@ -31,6 +32,7 @@ PUBLISHED:
 
   virtual void step(void);
   virtual void new_target(LPoint3f&, LVector3f&);
+  virtual void force_target(LPoint3f&, LVector3f&);
 };
 
 class LerpCorrection : public Correction {
@@ -45,6 +47,7 @@ PUBLISHED:
 
   virtual void step(void);
   virtual void new_target(LPoint3f&, LVector3f&);
+  virtual void force_target(LPoint3f&, LVector3f&);
 
   void set_duration(float);
   float get_duration(void) const;
@@ -64,6 +67,7 @@ PUBLISHED:
 
   virtual void step(void);
   virtual void new_target(LPoint3f&, LVector3f&);
+  virtual void force_target(LPoint3f&, LVector3f&);
 
   void set_duration(float);
   float get_duration(void) const;
