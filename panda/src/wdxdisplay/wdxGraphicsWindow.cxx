@@ -492,18 +492,22 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       }
       break;
 
-    case WM_SYSKEYDOWN:
-      // want to use defwindproc on Alt syskey so Alt-F4 works, etc
-      // but do want to bypass defwindproc F10 behavior (it activates
-      // the main menu, but we have none)
+    case WM_SYSKEYDOWN: {
+      // Alt and F10 are sent as WM_SYSKEYDOWN instead of WM_KEYDOWN
+      // want to use defwindproc on Alt syskey so std windows cmd Alt-F4 works, etc
+      POINT point;
+      GetCursorPos(&point);
+      ScreenToClient(hwnd, &point);
+      handle_keypress(lookup_key(wparam), point.x, point.y);
       if (wparam == VK_F10) {
+        //bypass default windproc F10 behavior (it activates the main menu, but we have none)
         return 0;
       }
-      break;
+    }
+    break;
 
     case WM_KEYDOWN: {
       POINT point;
-
       GetCursorPos(&point);
       ScreenToClient(hwnd, &point);
       handle_keypress(lookup_key(wparam), point.x, point.y);
@@ -2684,8 +2688,9 @@ lookup_key(WPARAM wparam) const {
 
         case VK_MENU:
         case VK_LMENU:
-        case VK_RMENU:
+        case VK_RMENU: {
             return KeyboardButton::alt();
+        }
 
         default:
             int key = MapVirtualKey(wparam, 2);
