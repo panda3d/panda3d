@@ -74,8 +74,6 @@ Section "${FULLNAME}" SecCore
 
         RMDir /r "$SMPROGRAMS\${SMDIRECTORY}"
         CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}"
-        WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"
-        WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/manual/"
 
         !ifdef PPGAME
 
@@ -96,12 +94,16 @@ Section "${FULLNAME}" SecCore
             File ${PSOURCE}\doc\InstallerNotes
             SetOutPath $INSTDIR\lib
             File /r /x *.exp ${PANDA}\lib\*
+            SetOutPath $INSTDIR\include
+            File /r /x *.exp ${PANDA}\include\*
             SetOutPath $INSTDIR\SceneEditor
             File /r /x CVS ${PSOURCE}\SceneEditor
 
             SetOutPath $INSTDIR
+            WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"
+            WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/manual/"
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Manual.lnk" "$INSTDIR\Manual.url" "" "$INSTDIR\bin\ppython.exe" 0 "" "" "Panda Manual"
-            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\bin\ppython.exe" 0 "" "" "Panda Manual"
+            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\bin\ppython.exe" 0 "" "" "Panda Website"
             SetOutPath $INSTDIR\samples\RubiksCube
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Test - Rubiks Cube.lnk" "$INSTDIR\bin\ppython.exe" "rubiksCube.py" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Panda Test"
         !endif
