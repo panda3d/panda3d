@@ -31,7 +31,7 @@ DCSimpleParameter::Uint32Uint8Type *DCSimpleParameter::_uint32uint8_type = NULL;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 DCSimpleParameter::
-DCSimpleParameter(DCSubatomicType type, int divisor) :
+DCSimpleParameter(DCSubatomicType type, unsigned int divisor) :
   _type(type),
   _divisor(1)
 {
@@ -270,7 +270,7 @@ get_divisor() const {
 //               accept a divisor.
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleParameter::
-set_divisor(int divisor) {
+set_divisor(unsigned int divisor) {
   if (_pack_type == PT_string || divisor == 0) {
     return false;
   }
@@ -306,11 +306,11 @@ set_range(const DCDoubleRange &range) {
   case ST_int8array:
     _int_range.clear();
     for (i = 0; i < num_ranges; i++) {
-      int min = (int)floor(range.get_min(i) * _divisor + 0.5);
-      int max = (int)floor(range.get_max(i) * _divisor + 0.5);
-      validate_int_limits(min, 8, range_error);
-      validate_int_limits(max, 8, range_error);
-      _int_range.add_range(min, max);
+      PN_int64 min = (PN_int64)floor(range.get_min(i) * _divisor + 0.5);
+      PN_int64 max = (PN_int64)floor(range.get_max(i) * _divisor + 0.5);
+      validate_int64_limits(min, 8, range_error);
+      validate_int64_limits(max, 8, range_error);
+      _int_range.add_range((int)min, (int)max);
     }
     break;
     
@@ -318,11 +318,11 @@ set_range(const DCDoubleRange &range) {
   case ST_int16array:
     _int_range.clear();
     for (i = 0; i < num_ranges; i++) {
-      int min = (int)floor(range.get_min(i) * _divisor + 0.5);
-      int max = (int)floor(range.get_max(i) * _divisor + 0.5);
-      validate_int_limits(min, 16, range_error);
-      validate_int_limits(max, 16, range_error);
-      _int_range.add_range(min, max);
+      PN_int64 min = (PN_int64)floor(range.get_min(i) * _divisor + 0.5);
+      PN_int64 max = (PN_int64)floor(range.get_max(i) * _divisor + 0.5);
+      validate_int64_limits(min, 16, range_error);
+      validate_int64_limits(max, 16, range_error);
+      _int_range.add_range((int)min, (int)max);
     }
     break;
     
@@ -330,9 +330,11 @@ set_range(const DCDoubleRange &range) {
   case ST_int32array:
     _int_range.clear();
     for (i = 0; i < num_ranges; i++) {
-      int min = (int)floor(range.get_min(i) * _divisor + 0.5);
-      int max = (int)floor(range.get_max(i) * _divisor + 0.5);
-      _int_range.add_range(min, max);
+      PN_int64 min = (PN_int64)floor(range.get_min(i) * _divisor + 0.5);
+      PN_int64 max = (PN_int64)floor(range.get_max(i) * _divisor + 0.5);
+      validate_int64_limits(min, 32, range_error);
+      validate_int64_limits(max, 32, range_error);
+      _int_range.add_range((int)min, (int)max);
     }
     break;
     
@@ -349,11 +351,11 @@ set_range(const DCDoubleRange &range) {
   case ST_uint8array:
     _uint_range.clear();
     for (i = 0; i < num_ranges; i++) {
-      unsigned int min = (unsigned int)floor(range.get_min(i) * _divisor + 0.5);
-      unsigned int max = (unsigned int)floor(range.get_max(i) * _divisor + 0.5);
-      validate_uint_limits(min, 8, range_error);
-      validate_uint_limits(max, 8, range_error);
-      _uint_range.add_range(min, max);
+      PN_uint64 min = (PN_uint64)floor(range.get_min(i) * _divisor + 0.5);
+      PN_uint64 max = (PN_uint64)floor(range.get_max(i) * _divisor + 0.5);
+      validate_uint64_limits(min, 8, range_error);
+      validate_uint64_limits(max, 8, range_error);
+      _uint_range.add_range((unsigned int)min, (unsigned int)max);
     }
     break;
     
@@ -361,11 +363,11 @@ set_range(const DCDoubleRange &range) {
   case ST_uint16array:
     _uint_range.clear();
     for (i = 0; i < num_ranges; i++) {
-      unsigned int min = (unsigned int)floor(range.get_min(i) * _divisor + 0.5);
-      unsigned int max = (unsigned int)floor(range.get_max(i) * _divisor + 0.5);
-      validate_uint_limits(min, 16, range_error);
-      validate_uint_limits(max, 16, range_error);
-      _uint_range.add_range(min, max);
+      PN_uint64 min = (PN_uint64)floor(range.get_min(i) * _divisor + 0.5);
+      PN_uint64 max = (PN_uint64)floor(range.get_max(i) * _divisor + 0.5);
+      validate_uint64_limits(min, 16, range_error);
+      validate_uint64_limits(max, 16, range_error);
+      _uint_range.add_range((unsigned int)min, (unsigned int)max);
     }
     break;
     
@@ -373,9 +375,11 @@ set_range(const DCDoubleRange &range) {
   case ST_uint32array:
     _uint_range.clear();
     for (i = 0; i < num_ranges; i++) {
-      unsigned int min = (unsigned int)floor(range.get_min(i) * _divisor + 0.5);
-      unsigned int max = (unsigned int)floor(range.get_max(i) * _divisor + 0.5);
-      _uint_range.add_range(min, max);
+      PN_uint64 min = (PN_uint64)floor(range.get_min(i) * _divisor + 0.5);
+      PN_uint64 max = (PN_uint64)floor(range.get_max(i) * _divisor + 0.5);
+      validate_uint64_limits(min, 32, range_error);
+      validate_uint64_limits(max, 32, range_error);
+      _uint_range.add_range((unsigned int)min, (unsigned int)max);
     }
     break;
     
@@ -401,11 +405,11 @@ set_range(const DCDoubleRange &range) {
   case ST_blob:
     _uint_range.clear();
     for (i = 0; i < num_ranges; i++) {
-      unsigned int min = (unsigned int)floor(range.get_min(i) * _divisor + 0.5);
-      unsigned int max = (unsigned int)floor(range.get_max(i) * _divisor + 0.5);
-      validate_uint_limits(min, 16, range_error);
-      validate_uint_limits(max, 16, range_error);
-      _uint_range.add_range(min, max);
+      PN_uint64 min = (PN_uint64)floor(range.get_min(i) * _divisor + 0.5);
+      PN_uint64 max = (PN_uint64)floor(range.get_max(i) * _divisor + 0.5);
+      validate_uint64_limits(min, 16, range_error);
+      validate_uint64_limits(max, 16, range_error);
+      _uint_range.add_range((unsigned int)min, (unsigned int)max);
     }
     if (_uint_range.has_one_value()) {
       // If we now have a fixed-length string requirement, we don't
@@ -424,9 +428,11 @@ set_range(const DCDoubleRange &range) {
   case ST_blob32:
     _uint_range.clear();
     for (i = 0; i < num_ranges; i++) {
-      unsigned int min = (unsigned int)floor(range.get_min(i) * _divisor + 0.5);
-      unsigned int max = (unsigned int)floor(range.get_max(i) * _divisor + 0.5);
-      _uint_range.add_range(min, max);
+      PN_uint64 min = (PN_uint64)floor(range.get_min(i) * _divisor + 0.5);
+      PN_uint64 max = (PN_uint64)floor(range.get_max(i) * _divisor + 0.5);
+      validate_uint64_limits(min, 32, range_error);
+      validate_uint64_limits(max, 32, range_error);
+      _uint_range.add_range((unsigned int)min, (unsigned int)max);
     }
     if (_uint_range.has_one_value()) {
       // If we now have a fixed-length string requirement, we don't
@@ -1952,7 +1958,7 @@ generate_hash(HashGenerator &hashgen) const {
 //               if it is not already created.
 ////////////////////////////////////////////////////////////////////
 DCSimpleParameter *DCSimpleParameter::
-create_nested_field(DCSubatomicType type, int divisor) {
+create_nested_field(DCSubatomicType type, unsigned int divisor) {
   DivisorMap divisor_map = _nested_field_map[type];
   DivisorMap::iterator di;
   di = divisor_map.find(divisor);

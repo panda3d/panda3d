@@ -268,11 +268,19 @@ get_max(int n) const {
 template <class NUM>
 INLINE void DCNumericRange<NUM>::
 output_minmax(ostream &out, Number divisor, const MinMax &range) const {
-  if (range._min == range._max) {
-    out << (double)range._min / (double)divisor;
+  if (divisor == 1) {
+    if (range._min == range._max) {
+      out << range._min;
+    } else {
+      out << range._min << "-" << range._max;
+    }
   } else {
-    out << (double)range._min / (double)divisor
-        << "-"
-        << (double)range._max / (double)divisor;
+    if (range._min == range._max) {
+      out << (double)range._min / (double)divisor;
+    } else {
+      out << (double)range._min / (double)divisor
+          << "-"
+          << (double)range._max / (double)divisor;
+    }
   }
 }

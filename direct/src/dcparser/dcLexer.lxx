@@ -300,9 +300,10 @@ inline void accept() {
 
 %}
 
-INTEGERNUM       ([+-]?([0-9]+))
-HEXNUM           0x[0-9a-fA-F]*
-REALNUM          ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
+UNSIGNED_INTEGERNUM  ([0-9]+)
+SIGNED_INTEGERNUM    ([+-]([0-9]+))
+UNSIGNED_HEXNUM      (0x[0-9a-fA-F]*)
+REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 
 %%
 
@@ -520,12 +521,36 @@ REALNUM          ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return KW_AIRECV;
 }
 
-{INTEGERNUM} { 
-  // An integer number.
+{UNSIGNED_INTEGERNUM} { 
+  // An unsigned integer number.
   accept();
 
   // atoll isn't fully portable, so we'll decode the integer by hand.
-  dcyylval.u.integer = 0;
+  dcyylval.str = dcyytext;
+  dcyylval.u.uint64 = 0;
+  const char *p = dcyytext;
+  while (*p != '\0') {
+    PN_uint64 next_value = dcyylval.u.uint64 * 10;
+    if (next_value < dcyylval.u.uint64) {
+      dcyyerror("Number out of range.");
+      dcyylval.u.uint64 = 1;
+      return UNSIGNED_INTEGER;
+    }
+
+    dcyylval.u.uint64 = next_value + (*p - '0');
+    ++p;
+  }
+  
+  return UNSIGNED_INTEGER;
+}
+
+{SIGNED_INTEGERNUM} { 
+  // A signed integer number.
+  accept();
+
+  // atoll isn't fully portable, so we'll decode the integer by hand.
+  dcyylval.str = dcyytext;
+
   bool neg = false;
   const char *p = dcyytext;
   if (*p == '-') {
@@ -534,36 +559,62 @@ REALNUM          ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   } else if (*p == '+') {
     ++p;
   }
+
+  PN_uint64 value = 0;
   while (*p != '\0') {
-    dcyylval.u.integer = dcyylval.u.integer * 10 + (*p - '0');
+    PN_uint64 next_value = value * 10;
+    if (next_value < value) {
+      dcyyerror("Number out of range.");
+      dcyylval.u.int64 = 1;
+      return SIGNED_INTEGER;
+    }
+
+    value = next_value + (*p - '0');
     ++p;
   }
+
   if (neg) {
-    dcyylval.u.integer = -dcyylval.u.integer;
-  }
+    dcyylval.u.int64 = -(PN_int64)value;
+    if (dcyylval.u.int64 > 0) {
+      dcyyerror("Number out of range.");
+      dcyylval.u.int64 = 1;
+    }
+  } else {
+    dcyylval.u.int64 = (PN_int64)value;
+    if (dcyylval.u.int64 < 0) {
+      dcyyerror("Number out of range.");
+      dcyylval.u.int64 = 1;
+    }
+  }    
   
-  dcyylval.str = dcyytext;
-  return INTEGER; 
+  return SIGNED_INTEGER;
 }
 
-{HEXNUM} {
+{UNSIGNED_HEXNUM} {
   // A hexadecimal integer number.
   accept(); 
 
   // As above, we'll decode the hex string by hand.
-  dcyylval.u.integer = 0;
+  dcyylval.str = dcyytext;
+  dcyylval.u.uint64 = 0;
   const char *p = dcyytext + 2;
   while (*p != '\0') {
+    PN_uint64 next_value = dcyylval.u.uint64 * 16;
+    if (next_value < dcyylval.u.uint64) {
+      dcyyerror("Number out of range.");
+      dcyylval.u.uint64 = 1;
+      return UNSIGNED_INTEGER;
+    }
+
     if (isalpha(*p)) {
-      dcyylval.u.integer = dcyylval.u.integer * 16 + (tolower(*p) - 'a' + 10);
+      dcyylval.u.uint64 = next_value + (tolower(*p) - 'a' + 10);
     } else {
-      dcyylval.u.integer = dcyylval.u.integer * 16 + (*p - '0');
+      dcyylval.u.uint64 = next_value + (*p - '0');
     }
     ++p;
   }
 
-  dcyylval.str = dcyytext;
-  return INTEGER; 
+  return UNSIGNED_INTEGER; 
 }
 
 {REALNUM} { 

@@ -35,7 +35,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCSimpleParameter : public DCParameter {
 public:
-  DCSimpleParameter(DCSubatomicType type, int divisor = 1);
+  DCSimpleParameter(DCSubatomicType type, unsigned int divisor = 1);
   DCSimpleParameter(const DCSimpleParameter &copy);
 
 PUBLISHED:
@@ -47,7 +47,7 @@ PUBLISHED:
   int get_divisor() const;
 
 public:
-  bool set_divisor(int divisor);
+  bool set_divisor(unsigned int divisor);
   bool set_range(const DCDoubleRange &range);
 
   virtual int calc_num_nested_fields(size_t length_bytes) const;
@@ -87,12 +87,13 @@ public:
   virtual void generate_hash(HashGenerator &hashgen) const;
 
 private:
-  static DCSimpleParameter *create_nested_field(DCSubatomicType type, int divisor);
+  static DCSimpleParameter *create_nested_field(DCSubatomicType type, 
+                                                unsigned int divisor);
   static DCPackerInterface *create_uint32uint8_type();
 
 private:
   DCSubatomicType _type;
-  int _divisor;
+  unsigned int _divisor;
 
   DCSubatomicType _nested_type;
   DCPackerInterface *_nested_field;
@@ -101,7 +102,7 @@ private:
   // The rest of this is to maintain the static list of
   // DCPackerInterface objects for _nested_field, above.  We allocate
   // each possible object once, and don't delete it.
-  typedef pmap<int, DCSimpleParameter *> DivisorMap;
+  typedef pmap<unsigned int, DCSimpleParameter *> DivisorMap;
   typedef pmap<DCSubatomicType, DivisorMap> NestedFieldMap;
   static NestedFieldMap _nested_field_map;
 

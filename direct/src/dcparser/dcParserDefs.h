@@ -45,7 +45,10 @@ int dcyyparse();
 class DCTokenType {
 public:
   union U {
-    PN_int64 integer;
+    int s_int;
+    unsigned int s_uint;
+    PN_int64 int64;
+    PN_uint64 uint64;
     double real;
     bool flag;
     DCClass *dclass;
