@@ -71,9 +71,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    PandaNode::init_type();
+    LODNode::init_type();
     register_type(_type_handle, "FadeLODNode",
-                  PandaNode::get_class_type());
+                  LODNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
