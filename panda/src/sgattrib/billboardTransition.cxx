@@ -192,8 +192,8 @@ fillin(DatagramIterator& scan, BamReader* manager)
 {
   ImmediateTransition::fillin(scan, manager);
   _up_vector.read_datagram(scan);
-  _eye_relative = (bool) scan.get_uint8();
-  _axial_rotate = (bool) scan.get_uint8();
+  _eye_relative = (scan.get_uint8() !=0);
+  _axial_rotate = (scan.get_uint8() !=0);
 }
 
 ////////////////////////////////////////////////////////////////////
