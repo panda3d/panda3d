@@ -304,7 +304,7 @@ unpack_integer_value(const XFileParseDataList &parse_data_list,
   PT(XFileDataObject) data_value;
 
   if ((parse_data._parse_flags & XFileParseData::PF_int) != 0) {
-    nassertr(sub_index < parse_data._int_list.size(), false);
+    nassertr(sub_index < parse_data._int_list.size(), NULL);
     int value = parse_data._int_list[sub_index];
     data_value = new XFileDataObjectInteger(this, value);
     
@@ -337,7 +337,7 @@ unpack_double_value(const XFileParseDataList &parse_data_list,
   PT(XFileDataObject) data_value;
 
   if ((parse_data._parse_flags & XFileParseData::PF_double) != 0) {
-    nassertr(sub_index < parse_data._double_list.size(), false);
+    nassertr(sub_index < parse_data._double_list.size(), NULL);
     double value = parse_data._double_list[sub_index];
     data_value = new XFileDataObjectDouble(this, value);
     
@@ -348,7 +348,7 @@ unpack_double_value(const XFileParseDataList &parse_data_list,
     }
 
   } else if ((parse_data._parse_flags & XFileParseData::PF_int) != 0) {
-    nassertr(sub_index < parse_data._int_list.size(), false);
+    nassertr(sub_index < parse_data._int_list.size(), NULL);
     int value = parse_data._int_list[sub_index];
     data_value = new XFileDataObjectDouble(this, value);
     
