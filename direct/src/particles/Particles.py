@@ -144,14 +144,12 @@ class Particles(ParticleSystem.ParticleSystem):
             self.renderer = SpriteParticleRenderer.SpriteParticleRenderer()
             if (self.renderer.getSourceType() ==
                 SpriteParticleRenderer.SpriteParticleRenderer.STTexture):
-                t = loader.loadTexture('phase_3/maps/eyes.jpg')
-                if (t == None):
-                    print "Couldn't find default texture: evil_eye.rgb!"
-                    return None
-                self.renderer.setTexture(t)
+                # Use current default texture 
+                # See sourceTextureName SpriteParticleRenderer-extensions.py
+                self.renderer.setTextureFromFile()
             else:
-                # Use default model file and node
-                # See SpriteParticleRenderer-extensions.py
+                # Use current default model file and node
+                # See sourceFileName and sourceNodeName in SpriteParticleRenderer-extensions.py
                 self.renderer.setTextureFromNode()
         else:
             print "unknown renderer type: %s" % type
@@ -303,7 +301,7 @@ class Particles(ParticleSystem.ParticleSystem):
         file.write(targ + '.renderer.setAlphaMode(BaseParticleRenderer.' + aMode + ')\n')
         file.write(targ + '.renderer.setUserAlpha(%.2f)\n' % \
                                         self.renderer.getUserAlpha())
-        if (self.rendererType == "Point"):
+        if (self.rendererType == "PointParticleRenderer"):
             file.write('# Point parameters\n')
             file.write(targ + '.renderer.setPointSize(%.2f)\n' % \
                                         self.renderer.getPointSize())
