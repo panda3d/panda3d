@@ -24,7 +24,7 @@
 #include "event.h"
 #include "pt_Event.h"
 
-#include <circBuffer.h>
+#include "circBuffer.h"
 
 #ifdef OLD_HAVE_IPC
 #include <ipc_mutex.h>
@@ -52,8 +52,7 @@ PUBLISHED:
   bool is_queue_full() const;
   CPT_Event dequeue_event();
 
-  INLINE static EventQueue *
-  get_global_event_queue();
+  INLINE static EventQueue *get_global_event_queue();
 
 protected:
   CircBuffer<CPT_Event, max_events> _queue;

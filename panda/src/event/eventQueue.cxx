@@ -47,9 +47,18 @@ EventQueue::
 ////////////////////////////////////////////////////////////////////
 void EventQueue::
 queue_event(CPT_Event event) {
-#ifdef OLD_HAVE_IPC
+  nassertv(!event.is_null());
+  #ifdef OLD_HAVE_IPC
   mutex_lock lock(_lock);
-#endif
+  #endif
+  #if 0
+  // This is just some paranoid debug code.  I had a problem where 
+  // one of the events was going null while it was in the queue.
+  size_t limit = _queue.size();
+  while (limit--) {
+    nassertv(!_queue[limit].is_null());
+  }
+  #endif
   if (_queue.full()) {
     event_cat.error()
       << "Ignoring event " << *event << "; event queue full.\n";
@@ -109,6 +118,7 @@ dequeue_event() {
   // thread extracting events.  The magic of circular buffers.
   CPT_Event result = _queue.front();
   _queue.pop_front();
+  nassertr(!result.is_null(), result);
   return result;
 }
 
