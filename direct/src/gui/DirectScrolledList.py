@@ -20,7 +20,7 @@ class DirectScrolledListItem(DirectButton):
             self.nextCommand = kw.get("command")
             del kw["command"]
         if kw.has_key("extraArgs"):
-            self.nextCommnadExtraArgs = kw.get("extraArgs")
+            self.nextCommandExtraArgs = kw.get("extraArgs")
             del kw["extraArgs"]
         optiondefs = (
             ('parent', self.parent,    None),
@@ -33,7 +33,7 @@ class DirectScrolledListItem(DirectButton):
 
     def select(self):
         assert self.notify.debugStateCall(self)
-        apply(self.nextCommand, self.nextCommnadExtraArgs)
+        apply(self.nextCommand, self.nextCommandExtraArgs)
         self.parent.selectListItem(self)
 
 
