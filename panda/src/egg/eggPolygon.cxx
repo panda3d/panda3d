@@ -98,6 +98,12 @@ calculate_normal(Normald &result, CoordinateSystem cs) const {
 ////////////////////////////////////////////////////////////////////
 bool EggPolygon::
 is_planar() const {
+  if (size() <= 3) {
+    // If we don't have more than three vertices, we can't be
+    // non-planar.
+    return true;
+  }
+
   Normald normal;
   if (!calculate_normal(normal)) {
     // A degenerate polygon--all of the vertices are within one line,
