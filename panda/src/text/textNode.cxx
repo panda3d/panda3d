@@ -713,6 +713,9 @@ assemble_row(wstring::iterator &si, const wstring::iterator &send,
       // A space is a special case.
       xpos += font->get_space_advance();
 
+    } else if (character == text_soft_hyphen_key) {
+      // So is the 'soft-hyphen' key character.
+
     } else {
       // A printable character.
       bool got_glyph;
@@ -913,6 +916,9 @@ measure_row(wstring::iterator &si, const wstring::iterator &send,
       // A space is a special case.
       xpos += font->get_space_advance();
 
+    } else if (character == text_soft_hyphen_key) {
+      // So is the 'soft-hyphen' key character.
+
     } else {
       // A printable character.
       bool got_glyph;
@@ -972,7 +978,7 @@ measure_text(wstring::iterator si, const wstring::iterator &send,
       ul[0] = min(ul[0], -row_width);
 
     } else {
-      float half_row_width=0.5f*row_width;
+      float half_row_width = 0.5f * row_width;
 
       lr[0] = max(lr[0], half_row_width);
       ul[0] = min(ul[0], -half_row_width);
@@ -994,8 +1000,9 @@ measure_text(wstring::iterator si, const wstring::iterator &send,
 //               available (especially in the case of an accented
 //               letter), tries to find a suitable replacement.
 //               Normally, only one glyph is returned per character,
-//               but in the case we have to simulate a missing
-//               ligature in the font, two glyphs might be returned.
+//               but in the case in which we have to simulate a
+//               missing ligature in the font, two glyphs might be
+//               returned.
 //
 //               All parameters except the first two are output
 //               parameters.  got_glyph is set true if the glyph (or
