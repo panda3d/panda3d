@@ -20,7 +20,7 @@ public:
   INLINE DatagramGenerator();
   virtual ~DatagramGenerator();
   
-  virtual bool get_datagram(Datagram& dataBlock) = 0;
+  virtual bool get_datagram(Datagram &data) = 0;
   virtual bool is_eof() = 0;
   virtual bool is_error() = 0;
 };

@@ -1,42 +1,42 @@
-// Filename: datagramOutputFile.I
-// Created by:  drose (27Oct00)
+// Filename: datagramInputFile.I
+// Created by:  drose (30Oct00)
 // 
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::Constructor
+//     Function: DatagramInputFile::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE DatagramOutputFile::
-DatagramOutputFile() {
+INLINE DatagramInputFile::
+DatagramInputFile() {
   _error = true;
-  _wrote_first_datagram = false;
+  _read_first_datagram = false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::open
+//     Function: DatagramInputFile::open
 //       Access: Public
 //  Description: Opens the indicated filename for reading.  Returns
 //               true if successful, false on failure.
 ////////////////////////////////////////////////////////////////////
-INLINE bool DatagramOutputFile::
+INLINE bool DatagramInputFile::
 open(Filename filename) {
-  // DatagramOutputFiles are always binary.
-  _wrote_first_datagram = false;
+  // DatagramInputFiles are always binary.
+  _read_first_datagram = false;
   _error = false;
   filename.set_binary();
-  return filename.open_write(_out);
+  return filename.open_read(_in);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::close
+//     Function: DatagramInputFile::close
 //       Access: Public
 //  Description: Closes the file.  This is also implicitly done when
-//               the DatagramOutputFile destructs.
+//               the DatagramInputFile destructs.
 ////////////////////////////////////////////////////////////////////
-INLINE void DatagramOutputFile::
+INLINE void DatagramInputFile::
 close() {
-  _out.close();
+  _in.close();
 }

@@ -64,7 +64,12 @@ open_read(const Filename &filename, bool report_errors) {
     return false;
   }
 
-  string head = _din.read_header(_bam_header.size());
+  string head;
+  if (!_din.read_header(head, _bam_header.size())) {
+    loader_cat.error() << bam_filename << " is not a valid BAM file.\n";
+    return false;
+  }
+
   if (head != _bam_header) {
     loader_cat.error() << bam_filename << " is not a valid BAM file.\n";
     return false;
