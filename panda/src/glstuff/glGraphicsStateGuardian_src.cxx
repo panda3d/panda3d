@@ -39,9 +39,7 @@
 #include "colorWriteAttrib.h"
 #include "texMatrixAttrib.h"
 #include "texGenAttrib.h"
-#ifdef HAVE_CGGL
 #include "cgShaderAttrib.h"
-#endif
 #include "materialAttrib.h"
 #include "renderModeAttrib.h"
 #include "fogAttrib.h"
