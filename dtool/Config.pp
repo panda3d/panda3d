@@ -55,9 +55,7 @@
 // allowable choices, at present, are:
 //
 //  unix      - Generate makefiles suitable for most Unix platforms.
-//  msvc      - Generate makefiles suitable for building on Windows platforms
-//              (e.g. Windows NT, Windows 2000) using the Microsoft Visual C++
-//              command-line compiler and Microsoft nmake.
+//  msvc      - Generate Visual C++ project files (still a work in progress)
 //  gmsvc     - Generate makefiles similar to the above, using Microsoft
 //              Visual C++, but uses the Cygwin-supplied GNU make
 //              instead of Microsoft nmake.  This is potentially
@@ -67,7 +65,8 @@
 //              the overhead associated with Cygwin fork() calls.
 
 #if $[eq $[PLATFORM], Win32]
-  #define BUILD_TYPE msvc
+//  #define BUILD_TYPE msvc  // not ready yet.
+  #define BUILD_TYPE gmsvc
 #elif $[eq $[PLATFORM], Cygwin]
   #define BUILD_TYPE gmsvc
 #else
