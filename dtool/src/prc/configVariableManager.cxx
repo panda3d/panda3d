@@ -342,7 +342,7 @@ list_variable(const ConfigVariableCore *variable,
         variable->get_value_type() == ConfigVariableCore::VT_search_path) {
       // We treat a "list" variable as a special case: list all of
       // its values.
-      nout << "  current value =\n";
+      nout << "  current value:\n";
       int num_references = variable->get_num_trusted_references();
       for (int i = 0; i < num_references; i++) {
         decl = variable->get_trusted_reference(i);
