@@ -18,6 +18,33 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::set_try_all_direct
+//       Access: Published
+//  Description: If this is set true, then after a connection attempt
+//               through a proxy fails, we always try a direct
+//               connection, regardless of whether the host is listed
+//               on the direct_host_spec list.  If this is false, a
+//               direct attempt is not made when we have a proxy in
+//               effect, even if the proxy fails.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPClient::
+set_try_all_direct(bool try_all_direct) {
+  _try_all_direct = try_all_direct;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_try_all_direct
+//       Access: Published
+//  Description: Returns whether a failed connection through a proxy
+//               will be followed up by a direct connection attempt,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPClient::
+get_try_all_direct() const {
+  return _try_all_direct;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::set_http_version
 //       Access: Published
 //  Description: Specifies the version of HTTP that the client uses to

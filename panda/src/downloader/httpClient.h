@@ -62,14 +62,14 @@ PUBLISHED:
   void operator = (const HTTPClient &copy);
   ~HTTPClient();
 
-  void set_proxy(const URLSpec &proxy);
-  URLSpec get_proxy() const;
-
   void set_proxy_spec(const string &proxy_spec);
   string get_proxy_spec() const;
 
   void set_direct_host_spec(const string &direct_host_spec);
   string get_direct_host_spec() const;
+
+  INLINE void set_try_all_direct(bool try_all_direct);
+  INLINE bool get_try_all_direct() const;
 
   void clear_proxy();
   void add_proxy(const string &scheme, const URLSpec &proxy);
@@ -141,6 +141,7 @@ private:
   ProxiesByScheme _proxies_by_scheme;
   typedef pvector<GlobPattern> DirectHosts;
   DirectHosts _direct_hosts;
+  bool _try_all_direct;
 
   HTTPEnum::HTTPVersion _http_version;
   VerifySSL _verify_ssl;

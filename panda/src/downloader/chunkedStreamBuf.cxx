@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "chunkedStreamBuf.h"
+#include "config_downloader.h"
 #include <ctype.h>
 
 // This module is not compiled if OpenSSL is not available.
@@ -77,7 +78,8 @@ open_read(BioStreamPtr *source, HTTPChannel *doc) {
 
   if (_doc != (HTTPChannel *)NULL) {
     _read_index = doc->_read_index;
-    _doc->_file_size = 0;
+    _doc->_transfer_file_size = 0;
+    _doc->_got_transfer_file_size = true;
 
     // Read a little bit from the file to get the first chunk (and
     // therefore the file size, or at least the size of the first
@@ -180,9 +182,16 @@ read_chars(char *start, size_t length) {
     return 0;
   }
   size_t chunk_size = (size_t)strtol(line.c_str(), NULL, 16);
+  if (downloader_cat.is_spam()) {
+    downloader_cat.spam()
+      << "Got chunk of size " << chunk_size << " bytes.\n";
+  }
+
   if (chunk_size == 0) {
     // Last chunk; we're done.
     _done = true;
+    _doc->_file_size = _doc->_transfer_file_size;
+    _doc->_got_file_size = true;
     if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
       _doc->finished_body(true);
     }
@@ -190,7 +199,7 @@ read_chars(char *start, size_t length) {
   }
 
   if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
-    _doc->_file_size += chunk_size;
+    _doc->_transfer_file_size += chunk_size;
   }
 
   _chunk_remaining = chunk_size;

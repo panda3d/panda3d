@@ -102,6 +102,7 @@ HTTPClient() {
 
   set_proxy_spec(http_proxy);
   set_direct_host_spec(http_direct_hosts);
+  _try_all_direct = http_try_all_direct;
 
   if (!http_proxy_username.empty()) {
     set_username("*proxy", "", http_proxy_username);
@@ -155,6 +156,7 @@ void HTTPClient::
 operator = (const HTTPClient &copy) {
   _proxies_by_scheme = copy._proxies_by_scheme;
   _direct_hosts = copy._direct_hosts;
+  _try_all_direct = copy._try_all_direct;
   _http_version = copy._http_version;
   _verify_ssl = copy._verify_ssl;
   _usernames = copy._usernames;
@@ -188,33 +190,6 @@ HTTPClient::
 
   // Free all of the expected server definitions.
   clear_expected_servers();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::set_proxy
-//       Access: Published
-//  Description: Specifies the proxy URL to handle all http and
-//               https requests.  Deprecated.
-////////////////////////////////////////////////////////////////////
-void HTTPClient::
-set_proxy(const URLSpec &proxy) {
-  set_proxy_spec(proxy.get_url());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::get_proxy
-//       Access: Published
-//  Description: Returns the proxy URL to handle all http and
-//               https requests.  Deprecated.
-////////////////////////////////////////////////////////////////////
-URLSpec HTTPClient::
-get_proxy() const {
-  pvector<URLSpec> proxies;
-  get_proxies_for_url(URLSpec("http://"), proxies);
-  if (!proxies.empty()) {
-    return proxies[0];
-  }
-  return URLSpec();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -524,8 +499,10 @@ get_proxies_for_url(const URLSpec &url, pvector<URLSpec> &proxies) const {
     }
   }
 
-  // We always try a direct connection if all else fails.
-  temp_list.push_back(URLSpec());
+  if (_try_all_direct) {
+    // We may try a direct connection if all else fails.
+    temp_list.push_back(URLSpec());
+  }
 
   // Finally, as a very last resort, fall back to the HTTP proxy.
   if (!got_any) {

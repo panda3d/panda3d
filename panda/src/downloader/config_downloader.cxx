@@ -88,8 +88,12 @@ const string http_proxy =
 config_downloader.GetString("http-proxy", "");
 const string http_direct_hosts =
 config_downloader.GetString("http-direct-hosts", "");
+const bool http_try_all_direct =
+config_downloader.GetBool("http-try-all-direct", true);
 const string http_proxy_username =
 config_downloader.GetString("http-proxy-username", "");
+const bool http_proxy_tunnel =
+config_downloader.GetBool("http-proxy-tunnel", false);
 
 // This is the default amount of time to wait for a TCP/IP connection
 // to be established, in seconds.  It is presently only used for

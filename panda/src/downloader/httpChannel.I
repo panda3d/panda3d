@@ -242,6 +242,44 @@ get_allow_proxy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::set_proxy_tunnel
+//       Access: Published
+//  Description: Normally, a proxy is itself asked for ordinary URL's,
+//               and the proxy decides whether to hand the client a
+//               cached version of the document or to contact the
+//               server for a fresh version.  The proxy may also
+//               modify the headers and transfer encoding on the way.
+//
+//               If this is set to true, then instead of asking for
+//               URL's from the proxy, we will ask the proxy to open a
+//               connection to the server (for instance, on port 80);
+//               if the proxy honors this request, then we contact the
+//               server directly through this connection to retrieve
+//               the document.  If the proxy does not honor the
+//               connect request, then the retrieve operation fails.
+//
+//               SSL connections (e.g. https), and connections through
+//               a Socks proxy, are always tunneled, regardless of the
+//               setting of this flag.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+set_proxy_tunnel(bool proxy_tunnel) {
+  _proxy_tunnel = proxy_tunnel;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_proxy_tunnel
+//       Access: Published
+//  Description: Returns true if connections always tunnel through a
+//               proxy, or false (the normal case) if we allow the
+//               proxy to serve up documents.  See set_proxy_tunnel().
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPChannel::
+get_proxy_tunnel() const {
+  return _proxy_tunnel;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::set_connect_timeout
 //       Access: Published
 //  Description: Sets the maximum length of time, in seconds, that the
@@ -432,22 +470,36 @@ get_max_updates_per_second() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::get_file_size
+//     Function: HTTPChannel::set_expected_file_size
 //       Access: Published
-//  Description: Returns the size of the file, if it is known.
-//               Returns 0 if the file size is not known.  
-//
-//               If the file is dynamically generated, the size may
-//               not be available until a read has started
-//               (e.g. open_read_file() has been called); and even
-//               then it may increase as more of the file is read due
-//               to the nature of HTTP/1.1 requests which can change
-//               their minds midstream about how much data they're
-//               sending you.
+//  Description: This may be called immediately after a call to
+//               get_document() or some related function to specify
+//               the expected size of the document we are retrieving,
+//               if we happen to know.  This is used as the return
+//               value to get_file_size() only in the case that the
+//               server does not tell us the actual file size.
 ////////////////////////////////////////////////////////////////////
-INLINE size_t HTTPChannel::
-get_file_size() const {
-  return _file_size;
+INLINE void HTTPChannel::
+set_expected_file_size(size_t file_size) {
+  _expected_file_size = file_size;
+  _got_expected_file_size = true;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::is_file_size_known
+//       Access: Published
+//  Description: Returns true if the size of the file we are currently
+//               retrieving was told us by the server and thus is
+//               reliably known, or false if the size reported by
+//               get_file_size() represents an educated guess
+//               (possibly as set by set_expected_file_size(), or as
+//               inferred from a chunked transfer encoding in
+//               progress).
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPChannel::
+is_file_size_known() const {
+  return _got_file_size;
 }
 
 ////////////////////////////////////////////////////////////////////

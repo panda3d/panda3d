@@ -44,6 +44,7 @@ HTTPChannel(HTTPClient *client) :
   _proxy_next_index = 0;
   _persistent_connection = false;
   _allow_proxy = true;
+  _proxy_tunnel = http_proxy_tunnel;
   _connect_timeout = connect_timeout;
   _http_timeout = http_timeout;
   _blocking_connect = false;
@@ -55,13 +56,18 @@ HTTPChannel(HTTPClient *client) :
   _nonblocking = false;
   _want_ssl = false;
   _proxy_serves_document = false;
-  _proxy_tunnel = false;
+  _proxy_tunnel_now = false;
   _first_byte_requested = 0;
   _last_byte_requested = 0;
   _first_byte_delivered = 0;
   _last_byte_delivered = 0;
   _read_index = 0;
+  _expected_file_size = 0;
   _file_size = 0;
+  _transfer_file_size = 0;
+  _got_expected_file_size = false;
+  _got_file_size = false;
+  _got_transfer_file_size = false;
   _bytes_downloaded = 0;
   _bytes_requested = 0;
   _status_code = 0;
@@ -177,6 +183,35 @@ get_header_value(const string &key) const {
     return (*hi).second;
   }
   return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_file_size
+//       Access: Published
+//  Description: Returns the size of the file, if it is known.
+//               Returns the value set by set_expected_file_size() if
+//               the file size is not known, or 0 if this value was
+//               not set.
+//
+//               If the file is dynamically generated, the size may
+//               not be available until a read has started
+//               (e.g. open_read_file() has been called); and even
+//               then it may increase as more of the file is read due
+//               to the nature of HTTP/1.1 requests which can change
+//               their minds midstream about how much data they're
+//               sending you.
+////////////////////////////////////////////////////////////////////
+size_t HTTPChannel::
+get_file_size() const {
+  if (_got_file_size) {
+    return _file_size;
+  } else if (_got_transfer_file_size) {
+    return _transfer_file_size;
+  } else if (_got_expected_file_size) {
+    return _expected_file_size;
+  } else {
+    return 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -421,17 +456,15 @@ read_body() {
   }
 
   string transfer_coding = downcase(get_header_value("Transfer-Encoding"));
-  string content_length = get_header_value("Content-Length");
 
   ISocketStream *result;
   if (transfer_coding == "chunked") {
     // "chunked" transfer encoding.  This means we will have to decode
     // the length of the file as we read it in chunks.  The
     // IChunkedStream does this.
-    _file_size = 0;
     _state = S_reading_body;
     _read_index++;
-    result = new IChunkedStream(_source, (HTTPChannel *)this);
+    result = new IChunkedStream(_source, this);
 
   } else {
     // If the transfer encoding is anything else, assume "identity".
@@ -440,8 +473,7 @@ read_body() {
     // specified), or till end of file otherwise.
     _state = S_reading_body;
     _read_index++;
-    result = new IIdentityStream(_source, (HTTPChannel *)this, 
-                                 !content_length.empty(), _file_size);
+    result = new IIdentityStream(_source, this, _got_file_size, _file_size);
   }
 
   return result;
@@ -709,7 +741,7 @@ run_connecting() {
       << _bio->get_port() << "\n";
   }
 
-  if (_proxy_tunnel) {
+  if (_proxy_tunnel_now) {
     if (_proxy.get_scheme() == "socks") {
       _state = S_socks_proxy_greet;
     } else {
@@ -833,7 +865,8 @@ run_http_proxy_request_sent() {
   _current_field_name = string();
   _current_field_value = string();
   _headers.clear();
-  _file_size = 0;
+  _got_file_size = false;
+  _got_transfer_file_size = false;
   return false;
 }
 
@@ -1355,7 +1388,8 @@ run_request_sent() {
   _current_field_name = string();
   _current_field_value = string();
   _headers.clear();
-  _file_size = 0;
+  _got_file_size = false;
+  _got_transfer_file_size = false;
   return false;
 }
 
@@ -1451,15 +1485,20 @@ run_reading_header() {
     return false;
   }
 
-  _file_size = 0;
+  _got_expected_file_size = false;
+  _got_file_size = false;
+  _got_transfer_file_size = false;
+  
   string content_length = get_header_value("Content-Length");
   if (!content_length.empty()) {
     _file_size = atoi(content_length.c_str());
+    _got_file_size = true;
 
   } else if (get_status_code() == 206) {
     // Well, we didn't get a content-length from the server, but we
     // can infer the number of bytes based on the range we're given.
     _file_size = _last_byte_delivered - _first_byte_delivered + 1;
+    _got_file_size = true;
   }
   _redirect = get_header_value("Location");
 
@@ -1608,15 +1647,15 @@ run_begin_body() {
     // We have already "read" the nonexistent body.
     _state = S_read_trailer;
 
-  } else if (_file_size > 8192) {
+  } else if (get_file_size() > 8192) {
     // If we know the size of the body we are about to skip and it's
     // too large (and here we arbitrarily say 8KB is too large), then
     // don't bother skipping it--just drop the connection and get a
     // new one.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << "Dropping connection rather than skipping past " << _file_size
-        << " bytes.\n";
+        << "Dropping connection rather than skipping past " 
+        << get_file_size() << " bytes.\n";
     }
     reset_to_new();
 
@@ -1920,26 +1959,28 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
 reconsider_proxy() {
-  _proxy_tunnel = false;
+  _proxy_tunnel_now = false;
   _proxy_serves_document = false;
 
   if (!_proxy.empty()) {
-    // If we're opening an SSL connection, or the user has explicitly
+    // If the user insists we always tunnel through a proxy, or if
+    // we're opening an SSL connection, or the user has explicitly
     // asked for a direct connection of some kind, or if we have a
     // SOCKS-style proxy; each of these demands a tunnel through the
     // proxy to speak directly to the http server.
-    _proxy_tunnel =
-      (_want_ssl || _method == HTTPEnum::M_connect || _proxy.get_scheme() == "socks");
+    _proxy_tunnel_now =
+      (get_proxy_tunnel() || _want_ssl ||
+       _method == HTTPEnum::M_connect || _proxy.get_scheme() == "socks");
 
     // Otherwise (but we still have a proxy), then we ask the proxy to
     // hand us the document.
-    _proxy_serves_document = !_proxy_tunnel;
+    _proxy_serves_document = !_proxy_tunnel_now;
   }
 
   make_header();
   make_request_text();
 
-  if (_proxy_tunnel) {
+  if (_proxy_tunnel_now) {
     // Maybe we need to tunnel through the proxy to connect to the
     // server directly.
     ostringstream request;

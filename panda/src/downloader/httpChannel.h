@@ -93,6 +93,8 @@ PUBLISHED:
 
   INLINE void set_allow_proxy(bool allow_proxy);
   INLINE bool get_allow_proxy() const;
+  INLINE void set_proxy_tunnel(bool proxy_tunnel);
+  INLINE bool get_proxy_tunnel() const;
 
   INLINE void set_connect_timeout(double timeout_seconds);
   INLINE double get_connect_timeout() const;
@@ -111,7 +113,9 @@ PUBLISHED:
   INLINE void set_max_updates_per_second(double max_updates_per_second);
   INLINE double get_max_updates_per_second() const;
 
+  INLINE void set_expected_file_size(size_t file_size);
   INLINE size_t get_file_size() const;
+  INLINE bool is_file_size_known() const;
 
   void write_headers(ostream &out) const;
 
@@ -255,6 +259,7 @@ private:
   PT(BioStreamPtr) _source;
   bool _persistent_connection;
   bool _allow_proxy;
+  bool _proxy_tunnel;
   double _connect_timeout;
   double _http_timeout;
   bool _blocking_connect;
@@ -274,7 +279,7 @@ private:
   string _body;
   bool _want_ssl;
   bool _proxy_serves_document;
-  bool _proxy_tunnel;
+  bool _proxy_tunnel_now;
   bool _server_response_has_no_body;
   size_t _first_byte_requested;
   size_t _last_byte_requested;
@@ -323,9 +328,14 @@ private:
   typedef pmap<string, string> Headers;
   Headers _headers;
 
+  size_t _expected_file_size;
   size_t _file_size;
+  size_t _transfer_file_size;
   size_t _bytes_downloaded;
   size_t _bytes_requested;
+  bool _got_expected_file_size;
+  bool _got_file_size;
+  bool _got_transfer_file_size;
 
   // These members are used to maintain the current state while
   // communicating with the server.  We need to store everything in
