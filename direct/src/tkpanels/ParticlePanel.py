@@ -62,7 +62,7 @@ class ParticlePanel(AppShell):
             ('System Pool size',
              'Size of particle pool',
              self.setSystemPoolSize,
-             0.0, 1.0),
+             1.0, 1.0),
             ('System Birth rate',
              'Seconds between particle births',
              self.setSystemBirthRate,
@@ -90,13 +90,13 @@ class ParticlePanel(AppShell):
             self.toggleSystemGrowsOlder, 0)
         # Vector widgets
         pos = self.createVector3Entry(systemPage, 'Pos',
-                                      'Particle system position')
-        pos.command = self.setSystemPos
+                                      'Particle system position',
+                                      command = self.setSystemPos)
         pos.addMenuItem('Popup Placer Panel', Placer.Placer)
         hpr = self.createVector3Entry(systemPage, 'Hpr',
                                      'Particle system orientation',
-                                      fGroup_labels = ('H', 'P', 'R'))
-        hpr.command = self.setSystemHpr
+                                      fGroup_labels = ('H', 'P', 'R'),
+                                      command = self.setSystemHpr)
         hpr.addMenuItem('Popup Placer Panel', Placer.Placer)
 
         ## FACTORY PAGE ##
@@ -375,7 +375,9 @@ class ParticlePanel(AppShell):
         bool = BooleanVar()
         bool.set(initialState)
         cb = Checkbutton(parent, text = text, anchor = W,
-                         variable = bool, command = command)
+                         variable = bool)
+        # Do this after the widget so command isn't called on creation
+        cb.command = command
         cb.pack(fill = X)
         return bool
         
@@ -395,31 +397,41 @@ class ParticlePanel(AppShell):
         kw['initialValue'] = min
         kw['resolution'] = resolution
         widget = apply(Floater.Floater, (parent,), kw)
-        widget.command = command
+        # Do this after the widget so command isn't called on creation
+        widget['command'] = command
         widget.pack(fill = X)
         self.bind(widget, balloonHelp)
         self.widgetDict['text'] = widget
         return widget
 
-    def createAngleDial(self, parent, text, balloonHelp, **kw):
+    def createAngleDial(self, parent, text, balloonHelp,
+                        command = None, **kw):
         kw['text'] = text
         widget = apply(Dial.AngleDial,(parent,), kw)
+        # Do this after the widget so command isn't called on creation
+        widget['command'] = command
         widget.pack(fill = X)
         self.bind(widget, balloonHelp)
         return widget
 
-    def createVector3Entry(self, parent, text, balloonHelp, **kw):
+    def createVector3Entry(self, parent, text, balloonHelp,
+                           command = None, **kw):
         # Set label's text
         kw['text'] = text
         widget = apply(VectorWidgets.Vector3Entry, (parent,), kw)
+        # Do this after the widget so command isn't called on creation
+        widget['command'] = command
         widget.pack(fill = X)
         self.bind(widget, balloonHelp)
         return widget
 
-    def createColorEntry(self, parent, text, balloonHelp, **kw):
+    def createColorEntry(self, parent, text, balloonHelp,
+                         command = None, **kw):
         # Set label's text
         kw['text'] = text
         widget = apply(VectorWidgets.ColorEntry, (parent,) ,kw)
+        # Do this after the widget so command isn't called on creation
+        widget['command'] = command
         widget.pack(fill = X)
         self.bind(widget, balloonHelp)
         return widget
@@ -430,8 +442,9 @@ class ParticlePanel(AppShell):
         widget = Pmw.OptionMenu(parent, labelpos = W, label_text = text,
                                 label_width = 12, menu_tearoff = 1,
                                 menubutton_textvariable = optionVar,
-                                items = items,
-                                command = command)
+                                items = items)
+        # Do this after the widget so command isn't called on creation
+        widget['command'] = command
         widget.pack(fill = X)
         self.bind(widget.component('menubutton'), balloonHelp)
         return optionVar
@@ -439,7 +452,8 @@ class ParticlePanel(AppShell):
     ### PARTICLE SYSTEM COMMANDS ###
     ## System Page ##
     def setSystemPoolSize(self, value):
-	self.particles.setPoolSize(value)
+        print self.particles, int(value)
+	self.particles.setPoolSize(int(value))
     def setSystemBirthRate(self, value):
 	self.particles.setBirthRate(value)
     def setSystemLitterSize(self, value):
@@ -488,9 +502,13 @@ class ParticlePanel(AppShell):
 	self.particles.setEmitter(type)
     # Box #
     def setEmitterBoxPoint1(self, point):
-	self.particles.emitter.setMinBound(Vec3(point[0], point[1], point[2]))
+	self.particles.emitter.setMinBound(Point3(point[0],
+                                                  point[1],
+                                                  point[2]))
     def setEmitterBoxPoint2(self, point):
-	self.particles.emitter.setMaxBound(Vec3(point[0], point[1], point[2]))
+	self.particles.emitter.setMaxBound(Point3(point[0],
+                                                  point[1],
+                                                  point[2]))
     def setEmitterBoxVelocityVector(self, vec):
         print 'Emitter box velocity vector:', vec
     # Disc #
@@ -508,21 +526,27 @@ class ParticlePanel(AppShell):
 	self.particles.emitter.setCubicLerping(self.emitterDiscCubicLerping.get())
     # Line #
     def setEmitterLinePoint1(self, point):
-	self.particles.emitter.setEndpoint1(Vec3(point[0], point[1], point[2]))
+	self.particles.emitter.setEndpoint1(Point3(point[0],
+                                                   point[1],
+                                                   point[2]))
     def setEmitterLinePoint2(self, point):
-	self.particles.emitter.setEndpoint2(Vec3(point[0], point[1], point[2]))
+	self.particles.emitter.setEndpoint2(Point3(point[0],
+                                                   point[1],
+                                                   point[2]))
     def setEmitterLineVelocityVector(self, vec):
         print 'Emitter line velocity vector:', vec
     # Point #
     def setEmitterPointPosition(self, pos):
-	self.particles.emitter.setLocation(Vec3(pos[0], pos[1], pos[2]))
+	self.particles.emitter.setLocation(Point3(pos[0], pos[1], pos[2]))
     def setEmitterPointVelocityVector(self, velocity):
         print 'Emitter point velocity:', velocity
     # Rectangle #
     def setEmitterRectanglePoint1(self, point):
-	self.particles.emitter.setMinBound(Vec3(point[0], point[1], point[2]))
+	self.particles.emitter.setMinBound(Point3(point[0], point[1],
+                                                  point[2]))
     def setEmitterRectanglePoint2(self, point):
-	self.particles.emitter.setMaxBound(Vec3(point[0], point[1], point[2]))
+	self.particles.emitter.setMaxBound(Point3(point[0], point[1],
+                                                  point[2]))
     def setEmitterRectangleVelocityVector(self, vec):
         print 'Emitter rectangle velocity vector:', vec
     # Ring #

@@ -76,7 +76,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	else:
 	    print "unknown factory type: %s" % type
 	    return None
-	self.factory.setLifespanBase(0.5)
+	#self.factory.setLifespanBase(0.5)
 	ParticleSystem.ParticleSystem.setFactory(self, self.factory)
 
     def setRenderer(self, type):
@@ -99,9 +99,9 @@ class Particles(ParticleSystem.ParticleSystem):
 	else:
 	    print "unknown renderer type: %s" % type
 	    return None
-	self.renderer.setAlphaMode(
-		BaseParticleRenderer.BaseParticleRenderer.PRALPHAUSER)
-	self.renderer.setUserAlpha(1.0)
+	#self.renderer.setAlphaMode(
+        #BaseParticleRenderer.BaseParticleRenderer.PRALPHAUSER)
+	#self.renderer.setUserAlpha(1.0)
 	ParticleSystem.ParticleSystem.setRenderer(self, self.renderer)
 
     def setEmitter(self, type):
@@ -111,7 +111,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	if (type == "Box"):
 	    self.emitter = BoxEmitter.BoxEmitter()
 	elif (type == "Disc"):
-	    self.emitter = DiskEmitter.DiskEmitter()
+	    self.emitter = DiscEmitter.DiscEmitter()
 	elif (type == "Line"):
 	    self.emitter = LineEmitter.LineEmitter()
 	elif (type == "Point"):
@@ -130,10 +130,10 @@ class Particles(ParticleSystem.ParticleSystem):
 	else:
 	    print "unknown emitter type: %s" % type
 	    return None
-	self.emitter.setEmissionType(
-		BaseParticleEmitter.BaseParticleEmitter.ETEXPLICIT)
-	self.emitter.setExplicitLaunchVector(Vec3(-1.0, -1.0, 1.0))
-	self.emitter.setAmplitude(1.0)
+	#self.emitter.setEmissionType(
+        #BaseParticleEmitter.BaseParticleEmitter.ETEXPLICIT)
+	#self.emitter.setExplicitLaunchVector(Vec3(-1.0, -1.0, 1.0))
+	#self.emitter.setAmplitude(1.0)
 	ParticleSystem.ParticleSystem.setEmitter(self, self.emitter)
 
     def __update(self, state):
