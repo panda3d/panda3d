@@ -52,6 +52,17 @@ release_all_textures() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_all_geoms
+//       Access: Public
+//  Description: Frees the resources for all geoms associated with
+//               this GSG.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+release_all_geoms() {
+  return _prepared_objects->release_all_geoms();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_active
 //       Access: Published
 //  Description: Sets the active flag associated with the

@@ -1229,7 +1229,7 @@ close_gsg() {
   free_pointers();
 
   // If we're not sharing the prepared objects list with any other
-  // GSG, go ahread and release all the textures and geoms now.  This
+  // GSG, go ahead and release all the textures and geoms now.  This
   // isn't really a reliable test of whether we are sharing this list,
   // but it's not too important if we get this wrong since this ought
   // to be an optional cleanup anyway.  (Presumably, the underlying
@@ -1237,7 +1237,7 @@ close_gsg() {
   // geoms when the last context using them is released.)
   if (_prepared_objects->get_ref_count() == 1) {
     release_all_textures();
-    //release_all_geoms();
+    release_all_geoms();
   }
 }
 

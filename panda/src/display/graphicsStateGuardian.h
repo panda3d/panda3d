@@ -72,7 +72,7 @@ public:
 
 PUBLISHED:
   INLINE int release_all_textures();
-  //  int release_all_geoms();
+  INLINE int release_all_geoms();
 
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
