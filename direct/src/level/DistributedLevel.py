@@ -770,6 +770,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def setOuch(self, penalty, anim = None):
         if anim == "Squish":
             toonbase.tcr.playGame.getPlace().fsm.request('squished')
+        elif anim == "Fall":
+            toonbase.tcr.playGame.getPlace().fsm.request('fallDown')
+            
         av = toonbase.localToon
         av.stunToon()
         av.playDialogueForString("!")

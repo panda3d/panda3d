@@ -16,7 +16,7 @@ class PathEntity(BasicEntities.NodePathEntity):
         self.pathIndex = pathIndex
         self.path = GoonPathData.Paths[self.pathIndex]
     
-    def makePathTrack(self, node, velocity, name, turnTime=1):
+    def makePathTrack(self, node, velocity, name, turnTime=1, lookAroundNode=None):
         track = Sequence(name = name)
         assert (len(self.path) > 1)
 
@@ -32,7 +32,7 @@ class PathEntity(BasicEntities.NodePathEntity):
             # Note: this will only look right for paths that are defined in a
             # counterclockwise order.  Otherwise the goon will always turn the
             # "long" way to look at the next point
-            node.setPos(startPoint[0],startPoint[1],startPoint[2])
+            node.setPos(startPoint[0], startPoint[1],startPoint[2])
             node.headsUp(endPoint[0], endPoint[1], endPoint[2])
             theta = node.getH() % 360
                               
