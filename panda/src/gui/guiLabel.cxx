@@ -88,6 +88,7 @@ GuiLabel* GuiLabel::make_simple_texture_label(Texture* texture) {
   uvs.push_back(TexCoordf(1., 0.));
   geoset->set_texcoords(uvs, G_PER_VERTEX);
   n2->add_geom(geoset);
+  return ret;
 }
 
 GuiLabel* GuiLabel::make_simple_text_label(const string& text, Node* font) {
