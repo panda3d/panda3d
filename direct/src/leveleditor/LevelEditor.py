@@ -126,9 +126,9 @@ except NameError:
     loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
     # Load all the neighborhood specific storage files
     loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
-    #loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
-    #loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
-    #loadDNAFile(DNASTORE, 'phase_6/dna/storage_BR.dna', CSDefault, 1)
+    loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
+    loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
+    loadDNAFile(DNASTORE, 'phase_6/dna/storage_BR.dna', CSDefault, 1)
     __builtin__.dnaLoaded = 1
 
 # Precompute class types for type comparisons

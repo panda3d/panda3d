@@ -55,6 +55,10 @@ class State(DirectObject):
         """setTransitions(self, string[])"""
         self.__transitions = stateTransitions
 
+    def addTransition(self, transition):
+        """addTransitions(self, string)"""
+        self.__transitions.append(transition)
+
     def getInspectorPos(self):
         """getInspectorPos(self)"""
         return(self.__inspectorPos)
