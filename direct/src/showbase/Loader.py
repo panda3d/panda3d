@@ -2,6 +2,7 @@
 
 from PandaModules import *
 from DirectNotifyGlobal import *
+import UsePgraph
 
 # You can specify a phaseChecker callback to check
 # a modelPath to see if it is being loaded in the correct
@@ -32,7 +33,10 @@ class Loader:
             phaseChecker(modelPath)
         node = self.loader.loadSync(Filename(modelPath))
         if (node != None):
-            nodePath = self.base.hidden.attachNewNode(node)
+            if UsePgraph.use:
+                nodePath = NodePath(node)
+            else:
+                nodePath = self.base.hidden.attachNewNode(node)
         else:
             nodePath = None
         return nodePath
@@ -47,7 +51,31 @@ class Loader:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
         if (node != None):
-            nodePath = self.base.hidden.attachNewNode(node)
+            if UsePgraph.use:
+                nodePath = NodePath(node)
+            else:
+                nodePath = self.base.hidden.attachNewNode(node)
+        else:
+            nodePath = None
+        return nodePath
+
+    def loadModelOnceUnder(self, modelPath, nodeName):
+        """loadModelOnceUnder(self, string, string)
+        Behaves like loadModelOnce, but also implicitly creates a new
+        node to attach the model under, which helps to differentiate
+        different instances.  This is useful when you want to load a
+        model once several times before parenting each instance
+        somewhere, or when you want to load a model and immediately
+        set a transform on it.  But also consider loadModelCopy().
+        """
+
+        Loader.notify.debug("Loading model once: %s under %s" % (modelPath, nodeName))
+        if phaseChecker:
+            phaseChecker(modelPath)
+        node = ModelPool.loadModel(modelPath)
+        if (node != None):
+            nodePath = NodePath(nodeName)
+            nodePath.attachNewNode(node)
         else:
             nodePath = None
         return nodePath
@@ -62,7 +90,10 @@ class Loader:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
         if (node != None):
-            return (NodePath(node).copyTo(self.base.hidden))
+            if UsePgraph.use:
+                return (NodePath(node.copySubgraph()))
+            else:
+                return (NodePath(node).copyTo(self.base.hidden))
         else:
             return None
 
