@@ -423,6 +423,7 @@ run(void) {
         if (write_to_disk(_current_status) == false)
           return DS_error_write;
       }
+      _dest_stream.close();
       return DS_success;
     } else {
       if (downloader_cat.is_debug())

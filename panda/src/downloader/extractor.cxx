@@ -109,7 +109,7 @@ run(void) {
   // Write to the out file
   char *start = _buffer->_buffer;
   int size = _source_buffer_length; 
-  if (_mfile.write_extract(start, size, _rel_path) == true) {
+  if (_mfile.write(start, size, _rel_path) == true) {
     _read_stream.close();
     _source_file.unlink();
     return ES_success;
