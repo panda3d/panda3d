@@ -22,6 +22,7 @@
 #include "load_egg_file.h"
 #include "config_util.h"
 #include "textNode.h"
+#include "multiplexStream.h"
 
 // We must define this to prevent Maya from doubly-declaring its
 // MApiVersion string in this file as well as in libmayaegg.
@@ -183,7 +184,7 @@ initializePlugin(MObject obj) {
   /*
   MultiplexStream *local_nout = new MultiplexStream();
   Notify::ptr()->set_ostream_ptr(local_nout, 0);
-  local_nout->add_file(Filename("/c/Cygwin/home/drose/foo.log"));
+  local_nout->add_file(Filename::expand_from("$TEMP/libmayapview.log"));
   local_nout->add_standard_output();
   */
 
