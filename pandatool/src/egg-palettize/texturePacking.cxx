@@ -413,12 +413,12 @@ needs_refresh() {
 
     } else {
       // Compare to the resized file.
-      target_filename = _texture->get_filename();
+      target_filename = get_new_filename();
     }
 
     if (!any_change) {
       any_change = 
-	(target_filename.compare_timestamps(_texture->_filename, true, false) < 0);
+	(target_filename.compare_timestamps(get_old_filename(), true, false) < 0);
     }
   }
 
@@ -472,9 +472,19 @@ write_unplaced(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 Filename TexturePacking::
 get_new_filename() const {
-  Filename dirname(_attrib_file->_map_dirname, _group->get_dirname());
+  Filename dirname = _group->get_full_dirname(_attrib_file);
   Filename new_filename(dirname, _texture->get_name());
   return new_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePacking::get_old_filename
+//       Access: Public
+//  Description: Returns the original filename of this texture.
+////////////////////////////////////////////////////////////////////
+Filename TexturePacking::
+get_old_filename() const {
+  return _texture->_filename;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -491,7 +501,7 @@ bool TexturePacking::
 transfer() {
   bool okflag = true;
 
-  Filename old_filename = _texture->_filename;
+  Filename old_filename = get_old_filename();
   Filename new_filename = get_new_filename();
   if (new_filename == old_filename) {
     nout << "*** Texture " << _texture->get_name()
@@ -541,7 +551,8 @@ transfer() {
 	   << " (size " << nx << " " << ny << ")\n";
     }
   }
-    
+  
+  new_filename.make_dir();
   if (!image->write(new_filename)) {
     nout << "Error in writing.\n";
     okflag = false;

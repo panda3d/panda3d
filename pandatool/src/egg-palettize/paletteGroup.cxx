@@ -8,6 +8,8 @@
 #include "palette.h"
 #include "attribFile.h"
 
+#include <stdio.h> // for sprintf()
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PaletteGroup::Constructor
 //       Access: Public
@@ -87,6 +89,20 @@ get_dirname() const {
 void PaletteGroup::
 set_dirname(const string &dirname) {
   _dirname = dirname;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::get_full_dirname
+//       Access: Public
+//  Description: Computes the actual directory name to which palettes
+//               and textures should be written, based on
+//               get_dirname() and on the -dm parameter.
+////////////////////////////////////////////////////////////////////
+string PaletteGroup::
+get_full_dirname(AttribFile *attrib_file) const {
+  char buffer[4096];
+  sprintf(buffer, attrib_file->_map_dirname.c_str(), _dirname.c_str());
+  return buffer;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -153,6 +153,7 @@ write_eggs() {
     }
 
     nout << "Writing " << filename << "\n";
+    filename.make_dir();
     if (!data->write_egg(filename)) {
       // Error writing an egg file; abort.
       exit(1);

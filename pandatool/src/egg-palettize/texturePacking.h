@@ -61,6 +61,7 @@ public:
   void write_unplaced(ostream &out) const;
 
   Filename get_new_filename() const;
+  Filename get_old_filename() const;
   bool transfer();
 
 private:

@@ -54,6 +54,8 @@ public:
   const string &get_dirname() const;
   void set_dirname(const string &dirname);
 
+  string get_full_dirname(AttribFile *attrib_file) const;
+
   bool pack_texture(TexturePacking *packing, AttribFile *attrib_file);
   bool generate_palette_images();
   void optimal_resize();

@@ -38,8 +38,12 @@ public:
   // The following parameter values specifically relate to textures
   // and palettes.  These values are stored in the .pi file for future
   // reference.
-  Filename _map_dirname;
+  string _map_dirname;
   bool _got_map_dirname;
+  string _default_groupname;
+  bool _got_default_groupname;
+  string _default_groupdir;
+  bool _got_default_groupdir;
   int _pal_size[2];
   bool _got_palette_size;
   int _default_margin;

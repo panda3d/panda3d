@@ -108,18 +108,6 @@ add_filename(const Filename &filename) {
   }
 }
 
-Filename PTexture::
-get_filename() const {
-  Filename filename = _name;
-  filename.set_dirname(_attrib_file->_map_dirname);
-  return filename;
-}
-
-Filename PTexture::
-get_basename() const {
-  return _name;
-}
-
 bool PTexture::
 get_size(int &xsize, int &ysize, int &zsize) {
   if (!_got_size) {

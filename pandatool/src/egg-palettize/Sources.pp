@@ -10,7 +10,7 @@
   #define SOURCES \
     attribFile.cxx attribFile.h config_egg_palettize.cxx \
     eggPalettize.cxx eggPalettize.h \
-    imageFile.cxx imageFile.h palette.cxx palette.h paletteGroup.cxx \
+    palette.cxx palette.h paletteGroup.cxx \
     paletteGroup.h pTexture.cxx pTexture.h sourceEgg.cxx \
     sourceEgg.h string_utils.cxx string_utils.h \
     textureEggRef.cxx textureEggRef.h textureOmitReason.h \

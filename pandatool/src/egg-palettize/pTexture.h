@@ -8,7 +8,7 @@
 
 #include <pandatoolbase.h>
 
-#include "imageFile.h"
+#include <filename.h>
 
 #include <set>
 #include <map>
@@ -27,7 +27,7 @@ class TextureEggRef;
 //               palettization on a number of different groups, but it
 //               must have the same size in each group.
 ////////////////////////////////////////////////////////////////////
-class PTexture : public ImageFile {
+class PTexture {
 public:
   PTexture(AttribFile *attrib_file, const Filename &name);
   ~PTexture();
@@ -35,9 +35,6 @@ public:
   Filename get_name() const;
   
   void add_filename(const Filename &filename);
-
-  virtual Filename get_filename() const;
-  virtual Filename get_basename() const;
 
   bool get_size(int &xsize, int &ysize, int &zsize);
   void set_size(int xsize, int ysize, int zsize);

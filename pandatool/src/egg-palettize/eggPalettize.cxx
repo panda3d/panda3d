@@ -51,22 +51,35 @@ EggPalettize() : EggMultiFilter(true) {
      "Do not process anything, but report statistics on all palette "
      "information files read.",
      &EggPalettize::dispatch_none, &_statistics_only);
-  redescribe_option
-    ("d",
+
+  // We redefine -d using add_option() instead of redescribe_option()
+  // so it gets listed along with these other options that relate.
+  add_option
+    ("d", "dirname", 0, 
      "The directory in which to write the palettized egg files.  This is "
      "only necessary if more than one egg file is processed at the same "
      "time; if it is included, each egg file will be processed and written "
-     "into the indicated directory.");
+     "into the indicated directory.",
+     &EggPalettize::dispatch_filename, &_got_output_dirname, &_output_dirname);
   add_option
     ("dm", "dirname", 0, 
      "The directory in which to place all maps: generated palettes, "
      "as well as images which were not placed on palettes "
-     "(but may have been resized).  It is often best if this is a "
-     "fully-qualified directory name rather than a relative directory name, "
-     "particularly if -d is used to write the egg files to a directory "
-     "different than the current directory, as the same name is written "
-     "into the egg files.",
-     &EggPalettize::dispatch_filename, &_got_map_dirname, &_map_dirname);
+     "(but may have been resized).  If this contains the string %s, "
+     "this will be replaced with the \"dir\" string associated with a "
+     "palette group.",
+     &EggPalettize::dispatch_string, &_got_map_dirname, &_map_dirname);
+  add_option
+    ("g", "group", 0, 
+     "The default palette group that egg files will be assigned to if they "
+     "are not explicitly assigned to any other group.",
+     &EggPalettize::dispatch_string, &_got_default_groupname, &_default_groupname);
+  add_option
+    ("gdir", "name", 0, 
+     "The \"dir\" string to associate with the default palette group "
+     "specified with -g, if no other dir name is given in the .txa file.",
+     &EggPalettize::dispatch_string, &_got_default_groupdir, &_default_groupdir);
+  
   add_option
     ("f", "", 0, 
      "Force an optimal packing.  By default, textures are added to "
@@ -127,7 +140,7 @@ EggPalettize() : EggMultiFilter(true) {
   add_option
     ("2", "", 0, 
      "Force textures that have been left out of the palette to a size "
-     "which is an even power of 2.  They will be scaled down to "
+     "which is an integer power of 2.  They will be scaled down to "
      "achieve this.",
      &EggPalettize::dispatch_none, &_got_force_power_2);
   add_option
@@ -533,6 +546,14 @@ run() {
   AttribFiles::iterator afi;
   for (afi = _attrib_files.begin(); afi != _attrib_files.end(); ++afi) {
     AttribFile &af = *(*afi);
+
+    if (_got_default_groupname) {
+      PaletteGroup *group = af.get_group(_default_groupname);
+      if (_got_default_groupdir) {
+	group->set_dirname(_default_groupdir);
+      }
+      af.set_default_group(group);
+    }
 
     if (!af.grab_lock()) {
       // Failing to grab the write lock on the attribute file is a

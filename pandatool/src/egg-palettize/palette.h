@@ -8,8 +8,6 @@
 
 #include <pandatoolbase.h>
 
-#include "imageFile.h"
-
 #include <filename.h>
 
 #include <vector>
@@ -28,7 +26,7 @@ class AttribFile;
 //               depending on the number and size of the palettized
 //               textures.
 ////////////////////////////////////////////////////////////////////
-class Palette : public ImageFile {
+class Palette {
 public:
   Palette(const Filename &filename, PaletteGroup *group,
 	  int xsize, int ysize, int components, AttribFile *attrib_file);
@@ -36,8 +34,8 @@ public:
 	  int xsize, int ysize, int components, AttribFile *attrib_file);
   ~Palette();
 
-  virtual Filename get_filename() const;
-  virtual Filename get_basename() const;
+  Filename get_filename() const;
+  Filename get_basename() const;
 
   PaletteGroup *get_group() const;
 

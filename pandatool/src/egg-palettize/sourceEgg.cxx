@@ -271,7 +271,7 @@ update_trefs() {
 	  packing->get_omit() != OR_none) {
 	// This texture wasn't palettized, so just rename the
 	// reference to the new one.
-	eggtex->set_fullpath(texture->get_filename());
+	eggtex->set_fullpath(packing->get_new_filename());
 
       } else {
 	// This texture was palettized, so redirect the tref to point

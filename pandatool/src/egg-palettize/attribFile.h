@@ -40,6 +40,7 @@ public:
   void update_params(EggPalettize *prog);
 
   PaletteGroup *get_group(const string &group_name);
+  void set_default_group(PaletteGroup *default_group);
   PaletteGroup *get_default_group();
 
   void get_egg_group_requests();
@@ -116,13 +117,15 @@ private:
   Filename _txa_filename;
   Filename _pi_filename;
 
+  PaletteGroup *_default_group;
+
 public:
   // These parameter values come from the command line, or from the
   // .pi file if omitted from the command line.  These are the
   // parameter values that specifically refer to textures and
   // palettes, and thus should be stored in the .pi file for future
   // reference.
-  Filename _map_dirname;
+  string _map_dirname;
   int _pal_xsize, _pal_ysize;
   int _default_margin;
   bool _force_power_2;

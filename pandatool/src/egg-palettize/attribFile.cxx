@@ -29,9 +29,12 @@ AttribFile(const Filename &filename) {
   _pi_filename.set_extension("pi");
   _txa_fd = -1;
 
+  _default_group = (PaletteGroup *)NULL;
+
   _optimal = false;
   _txa_needs_rewrite = false;
 
+  _map_dirname = "%s";
   _pal_xsize = 512;
   _pal_ysize = 512;
   _default_margin = 2;
@@ -178,6 +181,18 @@ get_group(const string &group_name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::set_default_group
+//       Access: Public
+//  Description: Sets the PaletteGroup that should be associated
+//               with any textures or egg files not explicitly placed
+//               in a different group.
+////////////////////////////////////////////////////////////////////
+void AttribFile::
+set_default_group(PaletteGroup *default_group) {
+  _default_group = default_group;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AttribFile::get_default_group
 //       Access: Public
 //  Description: Returns the PaletteGroup that should be associated
@@ -186,7 +201,10 @@ get_group(const string &group_name) {
 ////////////////////////////////////////////////////////////////////
 PaletteGroup *AttribFile::
 get_default_group() {
-  return get_group(_name);
+  if (_default_group == (PaletteGroup *)NULL) {
+    _default_group = get_group(_name);
+  }
+  return _default_group;
 }
 
 ////////////////////////////////////////////////////////////////////

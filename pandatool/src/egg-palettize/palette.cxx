@@ -332,7 +332,7 @@ finalize_palette() {
     sprintf(index_str, "%03d", _index);
     _basename = _group->get_name() + "-palette." + index_str + ".rgb";
 
-    Filename dirname(_attrib_file->_map_dirname, _group->get_dirname());
+    Filename dirname = _group->get_full_dirname(_attrib_file);
     _filename = _basename;
     _filename.set_dirname(dirname.get_fullpath());
   } else {
@@ -387,6 +387,7 @@ generate_image() {
   }
 
   nout << "Writing " << _filename << "\n";
+  _filename.make_dir();
   if (!palette.write(_filename)) {
     nout << "Error in writing.\n";
     okflag = false;
