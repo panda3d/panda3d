@@ -194,7 +194,7 @@ class TreeNode:
             return y+17
         self.kidKeys = []
         for item in sublist:
-            key = item.nodePath.id()
+            key = item.GetKey()
             if self.children.has_key(key):
                 child = self.children[key]
             else:
@@ -271,7 +271,8 @@ class TreeNode:
         if self.selected:
             self.label.configure(fg="white", bg="darkblue")
         else:
-            self.label.configure(fg="black", bg="white")
+            fg = self.item.GetTextFg()
+            self.label.configure(fg=fg, bg="white")
         id = self.canvas.create_window(textx, texty,
                                        anchor="nw", window=self.label)
         self.label.bind("<1>", self.select_or_edit)
@@ -331,6 +332,9 @@ class TreeItem:
 
     def GetText(self):
         """Return text string to display."""
+
+    def GetTextFg(self):
+        return "black"
 
     def GetLabelText(self):
         """Return label text string to display in front of text (if any)."""

@@ -129,6 +129,9 @@ class SceneGraphExplorerItem(TreeItem):
         name = self.nodePath.getName()
         return type + "  " + name
 
+    def GetKey(self):
+        return self.nodePath.id()
+
     def IsEditable(self):
         # All nodes' names can be edited nowadays.
         return 1
