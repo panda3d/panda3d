@@ -2838,7 +2838,7 @@ class LevelStyleManager:
         # Attach the color chips to the new menu and adjust sizes
         for i in range (numItems):
             # Create the node and set its color
-            node = OnscreenText('    ', 0.0, 0.0)
+            node = OnscreenText('    ')
             node.setColor(colorList[i])
             bounds = node.getBounds()
             center = bounds.getCenter()
@@ -2944,7 +2944,7 @@ class LevelStyleManager:
         for i in range (numItems):
             # Create onscreen text node for each item
             if (textList[i] != None):
-                node = OnscreenText(str(textList[i]),0,0)
+                node = OnscreenText(str(textList[i]))
             else:
                 node = None
             if node:
@@ -2952,10 +2952,12 @@ class LevelStyleManager:
                 bounds = node.getBounds()
                 center = bounds.getCenter()
                 center = center * (sf * node.getScale()[0])
+                node.freeze()
                 node.setPos(radius * math.cos(i * angle) - center[0],
                             ((radius * aspectRatio * math.sin(i * angle)) -
                              center[2]))
                 node.setScale(node.getScale() * sf)
+                node.thaw()
                 # Add it to the newMenu
                 node.reparentTo(newMenu)
         # Scale the whole shebang down by 0.5

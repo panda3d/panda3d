@@ -51,14 +51,9 @@ class ForceAcknowledge(StateData.StateData):
 	    return None
 
 	# create a message
-	self.text = OnscreenText.OnscreenText("", 0.0, 0.25)
-        self.text.freeze()
-	self.text.node().setAlign(0)
-	self.text.node().setTextColor(0.0, 0.0, 0.0, 1.0)
-	self.text.node().setFrameColor(1.0, 1.0, 1.0, 1.0)
-	self.text.setScale(0.08)
-        self.text.thaw()
-
+	self.text = OnscreenText.OnscreenText(parent = hidden,
+                                              scale = 0.08,
+                                              pos = (0.0, 0.25))
 	# create a button
 	self.okButton = Button.Button("ForceAcknowledge", "OK")
 	self.okButton.setPos(0.0, -0.5)
@@ -79,9 +74,6 @@ class ForceAcknowledge(StateData.StateData):
 	self.exit()
 
 	# GUI
-	self.text.removeNode()
-	self.text.cleanup()
-	self.text = None
 	self.okButton.cleanup()
 	self.okButton = None
 	self.isLoaded = 0

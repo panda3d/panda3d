@@ -88,6 +88,9 @@ def textLabelAndText(string, style,
     elif style == ScrollItem:
         pass
 
+    else:
+        raise ValueError
+
 
     # Don't set the text until the very last thing, so the TextNode
     # has minimal work to do (even though it's frozen).
