@@ -419,20 +419,25 @@ class ShowBase(DirectObject.DirectObject):
         # Set up some overrides to turn off certain properties which
         # we probably won't need for 2-d objects.
 
-        # It's particularly important to turn off the depth test,
-        # since we'll be keeping the same depth buffer already filled
-        # by the previously-drawn 3-d scene--we don't want to pay for
-        # a clear operation, but we also don't want to collide with
-        # that depth buffer.
+        # It's probably important to turn off the depth test, since
+        # many 2-d objects will be drawn over each other without
+        # regard to depth position.
+
+        # We used to avoid clearing the depth buffer before drawing
+        # render2d, but nowadays we clear it anyway, since we
+        # occasionally want to put 3-d geometry under render2d, and
+        # it's simplest (and seems to be easier on graphics drivers)
+        # if the 2-d scene has been cleared first.
+        
         dt = DepthTestAttrib.make(DepthTestAttrib.MNone)
         dw = DepthWriteAttrib.make(DepthWriteAttrib.MOff)
         #lt = LightTransition.allOff()
-        self.render2d.node().setAttrib(dt, 1)
-        self.render2d.node().setAttrib(dw, 1)
+        self.render2d.node().setAttrib(dt)
+        self.render2d.node().setAttrib(dw)
         #self.render2d.node().setAttrib(lt, 1)
 
         self.render2d.setMaterialOff(1)
-        self.render2d.setTwoSided(1, 1)
+        self.render2d.setTwoSided(1)
         
         # The normal 2-d layer has an aspect ratio that matches the
         # window, but its coordinate system is square.  This means
@@ -466,6 +471,10 @@ class ShowBase(DirectObject.DirectObject):
 
         # And make a display region to cover the whole layer.
         dr = layer.makeDisplayRegion()
+
+        # Enable clearing of the depth buffer on this new display
+        # region (see the comment above).
+        dr.setClearDepthActive(1)
 
         # Now make a new Camera node.
         cam2dNode = Camera('cam2d')
