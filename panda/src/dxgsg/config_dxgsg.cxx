@@ -131,6 +131,7 @@ init_libdxgsg() {
   DXGraphicsStateGuardian::init_type();
   DXSavedFrameBuffer::init_type();
   DXTextureContext::init_type();
+  DXGeomNodeContext::init_type();
 
   GraphicsStateGuardian::get_factory().register_factory
     (DXGraphicsStateGuardian::get_class_type(),
