@@ -256,7 +256,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
     if (index_length < 0xff) {
       // Discrete.  Read in the index.
       if (index_length > 0) {
-	float index[index_length];
+	float *index = (float *)alloca(index_length * sizeof(float));
 
 	int i;
 	for (i = 0; i < index_length; i++) {
