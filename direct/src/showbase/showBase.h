@@ -17,6 +17,12 @@
 #include <nodePath.h>
 #include <dconfig.h>
 
+#define testint 1
+#define testfloat 1.2345
+#define testcstring "testcstring"
+#include <string>
+#define teststring string("teststring")
+
 ConfigureDecl(config_showbase, EXPCL_DIRECT, EXPTP_DIRECT);
 typedef Config::Config<ConfigureGetConfig_config_showbase> ConfigShowbase;
 

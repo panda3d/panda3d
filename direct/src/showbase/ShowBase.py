@@ -4,10 +4,10 @@ from DirectNotifyGlobal import *
 from MessengerGlobal import *
 from TaskManagerGlobal import *
 from EventManagerGlobal import *
-from AudioManagerGlobal import *
 from PythonUtil import *
 import Task
 import EventManager
+import sys
 
 class ShowBase:
 
@@ -16,12 +16,11 @@ class ShowBase:
     def __init__(self):
 
         # Get the dconfig object
-        self.config = getConfigShowbase()
+        self.config = ConfigConfigureGetConfigConfigShowbase
 
         # Store dconfig variables
         self.wantTk = self.config.GetBool('want-tk', 0)
         self.wantSound = self.config.GetBool('want-sound', 1)
-        self.wantMusic = self.config.GetBool('want-music', 1)
         
         import Loader
 
@@ -71,14 +70,19 @@ class ShowBase:
 
         self.taskMgr = taskMgr
 
-        self.audioMgr = audioMgr
-
-        self.wantTk = 0
+        self.createAudioManager()
         self.createRootPanel()
         
         self.restart()
 
-
+    def createAudioManager(self):
+        if self.wantSound:
+            from AudioManagerGlobal import *
+            self.audioMgr = audioMgr
+            self.audioMgr.spawnUpdate()
+        else:
+            self.audioMgr = None
+            
     def createRootPanel(self):
         if self.wantTk:
             from TkGlobal import *
@@ -88,8 +92,6 @@ class ShowBase:
 
     def igloop(self, state):
         self.win.update()
-        if (self.wantSound):
-            self.audioMgr.update()
         return Task.cont
     
     def restart(self):

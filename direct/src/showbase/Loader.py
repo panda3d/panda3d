@@ -65,7 +65,7 @@ class Loader:
         Attempt to load a texture from the given file path using
         TexturePool class. Returns None if not found"""
         Loader.notify.info("Loading texture: %s" % (texturePath) )
-        texture = self.__texturePool.loadTexture(Filename(texturePath))
+        texture = self.__texturePool.loadTexture(texturePath)
         return texture
 
     # sound loading funcs
