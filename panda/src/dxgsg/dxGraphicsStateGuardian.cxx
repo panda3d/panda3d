@@ -1217,7 +1217,7 @@ draw_polygon(const GeomPolygon *geom) {
   dxgsg_cat.debug() << "draw_polygon()" << endl;
 #endif
 
-/*  wireframe polygon will be drawn as multu-tri trifan until I get this casting issue straightened out
+/*  wireframe polygon will be drawn as multi-tri trifan until I get this casting issue straightened out
    DWORD rstate;
    _d3dDevice->GetRenderState(D3DRENDERSTATE_FILLMODE, &rstate);
    if(rstate!=D3DFILL_WIREFRAME) {
@@ -1228,7 +1228,7 @@ draw_polygon(const GeomPolygon *geom) {
    }
 */   
 
-//   draw_multitri(geom, D3DPT_TRIANGLEFAN);
+   draw_multitri(geom, D3DPT_TRIANGLEFAN);
 
 #ifdef WBD_GL_MODE
   int nprims = geom->get_num_prims();
@@ -4407,11 +4407,6 @@ dx_cleanup() {
 
 	release_all_textures();
 
-	// Release the DDraw and D3D objects used by the app
-    RELEASE(_zbuf);
-    RELEASE(_back);
-    RELEASE(_pri);
-
     // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.
     if( _d3dDevice!=NULL ) {
         if( 0 < _d3dDevice->Release() ) {
@@ -4419,6 +4414,11 @@ dx_cleanup() {
         } 
         _d3dDevice = NULL;	// clear the pointer in the Gsg
     }
+
+	// Release the DDraw and D3D objects used by the app
+    RELEASE(_zbuf);
+    RELEASE(_back);
+    RELEASE(_pri);
 
     RELEASE(_d3d);
 
