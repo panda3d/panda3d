@@ -100,7 +100,10 @@ private:
 
   GraphicsLayer *_layer;
   NodePath _camera;
-  Camera *_camera_node;
+
+  // This needs to be a PT(Camera) so we prevent the Camera node from
+  // destructing while we hold its pointer.
+  PT(Camera) _camera_node;
 
   bool _active;
 

@@ -255,10 +255,9 @@ get_pipe() const {
 //     Function: DisplayRegion::set_camera
 //       Access: Published
 //  Description: Sets the camera that is associated with this
-//               DisplayRegion.  There is a one-to-one association
-//               between cameras and DisplayRegions; if this camera
-//               was already associated with a different
-//               DisplayRegion, that association is removed.
+//               DisplayRegion.  There is a one-to-many association
+//               between cameras and DisplayRegions; one camera may be
+//               shared by multiple DisplayRegions.
 //
 //               The camera is actually set via a NodePath, which
 //               clarifies which instance of the camera (if there
@@ -291,7 +290,8 @@ set_camera(const NodePath &camera) {
 //     Function: DisplayRegion::get_camera
 //       Access: Published
 //  Description: Returns the camera associated with this
-//               DisplayRegion, or NULL if no camera is associated.
+//               DisplayRegion, or an empty NodePath if no camera is
+//               associated.
 ////////////////////////////////////////////////////////////////////
 const NodePath &DisplayRegion::
 get_camera() const {
