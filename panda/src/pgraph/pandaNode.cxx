@@ -1144,6 +1144,18 @@ is_geom_node() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::as_light
+//       Access: Public, Virtual
+//  Description: Cross-casts the node to a Light pointer, if it is one
+//               of the four kinds of Light nodes, or returns NULL if
+//               it is not.
+////////////////////////////////////////////////////////////////////
+Light *PandaNode::
+as_light() {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::propagate_stale_bound
 //       Access: Protected, Virtual
 //  Description: Called by BoundedObject::mark_bound_stale(), this
@@ -1244,7 +1256,8 @@ recompute_bound() {
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *PandaNode::
 recompute_internal_bound() {
-  return _internal_bound.recompute_bound();
+  BoundingVolume *result = _internal_bound.recompute_bound();
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

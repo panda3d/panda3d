@@ -111,6 +111,7 @@ cull_and_draw_together() {
   Windows::iterator wi;
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
     GraphicsWindow *win = (*wi);
+    win->get_gsg()->reset_frame();
     win->clear();
 
     int num_display_regions = win->get_num_display_regions();
@@ -135,12 +136,13 @@ cull_and_draw_together(GraphicsWindow *win, DisplayRegion *dr) {
   GraphicsStateGuardian *gsg = win->get_gsg();
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
-  if (set_gsg_lens(gsg, dr)) {
+  PT(SceneSetup) scene_setup = setup_scene(dr->get_qpcamera(), gsg);
+  if (setup_gsg(gsg, scene_setup)) {
     DisplayRegionStack old_dr = gsg->push_display_region(dr);
     gsg->prepare_display_region();
     
     DrawCullHandler cull_handler(gsg);
-    do_cull(&cull_handler, dr->get_qpcamera(), gsg);
+    do_cull(&cull_handler, scene_setup, gsg);
     
     gsg->pop_display_region(old_dr);
   }
@@ -158,6 +160,7 @@ cull_bin_draw() {
   Windows::iterator wi;
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
     GraphicsWindow *win = (*wi);
+    win->get_gsg()->reset_frame();
     win->clear();
 
     int num_display_regions = win->get_num_display_regions();
@@ -187,64 +190,64 @@ cull_bin_draw(GraphicsWindow *win, DisplayRegion *dr) {
     cull_result = new CullResult(gsg);
   }
 
-  BinCullHandler cull_handler(cull_result);
-  do_cull(&cull_handler, dr->get_qpcamera(), gsg);
-
-  cull_result->finish_cull();
-
-  // Save the results for next frame.
-  dr->_cull_result = cull_result->make_next();
-
-  // Now draw.
-  do_draw(cull_result, gsg, dr);
+  PT(SceneSetup) scene_setup = setup_scene(dr->get_qpcamera(), gsg);
+  if (scene_setup != (SceneSetup *)NULL) {
+    BinCullHandler cull_handler(cull_result);
+    do_cull(&cull_handler, scene_setup, gsg);
+    
+    cull_result->finish_cull();
+    
+    // Save the results for next frame.
+    dr->_cull_result = cull_result->make_next();
+    
+    // Now draw.
+    do_draw(cull_result, scene_setup, gsg, dr);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::do_cull
+//     Function: GraphicsEngine::setup_scene
 //       Access: Private
-//  Description: Fires off a cull traversal using the indicated camera.
+//  Description: Returns a new SceneSetup object appropriate for
+//               rendering the scene from the indicated camera, or
+//               NULL if the scene should not be rendered for some
+//               reason.
 ////////////////////////////////////////////////////////////////////
-void GraphicsEngine::
-do_cull(CullHandler *cull_handler, const qpNodePath &camera,
-        GraphicsStateGuardian *gsg) {
-  // Statistics
-  PStatTimer timer(_cull_pcollector);
-
+PT(SceneSetup) GraphicsEngine::
+setup_scene(const qpNodePath &camera, GraphicsStateGuardian *gsg) {
   if (camera.is_empty()) {
     // No camera, no draw.
-    return;
+    return NULL;
   }
 
   qpCamera *camera_node;
-  DCAST_INTO_V(camera_node, camera.node());
+  DCAST_INTO_R(camera_node, camera.node(), NULL);
 
   if (!camera_node->is_active()) {
     // Camera inactive, no draw.
-    return;
+    return NULL;
   }
 
   Lens *lens = camera_node->get_lens();
   if (lens == (Lens *)NULL) {
     // No lens, no draw.
-    return;
+    return NULL;
   }
 
-  qpNodePath scene = camera_node->get_scene();
-  if (scene.is_empty()) {
+  qpNodePath scene_root = camera_node->get_scene();
+  if (scene_root.is_empty()) {
     // No scene, no draw.
-    return;
+    return NULL;
   }
 
-  qpCullTraverser trav;
-  trav.set_cull_handler(cull_handler);
-  trav.set_camera_mask(camera_node->get_camera_mask());
+  PT(SceneSetup) scene_setup = new SceneSetup;
 
   // We will need both the camera transform (the net transform to the
   // camera from the scene) and the world transform (the camera
   // transform inverse, or the net transform to the scene from the
   // camera).
-  CPT(TransformState) camera_transform = camera.get_transform(scene);
-  CPT(TransformState) world_transform = scene.get_transform(camera);
+  CPT(TransformState) camera_transform = camera.get_transform(scene_root);
+  CPT(TransformState) world_transform = scene_root.get_transform(camera);
 
   // The render transform is the same as the world transform, except
   // it is converted into the GSG's internal coordinate system.  This
@@ -259,8 +262,31 @@ do_cull(CullHandler *cull_handler, const qpNodePath &camera,
     render_transform = cs_transform->compose(render_transform);
   }
 
-  trav.set_camera_transform(camera_transform);
-  trav.set_render_transform(render_transform);
+  scene_setup->set_scene_root(scene_root);
+  scene_setup->set_camera(camera_node);
+  scene_setup->set_lens(lens);
+  scene_setup->set_camera_transform(camera_transform);
+  scene_setup->set_render_transform(render_transform);
+
+  return scene_setup;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::do_cull
+//       Access: Private
+//  Description: Fires off a cull traversal using the indicated camera.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
+        GraphicsStateGuardian *gsg) {
+  // Statistics
+  PStatTimer timer(_cull_pcollector);
+
+  qpCullTraverser trav;
+  trav.set_cull_handler(cull_handler);
+  trav.set_depth_offset_decals(gsg->depth_offset_decals());
+  trav.set_scene(scene_setup);
+  trav.set_camera_mask(scene_setup->get_camera()->get_camera_mask());
 
   if (qpview_frustum_cull) {
     // If we're to be performing view-frustum culling, determine the
@@ -268,20 +294,20 @@ do_cull(CullHandler *cull_handler, const qpNodePath &camera,
 
     // First, we have to get the current viewing frustum, which comes
     // from the lens.
-    PT(BoundingVolume) bv = lens->make_bounds();
+    PT(BoundingVolume) bv = scene_setup->get_lens()->make_bounds();
 
     if (bv != (BoundingVolume *)NULL &&
         bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
       // Transform it into the appropriate coordinate space.
       PT(GeometricBoundingVolume) local_frustum;
       local_frustum = DCAST(GeometricBoundingVolume, bv->make_copy());
-      local_frustum->xform(camera_transform->get_mat());
+      local_frustum->xform(scene_setup->get_camera_transform()->get_mat());
 
       trav.set_view_frustum(local_frustum);
     }
   }
   
-  trav.traverse(scene);
+  trav.traverse(scene_setup->get_scene_root());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -290,12 +316,12 @@ do_cull(CullHandler *cull_handler, const qpNodePath &camera,
 //  Description: Draws the previously-culled scene.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-do_draw(CullResult *cull_result, GraphicsStateGuardian *gsg,
-        DisplayRegion *dr) {
+do_draw(CullResult *cull_result, SceneSetup *scene_setup,
+        GraphicsStateGuardian *gsg, DisplayRegion *dr) {
   // Statistics
   PStatTimer timer(_draw_pcollector);
 
-  if (set_gsg_lens(gsg, dr)) {
+  if (setup_gsg(gsg, scene_setup)) {
     DisplayRegionStack old_dr = gsg->push_display_region(dr);
     gsg->prepare_display_region();
     cull_result->draw();
@@ -304,25 +330,21 @@ do_draw(CullResult *cull_result, GraphicsStateGuardian *gsg,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::set_gsg_lens
+//     Function: GraphicsEngine::setup_gsg
 //       Access: Private
-//  Description: Sets up the GSG to draw with the lens from the
-//               indicated DisplayRegion.  Returns true if the lens is
-//               acceptable, false otherwise.
+//  Description: Sets up the GSG to draw the indicated scene.  Returns
+//               true if the scene (and its lens) is acceptable, false
+//               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsEngine::
-set_gsg_lens(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
-  const qpNodePath &camera = dr->get_qpcamera();
-  if (camera.is_empty()) {
-    // No camera, no draw.
+setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup) {
+  if (scene_setup == (SceneSetup *)NULL) {
+    // No scene, no draw.
     return false;
   }
 
-  qpCamera *camera_node;
-  DCAST_INTO_R(camera_node, camera.node(), false);
-
-  Lens *lens = camera_node->get_lens();
-  if (lens == (Lens *)NULL) {
+  const Lens *lens = scene_setup->get_lens();
+  if (lens == (const Lens *)NULL) {
     // No lens, no draw.
     return false;
   }
@@ -334,6 +356,8 @@ set_gsg_lens(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
       << "\n";
     return false;
   }
+
+  gsg->set_scene(scene_setup);
 
   return true;
 }

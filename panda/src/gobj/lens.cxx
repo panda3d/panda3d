@@ -468,6 +468,17 @@ get_up_vector() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_nodal_point
+//       Access: Published
+//  Description: Returns the center point of the lens: the point from
+//               which the lens is viewing.
+////////////////////////////////////////////////////////////////////
+LPoint3f Lens::
+get_nodal_point() const {
+  return get_view_mat().get_row3(3);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Lens::set_iod_offset
 //       Access: Published
 //  Description: Sets the amount by which the lens is shifted to the

@@ -8,24 +8,47 @@
     linmath
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
-
   #define SOURCES \
-     ambientLight.h config_light.h directionalLight.I  \
-     directionalLight.h light.h \
-     lightTransition.I lightTransition.h pointLight.I  \
-     pointLight.h pt_Light.h spotlight.I spotlight.h  \
-     vector_PT_Light.h 
+    ambientLight.I ambientLight.h \
+    config_light.h \
+    directionalLight.I directionalLight.h \
+    light.I light.h \
+    lightAttrib.I lightAttrib.h \
+    lightLensNode.I lightLensNode.h \
+    lightNode.I lightNode.h \
+    lightTransition.I lightTransition.h \
+    pointLight.I pointLight.h \
+    pt_Light.h \
+    spotlight.I spotlight.h \
+    vector_PT_Light.h 
     
   #define INCLUDED_SOURCES \
-     ambientLight.cxx config_light.cxx directionalLight.cxx light.cxx  \
-     lightTransition.cxx pointLight.cxx  \
-     pt_Light.cxx spotlight.cxx vector_PT_Light.cxx 
+    ambientLight.cxx \
+    config_light.cxx \
+    directionalLight.cxx \
+    light.cxx \
+    lightAttrib.cxx \
+    lightLensNode.cxx \
+    lightNode.cxx \
+    lightTransition.cxx \
+    pointLight.cxx \
+    pt_Light.cxx \
+    spotlight.cxx \
+    vector_PT_Light.cxx 
 
   #define INSTALL_HEADERS \
-    ambientLight.h directionalLight.I directionalLight.h light.h \
+    ambientLight.I ambientLight.h \
+    directionalLight.I directionalLight.h \
+    light.I light.h \
+    lightAttrib.I lightAttrib.h \
+    lightLensNode.I lightLensNode.h \
+    lightNode.I lightNode.h \
     lightNameClass.h \
-    lightTransition.I lightTransition.h pointLight.I pointLight.h \
-    pt_Light.h spotlight.I spotlight.h vector_PT_Light.h
+    lightTransition.I lightTransition.h \
+    pointLight.I pointLight.h \
+    pt_Light.h \
+    spotlight.I spotlight.h \
+    vector_PT_Light.h
 
   #define IGATESCAN all
 

@@ -15,36 +15,105 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#include "pointLight.h"
 
-////////////////////////////////////////////////////////////////////
-// Static variables
-////////////////////////////////////////////////////////////////////
+#include "pointLight.h"
+#include "graphicsStateGuardian.h"
+#include "bamWriter.h"
+#include "bamReader.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+
 TypeHandle PointLight::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointLight::Constructor
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-PointLight::PointLight(const string& name) : NamedNode(name)
-{
-  set_color(Colorf(1, 1, 1, 1));
-  set_specular(Colorf(1, 1, 1, 1));
-
-  set_constant_attenuation(1);
-  set_linear_attenuation(0);
-  set_quadratic_attenuation(0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PointLight::output
+//     Function: PointLight::CData::make_copy
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
+CycleData *PointLight::CData::
+make_copy() const {
+  return new CData(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointLight::CData::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void PointLight::CData::
+write_datagram(BamWriter *, Datagram &dg) const {
+  _specular_color.write_datagram(dg);
+  _attenuation.write_datagram(dg);
+  _point.write_datagram(dg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointLight::CData::fillin
+//       Access: Public, Virtual
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new Light.
+////////////////////////////////////////////////////////////////////
+void PointLight::CData::
+fillin(DatagramIterator &scan, BamReader *) {
+  _specular_color.read_datagram(scan);
+  _attenuation.read_datagram(scan);
+  _point.read_datagram(scan);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointLight::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+PointLight::
+PointLight(const string &name) : 
+  LightNode(name) 
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointLight::Copy Constructor
+//       Access: Protected
+//  Description: Do not call the copy constructor directly; instead,
+//               use make_copy() or copy_subgraph() to make a copy of
+//               a node.
+////////////////////////////////////////////////////////////////////
+PointLight::
+PointLight(const PointLight &copy) :
+  LightNode(copy),
+  _cycler(copy._cycler)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointLight::make_copy
+//       Access: Public, Virtual
+//  Description: Returns a newly-allocated PandaNode that is a shallow
+//               copy of this one.  It will be a different pointer,
+//               but its internal data may or may not be shared with
+//               that of the original PandaNode.  No children will be
+//               copied.
+////////////////////////////////////////////////////////////////////
+PandaNode *PointLight::
+make_copy() const {
+  return new PointLight(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointLight::xform
+//       Access: Public, Virtual
+//  Description: Transforms the contents of this PandaNode by the
+//               indicated matrix, if it means anything to do so.  For
+//               most kinds of PandaNodes, this does nothing.
+////////////////////////////////////////////////////////////////////
 void PointLight::
-output(ostream &out) const {
-  NamedNode::output(out);
+xform(const LMatrix4f &mat) {
+  LightNode::xform(mat);
+  CDWriter cdata(_cycler);
+  cdata->_point = cdata->_point * mat;
+  mark_viz_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,9 +124,76 @@ output(ostream &out) const {
 void PointLight::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << ":\n";
-  indent(out, indent_level + 2) << "color " << _color << "\n";
-  indent(out, indent_level + 2) << "specular " << _specular << "\n";
   indent(out, indent_level + 2)
-    << "attenuation " << _constant_attenuation << ", "
-    << _linear_attenuation << ", " << _quadratic_attenuation << "\n";
+    << "color " << get_color() << "\n";
+  indent(out, indent_level + 2)
+    << "specular color " << get_specular_color() << "\n";
+  indent(out, indent_level + 2)
+    << "attenuation " << get_attenuation() << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointLight::apply
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void PointLight::
+apply(GraphicsStateGuardian *gsg) {
+  gsg->apply_light(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointLight::register_with_read_factory
+//       Access: Public, Static
+//  Description: Tells the BamReader how to create objects of type
+//               PointLight.
+////////////////////////////////////////////////////////////////////
+void PointLight::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointLight::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void PointLight::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  LightNode::write_datagram(manager, dg);
+  manager->write_cdata(dg, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointLight::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of type PointLight is encountered
+//               in the Bam file.  It should create the PointLight
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+TypedWritable *PointLight::
+make_from_bam(const FactoryParams &params) {
+  PointLight *node = new PointLight("");
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  node->fillin(scan, manager);
+
+  return node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointLight::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new PointLight.
+////////////////////////////////////////////////////////////////////
+void PointLight::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  LightNode::fillin(scan, manager);
+  manager->read_cdata(scan, _cycler);
 }

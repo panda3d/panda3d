@@ -837,6 +837,17 @@ prepare_lens() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::reset_frame
+//       Access: Public, Virtual
+//  Description: Called before each frame is rendered, to allow the
+//               GSG a chance to do any internal cleanup before
+//               beginning the frame.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+reset_frame() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::wants_normals
 //       Access: Public, Virtual
 //  Description:
@@ -899,15 +910,15 @@ end_decal(GeomNode *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::polygon_offset_decals
+//     Function: GraphicsStateGuardian::depth_offset_decals
 //       Access: Public, Virtual
 //  Description: Returns true if this GSG can implement decals using a
-//               PolygonOffsetAttrib, or false if that is unreliable
+//               DepthOffsetAttrib, or false if that is unreliable
 //               and the three-step rendering process should be used
 //               instead.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
-polygon_offset_decals() {
+depth_offset_decals() {
   return false;
 }
 

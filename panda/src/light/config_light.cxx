@@ -20,6 +20,9 @@
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "light.h"
+#include "lightAttrib.h"
+#include "lightLensNode.h"
+#include "lightNode.h"
 #include "lightTransition.h"
 #include "pointLight.h"
 #include "spotlight.h"
@@ -33,7 +36,16 @@ ConfigureFn(config_light) {
   AmbientLight::init_type();
   DirectionalLight::init_type();
   Light::init_type();
+  LightAttrib::init_type();
+  LightLensNode::init_type();
+  LightNode::init_type();
   LightTransition::init_type();
   PointLight::init_type();
   Spotlight::init_type();
+
+  LightAttrib::register_with_read_factory();
+  AmbientLight::register_with_read_factory();
+  DirectionalLight::register_with_read_factory();
+  PointLight::register_with_read_factory();
+  Spotlight::register_with_read_factory();
 }

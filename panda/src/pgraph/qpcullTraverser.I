@@ -18,6 +18,59 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::set_scene
+//       Access: Public
+//  Description: Sets the SceneSetup object that indicates the initial
+//               camera position, etc.  This must be called before
+//               traversal begins.
+////////////////////////////////////////////////////////////////////
+INLINE void qpCullTraverser::
+set_scene(SceneSetup *scene_setup) {
+  _scene_setup = scene_setup;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::get_scene
+//       Access: Public
+//  Description: Returns the SceneSetup object.
+////////////////////////////////////////////////////////////////////
+INLINE SceneSetup *qpCullTraverser::
+get_scene() const {
+  return _scene_setup;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::get_camera_transform
+//       Access: Public
+//  Description: Returns the position of the camera relative to the
+//               starting node, without any compensating
+//               coordinate-system transforms that might have been
+//               introduced for the purposes of rendering.
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *qpCullTraverser::
+get_camera_transform() const {
+  return _scene_setup->get_camera_transform();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::get_render_transform
+//       Access: Public
+//  Description: Returns the position of the starting node relative
+//               to the camera, pretransformed as appropriate for
+//               rendering.
+//
+//               Note that this value is always the position of the
+//               starting node, not the current node, even if it is
+//               sampled during a traversal.  To get the render
+//               transform of the current node check in the current
+//               CullTraverserData.
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *qpCullTraverser::
+get_render_transform() const {
+  return _scene_setup->get_render_transform();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpCullTraverser::set_initial_state
 //       Access: Public
 //  Description: Sets the initial RenderState at the top of the scene
@@ -42,6 +95,31 @@ get_initial_state() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::set_depth_offset_decals
+//       Access: Public
+//  Description: Sets the depth_offset_decals flag.  If this is true,
+//               decals will be rendered using DepthOffsetAttribs;
+//               otherwise, decals will be rendered with a more
+//               expensive three-pass system.  This is normally set
+//               from the corresponding flag in the GSG.
+////////////////////////////////////////////////////////////////////
+INLINE void qpCullTraverser::
+set_depth_offset_decals(bool flag) {
+  _depth_offset_decals = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::get_depth_offset_decals
+//       Access: Public
+//  Description: Returns the depth_offset_decals flag.  See
+//               set_depth_offset_decals().
+////////////////////////////////////////////////////////////////////
+INLINE bool qpCullTraverser::
+get_depth_offset_decals() const {
+  return _depth_offset_decals;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpCullTraverser::set_camera_mask
 //       Access: Public
 //  Description: Specifies the visibility mask from the camera viewing
@@ -62,62 +140,6 @@ set_camera_mask(const DrawMask &camera_mask) {
 INLINE const DrawMask &qpCullTraverser::
 get_camera_mask() const {
   return _camera_mask;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpCullTraverser::set_camera_transform
-//       Access: Public
-//  Description: Specifies the position of the camera relative to the
-//               starting node, without any compensating
-//               coordinate-system transforms that might have been
-//               introduced for the purposes of rendering.
-////////////////////////////////////////////////////////////////////
-INLINE void qpCullTraverser::
-set_camera_transform(const TransformState *camera_transform) {
-  _camera_transform = camera_transform;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpCullTraverser::get_camera_transform
-//       Access: Public
-//  Description: Returns the position of the camera relative to the
-//               starting node, without any compensating
-//               coordinate-system transforms that might have been
-//               introduced for the purposes of rendering.
-////////////////////////////////////////////////////////////////////
-INLINE const TransformState *qpCullTraverser::
-get_camera_transform() const {
-  return _camera_transform;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpCullTraverser::set_render_transform
-//       Access: Public
-//  Description: Specifies the position of the starting node relative
-//               to the camera, pretransformed as appropriate for
-//               rendering.
-////////////////////////////////////////////////////////////////////
-INLINE void qpCullTraverser::
-set_render_transform(const TransformState *render_transform) {
-  _render_transform = render_transform;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpCullTraverser::get_render_transform
-//       Access: Public
-//  Description: Returns the position of the starting node relative
-//               to the camera, pretransformed as appropriate for
-//               rendering.
-//
-//               Note that this value is always the position of the
-//               starting node, not the current node, even if it is
-//               sampled during a traversal.  To get the render
-//               transform of the current node check in the current
-//               CullTraverserData.
-////////////////////////////////////////////////////////////////////
-INLINE const TransformState *qpCullTraverser::
-get_render_transform() const {
-  return _render_transform;
 }
 
 ////////////////////////////////////////////////////////////////////

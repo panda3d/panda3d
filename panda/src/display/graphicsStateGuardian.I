@@ -97,6 +97,28 @@ is_closed() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_scene
+//       Access: Public
+//  Description: Sets the SceneSetup object that indicates the initial
+//               camera position, etc.  This must be called before
+//               traversal begins.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+set_scene(SceneSetup *scene_setup) {
+  _scene_setup = scene_setup;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_scene
+//       Access: Public
+//  Description: Returns the SceneSetup object.
+////////////////////////////////////////////////////////////////////
+INLINE SceneSetup *GraphicsStateGuardian::
+get_scene() const {
+  return _scene_setup;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_state
 //       Access: Public
 //  Description: Applies the transitions indicated in the state set to

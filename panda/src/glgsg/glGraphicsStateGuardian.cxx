@@ -66,6 +66,7 @@
 #include "pointShapeTransition.h"
 #include "polygonOffsetTransition.h"
 #include "textureAttrib.h"
+#include "lightAttrib.h"
 #include "cullFaceAttrib.h"
 #include "transparencyAttrib.h"
 #include "depthTestAttrib.h"
@@ -326,6 +327,9 @@ reset() {
   cfa->issue(this);
   la->issue(this);
   ta->issue(this);
+
+  Material empty;
+  apply_material(&empty);
 
   if (gl_cheap_textures) {
     glgsg_cat.info()
@@ -1019,16 +1023,9 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   // save the modelview matrix
   const LMatrix4f &modelview_mat = _transform->get_mat();
 
-  // get the camera information
-
-  // Hmm, this doesn't work any more, since we don't store the camera
-  // pointer in new scene graph land.  Need to find a better way to
-  // get the current window's aspect ratio.  Here's a temporary hack
-  // for now.
-
-  //  float aspect_ratio = 
-  //    get_current_camera()->get_lens()->get_aspect_ratio();
-  float aspect_ratio = 1.333333;
+  // We don't need to mess with the aspect ratio, since we are now
+  // using the default projection matrix, which has the right aspect
+  // ratio built in.
 
   // load up our own matrices
   glMatrixMode(GL_MODELVIEW);
@@ -1088,7 +1085,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 
   // y direction
   if (y_overall)
-    scaled_height = geom->_y_texel_ratio[0] * half_height * aspect_ratio;
+    scaled_height = geom->_y_texel_ratio[0] * half_height;
   else {
     nassertv(((int)geom->_y_texel_ratio.size() >= geom->get_num_prims()));
     y_walk = &geom->_y_texel_ratio[0];
@@ -1170,7 +1167,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
       scaled_width = cur_image._x_ratio * half_width;
 
     if (y_overall == false)
-      scaled_height = cur_image._y_ratio * half_height * aspect_ratio;
+      scaled_height = cur_image._y_ratio * half_height;
 
     // if not G_OVERALL, do some trig for this z rotate
     if (theta_on) {
@@ -2526,58 +2523,48 @@ apply_fog(qpFog *fog) {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::apply_light( PointLight* light )
-{
-  // The light position will be relative to the current matrix, so
-  // we have to know what the current matrix is.  Find a better
-  // solution later.
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "glMatrixMode(GL_MODELVIEW)" << endl;
-  glgsg_cat.debug()
-    << "glPushMatrix()" << endl;
-  glgsg_cat.debug()
-    << "glLoadIdentity()" << endl;
-#endif
+void GLGraphicsStateGuardian::
+apply_light(PointLight *light) {
+  // We need to temporarily load a new matrix so we can define the
+  // light in a known coordinate system.  We pick the transform of the
+  // root.  (Alternatively, we could leave the current transform where
+  // it is and compute the light position relative to that transform
+  // instead of relative to the root, by composing with the matrix
+  // computed by _transform->invert_compose(render_transform).  But I
+  // think loading a completely new matrix is simpler.)
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
+  glLoadMatrixf(_scene_setup->get_render_transform()->get_mat().get_data());
 
-  glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
-                .get_data());
-
-  GLenum id = get_light_id( _cur_light_id );
-  Colorf black(0, 0, 0, 1);
+  GLenum id = get_light_id(_cur_light_id);
+  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
   glLightfv(id, GL_AMBIENT, black.get_data());
   glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-  glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
+  glLightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
 
-    // Position needs to specify x, y, z, and w
-    // w == 1 implies non-infinite position
-  LPoint3f pos = get_rel_pos( light, _current_camera );
-  LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
-  glLightfv( id, GL_POSITION, fpos.get_data() );
+  // Position needs to specify x, y, z, and w
+  // w == 1 implies non-infinite position
+  qpNodePath light_np(light);
+  const LMatrix4f &light_mat = light_np.get_mat(qpNodePath());
+  LPoint3f pos = light->get_point() * light_mat;
+
+  LPoint4f fpos(pos[0], pos[1], pos[2], 1.0f);
+  glLightfv(id, GL_POSITION, fpos.get_data());
 
   // GL_SPOT_DIRECTION is not significant when cutoff == 180
 
-    // Exponent == 0 implies uniform light distribution
-  glLightf( id, GL_SPOT_EXPONENT, 0 );
+  // Exponent == 0 implies uniform light distribution
+  glLightf(id, GL_SPOT_EXPONENT, 0.0f);
 
   // Cutoff == 180 means uniform point light source
-  glLightf( id, GL_SPOT_CUTOFF, 180.0 );
+  glLightf(id, GL_SPOT_CUTOFF, 180.0f);
 
-  glLightf( id, GL_CONSTANT_ATTENUATION,
-            light->get_constant_attenuation() );
-  glLightf( id, GL_LINEAR_ATTENUATION,
-            light->get_linear_attenuation() );
-  glLightf( id, GL_QUADRATIC_ATTENUATION,
-            light->get_quadratic_attenuation() );
+  const LVecBase3f &att = light->get_attenuation();
+  glLightf(id, GL_CONSTANT_ATTENUATION, att[0]);
+  glLightf(id, GL_LINEAR_ATTENUATION, att[1]);
+  glLightf(id, GL_QUADRATIC_ATTENUATION, att[2]);
 
   glPopMatrix();
-
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "glPopMatrix()" << endl;
-#endif
   report_errors();
 }
 
@@ -2586,56 +2573,43 @@ void GLGraphicsStateGuardian::apply_light( PointLight* light )
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::apply_light( DirectionalLight* light )
-{
-  // The light position will be relative to the current matrix, so
-  // we have to know what the current matrix is.  Find a better
-  // solution later.
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "glMatrixMode(GL_MODELVIEW)" << endl;
-  glgsg_cat.debug()
-    << "glPushMatrix()" << endl;
-  glgsg_cat.debug()
-    << "glLoadIdentity()" << endl;
-#endif
+void GLGraphicsStateGuardian::
+apply_light(DirectionalLight *light) {
+  // See the comment about this transform change in PointLight, above.
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
-  glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
-                .get_data());
+  glLoadMatrixf(_scene_setup->get_render_transform()->get_mat().get_data());
 
   GLenum id = get_light_id( _cur_light_id );
-  Colorf black(0, 0, 0, 1);
+  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
   glLightfv(id, GL_AMBIENT, black.get_data());
   glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-  glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
+  glLightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
 
-    // Position needs to specify x, y, z, and w
-    // w == 0 implies light is at infinity
-  LPoint3f dir = get_rel_forward( light, _current_camera,
-                                  _coordinate_system );
-  LPoint4f pos( -dir[0], -dir[1], -dir[2], 0 );
-  glLightfv( id, GL_POSITION, pos.get_data() );
+  // Position needs to specify x, y, z, and w.
+  // w == 0 implies light is at infinity
+  qpNodePath light_np(light);
+  const LMatrix4f &light_mat = light_np.get_mat(qpNodePath());
+  LVector3f dir = light->get_direction() * light_mat;
+  LPoint4f fdir(-dir[0], -dir[1], -dir[2], 0);
+  glLightfv(id, GL_POSITION, fdir.get_data());
 
   // GL_SPOT_DIRECTION is not significant when cutoff == 180
   // In this case, position x, y, z specifies direction
 
   // Exponent == 0 implies uniform light distribution
-  glLightf( id, GL_SPOT_EXPONENT, 0 );
+  glLightf(id, GL_SPOT_EXPONENT, 0.0f);
 
   // Cutoff == 180 means uniform point light source
-  glLightf( id, GL_SPOT_CUTOFF, 180.0 );
+  glLightf(id, GL_SPOT_CUTOFF, 180.0f);
 
-  // Default attenuation values (only spotlight can modify these)
-  glLightf( id, GL_CONSTANT_ATTENUATION, 1 );
-  glLightf( id, GL_LINEAR_ATTENUATION, 0 );
-  glLightf( id, GL_QUADRATIC_ATTENUATION, 0 );
+  // Default attenuation values (only spotlight and point light can
+  // modify these)
+  glLightf(id, GL_CONSTANT_ATTENUATION, 1.0f);
+  glLightf(id, GL_LINEAR_ATTENUATION, 0.0f);
+  glLightf(id, GL_QUADRATIC_ATTENUATION, 0.0f);
 
   glPopMatrix();
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "glPopMatrix()" << endl;
-#endif
   report_errors();
 }
 
@@ -2644,54 +2618,42 @@ void GLGraphicsStateGuardian::apply_light( DirectionalLight* light )
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::apply_light( Spotlight* light )
-{
-  // The light position will be relative to the current matrix, so
-  // we have to know what the current matrix is.  Find a better
-  // solution later.
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "glMatrixMode(GL_MODELVIEW)" << endl;
-  glgsg_cat.debug()
-    << "glPushMatrix()" << endl;
-  glgsg_cat.debug()
-    << "glLoadIdentity()" << endl;
-#endif
+void GLGraphicsStateGuardian::
+apply_light(Spotlight *light) {
+  Lens *lens = light->get_lens();
+  nassertv(lens != (Lens *)NULL);
+
+  // See the comment about this transform change in PointLight, above.
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
-  glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
-                .get_data());
+  glLoadMatrixf(_scene_setup->get_render_transform()->get_mat().get_data());
 
-  GLenum id = get_light_id( _cur_light_id );
-  Colorf black(0, 0, 0, 1);
+  GLenum id = get_light_id(_cur_light_id);
+  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
   glLightfv(id, GL_AMBIENT, black.get_data());
   glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-  glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
+  glLightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
 
-    // Position needs to specify x, y, z, and w
-    // w == 1 implies non-infinite position
-  LPoint3f pos = get_rel_pos( light, _current_camera );
-  LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
-  glLightfv( id, GL_POSITION, fpos.get_data() );
+  // Position needs to specify x, y, z, and w
+  // w == 1 implies non-infinite position
+  qpNodePath light_np(light);
+  const LMatrix4f &light_mat = light_np.get_mat(qpNodePath());
+  LPoint3f pos = lens->get_nodal_point() * light_mat;
+  LVector3f dir = lens->get_view_vector() * light_mat;
 
-  glLightfv( id, GL_SPOT_DIRECTION,
-             get_rel_forward( light, _current_camera,
-                              _coordinate_system ).get_data() );
-  glLightf( id, GL_SPOT_EXPONENT, light->get_exponent() );
-  glLightf( id, GL_SPOT_CUTOFF,
-            light->get_cutoff_angle() );
-  glLightf( id, GL_CONSTANT_ATTENUATION,
-            light->get_constant_attenuation() );
-  glLightf( id, GL_LINEAR_ATTENUATION,
-            light->get_linear_attenuation() );
-  glLightf( id, GL_QUADRATIC_ATTENUATION,
-            light->get_quadratic_attenuation() );
+  LPoint4f fpos(pos[0], pos[1], pos[2], 1.0f);
+  glLightfv(id, GL_POSITION, fpos.get_data());
+  glLightfv(id, GL_SPOT_DIRECTION, dir.get_data());
+
+  glLightf(id, GL_SPOT_EXPONENT, light->get_exponent());
+  glLightf(id, GL_SPOT_CUTOFF, lens->get_hfov());
+
+  const LVecBase3f &att = light->get_attenuation();
+  glLightf(id, GL_CONSTANT_ATTENUATION, att[0]);
+  glLightf(id, GL_LINEAR_ATTENUATION, att[1]);
+  glLightf(id, GL_QUADRATIC_ATTENUATION, att[2]);
 
   glPopMatrix();
-#ifdef GSG_VERBOSE
-  glgsg_cat.debug()
-    << "glPopMatrix()" << endl;
-#endif
   report_errors();
 }
 
@@ -2700,8 +2662,8 @@ void GLGraphicsStateGuardian::apply_light( Spotlight* light )
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::apply_light( AmbientLight* )
-{
+void GLGraphicsStateGuardian::
+apply_light(AmbientLight *) {
   // Ambient lights are handled as a special case in issue_light().
 }
 
@@ -2984,6 +2946,7 @@ issue_render_mode(const RenderModeTransition *attrib) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::issue_light(const LightTransition *attrib )
 {
+#if 0
   nassertv(attrib->get_default_dir() != TD_on);
   //  activate();
 
@@ -3075,6 +3038,7 @@ void GLGraphicsStateGuardian::issue_light(const LightTransition *attrib )
     call_glLightModelAmbient(cur_ambient_light);
   }
   report_errors();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3492,6 +3456,104 @@ issue_texture(const TextureAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_light
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_light(const LightAttrib *attrib) {
+  // Initialize the current ambient light total and newly enabled
+  // light list
+  Colorf cur_ambient_light(0.0f, 0.0f, 0.0f, 1.0f);
+  int i;
+  for (i = 0; i < _max_lights; i++) {
+    _light_info[i]._next_enabled = false;
+  }
+
+  int num_enabled = 0;
+  int num_lights = attrib->get_num_lights();
+  if (attrib->get_operation() == LightAttrib::O_remove) {
+    num_lights = 0;
+  }
+  for (int li = 0; li < num_lights; li++) {
+    Light *light = attrib->get_light(li);
+    nassertv(light != (Light *)NULL);
+
+    num_enabled++;
+    enable_lighting(true);
+
+    if (light->get_type() == AmbientLight::get_class_type()) {
+      // Ambient lights don't require specific light ids; simply add
+      // in the ambient contribution to the current total
+      cur_ambient_light += light->get_color();
+        
+    } else {
+      // Check to see if this light has already been bound to an id
+      _cur_light_id = -1;
+      for (i = 0; i < _max_lights; i++) {
+        if (_light_info[i]._light == light) {
+          // Light has already been bound to an id, we only need to
+          // enable the light, not reapply it.
+          _cur_light_id = -2;
+          enable_light(i, true);
+          _light_info[i]._next_enabled = true;
+          break;
+        }
+      }
+        
+      // See if there are any unbound light ids
+      if (_cur_light_id == -1) {
+        for (i = 0; i < _max_lights; i++) {
+          if (_light_info[i]._light == (Light *)NULL) {
+            _light_info[i]._light = light;
+            _cur_light_id = i;
+            break;
+          }
+        }
+      }
+        
+      // If there were no unbound light ids, see if we can replace
+      // a currently unused but previously bound id
+      if (_cur_light_id == -1) {
+        for (i = 0; i < _max_lights; i++) {
+          if (!attrib->has_light(_light_info[i]._light)) {
+            _light_info[i]._light = light;
+            _cur_light_id = i;
+            break;
+          }
+        }
+      }
+        
+      if (_cur_light_id >= 0) {
+        enable_light(_cur_light_id, true);
+        _light_info[i]._next_enabled = true;
+        
+        // We need to do something different for each type of light
+        light->apply(this);
+      } else if (_cur_light_id == -1) {
+        glgsg_cat.error()
+          << "issue_light() - failed to bind light to id" << endl;
+      }
+    }
+  }
+
+  // Disable all unused lights
+  for (i = 0; i < _max_lights; i++) {
+    if (!_light_info[i]._next_enabled) {
+      enable_light(i, false);
+    }
+  }
+
+  // If no lights were enabled, disable lighting
+  if (num_enabled == 0) {
+    enable_lighting(false);
+  } else {
+    call_glLightModelAmbient(cur_ambient_light);
+  }
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_material
 //       Access: Public, Virtual
 //  Description:
@@ -3501,6 +3563,10 @@ issue_material(const MaterialAttrib *attrib) {
   const Material *material = attrib->get_material();
   if (material != (const Material *)NULL) {
     apply_material(material);
+  } else {
+    // Apply a default material when materials are turned off.
+    Material empty;
+    apply_material(&empty);
   }
   report_errors();
 }
@@ -3711,9 +3777,9 @@ issue_depth_offset(const DepthOffsetAttrib *attrib) {
   int offset = attrib->get_offset();
 
   if (offset != 0) {
-    GLfloat newfactor = 1.0f;
-    GLfloat newunits = (GLfloat)offset;
-    glPolygonOffset(newfactor, newunits);
+    // The relationship between these two parameters is a little
+    // unclear and poorly explained in the GL man pages.
+    glPolygonOffset((GLfloat) -offset, (GLfloat) -offset);
     enable_polygon_offset(true);
 
   } else {
@@ -3721,6 +3787,43 @@ issue_depth_offset(const DepthOffsetAttrib *attrib) {
   }
 
   report_errors();
+}
+
+static CPT(RenderState) 
+get_unlit_state() {
+  static CPT(RenderState) state = NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make(LightAttrib::make_all_off());
+    state->ref();
+  }
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::reset_frame
+//       Access: Public, Virtual
+//  Description: Called before each frame is rendered, to allow the
+//               GSG a chance to do any internal cleanup before
+//               beginning the frame.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+reset_frame() {
+  // Undo any lighting we had enabled last frame, to force the lights
+  // to be reissued, in case their parameters or positions have
+  // changed between frames.
+  if (_lighting_enabled_this_frame) {
+    for (int i = 0; i < _max_lights; i++) {
+      enable_light(i, false);
+      _light_info[i]._light = (Light *)NULL;
+    }
+
+    // Also force the lighting state to unlit, so that issue_light()
+    // will be guaranteed to be called next frame even if we have the
+    // same set of light pointers we had this frame.
+    modify_state(get_unlit_state());
+
+    _lighting_enabled_this_frame = false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3886,6 +3989,19 @@ end_decal(GeomNode *base_geom) {
     }
   }
   report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::depth_offset_decals
+//       Access: Public, Virtual
+//  Description: Returns true if this GSG can implement decals using a
+//               DepthOffsetAttrib, or false if that is unreliable
+//               and the three-step rendering process should be used
+//               instead.
+////////////////////////////////////////////////////////////////////
+bool GLGraphicsStateGuardian::
+depth_offset_decals() {
+  return gl_depth_offset_decals;
 }
 
 ////////////////////////////////////////////////////////////////////

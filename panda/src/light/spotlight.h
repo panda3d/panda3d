@@ -15,98 +15,105 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef SPOTLIGHT_H
 #define SPOTLIGHT_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
 
-#include <graphicsStateGuardian.h>
-#include <luse.h>
-#include "pmap.h"
-#include <namedNode.h>
-#include <frustum.h>
-#include "light.h"
-#include <lensNode.h>
+#include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
+#include "lightLensNode.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Spotlight
-// Description :
+// Description : A light originating from a single point in space, and
+//               shining in a particular direction, with a cone-shaped
+//               falloff.
+//
+//               The Spotlight frustum is defined using a Lens, so it
+//               can have any of the properties that a camera lens can
+//               have.
+//
+//               Note that the class is named Spotlight instead of
+//               SpotLight, because "spotlight" is a single English
+//               word, instead of two words.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Spotlight : public Light, public LensNode
-{
-  PUBLISHED:
+class EXPCL_PANDA Spotlight : public LightLensNode {
+PUBLISHED:
+  Spotlight(const string &name);
+  void foo();
 
-    Spotlight( const string& name = "" );
-    ~Spotlight( void ) { }
+protected:
+  Spotlight(const Spotlight &copy);
 
-    INLINE float get_exponent( void ) const;
-    INLINE void set_exponent( float exponent );
+public:
+  virtual PandaNode *make_copy() const;
+  virtual void xform(const LMatrix4f &mat);
+  virtual void write(ostream &out, int indent_level) const;
 
-    float get_cutoff_angle( void ) const;
+PUBLISHED:
+  INLINE float get_exponent() const;
+  INLINE void set_exponent(float exponent);
+  
+  INLINE const Colorf &get_specular_color() const;
+  INLINE void set_specular_color(const Colorf &color);
+  
+  INLINE const LVecBase3f &get_attenuation() const;
+  INLINE void set_attenuation(const LVecBase3f &attenuation);
+  
+public:
+  virtual void apply(GraphicsStateGuardian *gsg);
 
-    INLINE Colorf get_specular( void ) const;
-    INLINE void set_specular( const Colorf& color );
+  bool make_image(Texture *texture, float radius);
 
-    INLINE float get_constant_attenuation( void ) const;
-    INLINE void set_constant_attenuation( float att );
+protected:
+  virtual void fill_viz_geom(qpGeomNode *viz_geom);
 
-    INLINE float get_linear_attenuation( void ) const;
-    INLINE void set_linear_attenuation( float att );
+private:
+  CPT(RenderState) get_viz_state();
 
-    INLINE float get_quadratic_attenuation( void ) const;
-    INLINE void set_quadratic_attenuation( float att );
-
+private:
+  // This is the data that must be cycled between pipeline stages.
+  class EXPCL_PANDA CData : public CycleData {
   public:
+    INLINE CData();
+    INLINE CData(const CData &copy);
+    virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
-    virtual void output( ostream &out ) const;
-    virtual void write( ostream &out, int indent_level = 0 ) const;
+    float _exponent;
+    Colorf _specular_color;
+    LVecBase3f _attenuation;
+  };
 
-    virtual void apply( GraphicsStateGuardian* gsg ) {
-      gsg->apply_light( this );
-    }
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
 
-    bool make_image(Texture* texture, float radius = 0.7);
-    NamedNode* make_geometry(float intensity = 0.05, float length = 20.0,
-        int num_facets = 36);
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
 
-  protected:
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
-    float                               _exponent;
-    Colorf                              _specular;
-    float                               _constant_attenuation;
-    float                               _linear_attenuation;
-    float                               _quadratic_attenuation;
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    LightLensNode::init_type();
+    register_type(_type_handle, "Spotlight",
+                  LightLensNode::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
-  public:
-
-    static TypeHandle get_class_type( void ) {
-      return _type_handle;
-    }
-    static void init_type( void ) {
-      Light::init_type();
-      LensNode::init_type();
-      register_type( _type_handle, "Spotlight",
-                           Light::get_class_type(),
-                           LensNode::get_class_type() );
-    }
-    virtual TypeHandle get_type( void ) const {
-      return get_class_type();
-    }
-    virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    virtual TypeHandle get_light_type( void ) const {
-      return get_class_type();
-    }
-
-  private:
-
-    static TypeHandle                   _type_handle;
+private:
+  static TypeHandle _type_handle;
 };
 
 INLINE ostream &operator << (ostream &out, const Spotlight &light) {

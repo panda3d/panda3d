@@ -49,6 +49,9 @@
 #include "eventQueue.h"
 #include "eventHandler.h"
 #include "qpdataGraphTraverser.h"
+#include "lightAttrib.h"
+#include "ambientLight.h"
+#include "directionalLight.h"
 
 // Use dconfig to read a few Configrc variables.
 Configure(config_pview);
@@ -64,6 +67,7 @@ bool run_flag = true;
 // These are referenced in both event_w() and in event_b().
 bool wireframe = false;
 bool two_sided = false;
+bool lighting = false;
 
 
 // These are used by report_frame_rate().
@@ -75,6 +79,9 @@ static const int override_priority = 100;
 
 // This is the main scene graph.
 qpNodePath render;
+
+// And this is the camera node.
+qpNodePath camera_np;
 
 void 
 report_frame_rate() {
@@ -361,6 +368,37 @@ event_A(CPT_Event) {
 #endif
 }
 
+void
+event_l(CPT_Event) {
+  // 'l' : toggle lighting.
+  lighting = !lighting;
+  if (lighting) {
+    nout << "Enabling lighting.\n";
+    static bool lights_created = false;
+
+    static PT(AmbientLight) alight;
+    static PT(DirectionalLight) dlight;
+
+    if (!lights_created) {
+      alight = new AmbientLight("ambient");
+      alight->set_color(Colorf(0.2f, 0.2f, 0.2f, 1.0f));
+      dlight = new DirectionalLight("directional");
+      camera_np.attach_new_node(alight);
+      camera_np.attach_new_node(dlight);
+
+      lights_created = true;
+    }
+
+    // Enable lights on the top node.
+    render.node()->set_attrib(LightAttrib::make(LightAttrib::O_add, alight, dlight));
+
+  } else {
+    nout << "Disabling lighting.\n";
+    // Remove the lights from the top node.
+    render.node()->clear_attrib(LightAttrib::get_class_type());
+  }
+}
+
 int
 main(int argc, char *argv[]) {
   // First, we need a GraphicsPipe, before we can open a window.
@@ -375,7 +413,7 @@ main(int argc, char *argv[]) {
 
   // Now we just need to make a scene graph for the camera to render.
   render = qpNodePath("render");
-  render.attach_new_node(camera);
+  camera_np = render.attach_new_node(camera);
   camera->set_scene(render);
 
   // This is maybe here temporarily, and maybe not.
@@ -398,6 +436,7 @@ main(int argc, char *argv[]) {
   event_handler.add_hook("s", event_s);
   event_handler.add_hook("shift-s", event_S);
   event_handler.add_hook("shift-a", event_A);
+  event_handler.add_hook("l", event_l);
 
 
   // Put something in the scene graph to look at.

@@ -123,6 +123,8 @@ class LensNode;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsStateGuardianBase : public TypedReferenceCount {
 public:
+  virtual void reset_frame()=0;
+
   // These functions will be queried by the GeomIssuer to determine if
   // it should issue normals, texcoords, and/or colors, based on the
   // GSG's current state.
@@ -154,11 +156,11 @@ public:
   // coordinate space differently.
   virtual float compute_distance_to(const LPoint3f &point) const=0;
 
-  // These are used to implement decals.  If polygon_offset_decals()
+  // These are used to implement decals.  If depth_offset_decals()
   // returns true, none of the remaining functions will be called,
-  // since polygon offsets can be used to implement decals fully (and
+  // since depth offsets can be used to implement decals fully (and
   // usually faster).
-  virtual bool polygon_offset_decals()=0;
+  virtual bool depth_offset_decals()=0;
   virtual CPT(RenderState) begin_decal_base_first()=0;
   virtual CPT(RenderState) begin_decal_nested()=0;
   virtual CPT(RenderState) begin_decal_base_second()=0;

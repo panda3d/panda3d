@@ -4757,6 +4757,7 @@ apply_fog(Fog *fog) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::apply_light( PointLight* light ) {
+#if 0
     // The light position will be relative to the current matrix, so
     // we have to know what the current matrix is.  Find a better
     // solution later.
@@ -4780,6 +4781,7 @@ void DXGraphicsStateGuardian::apply_light( PointLight* light ) {
     alight.dvAttenuation2 = (D3DVALUE)light->get_quadratic_attenuation();
     
     HRESULT res = scrn.pD3DDevice->SetLight(_cur_light_id, &alight);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4788,6 +4790,7 @@ void DXGraphicsStateGuardian::apply_light( PointLight* light ) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
+#if 0
     // The light position will be relative to the current matrix, so
     // we have to know what the current matrix is.  Find a better
     // solution later.
@@ -4815,6 +4818,7 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
     HRESULT res = scrn.pD3DDevice->SetLight(_cur_light_id, &alight);
 //    scrn.pD3DDevice->LightEnable( _cur_light_id, TRUE );
 //    scrn.pD3DDevice->SetRenderState( D3DRENDERSTATE_LIGHTING, TRUE );
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4823,6 +4827,7 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::apply_light( Spotlight* light ) {
+#if 0
     // The light position will be relative to the current matrix, so
     // we have to know what the current matrix is.  Find a better
     // solution later.
@@ -4900,6 +4905,7 @@ void DXGraphicsStateGuardian::apply_light( Spotlight* light ) {
     HRESULT res = scrn.pD3DDevice->SetLight(_cur_light_id, &alight);
 
 #endif              // WBD_GL_MODE
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5194,6 +5200,7 @@ issue_render_mode(const RenderModeTransition *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::issue_light(const LightTransition *attrib ) {
+#if 0
   nassertv(attrib->get_default_dir() != TD_on);
 
   // Initialize the current ambient light total and currently enabled
@@ -5285,6 +5292,7 @@ void DXGraphicsStateGuardian::issue_light(const LightTransition *attrib ) {
     call_dxLightModelAmbient(_cur_ambient_light);
     enable_color_material(true);
   }
+#endif
 }
 
 /*

@@ -32,6 +32,7 @@ extern bool gl_force_mipmaps;
 extern bool gl_show_mipmaps;
 extern bool gl_save_mipmaps;
 extern bool gl_auto_normalize_lighting;
+extern bool gl_depth_offset_decals;
 extern bool gl_supports_bgr;
 
 // Ways to implement decals.

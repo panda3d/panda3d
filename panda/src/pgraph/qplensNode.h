@@ -34,20 +34,21 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA qpLensNode : public PandaNode {
 PUBLISHED:
-  INLINE qpLensNode(const string &name);
+  qpLensNode(const string &name);
 
 protected:
-  INLINE qpLensNode(const qpLensNode &copy);
+  qpLensNode(const qpLensNode &copy);
 public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
+  virtual void xform(const LMatrix4f &mat);
   virtual PandaNode *make_copy() const;
 
 PUBLISHED:
   INLINE void copy_lens(const Lens &lens);
   INLINE void set_lens(Lens *lens);
-  INLINE Lens *get_lens();
+  INLINE Lens *get_lens() const;
 
   bool is_in_view(const LPoint3f &pos);
 

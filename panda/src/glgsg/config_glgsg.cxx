@@ -65,6 +65,11 @@ bool gl_save_mipmaps = config_glgsg.GetBool("gl-save-mipmaps", false);
 // variable.
 bool gl_auto_normalize_lighting = config_glgsg.GetBool("auto-normalize-lighting", false);
 
+// Configure this true to try to implement decals using a
+// DepthOffsetAttrib, false to do them with the more reliable 3-pass
+// rendering method instead.
+bool gl_depth_offset_decals = config_glgsg.GetBool("depth-offset-decals", false);
+
 // Configure this true to indicate the current version of GL fully
 // supports textures with B, G, R ordering; false if it only supports
 // R, G, B.  false will always work, but true might be faster if the

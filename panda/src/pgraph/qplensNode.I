@@ -18,29 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpLensNode::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE qpLensNode::
-qpLensNode(const string &name) :
-  PandaNode(name)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpLensNode::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE qpLensNode::
-qpLensNode(const qpLensNode &copy) :
-  PandaNode(copy),
-  _lens(copy._lens)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: copy_lens
 //       Access: Public
 //  Description: Sets up the qpLensNode using a copy of the
@@ -73,6 +50,6 @@ set_lens(Lens *lens) {
 //               not yet a Lens associated.
 ////////////////////////////////////////////////////////////////////
 INLINE Lens *qpLensNode::
-get_lens() {
+get_lens() const {
   return _lens;
 }

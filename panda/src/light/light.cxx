@@ -15,9 +15,107 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #include "light.h"
+#include "bamWriter.h"
+#include "bamReader.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+
+TypeHandle Light::_type_handle;
+
 
 ////////////////////////////////////////////////////////////////////
-// Static variables
+//     Function: Light::CData::make_copy
+//       Access: Public, Virtual
+//  Description:
 ////////////////////////////////////////////////////////////////////
-TypeHandle Light::_type_handle;
+CycleData *Light::CData::
+make_copy() const {
+  return new CData(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Light::CData::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void Light::CData::
+write_datagram(BamWriter *, Datagram &dg) const {
+  _color.write_datagram(dg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Light::CData::fillin
+//       Access: Public, Virtual
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new Light.
+////////////////////////////////////////////////////////////////////
+void Light::CData::
+fillin(DatagramIterator &scan, BamReader *) {
+  _color.read_datagram(scan);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Light::Destructor
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+Light::
+~Light() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Light::get_viz
+//       Access: Public
+//  Description: Returns a GeomNode that may be rendered to visualize
+//               the Light.  This is used during the cull traversal to
+//               render the Lights that have been made visible.
+////////////////////////////////////////////////////////////////////
+qpGeomNode *Light::
+get_viz() {
+  CDReader cdata(_cycler);
+  if (cdata->_viz_geom_stale) {
+    CDWriter cdata_w(_cycler, cdata);
+
+    cdata_w->_viz_geom = new qpGeomNode("viz");
+    fill_viz_geom(cdata_w->_viz_geom);
+    cdata_w->_viz_geom_stale = false;
+  }
+  return cdata->_viz_geom;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Light::fill_viz_geom
+//       Access: Protected, Virtual
+//  Description: Fills the indicated GeomNode up with Geoms suitable
+//               for rendering this light.
+////////////////////////////////////////////////////////////////////
+void Light::
+fill_viz_geom(qpGeomNode *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Light::write_datagram
+//       Access: Protected
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void Light::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  manager->write_cdata(dg, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Light::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new Light.
+////////////////////////////////////////////////////////////////////
+void Light::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  manager->read_cdata(scan, _cycler);
+}

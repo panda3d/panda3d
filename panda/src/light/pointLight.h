@@ -15,86 +15,87 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef POINTLIGHT_H
 #define POINTLIGHT_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
 
-#include <graphicsStateGuardian.h>
-#include <luse.h>
-#include "pmap.h"
-#include <namedNode.h>
-#include "light.h"
+#include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
+#include "lightNode.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PointLight
-// Description :
+// Description : A light originating from a single point in space, and
+//               shining in all directions.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PointLight : public Light, public NamedNode
-{
-  PUBLISHED:
+class EXPCL_PANDA PointLight : public LightNode {
+PUBLISHED:
+  PointLight(const string &name);
 
-    PointLight( const string& name = "" );
-    ~PointLight( void ) { }
+protected:
+  PointLight(const PointLight &copy);
 
-    INLINE Colorf get_specular( void ) const;
-    INLINE void set_specular( const Colorf& color );
+public:
+  virtual PandaNode *make_copy() const;
+  virtual void xform(const LMatrix4f &mat);
+  virtual void write(ostream &out, int indent_level) const;
 
-    INLINE float get_constant_attenuation( void ) const;
-    INLINE void set_constant_attenuation( float att );
+PUBLISHED:
+  INLINE const Colorf &get_specular_color() const;
+  INLINE void set_specular_color(const Colorf &color);
+  
+  INLINE const LVecBase3f &get_attenuation() const;
+  INLINE void set_attenuation(const LVecBase3f &attenuation);
+  
+  INLINE const LPoint3f &get_point() const;
+  INLINE void set_point(const LPoint3f &point);
+  
+public:
+  virtual void apply(GraphicsStateGuardian *gsg);
 
-    INLINE float get_linear_attenuation( void ) const;
-    INLINE void set_linear_attenuation( float att );
-
-    INLINE float get_quadratic_attenuation( void ) const;
-    INLINE void set_quadratic_attenuation( float att );
-
+private:
+  // This is the data that must be cycled between pipeline stages.
+  class EXPCL_PANDA CData : public CycleData {
   public:
+    INLINE CData();
+    INLINE CData(const CData &copy);
+    virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
-    virtual void output( ostream &out ) const;
-    virtual void write( ostream &out, int indent_level = 0 ) const;
+    Colorf _specular_color;
+    LVecBase3f _attenuation;
+    LPoint3f _point;
+  };
 
-    virtual void apply( GraphicsStateGuardian* gsg ) {
-      gsg->apply_light( this );
-    }
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
 
-  protected:
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
 
-    Colorf                              _specular;
-    float                               _constant_attenuation;
-    float                               _linear_attenuation;
-    float                               _quadratic_attenuation;
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
-  public:
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    LightNode::init_type();
+    register_type(_type_handle, "PointLight",
+                  LightNode::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
-    static TypeHandle get_class_type( void ) {
-      return _type_handle;
-    }
-    static void init_type( void ) {
-      Light::init_type();
-      NamedNode::init_type();
-      register_type( _type_handle, "PointLight",
-                        Light::get_class_type(),
-                        NamedNode::get_class_type() );
-    }
-    virtual TypeHandle get_type( void ) const {
-      return get_class_type();
-    }
-    virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    virtual TypeHandle get_light_type( void ) const {
-      return get_class_type();
-    }
-
-  private:
-
-    static TypeHandle                   _type_handle;
+private:
+  static TypeHandle _type_handle;
 };
 
 INLINE ostream &operator << (ostream &out, const PointLight &light) {

@@ -99,6 +99,7 @@ PUBLISHED:
   void set_view_vector(const LVector3f &view_vector, const LVector3f &up_vector);
   const LVector3f &get_view_vector() const;
   const LVector3f &get_up_vector() const;
+  LPoint3f get_nodal_point() const;
   void set_iod_offset(float offset);
   float get_iod_offset() const;
 

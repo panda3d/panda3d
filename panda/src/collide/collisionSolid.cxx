@@ -100,7 +100,9 @@ update_viz(Node *parent) {
 //     Function: CollisionSolid::get_viz
 //       Access: Public
 //  Description: Returns a GeomNode that may be rendered to visualize
-//               the CollisionSolid.
+//               the CollisionSolid.  This is used during the cull
+//               traversal to render the CollisionNodes that have been
+//               made visible.
 ////////////////////////////////////////////////////////////////////
 qpGeomNode *CollisionSolid::
 get_viz() {
@@ -386,6 +388,7 @@ get_solid_viz_state() {
       (CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise),
        RenderModeAttrib::make(RenderModeAttrib::M_filled),
        TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+    base_state->ref();  // once more to guard against static destruction
   }
 
   if (_tangible) {
@@ -393,6 +396,7 @@ get_solid_viz_state() {
     if (tangible_state == (const RenderState *)NULL) {
       tangible_state = base_state->add_attrib
         (ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 1.0f, 0.5f)));
+      tangible_state->ref();
     }
     return tangible_state;
 
@@ -401,6 +405,7 @@ get_solid_viz_state() {
     if (intangible_state == (const RenderState *)NULL) {
       intangible_state = base_state->add_attrib
         (ColorAttrib::make_flat(Colorf(1.0f, 0.3f, 0.5f, 0.5f)));
+      intangible_state->ref();
     }
     return intangible_state;
   }
@@ -425,6 +430,7 @@ get_wireframe_viz_state() {
       (CullFaceAttrib::make(CullFaceAttrib::M_cull_none),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
        TransparencyAttrib::make(TransparencyAttrib::M_none));
+    base_state->ref();  // once more to guard against static destruction
   }
 
   if (_tangible) {
@@ -432,6 +438,7 @@ get_wireframe_viz_state() {
     if (tangible_state == (const RenderState *)NULL) {
       tangible_state = base_state->add_attrib
         (ColorAttrib::make_flat(Colorf(0.0f, 0.0f, 1.0f, 1.0f)));
+      tangible_state->ref();
     }
     return tangible_state;
 
@@ -440,6 +447,7 @@ get_wireframe_viz_state() {
     if (intangible_state == (const RenderState *)NULL) {
       intangible_state = base_state->add_attrib
         (ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 0.0f, 1.0f)));
+      intangible_state->ref();
     }
     return intangible_state;
   }
@@ -463,6 +471,7 @@ get_other_viz_state() {
       (CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise),
        RenderModeAttrib::make(RenderModeAttrib::M_filled),
        TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+    base_state->ref();  // once more to guard against static destruction
   }
 
   // We don't bother to make a distinction here between tangible and

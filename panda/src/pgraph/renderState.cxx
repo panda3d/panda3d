@@ -119,6 +119,7 @@ RenderState::
       // as to the computed result (if any), so neither object will be
       // tempted to destruct.  Go ahead and remove ourselves from the
       // other cache.
+      nassertv(other->_composition_cache.count(this) == 1);
       other->_composition_cache.erase(this);
 
       // It's all right if the other state destructs now, since it

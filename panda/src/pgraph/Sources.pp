@@ -52,6 +52,7 @@
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
     qpsceneGraphReducer.I qpsceneGraphReducer.h \
+    sceneSetup.I sceneSetup.h \
     selectiveChildNode.I selectiveChildNode.h \
     qpsequenceNode.I qpsequenceNode.h \
     showBoundsEffect.I showBoundsEffect.h \
@@ -111,6 +112,7 @@
     renderModeAttrib.cxx \
     renderState.cxx \
     qpsceneGraphReducer.cxx \
+    sceneSetup.cxx \
     selectiveChildNode.cxx \
     qpsequenceNode.cxx \
     showBoundsEffect.cxx \
@@ -172,6 +174,7 @@
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
     qpsceneGraphReducer.I qpsceneGraphReducer.h \
+    sceneSetup.I sceneSetup.h \
     selectiveChildNode.I selectiveChildNode.h \
     qpsequenceNode.I qpsequenceNode.h \
     showBoundsEffect.I showBoundsEffect.h \

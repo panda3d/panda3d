@@ -15,68 +15,103 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef LIGHT_H
 #define LIGHT_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
 
-#include <typedObject.h>
-#include <graphicsStateGuardian.h>
-#include <referenceCount.h>
+#include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
+#include "referenceCount.h"
+#include "luse.h"
+#include "cycleData.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
+#include "pipelineCycler.h"
+#include "qpgeomNode.h"
+
+class PandaNode;
+class GraphicsStateGuardian;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Light
-// Description :
+// Description : The abstract interface to all kinds of lights.  The
+//               actual light objects also inherit from PandaNode, and
+//               can therefore be added to the scene graph at some
+//               arbitrary point to define the coordinate system of
+//               effect.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Light : virtual public ReferenceCount
-{
-    PUBLISHED:
+class EXPCL_PANDA Light : virtual public ReferenceCount {
+  // We inherit from ReferenceCount instead of TypedReferenceCount so
+  // that LightNode does not inherit from TypedObject twice.  Note
+  // that we also inherit virtually from ReferenceCount for the same
+  // reason.
+PUBLISHED:
+  INLINE Light();
+  INLINE Light(const Light &copy);
+  virtual ~Light();
 
-        Light( void ) { _color.set(0.0, 0.0, 0.0, 1.0); }
-        virtual ~Light( void ) { }
+  virtual PandaNode *as_node()=0;
 
-        INLINE Colorf get_color(void) const { return _color; }
-        INLINE void set_color(const Colorf& color) { _color = color; }
+  INLINE const Colorf &get_color() const;
+  INLINE void set_color(const Colorf &color);
 
-        virtual void output(ostream &out) const=0;
-        virtual void write(ostream &out, int indent_level = 0) const=0;
+public:
+  virtual void output(ostream &out) const=0;
+  virtual void write(ostream &out, int indent_level) const=0;
+  virtual void apply(GraphicsStateGuardian *gsg)=0;
 
-    public:
-        virtual void apply( GraphicsStateGuardian* gsg ) = 0;
+  qpGeomNode *get_viz();
 
-    protected:
+protected:
+  virtual void fill_viz_geom(qpGeomNode *viz_geom);
+  INLINE void mark_viz_stale();
 
-        Colorf                  _color;
+private:
+  // This is the data that must be cycled between pipeline stages.
+  class EXPCL_PANDA CData : public CycleData {
+  public:
+    INLINE CData();
+    INLINE CData(const CData &copy);
+    virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
-    public:
+    Colorf _color;
 
-        static TypeHandle get_class_type( void ) {
-            return _type_handle;
-        }
-        static void init_type( void ) {
-            ReferenceCount::init_type();
-            register_type( _type_handle, "Light",
-                        ReferenceCount::get_class_type() );
-        }
-        virtual TypeHandle get_light_type( void ) const {
-            return get_class_type();
-        }
+    PT(qpGeomNode) _viz_geom;
+    bool _viz_geom_stale;
+  };
 
-    private:
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
 
-        static TypeHandle                       _type_handle;
+protected:
+  void write_datagram(BamWriter *manager, Datagram &dg);
+  void fillin(DatagramIterator &scan, BamReader *manager);
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    ReferenceCount::init_type();
+    register_type(_type_handle, "Light",
+                  ReferenceCount::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  
+private:
+  static TypeHandle _type_handle;
 };
 
 INLINE ostream &operator << (ostream &out, const Light &light) {
   light.output(out);
   return out;
 }
+
+#include "light.I"
 
 #endif

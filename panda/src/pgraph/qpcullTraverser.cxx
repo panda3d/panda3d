@@ -30,6 +30,7 @@
 #include "colorAttrib.h"
 #include "renderModeAttrib.h"
 #include "cullFaceAttrib.h"
+#include "depthOffsetAttrib.h"
 
 
 TypeHandle qpCullTraverser::_type_handle;
@@ -42,9 +43,7 @@ TypeHandle qpCullTraverser::_type_handle;
 qpCullTraverser::
 qpCullTraverser() {
   _initial_state = RenderState::make_empty();
-  _camera_mask = DrawMask::all_on();
-  _camera_transform = DCAST(TransformState, TransformState::make_identity());
-  _render_transform = DCAST(TransformState, TransformState::make_identity());
+  _depth_offset_decals = false;
   _cull_handler = (CullHandler *)NULL;
 }
 
@@ -55,10 +54,9 @@ qpCullTraverser() {
 ////////////////////////////////////////////////////////////////////
 qpCullTraverser::
 qpCullTraverser(const qpCullTraverser &copy) :
+  _scene_setup(copy._scene_setup),
   _initial_state(copy._initial_state),
-  _camera_mask(copy._camera_mask),
-  _camera_transform(copy._camera_transform),
-  _render_transform(copy._render_transform),
+  _depth_offset_decals(copy._depth_offset_decals),
   _view_frustum(copy._view_frustum),
   _guard_band(copy._guard_band),
   _cull_handler(copy._cull_handler)
@@ -71,11 +69,12 @@ qpCullTraverser(const qpCullTraverser &copy) :
 //  Description: Begins the traversal from the indicated node.
 ////////////////////////////////////////////////////////////////////
 void qpCullTraverser::
-traverse(qpNodePath &root) {
+traverse(const qpNodePath &root) {
   nassertv(_cull_handler != (CullHandler *)NULL);
-
-  CullTraverserData data(root,
-                         _render_transform, TransformState::make_identity(),
+  nassertv(_scene_setup != (SceneSetup *)NULL);
+  
+  CullTraverserData data(root, get_render_transform(),
+                         TransformState::make_identity(),
                          _initial_state, _view_frustum, _guard_band);
   traverse(data);
 }
@@ -112,7 +111,7 @@ traverse(CullTraverserData &data) {
       // now.  This maybe isn't the perfect time to call it, but it's
       // good enough; and at this time we have all the information we
       // need for it.
-      fog->get_fog()->adjust_to_camera(_camera_transform);
+      fog->get_fog()->adjust_to_camera(get_camera_transform());
     }
 
     if (node->has_cull_callback()) {
@@ -133,10 +132,13 @@ traverse(CullTraverserData &data) {
 //               node's space.
 ////////////////////////////////////////////////////////////////////
 void qpCullTraverser::
-traverse_below(const CullTraverserData &data) {
+traverse_below(CullTraverserData &data) {
   PandaNode *node = data.node();
   const RenderEffects *node_effects = node->get_effects();
-  if (node_effects->has_decal()) {
+  bool has_decal = node_effects->has_decal();
+  if (has_decal && !_depth_offset_decals) {
+    // Start the three-pass decal rendering if we're not using
+    // DepthOffsetAttribs to implement decals.
     start_decal(data);
     
   } else {
@@ -150,7 +152,21 @@ traverse_below(const CullTraverserData &data) {
         _cull_handler->record_object(object);
       }
     }
-    
+
+    if (has_decal) {
+      // If we *are* implementing decals with DepthOffsetAttribs,
+      // apply it now, so that each child of this node gets offset by
+      // a tiny amount.
+      data._state = data._state->compose(get_depth_offset_state());
+#ifndef NDEBUG
+      // This is just a sanity check message.
+      if (!node->is_geom_node()) {
+        pgraph_cat.error()
+          << "DecalEffect applied to " << *node << ", not a GeomNode.\n";
+      }
+#endif
+    }
+
     // Now visit all the node's children.  We cannot use the
     // node->get_children() interface, because that will keep a read
     // pointer open, and we might end up changing this node during the
@@ -246,6 +262,7 @@ get_bounds_outer_viz_state() {
       (ColorAttrib::make_flat(Colorf(0.3f, 1.0f, 0.5f, 1.0f)),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
        CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise));
+    state->ref();  // once more to guard against static destruction
   }
   return state;
 }
@@ -266,6 +283,26 @@ get_bounds_inner_viz_state() {
       (ColorAttrib::make_flat(Colorf(0.15f, 0.5f, 0.25f, 1.0f)),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
        CullFaceAttrib::make(CullFaceAttrib::M_cull_counter_clockwise));
+    state->ref();  // once more to guard against static destruction
+  }
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::get_depth_offset_state
+//       Access: Private, Static
+//  Description: Returns a RenderState for increasing the DepthOffset
+//               by one.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) qpCullTraverser::
+get_depth_offset_state() {
+  // Once someone asks for this pointer, we hold its reference count
+  // and never free it.
+  static CPT(RenderState) state = (const RenderState *)NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make
+      (DepthOffsetAttrib::make(1));
+    state->ref();  // once more to guard against static destruction
   }
   return state;
 }

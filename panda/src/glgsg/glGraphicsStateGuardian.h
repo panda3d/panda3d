@@ -164,7 +164,7 @@ public:
   //  virtual void issue_color(const ColorAttrib *attrib);
   virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
   virtual void issue_texture(const TextureAttrib *attrib);
-  //  virtual void issue_light(const LightAttrib *attrib);
+  virtual void issue_light(const LightAttrib *attrib);
   virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_render_mode(const RenderModeAttrib *attrib);
   virtual void issue_texture_apply(const TextureApplyAttrib *attrib);
@@ -180,11 +180,15 @@ public:
   //  virtual void issue_stencil(const StencilAttrib *attrib);
   //  virtual void issue_clip_plane(const ClipPlaneAttrib *attrib);
 
+  virtual void reset_frame();
+
   virtual bool wants_normals(void) const;
   virtual bool wants_texcoords(void) const;
 
   virtual void begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib);
   virtual void end_decal(GeomNode *base_geom);
+
+  virtual bool depth_offset_decals();
 
   virtual CoordinateSystem get_internal_coordinate_system() const;
   virtual float compute_distance_to(const LPoint3f &point) const;
@@ -357,7 +361,7 @@ protected:
   class LightInfo {
   public:
     INLINE LightInfo();
-    PT_Light _light;
+    PT(Light) _light;
     bool _enabled;
     bool _next_enabled;
   };

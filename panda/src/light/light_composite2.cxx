@@ -1,4 +1,3 @@
-
 #include "config_light.cxx"
 #include "ambientLight.cxx"
 #include "spotlight.cxx"

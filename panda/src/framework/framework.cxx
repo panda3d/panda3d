@@ -325,6 +325,8 @@ void display_func( void ) {
 
 void set_lighting(bool enabled) {
   if (enabled) {
+    cerr << "lighting is no longer supported in old scene graph.\n";
+    /*
     // Enable the lights on the initial state.
     PT(LightTransition) la = new LightTransition;
     la->set_on(light.p());
@@ -333,6 +335,7 @@ void set_lighting(bool enabled) {
       la->set_on(dlight.p());
     }
     render_arc->set_transition(la);
+    */
 
   } else {
     // Remove the lights from the initial state.
@@ -1081,6 +1084,7 @@ int framework_main(int argc, char *argv[]) {
   lights = new NamedNode("lights");
   new RenderRelation(cameras, lights);
 
+  /*
   light = new AmbientLight( "ambient" );
   dlight = new DirectionalLight( "directional" );
   plight = new PointLight( "point" );
@@ -1094,6 +1098,7 @@ int framework_main(int argc, char *argv[]) {
   new RenderRelation( lights, plight );
   new RenderRelation( lights, slight );
 #endif
+  */
 
   // Turn on culling.
   CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_clockwise);

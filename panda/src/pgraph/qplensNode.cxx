@@ -22,6 +22,42 @@
 TypeHandle qpLensNode::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpLensNode::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+qpLensNode::
+qpLensNode(const string &name) :
+  PandaNode(name)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpLensNode::Copy Constructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+qpLensNode::
+qpLensNode(const qpLensNode &copy) :
+  PandaNode(copy),
+  _lens(copy._lens)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpLensNode::xform
+//       Access: Public, Virtual
+//  Description: Transforms the contents of this PandaNode by the
+//               indicated matrix, if it means anything to do so.  For
+//               most kinds of PandaNodes, this does nothing.
+////////////////////////////////////////////////////////////////////
+void qpLensNode::
+xform(const LMatrix4f &mat) {
+  PandaNode::xform(mat);
+  // We need to actually transform the lens here.
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpLensNode::make_copy
 //       Access: Public, Virtual
 //  Description: Returns a newly-allocated Node that is a shallow copy

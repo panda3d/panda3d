@@ -157,6 +157,7 @@ get_fake_view_frustum_cull_state() {
        TextureAttrib::make_off(),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
        1000);
+    state->ref();  // once more to guard against static destruction
   }
   return state;
 }

@@ -27,6 +27,7 @@
 #include "lensStack.h"
 
 #include "graphicsStateGuardianBase.h"
+#include "sceneSetup.h"
 #include "nodeTransition.h"
 #include "nodeTransitionCache.h"
 #include "luse.h"
@@ -92,6 +93,9 @@ PUBLISHED:
 public:
   INLINE bool is_closed() const;
 
+  INLINE void set_scene(SceneSetup *scene_setup);
+  INLINE SceneSetup *get_scene() const;
+
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
@@ -124,6 +128,7 @@ public:
 
   INLINE void enable_normals(bool val) { _normals_enabled = val; }
 
+  virtual void reset_frame();
 
   // These functions will be queried by the GeomIssuer to determine if
   // it should issue normals, texcoords, and/or colors, based on the
@@ -135,7 +140,7 @@ public:
   virtual void begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib);
   virtual void end_decal(GeomNode *base_geom);
 
-  virtual bool polygon_offset_decals();
+  virtual bool depth_offset_decals();
   virtual CPT(RenderState) begin_decal_base_first();
   virtual CPT(RenderState) begin_decal_nested();
   virtual CPT(RenderState) begin_decal_base_second();
@@ -217,6 +222,8 @@ protected:
 #endif
 
 protected:
+  PT(SceneSetup) _scene_setup;
+
   class StateInfo {
   public:
     INLINE StateInfo(TypeHandle type);

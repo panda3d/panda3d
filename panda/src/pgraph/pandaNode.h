@@ -43,6 +43,7 @@
 class qpNodePathComponent;
 class qpCullTraverser;
 class CullTraverserData;
+class Light;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PandaNode
@@ -163,6 +164,7 @@ PUBLISHED:
 
 public:
   virtual bool is_geom_node() const;
+  virtual Light *as_light();
 
 protected:
   // Inherited from BoundedObject

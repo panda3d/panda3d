@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "graphicsWindow.h"
+#include "sceneSetup.h"
 #include "pointerTo.h"
 #include "pset.h"
 #include "pStatCollector.h"
@@ -58,12 +59,14 @@ private:
   void cull_bin_draw();
   void cull_bin_draw(GraphicsWindow *win, DisplayRegion *dr);
 
-  void do_cull(CullHandler *cull_handler, const qpNodePath &camera,
+  PT(SceneSetup) setup_scene(const qpNodePath &camera, 
+                             GraphicsStateGuardian *gsg);
+  void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
                GraphicsStateGuardian *gsg);
-  void do_draw(CullResult *cull_result, GraphicsStateGuardian *gsg,
-               DisplayRegion *dr);
+  void do_draw(CullResult *cull_result, SceneSetup *scene_setup,
+               GraphicsStateGuardian *gsg, DisplayRegion *dr);
 
-  bool set_gsg_lens(GraphicsStateGuardian *gsg, DisplayRegion *dr);
+  bool setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup);
 
   Pipeline *_pipeline;
 

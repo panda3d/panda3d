@@ -482,9 +482,6 @@ event_L(CPT_Event) {
 }
 
 void demo_keys(EventHandler&) {
-  new RenderRelation( lights, dlight );
-  have_dlight = true;
-
   /*
   event_handler.add_hook("mw-in-label2d", event_in_label2d);
   event_handler.add_hook("mw-out-label2d", event_out_label2d);
