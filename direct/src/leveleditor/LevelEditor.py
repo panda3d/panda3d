@@ -15,7 +15,8 @@ if sys.argv[1:]:
 # If you do not run from the command line, we just load all of them
 # or you can hack this up for your own purposes.
 else:
-    hoods = ['TT', 'DD', 'BR', 'DG', 'DL', 'MM']
+    # hoods = ['TT', 'DD', 'BR', 'DG', 'DL', 'MM']
+    hoods = ['BR' ]
 
 print "Loading LevelEditor for hoods: ", hoods
 
@@ -406,6 +407,7 @@ class LevelEditor(NodePath, PandaObject):
         # Used to store whatever edges and points are loaded in the level
         self.edgeDict = {}
         self.pointDict = {}
+        self.point2edgeDict = {}
         self.cellDict = {}
         
         # Initialize LevelEditor variables DNAData, DNAToplevel, NPToplevel
@@ -489,7 +491,7 @@ class LevelEditor(NodePath, PandaObject):
                                            'y-ring', 'y-disc',
                                            'z-post'])
         # Initialize camera
-        base.cam.node().setNear(5.0)
+        base.cam.node().setNear(1.0)
         base.cam.node().setFar(3000)
         direct.camera.setPos(0,-10,10)
         # Hide (disable) grid initially
@@ -555,6 +557,11 @@ class LevelEditor(NodePath, PandaObject):
         Reset level and re-initialize main class variables
         Pass in the new top level group
         """
+        # Reset path markers
+        self.resetPathMarkers()
+        # Reset battle cell markers
+        self.resetBattleCellMarkers()
+
         if fDeleteToplevel:
             # First destroy existing scene-graph/DNA hierarchy
             self.deleteToplevel()
@@ -596,10 +603,6 @@ class LevelEditor(NodePath, PandaObject):
         self.snapList = []
         # Last menu used
         self.activeMenu = None
-        # Reset path markers
-        self.resetPathMarkers()
-        # Reset battle cell markers
-        self.resetBattleCellMarkers()
 
     def deleteToplevel(self):
         # Destory old toplevel node path and DNA
@@ -830,6 +833,31 @@ class LevelEditor(NodePath, PandaObject):
                         self.setLastAngle(h)
                     # Update DNA
                     self.updatePose(dnaObject, selectedNode)
+            else:
+                possiblePoint = self.findSuitPointMarker(selectedNode)
+                if possiblePoint:
+                    point = self.getSuitPointFromNodePath(possiblePoint)
+                    if point:
+                        print "Found suit point!", point
+                        # First snap selected node path to grid
+                        pos = selectedNode.getPos(direct.grid)
+                        snapPos = direct.grid.computeSnapPoint(pos)
+                        if self.panel.fPlaneSnap.get():
+                            zheight = 0
+                        else:
+                            zheight = snapPos[2]
+                        selectedNode.setPos(direct.grid,
+                                            snapPos[0], snapPos[1], zheight)
+                        newPos = selectedNode.getPos(self.NPToplevel)
+                        point.setPos(newPos)
+                        # Ok, now update all the lines into that node
+                        for edge in self.point2edgeDict[point]:
+                            oldEdgeLine = self.edgeDict[edge]
+                            del self.edgeDict[edge]
+                            oldEdgeLine.reset()
+                            del oldEdgeLine
+                            newEdgeLine = self.drawSuitEdge(edge, self.NPParent)
+                            self.edgeDict[edge] = newEdgeLine
 
     def updatePose(self, dnaObject, nodePath):
         """
@@ -1499,7 +1527,15 @@ class LevelEditor(NodePath, PandaObject):
             if DNAClassEqual(dnaNode, DNA_STREET):
                 self.snapList = OBJECT_SNAP_POINTS[dnaNode.getCode()]
         else:
-            pass
+            possiblePoint = self.findSuitPointMarker(nodePath)
+            if possiblePoint:
+                point = self.getSuitPointFromNodePath(possiblePoint)
+                if point:
+                    print "Found suit point!", point
+                else:
+                    pass
+            else:
+                pass
         # Let others know that something new may be selected:
         for i in self.selectedNodePathHookHooks:
                 i()
@@ -1539,6 +1575,22 @@ class LevelEditor(NodePath, PandaObject):
             else:
                 # Try parent
                 return self.findDNARoot(nodePath.getParent())
+
+
+    def findSuitPointMarker(self, nodePath):
+        """ Walk up a node path's ancestry looking for its DNA Root """
+        # Check current node's name for root marker
+        if (nodePath.getName() == 'suitPointMarker'):
+            # Its a root!
+            return nodePath
+        else:
+            # If reached the top: fail
+            if not nodePath.hasParent():
+                return None
+            else:
+                # Try parent
+                return self.findSuitPointMarker(nodePath.getParent())
+
 
     # MANIPULATION FUNCTIONS
     def keyboardRotateSelected(self, arrowDirection):
@@ -1893,7 +1945,8 @@ class LevelEditor(NodePath, PandaObject):
         # Reset level, destroying existing scene/DNA hierarcy
         self.reset(fDeleteToplevel = 1, fCreateToplevel = 0)
         # Now load in new file
-        newNPToplevel = loadDNAFile(DNASTORE, filename, CSDefault, 1)
+        node = loadDNAFile(DNASTORE, filename, CSDefault, 1)
+        newNPToplevel = hidden.attachNewNode(node)
         # Make sure the topmost file DNA object gets put under DNARoot
         newDNAToplevel = self.findDNANode(newNPToplevel)
         
@@ -2066,7 +2119,7 @@ class LevelEditor(NodePath, PandaObject):
             self.outputDir = 'DonaldsDock'
         elif neighborhood == 'minnies_melody_land':
             self.outputDir = 'MinniesMelodyLand'
-        elif neighborhood == 'the_burrgh':
+        elif neighborhood == 'the_burrrgh':
             self.outputDir = 'TheBurrrgh'
         elif neighborhood == 'daisys_garden':
             self.outputDir = 'DaisysGarden'
@@ -2169,7 +2222,8 @@ class LevelEditor(NodePath, PandaObject):
         return edgeLine
 
     def drawSuitPoint(self, pos, type, parent):
-        marker = self.suitPointMarker.instanceTo(parent)
+        marker = self.suitPointMarker.copyTo(parent)
+        marker.setName("suitPointMarker")
         marker.setPos(pos)
         if (type == DNASuitPoint.STREETPOINT):
             marker.setColor(0,0,0.6)
@@ -2210,6 +2264,14 @@ class LevelEditor(NodePath, PandaObject):
                 edgeLine = self.drawSuitEdge(suitEdge, self.NPParent)
                 # Store the line in a dict so we can hide/show them
                 self.edgeDict[suitEdge] = edgeLine
+                # Store the edge on each point in case we move the point
+                # we can update the edge
+                for point in [self.startSuitPoint, self.endSuitPoint]:
+                    if self.point2edgeDict.has_key(point):
+                        self.point2edgeDict[point].append(suitEdge)
+                    else:
+                        self.point2edgeDict[point] = [suitEdge]
+                
                 print 'Added dnaSuitEdge to zone: ' + zoneId
             else:
                 print 'Error: DNAParent is not a dnaVisGroup. Did not add edge'
@@ -2222,7 +2284,7 @@ class LevelEditor(NodePath, PandaObject):
             self.startSuitPoint = suitPoint
 
     def drawBattleCell(self, cell, parent):
-        marker = self.battleCellMarker.instanceTo(parent)
+        marker = self.battleCellMarker.copyTo(parent)
         # Greenish
         marker.setColor(0.25,0.75,0.25,0.5)
         marker.setPos(cell.getPos())
@@ -2276,13 +2338,36 @@ class LevelEditor(NodePath, PandaObject):
                 edge = dnaVisGroup.getSuitEdge(i)
                 edgeLine = self.drawSuitEdge(edge, np)
                 self.edgeDict[edge] = edgeLine
+                # Store the edge on each point in case we move the point
+                # we can update the edge
+                for point in [edge.getStartPoint(), edge.getEndPoint()]:
+                    if self.point2edgeDict.has_key(point):
+                        self.point2edgeDict[point].append(edge)
+                    else:
+                        self.point2edgeDict[point] = [edge]
+
+
+    def getSuitPointFromNodePath(self, nodePath):
+        """
+        Given a node path, attempt to find the point,nodePath pair
+        in the pointDict. If it is there, return the point. If we
+        cannot find it, return None.
+        TODO: a reverse lookup pointDict would speed this up quite a bit
+        """
+        for point, marker in self.pointDict.items():
+            if marker.eq(nodePath):
+                return point
+        return None
 
     def resetPathMarkers(self):
         for edge, edgeLine in self.edgeDict.items():
-            edgeLine.remove()
+            if not edgeLine.isEmpty():
+                edgeLine.reset()
+                edgeLine.removeNode()
         self.edgeDict = {}
         for point, marker in self.pointDict.items():
-            marker.remove()
+            if not marker.isEmpty():
+                marker.removeNode()
         self.pointDict = {}
                 
     def hideSuitPaths(self):
@@ -2311,7 +2396,8 @@ class LevelEditor(NodePath, PandaObject):
 
     def resetBattleCellMarkers(self):
         for cell, marker in self.cellDict.items():
-            marker.remove()
+            if not marker.isEmpty():
+                marker.remove()
         self.cellDict = {}
 
     def hideBattleCells(self):

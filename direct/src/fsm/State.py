@@ -188,8 +188,16 @@ class State(DirectObject):
         Enter all child FSMs"""
         if self.hasChildren():
             for fsm in self.__FSMList:
-                fsm.request((fsm.getInitialState()).getName())
-
+                # Check to see if the child fsm is already in a state
+                # if it is, politely request the initial state
+                if fsm.getCurrentState():
+                    fsm.request((fsm.getInitialState()).getName())
+                # If it has no current state, I assume this means it
+                # has never entered the initial state, so enter it
+                # explicitly
+                else:
+                    fsm.enterInitialState()
+                    
     def __exitChildren(self, argList):
         """__exitChildren(self, argList)
         Exit all child FSMs"""

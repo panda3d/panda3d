@@ -35,10 +35,9 @@ class FSM(DirectObject):
         # Flag to see if we are inspecting
         self.inspecting = 0
 
-        # Enter the initial state.
-        # It is assumed that the initial state takes no arguments.
-        self.__currentState = self.__initialState
-        #self.__enter(self.__initialState)
+        # We do not enter the initial state to separate
+        # construction from activation
+        self.__currentState = None
         return None
 
     # I know this isn't how __repr__ is supposed to be used, but it
@@ -168,6 +167,12 @@ class FSM(DirectObject):
         Return true is transition exists to given state,
         false otherwise. 
         """
+
+        if not self.__currentState:
+            # Make this a warning for now
+            FSM.notify.warning("[%s]: request: never entered initial state" %
+                               (self.__name))
+            self.__currentState = self.__initialState
 
         if isinstance(aStateName, types.StringType):
             aState = self.getStateNamed(aStateName)
