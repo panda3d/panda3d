@@ -428,12 +428,13 @@ class TaskManager:
                 break
 
         if __debug__:
-            if self.pStatsTasks and name != "igloop":
+            if self.pStatsTasks and task.name != "igloop":
                 # Get the PStats name for the task.  By convention,
                 # this is everything until the first hyphen; the part
                 # of the task name following the hyphen is generally
                 # used to differentiate particular tasks that do the
                 # same thing to different objects.
+                name = task.name
                 hyphen = name.find('-')
                 if hyphen >= 0:
                     name = name[0:hyphen]
@@ -442,7 +443,7 @@ class TaskManager:
         if self.fVerbose:
             # Alert the world, a new task is born!
             messenger.send('TaskManager-spawnTask',
-                           sentArgs = [task, name, index])
+                           sentArgs = [task, task.name, index])
                 
         return task
 
