@@ -22,6 +22,7 @@
 
 #include "error_utils.h"
 #include "filename.h"
+#include "buffer.h"
 #include "zStream.h"
 
 #include "decompressor.h"
