@@ -1312,7 +1312,7 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
         vert.set_normal(LVector3d(n[0], n[1], n[2]));
       }
 
-      if (shader->has_projection()) {
+      if (shader != (MayaShader *)NULL && shader->has_projection()) {
         // If the shader has a projection, use it instead of the
         // polygon's built-in UV's.
         vert.set_uv(shader->project_uv(p3d));

@@ -93,8 +93,11 @@ doIt(const MArgList &) {
   framework.get_models().instance_to(window->get_render());
 
   if (!convert(framework.get_models())) {
+    cerr << "failure in conversion.\n";
     return MS::kFailure;
   }
+
+  cerr << "successfully converted.\n";
 
   loading_np.remove_node();
   window->center_trackball(framework.get_models());
