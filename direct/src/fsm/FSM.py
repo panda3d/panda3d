@@ -247,7 +247,7 @@ class FSM(DirectObject.DirectObject):
         return self.__str__()
 
     def __str__(self):
-        """__str__(self)
+        """
         Print out something useful about the fsm
         """
         if self.state:
