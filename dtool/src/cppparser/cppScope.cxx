@@ -826,11 +826,14 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
   bool anything_changed = false;
 
   if (_struct_type != NULL) {
+    CPPScope *native_scope = (CPPScope *)NULL;
+    if (_struct_type->_ident != (CPPIdentifier *)NULL) {
+      native_scope = _struct_type->_ident->_native_scope;
+    }
     to_scope->_struct_type = 
       new CPPStructType(_struct_type->_type, 
 			new CPPIdentifier(to_scope->_name),
-			_struct_type->_ident->_native_scope,
-			to_scope, _struct_type->_file);
+			native_scope, to_scope, _struct_type->_file);
     to_scope->_struct_type->_incomplete = false;
 
     // Copy the derivation to the new type.
