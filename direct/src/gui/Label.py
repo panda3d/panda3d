@@ -11,8 +11,10 @@ ButtonLit = 3
 ButtonDown = 4
 ButtonInactive = 5
 Sign = 6
-ScrollTitle = 7
-ScrollItem = 8
+SignBlack = 7
+ScrollTitle = 8
+ScrollItem = 9
+
 
 def textLabel(string, style,
               scale = 0.1,
@@ -89,6 +91,11 @@ def textLabelAndText(string, style,
     elif style == Sign:
         # For a sign, we want red text with no background card.
         text.setTextColor(1., 0., 0., 1.)
+        text.clearCard()
+
+    elif style == SignBlack:
+        # For a black sign, we want black text with no background card.
+        text.setTextColor(0., 0., 0., 1.)
         text.clearCard()
 
     elif style == ScrollTitle:
