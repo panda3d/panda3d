@@ -87,14 +87,46 @@ uses_mipmaps() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::has_ram_image
 //       Access: Public
-//  Description: Returns true if the Texture keeps has its image
-//               contents available in main RAM, false if it exists
-//               only in texture memory or in the prepared GSG
-//               context.
+//  Description: Returns true if the Texture has its image contents
+//               available in main RAM, false if it exists only in
+//               texture memory or in the prepared GSG context.
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 has_ram_image() const {
   return !_pbuffer->_image.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_keep_ram_image
+//       Access: Public
+//  Description: Sets the flag that indicates whether this Texture is
+//               eligible to have its main RAM copy of the texture
+//               memory dumped when the texture is prepared for
+//               rendering.
+//
+//               This will be true for most textures, which can reload
+//               their images if needed by rereading the input file.
+//               However, textures that were generated dynamically and
+//               cannot be easily reloaded will want to set this flag
+//               to true, so that the _pbuffer member will always keep
+//               its image copy around.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_keep_ram_image(bool keep_ram_image) {
+  _keep_ram_image = keep_ram_image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_keep_ram_image
+//       Access: Public
+//  Description: Returns the flag that indicates whether this Texture
+//               is eligible to have its main RAM copy of the texture
+//               memory dumped when the texture is prepared for
+//               rendering.  See set_keep_ram_image().
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+get_keep_ram_image() const {
+  return _keep_ram_image;
 }
 
 ////////////////////////////////////////////////////////////////////

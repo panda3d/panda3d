@@ -121,6 +121,7 @@ Texture() : ImageBuffer() {
   _wrapu = WM_repeat;
   _wrapv = WM_repeat;
   _anisotropic_degree = 1;
+  _keep_ram_image = false;
   _pbuffer = new PixelBuffer;
   _has_requested_size = false;
   _all_dirty_flags = 0;
@@ -366,7 +367,7 @@ prepare(GraphicsStateGuardianBase *gsg) {
   // context isn't.
   _all_dirty_flags = 0;
 
-  if (!keep_texture_ram) {
+  if (!keep_texture_ram && !_keep_ram_image) {
     // Once we have prepared the texture, we can generally safely
     // remove the pixels from main RAM.  The GSG is now responsible
     // for remembering what it looks like.

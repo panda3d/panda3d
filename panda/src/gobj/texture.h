@@ -105,6 +105,8 @@ public:
 
   INLINE bool has_ram_image() const;
   PixelBuffer *get_ram_image();
+  INLINE void set_keep_ram_image(bool keep_ram_image);
+  INLINE bool get_keep_ram_image() const;
 
   INLINE void apply(GraphicsStateGuardianBase *gsg);
 
@@ -134,6 +136,7 @@ private:
   FilterType _minfilter;
   FilterType _magfilter;
   int _anisotropic_degree;
+  bool _keep_ram_image;
 
   // A Texture keeps a list (actually, a map) of all the GSG's that it
   // has been prepared into.  Each GSG conversely keeps a list (a set)
