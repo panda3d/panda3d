@@ -3,7 +3,7 @@
   #define LOCAL_LIBS \
     eggbase progbase
   #define OTHER_LIBS \
-    egg:c linmath:c putil:c express:c pnmimagetypes:c \
+    egg:c linmath:c putil:c express:c pnmimage:c pnmimagetypes:c \
     pandaegg:m panda:m pandaexpress:m \
     dtoolutil:c dconfig:c dtool:m pystub
 

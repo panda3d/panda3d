@@ -907,8 +907,8 @@ parse_params(const vector<string> &words, istream &infile,
 bool AttribFile::
 parse_packing(const vector<string> &words, istream &infile, 
 	      string &line, int &line_num) {
-  if (words.size() != 3 || words[1] != "is" ||
-      (words[2] != "optimal" && words[2] != "suboptimal")) {
+  if (!(words.size() == 3 && words[1] == "is" &&
+	(words[2] == "optimal" || words[2] == "suboptimal"))) {
     nout << "Expected 'packing is {optimal|suboptimal}'\n";
     return false;
   }
@@ -1073,7 +1073,7 @@ parse_palette(const vector<string> &words, istream &infile,
   }
 
   string filename = words[1];
-  if (words[2] != "size") {
+  if (!(words[2] == "size")) {
     nout << "Expected keyword 'size'\n";
     return false;
   }
@@ -1096,21 +1096,21 @@ parse_palette(const vector<string> &words, istream &infile,
 
     Texture *texture = get_texture(twords[0]);
     
-    if (twords[1] != "at") {
+    if (!(twords[1] == "at")) {
       nout << "Expected keyword 'at'\n";
       return false;
     }
     int left = atoi(twords[2].c_str());
     int top = atoi(twords[3].c_str());
     
-    if (twords[4] != "size") {
+    if (!(twords[4] == "size")) {
       nout << "Expected keyword 'size'\n";
       return false;
     }
     int xsize = atoi(twords[5].c_str());
     int ysize = atoi(twords[6].c_str());
     
-    if (twords[7] != "margin") {
+    if (!(twords[7] == "margin")) {
       nout << "Expected keyword 'margin'\n";
       return false;
     }
@@ -1138,7 +1138,7 @@ parse_unplaced(const vector<string> &words, istream &infile,
 
   Texture *texture = get_texture(words[1]);
 
-  if (words[2] != "because") {
+  if (!(words[2] == "because")) {
     nout << "Expected keyword 'because'\n";
     return false;
   }
