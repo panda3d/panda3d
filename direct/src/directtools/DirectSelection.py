@@ -412,6 +412,20 @@ class SelectionQueue(CollisionHandlerQueue):
         # Add the collider to the collision Node
         self.collisionNode.addSolid( self.collider )
 
+    def collideWithBitMask(self, bitMask):
+        # The into collide mask is the bit pattern colliders look at
+        # when deciding whether or not to test for a collision "into"
+        # this collision solid.  Set to all Off so this collision solid
+        # will not be considered in any collision tests
+        self.collisionNode.setIntoCollideMask(BitMask32().allOff())
+        # The from collide mask is the bit pattern *this* collision solid
+        # compares against the into collide mask of candidate collision solids
+        # Turn this mask all off since we're not testing for collisions against
+        # collision solids
+        self.collisionNode.setFromCollideMask(bitMask)
+        # Don't test against actual geometry
+        self.collisionNode.setCollideGeom(0)
+
     def collideWithGeom(self):
         # The into collide mask is the bit pattern colliders look at
         # when deciding whether or not to test for a collision "into"
@@ -463,8 +477,16 @@ class SelectionQueue(CollisionHandlerQueue):
         # ray from camera to collision point is positive, we are
         # looking at the backface of the polygon
         v = Vec3(entry.getFromIntersectionPoint())
+        n = entry.getFromSurfaceNormal()
+        # Convert to camera space for backfacing test
+        if self.collisionNodePath.getParent() != base.cam:
+            # Problem: assumes base.cam is the camera in question
+            p2cam = self.collisionNodePath.getParent().getMat(base.cam)
+            v = Vec3(p2cam.xformPoint(v))
+            n = p2cam.xformVec(n)
+        # Normalize and check angle between to vectors
         v.normalize()
-        return v.dot(entry.getFromSurfaceNormal()) >= 0
+        return v.dot(n) >= 0
 
     def findCollisionEntry(self, skipFlags = SKIP_NONE, startIndex = 0 ):
         # Init self.index and self.entry
@@ -513,6 +535,14 @@ class SelectionRay(SelectionQueue):
         self.ct.traverse( targetNodePath )
         self.sortEntries()
 
+    def pickBitMask(self, bitMask = BitMask32.allOff(),
+                    targetNodePath = render,
+                    skipFlags = SKIP_ALL ):
+        self.collideWithBitMask(bitMask)
+        self.pick(targetNodePath)
+        # Determine collision entry
+        return self.findCollisionEntry(skipFlags)
+
     def pickGeom(self, targetNodePath = render, skipFlags = SKIP_ALL ):
         self.collideWithGeom()
         self.pick(targetNodePath)
@@ -536,6 +566,15 @@ class SelectionRay(SelectionQueue):
                    origin = Point3(0), dir = Vec3(0,0,-1),
                    skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):
         self.collideWithGeom()
+        self.pick3D(targetNodePath, origin, dir)
+        # Determine collision entry
+        return self.findCollisionEntry(skipFlags)
+
+    def pickBitMask3D(self, bitMask = BitMask32.allOff(),
+                      targetNodePath = render,
+                      origin = Point3(0), dir = Vec3(0,0,-1),
+                      skipFlags = SKIP_ALL ):
+        self.collideWithBitMask(bitMask)
         self.pick3D(targetNodePath, origin, dir)
         # Determine collision entry
         return self.findCollisionEntry(skipFlags)
@@ -568,7 +607,19 @@ class SelectionSegment(SelectionQueue):
             collider.setPointA( pointA )
             collider.setPointB( pointB )
         self.ct.traverse( targetNodePath )
-        # self.sortEntries()
+        # Determine collision entry
+        return self.findCollisionEntry(skipFlags)
+
+    def pickBitMask(self, bitMask = BitMask32.allOff(),
+                    targetNodePath = render, endPointList = [],
+                 skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):
+        self.collideWithBitMask(bitMask)
+        for i in range(min(len(endPointList), self.numColliders)):
+            pointA, pointB = endPointList[i]
+            collider = self.colliders[i]
+            collider.setPointA( pointA )
+            collider.setPointB( pointB )
+        self.ct.traverse( targetNodePath )
         # Determine collision entry
         return self.findCollisionEntry(skipFlags)
 
