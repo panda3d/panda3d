@@ -68,7 +68,7 @@ extern CPPPreprocessor *current_lexer;
 // union), so we'll use a class instead.  That means we need to
 // declare it externally, here.
 
-class yystype {
+class cppyystype {
 public:
   string str;
   union {
@@ -89,7 +89,7 @@ public:
     CPPIdentifier *identifier;
   } u;
 };
-#define YYSTYPE yystype
+#define YYSTYPE cppyystype
 
 // This structure takes advantage of a bison feature to track the
 // exact location in the file of each token, for more useful error
