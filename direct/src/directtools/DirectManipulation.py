@@ -230,9 +230,9 @@ class DirectManipulationControl(PandaObject):
                 # Mouse started in central region, xlate
                 # Mode depends on shift key
                 if direct.fShift:
-                    self.xlateCamXZ(state)
-                else:
                     self.xlateCamXY(state)
+                else:
+                    self.xlateCamXZ(state)
         if self.fSetCoa:
             # Update coa based on current widget position
             direct.selected.last.mCoa2Dnp.assign(

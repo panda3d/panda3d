@@ -92,60 +92,6 @@ class ParticlePanel(AppShell):
             label = 'Print Params',
             command = lambda s = self: s.particles.printParams())
 
-        # EFFECTS MENU
-        self.menuBar.addmenu('Effects', 'Particle Effects Operations')
-        # Get a handle on this menu
-        effectsMenu = self.menuBar.component('Effects-menu')
-        # Create new particle effect
-        self.menuBar.addmenuitem(
-            'Effects', 'command',
-            'Create New Particle Effect',
-            label = 'Create New Effect',
-            command = self.createNewEffect)
-        # Add cascade menus to view and enable, saving a handle
-        effectsConfigureMenu = Menu(effectsMenu, tearoff = 0)
-        effectsMenu.add_cascade(label = 'Configure',
-                                menu = effectsConfigureMenu)
-        self.effectsEnableMenu = Menu(effectsMenu, tearoff = 0)
-        effectsMenu.add_cascade(label = 'Enable/Disable',
-                                menu = self.effectsEnableMenu)
-
-        # PARTICLES MENU
-        self.menuBar.addmenu('Particles', 'Particles Operations')
-        # Get a handle on this menu
-        particlesMenu = self.menuBar.component('Particles-menu')
-        # Create new particles object
-        self.menuBar.addmenuitem(
-            'Particles', 'command',
-            'Create New Particles Object',
-            label = 'Create New Particles',
-            command = self.createNewParticles)
-        # Add cascade menus to view and enable, saving a handle
-        particlesConfigureMenu = Menu(particlesMenu, tearoff = 0)
-        particlesMenu.add_cascade(label = 'Configure',
-                                menu = particlesConfigureMenu)
-        self.particlesEnableMenu = Menu(particlesMenu, tearoff = 0)
-        particlesMenu.add_cascade(label = 'Enable/Disable',
-                                menu = self.particlesEnableMenu)
-
-        # FORCE GROUP MENU
-        self.menuBar.addmenu('ForceGroup', 'ForceGroup Operations')
-        # Get a handle on this menu
-        forceGroupMenu = self.menuBar.component('ForceGroup-menu')
-        # Create new particle effect
-        self.menuBar.addmenuitem(
-            'ForceGroup', 'command',
-            'Create New ForceGroup Object',
-            label = 'Create New ForceGroup',
-            command = self.createNewForceGroup)
-        # Add cascade menus to view and enable, saving a handle
-        forceGroupConfigureMenu = Menu(forceGroupMenu, tearoff = 0)
-        forceGroupMenu.add_cascade(label = 'Configure',
-                                menu = forceGroupConfigureMenu)
-        self.forceGroupEnableMenu = Menu(forceGroupMenu, tearoff = 0)
-        forceGroupMenu.add_cascade(label = 'Enable/Disable',
-                                menu = self.forceGroupEnableMenu)
-        
         # PARTICLE MANAGER MENU
         self.menuBar.addmenu('ParticleMgr', 'ParticleMgr Operations')
         self.particleMgrActive = IntVar()
@@ -164,40 +110,59 @@ class ParticlePanel(AppShell):
         self.effectsLabel = Menubutton(labelFrame, width = 10,
                                        relief = RAISED,
                                        borderwidth = 2,
-                                       font=('MSSansSerif', 14, 'bold'),
+                                       font=('MSSansSerif', 12, 'bold'),
                                        activebackground = '#909090')
-        effectsConfigureLabel = Menu(self.effectsLabel, tearoff = 0)
-        self.effectsLabel['menu'] = effectsConfigureLabel
-        self.effectsLabel.pack(side = LEFT, fill = 'x', expand = 0)
+        self.effectsLabelMenu = Menu(self.effectsLabel, tearoff = 0)
+        self.effectsLabel['menu'] = self.effectsLabelMenu
+        self.effectsLabel.pack(side = LEFT, fill = 'x', expand = 1)
+        self.bind(self.effectsLabel,
+                  'Select effect to configure or create new effect')
+        self.effectsLabelMenu.add_command(label = 'Create New Effect',
+                                          command = self.createNewEffect)
+        self.effectsEnableMenu = Menu(self.effectsLabelMenu, tearoff = 0)
+        self.effectsLabelMenu.add_cascade(label = 'Enable/Disable',
+                                          menu = self.effectsEnableMenu)
+        self.effectsLabelMenu.add_separator()
         # Current particles
         self.particlesLabel = Menubutton(labelFrame, width = 10,
                                          relief = RAISED,
                                          borderwidth = 2,
-                                         font=('MSSansSerif', 14, 'bold'),
+                                         font=('MSSansSerif', 12, 'bold'),
                                          activebackground = '#909090')
-        particlesConfigureLabel = Menu(self.particlesLabel, tearoff = 0)
-        self.particlesLabel['menu'] = particlesConfigureLabel
-        self.particlesLabel.pack(side = LEFT, fill = 'x', expand = 0)
+        self.particlesLabelMenu = Menu(self.particlesLabel, tearoff = 0)
+        self.particlesLabel['menu'] = self.particlesLabelMenu
+        self.particlesLabel.pack(side = LEFT, fill = 'x', expand = 1)
+        self.bind(self.particlesLabel,
+                  ('Select particles object to configure ' +
+                   'or add new particles object to current effect' ))
+        self.particlesLabelMenu.add_command(label = 'Create New Particles',
+                                            command = self.createNewParticles)
+        self.particlesEnableMenu = Menu(self.particlesLabelMenu, tearoff = 0)
+        self.particlesLabelMenu.add_cascade(label = 'Enable/Disable',
+                                            menu = self.particlesEnableMenu)
+        self.particlesLabelMenu.add_separator()
         # Current force
         self.forceGroupLabel = Menubutton(labelFrame, width = 10,
                                       relief = RAISED,
                                       borderwidth = 2,
-                                      font=('MSSansSerif', 14, 'bold'),
+                                      font=('MSSansSerif', 12, 'bold'),
                                       activebackground = '#909090')
-        forceGroupConfigureLabel = Menu(self.forceGroupLabel, tearoff = 0)
-        self.forceGroupLabel['menu'] = forceGroupConfigureLabel
-        self.forceGroupLabel.pack(side = LEFT, fill = 'x', expand = 0)
+        self.forceGroupLabelMenu = Menu(self.forceGroupLabel, tearoff = 0)
+        self.forceGroupLabel['menu'] = self.forceGroupLabelMenu
+        self.forceGroupLabel.pack(side = LEFT, fill = 'x', expand = 1)
+        self.bind(self.forceGroupLabel,
+                  ('Select force group to configure ' +
+                   'or add a new force group to current effect'))
+        self.forceGroupLabelMenu.add_command(
+            label = 'Create New ForceGroup',
+            command = self.createNewForceGroup)
+        self.forceGroupEnableMenu = Menu(self.forceGroupLabelMenu, tearoff = 0)
+        self.forceGroupLabelMenu.add_cascade(label = 'Enable/Disable',
+                                             menu = self.forceGroupEnableMenu)
+        self.forceGroupLabelMenu.add_separator()
         # Pack labels
         labelFrame.pack(fill = 'x', expand = 0)
 
-        # These get updated together
-        self.effectsConfigureMenus = [effectsConfigureMenu,
-                                      effectsConfigureLabel]
-        self.particlesConfigureMenus = [particlesConfigureMenu,
-                                        particlesConfigureLabel]
-        self.forceGroupConfigureMenus = [forceGroupConfigureMenu,
-                                         forceGroupConfigureLabel]
-                                 
         # Create the toplevel notebook pages
         self.mainNotebook = Pmw.NoteBook(interior)
         self.mainNotebook.pack(fill = BOTH, expand = 1)
@@ -836,7 +801,7 @@ class ParticlePanel(AppShell):
         if self.forceGroup != None:
             self.forceGroupLabel['text'] = self.forceGroup.getName()
         else:
-            self.forceGroupLabel['text'] = ''
+            self.forceGroupLabel['text'] = 'Force Group'
     
     def updateMenus(self):
         self.updateEffectsMenus()
@@ -846,19 +811,18 @@ class ParticlePanel(AppShell):
     def updateEffectsMenus(self):
         # Get rid of old effects entries if any
         self.effectsEnableMenu.delete(0, 'end')
-        for menu in self.effectsConfigureMenus:
-            menu.delete(0, 'end')
+        self.effectsLabelMenu.delete(2, 'end')
+        self.effectsLabelMenu.add_separator()
         # Add in a checkbutton for each effect (to toggle on/off)
         keys = self.effectsDict.keys()
         keys.sort()
         for name in keys: 
             effect = self.effectsDict[name]
-            for menu in self.effectsConfigureMenus:
-                menu.add_command(
-                    label = effect.getName(),
-                    command = (lambda s = self,
-                               e = effect: s.selectEffectNamed(e.getName()))
-                    )
+            self.effectsLabelMenu.add_command(
+                label = effect.getName(),
+                command = (lambda s = self,
+                           e = effect: s.selectEffectNamed(e.getName()))
+                )
             effectActive = IntVar()
             effectActive.set(effect.isEnabled())
             self.effectsEnableMenu.add_checkbutton(
@@ -871,20 +835,19 @@ class ParticlePanel(AppShell):
     def updateParticlesMenus(self):
         # Get rid of old particles entries if any
         self.particlesEnableMenu.delete(0, 'end')
-        for menu in self.particlesConfigureMenus:
-            menu.delete(0, 'end')
+        self.particlesLabelMenu.delete(2, 'end')
+        self.particlesLabelMenu.add_separator()
         # Add in a checkbutton for each effect (to toggle on/off)
         particles = self.particleEffect.getParticlesList()
         names = map(lambda x: x.getName(), particles)
         names.sort()
         for name in names:
             particle = self.particleEffect.getParticlesNamed(name)
-            for menu in self.particlesConfigureMenus:
-                menu.add_command(
-                    label = name,
-                    command = (lambda s = self,
-                               n = name: s.selectParticlesNamed(n))
-                    )
+            self.particlesLabelMenu.add_command(
+                label = name,
+                command = (lambda s = self,
+                           n = name: s.selectParticlesNamed(n))
+                )
             particleActive = IntVar()
             particleActive.set(particle.isEnabled())
             self.particlesEnableMenu.add_checkbutton(
@@ -897,20 +860,19 @@ class ParticlePanel(AppShell):
     def updateForceGroupMenus(self):
         # Get rid of old forceGroup entries if any
         self.forceGroupEnableMenu.delete(0, 'end')
-        for menu in self.forceGroupConfigureMenus:
-            menu.delete(0, 'end')
+        self.forceGroupLabelMenu.delete(2, 'end')
+        self.forceGroupLabelMenu.add_separator()
         # Add in a checkbutton for each effect (to toggle on/off)
         forceGroupList = self.particleEffect.getForceGroupList()
         names = map(lambda x: x.getName(), forceGroupList)
         names.sort()
         for name in names:
             force = self.particleEffect.getForceGroupNamed(name)
-            for menu in self.forceGroupConfigureMenus:
-                menu.add_command(
-                    label = name,
-                    command = (lambda s = self,
-                               n = name: s.selectForceGroupNamed(n))
-                    )
+            self.forceGroupLabelMenu.add_command(
+                label = name,
+                command = (lambda s = self,
+                           n = name: s.selectForceGroupNamed(n))
+                )
             forceActive = IntVar()
             forceActive.set(force.isEnabled())
             self.forceGroupEnableMenu.add_checkbutton(
@@ -1106,9 +1068,9 @@ class ParticlePanel(AppShell):
         lifespanSpread = factory.getLifespanSpread()
         self.getWidget('Factory', 'Life Span Spread').set(lifespanSpread, 0)
         mass = factory.getMassBase()
-        self.getWidget('Factory', 'Life Span').set(mass, 0)
+        self.getWidget('Factory', 'Mass').set(mass, 0)
         massSpread = factory.getMassSpread()
-        self.getWidget('Factory', 'Life Span Spread').set(massSpread, 0)
+        self.getWidget('Factory', 'Mass Spread').set(massSpread, 0)
         terminalVelocity = factory.getTerminalVelocityBase()
         self.getWidget('Factory', 'Terminal Velocity').set(terminalVelocity, 0)
         terminalVelocitySpread = factory.getTerminalVelocitySpread()
@@ -1471,10 +1433,12 @@ class ParticlePanel(AppShell):
                  color[2]/255.0, color[3]/255.0))
     # Geom #
     def setRendererGeomNode(self, event):
-	node = loader.loadOnce(self.rendererGeomNode.get())
-	if (node == None):
-	    return None
-	self.particles.renderer.setGeomNode(node)
+        node = None
+	nodePath = loader.loadModel(self.rendererGeomNode.get())
+        if nodePath != None:
+            node = nodePath.node()
+	if (node != None):
+            self.particles.renderer.setGeomNode(node)
     # Point #
     def setRendererPointSize(self, size):
 	self.particles.renderer.setPointSize(size)
