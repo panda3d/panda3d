@@ -359,7 +359,7 @@ class ShowBase:
             # Disable OOBE mode.
             self.oobeControl.setOff()
             self.mouseControl.setOn()
-            if not self.oobeVis.isEmpty():
+            if self.oobeVis:
                 self.oobeVis.reparentTo(self.hidden)
             self.cam.reparentTo(self.camera)
             self.oobeCamera.reparentTo(self.hidden)
@@ -392,7 +392,7 @@ class ShowBase:
             self.oobeTrackball.node().setMat(mat)
 
             self.cam.reparentTo(self.oobeCameraTrackball)
-            if not self.oobeVis.isEmpty():
+            if self.oobeVis:
                 self.oobeVis.reparentTo(self.camera)
             self.oobeMode = 1
 
