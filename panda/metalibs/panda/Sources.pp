@@ -15,8 +15,7 @@
     gsgmisc light linmath mathutil net pnm \
     pnmimagetypes pnmimage sgattrib sgmanip sgraph sgraphutil \
     switchnode text tform tiff lerp loader putil effects \
-    audio pandabase \
-//     audio audio_load_midi audio_load_st audio_load_wav pandabase \
+     audio audio_load_midi audio_load_st audio_load_wav pandabase 
 
 #define LOCAL_LIBS downloader event ipc express pandabase
 #define OTHER_LIBS dtool
