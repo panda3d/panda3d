@@ -3,13 +3,18 @@ import Task
 
 class Timer:
 
-    def __init__(self):
+    id = 0
+
+    def __init__(self, name=None):
         """ __init__()
         """
         self.clock = ClockObject.ClockObject.getGlobalClock()
         self.finalT = 0.0
         self.currT = 0.0
-        self.name = 'default-timer'
+        if (name == None):
+            name = 'default-timer-%d' % Timer.id
+            Timer.id += 1
+        self.name = name
         self.started = 0
         self.callback = None
 
@@ -33,7 +38,6 @@ class Timer:
             self.stop()
         self.callback = callback 
         self.finalT = t
-        self.name = 'default-timer'
         self.startT = self.clock.getFrameTime()
         self.currT = 0.0
         taskMgr.spawnMethodNamed(self.__timerTask, self.name + '-run')
@@ -58,7 +62,10 @@ class Timer:
     def restart(self):
         """ restart()
         """
-        self.start(self.finalT, self.name)
+        if (self.callback != None):
+            self.startCallback(self.finalT, self.callback)
+        else:
+            self.start(self.finalT, self.name)
 
     def isStarted(self):
         """ isStarted()
