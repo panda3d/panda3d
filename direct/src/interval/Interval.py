@@ -18,7 +18,7 @@ class Interval(DirectObject):
     playbackCounter = 0
 
     # Class methods
-    def __init__(self, name, duration, openEnded=1, reverse=0):
+    def __init__(self, name, duration, openEnded=1):
         """__init__(name, duration, openEnded, reverse)
         """
         self.name = name
@@ -29,7 +29,6 @@ class Interval(DirectObject):
         self.setTHooks = []
         # Set true if interval responds to setT(t): t>duration
         self.openEnded = openEnded
-        self.reverse = reverse
 
     def getName(self):
         """ getName()

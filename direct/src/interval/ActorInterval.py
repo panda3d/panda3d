@@ -43,7 +43,7 @@ class ActorInterval(Interval.Interval):
         if (name == None):
             name = id
         # Compute duration if no duration specified
-        reverse = 0
+        self.reverse = 0
         if duration == 0.0:
             if (endTime == None):
                 duration = max(self.actor.getDuration(self.animName) - \
@@ -57,10 +57,10 @@ class ActorInterval(Interval.Interval):
         else:
             self.finishTime = endTime
         if (self.startTime > self.finishTime):
-            reverse = 1
+            self.reverse = 1
 
         # Initialize superclass
-        Interval.Interval.__init__(self, name, duration, reverse=reverse)
+        Interval.Interval.__init__(self, name, duration)
         # Update stopEvent
         self.stopEvent = id + '_stopEvent'
         if self.loopAnim:
