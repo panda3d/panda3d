@@ -46,7 +46,6 @@ void AudioManager::set_update_func(AudioManager::UpdateFunc* func) {
 ////////////////////////////////////////////////////////////////////
 void AudioManager::ns_update(void) {
   // handle looping
-  mutex_lock l(_manager_mutex);
   if (_loopset != (LoopSet*)0L)
     for (LoopSet::iterator i=_loopset->begin(); i!=_loopset->end(); ++i)
       if ((*i)->status() == AudioSound::READY)
