@@ -182,7 +182,7 @@ get_persistent_connection() const {
 //               the data.
 //
 //               This only has effect on the nonblocking I/O methods
-//               like request_document(), etc.  The blocking methods
+//               like begin_document(), etc.  The blocking methods
 //               like get_document() always use as much CPU and
 //               bandwidth as they can get.
 ////////////////////////////////////////////////////////////////////
@@ -283,7 +283,7 @@ get_file_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 post_form(const URLSpec &url, const string &body) {
-  begin_request("POST", url, body, false);
+  begin_request("POST", url, body, false, 0, 0);
   run();
   return is_valid();
 }
@@ -296,7 +296,24 @@ post_form(const URLSpec &url, const string &body) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 get_document(const URLSpec &url) {
-  begin_request("GET", url, string(), false);
+  begin_request("GET", url, string(), false, 0, 0);
+  run();
+  return is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_subdocument
+//       Access: Published
+//  Description: Retrieves only the specified byte range of the
+//               indicated document.  If last_byte is 0, it stands for
+//               the last byte of the document.  When a subdocument is
+//               requested, get_file_size() and get_bytes_downloaded()
+//               will report the number of bytes of the subdocument,
+//               not of the complete document.
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPChannel::
+get_subdocument(const URLSpec &url, size_t first_byte, size_t last_byte) {
+  begin_request("GET", url, string(), false, first_byte, last_byte);
   run();
   return is_valid();
 }
@@ -312,17 +329,17 @@ get_document(const URLSpec &url) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 get_header(const URLSpec &url) {
-  begin_request("HEAD", url, string(), false);
+  begin_request("HEAD", url, string(), false, 0, 0);
   run();
   return is_valid();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::request_post_form
+//     Function: HTTPChannel::begin_post_form
 //       Access: Published
 //  Description: Posts form data to a particular URL and retrieves the
 //               response, all using non-blocking I/O.  See
-//               request_document() and post_form().
+//               begin_document() and post_form().
 //
 //               It is important to note that you *must* call run()
 //               repeatedly after calling this method until run()
@@ -332,12 +349,12 @@ get_header(const URLSpec &url) {
 //               may not get posted.
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
-request_post_form(const URLSpec &url, const string &body) {
-  begin_request("POST", url, body, true);
+begin_post_form(const URLSpec &url, const string &body) {
+  begin_request("POST", url, body, true, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::request_document
+//     Function: HTTPChannel::begin_document
 //       Access: Published
 //  Description: Begins a non-blocking request to retrieve a given
 //               document.  This method will return immediately, even
@@ -351,19 +368,51 @@ request_post_form(const URLSpec &url, const string &body) {
 //               is discarded.
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
-request_document(const URLSpec &url) {
-  begin_request("GET", url, string(), true);
+begin_document(const URLSpec &url) {
+  begin_request("GET", url, string(), true, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::request_header
+//     Function: HTTPChannel::begin_subdocument
 //       Access: Published
-//  Description: Begins a non-blocking request to retrieve a given
-//               header.  See request_document() and get_header().
+//  Description: Begins a non-blocking request to retrieve only the
+//               specified byte range of the indicated document.  If
+//               last_byte is 0, it stands for the last byte of the
+//               document.  When a subdocument is requested,
+//               get_file_size() and get_bytes_downloaded() will
+//               report the number of bytes of the subdocument, not of
+//               the complete document.
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
-request_header(const URLSpec &url) {
-  begin_request("HEAD", url, string(), true);
+begin_subdocument(const URLSpec &url, size_t first_byte, size_t last_byte) {
+  begin_request("GET", url, string(), true, first_byte, last_byte);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::begin_header
+//       Access: Published
+//  Description: Begins a non-blocking request to retrieve a given
+//               header.  See begin_document() and get_header().
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+begin_header(const URLSpec &url) {
+  begin_request("HEAD", url, string(), true, 0, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_bytes_downloaded
+//       Access: Published
+//  Description: Returns the number of bytes downloaded during the
+//               last (or current) download_to_file() or
+//               download_to_ram operation().  This can be used in
+//               conjunction with get_file_size() to report the
+//               percent complete (but be careful, since
+//               get_file_size() may return 0 if the server has not
+//               told us the size of the file).
+////////////////////////////////////////////////////////////////////
+INLINE size_t HTTPChannel::
+get_bytes_downloaded() const {
+  return _bytes_downloaded;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -101,17 +101,22 @@ PUBLISHED:
 
   INLINE bool post_form(const URLSpec &url, const string &body);
   INLINE bool get_document(const URLSpec &url);
+  INLINE bool get_subdocument(const URLSpec &url, 
+                              size_t first_byte, size_t last_byte);
   INLINE bool get_header(const URLSpec &url);
 
-  INLINE void request_post_form(const URLSpec &url, const string &body);
-  INLINE void request_document(const URLSpec &url);
-  INLINE void request_header(const URLSpec &url);
+  INLINE void begin_post_form(const URLSpec &url, const string &body);
+  INLINE void begin_document(const URLSpec &url);
+  INLINE void begin_subdocument(const URLSpec &url, 
+                                size_t first_byte, size_t last_byte);
+  INLINE void begin_header(const URLSpec &url);
   bool run();
 
   ISocketStream *read_body();
   bool download_to_file(const Filename &filename);
   bool download_to_ram(Ramfile *ramfile);
 
+  INLINE size_t get_bytes_downloaded() const;
   INLINE bool is_download_complete() const;
 
 private:
@@ -135,12 +140,14 @@ private:
   bool run_download_to_ram();
 
   void begin_request(const string &method, const URLSpec &url, 
-                     const string &body, bool nonblocking);
+                     const string &body, bool nonblocking,
+                     size_t first_byte, size_t last_byte);
 
   bool http_getline(string &str);
   bool http_send(const string &str);
   bool parse_http_response(const string &line);
   bool parse_http_header();
+  bool parse_content_range(const string &content_range);
 
   INLINE void check_socket();
   bool verify_server(X509_NAME *subject) const;
@@ -185,6 +192,8 @@ private:
   string _method;
   string _header;
   string _body;
+  size_t _first_byte;
+  size_t _last_byte;
 
   enum DownloadDest {
     DD_none,
@@ -209,6 +218,7 @@ private:
   Headers _headers;
 
   size_t _file_size;
+  size_t _bytes_downloaded;
 
   // These members are used to maintain the current state while
   // communicating with the server.  We need to store everything in

@@ -56,8 +56,11 @@ HTTPChannel(HTTPClient *client) :
   _max_updates_per_second = 1.0f / _seconds_per_update;
   _bytes_per_update = int(_max_bytes_per_second * _seconds_per_update);
   _nonblocking = false;
+  _first_byte = 0;
+  _last_byte = 0;
   _read_index = 0;
   _file_size = 0;
+  _bytes_downloaded = 0;
   _status_code = 0;
   _status_string = string();
   _proxy = _client->get_proxy();
@@ -393,7 +396,7 @@ read_body() {
 //  Description: Specifies the name of a file to download the
 //               resulting document to.  This should be called
 //               immediately after get_document() or
-//               request_document() or related functions.
+//               begin_document() or related functions.
 //
 //               In the case of the blocking I/O methods like
 //               get_document(), this function will download the
@@ -401,7 +404,7 @@ read_body() {
 //               successfully downloaded, false otherwise.
 //
 //               In the case of non-blocking I/O methods like
-//               request_document(), this function simply indicates an
+//               begin_document(), this function simply indicates an
 //               intention to download to the indicated file.  It
 //               returns true if the file can be opened for writing,
 //               false otherwise, but the contents will not be
@@ -440,7 +443,7 @@ download_to_file(const Filename &filename) {
 //  Description: Specifies a Ramfile object to download the
 //               resulting document to.  This should be called
 //               immediately after get_document() or
-//               request_document() or related functions.
+//               begin_document() or related functions.
 //
 //               In the case of the blocking I/O methods like
 //               get_document(), this function will download the
@@ -448,7 +451,7 @@ download_to_file(const Filename &filename) {
 //               was successfully downloaded, false otherwise.
 //
 //               In the case of non-blocking I/O methods like
-//               request_document(), this function simply indicates an
+//               begin_document(), this function simply indicates an
 //               intention to download to the indicated Ramfile.  It
 //               returns true if the file can be opened for writing,
 //               false otherwise, but the contents will not be
@@ -859,10 +862,22 @@ run_reading_header() {
   _realm = string();
 
   // Look for key properties in the header fields.
+  if (get_status_code() == 206) {
+    string content_range = get_header_value("Content-Range");
+    if (!content_range.empty()) {
+      parse_content_range(content_range);
+    }
+  }
+
   _file_size = 0;
   string content_length = get_header_value("Content-Length");
   if (!content_length.empty()) {
     _file_size = atoi(content_length.c_str());
+
+  } else if (get_status_code() == 206 && _last_byte != 0) {
+    // Well, we didn't get a content-length from the server, but we
+    // can infer the number of bytes based on the range we requested.
+    _file_size = _last_byte - _first_byte + 1;
   }
   _redirect = get_header_value("Location");
 
@@ -1126,7 +1141,8 @@ run_download_to_file() {
   int ch = _body_stream->get();
   while (!_body_stream->eof() && !_body_stream->fail()) {
     _download_to_file.put(ch);
-    if (do_throttle && ++count > _bytes_per_update) {
+    _bytes_downloaded++;
+    if (do_throttle && (++count > _bytes_per_update)) {
       // That's enough for now.
       return true;
     }
@@ -1169,7 +1185,8 @@ run_download_to_ram() {
   int ch = _body_stream->get();
   while (!_body_stream->eof() && !_body_stream->fail()) {
     _download_to_ramfile->_data += (char)ch;
-    if (do_throttle && ++count > _bytes_per_update) {
+    _bytes_downloaded++;
+    if (do_throttle && (++count > _bytes_per_update)) {
       // That's enough for now.
       return true;
     }
@@ -1196,12 +1213,14 @@ run_download_to_ram() {
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
 begin_request(const string &method, const URLSpec &url, const string &body,
-              bool nonblocking) {
+              bool nonblocking, size_t first_byte, size_t last_byte) {
   reset_download_to();
   _status_code = 0;
   _status_string = string();
   _redirect_trail.clear();
   _last_status_code = 0;
+  _file_size = 0;
+  _bytes_downloaded = 0;
 
   // Changing the proxy, or the nonblocking state, is grounds for
   // dropping the old connection, if any.
@@ -1218,6 +1237,8 @@ begin_request(const string &method, const URLSpec &url, const string &body,
   _method = method;
   set_url(url);
   _body = body;
+  _first_byte = first_byte;
+  _last_byte = last_byte;
   make_header();
   make_request_text(string());
 
@@ -1445,6 +1466,52 @@ parse_http_header() {
     _current_field_value = string();
   }
 
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::parse_content_range
+//       Access: Private
+//  Description: Interprets the "Content-Range" header in the reply,
+//               and fills in _first_byte and _last_byte appropriately
+//               if the header response can be understood.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+parse_content_range(const string &content_range) {
+  // First, get the units indication.
+  size_t p = 0;
+  while (p < content_range.length() && !isspace(content_range[p])) {
+    p++;
+  }
+
+  string units = content_range.substr(0, p);
+  while (p < content_range.length() && isspace(content_range[p])) {
+    p++;
+  }
+
+  if (units == "bytes") {
+    const char *c_str = content_range.c_str();
+    char *endptr;
+    if (p < content_range.length() && isdigit(content_range[p])) {
+      long first_byte = strtol(c_str + p, &endptr, 10);
+      p = endptr - c_str;
+      if (p < content_range.length() && content_range[p] == '-') {
+        p++;
+        if (p < content_range.length() && isdigit(content_range[p])) {
+          long last_byte = strtol(c_str + p, &endptr, 10);
+          p = endptr - c_str;
+          
+          if (last_byte >= first_byte) {
+            _first_byte = first_byte;
+            _last_byte = last_byte;
+            return true;
+          }
+        }
+      }
+    }
+  }
+    
+  // Invalid or unhandled response.
   return false;
 }
 
@@ -1770,6 +1837,15 @@ make_header() {
       stream
         << "Connection: close\r\n";
     }
+  }
+
+  if (_last_byte != 0) {
+    stream 
+      << "Range: bytes=" << _first_byte << "-" << _last_byte << "\r\n";
+
+  } else if (_first_byte != 0) {
+    stream 
+      << "Range: bytes=" << _first_byte << "-\r\n";
   }
 
   if (!_body.empty()) {
