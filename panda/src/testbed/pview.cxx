@@ -18,6 +18,14 @@
 
 #include "pandaFramework.h"
 
+#ifndef HAVE_GETOPT
+  #include "gnu_getopt.h"
+#else
+  #ifdef HAVE_GETOPT_H
+    #include <getopt.h>
+  #endif
+#endif
+
 PandaFramework framework;
 
 void
@@ -43,10 +51,62 @@ event_W(CPT_Event, void *) {
   }
 }
 
+void 
+usage() {
+  cerr <<
+    "Usage: pview [opts] model [model ...]\n";
+    "       pview -h\n";
+}
+
+void 
+help() {
+  usage();
+  cerr << "\n"
+    "pview opens a quick Panda window for viewing one or more models and/or\n"
+    "animations.\n\n"
+
+    "Options:\n\n"
+    
+    "  -c\n"
+    "      Automatically center models within the viewing window on startup.\n"
+    "      This can also be achieved with the 'c' hotkey at runtime.\n\n"
+
+    "  -h\n"
+    "      Display this help text.\n\n";
+}
+
 int
 main(int argc, char *argv[]) {
   framework.open_framework(argc, argv);
   framework.set_window_title("Panda Viewer");
+
+  bool auto_center = false;
+
+  extern char *optarg;
+  extern int optind;
+  static const char *optflags = "ch";
+  int flag = getopt(argc, argv, optflags);
+
+  while (flag != EOF) {
+    switch (flag) {
+    case 'c':
+      auto_center = true;
+      break;
+
+    case 'h':
+      help();
+      return 1;
+    case '?':
+      usage();
+      return 1;
+    default:
+      cerr << "Unhandled switch: " << flag << endl;
+      break;
+    }
+    flag = getopt(argc, argv, optflags);
+  }
+  argc -= (optind - 1);
+  argv += (optind - 1);
 
   WindowFramework *window = framework.open_window();
   if (window != (WindowFramework *)NULL) {
@@ -62,6 +122,10 @@ main(int argc, char *argv[]) {
       window->load_models(framework.get_models(), argc, argv);
     }
     window->loop_animations();
+
+    if (auto_center) {
+      window->center_trackball(framework.get_models());
+    }
 
     framework.enable_default_keys();
     framework.get_event_handler().add_hook("shift-w", event_W, NULL);
