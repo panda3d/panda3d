@@ -83,11 +83,13 @@ public:
   typedef vector<Element>::difference_type difference_type;
   typedef vector<Element>::size_type size_type;
 
+PUBLISHED:
   INLINE PointerToArray();
   INLINE PointerToArray(size_type n);
   INLINE PointerToArray(size_type n, const Element &value);
   INLINE PointerToArray(const PointerToArray<Element> &copy);
 
+public:
   // Duplicating the interface of vector.  The following member
   // functions are all const, because they do not reassign the
   // pointer--they operate only within the vector itself, which is
@@ -101,19 +103,18 @@ public:
   // Equality and comparison operators are pointerwise for
   // PointerToArrays, not elementwise as in vector.
 
+PUBLISHED:
   INLINE size_type size() const;
+
+public:
   INLINE size_type max_size() const;
   INLINE bool empty() const;
 
   // Functions specific to vectors.
   INLINE void reserve(size_type n);
   INLINE size_type capacity() const;
-#ifndef WIN32_VC
-  INLINE reference operator[](size_type n) const;
-#endif
   INLINE reference front() const;
   INLINE reference back() const;
-  INLINE void push_back(const Element &x);
   INLINE iterator insert(iterator position) const;
   INLINE iterator insert(iterator position, const Element &x) const;
   INLINE void insert(iterator position, size_type n, const Element &x) const;
@@ -125,9 +126,18 @@ public:
   INLINE void insert(iterator position, const Element *first, const Element *last) const;
 #endif
 
-  INLINE void pop_back() const;
   INLINE void erase(iterator position) const;
   INLINE void erase(iterator first, iterator last) const;
+
+PUBLISHED:
+#if !defined(WIN32_VC) || defined(CPPPARSER)
+  INLINE reference operator [](size_type n) const;
+#endif
+  INLINE void push_back(const Element &x);
+  INLINE void pop_back();
+  INLINE void make_empty();
+
+public:
 
   INLINE operator Element *() const;
   INLINE Element *p() const;

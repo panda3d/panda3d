@@ -266,11 +266,13 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
   BuilderBucket bucket;
   setup_bucket(bucket, parent, egg_prim);
 
-  LMatrix4d mat = egg_prim->get_vertex_to_node();
+  LMatrix4d mat;
 
   if (transform != NULL) {
-    mat = (*transform) * mat;
-  } 
+    mat = (*transform);
+  } else {
+    mat = egg_prim->get_vertex_to_node();
+  }
 
   BuilderPrim bprim;
   bprim.set_type(BPT_poly);
@@ -340,11 +342,13 @@ make_indexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
   bucket.set_texcoords(_comp_verts_maker._texcoords);
   bucket.set_colors(_comp_verts_maker._colors);
 
-  LMatrix4d mat = egg_prim->get_vertex_to_node();
+  LMatrix4d mat;
 
   if (transform != NULL) {
-    mat = (*transform) * mat;
-  } 
+    mat = (*transform);
+  } else {
+    mat = egg_prim->get_vertex_to_node();
+  }
 
   BuilderPrimI bprim;
   bprim.set_type(BPT_poly);
@@ -359,12 +363,7 @@ make_indexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
     EggPrimitive::const_iterator vi;
     for (vi = egg_prim->begin(); vi != egg_prim->end(); ++vi) {
       EggVertex *egg_vert = *vi;
-      EggVertex::GroupRef::const_iterator gri;
-      for (gri = egg_vert->gref_begin(); gri != egg_vert->gref_end(); ++gri) {
-	EggGroup *egg_joint = (*gri);
-	double membership = egg_joint->get_vertex_membership(egg_vert);
-	_comp_verts_maker.add_joint(egg_joint, membership);
-      }
+      _comp_verts_maker.add_vertex_joints(egg_vert, egg_prim);
     }
     _comp_verts_maker.mark_space();
 
@@ -390,20 +389,7 @@ make_indexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
     // Set up the ComputedVerticesMaker for the coordinate space of
     // the vertex.
     _comp_verts_maker.begin_new_space();
-    if (egg_vert->gref_size() == 0) {
-      // This vertex belongs where the primitive is.
-      EggGroupNode *egg_joint = egg_prim->get_parent();
-      _comp_verts_maker.add_joint(egg_joint, 1.0);
-
-    } else {
-      // This vertex belongs in the joint or joints that reference it.
-      EggVertex::GroupRef::const_iterator gri;
-      for (gri = egg_vert->gref_begin(); gri != egg_vert->gref_end(); ++gri) {
-	EggGroup *egg_joint = (*gri);
-	double membership = egg_joint->get_vertex_membership(egg_vert);
-	_comp_verts_maker.add_joint(egg_joint, membership);
-      }
-    }
+    _comp_verts_maker.add_vertex_joints(egg_vert, egg_prim);
     _comp_verts_maker.mark_space();
 
     int vindex =

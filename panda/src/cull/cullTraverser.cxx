@@ -510,6 +510,10 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
   }
   node->draw_traverse();
 
+  // We have to get a new _now timestamp, just in case either of the
+  // above traversals changed it.
+  _now = last_graph_update(_graph_type);
+
   AllTransitionsWrapper trans;
 
   UpdateSeq last_update = arc->get_last_update();

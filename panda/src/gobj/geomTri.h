@@ -39,10 +39,11 @@ public:
   static void register_with_read_factory(void);
   static TypedWriteable *make_GeomTri(const FactoryParams &params);
 
-public:
+PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
+public:
   static void init_type() {
     Geom::init_type();
     register_type(_type_handle, "GeomTri",

@@ -11,7 +11,7 @@ vector<Element> ConstPointerToArray<Element>::_empty_array;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -23,7 +23,7 @@ PointerToArray() :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -36,7 +36,7 @@ PointerToArray(size_type n) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -49,7 +49,7 @@ PointerToArray(size_type n, const Element &value) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -117,7 +117,7 @@ rend() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::size
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -177,26 +177,6 @@ capacity() const {
   return _ptr->capacity();
 }
 
-#ifndef WIN32_VC
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::Indexing operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class Element>
-INLINE PointerToArray<Element>::reference PointerToArray<Element>::
-operator[](size_type n) const {
-  nassertd(_ptr != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new RefCountObj<vector<Element> >);
-  }
-  nassertd(!_ptr->empty()) {
-    _ptr->push_back(Element());
-  }
-  nassertr(n < _ptr->size(), _ptr->operator[](0));
-  return _ptr->operator[](n);
-}
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::front
 //       Access: Public
@@ -229,20 +209,6 @@ back() const {
     _ptr->push_back(Element());
   }
   return _ptr->back();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::push_back
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class Element>
-INLINE void PointerToArray<Element>::
-push_back(const Element &x) {
-  if (_ptr == NULL) {
-    reassign(new RefCountObj<vector<Element> >);
-  }
-  _ptr->push_back(x);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -319,21 +285,6 @@ insert(iterator position, const Element *first, const Element *last) const {
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::pop_back
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class Element>
-INLINE void PointerToArray<Element>::
-pop_back() const {
-  nassertd(_ptr != NULL) {
-    ((PointerToArray<Element> *)this)->reassign(new RefCountObj<vector<Element> >);
-  }
-  nassertv(!_ptr->empty());
-  _ptr->pop_back();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::erase
 //       Access: Public
 //  Description: 
@@ -363,6 +314,72 @@ erase(iterator first, iterator last) const {
   nassertv(first >= _ptr->begin() && first <= _ptr->end());
   nassertv(last >= _ptr->begin() && last <= _ptr->end());
   _ptr->erase(first, last);
+}
+
+#if !defined(WIN32_VC) || defined(CPPPARSER)
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::Indexing operator
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE PointerToArray<Element>::reference PointerToArray<Element>::
+operator [](size_type n) const {
+  nassertd(_ptr != NULL) {
+    ((PointerToArray<Element> *)this)->reassign(new RefCountObj<vector<Element> >);
+  }
+  nassertd(!_ptr->empty()) {
+    _ptr->push_back(Element());
+  }
+  nassertr(n < _ptr->size(), _ptr->operator[](0));
+  return _ptr->operator[](n);
+}
+#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::push_back
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void PointerToArray<Element>::
+push_back(const Element &x) {
+  if (_ptr == NULL) {
+    reassign(new RefCountObj<vector<Element> >);
+  }
+  _ptr->push_back(x);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::pop_back
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void PointerToArray<Element>::
+pop_back() {
+  nassertd(_ptr != NULL) {
+    ((PointerToArray<Element> *)this)->reassign(new RefCountObj<vector<Element> >);
+  }
+  nassertv(!_ptr->empty());
+  _ptr->pop_back();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::make_empty
+//       Access: Published
+//  Description: Empties the array pointed to.  This is different from
+//               clear(), which reassigns the pointer to a NULL
+//               pointer.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void PointerToArray<Element>::
+make_empty() {
+  nassertd(_ptr != NULL) {
+    ((PointerToArray<Element> *)this)->reassign(new RefCountObj<vector<Element> >);
+  }
+  nassertv(!_ptr->empty());
+  _ptr->clear();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -3,6 +3,172 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_binding
+//       Access: Published
+//  Description: Returns the GeomBindType which indicates the
+//               assignment of colors (or normals, etc.) to the
+//               primitives.
+////////////////////////////////////////////////////////////////////
+INLINE GeomBindType Geom::
+get_binding(int attr) const {
+  return _bind[attr];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_coords_array
+//       Access: Published
+//  Description: Returns the array of vertex coordinates associated
+//               with the Geom.  This must have binding type
+//               G_PER_VERTEX.  It may either be indexed or
+//               nonindexed, depending on whether get_coords_index()
+//               returns a NULL array.
+////////////////////////////////////////////////////////////////////
+INLINE const PTA_Vertexf &Geom::
+get_coords_array() const {
+  return _coords;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_normals_array
+//       Access: Published
+//  Description: Returns the array of normals associated with the
+//               Geom.  This may have any binding type.  It may either
+//               be indexed or nonindexed, depending on whether
+//               get_normals_index() returns a NULL array.
+////////////////////////////////////////////////////////////////////
+INLINE const PTA_Normalf &Geom::
+get_normals_array() const {
+  return _norms;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_colors_array
+//       Access: Published
+//  Description: Returns the array of colors associated with the
+//               Geom.  This may have any binding type.  It may either
+//               be indexed or nonindexed, depending on whether
+//               get_colors_index() returns a NULL array.
+////////////////////////////////////////////////////////////////////
+INLINE const PTA_Colorf &Geom::
+get_colors_array() const {
+  return _colors;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_texcoords_array
+//       Access: Published
+//  Description: Returns the array of texcoords associated with the
+//               Geom.  This may have a binding type of G_PER_VERTEX
+//               or G_OFF.  It may either be indexed or nonindexed,
+//               depending on whether get_texcoords_index() returns a
+//               NULL array.
+////////////////////////////////////////////////////////////////////
+INLINE const PTA_TexCoordf &Geom::
+get_texcoords_array() const {
+  return _texcoords;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_coords_index
+//       Access: Published
+//  Description: Returns the array of indices that, if nonempty, will
+//               be used to traverse the vertices in coords_array.
+////////////////////////////////////////////////////////////////////
+INLINE const PTA_ushort &Geom::
+get_coords_index() const {
+  return _vindex;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_normals_index
+//       Access: Published
+//  Description: Returns the array of indices that, if nonempty, will
+//               be used to traverse the vertices in normals_array.
+////////////////////////////////////////////////////////////////////
+INLINE const PTA_ushort &Geom::
+get_normals_index() const {
+  return _nindex;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_colors_index
+//       Access: Published
+//  Description: Returns the array of indices that, if nonempty, will
+//               be used to traverse the vertices in colors_array.
+////////////////////////////////////////////////////////////////////
+INLINE const PTA_ushort &Geom::
+get_colors_index() const {
+  return _cindex;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_texcoords_index
+//       Access: Published
+//  Description: Returns the array of indices that, if nonempty, will
+//               be used to traverse the vertices in texcoords_array.
+////////////////////////////////////////////////////////////////////
+INLINE const PTA_ushort &Geom::
+get_texcoords_index() const {
+  return _tindex;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::set_num_prims
+//       Access: Public
+//  Description: Sets the number of primitives in the Geom.  The
+//               meaning of this depends on the precise type of Geom;
+//               generally, each prim is one triangle in a GeomTri, or
+//               one tristrip in a GeomTristrip.
+////////////////////////////////////////////////////////////////////
+INLINE void Geom::
+set_num_prims(int num) { 
+  _numprims = num; 
+  make_dirty(); 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_num_prims
+//       Access: Public
+//  Description: Returns the number of primitives in the Geom.
+////////////////////////////////////////////////////////////////////
+INLINE int Geom::
+get_num_prims(void) const { 
+  return _numprims; 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::set_lengths
+//       Access: Public
+//  Description: Sets the array that indicates the length (number of
+//               vertices) of each primitive.  This array should have
+//               get_num_prims() entries.  This only has meaning for
+//               composite type Geoms, like a GeomTristrip; it is
+//               ignored for simple Geoms, like a GeomTri.
+////////////////////////////////////////////////////////////////////
+INLINE void Geom::
+set_lengths(const PTA_int &lengths) {
+  _primlengths = lengths;
+  make_dirty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_lengths
+//       Access: Public
+//  Description: Returns the array the indicates the length (number of
+//               vertices) of each primitive.  This array will
+//               generally only be defined for composite type Geoms,
+//               like a GeomTristrip; it is meaningless for simple
+//               Geoms.
+////////////////////////////////////////////////////////////////////
+INLINE PTA_int Geom::
+get_lengths() const {
+  return _primlengths;
+}
+
+
+
 ////////////////////////////////////////////////////////////////////
 //
 // make_vertex_iterator(), get_next_vertex()
@@ -33,8 +199,7 @@
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE Geom::
-VertexIterator Geom::
+INLINE Geom::VertexIterator Geom::
 make_vertex_iterator() const {
   check_config();
   VertexIterator i;

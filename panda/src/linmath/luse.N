@@ -73,3 +73,13 @@ forcetype LOrientationf
 forcetype LQuaterniond
 forcetype LRotationd
 forcetype LOrientationd
+
+forcetype PTA_Vertexf
+forcetype PTA_Normalf
+forcetype PTA_TexCoordf
+forcetype PTA_Colorf
+
+renametype PTA_Vertexf PTA_Vertexf
+renametype PTA_Normalf PTA_Normalf
+renametype PTA_TexCoordf PTA_TexCoordf
+renametype PTA_Colorf PTA_Colorf

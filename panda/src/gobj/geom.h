@@ -33,6 +33,7 @@ class BamWriter;
 ////////////////////////////////////////////////////////////////////
 // Defines
 ////////////////////////////////////////////////////////////////////
+BEGIN_PUBLISH
 enum GeomBindType
 {
     G_OFF,
@@ -41,6 +42,7 @@ enum GeomBindType
     G_PER_COMPONENT,
     G_PER_VERTEX
 };
+END_PUBLISH
 static const int num_GeomBindTypes = 5;
 
 enum GeomAttrType
@@ -126,10 +128,7 @@ public:
 public:
  
   void get_min_max( Vertexf& min, Vertexf& max ) const;
- 
-  GeomBindType get_binding( int attr ) const {
-    return _bind[attr];
-  }
+  
  
   void set_coords( const PTA_Vertexf &coords,
 		   GeomBindType bind,
@@ -160,12 +159,24 @@ public:
   void get_texcoords( PTA_TexCoordf &texcoords,
 		      GeomBindType &bind,
 		      PTA_ushort &tindex) const;
+
+PUBLISHED: 
+  INLINE GeomBindType get_binding(int attr) const;
+  INLINE const PTA_Vertexf &get_coords_array() const;
+  INLINE const PTA_Normalf &get_normals_array() const;
+  INLINE const PTA_Colorf &get_colors_array() const;
+  INLINE const PTA_TexCoordf &get_texcoords_array() const;
+  INLINE const PTA_ushort &get_coords_index() const;
+  INLINE const PTA_ushort &get_normals_index() const;
+  INLINE const PTA_ushort &get_colors_index() const;
+  INLINE const PTA_ushort &get_texcoords_index() const;
+
+public: 
+  INLINE void set_num_prims(int num);
+  INLINE int get_num_prims(void) const;
  
-  INLINE void set_num_prims(int num) { _numprims = num; make_dirty(); }
-  INLINE int get_num_prims(void) const { return _numprims; }
- 
-  void set_lengths( const PTA_int &lengths );
-  PTA_int get_lengths() const;
+  INLINE void set_lengths(const PTA_int &lengths);
+  INLINE PTA_int get_lengths() const;
  
   virtual int get_num_vertices_per_prim() const=0;
   virtual int get_num_more_vertices_than_components() const=0;

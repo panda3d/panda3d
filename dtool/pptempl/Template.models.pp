@@ -98,6 +98,7 @@ install-bam : $[install_bam_targets]
 install-other : $[install_other_targets]
 
 install : install-other install-bam
+uninstall : uninstall-other uninstall-bam uninstall-egg
 
 clean-bam :
 #if $[bam_targets]
@@ -284,6 +285,15 @@ $[dest]/$[local] : $[source_prefix]$[local]
   #end egg
 #end install_egg
 
+// Egg file uninstallation.
+uninstall-egg :
+#forscopes install_egg
+  #define files $[patsubst %,$[install_model_dir]/%,$[SOURCES] $[UNPAL_SOURCES]]
+  #if $[files]
+	rm -f $[files]
+  #endif
+#end install_egg
+
 
 // Bam file installation.
 #forscopes install_egg
@@ -299,6 +309,16 @@ $[dest]/$[local] : $[sourcedir]/$[local]
   #end egg
 #end install_egg
 
+// Bam file uninstallation.
+uninstall-bam :
+#forscopes install_egg
+  #define files $[patsubst %.egg,$[install_model_dir]/%.bam,$[SOURCES] $[UNPAL_SOURCES]]
+  #if $[files]
+	rm -f $[files]
+  #endif
+#end install_egg
+
+
 
 // Miscellaneous file installation.
 #forscopes install_audio install_dna install_icons install_misc
@@ -312,6 +332,16 @@ $[dest]/$[local] : $[local]
 
   #end file
 #end install_audio install_dna install_icons install_misc
+
+// Miscellaneous file uninstallation.
+uninstall-other:
+#forscopes install_audio install_dna install_icons install_misc
+  #define files $[patsubst %,$[install_model_dir]/%,$[SOURCES]]
+  #if $[files]
+	rm -f $[files]
+  #endif
+#end install_audio install_dna install_icons install_misc
+
 
 #end Makefile
 
@@ -363,6 +393,9 @@ install-egg : egg pal repal $[subdirs:%=install-egg-%]
 install-bam : egg pal repal $[subdirs:%=install-bam-%]
 install-other : $[subdirs:%=install-other-%]
 install : egg pal repal $[subdirs:%=install-%]
+uninstall-egg : $[subdirs:%=uninstall-egg-%]
+uninstall-bam : $[subdirs:%=uninstall-bam-%]
+uninstall-other : $[subdirs:%=uninstall-other-%]
 uninstall : $[subdirs:%=uninstall-%]
 
 #
@@ -470,6 +503,21 @@ install-other-$[dirname] :
 #formap dirname subdirs
 install-$[dirname] : 
 	cd ./$[PATH] && $(MAKE) install
+#end dirname
+
+#formap dirname subdirs
+uninstall-egg-$[dirname] :
+	cd ./$[PATH] && $(MAKE) uninstall-egg
+#end dirname
+
+#formap dirname subdirs
+uninstall-bam-$[dirname] :
+	cd ./$[PATH] && $(MAKE) uninstall-bam
+#end dirname
+
+#formap dirname subdirs
+uninstall-other-$[dirname] :
+	cd ./$[PATH] && $(MAKE) uninstall-other
 #end dirname
 
 #formap dirname subdirs

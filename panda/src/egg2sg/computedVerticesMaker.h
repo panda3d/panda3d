@@ -26,10 +26,26 @@
 class ComputedVertices;
 class CharacterMaker;
 class EggNode;
+class EggVertex;
 
 ///////////////////////////////////////////////////////////////////
 // 	 Class : ComputedVerticesMaker
-// Description :
+// Description : An object to collect together all the vertices of a
+//               character, indicate what the transform space of each
+//               vertex is (which may be a soft-skinned combination of
+//               one or more joints), and identify which vertices may
+//               be shared together.
+//
+//               Generally, you use a ComputedVerticesMaker by first
+//               defining a transform space via begin_new_space(),
+//               repeated calls to add_joint() (or
+//               add_vertex_joints()), and then mark_space().  Having
+//               done that, you can then add any number of vertices to
+//               the space via add_vertex(), add_normal(), etc., and
+//               it will return an index number for each vertex,
+//               collapsing duplicate vertices together properly.
+//               When you are ready to define a new space, simply
+//               repeat the process from begin_new_space().
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG ComputedVerticesMaker {
 public:
@@ -37,6 +53,7 @@ public:
  
   void begin_new_space();
   void add_joint(EggNode *joint, double membership);
+  void add_vertex_joints(EggVertex *vertex, EggNode *object);
   void mark_space();
 
   int add_vertex(const Vertexd &vertex, const EggMorphVertexList &morphs,

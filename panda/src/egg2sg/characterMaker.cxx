@@ -264,7 +264,7 @@ make_static_primitive(EggPrimitive *egg_primitive, EggGroupNode *prim_home) {
   LMatrix4d transform = 
     egg_primitive->get_vertex_frame() *
     prim_home->get_node_frame_inv();
-  
+
   _loader.make_nonindexed_primitive(egg_primitive, node, &transform);
 }
 
@@ -280,7 +280,7 @@ make_dynamic_primitive(EggPrimitive *egg_primitive, EggGroupNode *prim_home) {
   LMatrix4d transform = 
     egg_primitive->get_vertex_frame() *
     prim_home->get_node_frame_inv();
-  
+
   _loader.make_indexed_primitive(egg_primitive, node, &transform,
 				 _comp_verts_maker);
 }
@@ -342,18 +342,37 @@ determine_primitive_home(EggPrimitive *egg_primitive) {
   nassertr(home != NULL, NULL);
 
   // So, all the vertices are assigned to the same group.  This means
-  // the polygon belongs entirely to one joint.  If that joint happens
-  // to have a <DCS> flag, and will therefore be an explicit animated
-  // node, we might as well put the polygon under that joint.
-  // Otherwise, we'll leave the polygon under the character node and
-  // animate it there explicitly.
+  // the polygon belongs entirely to one joint.
 
+  // If the group is not, in fact, a joint then we return the first
+  // joint above the group.
+  EggGroup *egg_group = (EggGroup *)NULL;
   if (home->is_of_type(EggGroup::get_class_type())) {
-    EggGroup *egg_group = DCAST(EggGroup, home);
-    if (egg_group->get_dcs_flag()) {
-      return home;
+    egg_group = DCAST(EggGroup, home);
+  }
+  while (egg_group != (EggGroup *)NULL && 
+	 egg_group->get_group_type() != EggGroup::GT_joint &&
+	 egg_group->get_dart_type() == EggGroup::DT_none) {
+    nassertr(egg_group->get_parent() != (EggGroupNode *)NULL, NULL);
+    home = egg_group->get_parent();
+    egg_group = (EggGroup *)NULL;
+    if (home->is_of_type(EggGroup::get_class_type())) {
+      egg_group = DCAST(EggGroup, home);
     }
   }
 
-  return NULL;
+  if (egg_group != (EggGroup *)NULL &&
+      egg_group->get_group_type() == EggGroup::GT_joint &&
+      !egg_group->get_dcs_flag()) {
+    // If the home is a joint without a <DCS> flag--this is the normal
+    // case--we'll move the polygon under the character node and
+    // animate it from there explicitly.
+    return NULL;
+  }
+
+  // Otherwise, if the joint *does* have a <DCS> flag, we'll create
+  // static geometry that we parent directly to the joint node.
+  // We'll also create static geometry for polygons that have no
+  // explicit joint assignment.
+  return home;
 }

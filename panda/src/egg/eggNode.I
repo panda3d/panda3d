@@ -168,7 +168,7 @@ get_vertex_frame_inv() const {
 //     Function: EggNode::get_node_frame_inv
 //       Access: Public
 //  Description: Returns the inverse of the matrix returned by
-//               get_vertex_frame().  See get_vertex_frame().
+//               get_node_frame().  See get_node_frame().
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4d &EggNode::
 get_node_frame_inv() const {

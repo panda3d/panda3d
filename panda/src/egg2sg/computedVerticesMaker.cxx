@@ -10,6 +10,8 @@
 #include <character.h>
 #include <computedVertices.h>
 #include <eggNode.h>
+#include <eggGroup.h>
+#include <eggVertex.h>
 
 #include <algorithm>
 
@@ -64,6 +66,53 @@ add_joint(EggNode *joint, double membership) {
   } else {
     // This is the first time we've added this joint.
     _current_jw[joint] = membership;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ComputedVerticesMaker::add_vertex_joints
+//       Access: Public
+//  Description: Adds the joints the vertex belongs to, along with
+//               their respective memberships, to the current
+//               transform space definition.
+////////////////////////////////////////////////////////////////////
+void ComputedVerticesMaker::
+add_vertex_joints(EggVertex *vertex, EggNode *object) {
+  if (vertex->gref_size() == 0) {
+    // This vertex belongs in the same group as the primitive that
+    // contains it.
+    EggGroupNode *egg_joint = object->get_parent();
+
+    // We actually walk up to find the first group above that that's a
+    // joint, or the character root itself, so we won't (a) be fooled
+    // by meaningless transforms on non-joints within a character
+    // hierarchy, or (b) consider meaninglessly different groups to be
+    // significant.
+    EggGroup *egg_group = (EggGroup *)NULL;
+    if (egg_joint->is_of_type(EggGroup::get_class_type())) {
+      egg_group = DCAST(EggGroup, egg_joint);
+    }
+    while (egg_group != (EggGroup *)NULL && 
+	   egg_group->get_group_type() != EggGroup::GT_joint &&
+	   egg_group->get_dart_type() == EggGroup::DT_none) {
+      nassertv(egg_group->get_parent() != (EggGroupNode *)NULL);
+      egg_joint = egg_group->get_parent();
+      egg_group = (EggGroup *)NULL;
+      if (egg_joint->is_of_type(EggGroup::get_class_type())) {
+	egg_group = DCAST(EggGroup, egg_joint);
+      }
+    }
+
+    add_joint(egg_joint, 1.0);
+    
+  } else {
+    // This vertex belongs in the joint or joints that reference it.
+    EggVertex::GroupRef::const_iterator gri;
+    for (gri = vertex->gref_begin(); gri != vertex->gref_end(); ++gri) {
+      EggGroup *egg_joint = (*gri);
+      double membership = egg_joint->get_vertex_membership(vertex);
+      add_joint(egg_joint, membership);
+    }
   }
 }
 

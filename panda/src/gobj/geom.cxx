@@ -307,27 +307,6 @@ get_texcoords(PTA_TexCoordf &texcoords, GeomBindType &bind,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::set_lengths
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Geom::
-set_lengths(const PTA_int &lengths) {
-  _primlengths = lengths;
-  make_dirty();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_lengths
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-PTA_int Geom::
-get_lengths() const {
-  return _primlengths;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Geom::explode
 //       Access: Public, Virtual
 //  Description: If the Geom is a composite type such as a tristrip,
@@ -424,23 +403,15 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 output(ostream &out) const {
-  out << get_type() << " (" << _numprims << ") ";
-  out << "v:";
-  if ( _coords != (Vertexf*)0L ) out << "1 "; else out << "0 ";
-  out << "n:";
-  if ( _norms != (Normalf*)0L ) out << "1 "; else out << "0 ";
-  out << "c:";
-  if ( _colors != (Colorf*)0L ) out << "1 "; else out << "0 ";
-  out << "t:";
-  if ( _texcoords != (TexCoordf*)0L ) out << "1 "; else out << "0 ";
-  out << "vi:";
-  if ( _vindex != (ushort*)0L ) out << "1 "; else out << "0 ";
-  out << "ni:";
-  if ( _nindex != (ushort*)0L ) out << "1 "; else out << "0 ";
-  out << "ci:";
-  if ( _cindex != (ushort*)0L ) out << "1 "; else out << "0 ";
-  out << "ti:";
-  if ( _tindex != (ushort*)0L ) out << "1 "; else out << "0 ";
+  out << get_type() << " (" << _numprims << ")"
+      << " v:" << _coords.size()
+      << " n:" << _norms.size()
+      << " c:" << _colors.size()
+      << " t:" << _texcoords.size()
+      << " vi:" << _vindex.size()
+      << " ni:" << _nindex.size()
+      << " ci:" << _cindex.size()
+      << " ti:" << _tindex.size();
 }
 
 ////////////////////////////////////////////////////////////////////
