@@ -265,9 +265,9 @@ idle() {
 
 // STL function object for sorting labels in order by the collector's
 // sort index, used in compute_page(), below.
-class SortCollectorLabels {
+class SortCollectorLabels1 {
 public:
-  SortCollectorLabels(const PStatClientData *client_data) :
+  SortCollectorLabels1(const PStatClientData *client_data) :
     _client_data(client_data) {
   }
   bool operator () (int a, int b) const {
@@ -315,7 +315,7 @@ compute_page(const PStatFrameData &frame_data) {
       }
     }
 
-    SortCollectorLabels sort_labels(client_data);
+    SortCollectorLabels1 sort_labels(client_data);
     sort(_labels.begin(), _labels.end(), sort_labels);
 
     _labels_changed = true;

@@ -439,9 +439,9 @@ idle() {
 
 // STL function object for sorting labels in order by the collector's
 // sort index, used in update_labels(), below.
-class SortCollectorLabels {
+class SortCollectorLabels2 {
 public:
-  SortCollectorLabels(const PStatClientData *client_data) :
+  SortCollectorLabels2(const PStatClientData *client_data) :
     _client_data(client_data) {
   }
   bool operator () (int a, int b) const {
@@ -469,7 +469,7 @@ update_labels() {
     _labels.push_back(collector);
   }
 
-  SortCollectorLabels sort_labels(get_monitor()->get_client_data());
+  SortCollectorLabels2 sort_labels(get_monitor()->get_client_data());
   sort(_labels.begin(), _labels.end(), sort_labels);
 
   int collector = level->get_collector();
