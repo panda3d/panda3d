@@ -62,35 +62,35 @@ class EXPCL_DTOOLCONFIG ConfigTable {
       ConfigString NextWord(const ConfigString& S);
       ConfigString PopNextWord(ConfigString& S);
       void ParseConfigFile(istream&, const ConfigString&);
-      void ReadConfigFile(void);
+      void ReadConfigFile();
       void ParseCommandEnv(ConfigString&, const ConfigString&);
-      void ParseArgs(void);
-      INLINE void ConfigDbgDefault(void);
-      INLINE void ReadArgsDefault(void);
-      INLINE void ReadEnvsDefault(void);
-      INLINE void PathSepDefault(void);
-      INLINE void FileSepDefault(void);
-      INLINE void ConfigNameDefault(void);
-      INLINE void ConfigSuffixDefault(void);
-      INLINE void ConfigArgsDefault(void);
-      INLINE void ConfigPathDefault(void);
-      INLINE void ConfigCmtDefault(void);
-      INLINE void ArgSuffixDefault(void);
-      INLINE void CommandStubDefault(void);
-      void MicroConfig(void);
-      void GetData(void);
+      void ParseArgs();
+      INLINE void ConfigDbgDefault();
+      INLINE void ReadArgsDefault();
+      INLINE void ReadEnvsDefault();
+      INLINE void PathSepDefault();
+      INLINE void FileSepDefault();
+      INLINE void ConfigNameDefault();
+      INLINE void ConfigSuffixDefault();
+      INLINE void ConfigArgsDefault();
+      INLINE void ConfigPathDefault();
+      INLINE void ConfigCmtDefault();
+      INLINE void ArgSuffixDefault();
+      INLINE void CommandStubDefault();
+      void MicroConfig();
+      void GetData();
    protected:
-      ConfigTable(void) : _initializing(true) {}
+      ConfigTable() : _initializing(true) {}
    public:
-      static ConfigTable* Instance(void);
-      bool AmInitializing(void);
+      static ConfigTable* Instance();
+      bool AmInitializing();
       static bool TrueOrFalse(const ConfigString& in, bool def = false);
       bool Defined(const ConfigString& sym, const ConfigString qual="");
       SymEnt Get(const ConfigString& sym, const ConfigString qual = "");
       const Symbol& GetSym(const ConfigString& sym,
                            const ConfigString qual = "");
-      INLINE ConfigString GetConfigPath(void) const;
-      INLINE bool IsConfigDbg(void) { return configdbg; };
+      INLINE ConfigString GetConfigPath() const;
+      INLINE bool IsConfigDbg() { return configdbg; };
 };
 
 #include "configTable.I"

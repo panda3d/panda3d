@@ -35,7 +35,7 @@
 #include "mouseButton.h"
 #include "get_config_path.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 ConfigureDef(config_util);
 NotifyCategoryDef(util, "");

@@ -67,15 +67,13 @@ void ConfigTable::DeComment(ConfigString& S) {
   }
 }
 
-bool ConfigTable::IsComment(const ConfigString& S)
-{
+bool ConfigTable::IsComment(const ConfigString& S) {
   // Returns true if the line begins with the comment delimiter,
   // whether or not the delimiter is followed by whitespace.
   return (S.substr(0, configcmt.length()) == configcmt);
 }
 
-void ConfigTable::UpCase(ConfigString& S)
-{
+void ConfigTable::UpCase(ConfigString& S) {
    for (ConfigString::iterator i=S.begin(); i!=S.end(); ++i)
       (*i) = toupper(*i);
 }
@@ -93,8 +91,7 @@ ConfigString ConfigTable::PopNextWord(ConfigString& S) {
   return ret;
 }
 
-void ConfigTable::ParseConfigFile(istream& is, const ConfigString& Filename)
-{
+void ConfigTable::ParseConfigFile(istream& is, const ConfigString& Filename) {
    ConfigString line;
 
    while (!is.eof() && !is.fail()) {
@@ -133,7 +130,7 @@ void ConfigTable::ParseConfigFile(istream& is, const ConfigString& Filename)
    }
 }
 
-void ConfigTable::ReadConfigFile(void) {
+void ConfigTable::ReadConfigFile() {
   // The configpath variable lists the environment variables that
   // themselves should be considered to contain search paths for
   // Configrc files.  This is one level of indirection from the
@@ -284,8 +281,7 @@ void ConfigTable::ParseCommandEnv(ConfigString& S, const ConfigString& sym)
    }
 }
 
-void ConfigTable::ParseArgs(void)
-{
+void ConfigTable::ParseArgs() {
    int n = 0;
    int num_args = ExecutionEnvironment::get_num_args();
 
@@ -336,8 +332,7 @@ void ConfigTable::ParseArgs(void)
    }
 }
 
-void ConfigTable::MicroConfig(void)
-{
+void ConfigTable::MicroConfig() {
 /*
 #ifndef NDEBUG
    NotifySeverity mcs = microconfig_cat->get_severity();
@@ -356,8 +351,9 @@ void ConfigTable::MicroConfig(void)
 #endif * NDEBUG *
 */
    string cc = ExecutionEnvironment::get_environment_variable("CONFIG_CONFIG");
-   if (microconfig_cat->is_spam())
-      microconfig_cat->spam() << "CONFIG_CONFIG = '" << cc << "'" << endl;
+   if (microconfig_cat->is_spam()) {
+     microconfig_cat->spam() << "CONFIG_CONFIG = '" << cc << "'" << endl;
+   }
    bool cdbg = false;
    bool psep = false;
    bool fsep = false;
@@ -375,9 +371,10 @@ void ConfigTable::MicroConfig(void)
       if (configconfig.length() > 1) {
          ConfigString assign = "=";
          ConfigString sep = configconfig.substr(0, 1);
-         if (microconfig_cat->is_spam())
+         if (microconfig_cat->is_spam()) {
             microconfig_cat->spam() << "separator character is: '" << sep
                                     << "'" << endl;
+         }
          typedef std::vector<ConfigString> strvec;
          strvec sv;
          size_t q = 1;
@@ -616,7 +613,7 @@ void ConfigTable::MicroConfig(void)
    }
 }
 
-void ConfigTable::GetData(void) {
+void ConfigTable::GetData() {
   MicroConfig();
 #ifndef DISABLE_CONFIG
   ReadConfigFile();
@@ -644,7 +641,7 @@ void ConfigTable::GetData(void) {
 #endif  // DISABLE_CONFIG
 }
 
-ConfigTable* ConfigTable::Instance(void) {
+ConfigTable* ConfigTable::Instance() {
   if (_instance == (ConfigTable*)0L) {
     _instance = new ConfigTable;
     _instance->GetData();
@@ -654,7 +651,7 @@ ConfigTable* ConfigTable::Instance(void) {
   return _instance;
 }
 
-bool ConfigTable::AmInitializing(void) {
+bool ConfigTable::AmInitializing() {
   return _initializing;
 }
 
@@ -663,10 +660,11 @@ bool ConfigTable::TrueOrFalse(const ConfigString& in, bool def) {
   ConfigString S = in;
   UpCase(S);
   if (S[0] == '#') {
-    if (S[1] == 'F')
+    if (S[1] == 'F') {
       ret = false;
-    else if (S[1] == 'T')
+    } else if (S[1] == 'T') {
       ret = true;
+    }
   } else if (S == "0") {
     ret = false;
   } else if (S == "1") {

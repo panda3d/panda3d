@@ -19,7 +19,7 @@
 #ifndef NOTIFYSEVERITY_H
 #define NOTIFYSEVERITY_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 BEGIN_PUBLISH
 enum NotifySeverity {

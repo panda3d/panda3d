@@ -50,7 +50,6 @@ NotifyCategory(const string &fullname, const string &basename,
 
   if (_fullname.empty()) {
     config_name = "notify-level";
-
   } else if (!_basename.empty()) {
     config_name = "notify-level-" + _basename;
   }
@@ -76,7 +75,6 @@ NotifyCategory(const string &fullname, const string &basename,
     // parent's.
     if (_parent != (NotifyCategory *)NULL) {
       _severity = _parent->_severity;
-
     } else {
       // Unless, of course, we're the root.
       _severity = NS_info;

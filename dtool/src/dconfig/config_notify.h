@@ -19,7 +19,7 @@
 #ifndef CONFIG_NOTIFY_H
 #define CONFIG_NOTIFY_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 #include "dconfig.h"
 
 ConfigureDecl(config_notify, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);

@@ -31,7 +31,7 @@
 #include "virtualFileMountSystem.h"
 #include "virtualFileSimple.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 ConfigureDef(config_express);
 NotifyCategoryDef(express, "");

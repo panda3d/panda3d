@@ -19,7 +19,7 @@
 #ifndef DCONFIG_H
 #define DCONFIG_H
 
-#include <dtoolbase.h>
+#include "dtoolbase.h"
 
 #include "config_setup.h"
 #include "config_dconfig.h"
@@ -64,15 +64,15 @@ EXPCL_DTOOLCONFIG extern int total_num_get;
 template <class GetConfig>
 class Config {
    protected:
-      static void ConfigFunc(void);
+      static void ConfigFunc();
       static void Flag(bool);
    public:
-      Config(void);
-      ~Config(void);
-      static bool         AmInitializing(void);
-      static ConfigString Name(void);
-      static bool         Flag(void);
-      static void         Init(void);
+      Config();
+      ~Config();
+      static bool         AmInitializing();
+      static ConfigString Name();
+      static bool         Flag();
+      static void         Init();
       static bool         Defined(const ConfigString& sym);
       static ConfigString Get(const ConfigString sym);
       static ConfigTable::Symbol& GetAll(const ConfigString,
@@ -89,14 +89,12 @@ class Config {
 // Implementation follows
 
 template<class GetConfig>
-void Config<GetConfig>::ConfigFunc(void)
-{
+void Config<GetConfig>::ConfigFunc() {
   GetConfig::config_func();
 }
 
 template<class GetConfig>
-bool Config<GetConfig>::AmInitializing(void)
-{
+bool Config<GetConfig>::AmInitializing() {
    ConfigTable* tab = ConfigTable::Instance();
    if (tab == (ConfigTable *)0L)
       return Flag();
@@ -104,26 +102,22 @@ bool Config<GetConfig>::AmInitializing(void)
 }
 
 template<class GetConfig>
-ConfigString Config<GetConfig>::Name(void)
-{
+ConfigString Config<GetConfig>::Name() {
    return GetConfig::get_name();
 }
 
 template<class GetConfig>
-bool Config<GetConfig>::Flag(void)
-{
+bool Config<GetConfig>::Flag() {
    return GetConfig::_flag;
 }
 
 template<class GetConfig>
-void Config<GetConfig>::Flag(bool f)
-{
+void Config<GetConfig>::Flag(bool f) {
    GetConfig::_flag = f;
 }
 
 template<class GetConfig>
-void Config<GetConfig>::Init(void)
-{
+void Config<GetConfig>::Init() {
    if (Flag())
       return;
    total_time_config_init -= clock();
@@ -161,14 +155,12 @@ void Config<GetConfig>::Init(void)
 }
 
 template<class GetConfig>
-Config<GetConfig>::Config(void)
-{
+Config<GetConfig>::Config() {
    Init();
 }
 
 template<class GetConfig>
-Config<GetConfig>::~Config(void)
-{
+Config<GetConfig>::~Config() {
 }
 
 template<class GetConfig>

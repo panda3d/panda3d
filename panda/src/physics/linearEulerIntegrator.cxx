@@ -185,10 +185,10 @@ child_integrate(Physical *physical,
     
     accel_vec*=viscosityDamper;
     
-    // x = x + v * t + 0.5 * a * t * t
-    pos += vel_vec * dt + 0.5 * accel_vec * dt * dt;
     // v = v + a * t
     vel_vec += accel_vec * dt;
+    // x = x + v * t + 0.5 * a * t * t
+    pos += vel_vec * dt + 0.5 * accel_vec * dt * dt;
     #endif //]
     
     // and store them back.

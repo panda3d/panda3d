@@ -17,57 +17,57 @@
 ////////////////////////////////////////////////////////////////////
 
 
-INLINE void ConfigTable::ConfigDbgDefault(void) {
+INLINE void ConfigTable::ConfigDbgDefault() {
   // this should not be called if  CONFIG_CONFIG=:configdbg=1 
   configdbg = false;
   microconfig_cat->set_severity(NS_info);
   dconfig_cat->set_severity(NS_info);
 }
 
-INLINE void ConfigTable::ReadArgsDefault(void) {
+INLINE void ConfigTable::ReadArgsDefault() {
   readargs = true;
 }
 
-INLINE void ConfigTable::ReadEnvsDefault(void) {
+INLINE void ConfigTable::ReadEnvsDefault() {
   readenvs = true;
 }
 
-INLINE void ConfigTable::PathSepDefault(void) {
+INLINE void ConfigTable::PathSepDefault() {
   pathsep = ": ";
 }
 
-INLINE void ConfigTable::FileSepDefault(void) {
+INLINE void ConfigTable::FileSepDefault() {
   filesep = "/";
 }
 
-INLINE void ConfigTable::ConfigNameDefault(void) {
+INLINE void ConfigTable::ConfigNameDefault() {
   configname = "Configrc";
 }
 
-INLINE void ConfigTable::ConfigSuffixDefault(void) {
+INLINE void ConfigTable::ConfigSuffixDefault() {
   configsuffix = "";
 }
 
-INLINE void ConfigTable::ConfigArgsDefault(void) {
+INLINE void ConfigTable::ConfigArgsDefault() {
   configargs = "";
 }
 
-INLINE void ConfigTable::ConfigPathDefault(void) {
+INLINE void ConfigTable::ConfigPathDefault() {
   configpath = "CFG_PATH";
 }
 
-INLINE void ConfigTable::ConfigCmtDefault(void) {
+INLINE void ConfigTable::ConfigCmtDefault() {
   configcmt = "#";
 }
 
-INLINE void ConfigTable::ArgSuffixDefault(void) {
+INLINE void ConfigTable::ArgSuffixDefault() {
   argsuffix = "_ARGS";
 }
 
-INLINE void ConfigTable::CommandStubDefault(void) {
+INLINE void ConfigTable::CommandStubDefault() {
   commandstub = "CONFIG";
 }
 
-INLINE ConfigString ConfigTable::GetConfigPath(void) const {
+INLINE ConfigString ConfigTable::GetConfigPath() const {
   return configpath;
 }
