@@ -37,7 +37,7 @@ public:
   virtual Projection *make_copy() const;
   virtual LMatrix4f get_projection_mat(CoordinateSystem cs = CS_default) const;
 
-  virtual Geom* make_geometry(const Colorf &color = Colorf(0.0, 1.0, 0.0, 1.0),
+  virtual Geom* make_geometry(const Colorf &color = Colorf(0.0f, 1.0f, 0.0f, 1.0f),
                               CoordinateSystem cs = CS_default) const;
 
   virtual BoundingVolume *make_bounds(CoordinateSystem cs = CS_default) const;

@@ -165,9 +165,9 @@ extrude(const LPoint2f &point2d, LPoint3f &origin, LVector3f &direction,
 
   // Scale the point from (-1,1) to the range of the frustum.
 
-  LPoint2f scaled(_frustum._l + 0.5 * (point2d[0] + 1.0) *
+  LPoint2f scaled(_frustum._l + 0.5f * (point2d[0] + 1.0f) *
                   (_frustum._r - _frustum._l),
-                  _frustum._b + 0.5 * (point2d[1] + 1.0) *
+                  _frustum._b + 0.5f * (point2d[1] + 1.0f) *
                   (_frustum._t - _frustum._b));
 
   LVector3f near_vector =
@@ -211,9 +211,9 @@ project(const LPoint3f &point3d, LPoint2f &point2d,
     return false;
   }
 
-  point2d.set((scaled[0] - _frustum._l) * 2.0 /
-              (_frustum._r - _frustum._l) - 1.0,
-              (scaled[1] - _frustum._b) * 2.0 /
-              (_frustum._t - _frustum._b) - 1.0);
+  point2d.set((scaled[0] - _frustum._l) * 2.0f /
+              (_frustum._r - _frustum._l) - 1.0f,
+              (scaled[1] - _frustum._b) * 2.0f /
+              (_frustum._t - _frustum._b) - 1.0f);
   return true;
 }

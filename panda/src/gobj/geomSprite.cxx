@@ -39,8 +39,8 @@ GeomSprite::
 GeomSprite(Texture *tex, bool alpha_disable) :
   _texture(tex), _alpha_disable(alpha_disable) 
 {
-  _ll_uv.set(0.0, 0.0);
-  _ur_uv.set(1.0, 1.0);
+  _ll_uv.set(0.0f, 0.0f);
+  _ur_uv.set(1.0f, 1.0f);
   _x_texel_ratio.clear();
   _y_texel_ratio.clear();
 

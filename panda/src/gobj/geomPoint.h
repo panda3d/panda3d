@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomPoint : public Geom {
 public:
-  GeomPoint() : Geom() { _size = 1.0; }
+  GeomPoint() : Geom() { _size = 1.0f; }
   virtual Geom *make_copy() const;
 
   virtual void print_draw_immediate() const;

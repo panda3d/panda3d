@@ -28,7 +28,7 @@
 class EXPCL_PANDA GeomLine : public Geom
 {
 public:
-  GeomLine( void ) : Geom() { _width = 1.0; }
+  GeomLine( void ) : Geom() { _width = 1.0f; }
   virtual Geom *make_copy() const;
   virtual void print_draw_immediate( void ) const { }
   virtual void draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc);
