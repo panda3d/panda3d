@@ -16,10 +16,10 @@ from direct.task import Task
 sc = None
 
 class ShadowCaster:
-    texXSize = 256
-    texYSize = 256
+    texXSize = 128
+    texYSize = 128
     
-    def __init__(self, lightPath, objectPath):
+    def __init__(self, lightPath, objectPath, filmX, filmY):
         self.lightPath = lightPath
         self.objectPath = objectPath
         self.groundPath = None
@@ -49,8 +49,9 @@ class ShadowCaster:
         # camera.  The initial state will render everything in a
         # flat-shaded gray, as if it were a shadow.
         initial = NodePath('initial')
-        initial.setColor(0.5, 0.5, 0.5, 1, 1)
+        initial.setColor(0.6, 0.6, 0.6, 1, 1)
         initial.setTextureOff(2)
+        initial.setLightOff(2)
         self.camera.setInitialState(initial.getState())
 
         # Use an orthographic lens for this camera instead of the
@@ -59,7 +60,7 @@ class ShadowCaster:
         # the film size large enough to render a typical avatar (but
         # not so large that we lose detail in the texture).
         self.lens = OrthographicLens()
-        self.lens.setFilmSize(4, 6)
+        self.lens.setFilmSize(filmX, filmY)
         self.camera.setLens(self.lens)
 
         # Finally, we'll need a unique TextureStage to apply this
@@ -132,10 +133,86 @@ def avatarShadow():
     if sc != None:
         sc.clear()
         
-    sc = ShadowCaster(lightPath, objectPath)
+    sc = ShadowCaster(lightPath, objectPath, 4, 6)
 
     # Naively, just apply the shadow to everything in the world.  It
     # would probably be better to use a little restraint.
     sc.setGround(render)
 
     return sc
+
+def piratesAvatarShadow():
+    a = avatarShadow()
+    # Force the lod to be 0 at all times
+    base.localAvatar.getGeomNode().getChild(1).node().forceSwitch(0)
+    return a
+    
+def arbitraryShadow(node):
+    # Turn off the existing drop shadow, if any
+    if hasattr(node, "dropShadow"):
+        base.localAvatar.dropShadow.hide()
+
+    # Set up a new node to hold the "light": this is an abitrary point
+    # somewhere above the node, looking down, as if from the sun.
+    objectPath = node
+    shadowCamera = objectPath.attachNewNode('shadowCamera')
+    lightPath = shadowCamera.attachNewNode('lightPath')
+
+    # We can change this position at will to change the angle of the
+    # sun.
+    lightPath.setPos(50, 0, 50)
+
+    # We need a task to keep the shadowCamera rotated in the same
+    # direction relative to render (otherwise, the shadow seems to
+    # rotate when you rotate your avatar, which is strange).  We can't
+    # just use a compass effect, since that doesn't work on cameras.
+    def shadowCameraRotate(task, shadowCamera = shadowCamera):
+        shadowCamera.setHpr(render, 0, 0, 0)
+        lightPath.lookAt(shadowCamera, 0, 0, 3)
+        return Task.cont
+
+    taskMgr.remove('shadowCamera')
+    taskMgr.add(shadowCameraRotate, 'shadowCamera')    
+
+    global sc
+    if sc != None:
+        sc.clear()
+        
+    sc = ShadowCaster(lightPath, objectPath, 100, 100)
+
+    # Naively, just apply the shadow to everything in the world.  It
+    # would probably be better to use a little restraint.
+    sc.setGround(render)
+
+    return sc
+
+def testShadow():
+##    a = piratesAvatarShadow()
+    """
+from direct.showbase.ShadowDemo import *
+from direct.interval.IntervalGlobal import *
+b = loader.loadModel('/i/beta/PotC/Maya/Pirates/scenes/models/sets/buildings/spanish_buildings/TavernIntExt/tavern_ext/bar.egg')
+bs = arbitraryShadow(b)
+s = loader.loadModel('smiley')
+s.reparentTo(bs.lightPath)
+b.reparentTo((base.localAvatar))
+a = AmbientLight('cloudAmbientHi')
+a.setColor(Vec4(0.9, 0.9, 0.9, 1.000))
+aNP = s.attachNewNode(a.upcastToPandaNode())
+b.setLight(aNP)
+d = DirectionalLight("chernabogDirectionalLight")
+d.setDirection(Vec3(0,1,0))
+d.setColor(Vec4(1))
+#d.setColor(Vec4(0.9, 0.7, 0.7, 1.000))
+dNP = s.attachNewNode(d.upcastToPandaNode())
+b.setLight(dNP)
+
+ival = Sequence(LerpPosInterval(bs.lightPath, 0.0, Vec3(-200,0,50)),
+                LerpPosInterval(bs.lightPath, 10.0, Vec3(-200,0,200)),
+                LerpPosInterval(bs.lightPath, 10.0, Vec3(200,0,200)),
+                LerpPosInterval(bs.lightPath, 10.0, Vec3(200,0,50)),
+)
+ival.loop()
+
+
+    """
