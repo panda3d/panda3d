@@ -45,12 +45,11 @@ class MultiTrack(Interval):
 	    Go to time t
 	"""
 	for track in self.tlist:
-            tEnd = track.getDuration()
             # Compare time with track's end times
-            if (t > tEnd):
-                # If t > tEnd, only call if just crossing over
+            if (t > track.duration):
+                # If t > track.duration, only call if just crossing over
                 # or this is an IVAL_INIT event
-                if (self.prev_t < tEnd) or (event == IVAL_INIT):
+                if (self.prev_t < track.duration) or (event == IVAL_INIT):
                     track.setT(t, event)
             else:
                 # Update track

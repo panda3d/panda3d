@@ -252,17 +252,15 @@ class LerpFunctionInterval(Interval):
         if (t >= self.duration):
             # Set to end value
 	    apply(self.function, [self.toData] + self.extraArgs)
+        elif self.duration == 0.0:
+            # Zero duration, just use endpoint
+            apply(self.function, [self.toData] + self.extraArgs)
         else:
             # In the middle of the lerp, compute appropriate blended value
-            try:
-                bt = self.blendType(t/self.duration)
-                data = (self.fromData * (1 - bt)) + (self.toData * bt)
-                # Evaluate function
-                apply(self.function, [data] + self.extraArgs)
-            except ZeroDivisionError:
-                # Zero duration, just use endpoint
-                apply(self.function, [self.toData] + self.extraArgs)
-
+            bt = self.blendType(t/self.duration)
+            data = (self.fromData * (1 - bt)) + (self.toData * bt)
+            # Evaluate function
+            apply(self.function, [data] + self.extraArgs)
     def getBlend(self, blendType):
         """__getBlend(self, string)
         Return the C++ blend class corresponding to blendType string

@@ -30,6 +30,7 @@ class DirectCameraControl(PandaObject):
             ['h', self.homeCam],
             ['i', self.toggleMarkerVis],
             ['m', self.moveToFit],
+            ['n', self.pickNextCOA],
             ['u', self.orbitUprightCam],
             ['U', self.uprightCam],
             [`1`, self.spawnMoveToView, 1],
@@ -69,31 +70,7 @@ class DirectCameraControl(PandaObject):
             # And then spawn task to determine mouse mode
             node, hitPt, hitPtDist = direct.iRay.pickGeom(
                 fIntersectUnpickable = 1)
-            coa = Point3(0)
-            if self.fUpdateCOA and node:
-                # Set center of action
-                coa.assign(hitPt)
-                coaDist = hitPtDist
-                # Handle case of bad coa point (too close or too far)
-                if ((coaDist < (1.1 * direct.dr.near)) or
-                    (coaDist > direct.dr.far)):
-                    # Just use existing point
-                    coa.assign(self.coaMarker.getPos(direct.camera))
-                    coaDist = Vec3(coa - ZERO_POINT).length()
-                    if coaDist < (1.1 * direct.dr.near):
-                        coa.set(0,100,0)
-                        coaDist = 100
-            else:
-                # If no intersection point or COA is locked:
-                # Use existing point
-                coa.assign(self.coaMarker.getPos(direct.camera))
-                coaDist = Vec3(coa - ZERO_POINT).length()
-                # Check again its not to close 
-                if coaDist < (1.1 * direct.dr.near):
-                    coa.set(0,100,0)
-                    coaDist = 100
-            # Update coa and marker
-            self.updateCoa(coa, coaDist)
+            self.computeCOA(node, hitPt, hitPtDist)
             # Start manipulation
             self.spawnXZTranslateOrHPanYZoom()
             # END MOUSE IN CENTRAL REGION
@@ -277,6 +254,38 @@ class DirectCameraControl(PandaObject):
 
     def toggleCOALock(self):
         self.fUpdateCOA = 1 - self.fUpdateCOA
+
+    def pickNextCOA(self):
+        """ Cycle through collision handler entries """
+        node, hitPt, hitPtDist = direct.iRay.pickNext()
+        self.computeCOA(node, hitPt, hitPtDist)
+
+    def computeCOA(self, node, hitPt, hitPtDist):
+        coa = Point3(0)
+        if self.fUpdateCOA and node:
+            # Set center of action
+            coa.assign(hitPt)
+            coaDist = hitPtDist
+            # Handle case of bad coa point (too close or too far)
+            if ((coaDist < (1.1 * direct.dr.near)) or
+                (coaDist > direct.dr.far)):
+                # Just use existing point
+                coa.assign(self.coaMarker.getPos(direct.camera))
+                coaDist = Vec3(coa - ZERO_POINT).length()
+                if coaDist < (1.1 * direct.dr.near):
+                    coa.set(0,100,0)
+                    coaDist = 100
+        else:
+            # If no intersection point or COA is locked:
+            # Use existing point
+            coa.assign(self.coaMarker.getPos(direct.camera))
+            coaDist = Vec3(coa - ZERO_POINT).length()
+            # Check again its not to close 
+            if coaDist < (1.1 * direct.dr.near):
+                coa.set(0,100,0)
+                coaDist = 100
+        # Update coa and marker
+        self.updateCoa(coa, coaDist)
 
     def updateCoa(self, cam2point, coaDist = None):
         self.coa.set(cam2point[0], cam2point[1], cam2point[2])

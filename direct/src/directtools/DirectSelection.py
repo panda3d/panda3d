@@ -395,7 +395,10 @@ class SelectionRay:
         self.rayCollisionNode.addSolid( self.ray )
         # Create a queue to hold the collision results
         self.cq = CollisionHandlerQueue()
+        # Number of entries in CollisionHandlerQueue
         self.numEntries = 0
+        # Current entry in collision queue
+        self.cqIndex = 0
         # And a traverser to do the actual collision tests
         self.ct = CollisionTraverser( RenderRelation.getClassType() )
         # Let the traverser know about the queue and the collision node
@@ -413,13 +416,13 @@ class SelectionRay:
 
     def pickGeom(self, targetNodePath = render, fIntersectUnpickable = 0):
         self.collideWithGeom()
-        numEntries = self.pick(targetNodePath,
-                               direct.dr.mouseX,
-                               direct.dr.mouseY)
-        # Init index
-        index = -1
+        self.pick(targetNodePath,
+                  direct.dr.mouseX,
+                  direct.dr.mouseY)
+        # Init self.cqIndex
+        self.cqIndex = -1
         # Pick out the closest object that isn't a widget
-        for i in range(0,numEntries):
+        for i in range(0,self.numEntries):
             entry = self.cq.getEntry(i)
             node = entry.getIntoNode()
             # Don't pick hidden nodes
@@ -427,7 +430,7 @@ class SelectionRay:
                 pass
             # Can pick unpickable, use the first visible node
             elif fIntersectUnpickable:
-                index = i
+                self.cqIndex = i
                 break
             # Is it a named node?, If so, see if it has a name
             elif issubclass(node.__class__, NamedNode):
@@ -435,17 +438,17 @@ class SelectionRay:
                 if name in self.unpickable:
                     pass
                 else:
-                    index = i
+                    self.cqIndex = i
                     break
             # Not hidden and not one of the widgets, use it
             else:
-                index = i
+                self.cqIndex = i
                 break
         # Did we hit an object?
-        if(index >= 0):
+        if(self.cqIndex >= 0):
             # Yes!
             # Find hit point in parent's space
-            hitPt = self.parentToHitPt(index)
+            hitPt = self.parentToHitPt(self.cqIndex)
             hitPtDist = Vec3(hitPt - ZERO_POINT).length()
             return (node, hitPt, hitPtDist)
         else:
@@ -453,11 +456,11 @@ class SelectionRay:
 
     def pickWidget(self, targetNodePath = render):
         self.collideWithWidget()
-        numEntries = self.pick(targetNodePath,
-                               direct.dr.mouseX,
-                               direct.dr.mouseY)
+        self.pick(targetNodePath,
+                  direct.dr.mouseX,
+                  direct.dr.mouseY)
         # Did we hit a widget?
-        if numEntries:
+        if self.numEntries:
             # Yes!
             # Entry 0 is the closest hit point if multiple hits
             minPt = 0
@@ -482,12 +485,24 @@ class SelectionRay:
         self.cq.sortEntries()
         return self.numEntries
 
+    def pickNext(self):
+        if self.cqIndex >= 0:
+            self.cqIndex = (self.cqIndex + 1) % self.numEntries
+            entry = self.cq.getEntry(self.cqIndex)
+            node = entry.getIntoNode()
+            # Find hit point in parent's space
+            hitPt = self.parentToHitPt(self.cqIndex)
+            hitPtDist = Vec3(hitPt - ZERO_POINT).length()
+            return (node, hitPt, hitPtDist)
+        else:
+            return (None, ZERO_POINT, 0)
+
     def pickGeom3D(self, targetNodePath = render, origin = Point3(0),
                    dir = Vec3(0,0,-1), fIntersectUnpickable = 0):
         self.collideWithGeom()
         numEntries = self.pick3D(targetNodePath, origin, dir)
-        # Init index
-        index = -1
+        # Init self.cqIndex
+        self.cqIndex = -1
         # Pick out the closest object that isn't a widget
         for i in range(0,numEntries):
             entry = self.cq.getEntry(i)
@@ -497,7 +512,7 @@ class SelectionRay:
                 pass
             # Can pick unpickable, use the first visible node
             elif fIntersectUnpickable:
-                index = i
+                self.cqIndex = i
                 break
             # Is it a named node?, If so, see if it has a name
             elif issubclass(node.__class__, NamedNode):
@@ -505,17 +520,17 @@ class SelectionRay:
                 if name in self.unpickable:
                     pass
                 else:
-                    index = i
+                    self.cqIndex = i
                     break
             # Not hidden and not one of the widgets, use it
             else:
-                index = i
+                self.cqIndex = i
                 break
         # Did we hit an object?
-        if(index >= 0):
+        if(self.cqIndex >= 0):
             # Yes!
             # Find hit point in parent's space
-            hitPt = self.parentToHitPt(index)
+            hitPt = self.parentToHitPt(self.cqIndex)
             hitPtDist = Vec3(hitPt - ZERO_POINT).length()
             return (node, hitPt, hitPtDist)
         else:
