@@ -31,7 +31,7 @@ ButtonRegistry *ButtonRegistry::_global_pointer = NULL;
 ////////////////////////////////////////////////////////////////////
 bool ButtonRegistry::
 register_button(ButtonHandle &button_handle, const string &name,
-        char ascii_equivalent) { 
+                char ascii_equivalent) { 
   NameRegistry::iterator ri;
   ri = _name_registry.find(name);
 
@@ -79,7 +79,7 @@ register_button(ButtonHandle &button_handle, const string &name,
   RegistryNode *rnode = (*ri).second;
   nassertr(rnode->_name == (*ri).first, false);
   nassertr(rnode->_handle._index >= 0 && 
-       rnode->_handle._index < (int)_handle_registry.size(), false);
+           rnode->_handle._index < (int)_handle_registry.size(), false);
   nassertr(_handle_registry[rnode->_handle._index] == rnode, false);
   nassertr(rnode->_handle._index != 0, false);
 
