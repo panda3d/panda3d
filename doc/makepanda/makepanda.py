@@ -5765,26 +5765,10 @@ CompileLink(opts=['ADVAPI', 'NSPR'], dll='vrml2egg.exe', obj=[
 if (sys.platform == "win32"):
   IPATH=['pandatool/src/win-stats']
   OPTS=['NSPR']
-  CompileC(ipath=IPATH, opts=OPTS, src='winStats.cxx', obj='pstats_winStats.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='winStatsChartMenu.cxx', obj='pstats_winStatsChartMenu.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='winStatsGraph.cxx', obj='pstats_winStatsGraph.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='winStatsLabel.cxx', obj='pstats_winStatsLabel.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='winStatsLabelStack.cxx', obj='pstats_winStatsLabelStack.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='winStatsMonitor.cxx', obj='pstats_winStatsMonitor.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='winStatsPianoRoll.cxx', obj='pstats_winStatsPianoRoll.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='winStatsServer.cxx', obj='pstats_winStatsServer.obj')
-  CompileC(ipath=IPATH, opts=OPTS, src='winStatsStripChart.cxx', obj='pstats_winStatsStripChart.obj')
+  CompileC(ipath=IPATH, opts=OPTS, src='winstats_composite1.cxx', obj='pstats_composite1.obj')
   CompileLink(opts=['WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'NSPR'],
               dll='pstats.exe', obj=[
-              'pstats_winStats.obj',
-              'pstats_winStatsChartMenu.obj',
-              'pstats_winStatsGraph.obj',
-              'pstats_winStatsLabel.obj',
-              'pstats_winStatsLabelStack.obj',
-              'pstats_winStatsMonitor.obj',
-              'pstats_winStatsPianoRoll.obj',
-              'pstats_winStatsServer.obj',
-              'pstats_winStatsStripChart.obj',
+              'pstats_composite1.obj',
               'libprogbase.lib',
               'libpstatserver.lib',
               'libpandatoolbase.lib',
@@ -5930,57 +5914,13 @@ CompileBison(pre='stitchyy', dstc='stitchParser.cxx', dsth='stitchParser.h', src
 CompileFlex(pre='stitchyy', dst='stitchLexer.cxx', src='pandaapp/src/stitchbase/stitchLexer.lxx', dashi=1)
 IPATH=['pandaapp/src/stitchbase', 'pandaapp/src/pandaappbase']
 OPTS=['NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='config_stitch.cxx', obj='stitchbase_config_stitch.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='fadeImagePool.cxx', obj='stitchbase_fadeImagePool.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='layeredImage.cxx', obj='stitchbase_layeredImage.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='morphGrid.cxx', obj='stitchbase_morphGrid.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchCommand.cxx', obj='stitchbase_stitchCommand.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchCommandReader.cxx', obj='stitchbase_stitchCommandReader.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchCylindricalLens.cxx', obj='stitchbase_stitchCylindricalLens.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchFile.cxx', obj='stitchbase_stitchFile.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchFisheyeLens.cxx', obj='stitchbase_stitchFisheyeLens.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchImage.cxx', obj='stitchbase_stitchImage.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchImageCommandOutput.cxx', obj='stitchbase_stitchImageCommandOutput.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchImageOutputter.cxx', obj='stitchbase_stitchImageOutputter.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchImageRasterizer.cxx', obj='stitchbase_stitchImageRasterizer.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchLens.cxx', obj='stitchbase_stitchLens.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchPSphereLens.cxx', obj='stitchbase_stitchPSphereLens.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchPerspectiveLens.cxx', obj='stitchbase_stitchPerspectiveLens.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchPoint.cxx', obj='stitchbase_stitchPoint.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitcher.cxx', obj='stitchbase_stitcher.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='triangle.cxx', obj='stitchbase_triangle.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='triangleRasterizer.cxx', obj='stitchbase_triangleRasterizer.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchCylindricalScreen.cxx', obj='stitchbase_stitchCylindricalScreen.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchFlatScreen.cxx', obj='stitchbase_stitchFlatScreen.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchMultiScreen.cxx', obj='stitchbase_stitchMultiScreen.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='stitchScreen.cxx', obj='stitchbase_stitchScreen.obj')
+CompileC(ipath=IPATH, opts=OPTS, src='stitchbase_composite1.cxx', obj='stitchbase_composite1.obj')
+CompileC(ipath=IPATH, opts=OPTS, src='stitchbase_composite2.cxx', obj='stitchbase_composite2.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='stitchParser.cxx', obj='stitchbase_stitchParser.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='stitchLexer.cxx', obj='stitchbase_stitchLexer.obj')
 CompileLIB(lib='libstitchbase.lib', obj=[
-             'stitchbase_config_stitch.obj',
-             'stitchbase_fadeImagePool.obj',
-             'stitchbase_layeredImage.obj',
-             'stitchbase_morphGrid.obj',
-             'stitchbase_stitchCommand.obj',
-             'stitchbase_stitchCommandReader.obj',
-             'stitchbase_stitchCylindricalLens.obj',
-             'stitchbase_stitchFile.obj',
-             'stitchbase_stitchFisheyeLens.obj',
-             'stitchbase_stitchImage.obj',
-             'stitchbase_stitchImageCommandOutput.obj',
-             'stitchbase_stitchImageOutputter.obj',
-             'stitchbase_stitchImageRasterizer.obj',
-             'stitchbase_stitchLens.obj',
-             'stitchbase_stitchPSphereLens.obj',
-             'stitchbase_stitchPerspectiveLens.obj',
-             'stitchbase_stitchPoint.obj',
-             'stitchbase_stitcher.obj',
-             'stitchbase_triangle.obj',
-             'stitchbase_triangleRasterizer.obj',
-             'stitchbase_stitchCylindricalScreen.obj',
-             'stitchbase_stitchFlatScreen.obj',
-             'stitchbase_stitchMultiScreen.obj',
-             'stitchbase_stitchScreen.obj',
+             'stitchbase_composite1.obj',
+             'stitchbase_composite2.obj',
              'stitchbase_stitchParser.obj',
              'stitchbase_stitchLexer.obj',
 ])
