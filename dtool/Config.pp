@@ -254,12 +254,6 @@
 #define ZLIB_LIBS z
 #defer HAVE_ZLIB $[libtest $[ZLIB_LPATH],$[ZLIB_LIBS]]
 
-// Is the sox libst library installed, and where?
-#define SOXST_IPATH
-#define SOXST_LPATH
-#define SOXST_LIBS st
-#defer HAVE_SOXST $[libtest $[SOXST_LPATH],$[SOXST_LIBS]]
-
 // Is OpenGL installed, and where?  This should include libGL as well
 // as libGLU, if they are in different places.
 #if $[WINDOWS_PLATFORM]
@@ -305,27 +299,17 @@
 #defer HAVE_MESA $[libtest $[MESA_LPATH],$[MESA_LIBS]]
 
 
-// Is Chromium OpenGL installed, and where?  This should include libcr_opengl32.
+// Is the Chromium remote-rendering library installed, and where?
+// This should include libcr_opengl32.
 #defer CHROMIUM_IPATH
-#defer CHROMIUM_LPATH /usr/X11R6/lib
-#defer GL_LIBS GL GLU
+#defer CHROMIUM_LPATH
+#defer CHROMIUM_LIBS
 #defer HAVE_CHROMIUM $[libtest $[CHROMIUM_LPATH],$[CHROMIUM_LIBS]]
-
-// Should we try to build the WCR interface?
-#define HAVE_WCR $[and $[HAVE_CHROMIUM], $[WINDOWS_PLATFORM]]
 
 // How about GLX?
 #define GLX_IPATH
 #define GLX_LPATH
 #defer HAVE_GLX $[and $[HAVE_GL],$[UNIX_PLATFORM]]
-
-// Glut?
-#define GLUT_IPATH
-#define GLUT_LPATH
-#define GLUT_LIBS glut
-//#defer HAVE_GLUT $[libtest $[GLUT_LPATH],$[GLUT_LIBS]]
-// For now, glut is broken.  Don't even try to build it.
-#define HAVE_GLUT
 
 // Should we try to build the WGL interface?
 #defer HAVE_WGL $[and $[HAVE_GL],$[WINDOWS_PLATFORM]]
@@ -339,18 +323,10 @@
 #define DX_LIBS d3d8.lib d3dx8.lib dxerr8.lib
 #defer HAVE_DX $[libtest $[DX_LPATH],$[DX_LIBS]]
 
-// Do you want to build the Renderman interface?
-#define HAVE_RIB
-
 // Do you want to build the DirectD tools for starting Panda clients
 // remotely?  This only affects the direct tree.  Enabling this may
 // cause libdirect.dll to fail to load on Win98 clients.
 #define HAVE_DIRECTD
-
-
-// Is Mikmod installed?  How should we run the libmikmod-config program?
-#define MIKMOD_CONFIG libmikmod-config
-#defer HAVE_MIKMOD $[bintest $[MIKMOD_CONFIG]]
 
 // Do you want to build in support for threading (multiprocessing)?
 // Building in support for threading will enable Panda to take

@@ -80,26 +80,11 @@ $[cdefine HAVE_GLX]
 /* Define if we have Windows-GL installed and want to build for Wgl.  */
 $[cdefine HAVE_WGL]
 
-/* Define if we have Glut installed and want to build for Glut.  */
-$[cdefine HAVE_GLUT]
-
 /* Define if we have DirectX installed and want to build for DX.  */
 $[cdefine HAVE_DX]
 
-/* Define if we have Chromium OpenGL installed and want to build for GL.  */
+/* Define if we have Chromium installed and want to use it.  */
 $[cdefine HAVE_CHROMIUM]
-
-/* Define if we have Chromium installed and want to run it in Windows.  */
-$[cdefine HAVE_WCR]
-
-/* Define if we want to build the Renderman interface.  */
-$[cdefine HAVE_RIB]
-
-/* Define if we have sox libst installed.  */
-$[cdefine HAVE_SOXST]
-
-/* Define if we want to use mikmod for audio.  */
-$[cdefine HAVE_MIKMOD]
 
 /* Define if we want to compile the threading code.  */
 $[cdefine HAVE_THREADS]

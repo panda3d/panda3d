@@ -130,11 +130,6 @@
 #set ZLIB_LIBS $[ZLIB_LIBS]
 #set HAVE_ZLIB $[HAVE_ZLIB]
 
-#set SOXST_IPATH $[unixfilename $[SOXST_IPATH]]
-#set SOXST_LPATH $[unixfilename $[SOXST_LPATH]]
-#set SOXST_LIBS $[SOXST_LIBS]
-#set HAVE_SOXST $[HAVE_SOXST]
-
 #set GL_IPATH $[unixfilename $[GL_IPATH]]
 #set GL_LPATH $[unixfilename $[GL_LPATH]]
 #set GL_LIBS $[GL_LIBS]
@@ -149,11 +144,6 @@
 #set GLX_LPATH $[unixfilename $[GLX_LPATH]]
 #set HAVE_GLX $[HAVE_GLX]
 
-#set GLUT_IPATH $[unixfilename $[GLUT_IPATH]]
-#set GLUT_LPATH $[unixfilename $[GLUT_LPATH]]
-#set GLUT_LIBS $[GLUT_LIBS]
-#set HAVE_GLUT $[HAVE_GLUT]
-
 #set HAVE_WGL $[HAVE_WGL]
 
 #set HAVE_SGIGL $[HAVE_SGIGL]
@@ -162,11 +152,6 @@
 #set DX_LPATH $[unixfilename $[DX_LPATH]]
 #set DX_LIBS $[DX_LIBS]
 #set HAVE_DX $[HAVE_DX]
-
-#set HAVE_RIB $[HAVE_RIB]
-
-#set MIKMOD_CONFIG $[MIKMOD_CONFIG]
-#set HAVE_MIKMOD $[HAVE_MIKMOD]
 
 #set HAVE_THREADS $[HAVE_THREADS]
 
@@ -211,16 +196,6 @@
 
 
 // Now infer a few more variables based on what was defined.
-#if $[and $[HAVE_MIKMOD],$[MIKMOD_CONFIG]]
-  #define cflags $[shell $[MIKMOD_CONFIG] --cflags]
-  #define libs $[shell $[MIKMOD_CONFIG] --libs]
-
-  #define MIKMOD_CFLAGS $[filter-out -I%,$[cflags]]
-  #define MIKMOD_IPATH $[unique $[patsubst -I%,%,$[filter -I%,$[cflags]]]]
-  #define MIKMOD_LPATH $[unique $[patsubst -L%,%,$[filter -L%,$[libs]]]]
-  #define MIKMOD_LIBS $[patsubst -l%,%,$[filter -l%,$[libs]]]
-#endif
-
 #if $[and $[HAVE_GTKMM],$[GTKMM_CONFIG]]
   #define cflags $[shell $[GTKMM_CONFIG] --cflags]
   #define libs $[shell $[GTKMM_CONFIG] --libs]

@@ -111,13 +111,6 @@
   #define zlib_libs $[ZLIB_LIBS]
 #endif
 
-#if $[HAVE_SOXST]
-  #define soxst_ipath $[wildcard $[SOXST_IPATH]]
-  #define soxst_lpath $[wildcard $[SOXST_LPATH]]
-  #define soxst_cflags $[SOXST_CFLAGS]
-  #define soxst_libs $[SOXST_LIBS]
-#endif
-
 #if $[HAVE_GL]
   #define gl_ipath $[wildcard $[GL_IPATH]]
   #define gl_lpath $[wildcard $[GL_LPATH]]
