@@ -1,5 +1,6 @@
 #define OTHER_LIBS dtool
 #define DIRECTORY_IF_AUDIO yes
+#define DIRECTORY_IF_IPC yes
 #define USE_AUDIO yes
 
 #begin lib_target
