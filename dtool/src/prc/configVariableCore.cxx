@@ -118,15 +118,26 @@ set_value_type(ConfigVariableCore::ValueType value_type) {
 //  Description: Specifies the trust level of this variable.  See
 //               get_flags().  It is not an error to call this
 //               multiple times, but if the value changes once
-//               get_declaration() has been called, a warning is printed.
+//               get_declaration() has been called, a warning is
+//               printed.
 ////////////////////////////////////////////////////////////////////
 void ConfigVariableCore::
 set_flags(int flags) {
-  if (_value_queried && _flags != flags) {
-    prc_cat->warning()
-      << "changing trust level for ConfigVariable " 
-      << get_name() << " from " << _flags << " to " 
-      << flags << ".\n";
+  if (_value_queried) {
+    int bits_changed = (_flags ^ flags);
+    if ((bits_changed & F_trust_level_mask) != 0) {
+      prc_cat->warning()
+        << "changing trust level for ConfigVariable " 
+        << get_name() << " from " << (_flags & F_trust_level_mask) << " to " 
+        << (flags & F_trust_level_mask) << ".\n";
+    }
+    if ((bits_changed & ~(F_trust_level_mask | F_dconfig)) != 0) {
+      prc_cat->warning()
+        << "changing flags for ConfigVariable " 
+        << get_name() << " from " << hex 
+        << (_flags & ~F_trust_level_mask) << " to "
+        << (flags & ~F_trust_level_mask) << dec << ".\n";
+    }
   }
 
   _flags = flags;
@@ -151,6 +162,15 @@ set_description(const string &description) {
       // As a special exception, if the flags include F_dconfig, we
       // don't change it, since this is presumably coming from the
       // older DConfig interface.
+      return;
+    }
+    if (description == "DConfig") {
+      // As a similar exception, we don't replace an existing
+      // description with one that reads simply "DConfig", unless it
+      // was empty previously.
+      if (_description.empty()) {
+        _description = description;
+      }
       return;
     }
       
