@@ -1669,6 +1669,7 @@ FillDDSurfTexturePixels(void) {
             DWORD src_row_bytelength=oldcurxsize*cPixelSize;
             DWORD two_src_row_bytelength=2*src_row_bytelength;
 
+        #define GENMIPMAP_DO_INTEGER_DIV    // should be a little faster, but no rounding up
         #ifdef GENMIPMAP_DO_INTEGER_DIV
             DWORD DivShift=2;
             if((oldcurxsize==1)||(oldcurysize==1))
