@@ -7,8 +7,8 @@ appropriately in the db web interface.
 import DistributedObjectAI
 
 class AccountAI(DistributedObjectAI.DistributedObjectAI):
+    pirateAvatars = [0,0,0,0,0,0]
+
     def setPirate(self, slot, avatarId):
-        if (not hasattr(self,'pirateAvatars')):
-            self.pirateAvatars = [0,0,0,0,0,0]
         self.pirateAvatars[slot] = avatarId
         self.sendUpdate('pirateAvatars', self.pirateAvatars)
