@@ -324,9 +324,43 @@ create_polygons(XFileToEggConverter *converter) {
         temp_vtx.set_normal(LCAST(double, normal->_normal));
       }
 
-      // Transform the vertex into the appropriate (global) coordinate
-      // space.
-      temp_vtx.transform(_egg_parent->get_node_to_vertex());
+      // We are given the vertex in local space; we need to transform
+      // it into global space.  If the vertex has been skinned, that
+      // means the global space of all of its joints (modified by the
+      // matrix_offset provided in the skinning data).
+      double net_weight = 0.0;
+      LMatrix4d weighted_transform(0.0, 0.0, 0.0, 0.0,
+                                   0.0, 0.0, 0.0, 0.0,
+                                   0.0, 0.0, 0.0, 0.0,
+                                   0.0, 0.0, 0.0, 0.0);
+      SkinWeights::const_iterator swi;
+      for (swi = _skin_weights.begin(); swi != _skin_weights.end(); ++swi) {
+        const SkinWeightsData &data = (*swi);
+        WeightMap::const_iterator wmi = data._weight_map.find(vertex_index);
+        if (wmi != data._weight_map.end()) {
+          EggGroup *joint = converter->find_joint(data._joint_name);
+          if (joint != (EggGroup *)NULL) {
+            double weight = (*wmi).second;
+            LMatrix4d mat = LCAST(double, data._matrix_offset);
+            mat *= joint->get_node_to_vertex();
+            weighted_transform += mat * weight;
+            net_weight += weight;
+          }
+        }
+      }
+
+      if (net_weight == 0.0) {
+        // The vertex had no joint membership.  Transform it into the
+        // appropriate (global) space based on its parent.
+        temp_vtx.transform(_egg_parent->get_node_to_vertex());
+
+      } else {
+        // The vertex was skinned into one or more joints.  Therefore,
+        // transform it according to the blended matrix_offset from
+        // the skinning data.
+        weighted_transform /= net_weight;
+        temp_vtx.transform(weighted_transform);
+      }
 
       // Now get a real EggVertex matching our template.
       EggVertex *egg_vtx = vpool->create_unique_vertex(temp_vtx);
@@ -352,8 +386,7 @@ create_polygons(XFileToEggConverter *converter) {
       const SkinWeightsData &data = (*swi);
       WeightMap::const_iterator wmi = data._weight_map.find(vertex_index);
       if (wmi != data._weight_map.end()) {
-        EggGroup *joint = converter->find_joint(data._joint_name,
-                                                data._matrix_offset);
+        EggGroup *joint = converter->find_joint(data._joint_name);
         if (joint != (EggGroup *)NULL) {
           double weight = (*wmi).second;
           joint->ref_vertex(egg_vtx, weight);
