@@ -50,7 +50,8 @@
   #define LOCAL_LIBS \
     flt
   #define OTHER_LIBS \
-    pystub
+    express:c pandaexpress:m \
+    dtoolutil:c dconfig:c dtool:m pystub
 
   #define SOURCES \
     test_flt.cxx

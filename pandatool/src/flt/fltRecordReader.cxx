@@ -116,7 +116,7 @@ advance(bool ok_eof) {
   char bytes[header_size];
   _in.read(bytes, header_size);
 
-  if ((int)_in.gcount() < header_size && _in.eof()) {
+  if (_in.eof()) {
     _state = S_eof;
     if (ok_eof) {
       return FE_ok;
@@ -136,6 +136,11 @@ advance(bool ok_eof) {
   _opcode = (FltOpcode)dgi.get_be_int16();
   _record_length = dgi.get_be_uint16();
 
+  if (_record_length < header_size) {
+    assert(!flt_error_abort);
+    return FE_invalid_record;
+  }
+
   if (flt_cat.is_debug()) {
     flt_cat.debug()
       << "Reading " << _opcode << " of length " << _record_length << "\n";
@@ -144,11 +149,13 @@ advance(bool ok_eof) {
   // And now read the full record based on the length.
   int length = _record_length - header_size;
   char *buffer = new char[length];
-  _in.read(buffer, length);
+  if (length > 0) {
+    _in.read(buffer, length);
+  }
   _datagram = Datagram(buffer, length);
   delete[] buffer;
 
-  if ((int)_in.gcount() < length && _in.eof()) {
+  if (_in.eof()) {
     _state = S_eof;
     assert(!flt_error_abort);
     return FE_end_of_file;
