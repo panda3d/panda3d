@@ -78,6 +78,24 @@ consider_node(NodePathCollection &result, FindApproxLevel &next_level,
       return;
     }
   }
+
+  if (_approx_path.return_stashed() && 
+      next_graph_type != NodeRelation::get_stashed_type()) {
+    // If the approx path allows us to return stashed nodes, and we
+    // didn't just traverse the list of stashed nodes, then traverse
+    // them now.
+    next_graph_type = NodeRelation::get_stashed_type();
+
+    int num_children = bottom_node->get_num_children(next_graph_type);
+    for (int i = 0; i < num_children; i++) {
+      NodeRelation *child_arc = bottom_node->get_child(next_graph_type, i);
+      
+      consider_next_step(result, child_arc, next_level, max_matches, graph_type);
+      if (max_matches > 0 && result.get_num_paths() >= max_matches) {
+        return;
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -96,6 +114,13 @@ void FindApproxLevelEntry::
 consider_next_step(NodePathCollection &result,
 		   NodeRelation *arc, FindApproxLevel &next_level, 
 		   int max_matches, TypeHandle graph_type) const {
+  if (!_approx_path.return_hidden() && 
+      arc->has_transition(PruneTransition::get_class_type())) {
+    // If the approx path does not allow us to return hidden nodes,
+    // and this arc has indeed been hidden, then stop here.
+    return;
+  }
+
   nassertv(_i < _approx_path.get_num_components());
 
   FindApproxLevelEntry next(*this);

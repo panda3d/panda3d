@@ -28,6 +28,7 @@ public:
   INLINE FindApproxPath();
 
   bool add_string(const string &str_path);
+  bool add_flags(const string &str_flags);
   bool add_component(string str_component);
 
   INLINE void add_match_name(const string &name, int flags);
@@ -42,6 +43,9 @@ public:
   INLINE bool is_component_match_many(int index) const;
   INLINE bool matches_component(int index, NodeRelation *arc) const;
   INLINE bool matches_stashed(int index) const;
+
+  INLINE bool return_hidden() const;
+  INLINE bool return_stashed() const;
 
   void output(ostream &out) const;
   INLINE void output_component(ostream &out, int index) const;
@@ -78,6 +82,9 @@ private:
 
   typedef vector<Component> Path;
   Path _path;
+
+  bool _return_hidden;
+  bool _return_stashed;
 
 friend ostream &operator << (ostream &, FindApproxPath::ComponentType);
 friend INLINE ostream &operator << (ostream &, const FindApproxPath::Component &);

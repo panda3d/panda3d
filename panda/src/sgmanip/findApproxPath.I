@@ -11,6 +11,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE FindApproxPath::
 FindApproxPath() {
+  _return_hidden = true;
+  _return_stashed = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,6 +166,28 @@ matches_stashed(int index) const {
   } else {
     return false;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FindApproxPath::return_hidden
+//       Access: Public
+//  Description: Returns true if this path allows returning of hidden
+//               nodes, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool FindApproxPath::
+return_hidden() const {
+  return _return_hidden;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FindApproxPath::return_stashed
+//       Access: Public
+//  Description: Returns true if this path allows returning of stashed
+//               nodes, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool FindApproxPath::
+return_stashed() const {
+  return _return_stashed;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -87,9 +87,10 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FindApproxPath::add_string
 //       Access: Public
-//  Description: Adds a sequence of components separated by slashes to
-//               the path sequence.  Returns true if successful, false
-//               if the string contained an error.
+//  Description: Adds a sequence of components separated by slashes,
+//               followed optionally by a semicolon and a sequence of
+//               control flags, to the path sequence.  Returns true if
+//               successful, false if the string contained an error.
 ////////////////////////////////////////////////////////////////////
 bool FindApproxPath::
 add_string(const string &str_path) {
@@ -102,7 +103,80 @@ add_string(const string &str_path) {
     start = slash + 1;
     slash = str_path.find('/', start);
   }
-  return add_component(str_path.substr(start));
+
+  size_t semicolon = str_path.rfind(';');
+
+  // We want to find the *last* semicolon at start or later, if there
+  // happens to be more than one.  rfind will find the rightmost
+  // semicolon in the entire string; if this is less than start, there
+  // is no semicolon right of start.
+  if (semicolon < start) {
+    semicolon = string::npos;
+  }
+
+  if (!add_component(str_path.substr(start, semicolon - start))) {
+    return false;
+  }
+
+  if (semicolon != string::npos) {
+    return add_flags(str_path.substr(semicolon + 1));
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FindApproxPath::add_flags
+//       Access: Public
+//  Description: Adds a sequence of control flags.  This will be a
+//               sequence of letters preceded by either '+' or '-',
+//               with no intervening punctuation.  Returns true if
+//               successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool FindApproxPath::
+add_flags(const string &str_flags) {
+  string::const_iterator pi = str_flags.begin();
+  while (pi != str_flags.end()) {
+    bool on;
+    switch (*pi) {
+    case '+':
+      on = true;
+      break;
+    case '-':
+      on = false;
+      break;
+    default:
+      sgmanip_cat.error()
+        << "Invalid control flag string: " << str_flags << "\n";
+      return false;
+    }
+
+    ++pi;
+    if (pi == str_flags.end()) {
+      sgmanip_cat.error()
+        << "Invalid control flag string: " << str_flags << "\n";
+      return false;
+    }
+
+    switch (*pi) {
+    case 'h':
+      _return_hidden = on;
+      break;
+      
+    case 's':
+      _return_stashed = on;
+      break;
+      
+    default:
+      sgmanip_cat.error()
+        << "Invalid control flag string: " << str_flags << "\n";
+      return false;
+    }
+    
+    ++pi;
+  }
+
+  return true;
 }
 
 
