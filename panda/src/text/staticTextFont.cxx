@@ -23,6 +23,7 @@
 #include "geomPoint.h"
 #include "qpgeomNode.h"
 #include "renderState.h"
+#include "dcast.h"
 
 TypeHandle StaticTextFont::_type_handle;
 
