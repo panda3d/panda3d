@@ -8,7 +8,7 @@
   #define OPT1FLAGS /GZ 
   
 //  #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] $[DEBUG_TYPE_FLAGS]
-  #defer DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
+  #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
   #define RELEASEFLAGS /MD
   
 // in case we have mixed intel/msvc build

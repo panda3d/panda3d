@@ -85,19 +85,14 @@
 // and currently every cxx generates its own separate pdb
 // to avoid write file conflict in multi-proc build
 
-#if $[NO_PCH]
-// different .pdb for every .obj
-#defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"
-#elif $[eq $[NUMBER_OF_PROCESSORS],1]
-// no multi-proc, so can use same .pdb file for each compile
-#defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[pdb_filename].pdb]"
-#else
-// puts dbg info inside first .obj
-#defer DEBUG_TYPE_FLAGS /Z7 
+#include $[THISDIRPREFIX]compilerSettings.pp
+
+#if $[and $[DO_PCH],$[>= $[NUMBER_OF_PROCESSORS],2]]
+// multi-proc case
+// single-processor case will act like nmake, conditionally renaming .pdb each file in Template.gmsvc.pp
+#defer DEBUGFLAGS $[patsubst /Fd%,,$[subst /Zi,/Z7, $[DEBUGFLAGS]]]
 #define NO_PDB 1
 #endif
-
-#include $[THISDIRPREFIX]compilerSettings.pp
 
 #define WARNING_LEVEL_FLAG /W3
 

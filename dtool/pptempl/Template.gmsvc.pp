@@ -130,8 +130,7 @@
 // We define $[complete_local_libs] as the full set of libraries (from
 // within this tree) that we must link a particular target with.  It
 // is the transitive closure of our dependent libs: the libraries we
-// depend on, plus the libraries *those* libraries depend on, and so
-// on.
+// depend on, plus the libraries *those* libraries depend on, and so on.
 #defer complete_local_libs $[unique $[closure all_libs,$[active_libs]]]
 #defer actual_local_libs $[get_metalibs $[TARGET],$[complete_local_libs]]
 
@@ -772,8 +771,6 @@ $[TAB] $[COMPILE_C++]
 #define source $[file]
 #define ipath $[file_ipath]
 
-#define pdb_filename $[st_dir]/$[TARGET(lib_target)]
-
 #if $[DO_PCH]
 // best way to find out if file use pch (and needs /Yu) is to check dependencies
 // these must be defined before flags (or could defer them)
@@ -783,7 +780,12 @@ $[TAB] $[COMPILE_C++]
 #define flags $[c++flags] $[all_sources $[building_var:%=/D%],$[file]]
 
 #if $[target_pch]
-#define COMPILE_LINE $[COMPILE_C_WITH_PCH]
+ #if $[eq $[NUMBER_OF_PROCESSORS],1]
+   #define pdb_filename $[osfilename $[st_dir]/$[TARGET(lib_target)]]  // assumes pch only occurs in lib_target scope, not metalib_target or in interrogate
+   #define COMPILE_LINE $[patsubst /Fd%, /Fd"$[pdb_filename].pdb",$[COMPILE_C_WITH_PCH]]
+ #else
+   #define COMPILE_LINE $[COMPILE_C_WITH_PCH]
+ #endif
 #else
 #define COMPILE_LINE $[COMPILE_C++]
 #endif
@@ -798,12 +800,14 @@ $[TAB] $[COMPILE_LINE]
 #foreach file $[pch_header_source]
 #define target_pch $[patsubst %.h,$[st_dir]/%.pch,$[file]]
 #define target_obj $[patsubst %.h,$[st_dir]/%.obj,$[file]]
-#define pdb_filename $[st_dir]/$[TARGET(lib_target)]
 
 #define target $[target_obj]
 #define source $[file]
 #define ipath $[file_ipath]
 #define flags $[c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
+
+#define pdb_filename $[osfilename $[st_dir]/$[TARGET(lib_target)]]  // assumes pch only occurs in lib_target scope, not metalib_target or in interrogate
+#define COMPILE_CXXSTYLE_PCH $[patsubst /Fd%, /Fd"$[pdb_filename].pdb",$[COMPILE_CXXSTYLE_PCH]]
 
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
