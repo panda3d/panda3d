@@ -35,13 +35,16 @@ ConfigureFn(config_interval) {
   init_libinterval();
 }
 
-// Set this to the default value for set_precision() for each
-// CMetaInterval created.
-const double interval_precision = config_interval.GetDouble("interval-precision", 1000.0);
+ConfigVariableDouble interval_precision
+("interval-precision", 1000.0,
+ PRC_DESC("Set this to the default value for set_precision() for each "
+          "CMetaInterval created."));
 
-// Set this true to generate an assertion failure if interval
-// functions are called out-of-order.
-const bool verify_intervals = config_interval.GetBool("verify-intervals", false);
+ConfigVariableBool verify_intervals
+("verify-intervals", false,
+ PRC_DESC("Set this true to generate an assertion failure if interval "
+          "functions are called out-of-order."));
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libinterval

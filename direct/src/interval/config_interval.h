@@ -22,11 +22,13 @@
 #include "directbase.h"
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
+#include "configVariableDouble.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDecl(interval, EXPCL_DIRECT, EXPTP_DIRECT);
 
-extern const double interval_precision;
-extern const bool verify_intervals;
+extern ConfigVariableDouble interval_precision;
+extern ConfigVariableBool verify_intervals;
 
 extern EXPCL_DIRECT void init_libinterval();
 

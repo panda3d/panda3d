@@ -22,12 +22,14 @@
 #include "directbase.h"
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
+#include "configVariableInt.h"
+#include "configVariableDouble.h"
 
 NotifyCategoryDecl(distributed, EXPCL_DIRECT, EXPTP_DIRECT);
 
-extern const int game_server_timeout_ms;
-extern const double min_lag;
-extern const double max_lag;
+extern ConfigVariableInt game_server_timeout_ms;
+extern ConfigVariableDouble min_lag;
+extern ConfigVariableDouble max_lag;
 
 extern EXPCL_DIRECT void init_libdistributed();
 

@@ -26,16 +26,23 @@ ConfigureFn(config_distributed) {
   init_libdistributed();
 }
 
-// This represents the amount of time to block waiting for the TCP
-// connection to the game server.  It is only used when the connection
-// method is NSPR.
-const int game_server_timeout_ms = config_distributed.GetInt("game-server-timeout-ms", 20000);
+ConfigVariableInt game_server_timeout_ms
+("game-server-timeout-ms", 20000,
+ PRC_DESC("This represents the amount of time to block waiting for the TCP "
+          "connection to the game server.  It is only used when the connection "
+          "method is NSPR."));
 
-// These represent the time in seconds by which to artificially lag
-// inbound messages.  It is only used when the connection method is
-// NSPR.
-const double min_lag = config_distributed.GetDouble("min-lag", 0.0);
-const double max_lag = config_distributed.GetDouble("max-lag", 0.0);
+ConfigVariableDouble min_lag
+("min-lag", 0.0,
+ PRC_DESC("This represents the time in seconds by which to artificially lag "
+          "inbound messages.  It is only used when the connection method is "
+          "NSPR."));
+
+ConfigVariableDouble max_lag
+("max-lag", 0.0,
+ PRC_DESC("This represents the time in seconds by which to artificially lag "
+          "inbound messages.  It is only used when the connection method is "
+          "NSPR."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libdistributed
