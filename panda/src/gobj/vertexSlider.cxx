@@ -1,5 +1,5 @@
-// Filename: userVertexTransform.cxx
-// Created by:  drose (24Mar05)
+// Filename: vertexSlider.cxx
+// Created by:  drose (28Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,129 +16,139 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "userVertexTransform.h"
+#include "vertexSlider.h"
+#include "vertexTransform.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "indent.h"
 
-TypeHandle UserVertexTransform::_type_handle;
+TypeHandle VertexSlider::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: UserVertexTransform::Constructor
+//     Function: VertexSlider::Constructor
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-UserVertexTransform::
-UserVertexTransform(const string &name) :
-  _name(name)
-{
+VertexSlider::
+VertexSlider(const InternalName *name) : _name(name) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: UserVertexTransform::get_matrix
-//       Access: Published, Virtual
-//  Description: Stores the transform's matrix in the indicated object.
-////////////////////////////////////////////////////////////////////
-void UserVertexTransform::
-get_matrix(LMatrix4f &matrix) const {
-  CDReader cdata(_cycler);
-  matrix = cdata->_matrix;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UserVertexTransform::output
+//     Function: VertexSlider::Destructor
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void UserVertexTransform::
+VertexSlider::
+~VertexSlider() {
+  // We shouldn't destruct while any SliderTables are holding our
+  // pointer.
+  nassertv(_tables.empty());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexSlider::output
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void VertexSlider::
 output(ostream &out) const {
   out << get_type() << " " << get_name();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: UserVertexTransform::CData::make_copy
+//     Function: VertexSlider::write
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void VertexSlider::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) 
+    << *this << " = " << get_slider() << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexSlider::mark_modified
+//       Access: Protected
+//  Description: Intended to be called by a derived class whenever the
+//               reported transform might have changed.  Without
+//               calling this method, changes to get_slider() may not
+//               be propagated through the system.
+////////////////////////////////////////////////////////////////////
+void VertexSlider::
+mark_modified() {
+  CDWriter cdata(_cycler);
+  cdata->_modified = VertexTransform::get_next_modified();
+  
+  Tables::iterator ti;
+  for (ti = _tables.begin(); ti != _tables.end(); ++ti) {
+    (*ti)->update_modified(cdata->_modified);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexSlider::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void VertexSlider::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  TypedWritable::write_datagram(manager, dg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexSlider::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new VertexSlider.
+////////////////////////////////////////////////////////////////////
+void VertexSlider::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  TypedWritable::fillin(scan, manager);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexSlider::CData::make_copy
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-CycleData *UserVertexTransform::CData::
+CycleData *VertexSlider::CData::
 make_copy() const {
   return new CData(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: UserVertexTransform::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               UserVertexTransform.
-////////////////////////////////////////////////////////////////////
-void UserVertexTransform::
-register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UserVertexTransform::write_datagram
+//     Function: VertexSlider::CData::write_datagram
 //       Access: Public, Virtual
 //  Description: Writes the contents of this object to the datagram
 //               for shipping out to a Bam file.
 ////////////////////////////////////////////////////////////////////
-void UserVertexTransform::
-write_datagram(BamWriter *manager, Datagram &dg) {
-  VertexTransform::write_datagram(manager, dg);
-
-  manager->write_cdata(dg, _cycler);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UserVertexTransform::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type UserVertexTransform is encountered
-//               in the Bam file.  It should create the UserVertexTransform
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
-TypedWritable *UserVertexTransform::
-make_from_bam(const FactoryParams &params) {
-  UserVertexTransform *object = new UserVertexTransform("");
-  DatagramIterator scan;
-  BamReader *manager;
-
-  parse_params(params, scan, manager);
-  object->fillin(scan, manager);
-
-  return object;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UserVertexTransform::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new UserVertexTransform.
-////////////////////////////////////////////////////////////////////
-void UserVertexTransform::
-fillin(DatagramIterator &scan, BamReader *manager) {
-  VertexTransform::fillin(scan, manager);
-
-  manager->read_cdata(scan, _cycler);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UserVertexTransform::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
-void UserVertexTransform::CData::
+void VertexSlider::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: UserVertexTransform::CData::fillin
+//     Function: VertexSlider::CData::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+////////////////////////////////////////////////////////////////////
+int VertexSlider::CData::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = CycleData::complete_pointers(p_list, manager);
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexSlider::CData::fillin
 //       Access: Public, Virtual
 //  Description: This internal function is called by make_from_bam to
 //               read in all of the relevant data from the BamFile for
-//               the new UserVertexTransform.
+//               the new VertexSlider.
 ////////////////////////////////////////////////////////////////////
-void UserVertexTransform::CData::
+void VertexSlider::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
 }

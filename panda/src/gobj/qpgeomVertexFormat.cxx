@@ -506,6 +506,42 @@ do_register() {
     }
   }
 
+  // Go back through the index now and look for morph descriptions.
+  DataTypesByName::iterator ni;
+  for (ni = _data_types_by_name.begin(); 
+       ni != _data_types_by_name.end();
+       ++ni) {
+    const DataTypeRecord &record = (*ni).second;
+    const qpGeomVertexDataType *data_type = _arrays[record._array_index]->get_data_type(record._data_type_index);
+
+    // Is it a morph description?
+    if (data_type->get_contents() == qpGeomVertexDataType::C_morph_delta) {
+      MorphRecord morph;
+      morph._delta = data_type->get_name();
+      
+      // The delta name must be of the form "basename.morph.slidername".  
+      int n = morph._delta->find_ancestor("morph");
+      if (n < 0) {
+        gobj_cat.warning()
+          << "vertex format defines " << *data_type->get_name()
+          << ", which is stored as a C_morph_delta, but its name does not include \"morph\".\n";
+      } else {
+        morph._slider = InternalName::make(morph._delta->get_net_basename(n - 1));
+        morph._base = morph._delta->get_ancestor(n + 1);
+
+        if (_data_types_by_name.find(morph._base) == _data_types_by_name.end()) {
+          gobj_cat.warning()
+            << "vertex format defines " 
+            << *data_type->get_name() << " but does not define "
+            << *morph._base << "\n";
+        } else {
+          _morphs.push_back(morph);
+        }
+      }
+    }
+  }
+
+
   _is_registered = true;
 }
  

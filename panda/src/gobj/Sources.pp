@@ -47,6 +47,7 @@
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
     lens.h lens.I \
     savedContext.I savedContext.h \
+    sliderTable.I sliderTable.h \
     texture.I texture.h \
     textureContext.I textureContext.h \
     texturePool.I texturePool.h \
@@ -54,8 +55,10 @@
     transformBlend.I transformBlend.h \
     transformBlendPalette.I transformBlendPalette.h \
     transformPalette.I transformPalette.h \
+    userVertexSlider.I userVertexSlider.h \
     userVertexTransform.I userVertexTransform.h \
     vertexBufferContext.I vertexBufferContext.h \
+    vertexSlider.I vertexSlider.h \
     vertexTransform.I vertexTransform.h
     
   #define INCLUDED_SOURCES \
@@ -92,13 +95,17 @@
     perspectiveLens.cxx \
     preparedGraphicsObjects.cxx \
     lens.cxx  \
-    savedContext.cxx texture.cxx textureContext.cxx texturePool.cxx \
+    savedContext.cxx \
+    sliderTable.cxx \
+    texture.cxx textureContext.cxx texturePool.cxx \
     textureStage.cxx \
     transformBlend.cxx \
     transformBlendPalette.cxx \
     transformPalette.cxx \
+    userVertexSlider.cxx \
     userVertexTransform.cxx \
     vertexBufferContext.cxx \
+    vertexSlider.cxx \
     vertexTransform.cxx
 
   #define INSTALL_HEADERS \
@@ -139,6 +146,7 @@
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
     lens.h lens.I \
     savedContext.I savedContext.h \
+    sliderTable.I sliderTable.h \
     texture.I texture.h \
     textureContext.I textureContext.h \
     texturePool.I texturePool.h \
@@ -146,8 +154,10 @@
     transformBlend.I transformBlend.h \
     transformBlendPalette.I transformBlendPalette.h \
     transformPalette.I transformPalette.h \
+    userVertexSlider.I userVertexSlider.h \
     userVertexTransform.I userVertexTransform.h \
     vertexBufferContext.I vertexBufferContext.h \
+    vertexSlider.I vertexSlider.h \
     vertexTransform.I vertexTransform.h
 
 

@@ -19,6 +19,7 @@
 #include "qpgeomVertexData.h"
 #include "qpgeomVertexReader.h"
 #include "qpgeomVertexWriter.h"
+#include "qpgeomVertexRewriter.h"
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -242,6 +243,51 @@ set_transform_blend_palette(const TransformBlendPalette *palette) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::modify_slider_table
+//       Access: Published
+//  Description: Returns a modifiable pointer to the current
+//               SliderTable on this vertex data, if any, or
+//               NULL if there is not a SliderTable.  See
+//               get_slider_table().
+////////////////////////////////////////////////////////////////////
+SliderTable *qpGeomVertexData::
+modify_slider_table() {
+  // Perform copy-on-write: if the reference count on the table is
+  // greater than 1, assume some other GeomVertexData has the same
+  // pointer, so make a copy of it first.
+  CDWriter cdata(_cycler);
+
+  if (cdata->_slider_table->get_ref_count() > 1) {
+    cdata->_slider_table = new SliderTable(*cdata->_slider_table);
+  }
+  cdata->_modified = qpGeom::get_next_modified();
+  cdata->_animated_vertices_modified = UpdateSeq();
+
+  return cdata->_slider_table;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::set_slider_table
+//       Access: Published
+//  Description: Replaces the SliderTable on this vertex
+//               data with the indicated table.  There should be an
+//               entry in this table for each kind of morph offset
+//               defined in the vertex data.
+//
+//               The SliderTable object must have been registered
+//               prior to setting it on the GeomVertexData.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+set_slider_table(const SliderTable *table) {
+  nassertv(table == (SliderTable *)NULL || table->is_registered());
+
+  CDWriter cdata(_cycler);
+  cdata->_slider_table = (SliderTable *)table;
+  cdata->_modified = qpGeom::get_next_modified();
+  cdata->_animated_vertices_modified = UpdateSeq();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::get_num_bytes
 //       Access: Published
 //  Description: Returns the total number of bytes consumed by the
@@ -262,12 +308,148 @@ get_num_bytes() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::copy_from
+//       Access: Published
+//  Description: Copies all the data from the other array into the
+//               corresponding data types in this array, by matching
+//               data types name-by-name.
+//
+//               keep_data_objects specifies what to do when one or
+//               more of the arrays can be copied without the need to
+//               apply any conversion operation.  If it is true, the
+//               original GeomVertexArrayData objects in this object
+//               are retained, but their data arrays are copied
+//               pointerwise from the source; if it is false, then the
+//               GeomVertexArrayData objects themselves are copied
+//               pointerwise from the source.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexData::
+copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
+  const qpGeomVertexFormat *source_format = source.get_format();
+  const qpGeomVertexFormat *dest_format = get_format();
+
+  int num_vertices = source.get_num_vertices();
+  int num_arrays = source_format->get_num_arrays();
+  int source_i;
+
+  // First, check to see if any arrays can be simply appropriated for
+  // the new format, without changing the data.
+  pset<int> done_arrays;
+
+  for (source_i = 0; source_i < num_arrays; ++source_i) {
+    const qpGeomVertexArrayFormat *source_array_format = 
+      source_format->get_array(source_i);
+
+    bool array_done = false;
+
+    int dest_num_arrays = dest_format->get_num_arrays();
+    for (int dest_i = 0; 
+         dest_i < dest_num_arrays && !array_done; 
+         ++dest_i) {
+      const qpGeomVertexArrayFormat *dest_array_format = 
+        dest_format->get_array(dest_i);
+      if (dest_array_format->is_data_subset_of(*source_array_format)) {
+        // Great!  Just use the same data for this one.
+        if (keep_data_objects) {
+          // Copy the data, but keep the same GeomVertexArrayData object.  
+
+          // Maybe it even has the same data pointer already.  If so,
+          // avoid flipping the modified flag.
+          CPTA_uchar source_data = source.get_array(source_i)->get_data();
+          if (get_array(dest_i)->get_data() != source_data) {
+            modify_array(dest_i)->set_data(source_data);
+          }
+        } else {
+          // Copy the GeomVertexArrayData object.
+          if (get_array(dest_i) != source.get_array(source_i)) {
+            set_array(dest_i, source.get_array(source_i));
+          }
+        }
+
+        array_done = true;
+        done_arrays.insert(dest_i);
+      }
+    }
+  }
+
+  // Now make sure the arrays we didn't share are all filled in.
+  set_num_vertices(num_vertices);
+
+  // Now go back through and copy any data that's left over.
+  for (source_i = 0; source_i < num_arrays; ++source_i) {
+    CPTA_uchar array_data = source.get_array(source_i)->get_data();
+    const qpGeomVertexArrayFormat *source_array_format = source_format->get_array(source_i);
+    int num_data_types = source_array_format->get_num_data_types();
+    for (int di = 0; di < num_data_types; ++di) {
+      const qpGeomVertexDataType *source_data_type = source_array_format->get_data_type(di);
+
+      int dest_i = dest_format->get_array_with(source_data_type->get_name());
+      if (dest_i >= 0 && done_arrays.count(dest_i) == 0) {
+        // The data type exists in the new format; we have to copy it.
+        const qpGeomVertexArrayFormat *dest_array_format = 
+          dest_format->get_array(dest_i);
+        const qpGeomVertexDataType *dest_data_type = 
+          dest_array_format->get_data_type(source_data_type->get_name());
+
+        if (dest_data_type->is_bytewise_equivalent(*source_data_type)) {
+          // We can do a quick bytewise copy.
+          PTA_uchar dest_array_data = modify_array(dest_i)->modify_data();
+
+          bytewise_copy(dest_array_data + dest_data_type->get_start(), 
+                        dest_array_format->get_stride(),
+                        array_data + source_data_type->get_start(), source_array_format->get_stride(),
+                        source_data_type, num_vertices);
+
+        } else if (dest_data_type->is_packed_argb() && 
+                   source_data_type->is_uint8_rgba()) {
+          // A common special case: OpenGL color to DirectX color.
+          PTA_uchar dest_array_data = modify_array(dest_i)->modify_data();
+
+          uint8_rgba_to_packed_argb
+            (dest_array_data + dest_data_type->get_start(), 
+             dest_array_format->get_stride(),
+             array_data + source_data_type->get_start(), source_array_format->get_stride(),
+             num_vertices);
+
+        } else if (dest_data_type->is_uint8_rgba() && 
+                   source_data_type->is_packed_argb()) {
+          // Another common special case: DirectX color to OpenGL
+          // color.
+          PTA_uchar dest_array_data = modify_array(dest_i)->modify_data();
+
+          packed_argb_to_uint8_rgba
+            (dest_array_data + dest_data_type->get_start(), 
+             dest_array_format->get_stride(),
+             array_data + source_data_type->get_start(), source_array_format->get_stride(),
+             num_vertices);
+
+        } else {
+          // A generic copy.
+          if (gobj_cat.is_debug()) {
+            gobj_cat.debug()
+              << "generic copy " << *dest_data_type << " from " 
+              << *source_data_type << "\n";
+          }
+          qpGeomVertexWriter to(this);
+          to.set_data_type(dest_i, dest_data_type);
+          qpGeomVertexReader from(&source);
+          from.set_data_type(source_i, source_data_type);
+
+          while (!from.is_at_end()) {
+            to.set_data4f(from.get_data4f());
+          }
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::convert_to
 //       Access: Published
-//  Description: Matches up the data types of this format with the
-//               data types of the other format by name, and copies
-//               the data vertex-by-vertex to a new set of data arrays
-//               in the new format.
+//  Description: Returns a new GeomVertexData that represents the same
+//               contents as this one, with all data types matched up
+//               name-by-name to the indicated new format.
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexData) qpGeomVertexData::
 convert_to(const qpGeomVertexFormat *new_format) const {
@@ -277,121 +459,18 @@ convert_to(const qpGeomVertexFormat *new_format) const {
   }
 
   // Okay, convert the data to the new format.
-  int num_vertices = get_num_vertices();
-
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
-      << "Converting " << num_vertices << " vertices.\n";
+      << "Converting " << get_num_vertices() << " vertices.\n";
   }
   PStatTimer timer(_convert_pcollector);
 
   PT(qpGeomVertexData) new_data = 
     new qpGeomVertexData(get_name(), new_format, get_usage_hint());
   new_data->set_transform_blend_palette(get_transform_blend_palette());
+  new_data->set_slider_table(get_slider_table());
 
-  pset<int> done_arrays;
-
-  int num_arrays = _format->get_num_arrays();
-  int i;
-
-  // First, check to see if any arrays can be simply appropriated for
-  // the new format, without changing the data.
-  for (i = 0; i < num_arrays; ++i) {
-    const qpGeomVertexArrayFormat *array_format = 
-      _format->get_array(i);
-
-    bool array_done = false;
-
-    int new_num_arrays = new_format->get_num_arrays();
-    for (int new_i = 0; 
-         new_i < new_num_arrays && !array_done; 
-         ++new_i) {
-      const qpGeomVertexArrayFormat *new_array_format = 
-        new_format->get_array(new_i);
-      if (new_array_format->is_data_subset_of(*array_format)) {
-        // Great!  Just use the same data for this one.
-        new_data->set_array(new_i, get_array(i));
-        array_done = true;
-
-        done_arrays.insert(new_i);
-      }
-    }
-  }
-
-  // Now make sure the arrays we didn't share are all filled in.
-  new_data->set_num_vertices(num_vertices);
-
-  // Now go back through and copy any data that's left over.
-  for (i = 0; i < num_arrays; ++i) {
-    CPTA_uchar array_data = get_array(i)->get_data();
-    const qpGeomVertexArrayFormat *array_format = _format->get_array(i);
-    int num_data_types = array_format->get_num_data_types();
-    for (int di = 0; di < num_data_types; ++di) {
-      const qpGeomVertexDataType *data_type = array_format->get_data_type(di);
-
-      int new_i = new_format->get_array_with(data_type->get_name());
-      if (new_i >= 0 && done_arrays.count(new_i) == 0) {
-        // The data type exists in the new format; we have to copy it.
-        const qpGeomVertexArrayFormat *new_array_format = 
-          new_format->get_array(new_i);
-        const qpGeomVertexDataType *new_data_type = 
-          new_array_format->get_data_type(data_type->get_name());
-
-        if (new_data_type->is_bytewise_equivalent(*data_type)) {
-          // We can do a quick bytewise copy.
-          PTA_uchar new_array_data = 
-            new_data->modify_array(new_i)->modify_data();
-
-          bytewise_copy(new_array_data + new_data_type->get_start(), 
-                        new_array_format->get_stride(),
-                        array_data + data_type->get_start(), array_format->get_stride(),
-                        data_type, num_vertices);
-
-        } else if (new_data_type->is_packed_argb() && 
-                   data_type->is_uint8_rgba()) {
-          // A common special case: OpenGL color to DirectX color.
-          PTA_uchar new_array_data = 
-            new_data->modify_array(new_i)->modify_data();
-
-          uint8_rgba_to_packed_argb
-            (new_array_data + new_data_type->get_start(), 
-             new_array_format->get_stride(),
-             array_data + data_type->get_start(), array_format->get_stride(),
-             num_vertices);
-
-        } else if (new_data_type->is_uint8_rgba() && 
-                   data_type->is_packed_argb()) {
-          // Another common special case: DirectX color to OpenGL
-          // color.
-          PTA_uchar new_array_data = 
-            new_data->modify_array(new_i)->modify_data();
-
-          packed_argb_to_uint8_rgba
-            (new_array_data + new_data_type->get_start(), 
-             new_array_format->get_stride(),
-             array_data + data_type->get_start(), array_format->get_stride(),
-             num_vertices);
-
-        } else {
-          // A generic copy.
-          if (gobj_cat.is_debug()) {
-            gobj_cat.debug()
-              << "generic copy " << *new_data_type << " from " 
-              << *data_type << "\n";
-          }
-          qpGeomVertexWriter to(new_data);
-          to.set_data_type(new_i, new_data_type);
-          qpGeomVertexReader from(this);
-          from.set_data_type(i, data_type);
-
-          while (!from.is_at_end()) {
-            to.set_data4f(from.get_data4f());
-          }
-        }
-      }
-    }
-  }
-
+  new_data->copy_from(*this, false);
   return new_data;
 }
 
@@ -542,6 +621,7 @@ replace_data_type(const InternalName *name, int num_components,
     new qpGeomVertexData(get_name(), format, usage_hint);
   if (keep_animation) {
     new_data->set_transform_blend_palette(get_transform_blend_palette());
+    new_data->set_slider_table(get_slider_table());
   }
 
   int j = 0;
@@ -644,27 +724,35 @@ get_array_info(const InternalName *name,
 CPT(qpGeomVertexData) qpGeomVertexData::
 do_animate_vertices(bool from_app) const {
   CDReader cdata(_cycler);
-  if (cdata->_transform_blend_palette == (TransformBlendPalette *)NULL) {
-    // No vertex animation.
+
+  UpdateSeq modified;
+  if (cdata->_transform_blend_palette != (TransformBlendPalette *)NULL) {
+    if (cdata->_slider_table != (SliderTable *)NULL) {
+      modified = 
+        max(cdata->_transform_blend_palette->get_modified(),
+            cdata->_slider_table->get_modified());
+    } else {
+      modified = cdata->_transform_blend_palette->get_modified();
+    }
+
+  } else if (cdata->_slider_table != (SliderTable *)NULL) {
+    modified = cdata->_slider_table->get_modified();
+
+  } else {
+    // No transform blend palette or slider table--ergo, no vertex
+    // animation.
     return this;
   }
 
-  if (cdata->_animated_vertices == (qpGeomVertexData *)NULL) {
-    CDWriter cdataw(((qpGeomVertexData *)this)->_cycler, cdata);
-    ((qpGeomVertexData *)this)->make_animated_vertices(cdataw);
-    ((qpGeomVertexData *)this)->update_animated_vertices(cdataw, from_app);
-    return cdataw->_animated_vertices;
-  } else {
-    UpdateSeq blend_modified = cdata->_transform_blend_palette->get_modified();
-    if (cdata->_animated_vertices_modified == blend_modified) {
-      // No changes.
-      return cdata->_animated_vertices;
-    }
-    CDWriter cdataw(((qpGeomVertexData *)this)->_cycler, cdata);
-    cdataw->_animated_vertices_modified = blend_modified;
-    ((qpGeomVertexData *)this)->update_animated_vertices(cdataw, from_app);
-    return cdataw->_animated_vertices;
+  if (cdata->_animated_vertices_modified == modified &&
+      cdata->_animated_vertices != (qpGeomVertexData *)NULL) {
+    // No changes.
+    return cdata->_animated_vertices;
   }
+  CDWriter cdataw(((qpGeomVertexData *)this)->_cycler, cdata);
+  cdataw->_animated_vertices_modified = modified;
+  ((qpGeomVertexData *)this)->update_animated_vertices(cdataw, from_app);
+  return cdataw->_animated_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -788,22 +876,6 @@ do_set_num_vertices(int n, qpGeomVertexData::CDWriter &cdata) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::make_animated_vertices
-//       Access: Private
-//  Description: Creates the GeomVertexData that represents the
-//               results of computing the vertex animation on the CPU.
-////////////////////////////////////////////////////////////////////
-void qpGeomVertexData::
-make_animated_vertices(qpGeomVertexData::CDWriter &cdata) {
-  // First, make a new format that doesn't have the transform_blend
-  // array.
-  cdata->_animated_vertices = replace_data_type
-    (InternalName::get_transform_blend(), 0, qpGeomVertexDataType::NT_uint16,
-     qpGeomVertexDataType::C_index,
-     min(get_usage_hint(), qpGeomUsageHint::UH_dynamic), false);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::update_animated_vertices
 //       Access: Private
 //  Description: Recomputes the results of computing the vertex
@@ -825,46 +897,133 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
   PStatTimer timer(collector);
 #endif
 
-  CPT(TransformBlendPalette) palette = cdata->_transform_blend_palette;
-  nassertv(palette != (TransformBlendPalette *)NULL);
-
-  // Recompute all the blends up front, so we don't have to test each
-  // one for staleness at each vertex.
-  int num_blends = palette->get_num_blends();
-  int bi;
-  for (bi = 0; bi < num_blends; bi++) {
-    palette->get_blend(bi).update_blend();
+  if (cdata->_animated_vertices == (qpGeomVertexData *)NULL) {
+    CPT(qpGeomVertexFormat) animated_format = get_post_animated_format();
+    cdata->_animated_vertices = 
+      new qpGeomVertexData(get_name(), animated_format,
+                           min(get_usage_hint(), qpGeomUsageHint::UH_dynamic));
   }
-
   PT(qpGeomVertexData) new_data = cdata->_animated_vertices;
 
-  // Now go through and compute the animation.
-  qpGeomVertexWriter to(new_data, InternalName::get_vertex());
-  qpGeomVertexReader from(this, InternalName::get_vertex());
-  qpGeomVertexReader blendi(this, InternalName::get_transform_blend());
+  // We have to make a complete copy of data first so we can modify
+  // it.  If we were clever, we could maybe just figure out the subset
+  // of the data that might have changed since last frame, but that's
+  // too much trouble (and isn't obviously faster than just copying
+  // the whole thing).
+  new_data->copy_from(*this, true);
 
-  if (!blendi.has_data_type()) {
-    gobj_cat.warning()
-      << "Vertex data " << get_name()
-      << " has a transform_blend_palette, but no transform_blend data.\n";
-    return;
+  // First, apply all of the morphs.
+  CPT(SliderTable) table = cdata->_slider_table;
+  if (table != (SliderTable *)NULL) {
+    int num_morphs = _format->get_num_morphs();
+    for (int mi = 0; mi < num_morphs; mi++) {
+      CPT(InternalName) slider_name = _format->get_morph_slider(mi);
+      const VertexSlider *slider = table->get_slider(slider_name);
+      if (slider != (VertexSlider *)NULL) {
+        float slider_value = slider->get_slider();
+        if (slider_value != 0.0f) {
+          CPT(InternalName) base_name = _format->get_morph_base(mi);
+          CPT(InternalName) delta_name = _format->get_morph_delta(mi);
+          
+          qpGeomVertexRewriter data(new_data, base_name);
+          qpGeomVertexReader delta(this, delta_name);
+
+          if (data.get_data_type()->get_num_values() == 4) {
+            if (data.get_data_type()->has_homogeneous_coord()) {
+              for (int i = 0; i < num_vertices; i++) {
+                // Scale the delta by the homogeneous coordinate.
+                LPoint4f vertex = data.get_data4f();
+                LPoint3f d = delta.get_data3f();
+                d *= slider_value * vertex[3];
+                data.set_data4f(vertex[0] + d[0],
+                                vertex[1] + d[1],
+                                vertex[2] + d[2],
+                                vertex[3]);
+              }
+            } else {
+              // Just apply the four-component delta.
+              for (int i = 0; i < num_vertices; i++) {
+                const LPoint4f &vertex = data.get_data4f();
+                LPoint4f d = delta.get_data4f();
+                data.set_data4f(vertex + d * slider_value);
+              }
+            }
+          } else {
+            // 3-component or smaller values; don't worry about a
+            // homogeneous coordinate.
+            for (int i = 0; i < num_vertices; i++) {
+              const LPoint3f &vertex = data.get_data3f();
+              LPoint3f d = delta.get_data3f();
+              data.set_data3f(vertex + d * slider_value);
+            }
+          }
+        }
+      }
+    }
   }
 
-  if (from.get_data_type()->get_num_values() == 4) {
-    for (int i = 0; i < num_vertices; i++) {
-      LPoint4f vertex = from.get_data4f();
-      int bi = blendi.get_data1i();
-      palette->get_blend(bi).transform_point(vertex);
-      to.set_data4f(vertex);
+  // Then apply the transforms.
+  CPT(TransformBlendPalette) palette = cdata->_transform_blend_palette;
+  if (palette != (TransformBlendPalette *)NULL) {
+
+    // Recompute all the blends up front, so we don't have to test
+    // each one for staleness at each vertex.
+    int num_blends = palette->get_num_blends();
+    int bi;
+    for (bi = 0; bi < num_blends; bi++) {
+      palette->get_blend(bi).update_blend();
     }
-  } else {
-    for (int i = 0; i < num_vertices; i++) {
-      LPoint3f vertex = from.get_data3f();
-      int bi = blendi.get_data1i();
-      palette->get_blend(bi).transform_point(vertex);
-      to.set_data3f(vertex);
+
+    // Now go through and apply the transforms.
+    qpGeomVertexRewriter data(new_data, InternalName::get_vertex());
+    qpGeomVertexReader blendi(this, InternalName::get_transform_blend());
+
+    if (!blendi.has_data_type()) {
+      gobj_cat.warning()
+        << "Vertex data " << get_name()
+        << " has a transform_blend_palette, but no transform_blend data.\n";
+      return;
+    }
+    
+    if (data.get_data_type()->get_num_values() == 4) {
+      for (int i = 0; i < num_vertices; i++) {
+        LPoint4f vertex = data.get_data4f();
+        int bi = blendi.get_data1i();
+        palette->get_blend(bi).transform_point(vertex);
+        data.set_data4f(vertex);
+      }
+    } else {
+      for (int i = 0; i < num_vertices; i++) {
+        LPoint3f vertex = data.get_data3f();
+        int bi = blendi.get_data1i();
+        palette->get_blend(bi).transform_point(vertex);
+        data.set_data3f(vertex);
+      }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::get_post_animated_format
+//       Access: Private
+//  Description: Returns a suitable vertex format for sending the
+//               animated vertices to the graphics backend.  This is
+//               the same format as the source format, with the
+//               CPU-animation data elements removed.
+////////////////////////////////////////////////////////////////////
+CPT(qpGeomVertexFormat) qpGeomVertexData::
+get_post_animated_format() const {
+  PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*_format);
+
+  new_format->remove_data_type(InternalName::get_transform_blend());
+
+  int num_morphs = _format->get_num_morphs();
+  for (int mi = 0; mi < num_morphs; mi++) {
+    CPT(InternalName) delta_name = _format->get_morph_delta(mi);
+    new_format->remove_data_type(delta_name);
+  }
+
+  return qpGeomVertexFormat::register_format(new_format);
 }
 
 ////////////////////////////////////////////////////////////////////

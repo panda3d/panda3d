@@ -94,6 +94,81 @@ get_array(int array) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_num_morphs
+//       Access: Published
+//  Description: Returns the number of data types within the format
+//               that represent morph deltas.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomVertexFormat::
+get_num_morphs() const {
+  nassertr(_is_registered, 0);
+  
+  return _morphs.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_morph_slider
+//       Access: Published
+//  Description: Returns the slider name associated with the nth morph
+//               data type.  This is the name of the slider that will
+//               control the morph, and should be defined within the
+//               SliderTable associated with the GeomVertexData.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE const InternalName *qpGeomVertexFormat::
+get_morph_slider(int n) const {
+  nassertr(_is_registered, NULL);
+  nassertr(n >= 0 && n < (int)_morphs.size(), NULL);
+
+  return _morphs[n]._slider;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_morph_base
+//       Access: Published
+//  Description: Returns the name of the base data type that the nth
+//               morph modifies.  This data type will also be defined
+//               within the format, and can be retrieved via
+//               get_array_with() and/or get_data_type().
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE const InternalName *qpGeomVertexFormat::
+get_morph_base(int n) const {
+  nassertr(_is_registered, NULL);
+  nassertr(n >= 0 && n < (int)_morphs.size(), NULL);
+
+  return _morphs[n]._base;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_morph_delta
+//       Access: Published
+//  Description: Returns the name of the data type that defines the
+//               nth morph.  This contains the delta offsets that are
+//               to be applied to the data type defined by
+//               get_morph_base().  This data type will be defined
+//               within the format, and can be retrieved via
+//               get_array_with() and/or get_data_type().
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE const InternalName *qpGeomVertexFormat::
+get_morph_delta(int n) const {
+  nassertr(_is_registered, NULL);
+  nassertr(n >= 0 && n < (int)_morphs.size(), NULL);
+
+  return _morphs[n]._delta;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexFormat::get_v3
 //       Access: Published, Static
 //  Description: Returns a standard vertex format with just a

@@ -40,13 +40,16 @@
 #include "matrixLens.h"
 #include "perspectiveLens.h"
 #include "lens.h"
+#include "sliderTable.h"
 #include "texture.h"
 #include "textureStage.h"
 #include "textureContext.h"
 #include "transformBlendPalette.h"
 #include "transformPalette.h"
+#include "userVertexSlider.h"
 #include "userVertexTransform.h"
 #include "vertexTransform.h"
+#include "vertexSlider.h"
 #include "geomContext.h"
 #include "vertexBufferContext.h"
 #include "indexBufferContext.h"
@@ -212,13 +215,16 @@ ConfigureFn(config_gobj) {
   MatrixLens::init_type();
   PerspectiveLens::init_type();
   Lens::init_type();
+  SliderTable::init_type();
   Texture::init_type();
   dDrawable::init_type();
   TextureStage::init_type();
   TransformBlendPalette::init_type();
   TransformPalette::init_type();
+  UserVertexSlider::init_type();
   UserVertexTransform::init_type();
   VertexTransform::init_type();
+  VertexSlider::init_type();
   InternalName::init_type();
 
   //Registration of writeable object's creation
@@ -248,10 +254,12 @@ ConfigureFn(config_gobj) {
   OrthographicLens::register_with_read_factory();
   MatrixLens::register_with_read_factory();
   PerspectiveLens::register_with_read_factory();
+  SliderTable::register_with_read_factory();
   Texture::register_with_read_factory();
   TextureStage::register_with_read_factory();
   TransformBlendPalette::register_with_read_factory();
   TransformPalette::register_with_read_factory();
+  UserVertexSlider::register_with_read_factory();
   UserVertexTransform::register_with_read_factory();
   InternalName::register_with_read_factory();
 }

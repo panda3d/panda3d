@@ -151,6 +151,35 @@ clear_transform_blend_palette() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::get_slider_table
+//       Access: Published
+//  Description: Returns a const pointer to the SliderTable
+//               assigned to this data.  Vertices within the vertex
+//               data will look up their morph offsets, if any, within
+//               this table.
+//
+//               This will return NULL if the vertex data does not
+//               have a SliderTable assigned.
+////////////////////////////////////////////////////////////////////
+INLINE const SliderTable *qpGeomVertexData::
+get_slider_table() const {
+  CDReader cdata(_cycler);
+  return cdata->_slider_table;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::clear_slider_table
+//       Access: Published
+//  Description: Sets the SliderTable pointer to NULL,
+//               removing the table from the vertex data.  This
+//               disables morph (blend shape) animation.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexData::
+clear_slider_table() {
+  set_slider_table(NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::get_modified
 //       Access: Published
 //  Description: Returns a sequence number which is guaranteed to

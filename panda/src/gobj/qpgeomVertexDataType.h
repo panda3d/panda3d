@@ -49,6 +49,7 @@ PUBLISHED:
     C_rgba,         // RGB or RGBA, OpenGL-style order
     C_argb,         // RGBA, DirectX-style packed color
     C_index,        // An index value into some other table
+    C_morph_delta,  // A delta from some base value, defining a blend shape
   };
 
   INLINE qpGeomVertexDataType(const InternalName *name, int num_components,
@@ -67,6 +68,7 @@ PUBLISHED:
   INLINE int get_start() const;
   INLINE int get_component_bytes() const;
   INLINE int get_total_bytes() const;
+  INLINE bool has_homogeneous_coord() const;
 
   INLINE bool overlaps_with(int start_byte, int num_bytes) const;
   INLINE bool is_bytewise_equivalent(const qpGeomVertexDataType &other) const;

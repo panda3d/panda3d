@@ -152,6 +152,30 @@ get_total_bytes() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexDataType::has_homogeneous_coord
+//       Access: Published
+//  Description: Returns true if this Contents type is one that
+//               includes a homogeneous coordinate in the fourth
+//               component, or false otherwise.  If this is true,
+//               correct operation on the vertex data may require
+//               scaling by the homogeneous coordinate from time to
+//               time (but in general this is handled automatically if
+//               you use the 3-component or smaller forms of
+//               get_data() and set_data()).
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomVertexDataType::
+has_homogeneous_coord() const {
+  switch (_contents) {
+  case C_point:
+  case C_texcoord:
+    return true;
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexDataType::overlaps_with
 //       Access: Published
 //  Description: Returns true if this data type overlaps with any of

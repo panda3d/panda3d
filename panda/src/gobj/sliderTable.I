@@ -1,5 +1,5 @@
-// Filename: transformPalette.I
-// Created by:  drose (23Mar05)
+// Filename: sliderTable.I
+// Created by:  drose (28Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,114 +18,109 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::is_registered
+//     Function: SliderTable::is_registered
 //       Access: Published
-//  Description: Returns true if this palette has been registered.
-//               Once it has been registered, the set of transforms in
-//               a TransformPalette may not be further modified; but
+//  Description: Returns true if this table has been registered.
+//               Once it has been registered, the set of sliders in
+//               a SliderTable may not be further modified; but
 //               it must be registered before it can be assigned to a
 //               Geom.
 ////////////////////////////////////////////////////////////////////
-INLINE bool TransformPalette::
+INLINE bool SliderTable::
 is_registered() const {
   return _is_registered;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::register_palette
+//     Function: SliderTable::register_table
 //       Access: Published, Static
-//  Description: Registers a TransformPalette for use.  This is
+//  Description: Registers a SliderTable for use.  This is
 //               similar to GeomVertexFormat::register_format().  Once
-//               registered, a TransformPalette may no longer be
-//               modified (although the individual VertexTransform
-//               objects may modify their reported transforms).
+//               registered, a SliderTable may no longer be
+//               modified (although the individual VertexSlider
+//               objects may modify their reported sliders).
 //
-//               This must be called before a palette may be used in a
+//               This must be called before a table may be used in a
 //               Geom.  After this call, you should discard the
 //               original pointer you passed in (which may or may not
 //               now be invalid) and let its reference count decrement
 //               normally; you should use only the returned value from
 //               this point on.
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(TransformPalette) TransformPalette::
-register_palette(TransformPalette *palette) {
-  // We don't actually bother adding the palette object to a registry.
+INLINE CPT(SliderTable) SliderTable::
+register_table(SliderTable *table) {
+  // We don't actually bother adding the table object to a registry.
   // This means there may be multiple copies of identical registered
-  // TransformPalettes.  Big deal.  We can always go back and make a
+  // SliderTables.  Big deal.  We can always go back and make a
   // registry later if we really need it.
-  if (palette->is_registered()) {
-    return palette;
+  if (table->is_registered()) {
+    return table;
   }
 
-  palette->do_register();
-  return palette;
+  table->do_register();
+  return table;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::get_num_transforms
+//     Function: SliderTable::get_slider
 //       Access: Published
-//  Description: Returns the number of transforms in the palette.
+//  Description: Returns the slider with the indicated name, or NULL
+//               if no slider in the table has that name.
 ////////////////////////////////////////////////////////////////////
-INLINE int TransformPalette::
-get_num_transforms() const {
-  return _transforms.size();
+INLINE const VertexSlider *SliderTable::
+get_slider(const InternalName *name) const {
+  Sliders::const_iterator si;
+  si = _sliders.find(name);
+  if (si != _sliders.end()) {
+    return (*si).second;
+  }
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::get_transform
-//       Access: Published
-//  Description: Returns the nth transform in the palette.
-////////////////////////////////////////////////////////////////////
-INLINE const VertexTransform *TransformPalette::
-get_transform(int n) const {
-  nassertr(n >= 0 && n < (int)_transforms.size(), NULL);
-  return _transforms[n];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::get_modified
+//     Function: SliderTable::get_modified
 //       Access: Published
 //  Description: Returns a sequence number that's guaranteed to change
-//               at least when any VertexTransforms in the palette
+//               at least when any VertexSliders in the table
 //               change.  (However, this is only true for a registered
-//               palette.  An unregistered palette may or may not
-//               reflect an update here when a VertexTransform
+//               table.  An unregistered table may or may not
+//               reflect an update here when a VertexSlider
 //               changes.)
 ////////////////////////////////////////////////////////////////////
-INLINE UpdateSeq TransformPalette::
+INLINE UpdateSeq SliderTable::
 get_modified() const {
   CDReader cdata(_cycler);
   return cdata->_modified;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::update_modified
+//     Function: SliderTable::update_modified
 //       Access: Private
-//  Description: Called internally whenever a nested VertexTransform
+//  Description: Called internally whenever a nested VertexSlider
 //               reports that it has been modified.
 ////////////////////////////////////////////////////////////////////
-INLINE void TransformPalette::
+INLINE void SliderTable::
 update_modified(UpdateSeq modified) {
   CDWriter cdata(_cycler);
   cdata->_modified = modified;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::CData::Constructor
+//     Function: SliderTable::CData::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE TransformPalette::CData::
+INLINE SliderTable::CData::
 CData() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformPalette::CData::Copy Constructor
+//     Function: SliderTable::CData::Copy Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE TransformPalette::CData::
-CData(const TransformPalette::CData &copy) :
+INLINE SliderTable::CData::
+CData(const SliderTable::CData &copy) :
   _modified(copy._modified)
 {
 }

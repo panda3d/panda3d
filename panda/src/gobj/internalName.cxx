@@ -112,6 +112,74 @@ get_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InternalName::find_ancestor
+//       Access: Published
+//  Description: Returns the index of the ancestor with the indicated
+//               basename, or -1 if no ancestor has that basename.
+//               Returns 0 if this name has the basename.
+//
+//               This index value may be passed to get_ancestor() or
+//               get_net_basename() to retrieve more information about
+//               the indicated name.
+////////////////////////////////////////////////////////////////////
+int InternalName::
+find_ancestor(const string &basename) const {
+  if (_basename == basename) {
+    return 0;
+
+  } else if (_parent != (InternalName *)NULL) {
+    int index = _parent->find_ancestor(basename);
+    if (index >= 0) {
+      return index + 1;
+    }
+  }
+
+  return -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_ancestor
+//       Access: Published
+//  Description: Returns the ancestor with the indicated index number.
+//               0 is this name itself, 1 is the name's parent, 2 is
+//               the parent's parent, and so on.  If there are not
+//               enough ancestors, returns the root InternalName.
+////////////////////////////////////////////////////////////////////
+const InternalName *InternalName::
+get_ancestor(int n) const {
+  if (n == 0) {
+    return this;
+
+  } else if (_parent != (InternalName *)NULL) {
+    return _parent->get_ancestor(n - 1);
+
+  } else {
+    return get_root();
+  } 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_net_basename
+//       Access: Published
+//  Description: Returns the basename of this name prefixed by the
+//               indicated number of ancestors.  0 is this name's
+//               basename, 1 is parent.basename, 2 is
+//               grandparent.parent.basename, and so on.
+////////////////////////////////////////////////////////////////////
+string InternalName::
+get_net_basename(int n) const {
+  if (n == 0) {
+    return _basename;
+
+  } else if (_parent != (InternalName *)NULL && _parent != get_root()) {
+    return _parent->get_net_basename(n - 1) + "." + _basename;
+
+  } else {
+    return _basename;
+  } 
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InternalName::output
 //       Access: Published
 //  Description: 

@@ -26,6 +26,7 @@
 #include "qpgeomVertexArrayData.h"
 #include "qpgeomUsageHint.h"
 #include "transformBlendPalette.h"
+#include "sliderTable.h"
 #include "internalName.h"
 #include "cycleData.h"
 #include "cycleDataReader.h"
@@ -91,9 +92,15 @@ PUBLISHED:
   void set_transform_blend_palette(const TransformBlendPalette *palette);
   INLINE void clear_transform_blend_palette();
 
+  INLINE const SliderTable *get_slider_table() const;
+  SliderTable *modify_slider_table();
+  void set_slider_table(const SliderTable *palette);
+  INLINE void clear_slider_table();
+
   int get_num_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
+  void copy_from(const qpGeomVertexData &source, bool keep_data_objects);
   CPT(qpGeomVertexData) convert_to(const qpGeomVertexFormat *new_format) const;
   CPT(qpGeomVertexData) 
     scale_color(const LVecBase4f &color_scale, int num_components,
@@ -167,6 +174,7 @@ private:
 
     Arrays _arrays;
     PT(TransformBlendPalette) _transform_blend_palette;
+    PT(SliderTable) _slider_table;
     PT(qpGeomVertexData) _animated_vertices;
     UpdateSeq _animated_vertices_modified;
     UpdateSeq _modified;
@@ -178,8 +186,8 @@ private:
 
 private:
   bool do_set_num_vertices(int n, CDWriter &cdata);
-  void make_animated_vertices(CDWriter &cdata);
   void update_animated_vertices(CDWriter &cdata, bool from_app);
+  CPT(qpGeomVertexFormat) get_post_animated_format() const;
 
   static PStatCollector _convert_pcollector;
   static PStatCollector _scale_color_pcollector;

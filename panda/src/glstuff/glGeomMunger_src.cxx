@@ -50,9 +50,10 @@ munge_format_impl(const qpGeomVertexFormat *orig) {
   const qpGeomVertexDataType *color_type = 
     format->get_data_type(InternalName::get_color());
   if (color_type != (qpGeomVertexDataType *)NULL &&
-      color_type->get_numeric_type() == qpGeomVertexDataType::NT_packed_8888) {
+      (color_type->get_numeric_type() == qpGeomVertexDataType::NT_packed_8888 ||
+       color_type->get_contents() != qpGeomVertexDataType::NT_rgba)) {
     // We need to convert the color format; OpenGL doesn't support the
-    // byte order of DirectX's packed_argb format.
+    // byte order of DirectX's packed ARGB format.
     int color_array = format->get_array_with(InternalName::get_color());
 
     PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*format);

@@ -55,6 +55,10 @@ PUBLISHED:
   string get_name() const;
   INLINE const string &get_basename() const;
 
+  int find_ancestor(const string &basename) const;
+  const InternalName *get_ancestor(int n) const;
+  string get_net_basename(int n) const;
+
   void output(ostream &out) const;
 
   // Some predefined built-in names.

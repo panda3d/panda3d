@@ -84,6 +84,11 @@ PUBLISHED:
 
   void remove_data_type(const InternalName *name);
 
+  INLINE int get_num_morphs() const;
+  INLINE const InternalName *get_morph_slider(int n) const;
+  INLINE const InternalName *get_morph_base(int n) const;
+  INLINE const InternalName *get_morph_delta(int n) const;
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
   void write_with_data(ostream &out, int indent_level, 
@@ -145,6 +150,15 @@ private:
 
   typedef pmap<const InternalName *, DataTypeRecord> DataTypesByName;
   DataTypesByName _data_types_by_name;
+
+  class MorphRecord {
+  public:
+    CPT(InternalName) _slider;
+    CPT(InternalName) _base;
+    CPT(InternalName) _delta;
+  };
+  typedef pvector<MorphRecord> Morphs;
+  Morphs _morphs;
 
   // This set keeps track of things that need to be told when we
   // destruct, and it is protected by the mutex.

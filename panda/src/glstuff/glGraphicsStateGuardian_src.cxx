@@ -2676,7 +2676,7 @@ prepare_index_buffer(qpGeomPrimitive *data) {
 
     if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "creating vertex buffer " << gibc->_index << "\n";
+        << "creating index buffer " << gibc->_index << "\n";
     }
     
     report_my_gl_errors();
