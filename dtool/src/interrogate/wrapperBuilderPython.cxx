@@ -95,7 +95,7 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
       out << "PyObject *" << get_parameter_name(pn);
       format_specifiers += "O";
       parameter_list += ", &" + get_parameter_name(pn);
-      pexpr_string = "PyObject_IsTrue(" + get_parameter_name(pn) + ")";
+      pexpr_string = "(PyObject_IsTrue(" + get_parameter_name(pn) + ")!=0)";
 
     } else if (TypeManager::is_integer(type)) {
       out << "int " << get_parameter_name(pn);
