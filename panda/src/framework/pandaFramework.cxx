@@ -192,7 +192,7 @@ open_window(const WindowProperties &props, GraphicsPipe *pipe) {
   }
 
   nassertr(_is_open, NULL);
-  WindowFramework *wf = make_window_framework();
+  PT(WindowFramework) wf = make_window_framework();
   wf->set_wireframe(get_wireframe());
   wf->set_texture(get_texture());
   wf->set_two_sided(get_two_sided());
@@ -224,6 +224,25 @@ find_window(const GraphicsWindow *win) const {
   return -1;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::find_window
+//       Access: Public
+//  Description: Returns the index of the given WindowFramework
+//               object, or -1 if the object does not represent a
+//               window opened with this PandaFramework.
+////////////////////////////////////////////////////////////////////
+int PandaFramework::
+find_window(const WindowFramework *wf) const {
+  int n;
+  for (n = 0; n < (int)_windows.size(); n++) {
+    if (_windows[n] == wf) {
+      return n;
+    }
+  }
+
+  return -1;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::close_window
@@ -241,7 +260,6 @@ close_window(int n) {
   }
   
   wf->close_window();
-  delete wf;
   _windows.erase(_windows.begin() + n);
 }
 
@@ -263,7 +281,6 @@ close_all_windows() {
     }
     
     wf->close_window();
-    delete wf;
   }
 
   _windows.clear();
@@ -551,7 +568,7 @@ main_loop() {
 //               provided as a hook so derived PandaFramework classes
 //               can create custom WindowFramework objects.
 ////////////////////////////////////////////////////////////////////
-WindowFramework *PandaFramework::
+PT(WindowFramework) PandaFramework::
 make_window_framework() {
   return new WindowFramework(this);
 }
@@ -615,14 +632,11 @@ void PandaFramework::
 event_esc(CPT_Event event, void *data) { 
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
-    GraphicsWindow *win;
-    DCAST_INTO_V(win, param.get_ptr());
+    WindowFramework *wf;
+    DCAST_INTO_V(wf, param.get_ptr());
 
     PandaFramework *self = (PandaFramework *)data;
-    int n = self->find_window(win);
-    if (n >= 0) {
-      self->close_window(n);
-    }
+    self->close_window(wf);
 
     // If we closed the last window, shut down.
     if (self->_windows.empty()) {
@@ -650,9 +664,14 @@ event_f(CPT_Event, void *data) {
 //  Description: Default handler for w key: toggle wireframe.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_w(CPT_Event, void *data) {
-  PandaFramework *self = (PandaFramework *)data;
-  self->set_wireframe(!self->get_wireframe());
+event_w(CPT_Event event, void *) {
+  if (event->get_num_parameters() == 1) {
+    EventParameter param = event->get_parameter(0);
+    WindowFramework *wf;
+    DCAST_INTO_V(wf, param.get_ptr());
+
+    wf->set_wireframe(!wf->get_wireframe());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -661,9 +680,14 @@ event_w(CPT_Event, void *data) {
 //  Description: Default handler for t key: toggle texture.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_t(CPT_Event, void *data) {
-  PandaFramework *self = (PandaFramework *)data;
-  self->set_texture(!self->get_texture());
+event_t(CPT_Event event, void *) {
+  if (event->get_num_parameters() == 1) {
+    EventParameter param = event->get_parameter(0);
+    WindowFramework *wf;
+    DCAST_INTO_V(wf, param.get_ptr());
+
+    wf->set_texture(!wf->get_texture());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -673,9 +697,14 @@ event_t(CPT_Event, void *data) {
 //               rendering).
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_b(CPT_Event, void *data) {
-  PandaFramework *self = (PandaFramework *)data;
-  self->set_two_sided(!self->get_two_sided());
+event_b(CPT_Event event, void *) {
+  if (event->get_num_parameters() == 1) {
+    EventParameter param = event->get_parameter(0);
+    WindowFramework *wf;
+    DCAST_INTO_V(wf, param.get_ptr());
+
+    wf->set_two_sided(!wf->get_two_sided());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -684,9 +713,14 @@ event_b(CPT_Event, void *data) {
 //  Description: Default handler for l key: toggle lighting.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_l(CPT_Event, void *data) {
-  PandaFramework *self = (PandaFramework *)data;
-  self->set_lighting(!self->get_lighting());
+event_l(CPT_Event event, void *) {
+  if (event->get_num_parameters() == 1) {
+    EventParameter param = event->get_parameter(0);
+    WindowFramework *wf;
+    DCAST_INTO_V(wf, param.get_ptr());
+
+    wf->set_lighting(!wf->get_lighting());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -699,8 +733,8 @@ void PandaFramework::
 event_c(CPT_Event event, void *data) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
-    const GraphicsWindow *win;
-    DCAST_INTO_V(win, param.get_ptr());
+    WindowFramework *wf;
+    DCAST_INTO_V(wf, param.get_ptr());
 
     PandaFramework *self = (PandaFramework *)data;
 
@@ -708,11 +742,7 @@ event_c(CPT_Event event, void *data) {
     if (node.is_empty()) {
       node = self->get_models();
     }
-
-    int n = self->find_window(win);
-    if (n >= 0) {
-      self->_windows[n]->center_trackball(node);
-    }
+    wf->center_trackball(node);
   }
 }
 
@@ -899,19 +929,23 @@ event_S(CPT_Event, void *data) {
 //  Description: Default handler for comma key: rotate background color.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_comma(CPT_Event, void *data) {
-  PandaFramework *self = (PandaFramework *)data;
+event_comma(CPT_Event event, void *) {
+  if (event->get_num_parameters() == 1) {
+    EventParameter param = event->get_parameter(0);
+    WindowFramework *wf;
+    DCAST_INTO_V(wf, param.get_ptr());
 
-  switch (self->get_background_type()) {
-  case WindowFramework::BT_other:
-    break;
-
-  case WindowFramework::BT_none:
-    self->set_background_type(WindowFramework::BT_default);
-    break;
-
-  default:
-    self->set_background_type((WindowFramework::BackgroundType)(self->get_background_type() + 1));
+    switch (wf->get_background_type()) {
+    case WindowFramework::BT_other:
+      break;
+      
+    case WindowFramework::BT_none:
+      wf->set_background_type(WindowFramework::BT_default);
+      break;
+      
+    default:
+      wf->set_background_type((WindowFramework::BackgroundType)(wf->get_background_type() + 1));
+    }
   }
 }
 
@@ -925,6 +959,9 @@ void PandaFramework::
 event_window_event(CPT_Event event, void *data) {
   PandaFramework *self = (PandaFramework *)data;
   if (event->get_num_parameters() == 1) {
+    // The parameter of the window event is the window itself, rather
+    // than the window framework object (which is the parameter of all
+    // of the keyboard events).
     EventParameter param = event->get_parameter(0);
     const GraphicsWindow *win;
     DCAST_INTO_V(win, param.get_ptr());

@@ -56,12 +56,14 @@ public:
 
   WindowFramework *open_window(GraphicsPipe *pipe = NULL);
   WindowFramework *open_window(const WindowProperties &props,
-                               GraphicsPipe *pipe = NULL);
+			       GraphicsPipe *pipe = NULL);
 
   INLINE int get_num_windows() const;
   INLINE WindowFramework *get_window(int n) const;
   int find_window(const GraphicsWindow *win) const;
+  int find_window(const WindowFramework *wf) const;
   void close_window(int n);
+  INLINE void close_window(WindowFramework *wf);
   void close_all_windows();
   bool all_windows_closed() const;
 
@@ -98,7 +100,7 @@ public:
   INLINE void set_exit_flag();
 
 protected:
-  virtual WindowFramework *make_window_framework();
+  virtual PT(WindowFramework) make_window_framework();
   virtual void make_default_pipe();
   virtual void do_enable_default_keys();
 
@@ -134,7 +136,7 @@ private:
   NodePath _data_root;
   EventHandler _event_handler;
 
-  typedef pvector<WindowFramework *> Windows;
+  typedef pvector< PT(WindowFramework) > Windows;
   Windows _windows;
 
   NodePath _models;

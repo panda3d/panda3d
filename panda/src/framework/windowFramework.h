@@ -28,6 +28,7 @@
 #include "filename.h"
 #include "pointerTo.h"
 #include "pvector.h"
+#include "typedReferenceCount.h"
 
 class PandaFramework;
 class AmbientLight;
@@ -40,11 +41,13 @@ class GraphicsPipe;
 // Description : This encapsulates the data that is normally
 //               associated with a single window that we've opened.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_FRAMEWORK WindowFramework {
+class EXPCL_FRAMEWORK WindowFramework : public TypedReferenceCount {
 protected:
   WindowFramework(PandaFramework *panda_framework);
+public:
   virtual ~WindowFramework();
 
+protected:
   GraphicsWindow *open_window(const WindowProperties &props,
                               GraphicsEngine *engine, GraphicsPipe *pipe);
   void close_window();
@@ -125,6 +128,23 @@ private:
   bool _lighting_enabled;
 
   BackgroundType _background_type;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "WindowFramework",
+                  TypedReferenceCount::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 
   friend class PandaFramework;
 };

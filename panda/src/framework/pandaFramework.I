@@ -87,6 +87,20 @@ get_window(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::close_window
+//       Access: Public
+//  Description: Closes the indicated WindowFramework window and
+//               removes it from the list.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+close_window(WindowFramework *wf) {
+  int n = find_window(wf);
+  if (n >= 0) {
+    close_window(n);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::get_wireframe
 //       Access: Public
 //  Description: Returns the current state of the wireframe flag.

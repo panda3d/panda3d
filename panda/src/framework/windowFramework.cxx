@@ -41,6 +41,8 @@
 // files.
 static const int override_priority = 100;
 
+TypeHandle WindowFramework::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::Constructor
 //       Access: Protected
@@ -64,7 +66,7 @@ WindowFramework(PandaFramework *panda_framework) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::Destructor
-//       Access: Protected, Virtual
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 WindowFramework::
@@ -198,7 +200,7 @@ enable_keyboard() {
     NodePath mouse = get_mouse();
 
     PT(ButtonThrower) bt = new ButtonThrower("kb-events");
-    bt->add_parameter(EventParameter(_window));
+    bt->add_parameter(EventParameter(this));
     ModifierButtons mods;
     mods.add_button(KeyboardButton::shift());
     mods.add_button(KeyboardButton::control());

@@ -18,12 +18,14 @@
 
 #include "config_framework.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
+#include "windowFramework.h"
 
 Configure(config_framework);
 NotifyCategoryDef(framework, "");
 
 ConfigureFn(config_framework) {
+  WindowFramework::init_type();
 }
 
 const int win_width = config_framework.GetInt("win-width", 640);
