@@ -139,11 +139,6 @@ def textLabelAndText(string, style,
     else:
         # Otherwise, we can throw it away.
         node = text.generate()
-
-        #*** Temporary for old Pandas
-        if node == None:
-            node = NamedNode()
-            
         text = node
 
     # Now create a GuiLabel containing this text.

@@ -198,11 +198,6 @@ class OnscreenText(PandaObject, NodePath):
         else:
             # Otherwise, we can throw it away.
             self.textNode = textNode.generate()
-
-            #*** Temporary for old Pandas.
-            if self.textNode == None:
-                self.textNode = NamedNode()
-        
         
 	self.isClean = 0
 
