@@ -59,37 +59,60 @@ apply_linear_force(ColliderDef &def, const LVector3f &force) {
     return;
   }
   ActorNode *actor=DCAST(ActorNode, def._node);
-  float friction=0.9f;
   LVector3f vel=actor->get_physics_object()->get_velocity();
   physics_debug("apply_linear_force() {");
   physics_debug("  vel "<<vel<<" len "<<vel.length());
   physics_debug("  force "<<force<<" len "<<force.length());
   LVector3f old_vel=vel;
-  LVector3f adjustment=force;
+  // Copy the force vector while translating it 
+  // into the physics object coordinate system:
+  LVector3f adjustment=force*actor->get_physics_object()->get_lcs();
+  physics_debug("  adjustment set "<<adjustment<<" len "<<adjustment.length());
   adjustment.normalize();
-  adjustment*=adjustment.dot(vel);
-  physics_debug("  adjustment "<<adjustment<<" len "<<adjustment.length());
-  float angle=adjustment.dot(vel);
-  vel-=adjustment;
-  physics_debug("  vel "<<vel<<" len "<<vel.length());
-  physics_debug("  angle "<<angle);
-  if (angle<=0.0f) {
-    // ...avoid amplifying the velocity by checking to see
-    // that the adjustment and the velocity are more than 
-    // right-angles (i.e. obtuse angle).
-    float almostStationary=0.1f;
-    if (vel.length()>almostStationary) {
-      physics_debug("  vel > almostStationary");
-      friction*=0.01f;
+  physics_debug("  adjustment nrm "<<adjustment<<" len "<<adjustment.length());
+  float adjustmentLength=-(adjustment.dot(vel));
+  physics_debug("  adjustmentLength "<<adjustmentLength);
+  // Are we in contact with something:
+  if (adjustmentLength>0.0f) {
+    physics_debug("  positive contact");
+    adjustment*=adjustmentLength;
+    physics_debug("  adjustment mul "<<adjustment<<" len "<<adjustment.length());
+    // This adjustment to our velocity will not reflect us off the surface,
+    // but will deflect us parallel (or tangent) to the surface:
+    vel+=adjustment;
+    physics_debug("  vel "<<vel<<" len "<<vel.length());
+    physics_debug("  angle "<<adjustmentLength);
+    const float almostStationary=0.1f;
+    float friction=0.9f;
+    // This velocity is not very accurate, but it's better than using 
+    // the pre-collision-tested velocity for now.  This may need to be 
+    // better:
+    LVector3f implicitVel=actor->get_physics_object()->get_implicit_velocity();
+    physics_debug("  implicitVel "<<implicitVel<<" len "<<implicitVel.length());
+    // Determine the friction:
+    if (implicitVel.length()<almostStationary) {
+      physics_debug("  static friction");
+      friction=0.9f;
+    } else {
+      physics_debug("  dynamic friction");
+      friction=0.1f;
     }
-    //vel*=1.0f-friction;
+    // Apply the friction:
+    vel*=1.0f-friction;
+  } else if (adjustmentLength==0.0f) {
+    physics_debug("  brushing contact");
+  } else {
+    physics_debug("  negative contact");
   }
 
   #ifndef NDEBUG //[
   if (vel.length() > old_vel.length()) {
+    // This is a check to avoid adding engergy:
     physics_debug("  vel.length() > old_vel.length()  "<<vel.length()<<" > "<<old_vel.length());
   }
   if (vel.length() > 10.0f) {
+    // This is a check to see if the velocity is higher than I expect it
+    // to go.  The check value is arbitrary.
     physics_debug("  vel.length() > 10.0f  "<<vel.length());
   }
   #endif //]
@@ -97,6 +120,6 @@ apply_linear_force(ColliderDef &def, const LVector3f &force) {
   physics_debug("  force "<<force<<" len "<<force.length());
   physics_debug("  vel "<<vel<<" len "<<vel.length());
   physics_debug("}");
-  actor->set_contact_vector(force);
+  actor->set_contact_vector(adjustment);
   actor->get_physics_object()->set_velocity(vel);
 }
