@@ -84,7 +84,6 @@ class FFIExternalObject:
             fromClass = lineage[top - i]
             downcastFuncName = ('downcastTo' + toClass.__name__
                                 + 'From' + fromClass.__name__)
-            print downcastFuncName
             # Look over this classes global modules dictionaries
             # for the downcast function name
             for globmod in toClass.__CModuleDowncasts__:
@@ -99,7 +98,12 @@ class FFIExternalObject:
     def setPointer(self):
         # See what type it really is and downcast to that type (if necessary)
         # Look up the TypeHandle in the dict. get() returns None if it is not there
-        exactWrapperClass = WrapperClassMap.get(self.getType().getIndex())
+        try:
+            index = self.getTypeIndex()
+        except:
+            # Remove this after everybody builds their panda
+            index = self.getType().getIndex()
+        exactWrapperClass = WrapperClassMap.get(index)
         # We do not need to downcast if we already have the same class
         if (exactWrapperClass and (exactWrapperClass != self.__class__)):
             # Create a new wrapper class instance

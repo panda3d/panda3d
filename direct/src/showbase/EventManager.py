@@ -12,12 +12,9 @@ class EventManager:
         """
         Create a C++ event queue and handler
         """
-
         # Make a notify category for this class (unless there already is one)
         if (EventManager.notify == None):
             EventManager.notify = directNotify.newCategory("EventManager")
-
-        # EventManager.notify.setDebug(1)
 
         self.eventQueue = EventQueue.getGlobalEventQueue()
         self.eventHandler = EventHandler(self.eventQueue)
@@ -27,8 +24,7 @@ class EventManager:
         Process all the events on the C++ event queue
         """
         while (not self.eventQueue.isQueueEmpty()):
-            event = self.eventQueue.dequeueEvent()
-            self.processEvent(event)
+            self.processEvent(self.eventQueue.dequeueEvent())
         return Task.cont
 
     def parseEventParameter(self, eventParameter):
@@ -46,36 +42,28 @@ class EventManager:
         else:
             return eventParameter.getPtr()
         
-            
-
     def processEvent(self, event):
         """
         Process a C++ event
         """
-        # If the event has a name, throw a Python event with the Pythonified name
-	if event.hasName():
-            # Get the event name
-            eventName = event.getName()
-            numParameters = event.getNumParameters()
+        # Get the event name
+        eventName = event.getName()
+        if eventName:
             paramList = []
-            for i in range(numParameters):
+            for i in range(event.getNumParameters()):
                 eventParameter = event.getParameter(i)
                 eventParameterData = self.parseEventParameter(eventParameter)
                 paramList.append(eventParameterData)
-
             # Do not print the new frame debug, it is too noisy!
             if (eventName != 'NewFrame'):
                 EventManager.notify.debug('received C++ event named: ' + eventName +
                                           ' parameters: ' + `paramList`)
-
-
             # Send the event, we used to send it with the event 
             # name as a parameter, but now you can use extraArgs for that
             if paramList:
                 messenger.send(eventName, paramList)
             else:
                 messenger.send(eventName)
-
             # Also send the event down into C++ land
             self.eventHandler.dispatchEvent(event)
             

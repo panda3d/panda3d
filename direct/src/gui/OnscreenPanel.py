@@ -221,7 +221,7 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
                                 button.func, [button.button])
                 button.startBehavior()
                 
-        base.mouseWatcher.node().addRegion(self.panelRegion)
+        base.mouseWatcherNode.addRegion(self.panelRegion)
         
     def hide(self):
         """hide(self):
@@ -241,7 +241,7 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
             if button.panelManage:
                 button.unmanage()
                 
-        base.mouseWatcher.node().removeRegion(self.panelRegion)
+        base.mouseWatcherNode.removeRegion(self.panelRegion)
 
     def makeButton(self, name,
                    func = None,

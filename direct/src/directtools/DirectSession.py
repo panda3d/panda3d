@@ -698,9 +698,9 @@ class DisplayRegionContext:
         self.mouseLastY = self.mouseY
         # Values for this frame
         # This ranges from -1 to 1
-        if (base.mouseWatcher.node().hasMouse()):
-            self.mouseX = base.mouseWatcher.node().getMouseX()
-            self.mouseY = base.mouseWatcher.node().getMouseY()
+        if (base.mouseWatcherNode.hasMouse()):
+            self.mouseX = base.mouseWatcherNode.getMouseX()
+            self.mouseY = base.mouseWatcherNode.getMouseY()
         # Delta percent of window the mouse moved
         self.mouseDeltaX = self.mouseX - self.mouseLastX
         self.mouseDeltaY = self.mouseY - self.mouseLastY

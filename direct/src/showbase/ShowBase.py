@@ -85,7 +85,9 @@ class ShowBase:
             self.camList.append( camera.find('**/+Camera') )
         # Set the default camera
         self.cam = self.camera.find('**/+Camera')
-
+        # If you need to use the camera node, use camNode instead
+        # of calling cam.node() to save the FFI overhead
+        self.camNode = self.cam.node()
         # Set up a 2-d layer for drawing things behind Gui labels.
         self.render2d = NodePath(setupPanda2d(self.win, "render2d"))
 
@@ -128,7 +130,8 @@ class ShowBase:
         # mouseWatcher, while objects that want events in all cases, like the
         # chat interface, should be parented to mak.
         self.mak = self.dataRoot.attachNewNode(MouseAndKeyboard(self.win, 0, 'mak'))
-        self.mouseWatcher = self.mak.attachNewNode(MouseWatcher('mouseWatcher'))
+        self.mouseWatcherNode = MouseWatcher('mouseWatcher')
+        self.mouseWatcher = self.mak.attachNewNode(self.mouseWatcherNode)
 
         # We also create a DataValve object above the trackball/drive
         # interface, which will allow us to switch some of the mouse
