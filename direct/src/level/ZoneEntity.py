@@ -14,5 +14,6 @@ class ZoneEntity(ZoneEntityBase.ZoneEntityBase, BasicEntities.NodePathAttribs):
         self.nodePath = self.level.getZoneNode(self.modelZoneNum)
         self.initNodePathAttribs(doReparent=0)
 
+
     def getNodePath(self):
         return self.nodePath

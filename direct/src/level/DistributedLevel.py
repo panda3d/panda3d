@@ -7,6 +7,8 @@ import DistributedObject
 import Level
 import DirectNotifyGlobal
 import EntityCreator
+import OnscreenText
+import Task
 
 class DistributedLevel(DistributedObject.DistributedObject,
                        Level.Level):
@@ -22,6 +24,29 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def __init__(self, cr):
         DistributedObject.DistributedObject.__init__(self, cr)
         Level.Level.__init__(self)
+        self.lastToonZone = 0
+        self.titleColor = (1,1,1,1)
+        self.titleText = OnscreenText.OnscreenText(
+            "",
+            fg = self.titleColor,
+            font = ToontownGlobals.getSignFont(),
+            pos = (0,-0.5),
+            scale = 0.16,
+            drawOrder = 0,
+            mayChange = 1,
+            )
+
+        self.smallTitleText = OnscreenText.OnscreenText(
+            "",
+            fg = self.titleColor,
+            font = ToontownGlobals.getSignFont(),
+            pos = (0.4,0.9),
+            scale = 0.08,
+            drawOrder = 0,
+            mayChange = 1,
+            bg = (.5,.5,.5,.5),
+            )
+        self.zonesEnteredList = []
 
     def generate(self):
         self.notify.debug('generate')
@@ -39,6 +64,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # We should listen for any and all time-sync events and re-sync
         # all our entities at that time.
         toonbase.tcr.timeManager.synchronize('DistributedLevel.generate')
+
+        # add factory menu to SpeedChat
+        toonbase.localToon.chatMgr.chatInputSpeedChat.addFactoryMenu()
 
     # "required" fields (these ought to be required fields, but
     # the AI level obj doesn't know the data values until it has been
@@ -179,10 +207,21 @@ class DistributedLevel(DistributedObject.DistributedObject,
         DistributedObject.DistributedObject.disable(self)
         self.ignoreAll()
 
+        # NOTE: this should be moved to FactoryInterior
+        if self.smallTitleText:
+            self.smallTitleText.cleanup()
+            self.smallTitleText = None
+        if self.titleText:
+            self.titleText.cleanup()
+            self.titleText = None
+        self.zonesEnteredList = []
+        
+        # NOTE:  this should be moved to ZoneEntity.disable
+        toonbase.localToon.chatMgr.chatInputSpeedChat.removeFactoryMenu()
+
     def delete(self):
         self.notify.debug('delete')
         DistributedObject.DistributedObject.delete(self)
-
     def getDoorwayNode(self, doorwayNum):
         # returns node that doors should parent themselves to
         return self.doorwayNum2Node[doorwayNum]
@@ -272,7 +311,13 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def toonEnterZone(self, zoneNum):
         self.notify.debug('toonEnterZone%s' % zoneNum)
-
+        if zoneNum != self.lastToonZone:
+            self.lastToonZone = zoneNum
+            print "made zone transition to %s" % zoneNum
+            messenger.send("factoryZoneChanged", [zoneNum])
+            self.smallTitleText.hide()
+            self.spawnTitleText()
+            
     def camEnterZone(self, zoneNum):
         self.notify.debug('camEnterZone%s' % zoneNum)
         self.enterZone(zoneNum)
@@ -363,4 +408,72 @@ class DistributedLevel(DistributedObject.DistributedObject,
                        (lineInfo()[2], specStr, e))
                 raise e
             """
+            
+    def spawnTitleText(self):
+        def getDescription(zoneId, self=self):
+            entId = self.zoneNum2entId.get(zoneId)
+            if entId:
+                ent = self.entities.get(entId)
+                if ent and hasattr(ent, 'description'):
+                    return ent.description
+            return None
+
+        description = getDescription(self.lastToonZone)
+        if description:
+            self.smallTitleText.setText(description)
+            self.titleText.setText(description)
+            self.titleText.setColor(Vec4(*self.titleColor))
+            self.titleText.setFg(self.titleColor)
+
+            # Only show the big title once per session.
+            # If we've already seen it, just show the small title
+
+            titleSeq = None
+            if not self.lastToonZone in self.zonesEnteredList:
+                self.zonesEnteredList.append(self.lastToonZone)
+                titleSeq = Task.sequence(
+                    Task.Task(self.hideSmallTitleTextTask),
+                    Task.Task(self.showTitleTextTask),
+                    Task.pause(0.1),
+                    Task.pause(6.0),
+                    self.titleText.lerpColor(Vec4(self.titleColor[0],
+                                                  self.titleColor[1],
+                                                  self.titleColor[2],
+                                                  self.titleColor[3]),
+                                             Vec4(self.titleColor[0],
+                                                  self.titleColor[1],
+                                                  self.titleColor[2],
+                                                  0.0),
+                                             0.5),
+                    )
+            smallTitleSeq = Task.sequence(Task.Task(self.hideTitleTextTask),
+                                          Task.Task(self.showSmallTitleTask),
+                                          Task.Task(self.showSmallTitleTask))
+            if titleSeq:
+                seq = Task.sequence(titleSeq, smallTitleSeq)
+            else:
+                seq = smallTitleSeq
+            taskMgr.add(seq, "titleText")
+        
+    def showTitleTextTask(self, task):
+        assert(self.notify.debug("hideTitleTextTask()"))
+        self.titleText.show()
+        return Task.done
+
+    def hideTitleTextTask(self, task):
+        assert(self.notify.debug("hideTitleTextTask()"))
+        self.titleText.hide()
+        return Task.done
+
+    def showSmallTitleTask(self, task):
+        # make sure large title is hidden
+        self.titleText.hide()
+        # show the small title
+        self.smallTitleText.show()
+        return Task.done
+    
+    def hideSmallTitleTextTask(self, task):
+        assert(self.notify.debug("hideTitleTextTask()"))
+        self.smallTitleText.hide()
+        return Task.done
             
