@@ -39,18 +39,14 @@ class ShowBase:
 
         # Store dconfig variables
         self.wantTk = self.config.GetBool('want-tk', 0)
-        self.wantAnySound = self.config.GetBool('want-sound', 1)
-        self.wantSfx = self.config.GetBool('audio-sfx-active', 1)
-        self.wantMusic = self.config.GetBool('audio-music-active', 1)
+        self.sfxActive = self.config.GetBool('audio-sfx-active', 1)
+        self.musicActive = self.config.GetBool('audio-music-active', 1)
         self.wantFog = self.config.GetBool('want-fog', 1)
         self.screenshotExtension = self.config.GetString('screenshot-extension', 'jpg')
-        if not (self.wantSfx or self.wantMusic):
-            self.wantAnySound = None
-        if not self.wantAnySound:
-            self.wantSfx = None
-            self.wantMusic = None
         self.musicManager = None
+        self.musicManagerIsValid = None
         self.sfxManager = None
+        self.sfxManagerIsValid = None
 
         self.wantDIRECT = self.config.GetBool('want-directtools', 0)
         self.wantStats = self.config.GetBool('want-stats', 0)
@@ -319,29 +315,28 @@ class ShowBase:
             PStatClient.connect()
 
     def createAudioManager(self):
-        if self.wantSfx:
-            self.sfxManager = AudioManager.createAudioManager()
-            if not self.sfxManager.isValid():
-                self.wantSfx=None
-        if self.wantMusic:
-            self.musicManager = AudioManager.createAudioManager()
+        self.sfxManager = AudioManager.createAudioManager()
+        self.sfxManagerIsValid=self.sfxManager!=None \
+                and self.sfxManager.isValid()
+
+        self.musicManager = AudioManager.createAudioManager()
+        self.musicManagerIsValid=self.musicManager!=None \
+                and self.musicManager.isValid()
+
+        if self.musicManagerIsValid:
             # Turn down the music globally
             # Eventually we may want to control this in the options page
             self.musicManager.setVolume(0.7)
-            if not self.musicManager.isValid():
-                self.wantMusic=None
-
-        self.wantAnySound = (self.wantSfx or self.wantMusic)
 
     def loadSfx(self, name):
-        if (name and base.wantSfx):
+        if (name):
             sound=self.sfxManager.getSound(name)
             if sound == None:
                 self.notify.warning("Could not load sound file %s." % name)
             return sound
 
     def loadMusic(self, name):
-        if (name and base.wantMusic):
+        if (name):
             sound=self.musicManager.getSound(name)
             if sound == None:
                 self.notify.warning("Could not load music file %s." % name)
@@ -356,8 +351,8 @@ class ShowBase:
             del music
 
     def playSfx(self, sfx, looping = 0, interupt = 1, volume = None,
-                time = 0.):
-        if (sfx and base.wantSfx):
+            time = 0.):
+        if sfx:
             if volume != None:
                 sfx.setVolume(volume)
             if interupt or (sfx.status() != AudioSound.PLAYING):
@@ -366,8 +361,8 @@ class ShowBase:
                 sfx.play()
 
     def playMusic(self, music, looping = 0, interupt = 1, volume = None,
-                  time = 0.0):
-        if (music and base.wantMusic):
+            time = 0.0):
+        if music:
             if volume != None:
                 music.setVolume(volume)
             if interupt or (music.status() != AudioSound.PLAYING):
@@ -376,11 +371,11 @@ class ShowBase:
                 music.play()
 
     def stopSfx(self, sfx):
-        if (sfx and base.wantSfx):
+        if sfx:
             sfx.stop()
 
     def stopMusic(self, music):
-        if (music and base.wantMusic):
+        if music:
             music.stop()
 
     def dataloop(self, state):
@@ -702,64 +697,40 @@ class ShowBase:
 
     # these are meant to be called in response to a user request
     def EnableMusic(self, bEnableMusic):
-        self.wantMusic = bEnableMusic
-        self.wantAnySound = (self.wantSfx or self.wantMusic)
-
-        if (self.wantMusic and self.musicManager == None):
-            self.createAudioManager()
-
-            if not self.wantMusic:
-                # Oops, it didn't work.
-                self.notify.warning("Unable to toggle music on.")
-                return 0
-
         # dont setActive(1) if no audiofocus
-        if(not (self.wantMusic and not self.AppHasAudioFocus)):
-                self.musicManager.setActive(self.wantMusic)
-
-        if(self.wantMusic):
+        if self.AppHasAudioFocus and self.musicManagerIsValid:
+            self.musicManager.setActive(bEnableMusic)
+        self.musicActive = bEnableMusic
+        if bEnableMusic:
             self.notify.debug("Enabling music")
         else:
             self.notify.debug("Disabling music")
-        return 1
 
     def EnableSoundEffects(self, bEnableSoundEffects):
-        self.wantSfx = bEnableSoundEffects
-        self.wantAnySound = (self.wantSfx or self.wantMusic)
-
-        if (self.wantSfx and self.sfxManager == None):
-            self.createAudioManager()
-
-            if not self.wantSfx:
-                # Oops, it didn't work.
-                self.notify.warning("Unable to toggle sound effects on.")
-                return 0
-
         # dont setActive(1) if no audiofocus
-        if(not (self.wantSfx and not self.AppHasAudioFocus)):
-            self.sfxManager.setActive(self.wantSfx)
-
-        if(self.wantSfx):
+        if self.AppHasAudioFocus and self.sfxManagerIsValid:
+            self.sfxManager.setActive(bEnableSoundEffects)
+        self.sfxActive=bEnableSoundEffects
+        if bEnableSoundEffects:
             self.notify.debug("Enabling sound effects")
         else:
             self.notify.debug("Disabling sound effects")
-        return 1
 
     # these are meant to be called by the sw when app loses audio focus (switched out)
     def DisableAudio(self):
         self.AppHasAudioFocus = 0
-        if (self.wantSfx and (self.sfxManager != None)):
+        if self.sfxManagerIsValid:
             self.sfxManager.setActive(0)
-        if (self.wantMusic and (self.musicManager != None)):
+        if self.musicManagerIsValid:
             self.musicManager.setActive(0)
         self.notify.debug("Disabling audio")
 
     def EnableAudio(self):
         self.AppHasAudioFocus = 1
-        if (self.wantSfx and (self.sfxManager != None)):
-            self.sfxManager.setActive(1)
-        if (self.wantMusic and (self.musicManager != None)):
-            self.musicManager.setActive(1)
+        if self.sfxManagerIsValid:
+            self.sfxManager.setActive(self.sfxActive)
+        if self.musicManagerIsValid:
+            self.musicManager.setActive(self.musicActive)
         self.notify.debug("Enabling audio")
 
     def run(self):

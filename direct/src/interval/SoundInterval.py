@@ -28,24 +28,16 @@ class SoundInterval(Interval):
         self.sound = sound
         self.loop = loop
         self.volume = volume
-        self.wantSound = base.wantSfx
         # If no duration given use sound's duration as interval's duration
-        if duration == 0.0:
-            if self.wantSound:
-                duration = self.sound.length()
-                if (duration == 0):
-                    self.notify.warning('zero length duration!')
-                # MPG - hack for Miles bug
-                #duration += 1.5
-                # DCR - hack for Miles bug - adding 1.5 seconds caused
-                # problems for MG_neg_buzzer.wav
-                duration += min(duration * 2.4, 1.5)
-            else:
-                # This will screw up any intervals that base their
-                # time on the duration of this sound interval
-                print ('SoundInterval: Warning, want-sound #f,'+
-                       ' zero sound duration assumed')
-                duration = 0.0
+        if duration == 0.0 and self.sound != None:
+            duration = self.sound.length()
+            if (duration == 0):
+                self.notify.warning('zero length duration!')
+            # MPG - hack for Miles bug
+            #duration += 1.5
+            # DCR - hack for Miles bug - adding 1.5 seconds caused
+            # problems for MG_neg_buzzer.wav
+            duration += min(duration * 2.4, 1.5)
         # Generate unique name if necessary
         if (name == None):
             name = id
@@ -53,15 +45,12 @@ class SoundInterval(Interval):
         Interval.__init__(self, name, duration)
         # Update stopEvent
         self.stopEvent = id + '_stopEvent'
-        if self.wantSound:
-            self.stopEventList = [self.stopEvent]
+        self.stopEventList = [self.stopEvent]
 
     def updateFunc(self, t, event = IVAL_NONE):
         """ updateFunc(t, event)
         Go to time t
         """
-        if not self.wantSound:
-            return
         # Update sound based on current time
         if (t >= self.getDuration()):
             # If end of sound reached or stop event received, stop sound
