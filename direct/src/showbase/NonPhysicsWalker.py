@@ -26,6 +26,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
     # special methods
     def __init__(self):
         DirectObject.DirectObject.__init__(self)
+        self.collisionsActive = 0
         #self.forwardButton=0
         #self.reverseButton=0
         #self.jumpButton=0
@@ -99,7 +100,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         self.lifter.setMaxVelocity(16.0)
 
         # activate the collider with the traverser and pusher
-        self.collisionsOn()
+        self.setCollisionsActive(1)
         
         self.pusher.addCollider(self.cSphereNodePath, avatarNodePath)
         self.lifter.addCollider(self.cRayNodePath, avatarNodePath)
@@ -229,7 +230,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         #self.accept("arrow_down", self.moveInReverse, [1])
         #self.accept("arrow_down-up", self.moveInReverse, [0])
         
-        self.collisionsOn()
+        self.setCollisionsActive(1)
 
         taskName = "AvatarControls%s"%(id(self),)
         # remove any old
@@ -266,7 +267,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         #self.ignore("arrow_down")
         #self.ignore("arrow_down-up")
         
-        self.collisionsOff()
+        self.setCollisionsActive(0)
 
         # reset state
         #self.moveTurnLeft(0)
