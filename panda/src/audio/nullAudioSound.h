@@ -63,7 +63,7 @@ public:
   float length() const;
 
   void set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz);
-  void get_3d_attributes(float px, float py, float pz, float vx, float vy, float vz);
+  void get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz);
   
   AudioSound::SoundStatus status() const;
 

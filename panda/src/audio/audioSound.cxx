@@ -40,3 +40,13 @@ AudioSound() {
   // Intentionally blank.
 }
 
+
+void AudioSound::
+set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz) {
+  // Intentionally blank.
+}
+
+void AudioSound::
+get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz) {
+  // Intentionally blank.
+}

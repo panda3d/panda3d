@@ -40,7 +40,7 @@ public:
 
   bool is_valid();
   
-  PT(AudioSound) get_sound(const string& file_name);
+  virtual PT(AudioSound) get_sound(const string& file_name, bool positional = false);
   void uncache_sound(const string& file_name);
   void clear_cache();
   void set_cache_limit(unsigned int count);

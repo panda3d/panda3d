@@ -272,7 +272,7 @@ load(Filename file_name) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(AudioSound) MilesAudioManager::
-get_sound(const string& file_name) {
+get_sound(const string& file_name, bool) {
   audio_debug("MilesAudioManager::get_sound(file_name=\""<<file_name<<"\")");
 
   if(!is_valid()) {
