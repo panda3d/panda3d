@@ -21,7 +21,6 @@
     filename.h load_dso.h dSearchPath.I dSearchPath.h   \
     pfstream.h pfstream.I vector_string.h gnu_getopt.h \
     pfstreamBuf.h vector_src.cxx vector_src.h
-
 #end lib_target
 
 #begin test_bin_target
