@@ -154,3 +154,31 @@ append_data(const void *data, size_t size) {
     _data.v().push_back(source[i]);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void Datagram::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<""<<"Datagram";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void Datagram::
+write(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent);
+  out<<""<<"Datagram:\n";
+  dump_hex(out);
+  #endif //] NDEBUG
+}

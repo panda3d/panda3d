@@ -98,6 +98,9 @@ PUBLISHED:
   INLINE bool operator != (const Datagram &other) const;
   INLINE bool operator < (const Datagram &other) const;
 
+  void output(ostream &out) const;
+  void write(ostream &out, unsigned int indent=0) const;
+
 private:
   PTA_uchar _data;
 
