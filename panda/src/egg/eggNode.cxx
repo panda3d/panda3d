@@ -45,6 +45,20 @@ apply_texmats() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggNode::is_joint
+//       Access: Public, Virtual
+//  Description: Returns true if this particular node represents a
+//               <Joint> entry or not.  This is a handy thing to know
+//               since Joints are sorted to the end of their sibling
+//               list when writing an egg file.  See
+//               EggGroupNode::write().
+////////////////////////////////////////////////////////////////////
+bool EggNode::
+is_joint() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggNode::determine_alpha_mode
 //       Access: Public, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup

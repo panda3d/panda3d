@@ -99,6 +99,8 @@ public:
 
   virtual void write(ostream &out, int indent_level) const;
 
+  virtual bool is_joint() const;
+
   virtual EggRenderMode *determine_alpha_mode();
   virtual EggRenderMode *determine_depth_write_mode();
   virtual EggRenderMode *determine_depth_test_mode();

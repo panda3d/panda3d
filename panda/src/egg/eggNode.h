@@ -63,6 +63,8 @@ public:
   INLINE void flatten_transforms();
   void apply_texmats();
 
+  virtual bool is_joint() const;
+
   virtual EggRenderMode *determine_alpha_mode();
   virtual EggRenderMode *determine_depth_write_mode();
   virtual EggRenderMode *determine_depth_test_mode();

@@ -86,8 +86,25 @@ EggGroupNode::
 void EggGroupNode::
 write(ostream &out, int indent_level) const {
   iterator i;
+
+  // Since joints tend to reference vertex pools, which sometimes
+  // appear later in the file, and since generally non-joints don't
+  // reference joints, we try to maximize our chance of writing out a
+  // one-pass readable egg file by writing joints at the end of the
+  // list of children of a particular node.
+
   for (i = begin(); i != end(); ++i) {
-    (*i)->write(out, indent_level);
+    PT(EggNode) child = (*i);
+    if (!child->is_joint()) {
+      child->write(out, indent_level);
+    }
+  }
+
+  for (i = begin(); i != end(); ++i) {
+    PT(EggNode) child = (*i);
+    if (child->is_joint()) {
+      child->write(out, indent_level);
+    }
   }
 }
 

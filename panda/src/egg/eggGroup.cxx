@@ -295,6 +295,20 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::is_joint
+//       Access: Public, Virtual
+//  Description: Returns true if this particular node represents a
+//               <Joint> entry or not.  This is a handy thing to know
+//               since Joints are sorted to the end of their sibling
+//               list when writing an egg file.  See
+//               EggGroupNode::write().
+////////////////////////////////////////////////////////////////////
+bool EggGroup::
+is_joint() const {
+  return (get_group_type() == GT_joint);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::determine_alpha_mode
 //       Access: Public, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup
