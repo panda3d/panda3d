@@ -29,6 +29,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
     # special methods
     def __init__(self):
         DirectObject.DirectObject.__init__(self)
+        self.worldVelocity = Vec3.zero()
         self.collisionsActive = 0
         self.speed=0.0
         self.rotationSpeed=0.0
@@ -235,6 +236,11 @@ class NonPhysicsWalker(DirectObject.DirectObject):
             messenger.send("avatarMoving")
         else:
             self.vel.set(0.0, 0.0, 0.0)
+        
+        self.__oldPosDelta = self.avatarNodePath.getPosDelta(render)
+        self.__oldDt = dt
+        self.worldVelocity = self.__oldPosDelta*(1/self.__oldDt)
+        
         return Task.cont
     
     def doDeltaPos(self):
