@@ -15,6 +15,7 @@ void GuiCollection::recompute_frame(void) {
   for (Items::iterator i=_items.begin(); i!=_items.end(); ++i)
     (*i)->recompute();
 
+  this->adjust_region();
   thaw();
 }
 

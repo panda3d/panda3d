@@ -12,6 +12,7 @@ void GuiSign::recompute_frame(void) {
   GuiItem::recompute_frame();
   _sign->recompute();
   _sign->get_extents(_left, _right, _bottom, _top);
+  this->adjust_region();
 }
 
 void GuiSign::set_priority(GuiLabel* l, const GuiItem::Priority p) {

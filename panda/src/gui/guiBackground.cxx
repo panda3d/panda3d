@@ -16,6 +16,7 @@ void GuiBackground::recompute_frame(void) {
 			      (_item->get_bottom() + _item->get_top())*0.5));
   _bg->recompute();
   GuiItem::recompute_frame();
+  this->adjust_region();
 }
 
 void GuiBackground::set_priority(GuiLabel* l, const GuiItem::Priority p) {

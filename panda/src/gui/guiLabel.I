@@ -11,6 +11,8 @@ INLINE GuiLabel::GuiLabel(void) : _type(GuiLabel::NONE),
 				  _model_height(1.), _scale(1.),
 				  _scale_x(1.), _scale_y(1.), _scale_z(1.),
 				  _pos(0., 0., 0.),
+				  _model_pos(0., 0., 0.),
+				  _have_foreground(false),
 				  _foreground(1., 1., 1., 1.),
 				  _have_background(false),
 				  _background(0., 0., 0., 0.),
@@ -108,6 +110,7 @@ INLINE LVector3f GuiLabel::get_pos(void) const {
 
 INLINE void GuiLabel::set_foreground_color(float r, float g, float b,
 					   float a) {
+  this->_have_foreground = true;
   this->set_foreground_color(Colorf(r, g, b, a));
 }
 

@@ -207,6 +207,7 @@ void GuiFrame::recompute_frame(void) {
     _top = (_top<tmp)?tmp:_top;
   }
 
+  this->adjust_region();
   thaw();
 }
 

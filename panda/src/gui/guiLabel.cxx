@@ -47,7 +47,7 @@ void GuiLabel::recompute_transform(void) {
 	LMatrix4f::scale_mat(LVector3f::rfu(w, 1., h)) *
 	LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.:1.), 1.,
 					    (_mirror_y?-1.:1.))) *
-	LMatrix4f::translate_mat(_pos);
+	LMatrix4f::translate_mat(_pos + _model_pos);
       _internal->set_transition(new TransformTransition(mat));
     }
     break;
@@ -63,7 +63,8 @@ void GuiLabel::set_properties(void) {
   case SIMPLE_TEXT:
     {
       TextNode* n = DCAST(TextNode, _geom);
-      n->set_text_color(_foreground);
+      if (_have_foreground)
+	n->set_text_color(_foreground);
       n->clear_card();
       if ((_have_background) || (_tex == (Texture*)0L)) {
 	if (_have_background)
@@ -108,10 +109,19 @@ void GuiLabel::set_properties(void) {
   case SIMPLE_TEXTURE:
   case MODEL:
   case L_NULL:
-    _internal->set_transition(new ColorTransition(_foreground));
+    if (_have_foreground)
+      _internal->set_transition(new ColorTransition(_foreground));
     break;
   case SIMPLE_CARD:
-    _internal->set_transition(new ColorTransition(_foreground));
+    if (_have_foreground) {
+      _internal->set_transition(new ColorTransition(_foreground));
+      TransparencyProperty::Mode mode;
+      if (_foreground[3] != 1.)
+	mode = TransparencyProperty::M_alpha;
+      else
+	mode = TransparencyProperty::M_none;
+      _internal->set_transition(new TransparencyTransition(mode));
+    }
     {
       float w, h;
       w = _have_width?(_width * 0.5):0.5;
@@ -258,8 +268,23 @@ GuiLabel* GuiLabel::make_model_label(Node* geom, float w, float h) {
   ret->_model_width = w;
   ret->_model_height = h;
   ret->_internal = new RenderRelation(ret->_geom, geom);
-  ret->_internal->set_transition(
-				new ColorTransition(Colorf(ret->_foreground)));
+  gui_cat->debug() << "created model label 0x" << (void*)ret 
+		   << " from node 0x" << (void*)geom
+		   << ", set _type(" << (int)(ret->_type) << ") to MODEL("
+		   << (int)MODEL << ")" << endl;
+  return ret;
+}
+
+GuiLabel* GuiLabel::make_model_label(Node* geom, float left, float right,
+				     float bottom, float top) {
+  GuiLabel* ret = new GuiLabel();
+  ret->_type = MODEL;
+  ret->_geom = new NamedNode("GUI label");
+  ret->_model_pos = LVector3f::rfu((left - right) * 0.5, 0.,
+				   (bottom - top) * 0.5);
+  ret->_model_width = right - left;
+  ret->_model_height = top - bottom;
+  ret->_internal = new RenderRelation(ret->_geom, geom);
   gui_cat->debug() << "created model label 0x" << (void*)ret 
 		   << " from node 0x" << (void*)geom
 		   << ", set _type(" << (int)(ret->_type) << ") to MODEL("
@@ -640,7 +665,7 @@ int GuiLabel::set_draw_order(int order) {
   case SIMPLE_CARD:
   case L_NULL:
   case MODEL:
-    _arc->set_transition(new GeomBinTransition("fixed", order));
+    _internal->set_transition(new GeomBinTransition("fixed", order));
     break;
   default:
     gui_cat->warning() << "trying to set draw order on an unknown label type ("

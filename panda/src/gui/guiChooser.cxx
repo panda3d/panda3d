@@ -60,6 +60,7 @@ void GuiChooser::recompute_frame(void) {
   _top = t;
 
   GuiBehavior::recompute_frame();
+  this->adjust_region();
 }
 
 void GuiChooser::set_priority(GuiLabel* l, GuiItem::Priority p) {

@@ -68,24 +68,7 @@ void GuiRollover::recompute_frame(void) {
 
 void GuiRollover::adjust_region(void) {
   GetExtents(_off, _on, _left, _right, _bottom, _top);
-  gui_cat->debug() << "in adjust_region, base values (" << _left << ", "
-		   << _right << ", " << _bottom << ", " << _top << ")" << endl;
-  if (!(_alt_root.is_null())) {
-    // adjust for graph transform
-    LMatrix4f m;
-    this->get_graph_mat(m);
-    LPoint3f ul = LVector3f::rfu(_left, 0., _top);
-    LPoint3f lr = LVector3f::rfu(_right, 0., _bottom);
-    ul = m * ul;
-    lr = m * lr;
-    _left = ul.dot(LVector3f::rfu(1., 0., 0.));
-    _top = ul.dot(LVector3f::rfu(0., 0., 1.));
-    _right = lr.dot(LVector3f::rfu(1., 0., 0.));
-    _bottom = lr.dot(LVector3f::rfu(0., 0., 1.));
-    gui_cat->debug() << "childed to non-default node, current values ("
-		     << _left << ", " << _right << ", " << _bottom << ", "
-		     << _top << ")" << endl;
-  }
+  GuiItem::adjust_region();
   _rgn->set_region(_left, _right, _bottom, _top);
 }
 

@@ -58,6 +58,7 @@ void GuiListBox::recompute_frame(void) {
   _right = rgt;
   _top = tp;
   _bottom = btm;
+  this->adjust_region();
   this->thaw();
 }
 

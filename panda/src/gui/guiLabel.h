@@ -38,6 +38,8 @@ private:
   float _scale;
   float _scale_x, _scale_y, _scale_z;
   LVector3f _pos;
+  LVector3f _model_pos;
+  bool _have_foreground;
   Colorf _foreground;
   bool _have_background;
   Colorf _background;
@@ -73,6 +75,7 @@ PUBLISHED:
   static GuiLabel* make_simple_card_label(void);
   static GuiLabel* make_null_label(void);
   static GuiLabel* make_model_label(Node*, float, float);
+  static GuiLabel* make_model_label(Node*, float, float, float, float);
 
   int freeze();
   int thaw();
