@@ -13,7 +13,7 @@ $rebase_path="C:\\Program Files\\Microsoft Platform SDK\\Bin;C:\\Program Files\\
 $ENV{'PATH'}.=";".$rebase_path;
 
 # note: this is the order dlls will be laid out in memory
-@dll_names=("libpanda","libpandadx","libpandagl","libpandaexpress","libpandaphysics",
+@dll_names=("libpanda","libpandadx","libpandadx8","libpandagl","libpandaexpress","libpandaphysics",
             "libpandafx","libdtool","libdtoolconfig","libpystub","libdirect","libtoontown","libmiles_audio","libpandaegg");
 
 # old audio dlls
