@@ -862,6 +862,8 @@ fill_image(PNMImage &image) {
       }
     }
   }
+
+  _texture->release_source_image();
 }
 
 ////////////////////////////////////////////////////////////////////

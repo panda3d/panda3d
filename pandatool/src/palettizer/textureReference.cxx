@@ -155,6 +155,34 @@ from_egg_quick(const TextureReference &other) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureReference::release_egg_data
+//       Access: Public
+//  Description: Called to indicate that the EggData previously passed
+//               to from_egg() is about to be deallocated, and all of
+//               its pointers should be cleared.
+////////////////////////////////////////////////////////////////////
+void TextureReference::
+release_egg_data() {
+  _egg_tex = NULL;
+  _egg_data = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureReference::rebind_egg_data
+//       Access: Public
+//  Description: After an EggData has previously been released via
+//               release_egg_data(), this can be called to indicate
+//               that the egg file has been reloaded and we should
+//               assign the indicated pointers.
+////////////////////////////////////////////////////////////////////
+void TextureReference::
+rebind_egg_data(EggData *data, EggTexture *egg_tex) {
+  nassertv(_tref_name == egg_tex->get_name());
+  _egg_data = data;
+  _egg_tex = egg_tex;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureReference::get_egg_file
 //       Access: Public
 //  Description: Returns the EggFile that references this texture.

@@ -78,13 +78,13 @@ add_placement(TexturePlacement *placement) {
 
   } else {
     DestTextureImage *dest = placement->get_dest();
-    nassertv(dest != (DestTextureImage *)NULL);
-
-    int bytes = count_bytes(dest);
-    add_texture(texture, bytes);
-
-    _bytes += bytes;
-    _num_unplaced++;
+    if (dest != (DestTextureImage *)NULL) {
+      int bytes = count_bytes(dest);
+      add_texture(texture, bytes);
+      
+      _bytes += bytes;
+      _num_unplaced++;
+    }
   }
 }
 

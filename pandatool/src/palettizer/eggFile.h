@@ -23,14 +23,13 @@
 
 #include "paletteGroups.h"
 #include "textureReference.h"
-
+#include "eggData.h"
 #include "filename.h"
 #include "namable.h"
 #include "typedWritable.h"
-
+#include "pointerTo.h"
 #include "pset.h"
 
-class EggData;
 class TextureImage;
 
 ////////////////////////////////////////////////////////////////////
@@ -71,10 +70,12 @@ public:
   void choose_placements();
 
   bool has_data() const;
+  bool had_data() const;
 
   void update_egg();
   void remove_egg();
   bool read_egg();
+  void release_egg_data();
   bool write_egg();
 
   void write_description(ostream &out, int indent_level = 0) const;
@@ -82,9 +83,10 @@ public:
 
 private:
   void remove_backstage(EggGroupNode *node);
+  void rescan_textures();
 
 private:
-  EggData *_data;
+  PT(EggData) _data;
   Filename _current_directory;
   Filename _source_filename;
   Filename _dest_filename;
@@ -99,6 +101,7 @@ private:
   PaletteGroups _complete_groups;
   bool _is_surprise;
   bool _is_stale;
+  bool _had_data;
 
 
   // The TypedWritable interface follows.

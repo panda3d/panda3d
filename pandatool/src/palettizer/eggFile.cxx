@@ -49,10 +49,11 @@ TypeHandle EggFile::_type_handle;
 EggFile::
 EggFile() {
   _data = (EggData *)NULL;
+  _first_txa_match = false;
   _default_group = (PaletteGroup *)NULL;
   _is_surprise = true;
   _is_stale = true;
-  _first_txa_match = false;
+  _had_data = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,6 +68,7 @@ from_command_line(EggData *data,
                   const Filename &dest_filename,
                   const string &egg_comment) {
   _data = data;
+  _had_data = true;
   remove_backstage(_data);
 
   // We save the current directory at the time the egg file appeared
@@ -468,12 +470,23 @@ choose_placements() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggFile::has_data
 //       Access: Public
-//  Description: Returns true if the EggData for this EggFile has ever
-//               been loaded.
+//  Description: Returns true if the EggData for this EggFile has 
+//               been loaded, and not yet released.
 ////////////////////////////////////////////////////////////////////
 bool EggFile::
 has_data() const {
   return (_data != (EggData *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::had_data
+//       Access: Public
+//  Description: Returns true if the EggData for this EggFile has ever
+//               been loaded.
+////////////////////////////////////////////////////////////////////
+bool EggFile::
+had_data() const {
+  return _had_data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -485,6 +498,8 @@ has_data() const {
 ////////////////////////////////////////////////////////////////////
 void EggFile::
 update_egg() {
+  nassertv(_data != (EggData *)NULL);
+
   Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     TextureReference *reference = (*ti);
@@ -515,6 +530,10 @@ remove_egg() {
 //               is only valid to call this if it has not already been
 //               read in, e.g. from the command line.  Returns true if
 //               successful, false if there is an error.
+//
+//               This may also be called after a previous call to
+//               release_egg_data(), in order to re-read the same egg
+//               file.
 ////////////////////////////////////////////////////////////////////
 bool EggFile::
 read_egg() {
@@ -529,12 +548,23 @@ read_egg() {
     return false;
   }
 
-  EggData *data = new EggData;
+  PT(EggData) data = new EggData;
   if (!data->read(_source_filename, user_source_filename)) {
     // Failure reading.
-    delete data;
     return false;
   }
+
+
+  // Extract the set of textures referenced by this egg file.
+  EggTextureCollection tc;
+  tc.find_used_textures(_data);
+  
+  // Make sure each tref name is unique within a given file.
+  tc.uniquify_trefs();
+
+  // Now build up a list of new TextureReference objects that
+  // represent the textures actually used and their uv range, etc.
+  Textures new_textures;
 
   // We want to search for filenames based on the egg directory, and
   // also on our current directory from which we originally loaded the
@@ -551,18 +581,41 @@ read_egg() {
 
   if (!data->load_externals()) {
     // Failure reading an external.
-    delete data;
     return false;
   }
 
   _data = data;
+  _had_data = true;
   remove_backstage(_data);
 
-  // Replace the comment that shows how we first generated the egg
-  // file.
-  _data->insert(_data->begin(), new EggComment("", _egg_comment));
+  // Insert a comment that shows how we first generated the egg file.
+  PT(EggNode) comment = new EggComment("", _egg_comment);
+  _data->insert(_data->begin(), comment);
+
+  if (!_textures.empty()) {
+    // If we already have textures, assume we're re-reading the file.
+    rescan_textures();
+  }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::release_egg_data
+//       Access: Public
+//  Description: Releases the memory that was loaded by a previous
+//               call to read_egg().
+////////////////////////////////////////////////////////////////////
+void EggFile::
+release_egg_data() {
+  if (_data != (EggData *)NULL) {
+    _data = NULL;
+  }
+  Textures::iterator ti;
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    TextureReference *reference = (*ti);
+    reference->release_egg_data();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -659,6 +712,51 @@ remove_backstage(EggGroupNode *node) {
         remove_backstage(DCAST(EggGroupNode, child));
       }
       ++ci;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::rescan_textures
+//       Access: Private
+//  Description: After reloading the egg file for the second time in a
+//               given session, rematches the texture pointers with
+//               the TextureReference objects.
+////////////////////////////////////////////////////////////////////
+void EggFile::
+rescan_textures() {
+  nassertv(_data != (EggData *)NULL);
+
+  // Extract the set of textures referenced by this egg file.
+  EggTextureCollection tc;
+  tc.find_used_textures(_data);
+  
+  // Make sure each tref name is unique within a given file.
+  tc.uniquify_trefs();
+
+  typedef pmap<string, TextureReference *> ByTRefName;
+  ByTRefName by_tref_name;
+  for (Textures::const_iterator ti = _textures.begin();
+       ti != _textures.end();
+       ++ti) {
+    TextureReference *ref = (*ti);
+    by_tref_name[ref->get_tref_name()] = ref;
+  }
+
+  EggTextureCollection::iterator eti;
+  for (eti = tc.begin(); eti != tc.end(); ++eti) {
+    EggTexture *egg_tex = (*eti);
+
+    ByTRefName::const_iterator tni = by_tref_name.find(egg_tex->get_name());
+    if (tni == by_tref_name.end()) {
+      // We didn't find this TRef name last time around!
+      nout << _source_filename.get_basename()
+           << " modified during session--TRef " << egg_tex->get_name() 
+           << " is new!\n";
+
+    } else {
+      TextureReference *ref = (*tni).second;
+      ref->rebind_egg_data(_data, egg_tex);
     }
   }
 }

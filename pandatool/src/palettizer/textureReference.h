@@ -51,6 +51,8 @@ public:
 
   void from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex);
   void from_egg_quick(const TextureReference &other);
+  void release_egg_data();
+  void rebind_egg_data(EggData *data, EggTexture *egg_tex);
 
   EggFile *get_egg_file() const;
   SourceTextureImage *get_source() const;
@@ -78,6 +80,7 @@ public:
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
+
 
 private:
   bool get_uv_range(EggGroupNode *group, Palettizer::RemapUV remap);

@@ -652,7 +652,7 @@ generate_images(bool redo_all) {
 bool Palettizer::
 read_stale_eggs(bool redo_all) {
   bool okflag = true;
-  
+
   pvector<EggFiles::iterator> invalid_eggs;
 
   EggFiles::iterator ei;
@@ -666,6 +666,7 @@ read_stale_eggs(bool redo_all) {
       } else {
         egg_file->scan_textures();
         egg_file->choose_placements();
+        egg_file->release_egg_data();
       }
     }
   }
@@ -697,10 +698,22 @@ write_eggs() {
   EggFiles::iterator ei;
   for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
     EggFile *egg_file = (*ei).second;
-    if (egg_file->has_data()) {
-      egg_file->update_egg();
-      if (!egg_file->write_egg()) {
-        okflag = false;
+    if (egg_file->had_data()) {
+      if (!egg_file->has_data()) {
+        // Re-read the egg file.
+        bool read_ok = egg_file->read_egg();
+        if (!read_ok) {
+          nout << "Error!  Unable to re-read egg file.\n";
+          okflag = false;
+        }
+      }
+
+      if (egg_file->has_data()) {
+        egg_file->update_egg();
+        if (!egg_file->write_egg()) {
+          okflag = false;
+        }
+        egg_file->release_egg_data();
       }
     }
   }
