@@ -62,7 +62,6 @@ class ShadowPlacer(DirectObject.DirectObject):
 
         # set up floor collision mechanism
         self.lifter = CollisionHandlerFloor()
-        #*#self.lifter.setWrtFlag(1)
         #self.lifter.setInPattern("on-floor")
         #self.lifter.setOutPattern("off-floor")
         self.lifter.setOffset(floorOffset)

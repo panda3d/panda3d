@@ -325,13 +325,15 @@ class Actor(PandaObject, NodePath):
         return self.__partBundleDict.values()[0].keys()
     
     def getGeomNode(self):
-        """getGeomNode(self)
-        Return the node that contains all actor geometry"""
+        """
+        Return the node that contains all actor geometry
+        """
         return self.__geomNode
 
     def setGeomNode(self, node):
         """
-        Set the node that contains all actor geometry"""
+        Set the node that contains all actor geometry
+        """
         self.__geomNode = node
 
     def getLODNode(self):
