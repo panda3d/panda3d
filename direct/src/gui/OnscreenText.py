@@ -12,6 +12,7 @@ Plain = 1
 ScreenTitle = 2
 ScreenPrompt = 3
 NameConfirm = 4
+BlackOnWhite = 5
 
 class OnscreenText(PandaObject, NodePath):
 
@@ -120,6 +121,14 @@ class OnscreenText(PandaObject, NodePath):
             scale = scale or 0.1
             fg = fg or (0, 1, 0, 1)
             bg = bg or (0, 0, 0, 0)
+            shadow = shadow or (0, 0, 0, 0)
+            frame = frame or (0, 0, 0, 0)
+            align = align or TMALIGNCENTER
+
+        elif style == BlackOnWhite:
+            scale = scale or 0.1
+            fg = fg or (0, 0, 0, 1)
+            bg = bg or (1, 1, 1, 1)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
             align = align or TMALIGNCENTER
