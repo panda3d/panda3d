@@ -253,14 +253,15 @@ apply(double x, double y, bool any_button) {
       // Motion is forward.  Compute the throttle value: the ratio of
       // the mouse pointer within the range of vertical movement.
       float throttle =
-        (min(y, 1.0f) - dead_zone_top) /
+        // double 1.0, not 1.0f, is required here to satisfy min()
+        (min(y, 1.0) - dead_zone_top) /
         (1.0f - dead_zone_top);
       _speed = throttle * _forward_speed;
 
     } else if (y <= dead_zone_bottom) {
       // Motion is backward.
       float throttle =
-        (max(y, -1.0f) - dead_zone_bottom) /
+        (max(y, -1.0) - dead_zone_bottom) /
         (-1.0f - dead_zone_bottom);
       _speed = -throttle * _reverse_speed;
     }
@@ -276,14 +277,14 @@ apply(double x, double y, bool any_button) {
       // ratio of the mouse pointer within the range of horizontal
       // movement.
       float throttle =
-        (min(x, 1.0f) - dead_zone_right) /
+        (min(x, 1.0) - dead_zone_right) /
         (1.0f - dead_zone_right);
       _rot_speed = throttle * _rotate_speed;
 
     } else if (x <= dead_zone_left) {
       // Rotation is to the left.
       float throttle =
-        (max(x, -1.0f) - dead_zone_left) /
+        (max(x, -1.0) - dead_zone_left) /
         (-1.0f - dead_zone_left);
       _rot_speed = -throttle * _rotate_speed;
     }
