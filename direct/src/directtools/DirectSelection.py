@@ -560,7 +560,7 @@ class SelectionRay(SelectionQueue):
 
     def pickBitMask(self, bitMask = BitMask32.allOff(),
                     targetNodePath = render,
-                    skipFlags = SKIP_ALL ):
+                    skipFlags = SKIP_ALL):
         self.collideWithBitMask(bitMask)
         self.pick(targetNodePath)
         # Determine collision entry
