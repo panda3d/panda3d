@@ -12,7 +12,8 @@
     pstatclient grutil chan chancfg \
     char chat collide cull device \
     dgraph display gobj graph gsgbase \
-    gsgmisc light linmath mathutil net pnm \
+    gsgmisc light linmath mathutil net \
+    parametrics pnm \
     pnmimagetypes pnmimage sgattrib sgmanip sgraph sgraphutil \
     switchnode text tform tiff lerp loader putil effects \
     audio gui pandabase 
