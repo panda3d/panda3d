@@ -18,6 +18,7 @@
 
 #include "fftCompressor.h"
 #include "config_mathutil.h"
+#include "config_linmath.h"
 
 #include "datagram.h"
 #include "datagramIterator.h"
@@ -646,9 +647,15 @@ read_reals(DatagramIterator &di, vector_float &array) {
 //               onto the end of the indicated vector, which is not
 //               cleared first; it is the user's responsibility to
 //               ensure that the array is initially empty.
+//
+//               new_hpr is a temporary, transitional parameter.  If
+//               it is set false, the hprs are decompressed according
+//               to the old, broken hpr calculation; if true, the hprs
+//               are decompressed according to the new, correct hpr
+//               calculation.  See temp_hpr_fix.
 ////////////////////////////////////////////////////////////////////
 bool FFTCompressor::
-read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
+read_hprs(DatagramIterator &di, vector_LVecBase3f &array, bool new_hpr) {
 #ifndef NDEBUG
   if (_quality >= 104) {
     // If quality level is at least 104, we don't even convert hpr to
@@ -663,7 +670,7 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
     if (okflag) {
       nassertr(h.size() == p.size() && p.size() == r.size(), false);
       for (int i = 0; i < (int)h.size(); i++) {
-                  array.push_back(LVecBase3f(h[i], p[i], r[i]));
+        array.push_back(LVecBase3f(h[i], p[i], r[i]));
       }
     }
 
@@ -694,7 +701,11 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
                       m10[i], m11[i], m12[i],
                       m20[i], m21[i], m22[i]);
         LVecBase3f scale, shear, hpr;
-        decompose_matrix(mat, scale, shear, hpr);
+        if (new_hpr) {
+          decompose_matrix_new_hpr(mat, scale, shear, hpr);
+        } else {
+          decompose_matrix_old_hpr(mat, scale, shear, hpr);
+        }
         array.push_back(hpr);
       }
     }
@@ -753,12 +764,29 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
         mat.transpose_in_place();
       }
       LVecBase3f scale, shear, hpr;
-      decompose_matrix(mat, scale, shear, hpr);
+      if (new_hpr) {
+        decompose_matrix_new_hpr(mat, scale, shear, hpr);
+      } else {
+        decompose_matrix_old_hpr(mat, scale, shear, hpr);
+      }
       array.push_back(hpr);
     }
   }
 
   return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FFTCompressor::read_hprs
+//       Access: Public
+//  Description: Reads an array of HPR angles.  The result is pushed
+//               onto the end of the indicated vector, which is not
+//               cleared first; it is the user's responsibility to
+//               ensure that the array is initially empty.
+////////////////////////////////////////////////////////////////////
+bool FFTCompressor::
+read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
+  return read_hprs(di, array, temp_hpr_fix);
 }
 
 

@@ -28,6 +28,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "fftCompressor.h"
+#include "config_linmath.h"
 
 TypeHandle AnimChannelMatrixXfmTable::_type_handle;
 
@@ -267,6 +268,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
     FFTCompressor compressor;
     compressor.set_quality(compress_chan_quality);
     compressor.set_use_error_threshold(true);
+    me.add_bool(temp_hpr_fix);
     compressor.write_header(me);
 
     // First, write out the scales and shears.
@@ -336,6 +338,14 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       return;
     }
 
+    bool new_hpr = false;
+    if (manager->get_file_minor_ver() >= 14) {
+      // Beginning in bam 4.14, we encode a bool to indicate whether
+      // we used the old hpr or the new hpr calculation.  Previously,
+      // we assume all bams used the old hpr calculation.
+      new_hpr = scan.get_bool();
+    }
+
     FFTCompressor compressor;
     compressor.read_header(scan, manager->get_file_minor_ver());
 
@@ -362,7 +372,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
     // Read in the HPR array and store it back in the joint angles.
     vector_LVecBase3f hprs;
-    compressor.read_hprs(scan, hprs);
+    compressor.read_hprs(scan, hprs, new_hpr);
     PTA_float h_table = PTA_float::empty_array(hprs.size());
     PTA_float p_table = PTA_float::empty_array(hprs.size());
     PTA_float r_table = PTA_float::empty_array(hprs.size());

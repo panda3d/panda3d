@@ -34,7 +34,7 @@ static const unsigned short _bam_major_ver = 4;
 // Bumped to major version 3 on 12/8/00 to change float64's to float32's.
 // Bumped to major version 4 on 4/10/02 to store new scene graph.
 
-static const unsigned short _bam_minor_ver = 13;
+static const unsigned short _bam_minor_ver = 14;
 // Bumped to minor version 1 on 4/10/03 to add CullFaceAttrib::reverse.
 // Bumped to minor version 1 on 4/10/03 to add CullFaceAttrib::reverse.
 // Bumped to minor version 2 on 4/12/03 to add num_components to texture.
@@ -49,6 +49,7 @@ static const unsigned short _bam_minor_ver = 13;
 // Bumped to minor version 11 on 07/26/04 to add multitexture pointers.
 // Bumped to minor version 12 on 09/22/04 to add PandaNode::into_collide_mask.
 // Bumped to minor version 13 on 09/24/04 to store actual LODNode switch distances instead of squares.
+// Bumped to minor version 14 on 11/18/04 to differentiate old_hpr from new_hpr in compressed anim channels.
 
 
 #endif
