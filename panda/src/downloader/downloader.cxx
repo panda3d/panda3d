@@ -690,12 +690,14 @@ int Downloader::
 parse_http_response(const string &resp) {
   size_t ws = resp.find(" ", 0);
   string httpstr = resp.substr(0, ws);
+#if 0
   if (!(httpstr == "HTTP/1.1")) {
     downloader_cat.error()
       << "Downloader::parse_http_response() - not HTTP/1.1 - got: "
       << httpstr << endl;
     return EU_error_abort;
   }
+#endif
   size_t ws2 = resp.find(" ", ws);
   string numstr = resp.substr(ws, ws2);
   nassertr(numstr.length() > 0, false);
