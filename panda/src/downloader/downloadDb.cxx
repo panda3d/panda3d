@@ -982,12 +982,16 @@ get_version(const Filename &name, Hash hash) {
   int name_code = atoi(name.get_fullpath().c_str());
   VersionMap::const_iterator vmi = _versions.find(name_code);
   if (vmi == _versions.end()) {
+    downloader_cat.debug()
+      << "DownloadDb::get_version() - can't find: " << name << endl;
     return -1;
   }
   vector_ulong ulvec = (*vmi).second;
   vector_ulong::iterator i = find(ulvec.begin(), ulvec.end(), hash);
   if (i != ulvec.end())
     return (i - ulvec.begin() + 1);
+  downloader_cat.debug()
+    << "DownloadDb::get_version() - can't find hash: " << hash << endl;
   return -1;
 }
 
@@ -1038,7 +1042,7 @@ read_version_map(ifstream &read_stream) {
       _master_datagram.append_data(buffer, sizeof(PN_uint64));
       DatagramIterator di3(_master_datagram);
       int hash = di3.get_uint64();
-      add_version(name, hash, j);
+      add_version(name, hash, j + 1);
     }
   }
   delete buffer;
