@@ -950,7 +950,10 @@ class Actor(PandaObject, NodePath):
                 control.play()
         else:
             for control in self.getAnimControls(animName, partName):
-                control.play(fromFrame, toFrame)
+                if toFrame == None:
+                    control.play(fromFrame, control.getNumFrames() - 1)
+                else:
+                    control.play(fromFrame, toFrame)
 
     def loop(self, animName, restart=1, partName=None,
              fromFrame=None, toFrame=None):
