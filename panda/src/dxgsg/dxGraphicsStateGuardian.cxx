@@ -4882,12 +4882,16 @@ begin_decal(GeomNode *base_geom) {
     nassertv(base_geom != (GeomNode *)NULL);
 
     _decal_level++;
-    nassertv(4*_decal_level < 16);
 
 #ifndef DISABLE_POLYGON_OFFSET_DECALING
     if (dx_decal_type == GDT_offset) {
-
 #define POLYGON_OFFSET_MULTIPLIER 2
+
+        // note: zbias seems inconsitently supported.  may be possible to fake it by
+        //       adding (delta * element[4,3]) to element [3,3] of a regular matrix
+        //       need to test this and see if to offers perf improvement over blend-based decaling
+
+        nassertv(POLYGON_OFFSET_MULTIPLIER*_decal_level < 16);  // 16 is the max allowed zbias
 
         // Just draw the base geometry normally.
         base_geom->draw(this);
