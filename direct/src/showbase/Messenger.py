@@ -186,6 +186,53 @@ class Messenger:
     def toggleVerbose(self):
         Messenger.notify.setDebug(1 - Messenger.notify.getDebug())
 
+    def find(self, needle):
+        """
+        return a matching event (needle) if found (in haystack).
+        This is primarily a debugging tool.
+        """
+        keys = self.dict.keys()
+        keys.sort()
+        for event in keys:
+            if `event`.find(needle) >= 0:
+                print self.__eventRepr(event),
+                return {event: self.dict[event]}
+
+    def findAll(self, needle, limit=None):
+        """
+        return a dict of events (needle) if found (in haystack).
+        limit may be None or an integer (e.g. 1).
+        This is primarily a debugging tool.
+        """
+        matches = {}
+        keys = self.dict.keys()
+        keys.sort()
+        for event in keys:
+            if `event`.find(needle) >= 0:
+                print self.__eventRepr(event),
+                matches[event] = self.dict[event]
+                # if the limit is not None, decrement and
+                # check for break:
+                if limit > 0:
+                    limit -= 1
+                    if limit == 0:
+                        break
+        return matches
+
+    def __eventRepr(self, event):
+        """
+        Compact version of event, acceptor pairs
+        """
+        str = event.ljust(32) + '\t'
+        acceptorDict = self.dict[event]
+        for object in acceptorDict.keys():
+            method, extraArgs, persistent = acceptorDict[object]
+            className = object.__class__.__name__
+            methodName = method.__name__
+            str = str + className + '.' + methodName + ' '
+        str = str + '\n'
+        return str
+
     def __repr__(self):
         """
         Compact version of event, acceptor pairs
@@ -194,14 +241,7 @@ class Messenger:
         keys = self.dict.keys()
         keys.sort()
         for event in keys:
-            str = str + event.ljust(32) + '\t'
-            acceptorDict = self.dict[event]
-            for object in acceptorDict.keys():
-                method, extraArgs, persistent = acceptorDict[object]
-                className = object.__class__.__name__
-                methodName = method.__name__
-                str = str + className + '.' + methodName + ' '
-            str = str + '\n'
+            str += self.__eventRepr(event)
         return str
 
     def detailedRepr(self):
