@@ -16,6 +16,9 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef SGI_IMAGE_H
+#define SGI_IMAGE_H
+
 typedef struct {
     short           magic;
     char            storage;
@@ -42,4 +45,4 @@ typedef struct {
 #define CMAP_SCREEN         2   /* not supported */
 #define CMAP_COLORMAP       3   /* not supported */
 
-
+#endif

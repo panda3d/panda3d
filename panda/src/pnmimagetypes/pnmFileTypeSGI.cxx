@@ -23,10 +23,10 @@
 #include <pnmFileTypeRegistry.h>
 #include <bamReader.h>
 
-static const char * const extensions[] = {
+static const char * const extensions_SGI[] = {
   "rgb", "rgba", "sgi"
 };
-static const int num_extensions = sizeof(extensions) / sizeof(const char *);
+static const int num_extensions_SGI = sizeof(extensions_SGI) / sizeof(const char *);
 
 TypeHandle PNMFileTypeSGI::_type_handle;
 
@@ -53,11 +53,11 @@ get_name() const {
 //     Function: PNMFileTypeSGI::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions associated with this particular file type.
+//               extensions_SGI associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeSGI::
 get_num_extensions() const {
-  return num_extensions;
+  return num_extensions_SGI;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,8 +69,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeSGI::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions, string());
-  return extensions[n];
+  nassertr(n >= 0 && n < num_extensions_SGI, string());
+  return extensions_SGI[n];
 }
 
 ////////////////////////////////////////////////////////////////////

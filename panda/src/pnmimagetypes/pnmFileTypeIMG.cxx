@@ -27,10 +27,10 @@
 // larger than this, it must be bogus.
 #define INSANE_SIZE 20000
 
-static const char * const extensions[] = {
+static const char * const extensionsIMG[] = {
   "img"
 };
-static const int num_extensions = sizeof(extensions) / sizeof(const char *);
+static const int num_extensions_IMG = sizeof(extensionsIMG) / sizeof(const char *);
 
 TypeHandle PNMFileTypeIMG::_type_handle;
 
@@ -61,7 +61,7 @@ get_name() const {
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeIMG::
 get_num_extensions() const {
-  return num_extensions;
+  return num_extensions_IMG;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,8 +73,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeIMG::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions, string());
-  return extensions[n];
+  nassertr(n >= 0 && n < num_extensions_IMG, string());
+  return extensionsIMG[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -123,13 +123,13 @@ read_ulong(FILE *file) {
 }
 
 inline unsigned short
-read_ushort(FILE *file) {
+read_ushort_IMG(FILE *file) {
   unsigned short x;
   return pm_readbigshort(file, (short *)&x)==0 ? x : 0;
 }
 
 inline unsigned char
-read_uchar(FILE *file) {
+read_uchar_IMG(FILE *file) {
   int x;
   x = getc(file);
   return (x!=EOF) ? (unsigned char)x : 0;
@@ -141,12 +141,12 @@ write_ulong(FILE *file, unsigned long x) {
 }
 
 inline void
-write_ushort(FILE *file, unsigned long x) {
+write_ushort_IMG(FILE *file, unsigned long x) {
   pm_writebigshort(file, (short)(long)x);
 }
 
 inline void
-write_uchar(FILE *file, unsigned char x) {
+write_uchar_IMG(FILE *file, unsigned char x) {
   putc(x, file);
 }
 
@@ -258,9 +258,9 @@ read_row(xel *row_data, xelval *) {
   int x;
   xelval red, grn, blu;
   for (x = 0; x < _x_size; x++) {
-    red = read_uchar(_file);
-    grn = read_uchar(_file);
-    blu = read_uchar(_file);
+    red = read_uchar_IMG(_file);
+    grn = read_uchar_IMG(_file);
+    blu = read_uchar_IMG(_file);
 
     PPM_ASSIGN(row_data[x], red, grn, blu);
   }
@@ -314,8 +314,8 @@ write_header() {
     write_ulong(_file, _x_size);
     write_ulong(_file, _y_size);
   } else if (img_header_type == IHT_short) {
-    write_ushort(_file, _x_size);
-    write_ushort(_file, _y_size);
+    write_ushort_IMG(_file, _x_size);
+    write_ushort_IMG(_file, _y_size);
   }
   return true;
 }
@@ -339,9 +339,9 @@ bool PNMFileTypeIMG::Writer::
 write_row(xel *row_data, xelval *) {
   int x;
   for (x = 0; x < _x_size; x++) {
-    write_uchar(_file, (unsigned char)(255*PPM_GETR(row_data[x])/_maxval));
-    write_uchar(_file, (unsigned char)(255*PPM_GETG(row_data[x])/_maxval));
-    write_uchar(_file, (unsigned char)(255*PPM_GETB(row_data[x])/_maxval));
+    write_uchar_IMG(_file, (unsigned char)(255*PPM_GETR(row_data[x])/_maxval));
+    write_uchar_IMG(_file, (unsigned char)(255*PPM_GETG(row_data[x])/_maxval));
+    write_uchar_IMG(_file, (unsigned char)(255*PPM_GETB(row_data[x])/_maxval));
   }
 
   return true;

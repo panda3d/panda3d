@@ -32,10 +32,10 @@ extern "C" {
 #include "../tiff/tiffio.h"
 }
 
-static const char * const extensions[] = {
+static const char * const extensions_TIFF[] = {
   "tiff", "tif"
 };
-static const int num_extensions = sizeof(extensions) / sizeof(const char *);
+static const int num_extensions_TIFF = sizeof(extensions_TIFF) / sizeof(const char *);
 
 // These are configurable parameters to specify TIFF details on output.
 // See tools/drr/../pnm/libtiff/tiff.h or type man pnmtotiff for a better
@@ -151,11 +151,11 @@ get_name() const {
 //     Function: PNMFileTypeTIFF::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions associated with this particular file type.
+//               extensions_TIFF associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeTIFF::
 get_num_extensions() const {
-  return num_extensions;
+  return num_extensions_TIFF;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -167,8 +167,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeTIFF::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions, string());
-  return extensions[n];
+  nassertr(n >= 0 && n < num_extensions_TIFF, string());
+  return extensions_TIFF[n];
 }
 
 ////////////////////////////////////////////////////////////////////

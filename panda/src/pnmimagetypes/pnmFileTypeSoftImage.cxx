@@ -39,10 +39,10 @@ static const char imageComment[imageCommentLength+1] =
 #define SOFTIMAGE_MAGIC1 0x5380
 #define SOFTIMAGE_MAGIC2 0xf634
 
-static const char * const extensions[] = {
+static const char * const extensions_SI[] = {
   "pic", "soft"
 };
-static const int num_extensions = sizeof(extensions) / sizeof(const char *);
+static const int num_extensions_SI = sizeof(extensions_SI) / sizeof(const char *);
 
 TypeHandle PNMFileTypeSoftImage::_type_handle;
 
@@ -58,25 +58,25 @@ read_float(FILE *file) {
 }
 
 inline unsigned short
-read_ushort(FILE *file) {
+read_ushort_SI(FILE *file) {
   unsigned short x;
   return pm_readbigshort(file, (short *)&x)==0 ? x : 0;
 }
 
 inline unsigned char
-read_uchar(FILE *file) {
+read_uchar_SI(FILE *file) {
   int x;
   x = getc(file);
   return (x!=EOF) ? (unsigned char)x : 0;
 }
 
 inline void
-write_ushort(FILE *file, unsigned short x) {
+write_ushort_SI(FILE *file, unsigned short x) {
   pm_writebigshort(file, (short)x);
 }
 
 inline void
-write_uchar(FILE *file, unsigned char x) {
+write_uchar_SI(FILE *file, unsigned char x) {
   putc(x, file);
 }
 
@@ -88,10 +88,10 @@ write_float(FILE *file, float x) {
 static int
 read_channel_pkt(FILE *file,
                  int &chained, int &size, int &type, int &channel) {
-  chained = read_uchar(file);
-  size = read_uchar(file);
-  type = read_uchar(file);
-  channel = read_uchar(file);
+  chained = read_uchar_SI(file);
+  size = read_uchar_SI(file);
+  type = read_uchar_SI(file);
+  channel = read_uchar_SI(file);
 
   if (feof(file)) {
     return false;
@@ -109,9 +109,9 @@ read_channel_pkt(FILE *file,
 static void
 read_rgb(xel *row_data, xelval *, FILE *file, int x, int repeat) {
   xelval red, grn, blu;
-  red = read_uchar(file);
-  grn = read_uchar(file);
-  blu = read_uchar(file);
+  red = read_uchar_SI(file);
+  grn = read_uchar_SI(file);
+  blu = read_uchar_SI(file);
 
   while (repeat>0) {
     PPM_ASSIGN(row_data[x], red, grn, blu);
@@ -122,7 +122,7 @@ read_rgb(xel *row_data, xelval *, FILE *file, int x, int repeat) {
 
 static void
 read_alpha(xel *, xelval *alpha_data, FILE *file, int x, int repeat) {
-  xelval alpha = read_uchar(file);
+  xelval alpha = read_uchar_SI(file);
 
   while (repeat>0) {
     alpha_data[x] = alpha;
@@ -134,10 +134,10 @@ read_alpha(xel *, xelval *alpha_data, FILE *file, int x, int repeat) {
 static void
 read_rgba(xel *row_data, xelval *alpha_data, FILE *file, int x, int repeat) {
   xelval red, grn, blu, alpha;
-  red = read_uchar(file);
-  grn = read_uchar(file);
-  blu = read_uchar(file);
-  alpha = read_uchar(file);
+  red = read_uchar_SI(file);
+  grn = read_uchar_SI(file);
+  blu = read_uchar_SI(file);
+  alpha = read_uchar_SI(file);
 
   while (repeat>0) {
     PPM_ASSIGN(row_data[x], red, grn, blu);
@@ -164,7 +164,7 @@ read_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
 
     x = 0;
     while (x < cols) {
-      num = read_uchar(file);
+      num = read_uchar_SI(file);
 
       if (num<128) {
         // Sequence of non-repeated values.
@@ -183,7 +183,7 @@ read_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
       } else {
         // Sequence of repeated values.
         if (num==128) {
-          num = read_ushort(file);
+          num = read_ushort_SI(file);
         } else {
           num -= 127;
         }
@@ -225,11 +225,11 @@ get_name() const {
 //     Function: PNMFileTypeSoftImage::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions associated with this particular file type.
+//               extensions_SI associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeSoftImage::
 get_num_extensions() const {
-  return num_extensions;
+  return num_extensions_SI;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,8 +241,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeSoftImage::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions, string());
-  return extensions[n];
+  nassertr(n >= 0 && n < num_extensions_SI, string());
+  return extensions_SI[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -359,12 +359,12 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     return;
   }
 
-  _x_size = read_ushort(_file);
-  _y_size = read_ushort(_file);
+  _x_size = read_ushort_SI(_file);
+  _y_size = read_ushort_SI(_file);
 
   /* float ratio = */ read_float(_file);
-  /* int fields = */ read_ushort(_file);
-  read_ushort(_file);
+  /* int fields = */ read_ushort_SI(_file);
+  read_ushort_SI(_file);
 
   int chained, size, channel;
   if (!read_channel_pkt(_file, chained, size, rgb_ctype, channel)) {
@@ -494,17 +494,17 @@ read_row(xel *row_data, xelval *alpha_data) {
 static void
 write_channel_pkt(FILE *file,
                  int chained, int size, int type, int channel) {
-  write_uchar(file, chained);
-  write_uchar(file, size);
-  write_uchar(file, type);
-  write_uchar(file, channel);
+  write_uchar_SI(file, chained);
+  write_uchar_SI(file, size);
+  write_uchar_SI(file, type);
+  write_uchar_SI(file, channel);
 }
 
 static void
 write_rgb(xel *row_data, xelval *, FILE *file, int x) {
-  write_uchar(file, PPM_GETR(row_data[x]));
-  write_uchar(file, PPM_GETG(row_data[x]));
-  write_uchar(file, PPM_GETB(row_data[x]));
+  write_uchar_SI(file, PPM_GETR(row_data[x]));
+  write_uchar_SI(file, PPM_GETG(row_data[x]));
+  write_uchar_SI(file, PPM_GETB(row_data[x]));
 }
 
 static int
@@ -514,9 +514,9 @@ compare_rgb(xel *row_data, xelval *, int x1, int x2) {
 
 static void
 write_gray(xel *row_data, xelval *, FILE *file, int x) {
-  write_uchar(file, PPM_GETB(row_data[x]));
-  write_uchar(file, PPM_GETB(row_data[x]));
-  write_uchar(file, PPM_GETB(row_data[x]));
+  write_uchar_SI(file, PPM_GETB(row_data[x]));
+  write_uchar_SI(file, PPM_GETB(row_data[x]));
+  write_uchar_SI(file, PPM_GETB(row_data[x]));
 }
 
 static int
@@ -526,7 +526,7 @@ compare_gray(xel *row_data, xelval *, int x1, int x2) {
 
 static void
 write_alpha(xel *, xelval *alpha_data, FILE *file, int x) {
-  write_uchar(file, alpha_data[x]);
+  write_uchar_SI(file, alpha_data[x]);
 }
 
 static int
@@ -542,7 +542,7 @@ write_diff(xel *row_data, xelval *alpha_data, FILE *file,
   if (length>0) {
     nassertv(length<=128);
 
-    write_uchar(file, length-1);
+    write_uchar_SI(file, length-1);
     while (length>0) {
       length--;
       write_data(row_data, alpha_data, file, tox-length);
@@ -560,10 +560,10 @@ write_same(xel *row_data, xelval *alpha_data, FILE *file,
 
   } else if (length>0) {
     if (length<128) {
-      write_uchar(file, length+127);
+      write_uchar_SI(file, length+127);
     } else {
-      write_uchar(file, 128);
-      write_ushort(file, length);
+      write_uchar_SI(file, 128);
+      write_ushort_SI(file, length);
     }
     write_data(row_data, alpha_data, file, tox);
   }
@@ -702,19 +702,19 @@ supports_write_row() const {
 ////////////////////////////////////////////////////////////////////
 bool PNMFileTypeSoftImage::Writer::
 write_header() {
-  write_ushort(_file, SOFTIMAGE_MAGIC1);
-  write_ushort(_file, SOFTIMAGE_MAGIC2);
+  write_ushort_SI(_file, SOFTIMAGE_MAGIC1);
+  write_ushort_SI(_file, SOFTIMAGE_MAGIC2);
   write_float(_file, imageVersionNumber);
 
   fwrite(imageComment, 1, imageCommentLength, _file);
   fwrite("PICT", 1, 4, _file);
 
-  write_ushort(_file, _x_size);
-  write_ushort(_file, _y_size);
+  write_ushort_SI(_file, _x_size);
+  write_ushort_SI(_file, _y_size);
 
   write_float(_file, 1.0);    // pixel aspect ratio; we don't know.
-  write_ushort(_file, 3);     // fields value; we don't really know either.
-  write_ushort(_file, 0);     // padding
+  write_ushort_SI(_file, 3);     // fields value; we don't really know either.
+  write_ushort_SI(_file, 0);     // padding
 
   // There doesn't seem to be a variation on SoftImage image formats for
   // grayscale images.  We'll write out grayscale as a 3-channel image.

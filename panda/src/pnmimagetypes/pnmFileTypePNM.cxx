@@ -32,10 +32,10 @@ extern "C" {
 #include "../pnm/libpbm.h"
 }
 
-static const char * const extensions[] = {
+static const char * const extensions_PNM[] = {
   "pbm", "ppm", "pnm"
 };
-static const int num_extensions = sizeof(extensions) / sizeof(const char *);
+static const int num_extensions_PNM = sizeof(extensions_PNM) / sizeof(const char *);
 
 TypeHandle PNMFileTypePNM::_type_handle;
 
@@ -62,11 +62,11 @@ get_name() const {
 //     Function: PNMFileTypePNM::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions associated with this particular file type.
+//               extensions_PNM associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypePNM::
 get_num_extensions() const {
-  return num_extensions;
+  return num_extensions_PNM;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,8 +78,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypePNM::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions, string());
-  return extensions[n];
+  nassertr(n >= 0 && n < num_extensions_PNM, string());
+  return extensions_PNM[n];
 }
 
 ////////////////////////////////////////////////////////////////////

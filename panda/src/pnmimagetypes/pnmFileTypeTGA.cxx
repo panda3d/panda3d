@@ -55,10 +55,10 @@
 #include <ppm.h>
 #include <string.h>
 
-static const char * const extensions[] = {
+static const char * const extensions_TGA[] = {
   "tga"
 };
-static const int num_extensions = sizeof(extensions) / sizeof(const char *);
+static const int num_extensions_TGA = sizeof(extensions_TGA) / sizeof(const char *);
 
 TypeHandle PNMFileTypeTGA::_type_handle;
 
@@ -123,11 +123,11 @@ get_name() const {
 //     Function: PNMFileTypeTGA::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions associated with this particular file type.
+//               extensions_TGA associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeTGA::
 get_num_extensions() const {
-  return num_extensions;
+  return num_extensions_TGA;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -139,8 +139,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeTGA::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions, string());
-  return extensions[n];
+  nassertr(n >= 0 && n < num_extensions_TGA, string());
+  return extensions_TGA[n];
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -27,10 +27,10 @@
 // or height is larger than this, it must be bogus.
 #define INSANE_SIZE 20000
 
-static const char * const extensions[] = {
+static const char * const extensions_ALIAS[] = {
   "pix", "als"
 };
-static const int num_extensions = sizeof(extensions) / sizeof(const char *);
+static const int num_extensions_ALIAS = sizeof(extensions_ALIAS) / sizeof(const char *);
 
 TypeHandle PNMFileTypeAlias::_type_handle;
 
@@ -57,11 +57,11 @@ get_name() const {
 //     Function: PNMFileTypeAlias::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions associated with this particular file type.
+//               extensions_ALIAS associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeAlias::
 get_num_extensions() const {
-  return num_extensions;
+  return num_extensions_ALIAS;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,8 +73,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeAlias::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions, string());
-  return extensions[n];
+  nassertr(n >= 0 && n < num_extensions_ALIAS, string());
+  return extensions_ALIAS[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,7 +124,7 @@ read_ushort(FILE *file) {
 }
 
 inline unsigned char
-read_uchar(FILE *file) {
+read_uchar_ALIAS(FILE *file) {
   int x;
   x = getc(file);
   return (x!=EOF) ? (unsigned char)x : 0;
@@ -136,7 +136,7 @@ write_ushort(FILE *file, unsigned short x) {
 }
 
 inline void
-write_uchar(FILE *file, unsigned char x) {
+write_uchar_ALIAS(FILE *file, unsigned char x) {
   putc(x, file);
 }
 
@@ -240,15 +240,15 @@ read_row(xel *row_data, xelval *) {
 
   x = 0;
   while (x < _x_size) {
-    num = read_uchar(_file);
+    num = read_uchar_ALIAS(_file);
     if (num==0 || x+num > _x_size) {
       return false;
     }
-    blu = read_uchar(_file);
+    blu = read_uchar_ALIAS(_file);
 
     if (get_color_type() == PNMImageHeader::CT_color) {
-      grn = read_uchar(_file);
-      red = read_uchar(_file);
+      grn = read_uchar_ALIAS(_file);
+      red = read_uchar_ALIAS(_file);
       while (num>0) {
         PPM_ASSIGN(row_data[x], red, grn, blu);
         x++;
@@ -272,10 +272,10 @@ static int num_count = 0;
 static void
 flush_color(FILE *file) {
   if (num_count>0) {
-    write_uchar(file, num_count);
-    write_uchar(file, last_blu);
-    write_uchar(file, last_grn);
-    write_uchar(file, last_red);
+    write_uchar_ALIAS(file, num_count);
+    write_uchar_ALIAS(file, last_blu);
+    write_uchar_ALIAS(file, last_grn);
+    write_uchar_ALIAS(file, last_red);
     num_count = 0;
   }
 }

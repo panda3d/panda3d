@@ -22,10 +22,10 @@
 #include <pnmFileTypeRegistry.h>
 #include <bamReader.h>
 
-static const char * const extensions[] = {
+static const char * const extensions_JPG[] = {
   "jpg", "jpeg"
 };
-static const int num_extensions = sizeof(extensions) / sizeof(const char *);
+static const int num_extensions_JPG = sizeof(extensions_JPG) / sizeof(const char *);
 
 TypeHandle PNMFileTypeJPG::_type_handle;
 
@@ -52,11 +52,11 @@ get_name() const {
 //     Function: PNMFileTypeJPG::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions associated with this particular file type.
+//               extensions_JPG associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeJPG::
 get_num_extensions() const {
-  return num_extensions;
+  return num_extensions_JPG;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,8 +68,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeJPG::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions, string());
-  return extensions[n];
+  nassertr(n >= 0 && n < num_extensions_JPG, string());
+  return extensions_JPG[n];
 }
 
 ////////////////////////////////////////////////////////////////////

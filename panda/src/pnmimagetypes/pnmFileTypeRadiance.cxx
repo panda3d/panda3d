@@ -39,10 +39,10 @@ extern "C" {
   void gambs_colrs(COLR *, int);
 }
 
-static const char * const extensions[] = {
+static const char * const extensions_RAD[] = {
   "pic", "rad"
 };
-static const int num_extensions = sizeof(extensions) / sizeof(const char *);
+static const int num_extensions_RAD = sizeof(extensions_RAD) / sizeof(const char *);
 
 TypeHandle PNMFileTypeRadiance::_type_handle;
 
@@ -72,11 +72,11 @@ get_name() const {
 //     Function: PNMFileTypeRadiance::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions associated with this particular file type.
+//               extensions_RAD associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeRadiance::
 get_num_extensions() const {
-  return num_extensions;
+  return num_extensions_RAD;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,8 +88,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeRadiance::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions, string());
-  return extensions[n];
+  nassertr(n >= 0 && n < num_extensions_RAD, string());
+  return extensions_RAD[n];
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -70,10 +70,10 @@
 /* x must be signed for the following to work correctly */
 #define limit(x) (xelval)(((x>0xffffff)?0xff0000:((x<=0xffff)?0:x&0xff0000))>>16)
 
-static const char * const extensions[] = {
+static const char * const extensions_YUV[] = {
   "yuv"
 };
-static const int num_extensions = sizeof(extensions) / sizeof(const char *);
+static const int num_extensions_YUV = sizeof(extensions_YUV) / sizeof(const char *);
 
 TypeHandle PNMFileTypeYUV::_type_handle;
 
@@ -100,11 +100,11 @@ get_name() const {
 //     Function: PNMFileTypeYUV::get_num_extensions
 //       Access: Public, Virtual
 //  Description: Returns the number of different possible filename
-//               extensions associated with this particular file type.
+//               extensions_YUV associated with this particular file type.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeYUV::
 get_num_extensions() const {
-  return num_extensions;
+  return num_extensions_YUV;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -116,8 +116,8 @@ get_num_extensions() const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeYUV::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < num_extensions, string());
-  return extensions[n];
+  nassertr(n >= 0 && n < num_extensions_YUV, string());
+  return extensions_YUV[n];
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -3,6 +3,9 @@
 
 /* Color histogram stuff. */
 
+#ifndef PPMCMAP_H
+#define PPMCMAP_H
+
 typedef struct colorhist_item* colorhist_vector;
 struct colorhist_item
     {
@@ -43,3 +46,5 @@ int ppm_addtocolorhash ARGS(( colorhash_table cht, pixel* colorP, int value ));
 colorhash_table ppm_alloccolorhash ARGS(( void ));
 
 void ppm_freecolorhash( colorhash_table cht );
+
+#endif
