@@ -39,6 +39,11 @@ class DirectEntry(DirectFrame):
             # Command to be called on hitting Enter
             ('command',        None,              None),
             ('extraArgs',      [],                None),
+            # commands to be called when focus is gained or lost
+            ('focusInCommand', None,              None),
+            ('focusInExtraArgs',[],              None),
+            ('focusOutCommand',None,              None),
+            ('focusOutExtraArgs',[],              None),
             # Sounds to be used for button events
             ('rolloverSound',   getDefaultRolloverSound(), self.setRolloverSound),
             ('clickSound',    getDefaultClickSound(),    self.setClickSound),
@@ -77,6 +82,9 @@ class DirectEntry(DirectFrame):
 
         # Bind command function
         self.bind(ACCEPT, self.commandFunc)
+
+        self.accept(self.guiItem.getFocusInEvent(), self.focusInCommandFunc)
+        self.accept(self.guiItem.getFocusOutEvent(), self.focusOutCommandFunc)
 
         # Call option initialization functions
         self.initialiseoptions(DirectEntry)
@@ -122,6 +130,14 @@ class DirectEntry(DirectFrame):
         if self['command']:
             # Pass any extra args to command
             apply(self['command'], [self.get()] + self['extraArgs'])
+
+    def focusInCommandFunc(self):
+        if self['focusInCommand']:
+            apply(self['focusInCommand'], self['focusInExtraArgs'])
+            
+    def focusOutCommandFunc(self):
+        if self['focusOutCommand']:
+            apply(self['focusOutCommand'], self['focusOutExtraArgs'])
             
     def set(self, text):
         self.guiItem.setText(text)
