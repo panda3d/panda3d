@@ -216,6 +216,8 @@ PUBLISHED:
 
   INLINE void ls() const;
   INLINE void ls(ostream &out, int indent_level = 0) const;
+  INLINE void reverse_ls() const;
+  INLINE int reverse_ls(ostream &out, int indent_level = 0) const;
 
 
   // Aggregate transform and state information.

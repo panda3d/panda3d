@@ -25,8 +25,7 @@
 #pragma warning (disable : 4231)
 #endif
 
-#include <dtoolbase.h>
-
+#include "dtoolbase.h"
 #include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(dconfig, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);

@@ -374,6 +374,33 @@ ls(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::reverse_ls
+//       Access: Published
+//  Description: Lists the hierarchy at and above the referenced node.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+reverse_ls() const {
+  reverse_ls(nout);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::reverse_ls
+//       Access: Published
+//  Description: Lists the hierarchy at and above the referenced node.
+////////////////////////////////////////////////////////////////////
+INLINE int NodePath::
+reverse_ls(ostream &out, int indent_level) const {
+  if (is_empty()) {
+    out << "(empty)\n";
+    return 0;
+  } else if (has_parent()) {
+    indent_level = get_parent().reverse_ls(out, indent_level);
+  }
+  node()->write(out, indent_level);
+  return indent_level + 2;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_state
 //       Access: Published
 //  Description: Returns the complete state object set on this node.
@@ -786,7 +813,7 @@ set_pos_hpr(const NodePath &other,
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_hpr_scale(const NodePath &other,
-	      float h, float p, float r, float sx, float sy, float sz) {
+        float h, float p, float r, float sx, float sy, float sz) {
   set_hpr_scale(other, LVecBase3f(h, p, r), LVecBase3f(sx, sy, sz));
 }
 
