@@ -60,7 +60,8 @@ class IntervalManager(CIntervalManager):
 
         index = self.getNextEvent()
         while index >= 0:
-            self.ivals[index].privPostEvent()
+            if self.ivals[index]:
+                self.ivals[index].privPostEvent()
             index = self.getNextEvent()
         
     def __storeInterval(self, interval, index):
