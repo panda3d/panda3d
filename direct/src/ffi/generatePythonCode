@@ -19,6 +19,9 @@ Linux:
 Windows:
   ppython -d generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtool libpandaexpress libpanda libdirect libtoontown
 
+Windows release:
+  ppython -O generatePythonCode -O -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtool libpandaexpress libpanda libdirect libtoontown
+
 
 Options:
   -h          print this message
