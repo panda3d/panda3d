@@ -51,18 +51,18 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.frame.makeWideAsWidest()
         
         # create the scroll buttons
-        self.leftButton = Button.Button(self.name + "-left", " < ")
-        self.leftButton.getGuiItem().setDownRolloverEvent(self.name + "-left")
-        self.leftButton.getGuiItem().setUpRolloverEvent(self.name + "-rollover")
+        self.leftButton = Button.Button(self.eventName + "-left", " < ")
+        self.leftButton.getGuiItem().setDownRolloverEvent(self.eventName + "-left")
+        self.leftButton.getGuiItem().setUpRolloverEvent(self.eventName + "-rollover")
         self.frame.addItem(self.leftButton)
         self.frame.packItem(self.leftButton, GuiFrame.GuiFrame.UNDER,
                             self.title)
         self.frame.packItem(self.leftButton, GuiFrame.GuiFrame.LEFT,
                             self.title)        
-        self.rightButton = Button.Button(self.name + "-right", " > ")
-        self.rightButton.getGuiItem().setDownRolloverEvent(self.name +
+        self.rightButton = Button.Button(self.eventName + "-right", " > ")
+        self.rightButton.getGuiItem().setDownRolloverEvent(self.eventName +
                                                            "-right")    
-        self.rightButton.getGuiItem().setUpRolloverEvent(self.name + "-rollover")
+        self.rightButton.getGuiItem().setUpRolloverEvent(self.eventName + "-rollover")
         self.frame.addItem(self.rightButton)
         self.frame.packItem(self.rightButton, GuiFrame.GuiFrame.UNDER,
                             self.title)
@@ -70,8 +70,8 @@ class ScrollingLabel(PandaObject.PandaObject):
                             self.title)        
 
         # listen for the scroll buttons
-        #self.accept(self.name + "-left", self.handleLeftButton)
-        #self.accept(self.name + "-right", self.handleRightButton)
+        #self.accept(self.eventName + "-left", self.handleLeftButton)
+        #self.accept(self.eventName + "-right", self.handleRightButton)
         
         # listen for keyboard hits
         #self.setKeyFocus(0)
@@ -87,9 +87,9 @@ class ScrollingLabel(PandaObject.PandaObject):
 	"""cleanup(self)
 	"""
         # ignore events
-        self.ignore(self.name + "-left")
-        self.ignore(self.name + "-right")
-	self.ignore(self.name + "-rollover")
+        self.ignore(self.eventName + "-left")
+        self.ignore(self.eventName + "-right")
+	self.ignore(self.eventName + "-rollover")
         self.setKeyFocus(0)
 
         # remove gui items
@@ -160,8 +160,8 @@ class ScrollingLabel(PandaObject.PandaObject):
         
     def manage(self):
         # listen for the scroll buttons
-        self.accept(self.name + "-left", self.handleLeftButton)
-        self.accept(self.name + "-right", self.handleRightButton)
+        self.accept(self.eventName + "-left", self.handleLeftButton)
+        self.accept(self.eventName + "-right", self.handleRightButton)
 
         self.frame.manage()
         self.setKeyFocus(0)
@@ -174,9 +174,9 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.ignore("right-up")            
 
         # ignore events
-        self.ignore(self.name + "-left")
-        self.ignore(self.name + "-right")
-	self.ignore(self.name + "-rollover")
+        self.ignore(self.eventName + "-left")
+        self.ignore(self.eventName + "-right")
+	self.ignore(self.eventName + "-rollover")
         self.setKeyFocus(0)
 
         self.frame.unmanage()

@@ -49,10 +49,9 @@ class Loader:
         then attempt to load it from disk. Return a nodepath to
         a copy of the model if successful or None otherwise"""
         Loader.notify.info("Loading model copy: %s" % (modelPath))
-        # utilize load once goodness
-        nodePath = self.loadModelOnce(modelPath)
-        if (nodePath != None):
-            return (nodePath.copyTo(self.base.hidden))
+        node = ModelPool.loadModel(modelPath)
+        if (node != None):
+            return (NodePath(node).copyTo(self.base.hidden))
         else:
             return None
 

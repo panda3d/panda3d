@@ -33,6 +33,10 @@ class Task:
         self.__call__ = callback
         self._priority = priority
         self.uponDeath = None
+        self.dt = 0.0
+        self.maxDt = 0.0
+        self.avgDt = 0.0
+        self.runningTotal = 0.0
 
     def getPriority(self):
         return self._priority
@@ -322,7 +326,6 @@ class TaskManager:
         standard shell globbing characters like *, ?, and [].
 
         """
-        
         TaskManager.notify.debug('removing tasks matching: ' + taskPattern)
         removedTasks = []
 
@@ -343,13 +346,28 @@ class TaskManager:
         self.currentTime, self.currentFrame = getTimeFrame()
         for task in self.taskList:
             task.setCurrentTimeFrame(self.currentTime, self.currentFrame)
+
             # Run the task and check the return value
-            # Record the dt
-            startTime = globalClock.getTime()
+            startTime = time.clock()
             ret = task(task)
-            endTime = globalClock.getTime()
+            endTime = time.clock()
+
+            # Record the dt
             dt = endTime - startTime
             task.dt = dt
+            
+            # See if this is the new max
+            if dt > task.maxDt:
+                task.maxDt = dt
+            
+            # Record the running total of all dts so we can compute an average
+            task.runningTotal = task.runningTotal + dt
+            if (task.frame > 0):
+                task.avgDt = (task.runningTotal / task.frame)
+            else:
+                task.avgDt = 0
+
+            # See if the task is done
             if (ret == cont):
                 continue
             elif (ret == done):
@@ -403,19 +421,33 @@ class TaskManager:
         return 0
 
     def __repr__(self):
+        import fpformat
         taskNameWidth = 32
-        dtWidth = 6
+        dtWidth = 7
         priorityWidth = 10
+        totalDt = 0
+        totalAvgDt = 0
         str = ('taskList'.ljust(taskNameWidth)
                + 'dt(ms)'.rjust(dtWidth)
+               + 'avg'.rjust(dtWidth)
+               + 'max'.rjust(dtWidth)
                + 'priority'.rjust(priorityWidth)
                + '\n')
-        str = str + '------------------------------------------------\n'
+        str = str + '---------------------------------------------------------------\n'
         for task in self.taskList:
+            totalDt = totalDt + task.dt
+            totalAvgDt = totalAvgDt + task.avgDt
             str = str + (task.name.ljust(taskNameWidth)
-                         + `int(round(task.dt * 1000))`.rjust(dtWidth)
+                         + fpformat.fix(task.dt*1000, 2).rjust(dtWidth)
+                         + fpformat.fix(task.avgDt*1000, 2).rjust(dtWidth)
+                         + fpformat.fix(task.maxDt*1000, 2).rjust(dtWidth)
                          + `task.getPriority()`.rjust(priorityWidth)
                          + '\n')
+        str = str + '---------------------------------------------------------------\n'
+        str = str + ('total'.ljust(taskNameWidth)
+                     + fpformat.fix(totalDt*1000, 2).rjust(dtWidth)
+                     + fpformat.fix(totalAvgDt*1000, 2).rjust(dtWidth)
+                     + '\n')
         return str
 
 

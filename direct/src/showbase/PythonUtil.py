@@ -1,5 +1,6 @@
 import types
 import re
+import math
 
 def ifAbsentPut(dict, key, newValue):
     """
@@ -165,3 +166,17 @@ def intersection(a, b):
             if (i not in d):
                 d.append(i)
     return d   
+
+def reduceAngle(deg):
+    """
+    Reduces an angle (in degrees) to a value between -180. and 180.
+    """
+    return (math.fmod((deg + 180.0), 360.0) - 180.0)
+
+def shortestDestAngle(src, dest):
+    """
+    Returns a version of dest that is numerically closest to src. It is
+    assumed that src is between -180. and 180.
+    Example: (shortest-dest-angle 50. -170.) --> 190.
+    """
+    return (src + (reduceAngle(reduceAngle(dest) - reduceAngle(src))))
