@@ -15,6 +15,11 @@ class DirectNotify:
         # create a default log file
         self.logger = Logger.Logger()
 
+        # This will get filled in later by ShowBase.py with a
+        # C++-level StreamWriter object for writing to standard
+        # output.
+        self.streamWriter = None
+
     def __str__(self):
         """__str__(self)
         Print handling routine"""

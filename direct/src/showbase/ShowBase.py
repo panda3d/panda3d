@@ -190,6 +190,10 @@ class ShowBase(DirectObject.DirectObject):
         __builtins__["globalClock"] = ClockObject.getGlobalClock()
         __builtins__["vfs"] = vfs
 
+        # Route all of our DirectNotify output through the Panda level
+        # ostream object from now on.
+        directNotify.streamWriter = StreamWriter(ostream)
+
         # Now hang a hook on the window-event from Panda.  This allows
         # us to detect when the user resizes, minimizes, or closes the
         # main window.

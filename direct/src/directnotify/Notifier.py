@@ -105,7 +105,7 @@ class Notifier:
         if (self.__warning):
             string = (self.getTime() + self.__name + '(warning): ' + warningString)
             self.__log(string)
-            print(string)
+            self.__print(string)
         return 1 # to allow assert(myNotify.warning("blah"))
 
     def setWarning(self, bool):
@@ -125,7 +125,7 @@ class Notifier:
         if (self.__debug):
             string = (self.getTime() + self.__name + '(debug): ' + debugString)
             self.__log(string)
-            print(string)
+            self.__print(string)
         return 1 # to allow assert(myNotify.debug("blah"))
 
     def setDebug(self, bool):
@@ -145,7 +145,7 @@ class Notifier:
         if (self.__info):
             string = (self.getTime() + self.__name + '(info): ' + infoString)
             self.__log(string)
-            print(string)
+            self.__print(string)
         return 1 # to allow assert(myNotify.info("blah"))
 
     def getInfo(self):
@@ -175,11 +175,18 @@ class Notifier:
         Set the logging flag to int (1=on, 0=off)"""
         self.__logging = bool
 
+    def __print(self, string):
+        """__print(self, string)
+        Prints the string to standard output followed by a newline.
+        """
+        # We could use the print command, but that seems to stop
+        # working when Python is in the program-level exception
+        # handler for some reason (!).  So we use C++-level output
+        # instead, as soon as we have the DirectNotify level
+        # streamWriter available.
 
-
-
-
-
-
-
-
+        import DirectNotifyGlobal
+        if DirectNotifyGlobal.directNotify.streamWriter:
+            DirectNotifyGlobal.directNotify.streamWriter.appendData(string + '\n')
+        else:
+            print string
