@@ -2,11 +2,14 @@ lib
 lib/py
 src/actor
 src/directutil
+src/directnotify
 src/distributed
 src/ffi
+src/fsm
 src/gui
 src/leveleditor
 src/net
 src/showbase
+src/task
 src/tkpanels
 src/tkwidgets
