@@ -145,6 +145,7 @@ class ClientRepository(DirectObject.DirectObject):
             # Unable to receive a datagram: did we lose the connection?
             if self.tcpConn.isClosed():
                 self.tcpConn = None
+                self.stopReaderPollTask()
                 self.loginFSM.request("noConnection")
             return 0
         
@@ -169,6 +170,7 @@ class ClientRepository(DirectObject.DirectObject):
                     self.qcm.closeConnection(resetConn)
                     if self.tcpConn.this == resetConn.this:
                         self.tcpConn = None
+                        self.stopReaderPollTask()
                         self.loginFSM.request("noConnection")
                     else:
                         self.notify.warning("Lost unknown connection.")
