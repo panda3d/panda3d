@@ -85,7 +85,7 @@ add_entry(CollisionEntry *entry) {
 //               should do whatever finalization is required for the
 //               handler.
 ////////////////////////////////////////////////////////////////////
-void CollisionHandlerEvent::
+bool CollisionHandlerEvent::
 end_group() {
   // Now compare the list of entries we collected this frame with
   // those we kept from the last time.  Each new entry represents a
@@ -139,6 +139,8 @@ end_group() {
     throw_event_pattern(_out_pattern, *cb);
     ++cb;
   }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -50,7 +50,13 @@ add_entry(CollisionEntry *) {
 //               all collision detections for this traversal.  It
 //               should do whatever finalization is required for the
 //               handler.
+//
+//               The return value is normally true, but if this
+//               returns value, the CollisionTraverser will remove the
+//               handler from its list, allowing the CollisionHandler
+//               itself to determine when it is no longer needed.
 ////////////////////////////////////////////////////////////////////
-void CollisionHandler::
+bool CollisionHandler::
 end_group() {
+  return true;
 }

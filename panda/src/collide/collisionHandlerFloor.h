@@ -45,7 +45,7 @@ PUBLISHED:
   INLINE float get_max_velocity() const;
 
 protected:
-  virtual void handle_entries();
+  virtual bool handle_entries();
 
 private:
   float _offset;

@@ -37,3 +37,15 @@ set_arc(NodeRelation *arc) {
   _arc = arc;
   _drive_interface.clear();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerPhysical::ColliderDef::is_valid
+//       Access: Public
+//  Description: Returns true if this ColliderDef is still valid;
+//               e.g. it refers to a valid arc or drive interface.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionHandlerPhysical::ColliderDef::
+is_valid() const {
+  return (_arc != (NodeRelation *)NULL) ||
+    (_drive_interface != (DriveInterface *)NULL);
+}

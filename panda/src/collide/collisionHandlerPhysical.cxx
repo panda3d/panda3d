@@ -58,9 +58,15 @@ get_mat(LMatrix4f &mat) const {
 //               indicated by the given transform.
 ////////////////////////////////////////////////////////////////////
 void CollisionHandlerPhysical::ColliderDef::
-set_mat(const LMatrix4f &mat) const {
+set_mat(const LMatrix4f &mat) {
   if (_arc != (NodeRelation *)NULL) {
-    _arc->set_transition(new TransformTransition(mat));
+    if (!_arc->is_attached()) {
+      collide_cat.error()
+        << "CollisionHandler is associated with an unattached arc.\n";
+      _arc = (NodeRelation *)NULL;
+    } else {
+      _arc->set_transition(new TransformTransition(mat));
+    }
 
   } else if (_drive_interface != (DriveInterface *)NULL) {
     _drive_interface->set_mat(mat);
@@ -129,11 +135,11 @@ add_entry(CollisionEntry *entry) {
 //               should do whatever finalization is required for the
 //               handler.
 ////////////////////////////////////////////////////////////////////
-void CollisionHandlerPhysical::
+bool CollisionHandlerPhysical::
 end_group() {
   CollisionHandlerEvent::end_group();
 
-  handle_entries();
+  return handle_entries();
 }
 
 ////////////////////////////////////////////////////////////////////

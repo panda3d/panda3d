@@ -40,7 +40,7 @@ PUBLISHED:
   INLINE bool get_horizontal() const;
 
 protected:
-  virtual void handle_entries();
+  virtual bool handle_entries();
 
 private:
   bool _horizontal;

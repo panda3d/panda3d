@@ -37,7 +37,7 @@ class EXPCL_PANDA CollisionHandler : public TypedReferenceCount {
 public:
   virtual void begin_group();
   virtual void add_entry(CollisionEntry *entry);
-  virtual void end_group();
+  virtual bool end_group();
 
 
 PUBLISHED:

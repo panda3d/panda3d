@@ -42,7 +42,7 @@ public:
 
   virtual void begin_group();
   virtual void add_entry(CollisionEntry *entry);
-  virtual void end_group();
+  virtual bool end_group();
 
 PUBLISHED:
   void add_collider(CollisionNode *node, DriveInterface *drive_interface);
@@ -52,7 +52,7 @@ PUBLISHED:
   void clear_colliders();
 
 protected:
-  virtual void handle_entries()=0;
+  virtual bool handle_entries()=0;
 
 protected:
   typedef pvector< PT(CollisionEntry) > Entries;
@@ -63,9 +63,10 @@ protected:
   public:
     INLINE void set_drive_interface(DriveInterface *drive_interface);
     INLINE void set_arc(NodeRelation *arc);
+    INLINE bool is_valid() const;
 
     void get_mat(LMatrix4f &mat) const;
-    void set_mat(const LMatrix4f &mat) const;
+    void set_mat(const LMatrix4f &mat);
 
     PT(DriveInterface) _drive_interface;
     PT_NodeRelation _arc;

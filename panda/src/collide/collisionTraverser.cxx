@@ -257,8 +257,17 @@ traverse(const NodePath &root) {
   df_traverse(root.node(), *this, NullTransitionWrapper(),
               level_state, _graph_type);
 
-  for (hi = _handlers.begin(); hi != _handlers.end(); ++hi) {
-    (*hi).first->end_group();
+  hi = _handlers.begin();
+  while (hi != _handlers.end()) {
+    if (!(*hi).first->end_group()) {
+      // This handler wants to remove itself from the traversal list.
+      Handlers::iterator hnext = hi;
+      ++hnext;
+      _handlers.erase(hi);
+      hi = hnext;
+    } else {
+      ++hi;
+    }
   }
 }
 
