@@ -20,6 +20,7 @@
 #include <directbase.h>
 #include <notify.h>
 #include <filename.h>
+#include <numeric_types.h>
 
 #else
 
@@ -74,6 +75,14 @@ using namespace std;
 // Panda defines a special Filename class.  We'll use an ordinary
 // string instead.
 typedef string Filename;
+
+// Panda defines IS_BIG_ENDIAN or IS_LITTLE_ENDIAN as appropriate.
+// Outside of panda, you'll have to do it yourself.  If neither is
+// defined, we'll assume IS_LITTLE_ENDIAN.
+#if !defined(IS_BIG_ENDIAN) && !defined(IS_LITTLE_ENDIAN)
+#define IS_LITTLE_ENDIAN
+#endif
+
 
 #endif  // WITHIN_PANDA
 

@@ -7,18 +7,15 @@
 #include "primeNumberGenerator.h"
 
 // We multiply each consecutive integer by the next prime number and
-// add it to the total, so in theory we will truly generate a unique
-// hash number for each unique sequence of ints, as long as the number
-// of ints does not exceed the number of prime numbers we have, and we
-// do not overflow the limits of a 32-bit integer.
+// add it to the total.  This will generate pretty evenly-distributed
+// hash numbers for an arbitrary sequence of ints.
 
 // We do recycle the prime number table at some point, just to keep it
-// from growing insanely large, however, and we also truncate
-// everything to the low-order 32 bits, so we introduce ambiguity in
-// this way.
+// from growing insanely large, however (and to avoid wasting time
+// computing large prime numbers unnecessarily), and we also truncate
+// the result to the low-order 32 bits.
 
 static const int max_prime_numbers = 10000;
-static PrimeNumberGenerator primes;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HashGenerator::Constructor
@@ -39,7 +36,7 @@ HashGenerator() {
 void HashGenerator::
 add_int(int num) {
   nassertv(_index >= 0 && _index < max_prime_numbers);
-  _hash += (int)primes[_index] * num;
+  _hash += _primes[_index] * num;
   _index = (_index + 1) % max_prime_numbers;
 }
 

@@ -25,7 +25,10 @@ PUBLISHED:
 
   int get_num_elements() const;
   DCSubatomicType get_element_type(int n) const;
+  string get_element_name(int n) const;
   int get_element_divisor(int n) const;
+  string get_element_default(int n) const;
+  bool has_element_default(int n) const;
 
   bool is_required() const;
   bool is_broadcast() const;
@@ -46,8 +49,23 @@ public:
   // definition as read from the file.
   class ElementType {
   public:
+    ElementType();
+    bool set_default_value(double num);
+    bool set_default_value(const string &str);
+    void set_default_value_literal(const string &str);
+
+    bool add_default_value(double num);
+    bool end_array();
+
     DCSubatomicType _type;
+    string _name;
     int _divisor;
+    string _default_value;
+    bool _has_default_value;
+
+  private:
+    bool format_default_value(double num, string &formatted) const;
+    bool format_default_value(const string &str, string &formatted) const;
   };
 
   typedef vector<ElementType> Elements;

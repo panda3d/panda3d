@@ -6,6 +6,7 @@
     directbase
 #define YACC_PREFIX dcyy
 #define C++FLAGS -DWITHIN_PANDA
+#define UNIX_SYS_LIBS m
 
 #begin lib_target
   #define TARGET dcparser

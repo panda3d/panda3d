@@ -7,6 +7,7 @@
 #define DCHASHGENERATOR_H
 
 #include "dcbase.h"
+#include "primeNumberGenerator.h"
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : HashGenerator
@@ -25,6 +26,7 @@ public:
 private:
   long _hash;
   int _index;
+  PrimeNumberGenerator _primes;
 };
 
 #endif

@@ -188,6 +188,66 @@ scan_quoted_string() {
   return result;
 }
 
+// scan_hex_string reads a string of hexadecimal digits delimited by
+// angle brackets and returns the representative string.
+static string
+scan_hex_string() {
+  string result;
+
+  // We don't touch the current line number and column number during
+  // scanning, so that if we detect an error while scanning the string
+  // (e.g. an unterminated string), we'll report the error as
+  // occurring at the start of the string, not at the end--somewhat
+  // more convenient for the user.
+
+  // Instead of adjusting the global line_number and col_number
+  // variables, we'll operate on our own local variables for the
+  // interim.
+  int line = line_number;
+  int col = col_number;
+
+  bool odd = false;
+  int last = 0;
+  int c;
+  c = read_char(line, col);
+  while (c != '>' && c != EOF) {
+    int value;
+    if (c >= '0' && c <= '9') {
+      value = c - '0';
+    } else if (c >= 'a' && c <= 'f') {
+      value = c - 'a' + 10;
+    } else if (c >= 'A' && c <= 'F') {
+      value = c - 'A' + 10;
+    } else {
+      line_number = line;
+      col_number = col;
+      dcyyerror("Invalid hex digit.");
+      return string();
+    }
+
+    odd = !odd;
+    if (odd) {
+      last = value;
+    } else {
+      result += (char)((last << 4) | value);
+    }
+    c = read_char(line, col);
+  }
+
+  if (c == EOF) {
+    dcyyerror("This hex string is unterminated.");
+    return string();
+  } else if (odd) {
+    dcyyerror("Odd number of hex digits.");
+    return string();
+  }
+
+  line_number = line;
+  col_number = col;
+
+  return result;
+}
+
 // eat_c_comment scans past all characters up until the first */
 // encountered.
 static void
@@ -229,6 +289,7 @@ inline void accept() {
 %}
 
 INTEGERNUM       ([+-]?([0-9]+))
+HEXNUM           0x[0-9a-fA-F]*
 REALNUM          ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 
 %%
@@ -403,6 +464,14 @@ mol[0-9]+ {
   return INTEGER; 
 }
 
+{HEXNUM} {
+  // A hexadecimal integer number.
+  accept(); 
+  dcyylval.u.integer = strtoul(yytext+2, NULL, 16);
+  dcyylval.str = yytext;
+  return INTEGER; 
+}
+
 {REALNUM} { 
   // A floating-point number.
   accept(); 
@@ -416,6 +485,13 @@ mol[0-9]+ {
   accept();
   dcyylval.str = scan_quoted_string();
   return STRING;
+}
+
+[<] {
+  // Long hex string.
+  accept();
+  dcyylval.str = scan_hex_string();
+  return HEX_STRING;
 }
 
 [A-Za-z_][A-Za-z_0-9]* { 
