@@ -23,7 +23,11 @@
 #include "string_utils.h"
 #include "pvector.h"
 
+#ifdef HAVE_GETOPT
 #include <getopt.h>
+#else
+#include "gnu_getopt.h"
+#endif
 
 
 #define RANDFRAC (rand()/(float)(RAND_MAX))
