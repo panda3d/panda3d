@@ -18,9 +18,7 @@
 #include <renderRelation.h>
 #include <pointerTo.h>
 
-#ifdef DO_PSTATS
 #include <pStatCollector.h>
-#endif
 
 #include <set>
 
@@ -92,10 +90,8 @@ private:
   typedef map<PT(CollisionHandler), int> Handlers;
   Handlers _handlers;
 
-  #ifdef DO_PSTATS
-    // Statistics
-     static PStatCollector _collisions_pcollector;
-  #endif
+  // Statistics
+  static PStatCollector _collisions_pcollector;
 };
 
 INLINE ostream &operator << (ostream &out, const CollisionTraverser &trav) {
