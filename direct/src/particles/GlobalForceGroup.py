@@ -3,11 +3,9 @@ import ForceGroup
 class GlobalForceGroup(ForceGroup.ForceGroup):
 
     def __init__(self, name = None):
-        """__init__(self)"""
         ForceGroup.ForceGroup.__init__(self, name)
 
     def addForce(self, force):
-        """addForce(self, force)"""
         ForceGroup.ForceGroup.addForce(force)
         if (force.isLinear() == 0):
             # Physics manager will need an angular integrator
@@ -18,7 +16,6 @@ class GlobalForceGroup(ForceGroup.ForceGroup):
             physicsMgr.addAngularForce(force)
 
     def removeForce(self, force):
-        """removeForce(self, force)"""
         ForceGroup.ForceGroup.removeForce(force)
         if (force.isLinear() == 1):
             physicsMgr.removeLinearForce(force)

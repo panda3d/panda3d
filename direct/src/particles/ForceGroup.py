@@ -12,8 +12,6 @@ class ForceGroup(DirectObject):
     id = 1
 
     def __init__(self, name=None):
-        """__init__(self)"""
-
         if (name == None):
             self.name = 'ForceGroup-%d' % ForceGroup.id 
             ForceGroup.id += 1
@@ -34,16 +32,14 @@ class ForceGroup(DirectObject):
         del self.particleEffect
 
     def enable(self):
-        """enable(self)
-           Convenience function to enable all forces in force group"""
+        """Convenience function to enable all forces in force group"""
         for i in range(self.node.getNumForces()):
             f = self.node.getForce(i)
             f.setActive(1)
         self.fEnabled = 1
 
     def disable(self):
-        """disable(self)
-           Convenience function to disable all forces in force group"""
+        """Convenience function to disable all forces in force group"""
         for i in range(self.node.getNumForces()):
             f = self.node.getForce(i)
             f.setActive(0)
@@ -53,49 +49,40 @@ class ForceGroup(DirectObject):
         return self.fEnabled
 
     def addForce(self, force):
-        """addForce(self, force)"""
         self.node.addForce(force)
         if (self.particleEffect):
             self.particleEffect.addForce(force)
 
     def removeForce(self, force):
-        """removeForce(self, force)"""
         self.node.removeForce(force)
         if (self.particleEffect != None):
             self.particleEffect.removeForce(force)
 
     # Get/set
     def getName(self):
-        """getName(self)"""
         return self.name
     def getNode(self):
-        """getNode(self)"""
         return self.node
     def getNodePath(self):
-        """getNodePath(self)"""
         return self.nodePath
 
     # Utility functions 
     def __getitem__(self, index):
-        """__getItem__(self, index)"""
         numForces = self.node.getNumForces()
         if ((index < 0) or (index >= numForces)):
             raise IndexError
         return self.node.getForce(index)
 
     def __len__(self):
-        """__len__(self)"""
         return self.node.getNumForces()
 
     def asList(self):
-        """asList(self)"""
         l = []
         for i in range(self.node.getNumForces()):
             l.append(self.node.getForce(i))
         return l
 
     def printParams(self, file = sys.stdout, targ = 'self'):
-        """printParams(file, targ)"""
         file.write('# Force parameters\n')
         for i in range(self.node.getNumForces()):
             f = self.node.getForce(i)
