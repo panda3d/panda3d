@@ -8,6 +8,10 @@
 
 $archive_root="\\\\dimbo\\panda\\win\\";
 
+#edit this to where rebase.exe is on your machine
+$rebase_path="C:\\Program Files\\Microsoft Platform SDK\\Bin;C:\\Program Files\\Microsoft Visual Studio\\VC98\\bin";
+$ENV{'PATH'}.=";".$rebase_path;
+
 # note: this is the order dlls will be laid out in memory
 @dll_names=("libpanda","libpandadx","libpandagl","libpandaexpress","libpandaphysics",
             "libshader","libdtool","libdtoolconfig","libpystub","libdirect","libtoontown","libmiles_audio","libpandaegg");
@@ -67,8 +71,11 @@ foreach my $dir1 (@modules) {
 }
 
 $argstr="-v -b $baseaddr -c $dllbasefile -l $basedlllogfilename $dll_names_nodbg";
-@args=("cmd.exe","/C","rebase.exe $argstr");
-print $args[0]." ".$args[1]." ".$args[2]."\n";
+
+#@args=("cmd.exe","/C","rebase.exe $argstr");
+#print $args[0]." ".$args[1]." ".$args[2]."\n";
+@args=("rebase.exe $argstr");
+print $args[0]."\n";
 system(@args);
 
 ############################
@@ -85,8 +92,10 @@ foreach my $dir1 (@modules) {
 }
 
 $argstr="-v -b $baseaddr -c $dllbasefile -l $basedlllogfilename $dll_names_dbg";
-@args=("cmd.exe","/C","rebase.exe $argstr");
-print $args[0]." ".$args[1]." ".$args[2]."\n";
+#@args=("cmd.exe","/C","rebase.exe $argstr");
+#print $args[0]." ".$args[1]." ".$args[2]."\n";
+@args=("rebase.exe $argstr");
+print $args[0]."\n";
 system(@args);
 
 @args=("dos2unix",$dllbasefile);
@@ -95,4 +104,5 @@ system(@args);
 
 
 exit(0);
+
 
