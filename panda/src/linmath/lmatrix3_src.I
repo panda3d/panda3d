@@ -786,7 +786,12 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
     nassertr(length_sq != 0.0, ident_mat());
   #endif
   FLOATTYPE recip_length = 1.0/csqrt(length_sq);
-  axis *= recip_length;
+  
+//  axis *= recip_length;
+
+  axis_0 *= recip_length;
+  axis_1 *= recip_length;
+  axis_2 *= recip_length;  
 
   FLOATTYPE angle_rad=deg_2_rad(angle);
   FLOATTYPE s,c;
