@@ -65,7 +65,7 @@ private:
     size_t size; // size of the data field, in bytes
     unsigned int refcount; // how many AudioSound objects are referencing me?
     bool stale; // can this entry be  purged from the cache?
-    void *data; // the memory-mapped audio file.
+    char *data; // the memory-mapped audio file.
   } SoundCacheEntry;
   typedef pmap<string, SoundCacheEntry > SoundMap;
   SoundMap _sounds;
@@ -80,9 +80,9 @@ private:
   bool _is_valid;
   bool _active;
   
-  void* load(const Filename& filename, size_t &size) const;
+  char* load(const Filename& filename, size_t &size) const;
 
-  friend FmodAudioSound;
+  friend class FmodAudioSound;
 };
 
 EXPCL_FMOD_AUDIO PT(AudioManager) Create_AudioManager();

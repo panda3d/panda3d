@@ -28,6 +28,7 @@
 #include "fmodAudioSound.h"
 #include "nullAudioSound.h"
 #include "virtualFileSystem.h"
+#include "string_utils.h"
 
 #include <algorithm>
 #include <cctype>
@@ -179,8 +180,8 @@ get_sound(const string &file_name) {
   FSOUND_STREAM *stream = NULL;
   int flags = FSOUND_LOADMEMORY | FSOUND_MPEGACCURATE;
   string os_path = path.to_os_specific();
-  string suffix = path.get_extension();
-  std::transform(suffix.begin(), suffix.end(), suffix.begin(), tolower);
+  string suffix = downcase(path.get_extension());
+  
   if (suffix == "mid" || suffix == "rmi" || suffix == "midi") {
     stream = FSOUND_Stream_OpenFile(os_path.c_str(), 0, 0);
   } else {
@@ -421,11 +422,10 @@ dec_refcount(const string& file_name) {
 //               newly-allocated buffer, and stores the size of the
 //               buffer in size.  Returns NULL if an error occurs.
 ////////////////////////////////////////////////////////////////////
-void* FmodAudioManager::
+char* FmodAudioManager::
 load(const Filename& filename, size_t &size) const {
   // Check file type (based on filename suffix
-  string suffix = filename.get_extension();
-  std::transform(suffix.begin(), suffix.end(), suffix.begin(), tolower);
+  string suffix = downcase(filename.get_extension());
   bool bSupported = false;
   if (suffix == "wav" || suffix == "mp3" || suffix == "mid"
       || suffix == "rmi" || suffix == "midi") {
