@@ -145,7 +145,7 @@ request_load(const Filename &filename, const string &event_name) {
     }
 
     // We need to grab the lock in order to signal the condition variable
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
     _lock.lock();
 #endif
 
@@ -163,7 +163,7 @@ request_load(const Filename &filename, const string &event_name) {
       tok = new LoaderToken(_next_token++, filename, event_name);
       _token_board->_waiting.push_back(tok);
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
       _request_cond->signal();
     _lock.unlock();
 #endif

@@ -25,7 +25,7 @@
 #include <notify.h>
 #include <typedef.h>
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
 #include <ipc_mutex.h>
 #include <ipc_condition.h>
 #include <ipc_thread.h>
@@ -61,7 +61,7 @@ protected:
   float _frequency;
   bool _threads_enabled;
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   mutex _lock;
   condition_variable *_request_cond;
   thread *_thread;

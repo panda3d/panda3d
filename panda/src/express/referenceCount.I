@@ -94,25 +94,6 @@ operator = (const ReferenceCount &) {
 ////////////////////////////////////////////////////////////////////
 INLINE ReferenceCount::
 ~ReferenceCount() {
-  prepare_delete();
-#ifdef DO_MEMORY_USAGE
-  MemoryUsage::remove_pointer(this);
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::prepare_delete
-//       Access: Public
-//  Description: This function is called by the ReferenceCount
-//               destructor to check on all of the numbers and make
-//               sure it's all right to delete the object.  Normally
-//               it will never be called explicitly elsewhere, except
-//               maybe in unref_delete() to simulate deleting the node
-//               without actually deleting it, when we want to test
-//               ref count integrities.
-////////////////////////////////////////////////////////////////////
-INLINE void ReferenceCount::
-prepare_delete() {
   nassertv(this != NULL);
 
   // If this assertion fails, we're trying to delete an object that
@@ -138,28 +119,16 @@ prepare_delete() {
   // all--onto a locally allocated one.
   nassertv(_ref_count == 0);
 
+#ifndef NDEBUG
   // Ok, all clear to delete.  Now set the reference count to -100,
   // so we'll have a better chance of noticing if we happen to have
   // a stray pointer to it still out there.
   _ref_count = -100;
-}
+#endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::unref_consider_delete
-//       Access: Public
-//  Description: This function is called by the global unref_delete()
-//               function.  This function unrefs the pointer and
-//               returns true if it should be deleted (i.e. the count
-//               has gone to zero), or false otherwise.  It doesn't
-//               delete itself because (a) a method cannot safely
-//               delete this, and (b) we don't have a virtual
-//               destructor anyway.  The decision of whether to delete
-//               is left up to unref_delete().
-////////////////////////////////////////////////////////////////////
-INLINE bool ReferenceCount::
-unref_consider_delete() {
-  unref();
-  return (get_ref_count() == 0);
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::remove_pointer(this);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -169,9 +138,9 @@ unref_consider_delete() {
 ////////////////////////////////////////////////////////////////////
 INLINE int ReferenceCount::
 get_ref_count() const {
- #ifndef NDEBUG
+#ifndef NDEBUG
   test_ref_count_integrity();
- #endif
+#endif
   return _ref_count;
 }
 
@@ -190,10 +159,12 @@ get_ref_count() const {
 //               with the object.  An object might be const in other
 //               ways, but we still need to accurately count the
 //               number of references to it.
+//
+//               The return value is the new reference count.
 ////////////////////////////////////////////////////////////////////
-INLINE void ReferenceCount::
+INLINE int ReferenceCount::
 ref() const {
-  nassertv(this != NULL);
+  nassertr(this != NULL, 0);
 
   // If this assertion fails, we're trying to ref a pointer that was
   // just deleted.  Probably you used a real pointer instead of a
@@ -201,30 +172,14 @@ ref() const {
   // PointerTo went out of scope.  Either that, or you forgot to
   // define a copy constructor for a class that contains
   // PointerTo's.
-  nassertv(_ref_count != -100);
+  nassertr(_ref_count != -100, 0);
 
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
-  nassertv(_ref_count >= 0);
+  nassertr(_ref_count >= 0, 0);
 
-#if 0
-  // This is an SGI-specific hack.  Maybe this isn't a valid test at
-  // all.  This is supposed to fail if the 'this' pointer is on the
-  // stack, instead of on the heap--I assume if the first two hex
-  // digits of the pointer of 0x7f it's on the stack, possibly a bad
-  // assumption.  In any case, if you ref-count a pointer on the
-  // stack, you just goofed.  Don't assign a PointerTo to refer to
-  // any local variables!
-  nassertv(((long)this & 0xff000000) != 0x7f000000);
-#endif
-
-  ((ReferenceCount *)this)->_ref_count++;
-
-  // If this assertion fails, we have just wrapped!  Either there
-  // are actually 2^32 pointers to this thing somewhere, or
-  // something is really screwy.
-  nassertv(_ref_count > 0);
+  return AtomicAdjust::inc(((ReferenceCount *)this)->_ref_count);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -233,7 +188,10 @@ ref() const {
 //  Description: Explicitly decrements the reference count.  Note that
 //               the object will not be implicitly deleted by unref()
 //               simply because the reference count drops to zero.
-//               However, see the helper function unref_delete().
+//               (Having a member function delete itself is
+//               problematic; plus, we don't have a virtual destructor
+//               anyway.) However, see the helper function
+//               unref_delete().
 //
 //               User code should avoid using ref() and unref()
 //               directly, which can result in missed reference
@@ -246,10 +204,12 @@ ref() const {
 //               with the object.  An object might be const in other
 //               ways, but we still need to accurately count the
 //               number of references to it.
+//
+//               The return value is the new reference count.
 ////////////////////////////////////////////////////////////////////
-INLINE void ReferenceCount::
+INLINE int ReferenceCount::
 unref() const {
-  nassertv(this != NULL);
+  nassertr(this != NULL, false);
 
   // If this assertion fails, we're trying to unref a pointer that
   // was just deleted.  Probably you used a real pointer instead of
@@ -257,18 +217,18 @@ unref() const {
   // PointerTo went out of scope.  Either that, or you forgot to
   // define a copy constructor for a class that contains
   // PointerTo's.
-  nassertv(_ref_count != -100);
+  nassertr(_ref_count != -100, false);
 
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
-  nassertv(_ref_count >= 0);
+  nassertr(_ref_count >= 0, false);
 
   // If this assertion fails, you tried to unref an object with a
   // zero reference count.  Are you using ref() and unref()
   // directly?  Are you sure you can't use PointerTo's?
-  nassertv(_ref_count > 0);
-  ((ReferenceCount *)this)->_ref_count--;
+  nassertr(_ref_count > 0, false);
+  return AtomicAdjust::dec(((ReferenceCount *)this)->_ref_count);
 }
 
 
@@ -280,7 +240,7 @@ unref() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ReferenceCount::
 test_ref_count_integrity() const {
- #ifndef NDEBUG
+#ifndef NDEBUG
   nassertv(this != NULL);
 
   // If this assertion fails, we're trying to access a pointer that
@@ -295,7 +255,7 @@ test_ref_count_integrity() const {
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
   nassertv(_ref_count >= 0);
- #endif
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -311,7 +271,7 @@ test_ref_count_integrity() const {
 template<class RefCountType>
 INLINE void
 unref_delete(RefCountType *ptr) {
-  if (((ReferenceCount *)ptr)->unref_consider_delete()) {
+  if (((ReferenceCount *)ptr)->unref() == 0) {
 #ifndef NDEBUG
     if (get_leak_memory()) {
       // In leak-memory mode, we don't actually delete the pointer,
@@ -319,9 +279,9 @@ unref_delete(RefCountType *ptr) {
       // exactly the same effect as deleting it, without actually
       // freeing up the memory it uses.
 
+      // Furthermore, if we have never-destruct set, we don't even
+      // call the destructor.
       if (!get_never_destruct()) {
-        // Furthermore, if we have never-destruct set, we don't even
-        // call the destructor.
         ptr->~RefCountType();
       }
       return;

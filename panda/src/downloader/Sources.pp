@@ -1,7 +1,7 @@
-#define LOCAL_LIBS event ipc express pandabase
+#define LOCAL_LIBS event express pandabase
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define USE_PACKAGES zlib ipc net
+#define USE_PACKAGES zlib net
 
 #begin lib_target
   #define TARGET downloader

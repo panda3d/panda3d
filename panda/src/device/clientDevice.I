@@ -78,7 +78,7 @@ get_device_name() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ClientDevice::
 lock() {
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   _lock.lock();
 #endif
 }
@@ -92,7 +92,7 @@ lock() {
 ////////////////////////////////////////////////////////////////////
 INLINE void ClientDevice::
 unlock() {
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   _lock.unlock();
 #endif
 }

@@ -131,7 +131,7 @@ void MultiplexStreamBuf::
 add_output(MultiplexStreamBuf::BufferType buffer_type,
            MultiplexStreamBuf::OutputType output_type,
            ostream *out, FILE *fout, bool owns_obj) {
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   // Ensure that we have the mutex while we fiddle with the list of
   // outputs.
   mutex_lock m(_lock);
@@ -154,7 +154,7 @@ add_output(MultiplexStreamBuf::BufferType buffer_type,
 ////////////////////////////////////////////////////////////////////
 void MultiplexStreamBuf::
 flush() {
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   mutex_lock m(_lock);
 #endif
 
@@ -169,7 +169,7 @@ flush() {
 ////////////////////////////////////////////////////////////////////
 int MultiplexStreamBuf::
 overflow(int ch) {
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   mutex_lock m(_lock);
 #endif
 
@@ -198,7 +198,7 @@ overflow(int ch) {
 ////////////////////////////////////////////////////////////////////
 int MultiplexStreamBuf::
 sync() {
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   mutex_lock m(_lock);
 #endif
 

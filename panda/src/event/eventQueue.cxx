@@ -47,7 +47,7 @@ EventQueue::
 ////////////////////////////////////////////////////////////////////
 void EventQueue::
 queue_event(CPT_Event event) {
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   mutex_lock lock(_lock);
 #endif
   if (_queue.full()) {

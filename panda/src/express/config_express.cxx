@@ -33,6 +33,7 @@
 
 ConfigureDef(config_express);
 NotifyCategoryDef(express, "");
+NotifyCategoryDef(ipc, "");
 
 extern void init_system_type_handles();
 

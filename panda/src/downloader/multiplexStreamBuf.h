@@ -21,7 +21,7 @@
 
 #include <pandabase.h>
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
 #include <ipc_mutex.h>
 #endif
 
@@ -82,7 +82,7 @@ private:
 
   string _line_buffer;
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   mutex _lock;
 #endif
 };

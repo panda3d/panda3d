@@ -43,7 +43,7 @@ AsyncUtility(float frequency) : _frequency(frequency) {
   _threaded = false;
   _threads_enabled = true;
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   _request_cond = new condition_variable(_lock);
 #endif
 }
@@ -55,7 +55,7 @@ AsyncUtility(float frequency) : _frequency(frequency) {
 ////////////////////////////////////////////////////////////////////
 AsyncUtility::
 ~AsyncUtility() {
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   delete _request_cond;
 #endif
 }
@@ -67,7 +67,7 @@ AsyncUtility::
 ////////////////////////////////////////////////////////////////////
 void AsyncUtility::
 create_thread(void) {
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   if (_threaded == false && _threads_enabled == true) {
     downloader_cat.debug()
       << "AsyncUtility::create_thread()" << endl;
@@ -84,7 +84,7 @@ create_thread(void) {
 ////////////////////////////////////////////////////////////////////
 void AsyncUtility::
 destroy_thread(void) {
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   if (_threaded == false)
     return;
 
@@ -116,7 +116,7 @@ destroy_thread(void) {
 ////////////////////////////////////////////////////////////////////
 void* AsyncUtility::
 st_callback(void *arg) {
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   nassertr(arg != NULL, NULL);
   ((AsyncUtility *)arg)->callback();
 #endif
@@ -131,7 +131,7 @@ st_callback(void *arg) {
 ////////////////////////////////////////////////////////////////////
 void AsyncUtility::
 callback(void) {
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   while (process_request()) {
     // Sleep until a signal arrives
     _lock.lock();
@@ -148,7 +148,7 @@ callback(void) {
 ////////////////////////////////////////////////////////////////////
 void AsyncUtility::
 nap(void) const {
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
 #ifdef WIN32
   _sleep((DWORD)(1000 * _frequency));
 #else
@@ -157,5 +157,5 @@ nap(void) const {
   tv.tv_usec = (long)(1000000 * _frequency);
   select(0, NULL, NULL, NULL, &tv);
 #endif
-#endif  // HAVE_IPC
+#endif  // OLD_HAVE_IPC
 }

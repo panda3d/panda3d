@@ -31,7 +31,7 @@
 #include "pointerTo.h"
 #include "coordinateSystem.h"
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
 #include "ipc_thread.h"
 #endif
 
@@ -87,7 +87,7 @@ private:
   int _last_poll_frame;
   CoordinateSystem _cs;
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   int _sleep_time;
   thread *_client_thread;
   bool _shutdown;

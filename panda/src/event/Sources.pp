@@ -1,4 +1,4 @@
-#define LOCAL_LIBS ipc express pandabase
+#define LOCAL_LIBS express pandabase
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
 

@@ -1,0 +1,51 @@
+// Filename: mutexNsprImpl.h
+// Created by:  drose (08Aug02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef MUTEXNSPRIMPL_H
+#define MUTEXNSPRIMPL_H
+
+#include "pandabase.h"
+#include "selectIpcImpl.h"
+
+#ifdef IPC_NSPR_IMPL
+
+#include "notify.h"
+
+#include <prlock.h>
+
+////////////////////////////////////////////////////////////////////
+//       Class : MutexNsprImpl
+// Description : Uses NSPR to implement a mutex.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA MutexNsprImpl {
+public:
+  INLINE MutexNsprImpl();
+  INLINE ~MutexNsprImpl();
+
+  INLINE void lock();
+  INLINE void release();
+
+private:
+  PRLock *_lock;
+};
+
+#include "mutexNsprImpl.I"
+
+#endif  // IPC_NSPR_IMPL
+
+#endif

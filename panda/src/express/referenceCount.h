@@ -24,6 +24,7 @@
 #include "typedObject.h"
 #include "memoryUsage.h"
 #include "config_express.h"
+#include "atomicAdjust.h"
 
 #include <stdlib.h>
 
@@ -45,16 +46,10 @@ protected:
   INLINE void operator = (const ReferenceCount &);
   INLINE ~ReferenceCount();
 
-public:
-  // These functions are not part of the normal API, but they have to
-  // be public.  You shouldn't generally call these directly.
-  INLINE void prepare_delete();
-  INLINE bool unref_consider_delete();
-
 PUBLISHED:
   INLINE int get_ref_count() const;
-  INLINE void ref() const;
-  INLINE void unref() const;
+  INLINE int ref() const;
+  INLINE int unref() const;
 
   INLINE void test_ref_count_integrity() const;
 

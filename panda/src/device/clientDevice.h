@@ -23,7 +23,7 @@
 
 #include <typedReferenceCount.h>
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
 #include <ipc_mutex.h>
 #endif
 
@@ -64,7 +64,7 @@ private:
   string _device_name;
   bool _is_connected;
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   mutex _lock;
 #endif
 

@@ -9,6 +9,9 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES \
+    atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I atomicAdjust.h \
+    atomicAdjust.I atomicAdjustImpl.h atomicAdjustNsprImpl.h \
+    atomicAdjustNsprImpl.I \
     bigEndian.h buffer.I buffer.h \
     checksumHashGenerator.I checksumHashGenerator.h circBuffer.I \
     circBuffer.h clockObject.I clockObject.h config_express.h \
@@ -25,7 +28,10 @@
     memoryUsage.I memoryUsage.h \
     memoryUsagePointerCounts.I memoryUsagePointerCounts.h \
     memoryUsagePointers.I memoryUsagePointers.h \
-    multifile.I multifile.h namable.I \
+    multifile.I multifile.h \
+    mutexDummyImpl.h mutexDummyImpl.I mutex.h mutexHolder.h \
+    mutexHolder.I mutex.I mutexImpl.h mutexNsprImpl.h mutexNsprImpl.I \
+    namable.I \
     namable.h nativeNumericData.I nativeNumericData.h \
     numeric_types.h \
     ordered_vector.h ordered_vector.I ordered_vector.T \
@@ -35,8 +41,11 @@
     pta_uchar.h referenceCount.I referenceCount.h \
     register_type.I register_type.h \
     reversedNumericData.I reversedNumericData.h \
+    selectIpcImpl.h \
     streamReader.I streamReader.h streamWriter.I streamWriter.h \
     subStream.I subStream.h subStreamBuf.h \
+    threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
+    threadNsprImpl.h threadNsprImpl.I threadPriority.h \
     tokenBoard.I \
     tokenBoard.h trueClock.I trueClock.h typeHandle.I \
     typeHandle.h typedObject.I typedObject.h \
@@ -56,6 +65,7 @@
        patchfile.cxx patchfile.h ]
 
   #define INCLUDED_SOURCES  \
+    atomicAdjust.cxx atomicAdjustDummyImpl.cxx atomicAdjustNsprImpl.cxx \
     buffer.cxx checksumHashGenerator.cxx clockObject.cxx \
     config_express.cxx datagram.cxx datagramGenerator.cxx \
     datagramIterator.cxx \
@@ -63,7 +73,9 @@
     get_config_path.cxx \
     hashGeneratorBase.cxx hashVal.cxx indent.cxx \
     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
-    memoryUsagePointers.cxx multifile.cxx namable.cxx \
+    memoryUsagePointers.cxx multifile.cxx \
+    mutex.cxx mutexHolder.cxx mutexDummyImpl.cxx mutexNsprImpl.cxx \
+    namable.cxx \
     nativeNumericData.cxx \
     ordered_vector.cxx \
     profileTimer.cxx \
@@ -71,6 +83,7 @@
     reversedNumericData.cxx \
     streamReader.cxx streamWriter.cxx \
     subStream.cxx subStreamBuf.cxx \
+    thread.cxx threadDummyImpl.cxx threadNsprImpl.cxx \
     trueClock.cxx typeHandle.cxx \
     typedObject.cxx typedReferenceCount.cxx \
     typeRegistry.cxx typeRegistryNode.cxx vector_uchar.cxx \
@@ -81,6 +94,9 @@
     zStream.cxx zStreamBuf.cxx
 
   #define INSTALL_HEADERS  \
+    atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I atomicAdjust.h \
+    atomicAdjust.I atomicAdjustImpl.h atomicAdjustNsprImpl.h \
+    atomicAdjustNsprImpl.I \
     bigEndian.h buffer.I buffer.h checksumHashGenerator.I  \
     checksumHashGenerator.h circBuffer.I circBuffer.h clockObject.I \
     clockObject.h config_express.h datagram.I datagram.h \
@@ -94,7 +110,10 @@
     littleEndian.h memoryInfo.I memoryInfo.h memoryUsage.I \
     memoryUsage.h memoryUsagePointerCounts.I \
     memoryUsagePointerCounts.h memoryUsagePointers.I \
-    memoryUsagePointers.h multifile.I multifile.h namable.I namable.h \
+    memoryUsagePointers.h multifile.I multifile.h \
+    mutexDummyImpl.h mutexDummyImpl.I mutex.h mutexHolder.h \
+    mutexHolder.I mutex.I mutexImpl.h mutexNsprImpl.h mutexNsprImpl.I \
+    namable.I namable.h \
     nativeNumericData.I nativeNumericData.h numeric_types.h \
     ordered_vector.h ordered_vector.I ordered_vector.T \
     patchfile.I patchfile.h pointerTo.I pointerTo.h \
@@ -102,8 +121,11 @@
     profileTimer.h pta_uchar.h referenceCount.I referenceCount.h \
     register_type.I register_type.h \
     reversedNumericData.I reversedNumericData.h \
+    selectIpcImpl.h \
     streamReader.I streamReader.h streamWriter.I streamWriter.h \
     subStream.I subStream.h subStreamBuf.h \
+    threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
+    threadNsprImpl.h threadNsprImpl.I threadPriority.h \
     tokenBoard.I \
     tokenBoard.h trueClock.I trueClock.h typeHandle.I typeHandle.h \
     typedObject.I typedObject.h typedReferenceCount.I \
@@ -158,3 +180,15 @@
 
 #end test_bin_target
 #endif
+
+
+#begin test_bin_target
+  #define TARGET test_threaddata
+  #define LOCAL_LIBS $[LOCAL_LIBS] express
+  #define OTHER_LIBS dtoolutil:c dtool:m pystub
+
+  #define SOURCES \
+    test_threaddata.cxx
+
+#end test_bin_target
+

@@ -26,7 +26,7 @@
 
 #include <circBuffer.h>
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
 #include <ipc_mutex.h>
 #endif
 
@@ -61,7 +61,7 @@ protected:
   static void make_global_event_queue();
   static EventQueue *_global_event_queue;
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   mutex _lock;
 #endif
 };

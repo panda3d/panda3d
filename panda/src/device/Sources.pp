@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET device
   #define LOCAL_LIBS \
-    dgraph display gobj gsgbase ipc mathutil linmath putil
+    dgraph display gobj gsgbase mathutil linmath putil
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 

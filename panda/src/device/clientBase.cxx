@@ -34,7 +34,7 @@ ClientBase() {
   _last_poll_frame = 0;
   _cs = CS_default;
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   _client_thread = (thread *)NULL;
   _shutdown = false;
 #endif
@@ -60,7 +60,7 @@ ClientBase::
     }
   }
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   if (_forked) {
     _shutdown = true;
 
@@ -84,7 +84,7 @@ ClientBase::
 ////////////////////////////////////////////////////////////////////
 bool ClientBase::
 fork_asynchronous_thread(double poll_time) {
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
   if (_forked) {
     device_cat.error()
       << "Attempt to fork client thread twice.\n";
@@ -202,7 +202,7 @@ do_poll() {
   _last_poll_time = global_clock->get_frame_time();
 }
 
-#ifdef HAVE_IPC
+#ifdef OLD_HAVE_IPC
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientBase::st_callback
 //       Access: Private, static
@@ -239,4 +239,4 @@ callback() {
     ipc_traits::sleep(0, _sleep_time);
   }
 }
-#endif // HAVE_IPC
+#endif // OLD_HAVE_IPC
