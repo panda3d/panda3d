@@ -1540,13 +1540,11 @@ build_shear_mat(LMatrix4f &shear_mat,
     cul, cur, clr, cll
   };
 
-  float edge_lengths[4];
   float max_edge_length = -1.0f;
   int base_edge = -1;
   for (int i = 0; i < 4; i++) {
     LVector3f edge = points[(i + 1) % 4] - points[i];
     float length = edge.length_squared();
-    edge_lengths[i] = length;
     if (length > max_edge_length) {
       base_edge = i;
       max_edge_length = length;
