@@ -6,12 +6,7 @@
 
     def id(self):
         """Returns a unique id identifying the NodePath instance"""
-        try:
-            # Old style scene graph
-            return self.arc()
-        except:
-            # New style scene graph
-            return self.getKey()
+        return self.getKey()
 
     def getName(self):
         """Returns the name of the bottom node if it exists, or <noname>"""
