@@ -151,6 +151,8 @@
             task.lerp.setStepSize(dt)
             task.lerp.step()
             if (task.lerp.isDone()):
+                # Reset the init flag, in case the task gets re-used
+                task.init = 1
                 return(Task.done)
             else:
                 return(Task.cont)
