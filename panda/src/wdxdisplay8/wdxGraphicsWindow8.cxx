@@ -1180,6 +1180,7 @@ void wdxGraphicsWindow::config_window(wdxGraphicsWindowGroup *pParentGroup) {
         }
     }
     _dxgsg = DCAST(DXGraphicsStateGuardian, _gsg);
+    _dxgsg->scrn.bIsDX81 = pParentGroup->_bIsDX81;
 }
 
 void wdxGraphicsWindow::finish_window_setup(void) {
@@ -1697,7 +1698,7 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevin
         for(i=0;i<cNumModes;i++) {
             D3DDISPLAYMODE dispmode;
             if(FAILED(hr = pD3D8->EnumAdapterDisplayModes(pDevInfo->cardID,i,&dispmode))) {
-                wdxdisplay_cat.error() << "GetAdapterDisplayMode failed for device #"<<pDevInfo->cardID<<": result = " << D3DERRORSTRING(hr);
+                wdxdisplay_cat.error() << "EnumAdapterDisplayMode failed for device #"<<pDevInfo->cardID<<": result = " << D3DERRORSTRING(hr);
                 exit(1); 
             }
 
@@ -1708,7 +1709,7 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevin
 
             if((dispmode.Width==dwRenderWidth) && (dispmode.Height==dwRenderHeight))  {
                 if(FAILED(hr = pD3D8->CheckDeviceFormat(pDevInfo->cardID,D3DDEVTYPE_HAL,dispmode.Format,
-                                                        D3DUSAGE_RENDERTARGET,dispmode.Format)) {
+                                                        D3DUSAGE_RENDERTARGET,D3DRTYPE_SURFACE,dispmode.Format)) {
                    if(hr==D3DERR_NOTAVAILABLE)
                        continue;
                      else {
@@ -1765,7 +1766,7 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevin
             pixFmt = D3DFORMAT_R8G8B8;
         else if(_dxgsg->scrn.dwSupportedScreenDepths & R5G6B5_FLAG) 
             pixFmt = D3DFORMAT_R5G6B5;
-        else if(_dxgsg->scrn.dwSupportedScreenDepths & X1R5G5B5_FLAG) 
+        else if(_dxgsg->scrn.dwSupportedScreenDepths & X1R5G5B5_FLAG)
             pixFmt = D3DFORMAT_X1R5G5B5;
         else {
            if(bCouldntFindValidZBuf) {
@@ -1778,7 +1779,6 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevin
         }
         
         if(_dxgsg->scrn.bIsLowVidMemCard) {
-
                // hack: figuring out exactly what res to use is tricky, instead I will
                // just use 640x480 if we have < 3 meg avail
     
@@ -1909,6 +1909,7 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
     HRESULT hr;
     DX_DECLARE_CLEAN( DDSURFACEDESC2, SurfaceDesc );
     bool bWantStencil = ((_props._mask & W_STENCIL)!=0);
+    DWORD dwBehaviorFlags;
 
     assert(pD3D8!=NULL);
     assert(pD3Dcaps->dwDevCaps & D3DDEVCAPS_HWRASTERIZATION);
@@ -1958,123 +1959,117 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
       }
     #endif
     
+    pPresParams->BackBufferFormat = Display.DisplayMode.Format;  // dont need dest alpha, so just use adapter format
+
+    if(dx_sync_video && !(pD3DCaps->Caps & D3DCAPS_READ_SCANLINE)) {
+        wdxdisplay_cat.info() << "HW doesnt support syncing to vertical refresh, ignoring dx_sync_video\n";
+        dx_sync_video=false;
+    }
+
+    // verify the rendertarget fmt one last time
+    if(FAILED(CheckDeviceFormat(Display.CardIDNum, D3DDEVTYPE_HAL, Display.DisplayMode.Format,D3DUSAGE_RENDERTARGET,
+                           D3DRTYPE_SURFACE, pPresParams->BackBufferFormat))) {
+        wdxdisplay_cat.error() << "device #"<<Display.cardIDNum<< " CheckDeviceFmt failed for surface fmt "<< D3DFormatStr(pPresParams->BackBufferFormat) << endl;
+        goto Fallback_to_16bpp_buffers;
+    }
+
+    if(FAILED(pD3D8->CheckDeviceType(Display.CardIDNum,D3DDEVTYPE_HAL, Display.DisplayMode.Format,pPresParams->BackBufferFormat,
+                                    dx_full_screen))) {
+        wdxdisplay_cat.error() << "device #"<<Display.cardIDNum<< " CheckDeviceType failed for surface fmt "<< D3DFormatStr(pPresParams->BackBufferFormat) << endl;
+        goto Fallback_to_16bpp_buffers;
+    }
+    
     if(Display.PresParams.EnableAutoDepthStencil) {
         if(!FindBestDepthFormat(Display,&Display.PresParams.AutoDepthStencilFormat,bWantStencil)) {
             wdxdisplay_cat.error() << "FindBestDepthFormat failed in CreateScreenBuffers for device #"<<Display.cardIDNum<< endl;
-            exit(1); 
+            goto Fallback_to_16bpp_buffers;
         }
     }
 
+    D3DPRESENT_PARAMETERS* pPresParams = &Display.PresParams;
+    pPresParams->Windowed = dx_full_screen;
+    DWORD dwBehaviorFlags=0x0;
+  
+    if(dx_multisample_antialiasing_level>1) {
+    // need to check both rendertarget and zbuffer fmts
+        if( FAILED(pD3D8->CheckDeviceMultiSampleType(Display.CardIDNum, D3DDEVTYPE_HAL, Display.DisplayMode.Format,
+                                                     dx_full_screen, D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level)) {
+            wdxdisplay_cat.fatal() << "device #"<<Display.cardIDNum<< " doesnt support multisample level "<<dx_multisample_antialiasing_level <<"surface fmt "<< D3DFormatStr(Display.DisplayMode.Format) <<endl;
+            exit(1); 
+        }
+    
+        if(Display.PresParams.EnableAutoDepthStencil) {
+            if( FAILED(pD3D8->CheckDeviceMultiSampleType(Display.CardIDNum, D3DDEVTYPE_HAL, Display.PresParams.AutoDepthStencilFormat,
+                                             dx_full_screen, D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level)) {
+                wdxdisplay_cat.fatal() << "device #"<<Display.cardIDNum<< " doesnt support multisample level "<<dx_multisample_antialiasing_level <<"surface fmt "<< D3DFormatStr(Display.PresParams.AutoDepthStencilFormat) <<endl;
+                exit(1); 
+            }
+        }
 
-   D3DPRESENT_PARAMETERS* pPresParams = &Display.PresParams;
-   pPresParams->Windowed = dx_full_screen;
-   DWORD dwBehaviorFlags=0x0;
+        pPresParams->MultiSampleType = D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level);
+    
+        if(wdxdisplay_cat.is_info())
+            wdxdisplay_cat.info() << "device #"<<Display.cardIDNum<< " using multisample antialiasing level "<<dx_multisample_antialiasing_level <<endl;
+    }
 
-   if(dx_full_screen) {
-       /*
-        pD3DModeInfo = &pD3DDeviceInfo->modes[pD3DDeviceInfo->dwCurrentMode];
-        pRenderUnit->DeviceType = pD3DDeviceInfo->DeviceType;
-        pRenderUnit->dwBehavior = pD3DModeInfo->dwBehavior;
-        pRenderUnit->iMonitor = iMonitor;
-       */
+    pPresParams->BackBufferCount = 1;
+    pPresParams->Flags = 0x0;
+    pPresParams->hDeviceWindow = Display.hWnd;
+    pPresParams->BackBufferWidth = Display.DisplayMode.Width;
+    pPresParams->BackBufferHeight = Display.DisplayMode.Height;
+    
+    if(_dxgsg->scrn.bIsTNLDevice) {
+       dwBehaviorFlags|=D3DCREATE_HARDWARE_VERTEXPROCESSING;
+      // note: we could create a pure device in this case if I eliminated the GetRenderState calls in dxgsg
+    
+      // also, no software vertex processing available since I specify D3DCREATE_HARDWARE_VERTEXPROCESSING
+      // and not D3DCREATE_MIXED_VERTEXPROCESSING 
+    } else {
+       dwBehaviorFlags|=D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+    }
+    
+    if(dx_preserve_fpu_state)
+       dwBehaviorFlags|=D3DCREATE_FPU_PRESERVE;
 
-        pPresParams->BackBufferCount = 1;
-        pPresParams->MultiSampleType = D3DMULTISAMPLE_NONE;   // bugbug: should we enable this use config var?
-        pPresParams->Flags = 0x0;
-        pPresParams->hDeviceWindow = Display.hWnd;
-        pPresParams->BackBufferFormat = Display.DisplayMode.Format;
-        pPresParams->BackBufferWidth = Display.DisplayMode.Width;
-        pPresParams->BackBufferHeight = Display.DisplayMode.Height;
+    if(dx_full_screen) {
+        pPresParams->SwapEffect = D3DSWAPEFFECT_DISCARD;  // we dont care about preserving contents of old frame
+        pPresParams->FullScreen_PresentationInterval = (dx_sync_video ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE);
         pPresParams->FullScreen_RefreshRateInHz = Display.DisplayMode.RefreshRate;
 
-        pRenderUnit->d3dpp.SwapEffect = 
-        pPresParams->FullScreen_PresentationInterval = (dx_sync_video ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE);
+#if 0
+/* this is incorrect, we dont need rendertarget to hold alpha to do normal alpha blending, since blending is usually just
+   based on source alpha.  so for now its OK to pick rendertargets with same format as display
+   
+        // assume app requires alpha-blending
+        // will fullscrn alphablend work with DISCARD anyway even if this cap is not set?  I dont see it being set by latest drivers
+        // for any card.  need to test both dx8.0 and dx8.1, it may be that dx8.1 works even if cap is not set, but 8.0 doesnt
+        if((!Display.bIsDX81) || (!(d3dcaps.Caps3 & D3DCAPS3_ALPHA_FULLSCREEN_FLIP_OR_DISCARD))) {
+            pPresParams->SwapEffect = (dx_sync_video ? D3DSWAPEFFECT_COPY_VSYNC : D3DSWAPEFFECT_COPY);
 
-        if(_dxgsg->scrn.bIsTNLDevice) {
-            dwBehaviorFlags|=D3DCREATE_HARDWARE_VERTEXPROCESSING;
-           // note: we could create a pure device in this case if I eliminated the GetRenderState calls in dxgsg
-
-           // also, no software vertex processing available since I specify D3DCREATE_HARDWARE_VERTEXPROCESSING
-           // and not D3DCREATE_MIXED_VERTEXPROCESSING 
-        } else {
-            dwBehaviorFlags|=D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+            if(pPresParams->MultiSampleType != D3DMULTISAMPLE_NONE) {
+                wdxdisplay_cat.fatal() << "device #"<<Display.cardIDNum<< " cant support multisample antialiasing and fullscrn alphablending because of driver limitations and/or lack of DX8.1"<<dx_multisample_antialiasing_level <<endl;
+                exit(1);
+            }
         }
+*/      
+#endif
+        #ifdef _DEBUG
+        if(pPresParams->MultiSampleType != D3DMULTISAMPLE_NONE)
+            assert(pPresParams->SwapEffect == D3DSWAPEFFECT_DISCARD);  // only valid effect for multisample
+        #endif
 
-        if(dx_preserve_fpu_state)
-            dwBehaviorFlags|=D3DCREATE_FPU_PRESERVE;
-
-        // Create device
-        hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _pParentWindowGroup->_hParentWindow,
+        hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _pParentWindowGroup->_hParentWindow,   
                                  dwBehaviorFlags, pPresParams, &Display.pD3DDevice);
 
+        #define IS_16BPP_FORMAT(FMT) (((FMT)>=D3DFMT_R5G6B5)&&((FMT)<=D3DFMT_A1R5G5B5))
+        
         if(FAILED(hr)) {
-            wdxdisplay_cat.fatal() << "D3D CreateDevice failed" << D3DERRORSTRING(hr);
-            exit(1);
+            wdxdisplay_cat.fatal() << "D3D CreateDevice failed for device #" << Display.CardIDnum << ", " << D3DERRORSTRING(hr);
+
+            if(hr == D3DERR_OUTOFVIDEOMEMORY)
+                goto Fallback_to_16bpp_buffers;         
         }
        
-        // Setup to create the primary surface w/backbuffer
-        DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd)
-        ddsd.dwFlags           = DDSD_CAPS|DDSD_BACKBUFFERCOUNT;
-        ddsd.ddsCaps.dwCaps    = DDSCAPS_PRIMARYSURFACE | DDSCAPS_3DDEVICE |
-                                 DDSCAPS_FLIP | DDSCAPS_COMPLEX;
-        ddsd.dwBackBufferCount = 1;
-
-        if(dx_full_screen_antialiasing) {
-            // cant check that d3ddevice has this capability yet, so got to set it anyway.
-            // hope this is OK.
-            ddsd.ddsCaps.dwCaps2 |= DDSCAPS2_HINTANTIALIASING; 
-        }
-
-        PRINTVIDMEM(pDD,&ddsd.ddsCaps,"initial primary & backbuf");
-
-        // Create the primary surface
-        if(FAILED( hr = pDD->CreateSurface( &ddsd, &pPrimaryDDSurf, NULL ) )) {
-            wdxdisplay_cat.fatal() << "CreateSurface failed for primary surface: result = " << ConvD3DErrorToString(hr) << endl;
-
-            if(((hr==DDERR_OUTOFVIDEOMEMORY)||(hr==DDERR_OUTOFMEMORY)) &&
-               (Display.dwFullScreenBitDepth>16)) {
-                // emergency fallback to 16bpp (shouldnt have to do this unless GetAvailVidMem lied)
-                // will this work for multimon?  what if surfs are already created on 1st mon?
-                Display.dwFullScreenBitDepth=16;
-
-                if(wdxdisplay_cat.info())
-                    wdxdisplay_cat.info() << "GetAvailVidMem lied, not enough VidMem for 32bpp, so trying 16bpp on device #"<< Display.CardIDNum<< endl;
-
-                if(FAILED( hr = pDD->SetDisplayMode( Display.dwRenderWidth, Display.dwRenderHeight,Display.dwFullScreenBitDepth, 0, 0 ))) {
-                    wdxdisplay_cat.fatal() << "SetDisplayMode failed to set ("<<Display.dwRenderWidth<<"x"<<Display.dwRenderHeight<<"x"<<Display.dwFullScreenBitDepth<<") on device #"<< Display.CardIDNum<<": result = " << ConvD3DErrorToString(hr) << endl;
-                    exit(1);
-                }
-                bool saved_value=dx_force_16bpp_zbuffer;
-                dx_force_16bpp_zbuffer=true;
-                CreateScreenBuffersAndDevice(Display);
-                dx_force_16bpp_zbuffer=saved_value;
-                return;
-            } else exit(1);
-        }
-
-        // Clear the primary surface to black
-
-        DX_DECLARE_CLEAN(DDBLTFX, bltfx)
-        bltfx.dwDDFX |= DDBLTFX_NOTEARING;
-        hr = pPrimaryDDSurf->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx);
-
-        if(FAILED(hr)) {
-            wdxdisplay_cat.fatal() << "Blt to Black of Primary Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
-            exit(1);
-        }
-
-        // Get the backbuffer, which was created along with the primary.
-        DDSCAPS2 ddscaps = { DDSCAPS_BACKBUFFER, 0, 0, 0};
-        if(FAILED( hr = pPrimaryDDSurf->GetAttachedSurface( &ddscaps, &pBackDDSurf ) )) {
-            wdxdisplay_cat.fatal() << "Can't get the backbuffer: result = " << ConvD3DErrorToString(hr) << endl;
-            exit(1);
-        }
-
-        if(FAILED( hr = pBackDDSurf->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx))) {
-            wdxdisplay_cat.fatal() << "Blt to Black of Back Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
-            exit(1);
-        }
-
         SetRect(&view_rect, 0, 0, dwRenderWidth, dwRenderHeight);
     }   // end create full screen buffers
 
@@ -2085,23 +2080,32 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
             exit(1);
         }
 
-        if(FAILED(hr = pDD->GetDisplayMode( &SurfaceDesc ))) {
-            wdxdisplay_cat.fatal() << "GetDisplayMode failed result = " << ConvD3DErrorToString(hr) << endl;
+        D3DDISPLAYMODE dispmode;
+        hr = Display.pD3D8->GetAdapterDisplayMode(Display.CardIDNum, &dispmode); 
+
+        if(FAILED(hr)) {
+            wdxdisplay_cat.fatal() << "GetAdapterDisplayMode failed result = " << D3DERRORSTRING(hr);
             exit(1);
         }
-        if(SurfaceDesc.ddpfPixelFormat.dwRGBBitCount <= 8) {
+
+        if(dispmode.Format == D3DFMT_P8) {
             wdxdisplay_cat.fatal() << "Can't run windowed in an 8-bit or less display mode" << endl;
             exit(1);
         }
 
-        if(!(BitDepth_2_DDBDMask(SurfaceDesc.ddpfPixelFormat.dwRGBBitCount) & pD3DDevDesc->dwDeviceRenderBitDepth)) {
-            wdxdisplay_cat.fatal() << "3D Device doesnt support rendering at " << SurfaceDesc.ddpfPixelFormat.dwRGBBitCount << "bpp (current desktop bitdepth)" << endl;
-            exit(1);
-        }
+        pPresParams->FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_ONE;   // I believe this irrelevant for windowed mode, but whatever
 
+        if(dx_multisample_antialiasing_level<2) {
+            if(dx_sync_video) {
+                pPresParams->SwapEffect = D3DSWAPEFFECT_COPY_VSYNC;
+            } else {
+                pPresParams->SwapEffect = D3DSWAPEFFECT_DISCARD;  //D3DSWAPEFFECT_COPY;  does this make any difference?
+            }
+        } else {
+            pPresParams->SwapEffect = D3DSWAPEFFECT_DISCARD;
+        }
      
         // Get the dimensions of the viewport and screen bounds
-
         GetClientRect( Display.hWnd, &view_rect );
         POINT ul,lr;
         ul.x=view_rect.left;  ul.y=view_rect.top;
@@ -2118,106 +2122,59 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
         _props._xsize = dwRenderWidth;
         _props._ysize = dwRenderHeight;
 
-        // Initialize the description of the primary surface
-        ZeroMemory( &SurfaceDesc, sizeof(DDSURFACEDESC2) );
-        SurfaceDesc.dwSize         = sizeof(DDSURFACEDESC2);
-        SurfaceDesc.dwFlags        = DDSD_CAPS ;
-        SurfaceDesc.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+        hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _pParentWindowGroup->_hParentWindow,   
+                                 dwBehaviorFlags, pPresParams, &Display.pD3DDevice);
 
-        PRINTVIDMEM(pDD,&SurfaceDesc.ddsCaps,"initial primary surface");
-
-        // Create the primary surface.  This includes all of the visible
-        // window, so no need to specify height/width
-        if(FAILED(hr = pDD->CreateSurface( &SurfaceDesc, &pPrimaryDDSurf, NULL ))) {
-            wdxdisplay_cat.fatal()
-            << "CreateSurface failed for primary surface: result = " << ConvD3DErrorToString(hr) << endl;
+        if(FAILED(hr)) {
+            wdxdisplay_cat.fatal() << "D3D CreateDevice failed for device #" << Display.CardIDnum << ", " << D3DERRORSTRING(hr);
             exit(1);
         }
-
-        // Create a clipper object which handles all our clipping for cases when
-        // our window is partially obscured by other windows.
-        LPDIRECTDRAWCLIPPER Clipper;
-        if(FAILED(hr = pDD->CreateClipper( 0, &Clipper, NULL ))) {
-            wdxdisplay_cat.fatal() << "CreateClipper failed : result = " << ConvD3DErrorToString(hr) << endl;
-            exit(1);
-        }
-
-        // Associate the clipper with our window. Note that, afterwards, the
-        // clipper is internally referenced by the primary surface, so it is safe
-        // to release our local reference to it.
-        Clipper->SetHWnd( 0, Display.hWnd );
-        pPrimaryDDSurf->SetClipper( Clipper );
-        Clipper->Release();
-   
-        // Clear the primary surface to black
-        DX_DECLARE_CLEAN(DDBLTFX, bltfx)
-
-        if(FAILED( hr = pPrimaryDDSurf->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx))) {
-            wdxdisplay_cat.fatal()
-            << "Blt to Black of Primary Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
-            exit(1);
-        }
-
-        // Setup a surface description to create a backbuffer.
-        SurfaceDesc.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;
-        SurfaceDesc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_3DDEVICE | DDSCAPS_VIDEOMEMORY;
-        SurfaceDesc.dwWidth  = dwRenderWidth;
-        SurfaceDesc.dwHeight = dwRenderHeight;
-
-        if(dx_full_screen_antialiasing) {
-            // cant check that d3ddevice has this capability yet, so got to set it anyway.
-            // hope this is OK.
-            SurfaceDesc.ddsCaps.dwCaps2 |= DDSCAPS2_HINTANTIALIASING; 
-        }
-
-        PRINTVIDMEM(pDD,&SurfaceDesc.ddsCaps,"initial backbuf");
-
-        // Create the backbuffer. (might want to handle failure due to running out of video memory)
-        if(FAILED(hr = pDD->CreateSurface( &SurfaceDesc, &pBackDDSurf, NULL ))) {
-            wdxdisplay_cat.fatal()
-            << "CreateSurface failed for backbuffer : result = " << ConvD3DErrorToString(hr) << endl;
-            exit(1);
-        }
-
-        if(FAILED( hr = pBackDDSurf->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx))) {
-            wdxdisplay_cat.fatal()
-            << "Blt to Black of Back Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
-            exit(1);
-        }
-
     }  // end create windowed buffers
+
+    // clear to transparent black to get rid of visible garbage 
+    hr = Display.pD3DDevice->Clear(0,NULL,D3DCLEAR_TARGET,0,0.0,0);
+    if(hr != DD_OK) {
+        wdxdisplay_cat.fatal() << "init Clear() to black failed for device #" << Display.CardIDnum << ", " << D3DERRORSTRING(hr);
+    }
 
 //  ========================================================
 
     resized(dwRenderWidth,dwRenderHeight);  // update panda channel/display rgn info
 
-
-
-    // Create the device. The device is created off of our back buffer, which
-    // becomes the render target for the newly created device.
-    hr = pD3DI->CreateDevice(pD3DDevDesc->deviceGUID, pBackDDSurf, &pD3DDevice );
-    if(hr != DD_OK) {
-        wdxdisplay_cat.fatal() << "CreateDevice failed : result = " << ConvD3DErrorToString(hr) << endl;
-        exit(1);
-    }
-
     // Create the viewport
-    D3DVIEWPORT7 vp = { 0, 0, _props._xsize, _props._ysize, 0.0f, 1.0f};
+    D3DVIEWPORT8 vp = { 0, 0, _props._xsize, _props._ysize, 0.0f, 1.0f};
     hr = pD3DDevice->SetViewport( &vp );
     if(hr != DD_OK) {
-        wdxdisplay_cat.fatal() << "SetViewport failed : result = " << ConvD3DErrorToString(hr) << endl;
+        wdxdisplay_cat.fatal() << "SetViewport failed for device #" << Display.CardIDnum << ", " << D3DERRORSTRING(hr);
         exit(1);
     }
 
     Display.pD3DDevice=pD3DDevice;
-    Display.pddsPrimary=pPrimaryDDSurf;
-    Display.pddsBack=pBackDDSurf;
-    Display.pddsZBuf=pZDDSurf;
     Display.view_rect = view_rect;
 
-//pDD, pPrimaryDDSurf, pBackDDSurf, pZDDSurf, pD3DI, pD3DDevice, view_rect);
     _dxgsg->dx_init();
     // do not SetDXReady() yet since caller may want to do more work before letting rendering proceed
+
+    return;
+
+Fallback_to_16bpp_buffers:
+
+    if(!IS_16BPP_FORMAT(pPresParams->BackBufferFormat) &&
+       (Display.dwSupportedScreenDepths & (R5G6B5_FLAG|X1R5G5B5_FLAG))) {
+            // fallback strategy, if we trying >16bpp, fallback to 16bpp buffers
+
+            if(Display.dwSupportedScreenDepths & R5G6B5_FLAG)
+              Display.DisplayMode.Format = D3DFORMAT_R5G6B5;
+              else Display.DisplayMode.Format = D3DFORMAT_X1R5G5B5;
+
+            dx_force_16bpp_zbuffer=true;
+            if(wdxdisplay_cat.info())
+               wdxdisplay_cat.info() << "CreateDevice failed, retrying w/16bpp buffers on device #"<< Display.CardIDNum<< ", hr = " << D3DERRORSTRING(hr);
+            CreateScreenBuffersAndDevice(Display);
+            return;
+    } else {
+        exit(1);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2784,7 +2741,7 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
         exit(1);
     }
 
-// these were taken from the 8.0 and 8.1 SDK headers
+// these were taken from the 8.0 and 8.1 d3d8.h SDK headers
 #define D3D_SDK_VERSION_8_0  120
 #define D3D_SDK_VERSION_8_1  220
 
