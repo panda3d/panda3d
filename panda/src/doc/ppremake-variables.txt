@@ -412,6 +412,16 @@ value is either the empty string (false) or a nonempty string (true).
     The above all have the obvious semantic meaning, based on a
     numerical comparison of <op1> and <op2>.
 
+  $[+ <op1>,<op2>]
+  $[- <op1>,<op2>]
+  $[- <op1>]
+  $[* <op1>,<op2>]
+  $[/ <op1>,<op2>]
+  $[% <op1>,<op2>]
+    The above perform the appropriate arithmetic operation on <op1>
+    and <op2> (or on <op1> only, in the case of unary minus).  The
+    operation is always integer.
+
   $[not <expr>] - returns true (nonempty) if the expression is empty,
     and false (empty) if the expression is nonempty.
 

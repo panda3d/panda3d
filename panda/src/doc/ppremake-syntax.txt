@@ -113,8 +113,25 @@ Simple commands:
   #print <text>
 
     Outputs the indicated text to standard error as soon as it is
-    encountered.  This is primarily useful for debugging ppremake
-    scripts.
+    encountered.  This is useful for debugging ppremake scripts; and
+    is also a good way to report warnings or status information to the
+    user.
+
+  #printvar <varname> [<varname2> ... ]
+
+    Outputs the literal contents of the named variable(s) to standard
+    error.  The output is similar to what you would get if you executed:
+      #print <varname> = "$[<varname>]" 
+    except the variable contents are not themselves expanded, making
+    it possible to view the exact literal contents of the variables.
+    Note that the variable names should be given without the enclosing
+    $[ ... ] syntax.
+
+  #mkdir <dirname> [<dirname2> ... ]
+
+    Creates the indicated directory names, if they do not already
+    exist.  This will also implicitly create any intervening directory
+    names that are necessary.
 
   #include <filename>
 
@@ -190,6 +207,25 @@ Simple commands:
     a variable in an enclosing scope (as opposed to #define and
     #defer, which can only shadow a variable in an enclosing scope,
     but cannot change the parent variable itself).
+
+  #push <count> <varname> [<varname2> ... ]
+
+    Copies the definition of the named variable(s) into the enclosing
+    dynamic scope.  This is primarily useful for defining variables
+    within an #forscopes or #formap block that must be preserved
+    outside the block; normally, since the code within these blocks
+    executes within a different scope, invoking the #define command
+    within these blocks will define a variable only within the
+    referenced scope, and the variable will not be available outside
+    the block.
+
+    The solution is to "push" the variable definition into the
+    immediately enclosing block, which will be the body of the
+    function that invoked the #forscopes command.  It will be as if
+    the variable were defined immediately outside the #forscopes.
+    Normally, a count of 1 should be used; if multiple nested blocks
+    must be pushed through, the count can be increased to indicated
+    the number of levels of nesting.
 
   #map <varname> <key_varname>(<scope_names>)
 
@@ -281,6 +317,22 @@ Block commands:
     the map variable.  Each time through the loop, a variable named
     <iterator> is created with the value of the current key, and the
     code is also evaluated within the associated scope.
+
+  #while <condition>
+    ..
+  #end <condition>
+
+    A general while loop, this repeated executes the nested block of
+    code as long as <condition> remains true, i.e. nonempty.
+
+  #for <varname> <start>,<end>[,<increment>]
+    ..
+  #end <varname>
+
+    A specialized iterative loop.  The variable named by <varname> is
+    initialized to the <start> value, then the contents of the loop
+    are repeated, adding <increment> each time, until the variable
+    reaches the <end> value.
 
   #defsub <subname> <params>
     ..
