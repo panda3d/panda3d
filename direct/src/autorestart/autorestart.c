@@ -38,6 +38,8 @@ char **params = NULL;
 char *logfile_name = NULL;
 int logfile_fd = -1;
 
+pid_t child_pid = 0;
+
 #define TIME_BUFFER_SIZE 128
 
 /* We shouldn't respawn more than (COUNT_RESPAWN - 1) times over
@@ -67,17 +69,17 @@ spawn_process() {
      by itself and should be respawned, false if it was explicitly
      killed (or some other error condition exists), and it should not
      respawn any more. */
-  pid_t child, wresult;
+  pid_t wresult;
   int status;
 
-  child = fork();
-  if (child < 0) {
+  child_pid = fork();
+  if (child_pid < 0) {
     /* Fork error. */
     perror("fork");
     return 0;
   }
 
-  if (child == 0) {
+  if (child_pid == 0) {
     /* Child.  Exec the process. */
     fprintf(stderr, "Child pid is %d.\n", getpid());
     exec_process();
@@ -86,11 +88,15 @@ spawn_process() {
   }
 
   /* Parent.  Wait for the child to terminate, then diagnose the reason. */
-  wresult = waitpid(child, &status, 0);
+  wresult = waitpid(child_pid, &status, 0);
   if (wresult < 0) {
     perror("waitpid");
     return 0;
   }
+
+  /* Now that we've returned from waitpid, clear the child pid number
+     so our signal handler doesn't get too confused. */
+  child_pid = 0;
 
   if (WIFSIGNALED(status)) {
     int signal = WTERMSIG(status);
@@ -108,14 +114,51 @@ spawn_process() {
 }
 
 void
+sigterm_handler() {
+  pid_t wresult;
+  int status;
+  time_t now;
+  char time_buffer[TIME_BUFFER_SIZE];
+
+  now = time(NULL);
+  strftime(time_buffer, TIME_BUFFER_SIZE, "%T on %A, %d %b %Y", localtime(&now));
+
+  fprintf(stderr, "\nsigterm caught at %s; shutting down.\n", time_buffer);
+  if (child_pid == 0) {
+    fprintf(stderr, "no child process.\n\n");
+
+  } else {
+    kill(child_pid, SIGTERM);
+
+    wresult = waitpid(child_pid, &status, 0);
+    if (wresult < 0) {
+      perror("waitpid");
+    } else {
+      fprintf(stderr, "child process terminated.\n\n");
+    }
+  }
+  exit(1);
+}
+
+void
 do_autorestart() {
   char time_buffer[TIME_BUFFER_SIZE];
   time_t now;
   time_t count_respawn[COUNT_RESPAWN];
   int cri, num_cri;
+  struct sigaction sa;
 
   /* Make our process its own process group. */
   setpgid(0, 0);
+
+  /* Set up a signal handler to trap SIGTERM. */
+  sa.sa_handler = sigterm_handler;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+  if (sigaction(SIGTERM, &sa, NULL) < 0) {
+    perror("sigaction");
+  }
+
 
   /* If we have a logfile, dup it onto stdout and stderr. */
   if (logfile_fd >= 0) {
