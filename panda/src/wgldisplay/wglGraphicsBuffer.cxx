@@ -280,7 +280,7 @@ make_pbuffer(HDC twindow_dc) {
     // Select a suitable pixel format that matches the GSG's existing
     // format, and also is appropriate for a pixel buffer.
 
-    static const int max_attrib_list = 32;
+    static const int max_attrib_list = 64;
     int iattrib_list[max_attrib_list];
     int ivalue_list[max_attrib_list];
     int ni = 0;
