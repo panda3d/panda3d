@@ -789,14 +789,14 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
       // This, of course, assumes we haven't just asked for the wrt()
       // from the very latest timestamp.
 #ifndef NDEBUG
-      if (wrt_cat.is_info()) {
-	wrt_cat.info()
+      if (wrt_cat.is_warning()) {
+	wrt_cat.warning()
 	  << "Recovering from stale cache.\n";
       }
 #endif
       nassertr(as_of != UpdateSeq::fresh(), NULL);
-      return cached_wrt_subtree(arc, to, UpdateSeq::fresh(), 
-				UpdateSeq::fresh(), result, graph_type);
+      return cached_wrt_subtree(arc, to, UpdateSeq::fresh(), now,
+				result, graph_type);
     }
     
     nassertr(to->get_num_parents(graph_type) == 1, NULL);

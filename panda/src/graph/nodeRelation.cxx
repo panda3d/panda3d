@@ -518,20 +518,14 @@ attach() {
   _net_transitions.clear();
   _last_update = ++last_graph_update(_type);
 
-  /*
   // If we have just added a new parent arc to a node that previously
-  // had exactly one parent, we also need to increment the update
-  // counter for all the children of that node.
+  // had exactly one parent, we also need to set the update sequence
+  // counter for the other parent arc, since we have fundamentally
+  // changed the nature of the node from non-instanced to instanced.
   if (child_list.size() == 2) {
-    cerr << "Attaching " << *this << " at " << _last_update << "\n";
-    DownRelationPointers &child_children = _child->_children[_type];
-    DownRelationPointers::iterator drpi;
-    for (drpi = child_children.begin(); drpi != child_children.end(); ++drpi) {
-      cerr << "Forcing update for " << *(*drpi) << "\n";
-      (*drpi)->_last_update = _last_update;
-    }
+    child_list[0]->_last_update = _last_update;
+    child_list[1]->_last_update = _last_update;
   }
-  */
 
   _parent->force_bound_stale();
   mark_bound_stale();
@@ -578,18 +572,13 @@ detach() {
   _net_transitions.clear();
   _last_update = ++last_graph_update(_type);
 
-  /*
   // If we have just removed a parent arc from a node, leaving exactly
-  // one parent, we also need to increment the update counter for all
-  // the children of that node.
+  // one parent, we also need to set the update sequence
+  // counter for the other parent arc, since we have fundamentally
+  // changed the nature of the node from instanced to non-instanced.
   if (child_list.size() == 1) {
-    DownRelationPointers &child_children = _child->_children[_type];
-    DownRelationPointers::iterator drpi;
-    for (drpi = child_children.begin(); drpi != child_children.end(); ++drpi) {
-      (*drpi)->_last_update = _last_update;
-    }
+    child_list[0]->_last_update = _last_update;
   }
-  */
 
   return result;
 }

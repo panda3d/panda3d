@@ -54,13 +54,13 @@ public:
   }
   static void init_type(void) {
     /*
-    TypedReferenceCount::init_type();
-    register_type(_type_handle, "AudioSound",
-		  TypedReferenceCount::get_class_type());
-    */
     TypedObject::init_type();
     register_type(_type_handle, "AudioSound",
 		  TypedObject::get_class_type());
+    */
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "AudioSound",
+		  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();
