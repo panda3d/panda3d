@@ -16,8 +16,6 @@
 
   #define SOURCES \
     config_mayaegg.cxx config_mayaegg.h \
-    mayaShader.cxx mayaShader.h \
-    mayaShaders.cxx mayaShaders.h \
     mayaToEggConverter.cxx mayaToEggConverter.h
 
 #end ss_lib_target

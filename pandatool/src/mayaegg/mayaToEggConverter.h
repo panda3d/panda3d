@@ -32,6 +32,7 @@ class EggData;
 class EggGroup;
 class EggVertexPool;
 class EggNurbsCurve;
+class EggPrimitive;
 
 class MDagPath;
 class MFnNurbsSurface;
@@ -89,6 +90,8 @@ private:
                     MayaShader *default_shader = NULL);
 
   EggGroup *get_egg_group(const string &name, EggData &data);
+  void set_shader_attributes(EggPrimitive &primitive,
+                             const MayaShader &shader);
 
   typedef pmap<string, EggGroup *> Groups;
   Groups _groups;

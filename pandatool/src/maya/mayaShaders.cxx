@@ -19,7 +19,7 @@
 #include "mayaShaders.h"
 #include "mayaShader.h"
 #include "maya_funcs.h"
-#include "config_mayaegg.h"
+#include "config_maya.h"
 
 #include "pre_maya_include.h"
 #include <maya/MStatus.h>
@@ -36,9 +36,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 MayaShaders::
-MayaShaders(MayaToEggConverter *converter) :
-  _converter(converter)
-{
+MayaShaders() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,7 +63,7 @@ find_shader_for_node(MObject node) {
   MObject iog_attr = node_fn.attribute("instObjGroups", &status);
   if (!status) {
     // The node is not renderable.  What are you thinking?
-    mayaegg_cat.error()
+    maya_cat.error()
       << node_fn.name() << " : not a renderable object.\n";
     return (MayaShader *)NULL;
   }
@@ -79,7 +77,7 @@ find_shader_for_node(MObject node) {
   iog_plug.elementByLogicalIndex(0).connectedTo(iog_pa, false, true, &status);
   if (!status) {
     // No shading group defined for this object.
-    mayaegg_cat.error()
+    maya_cat.error()
       << node_fn.name() << " : no shading group defined.\n";
     return (MayaShader *)NULL;
   }
@@ -97,7 +95,7 @@ find_shader_for_node(MObject node) {
   }
 
   // Well, we didn't find a ShadingEngine after all.  Huh.
-  mayaegg_cat.info()
+  maya_cat.info()
     << node_fn.name() << " : no shading engine found.\n";
   return (MayaShader *)NULL;
 }
@@ -123,7 +121,7 @@ find_shader_for_shading_engine(MObject engine) {
 
   // All right, this is a newly encountered shading engine.  Create a
   // new MayaShader object to represent it.
-  MayaShader *shader = new MayaShader(engine, _converter);
+  MayaShader *shader = new MayaShader(engine);
 
   // Record this for the future.
   _shaders.insert(Shaders::value_type(engine_name, shader));

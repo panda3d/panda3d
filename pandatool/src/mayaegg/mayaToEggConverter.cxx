@@ -28,6 +28,9 @@
 #include "eggNurbsSurface.h"
 #include "eggNurbsCurve.h"
 #include "eggPolygon.h"
+#include "eggPrimitive.h"
+#include "eggTexture.h"
+#include "eggTextureCollection.h"
 #include "string_utils.h"
 
 #include "pre_maya_include.h"
@@ -627,7 +630,7 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
   egg_group->add_child(egg_nurbs);
 
   if (shader != (MayaShader *)NULL) {
-    shader->set_attributes(*egg_nurbs, *this);
+    set_shader_attributes(*egg_nurbs, *shader);
   }
 }
 
@@ -978,4 +981,41 @@ get_egg_group(const string &name, EggData &data) {
 
   _groups.insert(Groups::value_type(name, egg_group));
   return egg_group;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::set_shader_attributes
+//       Access: Public
+//  Description: Applies the known shader attributes to the indicated
+//               egg primitive.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
+  // In Maya, a polygon is either textured or colored.  The texture,
+  // if present, replaces the color.
+
+  if (shader._has_texture) {
+    Filename pathname = convert_texture_path(_texture);
+    EggTexture tex(shader._name, pathname);
+    tex.set_wrap_u(shader._wrap_u ? EggTexture::WM_repeat : EggTexture::WM_clamp);
+    tex.set_wrap_v(shader._wrap_v ? EggTexture::WM_repeat : EggTexture::WM_clamp);
+ 
+    // Let's mipmap all textures by default.
+    tex.set_minfilter(EggTexture::FT_linear_mipmap_linear);
+    tex.set_magfilter(EggTexture::FT_linear);
+
+    LMatrix3d mat = shader.compute_texture_matrix();
+    if (!mat.almost_equal(LMatrix3d::ident_mat())) {
+      tex.set_transform(mat);
+    }
+
+    EggTexture *new_tex =
+      _textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
+
+    primitive.set_texture(new_tex);
+
+  } else if (shader._has_color) {
+    primitive.set_color(Colorf(shader._color[0], shader._color[1], 
+                               shader._color[2], 1.0f));
+  }
 }

@@ -24,7 +24,6 @@
 #include "pmap.h"
 
 class MayaShader;
-class MayaToEggConverter;
 class MObject;
 
 ////////////////////////////////////////////////////////////////////
@@ -34,7 +33,7 @@ class MObject;
 ////////////////////////////////////////////////////////////////////
 class MayaShaders {
 public:
-  MayaShaders(MayaToEggConverter *converter);
+  MayaShaders();
   ~MayaShaders();
   MayaShader *find_shader_for_node(MObject node);
   MayaShader *find_shader_for_shading_engine(MObject engine);
@@ -44,8 +43,6 @@ public:
 private:
   typedef pmap<string, MayaShader *> Shaders;
   Shaders _shaders;
-
-  MayaToEggConverter *_converter;
 };
 
 #endif

@@ -18,12 +18,7 @@
 
 #include "mayaShader.h"
 #include "maya_funcs.h"
-#include "mayaToEggConverter.h"
-#include "config_mayaegg.h"
-
-#include "eggPrimitive.h"
-#include "eggTexture.h"
-#include "eggTextureCollection.h"
+#include "config_maya.h"
 
 #include "pre_maya_include.h"
 #include <maya/MFnDependencyNode.h>
@@ -42,9 +37,7 @@
 //               relevant shader properties.
 ////////////////////////////////////////////////////////////////////
 MayaShader::
-MayaShader(MObject engine, MayaToEggConverter *converter) :
-  _converter(converter)
-{
+MayaShader(MObject engine) {
   _has_color = false;
   _transparency = 0.0;
 
@@ -67,8 +60,8 @@ MayaShader(MObject engine, MayaToEggConverter *converter) :
 
   _name = engine_fn.name().asChar();
 
-  if (mayaegg_cat.is_debug()) {
-    mayaegg_cat.debug()
+  if (maya_cat.is_debug()) {
+    maya_cat.debug()
       << "Reading shading engine " << _name << "\n";
   }
 
@@ -82,44 +75,6 @@ MayaShader(MObject engine, MayaToEggConverter *converter) :
       MObject shader = shader_pa[0].node();
       found_shader = read_surface_shader(shader);
     }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::set_attributes
-//       Access: Public
-//  Description: Applies the known shader attributes to the indicated
-//               egg primitive.
-////////////////////////////////////////////////////////////////////
-void MayaShader::
-set_attributes(EggPrimitive &primitive, MayaToEggConverter &conv) {
-  // In Maya, a polygon is either textured or colored.  The texture,
-  // if present, replaces the color.
-
-  if (_has_texture) {
-    EggTextureCollection &textures = conv._textures;
-
-    Filename pathname = _converter->convert_texture_path(_texture);
-    EggTexture tex(_name, pathname);
-    tex.set_wrap_u(_wrap_u ? EggTexture::WM_repeat : EggTexture::WM_clamp);
-    tex.set_wrap_v(_wrap_v ? EggTexture::WM_repeat : EggTexture::WM_clamp);
- 
-    // Let's mipmap all textures by default.
-    tex.set_minfilter(EggTexture::FT_linear_mipmap_linear);
-    tex.set_magfilter(EggTexture::FT_linear);
-
-    LMatrix3d mat = compute_texture_matrix();
-    if (!mat.almost_equal(LMatrix3d::ident_mat())) {
-      tex.set_transform(mat);
-    }
-
-    EggTexture *new_tex =
-      textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
-
-    primitive.set_texture(new_tex);
-
-  } else if (_has_color) {
-    primitive.set_color(Colorf(_color[0], _color[1], _color[2], 1.0));
   }
 }
 
@@ -181,8 +136,8 @@ read_surface_shader(MObject shader) {
   MStatus status;
   MFnDependencyNode shader_fn(shader);
 
-  if (mayaegg_cat.is_spam()) {
-    mayaegg_cat.spam()
+  if (maya_cat.is_spam()) {
+    maya_cat.spam()
       << "  Reading surface shader " << shader_fn.name() << "\n";
   }
 
@@ -212,8 +167,8 @@ read_surface_shader(MObject shader) {
   }
 
   if (!_has_color && !_has_texture) {
-    if (mayaegg_cat.is_spam()) {
-      mayaegg_cat.spam()
+    if (maya_cat.is_spam()) {
+      maya_cat.spam()
         << "  Color definition not found.\n";
     }
   }
@@ -251,8 +206,8 @@ read_surface_color(MObject color) {
 
   } else {
     // This shader wasn't understood.
-    if (mayaegg_cat.is_debug()) {
-      mayaegg_cat.info()
+    if (maya_cat.is_debug()) {
+      maya_cat.info()
         << "**Don't know how to interpret color attribute type "
         << color.apiTypeStr() << "\n";
 
@@ -261,7 +216,7 @@ read_surface_color(MObject color) {
       // of unsupportted shader once.
       static pset<MFn::Type> bad_types;
       if (bad_types.insert(color.apiType()).second) {
-        mayaegg_cat.info()
+        maya_cat.info()
           << "**Don't know how to interpret color attribute type "
           << color.apiTypeStr() << "\n";
       }
