@@ -108,11 +108,15 @@ read_iff(IffInputFile *in, size_t stop_at) {
              << " of polygon " << polygon_index
              << " specified by discontinuous vertex map.\n"
              << "Original value = ";
-        copy(orig_value.begin(), orig_value.end(),
-             ostream_iterator<float>(nout, " "));
+
+	PTA_float::const_iterator vi;
+	for (vi = orig_value.begin(); vi != orig_value.end(); ++vi) {
+	  nout << (*vi) << " ";
+	}
         nout << " new value = ";
-        copy(value.begin(), value.end(),
-             ostream_iterator<float>(nout, " "));
+	for (vi = value.begin(); vi != value.end(); ++vi) {
+	  nout << (*vi) << " ";
+	}
         nout << "\n";
       }
     }

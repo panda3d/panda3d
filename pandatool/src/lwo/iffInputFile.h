@@ -67,8 +67,8 @@ public:
   PT(IffChunk) get_subchunk(IffChunk *context);
 
   bool read_byte(char &byte);
-  bool read_bytes(Datagram &datagram, size_t length);
-  bool skip_bytes(size_t length);
+  bool read_bytes(Datagram &datagram, int length);
+  bool skip_bytes(int length);
 
 protected:
   virtual IffChunk *make_new_chunk(IffId id);
@@ -97,7 +97,7 @@ public:
 private:
   static TypeHandle _type_handle;
 
-  friend IffChunk;
+  friend class IffChunk;
 };
 
 #include "iffInputFile.I"

@@ -113,7 +113,10 @@ handle_args(ProgramBase::Args &args) {
   } else {
     if (!args.empty()) {
       nout << "Unexpected arguments on command line:\n";
-      copy(args.begin(), args.end(), ostream_iterator<string>(nout, " "));
+      Args::const_iterator ai;
+      for (ai = args.begin(); ai != args.end(); ++ai) {
+	nout << (*ai) << " ";
+      }
       nout << "\r";
       return false;
     }

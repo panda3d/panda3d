@@ -280,7 +280,10 @@ handle_args(Args &args) {
     nout << "You may only specify one " << _format_name
          << " file to read on the command line.  "
          << "You specified: ";
-    copy(args.begin(), args.end(), ostream_iterator<string>(nout, " "));
+    Args::const_iterator ai;
+    for (ai = args.begin(); ai != args.end(); ++ai) {
+      nout << (*ai) << " ";
+    }
     nout << "\n";
     return false;
   }

@@ -362,7 +362,7 @@ read_byte(char &byte) {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool IffInputFile::
-read_bytes(Datagram &datagram, size_t length) {
+read_bytes(Datagram &datagram, int length) {
   if (is_eof()) {
     return false;
   }
@@ -387,7 +387,7 @@ read_bytes(Datagram &datagram, size_t length) {
 //               Returns true if successful, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool IffInputFile::
-skip_bytes(size_t length) {
+skip_bytes(int length) {
   if (is_eof()) {
     return false;
   }
