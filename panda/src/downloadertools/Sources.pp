@@ -1,7 +1,7 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m pystub
 #define LOCAL_LIBS downloader express event ipc
-#define BUILD_DIRECTORY $[HAVE_IPC]
+//#define BUILD_DIRECTORY $[HAVE_IPC]
 #define USE_PACKAGES ipc
 
 #begin bin_target
