@@ -25,8 +25,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltTransformTranslate
-// Description : A transformation that applies a (possibly nonuniform)
-//               scale.
+// Description : A transformation that applies a translation.
 ////////////////////////////////////////////////////////////////////
 class FltTransformTranslate : public FltTransformRecord {
 public:
