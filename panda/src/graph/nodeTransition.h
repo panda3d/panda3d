@@ -143,7 +143,8 @@ private:
   friend class NodeTransitionCache;
 };
 
-INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransition &ntb);
+EXPCL_PANDA INLINE_GRAPH ostream &
+operator << (ostream &out, const NodeTransition &ntb);
 
 #ifndef DONT_INLINE_GRAPH
 #include "nodeTransition.I"

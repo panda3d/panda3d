@@ -112,7 +112,8 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE_GRAPH ostream &operator << (ostream &out, const NodeAttribute &nab);
+EXPCL_PANDA INLINE_GRAPH ostream &
+operator << (ostream &out, const NodeAttribute &nab);
 
 #ifndef DONT_INLINE_GRAPH
 #include "nodeAttribute.I"

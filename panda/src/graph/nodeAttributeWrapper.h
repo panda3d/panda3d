@@ -60,7 +60,7 @@ private:
   PT(NodeAttribute) _attrib;
 };
 
-INLINE_GRAPH ostream &operator << (ostream &out, const NodeAttributeWrapper &naw);
+EXPCL_PANDA INLINE_GRAPH ostream &operator << (ostream &out, const NodeAttributeWrapper &naw);
 
 #include "nodeAttributeWrapper.T"
 

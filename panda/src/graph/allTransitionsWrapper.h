@@ -131,7 +131,7 @@ private:
   friend class AllAttributesWrapper;
 };
 
-INLINE_GRAPH ostream &operator << (ostream &out, const AllTransitionsWrapper &ntw);
+EXPCL_PANDA INLINE_GRAPH ostream &operator << (ostream &out, const AllTransitionsWrapper &ntw);
 
 #include "allTransitionsWrapper.T"
 

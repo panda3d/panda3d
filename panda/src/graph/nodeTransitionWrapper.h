@@ -95,7 +95,7 @@ private:
   friend class NodeAttributeWrapper;
 };
 
-INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionWrapper &ntw);
+EXPCL_PANDA INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionWrapper &ntw);
 
 #ifndef DONT_INLINE_GRAPH
 #include "nodeTransitionWrapper.I"

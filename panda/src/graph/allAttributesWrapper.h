@@ -72,7 +72,7 @@ private:
   NodeAttributes _attrib;
 };
 
-INLINE_GRAPH ostream &operator << (ostream &out, const AllAttributesWrapper &a);
+EXPCL_PANDA INLINE_GRAPH ostream &operator << (ostream &out, const AllAttributesWrapper &a);
 
 #include "allAttributesWrapper.T"
 
