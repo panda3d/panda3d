@@ -36,11 +36,27 @@ class FSM(DirectObject):
         # It is assumed that the initial state takes no arguments.
         self.__currentState = self.__initialState
         #self.__enter(self.__initialState)
+        return None
+
+    # I know this isn't how __repr__ is supposed to be used, but it
+    # is nice and convenient.
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        """__str__(self)
+        Print out something useful about the fsm
+        """
+        str = ("FSM " + self.getName() + ' in state "' +
+               self.getCurrentState().getName() + '"')
+        return str
 
     def enterInitialState(self):
         self.__enter(self.__initialState)
+        return None
         
-    def __str__(self):
+    # Jesse decided that simpler was better with the __str__ function
+    def __str_not__(self):
         """__str__(self)"""
         return "FSM: name = %s \n states = %s \n initial = %s \n final = %s \n current = %s" % (self.__name, self.__states, self.__initialState, self.__finalState, self.__currentState)
 
