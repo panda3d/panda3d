@@ -20,7 +20,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_render_traverser
-//       Access: Public
+//       Access: Published
 //  Description: Sets the traverser that will be used to render the
 //               scene graph.  If this is unset, nothing will be
 //               rendered.
@@ -32,13 +32,25 @@ set_render_traverser(RenderTraverser *rt) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_render_traverser
-//       Access: Public
+//       Access: Published
 //  Description: Returns the traverser that will be used to render the
 //               scene graph.
 ////////////////////////////////////////////////////////////////////
 INLINE RenderTraverser *GraphicsStateGuardian::
 get_render_traverser() const {
   return _render_traverser;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::is_closed
+//       Access: Public
+//  Description: Returns true if the window associated with this GSG
+//               has been closed, and hence the resources associated
+//               with this GSG have been freed.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+is_closed() const {
+  return (_win == (GraphicsWindow *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

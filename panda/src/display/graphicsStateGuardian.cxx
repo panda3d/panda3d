@@ -733,6 +733,19 @@ unmark_prepared_geom_node(GeomNodeContext *gnc) {
   return removed;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::close_gsg
+//       Access: Protected, Virtual
+//  Description: This is called by the associated GraphicsWindow when
+//               close_window() is called.  It should null out the
+//               _win pointer and possibly free any open resources
+//               associated with the GSG.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+close_gsg() {
+  _win = (GraphicsWindow *)NULL;
+}
+
 #ifdef DO_PSTATS
 
 ////////////////////////////////////////////////////////////////////

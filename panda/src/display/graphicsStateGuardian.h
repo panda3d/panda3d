@@ -84,6 +84,8 @@ PUBLISHED:
   void clear_attribute(TypeHandle type);
 
 public:
+  INLINE bool is_closed() const;
+
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
@@ -164,6 +166,8 @@ protected:
   bool unmark_prepared_geom(GeomContext *gc);
   bool mark_prepared_geom_node(GeomNodeContext *gnc);
   bool unmark_prepared_geom_node(GeomNodeContext *gnc);
+
+  virtual void close_gsg();
 
 #ifdef DO_PSTATS
   // These functions are used to update the active texture memory
@@ -300,7 +304,8 @@ public:
 private:
   static TypeHandle _type_handle;
 
-friend class GraphicsPipe;
+  friend class GraphicsPipe;
+  friend class GraphicsWindow;
 };
 
 #include "graphicsStateGuardian.I"

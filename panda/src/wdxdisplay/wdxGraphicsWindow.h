@@ -115,7 +115,7 @@ public:
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
   void DestroyMe(bool bAtExitFnCalled);
-  virtual void close_window(int exit_status);
+  virtual void do_close_window();
 
 private:
   static TypeHandle _type_handle;

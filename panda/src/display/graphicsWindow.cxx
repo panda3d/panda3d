@@ -184,11 +184,22 @@ operator=(const GraphicsWindow&) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::Destructor
-//       Access: Public
+//       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
 ~GraphicsWindow() {
+  // First, call close_window().  This tells our GSG to let go of its
+  // pointer to us, and also eventually calls do_close_window().
+  // However, do_close_window() is a virtual function that might be
+  // extended in a derived class, but we don't have any derived
+  // virtual functions by the time the destructor is called.
+  
+  // Therefore, if a derived class has redefined do_close_window(), it
+  // should also call close_window() in its own destructor.
+  close_window();
+
+
   // We don't have to destruct our child channels explicitly, since
   // they are all reference-counted and will go away when their
   // pointers do.  However, we do need to zero out their pointers to
@@ -512,6 +523,47 @@ make_gsg() {
     make_instance(get_gsg_type(), params);
 
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::release_gsg
+//       Access: Protected
+//  Description: Releases the current GSG pointer, if it is currently
+//               held.  This invalidates the window and marks it
+//               closed; it should not be called unless the code to
+//               close the window is also called.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+release_gsg() {
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
+    // First, we save the GSG pointer and then NULL it out.  That way,
+    // if the GSG happens to call close_window() while it is closing
+    // itself, it won't be recursive (because we'll already be marked
+    // closed).
+    PT(GraphicsStateGuardian) gsg = _gsg;
+    _gsg.clear();
+
+    // Now we tell the GSG it's time to sleep.
+    gsg->close_gsg();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::do_close_window
+//       Access: Protected, Virtual
+//  Description: An internal function to release whatever system
+//               resources are held by the window and actually close
+//               it.  This is called by close_window().  
+//
+//               If a derived class redefines this function, it should
+//               also arrange to call close_window() (or its
+//               equivalent) from its own destructor, since we cannot
+//               call a virtual function from this destructor.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+do_close_window() {
+  display_cat.info()
+    << "Closing " << get_type() << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

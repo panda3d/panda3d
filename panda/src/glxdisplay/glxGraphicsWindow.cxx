@@ -1155,10 +1155,14 @@ void glxGraphicsWindow::process_event(XEvent event)
       handle_mouse_motion(event.xcrossing.x, event.xcrossing.y);
     }
     break;
+
+  case DestroyNotify:
+    close_window();
+    break;
+
   case UnmapNotify:
   case VisibilityNotify:
   case ClientMessage:
-  case DestroyNotify:
   case CirculateNotify:
   case CreateNotify:
   case GravityNotify:

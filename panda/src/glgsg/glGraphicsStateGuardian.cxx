@@ -1768,9 +1768,9 @@ release_texture(TextureContext *tc) {
   GLTextureContext *gtc = DCAST(GLTextureContext, tc);
   Texture *tex = tc->_texture;
 
-  HGLRC curcxt=wglGetCurrentContext();
-  if(curcxt!=NULL)
-      glDeleteTextures(1, &gtc->_index);
+  if (!is_closed()) {
+    glDeleteTextures(1, &gtc->_index);
+  }
   gtc->_index = 0;
 
   bool erased = unmark_prepared_texture(gtc);

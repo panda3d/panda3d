@@ -20,7 +20,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_properties
-//       Access: Public
+//       Access: Published
 //  Description: Returns the full Properties structure that describes
 //               the window.
 ////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ get_properties() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_width
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsWindow::
@@ -41,7 +41,7 @@ get_width() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_height
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsWindow::
@@ -51,7 +51,7 @@ get_height() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_xorg
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsWindow::
@@ -61,7 +61,7 @@ get_xorg() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_yorg
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsWindow::
@@ -71,19 +71,24 @@ get_yorg() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_gsg
-//       Access: Public
+//       Access: Published
 //  Description: Returns the GSG that is associated with this window.
 //               There is a one-to-one association between windows and
 //               GSG's.
+//
+//               It is invalid to call this if the window has been
+//               closed; that is, if is_closed() returns true.  In
+//               this case the GSG has been closed as well.
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsStateGuardian *GraphicsWindow::
 get_gsg() const {
+  nassertr(!is_closed(), NULL);
   return _gsg;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_pipe
-//       Access: Public
+//       Access: Published
 //  Description: Returns the GraphicsPipe that this window is
 //               associated with.  It is possible that the
 //               GraphicsPipe might have been deleted while an
@@ -97,99 +102,35 @@ get_pipe() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::get_num_input_devices
-//       Access: Public
-//  Description: Returns the number of separate input devices
-//               associated with the window.  Typically, a window will
-//               have exactly one input device: the keyboard/mouse
-//               pair.  However, some windows may have no input
-//               devices, and others may add additional devices, for
-//               instance for a joystick.
+//     Function: GraphicsWindow::close_window
+//       Access: Published
+//  Description: Closes the window and frees all resources associated
+//               with it, including the GSG.  The window may not be
+//               opened again.
 ////////////////////////////////////////////////////////////////////
-INLINE int GraphicsWindow::
-get_num_input_devices() const {
-  return _input_devices.size();
+INLINE void GraphicsWindow::
+close_window() {
+  if (!is_closed()) {
+    do_close_window();
+    release_gsg();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::get_input_device_name
-//       Access: Public
-//  Description: Returns the name of the nth input device.
-////////////////////////////////////////////////////////////////////
-INLINE string GraphicsWindow::
-get_input_device_name(int device) const {
-  nassertr(device >= 0 && device < (int)_input_devices.size(), "");
-  return _input_devices[device].get_name();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::has_pointer
-//       Access: Public
-//  Description: Returns true if the nth input device has a
-//               screen-space pointer (for instance, a mouse), false
-//               otherwise.
+//     Function: GraphicsWindow::is_closed
+//       Access: Published
+//  Description: Returns true if close_window() has been called on
+//               this window, false otherwise.  If the window has been
+//               closed, most of its interface is no longer valid.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsWindow::
-has_pointer(int device) const {
-  nassertr(device >= 0 && device < (int)_input_devices.size(), false);
-  return _input_devices[device].has_pointer();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::has_keyboard
-//       Access: Public
-//  Description: Returns true if the nth input device has a keyboard,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool GraphicsWindow::
-has_keyboard(int device) const {
-  nassertr(device >= 0 && device < (int)_input_devices.size(), false);
-  return _input_devices[device].has_keyboard();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::get_mouse_data
-//       Access: Public
-//  Description: Returns the MouseData associated with the nth input
-//               device.
-////////////////////////////////////////////////////////////////////
-INLINE const MouseData &GraphicsWindow::
-get_mouse_data(int device) const {
-  nassertr(device >= 0 && device < (int)_input_devices.size(),
-           *(new MouseData));
-  return _input_devices[device].get_mouse_data();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::has_button_event
-//       Access: Public
-//  Description: Returns true if the indicated device has a pending
-//               button event (a mouse button or keyboard button
-//               down/up), false otherwise.  If this returns true, the
-//               particular event may be extracted via
-//               get_button_event().
-////////////////////////////////////////////////////////////////////
-INLINE bool GraphicsWindow::
-has_button_event(int device) const {
-  nassertr(device >= 0 && device < (int)_input_devices.size(), false);
-  return _input_devices[device].has_button_event();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::get_button_event
-//       Access: Public
-//  Description: Assuming a previous call to has_button_event()
-//               returned true, this returns the pending button event.
-////////////////////////////////////////////////////////////////////
-INLINE ButtonEvent GraphicsWindow::
-get_button_event(int device) {
-  nassertr(has_button_event(device), ButtonEvent());
-  return _input_devices[device].get_button_event();
+is_closed() const {
+  return (_gsg == (GraphicsStateGuardian *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::set_frame_number
-//       Access: Public
+//       Access: Published
 //  Description: Sets the current frame number of the window.  This
 //               affects the frame numbers written for %f in a RIB or
 //               image filename template.  The frame number is
@@ -203,7 +144,7 @@ set_frame_number(const int f) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_frame_number
-//       Access: Public
+//       Access: Published
 //  Description: Returns the current frame number of the window.  See
 //               set_frame_number().
 ////////////////////////////////////////////////////////////////////
@@ -254,5 +195,96 @@ call_idle_callback() {
   if (_idle_callback) {
     _idle_callback->idle();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_num_input_devices
+//       Access: Published
+//  Description: Returns the number of separate input devices
+//               associated with the window.  Typically, a window will
+//               have exactly one input device: the keyboard/mouse
+//               pair.  However, some windows may have no input
+//               devices, and others may add additional devices, for
+//               instance for a joystick.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsWindow::
+get_num_input_devices() const {
+  return _input_devices.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_input_device_name
+//       Access: Published
+//  Description: Returns the name of the nth input device.
+////////////////////////////////////////////////////////////////////
+INLINE string GraphicsWindow::
+get_input_device_name(int device) const {
+  nassertr(device >= 0 && device < (int)_input_devices.size(), "");
+  return _input_devices[device].get_name();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::has_pointer
+//       Access: Published
+//  Description: Returns true if the nth input device has a
+//               screen-space pointer (for instance, a mouse), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsWindow::
+has_pointer(int device) const {
+  nassertr(device >= 0 && device < (int)_input_devices.size(), false);
+  return _input_devices[device].has_pointer();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::has_keyboard
+//       Access: Published
+//  Description: Returns true if the nth input device has a keyboard,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsWindow::
+has_keyboard(int device) const {
+  nassertr(device >= 0 && device < (int)_input_devices.size(), false);
+  return _input_devices[device].has_keyboard();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_mouse_data
+//       Access: Published
+//  Description: Returns the MouseData associated with the nth input
+//               device.
+////////////////////////////////////////////////////////////////////
+INLINE const MouseData &GraphicsWindow::
+get_mouse_data(int device) const {
+  nassertr(device >= 0 && device < (int)_input_devices.size(),
+           *(new MouseData));
+  return _input_devices[device].get_mouse_data();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::has_button_event
+//       Access: Published
+//  Description: Returns true if the indicated device has a pending
+//               button event (a mouse button or keyboard button
+//               down/up), false otherwise.  If this returns true, the
+//               particular event may be extracted via
+//               get_button_event().
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsWindow::
+has_button_event(int device) const {
+  nassertr(device >= 0 && device < (int)_input_devices.size(), false);
+  return _input_devices[device].has_button_event();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_button_event
+//       Access: Published
+//  Description: Assuming a previous call to has_button_event()
+//               returned true, this returns the pending button event.
+////////////////////////////////////////////////////////////////////
+INLINE ButtonEvent GraphicsWindow::
+get_button_event(int device) {
+  nassertr(has_button_event(device), ButtonEvent());
+  return _input_devices[device].get_button_event();
 }
 

@@ -178,6 +178,7 @@ void wdxGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
       _dxgsg->dx_cleanup(_props._fullscreen, bAtExitFnCalled);
       _dxgsg=NULL;
   }
+  release_gsg();
 
   if(_hdc!=NULL) {
     ReleaseDC(_mwindow,_hdc);
@@ -195,7 +196,8 @@ void wdxGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
   }
 }
 
-void wdxGraphicsWindow::close_window(int exit_status) {
+void wdxGraphicsWindow::do_close_window() {
+  GraphicsWindow::do_close_window();
    DestroyMe(false);
 }
 
@@ -205,7 +207,7 @@ void wdxGraphicsWindow::close_window(int exit_status) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsWindow::~wdxGraphicsWindow(void) {
-   DestroyMe(false);
+   close_window();
 }
 
 void DestroyAllWindows(bool bAtExitFnCalled) {
@@ -262,7 +264,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             break;
 
         case WM_CLOSE:
-          DestroyMe(false);
+          close_window();
 
           // BUGBUG:  right now there is no way to tell the panda app the graphics window is invalid or
           //          has been closed by the user, to prevent further methods from being called on the window.

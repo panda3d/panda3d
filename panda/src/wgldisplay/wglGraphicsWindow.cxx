@@ -96,7 +96,7 @@ void wglGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
       report_errors();
 
       // implicitly calls gsg destructors which release GL objects (textures, display lists, etc)
-      _gsg = NULL;
+      release_gsg();
     
       HGLRC curcxt=wglGetCurrentContext();
       if(curcxt!=NULL) 
@@ -134,7 +134,8 @@ void wglGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
   }
 }
 
-void wglGraphicsWindow::close_window(int exit_status) {
+void wglGraphicsWindow::do_close_window() {
+  GraphicsWindow::do_close_window();
    DestroyMe(false);
 }
 
@@ -144,7 +145,7 @@ void wglGraphicsWindow::close_window(int exit_status) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wglGraphicsWindow::~wglGraphicsWindow(void) {
-   DestroyMe(false);
+   close_window();
 }
 
 void DestroyAllWindows(bool bAtExitFnCalled) {
@@ -1330,7 +1331,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       break;
 
     case WM_CLOSE:
-          DestroyMe(false);
+          close_window();
 
           // BUGBUG:  right now there is no way to tell the panda app the graphics window is invalid or
           //          has been closed by the user, to prevent further methods from being called on the window.

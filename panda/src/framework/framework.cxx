@@ -431,11 +431,11 @@ void event_esc(CPT_Event ev) {
 #endif
 
    if(ev->get_name()=="q") {
-      // if app ever exits using exit() without close_window, hopefully this will work
-      framework_cat.debug() << "Testing unsafe, no close_window(), direct exit() of framework\n";
+     // if app ever exits using exit() without close_window, hopefully this will work
+     framework_cat.debug() << "Testing unsafe, no close_window(), direct exit() of framework\n";
    } else {
-    main_win->close_window(0);
-    framework_cat.debug() << "Exiting framework\n";
+     main_win->close_window();
+     framework_cat.debug() << "Exiting framework\n";
    }
 
    main_win = NULL;

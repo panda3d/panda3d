@@ -113,13 +113,13 @@ PUBLISHED:
   INLINE int get_yorg() const;
 
   INLINE GraphicsStateGuardian *get_gsg() const;
-
   INLINE GraphicsPipe *get_pipe() const;
+
+  INLINE void close_window();
+  INLINE bool is_closed() const;
 
   INLINE void set_frame_number(const int);
   INLINE int get_frame_number() const;
-
-  virtual void close_window(int exit_status) {return;};  //release windowing system resources
 
 public:
   virtual void resized(const int, const int);
@@ -179,6 +179,8 @@ public:
 
 protected:
   void make_gsg();
+  void release_gsg();
+  virtual void do_close_window();
 
   typedef vector_GraphicsWindowInputDevice InputDevices;
   InputDevices _input_devices;

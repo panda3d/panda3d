@@ -143,7 +143,9 @@ public:
   LONG WINAPI window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   ButtonHandle lookup_key(WPARAM wparam) const;
   void DestroyMe(bool bAtExitFnCalled);
-  virtual void close_window(int exit_status);
+
+protected:
+  virtual void do_close_window();
 
 private:
   static TypeHandle _type_handle;
