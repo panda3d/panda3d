@@ -343,11 +343,15 @@ rename_file(SoftCVS::SceneFiles::iterator begin,
     Filename file((*p).get_dirname(), (*p).get_filename());
     if (!file.unlink()) {
       nout << "Unable to remove " << file << ".\n";
-    } else if ((*p).is_1_0()) {
-      cvs_has_1_0 = true;
-      // We don't cvs remove the 1.0 version.
     } else {
-      _cvs_remove.push_back(file);
+      if ((*p).get_in_cvs()) {
+	if ((*p).is_1_0()) {
+	  // We don't cvs remove the 1.0 version.
+	  cvs_has_1_0 = true;
+	} else {
+	  _cvs_remove.push_back(file);
+	}
+      }
     }
   }
 
@@ -364,10 +368,13 @@ rename_file(SoftCVS::SceneFiles::iterator begin,
     // We do have to cvs remove the old one.
     _cvs_remove.push_back(source);
   }
+
   if (!cvs_has_1_0) {
     // And we have to cvs add the new one.
     _cvs_add.push_back(dest);
   }
+
+  orig.set_in_cvs(true);
 
   return true;
 }
