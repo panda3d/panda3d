@@ -293,7 +293,15 @@ fetch_latest() {
 
   nout << "Fetching " << document_spec.get_url() << "\n";
   PT(HTTPChannel) channel = _http.make_channel(true);
-  if (!channel->get_document(document_spec)) {
+  if (_always_download) {
+    channel->get_document(document_spec);
+  } else {
+    // Start out by asking for the header first, so we can verify the
+    // document has changed before we try to download it again.
+    channel->get_header(document_spec);
+  }
+
+  if (!channel->is_valid()) {
     if (channel->get_status_code() == 304) {
       nout << "Document has not been modified.\n";
       // This is considered a success condition.
@@ -304,7 +312,27 @@ fetch_latest() {
     return false;
   }
 
-  // The document is available.  Create an Entry for it.
+  // The document is available.
+  if (!_always_download) {
+    if (!entries.empty()) {
+      // Has it been modified?  We need to check again because the
+      // If-None-Match fields, etc. might have been ignored (e.g. by a
+      // proxy).
+      if (document_spec == channel->get_document_spec()) {
+        nout
+          << "Document has not been modified (server ignored conditional request).\n";
+        return true;
+      }
+    }
+
+    // Ok, the document really is ready.  Go ahead and download it.
+    if (!channel->get_document(document_spec)) {
+      nout << "Unable to request document.\n";
+      return false;
+    }
+  }
+
+  // We've started to download the document.  Create an entry for it.
   BackupCatalog::Entry *entry = new BackupCatalog::Entry;
   entry->_document_name = _document_name;
   entry->_document_spec = channel->get_document_spec();

@@ -8,7 +8,7 @@
   #define OTHER_LIBS \
     progbase \
     express:c downloader:c pandaexpress:m \
-    net:c panda:m
+    panda:m
 
   #define SOURCES \
     backupCatalog.I backupCatalog.cxx backupCatalog.h \
