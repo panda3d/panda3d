@@ -130,8 +130,6 @@ class NonPhysicsWalker(DirectObject.DirectObject):
                 # Now that we have disabled collisions, make one more pass
                 # right now to ensure we aren't standing in a wall.
                 self.oneTimeCollide()
-        print "  cTrav.ls()" #*#
-        print self.cTrav #*#
 
     def oneTimeCollide(self):
         """
