@@ -18,7 +18,7 @@
     cullBinUnsorted.h cullBinUnsorted.I \
     cullFaceAttrib.h cullFaceAttrib.I \
     cullHandler.h \
-    cullResult.h \
+    cullResult.h cullResult.I \
     qpcullTraverser.h qpcullTraverser.I \
     qpgeomNode.h qpgeomNode.I \
     qplensNode.h qplensNode.I \
@@ -77,7 +77,7 @@
     cullBinUnsorted.h cullBinUnsorted.I \
     cullFaceAttrib.h cullFaceAttrib.I \
     cullHandler.h \
-    cullResult.h \
+    cullResult.h cullResult.I \
     qpcullTraverser.h qpcullTraverser.I \
     qpgeomNode.h qpgeomNode.I \
     qplensNode.h qplensNode.I \
