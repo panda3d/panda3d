@@ -53,7 +53,6 @@
 #include "cr_glwrapper.h"
 #include "cr_applications.h"
 #include "cr_spu.h"
-///////#include "cr_glstate.h"
 extern SPUDispatchTable chromium;
 
 
@@ -61,7 +60,7 @@ extern SPUDispatchTable chromium;
 class PlaneNode;
 class Light;
 
-#ifdef GSG_VERBOSE
+#if !defined(WIN32) && defined(GSG_VERBOSE)
 ostream &output_cr_enum(ostream &out, GLenum v);
 INLINE ostream &operator << (ostream &out, GLenum v) {
   return output_cr_enum(out, v);

@@ -40,7 +40,6 @@ conversion=(
 #include "cr_glwrapper.h"
 #include "cr_applications.h"
 #include "cr_spu.h"
-///////#include "cr_glstate.h"
 extern SPUDispatchTable chromium;
 """),
     ("(TypeHandle CRGraphicsStateGuardian::_type_handle;)", "\\1\nSPUDispatchTable chromium;"),

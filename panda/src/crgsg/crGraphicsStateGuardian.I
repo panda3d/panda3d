@@ -1037,23 +1037,7 @@ get_current_alpha_scale() const {
 ////////////////////////////////////////////////////////////////////
 INLINE GLenum CRGraphicsStateGuardian::get_light_id(int index) const
 {
-    switch( index )
-    {
-        case 0: return GL_LIGHT0;
-        case 1: return GL_LIGHT1;
-        case 2: return GL_LIGHT2;
-        case 3: return GL_LIGHT3;
-        case 4: return GL_LIGHT4;
-        case 5: return GL_LIGHT5;
-        case 6: return GL_LIGHT6;
-        case 7: return GL_LIGHT7;
-        default:
-            crgsg_cat.error()
-              << "get_light_id() - we don't currently support ids "
-              << "> 8" << endl;
-            break;
-    }
-    return GL_LIGHT0;
+  return GL_LIGHT0 + index;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1088,9 +1072,9 @@ get_clip_plane_id(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CRGraphicsStateGuardian::
 issue_scene_graph_color() {
-  if (_issued_color_stale) {
+  if (_scene_graph_color_stale) {
     issue_transformed_color(_scene_graph_color);
-    _issued_color_stale = false;
+    _scene_graph_color_stale = false;
   }
 }
 
