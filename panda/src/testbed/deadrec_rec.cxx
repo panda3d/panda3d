@@ -422,10 +422,13 @@ inline static void correction_lerp(void) {
 	prev_pos = my_pos;
 	save_pos = target_pos;
       } else {
-	// half second lerp
-	float tmp = time * 2.;
-	LVector3f vtmp = save_pos - prev_pos;
-	my_pos = (tmp * vtmp) + prev_pos;
+	if (time < 0.5) {
+	  // half second lerp
+	  float tmp = time * 2.;
+	  LVector3f vtmp = save_pos - prev_pos;
+	  my_pos = (tmp * vtmp) + prev_pos;
+	  time += ClockObject::get_global_clock()->get_dt();
+	}
       }
     } else {
       if (new_telemetry) {
