@@ -79,8 +79,6 @@ public:
 // for which one is real.
 #ifdef HAVE_SYS_SOUNDCARD_H
   #define AUDIO_USE_LINUX
-#elif 1
-  #define AUDIO_USE_RAD_MSS
 #elif defined(HAVE_RAD_MSS)
   #define AUDIO_USE_RAD_MSS
 #elif defined(WIN32_VC)
