@@ -18,7 +18,10 @@ class PieMenu(NodePath, PandaObject):
         # Initialize instance variables
         self.menuItems = menuItems
         self.numItems = len(self.menuItems)
-        self.degreesPerItem = 360.0/self.numItems
+        if self.numItems == 0:
+            self.degreesPerItem = 0.0
+        else:
+            self.degreesPerItem = 360.0/self.numItems            
         self.itemOffset = self.degreesPerItem / 2.0
         self.sfx = self.visibleMenu.getSx()
         self.sfz = self.visibleMenu.getSz()
