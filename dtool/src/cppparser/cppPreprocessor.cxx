@@ -63,6 +63,9 @@ static string
 trim_blanks(const string &str) {
   size_t first, last;
 
+  if(str.empty())
+      return str;
+
   first = 0;
   while (first < str.length() && isspace(str[first])) {
     first++;
