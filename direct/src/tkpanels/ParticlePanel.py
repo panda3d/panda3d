@@ -106,11 +106,12 @@ class ParticlePanel(AppShell):
         hpr.addMenuItem('Popup Placer Panel', Placer.Placer)
 
         ## FACTORY PAGE ##
-        self.factorType = self.createOptionMenu(
+        self.factoryTypeMenu = self.createOptionMenu(
             factoryPage,
             'Factory', 'Factory Type',
             'Select type of particle factory',
-            ('Point', 'Z Spin', 'Oriented'),
+            ('PointParticleFactory', 'ZSpinParticleFactory',
+             'OrientedParticleFactory'),
             self.selectFactoryType)
         factoryWidgets = (
             ('Factory', 'Life Span',
@@ -141,9 +142,10 @@ class ParticlePanel(AppShell):
 
         self.factoryNotebook = Pmw.NoteBook(factoryPage, tabpos = None)
         # Point page #
-        factoryPointPage = self.factoryNotebook.add('Point')
+        factoryPointPage = self.factoryNotebook.add('PointParticleFactory')
+        Label(factoryPointPage, text = "").pack()
         # Z spin page #
-        zSpinPage = self.factoryNotebook.add('Z Spin')
+        zSpinPage = self.factoryNotebook.add('ZSpinParticleFactory')
         self.createAngleDial(zSpinPage, 'Z Spin Factory', 'Initial Angle',
                              'Starting angle in degrees',
                              command = self.setFactoryZSpinInitialAngle)
@@ -154,23 +156,24 @@ class ParticlePanel(AppShell):
                              'Spread of the final angle',
                              command = self.setFactoryZSpinAngleSpread)
         # Oriented page #
-        orientedPage = self.factoryNotebook.add('Oriented')
+        orientedPage = self.factoryNotebook.add('OrientedParticleFactory')
         Label(orientedPage, text = 'Not implemented').pack(expand = 1,
                                                            fill = BOTH)
-        self.factoryNotebook.pack(expand = 1, fill = BOTH)
+        #self.factoryNotebook.pack(expand = 1, fill = BOTH)
 
         ## EMITTER PAGE ##
-        self.createOptionMenu(emitterPage, 'Emitter',
-                              'Emitter type',
-                              'Select type of particle emitter',
-			      ('Box', 'Disc', 'Line', 'Point', 'Rectangle',
-                               'Ring', 'Sphere Volume', 'Sphere Surface',
-                               'Tangent Ring'),
-                              self.selectEmitterType)
+        self.emitterTypeMenu = self.createOptionMenu(
+            emitterPage, 'Emitter',
+            'Emitter type',
+            'Select type of particle emitter',
+            ('BoxEmitter', 'DiscEmitter', 'LineEmitter', 'PointEmitter',
+             'RectangleEmitter', 'RingEmitter', 'SphereVolumeEmitter',
+             'SphereSurfaceEmitter', 'TangentRingEmitter'),
+            self.selectEmitterType)
         
         self.emitterNotebook = Pmw.NoteBook(emitterPage, tabpos = None)
         # Box page #
-        boxPage = self.emitterNotebook.add('Box')
+        boxPage = self.emitterNotebook.add('BoxEmitter')
         self.createVector3Entry(boxPage, 'Box Emitter', 'Min',
                                 'Min point defining emitter box',
                                 command = self.setEmitterBoxPoint1)
@@ -182,7 +185,7 @@ class ParticlePanel(AppShell):
                                 'Initial particle velocity vector',
                                 command = self.setEmitterBoxVelocityVector)
         # Disc page #
-        discPage = self.emitterNotebook.add('Disc')
+        discPage = self.emitterNotebook.add('DiscEmitter')
         self.createFloater(discPage, 'Disc Emitter', 'Radius',
                            'Radius of disc',
                            command = self.setEmitterDiscRadius)
@@ -202,7 +205,7 @@ class ParticlePanel(AppShell):
             discPage, 'Disc Emitter', 'Cubic Lerping',
             self.toggleEmitterDiscCubicLerping, 0)
         # Line page #
-        linePage = self.emitterNotebook.add('Line')
+        linePage = self.emitterNotebook.add('LineEmitter')
         self.createVector3Entry(linePage, 'Line Emitter', 'Min',
                                 'Min point defining emitter line',
                                 command = self.setEmitterLinePoint1)
@@ -215,7 +218,7 @@ class ParticlePanel(AppShell):
                                 command = self.setEmitterLineVelocityVector,
                                 initialValue = (0.0, 0.0, 1.0))
         # Point page #
-        emitterPointPage = self.emitterNotebook.add('Point')
+        emitterPointPage = self.emitterNotebook.add('PointEmitter')
         self.createVector3Entry(emitterPointPage, 'Point Emitter', 'Position',
                                'Position of emitter point',
                                 command = self.setEmitterPointPosition)
@@ -225,7 +228,7 @@ class ParticlePanel(AppShell):
                                 command = self.setEmitterPointVelocityVector,
                                 initialValue = (0.0, 0.0, 1.0))
         # Rectangle #
-        rectanglePage = self.emitterNotebook.add('Rectangle')
+        rectanglePage = self.emitterNotebook.add('RectangleEmitter')
         self.createVector2Entry(rectanglePage,
                                 'Rectangle Emitter', 'Min',
                                'Point defining rectangle',
@@ -240,7 +243,7 @@ class ParticlePanel(AppShell):
             command = self.setEmitterRectangleVelocityVector,
             initialValue = (0.0, 0.0, 1.0))
         # Ring #
-        ringPage = self.emitterNotebook.add('Ring')
+        ringPage = self.emitterNotebook.add('RingEmitter')
         self.createFloater(ringPage, 'Ring Emitter', 'Radius',
                            'Radius of ring',
                            command = self.setEmitterRingRadius)
@@ -251,31 +254,34 @@ class ParticlePanel(AppShell):
                            'Launch velocity multiplier at outer edge of ring',
                            command = self.setEmitterRingVelocityMultiplier)
         # Sphere volume #
-        sphereVolumePage = self.emitterNotebook.add('Sphere Volume')
+        sphereVolumePage = self.emitterNotebook.add('SphereVolumeEmitter')
         self.createFloater(sphereVolumePage, 'Sphere Volume Emitter', 'Radius',
                            'Radius of sphere',
                            command = self.setEmitterSphereVolumeRadius)
         # Sphere surface #
-        sphereSurfacePage = self.emitterNotebook.add('Sphere Surface')
+        sphereSurfacePage = self.emitterNotebook.add('SphereSurfaceEmitter')
         self.createFloater(sphereSurfacePage, 'Sphere Surface Emitter',
                            'Radius',
                            'Radius of sphere',
                            command = self.setEmitterSphereSurfaceRadius)
         # Tangent ring # 
-        tangentRingPage = self.emitterNotebook.add('Tangent Ring')
+        tangentRingPage = self.emitterNotebook.add('TangentRingEmitter')
         self.createFloater(tangentRingPage, 'Tangent Ring Emitter', 'Radius',
                            'Radius of ring',
                            command = self.setEmitterTangentRingRadius)
         self.emitterNotebook.pack(fill = X)
 
         ## RENDERER PAGE ##
-        self.createOptionMenu(rendererPage, 'Renderer', 'Renderer type',
-                              'Select type of particle renderer',
-                              ('Line', 'Geom', 'Point', 'Sparkle', 'Sprite'),
-                              self.selectRendererType)
+        self.rendererTypeMenu = self.createOptionMenu(
+            rendererPage, 'Renderer', 'Renderer type',
+            'Select type of particle renderer',
+            ('LineParticleRenderer', 'GeomParticleRenderer',
+             'PointParticleRenderer', 'SparkleParticleRenderer',
+             'SpriteParticleRenderer'),
+            self.selectRendererType)
         self.rendererNotebook = Pmw.NoteBook(rendererPage, tabpos = None)
 	# Line page #
-	linePage = self.rendererNotebook.add('Line')
+	linePage = self.rendererNotebook.add('LineParticleRenderer')
 	self.createColorEntry(linePage, 'Line Renderer', 'Head Color',
 				'Head color of line',
 				command = self.setRendererLineHeadColor)
@@ -283,7 +289,7 @@ class ParticlePanel(AppShell):
 				'Tail color of line',
 				command = self.setRendererLineTailColor)
         # Geom page #
-        geomPage = self.rendererNotebook.add('Geom')
+        geomPage = self.rendererNotebook.add('GeomParticleRenderer')
         f = Frame(geomPage)
         f.pack(fill = X)
         Label(f, width = 12, text = 'Geom Node').pack(side = LEFT)
@@ -294,7 +300,7 @@ class ParticlePanel(AppShell):
         self.rendererGeomNodeEntry.bind('<Return>', self.setRendererGeomNode)
         self.rendererGeomNodeEntry.pack(side = LEFT, expand = 1, fill = X)
         # Point #
-        rendererPointPage = self.rendererNotebook.add('Point')
+        rendererPointPage = self.rendererNotebook.add('PointParticleRenderer')
         self.createFloater(rendererPointPage, 'Point Renderer', 'Point Size',
                            'Width and height of points in pixels',
                            command = self.setRendererPointSize)
@@ -319,7 +325,7 @@ class ParticlePanel(AppShell):
                                'PP_BLEND_CUBIC'),
                               self.rendererPointSelectBlendMethod)
         # Sparkle #
-        sparklePage = self.rendererNotebook.add('Sparkle')
+        sparklePage = self.rendererNotebook.add('SparkleParticleRenderer')
         self.createColorEntry(sparklePage, 'Sparkle Renderer',
                               'Center Color',
                               'Color of sparkle center',
@@ -342,7 +348,7 @@ class ParticlePanel(AppShell):
                               ('SP_NO_SCALE', 'SP_SCALE'),
                               self.setRendererSparkleLifeScale)
         # Sprite #
-        spritePage = self.rendererNotebook.add('Sprite')
+        spritePage = self.rendererNotebook.add('SpriteParticleRenderer')
         f = Frame(spritePage)
         f.pack(fill = X)
         Label(f, width = 12, text = 'Texture').pack(side = LEFT)
@@ -506,10 +512,13 @@ class ParticlePanel(AppShell):
         if page == 'System':
             self.updateSystemWidgets()
         elif page == 'Factory':
+            self.selectFactoryPage()
             self.updateFactoryWidgets()
         elif page == 'Emitter':
+            self.selectEmitterPage()
             self.updateEmitterWidgets()
         elif page == 'Renderer':
+            self.selectRendererPage()
             self.updateRendererWidgets()
             
     ## SYSTEM PAGE ##
@@ -554,6 +563,10 @@ class ParticlePanel(AppShell):
         self.factoryNotebook.selectpage(type)
 	self.particles.setFactory(type)
         self.updateFactoryWidgets()
+
+    def selectFactoryPage(self):
+        pass
+        
     def updateFactoryWidgets(self):
         factory = self.particles.factory
         lifespan = factory.getLifespanBase()
@@ -569,6 +582,7 @@ class ParticlePanel(AppShell):
         terminalVelocitySpread = factory.getTerminalVelocitySpread()
         self.getWidget('Factory', 'Terminal Vel. Spread').set(
             terminalVelocitySpread, 0)
+        
     def setFactoryLifeSpan(self, value):
 	self.particles.factory.setLifespanBase(value)
     def setFactoryLifeSpanSpread(self, value):
@@ -595,6 +609,11 @@ class ParticlePanel(AppShell):
         self.emitterNotebook.selectpage(type)
 	self.particles.setEmitter(type)
         self.updateEmitterWidgets()
+
+    def selectEmitterPage(self):
+        type = self.particles.emitter.__class__.__name__
+        self.emitterNotebook.selectpage(type)
+        self.emitterTypeMenu.set(type)
         
     def updateEmitterWidgets(self):
         emitter = self.particles.emitter
@@ -722,6 +741,7 @@ class ParticlePanel(AppShell):
         self.rendererNotebook.selectpage(type)
 	self.particles.setRenderer(type)
         self.updateRendererWidgets()
+        
     def updateRendererWidgets(self):
         renderer = self.particles.renderer
         if isinstance(renderer, LineParticleRenderer):
@@ -806,7 +826,12 @@ class ParticlePanel(AppShell):
 	    elif (blendMethod == BaseParticleRenderer.PPBLENDCUBIC):
 		bMethod = "PP_BLEND_CUBIC"
             self.rendererSpriteAlphaDisable.set(renderer.getAlphaDisable())
-            
+
+    def selectRendererPage(self):
+        type = self.particles.renderer.__class__.__name__
+        self.rendererNotebook.selectpage(type)
+        self.rendererTypeMenu.set(type)
+        
     # Line #
     def setRendererLineHeadColor(self, color):
 	self.particles.renderer.setHeadColor(

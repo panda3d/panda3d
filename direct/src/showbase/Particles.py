@@ -31,6 +31,8 @@ import LinearEulerIntegrator
 import ClockObject
 
 globalClock = ClockObject.ClockObject.getGlobalClock()
+SparkleParticleRenderer.SparkleParticleRenderer.SPNOSCALE = 0
+SparkleParticleRenderer.SparkleParticleRenderer.SPSCALE = 1
 
 class Particles(ParticleSystem.ParticleSystem):
 
@@ -45,13 +47,13 @@ class Particles(ParticleSystem.ParticleSystem):
 
 	self.factory = None 
 	self.factoryType = "undefined"
-	self.setFactory("Point")
+	self.setFactory("PointParticleFactory")
 	self.renderer = None 
 	self.rendererType = "undefined"
-	self.setRenderer("Line")
+	self.setRenderer("PointParticleRenderer")
 	self.emitter = None 
 	self.emitterType = "undefined"
-	self.setEmitter("Sphere Volume")
+	self.setEmitter("SphereVolumeEmitter")
 
 	self.node = PhysicalNode.PhysicalNode()
 	self.node.addPhysical(self)
@@ -73,16 +75,16 @@ class Particles(ParticleSystem.ParticleSystem):
 	if (self.factory):
 	    self.factory = None
 	self.factoryType = type
-	if (type == "Point"):
+	if (type == "PointParticleFactory"):
 	    self.factory = PointParticleFactory.PointParticleFactory() 
-	elif (type == "Z Spin"):
+	elif (type == "ZSpinParticleFactory"):
 	    self.factory = ZSpinParticleFactory.ZSpinParticleFactory()
-	elif (type == "Oriented"):
+	elif (type == "OrientedParticleFactory"):
 	    self.factory = OrientedParticleFactory.OrientedParticleFactory()
 	else:
 	    print "unknown factory type: %s" % type
 	    return None
-	#self.factory.setLifespanBase(0.5)
+	self.factory.setLifespanBase(0.5)
 	ParticleSystem.ParticleSystem.setFactory(self, self.factory)
 
     def setRenderer(self, type):
@@ -92,18 +94,18 @@ class Particles(ParticleSystem.ParticleSystem):
 	if (self.renderer):
 	    self.renderer = None
 	self.rendererType = type
-	if (type == "Point"):
+	if (type == "PointParticleRenderer"):
 	    self.renderer = PointParticleRenderer.PointParticleRenderer()
 	    self.renderer.setPointSize(1.0)
-	elif (type == "Line"):
+	elif (type == "LineParticleRenderer"):
 	    self.renderer = LineParticleRenderer.LineParticleRenderer()
 	    self.renderer.setHeadColor(Vec4(1.0, 1.0, 1.0, 1.0))
 	    self.renderer.setTailColor(Vec4(1.0, 1.0, 1.0, 1.0))
-	elif (type == "Geom"):
+	elif (type == "GeomParticleRenderer"):
 	    self.renderer = GeomParticleRenderer.GeomParticleRenderer()
-	elif (type == "Sparkle"):
+	elif (type == "SparkleParticleRenderer"):
 	    self.renderer = SparkleParticleRenderer.SparkleParticleRenderer()
-	elif (type == "Sprite"):
+	elif (type == "SpriteParticleRenderer"):
 	    self.renderer = SpriteParticleRenderer.SpriteParticleRenderer()
 	else:
 	    print "unknown renderer type: %s" % type
@@ -120,24 +122,24 @@ class Particles(ParticleSystem.ParticleSystem):
 	if (self.emitter):
 	    self.emitter = None
 	self.emitterType = type
-	if (type == "Box"):
+	if (type == "BoxEmitter"):
 	    self.emitter = BoxEmitter.BoxEmitter()
-	elif (type == "Disc"):
+	elif (type == "DiscEmitter"):
 	    self.emitter = DiscEmitter.DiscEmitter()
-	elif (type == "Line"):
+	elif (type == "LineEmitter"):
 	    self.emitter = LineEmitter.LineEmitter()
-	elif (type == "Point"):
+	elif (type == "PointEmitter"):
 	    self.emitter = PointEmitter.PointEmitter()
-	elif (type == "Rectangle"):
+	elif (type == "RectangleEmitter"):
 	    self.emitter = RectangleEmitter.RectangleEmitter()
-	elif (type == "Ring"):
+	elif (type == "RingEmitter"):
 	    self.emitter = RingEmitter.RingEmitter()
-	elif (type == "Sphere Surface"):
+	elif (type == "SphereSurfaceEmitter"):
 	    self.emitter = SphereSurfaceEmitter.SphereSurfaceEmitter()
-	elif (type == "Sphere Volume"):
+	elif (type == "SphereVolumeEmitter"):
 	    self.emitter = SphereVolumeEmitter.SphereVolumeEmitter()
 	    self.emitter.setRadius(1.0)
-	elif (type == "Tangent Ring"):
+	elif (type == "TangentRingEmitter"):
 	    self.emitter = TangentRingEmitter.TangentRingEmitter()
 	else:
 	    print "unknown emitter type: %s" % type
@@ -176,15 +178,15 @@ class Particles(ParticleSystem.ParticleSystem):
 	print "factory.setMassSpread(%f)" % self.factory.getMassSpread()
 	print "factory.setTerminalVelocityBase(%f)" % self.factory.getTerminalVelocityBase()
 	print "factory.setTerminalVelocitySpread(%f)" % self.factory.getTerminalVelocitySpread()
-	if (self.factoryType == "Point"):
+	if (self.factoryType == "PointParticleFactory"):
 	    print "# Point factory parameters"
-	elif (self.factoryType == "Z Spin"):
+	elif (self.factoryType == "ZSpinParticleFactory"):
 	    print "# Z Spin factory parameters"
 	    print "factory.setInitialAngle(%f)" % self.factory.getInitialAngle()
 	    print "factory.setFinalAngle(%f)" % self.factory.getFinalAngle()
 	    print "factory.setInitialAngleSpread(%f)" % self.factory.getInitialAngleSpread()
 	    print "factory.setFinalAngleSpread(%f)" % self.factory.getFinalAngleSpread()
-	elif (self.factoryType == "Oriented"):
+	elif (self.factoryType == "OrientedParticleFactory"):
 	    print "# Oriented factory parameters"
 	    print 'factory.setInitialOrientation(' + self.factory.getInitialOrientation + ')'
 	    print 'factory.setFinalOrientation(' + self.factory.getFinalOrientation + ')'
@@ -230,17 +232,17 @@ class Particles(ParticleSystem.ParticleSystem):
 	    elif (blendMethod == BaseParticleRenderer.BaseParticleRenderer.PPBLENDCUBIC):
 		bMethod = "PP_BLEND_CUBIC"
 	    print 'renderer.setBlendMethod(BaseParticleRenderer.BaseParticleRenderer.' + bMethod + ')'
-	elif (self.rendererType == "Line"):
+	elif (self.rendererType == "LineParticleRenderer"):
 	    print "# Line parameters"
 	    sColor = self.renderer.getHeadColor()
 	    print ('renderer.setHeadColor(Colorf(%f, %f, %f, %f))' % (sColor[0], sColor[1], sColor[2], sColor[3]))
 	    sColor = self.renderer.getTailColor()
 	    print ('renderer.setTailColor(Colorf(%f, %f, %f, %f))' % (sColor[0], sColor[1], sColor[2], sColor[3]))
-	elif (self.rendererType == "Geom"):
+	elif (self.rendererType == "GeomParticleRenderer"):
 	    print "# Geom parameters"
 	    node = self.renderer.getGeomNode()
 	    print 'renderer.setGeomNode(' + node.getName() + ')'
-	elif (self.rendererType == "Sparkle"):
+	elif (self.rendererType == "SparkleParticleRenderer"):
 	    print "# Sparkle parameters"
 	    sColor = self.renderer.getCenterColor()
 	    print ('renderer.setCenterColor(Colorf(%f, %f, %f, %f))' % (sColor[0], sColor[1], sColor[2], sColor[3]))
@@ -253,7 +255,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	    if (lifeScale == SparkleParticleRenderer.SparkleParticleRenderer.SPSCALE):
 		lScale = "SP_SCALE"
 	    print 'renderer.setLifeScale(SparkleParticleRenderer.SparkleParticleRenderer.' + lScale + ')'
-	elif (self.rendererType == "Sprite"):
+	elif (self.rendererType == "SpriteParticleRenderer"):
 	    print "# Sprite parameters"
 	    tex = self.renderer.getTexture()
 	    print 'renderer.setTexture(' + tex.getName() + ')'
@@ -296,13 +298,13 @@ class Particles(ParticleSystem.ParticleSystem):
 	print ('emitter.setExplicitLaunchVector(Vec3(%f, %f, %f))' % (oForce[0], oForce[1], oForce[2]))
 	orig = self.emitter.getRadiateOrigin()
 	print ('emitter.setRadiateOrigin(Point3(%f, %f, %f))' % (orig[0], orig[1], orig[2]))
-	if (self.emitterType == "Box"):
+	if (self.emitterType == "BoxEmitter"):
 	    print "# Box parameters"
 	    bound = self.emitter.getMinBound()
 	    print ('emitter.setMinBound(Point3(%f, %f, %f))' % (bound[0], bound[1], bound[2]))
 	    bound = self.emitter.getMaxBound()
 	    print ('emitter.setMaxBound(Point3(%f, %f, %f))' % (bound[0], bound[1], bound[2]))
-	elif (self.emitterType == "Disc"):
+	elif (self.emitterType == "DiscEmitter"):
 	    print "# Disc parameters"
 	    print 'emitter.setRadius(%f)' % self.emitter.getRadius()
 	    print 'emitter.setOuterAngle(%f)' % self.emitter.getOuterAngle()
@@ -311,32 +313,32 @@ class Particles(ParticleSystem.ParticleSystem):
 	    print 'emitter.setInnerMagnitude(%f)' % self.emitter.getInnerMagnitude()
 	    print 'emitter.setCubicLerping(%d)' % self.emitter.getCubicLerping()
 
-	elif (self.emitterType == "Line"):
+	elif (self.emitterType == "LineEmitter"):
 	    print "# Line parameters"
 	    point = self.emitter.getEndpoint1()
 	    print ('emitter.setEndpoint1(Point3(%f, %f, %f))' % (point[0], point[1], point[2]))
 	    point = self.emitter.getEndpoint2()
 	    print ('emitter.setEndpoint2(Point3(%f, %f, %f))' % (point[0], point[1], point[2]))
-	elif (self.emitterType == "Point"):
+	elif (self.emitterType == "PointEmitter"):
 	    print "# Point parameters"
 	    point = self.emitter.getLocation()
 	    print ('emitter.setLocation(Point3(%f, %f, %f))' % (point[0], point[1], point[2]))
-	elif (self.emitterType == "Rectangle"):
+	elif (self.emitterType == "RectangleEmitter"):
 	    print "# Rectangle parameters"
 	    bound = self.emitter.getMinBound()
 	    print ('emitter.setMinBound(Point2(%f, %f))' % (point[0], point[1]))
 	    bound = self.emitter.getMaxBound()
 	    print ('emitter.setMaxBound(Point2(%f, %f))' % (point[0], point[1]))
-	elif (self.emitterType == "Ring"):
+	elif (self.emitterType == "RingEmitter"):
 	    print "# Ring parameters"
 	    print 'emitter.setRadius(%f)' % self.emitter.getRadius()
 	    print 'emitter.setAngle(%f)' % self.emitter.getAngle()
-	elif (self.emitterType == "Sphere Surface"):
+	elif (self.emitterType == "SphereSurfaceEmitter"):
 	    print "# Sphere Surface parameters"
 	    print 'emitter.setRadius(%f)' % self.emitter.getRadius()
-	elif (self.emitterType == "Sphere Volume"):
+	elif (self.emitterType == "SphereVolumeEmitter"):
 	    print "# Sphere Volume parameters"
 	    print 'emitter.setRadius(%f)' % self.emitter.getRadius()
-	elif (self.emitterType == "Tangent Ring"):
+	elif (self.emitterType == "TangentRingEmitter"):
 	    print "# Tangent Ring parameters"
 	    print 'emitter.setRadius(%f)' % self.emitter.getRadius()

@@ -100,10 +100,10 @@ PT(GraphicsPipe) make_graphics_pipe() {
   GraphicsPipe::resolve_modules();
 
   nout << "Known pipe types:" << endl;
-  GraphicsPipe::_factory.write_types(nout, 2);
+  GraphicsPipe::get_factory().write_types(nout, 2);
 
   // Create a window
-  main_pipe = GraphicsPipe::_factory.
+  main_pipe = GraphicsPipe::get_factory().
     make_instance(InteractiveGraphicsPipe::get_class_type());
 
   if (main_pipe == (GraphicsPipe*)0L) {
