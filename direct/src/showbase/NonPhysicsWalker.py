@@ -153,7 +153,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         a one-time straighten-things-up operation after collisions
         have been disabled.
         """
-        tempCTrav = CollisionTraverser()
+        tempCTrav = CollisionTraverser("oneTimeCollide")
         tempCTrav.addCollider(self.cSphereNodePath, self.pusher)
         tempCTrav.addCollider(self.cRayNodePath, self.lifter)
         tempCTrav.traverse(render)

@@ -394,7 +394,7 @@ class SelectionQueue(CollisionHandlerQueue):
         # Intersect with geometry to begin with
         self.collideWithGeom()
         # And a traverser to do the actual collision tests
-        self.ct = CollisionTraverser()
+        self.ct = CollisionTraverser("DirectSelection")
         # Let the traverser know about the collision node and the queue
         self.ct.addCollider(self.collisionNode, self)
         # List of objects that can't be selected

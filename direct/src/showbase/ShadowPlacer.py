@@ -43,7 +43,7 @@ class ShadowPlacer(DirectObject.DirectObject):
             # set up the shadow collision traverser
             if not base.shadowTrav:
                 # set up the shadow collision traverser
-                base.shadowTrav = CollisionTraverser()
+                base.shadowTrav = CollisionTraverser("base.shadowTrav")
             cTrav = base.shadowTrav
 
         self.cTrav = cTrav
@@ -134,7 +134,7 @@ class ShadowPlacer(DirectObject.DirectObject):
         a one-time straighten-things-up operation after collisions
         have been disabled.
         """
-        tempCTrav = CollisionTraverser()
+        tempCTrav = CollisionTraverser("oneTimeCollide")
         tempCTrav.addCollider(self.cRayNodePath, self.lifter)
         tempCTrav.traverse(render)
 

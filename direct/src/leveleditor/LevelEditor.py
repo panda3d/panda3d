@@ -828,7 +828,7 @@ class LevelEditor(NodePath, PandaObject):
         self.lifter.setMaxVelocity(16.0)
 
         # set up the collision traverser
-        self.cTrav = CollisionTraverser()
+        self.cTrav = CollisionTraverser("LevelEditor")
 
         # activate the collider with the traverser and pusher
         self.pusher.addCollider(self.cSphereNodePath, base.camera, base.drive.node())

@@ -63,7 +63,7 @@ class ShowBase(DirectObject.DirectObject):
         self.sfxManagerList = []
         self.sfxManagerIsValidList = []
 
-        self.wantStats = self.config.GetBool('want-stats', 0)
+        self.wantStats = self.config.GetBool('want-pstats', 0)
 
         # Fill this in with a function to invoke when the user "exits"
         # the program by closing the main window.

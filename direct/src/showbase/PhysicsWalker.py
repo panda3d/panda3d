@@ -391,7 +391,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         have been disabled.
         """
         assert(self.debugPrint("oneTimeCollide()"))
-        tempCTrav = CollisionTraverser()
+        tempCTrav = CollisionTraverser("oneTimeCollide")
         tempCTrav.addCollider(self.cRayNodePath, self.lifter)
         tempCTrav.traverse(render)
 
