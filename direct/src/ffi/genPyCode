@@ -7,6 +7,7 @@
 
 firstarg="$1"
 extra_genPyCode_libs=""
+fSqueeze=""
 
 if [ "$firstarg" = "-t" ]; then
 extra_genPyCode_libs="$extra_genPyCode_libs libtoontown"
@@ -32,42 +33,51 @@ shift
 firstarg="$1"
 fi
 
+if [ "$firstarg" = "-s" ]; then
+fSqueeze="squeezeMe"
+shift
+firstarg="$1"
+fi
+
 shift
 extra_genPyCode_libs="$extra_genPyCode_libs $*"
 
 if [ "$firstarg" = "linux" ]; then
     cd $DIRECT/bin
-    exec ppython -d generatePythonCode -v -d $DIRECT/lib/py -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
-    exit 1
+    ppython -d generatePythonCode -v -d $DIRECT/lib/py -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
 fi
 
 if [ "$firstarg" = "win-debug" ]; then
     cd $DIRECT/bin
-    exec ppython -d generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
-    exit 1
+    ppython -d generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
 fi
 
 if [ "$firstarg" = "win-release" ]; then
     cd $DIRECT/bin
-    exec ppython generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
-    exit 1
+    ppython generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
 fi
 
 if [ "$firstarg" = "win-publish" ]; then
     # no assertions, no comments, no docstrings
     cd $DIRECT/bin
-    exec ppython -OO generatePythonCode -O -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
-    exit 1
+    ppython -OO generatePythonCode -O -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
 fi
 
 if [ "$firstarg" = "install" ]; then
     # as installed on a machine without ctattach etc.
-    exec install/bin/ppython -d install/bin/generatePythonCode -O -v -d install/lib/py -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
-    exit 1
+    install/bin/ppython -d install/bin/generatePythonCode -O -v -d install/lib/py -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
 fi
 
 if [ "$firstarg" = "release" ]; then
     # as installed on a machine without ctattach etc.
-    exec install/bin/ppython install/bin/generatePythonCode -v -d install/lib/py -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
-    exit 1
+    install/bin/ppython install/bin/generatePythonCode -v -d install/lib/py -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
 fi
+
+if [ "$fSqueeze" = "squeezeMe" ]; then
+    echo SQUEEZING ShowBaseGlobals
+    cd $DIRECT/src/showbase
+    ppython pandaSqueezer.py || exit
+fi
+
+echo DONE
+
