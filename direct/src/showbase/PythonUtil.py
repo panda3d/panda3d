@@ -7,6 +7,8 @@ import inspect
 import os
 import sys
 
+from Verify import *
+
 
 # NOTE: ifAbsentPut has been replaced with Python's dictionary's builtin setdefault
 # before:
