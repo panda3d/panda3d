@@ -22,7 +22,10 @@
 
 TriangleMesh::
 TriangleMesh(int x_verts, int y_verts) :
-  _coords(0), _norms(0), _colors(0), _texcoords(0),
+  _coords(PTA_Vertexf::empty_array(0)),
+  _norms(PTA_Normalf::empty_array(0)),
+  _colors(PTA_Colorf::empty_array(0)),
+  _texcoords(PTA_TexCoordf::empty_array(0)),
   _x_verts(x_verts),
   _y_verts(y_verts)
 {
@@ -49,8 +52,8 @@ build_mesh() const {
   int num_tstrips = (_y_verts-1);
   int tstrip_length = 2*(_x_verts-1)+2;
 
-  PTA(int) lengths(num_tstrips);
-  PTA(ushort) vindex(num_tstrips * tstrip_length);
+  PTA_int lengths = PTA_int::empty_array(num_tstrips);
+  PTA_ushort vindex = PTA_ushort::empty_array(num_tstrips * tstrip_length);
 
   // Set the lengths array.  We are creating num_tstrips T-strips,
   // each of which has t_strip length vertices.
