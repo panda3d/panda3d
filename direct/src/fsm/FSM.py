@@ -104,6 +104,9 @@ class FSM(DirectObject):
     def setFinalState(self, finalStateName):
         """setFinalState(self, string)"""
         self.__finalState = self.getStateNamed(finalStateName)
+
+    def requestFinalState(self):
+        self.request(self.__finalState.getName())
         
     def getCurrentState(self):
         """getCurrentState(self)"""

@@ -157,56 +157,47 @@ def textLabelAndText(string, style,
 def modelLabel(model,
                geomRect = None,
                style = None,
-               scale = 0.1,
+               scale = (0.1, 0.1),
                drawOrder = getDefaultDrawOrder()):
-
     # Preserve transitions on the arc by creating an intervening node.
     topnode = NamedNode('model')
     topnp = NodePath(topnode)
     mi = model.instanceTo(topnp)
-    mi.setScale(scale)
+    mi.setScale(scale[0], scale[0], scale[1])
     mi.setBin('fixed', drawOrder)
-
     if style != None:
         # For a modelLabel, the style determines the color that may be
         # applied.
-        color = None
-        
+        color = None        
         # The style might *itself* be a four-component color.
         if (isinstance(style, types.TupleType) or
             isinstance(style, VBase4)):
             color = style
-
         # Otherwise, there might be a predefined default color for one
         # of the canned styles.  Most don't have a default color,
         # though.
         elif style == ButtonInactive:
-            color = (0.5, 0.5, 0.5, 1.0)
-            
+            color = (0.5, 0.5, 0.5, 1.0)            
         if color != None:
             mi.setColor(color[0], color[1], color[2], color[3])
             if color[3] != 1.0:
-                mi.setTransparency(1)
-        
-
+                mi.setTransparency(1)        
     if geomRect == None:
         geomRect = (1, 1)
-
     if len(geomRect) == 2:
         # If we got only two parameters, it's height and width.
         label = GuiLabel.makeModelLabel(topnode,
-                                        geomRect[0] * scale,
-                                        geomRect[1] * scale)
+                                        geomRect[0] * scale[0],
+                                        geomRect[1] * scale[1])
     elif len(geomRect) == 4:
         # If we got four, they're left, right, bottom, top.
         label = GuiLabel.makeModelLabel(topnode,
-                                        geomRect[0] * scale,
-                                        geomRect[1] * scale,
-                                        geomRect[2] * scale,
-                                        geomRect[3] * scale)
+                                        geomRect[0] * scale[0],
+                                        geomRect[1] * scale[0],
+                                        geomRect[2] * scale[1],
+                                        geomRect[3] * scale[1])
     else:
-        raise ValueError
-    
+        raise ValueError    
     label.setDrawOrder(drawOrder)
     return label
                                     

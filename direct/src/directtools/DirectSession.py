@@ -710,3 +710,5 @@ class DisplayRegionContext:
         # Continue the task
         return Task.cont
 
+# Create one
+__builtin__.direct = base.direct = DirectSession()

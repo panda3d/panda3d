@@ -9,6 +9,9 @@ class Button(DirectObject):
 
     def __init__(self, name,
                  label = None,
+                 # If you have labels you want to use for the
+                 # various states, pass them as a list in labels
+                 labels = None,
                  scale = 0.1,
                  width = None,
                  align = None,
@@ -27,7 +30,7 @@ class Button(DirectObject):
         self.width = width
 
         # if no label given, use the button name
-        if (label == None):
+        if (label == None) and (labels == None):
             label = self.name
 
         self.inactive = inactive
@@ -60,7 +63,7 @@ class Button(DirectObject):
             self.lUp = Label.modelLabel(label,
                                         geomRect = geomRect,
                                         style = upStyle,
-                                        scale = scale,
+                                        scale = (scale, scale),
                                         drawOrder = drawOrder)
 
             if width == None:
@@ -70,23 +73,27 @@ class Button(DirectObject):
             self.lLit = Label.modelLabel(label,
                                          geomRect = geomRect,
                                          style = litStyle,
-                                         scale = scale,
+                                         scale = (scale, scale),
                                          drawOrder = drawOrder)
             self.lDown = Label.modelLabel(label,
                                           geomRect = geomRect,
                                           style = downStyle,
-                                          scale = scale,
+                                          scale = (scale, scale),
                                           drawOrder = drawOrder)
             if supportInactive:
                 self.lInactive = Label.modelLabel(label,
                                                   geomRect = geomRect,
                                                   style = inactiveStyle,
-                                                  scale = scale,
+                                                  scale = (scale, scale),
                                                   drawOrder = drawOrder)
 
         else:
-            # label provided, use it for all labels
-            self.lUp = self.lLit = self.lDown = self.lInactive = label
+            if labels:
+                # label provided, use it for all labels
+                self.lUp, self.lLit, self.lDown, self.lInactive = labels
+            else:
+                # label provided, use it for all labels
+                self.lUp = self.lLit = self.lDown = self.lInactive = label
             if width == None:
                 width = self.lUp.getWidth()
 

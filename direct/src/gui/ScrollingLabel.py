@@ -19,7 +19,10 @@ class ScrollingLabel(PandaObject.PandaObject):
                  width = None,
                  drawOrder = getDefaultDrawOrder(),
                  font = getDefaultFont(),
-                 showLabels = 1):
+                 showLabels = 1,
+                 leftLabels = None,
+                 rightLabels = None,
+                 ):
 
         self.name = name
         if (label == None):
@@ -65,22 +68,37 @@ class ScrollingLabel(PandaObject.PandaObject):
                             self.title)
         
         # create the scroll buttons
-        self.leftButton = Button.Button(self.eventName + "-left",
-                                        label = " < ",
-                                        scale = scale,
-                                        drawOrder = drawOrder,
-                                        font = font, event = "left-button")
+        if leftLabels:
+            self.leftButton = Button.Button(self.eventName + "-left",
+                                            labels = leftLabels,
+                                            scale = scale,
+                                            drawOrder = drawOrder,
+                                            font = font, event = "left-button")
+        else:
+            self.leftButton = Button.Button(self.eventName + "-left",
+                                            label = " < ",
+                                            scale = scale,
+                                            drawOrder = drawOrder,
+                                            font = font, event = "left-button")
         self.leftButton.getGuiItem().setUpRolloverEvent(self.eventName + "-rollover")
         self.frame.addItem(self.leftButton)
         self.frame.packItem(self.leftButton, GuiFrame.GuiFrame.UNDER,
                             self.title)
         self.frame.packItem(self.leftButton, GuiFrame.GuiFrame.LEFT,
-                            self.title)        
-        self.rightButton = Button.Button(self.eventName + "-right",
-                                         label = " > ",
-                                         scale = scale,
-                                         drawOrder = drawOrder,
-                                         font = font, event = "right-button")
+                            self.title)
+
+        if rightLabels:
+            self.rightButton = Button.Button(self.eventName + "-right",
+                                             labels = rightLabels,
+                                             scale = scale,
+                                             drawOrder = drawOrder,
+                                             font = font, event = "right-button")
+        else:
+            self.rightButton = Button.Button(self.eventName + "-right",
+                                             label = " > ",
+                                             scale = scale,
+                                             drawOrder = drawOrder,
+                                             font = font, event = "right-button")            
         self.rightButton.getGuiItem().setUpRolloverEvent(self.eventName + "-rollover")
         self.frame.addItem(self.rightButton)
         self.frame.packItem(self.rightButton, GuiFrame.GuiFrame.UNDER,

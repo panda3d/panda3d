@@ -122,7 +122,7 @@ class Messenger:
 
         if self.dict.has_key(event):
             acceptorDict = self.dict[event]
-            for object in acceptorDict.keys():
+            for object in self.dict[event].keys():
                 # We have to make this apparently redundant check, because
                 # it is possible that one object removes its own hooks
                 # in response to a handler called by a previous object.
@@ -136,10 +136,9 @@ class Messenger:
                         # have done an ignore.
                         if acceptorDict.has_key(object):
                             del acceptorDict[object]
-                        # If this dictionary is now empty, remove the event
+                        # If the dictionary at this event is now empty, remove the event
                         # entry from the Messenger alltogether
-                        if ((len(acceptorDict) == 0) and
-                            (self.dict.has_key(event))):
+                        if (self.dict.has_key(event) and (len(self.dict[event]) == 0)):
                             del self.dict[event]
 
     def clear(self):

@@ -784,6 +784,7 @@
         base.wantDIRECT = 1
         base.wantTk = 1
         from ShowBaseGlobal import *
+        from DirectSession import *
         import TkGlobal
         import Placer
         return Placer.place(self)
