@@ -902,49 +902,6 @@ make_egg_texture(const FltTexture *flt_texture) {
     break;
   }
 
-  switch (flt_texture->_mag_filter_alpha) {
-  case FltTexture::MG_point:
-    egg_texture->set_magfilteralpha(EggTexture::FT_nearest);
-    break;
-
-  case FltTexture::MG_bilinear:
-    egg_texture->set_magfilteralpha(EggTexture::FT_linear);
-    break;
-
-  case FltTexture::MG_bicubic:
-  case FltTexture::MG_sharpen:
-  case FltTexture::MG_add_detail:
-  case FltTexture::MG_modulate_detail:
-  case FltTexture::MG_bilinear_gequal:
-  case FltTexture::MG_bilinear_lequal:
-  case FltTexture::MG_bicubic_gequal:
-  case FltTexture::MG_bicubic_lequal:
-    // Not supported.
-    break;
-  }
-
-  switch (flt_texture->_mag_filter_color) {
-  case FltTexture::MG_point:
-    egg_texture->set_magfiltercolor(EggTexture::FT_nearest);
-    break;
-
-  case FltTexture::MG_bilinear:
-    egg_texture->set_magfiltercolor(EggTexture::FT_linear);
-    break;
-
-  case FltTexture::MG_bicubic:
-  case FltTexture::MG_sharpen:
-  case FltTexture::MG_add_detail:
-  case FltTexture::MG_modulate_detail:
-  case FltTexture::MG_bilinear_gequal:
-  case FltTexture::MG_bilinear_lequal:
-  case FltTexture::MG_bicubic_gequal:
-  case FltTexture::MG_bicubic_lequal:
-    // Not supported.
-    break;
-  }
-
-
   parse_comment(flt_texture, egg_texture);
   return egg_texture;
 }
