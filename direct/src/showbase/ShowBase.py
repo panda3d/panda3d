@@ -43,6 +43,7 @@ class ShowBase:
         self.wantSfx = self.config.GetBool('audio-sfx-active', 1)
         self.wantMusic = self.config.GetBool('audio-music-active', 1)
         self.wantFog = self.config.GetBool('want-fog', 1)
+        self.screenshotExtension = self.config.GetString('screenshot-extension', 'jpg')
         if not (self.wantSfx or self.wantMusic):
             self.wantAnySound = None
         if not self.wantAnySound:
@@ -663,7 +664,7 @@ class ShowBase:
         # Replace spaces with dashes because unix does not like spaces in the filename
         date = date.replace(' ', '-')
         date = date.replace(':', '-')
-        imageName = (namePrefix + '-' + date + '-' + str(frameCount) + '.bmp')
+        imageName = ('%s-%s-%d.%s' % (namePrefix, date, frameCount, self.screenshotExtension))
         self.notify.info("Taking screenshot: " + imageName)
         takeSnapshot(self.win, imageName)
 
