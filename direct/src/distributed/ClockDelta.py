@@ -218,7 +218,8 @@ class ClockDelta(DirectObject.DirectObject):
 
     ### Primary interface functions ###
 
-    def networkToLocalTime(self, networkTime, now = None, bits = 16):
+    def networkToLocalTime(self, networkTime, now = None, bits = 16,
+                           ticksPerSec=NetworkTimePrecision):
         """networkToLocalTime(self, int networkTime)
 
         Converts the indicated networkTime to the corresponding
@@ -234,11 +235,10 @@ class ClockDelta(DirectObject.DirectObject):
             return now
 
         # First, determine what network time we have for 'now'.
-        ntime = int(math.floor((now - self.delta) * NetworkTimePrecision + 0.5))
+        ntime = int(math.floor(((now - self.delta) * ticksPerSec) + 0.5))
 
-        # The signed difference between these is the number of units
-        # of NetworkTimePrecision by which the network time differs
-        # from 'now'.
+        # The signed difference between these is the number of ticks
+        # by which the network time differs from 'now'.
         if bits == 16:
             diff = self.__signExtend(networkTime - ntime)
 
@@ -249,15 +249,16 @@ class ClockDelta(DirectObject.DirectObject):
             
             diff = networkTime - ntime
         
-        return now + float(diff) / NetworkTimePrecision
+        return now + float(diff) / ticksPerSec
 
-    def localToNetworkTime(self, localTime, bits = 16):
+    def localToNetworkTime(self, localTime, bits = 16,
+                           ticksPerSec=NetworkTimePrecision):
         """localToNetworkTime(self, float localTime)
 
         Converts the indicated localTime to the corresponding
         networkTime value.
         """
-        ntime = int(math.floor((localTime - self.delta) * NetworkTimePrecision + 0.5))
+        ntime = int(math.floor(((localTime - self.delta) * ticksPerSec) + 0.5))
         if bits == 16:
             return self.__signExtend(ntime)
 
@@ -270,23 +271,28 @@ class ClockDelta(DirectObject.DirectObject):
 
     ### Convenience functions ###
 
-    def getRealNetworkTime(self, bits=16):
+    def getRealNetworkTime(self, bits=16,
+                           ticksPerSec=NetworkTimePrecision):
         """getRealNetworkTime(self)
 
         Returns the current getRealTime() expressed as a network time.
         """
         return self.localToNetworkTime(self.globalClock.getRealTime(),
-                                       bits=bits)
+                                       bits=bits,
+                                       ticksPerSec=ticksPerSec)
 
-    def getFrameNetworkTime(self, bits=16):
+    def getFrameNetworkTime(self, bits=16,
+                            ticksPerSec=NetworkTimePrecision):
         """getFrameNetworkTime(self)
 
         Returns the current getFrameTime() expressed as a network time.
         """
         return self.localToNetworkTime(self.globalClock.getFrameTime(),
-                                       bits=bits)
+                                       bits=bits,
+                                       ticksPerSec=ticksPerSec)
 
-    def localElapsedTime(self, networkTime, bits=16):
+    def localElapsedTime(self, networkTime, bits=16,
+                         ticksPerSec=NetworkTimePrecision):
         """localElapsedTime(self, int networkTime)
 
         Returns the amount of time elapsed (in seconds) on the client
@@ -295,7 +301,8 @@ class ClockDelta(DirectObject.DirectObject):
         
         """
         now = self.globalClock.getFrameTime()
-        dt = now - self.networkToLocalTime(networkTime, now, bits=bits)
+        dt = now - self.networkToLocalTime(networkTime, now, bits=bits,
+                                           ticksPerSec=ticksPerSec)
 
         return max(dt, 0.0)
 
