@@ -623,10 +623,15 @@ WinMusic* WinMusic::load_midi(Filename filename) {
   }
 */
   MULTI_TO_WIDE(fdesc.wszFileName, filename.to_os_specific().c_str());
-  if (filename.is_local())
+  audio_cat->debug() << "os_specific name '" << filename.to_os_specific()
+		     << "'" << endl;
+  if (filename.is_local()) {
     fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME;
-  else
+    audio_cat->debug() << "is local" << endl;
+  } else {
     fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME | DMUS_OBJ_FULLPATH;
+    audio_cat->debug() << "is not local" << endl;
+  }
   result = loader->GetObject(&fdesc, IID_IDirectMusicSegment2,
 			     (void**)&(ret->_music));
   if (FAILED(result)) {
