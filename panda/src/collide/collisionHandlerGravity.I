@@ -108,6 +108,16 @@ get_impact_velocity() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//    Function : CollisionHandlerGravity::get_contact_normal
+//      Access : Public
+// Description : 
+////////////////////////////////////////////////////////////////////
+INLINE const LVector3f &CollisionHandlerGravity::
+get_contact_normal() const {
+  return _contact_normal;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerGravity::add_velocity
 //       Access: Public
 //  Description: Adds the sepcified amount to the current velocity.

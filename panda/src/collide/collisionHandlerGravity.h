@@ -46,6 +46,7 @@ PUBLISHED:
   INLINE float get_airborne_height() const;
   INLINE bool is_on_ground() const;
   INLINE float get_impact_velocity() const;
+  INLINE const LVector3f &get_contact_normal() const;
 
   INLINE void add_velocity(float velocity);
   INLINE void set_velocity(float velocity);
@@ -70,6 +71,7 @@ private:
   float _gravity;
   float _current_velocity;
   float _max_velocity;
+  LVector3f _contact_normal;
 
 
 public:

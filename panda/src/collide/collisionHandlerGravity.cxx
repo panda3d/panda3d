@@ -39,6 +39,7 @@ CollisionHandlerGravity() {
   _gravity = 32.174f;
   _current_velocity = 0.0f;
   _max_velocity = 400.0f;
+  _contact_normal = LVector3f::zero();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -179,6 +180,22 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   // Add only the one that we're impacting with:
   add_entry(highest);
   
+  // Set the contact normal so that other code can make use of the
+  // surface slope:
+  if (highest->get_into()->is_of_type(CollisionPlane::get_class_type())) {
+    // This is asking: what is the normal of the plane that the avatar
+    // is colliding with relative to the avatar.  A positive y valye means
+    // the avatar is facing downhill and a negative y value means the
+    // avatar is facing uphill.
+    _contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal() * from_node_path.get_mat(highest->get_into_node_path());
+    //_contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal();
+    // This is asking: what is the normal of the avatar that the avatar
+    // is colliding with relative to the plane.
+    //_contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal() * highest->get_into_node_path().get_mat(from_node_path);
+  } else {
+    _contact_normal = highest->get_surface_normal(from_node_path);
+  }
+  
   return max_height;
 }
 #endif
@@ -247,7 +264,7 @@ handle_entries() {
           }
           _current_velocity -= _gravity * dt;
           // Record the airborne height in case someone else needs it: 
-          _airborne_height = -max_height + adjust;
+          _airborne_height = -(max_height + _offset) + adjust;
           assert(_airborne_height>=0.0f);
         }
 
