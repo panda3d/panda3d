@@ -1029,7 +1029,7 @@ choose_device(int devnum, DXDeviceInfo *pDevinfo) {
 
   assert(dxpipe->_DirectDrawCreateEx != NULL);
 
-#if 0 test code
+#if 0 //test code
   // lets try a little cleanup
   if (_wcontext.pddsPrimary) {
     _wcontext.pddsPrimary->Release();
