@@ -314,7 +314,6 @@ register_window_class(HINSTANCE application) {
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = application;
   wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-  wc.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
   wc.lpszMenuName = NULL;
   wc.lpszClassName = _window_class_name;
 
@@ -351,5 +350,21 @@ static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 ////////////////////////////////////////////////////////////////////
 LONG WinStatsLabelStack::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  switch (msg) {
+  case WM_PAINT:
+    {
+      PAINTSTRUCT ps;
+      HDC hdc = BeginPaint(hwnd, &ps);
+
+      RECT rect = { 0, 0, _width, _height };
+      FillRect(hdc, &rect, (HBRUSH)(COLOR_BTNFACE + 1));
+      EndPaint(hwnd, &ps);
+      return 0;
+    }
+
+  default:
+    break;
+  }
+
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
