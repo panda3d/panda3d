@@ -196,13 +196,9 @@
 // libraries do we need?
 #define DX_IPATH
 #define DX_LPATH
-#if $[eq $[PLATFORM],Win32]
-  #define DX_LIBS \
-    dxguid.lib winmm.lib kernel32.lib gdi32.lib comdlg32.lib winspool.lib \
-    user32.lib advapi32.lib ddraw.lib d3dim.lib
-#else
-  #define DX_LIBS
-#endif
+#define DX_LIBS \
+  dxguid.lib winmm.lib kernel32.lib gdi32.lib comdlg32.lib winspool.lib \
+  user32.lib advapi32.lib ddraw.lib d3dim.lib
 #defer HAVE_DX $[libtest $[DX_LPATH],$[DX_LIBS]]
 
 // Do you want to build the Renderman interface?
