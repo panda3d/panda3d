@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <error_utils.h>
 
+#include <errno.h>
+
 ////////////////////////////////////////////////////////////////////
 // Defines
 ////////////////////////////////////////////////////////////////////
@@ -145,7 +147,7 @@ initiate(Filename &source_file, Filename &dest_file) {
   // half of the buffer to disk, and repeat.
   _total_bytes_read = 0;
   _read_all_input = false;
-  _source_buffer_length;
+  _source_buffer_length = 0;
   _initiated = true;
   _decompressor = new ZDecompressor();
   return EU_success;

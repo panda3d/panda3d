@@ -89,7 +89,7 @@ get_bytes_written(void) const {
     downloader_cat.warning()
       << "Downloader::get_bytes_written() - Download has not been "
       << "initiated" << endl;
-    return 0.0;
+    return 0;
   }
   if (_current_status != NULL)
     return _current_status->_total_bytes_written;

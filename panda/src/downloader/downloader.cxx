@@ -9,10 +9,18 @@
 #include "downloader.h"
 #include "config_downloader.h"
 
+#include <error_utils.h>
 #include <filename.h>
+
 #include <errno.h>
 #include <math.h>
-#include <error_utils.h>
+
+#if !defined(WIN32_VC)
+  #include <sys/time.h>
+  #include <netinet/in.h>
+  #include <arpa/inet.h>
+  #include <netdb.h>
+#endif
 
 ////////////////////////////////////////////////////////////////////
 // Defines
@@ -30,7 +38,7 @@ Downloader(void) {
   _byte_rate = downloader_byte_rate;
   _disk_write_frequency = downloader_disk_write_frequency;
   nassertv(_frequency > 0 && _byte_rate > 0 && _disk_write_frequency > 0);
-  _receive_size = _byte_rate * _frequency;
+  _receive_size = (ulong)(_byte_rate * _frequency);
   _disk_buffer_size = _disk_write_frequency * _receive_size;
   _buffer = new Buffer(_disk_buffer_size);
 
@@ -413,7 +421,7 @@ run(void) {
 
     // Allocate a new buffer
     _buffer.clear();
-    _receive_size = _frequency * _byte_rate;
+    _receive_size = (ulong)(_frequency * _byte_rate);
     _disk_buffer_size = _receive_size * _disk_write_frequency;
     _buffer = new Buffer(_disk_buffer_size);
     _current_status->_buffer = _buffer->_buffer;

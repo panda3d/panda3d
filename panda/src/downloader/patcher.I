@@ -13,4 +13,6 @@ get_progress(void) const {
   if(_patchfile) {
     return _patchfile->get_progress();
   }
+
+  return 0.0;
 }
