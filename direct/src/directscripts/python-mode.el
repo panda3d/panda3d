@@ -106,6 +106,11 @@ See the Python Mode home page for details:
   :type 'string
   :group 'python)
 
+(defcustom ppy-python-command "ppython"
+  "*Shell command used to start Python interpreter."
+  :type 'string
+  :group 'python)
+
 (defcustom pyd-python-command "python_d"
   "*Shell command used to start Python interpreter."
   :type 'string
@@ -136,13 +141,17 @@ mode buffer is visited during an Emacs session.  After that, use
 		 (const :tag "JPython" jpython))
   :group 'python)
 
-(defcustom py-python-command-args '("-i" "-u")
+(defcustom py-python-command-args '("-i")
   "*List of string arguments to be used when starting a Python shell."
   :type '(repeat string)
   :group 'python)
 
+(defcustom ppy-python-command-args '("-i")
+  "*List of string arguments to be used when starting a Python shell."
+  :type '(repeat string)
+  :group 'python)
 
-(defcustom pyd-python-command-args '("-i")
+(defcustom pyd-python-command-args '("-d -i")
   "*List of string arguments to be used when starting a Python shell."
   :type '(repeat string)
   :group 'python)
@@ -472,6 +481,7 @@ Currently-active file is at the head of the list.")
   (define-key py-mode-map "\C-c>"     'py-shift-region-right)
   ;; subprocess commands
   (define-key py-mode-map "\C-c\C-c"  'py-execute-buffer)
+  (define-key py-mode-map "\C-c\C-v"  'py-redefine-class)
   (define-key py-mode-map "\C-c\C-m"  'py-execute-import-or-reload)
   ;; (define-key py-mode-map "\C-c\C-s"  'py-execute-string)
   ;; VR STUDIO ENHANCEMENT
@@ -519,7 +529,7 @@ Currently-active file is at the head of the list.")
   (define-key py-mode-map "\C-xnd"    'py-narrow-to-defun)
   ;; information
   (define-key py-mode-map "\C-c\C-b" 'py-submit-bug-report)
-  (define-key py-mode-map "\C-c\C-v" 'py-version)
+  ;(define-key py-mode-map "\C-c\C-v" 'py-version)
   ;; shadow global bindings for newline-and-indent w/ the py- version.
   ;; BAW - this is extremely bad form, but I'm not going to change it
   ;; for now.
@@ -727,6 +737,7 @@ package.  Note that the latest X/Emacs releases contain this package.")
 	["Execute region"       py-execute-region (mark)]
 	["Execute def or class" py-execute-def-or-class (mark)]
 	["Execute string"       py-execute-string t]
+	["Redefine class"       py-redefine-class t]
 	["Start interpreter..." py-shell t]
 	"-"
 	["Go to start of block" py-goto-block-up t]
@@ -1022,6 +1033,7 @@ py-beep-if-tab-change\t\tring the bell if `tab-width' is changed"
   (setq local-write-file-hooks  'Use-Undecided-Unix-Mode)
   )
 
+
 (defun Use-Undecided-Unix-Mode()
   (interactive)
   (set-buffer-file-coding-system 'undecided-unix)
@@ -1153,15 +1165,21 @@ If an exception occurred return t, otherwise return nil.  BUF must exist."
 
 ;; for toggling between CPython and JPython
 (defvar py-which-shell nil)
+(defvar ppy-which-shell nil)
 (defvar pyd-which-shell nil)
 (defvar py-which-args  py-python-command-args)
+(defvar ppy-which-args  ppy-python-command-args)
 (defvar pyd-which-args  pyd-python-command-args)
 (defvar py-which-bufname "Python")
 (make-variable-buffer-local 'py-which-shell)
+(make-variable-buffer-local 'ppy-which-shell)
 (make-variable-buffer-local 'pyd-which-shell)
 (make-variable-buffer-local 'py-which-args)
+(make-variable-buffer-local 'ppy-which-args)
 (make-variable-buffer-local 'pyd-which-args)
 (make-variable-buffer-local 'py-which-bufname)
+(make-variable-buffer-local 'ppy-which-bufname)
+(make-variable-buffer-local 'pyd-which-bufname)
 
 (defun py-toggle-shells (arg)
   "Toggles between the CPython and JPython shells.
@@ -1190,14 +1208,17 @@ Programmatically, ARG can also be one of the symbols `cpython' or
      ((< 0 arg)
       ;; set to CPython
       (setq py-which-shell py-python-command
+	    ppy-which-shell ppy-python-command
 	    pyd-which-shell pyd-python-command
 	    py-which-args py-python-command-args
+	    ppy-which-args ppy-python-command-args
 	    pyd-which-args pyd-python-command-args
 	    py-which-bufname "Python"
 	    msg "CPython"
 	    mode-name "Python"))
      ((> 0 arg)
       (setq py-which-shell py-jpython-command
+	    ppy-which-shell ppy-jpython-command
 	    pyd-which-shell pyd-python-command
 	    py-which-args py-jpython-command-args
 	    py-which-bufname "JPython"
@@ -1296,6 +1317,36 @@ filter."
     (set-syntax-table py-mode-syntax-table)
     (use-local-map py-shell-map)
     ))
+
+
+
+(defun ppy-shell (&optional argprompt)
+  "This is Joe's hacked version of py-shell which runs ppython for linux"
+  (interactive "P")
+  ;; Set the default shell if not already set
+  (when (null ppy-which-shell)
+    (py-toggle-shells py-default-interpreter))
+  (let ((args ppy-which-args))
+    (when (and argprompt
+	       (interactive-p)
+	       (fboundp 'split-string))
+      ;; TBD: Perhaps force "-i" in the final list?
+      (setq args (split-string
+		  (read-string (concat py-which-bufname
+				       " arguments: ")
+			       (concat
+				(mapconcat 'identity py-which-args " ") " ")
+			       ))))
+    (switch-to-buffer-other-window
+     (apply 'make-comint py-which-bufname ppy-which-shell nil args))
+    (make-local-variable 'comint-prompt-regexp)
+    (setq comint-prompt-regexp "^>>> \\|^[.][.][.] \\|^(pdb) ")
+    (add-hook 'comint-output-filter-functions
+	      'py-comint-output-filter-function)
+    (set-syntax-table py-mode-syntax-table)
+    (use-local-map py-shell-map)
+    ))
+
 
 (defun py-clear-queue ()
   "Clear the queue of temporary files waiting to execute."
@@ -3171,8 +3222,22 @@ These are Python temporary files awaiting execution."
   (interactive "p")
   (let ((proc (get-buffer-process (current-buffer))))
     (if (and (eobp) proc (= (point) (marker-position (process-mark proc))))
-	(python-resume)
-      (delete-char arg))))
+	(let ((current (point)))
+	  (goto-char (- current 4))
+	  (if (or (search-forward ">>> " current t)
+		  (search-forward "... " current t))
+	      (python-resume)
+	    (let ()
+	      (goto-char current)
+	      (message "End of buffer")
+	      )
+	    )
+	  )
+      (delete-char arg)
+      )
+    )
+  )
+
 
 (defun comint-interrupt-subjob-or-maybe-return (arg)
   "Enter a return (comint-send-input) or send a comint-interrupt-subjob
@@ -3190,13 +3255,91 @@ These are Python temporary files awaiting execution."
 	     (comint-interrupt-subjob))))
       (comint-send-input))))
 
+
 ;; Function to try to resume panda mainloop
 (defun python-resume ()
   (interactive)
-  (end-of-buffer)
-  (insert "run()")
-  (newline 1)
-  (py-execute-string "try:\n\trun()\nexcept NameError,e:\n\tif e.__str__() == 'run':\n\t\tpass\n\telse:\n\t\traise\nexcept:\n\traise"))
+  (let* ((curbuf (current-buffer))
+	(proc (get-process py-which-bufname))
+	(procbuf (process-buffer proc))
+	)
+    (set-buffer procbuf)
+    (insert "run()\n")
+    (py-execute-string "try:\n\trun()\nexcept NameError,e:\n\tif e.__str__() == 'run':\n\t\tpass\n\telse:\n\t\traise\nexcept:\n\traise")
+    (goto-char (point-max))
+    (set-buffer curbuf)
+    )
+  )
+
+
+
+(defun py-redefine-class (&optional async)
+  (interactive "P")
+  (save-excursion
+      (py-mark-def-or-class t)
+      ;; mark is before point
+      (py-redefine-class-region (mark) (point) async)
+      )
+  )
+
+
+(defun py-redefine-class-region (start end &optional async)
+  (interactive "r\nP")
+  (or (< start end)
+      (error "Region is empty"))
+  (let* ((proc (get-process py-which-bufname))
+	 (temp (if (memq 'broken-temp-names py-emacs-features)
+		   (let
+		       ((sn py-serial-number)
+			(pid (and (fboundp 'emacs-pid) (emacs-pid))))
+		     (setq py-serial-number (1+ py-serial-number))
+		     (if pid
+			 (format "python-%d-%d" sn pid)
+		       (format "python-%d" sn)))
+		 (make-temp-name "python-")))
+	 (file (expand-file-name temp py-temp-directory)))
+    (write-region start end file nil 'nomsg)
+    (cond
+     (proc
+      ;; use the existing python shell
+      (py-redefine-class-file proc file)
+     ))))
+
+
+;; Python subprocess utilities and filters
+(defun py-redefine-class-file (proc filename)
+  "Send to Python interpreter process PROC \"execfile('FILENAME')\".
+Make that process's buffer visible and force display.  Also make
+comint believe the user typed this string so that
+`kill-output-from-shell' does The Right Thing."
+  (interactive)
+  (let ((curbuf (current-buffer))
+	(procbuf (process-buffer proc))
+	(cmd (format "import Finder; Finder.rebindClass(__builtins__.globals(), r'%s')\n" filename))
+	)
+
+	  ;; Goto the python buffer
+	  (set-buffer procbuf)
+	  (goto-char (point-max))
+	  (let ((current (point)))
+	    (goto-char (- current 4))
+	    ;; Look for the python prompt
+	    (if (or (search-forward ">>> " current t)
+		    (search-forward "... " current t))
+		(let ()
+		  ;; We are already at a prompt, no need to interrupt
+		  (process-send-string proc cmd)
+		  )
+	      (let ()
+		;; Interrupt the task loop
+		(interrupt-process procbuf nil)
+		(process-send-string proc cmd)
+		)
+	      )
+	    )
+	  )
+  )
+
 
 (provide 'python-mode)
 ;;; python-mode.el ends here

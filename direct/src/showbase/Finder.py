@@ -1,40 +1,54 @@
 
 import types
+import os
 
-def findClassInModule(module, className, nesting, visited=[]):
+def findClassInModule(module, className, visited):
     # Make sure you have not already visited this module
     # to prevent recursion
     if module in visited:
         return None
     # Ok, clear to proceed, add this module to the visited list
     visited.append(module)
-    print ('visiting: ' + `module`)
+    # print ('visiting: ' + `module`)
+    # Look in this module for classes and other modules
     for key in module.__dict__.keys():
         value = module.__dict__[key]
-        if (type(value) == types.ClassType):
+        # If this is a class
+        if ((key != "_") and (type(value) == types.ClassType)):
+            # See if the name matches
             if value.__name__ == className:
-                return value
+                # It does! We found our class
+                return [value, module.__dict__]
+        # Its a module, recursively look into its namespace
         elif (type(value) == types.ModuleType):
-            ret =  findClassInModule(value, className, nesting+1, visited)
+            ret =  findClassInModule(value, className, visited)
+            # If that recursion found it, return the goodies
             if ret:
                 return ret
-            # otherwise keep looking
+            # Otherwise keep looking
+    # Well, after all that we did not find anything
     return None
 
 
-def findClass(builtins, className):
-    for key in builtins.keys():
-        value = builtins[key]
-        if (type(value) == types.ClassType):
+# Find a class named className somewhere in this namespace
+def findClass(namespace, className):
+    for key in namespace.keys():
+        value = namespace[key]
+        # If we found a class, see if it matches classname
+        # Make sure we do not match "_"
+        if ((key != "_") and (type(value) == types.ClassType)):
             if value.__name__ == className:
-                return value
+                # It does, that was easy!
+                return [value, namespace]
+        # Look in all the modules in this namespace
         elif (type(value) == types.ModuleType):
-            ret = findClassInModule(value, className, 0)
+            ret = findClassInModule(value, className, [])
+            # If we found it return the goodies
             if ret:
                 return ret
-            # otherwise keep looking
+            # Otherwise keep looking
+    # Nope, not in there
     return None
-
 
 
 def rebindClass(builtins, filename):
@@ -53,7 +67,7 @@ def rebindClass(builtins, filename):
             parenLoc = classHeader.find('(')
             if parenLoc > 0:
                 className = classHeader[:parenLoc]
-                print 'found className: ' + className
+                # print 'found className: ' + className
                 found = 1
                 foundLine = i
                 foundChar = parenLoc
@@ -62,7 +76,7 @@ def rebindClass(builtins, filename):
                 colonLoc = classHeader.find(':')
                 if colonLoc > 0:
                     className = classHeader[:colonLoc]
-                    print 'found className: ' + className
+                    # print 'found className: ' + className
                     found = 1
                     foundLine = i
                     foundChar = colonLoc
@@ -72,52 +86,52 @@ def rebindClass(builtins, filename):
         return None
 
     # Store the original real class
-    realClass = findClass(builtins, className)
+    res = findClass(builtins, className)
+    if res:
+        realClass, realNameSpace = res
+    else:
+        print ('Error redinifing class: could not find class: ' + className)
+        return None
 
-    tmpfilename = '/usr/local/tmp_py_file'
+    # Make a temp file in the home directory to execfile from
+    tmpfilename = os.path.join(os.getenv('HOME'), 'tmp_py_file')
     tmpfile = open(tmpfilename, 'w')
-    # newline = 'class ' + tempClassName + lines[foundLine][(6+foundChar):]
-    newline = 'class ' + tempClassName + ':\012'
-    
+#    newline = 'class ' + tempClassName + ':\012'
+
     # now write the class back to the file with the new class name
     for i in range(len(lines)):
-        if (i == foundLine):
-            tmpfile.write(newline)
-        else:
-            tmpfile.write(lines[i])
+#        if (i == foundLine):
+#            tmpfile.write(newline)
+#        else:
+        tmpfile.write(lines[i])
             
     file.close()
     tmpfile.close()
 
     # Now execute that class def
-    execfile(tmpfilename, builtins)
+    execfile(tmpfilename, realNameSpace)
+    # Remove that temp file
+    os.remove(tmpfilename)
 
-    tmpClass = findClass(builtins, tempClassName)
+    res = findClass(realNameSpace, className)
+    if res:
+        tmpClass, tmpNameSpace = res
+    else:
+        print ('Error redinifing class: could not find temp class')
+        return None
 
-    print 'realClass: ' + `realClass`
-    print 'tmpClass: ' + `tmpClass`
+    # Copy the functions that we just redefined into the real class
+    copyFuncs(tmpClass, realClass)
 
-    # Reassign the new dict
-    #copyFuncs(tmpClass, realClass)
-    copyDict(tmpClass, realClass)
+    # Now make sure the original class is in that namespace, not our temp one
+    realNameSpace[className] = realClass
 
 
 def copyFuncs(fromClass, toClass):
+    # Copy the functions from fromClass into toClass dictionary
     for key in fromClass.__dict__.keys():
         value = fromClass.__dict__[key]
         if (type(value) == types.FunctionType):
             toClass.__dict__[key] = value
-
-
-def copyDict(fromClass, toClass):
-    oldModule = toClass.__module__
-    toClass.__dict__ = fromClass.__dict__
-    toClass.__module__ = oldModule
-
-class Finder:
-    def __init__(self):
-        pass
-    def tester(self):
-        pass
 
     

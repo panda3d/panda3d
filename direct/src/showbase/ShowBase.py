@@ -16,12 +16,14 @@ import LinearEulerIntegrator
 import AngularEulerIntegrator
 import ClockObject
 import Transitions
+import Loader
+
 
 globalClock = ClockObject.ClockObject.getGlobalClock()
 
 class ShowBase:
 
-    notify = None
+    notify = directNotify.newCategory("ShowBase")
 
     def __init__(self):
 
@@ -33,8 +35,6 @@ class ShowBase:
         self.wantSound = self.config.GetBool('want-sound', 1)
         self.wantDIRECT = self.config.GetBool('want-directtools', 0)
         self.wantStats = self.config.GetBool('want-stats', 0)
-
-        import Loader
 
         self.initialState = NodeAttributes()
         # Set a default "off color" (i.e. use poly color) for color transitions
@@ -101,15 +101,9 @@ class ShowBase:
 
         self.buttonThrower = self.mouseWatcher.attachNewNode(ButtonThrower())
 
-        if (ShowBase.notify == None):
-            ShowBase.notify = directNotify.newCategory("ShowBase")
-
         self.loader = Loader.Loader(self)
-
         self.eventMgr = eventMgr
-
         self.messenger = messenger
-
         self.taskMgr = taskMgr
 
 	# Particle manager
@@ -145,7 +139,7 @@ class ShowBase:
 	self.particleMgrEnabled = 1
 	self.physicsMgrEnabled = 1
 	self.taskMgr.removeTasksNamed('manager-update')
-	self.taskMgr.spawnTaskNamed(Task.Task(self.__updateManagers),
+	self.taskMgr.spawnTaskNamed(Task.Task(self.updateManagers),
 					'manager-update')
 
     def disableParticles(self):
@@ -166,8 +160,8 @@ class ShowBase:
     def isPhysicsMgrEnabled(self):
         return self.physicsMgrEnabled
 
-    def __updateManagers(self, state):
-	"""__updateManagers(self)"""
+    def updateManagers(self, state):
+	"""updateManagers(self)"""
 	dt = min(globalClock.getDt(), 0.1)
 	if (self.particleMgrEnabled == 1):
 	    self.particleMgr.doParticles(dt)

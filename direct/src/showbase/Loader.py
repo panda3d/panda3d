@@ -3,7 +3,6 @@
 from PandaModules import *
 from DirectNotifyGlobal import *
 
-
 class Loader:
 
     """Loader class: contains method to load models, sounds and code"""
@@ -14,11 +13,8 @@ class Loader:
     def __init__(self, base):
         """__init__(self)
         Loader constructor"""
-        self.__base = base
-        self.__loader = PandaLoader()
-        #self.__texturePool = TexturePool()
-        #self.__modelPool = ModelPool()
-        #self.__audioPool = AudioPool()
+        self.base = base
+        self.loader = PandaLoader()
         
     # model loading funcs
     def loadModel(self, modelPath):
@@ -26,9 +22,9 @@ class Loader:
         Attempt to load a model from given file path, return
         a nodepath to the model if successful or None otherwise."""
         Loader.notify.info("Loading model: %s" % (modelPath) )
-        node = self.__loader.loadSync(Filename(modelPath))
+        node = self.loader.loadSync(Filename(modelPath))
         if (node != None):
-            nodePath = self.__base.hidden.attachNewNode(node)
+            nodePath = self.base.hidden.attachNewNode(node)
         else:
             nodePath = None
         return nodePath
@@ -41,7 +37,7 @@ class Loader:
         Loader.notify.info("Loading model once: %s" % (modelPath))
         node = ModelPool.loadModel(modelPath)
         if (node != None):
-            nodePath = self.__base.hidden.attachNewNode(node)
+            nodePath = self.base.hidden.attachNewNode(node)
         else:
             nodePath = None
         return nodePath
@@ -55,7 +51,7 @@ class Loader:
         # utilize load once goodness
         nodePath = self.loadModelOnce(modelPath)
         if (nodePath != None):
-            return (nodePath.copyTo(self.__base.hidden))
+            return (nodePath.copyTo(self.base.hidden))
         else:
             return None
 

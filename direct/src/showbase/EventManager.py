@@ -84,6 +84,7 @@ class EventManager:
         else:
             EventManager.notify.warning('unnamed event in processEvent')
 
+
     def restart(self):
         taskMgr.spawnTaskNamed(Task.Task(self.eventLoop), 'eventManager')
 

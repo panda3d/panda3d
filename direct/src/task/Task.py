@@ -226,8 +226,8 @@ class TaskManager:
             task.uponDeath(task)
 
     def removeTasksNamed(self, taskName):
-        removedTasks = []
         TaskManager.notify.debug('removing tasks named: ' + taskName)
+        removedTasks = []
         
         # Find the tasks that match by name and make a list of them
         for task in self.taskList:
@@ -247,11 +247,7 @@ class TaskManager:
         for task in self.taskList:
             task.setCurrentTimeFrame(self.currentTime, self.currentFrame)
             # Run the task and check the return value
-            if task.name == 'test':
-                print 'before task'
             ret = task(task)
-            if task.name == 'test':
-                print 'after  task'
             if (ret == cont):
                 continue
             elif (ret == done):
