@@ -117,6 +117,7 @@ private:
   DEVMODE           *_pCurrent_display_settings;
 
   bool              _window_inactive;
+  bool              _return_control_to_app;
   bool              _exiting_window;
 
   bool              _mouse_input_enabled;
@@ -144,8 +145,8 @@ public:
   LONG WINAPI window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   ButtonHandle lookup_key(WPARAM wparam) const;
   void DestroyMe(bool bAtExitFnCalled);
-  void deactivate_window(void);
-  void reactivate_window(void);
+  virtual void deactivate_window(void);
+  virtual void reactivate_window(void);
 
 protected:
   virtual void do_close_window();

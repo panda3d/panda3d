@@ -21,8 +21,8 @@
 #include "config_wgldisplay.h"
 #include <keyboardButton.h>
 #include <mouseButton.h>
-#include <throw_event.h>
-#include <eventQueue.h>
+//#include <throw_event.h>
+//#include <eventQueue.h>
 #include <glGraphicsStateGuardian.h>
 #include <errno.h>
 #include <time.h>
@@ -276,6 +276,7 @@ void wglGraphicsWindow::config(void) {
     global_wglwinptr = this;  // need this until we get an HWND from CreateWindow
 
     _exiting_window = false;
+    _return_control_to_app = false;
     _PandaPausedTimer = NULL;
     _mouse_input_enabled = false;
     _mouse_motion_enabled = false;
@@ -319,7 +320,7 @@ void wglGraphicsWindow::config(void) {
         exit(1);
     }
 
-    DWORD window_style = WS_POPUP | WS_MAXIMIZE | WS_SYSMENU;  // for CreateWindow
+    DWORD window_style = WS_POPUP | WS_SYSMENU;  // for CreateWindow
 
     // rect now contains the coords for the entire window, not the client
     if (_props._fullscreen) {
@@ -1111,8 +1112,13 @@ void INLINE process_1_event(void) {
 void INLINE wglGraphicsWindow::process_events(void) {
   if(_window_inactive) {
       // Get 1 msg at a time until no more are left and we block and sleep,
-      // or that message changes _window_inactive status and we leave in
-      process_1_event();
+      // or message changes _return_control_to_app or _window_inactive status
+
+      while(_window_inactive && (!_return_control_to_app)) {
+          process_1_event();
+      }
+      _return_control_to_app = false;
+
   } else {
       MSG msg;
 
@@ -1307,10 +1313,7 @@ void wglGraphicsWindow::deactivate_window(void) {
        wgldisplay_cat.spam()  << "deactivate_window called"  << endl;
 #endif
 
-   if((!_props._fullscreen) || _exiting_window) 
-     return;
-
-   if(_window_inactive) 
+   if((!_props._fullscreen) || _exiting_window || _window_inactive) 
      return;
 
    if(wgldisplay_cat.is_spam())
@@ -1397,15 +1400,18 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           //_props._yorg = HIWORD(lparam);
           break;
 
-    case WM_ACTIVATE: 
+
+    case WM_ACTIVATEAPP: {
             #ifdef _DEBUG
-              wgldisplay_cat.spam()  << "WM_ACTIVATE received"  << endl;
+              wgldisplay_cat.spam()  << "WM_ACTIVATEAPP(" << (bool)(wparam!=0) <<") received\n";
             #endif
-           if(LOWORD(wparam)==WA_INACTIVE) {
+            
+           if(!wparam) {
                deactivate_window();
                return 0;
            }         // dont want to reactivate until window is actually un-minimized (see WM_SIZE)
-       break;
+           break;
+        }
 
     case WM_EXITSIZEMOVE:
             #ifdef _DEBUG
@@ -1439,7 +1445,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                     if(_window_inactive)
                         reactivate_window();
 
-                    if((_props._xsize != width) || (_props._ysize != height))
+//                  if((_props._xsize != width) || (_props._ysize != height))
                         handle_reshape();
                 }
                 break;
@@ -1448,6 +1454,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     case WM_PAINT: {
           PAINTSTRUCT ps;
           BeginPaint(hwnd, &ps);
+            // glReadBuffer(GL_BACK);  need to copy current rendering to front buffer, a la wdxdisplay?
           EndPaint(hwnd, &ps);
           return 0;       
     }
@@ -1548,8 +1555,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
     case WM_TIMER:
       if((wparam==_PandaPausedTimer) && _window_inactive) {
-         // wgldisplay_cat.spam() << "throwing PandaPaused\n";
-         throw_event("PandaPaused");   // throw panda event to invoke network-only processing
+         //wgldisplay_cat.spam() << "returning control to app\n";
+          _return_control_to_app = true;
+         // throw_event("PandaPaused");   
+         // do we still need to do this since I return control to app periodically using timer msgs?
+         // does app need to know to avoid major computation?
       }
 
       break;
