@@ -42,6 +42,7 @@ PUBLISHED:
   
   // Get a sound:
   virtual PT(AudioSound) get_sound(const string& file_name) = 0;
+  PT(AudioSound) get_null_sound();
 
   // Tell the AudioManager there is no need to keep this one cached.
   // This doesn't break any connection between AudioSounds that have
@@ -83,6 +84,7 @@ public:
 protected:
   static Create_AudioManager_proc* _create_AudioManager;
   bool _bExclusive;
+  PT(AudioSound) _null_sound;
 
   AudioManager() {
     // intentionally blank.

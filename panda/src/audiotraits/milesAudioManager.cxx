@@ -265,7 +265,7 @@ get_sound(const string& file_name) {
 
   if(!is_valid()) {
      audio_debug("invalid MilesAudioManager returning NullSound");
-     return new NullAudioSound();
+     return get_null_sound();
   }
 
   assert(is_valid());
@@ -303,7 +303,7 @@ get_sound(const string& file_name) {
         // The insert failed.
         audio_debug("  failed map insert of "<<path);
         assert(is_valid());
-        return 0;
+        return get_null_sound();
       }
       // Set si, so that we can get a reference to the path
       // for the MilesAudioSound.

@@ -83,9 +83,23 @@ create_AudioManager() {
   return am;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::get_null_sound
+//       Access: Public
+//  Description: Returns a special NullAudioSound object that has all
+//               the interface of a normal sound object, but plays no
+//               sound.  This same object may also be returned by
+//               get_sound() if it fails.
+////////////////////////////////////////////////////////////////////
+PT(AudioSound) AudioManager::
+get_null_sound() {
+  if (_null_sound == (AudioSound *)NULL) {
+    _null_sound = new NullAudioSound;
+  }
+  return _null_sound;
+}
+
 void AudioManager::
 set_mutually_exclusive(bool bExclusive) {
   _bExclusive = bExclusive;
 }
-
-
