@@ -30,6 +30,7 @@ TypeHandle CInterval::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CInterval::
 CInterval(const string &name, double duration, bool open_ended) :
+  _state(S_initial),
   _curr_t(0.0),
   _name(name),
   _duration(duration),
@@ -225,7 +226,9 @@ step_play() {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 initialize(double t) {
+  check_stopped("initialize");
   recompute();
+  _state = S_started;
   step(t);
 }
 
@@ -239,8 +242,11 @@ initialize(double t) {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 instant() {
+  check_stopped("instant");
   recompute();
+  _state = S_started;
   step(get_duration());
+  _state = S_final;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -252,6 +258,8 @@ instant() {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 step(double t) {
+  check_started("step");
+  _state = S_started;
   _curr_t = t;
 }
 
@@ -265,7 +273,13 @@ step(double t) {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 finalize() {
-  step(get_duration());
+  double duration = get_duration();
+  if (_state == S_initial) {
+    initialize(duration);
+  }
+
+  step(duration);
+  _state = S_final;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -278,7 +292,9 @@ finalize() {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 reverse_initialize(double t) {
+  check_stopped("reverse_initialize");
   recompute();
+  _state = S_started;
   step(t);
 }
 
@@ -293,8 +309,11 @@ reverse_initialize(double t) {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 reverse_instant() {
+  check_stopped("reverse_instant");
   recompute();
+  _state = S_started;
   step(0.0);
+  _state = S_initial;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -306,7 +325,12 @@ reverse_instant() {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 reverse_finalize() {
+  if (_state == S_initial) {
+    initialize(0.0);
+  }
+
   step(0.0);
+  _state = S_initial;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -325,6 +349,9 @@ reverse_finalize() {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 interrupt() {
+  if (_state == S_started) {
+    _state = S_paused;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -379,3 +406,23 @@ void CInterval::
 do_recompute() {
   _dirty = false;
 }
+
+ostream &
+operator << (ostream &out, CInterval::State state) {
+  switch (state) {
+  case CInterval::S_initial:
+    return out << "initial";
+
+  case CInterval::S_started:
+    return out << "started";
+
+  case CInterval::S_paused:
+    return out << "paused";
+
+  case CInterval::S_final:
+    return out << "final";
+  }
+
+  return out << "**invalid state(" << (int)state << ")**";
+}
+

@@ -64,8 +64,10 @@ CLerpNodePathInterval(const string &name, double duration,
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
 initialize(double t) {
+  check_stopped("initialize");
   recompute();
   _prev_d = 0.0;
+  _state = S_started;
   step(t);
 }
 
@@ -79,9 +81,12 @@ initialize(double t) {
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
 instant() {
+  check_stopped("instant");
   recompute();
   _prev_d = 0.0;
+  _state = S_started;
   step(get_duration());
+  _state = S_final;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,6 +98,8 @@ instant() {
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
 step(double t) {
+  check_started("step");
+  _state = S_started;
   double d = compute_delta(t);
 
   if ((_flags & (F_end_pos | F_end_hpr | F_end_scale)) != 0) {
@@ -278,7 +285,9 @@ step(double t) {
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
 reverse_initialize(double t) {
+  check_stopped("reverse_initialize");
   recompute();
+  _state = S_started;
   _prev_d = 1.0;
   step(t);
 }
@@ -294,9 +303,12 @@ reverse_initialize(double t) {
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
 reverse_instant() {
+  check_stopped("reverse_initialize");
   recompute();
+  _state = S_started;
   _prev_d = 1.0;
   step(0.0);
+  _state = S_initial;
 }
 
 ////////////////////////////////////////////////////////////////////

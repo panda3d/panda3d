@@ -75,22 +75,22 @@ class Interval(DirectObject):
         # Used by control panel to update scale
         pass
 
-    def play(self, t0=0.0, duration=0.0, scale=1.0):
-        """ play(t0, duration)
-        """
+    def start(self, t0=0.0, duration=0.0, scale=1.0):
+        # Starts playing the interval from the beginning, or at the
+        # indicated time if specified.
+        
         # Make sure the start time is sensible.
         if t0 > self.duration:
             t0 = self.duration
 
         # Kill ongoing play task
         if self.isPlaying():
-            self.stop()
+            self.finish()
         # Start new one
         self.offset = t0
         self.startT = globalClock.getFrameTime()
         assert(scale > 0.0)
         self.scale = scale
-        self.vernier = 0.0
         self.firstTime = 1
         if (duration == 0.0):
             # If no play duration specified, use duration of Interval
@@ -105,7 +105,7 @@ class Interval(DirectObject):
     def loop(self, t0=0.0, duration=0.0, scale=1.0):
         self.accept(self.name + '-loop', self.play,
                     extraArgs=[t0, duration, scale])
-        self.play(t0, duration, scale)
+        self.start(t0, duration, scale)
         return
 
     def pause(self):
@@ -121,16 +121,22 @@ class Interval(DirectObject):
         # Spawn task
         taskMgr.add(self.__playTask, self.getName() + '-play')
 
-    def stop(self):
-        # Nowadays, stop() will implicitly set the interval to its
+    def finish(self):
+        # Nowadays, finish() will implicitly set the interval to its
         # terminal state, like setFinalT() used to.  Use pause()
         # instead if you just want to leave the interval in its
         # current state, whatever that may be.
         self.pause()
         self.setT(self.getDuration(), IVAL_DONE)
 
+    def play(self, *args, **kw):
+        self.start(*args, **kw)
+        
+    def stop(self):
+        self.finish()
+
     def setFinalT(self):
-        self.stop()
+        self.finish()
 
     def isPlaying(self):
         return taskMgr.hasTaskNamed(self.name + '-play')
@@ -139,7 +145,7 @@ class Interval(DirectObject):
         """ __playTask(task)
         """
         t = globalClock.getFrameTime()
-        te = self.offset + ((t - self.startT) * self.scale + self.vernier)
+        te = self.offset + ((t - self.startT) * self.scale)
         if (te < self.endTime):
             if (self.firstTime):
                 # If first call, init intervals
@@ -215,7 +221,7 @@ class Interval(DirectObject):
                       command = lambda s=self: s.pause())
         play = Button(
             bf, text = 'Play',
-            command = lambda s=self, es=es: s.play(es.get()))
+            command = lambda s=self, es=es: s.start(es.get()))
         jumpToEnd = Button(bf, text = '>>', command = toEnd)
         jumpToStart.pack(side = LEFT, expand = 1, fill = X)
         play.pack(side = LEFT, expand = 1, fill = X)

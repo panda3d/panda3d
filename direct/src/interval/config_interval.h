@@ -26,6 +26,7 @@
 NotifyCategoryDecl(interval, EXPCL_DIRECT, EXPTP_DIRECT);
 
 extern const double interval_precision;
+extern const bool verify_intervals;
 
 extern EXPCL_DIRECT void init_libinterval();
 

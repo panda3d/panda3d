@@ -330,6 +330,7 @@ get_interval_end_time(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 initialize(double t) {
+  check_stopped("initialize");
   // It may be tempting to flush the event_queue here, but don't do
   // it.  Those are events that must still be serviced from some
   // previous interval operation.  Throwing them away would be a
@@ -354,6 +355,7 @@ initialize(double t) {
   finish_events_forward(now, new_active);
 
   _curr_t = t;
+  _state = S_started;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -366,6 +368,7 @@ initialize(double t) {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 instant() {
+  check_stopped("instant");
   recompute();
   _active.clear();
 
@@ -381,6 +384,7 @@ instant() {
 
   _next_event_index = _events.size();
   _curr_t = get_duration();
+  _state = S_final;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -392,6 +396,7 @@ instant() {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 step(double t) {
+  check_started("step");
   int now = double_to_int_time(t);
 
   // Now look for events between the last time we ran and the current
@@ -426,6 +431,7 @@ step(double t) {
   }
 
   _curr_t = t;
+  _state = S_started;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -437,6 +443,11 @@ step(double t) {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 finalize() {
+  double duration = get_duration();
+  if (_state == S_initial) {
+    initialize(duration);
+  }
+
   // Do all remaining events.
   ActiveEvents new_active;
   while (_next_event_index < _events.size()) {
@@ -446,8 +457,9 @@ finalize() {
     _next_event_index++;
   }
 
-  _curr_t = get_duration();
-  finish_events_forward(double_to_int_time(_curr_t), new_active);
+  finish_events_forward(double_to_int_time(duration), new_active);
+  _curr_t = duration;
+  _state = S_final;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -460,6 +472,7 @@ finalize() {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 reverse_initialize(double t) {
+  check_stopped("reverse_initialize");
   // It may be tempting to flush the event_queue here, but don't do
   // it.  Those are events that must still be serviced from some
   // previous interval operation.  Throwing them away would be a
@@ -484,6 +497,7 @@ reverse_initialize(double t) {
   finish_events_reverse(now, new_active);
 
   _curr_t = t;
+  _state = S_started;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -497,6 +511,7 @@ reverse_initialize(double t) {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 reverse_instant() {
+  check_stopped("reverse_instant");
   recompute();
   _active.clear();
 
@@ -512,6 +527,7 @@ reverse_instant() {
 
   _next_event_index = 0;
   _curr_t = 0.0;
+  _state = S_initial;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -523,6 +539,10 @@ reverse_instant() {
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 reverse_finalize() {
+  if (_state == S_initial) {
+    initialize(0.0);
+  }
+
   // Do all remaining events at the beginning.
   ActiveEvents new_active;
 
@@ -534,6 +554,7 @@ reverse_finalize() {
 
   finish_events_reverse(0, new_active);
   _curr_t = 0.0;
+  _state = S_initial;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -556,6 +577,9 @@ interrupt() {
   for (ai = _active.begin(); ai != _active.end(); ++ai) {
     PlaybackEvent *event = (*ai);
     enqueue_event(event->_n, ET_interrupt, false);
+  }
+  if (_state == S_started) {
+    _state = S_paused;
   }
 }
 

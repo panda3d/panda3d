@@ -55,6 +55,18 @@ get_open_ended() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CInterval::get_state
+//       Access: Published
+//  Description: Indicates the state the interval believes it is in:
+//               whether it has been started, is currently in the
+//               middle, or has been finalized.
+////////////////////////////////////////////////////////////////////
+INLINE CInterval::State CInterval::
+get_state() const {
+  return _state;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CInterval::set_t
 //       Access: Published
 //  Description: Advances the interval.  This function is provided
@@ -120,6 +132,38 @@ INLINE void CInterval::
 recompute() const {
   if (_dirty) {
     ((CInterval *)this)->do_recompute();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::check_stopped
+//       Access: Protected
+//  Description: Issues a warning if our internal state is not in
+//               one of the stopped states.
+////////////////////////////////////////////////////////////////////
+INLINE void CInterval::
+check_stopped(const char *method_name) const {
+  if (_state != S_initial && _state != S_final) {
+    interval_cat.warning()
+      << get_name() << "." << method_name << "() called in state "
+      << _state << ".\n";
+    nassertv(!verify_intervals);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::check_started
+//       Access: Protected
+//  Description: Issues a warning if our internal state is not in
+//               one of the started states.
+////////////////////////////////////////////////////////////////////
+INLINE void CInterval::
+check_started(const char *method_name) const {
+  if (_state != S_started && _state != S_paused) {
+    interval_cat.warning()
+      << get_name() << "." << method_name << "() called in state "
+      << _state << ".\n";
+    nassertv(!verify_intervals);
   }
 }
 

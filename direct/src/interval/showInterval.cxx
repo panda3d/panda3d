@@ -50,7 +50,9 @@ ShowInterval(const NodePath &node, const string &name) :
 ////////////////////////////////////////////////////////////////////
 void ShowInterval::
 instant() {
+  check_stopped("instant");
   _node.show();
+  _state = S_final;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -64,5 +66,7 @@ instant() {
 ////////////////////////////////////////////////////////////////////
 void ShowInterval::
 reverse_instant() {
+  check_stopped("instant");
   _node.hide();
+  _state = S_initial;
 }

@@ -319,11 +319,11 @@ class MetaInterval(CMetaInterval):
         CMetaInterval.interrupt(self)
         self.__doPythonCallbacks()
 
-    def stop(self):
+    def finish(self):
         # This function overrides from the parent level to check for Python
         # callbacks afterwards.
         self.__updateIvals()
-        CMetaInterval.stop(self)
+        CMetaInterval.finish(self)
         self.__doPythonCallbacks()
 
     def setFinalT(self):
@@ -360,12 +360,12 @@ class MetaInterval(CMetaInterval):
         self.__updateIvals()
         return CMetaInterval.getDuration(self)
 
-    def play(self, *args, **kw):
+    def start(self, *args, **kw):
         # This function overrides from the parent level to force it to
         # update the interval list first, if necessary.
 
         self.__updateIvals()
-        return CMetaInterval.play(self, *args, **kw)
+        return CMetaInterval.start(self, *args, **kw)
 
     def loop(self, *args, **kw):
         # This function overrides from the parent level to force it to

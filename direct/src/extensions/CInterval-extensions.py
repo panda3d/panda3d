@@ -4,11 +4,9 @@
     of the CInterval class
     """
 
-    def play(self, t0 = 0.0, duration = None, scale = 1.0):
-        """ play(t0, duration)
-        """
+    def start(self, t0 = 0.0, duration = None, scale = 1.0):
         if self.isPlaying():
-            self.stop()
+            self.finish()
         if duration:  # None or 0 implies full length
             self.setupPlay(t0, t0 + duration, scale)
         else:
@@ -17,7 +15,7 @@
         self.resume()
 
     def loop(self, t0 = 0.0, duration = None, scale = 1.0):
-        self.play(t0, duration, scale)
+        self.start(t0, duration, scale)
         self.__loop = 1
         return
 
@@ -31,8 +29,8 @@
         # Spawn task
         taskMgr.add(self.__playTask, self.getName() + '-play')
     
-    def stop(self):
-        # Nowadays, stop() will implicitly set the interval to its
+    def finish(self):
+        # Nowadays, finish() will implicitly set the interval to its
         # terminal state, like setFinalT() used to.  Use pause()
         # instead if you just want to leave the interval in its
         # current state, whatever that may be.
@@ -42,8 +40,14 @@
             for func in self.setTHooks:
                 func(self.getT())
 
+    def play(self, *args, **kw):
+        self.start(*args, **kw)
+
+    def stop(self):
+        self.finish()
+
     def setFinalT(self):
-        self.stop()
+        self.finish()
 
     def setT(self, t, event = ETStep):
         # Overridden from the C++ layer.  We rename the C++ function
@@ -115,7 +119,7 @@
                       command = lambda s=self: s.pause())
         play = Button(
             bf, text = 'Play',
-            command = lambda s=self, es=es: s.play(es.get()))
+            command = lambda s=self, es=es: s.start(es.get()))
         jumpToEnd = Button(bf, text = '>>', command = toEnd)
         jumpToStart.pack(side = LEFT, expand = 1, fill = X)
         play.pack(side = LEFT, expand = 1, fill = X)

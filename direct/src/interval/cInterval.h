@@ -22,6 +22,7 @@
 #include "directbase.h"
 #include "typedReferenceCount.h"
 #include "pvector.h"
+#include "config_interval.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CInterval
@@ -56,6 +57,15 @@ PUBLISHED:
     ET_interrupt
   };
 
+  enum State {
+    S_initial,
+    S_started,
+    S_paused,
+    S_final
+  };
+
+  INLINE State get_state() const;
+
   INLINE void set_t(double t, EventType event = ET_step);
   INLINE double get_t() const;
 
@@ -63,6 +73,9 @@ PUBLISHED:
   int step_play();
 
   // These functions control the actual playback of the interval.
+  // Don't call them directly; they're intended to be called from a
+  // supervising object, e.g. the Python start() .. finish()
+  // interface.
   virtual void initialize(double t);
   virtual void instant();
   virtual void step(double t);
@@ -81,7 +94,10 @@ public:
 protected:
   INLINE void recompute() const;
   virtual void do_recompute();
+  INLINE void check_stopped(const char *method_name) const;
+  INLINE void check_started(const char *method_name) const;
 
+  State _state;
   double _curr_t;
   string _name;
   double _duration;
@@ -128,6 +144,7 @@ private:
 };
 
 INLINE ostream &operator << (ostream &out, const CInterval &ival);
+ostream &operator << (ostream &out, CInterval::State state);
 
 #include "cInterval.I"
 

@@ -31,6 +31,8 @@ TypeHandle CLerpAnimEffectInterval::_type_handle;
 ////////////////////////////////////////////////////////////////////
 void CLerpAnimEffectInterval::
 step(double t) {
+  check_started("step");
+  _state = S_started;
   double d = compute_delta(t);
 
   Controls::iterator ci;

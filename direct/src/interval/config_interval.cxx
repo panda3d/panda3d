@@ -38,6 +38,10 @@ ConfigureFn(config_interval) {
 // CMetaInterval created.
 const double interval_precision = config_interval.GetDouble("interval-precision", 1000.0);
 
+// Set this true to generate an assertion failure if interval
+// functions are called out-of-order.
+const bool verify_intervals = config_interval.GetBool("verify-intervals", false);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libinterval
 //  Description: Initializes the library.  This must be called at
