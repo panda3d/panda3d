@@ -172,28 +172,19 @@ handle_entries() {
           }
         }
 
-        LMatrix4f mat;
-        def.get_mat(mat);
-
-        // def.set_mat(LMatrix4f::translate_mat(net_shove) * mat);
-
-        mat(3,0) += net_shove[0];
-        mat(3,1) += net_shove[1];
-
-        if (!_horizontal) {
-          mat(3,2) += net_shove[2];
+        if (_horizontal) {
+          net_shove[2] = 0.0;
         }
 
-        def.set_mat(mat);
-
         if (collide_cat.is_debug()) {
-          if (_horizontal)
-             net_shove[2] = 0.0;
-
           collide_cat.debug()
             << "Net shove on " << *from_node << " is: "
             << net_shove << "\n";
         }
+
+        LMatrix4f mat;
+        def.get_mat(mat);
+        def.set_mat(LMatrix4f::translate_mat(net_shove) * mat);
       }
     }
   }

@@ -125,17 +125,11 @@ test_intersection_from_sphere(CollisionHandler *record,
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
   LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
+  LVector3f from_radius_v =
+    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
+  float from_radius = length(from_radius_v);
+
   float dist = dist_to_plane(from_center);
-//  LVector3f from_radius_v =
-//    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
-//  float from_radius = length(from_radius_v);
-
-  const LMatrix4f *pMat = &entry.get_wrt_space();
-  float from_radius = sphere->get_radius() *
-                      sqrtf((*pMat)(0,0)*(*pMat)(0,0) + 
-                            (*pMat)(0,1)*(*pMat)(0,1) + 
-                            (*pMat)(0,2)*(*pMat)(0,2));
-
   if (dist > from_radius) {
     // No intersection.
     return 0;

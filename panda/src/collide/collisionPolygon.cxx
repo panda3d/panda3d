@@ -239,20 +239,12 @@ test_intersection_from_sphere(CollisionHandler *record,
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
   LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
+  LVector3f from_radius_v =
+    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
+  float from_radius = length(from_radius_v);
+
   float dist = dist_to_plane(from_center);
-
-//  LVector3f from_radius_v =
-//    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
-//  float from_radius = length(from_radius_v);
-
-  const LMatrix4f *pMat = &entry.get_wrt_space();
-  float from_radius = sphere->get_radius() *
-                      sqrtf((*pMat)(0,0)*(*pMat)(0,0) + 
-                            (*pMat)(0,1)*(*pMat)(0,1) + 
-                            (*pMat)(0,2)*(*pMat)(0,2));
-
-//  if (dist > from_radius || dist < -from_radius) {
-  if (fabs(dist) > from_radius) {
+  if (dist > from_radius || dist < -from_radius) {
     // No intersection.
     return 0;
   }
@@ -265,9 +257,7 @@ test_intersection_from_sphere(CollisionHandler *record,
   bool really_intersects =
     get_plane().intersects_line(plane_point,
                                 from_center, from_center + get_normal());
-#ifdef _DEBUG
   nassertr(really_intersects, 0);
-#endif
 
   LPoint2f p = to_2d(plane_point);
 

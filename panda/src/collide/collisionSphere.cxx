@@ -123,22 +123,17 @@ test_intersection_from_sphere(CollisionHandler *record,
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
- //from_radius_v = LVector3f(sphere->get_radius(), 0.0, 0.0) * entry.get_wrt_space();
- //float from_radius = length(from_radius_v);
-
-  const LMatrix4f *pMat = &entry.get_wrt_space();
-  float from_radius = sphere->get_radius() *
-                      sqrtf((*pMat)(0,0)*(*pMat)(0,0) + 
-                            (*pMat)(0,1)*(*pMat)(0,1) + 
-                            (*pMat)(0,2)*(*pMat)(0,2));
-
   LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
-  LVector3f vec = from_center - _center;
+  LVector3f from_radius_v =
+    LVector3f(sphere->get_radius(), 0.0, 0.0) * entry.get_wrt_space();
+  float from_radius = length(from_radius_v);
 
+  LPoint3f into_center = _center;
+  float into_radius = _radius;
+
+  LVector3f vec = from_center - into_center;
   float dist2 = dot(vec, vec);
-  float total_radius = _radius + from_radius;
-
-  if (dist2 > total_radius * total_radius) {
+  if (dist2 > (into_radius + from_radius) * (into_radius + from_radius)) {
     // No intersection.
     return 0;
   }
@@ -153,7 +148,7 @@ test_intersection_from_sphere(CollisionHandler *record,
   float dist = sqrtf(dist2);
   LVector3f into_normal = normalize(vec);
   LPoint3f into_intersection_point = into_normal * (dist - from_radius);
-  float into_depth = total_radius - dist;
+  float into_depth = into_radius + from_radius - dist;
 
   new_entry->set_into_surface_normal(into_normal * entry.get_inv_wrt_space());
   new_entry->set_into_intersection_point(into_intersection_point * entry.get_inv_wrt_space());
