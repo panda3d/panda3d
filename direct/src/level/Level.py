@@ -81,7 +81,8 @@ class Level:
                                    entity.entId))
                 entity.destroy()
             del self.createdEntities
-        del self.entities
+        if hasattr(self, 'entities'):
+            del self.entities
         del self.entId2spec
         del self.spec
 
@@ -141,6 +142,8 @@ class Level:
         # we used to do this in initializeEntity, but that did not
         # allow for additional initialization to be performed in
         # derived entity __init__ funcs
+        # note that now DistributedEntity's are responsible for calling
+        # this for themselves
         self.onEntityCreate(entId)
 
         return entity

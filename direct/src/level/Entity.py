@@ -10,12 +10,14 @@ class Entity(DirectObject):
     and can be edited with the LevelEditor."""
     notify = DirectNotifyGlobal.directNotify.newCategory('Entity')
 
+    """
     # these are values that can be changed in the level editor
     Attribs = (
         # Name, PythonType, CallSetterOnInitialization
         ('name', str, 0),
         ('comment', str, 0),
         )
+        """
 
     def __init__(self, level=None, entId=None):
         self.initializeEntity(level, entId)
@@ -84,9 +86,9 @@ class Entity(DirectObject):
                 # set the attrib directly
                 self.__dict__[attrib] = value
                 # and call the notify func
-                self.attribChanged(attrib)
+                self.attribChanged(attrib, value)
 
-        def attribChanged(self, attrib):
+        def attribChanged(self, attrib, value):
             """This is called when a parameter is tweaked and no setter
             is called; i.e. the value is set directly on the object.
             Some Entities might want to completely reset every time anything
@@ -95,8 +97,10 @@ class Entity(DirectObject):
             """
             pass
 
+        """
         def getAttribInfo(self):
             return self.attribs
+        """
 
     if __debug__:
         def debugPrint(self, message):
