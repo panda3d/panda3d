@@ -34,6 +34,7 @@ PUBLISHED:
   qpGeomPoints(const qpGeomPoints &copy);
   virtual ~qpGeomPoints();
 
+public:
   virtual PT(qpGeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
 

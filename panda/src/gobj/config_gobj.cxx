@@ -142,6 +142,15 @@ ConfigVariableBool matrix_palette
           "because its support seems to be buggy in certain drivers "
           "(ATI FireGL T2 8.103 in particular.)"));
 
+ConfigVariableBool connect_triangle_strips
+("connect-triangle-strips", true,
+ PRC_DESC("Set this true to set a batch of triangle strips to the graphics "
+          "card as one long triangle strip, connected by degenerate "
+          "triangles, or false to send them as separate triangle strips "
+          "with no degenerate triangles.  In many cases, using one long "
+          "triangle strip can help performance by reducing the number "
+          "of separate graphics calls that have to be made."));
+
 ConfigVariableBool use_qpgeom
 ("use-qpgeom", false,
  PRC_DESC("A temporary variable while the experimental Geom rewrite is "

@@ -94,137 +94,103 @@ get_vertex(int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_vertices
+//     Function: qpGeomPrimitive::get_num_faces
 //       Access: Published
-//  Description: Returns a const pointer to the vertex index array so
-//               application code can read it directly.  Do not
-//               attempt to modify the returned array; use
-//               modify_vertices() or set_vertices() for this.
+//  Description: Returns the number of triangles or other fundamental
+//               type (such as line segments) represented by all the
+//               primitives in this object.
 ////////////////////////////////////////////////////////////////////
-INLINE CPTA_ushort qpGeomPrimitive::
-get_vertices() const {
-  CDReader cdata(_cycler);
-  return cdata->_vertices;
-}
+INLINE int qpGeomPrimitive::
+get_num_faces() const {
+  int num_vertices_per_primitive = get_num_vertices_per_primitive();
 
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_flat_first_vertices
-//       Access: Published
-//  Description: Returns a const pointer to the vertex index array,
-//               suitable for traversing for a renderer that expects
-//               the key vertex of each triangle in a flat-shaded
-//               model to be the triangle's first vertex (as DirectX
-//               does).
-//
-//               The result of this is dependent on the value
-//               specified to set_shade_model().  If the shade model
-//               indicates flat_last_vertex, this will return the
-//               vertices rotated to bring them into first_vertex
-//               compliance; otherwise, it will be the unmodified
-//               result from get_vertices().
-////////////////////////////////////////////////////////////////////
-INLINE CPTA_ushort qpGeomPrimitive::
-get_flat_first_vertices() const {
-  CDReader cdata(_cycler);
-  if (cdata->_shade_model == SM_flat_last_vertex) {
-    if (cdata->_rotated_vertices == (const ushort *)NULL) {
-      return ((qpGeomPrimitive *)this)->do_rotate(cdata);
-    }
-    return cdata->_rotated_vertices;
+  if (num_vertices_per_primitive == 0) {
+    int num_primitives = get_num_primitives();
+    int num_vertices = get_num_vertices();
+    int min_num_vertices_per_primitive = get_min_num_vertices_per_primitive();
+    int num_unused_vertices_per_primitive = get_num_unused_vertices_per_primitive();
+    return num_vertices - (num_primitives * (min_num_vertices_per_primitive - 1)) - ((num_primitives - 1) * num_unused_vertices_per_primitive);
   } else {
-    return cdata->_vertices;
+    return get_num_primitives();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_flat_last_vertices
+//     Function: qpGeomPrimitive::get_primitive_num_faces
 //       Access: Published
-//  Description: Returns a const pointer to the vertex index array,
-//               suitable for traversing for a renderer that expects
-//               the key vertex of each triangle in a flat-shaded
-//               model to be the triangle's last vertex (as OpenGL
-//               does).
-//
-//               The result of this is dependent on the value
-//               specified to set_shade_model().  If the shade model
-//               indicates flat_first_vertex, this will return the
-//               vertices rotated to bring them into last_vertex
-//               compliance; otherwise, it will be the unmodified
-//               result from get_vertices().
+//  Description: Returns the number of triangles or other fundamental
+//               type (such as line segments) represented by the nth
+//               primitive in this object.
 ////////////////////////////////////////////////////////////////////
-INLINE CPTA_ushort qpGeomPrimitive::
-get_flat_last_vertices() const {
-  CDReader cdata(_cycler);
-  if (cdata->_shade_model == SM_flat_first_vertex) {
-    if (cdata->_rotated_vertices == (const ushort *)NULL) {
-      return ((qpGeomPrimitive *)this)->do_rotate(cdata);
-    }
-    return cdata->_rotated_vertices;
+INLINE int qpGeomPrimitive::
+get_primitive_num_faces(int n) const {
+  int num_vertices_per_primitive = get_num_vertices_per_primitive();
+
+  if (num_vertices_per_primitive == 0) {
+    return get_primitive_num_vertices(n) - get_min_num_vertices_per_primitive() + 1;
   } else {
-    return cdata->_vertices;
+    return 1;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_ends
+//     Function: qpGeomPrimitive::get_min_vertex
 //       Access: Published
-//  Description: Returns a const pointer to the primitive ends
-//               array so application code can read it directly.  Do
-//               not attempt to modify the returned array; use
-//               modify_ends() or set_ends() for this.
-//
-//               Note that simple primitive types, like triangles, do
-//               not have a ends array: since all the primitives
-//               have the same number of vertices, it is not needed.
+//  Description: Returns the minimum vertex index number used by all
+//               the primitives in this object.
 ////////////////////////////////////////////////////////////////////
-INLINE CPTA_int qpGeomPrimitive::
-get_ends() const {
-  CDReader cdata(_cycler);
-  return cdata->_ends;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_mins
-//       Access: Published
-//  Description: Returns a const pointer to the primitive mins
-//               array so application code can read it directly.  Do
-//               not attempt to modify the returned array; use
-//               modify_mins() or set_mins() for this.
-//
-//               Note that simple primitive types, like triangles, do
-//               not have a mins array.
-////////////////////////////////////////////////////////////////////
-INLINE CPTA_ushort qpGeomPrimitive::
-get_mins() const {
+INLINE int qpGeomPrimitive::
+get_min_vertex() const {
   CDReader cdata(_cycler);
   if (!cdata->_got_minmax) {
     CDWriter cdataw(((qpGeomPrimitive *)this)->_cycler, cdata);
     ((qpGeomPrimitive *)this)->recompute_minmax(cdataw);
-    return cdataw->_mins;
+    return cdataw->_min_vertex;
   }
-  return cdata->_mins;
+  return cdata->_min_vertex;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_maxs
+//     Function: qpGeomPrimitive::get_primitive_min_vertex
 //       Access: Published
-//  Description: Returns a const pointer to the primitive maxs
-//               array so application code can read it directly.  Do
-//               not attempt to modify the returned array; use
-//               modify_maxs() or set_maxs() for this.
-//
-//               Note that simple primitive types, like triangles, do
-//               not have a maxs array.
+//  Description: Returns the minimum vertex index number used by the
+//               nth primitive in this object.
 ////////////////////////////////////////////////////////////////////
-INLINE CPTA_ushort qpGeomPrimitive::
-get_maxs() const {
+INLINE int qpGeomPrimitive::
+get_primitive_min_vertex(int n) const {
+  CPTA_ushort mins = get_mins();
+  nassertr(n >= 0 && n < (int)mins.size(), -1);
+  return mins[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_max_vertex
+//       Access: Published
+//  Description: Returns the maximum vertex index number used by all
+//               the primitives in this object.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomPrimitive::
+get_max_vertex() const {
   CDReader cdata(_cycler);
   if (!cdata->_got_minmax) {
     CDWriter cdataw(((qpGeomPrimitive *)this)->_cycler, cdata);
     ((qpGeomPrimitive *)this)->recompute_minmax(cdataw);
-    return cdataw->_maxs;
+    return cdataw->_max_vertex;
   }
-  return cdata->_maxs;
+  return cdata->_max_vertex;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_primitive_max_vertex
+//       Access: Published
+//  Description: Returns the maximum vertex index number used by the
+//               nth primitive in this object.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomPrimitive::
+get_primitive_max_vertex(int n) const {
+  CPTA_ushort maxs = get_maxs();
+  nassertr(n >= 0 && n < (int)maxs.size(), -1);
+  return maxs[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -253,74 +219,137 @@ get_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_min_vertex
-//       Access: Published
-//  Description: Returns the minimum vertex index number used by the
-//               primitives in this object.
+//     Function: qpGeomPrimitive::get_vertices
+//       Access: Public
+//  Description: Returns a const pointer to the vertex index array so
+//               application code can read it directly.  Do not
+//               attempt to modify the returned array; use
+//               modify_vertices() or set_vertices() for this.
 ////////////////////////////////////////////////////////////////////
-INLINE int qpGeomPrimitive::
-get_min_vertex() const {
+INLINE CPTA_ushort qpGeomPrimitive::
+get_vertices() const {
+  CDReader cdata(_cycler);
+  return cdata->_vertices;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_flat_first_vertices
+//       Access: Public
+//  Description: Returns a const pointer to the vertex index array,
+//               suitable for traversing for a renderer that expects
+//               the key vertex of each triangle in a flat-shaded
+//               model to be the triangle's first vertex (as DirectX
+//               does).
+//
+//               The result of this is dependent on the value
+//               specified to set_shade_model().  If the shade model
+//               indicates flat_last_vertex, this will return the
+//               vertices rotated to bring them into first_vertex
+//               compliance; otherwise, it will be the unmodified
+//               result from get_vertices().
+////////////////////////////////////////////////////////////////////
+INLINE CPTA_ushort qpGeomPrimitive::
+get_flat_first_vertices() const {
+  CDReader cdata(_cycler);
+  if (cdata->_shade_model == SM_flat_last_vertex) {
+    if (cdata->_rotated_vertices == (const ushort *)NULL) {
+      return ((qpGeomPrimitive *)this)->do_rotate(cdata);
+    }
+    return cdata->_rotated_vertices;
+  } else {
+    return cdata->_vertices;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_flat_last_vertices
+//       Access: Public
+//  Description: Returns a const pointer to the vertex index array,
+//               suitable for traversing for a renderer that expects
+//               the key vertex of each triangle in a flat-shaded
+//               model to be the triangle's last vertex (as OpenGL
+//               does).
+//
+//               The result of this is dependent on the value
+//               specified to set_shade_model().  If the shade model
+//               indicates flat_first_vertex, this will return the
+//               vertices rotated to bring them into last_vertex
+//               compliance; otherwise, it will be the unmodified
+//               result from get_vertices().
+////////////////////////////////////////////////////////////////////
+INLINE CPTA_ushort qpGeomPrimitive::
+get_flat_last_vertices() const {
+  CDReader cdata(_cycler);
+  if (cdata->_shade_model == SM_flat_first_vertex) {
+    if (cdata->_rotated_vertices == (const ushort *)NULL) {
+      return ((qpGeomPrimitive *)this)->do_rotate(cdata);
+    }
+    return cdata->_rotated_vertices;
+  } else {
+    return cdata->_vertices;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_ends
+//       Access: Public
+//  Description: Returns a const pointer to the primitive ends
+//               array so application code can read it directly.  Do
+//               not attempt to modify the returned array; use
+//               modify_ends() or set_ends() for this.
+//
+//               Note that simple primitive types, like triangles, do
+//               not have a ends array: since all the primitives
+//               have the same number of vertices, it is not needed.
+////////////////////////////////////////////////////////////////////
+INLINE CPTA_int qpGeomPrimitive::
+get_ends() const {
+  CDReader cdata(_cycler);
+  return cdata->_ends;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_mins
+//       Access: Public
+//  Description: Returns a const pointer to the primitive mins
+//               array so application code can read it directly.  Do
+//               not attempt to modify the returned array; use
+//               modify_mins() or set_mins() for this.
+//
+//               Note that simple primitive types, like triangles, do
+//               not have a mins array.
+////////////////////////////////////////////////////////////////////
+INLINE CPTA_ushort qpGeomPrimitive::
+get_mins() const {
   CDReader cdata(_cycler);
   if (!cdata->_got_minmax) {
     CDWriter cdataw(((qpGeomPrimitive *)this)->_cycler, cdata);
     ((qpGeomPrimitive *)this)->recompute_minmax(cdataw);
-    return cdataw->_min_vertex;
+    return cdataw->_mins;
   }
-  return cdata->_min_vertex;
+  return cdata->_mins;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_min_vertex
-//       Access: Published
-//  Description: Returns the minimum vertex index number used by the
-//               ith primitive in this object.
+//     Function: qpGeomPrimitive::get_maxs
+//       Access: Public
+//  Description: Returns a const pointer to the primitive maxs
+//               array so application code can read it directly.  Do
+//               not attempt to modify the returned array; use
+//               modify_maxs() or set_maxs() for this.
+//
+//               Note that simple primitive types, like triangles, do
+//               not have a maxs array.
 ////////////////////////////////////////////////////////////////////
-INLINE int qpGeomPrimitive::
-get_min_vertex(int i) const {
-  CPTA_ushort mins = get_mins();
-  nassertr(i >= 0 && i < (int)mins.size(), -1);
-  return mins[i];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_max_vertex
-//       Access: Published
-//  Description: Returns the maximum vertex index number used by the
-//               primitives in this object.
-////////////////////////////////////////////////////////////////////
-INLINE int qpGeomPrimitive::
-get_max_vertex() const {
+INLINE CPTA_ushort qpGeomPrimitive::
+get_maxs() const {
   CDReader cdata(_cycler);
   if (!cdata->_got_minmax) {
     CDWriter cdataw(((qpGeomPrimitive *)this)->_cycler, cdata);
     ((qpGeomPrimitive *)this)->recompute_minmax(cdataw);
-    return cdataw->_max_vertex;
+    return cdataw->_maxs;
   }
-  return cdata->_max_vertex;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_max_vertex
-//       Access: Published
-//  Description: Returns the maximum vertex index number used by the
-//               ith primitive in this object.
-////////////////////////////////////////////////////////////////////
-INLINE int qpGeomPrimitive::
-get_max_vertex(int i) const {
-  CPTA_ushort maxs = get_maxs();
-  nassertr(i >= 0 && i < (int)maxs.size(), -1);
-  return maxs[i];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_primitive_end
-//       Access: Published
-//  Description: Returns the element within the _vertices list at which
-//               the ith primitive ends.  
-////////////////////////////////////////////////////////////////////
-INLINE int qpGeomPrimitive::
-get_primitive_end(int i) const {
-  return get_primitive_start(i + 1);
+  return cdata->_maxs;
 }
 
 ////////////////////////////////////////////////////////////////////

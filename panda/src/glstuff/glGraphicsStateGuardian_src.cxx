@@ -2247,22 +2247,36 @@ draw_triangles(const qpGeomTriangles *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_tristrips(const qpGeomTristrips *primitive) {
-  _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
   const unsigned short *client_pointer = setup_primitive(primitive);
 
-  CPTA_int ends = primitive->get_ends();
-  CPTA_ushort mins = primitive->get_mins();
-  CPTA_ushort maxs = primitive->get_maxs();
-  nassertv(mins.size() == ends.size() && maxs.size() == ends.size());
-
-  unsigned int start = 0;
-  for (size_t i = 0; i < ends.size(); i++) {
+  if (connect_triangle_strips && _render_mode != RenderModeAttrib::M_wireframe) {
+    // One long triangle strip, connected by the degenerate vertices
+    // that have already been set up within the primitive.
+    _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
     _glDrawRangeElements(GL_TRIANGLE_STRIP, 
-                         mins[i], maxs[i], ends[i] - start,
-                         GL_UNSIGNED_SHORT, client_pointer + start);
-    start = ends[i];
-  }
+                         primitive->get_min_vertex(),
+                         primitive->get_max_vertex(),
+                         primitive->get_num_vertices(),
+                         GL_UNSIGNED_SHORT, client_pointer);
 
+  } else {
+    // Send the individual triangle strips, stepping over the
+    // degenerate vertices.
+    CPTA_int ends = primitive->get_ends();
+    CPTA_ushort mins = primitive->get_mins();
+    CPTA_ushort maxs = primitive->get_maxs();
+    nassertv(mins.size() == ends.size() && maxs.size() == ends.size());
+    
+    unsigned int start = 0;
+    for (size_t i = 0; i < ends.size(); i++) {
+      _vertices_tristrip_pcollector.add_level(ends[i] - start);
+      _glDrawRangeElements(GL_TRIANGLE_STRIP, 
+                           mins[i], maxs[i], ends[i] - start,
+                           GL_UNSIGNED_SHORT, client_pointer + start);
+      start = ends[i] + 2;
+    }
+  }
+    
   report_my_gl_errors();
 }
 
@@ -2273,7 +2287,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_lines(const qpGeomLines *primitive) {
-  _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
+  _vertices_other_pcollector.add_level(primitive->get_num_vertices());
   const unsigned short *client_pointer = setup_primitive(primitive);
 
   _glDrawRangeElements(GL_LINES, 
@@ -2292,7 +2306,7 @@ draw_lines(const qpGeomLines *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_points(const qpGeomPoints *primitive) {
-  _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
+  _vertices_other_pcollector.add_level(primitive->get_num_vertices());
   const unsigned short *client_pointer = setup_primitive(primitive);
 
   _glDrawRangeElements(GL_POINTS, 

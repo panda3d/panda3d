@@ -98,6 +98,15 @@ add_vertex(int vertex) {
 
   clear_cache();
   CDWriter cdata(_cycler);
+
+  int num_primitives = get_num_primitives();
+  if (num_primitives > 0 &&
+      cdata->_vertices.size() == get_primitive_end(num_primitives - 1)) {
+    // If we are beginning a new primitive, give the derived class a
+    // chance to insert some degenerate vertices.
+    append_unused_vertices(cdata->_vertices, vertex);
+  }
+
   cdata->_vertices.push_back(short_vertex);
   cdata->_rotated_vertices.clear();
 
@@ -166,9 +175,10 @@ add_consecutive_vertices(int start, int num_vertices) {
 //       Access: Published
 //  Description: Indicates that the previous n calls to add_vertex(),
 //               since the last call to close_primitive(), have fully
-//               defined a new primitive.
+//               defined a new primitive.  Returns true if successful,
+//               false otherwise.
 ////////////////////////////////////////////////////////////////////
-void qpGeomPrimitive::
+bool qpGeomPrimitive::
 close_primitive() {
   clear_cache();
   int num_vertices_per_primitive = get_num_vertices_per_primitive();
@@ -183,22 +193,35 @@ close_primitive() {
       num_added = (int)cdata->_vertices.size();
     } else {
       num_added = (int)cdata->_vertices.size() - cdata->_ends.back();
+      num_added -= get_num_unused_vertices_per_primitive();
     }
-    nassertv(num_added >= get_min_num_vertices_per_primitive());
+    nassertr(num_added >= get_min_num_vertices_per_primitive(), false);
 #endif
     cdata->_ends.push_back((int)cdata->_vertices.size());
 
+#ifndef NDEBUG
     if (cdata->_got_minmax) {
-      nassertv((cdata->_mins.size() == cdata->_ends.size()) &&
-               (cdata->_maxs.size() == cdata->_ends.size()));
+      nassertd((cdata->_mins.size() == cdata->_ends.size()) &&
+               (cdata->_maxs.size() == cdata->_ends.size())) {
+        cdata->_got_minmax = false;
+      }
     }
+#endif
 
   } else {
+#ifndef NDEBUG
     // This is a simple primitive type like a triangle: each primitive
     // uses the same number of vertices.  Assert that we added the
     // correct number of vertices.
-    nassertv((int)cdata->_vertices.size() % num_vertices_per_primitive == 0);
+    int num_vertices_per_primitive = get_num_vertices_per_primitive();
+    int num_unused_vertices_per_primitive = get_num_unused_vertices_per_primitive();
+
+    int num_vertices = cdata->_vertices.size();
+    nassertr((num_vertices + num_unused_vertices_per_primitive) % (num_vertices_per_primitive + num_unused_vertices_per_primitive) == 0, false)
+#endif
   }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -217,121 +240,6 @@ clear_vertices() {
   cdata->_mins.clear();
   cdata->_maxs.clear();
   cdata->_got_minmax = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::modify_vertices
-//       Access: Published
-//  Description: Returns a modifiable pointer to the vertex index
-//               list, so application code can directly fiddle with
-//               this data.  Use with caution, since there are no
-//               checks that the data will be left in a stable state.
-////////////////////////////////////////////////////////////////////
-PTA_ushort qpGeomPrimitive::
-modify_vertices() {
-  clear_cache();
-  CDWriter cdata(_cycler);
-  cdata->_rotated_vertices.clear();
-  cdata->_got_minmax = false;
-  return cdata->_vertices;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::set_vertices
-//       Access: Published
-//  Description: Completely replaces the vertex index list with a new
-//               table.  Chances are good that you should also replace
-//               the ends list with set_ends() at the same time.
-////////////////////////////////////////////////////////////////////
-void qpGeomPrimitive::
-set_vertices(CPTA_ushort vertices) {
-  clear_cache();
-  CDWriter cdata(_cycler);
-  cdata->_vertices = (PTA_ushort &)vertices;
-  cdata->_rotated_vertices.clear();
-  cdata->_got_minmax = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::modify_ends
-//       Access: Published
-//  Description: Returns a modifiable pointer to the primitive ends
-//               array, so application code can directly fiddle with
-//               this data.  Use with caution, since there are no
-//               checks that the data will be left in a stable state.
-//
-//               Note that simple primitive types, like triangles, do
-//               not have a ends array: since all the primitives
-//               have the same number of vertices, it is not needed.
-////////////////////////////////////////////////////////////////////
-PTA_int qpGeomPrimitive::
-modify_ends() {
-  clear_cache();
-  CDWriter cdata(_cycler);
-  cdata->_rotated_vertices.clear();
-  cdata->_got_minmax = false;
-  return cdata->_ends;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::set_ends
-//       Access: Published
-//  Description: Completely replaces the primitive ends array with
-//               a new table.  Chances are good that you should also
-//               replace the vertices list with set_vertices() at the
-//               same time.
-//
-//               Note that simple primitive types, like triangles, do
-//               not have a ends array: since all the primitives
-//               have the same number of vertices, it is not needed.
-////////////////////////////////////////////////////////////////////
-void qpGeomPrimitive::
-set_ends(CPTA_int ends) {
-  clear_cache();
-  CDWriter cdata(_cycler);
-  cdata->_ends = (PTA_int &)ends;
-  cdata->_rotated_vertices.clear();
-  cdata->_got_minmax = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_num_bytes
-//       Access: Published
-//  Description: Returns the number of bytes consumed by the primitive
-//               and its index table(s).
-////////////////////////////////////////////////////////////////////
-int qpGeomPrimitive::
-get_num_bytes() const {
-  CDReader cdata(_cycler);
-  return (cdata->_vertices.size() + cdata->_mins.size() + cdata->_maxs.size()) * sizeof(short) +
-    cdata->_ends.size() * sizeof(int) + sizeof(qpGeomPrimitive);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_num_vertices_per_primitive
-//       Access: Published, Virtual
-//  Description: If the primitive type is a simple type in which all
-//               primitives have the same number of vertices, like
-//               triangles, returns the number of vertices per
-//               primitive.  If the primitive type is a more complex
-//               type in which different primitives might have
-//               different numbers of vertices, for instance a
-//               triangle strip, returns 0.
-////////////////////////////////////////////////////////////////////
-int qpGeomPrimitive::
-get_num_vertices_per_primitive() const {
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomPrimitive::get_min_num_vertices_per_primitive
-//       Access: Published, Virtual
-//  Description: Returns the minimum number of vertices that must be
-//               added before close_primitive() may legally be called.
-////////////////////////////////////////////////////////////////////
-int qpGeomPrimitive::
-get_min_num_vertices_per_primitive() const {
-  return 3;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -362,56 +270,86 @@ get_num_primitives() const {
 //     Function: qpGeomPrimitive::get_primitive_start
 //       Access: Published
 //  Description: Returns the element within the _vertices list at which
-//               the ith primitive starts.  
+//               the nth primitive starts.  
 //
 //               If i is one more than the highest valid primitive
 //               vertex, the return value will be one more than the
-//               last valid vertex.  Thus, it is always true that the
-//               vertices used by a particular primitive i are the set
-//               get_primitive_start(i) <= vi < get_primitive_start(i
-//               + 1).
+//               last valid vertex.  Thus, it is generally true that
+//               the vertices used by a particular primitive i are the
+//               set get_primitive_start(n) <= vi <
+//               get_primitive_start(n + 1) (although this range also
+//               includes the unused vertices between primitives).
 ////////////////////////////////////////////////////////////////////
 int qpGeomPrimitive::
-get_primitive_start(int i) const {
+get_primitive_start(int n) const {
+  int num_vertices_per_primitive = get_num_vertices_per_primitive();
+  int num_unused_vertices_per_primitive = get_num_unused_vertices_per_primitive();
+
+  if (num_vertices_per_primitive == 0) {
+    // This is a complex primitive type like a triangle strip: each
+    // primitive uses a different number of vertices.
+    CDReader cdata(_cycler);
+    nassertr(n >= 0 && n <= (int)cdata->_ends.size(), -1);
+    if (n == 0) {
+      return 0;
+    } else {
+      return cdata->_ends[n - 1] + num_unused_vertices_per_primitive;
+    }
+
+  } else {
+    // This is a simple primitive type like a triangle: each primitive
+    // uses the same number of vertices.
+    return n * (num_vertices_per_primitive + num_unused_vertices_per_primitive);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_primitive_end
+//       Access: Published
+//  Description: Returns the element within the _vertices list at which
+//               the nth primitive ends.  This is one past the last
+//               valid element for the nth primitive.
+////////////////////////////////////////////////////////////////////
+int qpGeomPrimitive::
+get_primitive_end(int n) const {
   int num_vertices_per_primitive = get_num_vertices_per_primitive();
 
   if (num_vertices_per_primitive == 0) {
     // This is a complex primitive type like a triangle strip: each
     // primitive uses a different number of vertices.
     CDReader cdata(_cycler);
-    nassertr(i >= 0 && i <= (int)cdata->_ends.size(), -1);
-    if (i == 0) {
-      return 0;
-    } else {
-      return cdata->_ends[i - 1];
-    }
+    nassertr(n >= 0 && n < (int)cdata->_ends.size(), -1);
+    return cdata->_ends[n];
 
   } else {
     // This is a simple primitive type like a triangle: each primitive
     // uses the same number of vertices.
-    return i * num_vertices_per_primitive;
+    int num_unused_vertices_per_primitive = get_num_unused_vertices_per_primitive();
+    return n * (num_vertices_per_primitive + num_unused_vertices_per_primitive) + num_vertices_per_primitive;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::get_primitive_num_vertices
 //       Access: Published
-//  Description: Returns the number of vertices used by the ith
-//               primitive.
+//  Description: Returns the number of vertices used by the nth
+//               primitive.  This is the same thing as
+//               get_primitive_end(n) - get_primitive_start(n).
 ////////////////////////////////////////////////////////////////////
 int qpGeomPrimitive::
-get_primitive_num_vertices(int i) const {
+get_primitive_num_vertices(int n) const {
   int num_vertices_per_primitive = get_num_vertices_per_primitive();
 
   if (num_vertices_per_primitive == 0) {
     // This is a complex primitive type like a triangle strip: each
     // primitive uses a different number of vertices.
     CDReader cdata(_cycler);
-    nassertr(i >= 0 && i < (int)cdata->_ends.size(), 0);
-    if (i == 0) {
+    nassertr(n >= 0 && n < (int)cdata->_ends.size(), 0);
+    if (n == 0) {
       return cdata->_ends[0];
     } else {
-      return cdata->_ends[i] - cdata->_ends[i - 1];
+      int num_unused_vertices_per_primitive = get_num_unused_vertices_per_primitive();
+      return cdata->_ends[n] - cdata->_ends[n - 1] - num_unused_vertices_per_primitive;
     }      
 
   } else {
@@ -483,6 +421,19 @@ decompose() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_num_bytes
+//       Access: Published
+//  Description: Returns the number of bytes consumed by the primitive
+//               and its index table(s).
+////////////////////////////////////////////////////////////////////
+int qpGeomPrimitive::
+get_num_bytes() const {
+  CDReader cdata(_cycler);
+  return (cdata->_vertices.size() + cdata->_mins.size() + cdata->_maxs.size()) * sizeof(short) +
+    cdata->_ends.size() * sizeof(int) + sizeof(qpGeomPrimitive);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::output
 //       Access: Published, Virtual
 //  Description: 
@@ -503,21 +454,149 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_type() << ":\n";
   int num_primitives = get_num_primitives();
-  for (int i = 0; i < num_primitives; i++) {
+  int num_vertices = get_num_vertices();
+  int num_unused_vertices_per_primitive = get_num_unused_vertices_per_primitive();
+  for (int i = 0; i < num_primitives; ++i) {
     indent(out, indent_level + 2)
       << "[";
     int begin = get_primitive_start(i);
-    int end = get_primitive_start(i + 1);
+    int end = get_primitive_end(i);
     for (int vi = begin; vi < end; vi++) {
       out << " " << get_vertex(vi);
     }
-    out << " ]\n";
+    out << " ]";
+    if (end < num_vertices) {
+      for (int ui = 0; ui < num_unused_vertices_per_primitive; ++ui) {
+        if (end + ui < num_vertices) {
+          out << " " << get_vertex(end + ui);
+        } else {
+          out << " ?";
+        }
+      }
+    }
+    out << "\n";
   }
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::modify_vertices
+//       Access: Public
+//  Description: Returns a modifiable pointer to the vertex index
+//               list, so application code can directly fiddle with
+//               this data.  Use with caution, since there are no
+//               checks that the data will be left in a stable state.
+////////////////////////////////////////////////////////////////////
+PTA_ushort qpGeomPrimitive::
+modify_vertices() {
+  clear_cache();
+  CDWriter cdata(_cycler);
+  cdata->_rotated_vertices.clear();
+  cdata->_got_minmax = false;
+  return cdata->_vertices;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::set_vertices
+//       Access: Public
+//  Description: Completely replaces the vertex index list with a new
+//               table.  Chances are good that you should also replace
+//               the ends list with set_ends() at the same time.
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::
+set_vertices(CPTA_ushort vertices) {
+  clear_cache();
+  CDWriter cdata(_cycler);
+  cdata->_vertices = (PTA_ushort &)vertices;
+  cdata->_rotated_vertices.clear();
+  cdata->_got_minmax = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::modify_ends
+//       Access: Public
+//  Description: Returns a modifiable pointer to the primitive ends
+//               array, so application code can directly fiddle with
+//               this data.  Use with caution, since there are no
+//               checks that the data will be left in a stable state.
+//
+//               Note that simple primitive types, like triangles, do
+//               not have a ends array: since all the primitives
+//               have the same number of vertices, it is not needed.
+////////////////////////////////////////////////////////////////////
+PTA_int qpGeomPrimitive::
+modify_ends() {
+  clear_cache();
+  CDWriter cdata(_cycler);
+  cdata->_rotated_vertices.clear();
+  cdata->_got_minmax = false;
+  return cdata->_ends;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::set_ends
+//       Access: Public
+//  Description: Completely replaces the primitive ends array with
+//               a new table.  Chances are good that you should also
+//               replace the vertices list with set_vertices() at the
+//               same time.
+//
+//               Note that simple primitive types, like triangles, do
+//               not have a ends array: since all the primitives
+//               have the same number of vertices, it is not needed.
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::
+set_ends(CPTA_int ends) {
+  clear_cache();
+  CDWriter cdata(_cycler);
+  cdata->_ends = (PTA_int &)ends;
+  cdata->_rotated_vertices.clear();
+  cdata->_got_minmax = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_num_vertices_per_primitive
+//       Access: Public, Virtual
+//  Description: If the primitive type is a simple type in which all
+//               primitives have the same number of vertices, like
+//               triangles, returns the number of vertices per
+//               primitive.  If the primitive type is a more complex
+//               type in which different primitives might have
+//               different numbers of vertices, for instance a
+//               triangle strip, returns 0.
+////////////////////////////////////////////////////////////////////
+int qpGeomPrimitive::
+get_num_vertices_per_primitive() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_min_num_vertices_per_primitive
+//       Access: Public, Virtual
+//  Description: Returns the minimum number of vertices that must be
+//               added before close_primitive() may legally be called.
+////////////////////////////////////////////////////////////////////
+int qpGeomPrimitive::
+get_min_num_vertices_per_primitive() const {
+  return 3;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_num_unused_vertices_per_primitive
+//       Access: Public, Virtual
+//  Description: Returns the number of vertices that are added between
+//               primitives that aren't, strictly speaking, part of
+//               the primitives themselves.  This is used, for
+//               instance, to define degenerate triangles to connect
+//               otherwise disconnected triangle strips.
+////////////////////////////////////////////////////////////////////
+int qpGeomPrimitive::
+get_num_unused_vertices_per_primitive() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::clear_cache
-//       Access: Published
+//       Access: Public
 //  Description: Removes all of the previously-cached results of
 //               decompose().
 ////////////////////////////////////////////////////////////////////
@@ -539,7 +618,7 @@ clear_cache() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::prepare
-//       Access: Published
+//       Access: Public
 //  Description: Indicates that the data should be enqueued to be
 //               prepared in the indicated prepared_objects at the
 //               beginning of the next frame.  This will ensure the
@@ -754,6 +833,19 @@ rotate_impl() const {
   // The default implementation doesn't even try to do anything.
   nassertr(false, get_vertices());
   return get_vertices();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::append_unused_vertices
+//       Access: Protected, Virtual
+//  Description: Called when a new primitive is begun (other than the
+//               first primitive), this should add some degenerate
+//               vertices between primitives, if the primitive type
+//               requires that.  The second parameter is the first
+//               vertex that begins the new primitive.
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::
+append_unused_vertices(PTA_ushort &, int) {
 }
 
 ////////////////////////////////////////////////////////////////////

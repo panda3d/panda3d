@@ -57,7 +57,7 @@ qpGeomTristrips::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomTristrips::make_copy
-//       Access: Published, Virtual
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomPrimitive) qpGeomTristrips::
@@ -67,7 +67,7 @@ make_copy() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomTristrips::get_primitive_type
-//       Access: Published, Virtual
+//       Access: Public, Virtual
 //  Description: Returns the fundamental rendering type of this
 //               primitive: whether it is points, lines, or polygons.
 //               This is used primarily to set up the appropriate
@@ -77,6 +77,20 @@ make_copy() const {
 qpGeomPrimitive::PrimitiveType qpGeomTristrips::
 get_primitive_type() const {
   return PT_polygons;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTristrips::get_num_unused_vertices_per_primitive
+//       Access: Public, Virtual
+//  Description: Returns the number of vertices that are added between
+//               primitives that aren't, strictly speaking, part of
+//               the primitives themselves.  This is used, for
+//               instance, to define degenerate triangles to connect
+//               otherwise disconnected triangle strips.
+////////////////////////////////////////////////////////////////////
+int qpGeomTristrips::
+get_num_unused_vertices_per_primitive() const {
+  return 2;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,9 +132,11 @@ decompose_impl() const {
   if (get_shade_model() == SM_flat_first_vertex) {
     // Preserve the first vertex of each component triangle as the
     // first vertex of each generated triangle.
-    int vi = 0;
+    int vi = -2;
     int li = 0;
     while (li < (int)ends.size()) {
+      // Skip unused vertices between tristrips.
+      vi += 2;
       int end = ends[li];
       nassertr(vi + 2 <= end, triangles.p());
       nassertr(vi < (int)vertices.size(), this);
@@ -154,9 +170,11 @@ decompose_impl() const {
   } else {
     // Preserve the last vertex of each component triangle as the
     // last vertex of each generated triangle.
-    int vi = 0;
+    int vi = -2;
     int li = 0;
     while (li < (int)ends.size()) {
+      // Skip unused vertices between tristrips.
+      vi += 2;
       int end = ends[li];
       nassertr(vi + 2 <= end, triangles.p());
       nassertr(vi < (int)vertices.size(), this);
@@ -216,6 +234,13 @@ rotate_impl() const {
     int end = (*ei);
     int num_vertices = end - begin;
 
+    if (begin != 0) {
+      // Copy in the unused vertices between tristrips.
+      new_vertices.push_back(new_vertices.back());
+      new_vertices.push_back(vertices[end - 1]);
+      begin += 2;
+    }
+
     if ((num_vertices & 1) == 0) {
       for (int vi = end - 1; vi >= begin; --vi) {
         new_vertices.push_back(vertices[vi]);
@@ -233,6 +258,21 @@ rotate_impl() const {
   // SM_flat_last_vertex specified--which is not allowed.
   nassertr(!any_odd, new_vertices);
   return new_vertices;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTristrips::append_unused_vertices
+//       Access: Protected, Virtual
+//  Description: Called when a new primitive is begun (other than the
+//               first primitive), this should add some degenerate
+//               vertices between primitives, if the primitive type
+//               requires that.  The second parameter is the first
+//               vertex that begins the new primitive.
+////////////////////////////////////////////////////////////////////
+void qpGeomTristrips::
+append_unused_vertices(PTA_ushort &vertices, int vertex) {
+  vertices.push_back(vertices.back());
+  vertices.push_back(vertex);
 }
 
 ////////////////////////////////////////////////////////////////////

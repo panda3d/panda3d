@@ -55,6 +55,7 @@ extern EXPCL_PANDA ConfigVariableBool vertex_buffers;
 extern EXPCL_PANDA ConfigVariableBool display_lists;
 extern EXPCL_PANDA ConfigVariableBool hardware_animated_vertices;
 extern EXPCL_PANDA ConfigVariableBool matrix_palette;
+extern EXPCL_PANDA ConfigVariableBool connect_triangle_strips;
 
 extern EXPCL_PANDA ConfigVariableBool use_qpgeom;
 

@@ -105,12 +105,52 @@ PUBLISHED:
   INLINE ShadeModel get_shade_model() const;
   INLINE void set_shade_model(ShadeModel shade_model);
 
+  // The following published methods are provided for safe, high-level
+  // iteration through the vertices and sub-primitives within the
+  // GeomPrimitive class.  These work correctly regardless of the
+  // primitive type and without depending on knowledge about the way
+  // primitives' lengths are encoded.  You can also safely build up a
+  // composite primitive using these methods.
+
   INLINE int get_num_vertices() const;
   INLINE int get_vertex(int i) const;
   void add_vertex(int vertex);
   void add_consecutive_vertices(int start, int num_vertices);
-  void close_primitive();
+  bool close_primitive();
   void clear_vertices();
+
+  int get_num_primitives() const;
+  int get_primitive_start(int n) const;
+  int get_primitive_end(int n) const;
+  int get_primitive_num_vertices(int n) const;
+
+  INLINE int get_num_faces() const;
+  INLINE int get_primitive_num_faces(int n) const;
+
+  INLINE int get_min_vertex() const;
+  INLINE int get_primitive_min_vertex(int n) const;
+  INLINE int get_max_vertex() const;
+  INLINE int get_primitive_max_vertex(int n) const;
+
+  CPT(qpGeomPrimitive) decompose() const;
+
+  int get_num_bytes() const;
+  INLINE int get_data_size_bytes() const;
+  INLINE UpdateSeq get_modified() const;
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level) const;
+
+public:
+  // These public methods are not intended for high-level usage.  They
+  // are public so that C++ code that absolutely needs fast access to
+  // the primitive data can get to it, but using them requires
+  // knowledge about how the component primitives are encoded within
+  // the GeomPrimitive class, and it's easy to screw something up.
+  // Also, if too many code samples depend on this internal knowledge,
+  // it may make it difficult to extend this class later.  It is
+  // recommended that application-level code use the above interfaces
+  // instead.
 
   INLINE CPTA_ushort get_vertices() const;
   INLINE CPTA_ushort get_flat_first_vertices() const;
@@ -125,29 +165,11 @@ PUBLISHED:
   INLINE CPTA_ushort get_mins() const;
   INLINE CPTA_ushort get_maxs() const;
 
-  int get_num_bytes() const;
-  INLINE int get_data_size_bytes() const;
-  INLINE UpdateSeq get_modified() const;
-
-  INLINE int get_min_vertex() const;
-  INLINE int get_min_vertex(int i) const;
-  INLINE int get_max_vertex() const;
-  INLINE int get_max_vertex(int i) const;
-
   virtual int get_num_vertices_per_primitive() const;
   virtual int get_min_num_vertices_per_primitive() const;
-  int get_num_primitives() const;
-  int get_primitive_start(int i) const;
-  INLINE int get_primitive_end(int i) const;
-  int get_primitive_num_vertices(int i) const;
-
-  CPT(qpGeomPrimitive) decompose() const;
-
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual int get_num_unused_vertices_per_primitive() const;
 
   void clear_cache();
-
   void prepare(PreparedGraphicsObjects *prepared_objects);
 
 public:
@@ -170,6 +192,7 @@ public:
 protected:
   virtual CPT(qpGeomPrimitive) decompose_impl() const;
   virtual CPTA_ushort rotate_impl() const;
+  virtual void append_unused_vertices(PTA_ushort &vertices, int vertex);
 
 protected:
   static PStatCollector _rotate_pcollector;
@@ -195,7 +218,6 @@ private:
     CPT(qpGeomPrimitive) _decomposed;
   };
     
-
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
   public:

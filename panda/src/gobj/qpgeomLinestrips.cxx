@@ -57,7 +57,7 @@ qpGeomLinestrips::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomLinestrips::make_copy
-//       Access: Published, Virtual
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomPrimitive) qpGeomLinestrips::
@@ -67,7 +67,7 @@ make_copy() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomLinestrips::get_primitive_type
-//       Access: Published, Virtual
+//       Access: Public, Virtual
 //  Description: Returns the fundamental rendering type of this
 //               primitive: whether it is points, lines, or polygons.
 //               This is used primarily to set up the appropriate

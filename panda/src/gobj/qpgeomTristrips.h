@@ -34,8 +34,10 @@ PUBLISHED:
   qpGeomTristrips(const qpGeomTristrips &copy);
   virtual ~qpGeomTristrips();
 
+public:
   virtual PT(qpGeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
+  virtual int get_num_unused_vertices_per_primitive() const;
 
 public:
   virtual void draw(GraphicsStateGuardianBase *gsg) const;
@@ -43,6 +45,7 @@ public:
 protected:
   virtual CPT(qpGeomPrimitive) decompose_impl() const;
   virtual CPTA_ushort rotate_impl() const;
+  virtual void append_unused_vertices(PTA_ushort &vertices, int vertex);
 
 public:
   static void register_with_read_factory();

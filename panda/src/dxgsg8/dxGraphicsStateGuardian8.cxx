@@ -2711,6 +2711,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_triangles(const qpGeomTriangles *primitive) {
+  _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
   if (_vbuffer_active) {
     IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
     nassertv(ibc != (IndexBufferContext *)NULL);
@@ -2744,41 +2745,75 @@ void DXGraphicsStateGuardian8::
 draw_tristrips(const qpGeomTristrips *primitive) {
   int min_vertex = primitive->get_min_vertex();
   int max_vertex = primitive->get_max_vertex();
-  CPTA_ushort vertices = primitive->get_flat_first_vertices();
-  CPTA_int ends = primitive->get_ends();
-  CPTA_ushort mins = primitive->get_mins();
-  CPTA_ushort maxs = primitive->get_maxs();
-  nassertv(mins.size() == ends.size() && maxs.size() == ends.size());
+  //  CPTA_ushort vertices = primitive->get_flat_first_vertices();
+  CPTA_ushort vertices = primitive->get_vertices();
 
-  if (_vbuffer_active) {
-    IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
-    nassertv(ibc != (IndexBufferContext *)NULL);
-    apply_index_buffer(ibc);
+  if (connect_triangle_strips && _current_fill_mode != RenderModeAttrib::M_wireframe) {
+    // One long triangle strip, connected by the degenerate vertices
+    // that have already been set up within the primitive.
+    _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
+    if (_vbuffer_active) {
+      IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+      nassertv(ibc != (IndexBufferContext *)NULL);
+      apply_index_buffer(ibc);
 
-    unsigned int start = 0;
-    for (size_t i = 0; i < ends.size(); i++) {
       _pD3DDevice->DrawIndexedPrimitive
         (D3DPT_TRIANGLESTRIP,
-         mins[i], maxs[i] - mins[i] + 1, 
-         start, ends[i] - start - 2);
-
-      start = ends[i];
+         primitive->get_min_vertex(),
+         primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+         0, primitive->get_num_vertices() - 2);
+      
+    } else {
+      _pD3DDevice->DrawIndexedPrimitiveUP
+        (D3DPT_TRIANGLESTRIP, 
+         primitive->get_min_vertex(),
+         primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+         primitive->get_num_vertices() - 2, 
+         vertices, D3DFMT_INDEX16,
+         _vertex_data->get_array(0)->get_data(),
+         _vertex_data->get_format()->get_array(0)->get_stride());
     }
 
   } else {
-    CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
-    int stride = _vertex_data->get_format()->get_array(0)->get_stride();
-
-    unsigned int start = 0;
-    for (size_t i = 0; i < ends.size(); i++) {
-      _pD3DDevice->DrawIndexedPrimitiveUP
-        (D3DPT_TRIANGLESTRIP, 
-         mins[i], maxs[i] - mins[i] + 1, 
-         ends[i] - start - 2,
-         vertices + start, D3DFMT_INDEX16,
-         array_data, stride);
+    // Send the individual triangle strips, stepping over the
+    // degenerate vertices.
+    CPTA_int ends = primitive->get_ends();
+    CPTA_ushort mins = primitive->get_mins();
+    CPTA_ushort maxs = primitive->get_maxs();
+    nassertv(mins.size() == ends.size() && maxs.size() == ends.size());
+    
+    if (_vbuffer_active) {
+      IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+      nassertv(ibc != (IndexBufferContext *)NULL);
+      apply_index_buffer(ibc);
       
-      start = ends[i];
+      unsigned int start = 0;
+      for (size_t i = 0; i < ends.size(); i++) {
+        _vertices_tristrip_pcollector.add_level(ends[i] - start);
+        _pD3DDevice->DrawIndexedPrimitive
+          (D3DPT_TRIANGLESTRIP,
+           mins[i], maxs[i] - mins[i] + 1, 
+           start, ends[i] - start - 2);
+        
+        start = ends[i] + 2;
+      }
+      
+    } else {
+      CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
+      int stride = _vertex_data->get_format()->get_array(0)->get_stride();
+      
+      unsigned int start = 0;
+      for (size_t i = 0; i < ends.size(); i++) {
+        _vertices_tristrip_pcollector.add_level(ends[i] - start);
+        _pD3DDevice->DrawIndexedPrimitiveUP
+          (D3DPT_TRIANGLESTRIP, 
+           mins[i], maxs[i] - mins[i] + 1, 
+           ends[i] - start - 2,
+           vertices + start, D3DFMT_INDEX16,
+           array_data, stride);
+        
+        start = ends[i] + 2;
+      }
     }
   }
 }

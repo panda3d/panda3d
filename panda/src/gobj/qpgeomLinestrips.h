@@ -34,6 +34,7 @@ PUBLISHED:
   qpGeomLinestrips(const qpGeomLinestrips &copy);
   virtual ~qpGeomLinestrips();
 
+public:
   virtual PT(qpGeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
 

@@ -34,6 +34,7 @@ PUBLISHED:
   qpGeomTriangles(const qpGeomTriangles &copy);
   virtual ~qpGeomTriangles();
 
+public:
   virtual PT(qpGeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
 

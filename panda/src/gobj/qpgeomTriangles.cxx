@@ -56,7 +56,7 @@ qpGeomTriangles::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomTriangles::make_copy
-//       Access: Published, Virtual
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomPrimitive) qpGeomTriangles::
@@ -66,7 +66,7 @@ make_copy() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomTriangles::get_primitive_type
-//       Access: Published, Virtual
+//       Access: Public, Virtual
 //  Description: Returns the fundamental rendering type of this
 //               primitive: whether it is points, lines, or polygons.
 //               This is used primarily to set up the appropriate
@@ -80,7 +80,7 @@ get_primitive_type() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomTriangles::get_num_vertices_per_primitive
-//       Access: Published, Virtual
+//       Access: Public, Virtual
 //  Description: If the primitive type is a simple type in which all
 //               primitives have the same number of vertices, like
 //               triangles, returns the number of vertices per
