@@ -27,6 +27,7 @@
 #include "coordinateSystem.h"
 
 class XFileNode;
+class XFileDataNode;
 class XFileMesh;
 class XFileVertex;
 class XFileNormal;
@@ -78,12 +79,13 @@ public:
   XFileDataNode *make_x_uvs(XFileNode *x_mesh, const string &suffix);
   XFileDataNode *make_x_material_list(XFileNode *x_mesh, const string &suffix);
 
-  bool read_mesh_data(const Datagram &raw_data);
-  bool read_normal_data(const Datagram &raw_data);
-  bool read_color_data(const Datagram &raw_data);
-  bool read_uv_data(const Datagram &raw_data);
-  bool read_skin_weights_data(const Datagram &raw_data);
-  bool read_material_list_data(const Datagram &raw_data);
+  bool fill_mesh(XFileDataNode *obj);
+  bool fill_mesh_child(XFileDataNode *obj);
+  bool fill_normals(XFileDataNode *obj);
+  bool fill_colors(XFileDataNode *obj);
+  bool fill_uvs(XFileDataNode *obj);
+  bool fill_skin_weights(XFileDataNode *obj);
+  bool fill_material_list(XFileDataNode *obj);
 
 private:
   typedef pvector<XFileVertex *> Vertices;
@@ -104,7 +106,7 @@ private:
   public:
     string _joint_name;
     WeightMap _weight_map;
-    LMatrix4f _matrix_offset;
+    LMatrix4d _matrix_offset;
   };
   typedef pvector<SkinWeightsData> SkinWeights;
   SkinWeights _skin_weights;

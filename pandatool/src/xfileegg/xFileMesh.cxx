@@ -310,19 +310,19 @@ create_polygons(XFileToEggConverter *converter) {
       // Create a temporary EggVertex before adding it to the pool.
       EggVertex temp_vtx;
       temp_vtx.set_external_index(vertex_index);
-      temp_vtx.set_pos(LCAST(double, vertex->_point));
+      temp_vtx.set_pos(vertex->_point);
       if (vertex->_has_color) {
         temp_vtx.set_color(vertex->_color);
       }
       if (vertex->_has_uv) {
-        TexCoordd uv = LCAST(double, vertex->_uv);
+        TexCoordd uv = vertex->_uv;
         // Windows draws the UV's upside-down.
         uv[1] = 1.0 - uv[1];
         temp_vtx.set_uv(uv);
       }
 
       if (normal != (XFileNormal *)NULL && normal->_has_normal) {
-        temp_vtx.set_normal(LCAST(double, normal->_normal));
+        temp_vtx.set_normal(normal->_normal);
       }
 
       // We are given the vertex in local space; we need to transform
@@ -342,7 +342,7 @@ create_polygons(XFileToEggConverter *converter) {
           EggGroup *joint = converter->find_joint(data._joint_name);
           if (joint != (EggGroup *)NULL) {
             double weight = (*wmi).second;
-            LMatrix4d mat = LCAST(double, data._matrix_offset);
+            LMatrix4d mat = data._matrix_offset;
             mat *= joint->get_node_to_vertex();
             weighted_transform += mat * weight;
             net_weight += weight;
@@ -395,7 +395,7 @@ create_polygons(XFileToEggConverter *converter) {
       }
     }
   }
-    
+
   if (!has_normals()) {
     // If we don't have explicit normals, make some up, per the DX
     // spec.  Since the DX spec doesn't mention anything about a
@@ -488,7 +488,7 @@ make_x_mesh(XFileNode *x_parent, const string &suffix) {
   Vertices::const_iterator vi;
   for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
     XFileVertex *vertex = (*vi);
-    x_vertices.add_Vector(x_mesh->get_x_file(), LCAST(double, vertex->_point));
+    x_vertices.add_Vector(x_mesh->get_x_file(), vertex->_point);
   }
   (*x_mesh)["nVertices"] = x_vertices.size();
 
@@ -546,7 +546,7 @@ make_x_normals(XFileNode *x_mesh, const string &suffix) {
   Normals::const_iterator ni;
   for (ni = _normals.begin(); ni != _normals.end(); ++ni) {
     XFileNormal *normal = (*ni);
-    x_normals.add_Vector(x_mesh->get_x_file(), LCAST(double, normal->_normal));
+    x_normals.add_Vector(x_mesh->get_x_file(), normal->_normal);
   }
   (*x_meshNormals)["nNormals"] = x_normals.size();
 
@@ -610,7 +610,7 @@ make_x_uvs(XFileNode *x_mesh, const string &suffix) {
   Vertices::const_iterator vi;
   for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
     XFileVertex *vertex = (*vi);
-    x_uvs.add_Coords2d(x_mesh->get_x_file(), LCAST(double, vertex->_uv));
+    x_uvs.add_Coords2d(x_mesh->get_x_file(), vertex->_uv);
   }
 
   (*x_meshUvs)["nTextureCoords"] = x_uvs.size();
@@ -655,35 +655,33 @@ make_x_material_list(XFileNode *x_mesh, const string &suffix) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::read_mesh_data
+//     Function: XFileMesh::fill_mesh
 //       Access: Public
 //  Description: Fills the structure based on the raw data from the
-//               Mesh template.
+//               X file's Mesh object.
 ////////////////////////////////////////////////////////////////////
 bool XFileMesh::
-read_mesh_data(const Datagram &raw_data) {
-  DatagramIterator di(raw_data);
-
+fill_mesh(XFileDataNode *obj) {
   clear();
 
   int i, j;
-  int num_vertices = di.get_int32();
-  for (i = 0; i < num_vertices; i++) {
+
+  const XFileDataObject &vertices = (*obj)["vertices"];
+  for (i = 0; i < vertices.size(); i++) {
     XFileVertex *vertex = new XFileVertex;
-    vertex->_point[0] = di.get_float32();
-    vertex->_point[1] = di.get_float32();
-    vertex->_point[2] = di.get_float32();
+    vertex->_point = vertices[i].vec3();
     add_vertex(vertex);
   }
 
-  int num_faces = di.get_int32();
-  for (i = 0; i < num_faces; i++) {
+  const XFileDataObject &faces = (*obj)["faces"];
+  for (i = 0; i < faces.size(); i++) {
     XFileFace *face = new XFileFace;
 
-    num_vertices = di.get_int32();
-    for (j = 0; j < num_vertices; j++) {
+    const XFileDataObject &faceIndices = faces[i]["faceVertexIndices"];
+
+    for (j = 0; j < faceIndices.size(); j++) {
       XFileFace::Vertex vertex;
-      vertex._vertex_index = di.get_int32();
+      vertex._vertex_index = faceIndices[j].i();
       vertex._normal_index = -1;
 
       face->_vertices.push_back(vertex);
@@ -691,207 +689,220 @@ read_mesh_data(const Datagram &raw_data) {
     _faces.push_back(face);
   }
 
-  if (di.get_remaining_size() != 0) {
-    xfile_cat.warning()
-      << "Ignoring " << di.get_remaining_size() << " trailing Mesh.\n";
+  // Some properties are stored as children of the mesh.
+  int num_objects = obj->get_num_objects();
+  for (int i = 0; i < num_objects; i++) {
+    if (!fill_mesh_child(obj->get_object(i))) {
+      return false;
+    }
   }
 
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::read_normal_data
+//     Function: XFileMesh::fill_mesh_child
+//       Access: Public
+//  Description: Fills the structure based on one of the children of
+//               the Mesh object.
+////////////////////////////////////////////////////////////////////
+bool XFileMesh::
+fill_mesh_child(XFileDataNode *obj) {
+  if (obj->is_standard_object("MeshNormals")) {
+    if (!fill_normals(obj)) {
+      return false;
+    }
+
+  } else if (obj->is_standard_object("MeshVertexColors")) {
+    if (!fill_colors(obj)) {
+      return false;
+    }
+
+  } else if (obj->is_standard_object("MeshTextureCoords")) {
+    if (!fill_uvs(obj)) {
+      return false;
+    }
+
+  } else if (obj->is_standard_object("MeshMaterialList")) {
+    if (!fill_material_list(obj)) {
+      return false;
+    }
+
+  } else if (obj->is_standard_object("XSkinMeshHeader")) {
+    // Quietly ignore a skin mesh header.
+    
+  } else if (obj->is_standard_object("SkinWeights")) {
+    if (!fill_skin_weights(obj)) {
+      return false;
+    }
+
+  } else {
+    if (xfile_cat.is_debug()) {
+      xfile_cat.debug()
+        << "Ignoring mesh data object of unknown type: "
+        << obj->get_template_name() << "\n";
+    }
+  }
+  
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileMesh::fill_normals
 //       Access: Public
 //  Description: Fills the structure based on the raw data from the
 //               MeshNormals template.
 ////////////////////////////////////////////////////////////////////
 bool XFileMesh::
-read_normal_data(const Datagram &raw_data) {
-  DatagramIterator di(raw_data);
+fill_normals(XFileDataNode *obj) {
+  int i, j;
 
-  int num_normals = di.get_int32();
-  int i;
-  for (i = 0; i < num_normals; i++) {
+  const XFileDataObject &normals = (*obj)["normals"];
+  for (i = 0; i < normals.size(); i++) {
     XFileNormal *normal = new XFileNormal;
-    normal->_normal[0] = di.get_float32();
-    normal->_normal[1] = di.get_float32();
-    normal->_normal[2] = di.get_float32();
+    normal->_normal = normals[i].vec3();
     normal->_has_normal = true;
     add_normal(normal);
   }
 
-  int num_faces = di.get_int32();
-
-  if (num_faces != _faces.size()) {
+  const XFileDataObject &faceNormals = (*obj)["faceNormals"];
+  if (faceNormals.size() != (int)_faces.size()) {
     xfile_cat.error()
       << "Incorrect number of faces in MeshNormals.\n";
     return false;
   }
 
-  for (i = 0; i < num_faces; i++) {
+  for (i = 0; i < faceNormals.size(); i++) {
     XFileFace *face = _faces[i];
-    int num_vertices = di.get_int32();
-    if (num_vertices != face->_vertices.size()) {
+
+    const XFileDataObject &faceIndices = faceNormals[i]["faceVertexIndices"];
+
+    if (faceIndices.size() != (int)face->_vertices.size()) {
       xfile_cat.error() 
         << "Incorrect number of vertices for face in MeshNormals.\n";
       return false;
     }
-    for (int j = 0; j < num_vertices; j++) {
-      face->_vertices[j]._normal_index = di.get_int32();
-    }
-  }
 
-  if (di.get_remaining_size() != 0) {
-    xfile_cat.warning()
-      << "Ignoring " << di.get_remaining_size()
-      << " trailing MeshNormals.\n";
+    for (j = 0; j < faceIndices.size(); j++) {
+      face->_vertices[j]._normal_index = faceIndices[j].i();
+    }
   }
 
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::read_color_data
+//     Function: XFileMesh::fill_colors
 //       Access: Public
 //  Description: Fills the structure based on the raw data from the
 //               MeshVertexColors template.
 ////////////////////////////////////////////////////////////////////
 bool XFileMesh::
-read_color_data(const Datagram &raw_data) {
-  DatagramIterator di(raw_data);
-
-  int num_colors = di.get_int32();
-  int i;
-  for (i = 0; i < num_colors; i++) {
-    unsigned int vertex_index = di.get_int32();
-    if (vertex_index < 0 || vertex_index >= _vertices.size()) {
+fill_colors(XFileDataNode *obj) {
+  const XFileDataObject &vertexColors = (*obj)["vertexColors"];
+  for (int i = 0; i < vertexColors.size(); i++) {
+    int vertex_index = vertexColors[i]["index"].i();
+    if (vertex_index < 0 || vertex_index >= (int)_vertices.size()) {
       xfile_cat.error()
         << "Vertex index out of range in MeshVertexColors.\n";
       return false;
     }
-    XFileVertex *vertex = _vertices[vertex_index];
-    vertex->_color[0] = di.get_float32();
-    vertex->_color[1] = di.get_float32();
-    vertex->_color[2] = di.get_float32();
-    vertex->_color[3] = di.get_float32();
-    vertex->_has_color = true;
-  }
 
-  if (di.get_remaining_size() != 0) {
-    xfile_cat.warning()
-      << "Ignoring " << di.get_remaining_size()
-      << " trailing MeshVertexColors.\n";
+    XFileVertex *vertex = _vertices[vertex_index];
+    vertex->_color = LCAST(float, vertexColors[i]["indexColor"].vec4());
+    vertex->_has_color = true;
   }
 
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::read_uv_data
+//     Function: XFileMesh::fill_uvs
 //       Access: Public
 //  Description: Fills the structure based on the raw data from the
 //               MeshTextureCoords template.
 ////////////////////////////////////////////////////////////////////
 bool XFileMesh::
-read_uv_data(const Datagram &raw_data) {
-  DatagramIterator di(raw_data);
-
-  int num_vertices = di.get_int32();
-  if (num_vertices != _vertices.size()) {
+fill_uvs(XFileDataNode *obj) {
+  const XFileDataObject &textureCoords = (*obj)["textureCoords"];
+  if (textureCoords.size() != (int)_vertices.size()) {
     xfile_cat.error()
       << "Wrong number of vertices in MeshTextureCoords.\n";
     return false;
   }
 
-  int i;
-  for (i = 0; i < num_vertices; i++) {
+  for (int i = 0; i < textureCoords.size(); i++) {
     XFileVertex *vertex = _vertices[i];
-    vertex->_uv[0] = di.get_float32();
-    vertex->_uv[1] = di.get_float32();
+    vertex->_uv = textureCoords[i].vec2();
     vertex->_has_uv = true;
-  }
-
-  if (di.get_remaining_size() != 0) {
-    xfile_cat.warning()
-      << "Ignoring " << di.get_remaining_size()
-      << " trailing MeshTextureCoords.\n";
   }
 
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::read_skin_weights_data
+//     Function: XFileMesh::fill_skin_weights
 //       Access: Public
 //  Description: Fills the structure based on the raw data from the
 //               SkinWeights template.
 ////////////////////////////////////////////////////////////////////
 bool XFileMesh::
-read_skin_weights_data(const Datagram &raw_data) {
-  DatagramIterator di(raw_data);
-
+fill_skin_weights(XFileDataNode *obj) {
   // Create a new SkinWeightsData record for the table.  We'll need
   // this data later when we create the vertices.
   _skin_weights.push_back(SkinWeightsData());
   SkinWeightsData &data = _skin_weights.back();
 
-  // The DX system encodes a pointer to a character string in four
-  // bytes within the stream.  Weird, in a Microsofty sort of way.
-  data._joint_name = (const char *)di.get_uint32();
+  data._joint_name = (*obj)["transformNodeName"].s();
 
-  int num_weights = di.get_int32();
+  const XFileDataObject &vertexIndices = (*obj)["vertexIndices"];
+  const XFileDataObject &weights = (*obj)["weights"];
 
-  vector_int vindices;
-  vindices.reserve(num_weights);
+  if (weights.size() != vertexIndices.size()) {
+    xfile_cat.error()
+      << "Inconsistent number of vertices in SkinWeights.\n";
+    return false;
+  }
 
-  // Unpack the list of vertices first
-  int i;
-  for (i = 0; i < num_weights; i++) {
-    int vindex = di.get_int32();
+  // Unpack the weight for each vertex.
+  for (int i = 0; i < weights.size(); i++) {
+    int vindex = vertexIndices[i].i();
+    double weight = weights[i].d();
+
     if (vindex < 0 || vindex > (int)_vertices.size()) {
       xfile_cat.error()
         << "Illegal vertex index " << vindex << " in SkinWeights.\n";
       return false;
     }
-    vindices.push_back(vindex);
+    data._weight_map[vindex] = weight;
   }
 
-  // Then unpack the weight for each vertex.
-  for (i = 0; i < num_weights; i++) {
-    float weight = di.get_float32();
-    data._weight_map[vindices[i]] = weight;
-  }
-
-  // Finally, read the matrix offset.
-  data._matrix_offset.read_datagram(di);
+  // Also retrieve the matrix offset.
+  data._matrix_offset = (*obj)["matrixOffset"]["matrix"].mat4();
 
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileMesh::read_material_list_data
+//     Function: XFileMesh::fill_material_list
 //       Access: Public
 //  Description: Fills the structure based on the raw data from the
-//               MaterialList template.
+//               MeshMaterialList template.
 ////////////////////////////////////////////////////////////////////
 bool XFileMesh::
-read_material_list_data(const Datagram &raw_data) {
-  DatagramIterator di(raw_data);
-
-  di.get_int32();  /* num_materials */
-  unsigned int num_faces = di.get_int32();
-
-  if (num_faces > _faces.size()) {
+fill_material_list(XFileDataNode *obj) {
+  const XFileDataObject &faceIndexes = (*obj)["faceIndexes"];
+  if (faceIndexes.size() > (int)_faces.size()) {
     xfile_cat.error()
-      << "Too many faces in MaterialList.\n";
+      << "Too many faces in MeshMaterialList.\n";
     return false;
   }
 
   int material_index = -1;
-  unsigned int i = 0;
-  while (i < num_faces) {
+  int i = 0;
+  while (i < faceIndexes.size()) {
     XFileFace *face = _faces[i];
-    material_index = di.get_int32();
+    material_index = faceIndexes[i].i();
     face->_material_index = material_index;
     i++;
   }
@@ -904,10 +915,26 @@ read_material_list_data(const Datagram &raw_data) {
     i++;
   }
 
-  if (di.get_remaining_size() != 0) {
-    xfile_cat.warning()
-      << "Ignoring " << di.get_remaining_size()
-      << " trailing MeshMaterialList.\n";
+  // Now look for children of the MaterialList object.  These should
+  // all be Material objects.
+  int num_objects = obj->get_num_objects();
+  for (int i = 0; i < num_objects; i++) {
+    XFileDataNode *child = obj->get_object(i);
+    if (child->is_standard_object("Material")) {
+      XFileMaterial *material = new XFileMaterial;
+      if (!material->fill_material(child)) {
+        delete material;
+        return false;
+      }
+      add_material(material);
+
+    } else {
+      if (xfile_cat.is_debug()) {
+        xfile_cat.debug()
+          << "Ignoring material list object of unknown type: "
+          << child->get_template_name() << "\n";
+      }
+    }
   }
 
   return true;

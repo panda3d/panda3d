@@ -25,11 +25,8 @@
 #include "lwoToEggConverter.h"
 #include "dxfToEggConverter.h"
 #include "vrmlToEggConverter.h"
-
-#ifdef HAVE_DX
 #include "config_xfile.h"
 #include "xFileToEggConverter.h"
-#endif
 
 #include "dconfig.h"
 #include "loaderFileTypeRegistry.h"
@@ -87,11 +84,9 @@ init_libptloader() {
   VRMLToEggConverter *vrml = new VRMLToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(vrml));
 
-#ifdef HAVE_DX
   init_libxfile();
   XFileToEggConverter *xfile = new XFileToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(xfile));
-#endif
 
 #ifdef HAVE_MAYA
   // Register the Maya converter as a deferred type.  We don't compile

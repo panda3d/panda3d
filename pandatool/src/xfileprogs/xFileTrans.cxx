@@ -26,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 XFileTrans::
 XFileTrans() :
-  WithOutputFile(true, true, false)
+  WithOutputFile(true, false, true)
 {
   // Indicate the extension name we expect the user to supply for
   // output files.
@@ -38,7 +38,6 @@ XFileTrans() :
      "debugging the X file parser that is part of the Pandatool library.");
 
   clear_runlines();
-  add_runline("[opts] input.x > output.x");
   add_runline("[opts] input.x output.x");
   add_runline("[opts] -o output.x input.x");
 

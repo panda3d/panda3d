@@ -155,11 +155,6 @@ repack_data(XFileDataObject *object,
             const XFileParseDataList &parse_data_list,
             XFileDataDef::PrevData &prev_data,
             size_t &index, size_t &sub_index) const {
-  if (index >= parse_data_list._list.size()) {
-    xyyerror("Not enough data elements in structure.");
-    return false;
-  }
-
   // We'll fill this in with the data value we pack, if any.
   PT(XFileDataObject) data_value;
 
@@ -434,6 +429,10 @@ unpack_value(const XFileParseDataList &parse_data_list, int array_index,
   PT(XFileDataObject) data_value;
   
   if (array_index == (int)_array_def.size()) {
+    if (index >= parse_data_list._list.size()) {
+      xyyerror("Not enough data elements in structure at " + get_name());
+      return NULL;
+    }
     data_value = (this->*unpack_method)(parse_data_list, prev_data,
                                         index, sub_index);
 
@@ -453,7 +452,7 @@ unpack_value(const XFileParseDataList &parse_data_list, int array_index,
                      prev_data, index, sub_index,
                      unpack_method);
       if (array_element == (XFileDataObject *)NULL) {
-        return NULL;
+        return data_value;
       }
       data_value->add_element(array_element);
     }

@@ -36,8 +36,8 @@ public:
   void set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_poly);
   int compare_to(const XFileVertex &other) const;
 
-  Vertexf _point;
-  TexCoordf _uv;
+  Vertexd _point;
+  TexCoordd _uv;
   Colorf _color;
   bool _has_color;
   bool _has_uv;

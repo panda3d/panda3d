@@ -48,7 +48,7 @@ get_data_def() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void XFileDataObject::
 operator = (int int_value) {
-  set_int_value(int_value);
+  set(int_value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ operator = (int int_value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void XFileDataObject::
 operator = (double double_value) {
-  set_double_value(double_value);
+  set(double_value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,7 +74,149 @@ operator = (double double_value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void XFileDataObject::
 operator = (const string &string_value) {
+  set(string_value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::operator = (vec2)
+//       Access: Public
+//  Description: Stores the indicated Vec2 value into the object,
+//               if it makes sense to do so.  It is an error to call
+//               this on an object that does not store two
+//               floating-point values.
+////////////////////////////////////////////////////////////////////
+INLINE void XFileDataObject::
+operator = (const LVecBase2d &vec) {
+  set(vec);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::operator = (vec3)
+//       Access: Public
+//  Description: Stores the indicated Vec3 value into the object,
+//               if it makes sense to do so.  It is an error to call
+//               this on an object that does not store three
+//               floating-point values.
+////////////////////////////////////////////////////////////////////
+INLINE void XFileDataObject::
+operator = (const LVecBase3d &vec) {
+  set(vec);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::operator = (vec4)
+//       Access: Public
+//  Description: Stores the indicated Vec4 value into the object,
+//               if it makes sense to do so.  It is an error to call
+//               this on an object that does not store four
+//               floating-point values.
+////////////////////////////////////////////////////////////////////
+INLINE void XFileDataObject::
+operator = (const LVecBase4d &vec) {
+  set(vec);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::operator = (mat)
+//       Access: Public
+//  Description: Stores the indicated Matrix value into the object,
+//               if it makes sense to do so.  It is an error to call
+//               this on an object that does not store sixteen
+//               floating-point values.
+////////////////////////////////////////////////////////////////////
+INLINE void XFileDataObject::
+operator = (const LMatrix4d &mat) {
+  set(mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::set(int)
+//       Access: Public
+//  Description: Stores the indicated integer value into the object,
+//               if it makes sense to do so.  It is an error to call
+//               this on an object that cannot accept an integer value.
+////////////////////////////////////////////////////////////////////
+INLINE void XFileDataObject::
+set(int int_value) {
+  set_int_value(int_value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::set(double)
+//       Access: Public
+//  Description: Stores the indicated floating-point value into the
+//               object, if it makes sense to do so.  It is an error
+//               to call this on an object that cannot accept a
+//               floating-point value.
+////////////////////////////////////////////////////////////////////
+INLINE void XFileDataObject::
+set(double double_value) {
+  set_double_value(double_value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::set(string)
+//       Access: Public
+//  Description: Stores the indicated string value into the
+//               object, if it makes sense to do so.  It is an error
+//               to call this on an object that cannot accept a
+//               string value.
+////////////////////////////////////////////////////////////////////
+INLINE void XFileDataObject::
+set(const string &string_value) {
   set_string_value(string_value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::set(vec2)
+//       Access: Public
+//  Description: Stores the indicated Vec2 value into the object,
+//               if it makes sense to do so.  It is an error to call
+//               this on an object that does not store two
+//               floating-point values.
+////////////////////////////////////////////////////////////////////
+INLINE void XFileDataObject::
+set(const LVecBase2d &vec) {
+  store_double_array(2, vec.get_data());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::set(vec3)
+//       Access: Public
+//  Description: Stores the indicated Vec3 value into the object,
+//               if it makes sense to do so.  It is an error to call
+//               this on an object that does not store three
+//               floating-point values.
+////////////////////////////////////////////////////////////////////
+INLINE void XFileDataObject::
+set(const LVecBase3d &vec) {
+  store_double_array(3, vec.get_data());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::set(vec4)
+//       Access: Public
+//  Description: Stores the indicated Vec4 value into the object,
+//               if it makes sense to do so.  It is an error to call
+//               this on an object that does not store four
+//               floating-point values.
+////////////////////////////////////////////////////////////////////
+INLINE void XFileDataObject::
+set(const LVecBase4d &vec) {
+  store_double_array(4, vec.get_data());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::set(mat)
+//       Access: Public
+//  Description: Stores the indicated Matrix value into the object,
+//               if it makes sense to do so.  It is an error to call
+//               this on an object that does not store sixteen
+//               floating-point values.
+////////////////////////////////////////////////////////////////////
+INLINE void XFileDataObject::
+set(const LMatrix4d &mat) {
+  store_double_array(16, mat.get_data());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,6 +256,62 @@ d() const {
 INLINE string XFileDataObject::
 s() const {
   return get_string_value();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::vec2
+//       Access: Public
+//  Description: Returns the object's representation as an LVecBase2d.
+//               It is an error if the object does not have two nested
+//               objects that store a double value.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase2d XFileDataObject::
+vec2() const {
+  LVecBase2d vec;
+  get_double_array(2, &vec[0]);
+  return vec;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::vec3
+//       Access: Public
+//  Description: Returns the object's representation as an LVecBase3d.
+//               It is an error if the object does not have three nested
+//               objects that store a double value.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase3d XFileDataObject::
+vec3() const {
+  LVecBase3d vec;
+  get_double_array(3, &vec[0]);
+  return vec;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::vec4
+//       Access: Public
+//  Description: Returns the object's representation as an LVecBase4d.
+//               It is an error if the object does not have four nested
+//               objects that store a double value.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase4d XFileDataObject::
+vec4() const {
+  LVecBase4d vec;
+  get_double_array(4, &vec[0]);
+  return vec;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::mat4
+//       Access: Public
+//  Description: Returns the object's representation as an LMatrix4d.
+//               It is an error if the object does not have sixteen
+//               nested objects that store a double value.
+////////////////////////////////////////////////////////////////////
+INLINE LMatrix4d XFileDataObject::
+mat4() const {
+  LMatrix4d mat;
+  get_double_array(16, &mat(0, 0));
+  return mat;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1,5 +1,3 @@
-#define USE_PACKAGES dx
-
 #begin lib_target
   #define TARGET ptloader
   #define BUILDING_DLL BUILDING_PTLOADER
@@ -19,9 +17,6 @@
     dtoolutil:c dtoolbase:c dtool:m
   #define UNIX_SYS_LIBS \
     m
-
-  #define WIN_SYS_LIBS \
-    d3dxof.lib dxguid.lib d3d8.lib d3dx8.lib dxerr8.lib
 
   #define SOURCES \
     config_ptloader.cxx config_ptloader.h \

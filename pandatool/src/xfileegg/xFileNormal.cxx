@@ -56,7 +56,7 @@ set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
       norm = norm * egg_prim->get_vertex_to_node();
     }
 
-    _normal = LCAST(float, norm);
+    _normal = norm;
     _has_normal = true;
   }
 }

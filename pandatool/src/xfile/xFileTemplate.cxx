@@ -66,6 +66,24 @@ get_guid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileTemplate::is_template_def
+//       Access: Public, Virtual
+//  Description: Returns true if this node represents the definition
+//               of some template.  This is the template definition,
+//               not an actual data object that represents an instance
+//               of the template.  If the file strictly uses standard
+//               templates, the presence of template definitions is
+//               optional.
+//
+//               If this returns true, the node must be of type
+//               XFileTemplate.
+////////////////////////////////////////////////////////////////////
+bool XFileTemplate::
+is_template_def() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileTemplate::clear
 //       Access: Public, Virtual
 //  Description: Removes all children from the node, and otherwise

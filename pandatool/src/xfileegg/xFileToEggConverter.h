@@ -21,19 +21,14 @@
 
 #include "pandatoolbase.h"
 #include "xFileAnimationSet.h"
+#include "xFile.h"
 #include "somethingToEggConverter.h"
 #include "eggTextureCollection.h"
 #include "eggMaterialCollection.h"
 #include "pvector.h"
 #include "pmap.h"
 #include "luse.h"
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <d3dx.h>
-#include <dxfile.h>
-#include <rmxfguid.h>
-#undef WIN32_LEAN_AND_MEAN
+#include "pointerTo.h"
 
 class Datagram;
 class XFileMesh;
@@ -42,6 +37,7 @@ class EggGroup;
 class EggGroupNode;
 class EggTexture;
 class EggMaterial;
+class XFileDataObject;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileToEggConverter
@@ -66,8 +62,6 @@ public:
   EggTexture *create_unique_texture(const EggTexture &copy);
   EggMaterial *create_unique_material(const EggMaterial &copy);
   EggGroup *find_joint(const string &joint_name);
-  EggGroup *find_joint(const string &joint_name,
-                       const LMatrix4f &matrix_offset);
 
 public:
   bool _make_char;
@@ -78,77 +72,39 @@ private:
   typedef XFileAnimationSet::FrameData FrameData;
   
   bool get_toplevel();
-  bool convert_toplevel_object(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent);
-  bool convert_object(LPDIRECTXFILEOBJECT obj, EggGroupNode *egg_parent);
-  bool convert_data_object(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent);
-  bool convert_frame(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent);
-  bool convert_transform(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent);
-  bool convert_animation_set(LPDIRECTXFILEDATA obj);
-  bool convert_animation_set_object(LPDIRECTXFILEOBJECT obj, 
+  bool convert_toplevel_object(XFileDataNode *obj, EggGroupNode *egg_parent);
+  bool convert_object(XFileDataNode *obj, EggGroupNode *egg_parent);
+  bool convert_frame(XFileDataNode *obj, EggGroupNode *egg_parent);
+  bool convert_transform(XFileDataNode *obj, EggGroupNode *egg_parent);
+  bool convert_animation_set(XFileDataNode *obj);
+  bool convert_animation_set_object(XFileDataNode *obj, 
                                     XFileAnimationSet &animation_set);
-  bool convert_animation_set_data_object(LPDIRECTXFILEDATA obj, 
-                                         XFileAnimationSet &animation_set);
-  bool convert_animation(LPDIRECTXFILEDATA obj, 
+  bool convert_animation(XFileDataNode *obj, 
                          XFileAnimationSet &animation_set);
-  bool convert_animation_object(LPDIRECTXFILEOBJECT obj, 
+  bool convert_animation_object(XFileDataNode *obj, 
                                 const string &joint_name, FrameData &table);
-  bool convert_animation_data_object(LPDIRECTXFILEDATA obj, 
-                                     const string &joint_name, 
-                                     FrameData &table);
-  bool convert_animation_key(LPDIRECTXFILEDATA obj, const string &joint_name,
+  bool convert_animation_key(XFileDataNode *obj, const string &joint_name,
                              FrameData &table);
   bool set_animation_frame(const string &joint_name, FrameData &table, 
                            int frame, int key_type,
-                           const float *values, int nvalues);
-  bool convert_mesh(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent,
-                    bool is_toplevel);
-
-  bool convert_mesh_object(LPDIRECTXFILEOBJECT obj, XFileMesh &mesh);
-  bool convert_mesh_data_object(LPDIRECTXFILEDATA obj, XFileMesh &mesh);
-  bool convert_mesh_normals(LPDIRECTXFILEDATA obj, XFileMesh &mesh);
-  bool convert_mesh_colors(LPDIRECTXFILEDATA obj, XFileMesh &mesh);
-  bool convert_mesh_uvs(LPDIRECTXFILEDATA obj, XFileMesh &mesh);
-  bool convert_skin_weights(LPDIRECTXFILEDATA obj, XFileMesh &mesh);
-  bool convert_mesh_material_list(LPDIRECTXFILEDATA obj, XFileMesh &mesh);
-  bool convert_material_list_object(LPDIRECTXFILEOBJECT obj, XFileMesh &mesh);
-  bool convert_material_list_data_object(LPDIRECTXFILEDATA obj, XFileMesh &mesh);
-  bool convert_material(LPDIRECTXFILEDATA obj, XFileMesh &mesh);
-  bool convert_material_object(LPDIRECTXFILEOBJECT obj, XFileMaterial &material);
-  bool convert_material_data_object(LPDIRECTXFILEDATA obj, XFileMaterial &material);
-  bool convert_texture(LPDIRECTXFILEDATA obj, XFileMaterial &material);
+                           const XFileDataObject &values);
+  bool convert_mesh(XFileDataNode *obj, EggGroupNode *egg_parent);
 
   bool create_polygons();
   bool create_hierarchy();
 
-  string get_object_name(LPDIRECTXFILEOBJECT obj);
-  bool get_data(LPDIRECTXFILEDATA obj, Datagram &raw_data);
-
-  LPDIRECTXFILE _dx_file;
-  LPDIRECTXFILEENUMOBJECT _dx_file_enum;
+  PT(XFile) _x_file;
 
   bool _any_frames;
+  bool _any_animation;
 
   typedef pvector<XFileMesh *> Meshes;
   Meshes _meshes;
-  Meshes _toplevel_meshes;
 
   typedef pvector<XFileAnimationSet *> AnimationSets;
   AnimationSets _animation_sets;
-
-  typedef pmap<LMatrix4f, EggGroup *> OffsetJoints;
-
-  // A joint definition consists of the pointer to the EggGroup that
-  // represents the actual joint, plus a table of synthetic joints
-  // that were created for each animation set's offset matrix (we need
-  // to create a different joint to apply each unique offset matrix in
-  // an animation set).
-  class JointDef {
-  public:
-    EggGroup *_node;
-    OffsetJoints _offsets;
-  };
     
-  typedef pmap<string, JointDef> Joints;
+  typedef pmap<string, EggGroup *> Joints;
   Joints _joints;
 
   EggGroup *_dart_node;

@@ -148,12 +148,71 @@ get_guid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileNode::is_template_def
+//       Access: Public, Virtual
+//  Description: Returns true if this node represents the definition
+//               of some template.  This is the template definition,
+//               not an actual data object that represents an instance
+//               of the template.  If the file strictly uses standard
+//               templates, the presence of template definitions is
+//               optional.
+//
+//               If this returns true, the node must be of type
+//               XFileTemplate.
+////////////////////////////////////////////////////////////////////
+bool XFileNode::
+is_template_def() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileNode::is_reference
+//       Access: Public, Virtual
+//  Description: Returns true if this node represents an indirect
+//               reference to an object defined previously in the
+//               file.  References are generally transparent, so in
+//               most cases you never need to call this, unless you
+//               actually need to differentiate between references and
+//               instances; you can simply use the reference node as
+//               if it were itself the object it references.
+//
+//               If this returns true, the node must be of type
+//               XFileDataNodeReference.
+////////////////////////////////////////////////////////////////////
+bool XFileNode::
+is_reference() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileNode::is_object
+//       Access: Public, Virtual
+//  Description: Returns true if this node represents a data object
+//               that is the instance of some template, or false
+//               otherwise.  This also returns true for references to
+//               objects (which are generally treated just like the
+//               objects themselves).
+//
+//               If this returns true, the node must be of type
+//               XFileDataNode (it is either an XFileDataNodeTemplate
+//               or an XFileDataNodeReference).
+////////////////////////////////////////////////////////////////////
+bool XFileNode::
+is_object() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileNode::is_standard_object
 //       Access: Public, Virtual
 //  Description: Returns true if this node represents an instance of
 //               the standard template with the indicated name, or
-//               false otherwise.  If this returns true, the object
-//               must be of type XFileDataNodeTemplate.
+//               false otherwise.  This returns also returns true for
+//               references to standard objects.
+//
+//               If this returns true, the node must be of type
+//               XFileDataNode (it is either an XFileDataNodeTemplate
+//               or an XFileDataNodeReference).
 ////////////////////////////////////////////////////////////////////
 bool XFileNode::
 is_standard_object(const string &template_name) const {
@@ -173,6 +232,9 @@ add_child(XFileNode *node) {
   if (node->has_guid()) {
     _x_file->_nodes_by_guid[node->get_guid()] = node;
   }
+  if (node->is_of_type(XFileDataNode::get_class_type())) {
+    _objects.push_back(DCAST(XFileDataNode, node));
+  }
   _children.push_back(node);
 }
 
@@ -185,6 +247,7 @@ add_child(XFileNode *node) {
 void XFileNode::
 clear() {
   _children.clear();
+  _objects.clear();
   _children_by_name.clear();
 }
 
@@ -495,9 +558,16 @@ make_nice_name(const string &str) {
   string::const_iterator si;
   for (si = str.begin(); si != str.end(); ++si) {
     if (isalnum(*si)) {
-      result += *si;
+      result += (*si);
     } else {
-      result += "_";
+      switch (*si) {
+      case '-':
+        result += (*si);
+        break;
+
+      default:
+        result += "_";
+      }
     }
   }
 

@@ -40,8 +40,6 @@ public:
   XFileDataNodeTemplate(XFile *x_file, const string &name,
                         XFileTemplate *xtemplate);
 
-  virtual bool is_standard_object(const string &template_name) const;
-
   void zero_fill();
 
   virtual bool is_complex_object() const;

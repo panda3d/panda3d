@@ -38,7 +38,7 @@ public:
   void set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim);
   int compare_to(const XFileNormal &other) const;
 
-  Normalf _normal;
+  Normald _normal;
   bool _has_normal;
 };
 

@@ -50,6 +50,17 @@ is_complex_object() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::get_type_name
+//       Access: Public, Virtual
+//  Description: Returns a string that represents the type of object
+//               this data object represents.
+////////////////////////////////////////////////////////////////////
+string XFileDataObject::
+get_type_name() const {
+  return get_type().get_name();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileDataObject::add_int
 //       Access: Public
 //  Description: Appends a new integer value to the data object, if it
@@ -111,9 +122,7 @@ add_Vector(XFile *x_file, const LVecBase3d &vector) {
   add_element(node);
   node->zero_fill();
 
-  (*node)["x"] = vector[0];
-  (*node)["y"] = vector[1];
-  (*node)["z"] = vector[2];
+  node->set(vector);
 
   return *node;
 }
@@ -150,10 +159,7 @@ add_IndexedColor(XFile *x_file, int index, const Colorf &color) {
   node->zero_fill();
 
   (*node)["index"] = index;
-  (*node)["indexColor"]["red"] = color[0];
-  (*node)["indexColor"]["green"] = color[1];
-  (*node)["indexColor"]["blue"] = color[2];
-  (*node)["indexColor"]["alpha"] = color[3];
+  (*node)["indexColor"] = LCAST(double, color);
 
   return *node;
 }
@@ -172,8 +178,7 @@ add_Coords2d(XFile *x_file, const LVecBase2d &coords) {
   add_element(node);
   node->zero_fill();
 
-  (*node)["u"] = coords[0];
-  (*node)["v"] = coords[1];
+  node->set(coords);
 
   return *node;
 }
@@ -223,7 +228,7 @@ write_data(ostream &out, int indent_level, const char *) const {
 void XFileDataObject::
 set_int_value(int int_value) {
   xfile_cat.error()
-    << get_type() << " does not support integer values.\n";
+    << get_type_name() << " does not support integer values.\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -235,7 +240,7 @@ set_int_value(int int_value) {
 void XFileDataObject::
 set_double_value(double double_value) {
   xfile_cat.error()
-    << get_type() << " does not support floating-point values.\n";
+    << get_type_name() << " does not support floating-point values.\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -247,8 +252,31 @@ set_double_value(double double_value) {
 void XFileDataObject::
 set_string_value(const string &string_value) {
   xfile_cat.error()
-    << get_type() << " does not support stringeger values.\n";
+    << get_type_name() << " does not support string values.\n";
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::store_double_array
+//       Access: Protected
+//  Description: Stores the indicated array of doubles in the nested
+//               elements within this object.  There must be exactly
+//               the indicated number of nested values, and they must
+//               all accept a double.
+////////////////////////////////////////////////////////////////////
+void XFileDataObject::
+store_double_array(int num_elements, const double *values) {
+  if (get_num_elements() != num_elements) {
+    xfile_cat.error()
+      << get_type_name() << " does not accept " 
+      << num_elements << " values.\n";
+    return;
+  }
+
+  for (int i = 0; i < num_elements; i++) {
+    get_element(i)->set_double_value(values[i]);
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileDataObject::get_int_value
@@ -284,6 +312,28 @@ get_string_value() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileDataObject::get_double_array
+//       Access: Protected
+//  Description: Fills the indicated array of doubles with the values
+//               from the nested elements within this object.  There
+//               must be exactly the indicated number of nested
+//               values, and they must all return a double.
+////////////////////////////////////////////////////////////////////
+void XFileDataObject::
+get_double_array(int num_elements, double *values) const {
+  if (get_num_elements() != num_elements) {
+    xfile_cat.error()
+      << get_type_name() << " does not contain " 
+      << num_elements << " values.\n";
+    return;
+  }
+
+  for (int i = 0; i < num_elements; i++) {
+    values[i] = ((XFileDataObject *)this)->get_element(i)->get_double_value();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileDataObject::get_num_elements
 //       Access: Protected, Virtual
 //  Description: Returns the number of nested data elements within the
@@ -305,7 +355,7 @@ XFileDataObject *XFileDataObject::
 get_element(int n) {
   xfile_cat.warning()
     << "Looking for [" << n << "] within data object of type " 
-    << get_type() << ", does not support nested objects.\n";
+    << get_type_name() << ", does not support nested objects.\n";
   return NULL;
 }
 
@@ -319,6 +369,6 @@ XFileDataObject *XFileDataObject::
 get_element(const string &name) {
   xfile_cat.warning()
     << "Looking for [\"" << name << "\"] within data object of type " 
-    << get_type() << ", does not support nested objects.\n";
+    << get_type_name() << ", does not support nested objects.\n";
   return NULL;
 }

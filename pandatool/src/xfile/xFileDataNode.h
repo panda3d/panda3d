@@ -42,9 +42,14 @@ public:
   XFileDataNode(XFile *x_file, const string &name,
                 XFileTemplate *xtemplate);
 
+  virtual bool is_object() const;
+  virtual bool is_standard_object(const string &template_name) const;
+  virtual string get_type_name() const;
+
   INLINE const XFileDataNode &get_data_child(int n) const;
 
   INLINE XFileTemplate *get_template() const;
+  INLINE const string &get_template_name() const;
 
 protected:
   PT(XFileTemplate) _template;

@@ -19,7 +19,6 @@
 #include "xFileToEggConverter.h"
 #include "xFileMesh.h"
 #include "xFileMaterial.h"
-#include "xFileTemplates.h"
 #include "xFileAnimationSet.h"
 #include "config_xfile.h"
 
@@ -32,26 +31,6 @@
 #include "eggTextureCollection.h"
 #include "dcast.h"
 
-#define MY_DEFINE_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
-        EXTERN_C const GUID DECLSPEC_SELECTANY name \
-                = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
-
-// These are defined in d3dx9mesh.h, which we may not have available
-// (so far, Panda is only dependent on dx8 API's).
-#ifndef DXFILEOBJ_XSkinMeshHeader
-// {3CF169CE-FF7C-44ab-93C0-F78F62D172E2}
-MY_DEFINE_GUID(DXFILEOBJ_XSkinMeshHeader,
-0x3cf169ce, 0xff7c, 0x44ab, 0x93, 0xc0, 0xf7, 0x8f, 0x62, 0xd1, 0x72, 0xe2);
-#endif
-
-#ifndef DXFILEOBJ_SkinWeights
-// {6F0D123B-BAD2-4167-A0D0-80224F25FABB}
-MY_DEFINE_GUID(DXFILEOBJ_SkinWeights, 
-0x6f0d123b, 0xbad2, 0x4167, 0xa0, 0xd0, 0x80, 0x22, 0x4f, 0x25, 0xfa, 0xbb);
-#endif
-
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileToEggConverter::Constructor
 //       Access: Public
@@ -61,8 +40,7 @@ XFileToEggConverter::
 XFileToEggConverter() {
   _make_char = false;
   _frame_rate = 30.0;
-  _dx_file = NULL;
-  _dx_file_enum = NULL;
+  _x_file = new XFile;
   _dart_node = NULL;
 }
 
@@ -76,8 +54,7 @@ XFileToEggConverter(const XFileToEggConverter &copy) :
   SomethingToEggConverter(copy),
   _make_char(copy._make_char)
 {
-  _dx_file = NULL;
-  _dx_file_enum = NULL;
+  _x_file = new XFile;
   _dart_node = NULL;
 }
 
@@ -138,28 +115,15 @@ get_extension() const {
 ////////////////////////////////////////////////////////////////////
 bool XFileToEggConverter::
 convert_file(const Filename &filename) {
-  HRESULT hr;
-
   close();
-  hr = DirectXFileCreate(&_dx_file);
-  if (hr != DXFILE_OK) {
-    nout << "Unable to create X interface.\n";
+
+  if (!_x_file->read(filename)) {
+    nout << "Unable to open X file: " << filename << "\n";
     return false;
   }
 
-  // Register our templates.
-  hr = _dx_file->RegisterTemplates(D3DRM_XTEMPLATES, d3drm_xtemplates_length);
-  if (hr != DXFILE_OK) {
-    nout << "Unable to register templates.\n";
-    return false;
-  }
-
-  string os_file = filename.to_os_specific();
-  hr = _dx_file->CreateEnumObject
-    ((void *)os_file.c_str(), DXFILELOAD_FROMFILE, &_dx_file_enum);
-  if (hr != DXFILE_OK) {
-    nout << "Unable to open X file: " << os_file << "\n";
-    return false;
+  if (_char_name.empty()) {
+    _char_name = filename.get_basename_wo_extension();
   }
 
   if (_egg_data->get_coordinate_system() == CS_default) {
@@ -195,14 +159,7 @@ convert_file(const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 void XFileToEggConverter::
 close() {
-  if (_dx_file != NULL) {
-    if (_dx_file_enum != NULL) {
-      _dx_file_enum->Release();
-      _dx_file_enum = NULL;
-    }
-    _dx_file->Release();
-    _dx_file = NULL;
-  }
+  _x_file->clear();
 
   // Clean up all the other stuff.
   Meshes::const_iterator mi;
@@ -210,11 +167,6 @@ close() {
     delete (*mi);
   }
   _meshes.clear();
-
-  for (mi = _toplevel_meshes.begin(); mi != _toplevel_meshes.end(); ++mi) {
-    delete (*mi);
-  }
-  _toplevel_meshes.clear();
   
   AnimationSets::const_iterator asi;
   for (asi = _animation_sets.begin(); asi != _animation_sets.end(); ++asi) {
@@ -261,7 +213,7 @@ create_unique_material(const EggMaterial &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::find_joint (one parameter)
+//     Function: XFileToEggConverter::find_joint
 //       Access: Public
 //  Description: This is called by set_animation_frame, for
 //               the purposes of building the frame data for the
@@ -273,13 +225,13 @@ find_joint(const string &joint_name) {
   Joints::iterator ji;
   ji = _joints.find(joint_name);
   if (ji != _joints.end()) {
-    JointDef &joint_def = (*ji).second;
-    if (joint_def._node == (EggGroup *)NULL) {
+    EggGroup *joint = (*ji).second;
+    if (joint == (EggGroup *)NULL) {
       // An invalid joint detected earlier.
       return NULL;
     }
 
-    return joint_def._node;
+    return joint;
   }
 
   // Joint name is unknown.  Issue a warning, then insert NULL into
@@ -289,67 +241,9 @@ find_joint(const string &joint_name) {
     xfile_cat.warning()
       << "Joint name " << joint_name << " in animation data is undefined.\n";
   }
-  _joints[joint_name]._node = NULL;
+  _joints[joint_name] = NULL;
 
   return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::find_joint (two parameters)
-//       Access: Public
-//  Description: This is called by XFileMesh::create_polygons(), for
-//               the purposes of applying skinning to vertices.  It
-//               searches for the joint matching the indicated name,
-//               and returns it, possibly creating a new joint if the
-//               requested matrix_offset demands it.  Returns NULL if
-//               the joint name is unknown.
-////////////////////////////////////////////////////////////////////
-EggGroup *XFileToEggConverter::
-find_joint(const string &joint_name, const LMatrix4f &matrix_offset) {
-  return find_joint(joint_name);
-  /*
-  Joints::iterator ji;
-  ji = _joints.find(joint_name);
-  if (ji != _joints.end()) {
-    JointDef &joint_def = (*ji).second;
-    if (joint_def._node == (EggGroup *)NULL) {
-      // An invalid joint detected earlier.
-      return NULL;
-    }
-
-    OffsetJoints::iterator oji = joint_def._offsets.find(matrix_offset);
-    if (oji != joint_def._offsets.end()) {
-      // We've previously created a joint for this matrix, so just
-      // reuse it.
-      return (*oji).second;
-    }
-
-    if (!joint_def._offsets.empty()) {
-      const LMatrix4f &mat = (*joint_def._offsets.begin()).first;
-    }
-
-    // We need to create a new joint for this matrix.
-    EggGroup *new_joint = new EggGroup("synth");
-    joint_def._node->add_child(new_joint);
-
-    new_joint->set_group_type(EggGroup::GT_joint);
-    new_joint->set_transform(LCAST(double, matrix_offset));
-    joint_def._offsets[matrix_offset] = new_joint;
-
-    return new_joint;
-  }
-
-  // Joint name is unknown.  Issue a warning, then insert NULL into
-  // the table so we don't get the same warning again with the next
-  // polygon.
-  if (_make_char) {
-    xfile_cat.warning()
-      << "Joint name " << joint_name << " in animation data is undefined.\n";
-  }
-  _joints[joint_name]._node = NULL;
-
-  return NULL;
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -361,8 +255,26 @@ find_joint(const string &joint_name, const LMatrix4f &matrix_offset) {
 ////////////////////////////////////////////////////////////////////
 bool XFileToEggConverter::
 get_toplevel() {
-  HRESULT hr;
-  LPDIRECTXFILEDATA obj;
+  int num_objects = _x_file->get_num_objects();
+  int i;
+
+  // First, make a pass through the toplevel objects and see if we
+  // have frames and/or animation.
+  _any_frames = false;
+  _any_animation = false;
+  for (int i = 0; i < num_objects; i++) {
+    XFileDataNode *child = _x_file->get_object(i);
+    if (child->is_standard_object("Frame")) {
+      _any_frames = true;
+    } else if (child->is_standard_object("AnimationSet")) {
+      _any_animation = true;
+    }
+  }
+
+  // If we have animation, assume we want to convert it as a character.
+  if (_any_animation) {
+    _make_char = true;
+  }
 
   EggGroupNode *egg_parent = _egg_data;
   
@@ -375,20 +287,11 @@ get_toplevel() {
     egg_parent = _dart_node;
   }
 
-  _any_frames = false;
-
-  hr = _dx_file_enum->GetNextDataObject(&obj);
-  while (hr == DXFILE_OK) {
-    if (!convert_toplevel_object(obj, egg_parent)) {
+  // Now go back through and convert the objects.
+  for (i = 0; i < num_objects; i++) {
+    if (!convert_toplevel_object(_x_file->get_object(i), egg_parent)) {
       return false;
     }
-    hr = _dx_file_enum->GetNextDataObject(&obj);
-  }
-
-  if (hr != DXFILEERR_NOMOREOBJECTS) {
-    xfile_cat.error()
-      << "Error extracting top-level objects.\n";
-    return false;
   }
 
   return true;
@@ -401,55 +304,41 @@ get_toplevel() {
 //               any Frames, to the appropriate egg structures.
 ////////////////////////////////////////////////////////////////////
 bool XFileToEggConverter::
-convert_toplevel_object(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
-  HRESULT hr;
-
-  // Determine what type of data object we have.
-  const GUID *type;
-  hr = obj->GetType(&type);
-  if (hr != DXFILE_OK) {
-    xfile_cat.error()
-      << "Unable to get type of template\n";
-    return false;
-  }
-
-  if (*type == mydef_TID_D3DRMHeader) {
+convert_toplevel_object(XFileDataNode *obj, EggGroupNode *egg_parent) {
+  if (obj->is_standard_object("Header")) {
     // Quietly ignore headers.
 
-  } else if (*type == TID_D3DRMMaterial) {
+  } else if (obj->is_standard_object("Material")) {
     // Quietly ignore toplevel materials.  These will presumably be
     // referenced below.
 
-  } else if (*type == TID_D3DRMFrame) {
-    _any_frames = true;
+  } else if (obj->is_standard_object("Frame")) {
     if (!convert_frame(obj, egg_parent)) {
       return false;
     }
 
-  } else if (*type == TID_D3DRMFrameTransformMatrix) {
-    if (!convert_transform(obj, egg_parent)) {
-      return false;
-    }
-
-  } else if (*type == TID_D3DRMAnimationSet) {
+  } else if (obj->is_standard_object("AnimationSet")) {
     if (!convert_animation_set(obj)) {
       return false;
     }
 
-  } else if (*type == TID_D3DRMMesh) {
-    // Assume a Mesh at the toplevel is just present to define a
-    // reference that will be included below.  Convert it into the
-    // _toplevel_meshes set, where it will be ignored unless there are
-    // no frames at all in the file.
-    if (!convert_mesh(obj, egg_parent, true)) {
-      return false;
+  } else if (obj->is_standard_object("Mesh")) {
+    // If there are any Frames at all in the file, then assume a Mesh
+    // at the toplevel is just present to define a reference that will
+    // be included below--so we ignore it here.  On the other hand, if
+    // the file has no Frames, then a Mesh at the toplevel must be
+    // actual geometry, so convert it now.
+    if (!_any_frames) {
+      if (!convert_mesh(obj, egg_parent)) {
+        return false;
+      }
     }
 
   } else {
     if (xfile_cat.is_debug()) {
       xfile_cat.debug()
         << "Ignoring toplevel object of unknown type: "
-        << get_object_name(obj) << "\n";
+        << obj->get_template_name() << "\n";
     }
   }
   
@@ -463,79 +352,30 @@ convert_toplevel_object(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
 //               structures.
 ////////////////////////////////////////////////////////////////////
 bool XFileToEggConverter::
-convert_object(LPDIRECTXFILEOBJECT obj, EggGroupNode *egg_parent) {
-  HRESULT hr;
-  LPDIRECTXFILEDATA data_obj;
-  LPDIRECTXFILEDATAREFERENCE ref_obj;
-
-  // See if the object is a data object.
-  hr = obj->QueryInterface(IID_IDirectXFileData, (void **)&data_obj);
-  if (hr == DD_OK) {
-    // It is.
-    return convert_data_object(data_obj, egg_parent);
-  }
-
-  // Or maybe it's a reference to a previous object.
-  hr = obj->QueryInterface(IID_IDirectXFileDataReference, (void **)&ref_obj);
-  if (hr == DD_OK) {
-    // It is.
-    if (ref_obj->Resolve(&data_obj) == DXFILE_OK) {
-      return convert_data_object(data_obj, egg_parent);
-    }
-  }
-
-  // It isn't.
-  if (xfile_cat.is_debug()) {
-    xfile_cat.debug()
-      << "Ignoring object of unknown type: "
-      << get_object_name(obj) << "\n";
-  }
-  return true;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_data_object
-//       Access: Private
-//  Description: Converts the indicated object to the appropriate egg
-//               structures.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_data_object(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
-  HRESULT hr;
-
-  // Determine what type of data object we have.
-  const GUID *type;
-  hr = obj->GetType(&type);
-  if (hr != DXFILE_OK) {
-    xfile_cat.error()
-      << "Unable to get type of template\n";
-    return false;
-  }
-
-  if (*type == mydef_TID_D3DRMHeader) {
+convert_object(XFileDataNode *obj, EggGroupNode *egg_parent) {
+  if (obj->is_standard_object("Header")) {
     // Quietly ignore headers.
 
-  } else if (*type == TID_D3DRMFrame) {
+  } else if (obj->is_standard_object("Frame")) {
     if (!convert_frame(obj, egg_parent)) {
       return false;
     }
 
-  } else if (*type == TID_D3DRMFrameTransformMatrix) {
+  } else if (obj->is_standard_object("FrameTransformMatrix")) {
     if (!convert_transform(obj, egg_parent)) {
       return false;
     }
 
-  } else if (*type == TID_D3DRMMesh) {
-    if (!convert_mesh(obj, egg_parent, false)) {
+  } else if (obj->is_standard_object("Mesh")) {
+    if (!convert_mesh(obj, egg_parent)) {
       return false;
     }
 
   } else {
     if (xfile_cat.is_debug()) {
       xfile_cat.debug()
-        << "Ignoring data object of unknown type: "
-        << get_object_name(obj) << "\n";
+        << "Ignoring object of unknown type: "
+        << obj->get_template_name() << "\n";
     }
   }
   
@@ -549,10 +389,8 @@ convert_data_object(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
 //               structures.
 ////////////////////////////////////////////////////////////////////
 bool XFileToEggConverter::
-convert_frame(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
-  HRESULT hr;
-
-  string name = get_object_name(obj);
+convert_frame(XFileDataNode *obj, EggGroupNode *egg_parent) {
+  string name = obj->get_name();
   EggGroup *group = new EggGroup(name);
   egg_parent->add_child(group);
 
@@ -563,9 +401,7 @@ convert_frame(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
       group->set_name("unnamed");
 
     } else {
-      JointDef joint_def;
-      joint_def._node = group;
-      bool inserted = _joints.insert(Joints::value_type(name, joint_def)).second;
+      bool inserted = _joints.insert(Joints::value_type(name, group)).second;
       if (!inserted) {
         xfile_cat.warning()
           << "Nonunique Frame name " << name
@@ -575,20 +411,11 @@ convert_frame(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
   }
 
   // Now walk through the children of the frame.
-  LPDIRECTXFILEOBJECT child_obj;
-
-  hr = obj->GetNextObject(&child_obj);
-  while (hr == DXFILE_OK) {
-    if (!convert_object(child_obj, group)) {
+  int num_objects = obj->get_num_objects();
+  for (int i = 0; i < num_objects; i++) {
+    if (!convert_object(obj->get_object(i), group)) {
       return false;
     }
-    hr = obj->GetNextObject(&child_obj);
-  }
-
-  if (hr != DXFILEERR_NOMOREOBJECTS) {
-    xfile_cat.error()
-      << "Error extracting children of frame " << name << ".\n";
-    return false;
   }
 
   return true;
@@ -604,23 +431,16 @@ convert_frame(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
 //               frame.
 ////////////////////////////////////////////////////////////////////
 bool XFileToEggConverter::
-convert_transform(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
-  Datagram raw_data;
-  if (!get_data(obj, raw_data)) {
-    return false;
-  }
-
-  DatagramIterator di(raw_data);
-  LMatrix4f mat;
-  mat.read_datagram(di);
+convert_transform(XFileDataNode *obj, EggGroupNode *egg_parent) {
+  LMatrix4d mat = (*obj)["frameMatrix"]["matrix"].mat4();
 
   if (egg_parent->is_of_type(EggGroup::get_class_type())) {
     EggGroup *egg_group = DCAST(EggGroup, egg_parent);
-    egg_group->set_transform(LCAST(double, mat));
+    egg_group->set_transform(mat);
 
   } else {
     xfile_cat.error()
-      << "Transform " << get_object_name(obj)
+      << "Transform " << obj->get_name()
       << " encountered without frame!\n";
   }
 
@@ -635,30 +455,17 @@ convert_transform(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
 //               be applied to the model within this file.
 ////////////////////////////////////////////////////////////////////
 bool XFileToEggConverter::
-convert_animation_set(LPDIRECTXFILEDATA obj) {
-  HRESULT hr;
-
+convert_animation_set(XFileDataNode *obj) {
   XFileAnimationSet *animation_set = new XFileAnimationSet();
-  animation_set->set_name(get_object_name(obj));
+  animation_set->set_name(obj->get_name());
 
   // Now walk through the children of the set; each one animates a
   // different joint.
-  LPDIRECTXFILEOBJECT child_obj;
-
-  hr = obj->GetNextObject(&child_obj);
-  while (hr == DXFILE_OK) {
-    if (!convert_animation_set_object(child_obj, *animation_set)) {
+  int num_objects = obj->get_num_objects();
+  for (int i = 0; i < num_objects; i++) {
+    if (!convert_animation_set_object(obj->get_object(i), *animation_set)) {
       return false;
     }
-    hr = obj->GetNextObject(&child_obj);
-  }
-
-  if (hr != DXFILEERR_NOMOREOBJECTS) {
-    xfile_cat.error()
-      << "Error extracting children of AnimationSet " 
-      << get_object_name(obj) << ".\n";
-    delete animation_set;
-    return false;
   }
 
   _animation_sets.push_back(animation_set);
@@ -673,65 +480,18 @@ convert_animation_set(LPDIRECTXFILEDATA obj) {
 //               AnimationSet.
 ////////////////////////////////////////////////////////////////////
 bool XFileToEggConverter::
-convert_animation_set_object(LPDIRECTXFILEOBJECT obj, 
+convert_animation_set_object(XFileDataNode *obj, 
                              XFileAnimationSet &animation_set) {
-  HRESULT hr;
-  LPDIRECTXFILEDATA data_obj;
-  LPDIRECTXFILEDATAREFERENCE ref_obj;
-
-  // See if the object is a data object.
-  hr = obj->QueryInterface(IID_IDirectXFileData, (void **)&data_obj);
-  if (hr == DD_OK) {
-    // It is.
-    return convert_animation_set_data_object(data_obj, animation_set);
-  }
-
-  // Or maybe it's a reference to a previous object.
-  hr = obj->QueryInterface(IID_IDirectXFileDataReference, (void **)&ref_obj);
-  if (hr == DD_OK) {
-    // It is.
-    if (ref_obj->Resolve(&data_obj) == DXFILE_OK) {
-      return convert_animation_set_data_object(data_obj, animation_set);
-    }
-  }
-
-  // It isn't.
-  if (xfile_cat.is_debug()) {
-    xfile_cat.debug()
-      << "Ignoring animation set object of unknown type: "
-      << get_object_name(obj) << "\n";
-  }
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_animation_set_data_object
-//       Access: Private
-//  Description: Converts the indicated data object, a child of a
-//               AnimationSet.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_animation_set_data_object(LPDIRECTXFILEDATA obj, XFileAnimationSet &animation_set) {
-  HRESULT hr;
-
-  // Determine what type of data object we have.
-  const GUID *type;
-  hr = obj->GetType(&type);
-  if (hr != DXFILE_OK) {
-    xfile_cat.error()
-      << "Unable to get type of template\n";
-    return false;
-  }
-
-  if (*type == TID_D3DRMAnimation) {
+  if (obj->is_standard_object("Animation")) {
     if (!convert_animation(obj, animation_set)) {
       return false;
     }
+
   } else {
     if (xfile_cat.is_debug()) {
       xfile_cat.debug()
-        << "Ignoring animation set data object of unknown type: "
-        << get_object_name(obj) << "\n";
+        << "Ignoring animation set object of unknown type: "
+        << obj->get_template_name() << "\n";
     }
   }
   
@@ -744,13 +504,10 @@ convert_animation_set_data_object(LPDIRECTXFILEDATA obj, XFileAnimationSet &anim
 //  Description: Converts the indicated Animation template object.
 ////////////////////////////////////////////////////////////////////
 bool XFileToEggConverter::
-convert_animation(LPDIRECTXFILEDATA obj, XFileAnimationSet &animation_set) {
-  HRESULT hr;
-
+convert_animation(XFileDataNode *obj, XFileAnimationSet &animation_set) {
   // Within an Animation template, we expect to find a reference to a
   // frame, possibly an AnimationOptions object, and one or more
   // AnimationKey objects.
-  LPDIRECTXFILEOBJECT child_obj;
 
   // First, walk through the list of children, to find the one that is
   // the frame reference.  We need to know this up front so we know
@@ -758,41 +515,19 @@ convert_animation(LPDIRECTXFILEDATA obj, XFileAnimationSet &animation_set) {
   string frame_name;
   bool got_frame_name = false;
 
-  pvector<LPDIRECTXFILEOBJECT> children;
-
-  hr = obj->GetNextObject(&child_obj);
-  while (hr == DXFILE_OK) {
-    LPDIRECTXFILEDATAREFERENCE ref_obj;
-    if (child_obj->QueryInterface(IID_IDirectXFileDataReference, (void **)&ref_obj) == DD_OK) {
-      // Here's a reference!
-      LPDIRECTXFILEDATA data_obj;
-      if (ref_obj->Resolve(&data_obj) == DXFILE_OK) {
-        const GUID *type;
-        if (data_obj->GetType(&type) == DXFILE_OK) {
-          if (*type == TID_D3DRMFrame) {
-            // Ok, this one is a reference to a frame.  Save the name.
-            frame_name = get_object_name(data_obj);
-            got_frame_name = true;
-          }
-        }
-      }
-    } else {
-      children.push_back(child_obj);
+  int num_objects = obj->get_num_objects();
+  int i;
+  for (i = 0; i < num_objects; i++) {
+    XFileDataNode *child = obj->get_object(i);
+    if (child->is_reference() && child->is_standard_object("Frame")) {
+      frame_name = child->get_name();
+      got_frame_name = true;
     }
-
-    hr = obj->GetNextObject(&child_obj);
-  }
-
-  if (hr != DXFILEERR_NOMOREOBJECTS) {
-    xfile_cat.error()
-      << "Error extracting children of Animation " 
-      << get_object_name(obj) << ".\n";
-    return false;
   }
 
   if (!got_frame_name) {
     xfile_cat.error()
-      << "Animation " << get_object_name(obj)
+      << "Animation " << obj->get_name()
       << " includes no reference to a frame.\n";
     return false;
   }
@@ -800,9 +535,8 @@ convert_animation(LPDIRECTXFILEDATA obj, XFileAnimationSet &animation_set) {
   FrameData &table = animation_set.create_frame_data(frame_name);
 
   // Now go back again and get the actual data.
-  pvector<LPDIRECTXFILEOBJECT>::iterator ci;
-  for (ci = children.begin(); ci != children.end(); ++ci) {
-    if (!convert_animation_object((*ci), frame_name, table)) {
+  for (i = 0; i < num_objects; i++) {
+    if (!convert_animation_object(obj->get_object(i), frame_name, table)) {
       return false;
     }
   }
@@ -817,61 +551,15 @@ convert_animation(LPDIRECTXFILEDATA obj, XFileAnimationSet &animation_set) {
 //               Animation.
 ////////////////////////////////////////////////////////////////////
 bool XFileToEggConverter::
-convert_animation_object(LPDIRECTXFILEOBJECT obj, const string &joint_name,
+convert_animation_object(XFileDataNode *obj, const string &joint_name,
                          XFileToEggConverter::FrameData &table) {
-  HRESULT hr;
-  LPDIRECTXFILEDATA data_obj;
-  LPDIRECTXFILEDATAREFERENCE ref_obj;
-
-  // See if the object is a data object.
-  hr = obj->QueryInterface(IID_IDirectXFileData, (void **)&data_obj);
-  if (hr == DD_OK) {
-    // It is.
-    return convert_animation_data_object(data_obj, joint_name, table);
-  }
-
-  // Or maybe it's a reference to a previous object.
-  hr = obj->QueryInterface(IID_IDirectXFileDataReference, (void **)&ref_obj);
-  if (hr == DD_OK) {
-    // It is.
-    if (ref_obj->Resolve(&data_obj) == DXFILE_OK) {
-      return convert_animation_data_object(data_obj, joint_name, table);
-    }
-  }
-
-  // It isn't.
-  if (xfile_cat.is_debug()) {
-    xfile_cat.debug()
-      << "Ignoring animation set object of unknown type: "
-      << get_object_name(obj) << "\n";
-  }
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_animation_data_object
-//       Access: Private
-//  Description: Converts the indicated data object, a child of a
-//               Animation.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_animation_data_object(LPDIRECTXFILEDATA obj, const string &joint_name,
-                              XFileToEggConverter::FrameData &table) {
-  HRESULT hr;
-
-  // Determine what type of data object we have.
-  const GUID *type;
-  hr = obj->GetType(&type);
-  if (hr != DXFILE_OK) {
-    xfile_cat.error()
-      << "Unable to get type of template\n";
-    return false;
-  }
-
-  if (*type == TID_D3DRMAnimationOptions) {
+  if (obj->is_standard_object("AnimationOptions")) {
     // Quietly ignore AnimationOptions.
 
-  } else  if (*type == TID_D3DRMAnimationKey) {
+  } else if (obj->is_standard_object("Frame")) {
+    // Quietly ignore frames, since we already got the frame name.
+
+  } else if (obj->is_standard_object("AnimationKey")) {
     if (!convert_animation_key(obj, joint_name, table)) {
       return false;
     }
@@ -879,8 +567,8 @@ convert_animation_data_object(LPDIRECTXFILEDATA obj, const string &joint_name,
   } else {
     if (xfile_cat.is_debug()) {
       xfile_cat.debug()
-        << "Ignoring animation set data object of unknown type: "
-        << get_object_name(obj) << "\n";
+        << "Ignoring animation object of unknown type: "
+        << obj->get_template_name() << "\n";
     }
   }
   
@@ -893,35 +581,21 @@ convert_animation_data_object(LPDIRECTXFILEDATA obj, const string &joint_name,
 //  Description: Converts the indicated AnimationKey template object.
 ////////////////////////////////////////////////////////////////////
 bool XFileToEggConverter::
-convert_animation_key(LPDIRECTXFILEDATA obj, const string &joint_name, 
+convert_animation_key(XFileDataNode *obj, const string &joint_name, 
                       XFileToEggConverter::FrameData &table) {
-  Datagram raw_data;
-  if (!get_data(obj, raw_data)) {
-    return false;
-  }
+  int key_type = (*obj)["keyType"].i();
+  
+  const XFileDataObject &keys = (*obj)["keys"];
 
-  DatagramIterator di(raw_data);
-  int key_type = di.get_uint32();
-  int nkeys = di.get_uint32();
-
-  for (int i = 0; i < nkeys; i++) {
+  for (int i = 0; i < keys.size(); i++) {
     // We ignore the time value.  It seems to be of questionable value
     // anyway, being of all sorts of crazy scales; and Panda doesn't
     // support timestamped keyframes anyway.  Assume the x file was
     // generated with one frame per frame of animation, and translate
     // accordingly.
-    /*int time =*/ di.get_uint32();
 
-    int nvalues = di.get_uint32();
-    pvector<float> values;
-    values.reserve(nvalues);
-    for (int j = 0; j < nvalues; j++) {
-      float value = di.get_float32();
-      values.push_back(value);
-    }
-
-    if (!set_animation_frame(joint_name, table, i, key_type, 
-                             &values[0], nvalues)) {
+    const XFileDataObject &values = keys[i]["tfkeys"]["values"];
+    if (!set_animation_frame(joint_name, table, i, key_type, values)) {
       return false;
     }
   }
@@ -937,7 +611,7 @@ convert_animation_key(LPDIRECTXFILEDATA obj, const string &joint_name,
 bool XFileToEggConverter::
 set_animation_frame(const string &joint_name, 
                     XFileToEggConverter::FrameData &table, int frame,
-                    int key_type, const float *values, int nvalues) {
+                    int key_type, const XFileDataObject &values) {
   if ((int)table._entries.size() <= frame) {
     nassertr((int)table._entries.size() == frame, false);
     table._entries.push_back(XFileAnimationSet::FrameEntry());
@@ -951,36 +625,36 @@ set_animation_frame(const string &joint_name,
     // Key type 0: rotation.
     // This appears to be a quaternion.  Hope we get the coordinate
     // system right.
-    if (nvalues != 4) {
+    if (values.size() != 4) {
       xfile_cat.error()
         << "Incorrect number of values in animation table: "
-        << nvalues << " for rotation data.\n";
+        << values.size() << " for rotation data.\n";
       return false;
     }
-    frame_entry._rot.set(-values[0], values[1], values[2], values[3]);
+    frame_entry._rot.invert_from(LQuaterniond(values.vec4()));
     table._flags |= XFileAnimationSet::FDF_rot;
     break;
 
   case 1:
-    if (nvalues != 3) {
+    if (values.size() != 3) {
       xfile_cat.error()
         << "Incorrect number of values in animation table: "
-        << nvalues << " for scale data.\n";
+        << values.size() << " for scale data.\n";
       return false;
     }
-    frame_entry._scale.set(values[0], values[1], values[2]);
+    frame_entry._scale = values.vec3();
     table._flags |= XFileAnimationSet::FDF_scale;
     break;
     
   case 2:
     // Key type 2: position
-    if (nvalues != 3) {
+    if (values.size() != 3) {
       xfile_cat.error()
         << "Incorrect number of values in animation table: "
-        << nvalues << " for position data.\n";
+        << values.size() << " for position data.\n";
       return false;
     }
-    frame_entry._trans.set(values[0], values[1], values[2]);
+    frame_entry._trans = values.vec3();
     table._flags |= XFileAnimationSet::FDF_trans;
     break;
 
@@ -992,16 +666,13 @@ set_animation_frame(const string &joint_name,
 
   case 4:
     // Key type 4: full matrix
-    if (nvalues != 16) {
+    if (values.size() != 16) {
       xfile_cat.error()
         << "Incorrect number of values in animation table: "
-        << nvalues << " for matrix data.\n";
+        << values.size() << " for matrix data.\n";
       return false;
     }
-    frame_entry._mat.set(values[0], values[1], values[2], values[3],
-                         values[4], values[5], values[6], values[7],
-                         values[8], values[9], values[10], values[11],
-                         values[12], values[13], values[14], values[15]);
+    frame_entry._mat = values.mat4();
     table._flags |= XFileAnimationSet::FDF_mat;
     break;
 
@@ -1021,470 +692,17 @@ set_animation_frame(const string &joint_name,
 //               structures.
 ////////////////////////////////////////////////////////////////////
 bool XFileToEggConverter::
-convert_mesh(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent, 
-             bool is_toplevel) {
-  HRESULT hr;
-
-  Datagram raw_data;
-  if (!get_data(obj, raw_data)) {
-    return false;
-  }
-
+convert_mesh(XFileDataNode *obj, EggGroupNode *egg_parent) {
   XFileMesh *mesh = new XFileMesh(_egg_data->get_coordinate_system());
-  mesh->set_name(get_object_name(obj));
+  mesh->set_name(obj->get_name());
   mesh->set_egg_parent(egg_parent);
 
-  if (!mesh->read_mesh_data(raw_data)) {
+  if (!mesh->fill_mesh(obj)) {
     delete mesh;
     return false;
   }
 
-  // Now process all the child objects of the mesh.
-  LPDIRECTXFILEOBJECT child_obj;
-
-  hr = obj->GetNextObject(&child_obj);
-  while (hr == DXFILE_OK) {
-    if (!convert_mesh_object(child_obj, *mesh)) {
-      return false;
-    }
-    hr = obj->GetNextObject(&child_obj);
-  }
-
-  if (hr != DXFILEERR_NOMOREOBJECTS) {
-    xfile_cat.error()
-      << "Error extracting children of mesh " << get_object_name(obj)
-      << ".\n";
-    delete mesh;
-    return false;
-  }
-
-  if (is_toplevel) {
-    _toplevel_meshes.push_back(mesh);
-  } else {
-    _meshes.push_back(mesh);
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_mesh_object
-//       Access: Private
-//  Description: Converts the indicated object, a child of a Mesh, to
-//               the appropriate egg structures.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_mesh_object(LPDIRECTXFILEOBJECT obj, XFileMesh &mesh) {
-  HRESULT hr;
-  LPDIRECTXFILEDATA data_obj;
-  LPDIRECTXFILEDATAREFERENCE ref_obj;
-
-  // See if the object is a data object.
-  hr = obj->QueryInterface(IID_IDirectXFileData, (void **)&data_obj);
-  if (hr == DD_OK) {
-    // It is.
-    return convert_mesh_data_object(data_obj, mesh);
-  }
-
-  // Or maybe it's a reference to a previous object.
-  hr = obj->QueryInterface(IID_IDirectXFileDataReference, (void **)&ref_obj);
-  if (hr == DD_OK) {
-    // It is.
-    if (ref_obj->Resolve(&data_obj) == DXFILE_OK) {
-      return convert_mesh_data_object(data_obj, mesh);
-    }
-  }
-
-  // It isn't.
-  if (xfile_cat.is_debug()) {
-    xfile_cat.debug()
-      << "Ignoring mesh object of unknown type: "
-      << get_object_name(obj) << "\n";
-  }
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_mesh_data_object
-//       Access: Private
-//  Description: Converts the indicated data object, a child of a
-//               Mesh, to the appropriate egg structures.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_mesh_data_object(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
-  HRESULT hr;
-
-  // Determine what type of data object we have.
-  const GUID *type;
-  hr = obj->GetType(&type);
-  if (hr != DXFILE_OK) {
-    xfile_cat.error()
-      << "Unable to get type of template\n";
-    return false;
-  }
-
-  if (*type == TID_D3DRMMeshNormals) {
-    if (!convert_mesh_normals(obj, mesh)) {
-      return false;
-    }
-
-  } else if (*type == TID_D3DRMMeshVertexColors) {
-    if (!convert_mesh_colors(obj, mesh)) {
-      return false;
-    }
-
-  } else if (*type == TID_D3DRMMeshTextureCoords) {
-    if (!convert_mesh_uvs(obj, mesh)) {
-      return false;
-    }
-
-  } else if (*type == TID_D3DRMMeshMaterialList) {
-    if (!convert_mesh_material_list(obj, mesh)) {
-      return false;
-    }
-
-  } else if (*type == DXFILEOBJ_XSkinMeshHeader) {
-    // Quietly ignore a skin mesh header.
-    
-  } else if (*type == DXFILEOBJ_SkinWeights) {
-    if (!convert_skin_weights(obj, mesh)) {
-      return false;
-    }
-
-  } else {
-    if (xfile_cat.is_debug()) {
-      xfile_cat.debug()
-        << "Ignoring mesh data object of unknown type: "
-        << get_object_name(obj) << "\n";
-    }
-  }
-  
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_mesh_normals
-//       Access: Private
-//  Description: Converts the indicated MeshNormals template
-//               object.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_mesh_normals(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
-  Datagram raw_data;
-  if (!get_data(obj, raw_data)) {
-    return false;
-  }
-
-  if (!mesh.read_normal_data(raw_data)) {
-    return false;
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_mesh_colors
-//       Access: Private
-//  Description: Converts the indicated MeshVertexColors template
-//               object.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_mesh_colors(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
-  Datagram raw_data;
-  if (!get_data(obj, raw_data)) {
-    return false;
-  }
-
-  if (!mesh.read_color_data(raw_data)) {
-    return false;
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_mesh_uvs
-//       Access: Private
-//  Description: Converts the indicated MeshTextureCoords template
-//               object.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_mesh_uvs(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
-  Datagram raw_data;
-  if (!get_data(obj, raw_data)) {
-    return false;
-  }
-
-  if (!mesh.read_uv_data(raw_data)) {
-    return false;
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_skin_weights
-//       Access: Private
-//  Description: Converts the indicated SkinWeights template
-//               object.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_skin_weights(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
-  Datagram raw_data;
-  if (!get_data(obj, raw_data)) {
-    return false;
-  }
-
-  if (!mesh.read_skin_weights_data(raw_data)) {
-    return false;
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_mesh_material_list
-//       Access: Private
-//  Description: Converts the indicated MeshMaterialList template
-//               object.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_mesh_material_list(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
-  HRESULT hr;
-
-  Datagram raw_data;
-  if (!get_data(obj, raw_data)) {
-    return false;
-  }
-
-  if (!mesh.read_material_list_data(raw_data)) {
-    return false;
-  }
-
-  // Now we need to process the children of the material list.  These
-  // will be the materials.
-  LPDIRECTXFILEOBJECT child_obj;
-
-  hr = obj->GetNextObject(&child_obj);
-  while (hr == DXFILE_OK) {
-    if (!convert_material_list_object(child_obj, mesh)) {
-      return false;
-    }
-    hr = obj->GetNextObject(&child_obj);
-  }
-
-  if (hr != DXFILEERR_NOMOREOBJECTS) {
-    xfile_cat.error()
-      << "Error extracting children of MeshMaterialList "
-      << get_object_name(obj) << ".\n";
-    return false;
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_material_list_object
-//       Access: Private
-//  Description: Converts the indicated object, a child of a
-//               MeshMaterialList.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_material_list_object(LPDIRECTXFILEOBJECT obj, XFileMesh &mesh) {
-  HRESULT hr;
-  LPDIRECTXFILEDATA data_obj;
-  LPDIRECTXFILEDATAREFERENCE ref_obj;
-
-  // See if the object is a data object.
-  hr = obj->QueryInterface(IID_IDirectXFileData, (void **)&data_obj);
-  if (hr == DD_OK) {
-    // It is.
-    return convert_material_list_data_object(data_obj, mesh);
-  }
-
-  // Or maybe it's a reference to a previous object.
-  hr = obj->QueryInterface(IID_IDirectXFileDataReference, (void **)&ref_obj);
-  if (hr == DD_OK) {
-    // It is.
-    if (ref_obj->Resolve(&data_obj) == DXFILE_OK) {
-      return convert_material_list_data_object(data_obj, mesh);
-    }
-  }
-
-  // It isn't.
-  if (xfile_cat.is_debug()) {
-    xfile_cat.debug()
-      << "Ignoring material list object of unknown type: "
-      << get_object_name(obj) << "\n";
-  }
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_material_list_data_object
-//       Access: Private
-//  Description: Converts the indicated data object, a child of a
-//               MeshMaterialList.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_material_list_data_object(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
-  HRESULT hr;
-
-  // Determine what type of data object we have.
-  const GUID *type;
-  hr = obj->GetType(&type);
-  if (hr != DXFILE_OK) {
-    xfile_cat.error()
-      << "Unable to get type of template\n";
-    return false;
-  }
-
-  if (*type == TID_D3DRMMaterial) {
-    if (!convert_material(obj, mesh)) {
-      return false;
-    }
-  } else {
-    if (xfile_cat.is_debug()) {
-      xfile_cat.debug()
-        << "Ignoring material list data object of unknown type: "
-        << get_object_name(obj) << "\n";
-    }
-  }
-  
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_material
-//       Access: Private
-//  Description: Converts the indicated Material template object.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_material(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
-  HRESULT hr;
-
-  Datagram raw_data;
-  if (!get_data(obj, raw_data)) {
-    return false;
-  }
-
-  XFileMaterial *material = new XFileMaterial;
-
-  if (!material->read_material_data(raw_data)) {
-    delete material;
-    return false;
-  }
-
-  mesh.add_material(material);
-
-  // Now we need to process the children of the material.  There
-  // should only be one, and it will be a texture.
-  LPDIRECTXFILEOBJECT child_obj;
-
-  hr = obj->GetNextObject(&child_obj);
-  while (hr == DXFILE_OK) {
-    if (!convert_material_object(child_obj, *material)) {
-      return false;
-    }
-    hr = obj->GetNextObject(&child_obj);
-  }
-
-  if (hr != DXFILEERR_NOMOREOBJECTS) {
-    xfile_cat.error()
-      << "Error extracting children of Material " 
-      << get_object_name(obj) << ".\n";
-    return false;
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_material_object
-//       Access: Private
-//  Description: Converts the indicated object, a child of a
-//               Material.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_material_object(LPDIRECTXFILEOBJECT obj, XFileMaterial &material) {
-  HRESULT hr;
-  LPDIRECTXFILEDATA data_obj;
-  LPDIRECTXFILEDATAREFERENCE ref_obj;
-
-  // See if the object is a data object.
-  hr = obj->QueryInterface(IID_IDirectXFileData, (void **)&data_obj);
-  if (hr == DD_OK) {
-    // It is.
-    return convert_material_data_object(data_obj, material);
-  }
-
-  // Or maybe it's a reference to a previous object.
-  hr = obj->QueryInterface(IID_IDirectXFileDataReference, (void **)&ref_obj);
-  if (hr == DD_OK) {
-    // It is.
-    if (ref_obj->Resolve(&data_obj) == DXFILE_OK) {
-      return convert_material_data_object(data_obj, material);
-    }
-  }
-
-  // It isn't.
-  if (xfile_cat.is_debug()) {
-    xfile_cat.debug()
-      << "Ignoring material object of unknown type: "
-      << get_object_name(obj) << "\n";
-  }
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_material_data_object
-//       Access: Private
-//  Description: Converts the indicated data object, a child of a
-//               Material.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_material_data_object(LPDIRECTXFILEDATA obj, XFileMaterial &material) {
-  HRESULT hr;
-
-  // Determine what type of data object we have.
-  const GUID *type;
-  hr = obj->GetType(&type);
-  if (hr != DXFILE_OK) {
-    xfile_cat.error()
-      << "Unable to get type of template\n";
-    return false;
-  }
-
-  if (*type == TID_D3DRMTextureFilename) {
-    if (!convert_texture(obj, material)) {
-      return false;
-    }
-  } else {
-    if (xfile_cat.is_debug()) {
-      xfile_cat.debug()
-        << "Ignoring material data object of unknown type: "
-        << get_object_name(obj) << "\n";
-    }
-  }
-  
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::convert_texture
-//       Access: Private
-//  Description: Converts the indicated TextureFilename template object.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-convert_texture(LPDIRECTXFILEDATA obj, XFileMaterial &material) {
-  Datagram raw_data;
-  if (!get_data(obj, raw_data)) {
-    return false;
-  }
-
-  if (!material.read_texture_data(raw_data)) {
-    return false;
-  }
+  _meshes.push_back(mesh);
 
   return true;
 }
@@ -1508,16 +726,6 @@ create_polygons() {
   }
   _meshes.clear();
 
-  for (mi = _toplevel_meshes.begin(); mi != _toplevel_meshes.end(); ++mi) {
-    if (!_any_frames) {
-      if (!(*mi)->create_polygons(this)) {
-        okflag = false;
-      }
-    }
-    delete (*mi);
-  }
-  _toplevel_meshes.clear();
-
   return okflag;
 }
 
@@ -1531,11 +739,6 @@ bool XFileToEggConverter::
 create_hierarchy() {
   bool okflag = true;
 
-  if (!_make_char && !_animation_sets.empty()) {
-    xfile_cat.warning()
-      << "Ignoring animation data without -a.\n";
-  }
-
   AnimationSets::const_iterator asi;
   for (asi = _animation_sets.begin(); asi != _animation_sets.end(); ++asi) {
     if (_make_char) {
@@ -1548,58 +751,4 @@ create_hierarchy() {
   _animation_sets.clear();
 
   return okflag;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::get_object_name
-//       Access: Private
-//  Description: Returns the name of the indicated object.
-////////////////////////////////////////////////////////////////////
-string XFileToEggConverter::
-get_object_name(LPDIRECTXFILEOBJECT obj) {
-  HRESULT hr;
-
-  DWORD length = 0;
-  obj->GetName(NULL, &length);
-  
-  if (length == 0) {
-    return string();
-  }
-
-  char *buffer = new char[length];
-  hr = obj->GetName(buffer, &length);
-
-  string result;
-  if (hr != DXFILE_OK) {
-    xfile_cat.error()
-      << "Unable to get object name.\n";
-  } else {
-    result = buffer;
-  }
-
-  delete[] buffer;
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEggConverter::get_data
-//       Access: Private
-//  Description: Extracts out the raw data for the indicated object.
-////////////////////////////////////////////////////////////////////
-bool XFileToEggConverter::
-get_data(LPDIRECTXFILEDATA obj, Datagram &raw_data) {
-  HRESULT hr;
-  DWORD length;
-  void *data;
-  hr = obj->GetData(NULL, &length, &data);
-  if (hr != DXFILE_OK) {
-    xfile_cat.error()
-      << "Unable to get data for " << get_object_name(obj) << "\n";
-    return false;
-  }
-
-  raw_data.clear();
-  raw_data.append_data(data, length);
-
-  return true;
 }

@@ -357,7 +357,7 @@ object:
 	;
 
 data_parts_list:
-        data_part
+        empty
         | data_parts_list data_part
         ;
 

@@ -18,7 +18,7 @@
 
 #include "xFileMaterial.h"
 #include "xFileToEggConverter.h"
-
+#include "xFileDataNode.h"
 #include "eggMaterial.h"
 #include "eggTexture.h"
 #include "eggPrimitive.h"
@@ -192,63 +192,43 @@ make_x_material(XFileNode *x_meshMaterials, const string &suffix) {
                                   _specular_color, _emissive_color);
 
   if (has_texture()) {
-    XFileDataNode *x_texture = 
-      x_material->add_TextureFilename("texture" + suffix, _texture);
+    x_material->add_TextureFilename("texture" + suffix, _texture);
   }
 
   return x_material;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileMaterial::read_material_data
+//     Function: XFileMaterial::fill_material
 //       Access: Public
 //  Description: Fills the structure based on the raw data from the
-//               Material template.
+//               X file's Material object.
 ////////////////////////////////////////////////////////////////////
 bool XFileMaterial::
-read_material_data(const Datagram &raw_data) {
-  DatagramIterator di(raw_data);
-
-  _face_color[0] = di.get_float32();
-  _face_color[1] = di.get_float32();
-  _face_color[2] = di.get_float32();
-  _face_color[3] = di.get_float32();
-  _power = di.get_float32();
-  _specular_color[0] = di.get_float32();
-  _specular_color[1] = di.get_float32();
-  _specular_color[2] = di.get_float32();
-  _emissive_color[0] = di.get_float32();
-  _emissive_color[1] = di.get_float32();
-  _emissive_color[2] = di.get_float32();
+fill_material(XFileDataNode *obj) {
+  _face_color = LCAST(float, (*obj)["faceColor"].vec4());
+  _power = (*obj)["faceColor"].d();
+  _specular_color = LCAST(float, (*obj)["specularColor"].vec3());
+  _emissive_color = LCAST(float, (*obj)["emissiveColor"].vec3());
   _has_material = true;
 
-  if (di.get_remaining_size() != 0) {
-    nout << "Ignoring " << di.get_remaining_size()
-         << " trailing MeshMaterial.\n";
+  // Walk through the children of the material.  If there are any,
+  // there should be only one, and it should be just a Texture.
+  int num_objects = obj->get_num_objects();
+  for (int i = 0; i < num_objects; i++) {
+    XFileDataNode *child = obj->get_object(i);
+    if (child->is_standard_object("TextureFilename")) {
+      _texture = Filename::from_os_specific((*child)["filename"].s());
+      _has_texture = true;
+
+    } else {
+      if (xfile_cat.is_debug()) {
+        xfile_cat.debug()
+          << "Ignoring material object of unknown type: "
+          << child->get_template_name() << "\n";
+      }
+    }
   }
 
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: XFileMaterial::read_texture_data
-//       Access: Public
-//  Description: Fills the structure based on the raw data from the
-//               TextureFilename template.
-////////////////////////////////////////////////////////////////////
-bool XFileMaterial::
-read_texture_data(const Datagram &raw_data) {
-  DatagramIterator di(raw_data);
-
-  // The Microsoft convention is to stuff a pointer into a four-byte
-  // field.  Not terribly portable, but that's the interface.
-  const char *ptr = (const char *)di.get_int32();
-  _texture = Filename::from_os_specific(ptr);
-  _has_texture = true;
-
-  if (di.get_remaining_size() != 0) {
-    nout << "Ignoring " << di.get_remaining_size()
-         << " trailing MeshMaterial.\n";
-  }
   return true;
 }

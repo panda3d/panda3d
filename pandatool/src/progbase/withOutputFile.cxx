@@ -57,7 +57,10 @@ get_output() {
   if (_output_ptr == (ostream *)NULL) {
     if (!_got_output_filename) {
       // No filename given; use standard output.
-      nassertr(_allow_stdout, _output_stream);
+      if (!_allow_stdout) {
+        nout << "No output filename specified.\n";
+        exit(1);
+      }
       _output_ptr = &cout;
 
     } else {

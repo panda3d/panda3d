@@ -46,3 +46,15 @@ INLINE XFileTemplate *XFileDataNode::
 get_template() const {
   return _template;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataNode::get_template_name
+//       Access: Public
+//  Description: A convenience function to return the name of the
+//               template used to define this data object.
+////////////////////////////////////////////////////////////////////
+INLINE const string &XFileDataNode::
+get_template_name() const {
+  return _template->get_name();
+}
+

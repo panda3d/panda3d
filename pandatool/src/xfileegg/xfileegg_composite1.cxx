@@ -5,7 +5,6 @@
 #include "xFileMaterial.cxx"
 #include "xFileMesh.cxx"
 #include "xFileNormal.cxx"
-#include "xFileTemplates.cxx"
 #include "xFileToEggConverter.cxx"
 #include "xFileVertex.cxx"
 

@@ -32,17 +32,3 @@
      xFileTemplate.cxx xFileTemplate.I xFileTemplate.h
 
 #end ss_lib_target
-
-#begin test_bin_target
-  #define TARGET x-trans
-  #define LOCAL_LIBS \
-    progbase xfile
-  #define OTHER_LIBS \
-    linmath:c panda:m \
-    express:c pandaexpress:m \
-    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
-
-  #define SOURCES \
-    xFileTrans.cxx xFileTrans.h
-
-#end test_bin_target

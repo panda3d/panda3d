@@ -35,6 +35,7 @@ class XFileParseDataList;
 class XFileDataDef;
 class XFileDataObject;
 class XFileDataNode;
+class XFileDataNodeTemplate;
 class Filename;
 
 ////////////////////////////////////////////////////////////////////
@@ -57,9 +58,15 @@ public:
   int find_child_index(const XFileNode *child) const;
   XFileNode *find_descendent(const string &name) const;
 
+  INLINE int get_num_objects() const;
+  INLINE XFileDataNode *get_object(int n) const;
+
   virtual bool has_guid() const;
   virtual const WindowsGuid &get_guid() const;
 
+  virtual bool is_template_def() const;
+  virtual bool is_reference() const;
+  virtual bool is_object() const;
   virtual bool is_standard_object(const string &template_name) const;
 
   void add_child(XFileNode *node);
@@ -103,6 +110,9 @@ protected:
   
   typedef pvector< PT(XFileNode) > Children;
   Children _children;
+  
+  typedef pvector<XFileDataNode *> Objects;
+  Objects _objects;
 
   typedef pmap<string, int> ChildrenByName;
   ChildrenByName _children_by_name;
@@ -125,6 +135,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class XFileDataNodeReference;
 };
 
 #include "xFileNode.I"

@@ -48,12 +48,11 @@ public:
   bool has_texture() const;
 
   XFileDataNode *make_x_material(XFileNode *x_meshMaterials, const string &suffix);
-  bool read_material_data(const Datagram &raw_data);
-  bool read_texture_data(const Datagram &raw_data);
+  bool fill_material(XFileDataNode *obj);
 
 private:
   Colorf _face_color;
-  float _power;
+  double _power;
   RGBColorf _specular_color;
   RGBColorf _emissive_color;
   Filename _texture;

@@ -32,6 +32,34 @@ XFileDataNodeReference(XFileDataNodeTemplate *object) :
                 object->get_template()),
   _object(object)
 {
+  // We steal a copy of the referenced object's children.  This is
+  // just a one-time copy, so if you go and change the list of
+  // children of the referenced object, it won't be reflected here in
+  // the reference.  Since presumably the reference is only used when
+  // parsing static files, that shouldn't be a problem; but you do
+  // need to be aware of it.
+  _children = object->_children;
+  _objects = object->_objects;
+  _children_by_name = object->_children_by_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataNodeReference::is_reference
+//       Access: Public, Virtual
+//  Description: Returns true if this node represents an indirect
+//               reference to an object defined previously in the
+//               file.  References are generally transparent, so in
+//               most cases you never need to call this, unless you
+//               actually need to differentiate between references and
+//               instances; you can simply use the reference node as
+//               if it were itself the object it references.
+//
+//               If this returns true, the node must be of type
+//               XFileDataNodeReference.
+////////////////////////////////////////////////////////////////////
+bool XFileDataNodeReference::
+is_reference() const {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,8 +104,8 @@ get_num_elements() const {
 //  Description: Returns the nth nested data element within the
 //               object.
 ////////////////////////////////////////////////////////////////////
-const XFileDataObject *XFileDataNodeReference::
-get_element(int n) const {
+XFileDataObject *XFileDataNodeReference::
+get_element(int n) {
   return &((*_object)[n]);
 }
 
@@ -87,7 +115,7 @@ get_element(int n) const {
 //  Description: Returns the nested data element within the
 //               object that has the indicated name.
 ////////////////////////////////////////////////////////////////////
-const XFileDataObject *XFileDataNodeReference::
-get_element(const string &name) const {
+XFileDataObject *XFileDataNodeReference::
+get_element(const string &name) {
   return &((*_object)[name]);
 }

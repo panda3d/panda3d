@@ -42,14 +42,31 @@ public:
   INLINE const XFileDataDef *get_data_def() const;
 
   virtual bool is_complex_object() const;
+  virtual string get_type_name() const;
 
   INLINE void operator = (int int_value);
   INLINE void operator = (double double_value);
   INLINE void operator = (const string &string_value);
+  INLINE void operator = (const LVecBase2d &vec);
+  INLINE void operator = (const LVecBase3d &vec);
+  INLINE void operator = (const LVecBase4d &vec);
+  INLINE void operator = (const LMatrix4d &mat);
+
+  INLINE void set(int int_value);
+  INLINE void set(double double_value);
+  INLINE void set(const string &string_value);
+  INLINE void set(const LVecBase2d &vec);
+  INLINE void set(const LVecBase3d &vec);
+  INLINE void set(const LVecBase4d &vec);
+  INLINE void set(const LMatrix4d &mat);
 
   INLINE int i() const;
   INLINE double d() const;
   INLINE string s() const;
+  INLINE LVecBase2d vec2() const;
+  INLINE LVecBase3d vec3() const;
+  INLINE LVecBase4d vec4() const;
+  INLINE LMatrix4d mat4() const;
 
   INLINE int size() const;
   INLINE const XFileDataObject &operator [] (int n) const;
@@ -85,10 +102,12 @@ protected:
   virtual void set_int_value(int int_value);
   virtual void set_double_value(double double_value);
   virtual void set_string_value(const string &string_value);
+  void store_double_array(int num_elements, const double *values);
 
   virtual int get_int_value() const;
   virtual double get_double_value() const;
   virtual string get_string_value() const;
+  void get_double_array(int num_elements, double *values) const;
 
   virtual int get_num_elements() const;
   virtual XFileDataObject *get_element(int n);

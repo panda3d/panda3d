@@ -38,6 +38,8 @@ public:
   virtual bool has_guid() const;
   virtual const WindowsGuid &get_guid() const;
 
+  virtual bool is_template_def() const;
+
   virtual void clear();
   virtual void write_text(ostream &out, int indent_level) const;
 

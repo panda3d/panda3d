@@ -19,7 +19,6 @@
 #include "xFileMaker.h"
 #include "xFileMesh.h"
 #include "xFileMaterial.h"
-#include "xFileTemplates.h"
 #include "config_xfile.h"
 
 #include "notify.h"
@@ -81,7 +80,7 @@ add_tree(EggData &egg_data) {
 
   // Now collect all the polygons together into polysets.
   EggPolysetMaker pmaker;
-  int num_bins = pmaker.make_bins(&egg_data);
+  pmaker.make_bins(&egg_data);
 
   // And now we're ready to traverse the egg hierarchy.
   if (!recurse_nodes(&egg_data, _x_file)) {
@@ -271,58 +270,5 @@ finalize_mesh(XFileNode *x_parent, XFileMesh *mesh) {
   // Finally, create the Mesh object.
   mesh->make_x_mesh(x_parent, mesh_index);
 
-  /*
-  if (mesh->has_materials()) {
-    // Tack on material definitions.
-    LPDIRECTXFILEDATA xmaterial_list;
-    mesh->make_material_list_data(raw_data);
-    if (!create_object(xmaterial_list, TID_D3DRMMeshMaterialList, 
-                       "materials" + mesh_index, raw_data)) {
-      return false;
-    }
-
-    // Now we need to iterate through the list of Materials
-    // themselves, and add *these* as children of the material list.
-    int num_materials = mesh->get_num_materials();
-    for (int i = 0; i < num_materials; i++) {
-      XFileMaterial *material = mesh->get_material(i);
-      LPDIRECTXFILEDATA xmaterial;
-      material->make_material_data(raw_data);
-      if (!create_object(xmaterial, TID_D3DRMMaterial, 
-                         "material" + mesh_index + "_" + format_string(i),
-                         raw_data)) {
-        return false;
-      }
-
-      // Also, if the Material has a texture map, we must add *this*
-      // as a child of the material.  What a weird system.
-      if (material->has_texture()) {
-        LPDIRECTXFILEDATA xtexture;
-        material->make_texture_data(raw_data);
-        if (!create_object(xtexture, TID_D3DRMTextureFilename, 
-                           "texture" + mesh_index + "_" + format_string(i),
-                           raw_data)) {
-          return false;
-        }
-
-        if (!attach_and_release(xtexture, xmaterial)) {
-          return false;
-        }
-      }
-
-      if (!attach_and_release(xmaterial, xmaterial_list)) {
-        return false;
-      }
-    }
-
-    if (!attach_and_release(xmaterial_list, xobj)) {
-      return false;
-    }
-  }
-
-  if (!attach_and_release(xobj, x_parent)) {
-    return false;
-  }
-  */
   return true;
 }

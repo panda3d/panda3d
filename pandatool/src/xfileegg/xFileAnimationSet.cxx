@@ -90,7 +90,6 @@ create_hierarchy(XFileToEggConverter *converter) {
   // Put some data in the empty tables also.
   Tables::iterator ti;
   for (ti = _tables.begin(); ti != _tables.end(); ++ti) {
-    const string &joint_name = (*ti).first;
     EggXfmSAnim *anim_table = (*ti).second._table;
     EggGroup *joint = (*ti).second._joint;
     if (anim_table->empty() && joint != (EggGroup *)NULL) {

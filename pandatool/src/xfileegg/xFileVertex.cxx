@@ -32,7 +32,7 @@ XFileVertex() {
   _has_uv = false;
   _point.set(0.0, 0.0, 0.0);
   _uv.set(0.0, 0.0);
-  _color.set(1.0, 1.0, 1.0, 1.0);
+  _color.set(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,7 +53,7 @@ set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
     pos = pos * egg_prim->get_vertex_to_node();
   }
 
-  _point = LCAST(float, pos);
+  _point = pos;
 
   if (egg_vertex->has_uv()) {
     TexCoordd uv = egg_vertex->get_uv();
