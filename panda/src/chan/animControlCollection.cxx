@@ -229,3 +229,26 @@ which_anim_playing() const {
 
   return result;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimControlCollection::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AnimControlCollection::
+output(ostream &out) const {
+  out << _controls.size() << " anims.";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimControlCollection::write
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AnimControlCollection::
+write(ostream &out) const {
+  Controls::const_iterator ci;
+  for (ci = _controls.begin(); ci != _controls.end(); ++ci) {
+    out << (*ci).first << ": " << *(*ci).second << "\n";
+  }
+}

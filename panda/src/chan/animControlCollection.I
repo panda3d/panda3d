@@ -239,3 +239,10 @@ get_num_frames(const string &anim_name) const {
   }
   return control->get_num_frames();
 }
+
+INLINE ostream &
+operator << (ostream &out, const AnimControlCollection &collection) {
+  collection.output(out);
+  return out;
+}
+

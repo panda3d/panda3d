@@ -362,6 +362,18 @@ get_part() const {
   return DCAST(PartBundle, _part);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AnimControl::output
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void AnimControl::
+output(ostream &out) const {
+  out << "AnimControl(" << get_part()->get_name()
+      << ", " << get_anim()->get_name() << ")";
+}
+
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::advance_time
@@ -456,18 +468,6 @@ void AnimControl::
 mark_channels() {
   _marked_frame = get_frame();
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: AnimControl::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void AnimControl::
-output(ostream &out) const {
-  out << "AnimControl(" << get_part()->get_name()
-      << ", " << get_anim()->get_name() << ")";
-}
-
 
 
 ////////////////////////////////////////////////////////////////////

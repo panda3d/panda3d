@@ -23,10 +23,9 @@
 
 #include "animControl.h"
 
-#include <event.h>
-#include <pt_Event.h>
+#include "event.h"
+#include "pt_Event.h"
 
-#include <string>
 #include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -84,12 +83,17 @@ PUBLISHED:
 
   string which_anim_playing() const;
 
+  void output(ostream &out) const;
+  void write(ostream &out) const;
+
 private:
   typedef pmap<string,  PT(AnimControl) > Controls;
   Controls _controls;
   CPT_Event _stop_event;
   AnimControl *_last_started_control;
 };
+
+INLINE ostream &operator << (ostream &out, const AnimControlCollection &collection);
 
 #include "animControlCollection.I"
 

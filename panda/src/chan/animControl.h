@@ -74,6 +74,8 @@ PUBLISHED:
   PartBundle *get_part() const;
   INLINE AnimBundle *get_anim() const;
 
+  void output(ostream &out) const;
+
 public:
   // The following functions aren't really part of the public
   // interface; they're just public so we don't have to declare a
@@ -85,8 +87,6 @@ public:
   void mark_channels();
 
   INLINE int get_channel_index() const;
-
-  void output(ostream &out) const;
 
 private:
 
