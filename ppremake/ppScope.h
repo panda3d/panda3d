@@ -16,7 +16,7 @@ class PPDirectory;
 class PPSubroutine;
 
 ///////////////////////////////////////////////////////////////////
-// 	 Class : PPScope
+//   Class : PPScope
 // Description : Defines a (possibly nested) scope for variable
 //               definitions.  Variables may be defined in a
 //               system-wide variable file, in a template file, or in
@@ -37,11 +37,11 @@ public:
   bool set_variable(const string &varname, const string &definition);
   void define_map_variable(const string &varname, const string &definition);
   void define_map_variable(const string &varname, const string &key_varname,
-			   const string &scope_names);
+               const string &scope_names);
   void add_to_map_variable(const string &varname, const string &key,
-			   PPScope *scope);
+               PPScope *scope);
   void define_formals(const string &subroutine_name,
-		      const vector<string> &formals, const string &actuals);
+              const vector<string> &formals, const string &actuals);
 
   string get_variable(const string &varname);
   string expand_variable(const string &varname);
@@ -58,7 +58,7 @@ public:
   static PPScope *get_bottom_scope();
 
   void tokenize_params(const string &str, vector<string> &tokens,
-		       bool expand);
+               bool expand);
   bool tokenize_numeric_pair(const string &str, double &a, double &b);
 
   static MapVariableDefinition _null_map_def;
@@ -76,9 +76,9 @@ private:
   string r_expand_string(const string &str, ExpandedVariable *expanded);
   string r_scan_variable(const string &str, size_t &vp);
   string r_expand_variable(const string &str, size_t &vp,
-			   PPScope::ExpandedVariable *expanded);
+               PPScope::ExpandedVariable *expanded);
   string expand_variable_nested(const string &varname, 
-				const string &scope_names);
+                const string &scope_names);
 
   string expand_isfullpath(const string &params);
   string expand_osfilename(const string &params);
@@ -112,6 +112,7 @@ private:
   string expand_unique(const string &params);
   string expand_matrix(const string &params);
   string expand_if(const string &params);
+  string expand_defined(const string &params);
   string expand_eq(const string &params);
   string expand_ne(const string &params);
   string expand_eqn(const string &params);
@@ -132,15 +133,15 @@ private:
   string expand_foreach(const string &params);
   string expand_forscopes(const string &params);
   string expand_function(const string &funcname, const PPSubroutine *sub,
-			 const string &params);
+             const string &params);
   string expand_map_variable(const string &varname, const string &params);
   string expand_map_variable(const string &varname, const string &expression,
-			     const vector<string> &keys);
+                 const vector<string> &keys);
 
   void
   r_expand_matrix(vector<string> &results,
-		  const vector<vector<string> > &words,
-		  int index, const string &prefix);
+          const vector<vector<string> > &words,
+          int index, const string &prefix);
 
   MapVariableDefinition &
   p_find_map_variable(const string &varname);
