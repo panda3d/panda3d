@@ -19,7 +19,7 @@
 #ifndef SOFTFILENAME_H
 #define SOFTFILENAME_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SoftFilename
@@ -59,6 +59,9 @@ public:
   void set_in_cvs(bool in_cvs);
   bool get_in_cvs() const;
 
+  void set_wants_cvs(bool wants_cvs);
+  bool get_wants_cvs() const;
+
   void increment_use_count();
   int get_use_count() const;
 
@@ -71,6 +74,7 @@ private:
   int _minor;
   string _ext;
   bool _in_cvs;
+  bool _wants_cvs;
   int _use_count;
 };
 

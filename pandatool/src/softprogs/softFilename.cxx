@@ -18,7 +18,7 @@
 
 #include "softFilename.h"
 
-#include <notify.h>
+#include "notify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftFilename::Constructor
@@ -34,6 +34,7 @@ SoftFilename(const string &dirname, const string &filename) :
   _major = 0;
   _minor = 0;
   _in_cvs = false;
+  _wants_cvs = false;
   _use_count = 0;
 
   _base = _filename;
@@ -82,6 +83,7 @@ SoftFilename(const SoftFilename &copy) :
   _minor(copy._minor),
   _ext(copy._ext),
   _in_cvs(copy._in_cvs),
+  _wants_cvs(copy._wants_cvs),
   _use_count(copy._use_count)
 {
 }
@@ -101,6 +103,7 @@ operator = (const SoftFilename &copy) {
   _minor = copy._minor;
   _ext = copy._ext;
   _in_cvs = copy._in_cvs;
+  _wants_cvs = copy._wants_cvs;
   _use_count = copy._use_count;
 }
 
@@ -297,6 +300,28 @@ set_in_cvs(bool in_cvs) {
 bool SoftFilename::
 get_in_cvs() const {
   return _in_cvs;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftFilename::set_wants_cvs
+//       Access: Public
+//  Description: Sets the flag that indicates whether this file 
+//               should be entered into the CVS database.
+////////////////////////////////////////////////////////////////////
+void SoftFilename::
+set_wants_cvs(bool wants_cvs) {
+  _wants_cvs = wants_cvs;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftFilename::get_wants_cvs
+//       Access: Public
+//  Description: Returns true if this file should be entered into the
+//               CVS database, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool SoftFilename::
+get_wants_cvs() const {
+  return _wants_cvs;
 }
 
 ////////////////////////////////////////////////////////////////////
