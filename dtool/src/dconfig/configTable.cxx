@@ -239,6 +239,10 @@ void ConfigTable::ReadConfigFile() {
       IPipeStream ifs(line);
       ParseConfigFile(ifs, config_file);
     } else {
+      #if 0
+        microconfig_cat->info() << "Reading .prc file '" << config_file << "'"<< endl;
+      #endif
+
       if (microconfig_cat->is_spam())
         microconfig_cat->spam()
           << "file is not executable, reading normally" << endl;
