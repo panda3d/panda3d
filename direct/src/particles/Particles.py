@@ -25,7 +25,6 @@ import SphereVolumeEmitter
 import TangentRingEmitter
 import string
 import os
-import DirectSelection
 import DirectNotifyGlobal
 
 SparkleParticleRenderer.SparkleParticleRenderer.SPNOSCALE = 0
@@ -135,6 +134,9 @@ class Particles(ParticleSystem.ParticleSystem):
 	elif (type == "GeomParticleRenderer"):
 	    self.renderer = GeomParticleRenderer.GeomParticleRenderer()
 	    npath = hidden.attachNewNode(NamedNode('default-geom'))
+            # This was moved here because we do not want to download
+            # the direct tools with toontown.
+            import DirectSelection
 	    bbox = DirectSelection.DirectBoundingBox(npath)
 	    self.renderer.setGeomNode(bbox.lines.node())
 	elif (type == "SparkleParticleRenderer"):

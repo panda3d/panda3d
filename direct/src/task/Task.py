@@ -316,16 +316,12 @@ class TaskManager:
             self.removeTask(task)
 
     def removeTask(self, task):
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('removing task: ' + `task`)
-        removed = 0
-        try:
+        # if TaskManager.notify.getDebug():
+        #     TaskManager.notify.debug('removing task: ' + `task`)
+        if task in self.taskList:
             self.taskList.remove(task)
-            removed = 1
-        except:
-            pass
-        if (task.uponDeath and removed):
-            task.uponDeath(task)
+            if task.uponDeath:
+                task.uponDeath(task)
 
     def removeTasksNamed(self, taskName):
         if TaskManager.notify.getDebug():

@@ -37,11 +37,12 @@ class Messenger:
         to this event, otherwise it will respond only once.
         """
 
-        Messenger.notify.debug('object: ' + `object`
-                  + '\n now accepting: ' + `event`
-                  + '\n method: ' + `method`
-                  + '\n extraArgs: ' + `extraArgs`
-                  + '\n persistent: ' + `persistent`)
+        if Messenger.notify.getDebug():
+            Messenger.notify.debug('object: ' + `object`
+                                   + '\n now accepting: ' + `event`
+                                   + '\n method: ' + `method`
+                                   + '\n extraArgs: ' + `extraArgs`
+                                   + '\n persistent: ' + `persistent`)
             
         acceptorDict = ifAbsentPut(self.dict, event, {})
         acceptorDict[object] = [method, extraArgs, persistent]
@@ -51,39 +52,34 @@ class Messenger:
         Make this object no longer respond to this event.
         It is safe to call even if it was not already accepting
         """
+        if Messenger.notify.getDebug():
+            Messenger.notify.debug(`object` + '\n now ignoring: ' + `event`)
 
-        Messenger.notify.debug(`object` + '\n now ignoring: ' + `event`)
-            
-        if self.dict.has_key(event):
-            # Find the dictionary of all the objects accepting this event
-            acceptorDict = self.dict[event]
-            # If this object is there, delete it from the dictionary
-            if acceptorDict.has_key(object):
-                del acceptorDict[object]
+        # Find the dictionary of all the objects accepting this event
+        acceptorDict = self.dict.get(event)
+        # If this object is there, delete it from the dictionary
+        if acceptorDict and acceptorDict.has_key(object):
+            del acceptorDict[object]
             # If this dictionary is now empty, remove the event
             # entry from the Messenger alltogether
             if (len(acceptorDict) == 0):
                 del self.dict[event]
-
-
+    
     def ignoreAll(self, object):
         """ ignoreAll(self, DirectObject)
         Make this object no longer respond to any events it was accepting
         Useful for cleanup
         """
-
-        Messenger.notify.debug(`object` + '\n now ignoring all events')
-
-        for event in self.dict.keys():
-            # Find the dictionary of all the objects accepting this event
-            acceptorDict = self.dict[event]
+        if Messenger.notify.getDebug():
+            Messenger.notify.debug(`object` + '\n now ignoring all events')
+        for event, acceptorDict in self.dict.items():
             # If this object is there, delete it from the dictionary
             if acceptorDict.has_key(object):
                 del acceptorDict[object]
-            # If this dictionary is now empty, remove the event
-            # entry from the Messenger alltogether
-            if (len(acceptorDict) == 0):
-                del self.dict[event]
+                # If this dictionary is now empty, remove the event
+                # entry from the Messenger alltogether
+                if (len(acceptorDict) == 0):
+                    del self.dict[event]
 
 
     def isAccepting(self, event, object):
@@ -94,7 +90,6 @@ class Messenger:
             if self.dict[event].has_key(object):
                 # Found it, return true
                 return 1
-                
         # If we looked in both dictionaries and made it here
         # that object must not be accepting that event.
         return 0
@@ -115,31 +110,31 @@ class Messenger:
         """ send(self, string, [arg1, arg2,...])
         Send this event, optionally passing in arguments
         """
-        
         # Do not print the new frame debug, it is too noisy!
-        if (event != 'NewFrame'):
+        if (Messenger.notify.getDebug() and (event != 'NewFrame')):
             Messenger.notify.debug('sent event: ' + event + ' sentArgs: ' + `sentArgs`)
-
-        if self.dict.has_key(event):
-            acceptorDict = self.dict[event]
-            for object in self.dict[event].keys():
-                # We have to make this apparently redundant check, because
-                # it is possible that one object removes its own hooks
-                # in response to a handler called by a previous object.
-                if acceptorDict.has_key(object):
-                    method, extraArgs, persistent = acceptorDict[object]
-                    apply(method, (extraArgs + sentArgs))
-                    # If this object was only accepting this event once,
-                    # remove it from the dictionary
-                    if not persistent:
-                        # We need to check this because the apply above might
-                        # have done an ignore.
-                        if acceptorDict.has_key(object):
-                            del acceptorDict[object]
-                        # If the dictionary at this event is now empty, remove the event
-                        # entry from the Messenger alltogether
-                        if (self.dict.has_key(event) and (len(self.dict[event]) == 0)):
-                            del self.dict[event]
+        acceptorDict = self.dict.get(event)
+        if not acceptorDict:
+            return
+        for object in acceptorDict.keys():
+            # We have to make this apparently redundant check, because
+            # it is possible that one object removes its own hooks
+            # in response to a handler called by a previous object.
+            callList = acceptorDict.get(object)
+            if callList:
+                method, extraArgs, persistent = callList
+                apply(method, (extraArgs + sentArgs))
+                # If this object was only accepting this event once,
+                # remove it from the dictionary
+                if not persistent:
+                    # We need to check this because the apply above might
+                    # have done an ignore.
+                    if acceptorDict.has_key(object):
+                        del acceptorDict[object]
+                    # If the dictionary at this event is now empty, remove the event
+                    # entry from the Messenger alltogether
+                    if (self.dict.has_key(event) and (len(self.dict[event]) == 0)):
+                        del self.dict[event]
 
     def clear(self):
         """clear(self)
