@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcArrayParameter.h"
+#include "dcSimpleParameter.h"
+#include "dcClassParameter.h"
 #include "hashGenerator.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -275,4 +277,53 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCArrayParameter::do_check_match
+//       Access: Protected, Virtual
+//  Description: Returns true if the other interface is bitwise the
+//               same as this one--that is, a uint32 only matches a
+//               uint32, etc. Names of components, and range limits,
+//               are not compared.
+////////////////////////////////////////////////////////////////////
+bool DCArrayParameter::
+do_check_match(const DCPackerInterface *other) const {
+  return other->do_check_match_array_parameter(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCArrayParameter::do_check_match_simple_parameter
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               simple parameter, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCArrayParameter::
+do_check_match_simple_parameter(const DCSimpleParameter *other) const {
+  return ((const DCPackerInterface *)other)->do_check_match_array_parameter(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCArrayParameter::do_check_match_class_parameter
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               class parameter, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCArrayParameter::
+do_check_match_class_parameter(const DCClassParameter *other) const {
+  return ((const DCPackerInterface *)other)->do_check_match_array_parameter(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCArrayParameter::do_check_match_array_parameter
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               array parameter, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCArrayParameter::
+do_check_match_array_parameter(const DCArrayParameter *other) const {
+  if (_array_size != other->_array_size) {
+    return false;
+  }
+  return _element_type->check_match(other->_element_type);
 }

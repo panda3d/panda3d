@@ -56,6 +56,12 @@ public:
   virtual void generate_hash(HashGenerator &hashgen) const;
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 
+protected:
+  virtual bool do_check_match(const DCPackerInterface *other) const;
+  virtual bool do_check_match_simple_parameter(const DCSimpleParameter *other) const;
+  virtual bool do_check_match_class_parameter(const DCClassParameter *other) const;
+  virtual bool do_check_match_array_parameter(const DCArrayParameter *other) const;
+
 private:
   DCParameter *_element_type;
   int _array_size;

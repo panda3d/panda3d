@@ -18,6 +18,8 @@
 
 #include "dcPackerInterface.h"
 #include "dcPackerCatalog.h"
+#include "dcParserDefs.h"
+#include "dcLexerDefs.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::Constructor
@@ -149,6 +151,42 @@ as_class_parameter() {
 const DCClassParameter *DCPackerInterface::
 as_class_parameter() const {
   return (DCClassParameter *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::check_match
+//       Access: Published
+//  Description: Returns true if this interface is bitwise the same as
+//               the interface described with the indicated formatted
+//               string, e.g. "(uint8, uint8, int16)", or false
+//               otherwise.
+//
+//               If DCFile is not NULL, it specifies the DCFile that
+//               was previously loaded, from which some predefined
+//               structs and typedefs may be referenced in the
+//               description string.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+check_match(const string &description, DCFile *dcfile) const {
+  bool match = false;
+
+  istringstream strm(description);
+  dc_init_parser_parameter_description(strm, "check_match", dcfile);
+  dcyyparse();
+  dc_cleanup_parser();
+
+  DCField *field = dc_get_parameter_description();
+  if (field != NULL) {
+    match = check_match(field);
+    delete field;
+  }
+
+  if (dc_error_count() == 0) {
+    return match;
+  }
+
+  // Parse error: no match is allowed.
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -415,6 +453,72 @@ get_catalog() const {
     ((DCPackerInterface *)this)->make_catalog();
   }
   return _catalog;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::do_check_match_simple_parameter
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               simple parameter, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+do_check_match_simple_parameter(const DCSimpleParameter *) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::do_check_match_class_parameter
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               class parameter, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+do_check_match_class_parameter(const DCClassParameter *) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::do_check_match_switch_parameter
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               switch parameter, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+do_check_match_switch_parameter(const DCSwitchParameter *) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::do_check_match_array_parameter
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               array parameter, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+do_check_match_array_parameter(const DCArrayParameter *) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::do_check_match_atomic_field
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               atomic field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+do_check_match_atomic_field(const DCAtomicField *) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::do_check_match_molecular_field
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               molecular field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+do_check_match_molecular_field(const DCMolecularField *) const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

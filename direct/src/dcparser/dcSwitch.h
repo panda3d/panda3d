@@ -70,6 +70,8 @@ public:
   virtual void generate_hash(HashGenerator &hashgen) const;
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 
+  bool do_check_match_switch(const DCSwitch *other) const;
+
 public:
   typedef pvector<DCField *> Fields;
   typedef pmap<string, DCField *> FieldsByName;
@@ -81,7 +83,12 @@ public:
     virtual DCPackerInterface *get_nested_field(int n) const;
 
     bool add_field(DCField *field);
+    bool do_check_match_switch_case(const SwitchCase *other) const;
 
+  protected:
+    virtual bool do_check_match(const DCPackerInterface *other) const;
+
+  public:
     string _value;
     Fields _fields;
     FieldsByName _fields_by_name;

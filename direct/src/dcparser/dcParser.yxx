@@ -37,6 +37,7 @@ static DCPacker default_packer;
 static DCPacker *current_packer;
 static DCDoubleRange double_range;
 static DCUnsignedIntRange uint_range;
+static DCField *parameter_description = (DCField *)NULL;
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
@@ -55,6 +56,20 @@ dc_init_parser_parameter_value(istream &in, const string &filename,
   current_packer = &packer;
   dc_init_lexer(in, filename);
   dc_start_parameter_value();
+}
+
+void
+dc_init_parser_parameter_description(istream &in, const string &filename,
+                                     DCFile *file) {
+  dc_file = file;
+  dc_init_lexer(in, filename);
+  parameter_description = NULL;
+  dc_start_parameter_description();
+}
+
+DCField *
+dc_get_parameter_description() {
+  return parameter_description;
 }
 
 void
@@ -113,6 +128,7 @@ dc_cleanup_parser() {
    of the input stream. */
 %token START_DC
 %token START_PARAMETER_VALUE
+%token START_PARAMETER_DESCRIPTION
 
 %type <u.atomic> atomic_name
 %type <u.s_int> server_flags
@@ -124,6 +140,7 @@ dc_cleanup_parser() {
 %type <u.dclass> struct_name
 %type <u.dclass> struct
 %type <u.field> struct_field
+%type <u.field> parameter_description
 %type <u.dswitch> switch
 %type <u.field> switch_field
 %type <u.field> atomic_field
@@ -153,6 +170,10 @@ dc_cleanup_parser() {
 grammar:
 	START_DC dc
 	| START_PARAMETER_VALUE	parameter_value
+	| START_PARAMETER_DESCRIPTION parameter_description
+{
+  parameter_description = $2;
+}
 	;
 
 dc:
@@ -229,14 +250,16 @@ import_symbol_list:
 typedef_decl:
         KW_TYPEDEF parameter_with_default
 {
-  DCTypedef *dtypedef = new DCTypedef($2);
-
-  if (!dc_file->add_typedef(dtypedef)) {
-    DCTypedef *old_typedef = dc_file->get_typedef_by_name(dtypedef->get_name());
-    if (old_typedef->is_bogus_typedef()) {
-      yyerror("typedef defined after its first reference: " + dtypedef->get_name());
-    } else {
-      yyerror("Duplicate typedef name: " + dtypedef->get_name());
+  if ($2 != (DCParameter *)NULL) {
+    DCTypedef *dtypedef = new DCTypedef($2);
+    
+    if (!dc_file->add_typedef(dtypedef)) {
+      DCTypedef *old_typedef = dc_file->get_typedef_by_name(dtypedef->get_name());
+      if (old_typedef->is_bogus_typedef()) {
+        yyerror("typedef defined after its first reference: " + dtypedef->get_name());
+      } else {
+        yyerror("Duplicate typedef name: " + dtypedef->get_name());
+      }
     }
   }
 }
@@ -263,17 +286,23 @@ dclass:
 dclass_name:
         IDENTIFIER
 {
-  DCClass *dclass = dc_file->get_class_by_name($1);
-  if (dclass == (DCClass *)NULL) {
-    // Create a bogus class as a forward reference.
-    dclass = new DCClass($1, false, true);
-    dc_file->add_class(dclass);
-  }
-  if (dclass->is_struct()) {
-    yyerror("struct name not allowed");
-  }
+  if (dc_file == (DCFile *)NULL) {
+    yyerror("No DCFile available, so no class names are predefined.");
+    $$ = NULL;
+
+  } else {
+    DCClass *dclass = dc_file->get_class_by_name($1);
+    if (dclass == (DCClass *)NULL) {
+      // Create a bogus class as a forward reference.
+      dclass = new DCClass($1, false, true);
+      dc_file->add_class(dclass);
+    }
+    if (dclass->is_struct()) {
+      yyerror("struct name not allowed");
+    }
   
-  $$ = dclass;
+    $$ = dclass;
+  }
 }
 	;
 
@@ -302,7 +331,9 @@ dclass_fields:
         | dclass_fields ';'
         | dclass_fields dclass_field
 {
-  if (!current_class->add_field($2)) {
+  if ($2 == (DCField *)NULL) {
+    // Pass this error up.
+  } else if (!current_class->add_field($2)) {
     yyerror("Duplicate field name: " + $2->get_name());
   } else if ($2->get_number() < 0) {
     yyerror("A non-network field cannot be stored on a dclass");
@@ -313,20 +344,29 @@ dclass_fields:
 dclass_field:
 	atomic_field server_flags
 {
+  if ($1 != (DCField *)NULL) {
+    if ($1->get_name().empty()) {
+      yyerror("Field name required.");
+    }
+    $1->set_flags($2);
+  }
   $$ = $1;
-  $$->set_flags($2);
 }
 	| molecular_field no_server_flags
 	| unnamed_parameter_with_default server_flags ';'
 {
   yyerror("Unnamed parameters are not allowed on a dclass");
+  if ($1 != (DCField *)NULL) {
+    $1->set_flags($2);
+  }
   $$ = $1;
-  $$->set_flags($2);
 }
 	| named_parameter_with_default server_flags
 {
+  if ($1 != (DCField *)NULL) {
+    $1->set_flags($2);
+  }
   $$ = $1;
-  $$->set_flags($2);
 }
 	;
 
@@ -346,17 +386,23 @@ struct:
 struct_name:
         IDENTIFIER
 {
-  DCClass *dstruct = dc_file->get_class_by_name($1);
-  if (dstruct == (DCClass *)NULL) {
-    // Create a bogus class as a forward reference.
-    dstruct = new DCClass($1, false, true);
-    dc_file->add_class(dstruct);
-  }
-  if (!dstruct->is_struct()) {
-    yyerror("struct name required");
-  }
+  if (dc_file == (DCFile *)NULL) {
+    yyerror("No DCFile available, so no struct names are predefined.");
+    $$ = NULL;
+
+  } else {
+    DCClass *dstruct = dc_file->get_class_by_name($1);
+    if (dstruct == (DCClass *)NULL) {
+      // Create a bogus class as a forward reference.
+      dstruct = new DCClass($1, false, true);
+      dc_file->add_class(dstruct);
+    }
+    if (!dstruct->is_struct()) {
+      yyerror("struct name required");
+    }
   
-  $$ = dstruct;
+    $$ = dstruct;
+  }
 }
 	;
 
@@ -385,7 +431,9 @@ struct_fields:
         | struct_fields ';'
         | struct_fields struct_field
 {
-  if (!current_class->add_field($2)) {
+  if ($2 == (DCField *)NULL) {
+    // Pass this error up.
+  } else if (!current_class->add_field($2)) {
     yyerror("Duplicate field name: " + $2->get_name());
   }
 }
@@ -393,6 +441,12 @@ struct_fields:
 
 struct_field:
 	atomic_field no_server_flags
+{
+  if ($1->get_name().empty()) {
+    yyerror("Field name required.");
+  }
+  $$ = $1;
+}
 	| molecular_field no_server_flags
 	| unnamed_parameter_with_default no_server_flags ';'
 {
@@ -405,7 +459,7 @@ struct_field:
 	;
 
 atomic_field:
-        IDENTIFIER '('
+        optional_name '('
 {
   $$ = current_atomic;
   current_atomic = new DCAtomicField($1);
@@ -430,7 +484,9 @@ nonempty_parameter_list:
 atomic_element:
         parameter_with_default
 {
-  current_atomic->add_element($1);
+  if ($1 != (DCParameter *)NULL) {
+    current_atomic->add_element($1);
+  }
 }
 	;
 
@@ -455,11 +511,16 @@ named_parameter_with_default:
 {
   current_packer = &default_packer;
   current_packer->clear_data();
-  current_packer->begin_pack($1);
+  if ($1 != (DCField *)NULL) {
+    current_packer->begin_pack($1);
+  }
 }
 	parameter_value
 {
-  bool is_valid = $1->is_valid();
+  bool is_valid = false;
+  if ($1 != (DCField *)NULL) {
+    is_valid = $1->is_valid();
+  }
   if (current_packer->end_pack()) {
     $1->set_default_value(current_packer->get_string());
 
@@ -480,11 +541,16 @@ unnamed_parameter_with_default:
 {
   current_packer = &default_packer;
   current_packer->clear_data();
-  current_packer->begin_pack($1);
+  if ($1 != (DCField *)NULL) {
+    current_packer->begin_pack($1);
+  }
 }
 	parameter_value
 {
-  bool is_valid = $1->is_valid();
+  bool is_valid = false;
+  if ($1 != (DCField *)NULL) {
+    is_valid = $1->is_valid();
+  }
   if (current_packer->end_pack()) {
     $1->set_default_value(current_packer->get_string());
 
@@ -508,6 +574,21 @@ parameter_with_default:
         named_parameter_with_default
         | unnamed_parameter_with_default
         ;
+
+parameter_description:
+	atomic_field no_server_flags
+{
+  $$ = $1;
+}
+	| unnamed_parameter_with_default no_server_flags
+{
+  $$ = $1;
+}
+	| named_parameter_with_default no_server_flags
+{
+  $$ = $1;
+}
+	;
 
 type_name:
         type_token
@@ -563,44 +644,62 @@ type_name:
 }
 	| IDENTIFIER
 {
-  DCTypedef *dtypedef = dc_file->get_typedef_by_name($1);
-  if (dtypedef == (DCTypedef *)NULL) {
-    // Maybe it's a class name.
-    DCClass *dclass = dc_file->get_class_by_name($1);
-    if (dclass != (DCClass *)NULL) {
-      if (!dclass->is_struct()) {
-        yyerror("cannot embed a dclass object within a message; use a struct");
-      }
-      // Create an implicit typedef for this.
-      dtypedef = new DCTypedef(new DCClassParameter(dclass), true);
-    } else {
-      // Maybe it's a switch name.
-      DCSwitch *dswitch = dc_file->get_switch_by_name($1);
-      if (dswitch != (DCSwitch *)NULL) {
-        // This also gets an implicit typedef.
-        dtypedef = new DCTypedef(new DCSwitchParameter(dswitch), true);
+  if (dc_file == (DCFile *)NULL) {
+    yyerror("Invalid type.");
+    $$ = NULL;
+
+  } else {
+    DCTypedef *dtypedef = dc_file->get_typedef_by_name($1);
+    if (dtypedef == (DCTypedef *)NULL) {
+      // Maybe it's a class name.
+      DCClass *dclass = dc_file->get_class_by_name($1);
+      if (dclass != (DCClass *)NULL) {
+        if (!dclass->is_struct()) {
+          yyerror("cannot embed a dclass object within a message; use a struct");
+        }
+        // Create an implicit typedef for this.
+        dtypedef = new DCTypedef(new DCClassParameter(dclass), true);
       } else {
-        // It's an undefined typedef.  Create a bogus forward reference.
-        dtypedef = new DCTypedef($1);
+        // Maybe it's a switch name.
+        DCSwitch *dswitch = dc_file->get_switch_by_name($1);
+        if (dswitch != (DCSwitch *)NULL) {
+          // This also gets an implicit typedef.
+          dtypedef = new DCTypedef(new DCSwitchParameter(dswitch), true);
+        } else {
+          // It's an undefined typedef.  Create a bogus forward reference.
+          dtypedef = new DCTypedef($1);
+        }
       }
+      
+      dc_file->add_typedef(dtypedef);
     }
-
-    dc_file->add_typedef(dtypedef);
+    
+    $$ = dtypedef->make_new_parameter();
   }
-
-  $$ = dtypedef->make_new_parameter();
 }
 	| struct
 {
   // This is an inline struct definition.
-  dc_file->add_thing_to_delete($1);
-  $$ = new DCClassParameter($1);
+  if ($1 == (DCClass *)NULL) {
+    $$ = NULL;
+  } else {
+    if (dc_file != (DCFile *)NULL) {
+      dc_file->add_thing_to_delete($1);
+    }
+    $$ = new DCClassParameter($1);
+  }
 }
 	| switch
 {
   // This is an inline switch definition.
-  dc_file->add_thing_to_delete($1);
-  $$ = new DCSwitchParameter($1);
+  if ($1 == (DCSwitch *)NULL) {
+    $$ = NULL;
+  } else {
+    if (dc_file != (DCFile *)NULL) {
+      dc_file->add_thing_to_delete($1);
+    }
+    $$ = new DCSwitchParameter($1);
+  }
 }
 	;
 
@@ -691,7 +790,11 @@ type_definition:
         type_name
 	| type_definition '[' uint_range ']'
 {
-  $$ = new DCArrayParameter($1, uint_range);
+  if ($1 == (DCParameter *)NULL) {
+    $$ = NULL;
+  } else {
+    $$ = new DCArrayParameter($1, uint_range);
+  }
 }
 	;
 
@@ -1078,8 +1181,10 @@ switch_fields:
 {
   if (current_switch->get_num_cases() == 0) {
     yyerror("case declaration required before first element");
-  } else if (!current_switch->add_field($2)) {
-    yyerror("Duplicate field name: " + $2->get_name());
+  } else if ($2 != (DCField *)NULL) {
+    if (!current_switch->add_field($2)) {
+      yyerror("Duplicate field name: " + $2->get_name());
+    }
   }
 }
         ;

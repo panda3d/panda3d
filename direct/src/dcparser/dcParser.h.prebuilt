@@ -45,6 +45,7 @@
 # define	KW_AIRECV	298
 # define	START_DC	299
 # define	START_PARAMETER_VALUE	300
+# define	START_PARAMETER_DESCRIPTION	301
 
 
 extern YYSTYPE dcyylval;

@@ -52,6 +52,10 @@ public:
 
   virtual DCPackerInterface *get_nested_field(int n) const;
 
+protected:
+  virtual bool do_check_match(const DCPackerInterface *other) const;
+  virtual bool do_check_match_molecular_field(const DCMolecularField *other) const;
+
 private:
   // These members define the primary interface to the molecular field
   // definition as read from the file.

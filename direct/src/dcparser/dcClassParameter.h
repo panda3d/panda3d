@@ -50,6 +50,11 @@ public:
                                const string &name, const string &postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 
+protected:
+  virtual bool do_check_match(const DCPackerInterface *other) const;
+  virtual bool do_check_match_class_parameter(const DCClassParameter *other) const;
+  virtual bool do_check_match_array_parameter(const DCArrayParameter *other) const;
+
 private:
   typedef pvector<DCPackerInterface *> Fields;
   Fields _nested_fields;

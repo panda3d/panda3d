@@ -285,6 +285,39 @@ add_element(DCParameter *element) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::do_check_match
+//       Access: Protected, Virtual
+//  Description: Returns true if the other interface is bitwise the
+//               same as this one--that is, a uint32 only matches a
+//               uint32, etc. Names of components, and range limits,
+//               are not compared.
+////////////////////////////////////////////////////////////////////
+bool DCAtomicField::
+do_check_match(const DCPackerInterface *other) const {
+  return other->do_check_match_atomic_field(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::do_check_match_atomic_field
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               atomic field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCAtomicField::
+do_check_match_atomic_field(const DCAtomicField *other) const {
+  if (_elements.size() != other->_elements.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < _elements.size(); i++) {
+    if (!_elements[i]->check_match(other->_elements[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::output_element
 //       Access: Private
 //  Description: 

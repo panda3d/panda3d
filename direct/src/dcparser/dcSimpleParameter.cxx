@@ -19,11 +19,14 @@
 #include "dcSimpleParameter.h"
 #include "dcPackData.h"
 #include "dcTypedef.h"
+#include "dcArrayParameter.h"
+#include "dcClassParameter.h"
+#include "dcClass.h"
 #include "hashGenerator.h"
 #include <math.h>
 
 DCSimpleParameter::NestedFieldMap DCSimpleParameter::_nested_field_map;
-DCSimpleParameter::Uint32Uint8Type *DCSimpleParameter::_uint32uint8_type = NULL;
+DCClassParameter *DCSimpleParameter::_uint32uint8_type = NULL;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::Constructor
@@ -2151,6 +2154,87 @@ generate_hash(HashGenerator &hashgen) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::do_check_match
+//       Access: Protected, Virtual
+//  Description: Returns true if the other interface is bitwise the
+//               same as this one--that is, a uint32 only matches a
+//               uint32, etc. Names of components, and range limits,
+//               are not compared.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleParameter::
+do_check_match(const DCPackerInterface *other) const {
+  return other->do_check_match_simple_parameter(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::do_check_match_simple_parameter
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               simple parameter, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleParameter::
+do_check_match_simple_parameter(const DCSimpleParameter *other) const {
+  if (_divisor != other->_divisor) {
+    return false;
+  }
+
+  if (_type == other->_type) {
+    return true;
+  }
+
+  // Check for certain types that are considered equivalent to each
+  // other.
+  switch (_type) {
+  case ST_uint8:
+  case ST_char:
+    switch (other->_type) {
+    case ST_uint8:
+    case ST_char:
+      return true;
+
+    default:
+      return false;
+    }
+
+  case ST_string:
+  case ST_blob:
+  case ST_uint8array:
+    switch (other->_type) {
+    case ST_string:
+    case ST_blob:
+    case ST_uint8array:
+      return true;
+
+    default:
+      return false;
+    }
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::do_check_match_array_parameter
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               array parameter, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleParameter::
+do_check_match_array_parameter(const DCArrayParameter *other) const {
+  if (other->get_array_size() != -1) {
+    // We cannot match a fixed-size array.
+    return false;
+  }
+  if (_nested_field == NULL) {
+    // Only an array-style simple parameter can match a DCArrayParameter.
+    return false;
+  }
+
+  return _nested_field->check_match(other->get_element_type());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::create_nested_field
 //       Access: Private, Static
 //  Description: Creates the one instance of the DCSimpleParameter
@@ -2180,43 +2264,10 @@ create_nested_field(DCSubatomicType type, unsigned int divisor) {
 DCPackerInterface *DCSimpleParameter::
 create_uint32uint8_type() {
   if (_uint32uint8_type == NULL) {
-    _uint32uint8_type = new Uint32Uint8Type;
+    DCClass *dclass = new DCClass("", true, false);
+    dclass->add_field(new DCSimpleParameter(ST_uint32));
+    dclass->add_field(new DCSimpleParameter(ST_uint8));
+    _uint32uint8_type = new DCClassParameter(dclass);
   }
   return _uint32uint8_type;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::Uint32Uint8Type::Constructor
-//       Access: Public
-//  Description: This special packer interface is provided just to
-//               implement uint32uint8array, which is a special kind
-//               of array that consists of nested pairs of (uint32,
-//               uint8) values.
-////////////////////////////////////////////////////////////////////
-DCSimpleParameter::Uint32Uint8Type::
-Uint32Uint8Type() {
-  _uint32_type = new DCSimpleParameter(ST_uint32);
-  _uint8_type = new DCSimpleParameter(ST_uint8);
-  _has_nested_fields = true;
-  _num_nested_fields = 2;
-  _pack_type = PT_class;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::Uint32Uint8Type::get_nested_field
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-DCPackerInterface *DCSimpleParameter::Uint32Uint8Type::
-get_nested_field(int n) const {
-  switch (n) {
-  case 0:
-    return _uint32_type;
-
-  case 1:
-    return _uint8_type;
-
-  default:
-    return NULL;
-  }
 }

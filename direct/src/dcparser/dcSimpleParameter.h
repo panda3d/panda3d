@@ -89,6 +89,11 @@ public:
                                const string &name, const string &postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 
+protected:
+  virtual bool do_check_match(const DCPackerInterface *other) const;
+  virtual bool do_check_match_simple_parameter(const DCSimpleParameter *other) const;
+  virtual bool do_check_match_array_parameter(const DCArrayParameter *other) const;
+
 private:
   static DCSimpleParameter *create_nested_field(DCSubatomicType type, 
                                                 unsigned int divisor);
@@ -109,22 +114,13 @@ private:
   typedef pmap<DCSubatomicType, DivisorMap> NestedFieldMap;
   static NestedFieldMap _nested_field_map;
 
-  class Uint32Uint8Type : public DCPackerInterface {
-  public:
-    Uint32Uint8Type();
-    virtual DCPackerInterface *get_nested_field(int n) const;
-
-    DCSimpleParameter *_uint32_type;
-    DCSimpleParameter *_uint8_type;
-  };
-
   DCIntRange _int_range;
   DCUnsignedIntRange _uint_range;
   DCInt64Range _int64_range;
   DCUnsignedInt64Range _uint64_range;
   DCDoubleRange _double_range;
 
-  static Uint32Uint8Type *_uint32uint8_type;
+  static DCClassParameter *_uint32uint8_type;
 };
 
 #endif

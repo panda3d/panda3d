@@ -63,6 +63,10 @@ public:
 
   virtual DCPackerInterface *get_nested_field(int n) const;
 
+protected:
+  virtual bool do_check_match(const DCPackerInterface *other) const;
+  virtual bool do_check_match_atomic_field(const DCAtomicField *other) const;
+
 private:
   void output_element(ostream &out, bool brief, DCParameter *element) const;
 

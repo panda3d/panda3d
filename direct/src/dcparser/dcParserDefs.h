@@ -33,6 +33,9 @@ class DCPacker;
 void dc_init_parser(istream &in, const string &filename, DCFile &file);
 void dc_init_parser_parameter_value(istream &in, const string &filename, 
                                     DCPacker &packer);
+void dc_init_parser_parameter_description(istream &in, const string &filename,
+                                          DCFile *file);
+DCField *dc_get_parameter_description();
 void dc_cleanup_parser();
 int dcyyparse();
 

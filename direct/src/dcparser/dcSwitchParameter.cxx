@@ -224,3 +224,27 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
 
   return _dswitch->pack_default_value(pack_data, pack_error);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSwitchParameter::do_check_match
+//       Access: Protected, Virtual
+//  Description: Returns true if the other interface is bitwise the
+//               same as this one--that is, a uint32 only matches a
+//               uint32, etc. Names of components, and range limits,
+//               are not compared.
+////////////////////////////////////////////////////////////////////
+bool DCSwitchParameter::
+do_check_match(const DCPackerInterface *other) const {
+  return other->do_check_match_switch_parameter(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSwitchParameter::do_check_match_switch_parameter
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               switch parameter, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCSwitchParameter::
+do_check_match_switch_parameter(const DCSwitchParameter *other) const {
+  return _dswitch->do_check_match_switch(other->_dswitch);
+}

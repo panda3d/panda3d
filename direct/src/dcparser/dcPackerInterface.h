@@ -22,9 +22,14 @@
 #include "dcbase.h"
 #include "dcSubatomicType.h"
 
+class DCFile;
 class DCField;
+class DCSimpleParameter;
 class DCSwitchParameter;
 class DCClassParameter;
+class DCArrayParameter;
+class DCAtomicField;
+class DCMolecularField;
 class DCPackData;
 class DCPackerCatalog;
 
@@ -83,6 +88,9 @@ PUBLISHED:
   virtual const DCSwitchParameter *as_switch_parameter() const;
   virtual DCClassParameter *as_class_parameter();
   virtual const DCClassParameter *as_class_parameter() const;
+
+  INLINE bool check_match(const DCPackerInterface *other) const;
+  bool check_match(const string &description, DCFile *dcfile = NULL) const;
 
 public:
   INLINE void set_name(const string &name);
@@ -165,6 +173,20 @@ public:
                                             bool &range_error);
 
   const DCPackerCatalog *get_catalog() const;
+
+protected:
+  virtual bool do_check_match(const DCPackerInterface *other) const=0;
+
+public:
+  // These are declared public just so the derived classes can call
+  // them easily.  They're not intended to be called directly.
+
+  virtual bool do_check_match_simple_parameter(const DCSimpleParameter *other) const;
+  virtual bool do_check_match_class_parameter(const DCClassParameter *other) const;
+  virtual bool do_check_match_switch_parameter(const DCSwitchParameter *other) const;
+  virtual bool do_check_match_array_parameter(const DCArrayParameter *other) const;
+  virtual bool do_check_match_atomic_field(const DCAtomicField *other) const;
+  virtual bool do_check_match_molecular_field(const DCMolecularField *other) const;
 
 private:
   void make_catalog();

@@ -56,6 +56,10 @@ public:
   virtual void generate_hash(HashGenerator &hashgen) const;
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 
+protected:
+  virtual bool do_check_match(const DCPackerInterface *other) const;
+  virtual bool do_check_match_switch_parameter(const DCSwitchParameter *other) const;
+
 private:
   const DCSwitch *_dswitch;
 };

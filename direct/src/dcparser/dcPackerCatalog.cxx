@@ -190,8 +190,23 @@ add_entry(const string &name, const DCPackerInterface *field,
 
   int entry_index = (int)_entries.size();
   _entries.push_back(entry);
-  _entries_by_name.insert(EntriesByName::value_type(name, entry_index));
   _entries_by_field.insert(EntriesByField::value_type(field, entry_index));
+
+  // Add an entry for the fully-qualified field name
+  // (e.g. dna.topTex).  If there was another entry for this name
+  // previously, completely replace it--the fully-qualified name is
+  // supposed to be unique and trumps the local field names (which are
+  // not necessarily unique).
+  _entries_by_name[name] = entry_index;
+
+  // We'll also add an entry for the local field name, for the user's
+  // convenience.  This won't override a fully-qualified name that
+  // might already have been recorded, and a fully-qualified name
+  // discovered later that conflicts with this name will replace it.
+  string local_name = field->get_name();
+  if (local_name != name) {
+    _entries_by_name.insert(EntriesByName::value_type(local_name, entry_index));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

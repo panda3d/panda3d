@@ -18,6 +18,7 @@
 
 #include "dcClassParameter.h"
 #include "dcClass.h"
+#include "dcArrayParameter.h"
 #include "hashGenerator.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -175,4 +176,61 @@ void DCClassParameter::
 generate_hash(HashGenerator &hashgen) const {
   DCParameter::generate_hash(hashgen);
   _dclass->generate_hash(hashgen);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClassParameter::do_check_match
+//       Access: Protected, Virtual
+//  Description: Returns true if the other interface is bitwise the
+//               same as this one--that is, a uint32 only matches a
+//               uint32, etc. Names of components, and range limits,
+//               are not compared.
+////////////////////////////////////////////////////////////////////
+bool DCClassParameter::
+do_check_match(const DCPackerInterface *other) const {
+  return other->do_check_match_class_parameter(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClassParameter::do_check_match_class_parameter
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               class parameter, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCClassParameter::
+do_check_match_class_parameter(const DCClassParameter *other) const {
+  if (_nested_fields.size() != other->_nested_fields.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < _nested_fields.size(); i++) {
+    if (!_nested_fields[i]->check_match(other->_nested_fields[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClassParameter::do_check_match_array_parameter
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               array parameter, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCClassParameter::
+do_check_match_array_parameter(const DCArrayParameter *other) const {
+  if ((int)_nested_fields.size() != other->get_array_size()) {
+    // We can only match a fixed-size array whose size happens to
+    // exactly match our number of fields.
+    return false;
+  }
+
+  const DCPackerInterface *element_type = other->get_element_type();
+  for (size_t i = 0; i < _nested_fields.size(); i++) {
+    if (!_nested_fields[i]->check_match(element_type)) {
+      return false;
+    }
+  }
+
+  return true;
 }

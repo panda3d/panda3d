@@ -29,6 +29,19 @@ get_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::check_match
+//       Access: Published
+//  Description: Returns true if the other interface is bitwise the
+//               same as this one--that is, a uint32 only matches a
+//               uint32, etc. Names of components, and range limits,
+//               are not compared.
+////////////////////////////////////////////////////////////////////
+INLINE bool DCPackerInterface::
+check_match(const DCPackerInterface *other) const {
+  return do_check_match(other);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::set_name
 //       Access: Public
 //  Description: Sets the name of this field.

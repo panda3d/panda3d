@@ -192,3 +192,36 @@ get_nested_field(int n) const {
   nassertr(n >= 0 && n < (int)_nested_fields.size(), NULL);
   return _nested_fields[n];
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCMolecularField::do_check_match
+//       Access: Protected, Virtual
+//  Description: Returns true if the other interface is bitwise the
+//               same as this one--that is, a uint32 only matches a
+//               uint32, etc. Names of components, and range limits,
+//               are not compared.
+////////////////////////////////////////////////////////////////////
+bool DCMolecularField::
+do_check_match(const DCPackerInterface *other) const {
+  return other->do_check_match_molecular_field(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCMolecularField::do_check_match_molecular_field
+//       Access: Protected, Virtual
+//  Description: Returns true if this field matches the indicated
+//               molecular field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCMolecularField::
+do_check_match_molecular_field(const DCMolecularField *other) const {
+  if (_nested_fields.size() != other->_nested_fields.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < _nested_fields.size(); i++) {
+    if (!_nested_fields[i]->check_match(other->_nested_fields[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}

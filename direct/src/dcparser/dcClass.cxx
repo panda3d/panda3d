@@ -876,27 +876,29 @@ generate_hash(HashGenerator &hashgen) const {
 ////////////////////////////////////////////////////////////////////
 bool DCClass::
 add_field(DCField *field) {
-  if (!_name.empty() && field->get_name() == _name) {
-    // This field is a constructor.
-    if (_constructor != (DCField *)NULL) {
-      // We already have a constructor.
+  if (!field->get_name().empty()) {
+    if (field->get_name() == _name) {
+      // This field is a constructor.
+      if (_constructor != (DCField *)NULL) {
+        // We already have a constructor.
+        return false;
+      }
+      if (field->as_atomic_field() == (DCAtomicField *)NULL) {
+        // The constructor must be an atomic field.
+        return false;
+      }
+      _constructor = field;
+      _fields_by_name.insert
+        (FieldsByName::value_type(field->get_name(), field));
+      return true;
+    }
+
+    bool inserted = _fields_by_name.insert
+      (FieldsByName::value_type(field->get_name(), field)).second;
+
+    if (!inserted) {
       return false;
     }
-    if (field->as_atomic_field() == (DCAtomicField *)NULL) {
-      // The constructor must be an atomic field.
-      return false;
-    }
-    _constructor = field;
-    _fields_by_name.insert
-      (FieldsByName::value_type(field->get_name(), field));
-    return true;
-  }
-
-  bool inserted = _fields_by_name.insert
-    (FieldsByName::value_type(field->get_name(), field)).second;
-
-  if (!inserted) {
-    return false;
   }
 
   if (!is_struct()) {

@@ -411,6 +411,45 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCSwitch::do_check_match_switch
+//       Access: Public
+//  Description: Returns true if this switch matches the indicated
+//               switch, false otherwise.  This is only intended to be
+//               called internally from
+//               DCSwitchParameter::do_check_match_switch_parameter().
+////////////////////////////////////////////////////////////////////
+bool DCSwitch::
+do_check_match_switch(const DCSwitch *other) const {
+  if (!_key_parameter->check_match(other->_key_parameter)) {
+    return false;
+  }
+
+  if (_cases.size() != other->_cases.size()) {
+    return false;
+  }
+
+  Cases::const_iterator ci;
+  for (ci = _cases.begin(); ci != _cases.end(); ++ci) {
+    const SwitchCase *c1 = (*ci);
+    CasesByValue::const_iterator vi;
+    vi = other->_cases_by_value.find(c1->_value);
+    if (vi == other->_cases_by_value.end()) {
+      // No matching value.
+      return false;
+    }
+    int c2_index = (*vi).second;
+    nassertr(c2_index >= 0 && c2_index < (int)other->_cases.size(), false);
+    const SwitchCase *c2 = other->_cases[c2_index];
+
+    if (!c1->do_check_match_switch_case(c2)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::SwitchCase::Constructor
 //       Access: Public
 //  Description: 
@@ -477,11 +516,13 @@ get_nested_field(int n) const {
 ////////////////////////////////////////////////////////////////////
 bool DCSwitch::SwitchCase::
 add_field(DCField *field) {
-  bool inserted = _fields_by_name.insert
-    (FieldsByName::value_type(field->get_name(), field)).second;
-
-  if (!inserted) {
-    return false;
+  if (!field->get_name().empty()) {
+    bool inserted = _fields_by_name.insert
+      (FieldsByName::value_type(field->get_name(), field)).second;
+    
+    if (!inserted) {
+      return false;
+    }
   }
 
   _fields.push_back(field);
@@ -503,4 +544,41 @@ add_field(DCField *field) {
     _has_default_value = field->has_default_value();
   }
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSwitch::SwitchCase::do_check_match_switch_case
+//       Access: Public
+//  Description: Returns true if this case matches the indicated
+//               case, false otherwise.  This is only intended to be
+//               called internally from
+//               DCSwitch::do_check_match_switch().
+////////////////////////////////////////////////////////////////////
+bool DCSwitch::SwitchCase::
+do_check_match_switch_case(const DCSwitch::SwitchCase *other) const {
+  if (_fields.size() != other->_fields.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < _fields.size(); i++) {
+    if (!_fields[i]->check_match(other->_fields[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSwitch::SwitchCase::do_check_match
+//       Access: Protected, Virtual
+//  Description: Returns true if the other interface is bitwise the
+//               same as this one--that is, a uint32 only matches a
+//               uint32, etc. Names of components, and range limits,
+//               are not compared.
+////////////////////////////////////////////////////////////////////
+bool DCSwitch::SwitchCase::
+do_check_match(const DCPackerInterface *) const {
+  // This should never be called on a SwitchCase.
+  nassertr(false, false);
+  return false;
 }

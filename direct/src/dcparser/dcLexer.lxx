@@ -66,6 +66,13 @@ dc_start_parameter_value() {
   initial_token = START_PARAMETER_VALUE;
 }
 
+void
+dc_start_parameter_description() {
+  /* Set the initial state to begin parsing a parameter description, instead
+     of at the beginning of the dc file. */
+  initial_token = START_PARAMETER_DESCRIPTION;
+}
+
 int
 dc_error_count() {
   return error_count;
@@ -124,6 +131,10 @@ input_chars(char *buffer, int &result, int max_size) {
   if (*inp) {
     inp->read(buffer, max_size);
     result = inp->gcount();
+    if (result >= 0 && result < max_size) {
+      // Truncate at the end of the read.
+      buffer[result] = '\0';
+    }
 
     if (line_number == 0) {
       // This is a special case.  If we are reading the very first bit
