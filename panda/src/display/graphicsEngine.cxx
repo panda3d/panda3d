@@ -73,13 +73,7 @@ GraphicsEngine(Pipeline *pipeline) :
   _windows_sorted = true;
 
   // Default frame buffer properties.
-  _frame_buffer_properties.set_depth_bits(1);
-  _frame_buffer_properties.set_color_bits(1);
-  _frame_buffer_properties.set_frame_buffer_mode
-    (FrameBufferProperties::FM_rgba | 
-     FrameBufferProperties::FM_double_buffer | 
-     FrameBufferProperties::FM_multisample | 
-     FrameBufferProperties::FM_depth);
+  _frame_buffer_properties = FrameBufferProperties::get_default();
 
   set_threading_model(GraphicsThreadingModel(threading_model));
   if (!_threading_model.is_default()) {
@@ -1084,7 +1078,7 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
 
   CullTraverser trav;
   trav.set_cull_handler(cull_handler);
-  trav.set_depth_offset_decals(gsg->depth_offset_decals());
+  trav.set_depth_offset_decals(depth_offset_decals && gsg->depth_offset_decals());
   trav.set_scene(scene_setup);
   
   if (view_frustum_cull) {

@@ -100,15 +100,10 @@ make_gsg(const FrameBufferProperties &properties,
     DCAST_INTO_R(share_gsg, share_with, NULL);
   }
 
-  // Make a copy of the supplied properties so we can possibly modify
-  // them to suit our available properties.
-  FrameBufferProperties new_properties = properties;
-
   // We need a DC to examine the available pixel formats.  We'll use
   // the screen DC.
   HDC hdc = GetDC(NULL);
-  int pfnum = choose_pfnum(new_properties, hdc);
-  ReleaseDC(NULL, hdc);
+  int pfnum = choose_pfnum(properties, hdc);
 
   if (gl_force_pixfmt != 0) {
     wgldisplay_cat.info()
@@ -117,13 +112,18 @@ make_gsg(const FrameBufferProperties &properties,
     pfnum = gl_force_pixfmt;
   }
 
+  FrameBufferProperties new_properties;
+  get_properties(new_properties, hdc, pfnum);
+  ReleaseDC(NULL, hdc);
+
   if (wgldisplay_cat.is_debug()) {
     wgldisplay_cat.debug()
-      << "config() - picking pixfmt #" << pfnum <<endl;
+      << "Picking pixfmt #" << pfnum << " = " 
+      << new_properties << "\n";
   }
 
   PT(wglGraphicsStateGuardian) gsg = 
-    new wglGraphicsStateGuardian(properties, share_gsg, pfnum);
+    new wglGraphicsStateGuardian(new_properties, share_gsg, pfnum);
 
   // Ideally, we should be able to detect whether the share_gsg will
   // be successful, and return NULL if it won't work.  But we can't do
@@ -167,22 +167,24 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
 //               the actual visual chosen.
 ////////////////////////////////////////////////////////////////////
 int wglGraphicsPipe::
-choose_pfnum(FrameBufferProperties &properties, HDC hdc) {
+choose_pfnum(const FrameBufferProperties &properties, HDC hdc) {
   int pfnum;
 
-  if (force_software_renderer) {
-    pfnum = find_pixfmtnum(properties, hdc, false);
-    
-    if (pfnum == 0) {
-      wgldisplay_cat.error()
-        << "Couldn't find compatible software-renderer OpenGL pixfmt, check your window properties!\n";
-      return 0;
-    }
+  int mode = properties.get_frame_buffer_mode();
+  bool hardware = ((mode & FrameBufferProperties::FM_hardware) != 0);
+  bool software = ((mode & FrameBufferProperties::FM_software) != 0);
 
-  } else {
+  // If the user specified neither hardware nor software frame buffer,
+  // he gets either one.
+  if (!hardware && !software) {
+    hardware = true;
+    software = true;
+  }
+
+  if (hardware) {
     pfnum = find_pixfmtnum(properties, hdc, true);
     if (pfnum == 0) {
-      if (allow_software_renderer) {
+      if (software) {
         pfnum = find_pixfmtnum(properties, hdc, false);
         if (pfnum == 0) {
           wgldisplay_cat.error()
@@ -204,6 +206,15 @@ choose_pfnum(FrameBufferProperties &properties, HDC hdc) {
         return 0;
       }
     }
+
+  } else {
+    pfnum = find_pixfmtnum(properties, hdc, false);
+    
+    if (pfnum == 0) {
+      wgldisplay_cat.error()
+        << "Couldn't find compatible software-renderer OpenGL pixfmt, check your window properties!\n";
+      return 0;
+    }
   }
   
   return pfnum;
@@ -218,11 +229,13 @@ choose_pfnum(FrameBufferProperties &properties, HDC hdc) {
 //               not be found.
 ////////////////////////////////////////////////////////////////////
 int wglGraphicsPipe::
-find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
+find_pixfmtnum(const FrameBufferProperties &properties, HDC hdc,
                bool bLookforHW) {
   int frame_buffer_mode = properties.get_frame_buffer_mode();
-  bool want_depth_bits = properties.has_depth_bits();
-  bool want_color_bits = properties.has_color_bits();
+  int depth_bits = properties.get_depth_bits();
+  int color_bits = properties.get_color_bits();
+  int alpha_bits = properties.get_alpha_bits();
+  int stencil_bits = properties.get_stencil_bits();
   OGLDriverType drvtype;
 
   PIXELFORMATDESCRIPTOR pfd;
@@ -313,19 +326,19 @@ find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
     }
 
     if ((frame_buffer_mode & FrameBufferProperties::FM_alpha) != 0 && 
-        (pfd.cAlphaBits==0)) {
+        (pfd.cAlphaBits < alpha_bits)) {
       wgldisplay_cat.debug() 
         << "  rejecting.\n";
       continue;
     }
     if ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0 && 
-        (pfd.cDepthBits==0)) {
+        (pfd.cDepthBits < depth_bits)) {
       wgldisplay_cat.debug() 
         << "  rejecting.\n";
       continue;
     }
     if ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0 && 
-        (pfd.cStencilBits==0)) {
+        (pfd.cStencilBits < stencil_bits)) {
       wgldisplay_cat.debug() 
         << "  rejecting.\n";
       continue;
@@ -338,18 +351,9 @@ find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
       continue;
     }
 
-    // now we ignore the specified want_color_bits for windowed mode
-    // instead we use the current screen depth
-
-    // drose: Does this help anything?  Checking the current screen
-    // depth doesn't make sense if we are rendering offscreen or if we
-    // are planning to open a fullscreen window, and it seems like it
-    // shouldn't be necessary anyway.
-    if ((pfd.cColorBits!=cur_bpp) && 
-        (!((cur_bpp==16) && (pfd.cColorBits==15))) && 
-        (!((cur_bpp==32) && (pfd.cColorBits==24)))) {
+    if (pfd.cColorBits < color_bits) {
       wgldisplay_cat.debug() 
-        << "  rejecting because it doesn't match the screen depth.\n";
+        << "  rejecting.\n";
       continue;
     }
 
@@ -391,6 +395,57 @@ find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
   }
 
   return found_pfnum;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsPipe::get_properties
+//       Access: Private, Static
+//  Description: Gets the FrameBufferProperties to match the
+//               indicated pixel format descriptor.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsPipe::
+get_properties(FrameBufferProperties &properties, HDC hdc,
+               int pfnum) {
+  PIXELFORMATDESCRIPTOR pfd;
+  ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR));
+  pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+  pfd.nVersion = 1;
+
+  DescribePixelFormat(hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+
+  properties.clear();
+
+  int mode = 0;
+  if (pfd.dwFlags & PFD_DOUBLEBUFFER) {
+    mode |= FrameBufferProperties::FM_double_buffer;
+  }
+  if (pfd.dwFlags & PFD_STEREO) {
+    mode |= FrameBufferProperties::FM_stereo;
+  }
+  if (pfd.dwFlags & PFD_GENERIC_FORMAT) {
+    mode |= FrameBufferProperties::FM_software;
+  } else {
+    mode |= FrameBufferProperties::FM_hardware;
+  }
+
+  if (pfd.cColorBits != 0) {
+    mode |= FrameBufferProperties::FM_rgb;
+    properties.set_color_bits(pfd.cColorBits);
+  }
+  if (pfd.cAlphaBits != 0) {
+    mode |= FrameBufferProperties::FM_alpha;
+    properties.set_alpha_bits(pfd.cAlphaBits);
+  }
+  if (pfd.cDepthBits != 0) {
+    mode |= FrameBufferProperties::FM_depth;
+    properties.set_depth_bits(pfd.cDepthBits);
+  }
+  if (pfd.cStencilBits != 0) {
+    mode |= FrameBufferProperties::FM_stencil;
+    properties.set_stencil_bits(pfd.cStencilBits);
+  }
+
+  properties.set_frame_buffer_mode(mode);
 }
 
 ////////////////////////////////////////////////////////////////////

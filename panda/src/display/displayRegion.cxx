@@ -38,6 +38,7 @@ DisplayRegion(GraphicsOutput *window) :
   _active(true),
   _sort(0)
 {
+  _draw_buffer_type = window->get_draw_buffer_type();
   compute_pixels();
 }
 
@@ -55,6 +56,7 @@ DisplayRegion(GraphicsOutput *window, const float l,
   _active(true),
   _sort(0)
 {
+  _draw_buffer_type = window->get_draw_buffer_type();
   compute_pixels();
 }
 

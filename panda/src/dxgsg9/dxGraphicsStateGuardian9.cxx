@@ -73,10 +73,6 @@
 // for sprites, 1000 prims, 6 verts/prim, 24 bytes/vert
 const int VERT_BUFFER_SIZE = (32*6*1024L);
 
-// if defined, pandadx only handles 1 panda display region
-// note multiple region code doesnt work now (see prepare_display_region,set_clipper)
-#define NO_MULTIPLE_DISPLAY_REGIONS
-
 TypeHandle DXGraphicsStateGuardian9::_type_handle;
 
 // bit masks used for drawing primitives
@@ -574,33 +570,6 @@ dx_init(void) {
 void DXGraphicsStateGuardian9::
 support_overlay_window(bool flag) {
   // How is this supposed to be done in DX9?
-
-  /*
-  if (_overlay_windows_supported && !flag) {
-    // Disable support for overlay windows.
-    _overlay_windows_supported = false;
-
-    if (dx_full_screen) {
-      _pD3DDevicesPrimary->SetClipper(NULL);
-    }
-
-  } else if (!_overlay_windows_supported && flag) {
-    // Enable support for overlay windows.
-    _overlay_windows_supported = true;
-
-    if (dx_full_screen) {
-      // Create a Clipper object to blt the whole screen.
-      LPDIRECTDRAWCLIPPER Clipper;
-
-      if (_pScrn->pDD->CreateClipper(0, &Clipper, NULL) == DD_OK) {
-        Clipper->SetHWnd(0, _pScrn->hWnd);
-        _pScrn->pddsPrimary->SetClipper(Clipper);
-      }
-      _pScrn->pDD->FlipToGDISurface();
-      Clipper->Release();
-    }
-  }
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -731,54 +700,6 @@ prepare_lens() {
                               (D3DMATRIX*)new_projection_mat.get_data());
   return SUCCEEDED(hr);
 }
-
-#ifndef NO_MULTIPLE_DISPLAY_REGIONS
-////////////////////////////////////////////////////////////////////
-//     Function: set_clipper
-//       Access:
-//  Description: Useless in DX at the present time
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::set_clipper(RECT cliprect) {
-
-    LPDIRECTDRAWCLIPPER Clipper;
-    HRESULT result;
-
-    // For windowed mode, the clip region is associated with the window,
-    // and DirectX does not allow you to create clip regions.
-    if (dx_full_screen) return;
-
-    /* The cliprect we receive is normalized so that (0,0) means the upper left of
-       the client portion of the window.
-        At least, I think that's true, and the following code assumes that.
-        So we must adjust the clip region by offsetting it to the origin of the
-        view rectangle.
-    */
-    clip_rect = cliprect;       // store the normalized clip rect
-    cliprect.left += _view_rect.left;
-    cliprect.right += _view_rect.left;
-    cliprect.top += _view_rect.top;
-    cliprect.bottom += _view_rect.top;
-    RGNDATA *rgn_data = (RGNDATA *)malloc(sizeof(RGNDATAHEADER) + sizeof(RECT));
-    HRGN hrgn = CreateRectRgn(cliprect.left, cliprect.top, cliprect.right, cliprect.bottom);
-    GetRegionData(hrgn, sizeof(RGNDATAHEADER) + sizeof(RECT), rgn_data);
-
-    if (_pD3DDevicesPrimary->GetClipper(&Clipper) != DD_OK) {
-        result = _pD3DDevice->CreateClipper(0, &Clipper, NULL);
-        result = Clipper->SetClipList(rgn_data, 0);
-        result = _pD3DDevicesPrimary->SetClipper(Clipper);
-    } else {
-        result = Clipper->SetClipList(rgn_data, 0 );
-        if (result == DDERR_CLIPPERISUSINGHWND) {
-            result = _pD3DDevicesPrimary->SetClipper(NULL);
-            result = _pD3DDevice->CreateClipper(0, &Clipper, NULL);
-            result = Clipper->SetClipList(rgn_data, 0 ) ;
-            result = _pD3DDevicesPrimary->SetClipper(Clipper);
-        }
-    }
-    free(rgn_data);
-    DeleteObject(hrgn);
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::get_blend_func
@@ -3762,20 +3683,6 @@ end_frame() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::depth_offset_decals
-//       Access: Public, Virtual
-//  Description: Returns true if this GSG can implement decals using a
-//               DepthOffsetAttrib, or false if that is unreliable
-//               and the three-step rendering process should be used
-//               instead.
-////////////////////////////////////////////////////////////////////
-bool DXGraphicsStateGuardian9::
-depth_offset_decals() {
-  // False for now.
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::set_draw_buffer
 //       Access: Protected
 //  Description: Sets up the glDrawBuffer to render into the buffer
@@ -4380,13 +4287,12 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, DXScreenData **pScrn) {
 
   ReleaseAllDeviceObjects();
 
-  if(!dx_full_screen) {
-      // for windowed make sure out format matches the desktop fmt, in case the
-      // desktop mode has been changed
+  // for windowed mode make sure our format matches the desktop fmt,
+  // in case the desktop mode has been changed
+  
+  _pScrn->pD3D9->GetAdapterDisplayMode(_pScrn->CardIDNum, &_pScrn->DisplayMode);
+  pPresParams->BackBufferFormat = _pScrn->DisplayMode.Format;
 
-       _pScrn->pD3D9->GetAdapterDisplayMode(_pScrn->CardIDNum, &_pScrn->DisplayMode);
-       pPresParams->BackBufferFormat = _pScrn->DisplayMode.Format;
-  }
   // here we have to look at the _PresReset frame buffer dimension
   // if current window's dimension is bigger than _PresReset 
   // we have to reset the device before creating new swapchain.
@@ -4498,146 +4404,6 @@ CheckCooperativeLevel(bool bDoReactivateWindow) {
   _last_testcooplevel_result = hr;
   return SUCCEEDED(hr);
 }
-
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: adjust_view_rect
-//       Access:
-//  Description: we receive the new x and y position of the client
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::adjust_view_rect(int x, int y) {
-    if (_pScrn->view_rect.left != x || _pScrn->view_rect.top != y) {
-
-        _pScrn->view_rect.right = x + RECT_XSIZE(_pScrn->view_rect);
-        _pScrn->view_rect.left = x;
-        _pScrn->view_rect.bottom = y + RECT_YSIZE(_pScrn->view_rect);
-        _pScrn->view_rect.top = y;
-
-//  set_clipper(clip_rect);
-    }
-}
-*/
-
-#if 0
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::save_mipmap_images
-//       Access: Protected
-//  Description: Saves out each mipmap level of the indicated texture
-//               (which must also be the currently active texture in
-//               the GL state) as a separate image file to disk.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::read_mipmap_images(Texture *tex) {
-   Filename filename = tex->get_name();
-   string name;
-   if (filename.empty()) {
-     static index = 0;
-     name = "texture" + format_string(index);
-     index++;
-   } else {
-     name = filename.get_basename_wo_extension();
-   }
-
-   PixelBuffer *pb = tex->get_ram_image();
-   nassertv(pb != (PixelBuffer *)NULL);
-
-   GLenum external_format = get_external_image_format(pb->get_format());
-   GLenum type = get_image_type(pb->get_image_type());
-
-   int xsize = pb->get_xsize();
-   int ysize = pb->get_ysize();
-
-   // Specify byte-alignment for the pixels on output.
-   glPixelStorei(GL_PACK_ALIGNMENT, 1);
-
-   int mipmap_level = 0;
-   do {
-     xsize = max(xsize, 1);
-     ysize = max(ysize, 1);
-
-     PT(PixelBuffer) mpb =
-       new PixelBuffer(xsize, ysize, pb->get_num_components(),
-                       pb->get_component_width(), pb->get_image_type(),
-                       pb->get_format());
-     glGetTexImage(GL_TEXTURE_2D, mipmap_level, external_format,
-                   type, mpb->_image);
-     Filename mipmap_filename = name + "_" + format_string(mipmap_level) + ".pnm";
-     nout << "Writing mipmap level " << mipmap_level
-          << " (" << xsize << " by " << ysize << ") "
-          << mipmap_filename << "\n";
-     mpb->write(mipmap_filename);
-
-     xsize >>= 1;
-     ysize >>= 1;
-     mipmap_level++;
-   } while (xsize > 0 && ysize > 0);
-}
-#endif
-
-
-#if 0
-//-----------------------------------------------------------------------------
-// Name: SetViewMatrix()
-// Desc: Given an eye point, a lookat point, and an up vector, this
-//       function builds a 4x4 view matrix.
-//-----------------------------------------------------------------------------
-HRESULT SetViewMatrix( D3DMATRIX& mat, D3DXVECTOR3& vFrom, D3DXVECTOR3& vAt,
-                       D3DXVECTOR3& vWorldUp ) {
-    // Get the z basis vector, which points straight ahead. This is the
-    // difference from the eyepoint to the lookat point.
-    D3DXVECTOR3 vView = vAt - vFrom;
-
-    float fLength = Magnitude( vView );
-    if (fLength < 1e-6f)
-        return E_INVALIDARG;
-
-    // Normalize the z basis vector
-    vView /= fLength;
-
-    // Get the dot product, and calculate the projection of the z basis
-    // vector onto the up vector. The projection is the y basis vector.
-    float fDotProduct = DotProduct( vWorldUp, vView );
-
-    D3DXVECTOR3 vUp = vWorldUp - fDotProduct * vView;
-
-    // If this vector has near-zero length because the input specified a
-    // bogus up vector, let's try a default up vector
-    if (1e-6f > ( fLength = Magnitude( vUp ) )) {
-        vUp = D3DXVECTOR3( 0.0f, 1.0f, 0.0f ) - vView.y * vView;
-
-        // If we still have near-zero length, resort to a different axis.
-        if (1e-6f > ( fLength = Magnitude( vUp ) )) {
-            vUp = D3DXVECTOR3( 0.0f, 0.0f, 1.0f ) - vView.z * vView;
-
-            if (1e-6f > ( fLength = Magnitude( vUp ) ))
-                return E_INVALIDARG;
-        }
-    }
-
-    // Normalize the y basis vector
-    vUp /= fLength;
-
-    // The x basis vector is found simply with the cross product of the y
-    // and z basis vectors
-    D3DXVECTOR3 vRight = CrossProduct( vUp, vView );
-
-    // Start building the matrix. The first three rows contains the basis
-    // vectors used to rotate the view to point at the lookat point
-    mat._11 = vRight.x;  mat._12 = vUp.x;  mat._13 = vView.x;  mat._14 = 0.0f;
-    mat._21 = vRight.y;  mat._22 = vUp.y;  mat._23 = vView.y;  mat._24 = 0.0f;
-    mat._31 = vRight.z;  mat._32 = vUp.z;  mat._33 = vView.z;  mat._34 = 0.0f;
-
-    // Do the translation values (rotations are still about the eyepoint)
-    mat._41 = - DotProduct( vFrom, vRight );
-    mat._42 = - DotProduct( vFrom, vUp );
-    mat._43 = - DotProduct( vFrom, vView );
-    mat._44 = 1.0f;
-
-    return S_OK;
-}
-
-#endif
-
 
 HRESULT CreateDX9Cursor(LPDIRECT3DDEVICE9 pd3dDevice, HCURSOR hCursor,BOOL bAddWatermark) {
 // copied directly from dxsdk SetDeviceCursor

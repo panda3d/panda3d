@@ -164,7 +164,7 @@ has_depth_bits() const {
 INLINE void FrameBufferProperties::
 clear_depth_bits() {
   _specified &= ~S_depth_bits;
-  _depth_bits = 0;
+  _depth_bits = 1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -212,7 +212,145 @@ has_color_bits() const {
 INLINE void FrameBufferProperties::
 clear_color_bits() {
   _specified &= ~S_color_bits;
-  _color_bits = 0;
+  _color_bits = 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_alpha_bits
+//       Access: Published
+//  Description: Specifies the minimum number of bits that are
+//               required of the alpha buffer.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_alpha_bits(int alpha_bits) {
+  _alpha_bits = alpha_bits;
+  _specified |= S_alpha_bits;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_alpha_bits
+//       Access: Published
+//  Description: Returns the number of bits specified for the alpha
+//               buffer.
+////////////////////////////////////////////////////////////////////
+INLINE int FrameBufferProperties::
+get_alpha_bits() const {
+  return _alpha_bits;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::has_alpha_bits
+//       Access: Published
+//  Description: Returns true if the number of bits for the alpha
+//               buffer has been specified, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool FrameBufferProperties::
+has_alpha_bits() const {
+  return ((_specified & S_alpha_bits) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::clear_alpha_bits
+//       Access: Published
+//  Description: Removes the alpha_bits specification from the
+//               properties.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+clear_alpha_bits() {
+  _specified &= ~S_alpha_bits;
+  _alpha_bits = 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_stencil_bits
+//       Access: Published
+//  Description: Specifies the minimum number of bits that are
+//               required for the stencil buffer.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_stencil_bits(int stencil_bits) {
+  _stencil_bits = stencil_bits;
+  _specified |= S_stencil_bits;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_stencil_bits
+//       Access: Published
+//  Description: Returns the number of bits specified for the stencil
+//               buffer.
+////////////////////////////////////////////////////////////////////
+INLINE int FrameBufferProperties::
+get_stencil_bits() const {
+  return _stencil_bits;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::has_stencil_bits
+//       Access: Published
+//  Description: Returns true if the number of bits for the stencil
+//               buffer has been specified, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool FrameBufferProperties::
+has_stencil_bits() const {
+  return ((_specified & S_stencil_bits) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::clear_stencil_bits
+//       Access: Published
+//  Description: Removes the stencil_bits specification from the
+//               properties.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+clear_stencil_bits() {
+  _specified &= ~S_stencil_bits;
+  _stencil_bits = 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_multisample_bits
+//       Access: Published
+//  Description: Specifies the minimum number of bits that are
+//               required for the multisample buffer.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_multisample_bits(int multisample_bits) {
+  _multisample_bits = multisample_bits;
+  _specified |= S_multisample_bits;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_multisample_bits
+//       Access: Published
+//  Description: Returns the number of bits specified for the multisample
+//               buffer.
+////////////////////////////////////////////////////////////////////
+INLINE int FrameBufferProperties::
+get_multisample_bits() const {
+  return _multisample_bits;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::has_multisample_bits
+//       Access: Published
+//  Description: Returns true if the number of bits for the multisample
+//               buffer has been specified, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool FrameBufferProperties::
+has_multisample_bits() const {
+  return ((_specified & S_multisample_bits) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::clear_multisample_bits
+//       Access: Published
+//  Description: Removes the multisample_bits specification from the
+//               properties.
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+clear_multisample_bits() {
+  _specified &= ~S_multisample_bits;
+  _multisample_bits = 1;
 }
 
 INLINE ostream &

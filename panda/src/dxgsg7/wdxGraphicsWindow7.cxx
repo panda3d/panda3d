@@ -1013,8 +1013,22 @@ choose_device(int devnum, DXDeviceInfo *pDevinfo) {
   wdxGraphicsPipe7 *dxpipe;
   DCAST_INTO_R(dxpipe, _pipe, false);
 
-  DWORD dwRenderWidth = get_properties().get_x_size();
-  DWORD dwRenderHeight = get_properties().get_y_size();
+  WindowProperties properties = get_properties();
+  FrameBufferProperties fbprops = _dxgsg->get_properties();
+
+  int mode = fbprops.get_frame_buffer_mode();
+  bool hardware = ((mode & FrameBufferProperties::FM_hardware) != 0);
+  bool software = ((mode & FrameBufferProperties::FM_software) != 0);
+
+  // If the user specified neither hardware nor software frame buffer,
+  // he gets either one.
+  if (!hardware && !software) {
+    hardware = true;
+    software = true;
+  }
+
+  DWORD dwRenderWidth = properties.get_x_size();
+  DWORD dwRenderHeight = properties.get_y_size();
   LPDIRECTDRAW7 pDD=NULL;
   HRESULT hr;
 
@@ -1111,21 +1125,17 @@ choose_device(int devnum, DXDeviceInfo *pDevinfo) {
   WORD DeviceIdx;
 
   // select TNL if present
-  if (d3ddevs[TNLHALIDX].dwDevCaps & D3DDEVCAPS_HWRASTERIZATION) {
+  if (hardware && (d3ddevs[TNLHALIDX].dwDevCaps & D3DDEVCAPS_HWRASTERIZATION)) {
     DeviceIdx = TNLHALIDX;
-  } else if (d3ddevs[REGHALIDX].dwDevCaps & D3DDEVCAPS_HWRASTERIZATION) {
+  } else if (hardware && (d3ddevs[REGHALIDX].dwDevCaps & D3DDEVCAPS_HWRASTERIZATION)) {
     DeviceIdx = REGHALIDX;
-  } else if (dx_allow_software_renderer || dx_force_software_renderer) {
+  } else if (software) {
     DeviceIdx = SWRASTIDX;      
   } else {
     wdxdisplay7_cat.error()
-      << "No 3D HW present on device #" << devnum << ", skipping it... ("
+      << "No 3D graphics present on device #" << devnum << ", skipping it... ("
       << _wcontext.DXDeviceID.szDescription<<")\n";
     goto error_exit;
-  }
-
-  if (dx_force_software_renderer) {
-    DeviceIdx = SWRASTIDX; 
   }
     
   memcpy(&_wcontext.D3DDevDesc, &d3ddevs[DeviceIdx], 

@@ -52,11 +52,6 @@ bool CLP(save_mipmaps) = CONFIGOBJ.GetBool("gl-save-mipmaps", false);
 // variable.
 bool CLP(auto_normalize_lighting) = CONFIGOBJ.GetBool("auto-normalize-lighting", true);
 
-// Configure this true to try to implement decals using a
-// DepthOffsetAttrib, false to do them with the more reliable 3-pass
-// rendering method instead.
-bool CLP(depth_offset_decals) = CONFIGOBJ.GetBool("depth-offset-decals", false);
-
 // Configure this false if your GL's implementation of GLP(ColorMask)()
 // is broken (some are).  This will force the use of a (presumably)
 // more expensive blending operation instead.

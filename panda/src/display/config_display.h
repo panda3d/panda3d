@@ -53,6 +53,7 @@ extern ConfigVariableBool prefer_single_buffer;
 
 extern ConfigVariableBool copy_texture_inverted;
 extern ConfigVariableBool window_inverted;
+extern ConfigVariableBool depth_offset_decals;
 
 extern ConfigVariableInt win_size;
 extern ConfigVariableInt win_origin;
@@ -67,6 +68,13 @@ extern ConfigVariableFilename icon_filename;
 extern ConfigVariableFilename cursor_filename;
 extern ConfigVariableEnum<WindowProperties::ZOrder> z_order;
 extern ConfigVariableString window_title;
+
+extern ConfigVariableString framebuffer_mode;
+extern ConfigVariableInt depth_bits;
+extern ConfigVariableInt color_bits;
+extern ConfigVariableInt alpha_bits;
+extern ConfigVariableInt stencil_bits;
+extern ConfigVariableInt multisample_bits;
 
 extern ConfigVariableDouble background_color;
 

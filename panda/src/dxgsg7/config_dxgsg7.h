@@ -34,8 +34,6 @@ extern ConfigVariableBool dx_no_vertex_fog;
 extern ConfigVariableBool dx_full_screen_antialiasing;
 extern ConfigVariableBool dx_auto_normalize_lighting;
 extern ConfigVariableBool dx_use_rangebased_fog;
-extern ConfigVariableBool dx_allow_software_renderer;
-extern ConfigVariableBool dx_force_software_renderer;
 extern ConfigVariableBool link_tristrips;
 
 // debug flags we might want to use in full optimized build
@@ -46,8 +44,6 @@ extern ConfigVariableBool dx_no_dithering;
 extern ConfigVariableBool dx_force_16bpp_zbuffer;
 extern ConfigVariableBool dx_do_vidmemsize_check;
 extern ConfigVariableBool dx_preserve_fpu_state;
-
-extern ConfigVariableBool dx_depth_offset_decals;
 
 #ifndef NDEBUG
 extern ConfigVariableInt dx_force_backface_culling;

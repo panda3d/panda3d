@@ -414,19 +414,14 @@ reset() {
 
   report_my_gl_errors();
 
-  _buffer_mask = 0;
-
-  // All GL implementations have the following buffers. (?)
+  // All GL implementations have the following buffers.
   _buffer_mask = (RenderBuffer::T_color |
                   RenderBuffer::T_depth |
                   RenderBuffer::T_stencil |
                   RenderBuffer::T_accum);
 
-  // Check to see if we have double-buffering.
-
-  // This isn't completely right.  Instead of just clearing this bit
-  // and disallowing writes to T_back, we need to set T_front on
-  // operations that might have had T_back set otherwise.
+  // If we don't have double-buffering, don't attempt to write to the
+  // back buffer.
   GLboolean has_back;
   GLP(GetBooleanv)(GL_DOUBLEBUFFER, &has_back);
   if (!has_back) {
@@ -2829,19 +2824,6 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 bool CLP(GraphicsStateGuardian)::
 wants_texcoords() const {
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::depth_offset_decals
-//       Access: Public, Virtual
-//  Description: Returns true if this GSG can implement decals using a
-//               DepthOffsetAttrib, or false if that is unreliable
-//               and the three-step rendering process should be used
-//               instead.
-////////////////////////////////////////////////////////////////////
-bool CLP(GraphicsStateGuardian)::
-depth_offset_decals() {
-  return CLP(depth_offset_decals);
 }
 
 ////////////////////////////////////////////////////////////////////

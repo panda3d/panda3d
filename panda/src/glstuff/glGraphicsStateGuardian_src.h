@@ -132,8 +132,6 @@ public:
 
   virtual bool wants_texcoords(void) const;
 
-  virtual bool depth_offset_decals();
-
   virtual float compute_distance_to(const LPoint3f &point) const;
 
   void print_gfx_visual();

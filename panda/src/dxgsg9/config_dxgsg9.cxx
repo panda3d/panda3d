@@ -37,11 +37,6 @@ NotifyCategoryDef(wdxdisplay9, "windisplay");
 ConfigVariableBool dx_show_transforms
 ("dx-show-transforms", false);
 
-//  Configure this to TRUE if you want DirectX to control the entire screen,
-//  If false, it will just blit into a window.
-ConfigVariableBool dx_full_screen
-("dx-full-screen", false);
-
 //  Configure this true to force the rendering to sync to the video
 //  refresh, or false to let your frame rate go as high as it can,
 //  irrespective of the video refresh.
@@ -51,12 +46,6 @@ ConfigVariableBool dx_sync_video
 // Set Level of MultiSampling to be used, if HW supports it.  Valid values are 2-16.
 ConfigVariableInt dx_multisample_antialiasing_level
 ("dx-multisample-antialiasing-level", 0);
-
-// Configure this true to perform a cull traversal over the geometry
-// by default, false otherwise.  The cull traversal provides support
-// for state-sorting, z-sorting, and binning.
-ConfigVariableBool dx_cull_traversal
-("dx-cull-traversal", true);
 
 // if true, if card only supports per-vertex fog, it will be treated as no-HW fog capability
 ConfigVariableBool dx_no_vertex_fog

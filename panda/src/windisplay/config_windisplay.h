@@ -35,8 +35,6 @@ extern ConfigVariableBool ime_hide;
 
 extern EXPCL_PANDAWIN ConfigVariableBool sync_video;
 extern EXPCL_PANDAWIN ConfigVariableBool swapbuffer_framelock;
-extern EXPCL_PANDAWIN ConfigVariableBool force_software_renderer;
-extern EXPCL_PANDAWIN ConfigVariableBool allow_software_renderer;
 
 extern EXPCL_PANDAWIN void init_libwindisplay();
 

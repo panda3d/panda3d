@@ -119,6 +119,14 @@ ConfigVariableBool window_inverted
           "they will render upside-down and backwards.  Normally this is useful only "
           "for debugging."));
 
+ConfigVariableBool depth_offset_decals
+("depth-offset-decals", false,
+ PRC_DESC("Set this true to allow decals to be implemented via the advanced "
+          "depth offset feature, if supported, instead of via the traditional "
+          "(and slower) two-pass approach.  This is false by default "
+          "because it appears that many graphics drivers have issues with "
+          "their depth offset implementation."));
+
 ConfigVariableInt win_size
 ("win-size", "640 480",
  PRC_DESC("This is the default size at which to open a new window.  This "
@@ -161,6 +169,31 @@ ConfigVariableEnum<WindowProperties::ZOrder> z_order
 
 ConfigVariableString window_title
 ("window-title", "Panda");
+
+ConfigVariableString framebuffer_mode
+("framebuffer-mode", "rgba double-buffer depth multisample hardware",
+ PRC_DESC("A space-separated list of keywords that describe the default "
+          "framebuffer properties requested for a window."));
+ConfigVariableInt depth_bits
+("depth-bits", 1,
+ PRC_DESC("The minimum number of depth bits requested if the depth keyword "
+          "is present in framebuffer-mode."));
+ConfigVariableInt color_bits
+("color-bits", 1,
+ PRC_DESC("The minimum number of color bits requested in the default "
+          "framebuffer properties (sum of all three color channels)."));
+ConfigVariableInt alpha_bits
+("alpha-bits", 1,
+ PRC_DESC("The minimum number of alpha bits requested if the alpha or rgba "
+          "keyword is present in framebuffer-mode."));
+ConfigVariableInt stencil_bits
+("stencil-bits", 1,
+ PRC_DESC("The minimum number of stencil bits requested if the stencil keyword "
+          "is present in framebuffer-mode."));
+ConfigVariableInt multisample_bits
+("multisample-bits", 1,
+ PRC_DESC("The minimum number of multisample bits requested if the multisample keyword "
+          "is present in framebuffer-mode."));
 
 ConfigVariableDouble background_color
 ("background-color", "0.41 0.41 0.41",

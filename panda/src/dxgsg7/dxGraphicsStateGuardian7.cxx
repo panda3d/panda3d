@@ -4267,20 +4267,6 @@ wants_texcoords() const {
     return _texturing_enabled;
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::depth_offset_decals
-//       Access: Public, Virtual
-//  Description: Returns true if this GSG can implement decals using a
-//               DepthOffsetAttrib, or false if that is unreliable
-//               and the three-step rendering process should be used
-//               instead.
-////////////////////////////////////////////////////////////////////
-bool DXGraphicsStateGuardian7::
-depth_offset_decals() {
-  return dx_depth_offset_decals;
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian7::compute_distance_to
 //       Access: Public, Virtual

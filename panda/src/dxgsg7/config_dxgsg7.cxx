@@ -59,11 +59,6 @@ ConfigVariableBool dx_no_vertex_fog
 ConfigVariableBool dx_auto_normalize_lighting
 ("auto-normalize-lighting", true);
 
-ConfigVariableBool dx_allow_software_renderer
-("dx-allow-software-renderer", false);
-ConfigVariableBool dx_force_software_renderer
-("dx-force-software-renderer", false);
-
 #ifndef NDEBUG
 // debugging flag
 // values are same as D3DCULL enumtype, 0 - no force, 1 - force none, 2 - force CW, 3 - force CCW
@@ -95,12 +90,6 @@ ConfigVariableBool dx_do_vidmemsize_check
 // it believes it is using double-precision variables.
 ConfigVariableBool dx_preserve_fpu_state
 ("dx-preserve-fpu-state", true);
-
-// Configure this true to try to implement decals using a
-// DepthOffsetAttrib, false to do them with the more reliable 3-pass
-// rendering method instead.
-ConfigVariableBool dx_depth_offset_decals
-("depth-offset-decals", false);
 
 #ifdef _DEBUG
 ConfigVariableDouble dx_global_miplevel_bias

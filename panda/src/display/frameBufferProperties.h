@@ -34,24 +34,27 @@ PUBLISHED:
   void operator = (const FrameBufferProperties &copy);
   INLINE ~FrameBufferProperties();
 
+  static FrameBufferProperties get_default();
+
   bool operator == (const FrameBufferProperties &other) const;
   INLINE bool operator != (const FrameBufferProperties &other) const;
 
   enum FrameBufferMode {
-    FM_rgb =           0x0000,
-    FM_index =         0x0001,
-    FM_single_buffer = 0x0000,
-    FM_double_buffer = 0x0002,
-    FM_triple_buffer = 0x0004,
-    FM_buffer        = 0x0006,  // == (FM_single_buffer | FM_double_buffer | FM_triple_buffer)
-    FM_accum =         0x0008,
-    FM_alpha =         0x0010,
-    FM_rgba =          0x0010,  // == (FM_rgb | FM_alpha)
-    FM_depth =         0x0020,
-    FM_stencil =       0x0040,
-    FM_multisample =   0x0080,
-    FM_stereo =        0x0100,
-    FM_luminance =     0x0200,
+    FM_rgb            = 0x0000,
+    FM_index          = 0x0001,
+    FM_single_buffer  = 0x0000,
+    FM_double_buffer  = 0x0002,
+    FM_triple_buffer  = 0x0004,
+    FM_buffer         = 0x0006,  // == (FM_single_buffer | FM_double_buffer | FM_triple_buffer)
+    FM_accum          = 0x0008,
+    FM_alpha          = 0x0010,
+    FM_rgba           = 0x0010,  // == (FM_rgb | FM_alpha)
+    FM_depth          = 0x0020,
+    FM_stencil        = 0x0040,
+    FM_multisample    = 0x0080,
+    FM_stereo         = 0x0100,
+    FM_software       = 0x0200,
+    FM_hardware       = 0x0400,
   };
 
   void clear();
@@ -74,6 +77,21 @@ PUBLISHED:
   INLINE bool has_color_bits() const;
   INLINE void clear_color_bits();
 
+  INLINE void set_alpha_bits(int alpha_bits);
+  INLINE int get_alpha_bits() const;
+  INLINE bool has_alpha_bits() const;
+  INLINE void clear_alpha_bits();
+
+  INLINE void set_stencil_bits(int stencil_bits);
+  INLINE int get_stencil_bits() const;
+  INLINE bool has_stencil_bits() const;
+  INLINE void clear_stencil_bits();
+
+  INLINE void set_multisample_bits(int multisample_bits);
+  INLINE int get_multisample_bits() const;
+  INLINE bool has_multisample_bits() const;
+  INLINE void clear_multisample_bits();
+
   void add_properties(const FrameBufferProperties &other);
 
   void output(ostream &out) const;
@@ -83,24 +101,22 @@ private:
   // structure have been filled in by the user, and which remain
   // unspecified.
   enum Specified {
-    S_frame_buffer_mode = 0x0200,
-    S_depth_bits        = 0x0400,
-    S_color_bits        = 0x0800,
+    S_frame_buffer_mode = 0x0001,
+    S_depth_bits        = 0x0002,
+    S_color_bits        = 0x0004,
+    S_alpha_bits        = 0x0008,
+    S_stencil_bits      = 0x0010,
+    S_multisample_bits  = 0x0020,
   };
-
-  // This bitmask represents the true/false settings for various
-  // boolean flags (assuming the corresponding S_* bit has been set,
-  // above).
-  /*
-  enum Flags {
-  };
-  */
 
   int _specified;
   int _flags;
   int _frame_buffer_mode;
   int _depth_bits;
   int _color_bits;
+  int _alpha_bits;
+  int _stencil_bits;
+  int _multisample_bits;
 };
 
 INLINE ostream &operator << (ostream &out, const FrameBufferProperties &properties);

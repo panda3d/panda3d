@@ -72,11 +72,6 @@ ConfigVariableBool swapbuffer_framelock
 ("swapbuffer-framelock", false,
  PRC_DESC("Set this true to enable HW swapbuffer frame-lock on 3dlabs cards"));
 
-ConfigVariableBool force_software_renderer
-("force-software-renderer", false);
-ConfigVariableBool allow_software_renderer
-("allow-software-renderer", false);
-
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libwindisplay
 //  Description: Initializes the library.  This must be called at

@@ -45,9 +45,11 @@ protected:
                                          const string &name,
                                          int x_size, int y_size, bool want_texture);
 private:
-  static int choose_pfnum(FrameBufferProperties &properties, HDC hdc);
-  static int find_pixfmtnum(FrameBufferProperties &properties, HDC hdc,
+  static int choose_pfnum(const FrameBufferProperties &properties, HDC hdc);
+  static int find_pixfmtnum(const FrameBufferProperties &properties, HDC hdc,
                             bool bLookforHW);
+  static void get_properties(FrameBufferProperties &properties, HDC hdc,
+                             int pfnum);
   static string format_pfd_flags(DWORD pfd_flags);
 
 public:
