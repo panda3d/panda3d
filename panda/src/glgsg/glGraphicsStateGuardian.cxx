@@ -1787,7 +1787,9 @@ prepare_geom_node(GeomNode *node) {
   // otherwise there's no point in building a display list.
   int num_geoms = node->get_num_geoms();
   bool all_dynamic = true;
-  for (int i = 0; i < num_geoms && all_dynamic; i++) {
+  int i;
+
+  for (i = 0; (i < num_geoms) && all_dynamic; i++) {
     dDrawable *geom = node->get_geom(i);
     all_dynamic = geom->is_dynamic();
   }
@@ -1815,7 +1817,7 @@ prepare_geom_node(GeomNode *node) {
 
   // Now define the display list.
   glNewList(ggnc->_index, GL_COMPILE);
-  for (int i = 0; i < num_geoms; i++) {
+  for (i = 0; i < num_geoms; i++) {
     dDrawable *geom = node->get_geom(i);
     if (geom->is_dynamic()) {
       // Wait, this is a dynamic Geom.  We can't safely put it in the
