@@ -909,7 +909,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
             float DrawPrims_per_Geom = cDPcount/(float)cGeomcount;
             float verts_per_Geom = cVertcount/(float)cGeomcount;
 
-            dxgsg_cat.spam() << "==================================="
+            dxgsg_cat.debug() << "==================================="
                 << "\n Avg Verts/sec:\t\t" << verts_per_sec
                 << "\n Avg Tris/sec:\t\t" << tris_per_sec
                 << "\n Avg Verts/frame:\t" << verts_per_frame
@@ -1186,7 +1186,7 @@ typedef enum {
     FlatVerts,IndexedVerts,MixedFmtVerts
 } GeomVertFormat;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(COUNT_DRAWPRIMS)
 typedef enum {DrawPrim,DrawPrimStrided} DP_Type;
 
 void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,LPDIRECTDRAW7 pDD,DWORD nVerts,DWORD nTris) {
