@@ -23,6 +23,7 @@ TypeHandle HprLerpFunctor::_type_handle;
 TypeHandle ScaleLerpFunctor::_type_handle;
 TypeHandle ColorLerpFunctor::_type_handle;
 TypeHandle PosHprLerpFunctor::_type_handle;
+TypeHandle HprScaleLerpFunctor::_type_handle;
 TypeHandle PosHprScaleLerpFunctor::_type_handle;
 TypeHandle ColorScaleLerpFunctor::_type_handle;
 
@@ -171,6 +172,55 @@ void PosHprLerpFunctor::operator()(float t) {
     _node_path.set_pos_hpr(_wrt_path, p, h);
   else
     _node_path.set_pos_hpr(p, h);
+}
+
+HprScaleLerpFunctor::HprScaleLerpFunctor(const HprScaleLerpFunctor& c)
+  : LerpFunctor(c), _node_path(c._node_path) {}
+
+void HprScaleLerpFunctor::take_shortest(void) {
+  // so long as these are actually degrees
+  for (int i=0; i!=3; ++i)
+    if (this->_hdiff_cache[i] < -180.)
+      _hstart[i] -= 360.;
+    else if (this->_hdiff_cache[i] > 180.)
+      _hstart[i] += 360.;
+  this->_hdiff_cache = this->_hend - this->_hstart;
+}
+
+void HprScaleLerpFunctor::take_longest(void) {
+  // so long as these are actually degrees
+  for (int i=0; i!=3; ++i)
+    if ((this->_hdiff_cache[i] < 0.) && (this->_hdiff_cache[i] > -180.))
+      _hstart[i] -= 360.;
+    else if ((this->_hdiff_cache[i] >= 0.) && (this->_hdiff_cache[i] < 180))
+      _hstart[i] += 360.;
+  this->_hdiff_cache = this->_hend - this->_hstart;
+}
+
+HprScaleLerpFunctor::~HprScaleLerpFunctor(void)
+{
+}
+
+HprScaleLerpFunctor&
+HprScaleLerpFunctor::operator=(const HprScaleLerpFunctor& c) {
+  _node_path = c._node_path;
+  _hstart = c._hstart;
+  _hend = c._hend;
+  _hdiff_cache = c._hdiff_cache;
+  _sstart = c._sstart;
+  _send = c._send;
+  _sdiff_cache = c._sdiff_cache;
+  LerpFunctor::operator=(c);
+  return *this;
+}
+
+void HprScaleLerpFunctor::operator()(float t) {
+  LVecBase3f h = ((t * _hdiff_cache) + _hstart);
+  LVecBase3f s = ((t * _sdiff_cache) + _sstart);
+  if (_is_wrt)
+    _node_path.set_hpr_scale(_wrt_path, h, s);
+  else
+    _node_path.set_hpr_scale(h, s);
 }
 
 PosHprScaleLerpFunctor::PosHprScaleLerpFunctor(const PosHprScaleLerpFunctor& c)

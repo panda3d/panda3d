@@ -39,6 +39,7 @@ ConfigureFn(config_sgmanip) {
   HprLerpFunctor::init_type();
   ScaleLerpFunctor::init_type();
   PosHprLerpFunctor::init_type();
+  HprScaleLerpFunctor::init_type();
   PosHprScaleLerpFunctor::init_type();
   ColorLerpFunctor::init_type();
   ColorScaleLerpFunctor::init_type();

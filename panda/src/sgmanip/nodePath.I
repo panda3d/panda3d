@@ -684,6 +684,19 @@ set_pos_hpr(float x, float y, float z, float h, float p, float r) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_hpr_scale
+//       Access: Published
+//  Description: Sets the rotation and scale components of the
+//               transform, leaving translation untouched.  This, or
+//               set_pos_hpr_scale, is the preferred way to update a
+//               transform when both hpr and scale are to be changed.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_hpr_scale(float h, float p, float r, float sx, float sy, float sz) {
+  set_hpr_scale(LVecBase3f(h, p, r), LVecBase3f(sx, sy, sz));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos_hpr_scale
 //       Access: Published
 //  Description: Completely replaces the transform with new
@@ -976,6 +989,20 @@ set_pos_hpr(const NodePath &other,
             float x, float y, float z,
             float h, float p, float r) {
   set_pos_hpr(other, LVecBase3f(x, y, z), LVecBase3f(h, p, r));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_hpr_scale
+//       Access: Published
+//  Description: Sets the rotation and scale components of the
+//               transform, leaving translation untouched.  This, or
+//               set_pos_hpr_scale, is the preferred way to update a
+//               transform when both hpr and scale are to be changed.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_hpr_scale(const NodePath &other,
+	      float h, float p, float r, float sx, float sy, float sz) {
+  set_hpr_scale(other, LVecBase3f(h, p, r), LVecBase3f(sx, sy, sz));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1381,6 +1381,24 @@ set_pos_hpr(const LVecBase3f &pos, const LVecBase3f &hpr) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_hpr_scale
+//       Access: Published
+//  Description: Sets the rotation and scale components of the
+//               transform, leaving translation untouched.  This, or
+//               set_pos_hpr_scale, is the preferred way to update a
+//               transform when both hpr and scale are to be changed.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_hpr_scale(const LVecBase3f &hpr, const LVecBase3f &scale) {
+  nassertv(has_arcs());
+  LMatrix4f mat = get_mat();
+  LVecBase3f old_pos;
+  mat.get_row3(old_pos, 3);
+  compose_matrix(mat, scale, hpr, old_pos);
+  set_mat(mat);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos_hpr_scale
 //       Access: Published
 //  Description: Completely replaces the transform with new
@@ -1766,6 +1784,24 @@ set_pos_hpr(const NodePath &other, const LVecBase3f &pos,
   LVecBase3f scale, old_hpr, old_pos;
   decompose_matrix(mat, scale, old_hpr, old_pos);
   compose_matrix(mat, scale, hpr, pos);
+  set_mat(other, mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_hpr_scale
+//       Access: Published
+//  Description: Sets the rotation and scale components of the
+//               transform, leaving translation untouched.  This, or
+//               set_pos_hpr_scale, is the preferred way to update a
+//               transform when both hpr and scale are to be changed.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_hpr_scale(const NodePath &other, const LVecBase3f &hpr, const LVecBase3f &scale) {
+  nassertv(has_arcs());
+  LMatrix4f mat = get_mat(other);
+  LVecBase3f old_pos;
+  mat.get_row3(old_pos, 3);
+  compose_matrix(mat, scale, hpr, old_pos);
   set_mat(other, mat);
 }
 

@@ -306,6 +306,83 @@ private:
 };
 
 ////////////////////////////////////////////////////////////////////
+//       Class : HprScaleLerpFunctor
+// Description : Class for Lerping between orientation
+//               and scale
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA HprScaleLerpFunctor : public LerpFunctor {
+private:
+  NodePath _node_path;
+  LVecBase3f _hstart;
+  LVecBase3f _hend;
+  LVecBase3f _hdiff_cache;
+  LVecBase3f _sstart;
+  LVecBase3f _send;
+  LVecBase3f _sdiff_cache;
+  bool _is_wrt;
+  NodePath _wrt_path;
+
+PUBLISHED:
+  HprScaleLerpFunctor(NodePath np, 
+		      LVecBase3f hstart, LVecBase3f hend, LVecBase3f sstart,
+		      LVecBase3f send)
+    : LerpFunctor(), _node_path(np),
+      _hstart(hstart), _hend(hend),
+      _hdiff_cache(hend-hstart), _sstart(sstart), _send(send),
+      _sdiff_cache(send-sstart), _is_wrt(false) {}
+  HprScaleLerpFunctor(NodePath np, float hsx, float hsy,
+                         float hsz, float hex, float hey, float hez, float ssx,
+                         float ssy, float ssz, float sex, float sey, float sez)
+    : LerpFunctor(), _node_path(np),
+      _hstart(hsx, hsy, hsz), _hend(hex, hey, hez),
+      _hdiff_cache(_hend-_hstart), _sstart(ssx, ssy, ssz),
+      _send(sex, sey, sez), _sdiff_cache(_send-_sstart), _is_wrt(false) {}
+  HprScaleLerpFunctor(NodePath np, 
+		      LVecBase3f hstart, LVecBase3f hend, LVecBase3f sstart,
+		      LVecBase3f send, NodePath wrt)
+    : LerpFunctor(), _node_path(np), _hstart(hstart), _hend(hend),
+      _hdiff_cache(hend-hstart), _sstart(sstart), _send(send),
+      _sdiff_cache(send-sstart), _is_wrt(true), _wrt_path(wrt) {}
+  HprScaleLerpFunctor(NodePath np, float hsx, float hsy,
+		      float hsz, float hex, float hey, float hez, float ssx,
+		      float ssy, float ssz, float sex, float sey, float sez,
+		      NodePath wrt)
+    : LerpFunctor(), _node_path(np),
+      _hstart(hsx, hsy, hsz), _hend(hex, hey, hez),
+      _hdiff_cache(_hend-_hstart), _sstart(ssx, ssy, ssz),
+      _send(sex, sey, sez), _sdiff_cache(_send-_sstart), _is_wrt(true),
+      _wrt_path(wrt) {}
+  void take_shortest(void);
+  void take_longest(void);
+
+public:
+  HprScaleLerpFunctor(const HprScaleLerpFunctor&);
+  virtual ~HprScaleLerpFunctor(void);
+  HprScaleLerpFunctor& operator=(const HprScaleLerpFunctor&);
+  virtual void operator()(float);
+
+public:
+  // now for typehandle stuff
+  static TypeHandle get_class_type(void) {
+    return _type_handle;
+  }
+  static void init_type(void) {
+    LerpFunctor::init_type();
+    register_type(_type_handle, "HprScaleLerpFunctor",
+                  LerpFunctor::get_class_type());
+  }
+  virtual TypeHandle get_type(void) const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type(void) {
+    init_type();
+    return get_class_type();
+  }
+private:
+  static TypeHandle _type_handle;
+};
+
+////////////////////////////////////////////////////////////////////
 //       Class : PosHprScaleLerpFunctor
 // Description : Class for Lerping between position, orientation,
 //               and scale
