@@ -27,7 +27,7 @@
 //  Description: Returns the TypeRegistryNode associated with the
 //               indicated TypeHandle.
 ////////////////////////////////////////////////////////////////////
-INLINE TypeRegistry::TypeRegistryNode *TypeRegistry::
+INLINE TypeRegistryNode *TypeRegistry::
 look_up(TypeHandle handle, TypedObject *) const {
   return _handle_registry[handle._index];
 }
