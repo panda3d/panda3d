@@ -105,14 +105,14 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   }
 
   _maxval = (xelval)pixmax;
-  
+
   table_start = ftell(file);
   if( head.storage != STORAGE_VERBATIM )
     table = read_table(file, head.ysize * head.zsize);
 
   _x_size = head.xsize;
   _y_size = head.ysize;
-  _num_channels = head.zsize;
+  _num_channels = min((int)head.zsize, 4);
   bpc = head.bpc;
 
   current_row = _y_size - 1;
@@ -260,6 +260,13 @@ read_header(FILE *ifp, Header *head, const string &magic_number) {
     }
 
     /* adjust ysize/zsize to dimension, just to be sure */
+
+    // On reflection, this is a bad idea.  Ignore the number of
+    // dimensions, and take the xsize/ysize/zsize at face value.  The
+    // table was written based on these numbers, after all; you can't
+    // just change them arbitrarily.
+
+    /*
     switch( head->dimension ) {
     case 1:
       head->ysize = 1;
@@ -291,6 +298,8 @@ read_header(FILE *ifp, Header *head, const string &magic_number) {
 	<< " (only 1-3 allowed)\n";
       return false;
     }
+    */
+
     return true;
 }
 
@@ -302,10 +311,12 @@ read_table(FILE *ifp, int tablen) {
 
     table = MALLOC(tablen, TabEntry);
 
-    for( i = 0; i < tablen; i++ )
+    for( i = 0; i < tablen; i++ ) {
         table[i].start = get_big_long(ifp);
-    for( i = 0; i < tablen; i++ )
+    }
+    for( i = 0; i < tablen; i++ ) {
         table[i].length = get_big_long(ifp);
+    }
 
     return table;
 }
@@ -325,8 +336,9 @@ read_channel(FILE *ifp,
     short (*func)(FILE *);
     func = (bpc==1) ? get_byte_as_short : get_big_short;
 
-    if ( table ) 
+    if ( table ) {
       temp = (ScanElem *)alloca(WORSTCOMPR(xsize) * sizeof(ScanElem));
+    }
 
     sgi_index = channel * ysize + row;
     if( table ) {
@@ -336,7 +348,8 @@ read_channel(FILE *ifp,
 	length /= 2;   /* doc says length is in bytes, we are reading words */
       if( fseek(ifp, offset, SEEK_SET) != 0 )
 	pm_error("seek error for offset %ld", offset);
-      
+
+      nassertv(length <= WORSTCOMPR(xsize));
       for( i = 0; i < length; i++ )
 	temp[i] = (*func)(ifp);
       

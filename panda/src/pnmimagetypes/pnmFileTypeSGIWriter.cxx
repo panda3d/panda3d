@@ -125,13 +125,12 @@ write_header() {
 
   switch (_num_channels) {
   case 1:
-  case 2:
     dimensions = 2;
     break;
 
+  case 2:
   case 3:
   case 4:
-    dimensions = 3;
     dimensions = 3;
     break;
 
