@@ -110,8 +110,8 @@ public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
-  bool add_group(PT(MouseWatcherGroup) group);
-  bool remove_group(PT(MouseWatcherGroup) group);
+  bool add_group(MouseWatcherGroup *group);
+  bool remove_group(MouseWatcherGroup *group);
 
 protected:
   typedef pvector< PT(MouseWatcherRegion) > VRegions;
