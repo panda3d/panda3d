@@ -653,11 +653,19 @@ static void test11(GuiManager* mgr, Node* font) {
 PT(GuiButton) gb1;
 
 static void test12(GuiManager* mgr, Node* font) {
+  /*
   GuiLabel* l1 = GuiLabel::make_simple_text_label("up", font);
   GuiLabel* l2 = GuiLabel::make_simple_text_label("upr", font);
   GuiLabel* l3 = GuiLabel::make_simple_text_label("down", font);
   GuiLabel* l4 = GuiLabel::make_simple_text_label("downr", font);
   GuiLabel* l5 = GuiLabel::make_simple_text_label("none", font);
+  */
+  PT_Node smile = ModelPool::load_model("smiley");
+  GuiLabel* l1 = GuiLabel::make_model_label(smile);
+  GuiLabel* l2 = GuiLabel::make_model_label(smile);
+  GuiLabel* l3 = GuiLabel::make_model_label(smile);
+  GuiLabel* l4 = GuiLabel::make_model_label(smile);
+  GuiLabel* l5 = GuiLabel::make_model_label(smile);
   gb1 = new GuiButton("test12", l1, l2, l3, l4, l5);
   gb1->set_scale(0.1);
   gb1->set_pos(LVector3f::rfu(-0.25, 0., 0.25));
@@ -1064,7 +1072,7 @@ static void setup_gui(void) {
   // test 11
   //  test11(mgr, font);
   // test 12
-  //  test12(mgr, font);
+  test12(mgr, font);
   // test 13
   //  test13(mgr, font);
   // test 14
@@ -1074,7 +1082,7 @@ static void setup_gui(void) {
   // test 16
   //  test16(mgr, font);
   // test 17
-  test17(mgr, font);
+    //  test17(mgr, font);
 }
 
 static void event_2(CPT_Event) {
@@ -1162,17 +1170,17 @@ static void event_3(CPT_Event) {
 }
 */
 
-/*
 // for test 12
 static void event_3(CPT_Event) {
   gb1->inactive();
 }
-*/
 
+/*
 // for test 14-17
 static void event_3(CPT_Event) {
   ch1->move_prev();
 }
+*/
 
 /*
 // for test11, 13
@@ -1182,17 +1190,17 @@ static void event_4(CPT_Event) {
 }
 */
 
-/*
 // for test 12
 static void event_4(CPT_Event) {
   gb1->up();
 }
-*/
 
+/*
 // for test 14-17
 static void event_4(CPT_Event) {
   ch1->move_next();
 }
+*/
 
 static void event_demo(CPT_Event) {
   cout << "got demo-event-thing event!" << endl;
