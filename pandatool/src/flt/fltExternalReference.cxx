@@ -59,7 +59,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 Filename FltExternalReference::
 get_ref_filename() const {
-  Filename file(_filename);
+  Filename file = Filename::from_os_specific(_filename);
   file.resolve_filename(_header->get_model_path());
   return file;
 }

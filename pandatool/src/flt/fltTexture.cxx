@@ -97,7 +97,7 @@ FltTexture(FltHeader *header) : FltRecord(header) {
 ////////////////////////////////////////////////////////////////////
 Filename FltTexture::
 get_texture_filename() const {
-  Filename file(_filename);
+  Filename file = Filename::from_os_specific(_filename);
   file.resolve_filename(_header->get_texture_path());
   return file;
 }
