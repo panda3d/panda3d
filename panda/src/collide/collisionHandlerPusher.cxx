@@ -8,6 +8,21 @@
 
 TypeHandle CollisionHandlerPusher::_type_handle;
 
+///////////////////////////////////////////////////////////////////
+// 	 Class : ShoveData
+// Description : The ShoveData class is used within
+//               CollisionHandlerPusher::handle_entries(), to track
+//               multiple shoves onto a given collider.  It's not
+//               exported outside this file.
+////////////////////////////////////////////////////////////////////
+class ShoveData {
+public:
+  LVector3f _shove;
+  float _length;
+  LVector3f _normalized_shove;
+  bool _valid;
+};
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerPusher::Constructor
 //       Access: Public
@@ -55,6 +70,17 @@ handle_entries() {
     } else {
       const ColliderDef &def = (*ci).second;
 
+      // How to apply multiple shoves from different solids onto the
+      // same collider?  One's first intuition is to vector sum all
+      // the shoves.  However, this causes problems when two parallel
+      // walls shove on the collider, because we end up with a double
+      // shove.  We hack around this by testing if two shove vectors
+      // share nearly the same direction, and if so, we keep only the
+      // longer of the two.
+
+      typedef vector<ShoveData> Shoves;
+      Shoves shoves;
+
       Entries::const_iterator ei;
       for (ei = entries.begin(); ei != entries.end(); ++ei) {
 	CollisionEntry *entry = (*ei);
@@ -71,24 +97,80 @@ handle_entries() {
 
 	} else {
 	  // Shove it just enough to clear the volume.
-	  LVector3f shove = 
-	    entry->get_into_surface_normal() *
-	    entry->get_into_depth();
-	  
-	  if (_horizontal) {
-	    shove[2] = 0.0;
+	  if (entry->get_into_depth() != 0.0) {
+	    ShoveData sd;
+	    sd._shove = 
+	      entry->get_into_surface_normal() *
+	      entry->get_into_depth();
+	    
+	    if (collide_cat.is_debug()) {
+	      collide_cat.debug()
+		<< "Shove on " << *from_node << " from " 
+		<< *entry->get_into_node() << ": " << sd._shove << "\n";
+	    }
+
+	    sd._length = sd._shove.length();
+	    sd._normalized_shove = sd._shove / sd._length;
+	    sd._valid = true;
+	    
+	    shoves.push_back(sd);
 	  }
-	  
-	  if (collide_cat.is_debug()) {
-	    collide_cat.debug()
-	      << "Shoving on " << *from_node << " in the amount of: " 
-	      << shove << "\n";
-	  }
-	  
-	  LMatrix4f mat;
-	  def.get_mat(mat);
-	  def.set_mat(LMatrix4f::translate_mat(shove) * mat);
 	}
+      }
+
+      if (!shoves.empty()) {
+	// Now we combine any two shoves that shove in largely the
+	// same direction.  Hacky.
+
+	Shoves::iterator si;
+	for (si = shoves.begin(); si != shoves.end(); ++si) {
+	  ShoveData &sd = (*si);
+	  Shoves::iterator sj;
+	  for (sj = shoves.begin(); sj != si; ++sj) {
+	    ShoveData &sd2 = (*sj);
+	    if (sd2._valid) {
+
+	      float d = sd._normalized_shove.dot(sd2._normalized_shove);
+	      if (collide_cat.is_debug()) {
+		collide_cat.debug()
+		  << "Considering dot product " << d << "\n";
+	      }
+
+	      if (d > 0.9) {
+		// These two shoves are largely in the same direction;
+		// save the larger of the two.
+		if (sd2._length < sd._length) {
+		  sd2._valid = false;
+		} else {
+		  sd._valid = false;
+		}
+	      }
+	    }
+	  }
+	}
+
+	// Now we can determine the net shove.
+	LVector3f net_shove(0.0, 0.0, 0.0);
+	for (si = shoves.begin(); si != shoves.end(); ++si) {
+	  const ShoveData &sd = (*si);
+	  if (sd._valid) {
+	    net_shove += sd._shove;
+	  }
+	}
+	  
+	if (_horizontal) {
+	  net_shove[2] = 0.0;
+	}
+      
+	if (collide_cat.is_debug()) {
+	  collide_cat.debug()
+	    << "Net shove on " << *from_node << " is: " 
+	    << net_shove << "\n";
+	}
+	  
+	LMatrix4f mat;
+	def.get_mat(mat);
+	def.set_mat(LMatrix4f::translate_mat(net_shove) * mat);
       }
     }
   }
