@@ -68,9 +68,12 @@ class DistributedObjectAI(DirectObject.DirectObject):
             assert(self.notify.debug('delete(): %s' % (self.__dict__.get("doId"))))
 
             if not self._DOAI_requestedDelete:
-                self.notify.warning(
+                DistributedObjectAI.notify.warning(
                     'delete() called but requestDelete never called for %s: %s'
                     % (self.__dict__.get('doId'), self.__class__.__name__))
+                from direct.showbase.PythonUtil import StackTrace
+                DistributedObjectAI.notify.warning(
+                    'stack trace: %s' % StackTrace())
             self._DOAI_requestedDelete = False
 
             # Clean up all the pending barriers.
