@@ -293,6 +293,9 @@ convert_maya(bool from_selection) {
         all_ok = false;
       }
       break;
+
+    case AC_invalid:
+      break;
     };
 
     reparent_decals(&get_egg_data());
@@ -414,7 +417,7 @@ convert_char_model() {
 bool MayaToEggConverter::
 convert_char_chan(double start_frame, double end_frame, double frame_inc,
                   double output_frame_rate) {
-  MStatus status;
+  //  MStatus status;
 
   EggTable *root_table_node = new EggTable();
   get_egg_data().add_child(root_table_node);
