@@ -55,10 +55,11 @@ apply_linear_force(ColliderDef &def, const LVector3f &force) {
   if (force == LVector3f::zero()) {
     return;
   }
-  if (!def._node) {
+  if (def._target.is_empty()) {
     return;
   }
-  ActorNode *actor=DCAST(ActorNode, def._node);
+  ActorNode *actor;
+  DCAST_INTO_V(actor, def._target.node());
   LVector3f vel=actor->get_physics_object()->get_velocity();
   if (vel == LVector3f::zero()) {
     return;
