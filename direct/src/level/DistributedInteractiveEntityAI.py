@@ -66,11 +66,6 @@ class DistributedInteractiveEntityAI(DistributedEntityAI.DistributedEntityAI):
         assert(self.debugPrint("getAvatarInteract() returning: %s"%(self.avatarId,)))
         return self.avatarId
     
-    def getInitialState(self):
-        assert(self.debugPrint("getInitialState()"))
-        return [self.fsm.getCurrentState().getName(),
-                globalClockDelta.getRealNetworkTime()]
-    
     #def getOwnerDoId(self):
     #    assert(self.debugPrint("getOwnerDoId() returning: %s"%(self.ownerDoId,)))
     #    return self.ownerDoId
@@ -100,19 +95,21 @@ class DistributedInteractiveEntityAI(DistributedEntityAI.DistributedEntityAI):
             assert(self.notify.debug("  requestExit: invalid avatarId"))
     
     def getState(self):
-        assert(self.debugPrint("getState()"))
-        return [self.fsm.getCurrentState().getName(),
-                globalClockDelta.getRealNetworkTime()]
+        r = [
+            self.fsm.getCurrentState().getName(),
+            globalClockDelta.getRealNetworkTime()]
+        assert(self.debugPrint("getState() returning %s"%(r,)))
+        return r
     
-    def d_setState(self, state):
-        assert(self.debugPrint("d_setState(state=%s)"%(state,)))
-        self.sendUpdate('setState', [state, globalClockDelta.getRealNetworkTime()])
+    def sendState(self):
+        assert(self.debugPrint("sendState()"))
+        self.sendUpdate('setState', self.getState())
     
     ##### off state #####
     
     def enterOff(self):
         assert(self.debugPrint("enterOff()"))
-        #self.d_setState('off')
+        #self.setState('off')
     
     def exitOff(self):
         assert(self.debugPrint("exitOff()"))
@@ -121,7 +118,7 @@ class DistributedInteractiveEntityAI(DistributedEntityAI.DistributedEntityAI):
     
     def enterAttract(self):
         assert(self.debugPrint("enterAttract()"))
-        self.d_setState('attract')
+        self.sendState()
     
     def exitAttract(self):
         assert(self.debugPrint("exitAttract()"))
@@ -130,7 +127,7 @@ class DistributedInteractiveEntityAI(DistributedEntityAI.DistributedEntityAI):
     
     def enterPlaying(self):
         assert(self.debugPrint("enterPlaying()"))
-        self.d_setState('playing')
+        self.sendState()
     
     def exitPlaying(self):
         assert(self.debugPrint("exitPlaying()"))

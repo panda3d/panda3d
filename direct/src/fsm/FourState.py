@@ -41,7 +41,7 @@ class FourState:
     """
     if __debug__:
         notify = DirectNotifyGlobal.directNotify.newCategory(
-                'FourStateFSM')
+                'FourState')
 
     def __init__(self, names, durations = [0, 1, None, 1, 1]):
         """
@@ -55,6 +55,10 @@ class FourState:
         
         e.g. 3:
             ['off', 'deactivating', 'deactive', 'activating', 'activated', ]
+        
+        durations is a list of time values (floats) or None values.
+        
+        Each list must have five entries.
         
         More Details
         
@@ -86,7 +90,8 @@ class FourState:
         oposite of 'on').
         """
         assert(self.debugPrint("FourState(names=%s)"%(names)))
-        self.doLaterTask = None
+        self.track = None
+        self.stateTime = 0.0
         self.names = names
         self.durations = durations
         self.states = {
@@ -124,13 +129,30 @@ class FourState:
                           )
         self.fsm.enterInitialState()
     
+    def setTrack(self, track):
+        assert(self.debugPrint("setTrack(track=%s)"%(track,)))
+        if self.track is not None:
+            self.track.pause()
+            self.track = None
+        if track is not None:
+            print "\n\nstarting", self.stateIndex, "duration", self.duration, "at", self.stateTime #*#
+            track.start(self.stateTime)
+            self.track = track
+    
+    def enterStateN(self, stateIndex):
+        self.stateIndex = stateIndex
+        self.duration = self.durations[stateIndex] or 0.0
+    
+    # The AI is the authority on setting the On value.
+    # If the client wants the state changed it needs to
+    # send a request to the AI.
     #def setIsOn(self, isOn):
     #    assert(self.debugPrint("setIsOn(isOn=%s)"%(isOn,)))
     #    pass
     
-    #def getIsOn(self):
-    #    assert(self.debugPrint("getIsOn() returning %s"%(self.isOn,)))
-    #    return self.stateIndex==4
+    def isOn(self):
+        assert(self.debugPrint("isOn() returning %s (stateIndex=%s)"%(self.stateIndex==4, self.stateIndex)))
+        return self.stateIndex==4
 
     def changedOnState(self, isOn):
         """
@@ -142,7 +164,7 @@ class FourState:
     
     def enterState0(self):
         assert(self.debugPrint("enter0()"))
-        self.stateIndex = 0
+        self.enterStateN(0)
     
     def exitState0(self):
         assert(self.debugPrint("exit0()"))
@@ -156,7 +178,7 @@ class FourState:
     
     def enterState1(self):
         assert(self.debugPrint("enterState1()"))
-        self.stateIndex = 1
+        self.enterStateN(1)
     
     def exitState1(self):
         assert(self.debugPrint("exitState1()"))
@@ -165,7 +187,7 @@ class FourState:
     
     def enterState2(self):
         assert(self.debugPrint("enterState2()"))
-        self.stateIndex = 2
+        self.enterStateN(2)
     
     def exitState2(self):
         assert(self.debugPrint("exitState2()"))
@@ -174,7 +196,7 @@ class FourState:
     
     def enterState3(self):
         assert(self.debugPrint("enterState3()"))
-        self.stateIndex = 2
+        self.enterStateN(3)
     
     def exitState3(self):
         assert(self.debugPrint("exitState3()"))
@@ -183,7 +205,7 @@ class FourState:
     
     def enterState4(self):
         assert(self.debugPrint("enterState4()"))
-        self.stateIndex = 4
+        self.enterStateN(4)
         self.changedOnState(1)
     
     def exitState4(self):

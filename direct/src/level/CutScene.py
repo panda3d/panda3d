@@ -13,7 +13,7 @@ from ClockDelta import *
 import ToontownGlobals
 import DirectNotifyGlobal
 import FSM
-import DistributedInteractiveEntity
+#import DistributedInteractiveEntity
 import DelayDelete
 import Localizer
 

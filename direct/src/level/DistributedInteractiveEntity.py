@@ -79,19 +79,14 @@ class DistributedInteractiveEntity(DistributedEntity.DistributedEntity):
         assert(self.debugPrint("setOwnerDoId(%s)"%(ownerDoId,)))
         assert(not self.__dict__.has_key("ownerDoId"))
         self.ownerDoId=ownerDoId
-    
-    def setInitialState(self, state, timestamp):
-        """
-        required dc field.
-        """
-        assert(self.debugPrint("setInitialState(%s, %d)" % (state, timestamp)))
-        assert(not self.__dict__.has_key("initialState"))
-        self.initialState = state
-        self.initialStateTimestamp = timestamp
         
     def setState(self, state, timestamp):
         assert(self.debugPrint("setState(%s, %d)" % (state, timestamp)))
-        self.fsm.request(state, [globalClockDelta.localElapsedTime(timestamp)])
+        if self.isGenerated():
+            self.fsm.request(state, [globalClockDelta.localElapsedTime(timestamp)])
+        else:
+            self.initialState = state
+            self.initialStateTimestamp = timestamp
     
     #def __getPropNodePath(self):
     #    assert(self.debugPrint("__getPropNodePath()"))
@@ -113,7 +108,9 @@ class DistributedInteractiveEntity(DistributedEntity.DistributedEntity):
         # the AI server will reply with avatarExit.
     
     def rejectInteract(self):
-        """Server doesn't let the avatar interact with prop"""
+        """
+        Server doesn't let the avatar interact with prop.
+        """
         assert(self.debugPrint("rejectInteract()"))
         self.cr.playGame.getPlace().setState('walk')
         

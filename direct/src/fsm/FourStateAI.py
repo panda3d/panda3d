@@ -41,7 +41,7 @@ class FourStateAI:
     """
     if __debug__:
         notify = DirectNotifyGlobal.directNotify.newCategory(
-                'FourStateFSM')
+                'FourStateAI')
 
     def __init__(self, names, durations = [0, 1, None, 1, 1]):
         """
@@ -142,34 +142,34 @@ class FourStateAI:
         del self.states
         del self.fsm
     
-    def getInitialState(self):
-        assert(self.debugPrint("getInitialState() returning %s"%(self.stateIndex,)))
-        return self.stateIndex
+    def getState(self):
+        assert(self.debugPrint("getState() returning %s"%(self.stateIndex,)))
+        return [self.stateIndex]
     
-    def setInitialState(self):
-        assert(self.debugPrint("setInitialState()"))
-        self.sendUpdate('setInitialState', [self.getInitialState()])
+    def sendState(self):
+        assert(self.debugPrint("sendState()"))
+        self.sendUpdate('setState', self.getState())
     
     def setIsOn(self, isOn):
         assert(self.debugPrint("setIsOn(isOn=%s)"%(isOn,)))
         if isOn:
-            if self.stateIndex == 3:
-                self.stateIndex = 4
-                self.fsm.request(self.states[self.stateIndex])
-            elif self.stateIndex != 4:
-                self.stateIndex = 3
-                self.fsm.request(self.states[self.stateIndex])
+            if self.stateIndex != 4:
+                # ...if it's not On; request turning on:
+                self.fsm.request(self.states[3])
         else:
-            if self.stateIndex == 3:
-                self.stateIndex = 4
-                self.fsm.request(self.states[self.stateIndex])
-            elif self.stateIndex == 4:
-                self.stateIndex = 1
-                self.fsm.request(self.states[self.stateIndex])
+            if self.stateIndex != 2:
+                # ...if it's not Off; request turning off:
+                self.fsm.request(self.states[1])
+        #if isOn:
+        #    nextState = (4, 3, 3, 4, None)[self.stateIndex]
+        #else:
+        #    nextState = (2, 2, None, 1, 1)[self.stateIndex]
+        #if nextState is not None:
+        #    self.fsm.request(self.states[nextState])
     
-    #def getIsOn(self):
-    #    assert(self.debugPrint("getIsOn() returning %s"%(self.stateIndex==4,)))
-    #    return self.stateIndex==4
+    def isOn(self):
+        assert(self.debugPrint("isOn() returning %s (stateIndex=%s)"%(self.stateIndex==4, self.stateIndex)))
+        return self.stateIndex==4
 
     def changedOnState(self, isOn):
         """
@@ -192,8 +192,7 @@ class FourStateAI:
         may easily alter the network message.
         """
         assert(self.debugPrint("distributeStateChange()"))
-        self.setInitialState()
-        self.sendUpdate('setState', [self.stateIndex, globalClockDelta.getRealNetworkTime()])
+        self.sendState()
     
     def enterStateN(self, stateIndex, nextStateIndex):
         assert(self.debugPrint("enterStateN(stateIndex=%s, nextStateIndex=%s)"%(
@@ -218,7 +217,7 @@ class FourStateAI:
     
     def enterState0(self):
         assert(self.debugPrint("enter0()"))
-        self.stateIndex = 0
+        self.enterStateN(0, 0)
     
     def exitState0(self):
         assert(self.debugPrint("exit0()"))
