@@ -152,7 +152,7 @@ $[directory]/stamp :
     #define target $[flt:%.flt=%.egg]
     #define source $[flt]
 $[target] : $[source]
-	flt2egg -no -rt -o $[target] $[source]
+	flt2egg -no -uo ft -rt -o $[target] $[source]
 
   #end flt
 #end flt_egg
