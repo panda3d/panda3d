@@ -1573,19 +1573,26 @@ bool wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
     bool bNeedZBuffer = (_dxgsg->scrn.PresParams.EnableAutoDepthStencil!=false);
     bool bNeedStencilBuffer = IS_STENCIL_FORMAT(_dxgsg->scrn.PresParams.AutoDepthStencilFormat);
 
-    // wdxdisplay_cat.error() << "1111111 lowvidmemcard="<< _dxgsg->scrn.bIsLowVidMemCard << endl;
+    bool bIsGoodMode=false;
 
-    if((_dxgsg->scrn.bIsLowVidMemCard) && ((xsize!=640)||(ysize!=480))) {
-      wdxdisplay_cat.error() << "resize() failed: cant resize low vidmem device #" << _dxgsg->scrn.CardIDNum << " to non 640x480!\n";
-      goto Error_Return;
+    if(!special_check_fullscreen_resolution(xsize,ysize)) {
+         // bypass the lowvidmem test below for certain "lowmem" cards we know have valid modes
+
+        // wdxdisplay_cat.info() << "1111111 lowvidmemcard="<< _dxgsg->scrn.bIsLowVidMemCard << endl;
+        if(_dxgsg->scrn.bIsLowVidMemCard && (!((xsize==640) && (ysize==480)))) {
+            wdxdisplay_cat.error() << "resize() failed: will not try to resize low vidmem device #" << _dxgsg->scrn.CardIDNum << " to non-640x480!\n";
+            goto Error_Return;
+        }
     }
 
+    // must ALWAYS use search_for_valid_displaymode even if we know a-priori that res is valid so we can 
+    // get a valid pixfmt
     search_for_valid_displaymode(xsize,ysize,bNeedZBuffer,bNeedStencilBuffer,
-                                 &_dxgsg->scrn.SupportedScreenDepthsMask,
-                                 &bCouldntFindValidZBuf,
-                                 &pixFmt);
+                                 &_dxgsg->scrn.SupportedScreenDepthsMask,&bCouldntFindValidZBuf,
+                                      &pixFmt);
+    bIsGoodMode=(pixFmt!=D3DFMT_UNKNOWN);
 
-    if(pixFmt==D3DFMT_UNKNOWN) {
+    if(!bIsGoodMode) {
         wdxdisplay_cat.error() << "resize() failed: "
           << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
           << " at " << xsize << "x" << ysize << " for device #" << _dxgsg->scrn.CardIDNum <<endl;
@@ -1640,7 +1647,7 @@ special_check_fullscreen_resolution(UINT xsize,UINT ysize) {
     switch(VendorId) {
         case 0x8086:  // Intel
             /*for now, just validate all the intel cards at these resolutions.
-              I dont have a complete list of deviceIDs (missing 82830, 845, etc)
+              I dont have a complete list of intel deviceIDs (missing 82830, 845, etc)
             // Intel i810,i815,82810
             if((DeviceId==0x7121)||(DeviceId==0x7123)||(DeviceId==0x7125)||
                (DeviceId==0x1132)) 
@@ -1676,7 +1683,6 @@ verify_window_sizes(UINT numsizes,UINT *dimen) {
       bool bIsGoodMode=false;
       bool CouldntFindAnyValidZBuf;
       D3DFORMAT newPixFmt=D3DFMT_UNKNOWN;
-
 
       if(special_check_fullscreen_resolution(xsize,ysize)) {
            // bypass the test below for certain cards we know have valid modes
@@ -1816,20 +1822,33 @@ find_all_card_memavails(void) {
         DDSCAPS2 ddsGAVMCaps;
         DWORD dwVidMemTotal,dwVidMemFree;
         dwVidMemTotal=dwVidMemFree=0;
-        ZeroMemory(&ddsGAVMCaps,sizeof(DDSCAPS2));
+        {
+            // print out total INCLUDING AGP just for information purposes and future use
+            // The real value I'm interested in for purposes of measuring possible valid screen sizes
+            // shouldnt include AGP
+            ZeroMemory(&ddsGAVMCaps,sizeof(DDSCAPS2));
+            ddsGAVMCaps.dwCaps = DDSCAPS_VIDEOMEMORY;
 
+            if(FAILED(hr = pDD->GetAvailableVidMem(&ddsGAVMCaps,&dwVidMemTotal,&dwVidMemFree))) {
+               wdxdisplay_cat.error() << "GetAvailableVidMem failed for device #"<< i << D3DERRORSTRING(hr);
+               // goto skip_device;
+               exit(1);  // probably want to exit, since it may be my fault
+            }
+        }
+        wdxdisplay_cat.info() << "GetAvailableVidMem (including AGP) returns Total: "<<dwVidMemTotal <<", Free: " << dwVidMemFree << " for device #"<<i<< endl;
+
+        ZeroMemory(&ddsGAVMCaps,sizeof(DDSCAPS2));
         // just want to measure localvidmem, not AGP texmem
         ddsGAVMCaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;
         if(FAILED(hr = pDD->GetAvailableVidMem(&ddsGAVMCaps,&dwVidMemTotal,&dwVidMemFree))) {
-           wdxdisplay_cat.error() << "GetAvailableVidMem failed for device #"<< pDX7DeviceID->szDescription<< D3DERRORSTRING(hr);
+           wdxdisplay_cat.error() << "GetAvailableVidMem failed for device #"<< i<< D3DERRORSTRING(hr);
            // goto skip_device;
            exit(1);  // probably want to exit, since it may be my fault
         }
 
+        wdxdisplay_cat.info() << "GetAvailableVidMem (no AGP) returns Total: "<<dwVidMemTotal <<", Free: " << dwVidMemFree << " for device #"<< i<< endl;
+
         pDD->Release();  // release DD obj, since this is all we needed it for
-
-
-        wdxdisplay_cat.info() << "GetAvailableVidMem returns Total: "<<dwVidMemTotal <<", Free: " << dwVidMemFree << " for device #"<< pDX7DeviceID->szDescription<< endl;
 
         if(!dx_do_vidmemsize_check) {
            // still calling the DD stuff to get deviceID, etc.  is this necessary?
@@ -1841,12 +1860,14 @@ find_all_card_memavails(void) {
         if(dwVidMemTotal==0) {  // unreliable driver
             dwVidMemTotal=UNKNOWN_VIDMEM_SIZE;
         } else {
-             // assume they wont return a proper max value, so
-             // round up to next pow of 2
-             UINT count=0;
-             while((dwVidMemTotal >> count)!=0)
-                count++;
-             dwVidMemTotal = (1 << count);
+             if(!ISPOW2(dwVidMemTotal)) {
+                 // assume they wont return a proper max value, so
+                 // round up to next pow of 2
+                 UINT count=0;
+                 while((dwVidMemTotal >> count)!=0x0)
+                    count++;
+                 dwVidMemTotal = (1 << count);
+             }
          }
 
         // after SetDisplayMode, GetAvailVidMem totalmem seems to go down by 1.2 meg (contradicting above
