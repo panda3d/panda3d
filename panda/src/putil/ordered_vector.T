@@ -1,0 +1,331 @@
+// Filename: ordered_vector.T
+// Created by:  drose (20Feb02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::insert
+//       Access: Public
+//  Description: Inserts the indicated key into the ordered vector.
+//               The iterator is a hint to the expected position; if
+//               this is correct, the insert operation is likely to be
+//               faster.  The return value is the iterator referencing
+//               the new element.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+ordered_vector<Key, Compare>::iterator ordered_vector<Key, Compare>::
+insert(ordered_vector<Key, Compare>::iterator position, 
+       const ordered_vector<Key, Compare>::value_type &key) {
+  if (position != begin()) {
+    // If we're not inserting at the beginning, this element should
+    // not lexicographically precede the one we're inserting after.
+    if (_compare(key, *(position - 1))) {
+      return insert(key);
+    }
+  }
+
+  if (position != end()) {
+    // If we're not inserting at the beginning, the element we're
+    // inserting before should not lexicographically precede this one.
+    if (_compare(*position, key)) {
+      return insert(key);
+    }
+  }
+
+  // Otherwise, we may insert where the caller requested.
+  iterator result = _vector.insert(position, key);
+  verify_list();
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::r_find_insert_position
+//       Access: Private
+//  Description: The recursive implementation of
+//               find_insert_position().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+ordered_vector<Key, Compare>::iterator ordered_vector<Key, Compare>::
+r_find_insert_position(ordered_vector<Key, Compare>::iterator first,
+                       ordered_vector<Key, Compare>::iterator last,
+                       const ordered_vector<Key, Compare>::key_type &key) {
+  if (first == last) {
+    // The list is empty; the insert position is the last of the list.
+    return last;
+  }
+
+  iterator center = first + (last - first) / 2;
+  nassertr(center < last, last);
+
+  if (_compare(key, *center)) {
+    // Insert before the center.
+    return r_find_insert_position(first, center, key);
+
+  } else {
+    // Insert after the center.
+    return r_find_insert_position(center + 1, last, key);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::r_find
+//       Access: Private
+//  Description: The recursive implementation of find().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+ordered_vector<Key, Compare>::const_iterator ordered_vector<Key, Compare>::
+r_find(ordered_vector<Key, Compare>::const_iterator first,
+       ordered_vector<Key, Compare>::const_iterator last,
+       ordered_vector<Key, Compare>::const_iterator not_found,
+       const ordered_vector<Key, Compare>::key_type &key) const {
+  if (first == last) {
+    // The list is empty; the key is not on the list.
+    return not_found;
+  }
+
+  const_iterator center = first + (last - first) / 2;
+  nassertr(center < last, last);
+
+  if (_compare(key, *center)) {
+    // It must be before the center.
+    return r_find(first, center, not_found, key);
+
+  } else if (_compare(*center, key)) {
+    // It must be after the center.
+    return r_find(center + 1, last, not_found, key);
+
+  } else {
+    // Here it is!
+    return center;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::r_find_particular
+//       Access: Private
+//  Description: The recursive implementation of find_particular().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+ordered_vector<Key, Compare>::const_iterator ordered_vector<Key, Compare>::
+r_find_particular(ordered_vector<Key, Compare>::const_iterator first,
+                  ordered_vector<Key, Compare>::const_iterator last,
+                  ordered_vector<Key, Compare>::const_iterator not_found,
+                  const ordered_vector<Key, Compare>::key_type &key) const {
+  if (first == last) {
+    // The list is empty; the key is not on the list.
+    return not_found;
+  }
+
+  const_iterator center = first + (last - first) / 2;
+  nassertr(center < last, last);
+
+  if (_compare(key, *center)) {
+    // It must be before the center.
+    return r_find_particular(first, center, not_found, key);
+
+  } else if (_compare(*center, key)) {
+    // It must be after the center.
+    return r_find_particular(center + 1, last, not_found, key);
+
+  } else {
+    // The center's sort matches the key's sort.  It could be either
+    // before or after the center.  First try after.
+    const_iterator i = center;
+    while (i < last && !_compare(key, *i)) {
+      if ((*i) == key) {
+        return i;
+      }
+      ++i;
+    }
+
+    // No, try before.
+    i = center;
+    --i;
+    while (i >= first && !_compare(key, *i)) {
+      if ((*i) == key) {
+        return i;
+      }
+      --i;
+    }
+
+    // No such key!
+    return not_found;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::r_count
+//       Access: Private
+//  Description: The recursive implementation of count().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+ordered_vector<Key, Compare>::size_type ordered_vector<Key, Compare>::
+r_count(ordered_vector<Key, Compare>::const_iterator first,
+        ordered_vector<Key, Compare>::const_iterator last,
+        const ordered_vector<Key, Compare>::key_type &key) const {
+  typedef pair<ordered_vector<Key, Compare>::const_iterator, ordered_vector<Key, Compare>::const_iterator> pair_type;
+
+  if (first == last) {
+    // The list is empty; the key is not on the list.
+    return 0;
+  }
+
+  const_iterator center = first + (last - first) / 2;
+  nassertr(center < last, 0);
+
+  if (_compare(key, *center)) {
+    // It must be before the center.
+    return r_count(first, center, key);
+
+  } else if (_compare(*center, key)) {
+    // It must be after the center.
+    return r_count(center + 1, last, key);
+
+  } else {
+    // The center matches the key; the range is here.
+    size_type lower = r_count(first, center, key);
+    size_type upper = r_count(center + 1, last, key);
+    return lower + 1 + upper;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::r_lower_bound
+//       Access: Private
+//  Description: The recursive implementation of lower_bound().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+ordered_vector<Key, Compare>::const_iterator ordered_vector<Key, Compare>::
+r_lower_bound(ordered_vector<Key, Compare>::const_iterator first,
+              ordered_vector<Key, Compare>::const_iterator last,
+              const ordered_vector<Key, Compare>::key_type &key) const {
+  if (first == last) {
+    // The list is empty; the key is not on the list.
+    return last;
+  }
+
+  const_iterator center = first + (last - first) / 2;
+  nassertr(center < last, last);
+
+  if (_compare(key, *center)) {
+    // It must be before the center.
+    return r_lower_bound(first, center, key);
+
+  } else if (_compare(*center, key)) {
+    // It must be after the center.
+    return r_lower_bound(center + 1, last, key);
+
+  } else {
+    // The center matches the key; thus, the first element not less
+    // than key is at or before the center.
+    return r_lower_bound(first, center, key);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::r_upper_bound
+//       Access: Private
+//  Description: The recursive implementation of upper_bound().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+ordered_vector<Key, Compare>::const_iterator ordered_vector<Key, Compare>::
+r_upper_bound(ordered_vector<Key, Compare>::const_iterator first,
+              ordered_vector<Key, Compare>::const_iterator last,
+              const ordered_vector<Key, Compare>::key_type &key) const {
+  if (first == last) {
+    // The list is empty; the key is not on the list.
+    return last;
+  }
+
+  const_iterator center = first + (last - first) / 2;
+  nassertr(center < last, last);
+
+  if (_compare(key, *center)) {
+    // It must be before the center.
+    return r_upper_bound(first, center, key);
+
+  } else if (_compare(*center, key)) {
+    // It must be after the center.
+    return r_upper_bound(center + 1, last, key);
+
+  } else {
+    // The center matches the key; thus, the first element greater
+    // than key is after the center.
+    return r_upper_bound(center + 1, last, key);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::r_equal_range
+//       Access: Private
+//  Description: The recursive implementation of equal_range().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+pair<ordered_vector<Key, Compare>::const_iterator, ordered_vector<Key, Compare>::const_iterator> ordered_vector<Key, Compare>::
+r_equal_range(ordered_vector<Key, Compare>::const_iterator first,
+              ordered_vector<Key, Compare>::const_iterator last,
+              const ordered_vector<Key, Compare>::key_type &key) const {
+  typedef pair<ordered_vector<Key, Compare>::const_iterator, ordered_vector<Key, Compare>::const_iterator> pair_type;
+
+  if (first == last) {
+    // The list is empty; the key is not on the list.
+    return pair_type(last, last);
+  }
+
+  const_iterator center = first + (last - first) / 2;
+  nassertr(center < last, pair_type(last, last));
+
+  if (_compare(key, *center)) {
+    // It must be before the center.
+    return r_equal_range(first, center, key);
+
+  } else if (_compare(*center, key)) {
+    // It must be after the center.
+    return r_equal_range(center + 1, last, key);
+
+  } else {
+    // The center matches the key; the range is here.
+    const_iterator lower = r_lower_bound(first, center, key);
+    const_iterator upper = r_upper_bound(center + 1, last, key);
+    return pair_type(lower, upper);
+  }
+}
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::verify_list_impl
+//       Access: Private
+//  Description: The non-inline implementation of verify_list().
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+bool ordered_vector<Key, Compare>::
+verify_list_impl(ordered_vector<Key, Compare>::iterator first, 
+                 ordered_vector<Key, Compare>::iterator last) {
+  if (first < last) {
+    iterator prev = first;
+    iterator i = first;
+    ++i;
+    while (i < last) {
+      bool ordered_correctly = !_compare(*i, *prev);
+      nassertr(ordered_correctly, false);
+      prev = i;
+      ++i;
+    }
+  }
+  return true;
+}
+#endif  // NDEBUG

@@ -71,6 +71,8 @@ ConfigureFn(config_util) {
 
 //const bool track_memory_usage = config_util.GetBool("track-memory-usage", false);
 
+const bool paranoid_ordered_vector = config_util.GetBool("paranoid-ordered-vector", false);
+
 DSearchPath &
 get_model_path() {
   static DSearchPath *model_path = NULL;

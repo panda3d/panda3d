@@ -28,6 +28,7 @@
      lineStream.h lineStreamBuf.I lineStreamBuf.h \
      modifierButtons.I modifierButtons.h mouseButton.h \
      mouseData.h nameUniquifier.I nameUniquifier.h \
+     ordered_vector.h ordered_vector.I ordered_vector.T \
      pta_double.h \
      pta_float.h pta_int.h \
      string_utils.I string_utils.N string_utils.h \
@@ -48,7 +49,9 @@
      ioPtaDatagramInt.cxx ioPtaDatagramShort.cxx \
      keyboardButton.cxx lineStream.cxx lineStreamBuf.cxx \
      modifierButtons.cxx mouseButton.cxx mouseData.cxx \
-     nameUniquifier.cxx pta_double.cxx pta_float.cxx \
+     nameUniquifier.cxx \
+     ordered_vector.cxx \
+     pta_double.cxx pta_float.cxx \
      pta_int.cxx pta_ushort.cxx \
      string_utils.cxx timedCycle.cxx typedWritable.cxx \
      typedWritableReferenceCount.cxx updateSeq.cxx \
@@ -75,7 +78,9 @@
     ioPtaDatagramShort.h iterator_types.h keyboardButton.h lineStream.I \
     lineStream.h lineStreamBuf.I lineStreamBuf.h modifierButtons.I \
     modifierButtons.h mouseButton.h mouseData.h nameUniquifier.I \
-    nameUniquifier.h pta_double.h \
+    nameUniquifier.h \
+    ordered_vector.h ordered_vector.I ordered_vector.T \
+    pta_double.h \
     pta_float.h pta_int.h pta_ushort.h string_utils.I \
     string_utils.h timedCycle.I timedCycle.h typedWritable.I \
     typedWritable.h typedWritableReferenceCount.I \
@@ -132,5 +137,16 @@
 
   #define SOURCES \
     test_linestream.cxx
+
+#end test_bin_target
+
+#begin test_bin_target
+  #define TARGET test_ordered_vector
+
+  #define SOURCES \
+    test_ordered_vector.cxx
+
+  #define LOCAL_LIBS $[LOCAL_LIBS] putil
+  #define OTHER_LIBS $[OTHER_LIBS] pystub
 
 #end test_bin_target

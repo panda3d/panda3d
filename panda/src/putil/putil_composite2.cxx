@@ -1,5 +1,6 @@
 
 #include "nameUniquifier.cxx"
+#include "ordered_vector.cxx"
 #include "pta_double.cxx"
 #include "pta_float.cxx"
 #include "pta_int.cxx"
