@@ -24,6 +24,7 @@
 #include "camera.h"
 #include "graphicsWindow.h"
 #include "animControlCollection.h"
+#include "trackball.h"
 #include "filename.h"
 #include "pointerTo.h"
 #include "pvector.h"
@@ -60,6 +61,7 @@ public:
 
   void enable_keyboard();
   void setup_trackball();
+  void center_trackball(const NodePath &object);
 
   bool load_models(const NodePath &parent,
                    int argc, char *argv[], int first_arg = 1);
@@ -96,6 +98,7 @@ private:
   AnimControlCollection _anim_controls;
 
   NodePath _mouse;
+  PT(Trackball) _trackball;
 
   AmbientLight *_alight;
   DirectionalLight *_dlight;

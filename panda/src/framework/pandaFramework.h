@@ -63,6 +63,8 @@ public:
   void close_window(int n);
   void close_all_windows();
 
+  const NodePath &get_models();
+
   void report_frame_rate(ostream &out) const;
   void reset_frame_rate();
 
@@ -75,6 +77,11 @@ public:
   INLINE bool get_texture() const;
   INLINE bool get_two_sided() const;
   INLINE bool get_lighting() const;
+
+  void set_highlight(const NodePath &node);
+  void clear_highlight();
+  INLINE bool has_highlight() const;
+  INLINE const NodePath &get_highlight() const;
 
   void enable_default_keys();
 
@@ -94,6 +101,12 @@ protected:
   static void event_t(CPT_Event, void *data);
   static void event_b(CPT_Event, void *data);
   static void event_l(CPT_Event, void *data);
+  static void event_c(CPT_Event, void *data);
+  static void event_h(CPT_Event, void *data);
+  static void event_arrow_up(CPT_Event, void *data);
+  static void event_arrow_down(CPT_Event, void *data);
+  static void event_arrow_left(CPT_Event, void *data);
+  static void event_arrow_right(CPT_Event, void *data);
   static void event_S(CPT_Event, void *data);
 
 
@@ -112,6 +125,8 @@ private:
   typedef pvector<WindowFramework *> Windows;
   Windows _windows;
 
+  NodePath _models;
+
   // For counting frame rate.
   double _start_time;
   int _frame_count;
@@ -120,6 +135,8 @@ private:
   bool _texture_enabled;
   bool _two_sided_enabled;
   bool _lighting_enabled;
+
+  NodePath _highlight;
 
   bool _default_keys_enabled;
 

@@ -101,8 +101,8 @@ clear() {
   _focal_length = 1.0f;
   _fov.set(_default_fov, _default_fov);
   _aspect_ratio = 1.0f;
-  _near_distance = 1.0f;
-  _far_distance = 1000.0f;
+  _near_distance = default_near;
+  _far_distance = default_far;
   _view_hpr.set(0.0f, 0.0f, 0.0f);
   _view_vector.set(0.0f, 1.0f, 0.0f);
   _up_vector.set(0.0f, 0.0f, 1.0f);
@@ -385,6 +385,30 @@ get_aspect_ratio() const {
     ((Lens *)this)->compute_aspect_ratio();
   }
   return _aspect_ratio;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_default_near
+//       Access: Published, Static
+//  Description: Returns the default near plane distance that will be
+//               assigned to each newly-created lens.  This is read
+//               from the Configrc file.
+////////////////////////////////////////////////////////////////////
+float Lens::
+get_default_near() {
+  return default_near;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_default_far
+//       Access: Published, Static
+//  Description: Returns the default far plane distance that will be
+//               assigned to each newly-created lens.  This is read
+//               from the Configrc file.
+////////////////////////////////////////////////////////////////////
+float Lens::
+get_default_far() {
+  return default_far;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -118,6 +118,10 @@ const int select_LOD_number = config_gobj.GetInt("select-LOD-number", -1);
 // will screen out successively higher levels
 const int minimum_LOD_number = config_gobj.GetInt("minimum-LOD-number", 0);
 
+// The default near and far plane distances.
+const float default_near = config_gobj.GetFloat("default-near", 1.0f);
+const float default_far = config_gobj.GetFloat("default-far", 1000.0f);
+
 static BamTextureMode
 parse_texture_mode(const string &mode) {
   if (mode == "fullpath") {

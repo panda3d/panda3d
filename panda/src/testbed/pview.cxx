@@ -30,11 +30,12 @@ main(int argc, char *argv[]) {
 
     window->enable_keyboard();
     window->setup_trackball();
+    framework.get_models().instance_to(window->get_render());
     if (argc < 2) {
       // If we have no arguments, get that trusty old triangle out.
-      window->load_default_model(window->get_render());
+      window->load_default_model(framework.get_models());
     } else {
-      window->load_models(window->get_render(), argc, argv);
+      window->load_models(framework.get_models(), argc, argv);
     }
     window->loop_animations();
 

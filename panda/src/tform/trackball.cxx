@@ -66,7 +66,7 @@ Trackball(const string &name) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::Destructor
-//       Access: Public, Scheme
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Trackball::
@@ -75,7 +75,7 @@ Trackball::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::reset
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Reinitializes all transforms to identity.
 ////////////////////////////////////////////////////////////////////
 void Trackball::
@@ -86,10 +86,34 @@ reset() {
   _mat = LMatrix4f::ident_mat();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Trackball::get_forward_scale
+//       Access: Published
+//  Description: Returns the scale factor applied to forward and
+//               backward motion.  See set_forward_scale().
+////////////////////////////////////////////////////////////////////
+float Trackball::
+get_forward_scale() const {
+  return _fwdscale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Trackball::set_forward_scale
+//       Access: Published
+//  Description: Changes the scale factor applied to forward and
+//               backward motion.  The larger this number, the faster
+//               the model will move in response to dollying in and
+//               out.
+////////////////////////////////////////////////////////////////////
+void Trackball::
+set_forward_scale(float fwdscale) {
+  _fwdscale = fwdscale;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::get_pos
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Return the offset from the center of rotation.
 ////////////////////////////////////////////////////////////////////
 const LPoint3f &Trackball::
@@ -115,7 +139,7 @@ get_z() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::set_pos
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Directly set the offset from the rotational origin.
 ////////////////////////////////////////////////////////////////////
 void Trackball::
@@ -151,7 +175,7 @@ set_z(float z) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::get_hpr
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Return the trackball's orientation.
 ////////////////////////////////////////////////////////////////////
 LVecBase3f Trackball::
@@ -185,7 +209,7 @@ get_r() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::set_hpr
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Directly set the mover's orientation.
 ////////////////////////////////////////////////////////////////////
 void Trackball::
@@ -235,7 +259,7 @@ set_r(float r) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::reset_origin_here
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Reposition the center of rotation to coincide with
 //               the current translation offset.  Future rotations
 //               will be about the current origin.
@@ -250,7 +274,7 @@ reset_origin_here() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::move_origin
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Moves the center of rotation by the given amount.
 ////////////////////////////////////////////////////////////////////
 void Trackball::
@@ -258,10 +282,31 @@ move_origin(float x, float y, float z) {
   _rotation = LMatrix4f::translate_mat(LVecBase3f(x, y, z)) *  _rotation;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Trackball::get_origin
+//       Access: Published
+//  Description: Returns the current center of rotation.
+////////////////////////////////////////////////////////////////////
+LPoint3f Trackball::
+get_origin() const {
+  return _rotation.get_row3(3);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Trackball::set_origin
+//       Access: Published
+//  Description: Directly sets the center of rotation.
+////////////////////////////////////////////////////////////////////
+void Trackball::
+set_origin(const LVecBase3f &origin) {
+  _rotation.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+  _rotation = LMatrix4f::translate_mat(-origin) *  _rotation;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::set_invert
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Sets the invert flag.  When this is set, the inverse
 //               matrix is generated, suitable for joining to a
 //               camera, instead of parenting the scene under it.
@@ -273,7 +318,7 @@ set_invert(bool flag) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::get_invert
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the invert flag.  When this is set, the
 //               inverse matrix is generated, suitable for joining to
 //               a camera, instead of parenting the scene under it.
@@ -285,7 +330,7 @@ get_invert() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::set_rel_to
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Sets the NodePath that all trackball manipulations
 //               are to be assumed to be relative to.  For instance,
 //               set your camera node here to make the trackball
@@ -300,7 +345,7 @@ set_rel_to(const NodePath &rel_to) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::get_rel_to
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the NodePath that all trackball manipulations
 //               are relative to, or the empty path.
 ////////////////////////////////////////////////////////////////////
@@ -312,7 +357,7 @@ get_rel_to() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::set_coordinate_system
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Sets the coordinate system of the Trackball.
 //               Normally, this is the default coordinate system.
 //               This changes the axes the Trackball manipulates so
@@ -326,7 +371,7 @@ set_coordinate_system(CoordinateSystem cs) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::get_coordinate_system
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the coordinate system of the Trackball.
 //               See set_coordinate_system().
 ////////////////////////////////////////////////////////////////////
@@ -337,7 +382,7 @@ get_coordinate_system() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::set_mat
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Stores the indicated transform in the trackball.
 //               This is a transform in global space, regardless of
 //               the rel_to node.
@@ -357,7 +402,7 @@ set_mat(const LMatrix4f &mat) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::get_mat
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the matrix represented by the trackball
 //               rotation.
 ////////////////////////////////////////////////////////////////////
@@ -368,7 +413,7 @@ get_mat() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::get_trans_mat
-//       Access: Public, Scheme
+//       Access: Published
 //  Description: Returns the actual transform that will be applied to
 //               the scene graph.  This is the same as get_mat(),
 //               unless invert is in effect.

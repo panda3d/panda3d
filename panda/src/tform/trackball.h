@@ -48,6 +48,9 @@ PUBLISHED:
 
   void reset();
 
+  float get_forward_scale() const;
+  void set_forward_scale(float fwdscale);
+
   /// **** Translation ****
 
   const LPoint3f &get_pos() const;
@@ -76,6 +79,9 @@ PUBLISHED:
 
   void reset_origin_here();
   void move_origin(float x, float y, float z);
+
+  LPoint3f get_origin() const;
+  void set_origin(const LVecBase3f &origin);
 
   /// **** Misc ****
 

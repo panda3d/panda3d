@@ -246,6 +246,22 @@ close_all_windows() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_models
+//       Access: Public
+//  Description: Returns the root of the scene graph normally reserved
+//               for parenting models and such.  This scene graph may
+//               be instanced to each window's render tree as the
+//               window is created.
+////////////////////////////////////////////////////////////////////
+const NodePath &PandaFramework::
+get_models() {
+  if (_models.is_empty()) {
+    _models = NodePath("models");
+  }
+  return _models;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::report_frame_rate
 //       Access: Public
 //  Description: Reports the currently measured average frame rate to
@@ -338,6 +354,36 @@ set_lighting(bool enable) {
   }
 
   _lighting_enabled = enable;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::set_highlight
+//       Access: Public
+//  Description: Sets the indicated node (normally a node within the
+//               get_models() tree) up as the highlighted node.
+//               Certain operations affect the highlighted node only.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+set_highlight(const NodePath &node) {
+  clear_highlight();
+  _highlight = node;
+  if (!_highlight.is_empty()) {
+    framework_cat.info(false) << _highlight << "\n";
+    _highlight.show_bounds();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::clear_highlight
+//       Access: Public
+//  Description: Unhighlights the currently highlighted node, if any.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+clear_highlight() {
+  if (!_highlight.is_empty()) {
+    _highlight.hide_bounds();
+    _highlight = NodePath();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -441,6 +487,12 @@ do_enable_default_keys() {
   _event_handler.add_hook("t", event_t, this);
   _event_handler.add_hook("b", event_b, this);
   _event_handler.add_hook("l", event_l, this);
+  _event_handler.add_hook("c", event_c, this);
+  _event_handler.add_hook("h", event_h, this);
+  _event_handler.add_hook("arrow_up", event_arrow_up, this);
+  _event_handler.add_hook("arrow_down", event_arrow_down, this);
+  _event_handler.add_hook("arrow_left", event_arrow_left, this);
+  _event_handler.add_hook("arrow_right", event_arrow_right, this);
   _event_handler.add_hook("shift-s", event_S, this);
 }
 
@@ -512,6 +564,133 @@ void PandaFramework::
 event_l(CPT_Event, void *data) {
   PandaFramework *self = (PandaFramework *)data;
   self->set_lighting(!self->get_lighting());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_c
+//       Access: Protected, Static
+//  Description: Default handler for c key: center the trackball over
+//               the scene, or over the highlighted part of the scene.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_c(CPT_Event, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  NodePath center_around = self->get_highlight();
+  if (center_around.is_empty()) {
+    center_around = self->get_models();
+  }
+
+  Windows::iterator wi;
+  for (wi = self->_windows.begin(); wi != self->_windows.end(); ++wi) {
+    WindowFramework *wf = (*wi);
+    wf->center_trackball(center_around);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_h
+//       Access: Protected, Static
+//  Description: Default handler for h key: toggle highlight mode.  In
+//               this mode, you can walk the scene graph with the
+//               arrow keys to highlight different nodes.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_h(CPT_Event, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+  
+  if (self->has_highlight()) {
+    self->clear_highlight();
+  } else {
+    self->set_highlight(self->get_models());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_arrow_up
+//       Access: Protected, Static
+//  Description: Default handler for up arrow key: in highlight mode,
+//               move the highlight to the node's parent.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_arrow_up(CPT_Event, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  if (self->has_highlight()) {
+    NodePath node = self->get_highlight();
+    if (node.has_parent() && node != self->get_models()) {
+      self->set_highlight(node.get_parent());
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_arrow_down
+//       Access: Protected, Static
+//  Description: Default handler for up arrow key: in highlight mode,
+//               move the highlight to the node's first child.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_arrow_down(CPT_Event, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  if (self->has_highlight()) {
+    NodePath node = self->get_highlight();
+    if (node.get_num_children() > 0) {
+      self->set_highlight(node.get_child(0));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_arrow_left
+//       Access: Protected, Static
+//  Description: Default handler for up arrow key: in highlight mode,
+//               move the highlight to the node's nearest sibling on
+//               the left.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_arrow_left(CPT_Event, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  if (self->has_highlight()) {
+    NodePath node = self->get_highlight();
+    NodePath parent = node.get_parent();
+    if (node.has_parent() && node != self->get_models()) {
+      int index = parent.node()->find_child(node.node());
+      nassertv(index >= 0);
+      int sibling = index - 1;
+      if (sibling >= 0) {
+        self->set_highlight(NodePath(parent, parent.node()->get_child(sibling)));
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_arrow_right
+//       Access: Protected, Static
+//  Description: Default handler for up arrow key: in highlight mode,
+//               move the highlight to the node's nearest sibling on
+//               the right.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_arrow_right(CPT_Event, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  if (self->has_highlight()) {
+    NodePath node = self->get_highlight();
+    NodePath parent = node.get_parent();
+    if (node.has_parent() && node != self->get_models()) {
+      int index = parent.node()->find_child(node.node());
+      nassertv(index >= 0);
+      int num_children = parent.node()->get_num_children();
+      int sibling = index + 1;
+      if (sibling < num_children) {
+        self->set_highlight(NodePath(parent, parent.node()->get_child(sibling)));
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

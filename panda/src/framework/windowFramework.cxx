@@ -20,7 +20,6 @@
 #include "pandaFramework.h"
 #include "mouseAndKeyboard.h"
 #include "buttonThrower.h"
-#include "trackball.h"
 #include "transform2sg.h"
 #include "dSearchPath.h"
 #include "filename.h"
@@ -34,6 +33,9 @@
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "lightAttrib.h"
+#include "boundingSphere.h"
+#include "deg_2_rad.h"
+#include "config_framework.h"
 
 // This number is chosen arbitrarily to override any settings in model
 // files.
@@ -212,15 +214,86 @@ setup_trackball() {
   NodePath mouse = get_mouse();
   NodePath camera = get_camera_group();
 
-  PT(Trackball) trackball = new Trackball("trackball");
-  trackball->set_pos(LVector3f::forward() * 50.0);
-  mouse.attach_new_node(trackball);
+  _trackball = new Trackball("trackball");
+  _trackball->set_pos(LVector3f::forward() * 50.0);
+  mouse.attach_new_node(_trackball);
 
   PT(Transform2SG) tball2cam = new Transform2SG("tball2cam");
   tball2cam->set_node(camera.node());
-  trackball->add_child(tball2cam);
+  _trackball->add_child(tball2cam);
 
   _got_trackball = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::center_trackball
+//       Access: Public
+//  Description: Centers the trackball on the indicated object, and
+//               scales the trackball motion suitably.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+center_trackball(const NodePath &object) {
+  PT(BoundingVolume) volume = object.get_bounds();
+  // We expect at least a geometric bounding volume around the world.
+  nassertv(volume != (BoundingVolume *)NULL);
+  nassertv(volume->is_of_type(GeometricBoundingVolume::get_class_type()));
+  GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, volume);
+  
+  // Determine the bounding sphere around the world.  The topmost
+  // BoundingVolume might itself be a sphere (it's likely), but since
+  // it might not, we'll take no chances and make our own sphere.
+  PT(BoundingSphere) sphere = new BoundingSphere;
+  if (!sphere->extend_by(gbv)) {
+    framework_cat.warning()
+      << "Cannot determine bounding volume of " << object << "\n";
+    return;
+  }
+
+  if (sphere->is_infinite()) {
+    framework_cat.warning()
+      << "Infinite bounding volume for " << object << "\n";
+    return;
+  }
+
+  if (sphere->is_empty()) {
+    framework_cat.warning()
+      << "Empty bounding volume for " << object << "\n";
+    return;
+  }
+
+  LPoint3f center = sphere->get_center();
+  float radius = sphere->get_radius();
+
+  float distance = 50.0f;
+
+  // Choose a suitable distance to view the whole volume in our frame.
+  // This is based on the camera lens in use.  Determine the lens
+  // based on the first camera; this will be the default camera.
+  Lens *lens = (Lens *)NULL;
+  if (!_cameras.empty()) {
+    Cameras::const_iterator ci;
+    for (ci = _cameras.begin();
+         ci != _cameras.end() && lens == (Lens *)NULL;
+         ++ci) {
+      lens = (*ci)->get_lens();
+    }
+  }
+
+  if (lens != (Lens *)NULL) {
+    LVecBase2f fov = lens->get_fov();
+    distance = radius / ctan(deg_2_rad(min(fov[0], fov[1]) / 2.0f));
+
+    // Ensure the far plane is far enough back to see the entire object.
+    float ideal_far_plane = distance + radius;
+    lens->set_far(max(lens->get_default_far(), ideal_far_plane)); 
+  }
+
+  _trackball->set_origin(center);
+  _trackball->set_pos(LVector3f::forward() * distance);
+
+  // Also set the movement scale on the trackball to be consistent
+  // with the size of the model and the lens field-of-view.
+  _trackball->set_forward_scale(distance * 0.006);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -91,6 +91,9 @@ PUBLISHED:
   INLINE void set_far(float far_distance);
   INLINE float get_far() const;
   INLINE void set_near_far(float near_distance, float far_distance);
+
+  static float get_default_near();
+  static float get_default_far();
   
   INLINE void set_view_hpr(float h, float p, float r);
   void set_view_hpr(const LVecBase3f &view_hpr);
