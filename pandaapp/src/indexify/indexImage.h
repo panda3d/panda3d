@@ -28,6 +28,7 @@ class RollDirectory;
 class Photo;
 class TextMaker;
 class PNMImage;
+class PNMImageHeader;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : IndexImage
@@ -58,7 +59,7 @@ private:
   Filename compose_href(const Filename &rel_dir, const Filename &user_prefix,
                         const Filename &basename = Filename());
 
-  static void compute_reduction(const PNMImage &source_image,
+  static void compute_reduction(const PNMImageHeader &source_image,
                                 PNMImage &dest_image,
                                 int x_size, int y_size);
   static void draw_box(PNMImage &image);

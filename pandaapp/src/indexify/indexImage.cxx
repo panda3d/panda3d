@@ -188,7 +188,15 @@ generate_images(const Filename &archive_dir, TextMaker *text_maker) {
       photo->_full_x_size = photo_image.get_x_size();
       photo->_full_y_size = photo_image.get_y_size();
 
-      if (!dummy_mode && generate_index_image) {
+      if (dummy_mode) {
+	// In dummy mode, we may or may not actually have a reduced
+	// image.  In either case, ignore the file and compute its
+	// appropriate size from the source image.
+	compute_reduction(photo_image, reduced_image, reduced_width, reduced_height);
+	photo->_reduced_x_size = reduced_image.get_x_size();
+	photo->_reduced_y_size = reduced_image.get_y_size();
+
+      } else if (generate_index_image) {
 	// Now read the reduced image from disk, so we can put it on
 	// the index image.
 	nout << "Reading " << reduced_filename << "\n";
@@ -241,7 +249,7 @@ generate_images(const Filename &archive_dir, TextMaker *text_maker) {
 				 pinfo._y_place + y_center);
       
       if (text_maker != (TextMaker *)NULL) {
-	text_maker->generate_into(photo->get_name(), index_image, 
+	text_maker->generate_into(photo->get_frame_number(), index_image, 
 				  pinfo._x_place + thumb_width / 2, 
 				  pinfo._y_place + thumb_height + thumb_caption_height);
       }
@@ -597,7 +605,7 @@ compose_href(const Filename &rel_dir, const Filename &user_prefix,
 //               the dest_image to the computed size.
 ////////////////////////////////////////////////////////////////////
 void IndexImage::
-compute_reduction(const PNMImage &source_image, PNMImage &dest_image,
+compute_reduction(const PNMImageHeader &source_image, PNMImage &dest_image,
                   int x_size, int y_size) {
   double x_scale = (double)x_size / (double)source_image.get_x_size();
   double y_scale = (double)y_size / (double)source_image.get_y_size();

@@ -88,6 +88,16 @@ extern bool dummy_mode;
 // True to draw frames (slide mounts) around each thumbnail image.
 extern bool draw_frames;
 
+// True to avoid introducing each roll directory on the index page
+// with its own little header.  This also ignored the roll.cm file if
+// it exists.
+extern bool omit_roll_headers;
+
+// True to caption photos with just a frame number instead of the
+// whole image basename.  This only works if the photo image filenames
+// consist of the roll directory name concatenated with a frame number.
+extern bool caption_frame_numbers;
+
 
 void finalize_parameters();
 

@@ -35,6 +35,7 @@ public:
 
   const Filename &get_basename() const;
   const string &get_name() const;
+  const string &get_frame_number() const;
 
   void output(ostream &out) const;
 
@@ -48,6 +49,7 @@ private:
   RollDirectory *_dir;
   Filename _basename;
   string _name;
+  string _frame_number;
 };
 
 INLINE ostream &operator << (ostream &out, const Photo &p) {

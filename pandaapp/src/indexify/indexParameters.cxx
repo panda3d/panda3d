@@ -28,8 +28,8 @@ int thumb_height = 100;
 int thumb_caption_height = 12;
 int caption_font_size = 12;
 
-int thumb_x_space = 14;
-int thumb_y_space = 14;
+int thumb_x_space = 12;
+int thumb_y_space = 12;
 
 double frame_reduction_factor = 0.75;
 int frame_outer_bevel = 2;
@@ -46,6 +46,9 @@ bool force_regenerate = false;
 bool format_rose = false;
 bool dummy_mode = false;
 bool draw_frames = false;
+bool omit_roll_headers = false;
+bool caption_frame_numbers = false;
+
 
 // Computed parameters
 int thumb_count_x;

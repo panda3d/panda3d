@@ -131,12 +131,26 @@ Indexify() {
      &Indexify::dispatch_none, &_generate_icons);
 
   add_option
+    ("omitrh", "", 0,
+     "Omits roll headers introducing each roll directory, including any "
+     "headers defined in roll.cm files.",
+     &Indexify::dispatch_none, &omit_roll_headers);
+
+  add_option
     ("caption", "size[,spacing]", 0,
      "Specifies the font size in pixels of the thumbnail captions.  If the "
      "optional spacing parameter is included, it is the number of pixels "
      "below each thumbnail that the caption should be placed.  Specify "
      "-caption 0 to disable thumbnail captions.",
      &Indexify::dispatch_caption, NULL);
+
+  add_option
+    ("fnum", "", 0,
+     "Writes the frame number of each thumbnail image into the caption "
+     "on the index page, instead of the image filename.  This only works "
+     "if the photo image filenames consist of the roll directory name "
+     "concatenated with a frame number.",
+     &Indexify::dispatch_none, &caption_frame_numbers);
 
   add_option
     ("fontaa", "factor", 0,

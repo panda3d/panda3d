@@ -299,18 +299,20 @@ generate_html(ostream &root_html, const Filename &archive_dir,
               const Filename &roll_dir_root) {
   nassertr(!_index_images.empty(), false);
 
-  Filename cm_filename(_dir, _basename);
-  cm_filename.set_extension("cm");
-  if (cm_filename.exists()) {
-    // If the comment file for the roll exists, insert its contents
-    // here instead of the generic header.
-    if (!insert_html_comment(root_html, cm_filename)) {
-      return false;
+  if (!omit_roll_headers) {
+    Filename cm_filename(_dir, _basename);
+    cm_filename.set_extension("cm");
+    if (cm_filename.exists()) {
+      // If the comment file for the roll exists, insert its contents
+      // here instead of the generic header.
+      if (!insert_html_comment(root_html, cm_filename)) {
+	return false;
+      }
+      
+    } else {
+      root_html
+	<< "<h2>" << _name << "</h2>\n";
     }
-
-  } else {
-    root_html
-      << "<h2>" << _name << "</h2>\n";
   }
 
   nout << "Generating " << Filename(archive_dir, "html/")
