@@ -740,6 +740,10 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       tex->_pbuffer->set_format(PixelBuffer::F_luminance_alpha);
       break;
 
+    case EggTexture::F_luminance_alphamask:
+      tex->_pbuffer->set_format(PixelBuffer::F_luminance_alphamask);
+      break;
+
     case EggTexture::F_unspecified:
       break;
 
