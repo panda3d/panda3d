@@ -185,7 +185,7 @@ run() {
   // Now we can analyze the joints for their properties.
   for (ci = 0; ci < num_characters; ci++) {
     EggCharacterData *char_data = _collection->get_character(ci);
-    analyze_joints(char_data->get_root_joint());
+    analyze_joints(char_data->get_root_joint(), 0);
     analyze_sliders(char_data);
   }
 
@@ -419,7 +419,7 @@ determine_removed_components() {
   for (int ci = 0; ci < num_characters; ci++) {
     EggCharacterData *char_data = _collection->get_character(ci);
     int num_components = char_data->get_num_components();
-    cerr << char_data->get_name() << " has " << num_components << " components.\n";
+    nout << char_data->get_name() << " has " << num_components << " components.\n";
     for (int i = 0; i < num_components; i++) {
       EggComponentData *comp_data = char_data->get_component(i);
       nassertv(comp_data != (EggComponentData *)NULL);
@@ -446,7 +446,19 @@ determine_removed_components() {
       } else {
         // Remove this component if it's unanimated or empty.
         if ((user_data->_flags & (EggOptcharUserData::F_static | EggOptcharUserData::F_empty)) != 0) {
-          user_data->_flags |= EggOptcharUserData::F_remove;
+          if ((user_data->_flags & (EggOptcharUserData::F_top | EggOptcharUserData::F_empty)) == EggOptcharUserData::F_top) {
+            // Actually, we can't remove it if it's a top joint,
+            // unless it's also empty.  That's because vertices that
+            // are partially assigned to this joint would then have no
+            // joint to represent the same partial assignment, and
+            // they would then appear to be wholly assigned to their
+            // other joint, which would be incorrect.
+
+          } else {
+            // But joints that aren't top joints (or that are empty)
+            // are o.k. to remove.
+            user_data->_flags |= EggOptcharUserData::F_remove;
+          }
         }
       }
     }
@@ -523,7 +535,6 @@ move_vertices() {
 ////////////////////////////////////////////////////////////////////
 bool EggOptchar::
 process_joints() {
-  cerr << "process_joints\n";
   bool removed_any = false;
   int num_characters = _collection->get_num_characters();
   for (int ci = 0; ci < num_characters; ci++) {
@@ -772,9 +783,16 @@ zero_channels() {
 //               joint.
 ////////////////////////////////////////////////////////////////////
 void EggOptchar::
-analyze_joints(EggJointData *joint_data) {
+analyze_joints(EggJointData *joint_data, int level) {
   PT(EggOptcharUserData) user_data = new EggOptcharUserData;
   joint_data->set_user_data(user_data);
+
+  if (level == 1) {
+    // The child joints of the root joint are deemed "top" joints.
+    // These may not be removed unless they are empty (because their
+    // vertices have no joint to be moved into).
+    user_data->_flags |= EggOptcharUserData::F_top;
+  }
 
   // Analyze the table of matrices for this joint, checking to see if
   // they're all the same across all frames, or if any of them are
@@ -831,7 +849,7 @@ analyze_joints(EggJointData *joint_data) {
 
   int num_children = joint_data->get_num_children();
   for (i = 0; i < num_children; i++) {
-    analyze_joints(joint_data->get_child(i));
+    analyze_joints(joint_data->get_child(i), level + 1);
   }
 }
 
@@ -998,6 +1016,9 @@ describe_component(EggComponentData *comp_data, int indent_level,
     }
     if (user_data->is_empty()) {
       cout << " (empty)";
+    }
+    if (user_data->is_top()) {
+      cout << " (top)";
     }
   }
   cout << "\n";

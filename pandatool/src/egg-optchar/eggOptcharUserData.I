@@ -87,3 +87,13 @@ INLINE bool EggOptcharUserData::
 is_empty() const {
   return (_flags & F_empty) != 0;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggOptcharUserData::is_top
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool EggOptcharUserData::
+is_top() const {
+  return (_flags & F_top) != 0;
+}

@@ -64,7 +64,7 @@ private:
 
   bool apply_user_reparents();
   bool zero_channels();
-  void analyze_joints(EggJointData *joint_data);
+  void analyze_joints(EggJointData *joint_data, int level);
   void analyze_sliders(EggCharacterData *char_data);
   void list_joints(EggJointData *joint_data, int indent_level, bool verbose);
   void list_joints_p(EggJointData *joint_data, int &col);

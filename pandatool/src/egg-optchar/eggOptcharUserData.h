@@ -38,13 +38,15 @@ public:
   INLINE bool is_static() const;
   INLINE bool is_identity() const;
   INLINE bool is_empty() const;
+  INLINE bool is_top() const;
 
   enum Flags {
     F_static   = 0x0001,
     F_identity = 0x0002,
     F_empty    = 0x0004,
-    F_remove   = 0x0008,
-    F_expose   = 0x0010,
+    F_top      = 0x0008,
+    F_remove   = 0x0010,
+    F_expose   = 0x0020,
   };
   int _flags;
   LMatrix4d _static_mat;
