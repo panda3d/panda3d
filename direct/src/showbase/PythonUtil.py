@@ -21,13 +21,13 @@ def indent(stream, numIndents, str):
     indentString = '    '
     stream.write(indentString * numIndents + str)
 
-def pdir(obj, *args):
+def apropos(obj, *args):
     """
-    Print out a formatted list of members and methods of an instance or class
+    Obsolete, use pdir
     """
-    apply(apropos, (obj,) + args)
+    print 'Use pdir instead'
     
-def apropos(obj, str = None, fOverloaded = 0, width = None,
+def pdir(obj, str = None, fOverloaded = 0, width = None,
             fTruncate = 1, lineWidth = 75):
     """
     Print out a formatted list of members and methods of an instance or class
@@ -106,13 +106,14 @@ def apropos(obj, str = None, fOverloaded = 0, width = None,
             # Cut off line (keeping at least 1 char)
             value = value[:max(1,lineWidth - maxWidth)]
         print (format % key)[:maxWidth] + '\t' + value
+    # Check for parent classes
     if type(obj) == types.InstanceType:
         print
-        apropos(obj.__class__, str = str )
+        pdir(obj.__class__, str = str )
     elif type(obj) == types.ClassType:
         for parentClass in obj.__bases__:
             print
-            apropos(parentClass, str = str)
+            pdir(parentClass, str = str)
 
 def aproposAll(obj):
     """
