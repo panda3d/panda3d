@@ -112,14 +112,16 @@ enable_lighting(bool val) {
 INLINE void DXGraphicsStateGuardian::
 enable_dither(bool val) {
   if (_dither_enabled != val) {
-    _dither_enabled = val;
 
   #ifdef _DEBUG
     {
-        if(val && (_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_DITHER))
+        if(val && !(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_DITHER))
            dxgsg_cat.error() << "no HW support for color dithering!!\n";
+        return;
     }
   #endif
+
+    _dither_enabled = val;
 
     _d3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, (DWORD)val);
   }
