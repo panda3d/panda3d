@@ -17,18 +17,18 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "notify.h"
-#include "config_notify.h"
-#include "dconfig.h"
-
+#include "configPageManager.h"
+#include "configVariableString.h"
+#include "configVariableBool.h"
 #include "filename.h"
 
 #include <ctype.h>
 
-#ifdef WIN32
-#include <windows.h>   //for DebugBreak()
-#endif
-
 Notify *Notify::_global_ptr = (Notify *)NULL;
+
+static ConfigVariableBool assert_abort
+("assert-abort", false, 0,
+ "Set this true to trigger a core dump and/or stack trace when the first assertion fails");
 
 
 ////////////////////////////////////////////////////////////////////
@@ -251,11 +251,6 @@ get_top_category() {
 ////////////////////////////////////////////////////////////////////
 NotifyCategory *Notify::
 get_category(const string &basename, NotifyCategory *parent_category) {
-  // We have to ensure that config_notify has been at least created
-  // before we try to create any NotifyCategories, or we'll get an
-  // infinite recursion problem.  Calling this function is sufficient.
-  config_notify.AmInitializing();
-
   // The string should not contain colons.
   nassertr(basename.find(':') == string::npos, NULL);
 
@@ -448,7 +443,7 @@ assert_failure(const char *expression, int line,
 
   nout << "Assertion failed: " << message << "\n";
 
-  if (get_assert_abort()) {
+  if (assert_abort) {
 #ifdef WIN32
     // How to trigger an exception in VC++ that offers to take us into
     // the debugger?  abort() doesn't do it.  We used to be able to
@@ -516,7 +511,7 @@ string_severity(const string &str) {
 //     Function: Notify::config_initialized
 //       Access: Public
 //  Description: Intended to be called only by Config, this is a
-//               callback that indicated to Notify when Config has
+//               callback that indicates to Notify when Config has
 //               done initializing and Notify can safely set up some
 //               internal state variables that depend on Config
 //               variables.
@@ -531,7 +526,10 @@ config_initialized() {
   already_initialized = true;
 
   if (_ostream_ptr == &cerr) {
-    string notify_output = config_notify.GetString("notify-output", "");
+    ConfigVariableString notify_output
+      ("notify-output", "", 0,
+       "The filename to which to write all the output of notify");
+
     if (!notify_output.empty()) {
       if (notify_output == "stdout") {
         cout.setf(ios::unitbuf);

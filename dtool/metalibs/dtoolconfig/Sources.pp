@@ -7,7 +7,7 @@
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_DTOOLCONFIG
 
-#define COMPONENT_LIBS interrogatedb dconfig
+#define COMPONENT_LIBS interrogatedb dconfig prc
 #define LOCAL_LIBS dtoolutil dtoolbase
 #define USE_PACKAGES python
 

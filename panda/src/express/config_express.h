@@ -24,6 +24,19 @@
 #include "clockObject.h"
 #include "dconfig.h"
 
+// We include these files to force them to be instrumented by
+// interrogate.
+#include "globPattern.h"
+#include "configPage.h"
+#include "configPageManager.h"
+#include "configVariable.h"
+#include "configVariableBool.h"
+#include "configVariableDouble.h"
+#include "configVariableInt.h"
+#include "configVariableList.h"
+#include "configVariableManager.h"
+#include "configVariableString.h"
+
 ConfigureDecl(config_express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(thread, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);

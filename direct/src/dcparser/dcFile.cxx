@@ -29,6 +29,7 @@
 #include "config_express.h"
 #include "virtualFileSystem.h"
 #include "executionEnvironment.h"
+#include "configVariableList.h"
 #endif
 
 
@@ -90,28 +91,23 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
 read_all() {
-  Config::ConfigTable::Symbol dc_files;
-  config_express.GetAll("dc-file", dc_files);
+  ConfigVariableList dc_files("dc-file", 0,
+                              "The list of dc files to load.");
 
-  if (dc_files.empty()) {
+  if (dc_files.size() == 0) {
     cerr << "No files specified via dc-file Config.prc variable!\n";
     return false;
   }
 
-  // When we use GetAll(), we might inadvertently read duplicate
-  // lines.  Filter them out with a set.
-  pset<string> already_read;
-  
-  Config::ConfigTable::Symbol::iterator si;
-  for (si = dc_files.begin(); si != dc_files.end(); ++si) {
-    string dc_file = ExecutionEnvironment::expand_string((*si).Val());
+  int size = dc_files.size();
+
+  // Load the DC files in opposite order, because we want to load the
+  // least-important (most fundamental) files first.
+  for (int i = size - 1; i >= 0; i--) {
+    string dc_file = ExecutionEnvironment::expand_string(dc_files[i]);
     Filename filename = Filename::from_os_specific(dc_file);
-    if (already_read.insert(filename).second) {
-      if (!read(filename)) {
-        return false;
-      }
-    } else {
-      cerr << "DCFile::read_all Already read " << filename << "\n";
+    if (!read(filename)) {
+      return false;
     }
   }
 

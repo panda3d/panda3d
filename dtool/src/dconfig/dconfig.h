@@ -25,6 +25,11 @@
 #include "config_dconfig.h"
 #include "configTable.h"
 #include "executionEnvironment.h"
+#include "configVariableString.h"
+#include "configVariableBool.h"
+#include "configVariableInt.h"
+#include "configVariableDouble.h"
+#include "configVariableList.h"
 
 #include <vector>
 #include <map>
@@ -181,15 +186,8 @@ template<class GetConfig>
 ConfigString Config<GetConfig>::Get(ConfigString sym)
 {
    Init();
-   ConfigTable* tab = ConfigTable::Instance();
-   if (tab->Defined(sym, Name()))
-      return (tab->Get(sym, Name())).Val();
-   else if (tab->Defined(sym, ExecutionEnvironment::get_binary_name()))
-      return (tab->Get(sym, ExecutionEnvironment::get_binary_name())).Val();
-   else if (tab->Defined(sym))
-      return (tab->Get(sym)).Val();
-   else
-      return "";
+   ConfigVariableString var(sym);
+   return var.get_value();
 }
 
 template<class GetConfig>
@@ -197,19 +195,14 @@ ConfigTable::Symbol& Config<GetConfig>::GetAll(const ConfigString sym,
                                                 ConfigTable::Symbol& s)
 {
    Init();
-   ConfigTable* tab = ConfigTable::Instance();
-   if (tab->Defined(sym, Name())) {
-     const ConfigTable::Symbol& tsym = tab->GetSym(sym, Name());
-     s.insert(s.end(), tsym.begin(), tsym.end());
+   ConfigVariableList var(sym, 0, "DConfig");
+
+   int num_values = var.get_num_values();
+   for (int i = 0; i < num_values; i++) {
+     string value = var.get_string_value(i);
+     s.push_back(SymbolEnt(SymbolEnt::ConfigFile, value));
    }
-   if (tab->Defined(sym, ExecutionEnvironment::get_binary_name())) {
-     const ConfigTable::Symbol& tsym = tab->GetSym(sym, ExecutionEnvironment::get_binary_name());
-     s.insert(s.end(), tsym.begin(), tsym.end());
-   }
-   if (tab->Defined(sym)) {
-     const ConfigTable::Symbol& tsym = tab->GetSym(sym);
-     s.insert(s.end(), tsym.begin(), tsym.end());
-   }
+
    return s;
 }
 
@@ -217,87 +210,32 @@ template<class GetConfig>
 bool Config<GetConfig>::GetBool(const ConfigString sym, bool def)
 {
    Init();
-   if (Defined(sym)) {
-      ConfigString s = Get(sym);
-      bool ret = ConfigTable::TrueOrFalse(s, def);
-      if (dconfig_cat->is_spam())
-         dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: "
-                            << (ret?"true":"false") << endl;
-      return ret;
-   } else {
-      if (dconfig_cat->is_spam())
-         dconfig_cat->spam()
-            << "symbol '" << sym
-            << "' is not defined, returning provided default: "
-            << (def?"true":"false") << endl;
-      return def;
-   }
+   ConfigVariableBool var(sym, def, 0, "DConfig");
+   return var.get_value();
 }
 
 template<class GetConfig>
 int Config<GetConfig>::GetInt(const ConfigString sym, int def)
 {
    Init();
-   if (Defined(sym)) {
-      ConfigString v = Get(sym);
-      istringstream s(v);
-      int i;
-      s >> i;
-      if (dconfig_cat->is_spam())
-         dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: "
-                            << i << endl;
-      return i;
-   } else {
-      if (dconfig_cat->is_spam())
-         dconfig_cat->spam()
-            << "symbol '" << sym
-            << "' is not defined, returning provided default: " << def << endl;
-      return def;
-   }
+   ConfigVariableInt var(sym, def, 0, "DConfig");
+   return var.get_value();
 }
 
 template<class GetConfig>
 float Config<GetConfig>::GetFloat(const ConfigString sym, float def)
 {
    Init();
-   if (Defined(sym)) {
-      ConfigString v = Get(sym);
-      istringstream s(v);
-      float f;
-      s >> f;
-      if (dconfig_cat->is_spam())
-         dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: "
-                            << f << endl;
-      return f;
-   } else {
-      if (dconfig_cat->is_spam())
-         dconfig_cat->spam()
-            << "symbol '" << sym
-            << "' is not defined, returning provided default: " << def << endl;
-      return def;
-   }
+   ConfigVariableDouble var(sym, def, 0, "DConfig");
+   return var.get_value();
 }
 
 template<class GetConfig>
 double Config<GetConfig>::GetDouble(const ConfigString sym, double def)
 {
    Init();
-   if (Defined(sym)) {
-      ConfigString v = Get(sym);
-      istringstream s(v);
-      double d;
-      s >> d;
-      if (dconfig_cat->is_spam())
-         dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: "
-                            << d << endl;
-      return d;
-   } else {
-      if (dconfig_cat->is_spam())
-         dconfig_cat->spam()
-            << "symbol '" << sym
-            << "' is not defined, returning provided default: " << def << endl;
-      return def;
-   }
+   ConfigVariableDouble var(sym, def, 0, "DConfig");
+   return var.get_value();
 }
 
 template<class GetConfig>
@@ -305,20 +243,8 @@ ConfigString Config<GetConfig>::GetString(const ConfigString sym,
                                            const ConfigString def)
 {
    Init();
-   if (Defined(sym)) {
-      ConfigString ret = Get(sym);
-      if (dconfig_cat->is_spam())
-         dconfig_cat->spam() << "symbol '" << sym << "' defined, returning: '"
-                            << ret << "'" << endl;
-      return ret;
-   } else {
-      if (dconfig_cat->is_spam())
-         dconfig_cat->spam()
-            << "symbol '" << sym
-            << "' is not defined, returning provided default: '" << def
-            << "'" << endl;
-      return def;
-   }
+   ConfigVariableString var(sym, def, 0, "DConfig");
+   return var.get_value();
 }
 
 #include "dconfig.I"

@@ -1,11 +1,22 @@
 forcetype DSearchPath
 forcetype Filename
+forcetype GlobPattern
 forcetype Notify
 forcetype NotifyCategory
 forcetype NotifySeverity
 
 forcetype ConfigExpress
 renametype ConfigExpress ConfigExpress
+
+forcetype ConfigPage
+forcetype ConfigPageManager
+forcetype ConfigVariable
+forcetype ConfigVariableBool
+forcetype ConfigVariableDouble
+forcetype ConfigVariableInt
+forcetype ConfigVariableList
+forcetype ConfigVariableManager
+forcetype ConfigVariableString
 
 forcetype istream
 forcetype ostream

@@ -116,8 +116,8 @@ DSearchPath() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DSearchPath::
-DSearchPath(const string &path, const string &delimiters) {
-  append_path(path, delimiters);
+DSearchPath(const string &path, const string &separator) {
+  append_path(path, separator);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,18 +187,28 @@ prepend_directory(const Filename &directory) {
 //               to the end of the search list.
 ////////////////////////////////////////////////////////////////////
 void DSearchPath::
-append_path(const string &path, const string &delimiters) {
-  size_t p = 0;
-  while (p < path.length()) {
-    size_t q = path.find_first_of(delimiters, p);
-    if (q == string::npos) {
-      _directories.push_back(path.substr(p));
-      return;
+append_path(const string &path, const string &separator) {
+  string pathsep = separator;
+  if (pathsep.empty()) {
+    pathsep = DEFAULT_PATHSEP;
+  }
+
+  if (pathsep.empty()) {
+    append_directory(path);
+
+  } else {
+    size_t p = 0;
+    while (p < path.length()) {
+      size_t q = path.find_first_of(pathsep, p);
+      if (q == string::npos) {
+        _directories.push_back(Filename::from_os_specific(path.substr(p)));
+        return;
+      }
+      if (q != p) {
+        _directories.push_back(Filename::from_os_specific(path.substr(p, q - p)));
+      }
+      p = q + 1;
     }
-    if (q != p) {
-      _directories.push_back(path.substr(p, q - p));
-    }
-    p = q + 1;
   }
 }
 
@@ -341,12 +351,20 @@ find_all_files(const Filename &filename,
 ////////////////////////////////////////////////////////////////////
 void DSearchPath::
 output(ostream &out, const string &separator) const {
+  string pathsep = separator;
+  if (pathsep.empty()) {
+    pathsep = DEFAULT_PATHSEP;
+    if (!pathsep.empty()) {
+      pathsep = pathsep[0];
+    }
+  }
+
   if (!_directories.empty()) {
     Directories::const_iterator di = _directories.begin();
     out << (*di);
     ++di;
     while (di != _directories.end()) {
-      out << separator << (*di);
+      out << pathsep << (*di);
       ++di;
     }
   }

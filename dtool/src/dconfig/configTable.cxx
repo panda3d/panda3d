@@ -708,7 +708,6 @@ ConfigTable* ConfigTable::Instance() {
     _instance = new ConfigTable;
     _instance->GetData();
     _instance->_initializing = false;
-    Notify::ptr()->config_initialized();
   }
   return _instance;
 }

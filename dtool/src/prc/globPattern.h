@@ -39,7 +39,7 @@
 //               particular pattern.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOLCONFIG GlobPattern {
-public:
+PUBLISHED:
   INLINE GlobPattern(const string &pattern = string());
   INLINE GlobPattern(const GlobPattern &copy);
   INLINE void operator = (const GlobPattern &copy);

@@ -56,7 +56,7 @@ public:
 
 PUBLISHED:
   DSearchPath();
-  DSearchPath(const string &path, const string &delimiters = ": \n\t");
+  DSearchPath(const string &path, const string &separator = string());
   DSearchPath(const DSearchPath &copy);
   void operator = (const DSearchPath &copy);
   ~DSearchPath();
@@ -65,7 +65,7 @@ PUBLISHED:
   void append_directory(const Filename &directory);
   void prepend_directory(const Filename &directory);
   void append_path(const string &path,
-                   const string &delimiters = ": \n\t");
+                   const string &separator = string());
   void append_path(const DSearchPath &path);
   void prepend_path(const DSearchPath &path);
 
@@ -78,9 +78,9 @@ PUBLISHED:
 
   INLINE static Filename
   search_path(const Filename &filename, const string &path,
-              const string &delimiters = ": \n\t");
+              const string &separator = string());
 
-  void output(ostream &out, const string &separator = ":") const;
+  void output(ostream &out, const string &separator = string()) const;
   void write(ostream &out, int indent_level = 0) const;
 
 private:

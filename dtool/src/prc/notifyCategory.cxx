@@ -18,12 +18,18 @@
 
 #include "notifyCategory.h"
 #include "notify.h"
-#include "config_notify.h"
+#include "configPageManager.h"
+#include "configVariableString.h"
+#include "configVariableBool.h"
 
 #include <time.h>  // for strftime().
 #include <assert.h>
 
 time_t NotifyCategory::_server_delta = 0;
+
+static ConfigVariableBool notify_timestamp
+("notify-timestamp", false, 0,
+ "Set true to output the date & time with each notify message.");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::Constructor
@@ -55,15 +61,14 @@ NotifyCategory(const string &fullname, const string &basename,
   }
 
   if (!config_name.empty()) {
-    string severity_name;
-    if (!config_notify.AmInitializing()) {
-      severity_name = config_notify.GetString(config_name, "");
-    }
+    ConfigVariableString severity_name
+      (config_name, "", 0,
+       "Indicates the verbosity level of notify messages for the given category.");
     if (!severity_name.empty()) {
       // The user specified a particular severity for this category at
       // config time.  Use it.
       _severity = Notify::string_severity(severity_name);
-
+      
       if (_severity == NS_unspecified) {
         nout << "Invalid severity name for " << config_name << ": "
              << severity_name << "\n";
@@ -100,7 +105,7 @@ ostream &NotifyCategory::
 out(NotifySeverity severity, bool prefix) const {
   if (is_on(severity)) {
     if (prefix) {
-      if (get_notify_timestamp()) {
+      if (notify_timestamp) {
         // Format a timestamp to include as a prefix as well.
         time_t now = time(NULL) + _server_delta;
         struct tm *ptm = localtime(&now);

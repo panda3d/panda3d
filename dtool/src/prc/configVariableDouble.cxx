@@ -1,5 +1,5 @@
-// Filename: dSearchPath.I
-// Created by:  drose (01Jul00)
+// Filename: configVariableDouble.cxx
+// Created by:  drose (20Oct04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,19 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "configVariableDouble.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::search_path
-//       Access: Public, Static
-//  Description: A quick-and-easy way to search a searchpath for a
-//               file when you don't feel like building or keeping
-//               around a DSearchPath object.  This simply
-//               constructs a temporary DSearchPath based on the
-//               indicated path string, and searches that.
+//     Function: ConfigVariableDouble::Constructor
+//       Access: Published
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE Filename DSearchPath::
-search_path(const Filename &filename, const string &path,
-            const string &separator) {
-  DSearchPath search(path, separator);
-  return search.find_file(filename);
+ConfigVariableDouble::
+ConfigVariableDouble(const string &name, double default_value, int trust_level,
+                     const string &description, const string &text) :
+  ConfigVariable(name, ConfigVariableCore::VT_double, trust_level, 
+                 description, text)
+{
+  ostringstream strm;
+  strm << default_value;
+
+  _core->set_default_value(strm.str());
+  _core->set_used();
 }

@@ -237,12 +237,47 @@ $[cdefine LINK_IN_GL]
 /* Define if we are linking PANDAPHYSICS in with PANDA. */
 $[cdefine LINK_IN_PHYSICS]
 
+/* The compiled-in character(s) to expect to separate different
+   components of a path list (e.g. $PRC_PATH). */
+# define DEFAULT_PATHSEP "$[DEFAULT_PATHSEP]"
+
 /* The compiled-in default directory to look for the Configrc file, in
    the absence of the PRC_DIR environment variable set, and in
    the absence of anything specified via the configpath directive. */
-# define DEFAULT_PRC_DIR "$[DEFAULT_PRC_DIR]"
+# define DEFAULT_PRC_DIR "$[unixfilename $[DEFAULT_PRC_DIR]]"
 
+/* The compiled-in name of the environment variable(s) that contain
+   the name of a single directory in which to search for prc files. */
+# define PRC_DIR_ENVVARS "$[PRC_DIR_ENVVARS]"
 
+/* The compiled-in name of the environment variable(s) that contain
+   the name of multiple directories, separated by DEFAULT_PATHSEP, in
+   which to search for prc files. */
+# define PRC_PATH_ENVVARS "$[PRC_PATH_ENVVARS]"
+
+/* The filename(s) to search for in the above paths.  Normally this is
+   *.prc. */
+# define PRC_PATTERNS "$[PRC_PATTERNS]"
+
+/* The filename(s) to search for, and execute, in the above paths.
+   Normally this is empty. */
+# define PRC_EXECUTABLE_PATTERNS "$[PRC_EXECUTABLE_PATTERNS]"
+
+/* The environment variable that defines optional args to pass to
+   executables found that match one of the above patterns. */
+# define PRC_EXECUTABLE_ARGS_ENVVAR "$[PRC_EXECUTABLE_ARGS_ENVVAR]"
+
+/* The filename that specifies the public keys to import into
+   config. */
+# define PRC_PUBLIC_KEYS_FILENAME "$[unixfilename $[PRC_PUBLIC_KEYS_FILENAME]]"
+#if $[PRC_PUBLIC_KEYS_FILENAME]
+# define PRC_PUBLIC_KEYS_INCLUDE "$[osfilename $[PRC_PUBLIC_KEYS_FILENAME]]"
+#endif
+
+/* Define if we want to enable the "trust_level" feature of prc config
+   variables.  This requires OpenSSL and PRC_PUBLIC_KEYS_FILENAME,
+   above. */
+$[cdefine PRC_RESPECT_TRUST_LEVEL]
 
 
 /* Define if your processor stores words with the most significant
