@@ -61,7 +61,7 @@ private:
   int ns_garbage_collect();
   void ns_list_contents(ostream &out);
 
-  static void lookup_filename(const string &str,
+  static void lookup_filename(const string &str, string &index_str,
                               Filename &filename, int &face_index);
 
   static FontPool *get_ptr();

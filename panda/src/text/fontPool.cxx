@@ -34,12 +34,13 @@ static Loader model_loader;
 ////////////////////////////////////////////////////////////////////
 bool FontPool::
 ns_has_font(const string &str) {
+  string index_str;
   Filename filename;
   int face_index;
-  lookup_filename(str, filename, face_index);
+  lookup_filename(str, index_str, filename, face_index);
 
   Fonts::const_iterator ti;
-  ti = _fonts.find(filename);
+  ti = _fonts.find(index_str);
   if (ti != _fonts.end()) {
     // This font was previously loaded.
     return true;
@@ -55,12 +56,13 @@ ns_has_font(const string &str) {
 ////////////////////////////////////////////////////////////////////
 TextFont *FontPool::
 ns_load_font(const string &str) {
+  string index_str;
   Filename filename;
   int face_index;
-  lookup_filename(str, filename, face_index);
+  lookup_filename(str, index_str, filename, face_index);
 
   Fonts::const_iterator ti;
-  ti = _fonts.find(filename);
+  ti = _fonts.find(index_str);
   if (ti != _fonts.end()) {
     // This font was previously loaded.
     return (*ti).second;
@@ -189,10 +191,14 @@ ns_list_contents(ostream &out) {
 //               filename followed by an optional colon and a face
 //               index, and splits it out into its two components.
 //               Then it looks up the filename on the model path.
-//               Sets the filename and face index accordingly.
+//               Sets the filename and face index accordingly.  Also
+//               sets index_str to be the concatenation of the
+//               found filename with the face index, thus restoring
+//               the original input (but normalized to contain the
+//               full path.)
 ////////////////////////////////////////////////////////////////////
 void FontPool::
-lookup_filename(const string &str,
+lookup_filename(const string &str, string &index_str,
                 Filename &filename, int &face_index) {
   int colon = (int)str.length() - 1;
   // Scan backwards over digits for a colon.
@@ -217,6 +223,10 @@ lookup_filename(const string &str,
   } else {
     filename.resolve_filename(get_model_path());
   }
+
+  ostringstream strm;
+  strm << filename << ":" << face_index;
+  index_str = strm.str();
 }
 
 ////////////////////////////////////////////////////////////////////
