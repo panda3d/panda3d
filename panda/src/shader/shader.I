@@ -8,8 +8,8 @@
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-Shader::Visualize* Shader::get_viz(void)
-{
+INLINE Shader::
+Visualize* Shader::get_viz(void) {
   return _viz;
 }
 
@@ -18,8 +18,8 @@ Shader::Visualize* Shader::get_viz(void)
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void Shader::set_viz(Shader::Visualize* v)
-{
+INLINE void Shader::
+set_viz(Shader::Visualize* v) {
   _viz = v;
 }
 
@@ -28,8 +28,8 @@ void Shader::set_viz(Shader::Visualize* v)
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int FrustumShader::add_frustum(ProjectionNode* frust)
-{
+INLINE int FrustumShader::
+add_frustum(ProjectionNode* frust) {
   make_dirty();
   _frusta.push_back(frust);
   return (_frusta.size());
@@ -40,8 +40,8 @@ int FrustumShader::add_frustum(ProjectionNode* frust)
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int FrustumShader::remove_frustum(ProjectionNode* frust)
-{
+INLINE int FrustumShader::
+remove_frustum(ProjectionNode* frust) {
   make_dirty();
   int found = 0;
   ProjectionVector::iterator i;
