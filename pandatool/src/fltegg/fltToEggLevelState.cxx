@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "fltToEggLevelState.h"
+#include "fltToEggConverter.h"
 #include "fltTransformTranslate.h"
 #include "fltTransformRotateAboutPoint.h"
 #include "fltTransformRotateAboutEdge.h"
@@ -134,7 +135,7 @@ get_synthetic_group(const string &name,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltToEggLevelState::set_transform
-//       Access: Public, Static
+//       Access: Public
 //  Description: Sets up the group to reflect the transform indicated
 //               by the given record, if any.
 ////////////////////////////////////////////////////////////////////
@@ -144,7 +145,7 @@ set_transform(const FltBead *flt_bead, EggGroup *egg_group) {
     egg_group->set_group_type(EggGroup::GT_instance);
 
     int num_steps = flt_bead->get_num_transform_steps();
-    bool componentwise_ok = true;
+    bool componentwise_ok = !_converter->_compose_transforms;
 
     if (num_steps == 0) {
       componentwise_ok = false;
@@ -154,8 +155,7 @@ set_transform(const FltBead *flt_bead, EggGroup *egg_group) {
       // don't know how to interpret, just store the whole transform
       // matrix in the egg file.
       egg_group->clear_transform();
-
-      for (int i = 0; i < num_steps && componentwise_ok; i++) {
+      for (int i = num_steps -1; i >= 0 && componentwise_ok; i--) {
         const FltTransformRecord *step = flt_bead->get_transform_step(i);
         if (step->is_exact_type(FltTransformTranslate::get_class_type())) {
           const FltTransformTranslate *trans;
@@ -166,7 +166,7 @@ set_transform(const FltBead *flt_bead, EggGroup *egg_group) {
 
         } else if (step->is_exact_type(FltTransformRotateAboutPoint::get_class_type())) {
           const FltTransformRotateAboutPoint *rap;
-          DCAST_INTO_V(rap, step);
+          DCAST_INTO_V(rap, step); 
           if (!IS_NEARLY_ZERO(rap->get_angle())) {
             if (!rap->get_center().almost_equal(LVector3d::zero())) {
               egg_group->add_translate(-rap->get_center());

@@ -67,6 +67,11 @@ public:
   virtual bool convert_file(const Filename &filename);
   bool convert_flt(const FltHeader *flt_header);
 
+  // Set this true to store transforms in egg files as the fully
+  // composed matrix, or false (the default) to keep them decomposed
+  // into elemental operations.
+  bool _compose_transforms;
+
 private:
   void cleanup();
 

@@ -22,7 +22,9 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FltToEggLevelState::
-FltToEggLevelState() {
+FltToEggLevelState(FltToEggConverter *converter) :
+  _converter(converter)
+{
   _flt_object = (FltObject *)NULL;
   _egg_parent = (EggGroupNode *)NULL;
 }
@@ -35,7 +37,8 @@ FltToEggLevelState() {
 INLINE FltToEggLevelState::
 FltToEggLevelState(const FltToEggLevelState &copy) :
   _flt_object(copy._flt_object),
-  _egg_parent(copy._egg_parent)
+  _egg_parent(copy._egg_parent),
+  _converter(copy._converter)
 {
   // We don't bother to copy the _parents map.
 }
@@ -49,5 +52,6 @@ INLINE void FltToEggLevelState::
 operator = (const FltToEggLevelState &copy) {
   _flt_object = copy._flt_object;
   _egg_parent = copy._egg_parent;
+  _converter = copy._converter;
   // We don't bother to copy the _parents map.
 }

@@ -26,6 +26,7 @@ class FltObject;
 class FltBead;
 class EggGroupNode;
 class EggGroup;
+class FltToEggConverter;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltToEggLevelState
@@ -34,7 +35,7 @@ class EggGroup;
 ////////////////////////////////////////////////////////////////////
 class FltToEggLevelState {
 public:
-  INLINE FltToEggLevelState();
+  INLINE FltToEggLevelState(FltToEggConverter *converter);
   INLINE FltToEggLevelState(const FltToEggLevelState &copy);
   INLINE void operator = (const FltToEggLevelState &copy);
   ~FltToEggLevelState();
@@ -43,7 +44,7 @@ public:
                                     const FltBead *transform_bead,
                                     FltGeometry::BillboardType type = FltGeometry::BT_none);
 
-  static void set_transform(const FltBead *flt_bead, EggGroup *egg_group);
+  void set_transform(const FltBead *flt_bead, EggGroup *egg_group);
 
   const FltObject *_flt_object;
   EggGroupNode *_egg_parent;
@@ -60,6 +61,8 @@ private:
 
   typedef pmap<LMatrix4d, ParentNodes *> Parents;
   Parents _parents;
+
+  FltToEggConverter *_converter;
 };
 
 #include "fltToEggLevelState.I"

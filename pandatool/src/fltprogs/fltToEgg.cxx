@@ -48,6 +48,13 @@ FltToEgg() :
      "Specify the coordinate system of the input " + _format_name +
      " file.  Normally, this is z-up.");
 
+  add_option
+    ("C", "", 0,
+     "Compose node transforms into a single matrix before writing them to "
+     "the egg file, instead of writing them as individual scale, rotate, and "
+     "translate operations",
+     &FltToEgg::dispatch_none, &_compose_transforms);
+
   _coordinate_system = CS_zup_right;
 }
 
@@ -82,6 +89,7 @@ run() {
   converter.set_egg_data(&_data, false);
   converter.set_texture_path_convert(_texture_path_convert, _make_rel_dir);
   converter.set_model_path_convert(_model_path_convert, _make_rel_dir);
+  converter._compose_transforms = _compose_transforms;
 
   if (!converter.convert_flt(header)) {
     nout << "Errors in conversion.\n";

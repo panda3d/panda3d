@@ -95,7 +95,7 @@ recompute_matrix() {
 
     _matrix =
       LMatrix4d::translate_mat(-_center) *
-      LMatrix4d::rotate_mat(_angle, normalize(axis), CS_zup_right) *
+      LMatrix4d::rotate_mat(_angle, axis, CS_zup_right) *
       LMatrix4d::translate_mat(_center);
   }
 }

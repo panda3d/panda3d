@@ -36,6 +36,8 @@ public:
   FltToEgg();
 
   void run();
+
+  bool _compose_transforms;
 };
 
 #endif

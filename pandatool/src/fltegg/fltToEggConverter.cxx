@@ -48,6 +48,7 @@
 ////////////////////////////////////////////////////////////////////
 FltToEggConverter::
 FltToEggConverter() {
+  _compose_transforms = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +58,8 @@ FltToEggConverter() {
 ////////////////////////////////////////////////////////////////////
 FltToEggConverter::
 FltToEggConverter(const FltToEggConverter &copy) :
-  SomethingToEggConverter(copy)
+  SomethingToEggConverter(copy),
+  _compose_transforms(copy._compose_transforms)
 {
 }
 
@@ -156,7 +158,7 @@ convert_flt(const FltHeader *flt_header) {
   // they're assigned to (for instance, to apply a transparency or
   // something).
 
-  FltToEggLevelState state;
+  FltToEggLevelState state(this);
   state._egg_parent = _egg_data;
   convert_record(_flt_header, state);
 
