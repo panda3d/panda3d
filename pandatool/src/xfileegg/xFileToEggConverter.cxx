@@ -262,7 +262,7 @@ get_toplevel() {
   // have frames and/or animation.
   _any_frames = false;
   _any_animation = false;
-  for (int i = 0; i < num_objects; i++) {
+  for (i = 0; i < num_objects; i++) {
     XFileDataNode *child = _x_file->get_object(i);
     if (child->is_standard_object("Frame")) {
       _any_frames = true;
