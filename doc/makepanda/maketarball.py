@@ -116,7 +116,7 @@ cp built/etc/Confauto.prc    $RPM_BUILD_ROOT/etc/Confauto.prc
 cp --recursive built/include $RPM_BUILD_ROOT/usr/include/panda3d
 cp --recursive direct        $RPM_BUILD_ROOT/usr/share/panda3d/direct
 cp --recursive built/pandac  $RPM_BUILD_ROOT/usr/share/panda3d/pandac
-cp --recursive built/pmw     $RPM_BUILD_ROOT/usr/share/panda3d/pmw
+cp --recursive built/Pmw     $RPM_BUILD_ROOT/usr/share/panda3d/Pmw
 cp built/direct/__init__.py  $RPM_BUILD_ROOT/usr/share/panda3d/direct/__init__.py
 cp --recursive SceneEditor   $RPM_BUILD_ROOT/usr/share/panda3d/SceneEditor
 cp --recursive built/models  $RPM_BUILD_ROOT/usr/share/panda3d/models
@@ -187,6 +187,7 @@ oscmd("ln -sf ../samples      "+TARDIR+"/samples")
 oscmd("ln -sf ../doc          "+TARDIR+"/doc")
 oscmd("ln -sf ../makepanda    "+TARDIR+"/makepanda")
 oscmd("ln -sf ../../thirdparty/linux-libs-a "+TARDIR+"/thirdparty/linux-libs-a")
+oscmd("ln -sf ../../thirdparty/Pmw          "+TARDIR+"/thirdparty/Pmw")
 writefile(TARDIR+'/panda3d.spec',SPEC)
 oscmd("tar --exclude CVS -chzf "+TARDIR+".tar.gz "+TARDIR)
 oscmd("rm -rf "+TARDIR)
@@ -210,6 +211,7 @@ oscmd("ln -sf ../../thirdparty/win-libs-vc7 "+TARDIR+"/thirdparty/win-libs-vc7")
 oscmd("ln -sf ../../thirdparty/win-python   "+TARDIR+"/thirdparty/win-python")
 oscmd("ln -sf ../../thirdparty/win-util     "+TARDIR+"/thirdparty/win-util")
 oscmd("ln -sf ../../thirdparty/win-nsis     "+TARDIR+"/thirdparty/win-nsis")
+oscmd("ln -sf ../../thirdparty/Pmw          "+TARDIR+"/thirdparty/Pmw")
 oscmd("zip -rq "+TARDIR+".zip "+TARDIR+" -x '*/CVS/*'")
 oscmd("rm -rf "+TARDIR)
 
@@ -232,7 +234,6 @@ oscmd("rm -rf "+TARDIR)
 
 
 oscmd("mkdir -p "+TARDIR)
-oscmd("mkdir -p "+TARDIR+"/thirdparty")
 oscmd("ln -sf ../samples      "+TARDIR+"/samples")
 oscmd("zip -rq "+TARDIR+"-samples.zip "+TARDIR+" -x '*/CVS/*'")
 oscmd("rm -rf "+TARDIR)
@@ -241,13 +242,8 @@ oscmd("rm -rf "+TARDIR)
 oscmd("mkdir -p "+TARDIR)
 oscmd("mkdir -p "+TARDIR+"/thirdparty")
 oscmd("ln -sf ../../thirdparty/linux-libs-a "+TARDIR+"/thirdparty/linux-libs-a")
+oscmd("ln -sf ../../thirdparty/Pmw          "+TARDIR+"/thirdparty/Pmw")
 oscmd("zip -rq "+TARDIR+"-tools-linux.zip "+TARDIR+" -x '*/CVS/*'")
-oscmd("rm -rf "+TARDIR)
-
-
-oscmd("mkdir -p "+TARDIR)
-oscmd("ln -sf ../thirdparty "+TARDIR+"/thirdparty")
-oscmd("zip -rq "+TARDIR+"-tools-all.zip "+TARDIR+" -x '*/CVS/*'")
 oscmd("rm -rf "+TARDIR)
 
 
@@ -257,5 +253,12 @@ oscmd("ln -sf ../../thirdparty/win-libs-vc7 "+TARDIR+"/thirdparty/win-libs-vc7")
 oscmd("ln -sf ../../thirdparty/win-python   "+TARDIR+"/thirdparty/win-python")
 oscmd("ln -sf ../../thirdparty/win-util     "+TARDIR+"/thirdparty/win-util")
 oscmd("ln -sf ../../thirdparty/win-nsis     "+TARDIR+"/thirdparty/win-nsis")
+oscmd("ln -sf ../../thirdparty/Pmw          "+TARDIR+"/thirdparty/Pmw")
 oscmd("zip -rq "+TARDIR+"-tools-win32.zip "+TARDIR+" -x '*/CVS/*'")
+oscmd("rm -rf "+TARDIR)
+
+
+oscmd("mkdir -p "+TARDIR)
+oscmd("ln -sf ../thirdparty "+TARDIR+"/thirdparty")
+oscmd("zip -rq "+TARDIR+"-tools-all.zip "+TARDIR+" -x '*/CVS/*'")
 oscmd("rm -rf "+TARDIR)
