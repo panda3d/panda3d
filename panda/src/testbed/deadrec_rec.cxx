@@ -406,8 +406,10 @@ inline static void predict_linear(void) {
   static float A_time, B_time;
   static float time = 0.;
 
-  if (reinit_prediction)
+  if (reinit_prediction) {
     state = 0;
+    reinit_prediction = false;
+  }
   switch (state) {
   case 0:
     if (new_telemetry) {
