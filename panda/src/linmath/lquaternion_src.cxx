@@ -116,7 +116,7 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr, CoordinateSystem cs) {
 #ifndef NDEBUG
   if (paranoid_hpr_quat) {
     FLOATNAME(LMatrix3) mat;
-    compose_matrix(mat, FLOATNAME(LVecBase3)(1.0f, 1.0f, 1.0f), hpr);
+    compose_matrix(mat, FLOATNAME(LVecBase3)(1.0f, 1.0f, 1.0f), hpr, cs);
     FLOATNAME(LQuaternion) compare;
     compare.set_from_matrix(mat);
     if (!compare.almost_equal(*this) && !compare.almost_equal(-(*this))) {
@@ -213,7 +213,7 @@ get_hpr(CoordinateSystem cs) const {
     FLOATNAME(LMatrix3) mat;
     extract_to_matrix(mat);
     FLOATNAME(LVecBase3) scale, compare_hpr;
-    decompose_matrix(mat, scale, compare_hpr);
+    decompose_matrix(mat, scale, compare_hpr, cs);
     if (!compare_hpr.almost_equal(hpr)) {
       linmath_cat.warning()
         << "quat-to-hpr of " << *this << " computed " << hpr << " instead of "
