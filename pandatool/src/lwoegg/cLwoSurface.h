@@ -52,9 +52,10 @@ public:
     F_specular     = 0x0008,
     F_reflection   = 0x0010,
     F_transparency = 0x0020,
-    F_translucency = 0x0040,
-    F_smooth_angle = 0x0080,
-    F_backface     = 0x0100,
+    F_gloss        = 0x0040,
+    F_translucency = 0x0080,
+    F_smooth_angle = 0x0100,
+    F_backface     = 0x0200,
   };
   
   int _flags;
@@ -64,11 +65,13 @@ public:
   float _specular;
   float _reflection;
   float _transparency;
+  float _gloss;
   float _translucency;
   float _smooth_angle;
   bool _backface;
 
   Colorf _color;
+  Colorf _diffuse_color;
 
   LwoToEggConverter *_converter;
   CPT(LwoSurface) _surface;

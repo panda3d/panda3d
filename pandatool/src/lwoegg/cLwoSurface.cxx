@@ -69,6 +69,10 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
 	_flags |= F_transparency;
 	_transparency = param->_value;
 
+      } else if (type == IffId("GLOS")) {
+	_flags |= F_gloss;
+	_gloss = param->_value;
+
       } else if (type == IffId("TRNL")) {
 	_flags |= F_translucency;
 	_translucency = param->_value;
@@ -126,6 +130,8 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
   if ((_flags & F_transparency) != 0) {
     _color[3] = 1.0 - _transparency;
   }
+
+  _diffuse_color = _color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -165,7 +171,7 @@ apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
   bool has_texture = check_texture();
   bool has_material = check_material();
 
-  egg_prim->set_color(_color);
+  egg_prim->set_color(_diffuse_color);
 
   if (has_material) {
     egg_prim->set_material(_egg_material);
@@ -293,12 +299,19 @@ check_material() {
   _egg_material = new EggMaterial(get_name());
 
   if ((_flags & F_diffuse) != 0) {
-    Colorf diffuse(_color[0] * _diffuse,
-		   _color[1] * _diffuse,
-		   _color[2] * _diffuse,
-		   _color[3]);
-    _egg_material->set_diff(diffuse);
+    _diffuse_color.set(_color[0] * _diffuse,
+		       _color[1] * _diffuse,
+		       _color[2] * _diffuse,
+		       _color[3]);
+    // We want to avoid setting the diffuse color on the material.
+    // We're already setting the color explicitly on the object, so
+    // there's no need to also set a diffuse color on the material,
+    // and doing so prevents nice features like set_color() and
+    // set_color_scale() from working in Panda.
+
+    //_egg_material->set_diff(_diffuse_color);
   }
+
   if ((_flags & F_luminosity) != 0) {
     Colorf luminosity(_color[0] * _luminosity,
 		      _color[1] * _luminosity,
@@ -306,12 +319,17 @@ check_material() {
 		      1.0);
     _egg_material->set_emit(luminosity);
   }
+
   if ((_flags & F_specular) != 0) {
     Colorf specular(_color[0] * _specular,
 		    _color[1] * _specular,
 		    _color[2] * _specular,
 		    1.0);
     _egg_material->set_spec(specular);
+  }
+
+  if ((_flags & F_gloss) != 0) {
+    _egg_material->set_shininess(_gloss * 128.0);
   }
 
   return true;
