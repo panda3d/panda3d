@@ -613,6 +613,7 @@ class LevelEditor(NodePath, PandaObject):
         # The selected DNA Object/NodePath
         self.selectedDNARoot = None
         self.selectedNPRoot = None
+        self.selectedSuitPoint = None
         self.lastLandmarkBuildingDNA = None
         self.showLandmarkBlockToggleGroup = None
         # Set active target (the subcomponent being modified)
@@ -1827,6 +1828,7 @@ class LevelEditor(NodePath, PandaObject):
         # Clear out old root variables
         self.selectedDNARoot = None
         self.selectedNPRoot = None
+        self.selectedSuitPoint = None
         # Now process newly selected node path
         dnaParent = None
         dnaNode = self.findDNANode(nodePath)
@@ -1865,6 +1867,7 @@ class LevelEditor(NodePath, PandaObject):
             pointOrCell, type = self.findPointOrCell(nodePath)
             if pointOrCell and (type == 'suitPointMarker'):
                 print "Found suit point!", pointOrCell
+                self.selectedSuitPoint = pointOrCell
             if pointOrCell and (type == 'battleCellMarker'):
                 print "Found battle cell!", pointOrCell
 
@@ -1876,6 +1879,7 @@ class LevelEditor(NodePath, PandaObject):
         # Clear out old root variables
         self.selectedDNARoot = None
         self.selectedNPRoot = None
+        self.selectedSuitPoint = None
         # Let others know:
         for i in self.deselectedNodePathHookHooks:
                 i()
@@ -2634,7 +2638,7 @@ class LevelEditor(NodePath, PandaObject):
         marker.setPos(pos)
         if (type == DNASuitPoint.STREETPOINT):
             marker.setColor(0,0,0.6)
-            marker.setScale(0.25)
+            marker.setScale(0.4)
         elif (type == DNASuitPoint.FRONTDOORPOINT):
             marker.setColor(0,0,1)
             marker.setScale(0.5)
@@ -2930,6 +2934,11 @@ class LevelEditor(NodePath, PandaObject):
                     np=self.selectedNPRoot
                     self.showLandmarkBlockToggleGroup.append(np)
                     np.setColor(1,0,0,1)
+        elif self.selectedSuitPoint and self.lastLandmarkBuildingDNA:
+            block=self.lastLandmarkBuildingDNA.getName()
+            block=block[2:block.find(':')]
+            print ("associate point with building: " + str(block))
+            self.selectedSuitPoint.setLandmarkBuildingIndex(int(block))
 
     def findHighestLandmarkBlock(self, dnaRoot, npRoot):
         npc=npRoot.findAllMatches("**/*:toon_landmark_*")
@@ -3025,10 +3034,26 @@ class LevelEditor(NodePath, PandaObject):
                     group.append(nodePath)
                     nodePath.setColor(0,1,0,1)
 
+                # Get the suit point for this lb
+                for point, marker in self.pointDict.items():
+                    if (point.getPointType() == DNASuitPoint.FRONTDOORPOINT):
+                        lbIndex = point.getLandmarkBuildingIndex()
+                        if (lbIndex == int(block)):
+                            marker.setColor(1,0,0,1)
+                            marker.setScale(1.0)
+                            # There should only be one, so break now
+                        elif (lbIndex == -1):
+                            # This point belongs to no block
+                            marker.setColor(0,1,0,1)
+                
                 self.showLandmarkBlockToggleGroup=group
             else:
                 for i in self.showLandmarkBlockToggleGroup:
                     i.clearColor()
+                for point, marker in self.pointDict.items():
+                    if (point.getPointType() == DNASuitPoint.FRONTDOORPOINT):
+                        marker.setColor(0,0,1,1)
+                        marker.setScale(0.5)
                 self.showLandmarkBlockToggleGroup=None
     
     def pdbBreak(self):
