@@ -400,8 +400,10 @@ PUBLISHED:
                          const LVecBase3f &hpr,
                          const LVecBase3f &scale);
 
-  void set_mat(const NodePath &other, const LMatrix4f &mat);
   LMatrix4f get_mat(const NodePath &other) const;
+  void set_mat(const NodePath &other, const LMatrix4f &mat);
+
+  LPoint3f get_relative_point(const NodePath &other, const LVecBase3f &point);
 
   INLINE void look_at(const NodePath &other,
                       float x, float y, float z);

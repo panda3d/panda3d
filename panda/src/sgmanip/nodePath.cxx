@@ -279,91 +279,6 @@ clear() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_mat
-//       Access: Public
-//  Description: Returns the matrix that describes the coordinate
-//               space of the bottom node, relative to the other
-//               path's bottom node's coordinate space.
-////////////////////////////////////////////////////////////////////
-LMatrix4f NodePath::
-get_mat(const NodePath &other) const {
-  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
-
-  if (is_empty() && other.is_empty()) {
-    return LMatrix4f::ident_mat();
-
-  } else if (is_empty()) {
-    wrt(NULL, other.node(), other.begin(), other.end(),
-        ntw, _graph_type);
-
-  } else if (other.is_empty()) {
-    wrt(node(), begin(), end(), (Node *)NULL, ntw, _graph_type);
-
-  } else {
-    wrt(node(), begin(), end(),
-        other.node(), other.begin(), other.end(),
-        ntw, _graph_type);
-  }
-
-  const TransformTransition *tt;
-  if (!get_transition_into(tt, ntw)) {
-    // No relative transform.
-    return LMatrix4f::ident_mat();
-  } else {
-    return tt->get_matrix();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_mat
-//       Access: Public
-//  Description: Converts the indicated matrix from the other's
-//               coordinate space to the local coordinate space, and
-//               applies it to the arc.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_mat(const NodePath &other, const LMatrix4f &mat) {
-  nassertv_always(has_arcs());
-
-#ifndef NDEBUG
-  if (_graph_type == DataRelation::get_class_type()) {
-    sgmanip_cat.warning()
-      << "Setting transform on data graph arc.\n"
-      << "(This is probably meaningless.  Did you mean to do this to the bottom node?)\n";
-  }
-#endif
-
-  NodeRelation *darc = arc();
-
-  // First, we perform a wrt to the node's parent, to get the
-  // conversion matrix.
-  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
-  ForwardIterator from = begin();
-  ++from;
-
-  if (other.is_empty()) {
-    wrt(NULL, darc->get_parent(), from, end(), ntw, _graph_type);
-  } else {
-    wrt(other.node(), other.begin(), other.end(),
-        darc->get_parent(), from, end(),
-        ntw, _graph_type);
-  }
-
-  LMatrix4f new_mat,*new_mat_ptr;
-  const TransformTransition *tt;
-
-  if (!get_transition_into(tt, ntw)) {
-    // No relative transform.
-          new_mat_ptr = (LMatrix4f*)&mat;
-  } else {
-          new_mat.multiply(mat,tt->get_matrix());
-          new_mat_ptr = &new_mat;
-  }
-
-  darc->set_transition(new TransformTransition(*new_mat_ptr));
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_children
 //       Access: Public
 //  Description: Returns the set of all child nodes of the bottom
@@ -1928,6 +1843,104 @@ set_pos_hpr_scale(const NodePath &other,
   LMatrix4f mat;
   compose_matrix(mat, scale, hpr, pos);
   set_mat(other, mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_mat
+//       Access: Public
+//  Description: Returns the matrix that describes the coordinate
+//               space of the bottom node, relative to the other
+//               path's bottom node's coordinate space.
+////////////////////////////////////////////////////////////////////
+LMatrix4f NodePath::
+get_mat(const NodePath &other) const {
+  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
+
+  if (is_empty() && other.is_empty()) {
+    return LMatrix4f::ident_mat();
+
+  } else if (is_empty()) {
+    wrt(NULL, other.node(), other.begin(), other.end(),
+        ntw, _graph_type);
+
+  } else if (other.is_empty()) {
+    wrt(node(), begin(), end(), (Node *)NULL, ntw, _graph_type);
+
+  } else {
+    wrt(node(), begin(), end(),
+        other.node(), other.begin(), other.end(),
+        ntw, _graph_type);
+  }
+
+  const TransformTransition *tt;
+  if (!get_transition_into(tt, ntw)) {
+    // No relative transform.
+    return LMatrix4f::ident_mat();
+  } else {
+    return tt->get_matrix();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_mat
+//       Access: Public
+//  Description: Converts the indicated matrix from the other's
+//               coordinate space to the local coordinate space, and
+//               applies it to the arc.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_mat(const NodePath &other, const LMatrix4f &mat) {
+  nassertv_always(has_arcs());
+
+#ifndef NDEBUG
+  if (_graph_type == DataRelation::get_class_type()) {
+    sgmanip_cat.warning()
+      << "Setting transform on data graph arc.\n"
+      << "(This is probably meaningless.  Did you mean to do this to the bottom node?)\n";
+  }
+#endif
+
+  NodeRelation *darc = arc();
+
+  // First, we perform a wrt to the node's parent, to get the
+  // conversion matrix.
+  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
+  ForwardIterator from = begin();
+  ++from;
+
+  if (other.is_empty()) {
+    wrt(NULL, darc->get_parent(), from, end(), ntw, _graph_type);
+  } else {
+    wrt(other.node(), other.begin(), other.end(),
+        darc->get_parent(), from, end(),
+        ntw, _graph_type);
+  }
+
+  LMatrix4f new_mat,*new_mat_ptr;
+  const TransformTransition *tt;
+
+  if (!get_transition_into(tt, ntw)) {
+    // No relative transform.
+          new_mat_ptr = (LMatrix4f*)&mat;
+  } else {
+          new_mat.multiply(mat,tt->get_matrix());
+          new_mat_ptr = &new_mat;
+  }
+
+  darc->set_transition(new TransformTransition(*new_mat_ptr));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_relative_point
+//       Access: Public
+//  Description: Given that the indicated point is in the coordinate
+//               system of the other node, returns the same point in
+//               this node's coordinate system.
+////////////////////////////////////////////////////////////////////
+LPoint3f NodePath::
+get_relative_point(const NodePath &other, const LVecBase3f &point) {
+  LPoint3f rel_point = LPoint3f(point) * other.get_mat(*this);
+  return rel_point;
 }
 
 ////////////////////////////////////////////////////////////////////
