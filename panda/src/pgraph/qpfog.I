@@ -96,10 +96,12 @@ set_color(const Colorf &color) {
 //               M_linear, if it is not already set.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpFog::
-set_linear_range(float onset, float opaque, CoordinateSystem cs) {
-  LVector3f forward = LVector3f::forward(cs);
+set_linear_range(float onset, float opaque) {
+  LVector3f forward = LVector3f::forward();
   _linear_onset_point = onset * forward;
   _linear_opaque_point = opaque * forward;
+  _transformed_onset = onset;
+  _transformed_opaque = opaque;
   _mode = M_linear;
 }
 

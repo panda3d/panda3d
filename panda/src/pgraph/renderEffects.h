@@ -123,8 +123,8 @@ private:
   typedef ov_set<Effect> Effects;
   Effects _effects;
 
-  // We cache the pointer to the some critical effects stored in
-  // the state, if they exist.
+  // We cache the pointer to some critical effects stored in the
+  // state, if they exist.
   const BillboardEffect *_billboard;
 
   enum Flags {

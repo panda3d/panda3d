@@ -28,6 +28,7 @@
 #include "ordered_vector.h"
 
 class GraphicsStateGuardianBase;
+class FogAttrib;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderState
@@ -90,6 +91,7 @@ PUBLISHED:
 public:
   INLINE int get_bin_index() const;
   INLINE int get_draw_order() const;
+  INLINE const FogAttrib *get_fog() const;
 
   CPT(RenderState) issue_delta_modify(const RenderState *other, 
                                       GraphicsStateGuardianBase *gsg) const;
@@ -103,6 +105,7 @@ private:
   CPT(RenderState) do_compose(const RenderState *other) const;
   CPT(RenderState) do_invert_compose(const RenderState *other) const;
   void determine_bin_index();
+  void determine_fog();
 
 private:
   typedef pset<const RenderState *, IndirectLess<RenderState> > States;
@@ -161,8 +164,13 @@ private:
   int _bin_index;
   int _draw_order;
 
+  // We also cache the pointer to some critical attribs stored in the
+  // state, if they exist.
+  const FogAttrib *_fog;
+
   enum Flags {
     F_checked_bin_index    = 0x0001,
+    F_checked_fog          = 0x0002,
   };
   short _flags;
 

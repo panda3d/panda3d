@@ -22,6 +22,7 @@
 
 #include "mathNumbers.h"
 #include "qpnodePath.h"
+#include "transformState.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "datagram.h"
@@ -64,6 +65,8 @@ qpFog(const string &name) :
   _linear_fallback_cosa = -1.0f;
   _linear_fallback_onset = 0.0f;
   _linear_fallback_opaque = 0.0f;
+  _transformed_onset = 0.0f;
+  _transformed_opaque = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -83,6 +86,8 @@ qpFog(const qpFog &copy) :
   _linear_fallback_cosa = copy._linear_fallback_cosa;
   _linear_fallback_onset = copy._linear_fallback_onset;
   _linear_fallback_opaque = copy._linear_fallback_opaque;
+  _transformed_onset = copy._transformed_onset;
+  _transformed_opaque = copy._transformed_opaque;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -142,17 +147,17 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpFog::compute_linear_range
+//     Function: qpFog::adjust_to_camera
 //       Access: Public
-//  Description: This function is intended to be called by GSG's to
-//               compute the appropriate camera-relative onset and
-//               opaque distances, based on the fog node's position
-//               within the scene graph (if linear fog is in effect).
+//  Description: This function is intended to be called by the cull
+//               traverser to compute the appropriate camera-relative
+//               onset and opaque distances, based on the fog node's
+//               position within the scene graph (if linear fog is in
+//               effect).
 ////////////////////////////////////////////////////////////////////
 void qpFog::
-compute_linear_range(float &onset, float &opaque,
-                     const qpNodePath &camera, CoordinateSystem cs) {
-  LVector3f forward = LVector3f::forward(cs);
+adjust_to_camera(const TransformState *camera_transform) {
+  LVector3f forward = LVector3f::forward();
 
   LPoint3f onset_point, opaque_point;
   if (get_num_parents() != 0) {
@@ -160,7 +165,10 @@ compute_linear_range(float &onset, float &opaque,
     // graph.
     qpNodePath this_np(this);
 
-    const LMatrix4f &mat = this_np.get_mat(camera);
+    CPT(TransformState) rel_transform = 
+      camera_transform->invert_compose(this_np.get_net_transform());
+    
+    const LMatrix4f &mat = rel_transform->get_mat();
 
     // How far out of whack are we?
     LVector3f fog_vector = (_linear_opaque_point - _linear_onset_point) * mat;
@@ -169,24 +177,30 @@ compute_linear_range(float &onset, float &opaque,
     if (cabs(cosa) < _linear_fallback_cosa) {
       // The fog vector is too far from the eye vector; use the
       // fallback mode.
-      onset = _linear_fallback_onset;
-      opaque = _linear_fallback_opaque;
-      //cerr << "fallback! " << cosa << " vs. " << _linear_fallback_cosa << "\n";
-      return;
+      _transformed_onset = _linear_fallback_onset;
+      _transformed_opaque = _linear_fallback_opaque;
+
+    } else {
+      _transformed_onset = forward.dot(_linear_onset_point * mat);
+      _transformed_opaque = forward.dot(_linear_opaque_point * mat);
     }
 
-    onset_point = _linear_onset_point * mat;
-    opaque_point = _linear_opaque_point * mat;
-
   } else {
-    // If the fog object has no parents, we assume the user meant
-    // camera-relative fog.
-    onset_point = _linear_onset_point;
-    opaque_point = _linear_opaque_point;
+    // Not a camera-relative fog.
+    _transformed_onset = forward.dot(_linear_onset_point);
+    _transformed_opaque = forward.dot(_linear_opaque_point);
   }
-  
-  onset = onset_point.dot(forward);
-  opaque = opaque_point.dot(forward);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpFog::get_linear_range
+//       Access: Public
+//  Description: Retrieves the current onset and offset ranges.
+////////////////////////////////////////////////////////////////////
+void qpFog::
+get_linear_range(float &onset, float &opaque) {
+  onset = _transformed_onset;
+  opaque = _transformed_opaque;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -442,14 +442,12 @@ decode_text(const string &text) const {
       StringUtf8Decoder decoder(text);
       return decode_text_impl(decoder);
     }
-    break;
 
   case E_unicode:
     {
       StringUnicodeDecoder decoder(text);
       return decode_text_impl(decoder);
     }
-    break;
 
   case E_iso8859:
   default:

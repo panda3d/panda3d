@@ -69,7 +69,8 @@ apply_transform_and_state(qpCullTraverser *trav) {
     }
   }
 
-  _state = _state->compose(node()->get_state());
+  const RenderState *node_state = node()->get_state();
+  _state = _state->compose(node_state);
 
   const RenderEffects *node_effects = node()->get_effects();
   const BillboardEffect *billboard = node_effects->get_billboard();

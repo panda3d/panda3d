@@ -20,6 +20,7 @@
 #include "transparencyAttrib.h"
 #include "cullBinAttrib.h"
 #include "cullBinManager.h"
+#include "fogAttrib.h"
 #include "config_pgraph.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -925,6 +926,21 @@ determine_bin_index() {
     _bin_index = bin_manager->add_bin(bin_name, CullBinManager::BT_unsorted, 0);
   }
   _flags |= F_checked_bin_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_fog
+//       Access: Private
+//  Description: This is the private implementation of get_fog().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_fog() {
+  const RenderAttrib *attrib = get_attrib(FogAttrib::get_class_type());
+  _fog = (const FogAttrib *)NULL;
+  if (attrib != (const RenderAttrib *)NULL) {
+    _fog = DCAST(FogAttrib, attrib);
+  }
+  _flags |= F_checked_fog;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -26,7 +26,7 @@
 #include "cmath.h"
 #include "deg_2_rad.h"
 
-class qpNodePath;
+class TransformState;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Fog
@@ -74,8 +74,7 @@ PUBLISHED:
   INLINE void set_color(float r, float g, float b);
   INLINE void set_color(const Colorf &color);
 
-  INLINE void set_linear_range(float onset, float opaque,
-                               CoordinateSystem cs = CS_default);
+  INLINE void set_linear_range(float onset, float opaque);
 
   INLINE const LPoint3f &get_linear_onset_point() const;
   INLINE void set_linear_onset_point(float x, float y, float z);
@@ -93,8 +92,8 @@ PUBLISHED:
   void output(ostream &out) const;
 
 public:
-  void compute_linear_range(float &onset, float &opaque, 
-                            const qpNodePath &camera, CoordinateSystem cs);
+  void adjust_to_camera(const TransformState *camera_transform);
+  void get_linear_range(float &onset, float &opaque);
 
 protected:
   void compute_density();
@@ -116,6 +115,8 @@ protected:
 
   float _linear_fallback_cosa;
   float _linear_fallback_onset, _linear_fallback_opaque;
+  
+  float _transformed_onset, _transformed_opaque;
 
 public:
   static TypeHandle get_class_type() {

@@ -197,3 +197,22 @@ get_draw_order() const {
   }
   return _draw_order;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_fog
+//       Access: Public
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a FogAttrib on this state.  It returns a
+//               pointer to the FogAttrib, if there is one, or
+//               NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const FogAttrib *RenderState::
+get_fog() const {
+  if ((_flags & F_checked_fog) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal fog cache.
+    ((RenderState *)this)->determine_fog();
+  }
+  return _fog;
+}
