@@ -14,7 +14,7 @@ import time
 import fnmatch
 import string
 import signal
-from libheapq import heappush, heappop
+from libheapq import heappush, heappop, heapify
 
 # MRM: Need to make internal task variables like time, name, index
 # more unique (less likely to have name clashes)
@@ -305,6 +305,8 @@ class TaskManager:
     extendedExceptions = 0
     pStatsTasks = 0
 
+    doLaterCleanupCounter = 2000
+
     def __init__(self):
         self.running = 0
         self.stepping = 0
@@ -366,6 +368,8 @@ class TaskManager:
         # been removed Warning: this creates an entirely new doLaterList.
         oldLen = len(self.__doLaterList)
         self.__doLaterList = filter(lambda task: not task.isRemoved(), self.__doLaterList)
+        # Re heapify to maintain ordering after filter
+        heapify(self.__doLaterList)
         newLen = len(self.__doLaterList)
         return oldLen - newLen
 
@@ -395,7 +399,7 @@ class TaskManager:
                 continue
         # Every nth pass, let's clean out the list of removed tasks
         # This is basically a mark and sweep garbage collection of doLaters
-        if ((task.frame % 1000) == 0):
+        if ((task.frame % self.doLaterCleanupCounter) == 0):
             numRemoved = self.__doLaterFilter()
             # TaskManager.notify.debug("filtered %s removed doLaters" % numRemoved)
         return cont
