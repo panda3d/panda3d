@@ -1573,6 +1573,8 @@ bool wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
     bool bNeedZBuffer = (_dxgsg->scrn.PresParams.EnableAutoDepthStencil!=false);
     bool bNeedStencilBuffer = IS_STENCIL_FORMAT(_dxgsg->scrn.PresParams.AutoDepthStencilFormat);
 
+    // wdxdisplay_cat.error() << "1111111 lowvidmemcard="<< _dxgsg->scrn.bIsLowVidMemCard << endl;
+
     if((_dxgsg->scrn.bIsLowVidMemCard) && ((xsize!=640)||(ysize!=480))) {
       wdxdisplay_cat.error() << "resize() failed: cant resize low vidmem device #" << _dxgsg->scrn.CardIDNum << " to non 640x480!\n";
       goto Error_Return;
@@ -1826,6 +1828,9 @@ find_all_card_memavails(void) {
 
         pDD->Release();  // release DD obj, since this is all we needed it for
 
+
+        wdxdisplay_cat.info() << "GetAvailableVidMem returns Total: "<<dwVidMemTotal <<", Free: " << dwVidMemFree << " for device #"<< pDX7DeviceID->szDescription<< endl;
+
         if(!dx_do_vidmemsize_check) {
            // still calling the DD stuff to get deviceID, etc.  is this necessary?
            (*g_pCardIDVec)[i].MaxAvailVidMem = UNKNOWN_VIDMEM_SIZE;
@@ -1860,7 +1865,9 @@ find_all_card_memavails(void) {
         #define CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD 1000000  // if # is > 1MB, card is lying and I cant tell what it is
 
         // assume buggy drivers (this means you, FireGL2) may return zero (or small amts) for dwVidMemTotal, so ignore value if its < CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD
-        (*g_pCardIDVec)[i].bIsLowVidMemCard = ((dwVidMemTotal>CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD) && (dwVidMemTotal< LOWVIDMEMTHRESHOLD));
+        bool bLowVidMemFlag = ((dwVidMemTotal>CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD) && (dwVidMemTotal< LOWVIDMEMTHRESHOLD));
+        (*g_pCardIDVec)[i].bIsLowVidMemCard = bLowVidMemFlag;
+        wdxdisplay_cat.info() << "SetLowVidMem flag to "<< bLowVidMemFlag<< " based on adjusted VidMemTotal: " <<dwVidMemTotal << endl;
     }
 
     FreeLibrary(hDDrawDLL);
@@ -2369,6 +2376,9 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
 //return true if successful
 void wdxGraphicsWindow::
 CreateScreenBuffersAndDevice(DXScreenData &Display) {
+
+    // only want this to apply to initial startup
+    dx_pick_best_screenres=false;
 
     DWORD dwRenderWidth=Display.DisplayMode.Width;
     DWORD dwRenderHeight=Display.DisplayMode.Height;
