@@ -977,8 +977,8 @@ choose_device(void) {
           good_device_count++;
   }
 
-  if(good_device_count==0) {
-     wdxdisplay8_cat.fatal() << "no usable display devices, exiting...\n";
+  if (good_device_count==0) {
+     wdxdisplay8_cat.error() << "no usable display devices.\n";
      return false;
   }
 
@@ -1722,7 +1722,6 @@ reset_window(bool swapchain) {
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow8::
 open_window(void) {
-  cerr << "open_window()\n";
   PT(DXGraphicsDevice8) dxdev;
   DXGraphicsStateGuardian8 *dxgsg;
   DCAST_INTO_R(dxgsg,_gsg,false);

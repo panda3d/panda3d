@@ -980,7 +980,7 @@ choose_device(void) {
   }
 
   if(good_device_count==0) {
-     wdxdisplay9_cat.fatal() << "no usable display devices, exiting...\n";
+     wdxdisplay9_cat.error() << "no usable display devices.\n";
      return false;
   }
 

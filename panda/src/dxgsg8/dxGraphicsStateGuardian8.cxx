@@ -406,6 +406,7 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
     reset_panda_gsg();
 
     _pScrn = NULL;
+    _pD3DDevice = NULL;
     
     _bDXisReady = false;
     _overlay_windows_supported = false;
