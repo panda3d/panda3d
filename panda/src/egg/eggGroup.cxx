@@ -287,9 +287,9 @@ write(ostream &out, int indent_level) const {
 
   EggRenderMode::write(out, indent_level + 2);
 
-  EggGroupNode::write(out, indent_level + 2);
-
   write_vertex_ref(out, indent_level + 2);
+
+  EggGroupNode::write(out, indent_level + 2);
 
   indent(out, indent_level) << "}\n";
 }
