@@ -307,11 +307,45 @@ is_title_unknown() const {
 void PStatStripChart::
 accumulate_frame_data(FrameData &fdata, const FrameData &additional, 
                       float weight) {
-  FrameData result;
-  FrameData::const_iterator ai, bi;
+  FrameData::iterator ai;
+  FrameData::const_iterator bi;
 
   ai = fdata.begin();
   bi = additional.begin();
+
+  FrameData result;
+
+  if (fdata.size() == additional.size()) {
+    // Start out assuming that fdata and additional contain exactly
+    // the same set of collectors.  If we discover otherwise, we'll
+    // have to bail at that point.
+    while (ai != fdata.end() &&
+           (*ai)._collector_index == (*bi)._collector_index) {
+      (*ai)._net_value += ((*bi)._net_value * weight);
+      ++ai;
+      ++bi;
+    }
+
+    if (ai == fdata.end()) {
+      // If we successfully reached the end of the list, great!
+      // We're done without any merging.
+      return;
+    }
+
+    // Otherwise, the two lists weren't identical.  In that case, copy
+    // the accumulated data so far and continue from this point with
+    // the full-blown merge.
+    result.reserve(max(fdata.size(), additional.size()));
+    FrameData::const_iterator ci;
+    for (ci = fdata.begin(); ci != ai; ++ci) {
+      result.push_back(*ci);
+    }
+
+  } else {
+    // If the two lists had different lengths, clearly they aren't
+    // identical.
+    result.reserve(max(fdata.size(), additional.size()));
+  }
 
   while (ai != fdata.end() && bi != additional.end()) {
     if ((*ai)._collector_index < (*bi)._collector_index) {
