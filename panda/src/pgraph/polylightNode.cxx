@@ -70,7 +70,8 @@ Colorf PolylightNode::flicker() const {
   float r,g,b;
 
   Colorf color;
-  color = get_color_scenegraph();
+  color = get_color();
+  //color = get_color_scenegraph();
   r = color[0];
   g = color[1];
   b = color[2];
@@ -81,13 +82,13 @@ Colorf PolylightNode::flicker() const {
     variation = (rand()%100);// * ClockObject::get_global_clock()->get_dt();
     variation /= 100.0;
     //printf("Random Variation: %f\n",variation);
-    variation += _offset;
+    //variation += _offset;
     variation *= _scale;
   } else if (_flicker_type == FSIN) {
     double now = ClockObject::get_global_clock()->get_frame_time();
     variation = sinf(now*_sin_freq);// * ClockObject::get_global_clock()->get_dt();
     //printf("Variation: %f\n",variation);
-    variation += _offset;
+    //variation += _offset;
     variation *= _scale;
   } else if (_flicker_type == FCUSTOM) {
     // fixed point list of variation values coming soon...
