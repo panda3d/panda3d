@@ -1422,6 +1422,15 @@ dx_setup() {
     // so this is the true value
     _MaxAvailVidMem = dwVidMemTotal;  
 
+    #define LOWVIDMEMTHRESHOLD 3500000
+     // assume buggy drivers (this means you, FireGL2) may return zero for dwTotal, so ignore value if its 0    
+    if((dwVidMemFree>0)&&(dwVidMemFree< LOWVIDMEMTHRESHOLD)) {
+        // hack: figuring out exactly what res to use is tricky, instead I will
+        // just use 640x480 if we have < 3 meg avail
+        _bIsLowVidMemCard = true;
+        wdxdisplay_cat.debug() << " " << dwVidMemFree << " Available VidMem is under " << LOWVIDMEMTHRESHOLD <<", using 640x480 16bpp rendertargets to save tex vidmem.\n";
+    }
+
     if(dx_full_screen) {
            dwRenderWidth  = _props._xsize;
            dwRenderHeight = _props._ysize;
@@ -1470,45 +1479,37 @@ dx_setup() {
                exit(1);
            }
 
-           if(dwVidMemFree>0) {  // assume buggy drivers (this means you, FireGL2) may return zero for dwTotal, so ignore value if its 0
-
-               // hack: figuring out exactly what res to use is tricky, instead I will
-               // just use 640x480 if we have < 3 meg avail
-
-       #define LOWVIDMEMTHRESHOLD 3500000
-               if(dwVidMemFree< LOWVIDMEMTHRESHOLD) {
+           if(_bIsLowVidMemCard) {
                    // we're going to need 800x600 or 640x480 at 16 bit to save enough tex vidmem
                    dwFullScreenBitDepth=16;              // do 16bpp
                    dwRenderWidth=640;
                    dwRenderHeight=480;
-                   _bIsLowVidMemCard = true;
-                   wdxdisplay_cat.debug() << " " << dwVidMemFree << " Available VidMem is under " << LOWVIDMEMTHRESHOLD <<", using 640x480 16bpp rendertargets to save tex vidmem.\n";
-               }
+                   // force 16bpp textures too?
 
-       #if 0
-       // cant do this without more accurate way to estimate mem used before actually switching
-       // to that fullscrn mode.  simply computing memsize based on GetDisplayMode doesnt seem
-       // to be accurate within more than 1 meg
-
-               // we think we need to reserve at least 2 megs of vidmem for textures.
-               // to do this, reduce buffer bitdepth if possible
-       #define RESERVEDTEXVIDMEM 2000000
-
-               int rendertargetmem=dwRenderWidth*dwRenderHeight*(dwFullScreenBitDepth>>3);
-               int memleft = dwFree-rendertargetmem*2;   //*2 to handle backbuf/zbuf
-
-               if(memleft < RESERVEDTEXVIDMEM) {
-                   dwFullScreenBitDepth=16;
-                   wdxdisplay_cat.debug() << "using 16bpp rendertargets to save tex vidmem\n";
-                   assert((DMI.supportedBitDepths & DDBD_16) && (pD3DDevDesc->dwDeviceRenderBitDepth & DDBD_16));   // probably a safe assumption
-                   rendertargetmem=dwRenderWidth*dwRenderHeight*(dwFullScreenBitDepth>>3);
-                   memleft = dwFree-rendertargetmem*2;
-
-                    // BUGBUG:  if we still cant reserve 2 megs of vidmem, need to auto-reduce the scrn res
-                   if(memleft < RESERVEDTEXVIDMEM)
-                       wdxdisplay_cat.debug() << " XXXXXX WARNING: cant reserve 2MB of tex vidmem. only " << memleft << " bytes available. Need to rewrite wdxdisplay to try lower resolutions  XXXXXXXXXXXXXXXXXXXX\n";
-               }
-       #endif
+                   #if 0
+                   // cant do this without more accurate way to estimate mem used before actually switching
+                   // to that fullscrn mode.  simply computing memsize based on GetDisplayMode doesnt seem
+                   // to be accurate within more than 1 meg
+            
+                           // we think we need to reserve at least 2 megs of vidmem for textures.
+                           // to do this, reduce buffer bitdepth if possible
+                   #define RESERVEDTEXVIDMEM 2000000
+            
+                           int rendertargetmem=dwRenderWidth*dwRenderHeight*(dwFullScreenBitDepth>>3);
+                           int memleft = dwFree-rendertargetmem*2;   //*2 to handle backbuf/zbuf
+            
+                           if(memleft < RESERVEDTEXVIDMEM) {
+                               dwFullScreenBitDepth=16;
+                               wdxdisplay_cat.debug() << "using 16bpp rendertargets to save tex vidmem\n";
+                               assert((DMI.supportedBitDepths & DDBD_16) && (pD3DDevDesc->dwDeviceRenderBitDepth & DDBD_16));   // probably a safe assumption
+                               rendertargetmem=dwRenderWidth*dwRenderHeight*(dwFullScreenBitDepth>>3);
+                               memleft = dwFree-rendertargetmem*2;
+            
+                                // BUGBUG:  if we still cant reserve 2 megs of vidmem, need to auto-reduce the scrn res
+                               if(memleft < RESERVEDTEXVIDMEM)
+                                   wdxdisplay_cat.debug() << " XXXXXX WARNING: cant reserve 2MB of tex vidmem. only " << memleft << " bytes available. Need to rewrite wdxdisplay to try lower resolutions  XXXXXXXXXXXXXXXXXXXX\n";
+                           }
+                   #endif
            }
 
            DWORD SCL_FPUFlag;
