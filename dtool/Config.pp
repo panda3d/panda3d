@@ -210,8 +210,8 @@
 
 // Should we try to build the DirectX interface?  What additional
 // libraries do we need?
-#define DX_IPATH
-#define DX_LPATH
+#define DX_IPATH /mspsdk/Include
+#define DX_LPATH /mspsdk/Lib
 #define DX_LIBS \
   dxguid.lib winmm.lib kernel32.lib gdi32.lib comdlg32.lib winspool.lib \
   user32.lib advapi32.lib ddraw.lib d3dim.lib
@@ -245,8 +245,8 @@
 
 // Do you want to build the audio interface?  What additional
 // libraries are required?
-#define AUDIO_IPATH
-#define AUDIO_LPATH
+#define AUDIO_IPATH /mspsdk/Include
+#define AUDIO_LPATH /mspsdk/Lib
 #if $[eq $[PLATFORM],Win32]
   #define AUDIO_LIBS winmm.lib dsound.lib user32.lib ole32.lib dxguid.lib
 #else
