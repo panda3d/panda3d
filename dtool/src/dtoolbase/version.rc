@@ -1,0 +1,89 @@
+// Win32 VERSIONINFO resource file
+#include <winresrc.h>
+
+// rc's cpp doesnt support __DATE__,__TIME__ macros, so must use external generated file to get BUILD_DATE
+#include "verdate.h"
+
+// these should also be externally generated eventually
+#define BUILD_MAJOR                     0
+#define BUILD_MINOR                     0
+#define BUILD_NUMBER                    0
+#define BUILD_REVISION                  1
+
+#define BUILD_MAJOR_STR                 "0"
+#define BUILD_MINOR_STR                 "0"
+#define BUILD_NUMBER_STR                "0"
+#define BUILD_REVISION_STR              "1"
+
+#define VER_FILEVERSION         BUILD_MAJOR,BUILD_MINOR,BUILD_NUMBER,BUILD_REVISION
+#define VER_FILEVERSION_STR     BUILD_MAJOR_STR "." BUILD_MINOR_STR "." BUILD_NUMBER_STR "." BUILD_REVISION_STR
+
+#define VER_PRODUCTNAME_STR      "ToonTown"
+#define VER_PRODUCTVERSION_STR   VER_FILEVERSION_STR          // make these the same 4 now
+#define VER_COMPANY_STR          "Walt Disney Co."
+#define VER_COPYRIGHT_STR        "Copyright © 2001, Walt Disney Co."
+
+// may want to define these separately per dll
+#define VER_DESC_STR             "The Fabulous PANDA 3D Engine"
+
+#ifdef _DEBUG
+#define VER_DEBUG                VS_FF_DEBUG
+#else
+#define VER_DEBUG                0
+#endif
+
+#ifndef RELEASE
+#define VER_PRERELEASE           VS_FF_PRERELEASE
+#else
+#define VER_PRERELEASE           0
+#endif
+
+#ifndef OFFICIAL_BUILD
+#define VER_PRIVATE              VS_FF_PRIVATEBUILD
+#else
+#define VER_PRIVATE              0
+#endif
+
+// English (U.S.) resources
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+// ISO std charset
+//#pragma code_page(1252)
+
+// VFT_DLL incorrect for .exe's
+// see msdn 'VERSIONINFO' for fmt descrption
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION      VER_FILEVERSION
+ PRODUCTVERSION   VER_FILEVERSION
+ FILEFLAGSMASK    VS_FFI_FILEFLAGSMASK
+ FILEFLAGS        (VER_DEBUG | VER_PRIVATE | VER_PRERELEASE)
+ FILEOS           VOS__WINDOWS32
+ FILETYPE         VFT_DLL
+ FILESUBTYPE      VFT2_UNKNOWN 
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "Build Date",      VER_BUILD_DATE_STR
+            VALUE "CompanyName",     VER_COMPANY_STR
+            VALUE "FileDescription", VER_DESC_STR
+            VALUE "LegalCopyright",  VER_COPYRIGHT_STR
+#ifndef OFFICIAL_BUILD
+            VALUE "PrivateBuild", "This is a Private Build."
+#endif
+            VALUE "FileVersion",    VER_FILEVERSION_STR
+            VALUE "ProductVersion", VER_PRODUCTVERSION_STR
+            VALUE "ProductName",    VER_PRODUCTNAME_STR
+// these std fields can be added if need arises
+//            VALUE "Comments",  "\0"
+//            VALUE "LegalTrademarks", "\0"
+//            VALUE "OriginalFilename", "libpanda.dll\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
