@@ -26,6 +26,7 @@
 #include "multiTransitionHelpers.h"
 
 #include "indent.h"
+#include "firstOfPairLess.h"
 
 #include <algorithm>
 
@@ -62,10 +63,7 @@ private:
 
   // We use this as an STL function object for sorting the vector in
   // order by its property.
-  class SortByFirstOfPair {
-  public:
-    INLINE_GRAPH bool operator ()(const Element &a, const Element &b) const;
-  };
+  typedef FirstOfPairLess<Element> SortByFirstOfPair;
 
 protected:
   MultiTransition();
@@ -89,8 +87,8 @@ PUBLISHED:
   // set the default direction, which indicates whether to implicitly
   // turn on or off (or leave alone) any property not explicitly
   // mentioned in the transition.
-  INLINE_GRAPH void set_default_dir(TransitionDirection dir);
-  INLINE_GRAPH TransitionDirection get_default_dir() const;
+  INLINE void set_default_dir(TransitionDirection dir);
+  INLINE TransitionDirection get_default_dir() const;
 
   void set_identity(const Property &prop);
   void set_on(const Property &prop);
@@ -125,9 +123,9 @@ public:
   typedef Properties::value_type value_type;
   typedef Properties::size_type size_type;
 
-  INLINE_GRAPH size_type size() const;
-  INLINE_GRAPH const_iterator begin() const;
-  INLINE_GRAPH const_iterator end() const;
+  INLINE size_type size() const;
+  INLINE const_iterator begin() const;
+  INLINE const_iterator end() const;
 
 private:
   Properties _properties;

@@ -23,20 +23,6 @@ template<class Property, class NameClass>
 TypeHandle MultiTransition<Property, NameClass>::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MultiTransition::SortByFirstOfPair function operator
-//       Access: Public
-//  Description: Implements the STL function object that sorts
-//               elements in the vector according to the first
-//               component of each element.
-////////////////////////////////////////////////////////////////////
-template<class Property, class NameClass>
-INLINE_GRAPH bool MultiTransition<Property, NameClass>::SortByFirstOfPair::
-operator ()(const MultiTransition<Property, NameClass>::Element &a, 
-            const MultiTransition<Property, NameClass>::Element &b) const {
-  return a.first < b.first;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MultiTransition::Constructor
 //       Access: Public
 //  Description:
@@ -127,7 +113,7 @@ is_identity() const {
 //               are left unchanged.
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
-INLINE_GRAPH void MultiTransition<Property, NameClass>::
+INLINE void MultiTransition<Property, NameClass>::
 set_default_dir(TransitionDirection dir) {
   _default_dir = dir;
 }
@@ -138,7 +124,7 @@ set_default_dir(TransitionDirection dir) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
-INLINE_GRAPH TransitionDirection MultiTransition<Property, NameClass>::
+INLINE TransitionDirection MultiTransition<Property, NameClass>::
 get_default_dir() const {
   return _default_dir;
 }
@@ -594,7 +580,7 @@ write_property(ostream &, const Property &, int) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
-INLINE_GRAPH MultiTransition<Property, NameClass>::size_type MultiTransition<Property, NameClass>::
+INLINE MultiTransition<Property, NameClass>::size_type MultiTransition<Property, NameClass>::
 size() const {
   return _properties.size();
 }
@@ -606,7 +592,7 @@ size() const {
 //               properties in the transition.
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
-INLINE_GRAPH MultiTransition<Property, NameClass>::const_iterator MultiTransition<Property, NameClass>::
+INLINE MultiTransition<Property, NameClass>::const_iterator MultiTransition<Property, NameClass>::
 begin() const {
   return _properties.begin();
 }
@@ -618,7 +604,7 @@ begin() const {
 //               sequence of properties in the transition.
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
-INLINE_GRAPH MultiTransition<Property, NameClass>::const_iterator MultiTransition<Property, NameClass>::
+INLINE MultiTransition<Property, NameClass>::const_iterator MultiTransition<Property, NameClass>::
 end() const {
   return _properties.end();
 }

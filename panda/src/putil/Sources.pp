@@ -15,7 +15,10 @@
      collideMask.h config_util.N config_util.h \
      configurable.h factoryBase.I factoryBase.h \
      factoryParam.I factoryParam.h factoryParams.I \
-     factoryParams.h globPattern.I globPattern.h \
+     factoryParams.h \
+     firstOfPairCompare.I firstOfPairCompare.h \
+     firstOfPairLess.I firstOfPairLess.h \
+     globPattern.I globPattern.h \
      globalPointerRegistry.I globalPointerRegistry.h \
      indirectCompareNames.I indirectCompareNames.h \
      indirectCompareTo.I indirectCompareTo.h \
@@ -62,6 +65,8 @@
     config_util.h configurable.h factory.I factory.h \
     factoryBase.I factoryBase.h factoryParam.I factoryParam.h \
     factoryParams.I factoryParams.h \
+    firstOfPairCompare.I firstOfPairCompare.h \
+    firstOfPairLess.I firstOfPairLess.h \
     globPattern.I globPattern.h \
     globalPointerRegistry.I globalPointerRegistry.h \
     indirectCompareNames.I indirectCompareNames.h indirectCompareTo.I \
