@@ -1,0 +1,76 @@
+// Filename: mouseWatcherParameter.h
+// Created by:  drose (06Jul01)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef MOUSEWATCHERPARAMETER_H
+#define MOUSEWATCHERPARAMETER_H
+
+#include "pandabase.h"
+
+#include "buttonHandle.h"
+#include "modifierButtons.h"
+#include "luse.h"
+
+////////////////////////////////////////////////////////////////////
+//       Class : MouseWatcherParameter
+// Description : This is sent along as a parameter to most events
+//               generated for a region to indicate the mouse and
+//               button state for the event.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA MouseWatcherParameter {
+public:
+  INLINE MouseWatcherParameter();
+  INLINE MouseWatcherParameter(const MouseWatcherParameter &other);
+  INLINE void operator = (const MouseWatcherParameter &other);
+  INLINE ~MouseWatcherParameter();
+
+  INLINE void set_button(const ButtonHandle &button);
+  INLINE void set_modifier_buttons(const ModifierButtons &mods);
+  INLINE void set_mouse(const LPoint2f &mouse);
+  INLINE void set_outside(bool flag);
+
+PUBLISHED:
+  INLINE bool has_button() const;
+  INLINE ButtonHandle get_button() const;
+
+  INLINE const ModifierButtons &get_modifier_buttons() const;
+
+  INLINE bool has_mouse() const;
+  INLINE const LPoint2f &get_mouse() const;
+
+  INLINE bool is_outside() const;
+
+  void output(ostream &out) const;
+
+public:
+  ButtonHandle _button;
+  ModifierButtons _mods;
+  LPoint2f _mouse;
+
+  enum Flags {
+    F_has_button  = 0x001,
+    F_has_mouse   = 0x002,
+    F_is_outside  = 0x004,
+  };
+  int _flags;
+};
+
+INLINE ostream &operator << (ostream &out, const MouseWatcherParameter &parm);
+
+#include "mouseWatcherParameter.I"
+
+#endif
