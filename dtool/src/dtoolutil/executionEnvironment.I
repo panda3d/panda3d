@@ -52,6 +52,33 @@ set_environment_variable(const string &var, const string &value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ExecutionEnvironment::shadow_environment_variable
+//       Access: Public, Static
+//  Description: Changes the apparent definition of the indicated
+//               environment variable by masking it within this class
+//               with a new value.  This does not change the actual
+//               environment variable, but future calls to
+//               get_environment_variable() will return this new
+//               value.
+////////////////////////////////////////////////////////////////////
+INLINE void ExecutionEnvironment::
+shadow_environment_variable(const string &var, const string &value) {
+  get_ptr()->ns_shadow_environment_variable(var, value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ExecutionEnvironment::clear_shadow
+//       Access: Public, Static
+//  Description: Removes a value set by a previous call to
+//               shadow_environment_variable(), and lets the actual
+//               value of the variable show again.
+////////////////////////////////////////////////////////////////////
+INLINE void ExecutionEnvironment::
+clear_shadow(const string &var) {
+  get_ptr()->ns_clear_shadow(var);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ExecutionEnvironment::get_num_args
 //       Access: Public, Static
 //  Description: Returns the number of command-line arguments

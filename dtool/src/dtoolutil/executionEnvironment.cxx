@@ -182,12 +182,12 @@ ns_has_environment_variable(const string &var) const {
 ////////////////////////////////////////////////////////////////////
 string ExecutionEnvironment::
 ns_get_environment_variable(const string &var) const {
-#ifdef PREREAD_ENVIRONMENT
   EnvironmentVariables::const_iterator evi;
   evi = _variables.find(var);
   if (evi != _variables.end()) {
     return (*evi).second;
   }
+#ifdef PREREAD_ENVIRONMENT
   return string();
 #else
   const char *def = getenv(var.c_str());
@@ -213,6 +213,40 @@ ns_set_environment_variable(const string &var, const string &value) {
   char *put = (char *)malloc(putstr.length() + 1);
   strcpy(put, putstr.c_str());
   putenv(put);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ExecutionEnvironment::ns_shadow_environment_variable
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void ExecutionEnvironment::
+ns_shadow_environment_variable(const string &var, const string &value) {
+  _variables[var] = value;
+  string putstr = var + "=" + value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ExecutionEnvironment::ns_clear_shadow
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void ExecutionEnvironment::
+ns_clear_shadow(const string &var) {
+  EnvironmentVariables::iterator vi = _variables.find(var);
+  if (vi == _variables.end()) {
+    return;
+  }
+
+#ifdef PREREAD_ENVIRONMENT
+  // Now we have to replace the value in the table.
+  const char *def = getenv(var.c_str());
+  if (def != (char *)NULL) {
+    (*vi).second = def;
+  } else {
+    _variables.erase(vi);
+  }
+#endif  // PREREAD_ENVIRONMENT
 }
 
 ////////////////////////////////////////////////////////////////////

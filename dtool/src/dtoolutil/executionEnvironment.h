@@ -43,6 +43,9 @@ public:
   INLINE static string get_environment_variable(const string &var);
   INLINE static void set_environment_variable(const string &var, const string &value);
 
+  INLINE static void shadow_environment_variable(const string &var, const string &value);
+  INLINE static void clear_shadow(const string &var);
+
   static string expand_string(const string &str);
 
   INLINE static int get_num_args();
@@ -56,6 +59,8 @@ private:
   bool ns_has_environment_variable(const string &var) const;
   string ns_get_environment_variable(const string &var) const;
   void ns_set_environment_variable(const string &var, const string &value);
+  void ns_shadow_environment_variable(const string &var, const string &value);
+  void ns_clear_shadow(const string &var);
 
   int ns_get_num_args() const;
   string ns_get_arg(int n) const;

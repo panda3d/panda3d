@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "configVariableFilename.h"
+#include "executionEnvironment.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableFilename::reload_value
@@ -26,7 +27,17 @@
 ////////////////////////////////////////////////////////////////////
 void ConfigVariableFilename::
 reload_value() {
-  _value = Filename::expand_from(get_string_value());
+  nassertv(_core != (ConfigVariableCore *)NULL);
+
+  const ConfigDeclaration *decl = _core->get_declaration(0);
+  const ConfigPage *page = decl->get_page();
+
+  Filename page_filename(page->get_name());
+  Filename page_dirname = page_filename.get_dirname();
+  ExecutionEnvironment::shadow_environment_variable("THIS_PRC_DIR", page_dirname.to_os_specific());
+
+  _value = Filename::expand_from(decl->get_string_value());
+  ExecutionEnvironment::clear_shadow("THIS_PRC_DIR");
 
   _value_seq = _core->get_value_seq();
   _value_stale = false;

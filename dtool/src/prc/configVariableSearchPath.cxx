@@ -47,8 +47,14 @@ reload_search_path() {
   _value.append_path(_prefix);
   int num_unique_references = _core->get_num_unique_references();
   for (int i = 0; i < num_unique_references; i++) {
-    string dirname = _core->get_unique_reference(i)->get_string_value();
-    string expanded = ExecutionEnvironment::expand_string(dirname);
+    const ConfigDeclaration *decl = _core->get_unique_reference(i);
+    const ConfigPage *page = decl->get_page();
+
+    Filename page_filename(page->get_name());
+    Filename page_dirname = page_filename.get_dirname();
+    ExecutionEnvironment::shadow_environment_variable("THIS_PRC_DIR", page_dirname.to_os_specific());
+    string expanded = ExecutionEnvironment::expand_string(decl->get_string_value());
+    ExecutionEnvironment::clear_shadow("THIS_PRC_DIR");
     if (!expanded.empty()) {
       _value.append_directory(Filename::from_os_specific(expanded));
     }
