@@ -133,6 +133,4 @@ private:
 
 typedef NurbsPPCurve NurbsCurve;
 
-#include "nurbsPPCurve.I"
-
 #endif

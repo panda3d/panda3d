@@ -28,7 +28,7 @@
      piecewiseCurve.cxx 
 
   #define IF_NURBSPP_SOURCES \
-    nurbsPPCurve.cxx nurbsPPCurve.I nurbsPPCurve.h
+    nurbsPPCurve.cxx nurbsPPCurve.h
 
   #define INSTALL_HEADERS \
     classicNurbsCurve.I classicNurbsCurve.h \
@@ -40,7 +40,7 @@
     nurbsCurve.h \
     nurbsCurveDrawer.I nurbsCurveDrawer.h \
     nurbsCurveInterface.I nurbsCurveInterface.h \
-    nurbsPPCurve.h nurbsPPCurve.I \
+    nurbsPPCurve.h \
     parametricCurve.h \
     parametricCurveCollection.I parametricCurveCollection.h \
     piecewiseCurve.h
