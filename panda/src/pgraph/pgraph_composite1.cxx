@@ -1,5 +1,6 @@
 #include "accumulatedAttribs.cxx"
 #include "ambientLight.cxx"
+#include "auxSceneData.cxx"
 #include "bamFile.cxx"
 #include "billboardEffect.cxx"
 #include "binCullHandler.cxx"
