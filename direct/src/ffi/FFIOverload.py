@@ -140,7 +140,7 @@ def getInheritanceLevel(type, checkNested = 1):
     #    if (len(type.parentTypes) == 0):
     #        return 0
     if type.isNested:
-        level = getInheritanceLevel(type.outerType, 0)
+        level = 1+getInheritanceLevel(type.outerType, 0)
     else:
         level = 0
     for parentType in type.parentTypes:

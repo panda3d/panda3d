@@ -33,3 +33,21 @@ def getDefaultDrawOrder():
 def setDefaultDrawOrder(newDrawOrder):
     global drawOrder
     drawOrder = newDrawOrder
+
+def getNewRolloverFunctor():
+    val = None
+    if base.wantSound:
+        roll = loader.loadSound("phase_3/audio/sfr/GUI_rollover.mp3")
+        val = AudioGuiFunctor(roll)
+    else:
+        val = AudioGuiFunctor()
+    return val
+
+def getNewClickFunctor():
+    val = None
+    if base.wantSound:
+        click = loader.loadSound("phase_3/audio/sfx/GUI_create_toon_fwd.mp3")
+        val = AudioGuiFunctor(click)
+    else:
+        val = AudioGuiFunctor()
+    return val
