@@ -64,6 +64,7 @@
 #include <cullFaceTransition.h>
 #include <stencilAttribute.h>
 #include <stencilTransition.h>
+#include <throw_event.h>
 
 #include <pandabase.h>
 
@@ -914,6 +915,23 @@ typedef enum {
 	FlatVerts,IndexedVerts,MixedFmtVerts
 } GeomVertFormat;
 
+#ifdef _DEBUG
+typedef enum {DrawPrim,DrawPrimStrided} DP_Type;
+
+void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,LPDIRECTDRAW7 pDD) {
+		if(FAILED(hr)) {
+			// loss of exclusive mode is not a real DrawPrim problem
+			HRESULT testcooplvl_hr = pDD->TestCooperativeLevel();
+			if((testcooplvl_hr != DDERR_NOEXCLUSIVEMODE)||(testcooplvl_hr != DDERR_EXCLUSIVEMODEALREADYSET)) {
+				dxgsg_cat.fatal() << ((dptype==DrawPrimStrided) ? "DrawPrimStrided" : "DrawPrim") << "failed: result = " << ConvD3DErrorToString(hr) << endl;
+			}
+			exit(1);
+		}
+}
+#else
+#define TestDrawPrimFailure(a,b,c)
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_point
 //       Access: Public, Virtual
@@ -992,7 +1010,18 @@ draw_point(const GeomPoint *geom) {
 		// iterate through the point
 		draw_prim_inner_loop2(nPrims, geom, perPrim);
 
-		_d3dDevice->DrawPrimitive(D3DPT_POINTLIST, p_flags, _pFvfBufBasePtr, nPrims, NULL);
+		HRESULT hr = _d3dDevice->DrawPrimitive(D3DPT_POINTLIST, p_flags, _pFvfBufBasePtr, nPrims, NULL);
+
+	  #ifdef _DEBUG
+		if(FAILED(hr)) {
+			// loss of exclusive mode is not a real DrawPrim problem
+			HRESULT testcooplvl_hr = _pDD->TestCooperativeLevel();
+			if((testcooplvl_hr != DDERR_NOEXCLUSIVEMODE)||(testcooplvl_hr != DDERR_EXCLUSIVEMODEALREADYSET)) {
+				dxgsg_cat.fatal() << "DrawPrim failed: result = " << ConvD3DErrorToString(hr) << endl;
+			}
+			exit(1);
+		}
+	  #endif
 	} else {
 
 		size_t vertex_size = draw_prim_setup(geom);
@@ -1030,7 +1059,8 @@ draw_point(const GeomPoint *geom) {
 			dps_data.textureCoords[0].dwStride = sizeof(TexCoordf);
 		}
 
-		_d3dDevice->DrawPrimitiveStrided(D3DPT_POINTLIST, p_flags, &dps_data, nPrims, NULL);
+		HRESULT hr = _d3dDevice->DrawPrimitiveStrided(D3DPT_POINTLIST, p_flags, &dps_data, nPrims, NULL);
+	    TestDrawPrimFailure(DrawPrimStrided,hr,_pDD);
 	}
 
 	_pCurFvfBufPtr = NULL;
@@ -1132,12 +1162,15 @@ draw_line(const GeomLine* geom) {
 		draw_prim_inner_loop(2, geom);
 	}
 
-	if (_tmp_fvf == NULL)
-		_d3dDevice->DrawPrimitive(D3DPT_LINELIST, p_flags, _pFvfBufBasePtr, nPrims*2, NULL);
+	HRESULT hr;
+
+	if (_tmp_fvf == NULL) 
+		hr = _d3dDevice->DrawPrimitive(D3DPT_LINELIST, p_flags, _pFvfBufBasePtr, nPrims*2, NULL);
 	else {
-		_d3dDevice->DrawPrimitive(D3DPT_LINELIST, p_flags, _tmp_fvf, nPrims*2, NULL);
+		hr = _d3dDevice->DrawPrimitive(D3DPT_LINELIST, p_flags, _tmp_fvf, nPrims*2, NULL);
 		delete [] _tmp_fvf;
 	}
+	TestDrawPrimFailure(DrawPrim,hr,_pDD);
 
 	_pCurFvfBufPtr = NULL;
 
@@ -1259,7 +1292,8 @@ draw_linestrip(const GeomLinestrip* geom) {
 
 		draw_prim_inner_loop2(nVerts, geom, perComp);
 
-		_d3dDevice->DrawPrimitive(D3DPT_LINESTRIP,  p_flags, _pFvfBufBasePtr, nVerts, NULL);
+		HRESULT hr = _d3dDevice->DrawPrimitive(D3DPT_LINESTRIP,  p_flags, _pFvfBufBasePtr, nVerts, NULL);
+	    TestDrawPrimFailure(DrawPrim,hr,_pDD);
 
 		_pCurFvfBufPtr = NULL;
 	}
@@ -1990,6 +2024,7 @@ draw_tri(const GeomTri *geom) {
 		}
 
 		hr = _d3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, p_flags, _pFvfBufBasePtr, nPrims*3, NULL);
+	    TestDrawPrimFailure(DrawPrim,hr,_pDD);
 
 		_pCurFvfBufPtr = NULL;
 	} else {
@@ -2143,11 +2178,7 @@ draw_tri(const GeomTri *geom) {
 		set_shademode(NeededShadeMode);
 
 		hr = _d3dDevice->DrawPrimitiveStrided(primtype, fvf_flags, &dps_data, nPrims*dwVertsPerPrim, NULL);
-
-		if (FAILED(hr)) {
-			dxgsg_cat.fatal() << "DrawPrimStrided failed: result = " << ConvD3DErrorToString(hr) << endl;
-			exit(1);
-		}
+	    TestDrawPrimFailure(DrawPrimStrided,hr,_pDD);
 
 		_pCurFvfBufPtr = NULL;
 	}
@@ -2166,7 +2197,8 @@ draw_tri(const GeomTri *geom) {
 	_d3dDevice->SetTextureStageState(0,D3DTSS_BORDERCOLOR,D3DRGBA(0,0,0,0));
 
 	p_flags =  D3DFVF_XYZ | (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0)) ;
-	_d3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST,  p_flags, vert_buf, nPrims*3, NULL);
+	HRESULT hr = _d3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST,  p_flags, vert_buf, nPrims*3, NULL);
+    TestDrawPrimFailure(DrawPrim,hr,_pDD);
 #endif
 }
 
@@ -2386,7 +2418,8 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 			// Store remaining vertices
 			draw_prim_inner_loop2(nVerts-3, geom, perComp);
 
-			_d3dDevice->DrawPrimitive(trilisttype,  p_flags, _pFvfBufBasePtr, nVerts, NULL);
+			HRESULT hr = _d3dDevice->DrawPrimitive(trilisttype,  p_flags, _pFvfBufBasePtr, nVerts, NULL);
+			TestDrawPrimFailure(DrawPrim,hr,_pDD);
 
 			_pCurFvfBufPtr = NULL;
 		}
@@ -2587,13 +2620,8 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 			const int cCurNumStripVerts = pLengthArr[j];
 
 			hr = _d3dDevice->DrawPrimitiveStrided(trilisttype, fvf_flags, &dps_data, cCurNumStripVerts, NULL);
+			TestDrawPrimFailure(DrawPrimStrided,hr,_pDD);
 
-#ifdef _DEBUG
-			if (FAILED(hr)) {
-				dxgsg_cat.fatal() << "DrawPrimStrided failed: result = " << ConvD3DErrorToString(hr) << endl;
-				exit(1);
-			}
-#endif
 			dps_data.position.lpvData = (VOID*)(((char*) dps_data.position.lpvData) + cCurNumStripVerts*dps_data.position.dwStride); 
 			dps_data.diffuse.lpvData = (VOID*)(((char*) dps_data.diffuse.lpvData) + cCurNumStripVerts*dps_data.diffuse.dwStride);
 			dps_data.normal.lpvData = (VOID*)(((char*) dps_data.normal.lpvData) + cCurNumStripVerts*dps_data.normal.dwStride); 
@@ -2937,11 +2965,6 @@ issue_alpha_transform(const AlphaTransformAttribute *attrib) {
 	}
 }
 
-
-
-
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::prepare_texture
 //       Access: Public, Virtual
@@ -2965,7 +2988,7 @@ prepare_texture(Texture *tex) {
 	specify_texture(tex);
 	apply_texture_immediate(tex);
 #else
-	if (gtc->CreateTexture(_hdc, _d3dDevice,_cNumTexPixFmts,_pTexPixFmts) == NULL) {
+	if (gtc->CreateTexture(_d3dDevice,_cNumTexPixFmts,_pTexPixFmts) == NULL) {
 		delete gtc;
 		return NULL;
 	}
@@ -2994,15 +3017,14 @@ apply_texture(TextureContext *tc) {
 	}
 
 //  activate();  inactive
-
-#ifdef WBD_GL_MODE
-	bind_texture(tc);
-#else
+//	bind_texture(tc);
 
 //  specify_texture(tc->_texture);
 	// Note: if this code changes, make sure to change initialization SetTSS code in init_dx as well
 	// so DX TSS renderstate matches dxgsg state
 
+	DXTextureContext *dtc = DCAST(DXTextureContext, tc);  
+	
 	Texture *tex = tc->_texture;
 	Texture::WrapMode wrapU,wrapV;
 	wrapU=tex->get_wrapu();
@@ -3071,6 +3093,13 @@ apply_texture(TextureContext *tc) {
 				dxgsg_cat.error() << "Unknown tex filter type for tex: " << tex->get_name() << "  filter: "<<(DWORD)ft<<"\n";
 		}
 
+		#ifdef _DEBUG
+			if((!(dtc->_bHasMipMaps))&&(mipfilter!=D3DTFP_NONE)) {
+				dxgsg_cat.error() << "Trying to set mipmap filtering for texture with no generated mipmaps!! texname:" << tex->get_name() << "  filter: "<<(DWORD)ft<<"\n";
+				mipfilter=D3DTFP_NONE;
+			}
+		#endif
+
 		if (aniso_degree>1) {
 			minfilter=D3DTFN_ANISOTROPIC;
 		}
@@ -3078,8 +3107,6 @@ apply_texture(TextureContext *tc) {
 		_d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, minfilter);
 		_d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, mipfilter);
 	}
-
-	DXTextureContext *dtc = DCAST(DXTextureContext, tc);
 
 	// bugbug:  does this handle the case of untextured geometry? 
 	//          we dont see this bug cause we never mix textured/untextured
@@ -3092,11 +3119,7 @@ apply_texture(TextureContext *tc) {
 #endif
 
 	_pCurTexContext = dtc;	 // enable_texturing needs this
-
-#endif
 }
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::release_texture
@@ -3894,8 +3917,9 @@ issue_transform(const TransformAttribute *attrib) {
 			{0.0, 0.0, 3.0,  0.0, -1.0, 0.0,  D3DRGBA(0.0, 0.0, 1.0, 1.0)},	   // blu
 		};
 
-		_d3dDevice->DrawPrimitive(D3DPT_LINELIST, D3DFVF_DIFFUSE | D3DFVF_XYZ | D3DFVF_NORMAL,
+		HRESULT hr = _d3dDevice->DrawPrimitive(D3DPT_LINELIST, D3DFVF_DIFFUSE | D3DFVF_XYZ | D3DFVF_NORMAL,
 								  vert_buf, 6, NULL);
+		TestDrawPrimFailure(DrawPrim,hr,_pDD);
 
 		enable_lighting(lighting_was_enabled);
 		enable_texturing(texturing_was_enabled);
@@ -5252,9 +5276,39 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
 	hr = _d3dDevice->SetViewport( &vp );
 	if (hr != DD_OK) {
 		dxgsg_cat.fatal()
-		<< "DXGraphicsStateGuardian::config() - SetViewport failed : result = " << ConvD3DErrorToString(hr) << endl;
+		<< "DXGraphicsStateGuardian:: SetViewport failed : result = " << ConvD3DErrorToString(hr) << endl;
 		exit(1);
 	}
+}
+
+bool refill_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
+	 DXTextureContext *dtc = DCAST(DXTextureContext, tc);  
+//	 DXGraphicsStateGuardian *dxgsg = (DXGraphicsStateGuardian *)void_dxgsg_ptr;
+
+ 	 // Re-fill the contents of textures and vertex buffers
+	 // which just got restored now.
+     HRESULT hr=dtc->FillDDSurfTexturePixels();
+	 return hr==S_OK;
+}
+
+HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void) {
+  // BUGBUG: this should also restore vertex buffer contents when they are implemented
+  // You will need to destroy and recreate
+  // optimized vertex buffers however, restoring is not enough.
+
+  HRESULT hr;
+
+  // note: could go through and just restore surfs that return IsLost() true
+  // apparently that isnt as reliable w/some drivers tho
+  if (FAILED(hr = _pDD->RestoreAllSurfaces() )) {
+		dxgsg_cat.fatal()
+		<< "DXGraphicsStateGuardian:: RestoreAllSurfs failed : result = " << ConvD3DErrorToString(hr) << endl;
+	return hr;
+  }
+
+  // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
+  traverse_prepared_textures(refill_tex_callback,this);
+  return S_OK;
 }
 
 
@@ -5264,122 +5318,136 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
 //       Description:   Repaint primary buffer from back buffer  (windowed mode only)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::show_frame(void) {
-
 	PStatTimer timer(_win->_swap_pcollector);  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
 
-	if (_pri!=NULL) {
-		if (dx_full_screen) {
+	if(_pri==NULL)
+		return;
 
-			HRESULT hr = _pri->Flip( NULL, DDFLIP_WAIT );  // bugbug:  dont we want triple buffering instead of wasting time waiting for vsync?
-			if (hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
-#if 0
-				if (hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
-					HRESULT hr;
+	if(dx_full_screen) {
+		HRESULT hr = _pri->Flip( NULL, DDFLIP_WAIT );  // bugbug:  dont we want triple buffering instead of wasting time waiting for vsync?
 
-					// TestCooperativeLevel returns DD_OK: If the current mode is same as the one which the App set.
-					// The following two errors are returned to NORMALMODE (windowed)apps only.
-					//
-					// DDERR_WRONGMODE: If the App is a windowed app and the current mode is
-					//                  not the same as the one in which the app was created.
-					// DDERR_EXCLUSIVEMODEALREADYSET: If another app took exclusivemode access
-					//
-					// The following error is returned only for exclusivemode apps.
-					// DDERR_NOEXCLUSIVEMODE: Some other app took exclusive mode.
-					//
-					hr = _pDD->TestCooperativeLevel();
-					if (SUCCEEDED( hr )) {
+		if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
+			//full screen app has been switched away
+			HRESULT hr;
+
+			// TestCooperativeLevel returns DD_OK: If the current mode is same as the one which the App set.
+			// The following error is returned only for exclusivemode apps.
+			// DDERR_NOEXCLUSIVEMODE: Some other app took exclusive mode.
+			hr = _pDD->TestCooperativeLevel();
+
+			while(hr == DDERR_NOEXCLUSIVEMODE) {
 						// This means that mode changes had taken place, surfaces
 						// were lost but still we are in the original mode, so we
 						// simply restore all surfaces and keep going.
+				_dx_ready = FALSE;
 
+				#ifdef _DEBUG
+				  dxgsg_cat.spam() << "DXGraphicsStateGuardian:: no exclusive mode, waiting...\n";
+				#endif
+						
+				Sleep( 500 );	// Dont consume CPU.
+				throw_event("PandaPaused");   // throw panda event to invoke network-only processing
 
+				_win->process_events();
+				hr = _pDD->TestCooperativeLevel();
+			}
 
-						if (FAILED( m_pDD->RestoreAllSurfaces() ))
-							return hr;
-
-						// Re-fill the contents of textures and vertex buffers
-						// which just got restored now.
-						// You will need to destroy and recreate
-						// optimized vertex buffers however, restoring is not enough.
-						RefillAppSurfaces();
-					} else if (hr == DDERR_NOEXCLUSIVEMODE) {
-						// This means that some app took exclusive mode access
-						// we need to sit in a loop till we get back to the right mode.
-						do {
-							// Dont consume CPU.
-							Sleep( 500 );
-						} while (DDERR_NOEXCLUSIVEMODE==
-								 (hr = m_pDD->TestCooperativeLevel()));
-						if (SUCCEEDED( hr )) {
-							// This means that the exclusive mode app relinquished its
-							// control and we are back to the safe mode, so simply restore
-							if (FAILED( m_pDD->RestoreAllSurfaces() ))
-								return hr;
-							// Re-fill the contents of textures and vertex buffers
-							// which just got restored now.
-							// You will need to destroy and recreate
-							// optimized vertex buffers however, restoring is not enough.
-							RefillAppSurfaces();
-						} else {
-							// Busted!!
-							return hr;
-						}
-					} else {
-						// Busted!!
-						return hr;
-					}
-				}
-
-#endif
-
-
-				// Check/restore the primary surface
-				if (( _pri!=NULL ) && _pri->IsLost())
-					_pri->Restore();
-				// Check/restore the back buffer
-				if (( _back!=NULL ) &&  _back->IsLost())
-					_back->Restore();
-				// Check/restore the z-buffer
-				if (( _zbuf!=NULL ) &&  _zbuf->IsLost())
-					_zbuf->Restore();
+			if(FAILED(hr)) {
+				dxgsg_cat.error() << "DXGraphicsStateGuardian::unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;   
 				return;
 			}
 
-			if (hr != DD_OK) {
-				dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Flip failed : " << ConvD3DErrorToString(hr) << endl;
-				exit(1);
-			}
+			#ifdef _DEBUG
+			   dxgsg_cat.debug() << "DXGraphicsStateGuardian:: regained exclusive mode, refilling surfs...\n";
+			#endif
+			
+			RestoreAllVideoSurfaces();
 
-		} else {
-			DX_DECLARE_CLEAN(DDBLTFX, bltfx);
+			#ifdef _DEBUG
+			   dxgsg_cat.debug() << "DXGraphicsStateGuardian:: refill done...\n";			
+			#endif
+			
+			_dx_ready = TRUE;
+			
+			return;	 // need to re-render scene before we can display it
+		}
 
-			bltfx.dwDDFX |= DDBLTFX_NOTEARING;
-			HRESULT hr = _pri->Blt( &_view_rect, _back,  NULL, DDBLT_DDFX | DDBLT_WAIT, &bltfx );
-			if (hr!=DD_OK) {
-				if (hr == DDERR_SURFACELOST) {
-					// Check/restore the primary surface
-					if (( _pri!=NULL ) && _pri->IsLost())
-						_pri->Restore();
-					// Check/restore the back buffer
-					if (( _back!=NULL ) &&  _back->IsLost())
-						_back->Restore();
-					// Check/restore the z-buffer
-					if (( _zbuf!=NULL ) &&  _zbuf->IsLost())
-						_zbuf->Restore();
-					return;
-				} else {
-					dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Blt failed : " << ConvD3DErrorToString(hr) << endl;
-					exit(1);
+		if(hr != DD_OK) {
+			dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Flip failed w/unexpected error code: " << ConvD3DErrorToString(hr) << endl;
+			exit(1);
+		}
+
+	} else {
+		DX_DECLARE_CLEAN(DDBLTFX, bltfx);
+
+		bltfx.dwDDFX |= DDBLTFX_NOTEARING;
+		HRESULT hr = _pri->Blt( &_view_rect, _back,  NULL, DDBLT_DDFX | DDBLT_WAIT, &bltfx );
+
+		if(FAILED(hr)) {
+			if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
+
+				HRESULT hr;
+
+			// TestCooperativeLevel returns DD_OK: If the current mode is same as the one which the App set.
+			// The following two errors are returned to NORMALMODE (windowed)apps only.
+			//
+			// DDERR_WRONGMODE: If the App is a windowed app and the current mode is
+			//                  not the same as the one in which the app was created.
+			// DDERR_EXCLUSIVEMODEALREADYSET: If another app took exclusivemode access
+				hr = _pDD->TestCooperativeLevel();
+				while(hr == DDERR_EXCLUSIVEMODEALREADYSET) {
+				// This means that mode changes had taken place, surfaces
+				// were lost but still we are in the original mode, so we
+				// simply restore all surfaces and keep going.
+
+					_dx_ready = FALSE;
+	
+				#ifdef _DEBUG
+					dxgsg_cat.spam() << "DXGraphicsStateGuardian:: another app has exclusive mode, waiting...\n";
+				#endif
+							
+					Sleep( 500 );	// Dont consume CPU.
+					throw_event("PandaPaused");   // throw panda event to invoke network-only processing
+
+					hr = _pDD->TestCooperativeLevel();
 				}
-			}
-			// right now, we force sync to v-blank  (time from now up to vblank is wasted)
-			// this keeps calling processes from trying to render more frames than the refresh
-			// rate since (as implemented right now) they expect this call to block
-			hr =  _pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
-			if (hr != DD_OK) {
-				dxgsg_cat.error() << "DXGraphicsStateGuardian::WaitForVerticalBlank() failed : " << ConvD3DErrorToString(hr) << endl;
+
+				if(hr==DDERR_WRONGMODE) {
+				// This means that the desktop mode has changed
+				// need to destroy all of dx stuff and recreate everything back again, which is a big hit
+					dxgsg_cat.error() << "DXGraphicsStateGuardian:: detected display mode change in TestCoopLevel, must recreate all DDraw surfaces, D3D devices, this is not handled yet.  " << ConvD3DErrorToString(hr) << endl;   
+					exit(1);
+					return;
+				}
+
+				if(FAILED(hr)) {
+					dxgsg_cat.error() << "DXGraphicsStateGuardian::unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;   
+					return;
+				}
+
+			#ifdef _DEBUG
+			    dxgsg_cat.debug() << "DXGraphicsStateGuardian:: other app relinquished exclusive mode, refilling surfs...\n";
+			#endif
+				RestoreAllVideoSurfaces();  
+			#ifdef _DEBUG
+			    dxgsg_cat.debug() << "DXGraphicsStateGuardian:: refill done...\n";			
+			#endif
+
+				_dx_ready = TRUE;
+				return;	 // need to re-render scene before we can display it
+			} else {
+				dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Blt failed : " << ConvD3DErrorToString(hr) << endl;
 				exit(1);
 			}
+		}
+
+		// right now, we force sync to v-blank  (time from now up to vblank is wasted)
+		// this keeps calling processes from trying to render more frames than the refresh
+		// rate since (as implemented right now) they expect this call to block
+		hr =  _pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+		if(hr != DD_OK) {
+			dxgsg_cat.error() << "DXGraphicsStateGuardian::WaitForVerticalBlank() failed : " << ConvD3DErrorToString(hr) << endl;
+			exit(1);
 		}
 	}
 }

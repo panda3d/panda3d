@@ -220,6 +220,7 @@ protected:
 					D3DVECTOR *pCenter, float fRadius, 
 					DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
 					DWORD *pNumVertices,DWORD *pNumIndices,DWORD fvfFlags,DWORD dwVertSize);
+  HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void);
 
   INLINE void set_pack_alignment(int alignment);
   INLINE void set_unpack_alignment(int alignment);
@@ -379,7 +380,8 @@ public:
   LPDIRECTDRAWSURFACE7 GetZBuffer()  {  return _zbuf; }
   INLINE void  Set_HDC(HDC hdc)  {  _hdc = hdc;  }
   void adjust_view_rect(int x, int y);
-  INLINE void SetDXStatus(bool stat)  {  _dx_ready = stat; }
+  INLINE void SetDXReady(bool stat)  {  _dx_ready = stat; }
+  INLINE bool GetDXReady(void)  { return _dx_ready;}
   void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode TexBlendMode,bool bJustEnable);
 
   void  dx_cleanup();

@@ -61,11 +61,6 @@ protected:
   wdxGraphicsPipe(const wdxGraphicsPipe&);
   wdxGraphicsPipe& operator=(const wdxGraphicsPipe&);
 
-  /*
-  static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,
-	LPARAM lparam);
-  LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-  */
 };
 
 #endif

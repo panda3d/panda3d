@@ -63,12 +63,13 @@ release_all_textures() {
   // each call to release_texture() will remove that texture from the
   // list, and we don't want to traverse a list while we're modifying
   // it!
+
   Textures temp = _prepared_textures;
   for (Textures::const_iterator ti = temp.begin();
        ti != temp.end();
        ++ti) {
     release_texture(*ti);
-  }
+  } 
 
   // Now that we've released all of the textures, the
   // _prepared_textures list should have completely emptied itself.
@@ -413,6 +414,14 @@ unmark_prepared_texture(TextureContext *tc) {
   return (_prepared_textures.erase(tc) != 0);
 }
 
+void GraphicsStateGuardian::traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg) {
+	for (Textures::const_iterator ti = _prepared_textures.begin(); ti != _prepared_textures.end();
+		 ++ti) {
+		bool bResult=(*pertex_callbackfn)(*ti,callback_arg);
+		if(!bResult)
+		   return;
+	} 
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_factory

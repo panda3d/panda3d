@@ -155,9 +155,12 @@ protected:
 
   CoordinateSystem _coordinate_system;
 
-protected:
+private:
   typedef set<TextureContext *> Textures;
-  Textures _prepared_textures;
+  Textures _prepared_textures;  // NOTE: on win32 another DLL (e.g. libpandadx.dll) cannot access set directly due to exported template issue
+
+public:
+	void traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg);
 
 // factory stuff
 public:

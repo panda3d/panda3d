@@ -5,6 +5,10 @@
 
 #include "config_express.h"
 
+#if defined(_DEBUG) && defined(_WIN32)
+#include <windows.h>
+#endif
+
 // In general, we use the express_cat->info() syntax in this file
 // (instead of express_cat.info()), because much of this work is done at
 // static init time, and we must use the arrow syntax to force
@@ -402,7 +406,11 @@ INLINE WantType *
 _dcast(WantType *, TypedObject *ptr) {
 #ifndef NDEBUG
   TypeHandle want_handle = _dcast_get_typehandle((WantType *)0);
+ #if defined(_DEBUG) && defined(_WIN32)
+  if ((ptr == (TypedObject *)NULL) || IsBadWritePtr(ptr,sizeof(TypedObject))) { 
+ #else
   if (ptr == (TypedObject *)NULL) {
+ #endif
     express_cat->warning()
       << "Attempt to cast NULL pointer to " << want_handle << "\n";
     return (WantType *)NULL;

@@ -32,9 +32,13 @@ public:
   LPDIRECTDRAWSURFACE7  _surface;
   Texture *_tex;            // ptr to parent, primarily for access to namestr
 
-  LPDIRECTDRAWSURFACE7 CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT pTexPixFmts);
+  LPDIRECTDRAWSURFACE7 CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT pTexPixFmts);
        
   void DeleteTexture();
+
+  bool _bHasMipMaps;
+  DWORD _PixBufConversionType;  // enum ConversionType
+  HRESULT FillDDSurfTexturePixels(void);
 
 protected:
     unsigned int get_bits_per_pixel(PixelBuffer::Format format, int *alphbits);
@@ -55,6 +59,8 @@ public:
  
 private:
   static TypeHandle _type_handle;
+
+  friend class DXGraphicsStateGuardian;
 };
 
 

@@ -919,7 +919,7 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
 //       texture, and then copies the bitmap into the texture.
 //-----------------------------------------------------------------------------
 LPDIRECTDRAWSURFACE7 DXTextureContext::
-CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT pTexPixFmts) {
+CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT pTexPixFmts) {
 	HRESULT hr;
 	int i;
 	PixelBuffer *pbuf = _texture->_pbuffer;
@@ -1418,22 +1418,20 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
 		ft=Texture::FT_nearest;
 	_tex->set_magfilter(ft);
 
-	BOOL bDoMipMaps;
-
 	// figure out if we are mipmapping this texture
 	ft =_tex->get_minfilter();
-	bDoMipMaps=FALSE;
+	_bHasMipMaps=FALSE;
 
 	if(!dx_ignore_mipmaps) {  // set if no HW mipmap capable
 #ifdef _DEBUG
-		bDoMipMaps=dx_mipmap_everything;
+		_bHasMipMaps=dx_mipmap_everything;
 #endif
 		switch(ft) {
 			case Texture::FT_nearest_mipmap_nearest:
 			case Texture::FT_linear_mipmap_nearest:
 			case Texture::FT_nearest_mipmap_linear:	 // pick nearest in each, interpolate linearly b/w them
 			case Texture::FT_linear_mipmap_linear:
-				bDoMipMaps=TRUE;
+				_bHasMipMaps=TRUE;
 		}
 	} else if((ft==Texture::FT_nearest_mipmap_nearest) ||	// cvt to no-mipmap filter types
 			  (ft==Texture::FT_nearest_mipmap_linear)) {
@@ -1486,7 +1484,7 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
 	dxgsg_cat.spam() << "CreateTexture: setting aniso degree for "<< _tex->get_name() << " to: " << aniso_degree << endl;
 #endif
 
-	if(bDoMipMaps) {
+	if(_bHasMipMaps) {
 	   // We dont specify mipmapcount, so CreateSurface will auto-create surfs 
 	   // for all mipmaps down to 1x1 (if driver supports deep-mipmaps, otherwise Nx1)
 		ddsd.ddsCaps.dwCaps |= (DDSCAPS_MIPMAP | DDSCAPS_COMPLEX); 
@@ -1512,20 +1510,51 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
 	dxgsg_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converted " << ConvNameStrs[ConvNeeded] << " \n";    
 #endif
 
-	hr = ConvertPixBuftoDDSurf(ConvNeeded,pbuf->_image.p(),_surface);
+	_PixBufConversionType=ConvNeeded;
+
+	hr = FillDDSurfTexturePixels();
 	if(FAILED(hr)) {
 		goto error_exit;
 	}
 
+	// Done with DDraw
+	pDD->Release();
+
+	// Return the newly created texture
+	return _surface;
+
+  error_exit:
+
+	if(pDD!=NULL)
+		pDD->Release();
+	if(_surface!=NULL) {
+		_surface->Release();
+		_surface = NULL;
+	}
+
+	return NULL;
+}
+
+HRESULT DXTextureContext::
+FillDDSurfTexturePixels(void) {
+	PixelBuffer *pbuf = _texture->_pbuffer;
+	DWORD cNumColorChannels = pbuf->get_num_components();
+
+	HRESULT hr = ConvertPixBuftoDDSurf((ConversionType)_PixBufConversionType,pbuf->_image.p(),_surface);
+	if(FAILED(hr))
+		return hr;
+
+	DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
+
 	_surface->GetSurfaceDesc(&ddsd);
 
-	if(bDoMipMaps) {
+	if(_bHasMipMaps) {
 		DWORD i,oldcurxsize,oldcurysize,curxsize,curysize,cMipMapCount=ddsd.dwMipMapCount;
 		assert(ddsd.dwMipMapCount<20);
 
 		curxsize=ddsd.dwWidth; curysize=ddsd.dwHeight;
 
-		assert(pixbuf_type==PixelBuffer::T_unsigned_byte);	 // cant handle anything else now
+		assert(pbuf->get_image_type()==PixelBuffer::T_unsigned_byte);	 // cant handle anything else now
 
 		// all mipmap sublevels require 1/3 of total original space. alloc 1/2 for safety
 		BYTE *pMipMapPixBufSpace = new BYTE[((curxsize*curysize*cNumColorChannels)/2)+1024];
@@ -1596,38 +1625,38 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
 			ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_MIPMAP;
 			ddsCaps.dwCaps2 = DDSCAPS2_MIPMAPSUBLEVEL;
 
-
 			hr = pCurDDSurf->GetAttachedSurface(&ddsCaps, &pMipLevel_DDSurf);
 			if(FAILED(hr)) {
 				dxgsg_cat.error() << "CreateTexture failed creating mipmaps: GetAttachedSurf hr = " << ConvD3DErrorToString(hr) << "\n";
+				delete pMipMapPixBufSpace;
 				pCurDDSurf->Release();
-				goto error_exit;
+				return hr;
 			}
 
-			hr = ConvertPixBuftoDDSurf(ConvNeeded,pLastMipLevelStart,pMipLevel_DDSurf);
+			hr = ConvertPixBuftoDDSurf((ConversionType)_PixBufConversionType,pLastMipLevelStart,pMipLevel_DDSurf);
 			if(FAILED(hr)) {
+				delete pMipMapPixBufSpace;
 				pCurDDSurf->Release();
-				goto error_exit;
+				return hr;
 			}
 
 			pCurDDSurf->Release();
 			pCurDDSurf=pMipLevel_DDSurf;
 		}
 
-//    finish1=clock();
-//   double elapsed_time  = (double)(finish1 - start1) / CLOCKS_PER_SEC;
-//   cerr <<  "mipmap gen takes " << elapsed_time << " secs for this texture\n";
-
-		pCurDDSurf->Release(); 
+		//   finish1=clock();
+		//   double elapsed_time  = (double)(finish1 - start1) / CLOCKS_PER_SEC;
+		//   cerr <<  "mipmap gen takes " << elapsed_time << " secs for this texture\n";
 
 		delete pMipMapPixBufSpace;
+		pCurDDSurf->Release(); 
 
 #ifdef _DEBUG
 		if(dx_debug_view_mipmaps) {
 #if 0
 			if(!(ddcaps.dwCaps & DDCAPS_BLTSTRETCH)) {
 				dxgsg_cat.error() << "CreateTexture failed debug-viewing mipmaps, BLT stretching not supported!  ( we need to do SW stretch) \n";
-				goto error_exit;
+				return hr;
 			}
 #endif
 
@@ -1646,7 +1675,6 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
 
 			pTexturePrev->AddRef();
 
-
 			for(i = 0,curx=scrnrect.left,cury=scrnrect.top; i < ddsd.dwMipMapCount; i++) {
 
 				DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd_cur);
@@ -1659,12 +1687,10 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
 				}
 
 				BOOL res;
-				// res = BitBlt(PrimaryDC,0,0,ddsd.dwWidth,ddsd.dwHeight, TexDC,0,0,SRCCOPY);
-				// loader inverts y, so use StretchBlt to re-invert it
-				// res = StretchBlt(PrimaryDC,0,ddsd_cur.dwHeight+cury,ddsd_cur.dwWidth,-ddsd_cur.dwHeight, TexDC,0,0,ddsd_cur.dwWidth,ddsd_cur.dwHeight,SRCCOPY);
+						// res = BitBlt(_dxgsg->_hdc,0,0,ddsd.dwWidth,ddsd.dwHeight, TexDC,0,0,SRCCOPY);
+						// loader inverts y, so use StretchBlt to re-invert it
+						// res = StretchBlt(_dxgsg->hdc,0,ddsd_cur.dwHeight+cury,ddsd_cur.dwWidth,-ddsd_cur.dwHeight, TexDC,0,0,ddsd_cur.dwWidth,ddsd_cur.dwHeight,SRCCOPY);
 #if 0
-
-				//        dxgsg_cat.error() << "WINVER = " << (void*)WINVER << "\n";
 				if(cNumAlphaBits>0) {
 					BLENDFUNCTION  bf;
 					bf.BlendOp = AC_SRC_OVER;  bf.BlendFlags=0; 
@@ -1685,7 +1711,7 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
 
 					}
 				}
-//                SetBkMode(hScreenDC, TRANSPARENT);     
+		//                SetBkMode(hScreenDC, TRANSPARENT);     
 				sprintf(msg,"%d",i);
 				TextOut(hScreenDC,curx+(ddsd_cur.dwWidth)/2,5+cury+ddsd_cur.dwHeight,msg,strlen(msg));
 
@@ -1715,7 +1741,7 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
 				if(FAILED(hr)) {
 					dxgsg_cat.error() << " failed displaying mipmaps: GetAttachedSurf hr = " << ConvD3DErrorToString(hr) << "\n";
 				}
-				// done with the previous texture
+						// done with the previous texture
 				pTexturePrev->Release();
 				pTexturePrev = pTextureCurrent;            
 			}
@@ -1737,24 +1763,9 @@ CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, 
 		}
 #endif
 	}
-
-	// Done with DDraw
-	pDD->Release();
-
-	// Return the newly created texture
-	return _surface;
-
-	error_exit:
-
-	if(pDD!=NULL)
-		pDD->Release();
-	if(_surface!=NULL) {
-		_surface->Release();
-		_surface = NULL;
-	}
-
-	return NULL;
+	return S_OK;
 }
+
 
 
 //-----------------------------------------------------------------------------
@@ -1780,6 +1791,7 @@ TextureContext(tex) {
 	dxgsg_cat.spam() << "Making DX texture for " << tex->get_name() << "\n";
 #endif
 	_surface = NULL;
+	_bHasMipMaps = FALSE;
 	_tex = tex;
 }
 
@@ -1792,5 +1804,4 @@ DXTextureContext::
 	TextureContext::~TextureContext();
 	_tex = NULL;
 }
-
 
