@@ -101,9 +101,9 @@ class FunctionSpecification:
         """
         Write the function call to call this overloaded method
         For example:
-          self.overloaded_setPos_ptrNodePath_float_float_float(_args[0], _args[1], _args[2])
+          self.overloaded_setPos_ptrNodePath_float_float_float(*_args)
         If it is a class (static) method, call the class method
-          Class.overloaded_setPos_ptrNodePath_float_float_float(_args[0], _args[1], _args[2])
+          Class.overloaded_setPos_ptrNodePath_float_float_float(*_args)
 
         Constructors are not treated as static. They are special because
         they are not really constructors, they are instance methods that fill
@@ -117,22 +117,20 @@ class FunctionSpecification:
         """
         if classTypeDesc:
             if (self.isStatic() and not self.isConstructor()):
-                indent(file, 0, classTypeDesc.foreignTypeName + '.' + self.getFinalName() + '(')
+                if numArgs:
+                    indent(file, 0, classTypeDesc.foreignTypeName + '.' + self.getFinalName() + '(*_args)\n')
+                else:
+                    indent(file, 0, classTypeDesc.foreignTypeName + '.' + self.getFinalName() + '()\n')
             else:
-                indent(file, 0, 'self.' + self.getFinalName() + '(')
-
-            for i in range(numArgs):
-                file.write('_args[' + `i` + ']')
-                if (i != (numArgs - 1)):
-                    file.write(', ')
-            file.write(')\n')
+                if numArgs:
+                    indent(file, 0, 'self.' + self.getFinalName() + '(*_args)\n')
+                else:
+                    indent(file, 0, 'self.' + self.getFinalName() + '()\n')
         else:
-            indent(file, 0, self.getFinalName() + '(')
-            for i in range(numArgs):
-                file.write('_args[' + `i` + ']')
-                if (i != (numArgs - 1)):
-                    file.write(', ')
-            file.write(')\n')
+            if numArgs:
+                indent(file, 0, self.getFinalName() + '(*_args)\n')
+            else:
+                indent(file, 0, self.getFinalName() + '()\n')
             
 
 class GlobalFunctionSpecification(FunctionSpecification):

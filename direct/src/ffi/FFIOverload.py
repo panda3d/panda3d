@@ -341,20 +341,49 @@ class FFIMethodArgumentTree:
     def traverse(self, file, nesting, level):
         oneTreeHasArgs = 0
         typeNameList = []
+
+        # First see if this tree branches at all. If it does not there are
+        # drastic optimizations we can take because we can simply call the
+        # bottom-most function. We are not checking the types of all the
+        # arguments for the sake of type checking, we are simply trying to
+        # figure out which overloaded function to call. If there is only
+        # one overloaded function with this number of arguements at this
+        # level, it must be the one. No need to continue checking all the
+        # arguments.
+        branches = 0
+        subTree = self
+        prevTree = subTree
+        levelCopy = level
+
+        while subTree:
+            if (len(subTree.tree.keys()) == 0):
+                # Dead end branch
+                break
+            if (len(subTree.tree.keys()) > 1):
+                # Ok, we branch, it was worth a try though
+                branches = 1
+                break
+            
+            prevTree = subTree
+            # Must only have one subtree, traverse it
+            subTree = subTree.tree.values()[0][0]
+            levelCopy += 1
+
+        # If there were no branches, this is easy
+        # Just output the function and return
+        # Note this operates on prevTree because subTree went one too far
+        if not branches:
+            methodSpec = prevTree.tree.values()[0][1]
+            indent(file, nesting+2, 'return ')
+            methodSpec.outputOverloadedCall(file, prevTree.classTypeDesc, levelCopy)
+            return
+
+        # Ok, We must have a branch down here somewhere
         # Make a copy of the keys so we can sort them in place
         sortedKeys = self.tree.keys()
         # Sort the keys based on inheritance hierarchy, most specific classes first
         sortedKeys.sort(subclass)
-        # Import everybody we need
-        for i in range(len(sortedKeys)):
-            typeDesc = sortedKeys[i]
-            if ((typeDesc != 0) and
-                (not typeDesc.isNested) and
-                # Do not put our own module in the import list
-                (self.classTypeDesc != typeDesc) and
-                # If this is a class (not a primitive), put it on the list
-                (typeDesc.__class__ == FFITypes.ClassTypeDescriptor)):
-                indent(file, nesting+2, 'import ' + typeDesc.foreignTypeName + '\n')
+
         for i in range(len(sortedKeys)):
             typeDesc = sortedKeys[i]
             # See if this takes no arguments
@@ -364,6 +393,15 @@ class FFIMethodArgumentTree:
                 indent(file, nesting+2, 'return ')
                 methodSpec.outputOverloadedCall(file, self.classTypeDesc, 0)
             else:
+                # Import a file if we need to for this typeDesc
+                if ((typeDesc != 0) and
+                    (not typeDesc.isNested) and
+                    # Do not put our own module in the import list
+                    (self.classTypeDesc != typeDesc) and
+                    # If this is a class (not a primitive), put it on the list
+                    (typeDesc.__class__ == FFITypes.ClassTypeDescriptor)):
+                    indent(file, nesting+2, 'import ' + typeDesc.foreignTypeName + '\n')
+
                 # Specify that at least one of these trees had arguments
                 # so we know to output an else clause
                 oneTreeHasArgs = 1
@@ -384,23 +422,19 @@ class FFIMethodArgumentTree:
                                       + 'types.IntType'
                                       + '))')
                     
-                if (i == 0):
-                    indent(file, nesting+2, 'if ' + condition + ':\n')
-                else:
-                    indent(file, nesting+2, 'elif ' + condition + ':\n')
-                # Get to the bottom of this chain
-                if (self.tree[typeDesc][0] != None):
+                indent(file, nesting+2, 'if ' + condition + ':\n')
+                    
+                if (self.tree[typeDesc][0] is not None):
                     self.tree[typeDesc][0].traverse(file, nesting+1, level+1)
                 else:
-                    # Output the function
                     methodSpec = self.tree[typeDesc][1]
                     indent(file, nesting+3, 'return ')
                     numArgs = level+1
                     methodSpec.outputOverloadedCall(file, self.classTypeDesc, numArgs)
+
         # Output an else clause if one of the trees had arguments
         if oneTreeHasArgs:
-            indent(file, nesting+2, 'else:\n')
-            indent(file, nesting+3, "raise TypeError, 'Invalid argument " + `level` + ", expected one of: ")
+            indent(file, nesting+2, "raise TypeError, 'Invalid argument " + `level` + ", expected one of: ")
             for name in typeNameList:
                 indent(file, 0, ('<' + name + '> '))
             indent(file, 0, "'\n")
