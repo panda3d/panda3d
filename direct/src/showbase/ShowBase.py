@@ -130,6 +130,11 @@ class ShowBase:
         self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
         self.aspect2d.setScale(1.0 / self.aspectRatio, 1.0, 1.0)
 
+        # And let's enforce that aspect ratio on the camera.
+        hfov = self.camNode.getHfov()
+        vfov = hfov / self.aspectRatio
+        self.camNode.setFov(hfov, vfov)
+
         # It's important to know the bounds of the aspect2d screen.
         self.a2dTop = 1.0
         self.a2dBottom = -1.0
