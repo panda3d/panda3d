@@ -67,16 +67,7 @@ Downloader(void) {
   _got_any_data = false;
   _initiated = false;
   _ever_initiated = false;
-
-#if defined(WIN32)
-  WSAData mydata;
-  int answer1 = WSAStartup(0x0101, &mydata);
-  if(answer1 != 0) {
-    downloader_cat.error()
-      << "Downloader::Downloader() - Error initializing TCP stack!"
-      << endl;
-  }
-#endif
+  _TCP_stack_initialized = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,8 +89,23 @@ Downloader::
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool Downloader::
+int Downloader::
 connect_to_server(const string &name, uint port) {
+
+#if defined(WIN32)
+  if (_TCP_stack_initialized == false) {
+    WSAData mydata;
+    int answer1 = WSAStartup(0x0101, &mydata);
+    if(answer1 != 0) {
+      downloader_cat.error()
+        << "Downloader::connect_to_server() - WSAStartup() - error: "
+        << handle_socket_error() << endl;
+      return DL_error_abort;
+    }
+    _TCP_stack_initialized = true;
+  }
+#endif
+
   if (downloader_cat.is_debug())
     downloader_cat.debug()
       << "Downloader connecting to server: " << name << " on port: "
@@ -120,7 +126,7 @@ connect_to_server(const string &name, uint port) {
       downloader_cat.error()
         << "Downloader::connect_to_server() - gethostbyname() failed: "
  	<< handle_socket_error() << endl;
-      return false;
+      return get_network_error();
     }
   } else
     (void)memcpy(&_sin.sin_addr, &addr, sizeof(addr));
@@ -133,10 +139,10 @@ connect_to_server(const string &name, uint port) {
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool Downloader::
+int Downloader::
 connect_to_server(void) {
   if (_connected == true)
-    return true;
+    return DL_success;
 
   _socket = 0xffffffff;
   _socket = socket(PF_INET, SOCK_STREAM, 0);
@@ -144,10 +150,8 @@ connect_to_server(void) {
     downloader_cat.error()
       << "Downloader::connect_to_server() - socket failed: "
       << handle_socket_error() << endl;
-    return false;
+    return get_network_error();
   }
-
-  _connected = true;
 
   if (connect(_socket, (struct sockaddr *)&_sin, sizeof(_sin)) < 0) {
     downloader_cat.error()
@@ -155,9 +159,11 @@ connect_to_server(void) {
       << handle_socket_error() << endl;
     disconnect_from_server();
     _connected = false;
+    return get_network_error();
   }
 
-  return _connected;
+  _connected = true;
+  return DL_success;
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -188,7 +194,7 @@ safe_send(int socket, const char *data, int length, long timeout) {
   if (length == 0) {
     downloader_cat.error()
       << "Downloader::safe_send() - requested 0 length send!" << endl;
-    return SS_error;
+    return DL_error_abort;
   }
   int bytes = 0;
   struct timeval tv;
@@ -203,12 +209,12 @@ safe_send(int socket, const char *data, int length, long timeout) {
       downloader_cat.error()
         << "Downloader::safe_send() - select timed out after: "
         << timeout << " seconds" << endl;
-      return SS_timeout;
+      return DL_error_network_timeout;
     } else if (sret == -1) {
       downloader_cat.error()
         << "Downloader::safe_send() - error: " << handle_socket_error() 
         << endl;
-      return SS_error;
+      return get_network_error();
     }
     int ret = send(socket, data, length, 0);
     if (ret > 0)
@@ -217,10 +223,10 @@ safe_send(int socket, const char *data, int length, long timeout) {
       downloader_cat.error()
         << "Downloader::safe_send() - error: " << handle_socket_error() 
         << endl;
-      return SS_error;
+      return get_network_error();
     }
   }
-  return SS_success;
+  return DL_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -235,7 +241,7 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
     downloader_cat.error()
       << "Downloader::fast_receive() - Invalid receive size: " << rec_size
       << endl;
-    return FR_error;
+    return DL_error_abort;
   }
 
   // Poll the socket with select() to see if there is any data
@@ -247,21 +253,21 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
   FD_SET(socket, &rset);
   int sret = select(socket, &rset, NULL, NULL, &tv);
   if (sret == 0) {
-    return FR_no_data;
+    return DL_network_no_data;
   } else if (sret == -1) {
     downloader_cat.error()
       << "Downloader::fast_receive() - select() error: " 
       << handle_socket_error() << endl;
-    return FR_error;
+    return get_network_error();
   }
   int ret = recv(socket, status->_next_in, rec_size, 0);
   if (ret == 0) {
-    return FR_eof;
+    return DL_eof;
   } else if (ret == -1) {
     downloader_cat.error()
       << "Downloader::fast_receive() - recv() error: " 
       << handle_socket_error() << endl;
-    return FR_error;
+    return get_network_error();
   }
   if (downloader_cat.is_debug())
     downloader_cat.debug()
@@ -270,7 +276,7 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
   status->_next_in += ret;
   status->_bytes_in_buffer += ret;
   status->_total_bytes += ret;
-  return FR_success;
+  return DL_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -297,12 +303,13 @@ initiate(const string &file_name, Filename file_dest,
     downloader_cat.error()
       << "Downloader::initiate() - Download has already been initiated"
       << endl;
-    return DS_error;
+    return DL_error_abort;
   }
 
   // Connect to the server
-  if (connect_to_server() == false)
-    return DS_error_connect;
+  int connect_ret = connect_to_server();
+  if (connect_ret < 0)
+    return connect_ret;
 
   // Attempt to open the destination file
   file_dest.set_binary();
@@ -315,8 +322,8 @@ initiate(const string &file_name, Filename file_dest,
   if (result == false) {
     downloader_cat.error()
       << "Downloader::initiate() - Error opening file: " << file_dest
-      << " for writing" << endl;
-    return DS_error_write;
+      << " for writing: " << strerror(errno) << endl;
+    return DL_error_write;
   }
 
   // Send an HTTP request for the file to the server
@@ -342,16 +349,8 @@ initiate(const string &file_name, Filename file_dest,
       << "Downloader::initiate() - Sending request:\n" << request << endl;
   int send_ret = safe_send(_socket, request.c_str(), outlen,
                         (long)downloader_timeout);
-
-  // Handle timeouts on the send
-  if (send_ret == SS_timeout) {
-    downloader_cat.error()
-      << "Downloader::initiate() - send timed out" << endl;
-    return DS_error_connect;
-  }
-
-  if (send_ret == SS_error)
-    return DS_error_connect;
+  if (send_ret < 0)
+    return send_ret;
 
   // Create a download status to maintain download progress information
   _current_status = new DownloadStatus(_buffer->_buffer,
@@ -363,7 +362,7 @@ initiate(const string &file_name, Filename file_dest,
   _got_any_data = false;
   _initiated = true;
   _ever_initiated = true;
-  return DS_success;
+  return DL_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -399,21 +398,23 @@ run(void) {
     downloader_cat.error()
       << "Downloader::run() - Download has not been initiated"
       << endl;
-    return DS_error;
+    return DL_error_abort;
   }
 
-  nassertr(_current_status != NULL, DS_error);
+  nassertr(_current_status != NULL, DL_error_abort);
 
-  if (connect_to_server() == false)
-    return DS_error_connect;
+  int connect_ret = connect_to_server();
+  if (connect_ret < 0)
+    return connect_ret;
 
-  int ret = DS_ok;
+  int ret = DL_ok;
+  int write_ret;
   double t0 = _clock.get_real_time();
   if (_tfirst == 0.0) {
     _tfirst = t0;
   }
   if (t0 - _tlast < _frequency) 
-    return DS_ok;
+    return DL_ok;
 
   // Recompute the buffer size if necessary
   if (_recompute_buffer == true) {
@@ -423,10 +424,11 @@ run(void) {
 
     // Flush the current buffer if it holds any data
     if (_current_status->_bytes_in_buffer > 0) {
-      if (write_to_disk(_current_status) == false) {
-	return DS_error_write;
-      }
-      ret = DS_write;
+      write_ret = write_to_disk(_current_status);
+      if (write_ret < 0)
+	return write_ret;
+
+      ret = DL_write;
     }
 
     // Allocate a new buffer
@@ -449,9 +451,10 @@ run(void) {
     if (downloader_cat.is_debug())
       downloader_cat.debug()
 	<< "Downloader::run() - Flushing buffer" << endl;
-    if (write_to_disk(_current_status) == false)
-      return DS_error_write;
-    ret = DS_write;
+    write_ret = write_to_disk(_current_status);
+    if (write_ret < 0)
+      return write_ret;
+    ret = DL_write;
   }
 
   // Attempt to receive the bytes from the socket
@@ -471,9 +474,9 @@ run(void) {
         fret = fast_receive(_socket, _current_status, MAX_RECEIVE_BYTES);
       else if (remain > 0)
         fret = fast_receive(_socket, _current_status, remain);
-      if (fret == FR_eof || fret < 0) {
+      if (fret == DL_eof || fret < 0) {
 	break;
-      } else if (fret == FR_success) {
+      } else if (fret == DL_success) {
         _got_any_data = true;
       }
     }
@@ -486,30 +489,31 @@ run(void) {
   _tlast = _clock.get_real_time();
 
   // Check for end of file
-  if (fret == FR_eof) {
+  if (fret == DL_eof) {
     if (_got_any_data == true) {
       if (_current_status->_bytes_in_buffer > 0) {
-        if (write_to_disk(_current_status) == false)
-          return DS_error_write;
+	write_ret = write_to_disk(_current_status);
+ 	if (write_ret < 0)
+          return write_ret;
       }
       if (downloader_cat.is_debug())
         downloader_cat.debug()
 	  << "Downloader::run() - Got eof" << endl;
       cleanup();
-      return DS_success;
+      return DL_success;
     } else {
       if (downloader_cat.is_debug())
 	downloader_cat.debug()
 	  << "Downloader::run() - Got 0 bytes" << endl;
       return ret;
     }
-  } else if (fret == FR_no_data) {
+  } else if (fret == DL_network_no_data) {
     if (downloader_cat.is_debug())
       downloader_cat.debug()
 	<< "Downloader::run() - No data" << endl;
       return ret;
   } else if (fret < 0) {
-    return DS_error;
+    return fret;
   }
 
   _got_any_data = true;
@@ -521,7 +525,7 @@ run(void) {
 //       Access: Private
 //  Description: Check the HTTP response from the server
 ////////////////////////////////////////////////////////////////////
-bool Downloader::
+int Downloader::
 parse_http_response(const string &resp) {
   size_t ws = resp.find(" ", 0);
   string httpstr = resp.substr(0, ws);
@@ -529,7 +533,7 @@ parse_http_response(const string &resp) {
     downloader_cat.error()
       << "Downloader::parse_http_response() - not HTTP/1.1 - got: "
       << httpstr << endl;
-    return false;
+    return DL_error_abort;
   }
   size_t ws2 = resp.find(" ", ws);
   string numstr = resp.substr(ws, ws2);
@@ -538,18 +542,25 @@ parse_http_response(const string &resp) {
   switch (num) {
     case 200:
     case 206:
-      return true;
+      return DL_success;
     case 202:
       // Accepted - server may not honor request, though
       if (downloader_cat.is_debug())
         downloader_cat.debug()
           << "Downloader::parse_http_response() - got a 202 Accepted - "
           << "server does not guarantee to honor this request" << endl;
-      return true;
+      return DL_success;
     case 201:
     case 203:
     case 204:
     case 205:
+      break;
+    case 408:
+      return DL_error_http_server_timeout;
+    case 503:
+      return DL_error_http_service_unavailable;
+    case 504:
+      return DL_error_http_gateway_timeout;
     default:
       break;
   }
@@ -557,7 +568,7 @@ parse_http_response(const string &resp) {
   downloader_cat.error()
     << "Downloader::parse_http_response() - Invalid response: "
     << resp << endl;
-  return false;
+  return DL_error_abort;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -568,17 +579,17 @@ parse_http_response(const string &resp) {
 //               the download status structure.  Function returns false
 //               on an error condition, otherwise true.
 ////////////////////////////////////////////////////////////////////
-bool Downloader::
+int Downloader::
 parse_header(DownloadStatus *status) {
-  nassertr(status != NULL, false);
+  nassertr(status != NULL, DL_error_abort);
 
   if (status->_header_is_complete == true)
-    return true;
+    return DL_success;
 
   if (status->_bytes_in_buffer == 0) {
     downloader_cat.error()
       << "Downloader::parse_header() - Empty buffer!" << endl;
-    return false;
+    return DL_error_abort;
   }
 
   string bufstr((char *)status->_start, status->_bytes_in_buffer);
@@ -590,12 +601,12 @@ parse_header(DownloadStatus *status) {
       downloader_cat.error()
         << "Downloader::parse_header() - No newlines in buffer of "
         << "length: " << status->_bytes_in_buffer << endl;
-      return false;
+      return DL_error_abort;
     } else if (p == 0 && nl == p) {
       downloader_cat.error()
         << "Downloader::parse_header() - Buffer begins with newline!"
         << endl;
-        return false;
+        return DL_error_abort;
     }
 
     string component = bufstr.substr(p, nl - p);
@@ -604,14 +615,15 @@ parse_header(DownloadStatus *status) {
     // got an error or not
     if (status->_first_line_complete == false) {
       status->_first_line_complete = true;
-      if (parse_http_response(component) == true) {
+      int parse_ret = parse_http_response(component);
+      if (parse_ret == DL_success) {
         if (downloader_cat.is_debug())
           downloader_cat.debug()
             << "Downloader::parse_header() - Header is valid: "
             << component << endl;
         status->_header_is_valid = true;
       } else {
-        return false;
+        return parse_ret;
       }
     }
 
@@ -630,7 +642,7 @@ parse_header(DownloadStatus *status) {
           << server_download_bytes << ", client size = "
           << client_download_bytes << " ("
           << status->_last_byte << "-" << status->_first_byte << ")" << endl;
-        return false;
+        return DL_error_abort;
       }
     }
 
@@ -651,7 +663,7 @@ parse_header(DownloadStatus *status) {
           << "Downloader::parse_header() - Stripping out header of size: "
           << header_length << endl;
 
-      return true;
+      return DL_success;
     }
 
     p = nl + 2;
@@ -663,9 +675,10 @@ parse_header(DownloadStatus *status) {
         << "Downloader::parse_header() - Reached end of buffer without "
         << "successfully parsing the header - buffer size: "
         << status->_bytes_in_buffer << endl;
+    return DL_error_abort;
   }
 
-  return true;
+  return DL_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -676,20 +689,21 @@ parse_header(DownloadStatus *status) {
 //               is excluded.  Function returns false on error
 //               condition.
 ////////////////////////////////////////////////////////////////////
-bool Downloader::
+int Downloader::
 write_to_disk(DownloadStatus *status) {
-  nassertr(status != NULL, false);
+  nassertr(status != NULL, DL_error_abort);
 
   // Ensure the header has been parsed successfully first
-  if (parse_header(status) == false)
-    return false;
+  int parse_ret = parse_header(status);
+  if (parse_ret < 0)
+    return parse_ret;
 
   if (status->_header_is_complete == false) {
     downloader_cat.error()
       << "Downloader::write_to_disk() - Incomplete HTTP header - "
       << "(or header was larger than download buffer) - "
       << "try increasing download-buffer-size" << endl;
-    return false;
+    return DL_error_abort;
   }
 
   // Write what we have so far to disk
@@ -705,7 +719,7 @@ write_to_disk(DownloadStatus *status) {
 
   status->reset();
 
-  return true;
+  return DL_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -748,7 +762,7 @@ reset(void) {
 ////////////////////////////////////////////////////////////////////
 char *Downloader::
 handle_socket_error(void) const {
-#ifndef WIN32_VC
+#ifndef WIN32
   return strerror(errno);
 #else
   switch (WSAGetLastError()) {
@@ -786,6 +800,50 @@ handle_socket_error(void) const {
       return "WSAStartup() was not called";
     default:
       return "Unknown WSA error";
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::error_gethostbyname
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+int Downloader::
+get_network_error(void) const {
+#ifndef WIN32
+  return DL_error;
+#else
+  switch (WSAGetLastError()) {
+    case 10050:
+      return DL_error_network_dead;
+    case 10051:
+      return DL_error_network_unreachable;
+    case 10052:
+    case 10057:
+    case 10058:
+      return DL_error_network_disconnected;
+    case 10053:
+      return DL_error_network_disconnected_locally;
+    case 10054:
+    case 10061:
+      return DL_error_network_remote_host_disconnected;
+    case 10055:
+      return DL_error_network_buffer_overflow;
+    case 10060:
+      return DL_error_network_timeout;
+    case 10064:
+      return DL_error_network_remote_host_down;
+    case 10065:
+      return DL_error_network_remote_host_unreachable;
+    case 10069:
+      return DL_error_network_disk_quota_exceeded;
+    case 11001:
+      return DL_error_network_remote_host_not_found;
+    case 11002:
+      return DL_error_network_remote_host_no_response;
+    default:
+      return DL_error_abort;
   }
 #endif
 }

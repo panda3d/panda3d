@@ -24,10 +24,10 @@ main(int argc, char *argv[]) {
 
   for (;;) {
     ret = dl.run();
-    if (ret == Downloader::DS_success) {
+    if (ret == Downloader::DL_success) {
       cerr << "bytes per second: " << dl.get_bytes_per_second() << endl;
       return 1;
-    } else if (ret == Downloader::DS_write) {
+    } else if (ret == Downloader::DL_write) {
       cerr << "bytes per second: " << dl.get_bytes_per_second() << endl;
     } else if (ret < 0) {
       cerr << "error!" << endl;
