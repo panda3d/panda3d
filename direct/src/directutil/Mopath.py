@@ -12,21 +12,23 @@ class Mopath(PandaObject):
             name = 'mopath%d' % self.nameIndex
             self.nameIndex = self.nameIndex + 1
         self.name = name
+        self.tPoint = Point3(0)
         self.reset()
 
     def getMaxT(self):
         return self.maxT
 
     def loadFile(self, filename):
+        self.reset()
         nodePath = loader.loadModel(filename)
         if nodePath:
             self.__extractCurves(nodePath)
-            if (self.xyzNurbsCurve != None):
+            if (self.tNurbsCurve != None):
+                self.maxT = self.tNurbsCurve[-1].getMaxT()
+            elif (self.xyzNurbsCurve != None):
                 self.maxT = self.xyzNurbsCurve.getMaxT()
             elif (self.hprNurbsCurve != None):
                 self.maxT = self.hprNurbsCurve.getMaxT()
-            elif (self.tNurbsCurve != None):
-                self.maxT = self.tNurbsCurve.getMaxT()
             else:
                 print 'Mopath: no valid curves in file: %s' % filename
 
@@ -40,7 +42,7 @@ class Mopath(PandaObject):
         self.loop = 0
         self.xyzNurbsCurve = None
         self.hprNurbsCurve = None
-        self.tNurbsCurve = None
+        self.tNurbsCurve = []
         self.node = None
 
     def __extractCurves(self, nodePath):
@@ -56,11 +58,21 @@ class Mopath(PandaObject):
                 else:
                     print 'Mopath: got a PCT_NONE curve and an XYZ Curve!'
             elif (node.getCurveType() == PCTT):
-                self.tNurbsCurve = node
+                self.tNurbsCurve.append(node)
         else:
             # Iterate over children if any
             for child in nodePath.getChildrenAsList():
                 self.__extractCurves(child)
+
+    def calcTime(self, tIn):
+        return self.__calcTime(tIn, self.tNurbsCurve)
+
+    def __calcTime(self, tIn, tCurveList):
+        if tCurveList:
+            tCurveList[-1].getPoint(tIn, self.tPoint)
+            return self.__calcTime(self.tPoint[0], tCurveList[:-1])
+        else:
+            return tIn
 
     def getFinalState(self):
         """ getFinalState()
@@ -77,7 +89,7 @@ class Mopath(PandaObject):
         if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
             print 'Mopath: Mopath has no curves'
             return
-        self.playbackTime = CLAMP(time, 0.0, self.maxT)
+        self.playbackTime = self.calcTime(CLAMP(time, 0.0, self.maxT))
         if (self.xyzNurbsCurve != None):
             pos = Point3(0)
             self.xyzNurbsCurve.getPoint(self.playbackTime, pos)
