@@ -19,6 +19,8 @@ public:
   EggToBam();
 
   void run();
+
+  bool _keep_paths;
 };
 
 #endif

@@ -222,9 +222,9 @@ $[target] : $[sources]
     #define target $[pal_egg_dir]/$[egg]
 $[target] : $[source] $[pt]
     #if $[PHASE]
-	egg-palettize-new -C -dm $[install_dir]/%s/maps -g phase_$[PHASE] -gdir phase_$[PHASE] -P256,256 -2 -o $[target] $[texattrib_file] $[source]
+	egg-palettize-new $[PALETTIZE_OPTS] -C -dr $[install_dir] -dm $[install_dir]/%s/maps -g phase_$[PHASE] -gdir phase_$[PHASE] -P256,256 -2 -o $[target] $[texattrib_file] $[source]
     #else
-	egg-palettize-new -C -dm $[install_dir]/maps -P256,256 -2 -o $[target] $[texattrib_file] $[source]
+	egg-palettize-new $[PALETTIZE_OPTS] -C -dr $[install_dir] -dm $[install_dir]/maps -P256,256 -2 -o $[target] $[texattrib_file] $[source]
     #endif
 
 $[pt] :
@@ -350,10 +350,10 @@ install-misc : $[subdirs:%=install-misc-%]
 install : egg $[subdirs:%=install-%]
 uninstall : $[subdirs:%=uninstall-%]
 
-optimize-palettes : regen-palettes pal
+optimize-palettes : regen-palettes install
 
 regen-palettes :
-	egg-palettize-new -C -fRt $[texattrib_file]
+	egg-palettize-new $[PALETTIZE_OPTS] -C -fRt $[texattrib_file]
 
 // Somehow, something in the cttools confuses some shells, so that
 // when we are attached, 'cd foo' doesn't work, but 'cd ./foo' does.

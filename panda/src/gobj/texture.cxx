@@ -82,6 +82,7 @@ bool Texture::read(const string& name)
   }
 
   set_name(name);
+  clear_alpha_name();
   return load(pnmimage);
 }
 
@@ -161,6 +162,7 @@ bool Texture::read(const string &name, const string &gray) {
   }
 
   set_name(name);
+  set_alpha_name(gray);
   return load(pnmimage);
 }
 
@@ -425,7 +427,19 @@ make_Texture(const FactoryParams &params)
   DatagramIterator scan(packet);
 
   string name = scan.get_string();
-  PT(Texture) me = TexturePool::load_texture(name);
+  string alpha_name;
+  if (manager->get_file_minor_ver() >= 3) {
+    alpha_name = scan.get_string();
+  }
+
+  PT(Texture) me;
+
+  if (alpha_name.empty()) {
+    me = TexturePool::load_texture(name);
+  } else {
+    me = TexturePool::load_texture(name, alpha_name);
+  }
+
   if (me == (Texture *)NULL) {
     // Oops, we couldn't load the texture; we'll just return NULL.
     // But we do need a dummy texture to read in and ignore all of the

@@ -30,6 +30,11 @@
 #include <sys/stat.h>
 #endif
 
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
 AttribFile::
 AttribFile(const Filename &filename) {
   _name = filename.get_basename_wo_extension();
@@ -61,11 +66,24 @@ AttribFile(const Filename &filename) {
   _alpha_type = (PNMFileType *)NULL;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::get_name
+//       Access: Public
+//  Description: Returns the name of the AttribFile.  This is derived
+//               from, but is not equivalent to, the filename.
+////////////////////////////////////////////////////////////////////
 string AttribFile::
 get_name() const {
   return _name;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::open_and_lock
+//       Access: Public
+//  Description: Opens the .txa file and simultaneously locks it (if
+//               lock is true) for exclusive read/write access.
+//               Returns true if successful, false on failure.
+////////////////////////////////////////////////////////////////////
 bool AttribFile::
 open_and_lock(bool lock) {
   if (!_txa_filename.exists()) {
@@ -135,6 +153,12 @@ open_and_lock(bool lock) {
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::close_and_unlock
+//       Access: Public
+//  Description: Simultaneously closes the .txa file and releases the
+//               lock.
+////////////////////////////////////////////////////////////////////
 bool AttribFile::
 close_and_unlock() {
   // Closing the fstream will close the fd, and thus release all the
@@ -145,45 +169,71 @@ close_and_unlock() {
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::rewind_and_truncate
+//       Access: Public
+//  Description: Rewinds the .txa file to the beginning and truncates
+//               it in preparation for rewriting it, without releasing
+//               the lock.
+////////////////////////////////////////////////////////////////////
+bool AttribFile::
+rewind_and_truncate() {
+#ifdef WIN32_VC
+  // In Windows, since we're not implementing file locking right now,
+  // we might as well just close and reopen the file.  Which is good
+  // since I don't know how to truncate an already-opened file in
+  // Windows.
+  _txa_fstrm.close();
+  _txa_filename.unlink();
+  _txa_filename.open_read_write(_txa_fstrm);
+#else
+  // In Unix, we need to keep the file open so we don't lose the lock,
+  // so we just rewind and then explicitly truncate the file with a
+  // system call.
+  _txa_fstrm.clear();
+  _txa_fstrm.seekp(0, ios::beg);
+  ftruncate(_txa_fd, 0);
+#endif
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::read
+//       Access: Public
+//  Description: Reads the .txa and .pi files.
+////////////////////////////////////////////////////////////////////
 bool AttribFile::
 read(bool force_redo_all) {
   bool okflag = true;
 
   okflag = read_txa(_txa_fstrm);
 
-  {
-    if (!_pi_filename.exists()) {
-      nout << "Palette information file " << _pi_filename << " does not exist.\n";
-    } else {
-      ifstream infile;
-      if (!_pi_filename.open_read(infile)) {
-	nout << "Palette information file " << _pi_filename << " exists, but cannot be read.\n";
-	return false;
-      }
-
-      okflag = read_pi(infile, force_redo_all);
+  if (!_pi_filename.exists()) {
+    nout << "Palette information file " << _pi_filename << " does not exist.\n";
+  } else {
+    ifstream infile;
+    if (!_pi_filename.open_read(infile)) {
+      nout << "Palette information file " << _pi_filename << " exists, but cannot be read.\n";
+      return false;
     }
+    
+    okflag = read_pi(infile, force_redo_all);
   }
 
   return okflag;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::write
+//       Access: Public
+//  Description: Rewrites the .txa and .pi files, if necessary.
+////////////////////////////////////////////////////////////////////
 bool AttribFile::
 write() {
   bool okflag = true;
 
   if (_txa_needs_rewrite) {
-    // Rewind and truncate the file for writing.
-#ifdef WIN32_VC
-    _txa_fstrm.close();
-    _txa_filename.unlink();
-    _txa_filename.open_read_write(_txa_fstrm);
-#else
-    _txa_fstrm.clear();
-    _txa_fstrm.seekp(0, ios::beg);
-    ftruncate(_txa_fd, 0);
-#endif
-
+    rewind_and_truncate();
     okflag = write_txa(_txa_fstrm) && okflag;
     _txa_fstrm << flush;
   }
@@ -243,6 +293,13 @@ write_egg_filename(Filename filename) const {
   return filename;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::update_params
+//       Access: Public
+//  Description: Reads the program parameters from the command line
+//               (if they were specified), overriding whatever was
+//               read from the .pi file.
+////////////////////////////////////////////////////////////////////
 void AttribFile::
 update_params(EggPalettize *prog) {
   if (prog->_got_map_dirname) {
@@ -384,9 +441,14 @@ get_size_requests() {
   }
 }
 
-// Update the unused flags on all textures to accurately reflect
-// those that are unused by any egg files.  Omit unused textures
-// from the palettizing set.
+
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::update_texture_flags
+//       Access: Public
+//  Description: Update the unused flags on all textures to accurately
+//               reflect those that are unused by any egg files.  Omit
+//               unused textures from the palettizing set.
+////////////////////////////////////////////////////////////////////
 void AttribFile::
 update_texture_flags() {
   // First, clear all the flags.
@@ -418,9 +480,14 @@ update_texture_flags() {
   }
 }
 
-// Clear out all the old packing order and start again from the top.
-// This should get as nearly optimal a packing as this poor little
-// algorithm can manage.
+
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::repack_all_textures
+//       Access: Public
+//  Description: Clear out all the old packing order and start again
+//               from the top.  This should get as nearly optimal a
+//               packing as this poor little algorithm can manage.
+////////////////////////////////////////////////////////////////////
 void AttribFile::
 repack_all_textures() {
   // First, empty all the existing palette groups.
@@ -447,10 +514,15 @@ repack_all_textures() {
   _optimal = true;
 }
 
-// Add new textures into the palettes without disturbing whatever was
-// already there.  This won't generate an optimal palette, but it
-// won't require rebuilding every egg file that already uses this
-// palette.
+
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::repack_some_textures
+//       Access: Public
+//  Description: Add new textures into the palettes without disturbing
+//               whatever was already there.  This won't generate an
+//               optimal palette, but it won't require rebuilding
+//               every egg file that already uses this palette.
+////////////////////////////////////////////////////////////////////
 void AttribFile::
 repack_some_textures() {
   bool empty_before = _groups.empty();
@@ -473,6 +545,11 @@ repack_some_textures() {
   _optimal = (empty_before || !any_added);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::optimal_resize
+//       Access: Public
+//  Description: Resizes each palette texture as small as it can be.
+////////////////////////////////////////////////////////////////////
 void AttribFile::
 optimal_resize() {
   Groups::iterator gi;
@@ -481,6 +558,12 @@ optimal_resize() {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::finalize_palettes
+//       Access: Public
+//  Description: Sets up some final state on each palette, necessary
+//               before writing them out.
+////////////////////////////////////////////////////////////////////
 void AttribFile::
 finalize_palettes() {
   Groups::iterator gi;
@@ -489,6 +572,14 @@ finalize_palettes() {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::remove_unused_lines
+//       Access: Public
+//  Description: Removes any lines from the .txa file that weren't
+//               used by any texture, presumably in response to -k on
+//               the command line and in preparation for rewriting the
+//               .txa file.
+////////////////////////////////////////////////////////////////////
 void AttribFile::
 remove_unused_lines() {
   UserLines::iterator read, write;
@@ -541,11 +632,15 @@ prepare_repack(bool force_optimal) {
   return needs_repack;
 }
 
-
-// Updates the timestamp on each egg file that will need to be
-// rebuilt, so that a future make process will pick it up.  This is
-// only necessary to update egg files that may not have been included
-// on the command line, and which we don't have direct access to.
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::touch_dirty_egg_files
+//       Access: Public
+//  Description: Updates the timestamp on each egg file that will need
+//               to be rebuilt, so that a future make process will
+//               pick it up.  This is only necessary to update egg
+//               files that may not have been included on the command
+//               line, and which we don't have direct access to.
+////////////////////////////////////////////////////////////////////
 void AttribFile::
 touch_dirty_egg_files(bool force_redo_all,
 		      bool eggs_include_images) {
@@ -564,7 +659,14 @@ touch_dirty_egg_files(bool force_redo_all,
   }
 }
 
-
+////////////////////////////////////////////////////////////////////
+//     Function: AttribFile::get_texture
+//       Access: Public
+//  Description: Returns a pointer to the particular texture with the
+//               indicated name.  If the named PTexture does not exist
+//               in the AttribFile structure, creates one and returns
+//               it.
+////////////////////////////////////////////////////////////////////
 PTexture *AttribFile::
 get_texture(const string &name) {
   PTextures::iterator ti;

@@ -5,7 +5,8 @@
   #define TARGET putil
 
   #define SOURCES \
-    bamReader.I bamReader.N bamReader.cxx bamReader.h bamReaderParam.I \
+    bam.h bamReader.I bamReader.N bamReader.cxx \
+    bamReader.h bamReaderParam.I \
     bamReaderParam.cxx bamReaderParam.h bamWriter.I bamWriter.cxx \
     bamWriter.h bitMask.I bitMask.cxx bitMask.h buttonEvent.I \
     buttonEvent.cxx buttonEvent.h buttonHandle.I buttonHandle.cxx \

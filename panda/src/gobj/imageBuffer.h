@@ -41,11 +41,19 @@ public:
   
   virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *)=0;
   virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *,
-			const RenderBuffer &rb)=0;
+		    const RenderBuffer &rb)=0;
   virtual void draw(GraphicsStateGuardianBase *)=0;
   virtual void draw(GraphicsStateGuardianBase *, const DisplayRegion *)=0;
   virtual void draw(GraphicsStateGuardianBase *, const DisplayRegion *,
 		    const RenderBuffer &rb)=0;
+
+  INLINE void set_alpha_name(const string &alpha_name);
+  INLINE void clear_alpha_name();
+  INLINE bool has_alpha_name() const;
+  INLINE const string &get_alpha_name() const;
+
+private:
+  string _alpha_name;
 
 public:
   //Abstract class, so no factory methods for Reading and Writing
@@ -75,6 +83,8 @@ private:
   
   static TypeHandle _type_handle;
 };
+
+#include "imageBuffer.I"
 
 #endif
 

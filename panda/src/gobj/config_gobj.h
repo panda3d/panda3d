@@ -12,14 +12,14 @@
 NotifyCategoryDecl(gobj, EXPCL_PANDA, EXPTP_PANDA);
 
 // Configure variables for gobj package.
-extern const int max_texture_dimension;
+extern EXPCL_PANDA const int max_texture_dimension;
 
 enum BamTextureMode {
   BTM_fullpath,
   BTM_relative,
   BTM_basename
 };
-extern BamTextureMode bam_texture_mode;
+extern EXPCL_PANDA BamTextureMode bam_texture_mode;
 
 #endif
 

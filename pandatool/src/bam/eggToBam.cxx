@@ -8,6 +8,8 @@
 #include <config_util.h>
 #include <bamFile.h>
 #include <load_egg_file.h>
+#include <config_egg2sg.h>
+#include <config_gobj.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggToBam::Constructor
@@ -28,6 +30,13 @@ EggToBam() :
      "option may also be repeated to add multiple paths.",
      &EggToBam::dispatch_search_path, NULL, &get_texture_path());
 
+  add_option
+    ("kp", "", 0, 
+     "Keep the texture paths exactly as they are specified in the egg file, "
+     "as relative paths, rather than storing them as full paths or as "
+     "whatever is specified by the bam-texture-mode Configrc variable.",
+     &EggToBam::dispatch_none, &_keep_paths);
+
   redescribe_option
     ("cs",
      "Specify the coordinate system of the resulting " + _format_name +
@@ -43,6 +52,13 @@ EggToBam() :
 ////////////////////////////////////////////////////////////////////
 void EggToBam::
 run() {
+  if (_keep_paths) {
+    // If the user specified -kp, we need to set a couple of Configrc
+    // variables directly to achieve this.
+    egg_keep_texture_pathnames = true;
+    bam_texture_mode = BTM_fullpath;
+  }
+
   if (!_got_coordinate_system) {
     // If the user didn't specify otherwise, ensure the coordinate
     // system is Z-up.

@@ -13,31 +13,40 @@
 ConfigureDef(config_egg2sg);
 NotifyCategoryDef(egg2sg, "");
 
-const bool egg_mesh = config_egg2sg.GetBool("egg-mesh", true);
-const bool egg_retesselate_coplanar = config_egg2sg.GetBool("egg-retesselate-coplanar", true);
-const bool egg_unroll_fans = config_egg2sg.GetBool("egg-unroll-fans", true);
-const bool egg_show_tstrips = config_egg2sg.GetBool("egg-show-tstrips", false);
-const bool egg_show_qsheets = config_egg2sg.GetBool("egg-show-qsheets", false);
-const bool egg_show_quads = config_egg2sg.GetBool("egg-show-quads", false);
-const bool egg_false_color = (egg_show_tstrips | egg_show_qsheets | egg_show_quads);
-const bool egg_show_normals = config_egg2sg.GetBool("egg-show-normals", false);
-const double egg_normal_scale = config_egg2sg.GetDouble("egg-normal-scale", 1.0);
-const bool egg_subdivide_polys = config_egg2sg.GetBool("egg-subdivide-polys", true);
-const bool egg_consider_fans = config_egg2sg.GetBool("egg-consider-fans", true);
-const double egg_max_tfan_angle = config_egg2sg.GetDouble("egg-max-tfan-angle", 40.0);
-const int egg_min_tfan_tris = config_egg2sg.GetInt("egg-min-tfan-tris", 4);
-const double egg_coplanar_threshold = config_egg2sg.GetDouble("egg-coplanar-threshold", 0.01);
-const bool egg_ignore_mipmaps = config_egg2sg.GetBool("egg-ignore-mipmaps", false);
-const bool egg_ignore_filters = config_egg2sg.GetBool("egg-ignore-filters", false);
-const bool egg_ignore_clamp = config_egg2sg.GetBool("egg-ignore-clamp", false);
-const bool egg_always_decal_textures = config_egg2sg.GetBool("egg-always-decal-textures", false);
-const bool egg_ignore_decals = config_egg2sg.GetBool("egg-ignore-decals", false);
-const bool egg_flatten = config_egg2sg.GetBool("egg-flatten", true);
+bool egg_mesh = config_egg2sg.GetBool("egg-mesh", true);
+bool egg_retesselate_coplanar = config_egg2sg.GetBool("egg-retesselate-coplanar", true);
+bool egg_unroll_fans = config_egg2sg.GetBool("egg-unroll-fans", true);
+bool egg_show_tstrips = config_egg2sg.GetBool("egg-show-tstrips", false);
+bool egg_show_qsheets = config_egg2sg.GetBool("egg-show-qsheets", false);
+bool egg_show_quads = config_egg2sg.GetBool("egg-show-quads", false);
+bool egg_false_color = (egg_show_tstrips | egg_show_qsheets | egg_show_quads);
+bool egg_show_normals = config_egg2sg.GetBool("egg-show-normals", false);
+double egg_normal_scale = config_egg2sg.GetDouble("egg-normal-scale", 1.0);
+bool egg_subdivide_polys = config_egg2sg.GetBool("egg-subdivide-polys", true);
+bool egg_consider_fans = config_egg2sg.GetBool("egg-consider-fans", true);
+double egg_max_tfan_angle = config_egg2sg.GetDouble("egg-max-tfan-angle", 40.0);
+int egg_min_tfan_tris = config_egg2sg.GetInt("egg-min-tfan-tris", 4);
+double egg_coplanar_threshold = config_egg2sg.GetDouble("egg-coplanar-threshold", 0.01);
+bool egg_ignore_mipmaps = config_egg2sg.GetBool("egg-ignore-mipmaps", false);
+bool egg_ignore_filters = config_egg2sg.GetBool("egg-ignore-filters", false);
+bool egg_ignore_clamp = config_egg2sg.GetBool("egg-ignore-clamp", false);
+bool egg_always_decal_textures = config_egg2sg.GetBool("egg-always-decal-textures", false);
+bool egg_ignore_decals = config_egg2sg.GetBool("egg-ignore-decals", false);
+bool egg_flatten = config_egg2sg.GetBool("egg-flatten", true);
 
 // It is almost always a bad idea to set this true.
-const bool egg_flatten_siblings = config_egg2sg.GetBool("egg-flatten-siblings", false);
+bool egg_flatten_siblings = config_egg2sg.GetBool("egg-flatten-siblings", false);
 
-const bool egg_show_collision_solids = config_egg2sg.GetBool("egg-show-collision-solids", false);
+bool egg_show_collision_solids = config_egg2sg.GetBool("egg-show-collision-solids", false);
+
+// When this is true, keep texture pathnames exactly the same as they
+// appeared in the egg file, in particular leaving them as relative
+// paths, rather than letting them reflect the full path at which they
+// were found.  This is particularly useful when generating bam files.
+// However, if the same texture is named by two different relative
+// paths, these will still be collapsed into one texture (using one of
+// the relative paths, chosen arbitrarily).
+bool egg_keep_texture_pathnames = config_egg2sg.GetBool("egg-keep-texture-pathnames", false);
 
 CoordinateSystem egg_coordinate_system;
 

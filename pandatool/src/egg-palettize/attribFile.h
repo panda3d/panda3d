@@ -26,7 +26,10 @@ class PNMFileType;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : AttribFile
-// Description : 
+// Description : The primary driving object behind egg-palettize, this
+//               class represents both a .txa file and its associated
+//               .pi file, as well as containing pointers to all the
+//               textures, palettes, and egg files referenced.
 ////////////////////////////////////////////////////////////////////
 class AttribFile {
 public:
@@ -36,6 +39,7 @@ public:
 
   bool open_and_lock(bool lock);
   bool close_and_unlock();
+  bool rewind_and_truncate();
 
   bool read(bool force_redo_all);
   bool write();

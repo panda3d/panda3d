@@ -302,6 +302,11 @@ update_trefs() {
 	Palette *palette = packing->get_palette();
 	
 	eggtex->set_filename(_attrib_file->write_egg_filename(palette->get_filename()));
+	if (palette->has_alpha_filename()) {
+	  eggtex->set_alpha_file(_attrib_file->write_egg_filename(palette->get_alpha_filename()));
+	} else {
+	  eggtex->clear_alpha_file();
+	}
 	
 	// Set the texture attributes to be uniform across all palettes.
 	eggtex->set_minfilter(EggTexture::FT_mipmap_trilinear);

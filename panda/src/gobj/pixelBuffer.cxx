@@ -40,6 +40,7 @@ bool PixelBuffer::read(const string& name)
   }
 
   set_name(name);
+  clear_alpha_name();
   return load(pnmimage);
 }
 

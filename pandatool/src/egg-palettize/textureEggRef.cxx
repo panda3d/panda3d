@@ -63,7 +63,7 @@ require_groups(PaletteGroup *preferred, const PaletteGroups &groups) {
 
   // For now, we arbitrarily pick the preferred group.  Later, maybe
   // we'll try to be smart about this and do some kind of graph
-  // minimization to choose the group the leads to the least redundant
-  // packing.
+  // minimization to choose the group that leads to the least
+  // redundant packing.
   _packing = _texture->add_to_group(preferred);
 }

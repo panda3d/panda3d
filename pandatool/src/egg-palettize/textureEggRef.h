@@ -20,7 +20,7 @@ class EggTexture;
 ////////////////////////////////////////////////////////////////////
 // 	 Class : TextureEggRef
 // Description : This associates a texture with the egg files it is
-//               placed on, and also associated an egg file with the
+//               placed on, and also associates an egg file with the
 //               various textures it contains.
 ////////////////////////////////////////////////////////////////////
 class TextureEggRef {

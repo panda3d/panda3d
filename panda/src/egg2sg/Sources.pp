@@ -15,7 +15,7 @@
     load_egg_file.h loaderFileTypeEgg.cxx loaderFileTypeEgg.h
 
   #define INSTALL_HEADERS \
-    load_egg_file.h
+    load_egg_file.h config_egg2sg.h
 
 #end lib_target
 

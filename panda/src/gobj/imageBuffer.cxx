@@ -14,6 +14,7 @@
 
 #include <datagram.h>
 #include <datagramIterator.h>
+#include <bamReader.h>
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -30,6 +31,7 @@ void ImageBuffer::
 write_datagram(BamWriter *, Datagram &me)
 {
   Filename filename = get_name();
+  Filename alpha_filename = get_alpha_name();
 
   switch (bam_texture_mode) {
   case BTM_fullpath:
@@ -42,10 +44,17 @@ write_datagram(BamWriter *, Datagram &me)
       gobj_cat.debug() 
 	<< "Texture file " << get_name() << " found as " << filename << "\n";
     }
+    alpha_filename.find_on_searchpath(get_texture_path());
+    alpha_filename.find_on_searchpath(get_model_path());
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug() 
+	<< "Alpha image " << get_alpha_name() << " found as " << alpha_filename << "\n";
+    }
     break;
 
   case BTM_basename:
     filename = filename.get_basename();
+    alpha_filename = alpha_filename.get_basename();
     break;
 
   default:
@@ -54,6 +63,7 @@ write_datagram(BamWriter *, Datagram &me)
   }
 
   me.add_string(filename);
+  me.add_string(alpha_filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,7 +75,12 @@ write_datagram(BamWriter *, Datagram &me)
 //               place
 ////////////////////////////////////////////////////////////////////
 void ImageBuffer::
-fillin(DatagramIterator& scan, BamReader*)
-{
+fillin(DatagramIterator &scan, BamReader *manager) {
   set_name(scan.get_string());
+
+  if (manager->get_file_minor_ver() >= 3) {
+    set_alpha_name(scan.get_string());
+  } else {
+    clear_alpha_name();
+  }
 }

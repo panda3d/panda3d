@@ -38,10 +38,10 @@ EggMultiFilter(bool allow_empty) : _allow_empty(allow_empty) {
 
   add_option
     ("inplace", "", 50, 
-     "If this option is given, the input files will be rewritten in place with "
-     "the results.  This obviates the need to specify -d for an output "
-     "directory; however, it's risky because the original input "
-     "files are lost.",
+     "If this option is given, the input egg files will be rewritten in "
+     "place with the results.  This obviates the need to specify -d "
+     "for an output directory; however, it's risky because the original "
+     "input egg files are lost.",
      &EggMultiFilter::dispatch_none, &_inplace);
 }
 
