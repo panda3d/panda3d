@@ -108,6 +108,11 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.notify.debug('zones: %s' % self.zoneNums)
         assert sameElements(self.zoneNums, self.spec['zones'].keys() + [0])
 
+        # hack in another doorway
+        dw = self.geom.attachNewNode('Doorway27')
+        dw.setPos(-49.4,86.7,19.26)
+        dw.setH(0)
+
         # find the doorway nodes
         self.doorwayNum2Node = findNumberedNodes('Doorway')
 
@@ -224,7 +229,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def enterZone(self, zoneNum):
         if not DistributedLevel.WantVisibility:
             return
-
+        
         if zoneNum == self.curZoneNum:
             return
         
@@ -233,7 +238,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # use dicts to efficiently ensure that there are no duplicates
         visibleZoneNums = list2dict([zoneNum])
         visibleZoneNums.update(list2dict(zoneSpec['visibility']))
-
+        
         if DistributedLevel.HideZones:
             # figure out which zones are new and which are going invisible
             # use dicts because it's faster to use dict.has_key(x)
