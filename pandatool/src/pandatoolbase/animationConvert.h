@@ -32,6 +32,7 @@ enum AnimationConvert {
   AC_none,     // No animation: static geometry only.
   AC_pose,     // Pose to one frame, then get static geometry.
   AC_flip,     // A flip (sequence) of static geometry models.
+  AC_strobe,   // All frames of a flip visible at the same time.
   AC_model,    // A character model, with joints.
   AC_chan,     // Animation tables for the above model.
   AC_both,     // A character model and tables in the same file.

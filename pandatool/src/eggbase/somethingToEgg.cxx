@@ -106,8 +106,8 @@ add_animation_options() {
     ("a", "animation-mode", 40,
      "Specifies how animation from the " + _format_name + " file is "
      "converted to egg, if at all.  At present, the following keywords "
-     "are supported: none, pose, flip, model, chan, or both.  The default "
-     "is none, which means not to convert animation.",
+     "are supported: none, pose, flip, strobe, model, chan, or both.  "
+     "The default is none, which means not to convert animation.",
      &SomethingToEgg::dispatch_animation_convert, NULL, &_animation_convert);
 
   add_option

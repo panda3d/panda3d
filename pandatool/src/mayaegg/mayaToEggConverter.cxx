@@ -254,8 +254,9 @@ convert_maya(bool from_selection) {
       break;
       
     case AC_flip:
-      // flip: get out a series of static models, one per frame, under a
-      // sequence node.
+    case AC_strobe:
+      // flip or strobe: get out a series of static models, one per
+      // frame, under a sequence node for AC_flip.
       all_ok = convert_flip(start_frame, end_frame, frame_inc,
                             output_frame_rate);
       break;
@@ -347,8 +348,10 @@ convert_flip(double start_frame, double end_frame, double frame_inc,
 
   EggGroup *sequence_node = new EggGroup(_character_name);
   get_egg_data().add_child(sequence_node);
-  sequence_node->set_switch_flag(true);
-  sequence_node->set_switch_fps(output_frame_rate / frame_inc);
+  if (_animation_convert == AC_flip) { 
+    sequence_node->set_switch_flag(true);
+    sequence_node->set_switch_fps(output_frame_rate / frame_inc);
+  }
 
   MTime frame(start_frame, MTime::uiUnit());
   MTime frame_stop(end_frame, MTime::uiUnit());
@@ -361,7 +364,7 @@ convert_flip(double start_frame, double end_frame, double frame_inc,
     sequence_node->add_child(frame_root);
 
     MGlobal::viewFrame(frame);
-    if (!convert_hierarchy(&get_egg_data())) {
+    if (!convert_hierarchy(frame_root)) {
       all_ok = false;
     }
 
