@@ -328,8 +328,8 @@ choose_placements() {
       // which also happen to include the texture.  It better not be
       // empty.
       if (groups.empty()) {
-	nout << "Warning!  Egg file " << get_name() << ", referencing texture "
-	     << *reference << ", does not have any groups in common.\n"
+	nout << "Warning!  Egg file " << get_name() << " and texture "
+	     << *reference << " do not have any groups in common.\n"
 	     << "Egg groups:\n";
 	get_complete_groups().write(nout, 2);
 	nout << "Texture groups:\n";

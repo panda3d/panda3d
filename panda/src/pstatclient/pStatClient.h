@@ -60,15 +60,18 @@ public:
   PStatThread get_main_thread() const;
 
   static void main_tick();
-
-PUBLISHED:
   static PStatClient *get_global_pstats();
 
-  bool connect(string hostname = string(), int port = -1);
-  void disconnect();
-  bool is_connected() const;
+PUBLISHED:
+  INLINE static bool connect(string hostname = string(), int port = -1);
+  INLINE static void disconnect();
+  INLINE static bool is_connected();
 
 private:
+  bool ns_connect(string hostname, int port);
+  void ns_disconnect();
+  bool ns_is_connected() const;
+
   PStatCollector make_collector(int parent_index, string fullname);
   PStatCollector make_collector(int parent_index, const string &fullname,
 				const RGBColorf &suggested_color, int sort);

@@ -368,15 +368,13 @@ get_global_pstats() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::connect
-//       Access: Public
-//  Description: Attempts to establish a connection to the indicated
-//               PStatServer.  Returns true if successful, false on
-//               failure.
+//     Function: PStatClient::ns_connect
+//       Access: Private
+//  Description: The nonstatic implementation of connect().
 ////////////////////////////////////////////////////////////////////
 bool PStatClient::
-connect(string hostname, int port) {
-  disconnect();
+ns_connect(string hostname, int port) {
+  ns_disconnect();
 
   if (hostname.empty()) {
     hostname = pstats_host;
@@ -411,12 +409,12 @@ connect(string hostname, int port) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::disconnect
-//       Access: Public
-//  Description: Closes the connection previously established.
+//     Function: PStatClient::ns_disconnect
+//       Access: Private
+//  Description: The nonstatic implementation of disconnect().
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
-disconnect() {
+ns_disconnect() {
   if (_is_connected) {
     _reader.remove_connection(_tcp_connection);
     close_connection(_tcp_connection);
@@ -452,13 +450,12 @@ disconnect() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::is_connected
+//     Function: PStatClient::ns_is_connected
 //       Access: Public
-//  Description: Returns true if the client believes it is connected
-//               to a working PStatServer, false otherwise.
+//  Description: The nonstatic implementation of is_connected().
 ////////////////////////////////////////////////////////////////////
 bool PStatClient::
-is_connected() const {
+ns_is_connected() const {
   return _is_connected;
 }
 

@@ -213,13 +213,20 @@ get_latest_frame() const {
 ////////////////////////////////////////////////////////////////////
 double PStatThreadData::
 get_frame_rate(double time) const {
-  nassertr(!_frames.empty(), 0.0);
+  if (_frames.empty()) {
+    // No frames in the data at all; nothing to base the frame rate
+    // on.
+    return 0.0;
+  }
 
   int now_i = _frames.size() - 1;
   while (now_i > 0 && _frames[now_i] == (PStatFrameData *)NULL) {
     now_i--;
   }
-  nassertr(now_i >= 0, 0.0);
+  if (now_i < 0) {
+    // No frames have any real data.
+    return 0.0;
+  }
   nassertr(_frames[now_i] != (PStatFrameData *)NULL, 0.0);
 
   double now = _frames[now_i]->get_end();
@@ -229,7 +236,7 @@ get_frame_rate(double time) const {
   int last_good_i = now_i;
 
   while (then_i > 0 && _frames[then_i]->get_start() > then) {
-    last_good_i = now_i;
+    last_good_i = then_i;
     then_i--;
     while (then_i > 0 && _frames[then_i] == (PStatFrameData *)NULL) {
       then_i--;

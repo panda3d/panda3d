@@ -57,3 +57,36 @@ INLINE double PStatClient::
 get_max_rate() const {
   return _max_rate;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::connect
+//       Access: Published
+//  Description: Attempts to establish a connection to the indicated
+//               PStatServer.  Returns true if successful, false on
+//               failure.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatClient::
+connect(string hostname, int port) {
+  return get_global_pstats()->connect(hostname, port);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::disconnect
+//       Access: Published
+//  Description: Closes the connection previously established.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatClient::
+disconnect() {
+  get_global_pstats()->disconnect();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::is_connected
+//       Access: Published
+//  Description: Returns true if the client believes it is connected
+//               to a working PStatServer, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatClient::
+is_connected() {
+  return get_global_pstats()->is_connected();
+}
