@@ -104,7 +104,7 @@ class myLevelEditor(AppShell):
         if self.wantTK:
             pass
         else:
-            taskMgr.remove('tkloop')
+            taskMgr.remove('tkLoop')
             spawnTkLoop()
         ## Set up window frame
         INITOPT = Pmw.INITOPT
