@@ -192,7 +192,8 @@ class ShowBase(DirectObject.DirectObject):
 
         # Route all of our DirectNotify output through the Panda level
         # ostream object from now on.
-        directNotify.streamWriter = StreamWriter(ostream)
+        # This is causing problems - Joe
+        # directNotify.streamWriter = StreamWriter(ostream)
 
         # Now hang a hook on the window-event from Panda.  This allows
         # us to detect when the user resizes, minimizes, or closes the
