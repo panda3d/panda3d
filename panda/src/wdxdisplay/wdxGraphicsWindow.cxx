@@ -178,7 +178,6 @@ void wdxGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
       _dxgsg->dx_cleanup(_props._fullscreen, bAtExitFnCalled);
       _dxgsg=NULL;
   }
-  release_gsg();
 
   if(_hdc!=NULL) {
     ReleaseDC(_mwindow,_hdc);
