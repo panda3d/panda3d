@@ -41,7 +41,7 @@ void GuiBackground::manage(GuiManager* mgr, EventHandler& eh) {
     _bg->freeze();
     _bg->set_width(_item->get_width());
     _bg->set_height(_item->get_height());
-    _bf->thaw();
+    _bg->thaw();
     mgr->add_label(_bg);
     _item->manage(mgr, eh);
     GuiItem::manage(mgr, eh);
