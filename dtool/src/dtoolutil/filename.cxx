@@ -1022,12 +1022,10 @@ resolve_filename(const DSearchPath &searchpath,
         found = searchpath.find_file(try_ext.get_fullpath());
       }
     }
-
   } else {
     if (exists()) {
       // The full pathname exists.  Return true.
       return true;
-
     } else {
       // The full pathname doesn't exist with the given extension;
       // does it exist with the default extension?
