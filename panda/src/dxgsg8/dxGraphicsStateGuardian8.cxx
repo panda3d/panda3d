@@ -1398,7 +1398,7 @@ transform_color(Colorf &InColor,D3DCOLOR &OutRGBAColor) {
      (InColor[1] * _current_color_scale[1]) + _current_color_offset[1],
      (InColor[2] * _current_color_scale[2]) + _current_color_offset[2],
      (InColor[3] * _current_color_scale[3]) + _current_color_offset[3]);
-  OutRGBAColor = Colorf_to_D3DCOLOR(InColor);
+  OutRGBAColor = Colorf_to_D3DCOLOR(transformed);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1421,9 +1421,10 @@ draw_prim_setup(const Geom *geom) {
 #define GET_NEXT_VERTEX(NEXTVERT) { NEXTVERT = geom->get_next_vertex(vi); }
 #define GET_NEXT_NORMAL() { p_normal = geom->get_next_normal(ni); }
 #define GET_NEXT_TEXCOORD() { p_texcoord = geom->get_next_texcoord(ti); }
+
 #define GET_NEXT_COLOR() {                                                           \
     Colorf tempcolor = geom->get_next_color(ci);                                     \
-    if(_color_transform_enabled == 0) {                                                 \
+    if(_color_transform_enabled == 0) {                                              \
         _curD3Dcolor = Colorf_to_D3DCOLOR(tempcolor);                                \
     } else {                                                                         \
         transform_color(tempcolor,_curD3Dcolor);                                     \

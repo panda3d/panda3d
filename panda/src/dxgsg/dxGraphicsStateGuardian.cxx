@@ -1274,7 +1274,7 @@ transform_color(Colorf &InColor,D3DCOLOR &OutRGBAColor) {
      (InColor[1] * _current_color_scale[1]) + _current_color_offset[1],
      (InColor[2] * _current_color_scale[2]) + _current_color_offset[2],
      (InColor[3] * _current_color_scale[3]) + _current_color_offset[3]);
-  OutRGBAColor = Colorf_to_D3DCOLOR(InColor);
+  OutRGBAColor = Colorf_to_D3DCOLOR(transformed);
 }
 
 ////////////////////////////////////////////////////////////////////
