@@ -85,7 +85,7 @@ class SceneGraphExplorerItem(TreeItem):
 
     def GetText(self):
         type = self.nodePath.node().getType().getName()
-        name = self.nodePath.getNodePathName()
+        name = self.nodePath.getName()
         return type + "  " + name
 
     def IsEditable(self):

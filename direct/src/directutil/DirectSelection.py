@@ -10,7 +10,7 @@ class DirectNodePath(NodePath):
         NodePath.__init__(self)
         self.assign(nodePath)
         # Get a reasonable name
-        self.name = self.getNodePathName()
+        self.name = self.getName()
         # Create a bounding box
         self.bbox = DirectBoundingBox(self)
         center = self.bbox.getCenter()
@@ -308,7 +308,7 @@ class DirectBoundingBox:
 
     def __repr__(self):
         return (`self.__class__` + 
-                '\nNodePath:\t%s\n' % self.nodePath.getNodePathName() +
+                '\nNodePath:\t%s\n' % self.nodePath.getName() +
                 'Min:\t\t%s\n' % self.vecAsString(self.min) +
                 'Max:\t\t%s\n' % self.vecAsString(self.max) +
                 'Center:\t\t%s\n' % self.vecAsString(self.center) +

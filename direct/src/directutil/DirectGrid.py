@@ -59,7 +59,7 @@ class DirectGrid(NodePath,PandaObject):
         self.ignore('selectedNodePath')
 
     def selectGridBackParent(self, nodePath):
-        if nodePath.getNodePathName() == 'GridBack':
+        if nodePath.getName() == 'GridBack':
             self.direct.select(self)
 
     def updateGrid(self):

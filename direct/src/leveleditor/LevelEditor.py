@@ -381,6 +381,7 @@ class LevelEditor(NodePath, PandaObject):
         self.ignore('manipulateObjectCleanup')
         self.ignore('SGESelectNodePath')
         self.ignore('SGEIsolateNodePath')
+        self.ignore('SGEToggle VizNodePath')
         self.ignore('SGESet ParentNodePath')
         self.ignore('SGEAdd GroupNodePath')
 	self.ignore('showAll')
@@ -460,8 +461,9 @@ class LevelEditor(NodePath, PandaObject):
 	self.accept('setNodePathName', self.setNodePathName)
         self.accept('manipulateObjectCleanup', self.updateSelectedPose)
         self.accept('SGESelectNodePath', self.selectNodePath)
-	self.accept('SGESelectNodePath', self.preSelectNodePath)
+	self.accept('SGEFlashNodePath', self.preSelectNodePath)
         self.accept('SGEIsolateNodePath', self.isolateNodePath)
+        self.accept('SGEToggle VizNodePath', self.toggleNodePathViz)
         self.accept('SGESet ParentNodePath', self.setGroupParent)
         self.accept('SGEAdd GroupNodePath', self.addGroupToSelected)
 	self.accept('showAll', self.showAll)
@@ -657,7 +659,7 @@ class LevelEditor(NodePath, PandaObject):
 
     def selectDNARoot(self, aNodePath):
         # If this isn't a root object see if one exists above it
-        if (aNodePath.getNodePathName()[-8:] != '_DNARoot'):
+        if (aNodePath.getName()[-8:] != '_DNARoot'):
             dnaRoot = self.getDNARoot(aNodePath)
             # Is this a DNA object?
             if dnaRoot:
@@ -668,7 +670,7 @@ class LevelEditor(NodePath, PandaObject):
         if ((aNodePath.node() == render.node()) |
             (aNodePath.node() == hidden.node())):
             return 0
-        name = aNodePath.getNodePathName()
+        name = aNodePath.getName()
         if (name[-8:] == '_DNARoot'):
             return aNodePath
         else:
@@ -919,6 +921,9 @@ class LevelEditor(NodePath, PandaObject):
             self.levelMap.reparentTo(self)
         else:
             self.levelMap.reparentTo(hidden)
+
+    def toggleNodePathViz(self, aNodePath):
+        pass
 
     def setXyzSnap(self, flag):
         self.grid.setXyzSnap(flag)
@@ -3199,7 +3204,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.sceneGraphExplorer = SceneGraphExplorer(
             parent = sceneGraphPage,
             root = self.levelEditor.getLevelObjects(),
-            menuItems = ['Select', 'Isolate', 'Set Parent', 'Add Group'])
+            menuItems = ['Select', 'Isolate', 'Flash',
+                         'Toggle Viz', 'Set Parent', 'Add Group'])
         self.sceneGraphExplorer.pack(expand = 1, fill = 'both')
         
     def toggleGrid(self):

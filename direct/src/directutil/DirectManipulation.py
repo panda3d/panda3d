@@ -97,7 +97,7 @@ class DirectManipulationControl(PandaObject):
             return Task.done
         else:
             return Task.cont
-                        
+
     def manipulationStop(self):
         taskMgr.removeTasksNamed('manipulateObject')
         taskMgr.removeTasksNamed('manip-move-wait')
@@ -113,6 +113,8 @@ class DirectManipulationControl(PandaObject):
             for i in range(0,numEntries):
                 entry = self.direct.iRay.cq.getEntry(i)
                 node = entry.getIntoNode()
+                if node.isHidden():
+                    pass
                 # Is it a named node?, If so, see if it has a name
                 if issubclass(node.__class__, NamedNode):
                     name = node.getName()

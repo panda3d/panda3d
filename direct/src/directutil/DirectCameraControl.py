@@ -40,19 +40,30 @@ class DirectCameraControl(PandaObject):
                 # And then spawn task to determine mouse mode
                 numEntries = self.direct.iRay.pickGeom(
                     render,chan.mouseX,chan.mouseY)
+                # Filter out hidden nodes from entry list
+                indexList = []
+                for i in range(0,numEntries):
+                    entry = self.direct.iRay.cq.getEntry(i)
+                    node = entry.getIntoNode()
+                    if node.isHidden():
+                        pass
+                    else:
+                        # Not one of the widgets, use it
+                        indexList.append(i)
                 coa = Point3(0)
-                if(numEntries):
+                if(indexList):
                     # Start off with first point
-                    minPt = 0
+                    minPt = indexList[0]
                     # Find hit point in camera's space
                     hitPt = self.direct.iRay.camToHitPt(minPt)
                     coa.set(hitPt[0],hitPt[1],hitPt[2])
                     coaDist = Vec3(coa - self.zeroPoint).length()
                     # Check other intersection points, sorting them
                     # TBD: Use TBS C++ function to do this
-                    if numEntries > 1:
-                        for i in range(1,numEntries):
-                            hitPt = self.direct.iRay.camToHitPt(i)
+                    if len(indexList) > 1:
+                        for i in range(1,len(indexList)):
+                            entryNum = indexList[i]
+                            hitPt = self.direct.iRay.camToHitPt(entryNum)
                             dist = Vec3(hitPt - self.zeroPoint).length()
                             if (dist < coaDist):
                                 coaDist = dist

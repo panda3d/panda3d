@@ -8,7 +8,8 @@
         """Returns the bottom node's this pointer as a unique id"""
         return self.getBottomArc()
 
-    def getNodePathName(self):
+    def getName(self):
+        """Returns the name of the bottom node if it exists, or <noname>"""
         from PandaModules import *
         # Initialize to a default value
         name = '<noname>'
@@ -24,41 +25,49 @@
 
     # For iterating over children
     def getChildrenAsList(self):
+        """Converts a node path's child NodePathCollection into a list"""
         childrenList = []
         for childNum in range(self.getNumChildren()):
             childrenList.append(self.getChild(childNum))
         return childrenList
 
     def printChildren(self):
+        """Prints out the children of the bottom node of a node path"""
         for child in self.getChildrenAsList():
-            print child.getNodePathName()
+            print child.getName()
 
     def toggleViz(self):
+        """Toggles visibility of a nodePath"""
         if self.isHidden():
             self.show()
         else:
             self.hide()
             
     def showSiblings(self):
+        """Show all the siblings of a node path"""
         for sib in self.getParent().getChildrenAsList():
             if sib.node() != self.node():
                 sib.show()
 
     def hideSiblings(self):
+        """Hide all the siblings of a node path"""
         for sib in self.getParent().getChildrenAsList():
             if sib.node() != self.node():
                 sib.hide()
 
     def showAllDescendants(self):
+        """Show the node path and all its children"""
 	self.show()
         for child in self.getChildrenAsList():
             child.showAllDescendants()
 
     def isolate(self):
+        """Show the node path and hide its siblings"""
         self.showAllDescendants()
         self.hideSiblings()
 
     def remove(self):
+        """Remove a node path from the scene graph"""
         from PandaObject import *
         # Send message in case anyone needs to do something
         # before node is deleted
@@ -68,15 +77,17 @@
         self.removeNode()
 
     def reversels(self):
+        """Walk up a tree and print out the path to the root"""
         ancestry = self.getAncestry()
         indentString = ""
         for nodePath in ancestry:
             type = nodePath.node().getType().getName()
-            name = nodePath.getNodePathName()
+            name = nodePath.getName()
             print indentString + type + "  " + name
             indentString = indentString + " "
 
     def getAncestry(self):
+        """Get a list of a node path's ancestors"""
         from PandaObject import *
         node = self.node()
         if (self.hasParent()):
