@@ -35,12 +35,10 @@ CPPToken(int token, int line_number, int col_number,
   _token(token), _lval(lval)
 {
   _lval.str = str;
-  _lloc.timestamp = 0;
   _lloc.first_line = line_number;
   _lloc.first_column = col_number;
   _lloc.last_line = line_number;
   _lloc.last_column = col_number;
-  _lloc.text = NULL;
   _lloc.file = file;
 }
 

@@ -97,14 +97,19 @@ public:
 // lexer.
 
 struct cppyyltype {
-  int timestamp;
   int first_line;
   int first_column;
   int last_line;
   int last_column;
-  char *text;
   CPPFile file;
 };
 #define YYLTYPE cppyyltype
+
+// Beginning around bison 1.35 or so, we need to define this macro as
+// well, to tell bison how to collect multiple locations together.
+#define YYLLOC_DEFAULT(Current, Rhs, N)          \
+  Current = Rhs[1];                              \
+  Current.last_line    = Rhs[N].last_line;       \
+  Current.last_column  = Rhs[N].last_column;
 
 #endif
