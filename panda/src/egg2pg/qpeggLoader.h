@@ -35,6 +35,8 @@
 #include "indirectCompareTo.h"
 #include "textureAttrib.h"
 
+#include "eggLoaderBase.h"
+
 class EggNode;
 class EggBin;
 class EggTable;
@@ -57,7 +59,7 @@ class CollisionPolygon;
 //
 //               This class isn't exported from this package.
 ////////////////////////////////////////////////////////////////////
-class qpEggLoader {
+class qpEggLoader : public EggLoaderBase {
 public:
   qpEggLoader();
   qpEggLoader(const EggData &data);

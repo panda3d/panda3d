@@ -10,19 +10,25 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
-     character.I character.h characterJoint.h characterJointBundle.I  \
-     characterJointBundle.h characterSlider.h computedVertices.I  \
-     computedVertices.h computedVerticesMorph.I  \
-     computedVerticesMorph.h config_char.h dynamicVertices.h
+    character.I character.h \
+    qpcharacter.I qpcharacter.h \
+    characterJoint.h characterJointBundle.I  \
+    characterJointBundle.h characterSlider.h computedVertices.I  \
+    computedVertices.h computedVerticesMorph.I  \
+    computedVerticesMorph.h config_char.h dynamicVertices.h
     
   #define INCLUDED_SOURCES \
-     character.cxx characterJoint.cxx characterJointBundle.cxx  \
-     characterSlider.cxx computedVertices.cxx  \
-     computedVerticesMorph.cxx config_char.cxx  \
-     dynamicVertices.cxx
+    character.cxx \
+    qpcharacter.cxx \
+    characterJoint.cxx characterJointBundle.cxx  \
+    characterSlider.cxx computedVertices.cxx  \
+    computedVerticesMorph.cxx config_char.cxx  \
+    dynamicVertices.cxx
 
   #define INSTALL_HEADERS \
-    character.I character.h characterJoint.h characterJointBundle.I \
+    character.I character.h \
+    qpcharacter.I qpcharacter.h \
+    characterJoint.h characterJointBundle.I \
     characterJointBundle.h characterSlider.h computedVertices.I \
     computedVertices.h computedVerticesMorph.I computedVerticesMorph.h \
     config_char.h dynamicVertices.h

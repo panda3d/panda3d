@@ -34,6 +34,7 @@
 #include "texturePool.h"
 #include "dSearchPath.h"
 #include "loader.h"
+#include "auto_bind.h"
 
 // These are in support of legacy data graph operations.
 #include "namedNode.h"
@@ -293,6 +294,14 @@ main(int argc, char *argv[]) {
 
   // Put something in the scene graph to look at.
   get_models(render, argc, argv);
+
+  // If we happened to load up both a character file and its matching
+  // animation file, attempt to bind them together now and start the
+  // animations looping.
+  AnimControlCollection anim_controls;
+  auto_bind(render, anim_controls, ~0);
+  anim_controls.loop_all(true);
+
 
   // Tick the clock once so we won't count the time spent loading up
   // files, above, in our frame rate average.

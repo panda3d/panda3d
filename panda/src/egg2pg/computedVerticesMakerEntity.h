@@ -19,14 +19,15 @@
 #ifndef COMPUTEDVERTICESMAKERENTITY_H
 #define COMPUTEDVERTICESMAKERENTITY_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <luse.h>
-#include <eggMorphList.h>
-#include <typedef.h>
-#include <pointerToArray.h>
+#include "luse.h"
+#include "eggMorphList.h"
+#include "typedef.h"
+#include "pointerToArray.h"
 
 #include "pmap.h"
+#include <math.h>
 
 ///////////////////////////////////////////////////////////////////
 //       Class : ComputedVerticesMakerEntity

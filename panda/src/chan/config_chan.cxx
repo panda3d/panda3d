@@ -20,6 +20,7 @@
 #include "config_chan.h"
 #include "animBundle.h"
 #include "animBundleNode.h"
+#include "qpanimBundleNode.h"
 #include "animChannelBase.h"
 #include "animChannelMatrixXfmTable.h"
 #include "animChannelScalarTable.h"
@@ -30,10 +31,11 @@
 #include "movingPartScalar.h"
 #include "partBundle.h"
 #include "partBundleNode.h"
+#include "qppartBundleNode.h"
 #include "partGroup.h"
 
-#include <luse.h>
-#include <dconfig.h>
+#include "luse.h"
+#include "dconfig.h"
 
 Configure(config_chan);
 NotifyCategoryDef(chan, "");
@@ -79,6 +81,7 @@ bool read_compressed_channels = config_chan.GetBool("read-compressed-channels", 
 ConfigureFn(config_chan) {
   AnimBundle::init_type();
   AnimBundleNode::init_type();
+  qpAnimBundleNode::init_type();
   AnimChannelBase::init_type();
   AnimChannelMatrixXfmTable::init_type();
   AnimChannelScalarTable::init_type();
@@ -89,6 +92,7 @@ ConfigureFn(config_chan) {
   MovingPartScalar::init_type();
   PartBundle::init_type();
   PartBundleNode::init_type();
+  qpPartBundleNode::init_type();
   PartGroup::init_type();
 
   // This isn't defined in this package, but it *is* essential that it
@@ -107,6 +111,7 @@ ConfigureFn(config_chan) {
   AnimGroup::register_with_read_factory();
   AnimBundle::register_with_read_factory();
   AnimBundleNode::register_with_read_factory();
+  qpAnimBundleNode::register_with_read_factory();
   AnimChannelMatrixXfmTable::register_with_read_factory();
   AnimChannelScalarTable::register_with_read_factory();
 }

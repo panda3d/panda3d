@@ -9,12 +9,22 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES \
+    animBundleMaker.h \
+    characterMaker.h \
+    qpcharacterMaker.h \
+    computedVerticesMaker.I computedVerticesMaker.h \
+    computedVerticesMakerEntity.I computedVerticesMakerEntity.h \
     config_egg2pg.h \
     eggBinner.h \
+    eggLoaderBase.h \
     qpeggLoader.h \
     qpload_egg_file.h
 
   #define INCLUDED_SOURCES \
+    animBundleMaker.cxx \
+    characterMaker.cxx \
+    qpcharacterMaker.cxx \
+    computedVerticesMaker.cxx \
     config_egg2pg.cxx \
     eggBinner.cxx \
     qpeggLoader.cxx \
@@ -27,9 +37,6 @@
   #endif
 
   #define INSTALL_HEADERS \
-    config_egg2pg.h \
-    eggBinner.h \
-    qpeggLoader.h \
-    qpload_egg_file.h
+    qpload_egg_file.h config_egg2pg.h
 
 #end lib_target

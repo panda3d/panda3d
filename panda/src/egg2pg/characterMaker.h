@@ -19,14 +19,12 @@
 #ifndef CHARACTERMAKER_H
 #define CHARACTERMAKER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "computedVerticesMaker.h"
 
-#include <vector_PartGroupStar.h>
-#include <typedef.h>
-
-#include <string>
+#include "vector_PartGroupStar.h"
+#include "typedef.h"
 #include "pmap.h"
 
 class EggNode;
@@ -39,7 +37,7 @@ class Character;
 class CharacterSlider;
 class MovingPartBase;
 class NamedNode;
-class EggLoader;
+class EggLoaderBase;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CharacterMaker
@@ -49,7 +47,7 @@ class EggLoader;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG CharacterMaker {
 public:
-  CharacterMaker(EggGroup *root, EggLoader &loader);
+  CharacterMaker(EggGroup *root, EggLoaderBase &loader);
 
   Character *make_node();
 
@@ -78,7 +76,7 @@ private:
   typedef vector_PartGroupStar Parts;
   Parts _parts;
 
-  EggLoader &_loader;
+  EggLoaderBase &_loader;
   EggGroup *_egg_root;
   Character *_character_node;
   CharacterJointBundle *_bundle;

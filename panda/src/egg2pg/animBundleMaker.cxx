@@ -17,18 +17,19 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "animBundleMaker.h"
-#include "config_egg2sg.h"
+#include "config_egg2pg.h"
 
-#include <eggTable.h>
-#include <eggAnimData.h>
-#include <eggSAnimData.h>
-#include <eggXfmAnimData.h>
-#include <eggXfmSAnim.h>
-#include <eggGroupNode.h>
-#include <animBundle.h>
-#include <animBundleNode.h>
-#include <animChannelMatrixXfmTable.h>
-#include <animChannelScalarTable.h>
+#include "eggTable.h"
+#include "eggAnimData.h"
+#include "eggSAnimData.h"
+#include "eggXfmAnimData.h"
+#include "eggXfmSAnim.h"
+#include "eggGroupNode.h"
+#include "animBundle.h"
+#include "animBundleNode.h"
+#include "qpanimBundleNode.h"
+#include "animChannelMatrixXfmTable.h"
+#include "animChannelScalarTable.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimBundleMaker::Construtor
@@ -46,18 +47,18 @@ AnimBundleMaker(EggTable *root) : _root(root) {
   inspect_tree(root);
 
   if (!_ok_fps) {
-    egg2sg_cat.warning()
+    egg2pg_cat.warning()
       << "AnimBundle " << _root->get_name()
       << " specifies contradictory frame rates.\n";
   } else if (_fps == 0.0f) {
-    egg2sg_cat.warning()
+    egg2pg_cat.warning()
       << "AnimBundle " << _root->get_name()
       << " does not specify a frame rate.\n";
     _fps = 24.0f;
   }
 
   if (!_ok_num_frames) {
-    egg2sg_cat.warning()
+    egg2pg_cat.warning()
       << "AnimBundle " << _root->get_name()
       << " specifies contradictory number of frames.\n";
   }
@@ -72,6 +73,16 @@ AnimBundleMaker(EggTable *root) : _root(root) {
 AnimBundleNode *AnimBundleMaker::
 make_node() {
   return new AnimBundleNode(make_bundle());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimBundleMaker::make_qpnode
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+qpAnimBundleNode *AnimBundleMaker::
+make_qpnode() {
+  return new qpAnimBundleNode("", make_bundle());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -196,7 +207,7 @@ build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
       if (this_node == NULL) {
         this_node = create_xfm_channel((*ci), egg_table->get_name(), parent);
       } else {
-        egg2sg_cat.warning()
+        egg2pg_cat.warning()
           << "Duplicate xform table under node "
           << egg_table->get_name() << "\n";
       }
@@ -271,7 +282,7 @@ create_xfm_channel(EggNode *egg_node, const string &name,
     return create_xfm_channel(egg_anim, name, parent);
   }
 
-  egg2sg_cat.warning()
+  egg2pg_cat.warning()
     << "Inappropriate node named xform under node "
     << name << "\n";
   return NULL;
@@ -304,7 +315,7 @@ create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
       EggSAnimData *child = DCAST(EggSAnimData, *ci);
 
       if (child->get_name().empty()) {
-        egg2sg_cat.warning()
+        egg2pg_cat.warning()
           << "Unnamed subtable of <Xfm$Anim_S$> " << name
           << "\n";
       } else {
@@ -312,12 +323,12 @@ create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
 
         if (child->get_name().length() > 1 ||
             !table->is_valid_id(table_id)) {
-          egg2sg_cat.warning()
+          egg2pg_cat.warning()
             << "Unexpected table name " << child->get_name()
             << ", child of " << name << "\n";
 
         } else if (table->has_table(table_id)) {
-          egg2sg_cat.warning()
+          egg2pg_cat.warning()
             << "Duplicate table definition for " << table_id
             << " under " << name << "\n";
 

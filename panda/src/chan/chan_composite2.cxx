@@ -1,6 +1,7 @@
 
 #include "animBundle.cxx"
 #include "animBundleNode.cxx"
+#include "qpanimBundleNode.cxx"
 #include "animChannel.cxx"
 #include "animChannelBase.cxx"
 #include "animChannelMatrixXfmTable.cxx"

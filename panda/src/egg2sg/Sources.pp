@@ -11,13 +11,11 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES \
-     animBundleMaker.h characterMaker.h computedVerticesMaker.I  \
-     computedVerticesMaker.h config_egg2sg.h  \
+     config_egg2sg.h  \
      deferredArcProperty.h deferredArcTraverser.h  \
      eggLoader.h load_egg_file.h loaderFileTypeEgg.h 
 
   #define INCLUDED_SOURCES \
-     animBundleMaker.cxx characterMaker.cxx computedVerticesMaker.cxx  \
      config_egg2sg.cxx deferredArcProperty.cxx  \
      deferredArcTraverser.cxx eggLoader.cxx  \
      load_egg_file.cxx loaderFileTypeEgg.cxx 

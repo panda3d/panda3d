@@ -20,6 +20,7 @@
 
 #include "qpeggLoader.h"
 #include "config_egg2pg.h"
+#include "nodeChain.h"
 #include "renderState.h"
 #include "transformState.h"
 #include "textureAttrib.h"
@@ -48,7 +49,10 @@
 #include "eggBin.h"
 #include "eggTable.h"
 #include "eggBinner.h"
-#include "nodeChain.h"
+#include "qpcharacterMaker.h"
+#include "qpcharacter.h"
+#include "animBundleMaker.h"
+#include "qpanimBundleNode.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -283,7 +287,6 @@ void qpEggLoader::
 make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
                        const LMatrix4d *transform,
                        ComputedVerticesMaker &_comp_verts_maker) {
-  /*
   BuilderBucket bucket;
   setup_bucket(bucket, parent, egg_prim);
 
@@ -396,7 +399,6 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
   }
 
   _builder.add_prim(bucket, bprim);
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1338,11 +1340,9 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
   }
 
   if (egg_group->get_dart_type() != EggGroup::DT_none) {
-    /*
     // A group with the <Dart> flag set means to create a character.
-    CharacterMaker char_maker(egg_group, *this);
+    qpCharacterMaker char_maker(egg_group, *this);
     node = char_maker.make_node();
-    */
 
   } else if (egg_group->get_cs_type() != EggGroup::CST_none &&
              egg_group->get_cs_type() != EggGroup::CST_geode) {
@@ -1493,8 +1493,6 @@ create_group_arc(EggGroup *egg_group, PandaNode *parent, PandaNode *node) {
 ////////////////////////////////////////////////////////////////////
 PandaNode *qpEggLoader::
 make_node(EggTable *egg_table, PandaNode *parent) {
-  return (PandaNode *)NULL;
-  /*
   if (egg_table->get_table_type() != EggTable::TT_bundle) {
     // We only do anything with bundles.  Isolated tables are treated
     // as ordinary groups.
@@ -1504,9 +1502,9 @@ make_node(EggTable *egg_table, PandaNode *parent) {
   // It's an actual bundle, so make an AnimBundle from it and its
   // descendants.
   AnimBundleMaker bundle_maker(egg_table);
-  AnimBundleNode *node = bundle_maker.make_node();
-  return new PandaNode(parent, node);
-  */
+  qpAnimBundleNode *node = bundle_maker.make_qpnode();
+  parent->add_child(node);
+  return node;
 }
 
 

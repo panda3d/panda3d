@@ -19,25 +19,26 @@
 #ifndef COMPUTEDVERTICESMAKER_H
 #define COMPUTEDVERTICESMAKER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "computedVerticesMakerEntity.h"
 
-#include <computedVerticesMorph.h>
-#include <pointerToArray.h>
-#include <luse.h>
-#include <typedef.h>
-#include <eggMorphList.h>
-#include <pta_Vertexf.h>
-#include <pta_Normalf.h>
-#include <pta_Colorf.h>
-#include <pta_TexCoordf.h>
+#include "computedVerticesMorph.h"
+#include "pointerToArray.h"
+#include "luse.h"
+#include "typedef.h"
+#include "eggMorphList.h"
+#include "pta_Vertexf.h"
+#include "pta_Normalf.h"
+#include "pta_Colorf.h"
+#include "pta_TexCoordf.h"
 
 #include "pset.h"
 #include "pmap.h"
 
 class ComputedVertices;
 class CharacterMaker;
+class qpCharacterMaker;
 class EggNode;
 class EggVertex;
 
@@ -80,6 +81,9 @@ public:
 
   ComputedVertices *make_computed_vertices(Character *character,
                                            CharacterMaker &char_maker);
+
+  ComputedVertices *make_computed_vertices(qpCharacter *character,
+                                           qpCharacterMaker &char_maker);
 
   void write(ostream &out) const;
 

@@ -17,19 +17,19 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "characterMaker.h"
-#include "eggLoader.h"
-#include "config_egg2sg.h"
+#include "qpeggLoader.h"
+#include "config_egg2pg.h"
 
-#include <computedVertices.h>
-#include <eggGroup.h>
-#include <eggPrimitive.h>
-#include <partGroup.h>
-#include <characterJoint.h>
-#include <characterJointBundle.h>
-#include <characterSlider.h>
-#include <character.h>
-#include <renderRelation.h>
-#include <transformTransition.h>
+#include "computedVertices.h"
+#include "eggGroup.h"
+#include "eggPrimitive.h"
+#include "partGroup.h"
+#include "characterJoint.h"
+#include "characterJointBundle.h"
+#include "characterSlider.h"
+#include "character.h"
+#include "renderRelation.h"
+#include "transformTransition.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::Construtor
@@ -37,7 +37,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CharacterMaker::
-CharacterMaker(EggGroup *root, EggLoader &loader)
+CharacterMaker(EggGroup *root, EggLoaderBase &loader)
   : _loader(loader), _egg_root(root) {
 
   _character_node = new Character(_egg_root->get_name());

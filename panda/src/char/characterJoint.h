@@ -82,6 +82,7 @@ public:
   // character.  It does not store any meaningful value after
   // creation is complete.
   PT_NamedNode _geom_node;
+  PT(PandaNode) _qpgeom_node;
 
   // These are filled in as the joint animates.
   LMatrix4f _net_transform;

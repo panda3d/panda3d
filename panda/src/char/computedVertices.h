@@ -19,15 +19,16 @@
 #ifndef COMPUTEDVERTICES_H
 #define COMPUTEDVERTICES_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "dynamicVertices.h"
 #include "computedVerticesMorph.h"
 
-#include <vector_ushort.h>
-#include <typedWritableReferenceCount.h>
+#include "vector_ushort.h"
+#include "typedWritableReferenceCount.h"
 
 class Character;
+class qpCharacter;
 class CharacterJoint;
 
 ////////////////////////////////////////////////////////////////////
@@ -42,7 +43,9 @@ public:
   INLINE ComputedVertices();
 
   void update(Character *character);
+  void update(qpCharacter *character);
   void make_orig(Character *character);
+  void make_orig(qpCharacter *character);
 
   void write(ostream &out, Character *character) const;
 

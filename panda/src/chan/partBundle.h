@@ -19,17 +19,18 @@
 #ifndef PARTBUNDLE_H
 #define PARTBUNDLE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "partGroup.h"
 #include "animControl.h"
 #include "animControlCollection.h"
 
-#include <pointerTo.h>
-#include <iterator_types.h>
+#include "pointerTo.h"
+#include "iterator_types.h"
 
 class AnimBundle;
 class PartBundleNode;
+class qpPartBundleNode;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PartBundle
@@ -93,6 +94,7 @@ PUBLISHED:
   INLINE BlendType get_blend_type() const;
 
   INLINE PartBundleNode *get_node() const;
+  INLINE qpPartBundleNode *get_qpnode() const;
 
   void clear_control_effects();
   void set_control_effect(AnimControl *control, float effect);
@@ -131,6 +133,7 @@ protected:
 
   BlendType _blend_type;
   PartBundleNode *_node;
+  qpPartBundleNode *_qpnode;
 
   AnimControl *_last_control_set;
   ChannelBlend _blend;
@@ -162,6 +165,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class PartBundleNode;
+  friend class qpPartBundleNode;
 };
 
 inline ostream &operator <<(ostream &out, const PartBundle &bundle) {

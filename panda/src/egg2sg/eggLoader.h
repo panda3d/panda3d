@@ -22,6 +22,7 @@
 #include <pandabase.h>
 
 #include "deferredArcTraverser.h"
+#include "eggLoaderBase.h"
 
 #include <eggData.h>
 #include <eggTexture.h>
@@ -62,7 +63,7 @@ class CollisionPolygon;
 //
 //               This class isn't exported from this package.
 ////////////////////////////////////////////////////////////////////
-class EggLoader {
+class EggLoader : public EggLoaderBase {
 public:
   EggLoader();
   EggLoader(const EggData &data);

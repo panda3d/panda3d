@@ -130,6 +130,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class Character;
+  friend class qpCharacter;
 };
 
 #include "partGroup.I"

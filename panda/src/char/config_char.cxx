@@ -19,6 +19,7 @@
 
 #include "config_char.h"
 #include "character.h"
+#include "qpcharacter.h"
 #include "characterJoint.h"
 #include "characterJointBundle.h"
 #include "characterSlider.h"
@@ -67,6 +68,7 @@ init_libchar() {
   initialized = true;
 
   Character::init_type();
+  qpCharacter::init_type();
   CharacterJoint::init_type();
   CharacterJointBundle::init_type();
   CharacterSlider::init_type();
@@ -82,6 +84,7 @@ init_libchar() {
   //Registration of writeable object's creation
   //functions with BamReader's factory
   Character::register_with_read_factory();
+  qpCharacter::register_with_read_factory();
   CharacterJoint::register_with_read_factory();
   CharacterJointBundle::register_with_read_factory();
   CharacterSlider::register_with_read_factory();

@@ -19,11 +19,8 @@
 #ifndef ANIMBUNDLEMAKER_H
 #define ANIMBUNDLEMAKER_H
 
-#include <pandabase.h>
-
-#include <typedef.h>
-
-#include <string>
+#include "pandabase.h"
+#include "typedef.h"
 
 class EggNode;
 class EggGroupNode;
@@ -33,6 +30,7 @@ class EggSAnimData;
 class AnimGroup;
 class AnimBundle;
 class AnimBundleNode;
+class qpAnimBundleNode;
 class AnimChannelScalarTable;
 class AnimChannelMatrixXfmTable;
 
@@ -46,6 +44,7 @@ public:
   AnimBundleMaker(EggTable *root);
 
   AnimBundleNode *make_node();
+  qpAnimBundleNode *make_qpnode();
 
 private:
   AnimBundle *make_bundle();
