@@ -669,12 +669,15 @@ class Actor(PandaObject, NodePath):
         else:
             Actor.notify.warning("no part named %s!" % (partName))
 
-    def exposeJoint(self, node, partName, jointName, lodName="lodRoot"):
+    def exposeJoint(self, node, partName, jointName, lodName="lodRoot",
+                    localTransform = 0):
         """exposeJoint(self, NodePath, string, string, key="lodRoot")
         Starts the joint animating the indicated node.  As the joint
         animates, it will transform the node by the corresponding
         amount.  This will replace whatever matrix is on the node each
-        frame."""
+        frame.  The default is to expose the net transform from the root,
+        but if localTransform is true, only the node's local transform
+        from its parent is exposed."""
         partBundleDict = self.__partBundleDict.get(lodName)
         if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
@@ -694,7 +697,10 @@ class Actor(PandaObject, NodePath):
             node = self.attachNewNode(jointName)
 
         if (joint):
-            joint.addNetTransform(node.node())
+            if localTransform:
+                joint.addLocalTransform(node.node())
+            else:
+                joint.addNetTransform(node.node())
         else:
             Actor.notify.warning("no joint named %s!" % (jointName))
 
