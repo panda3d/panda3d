@@ -25,9 +25,15 @@ class ModelEntity(BasicEntities.NodePathEntity):
 
         # HACK SDN: special code for moving crate wall collisions down
         if self.modelPath == "phase_9/models/cogHQ/woodCrateB.bam":
+            # move walls down
             cNode = self.find("**/wall")
-            if not cNode.isEmpty():
-                cNode.setZ(-.5)
+            cNode.setZ(-1.25)
+            # duplicate the floor and move it down to crate a
+            # catch effect for low-hopped toons
+            colNode = self.find("**/collision")
+            floor = colNode.find("**/floor")
+            floor2 = floor.copyTo(colNode)
+            floor2.setZ(-1.25)
 
     def setModelPath(self, path):
         self.modelPath = path
