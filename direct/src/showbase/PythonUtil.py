@@ -488,6 +488,8 @@ class Functor:
         self._function = function
         self._args = args
         self._kargs = kargs
+        self.__name__ = 'Functor: %s' % self._function.__name__
+        self.__doc__ = self._function.__doc__
         
     def __call__(self, *args, **kargs):
         """call function"""
