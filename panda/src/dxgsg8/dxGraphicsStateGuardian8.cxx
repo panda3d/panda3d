@@ -64,6 +64,32 @@
 #include "dxGraphicsStateGuardian8.h"
 #include "d3dx8.h"
 
+#ifdef _DEBUG
+// defns for print formatting in debugger
+typedef struct {
+  float x,y,z;
+  float nx,ny,nz;
+  D3DCOLOR diffuse;
+  float u,v;
+} POS_NORM_COLOR_TEX_VERTEX;
+
+typedef struct {
+  float x,y,z;
+  D3DCOLOR diffuse;
+  float u,v;
+} POS_COLOR_TEX_VERTEX;
+
+typedef struct {
+  float x,y,z;
+  float u,v;
+} POS_TEX_VERTEX;
+
+// define junk vars so symbols are included in dbginfo
+POS_TEX_VERTEX junk11;  
+POS_COLOR_TEX_VERTEX junk22;  
+POS_NORM_COLOR_TEX_VERTEX junk33;
+#endif
+
 // disable nameless struct 'warning'
 #pragma warning (disable : 4201)
 
@@ -2191,17 +2217,6 @@ draw_line(GeomLine* geom, GeomContext *gc) {
     _perPrim = 0x0;
     _perComp = 0x0;
 
-    switch(geom->get_binding(G_NORMAL)) {
-        case G_PER_VERTEX:
-            _perVertex |=  PER_NORMAL;
-            break;
-        case G_PER_COMPONENT:
-            _perComp |=  PER_NORMAL;
-            break;
-        default:
-            _perPrim |=  PER_NORMAL;
-    }
-
     switch(geom->get_binding(G_COLOR)) {
         case G_PER_VERTEX:
             _perVertex |=  PER_COLOR;
@@ -2211,6 +2226,17 @@ draw_line(GeomLine* geom, GeomContext *gc) {
             break;
         default:
             _perPrim |= PER_COLOR;
+    }
+
+    switch(geom->get_binding(G_NORMAL)) {
+        case G_PER_VERTEX:
+            _perVertex |=  PER_NORMAL;
+            break;
+        case G_PER_COMPONENT:
+            _perComp |=  PER_NORMAL;
+            break;
+        default:
+            _perPrim |=  PER_NORMAL;
     }
 
     size_t vertex_size = draw_prim_setup(geom);
@@ -2240,10 +2266,10 @@ draw_line(GeomLine* geom, GeomContext *gc) {
     if(!_bDrawPrimDoSetupVertexBuffer) {
         if (_tmp_fvfOverrunBuf == NULL) {
             nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
-            hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, nVerts, _pFvfBufBasePtr, vertex_size);
+            hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, nPrims, _pFvfBufBasePtr, vertex_size);
         } else {
             nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_tmp_fvfOverrunBuf));
-            hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, nVerts, _tmp_fvfOverrunBuf, vertex_size);
+            hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, nPrims, _tmp_fvfOverrunBuf, vertex_size);
             delete [] _tmp_fvfOverrunBuf;
         }
         TestDrawPrimFailure(DrawPrim,hr,scrn.pD3DDevice,nVerts,0);
@@ -2298,6 +2324,17 @@ draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
     _perPrim = 0x0;
     _perComp = 0x0;
 
+    switch(geom->get_binding(G_COLOR)) {
+        case G_PER_VERTEX:
+            _perVertex |= PER_COLOR;
+            break;
+        case G_PER_COMPONENT:
+            _perComp |= PER_COLOR;
+            break;
+        default:
+            _perPrim |= PER_COLOR;
+    }
+
     switch(geom->get_binding(G_NORMAL)) {
         case G_PER_VERTEX:
             _perVertex |=  PER_NORMAL;
@@ -2307,17 +2344,6 @@ draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
             break;
         default:
             _perPrim |= PER_NORMAL;
-    }
-
-    switch(geom->get_binding(G_COLOR)) {
-        case G_PER_VERTEX:
-            _perVertex |=  PER_COLOR;
-            break;
-        case G_PER_COMPONENT:
-            _perComp |= PER_COLOR;
-            break;
-        default:
-            _perPrim |= PER_COLOR;
     }
 
     size_t vertex_size = draw_prim_setup(geom);
@@ -2361,7 +2387,7 @@ draw_linestrip_base(Geom* geom, GeomContext *gc, bool bConnectEnds) {
         nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
 
         if(!_bDrawPrimDoSetupVertexBuffer) {
-            HRESULT hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_LINESTRIP, nVerts, _pFvfBufBasePtr, vertex_size);
+            HRESULT hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_LINESTRIP, nVerts-1, _pFvfBufBasePtr, vertex_size);
             TestDrawPrimFailure(DrawPrim,hr,scrn.pD3DDevice,nVerts,0);
         } else {
             COPYVERTDATA_2_VERTEXBUFFER(D3DPT_LINESTRIP,nVerts);
@@ -2757,14 +2783,16 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
         CurVertCount+=4;
     }
 
-    DWORD nVerts= nPrims << 2;  // 4*nPrims
+    DWORD nVerts= nPrims << 2;  // 4*nPrims verts in vert array
+    DWORD numTris = nPrims << 1;  // 2*nPrims
 
     // cant do tristrip/fan since multiple quads arent connected
     // best we can do is indexed primitive, which sends 2 redundant indices instead of sending 2 redundant full verts
     HRESULT hr = scrn.pD3DDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0,  // start index in array
-                                                         nVerts, nPrims, _index_buf, D3DFMT_INDEX16,
+                                                         nVerts, numTris, 
+                                                         _index_buf, D3DFMT_INDEX16,
                                                          _pFvfBufBasePtr, vertex_size);
-    TestDrawPrimFailure(DrawIndexedPrim,hr,scrn.pD3DDevice,QUADVERTLISTLEN*nPrims,nPrims);
+    TestDrawPrimFailure(DrawIndexedPrim,hr,scrn.pD3DDevice,QUADVERTLISTLEN*nPrims,numTris);
 
     _pCurFvfBufPtr = NULL;
     delete [] SpriteArray;
@@ -2875,10 +2903,16 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 
         bool bPerPrimNormal;
 
+        bool bPerPrimColor=(ColorBinding == G_PER_PRIM);
+        if(bPerPrimColor)
+           _perPrim = PER_COLOR;
+          else if(ColorBinding == G_PER_VERTEX)    
+                 _perVertex = PER_COLOR;
+
         if(bUseTexCoordOnlyLoop) {
            _perVertex |= PER_TEXCOORD;  // TexCoords are either G_OFF or G_PER_VERTEX 
         } else {
-            if(NormalBinding == G_PER_VERTEX)   
+            if(NormalBinding == G_PER_VERTEX)
                 _perVertex |= PER_NORMAL;
             else if(NormalBinding == G_PER_PRIM) 
                     _perPrim |= PER_NORMAL;
@@ -2888,12 +2922,6 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
             if(TexCoordBinding == G_PER_VERTEX) 
                _perVertex |= PER_TEXCOORD;
         } 
-
-        bool bPerPrimColor=(ColorBinding == G_PER_PRIM);
-        if(bPerPrimColor)
-           _perPrim |= PER_COLOR;
-          else if(ColorBinding == G_PER_VERTEX)    
-                 _perVertex |= PER_COLOR;
 
         size_t vertex_size = draw_prim_setup(geom);
 
@@ -2923,7 +2951,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
         nassertv((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
 
         if(!_bDrawPrimDoSetupVertexBuffer) {
-            hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, nVerts, _pFvfBufBasePtr, vertex_size);
+            hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, nPrims, _pFvfBufBasePtr, vertex_size);
             TestDrawPrimFailure(DrawPrim,hr,scrn.pD3DDevice,nVerts,nPrims);
         } else {
             COPYVERTDATA_2_VERTEXBUFFER(D3DPT_TRIANGLELIST,nVerts);
@@ -2947,8 +2975,8 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 
     DWORD FVFType =  D3DFVF_XYZ | (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0)) ;
     set_vertex_format(FVFType);
-    HRESULT hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST,  vert_buf, nPrims*3, 5*sizeof(float));
-    TestDrawPrimFailure(DrawPrim,hr,scrn.pD3DDevice,nPrims*3,nPrims);
+    HRESULT hr = scrn.pD3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST,  vert_buf, 1, 5*sizeof(float));
+    TestDrawPrimFailure(DrawPrim,hr,scrn.pD3DDevice,3,1);
 #endif
 }
 
@@ -3036,9 +3064,21 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
         if(bUseTexCoordOnlyLoop) {
            if(bPerPrimColor) {
-                _perPrim |= PER_COLOR;
+                _perPrim = PER_COLOR;
            }
         } else {
+            switch (ColorBinding) {
+                case G_PER_PRIM:
+                    _perPrim = PER_COLOR;
+                    break;
+                case G_PER_COMPONENT:
+                    _perComp = PER_COLOR;
+                    break;
+                case G_PER_VERTEX:
+                    _perVertex = PER_COLOR;
+                    break;
+            }
+
             switch (NormalBinding) {
                 case G_PER_VERTEX:
                     _perVertex |= PER_NORMAL;
@@ -3055,18 +3095,6 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
             if (TexCoordBinding == G_PER_VERTEX)
                 _perVertex |= PER_TEXCOORD;
-
-            switch (ColorBinding) {
-                case G_PER_PRIM:
-                    _perPrim |= PER_COLOR;
-                    break;
-                case G_PER_COMPONENT:
-                    _perComp |= PER_COLOR;
-                    break;
-                case G_PER_VERTEX:
-                    _perVertex |= PER_COLOR;
-                    break;
-            }
         }
 
         size_t vertex_size = draw_prim_setup(geom);
@@ -3131,10 +3159,11 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             }
 
             assert((nVerts*vertex_size) == (_pCurFvfBufPtr-_pFvfBufBasePtr));
+            DWORD numTris=nVerts-2;
 
             if(!_bDrawPrimDoSetupVertexBuffer) {
-                hr = scrn.pD3DDevice->DrawPrimitiveUP(trilisttype, nVerts, _pFvfBufBasePtr, vertex_size);
-                TestDrawPrimFailure(DrawPrim,hr,scrn.pD3DDevice,nVerts,nVerts-2);
+                hr = scrn.pD3DDevice->DrawPrimitiveUP(trilisttype, numTris, _pFvfBufBasePtr, vertex_size);
+                TestDrawPrimFailure(DrawPrim,hr,scrn.pD3DDevice,nVerts,numTris);
             } else {
                 COPYVERTDATA_2_VERTEXBUFFER(trilisttype,nVerts);
             }                       
