@@ -16,6 +16,11 @@ bool* AudioManager::_quit = (bool*)0L;
 thread* AudioManager::_spawned = (thread*)0L;
 AudioManager::LoopSet* AudioManager::_loopset = (AudioManager::LoopSet*)0L;
 AudioManager::LoopSet* AudioManager::_loopcopy = (AudioManager::LoopSet*)0L;
+bool AudioManager::_sfx_active = false;
+bool AudioManager::_music_active = false;
+bool AudioManager::_master_volume_change = false;
+float AudioManager::_master_sfx_volume = 0.;
+float AudioManager::_master_music_volume = 0.;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::destructor
@@ -68,8 +73,10 @@ void AudioManager::ns_update(void) {
 	  audio_cat->debug() << "AudioManager::ns_update looping '"
 			     << sound->get_name() << "'" << endl;
 	AudioManager::play(sound);
-      }
+      } else if (AudioManager::_master_volume_change)
+	sound->get_player()->adjust_volume(sound->get_state());
     }
+  AudioManager::_master_volume_change = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,6 +119,7 @@ void AudioManager::ns_play(AudioSound* sound, float start_time) {
     this->ns_stop(sound);
   sound->get_player()->play_sound(sound->get_sound(), sound->get_state(),
 				  start_time);
+  sound->get_player()->adjust_volume(sound->get_state());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -168,7 +176,8 @@ void* AudioManager::spawned_update(void* data) {
     ipc_traits::sleep(0, audio_auto_update_delay);
   }
   *flag = false;
-  audio_cat->debug() << "exiting update thread" << endl;
+  if (audio_cat->is_debug())
+    audio_cat->debug() << "exiting update thread" << endl;
   return (void*)0L;
 }
 
@@ -226,6 +235,7 @@ void AudioManager::ns_shutdown(void) {
     (*_shutdown_func)();
   if (_spawned != (thread*)0L)
     while (*_quit);
-  audio_cat->debug() << "update thread has shutdown" << endl;
+  if (audio_cat->is_debug())
+    audio_cat->debug() << "update thread has shutdown" << endl;
   delete _quit;
 }

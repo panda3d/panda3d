@@ -32,6 +32,22 @@ static IDirectSound* musicDirectSound = NULL;
     return; \
   }
 
+#define CHECK_RESULT_SFX(_result, _msg) \
+  if (FAILED(_result)) { \
+    audio_cat->error() << _msg << " at " << __FILE__ << ":" << __LINE__ \
+                       << endl; \
+    AudioManager::set_sfx_active(false); \
+    return; \
+  }
+
+#define CHECK_RESULT_MUSIC(_result, _msg) \
+  if (FAILED(_result)) { \
+    audio_cat->error() << _msg << " at " << __FILE__ << ":" << __LINE__ \
+                       << endl; \
+    AudioManager::set_music_active(false); \
+    return; \
+  }
+
 // #define MULTI_TO_WIDE(_in, _out) MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, _in, -1, _out, DMUS_MAX_FILENAME)
 #define MULTI_TO_WIDE(x,y) MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, y, -1, x, _MAX_PATH);
 
@@ -62,7 +78,7 @@ static void initialize(void) {
 
   // create a direct sound object
   result = DirectSoundCreate(NULL, &soundDirectSound, NULL);
-  CHECK_RESULT(result, "could not create a Direct Sound (tm) object (c)");
+  CHECK_RESULT_SFX(result, "could not create a Direct Sound (tm) object (c)");
 
   // set the cooperative level
   result = soundDirectSound->SetCooperativeLevel(global_hwnd, DSSCL_PRIORITY);
@@ -70,7 +86,7 @@ static void initialize(void) {
     audio_cat->warning() << "could not set Direct Sound co-op level to "
 			 << "DSSCL_PRIORITY, trying DSSCL_NORMAL" << endl;
     result = soundDirectSound->SetCooperativeLevel(global_hwnd, DSSCL_NORMAL);
-    CHECK_RESULT(result, "failed setting to DSSCL_NORMAL");
+    CHECK_RESULT_SFX(result, "failed setting to DSSCL_NORMAL");
   }
 
   // Move any unused portions of onboard sound memory to a contiguous block
@@ -84,7 +100,7 @@ static void initialize(void) {
   dsbd.dwFlags = DSBCAPS_PRIMARYBUFFER;
   result = soundDirectSound->CreateSoundBuffer(&dsbd, &soundPrimaryBuffer,
 					       NULL);
-  CHECK_RESULT(result, "could not create primary buffer");
+  CHECK_RESULT_SFX(result, "could not create primary buffer");
 
   // set primary buffer format to 22kHz and 16-bit output
   // COME BACK LATER TO MAKE THIS CONFIG
@@ -467,7 +483,7 @@ void WinMusic::init(void) {
   // initialize performance object
   // result = _performance->Init(&musicDirectMusic, NULL, NULL);
   result = _performance->Init(NULL, NULL, NULL);
-  CHECK_RESULT(result, "could not initialize performance object");
+  CHECK_RESULT_MUSIC(result, "could not initialize performance object");
 
 /*
   // create the output synth object
@@ -518,7 +534,7 @@ void WinMusic::init(void) {
     audio_cat->error() << "got E_OUTOFMEMORY" << endl;
   else if (result == E_POINTER)
     audio_cat->error() << "got E_POINTER" << endl;
-  CHECK_RESULT(result, "failed to add synth to performance");
+  CHECK_RESULT_MUSIC(result, "failed to add synth to performance");
 
 /*
   // allocate performance channels
@@ -625,10 +641,12 @@ WinMusic* WinMusic::load_midi(Filename filename) {
 */
   string stmp = filename.to_os_specific();
   MULTI_TO_WIDE(fdesc.wszFileName, stmp.c_str());
-  audio_cat->debug() << "os_specific name '" << stmp << "'" << endl;
+  if (audio_cat->is_debug())
+    audio_cat->debug() << "os_specific name '" << stmp << "'" << endl;
   if (filename.is_local()) {
     fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME;
-    audio_cat->debug() << "is local" << endl;
+    if (audio_cat->is_debug())
+      audio_cat->debug() << "is local" << endl;
     char szDir[2] = ".";
     WCHAR wszDir[2];
     MULTI_TO_WIDE(wszDir, szDir);
@@ -643,7 +661,8 @@ WinMusic* WinMusic::load_midi(Filename filename) {
     }
   } else {
     fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME | DMUS_OBJ_FULLPATH;
-    audio_cat->debug() << "is not local" << endl;
+    if (audio_cat->is_debug())
+      audio_cat->debug() << "is not local" << endl;
   }
   result = loader->GetObject(&fdesc, IID_IDirectMusicSegment2,
 			     (void**)&(ret->_music));
@@ -657,8 +676,6 @@ WinMusic* WinMusic::load_midi(Filename filename) {
   ret->_music->SetParam(GUID_StandardMIDIFile, -1, 0, 0,
 			(void*)(ret->_performance));
   ret->_music->SetParam(GUID_Download, -1, 0, 0, (void*)(ret->_performance));
-  // ret->_buffer->SetVolume(0);
-  // ret->_buffer->SetPan(0);
   if (audio_cat->is_debug())
     audio_cat->debug() << "out of WinMusic::load_midi()  _music = "
                        << (void*)ret->_music << endl;
@@ -824,6 +841,8 @@ void WinSamplePlayer::play_sound(AudioTraits::SoundClass* sample,
   initialize();
   if (!audio_is_active)
     return;
+  if (!AudioManager::get_sfx_active())
+    return;
   WinSample* wsample = (WinSample*)sample;
   WinSamplePlaying* wplay = (WinSamplePlaying*)play;
   LPDIRECTSOUNDBUFFER chan = wplay->get_channel();
@@ -851,6 +870,8 @@ void WinSamplePlayer::stop_sound(AudioTraits::SoundClass*,
   initialize();
   if (!audio_is_active)
     return;
+  if (!AudioManager::get_sfx_active())
+    return;
   WinSamplePlaying* wplay = (WinSamplePlaying*)play;
   LPDIRECTSOUNDBUFFER chan = wplay->get_channel();
   if (chan)
@@ -863,10 +884,31 @@ void WinSamplePlayer::set_volume(AudioTraits::PlayingClass* play, float v) {
   initialize();
   if (!audio_is_active)
     return;
+  if (!AudioManager::get_sfx_active())
+    return;
   WinSamplePlaying* wplay = (WinSamplePlaying*)play;
   LPDIRECTSOUNDBUFFER chan = wplay->get_channel();
+  float tmpv = v * AudioManager::get_master_sfx_volume();
   if (chan) {
-    LONG v2 = (v * (DSBVOLUME_MAX - DSBVOLUME_MIN)) + DSBVOLUME_MIN;
+    LONG v2 = (tmpv * (DSBVOLUME_MAX - DSBVOLUME_MIN)) + DSBVOLUME_MIN;
+    chan->SetVolume(v2);
+  }
+  play->set_volume(v);
+}
+
+void WinSamplePlayer::adjust_volume(AudioTraits::PlayingClass* play) {
+  if (audio_cat->is_debug())
+    audio_cat->debug() << "winsampleplayer adjust_volume" << endl;
+  initialize();
+  if (!audio_is_active)
+    return;
+  if (!AudioManager::get_sfx_active())
+    return;
+  WinSamplePlaying* wplay = (WinSamplePlaying*)play;
+  LPDIRECTSOUNDBUFFER chan = wplay->get_channel();
+  float tmpv = play->get_volume() * AudioManager::get_master_sfx_volume();
+  if (chan) {
+    LONG v2 = (tmpv * (DSBVOLUME_MAX - DSBVOLUME_MIN)) + DSBVOLUME_MIN;
     chan->SetVolume(v2);
   }
 }
@@ -895,6 +937,8 @@ void WinMusicPlayer::play_sound(AudioTraits::SoundClass* music,
     audio_cat->debug() << "in WinMusicPlayer::play_sound()" << endl;
   initialize();
   if (!audio_is_active)
+    return;
+  if (!AudioManager::get_music_active())
     return;
   WinMusic* wmusic = (WinMusic*)music;
   IDirectMusicPerformance* _perf = wmusic->get_performance();
@@ -935,6 +979,8 @@ void WinMusicPlayer::stop_sound(AudioTraits::SoundClass* music,
   IDirectMusicPerformance* _perf = wmusic->get_performance();
   IDirectMusicSegment* _msc = wmusic->get_music();
 
+  if (!AudioManager::get_music_active())
+    return;
   if (_perf && _msc) {
     HRESULT result = _perf->Stop(_msc, 0, 0, 0);
     if (result != S_OK)
@@ -947,8 +993,26 @@ void WinMusicPlayer::set_volume(AudioTraits::PlayingClass* play, float v) {
     audio_cat->debug() << "WinMusicPlayer::set_volume()" << endl;
   WinMusicPlaying* wplay = (WinMusicPlaying*)play;
   IDirectMusicPerformance* perf = wplay->get_performance();
+  float tmpv = v * AudioManager::get_master_music_volume();
+  if (!AudioManager::get_music_active())
+    return;
   if (perf) {
-    LONG v2 = (v * (DSBVOLUME_MAX - DSBVOLUME_MIN)) + DSBVOLUME_MIN;
+    LONG v2 = (tmpv * (DSBVOLUME_MAX - DSBVOLUME_MIN)) + DSBVOLUME_MIN;
+    perf->SetGlobalParam(GUID_PerfMasterVolume, &v2, sizeof(LONG));
+  }
+  play->set_volume(v);
+}
+
+void WinMusicPlayer::adjust_volume(AudioTraits::PlayingClass* play) {
+  if (audio_cat->is_debug())
+    audio_cat->debug() << "WinMusicPlayer::adjust_volume()" << endl;
+  WinMusicPlaying* wplay = (WinMusicPlaying*)play;
+  IDirectMusicPerformance* perf = wplay->get_performance();
+  float tmpv = play->get_volume() * AudioManager::get_master_music_volume();
+  if (!AudioManager::get_music_active())
+    return;
+  if (perf) {
+    LONG v2 = (tmpv * (DSBVOLUME_MAX - DSBVOLUME_MIN)) + DSBVOLUME_MIN;
     perf->SetGlobalParam(GUID_PerfMasterVolume, &v2, sizeof(LONG));
   }
 }

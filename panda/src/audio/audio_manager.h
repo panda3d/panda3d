@@ -33,7 +33,6 @@ private:
 
   typedef void UpdateFunc(void);
   typedef void ShutdownFunc(void);
-  //  typedef set<PT(AudioSound)> LoopSet;
   typedef set<AudioSound*> LoopSet;
   static AudioManager* _global_ptr;
   static UpdateFunc* _update_func;
@@ -43,6 +42,11 @@ private:
   static thread* _spawned;
   static LoopSet* _loopset;
   static LoopSet* _loopcopy;
+  static bool _sfx_active;
+  static bool _music_active;
+  static float _master_sfx_volume;
+  static float _master_music_volume;
+  static bool _master_volume_change;
 public:
   virtual ~AudioManager(void);
 
@@ -58,6 +62,16 @@ PUBLISHED:
   INLINE static void update(void);
   INLINE static void spawn_update(void);
   INLINE static void shutdown(void);
+  INLINE static void set_master_sfx_volume(float);
+  INLINE static void set_master_music_volume(float);
+  INLINE static float get_master_sfx_volume(void);
+  INLINE static float get_master_music_volume(void);
+  INLINE static void set_all_sound_active(bool);
+  INLINE static bool get_all_sound_active(void);
+  INLINE static void set_sfx_active(bool);
+  INLINE static void set_music_active(bool);
+  INLINE static bool get_sfx_active(void);
+  INLINE static bool get_music_active(void);
 };
 
 #include "audio_manager.I"

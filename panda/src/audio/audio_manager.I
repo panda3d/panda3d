@@ -95,4 +95,101 @@ INLINE bool AudioManager::get_loop(AudioSound* sound) {
 //               directly; there's only supposed to be one AudioManager
 //               in the universe and it constructs itself.
 ////////////////////////////////////////////////////////////////////
-INLINE AudioManager::AudioManager(void) {}
+INLINE AudioManager::AudioManager(void) {
+  _sfx_active = audio_sfx_active;
+  _music_active = audio_music_active;
+  _master_sfx_volume = audio_master_sfx_volume;
+  _master_music_volume = audio_master_music_volume;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::set_master_sfx_volume
+//       Access: Public, Static
+//  Description: set the overall volume of SFX
+////////////////////////////////////////////////////////////////////
+INLINE void AudioManager::set_master_sfx_volume(float v) {
+  AudioManager::_master_sfx_volume = v;
+  AudioManager::_master_volume_change = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::set_master_music_volume
+//       Access: Public, Static
+//  Description: set the overall volume of music
+////////////////////////////////////////////////////////////////////
+INLINE void AudioManager::set_master_music_volume(float v) {
+  AudioManager::_master_music_volume = v;
+  AudioManager::_master_volume_change = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::get_master_sfx_volume
+//       Access: Public, Static
+//  Description: return the overall volume of SFX
+////////////////////////////////////////////////////////////////////
+INLINE float AudioManager::get_master_sfx_volume(void) {
+  return AudioManager::_master_sfx_volume;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::get_master_music_volume
+//       Access: Public, Static
+//  Description: return the overall volume of music
+////////////////////////////////////////////////////////////////////
+INLINE float AudioManager::get_master_music_volume(void) {
+  return AudioManager::_master_music_volume;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::set_all_sound_active
+//       Access: Public, Static
+//  Description: turn on/off all audio
+////////////////////////////////////////////////////////////////////
+INLINE void AudioManager::set_all_sound_active(bool f) {
+  audio_is_active = f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::set_all_sound_active
+//       Access: Public, Static
+//  Description: turn on/off all audio
+////////////////////////////////////////////////////////////////////
+INLINE bool AudioManager::get_all_sound_active(void) {
+  return audio_is_active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::set_sfx_active
+//       Access: Public, Static
+//  Description: turn on/off SFX
+////////////////////////////////////////////////////////////////////
+INLINE void AudioManager::set_sfx_active(bool f) {
+  AudioManager::_sfx_active = f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::set_music_active
+//       Access: Public, Static
+//  Description: turn on/off music
+////////////////////////////////////////////////////////////////////
+INLINE void AudioManager::set_music_active(bool f) {
+  AudioManager::_music_active = f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::get_sfx_active
+//       Access: Public, Static
+//  Description: return the state of SFX playing
+////////////////////////////////////////////////////////////////////
+INLINE bool AudioManager::get_sfx_active(void) {
+  return AudioManager::_sfx_active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::get_music_active
+//       Access: Public, Static
+//  Description: return the state of music playing
+////////////////////////////////////////////////////////////////////
+INLINE bool AudioManager::get_music_active(void) {
+  return AudioManager::_music_active;
+}

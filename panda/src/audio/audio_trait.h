@@ -31,13 +31,16 @@ public:
   class EXPCL_PANDA PlayingClass {
   protected:
     SoundClass* _sound;
+    float _volume;
   public:
-    PlayingClass(SoundClass* s) : _sound(s) {}
+    PlayingClass(SoundClass* s) : _sound(s), _volume(1.) {}
     virtual ~PlayingClass(void);
 
     enum PlayingStatus { BAD, READY, PLAYING } ;
 
     virtual PlayingStatus status(void) = 0;
+    INLINE void set_volume(float v) { _volume = v; }
+    INLINE float get_volume(void) const { return _volume; }
   };
   class EXPCL_PANDA PlayerClass {
   public:
@@ -47,6 +50,7 @@ public:
     virtual void play_sound(SoundClass*, PlayingClass*, float) = 0;
     virtual void stop_sound(SoundClass*, PlayingClass*) = 0;
     virtual void set_volume(PlayingClass*, float) = 0;
+    virtual void adjust_volume(PlayingClass*) = 0;
   };
 };
 

@@ -100,6 +100,7 @@ public:
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
+  virtual void adjust_volume(AudioTraits::PlayingClass*);
 public:
   // used by the readers
   static WinSamplePlayer* get_instance(void);
@@ -117,6 +118,7 @@ public:
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
+  virtual void adjust_volume(AudioTraits::PlayingClass*);
 public:
   // used by the readers
   static WinMusicPlayer* get_instance(void);

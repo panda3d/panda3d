@@ -334,6 +334,8 @@ void LinuxSamplePlayer::play_sound(AudioTraits::SoundClass*,
 				   float start_time) {
   initialize();
   LinuxSamplePlaying* lplaying = (LinuxSamplePlaying*)playing;
+  if (!AudioManager::get_sfx_active())
+    return;
   unsigned long l = lplaying->get_data()->get_size();
   float factor = ((float)l) / (audio_mix_freq * 2. * sample_size);
   factor = start_time / factor;
@@ -349,10 +351,16 @@ void LinuxSamplePlayer::stop_sound(AudioTraits::SoundClass*,
 				   AudioTraits::PlayingClass* playing) {
   initialize();
   LinuxSamplePlaying* lplaying = (LinuxSamplePlaying*)playing;
+  if (!AudioManager::get_sfx_active())
+    return;
   buffers.erase(lplaying->get_data());
 }
 
-void LinuxSamplePlayer::set_volume(AudioTraits::PlayingClass*, float) {
+void LinuxSamplePlayer::set_volume(AudioTraits::PlayingClass* p, float v) {
+  p->set_volume(v);
+}
+
+void LinuxSamplePlayer::adjust_volume(AudioTraits::PlayingClass*) {
 }
 
 LinuxSamplePlayer* LinuxSamplePlayer::get_instance(void) {
@@ -377,7 +385,11 @@ void LinuxMusicPlayer::stop_sound(AudioTraits::SoundClass*,
   initialize();
 }
 
-void LinuxMusicPlayer::set_volume(AudioTraits::PlayingClass*, float) {
+void LinuxMusicPlayer::set_volume(AudioTraits::PlayingClass* p, float v) {
+  p->set_volume(v);
+}
+
+void LinuxMusicPlayer::adjust_volume(AudioTraits::PlayingClass*) {
 }
 
 LinuxMusicPlayer* LinuxMusicPlayer::get_instance(void) {
