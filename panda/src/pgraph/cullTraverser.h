@@ -75,7 +75,7 @@ public:
   INLINE void set_cull_handler(CullHandler *cull_handler);
   INLINE CullHandler *get_cull_handler() const;
 
-  void traverse(const NodePath &root);
+  void traverse(const NodePath &root, bool python_cull_control=false);
   void traverse(CullTraverserData &data);
   void traverse_below(CullTraverserData &data);
 

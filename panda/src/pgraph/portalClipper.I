@@ -94,7 +94,7 @@ draw_to(float x, float y, float z) {
 //  Description: Draw the current camera frustum in white color
 //           
 ////////////////////////////////////////////////////////////////////
-void PortalClipper::
+INLINE void PortalClipper::
 draw_camera_frustum()
 {
   _color = Colorf(1,1,1,1);
@@ -107,13 +107,13 @@ draw_camera_frustum()
 //  Description: checks if the _coords that forms  the plane is
 //               facing the camera
 ////////////////////////////////////////////////////////////////////
-bool PortalClipper::
+INLINE bool PortalClipper::
 is_facing_camera()
 {
   Planef portal_plane(_coords[0], _coords[1], _coords[2]);
   Planef camera_plane(_hex_frustum->get_point(4), _hex_frustum->get_point(5), _hex_frustum->get_point(6));
-  
-  float direction = portal_plane.get_normal().dot(camera_plane.get_normal());
+  pgraph_cat.debug() << portal_plane.get_normal() << "; " << -camera_plane.get_normal() << endl;
+  float direction = portal_plane.get_normal().dot(-camera_plane.get_normal());
   pgraph_cat.debug() << "Found direction of " << direction << endl;
-  return (direction > 0);
+  return (direction < _FACING_THRESHOLD);
 }

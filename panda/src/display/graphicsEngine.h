@@ -69,6 +69,9 @@ PUBLISHED:
   INLINE void set_auto_flip(bool auto_flip);
   INLINE bool get_auto_flip() const;
 
+  INLINE void set_portal_cull(bool value);
+  INLINE bool get_portal_cull() const;
+
   INLINE PT(GraphicsStateGuardian) make_gsg(GraphicsPipe *pipe);
   PT(GraphicsStateGuardian) make_gsg(GraphicsPipe *pipe,
                                      const FrameBufferProperties &properties,
@@ -226,6 +229,7 @@ private:
   FrameBufferProperties _frame_buffer_properties;
   GraphicsThreadingModel _threading_model;
   bool _auto_flip;
+  bool _portal_enabled; //toggle to portal culling on/off
 
   enum FlipState {
     FS_draw,  // Still drawing.

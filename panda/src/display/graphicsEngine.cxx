@@ -87,6 +87,7 @@ GraphicsEngine(Pipeline *pipeline) :
       << "Using threading model " << _threading_model << "\n";
   }
   _auto_flip = auto_flip;
+  _portal_enabled = false;
   _flip_state = FS_flip;
 }
 
@@ -1026,7 +1027,7 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
   trav.set_depth_offset_decals(gsg->depth_offset_decals());
   trav.set_scene(scene_setup);
   trav.set_camera_mask(scene_setup->get_camera_node()->get_camera_mask());
-
+  
   if (view_frustum_cull) {
     // If we're to be performing view-frustum culling, determine the
     // bounding volume associated with the current viewing frustum.
@@ -1049,7 +1050,7 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
     }
   }
   
-  trav.traverse(scene_setup->get_scene_root());
+  trav.traverse(scene_setup->get_scene_root(), get_portal_cull());
 }
 
 ////////////////////////////////////////////////////////////////////

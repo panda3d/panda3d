@@ -54,6 +54,31 @@ get_auto_flip() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::set_portal_cull
+//       Access: Published
+//  Description: Set this flag true to indicate the GraphicsEngine
+//               should start portal culling
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsEngine::
+set_portal_cull(bool value) {
+  // We don't bother with the mutex here.  It's just a bool, after
+  // all.
+  _portal_enabled = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::get_portal_cull
+//       Access: Published
+//  Description: Returns the current setting for the portal culling flag.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsEngine::
+get_portal_cull() const {
+  // We don't bother with the mutex here.  It's just a bool, after
+  // all.
+  return _portal_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::make_gsg
 //       Access: Published
 //  Description: Creates a new gsg using the indicated GraphicsPipe
