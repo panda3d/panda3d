@@ -55,6 +55,7 @@
 #include "qpcharacter.h"
 #include "animBundleMaker.h"
 #include "qpanimBundleNode.h"
+#include "selectiveChildNode.h"
 #include "qpcollisionNode.h"
 #include "collisionSphere.h"
 #include "collisionPlane.h"
@@ -1174,17 +1175,15 @@ make_node(EggPrimitive *egg_prim, PandaNode *parent) {
   assert(!parent->is_of_type(qpGeomNode::get_class_type()));
 
   if (egg_prim->cleanup()) {
-    /*
-    if (parent->is_of_type(SwitchNode::get_class_type())) {
-      // If we're putting a primitive under a SwitchNode of some kind,
-      // its exact position within the group is relevant, so we need
-      // to create a placeholder now.
+    if (parent->is_of_type(SelectiveChildNode::get_class_type())) {
+      // If we're putting a primitive under a SelectiveChildNode of
+      // some kind, its exact position within the group is relevant,
+      // so we need to create a placeholder now.
       PandaNode *group = new PandaNode(egg_prim->get_name());
       parent->add_child(group);
       make_nonindexed_primitive(egg_prim, group);
       return group;
     }
-    */
 
     // Otherwise, we don't really care what the position of this
     // primitive is within its parent's list of children, and in fact
