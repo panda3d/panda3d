@@ -32,7 +32,7 @@
 ////////////////////////////////////////////////////////////////////
 NonlinearImager::
 NonlinearImager() {
-  _gsg = (GraphicsStateGuardian *)NULL;
+  _engine = (GraphicsEngine *)NULL;
   _stale = true;
 }
 
@@ -45,6 +45,11 @@ NonlinearImager::
 ~NonlinearImager() {
   remove_all_screens();
   remove_all_viewers();
+
+  if (_engine != (GraphicsEngine *)NULL) {
+    _engine->remove_callback("", GraphicsEngine::CB_pre_frame, 
+                             recompute_callback, (void *)this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,11 +78,12 @@ NonlinearImager::
 //               screen.
 ////////////////////////////////////////////////////////////////////
 int NonlinearImager::
-add_screen(ProjectionScreen *screen) {
+add_screen(ProjectionScreen *screen, const string &name) {
   _screens.push_back(Screen());
   Screen &new_screen = _screens.back();
   new_screen._screen = screen;
-  new_screen._texture = (Texture *)NULL;
+  new_screen._name = name;
+  new_screen._buffer = (GraphicsOutput *)NULL;
   new_screen._tex_width = 256;
   new_screen._tex_height = 256;
   new_screen._active = true;
@@ -163,6 +169,20 @@ get_screen(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NonlinearImager::get_buffer
+//       Access: Published
+//  Description: Returns the offscreen buffer that is automatically
+//               created for the nth projection screen.  This may
+//               return NULL if the screen is inactive or if it has
+//               not been rendered yet.
+////////////////////////////////////////////////////////////////////
+GraphicsOutput *NonlinearImager::
+get_buffer(int index) const {
+  nassertr(index >= 0 && index < (int)_screens.size(), (GraphicsOutput *)NULL);
+  return _screens[index]._buffer;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NonlinearImager::set_texture_size
 //       Access: Published
 //  Description: Sets the width and height of the texture used to
@@ -176,8 +196,18 @@ get_screen(int index) const {
 void NonlinearImager::
 set_texture_size(int index, int width, int height) {
   nassertv(index >= 0 && index < (int)_screens.size());
-  _screens[index]._tex_width = width;
-  _screens[index]._tex_height = height;
+  
+  Screen &screen = _screens[index];
+
+  screen._tex_width = width;
+  screen._tex_height = height;
+
+  if (screen._buffer != (GraphicsOutput *)NULL) {
+    _engine->remove_window(screen._buffer);
+    screen._buffer = (GraphicsOutput *)NULL;
+  }
+
+  _stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,7 +246,13 @@ set_screen_active(int index, bool active) {
     for (size_t vi = 0; vi < screen._meshes.size(); vi++) {
       screen._meshes[vi]._mesh.remove_node();
     }
-    screen._texture.clear();
+
+    // Also remove its buffer.
+    if (screen._buffer != (GraphicsOutput *)NULL) {
+      _engine->remove_window(screen._buffer);
+      screen._buffer = (GraphicsOutput *)NULL;
+    }
+
   } else {
     // If we've just made it active, it needs to be recomputed.
     _stale = true;
@@ -250,18 +286,19 @@ get_screen_active(int index) const {
 //               camera are desired, you should use the
 //               set_viewer_camera() interface.
 //
-//               All viewers must share the same
-//               GraphicsStateGuardian.
+//               All viewers must share the same GraphicsEngine.
 //
 //               The return value is the index of the new viewer.
 ////////////////////////////////////////////////////////////////////
 int NonlinearImager::
 add_viewer(DisplayRegion *dr) {
-  GraphicsOutput *win = dr->get_window();
-  GraphicsStateGuardian *gsg = win->get_gsg();
-  nassertr(_viewers.empty() || (gsg == _gsg && win == _win), -1);
-  _gsg = gsg;
-  _win = win;
+  GraphicsEngine *engine = dr->get_window()->get_gsg()->get_engine();
+  nassertr(_viewers.empty() || (engine == _engine), -1);
+  if (_engine == (GraphicsEngine *)NULL) {
+    _engine = engine;
+    _engine->add_callback("", GraphicsEngine::CB_pre_frame, 
+                          recompute_callback, (void *)this);
+  }
 
   int previous_vi = find_viewer(dr);
   if (previous_vi >= 0) {
@@ -447,17 +484,11 @@ get_viewer(int index) const {
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
 recompute() {
-  // First, force all the textures to clear.
-  Screens::iterator si;
-  for (si = _screens.begin(); si != _screens.end(); ++si) {
-    Screen &screen = (*si);
-    screen._texture.clear();
-  }
-
   size_t vi;
   for (vi = 0; vi < _viewers.size(); ++vi) {
     Viewer &viewer = _viewers[vi];
 
+    Screens::iterator si;
     for (si = _screens.begin(); si != _screens.end(); ++si) {
       Screen &screen = (*si);
       if (screen._active) {
@@ -476,25 +507,16 @@ recompute() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NonlinearImager::render
-//       Access: Published
-//  Description: Uses the DisplayRegion's GSG to render a scene for
-//               each ProjectionScreen, and makes our DisplayRegion
-//               ready to render the combined results.  This will
-//               destroy the contents of the frame buffer; it should
-//               be done before any of the actual frame has started
-//               rendering.
+//     Function: NonlinearImager::recompute_callback
+//       Access: Private, Static
+//  Description: This function is added as a callback to the beginning
+//               of the graphics engine's frame, to ensure that all
+//               frames are up-to-date.
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
-render(GraphicsEngine *engine) {
-  recompute_if_stale();
-
-  Screens::iterator si;
-  for (si = _screens.begin(); si != _screens.end(); ++si) {
-    if ((*si)._active) {
-      render_screen(engine, *si);
-    }
-  }
+recompute_callback(void *data) {
+  NonlinearImager *self = (NonlinearImager *)data;
+  self->recompute_if_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -533,6 +555,8 @@ recompute_if_stale() {
             if (screen._active && 
                 screen._meshes[vi]._last_screen != screen._screen->get_last_screen()) {
               recompute_screen(screen, vi);
+            } else {
+              screen._screen->recompute_if_stale();
             }
           }
         }
@@ -555,64 +579,32 @@ recompute_screen(NonlinearImager::Screen &screen, size_t vi) {
     return;
   }
 
+  screen._screen->recompute_if_stale();
+
   Viewer &viewer = _viewers[vi];
   PT(PandaNode) mesh = screen._screen->make_flat_mesh(viewer._viewer);
   if (mesh != (PandaNode *)NULL) {
     screen._meshes[vi]._mesh = viewer._internal_scene.attach_new_node(mesh);
   }
 
-  if (screen._texture == (Texture *)NULL ||
-      screen._texture->_pbuffer == (PixelBuffer *)NULL ||
-      screen._texture->_pbuffer->get_xsize() != screen._tex_width ||
-      screen._texture->_pbuffer->get_ysize() != screen._tex_height) {
-    PT(Texture) texture = new Texture;
-    texture->set_minfilter(Texture::FT_linear);
-    texture->set_magfilter(Texture::FT_linear);
-    texture->set_wrapu(Texture::WM_clamp);
-    texture->set_wrapv(Texture::WM_clamp);
-    texture->_pbuffer->set_xsize(screen._tex_width);
-    texture->_pbuffer->set_ysize(screen._tex_height);
+  if (screen._buffer == (GraphicsOutput *)NULL) {
+    GraphicsOutput *win = viewer._dr->get_window();
+    GraphicsOutput *buffer = win->make_texture_buffer(screen._name, screen._tex_width, screen._tex_height);
 
-    screen._texture = texture;
+    if (buffer != (GraphicsOutput *)NULL) {
+      screen._buffer = buffer;
+      GraphicsLayer *layer = buffer->get_channel(0)->make_layer();
+      DisplayRegion *dr = layer->make_display_region();
+      dr->set_camera(screen._source_camera);
+
+    } else {
+      screen._meshes[vi]._mesh.clear_texture();
+    }
   }
 
-  screen._meshes[vi]._mesh.set_texture(screen._texture);
+  if (screen._buffer != (GraphicsOutput *)NULL) {
+    screen._meshes[vi]._mesh.set_texture(screen._buffer->get_texture());
+  }
+
   screen._meshes[vi]._last_screen = screen._screen->get_last_screen();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NonlinearImager::render_screen
-//       Access: Private
-//  Description: Renders the scene just for the indicated screen, into
-//               the screen's own texture.
-////////////////////////////////////////////////////////////////////
-void NonlinearImager::
-render_screen(GraphicsEngine *engine, NonlinearImager::Screen &screen) {
-  if (screen._source_camera.is_empty()) {
-    distort_cat.error()
-      << "No source camera specified for screen " << screen._screen->get_name()
-      << "\n";
-    return;
-  }
-
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-
-  screen._screen->recompute_if_stale();
-
-  // Make a display region of the proper size and clear it to prepare for
-  // rendering the scene.
-  PT(DisplayRegion) scratch_region =
-    _win->make_scratch_display_region(screen._tex_width, screen._tex_height);
-  scratch_region->set_camera(screen._source_camera);
-  engine->render_subframe(_gsg, scratch_region, true);
-
-  // Copy the results of the render from the frame buffer into the
-  // screen's texture.
-  TextureContext *tc = screen._texture->prepare_now(_gsg->get_prepared_objects(), _gsg);
-  _gsg->copy_texture(tc, scratch_region,
-                     _gsg->get_render_buffer(RenderBuffer::T_back));
-
-  // It might be nice if we didn't throw away the scratch region every
-  // time, which prevents us from preserving cull state from one frame
-  // to the next.
 }

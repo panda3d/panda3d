@@ -23,6 +23,7 @@
 
 #include "projectionScreen.h"
 #include "displayRegion.h"
+#include "graphicsOutput.h"
 #include "camera.h"
 #include "texture.h"
 #include "pandaNode.h"
@@ -95,13 +96,14 @@ PUBLISHED:
   NonlinearImager();
   ~NonlinearImager();
 
-  int add_screen(ProjectionScreen *screen);
+  int add_screen(ProjectionScreen *screen, const string &name = string());
   int find_screen(ProjectionScreen *screen) const;
   void remove_screen(int index);
   void remove_all_screens();
 
   int get_num_screens() const;
   ProjectionScreen *get_screen(int index) const;
+  GraphicsOutput *get_buffer(int index) const;
   void set_texture_size(int index, int width, int height);
   void set_source_camera(int index, const NodePath &source_camera);
 
@@ -122,7 +124,10 @@ PUBLISHED:
   DisplayRegion *get_viewer(int index) const;
 
   void recompute();
-  void render(GraphicsEngine *engine);
+
+public:
+  static void recompute_callback(void *data);
+  void recompute_if_stale();
 
 private:
   class Viewer {
@@ -146,7 +151,8 @@ private:
   class Screen {
   public:
     PT(ProjectionScreen) _screen;
-    PT(Texture) _texture;
+    string _name;
+    PT(GraphicsOutput) _buffer;
     NodePath _source_camera;
     int _tex_width, _tex_height;
     bool _active;
@@ -156,14 +162,13 @@ private:
   };
   typedef pvector<Screen> Screens;
 
-  void recompute_if_stale();
   void recompute_screen(Screen &screen, size_t vi);
   void render_screen(GraphicsEngine *engine, Screen &screen);
 
   Viewers _viewers;
   Screens _screens;
-  GraphicsStateGuardian *_gsg;
-  GraphicsOutput *_win;
+
+  GraphicsEngine *_engine;
 
   bool _stale;
 };
