@@ -88,10 +88,10 @@ handle_entries() {
         bool got_max = false;
         float max_height = 0.0f;
         
-        Entries::const_iterator ei;
-        if (ei != entries.end()) {
+        if (!entries.empty()) {
           _outer_space = false;
         }
+        Entries::const_iterator ei;
         for (ei = entries.begin(); ei != entries.end(); ++ei) {
           CollisionEntry *entry = (*ei);
           nassertr(entry != (CollisionEntry *)NULL, false);
