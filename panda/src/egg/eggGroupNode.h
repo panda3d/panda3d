@@ -120,6 +120,7 @@ PUBLISHED:
 
   EggNode *find_child(const string &name) const;
 
+  bool has_absolute_pathnames() const;
   void resolve_filenames(const DSearchPath &searchpath);
   void force_filenames(const Filename &directory);
   void reverse_vertex_ordering();

@@ -351,6 +351,63 @@ find_child(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::has_absolute_pathnames
+//       Access: Published
+//  Description: Returns true if any nodes at this level and below
+//               include a reference to a file via an absolute
+//               pathname, or false if all references are relative.
+////////////////////////////////////////////////////////////////////
+bool EggGroupNode::
+has_absolute_pathnames() const {
+  Children::const_iterator ci;
+  for (ci = _children.begin();
+       ci != _children.end();
+       ++ci) {
+    EggNode *child = *ci;
+    if (child->is_of_type(EggTexture::get_class_type())) {
+      EggTexture *tex = DCAST(EggTexture, child);
+      if (!tex->get_filename().is_local()) {
+        if (egg_cat.is_debug()) {
+          egg_cat.debug()
+            << "Absolute pathname: " << tex->get_filename()
+            << "\n";
+        }
+        return true;
+      }
+
+      if (tex->has_alpha_filename()) {
+        if (!tex->get_alpha_filename().is_local()) {
+          if (egg_cat.is_debug()) {
+            egg_cat.debug()
+              << "Absolute pathname: " << tex->get_alpha_filename()
+              << "\n";
+          }
+          return true;
+        }
+      }
+
+    } else if (child->is_of_type(EggFilenameNode::get_class_type())) {
+      EggFilenameNode *fnode = DCAST(EggFilenameNode, child);
+      if (!fnode->get_filename().is_local()) {
+        if (egg_cat.is_debug()) {
+          egg_cat.debug()
+            << "Absolute pathname: " << fnode->get_filename()
+            << "\n";
+        }
+        return true;
+      }
+
+    } else if (child->is_of_type(EggGroupNode::get_class_type())) {
+      if (DCAST(EggGroupNode, child)->has_absolute_pathnames()) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::resolve_filenames
 //       Access: Published
 //  Description: Walks the tree and attempts to resolve any filenames

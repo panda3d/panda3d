@@ -25,6 +25,7 @@
 INLINE EggData::
 EggData() {
   _auto_resolve_externals = false;
+  _had_absolute_pathnames = false;
   _coordsys = CS_default;
 }
 
@@ -38,6 +39,7 @@ INLINE EggData::
 EggData(const EggData &copy) :
   EggGroupNode(copy),
   _auto_resolve_externals(copy._auto_resolve_externals),
+  _had_absolute_pathnames(copy._had_absolute_pathnames),
   _coordsys(copy._coordsys),
   _egg_filename(copy._egg_filename) 
 {
@@ -52,6 +54,7 @@ INLINE EggData &EggData::
 operator = (const EggData &copy) {
   EggGroupNode::operator = (copy);
   _auto_resolve_externals = copy._auto_resolve_externals;
+  _had_absolute_pathnames = copy._had_absolute_pathnames;
   _coordsys = copy._coordsys;
   _egg_filename = copy._egg_filename;
   return *this;
@@ -79,6 +82,24 @@ set_auto_resolve_externals(bool resolve) {
 INLINE bool EggData::
 get_auto_resolve_externals() const {
   return _auto_resolve_externals;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggData::original_had_absolute_pathnames
+//       Access: Public
+//  Description: Returns true if the data processed in the last call
+//               to read() contained absolute pathnames, or false if
+//               those pathnames were all relative.
+//
+//               This method is necessary because if
+//               auto_resolve_externals() is in effect, it may modify
+//               the pathnames to be absolute whether or not they were
+//               as loaded from disk.  This method can be used to
+//               query the state of the original egg file from disk.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggData::
+original_had_absolute_pathnames() const {
+  return _had_absolute_pathnames;
 }
 
 ////////////////////////////////////////////////////////////////////

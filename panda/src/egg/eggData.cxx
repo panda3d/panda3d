@@ -342,6 +342,9 @@ post_read() {
     set_coordinate_system(old_coordsys);
   }
 
+  // Fill this in before we automatically resolve pathnames.
+  _had_absolute_pathnames = has_absolute_pathnames();
+
   if (get_auto_resolve_externals()) {
     // Resolve filenames that are relative to the egg file.
     DSearchPath dir;

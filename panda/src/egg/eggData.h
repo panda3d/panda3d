@@ -62,6 +62,7 @@ PUBLISHED:
 
   INLINE void set_auto_resolve_externals(bool resolve);
   INLINE bool get_auto_resolve_externals() const;
+  INLINE bool original_had_absolute_pathnames() const;
 
   void set_coordinate_system(CoordinateSystem coordsys);
   INLINE CoordinateSystem get_coordinate_system() const;
@@ -81,6 +82,7 @@ private:
   void pre_write();
 
   bool _auto_resolve_externals;
+  bool _had_absolute_pathnames;
   CoordinateSystem _coordsys;
   Filename _egg_filename;
 
