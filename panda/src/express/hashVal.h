@@ -72,8 +72,8 @@ PUBLISHED:
 #endif  // HAVE_SSL
 
 private:
-  static void encode_hex(unsigned int val, char *buffer);
-  static void decode_hex(const char *buffer, unsigned int &val);
+  static void encode_hex(PN_uint32 val, char *buffer);
+  static void decode_hex(const char *buffer, PN_uint32 &val);
   INLINE static char tohex(unsigned int nibble);
   INLINE static unsigned int fromhex(char digit);
 
