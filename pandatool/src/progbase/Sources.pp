@@ -4,13 +4,17 @@
     converter pandatoolbase
   #define OTHER_LIBS \
     pnmimage:c linmath:c putil:c express:c panda:m pystub dtool
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
   #define SOURCES \
-    programBase.I programBase.cxx programBase.h \
-    withOutputFile.cxx withOutputFile.h \
-    wordWrapStream.cxx \
-    wordWrapStream.h wordWrapStreamBuf.I wordWrapStreamBuf.cxx \
+    programBase.I programBase.h \
+    withOutputFile.h wordWrapStream.h wordWrapStreamBuf.I \
     wordWrapStreamBuf.h
+    
+  #define INCLUDED_SOURCES \
+    programBase.cxx withOutputFile.cxx wordWrapStream.cxx \
+    wordWrapStreamBuf.cxx   
 
   #define INSTALL_HEADERS \
     programBase.I programBase.h \
