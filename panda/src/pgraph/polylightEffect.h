@@ -33,10 +33,10 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : PolylightEffect
 // Description : A PolylightEffect can be used on a node to define a
-//				 LightGroup  for that node. A LightGroup contains 
+//               LightGroup  for that node. A LightGroup contains 
 //               Polylights which are essentially nodes that add 
-//			     color to the polygons of a model based on distance.
-//				 PolylightNode is a cheap way to get lighting effects
+//               color to the polygons of a model based on distance.
+//               PolylightNode is a cheap way to get lighting effects
 //               specially for night scenes
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PolylightEffect : public RenderEffect {

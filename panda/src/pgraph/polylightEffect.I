@@ -155,7 +155,7 @@ get_weight() const {
 //               _contribution_type is a string that controls how
 //               this division occurs.
 //               "proximal" : A light only contributes if the node 
-//				 is inside its volume
+//               is inside its volume
 //               "all" : All lights added to the effect are used in
 //               division irrespective of their light volumes
 ////////////////////////////////////////////////////////////////////

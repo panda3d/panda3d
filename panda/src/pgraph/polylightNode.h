@@ -38,9 +38,9 @@ class EXPCL_PANDA PolylightNode : public PandaNode{
 
 PUBLISHED:
   PolylightNode(const string &name, float x = 0.0, float y = 0.0, float z = 0.0,
-	float r = 1.0, float g = 1.0, float b = 1.0,
-	float radius=50.0, string attenuation_type= "linear",
-	bool flickering =false, string flicker_type="random");
+    float r = 1.0, float g = 1.0, float b = 1.0,
+    float radius=50.0, string attenuation_type= "linear",
+    bool flickering =false, string flicker_type="random");
   INLINE void enable();
   INLINE void disable();
   INLINE void set_pos(float x,float y, float z);
