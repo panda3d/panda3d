@@ -155,7 +155,7 @@ protected:
 
   CoordinateSystem _coordinate_system;
 
-private:
+protected:
   typedef set<TextureContext *> Textures;
   Textures _prepared_textures;
 

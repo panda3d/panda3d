@@ -133,6 +133,8 @@ PUBLISHED:
   INLINE bool has_pointer(int device) const;
   INLINE bool has_keyboard(int device) const;
 
+  virtual void process_events(void) { return; };   // process window events
+
 public:
   INLINE const MouseData &get_mouse_data(int device) const;
   INLINE bool has_button_event(int device) const;
