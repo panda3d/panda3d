@@ -17,6 +17,14 @@ main(int argc, char* argv[]) {
       exit(-1);
     }
 
+  {
+    AudioSound* tester = AudioPool::load_sound(argv[1]);
+    AudioPool::release_all_sounds();
+    cerr << "all sounds but 1 released" << endl;
+    delete tester;
+    cerr << "all sounds released" << endl;
+  }
+
   /*
   if (! AudioPool::verify_sound("test.mp3")) {
     audio_cat->fatal() << "could not locate 'test.mp3'" << endl;
