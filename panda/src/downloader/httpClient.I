@@ -48,16 +48,6 @@ operator = (const HTTPClient &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE HTTPClient::
-~HTTPClient() {
-  SSL_CTX_free(_ssl_ctx);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::set_proxy
 //       Access: Published
 //  Description: Specifies the proxy URL to handle all http and

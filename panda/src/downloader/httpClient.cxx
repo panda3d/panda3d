@@ -31,6 +31,19 @@
 #endif
 
 bool HTTPClient::_ssl_initialized = false;
+SSL_CTX *HTTPClient::_ssl_ctx = NULL;
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+HTTPClient::
+~HTTPClient() {
+  // Since the context is temporarily shared among all clients.
+  //  SSL_CTX_free(_ssl_ctx);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::load_certificates
@@ -112,6 +125,12 @@ make_ctx() {
   if (!_ssl_initialized) {
     initialize_ssl();
   }
+
+  if (_ssl_ctx != (SSL_CTX *)NULL) {
+    // Since the context is temporarily shared among all clients.
+    return;
+  }
+
   _ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 
 #if defined(SSL_097) && !defined(NDEBUG)

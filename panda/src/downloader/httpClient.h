@@ -84,10 +84,13 @@ private:
 #endif
 
   URLSpec _proxy;
-  SSL_CTX *_ssl_ctx;
   bool _verify_ssl;
 
   static bool _ssl_initialized;
+
+  // This is temporarily static, shared among all clients, to work
+  // around the loading certificates problem.
+  static SSL_CTX *_ssl_ctx;
 };
 
 #include "httpClient.I"
