@@ -460,8 +460,9 @@ assemble_row(const char *&source, Node *dest) {
         }
         text_cat.warning(false)
           << "\n";
+      }
 
-      } else {
+      if (glyph != (TextGlyph *)NULL) {
         PT(Geom) char_geom = glyph->get_geom();
         const AllTransitionsWrapper &trans = glyph->get_trans();
 

@@ -270,7 +270,7 @@ get_glyph(int character, const TextGlyph *&glyph, float &glyph_scale) {
     glyph = dynamic_glyph;
   }
 
-  return (glyph != (DynamicTextGlyph *)NULL);
+  return (glyph_index != 0 && glyph != (DynamicTextGlyph *)NULL);
 }
  
 ////////////////////////////////////////////////////////////////////
