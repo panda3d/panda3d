@@ -28,6 +28,8 @@ class DirectEntry(DirectFrame):
             ('width',           10,               self.setup),
             ('numLines',        5,                self.setup),
             ('focus',           0,                self.setFocus),
+            ('cursorKeys',      0,                self.setCursorKeysActive),
+            ('backgroundFocus', 0,                self.setBackgroundFocus),
             # Text used for the PGEntry text node
             # NOTE: This overrides the DirectFrame text option
             ('initialText',     '',               INITOPT),
@@ -81,11 +83,14 @@ class DirectEntry(DirectFrame):
     def setup(self):
         self.node().setup(self['width'], self['numLines'])
 
-    def setFont(self):
-        self.onscreenText.setFont(self['font'])
-
     def setFocus(self):
         PGEntry.setFocus(self.guiItem, self['focus'])
+
+    def setCursorKeysActive(self):
+        PGEntry.setCursorKeysActive(self.guiItem, self['cursorKeys'])
+
+    def setBackgroundFocus(self):
+        PGEntry.setBackgroundFocus(self.guiItem, self['backgroundFocus'])
 
     def setRolloverSound(self):
         if base.wantSfx:
@@ -105,5 +110,12 @@ class DirectEntry(DirectFrame):
 
     def get(self):
         return self.guiItem.getText()
+
+    def setCursorPosition(self, pos):
+        if (pos < 0):
+            self.guiItem.setCursorPosition(len(self.get()) + pos)
+        else:
+            self.guiItem.setCursorPosition(pos)
+            
 
 

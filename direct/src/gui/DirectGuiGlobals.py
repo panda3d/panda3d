@@ -51,6 +51,9 @@ B3RELEASE = PGButton.getReleasePrefix() + MouseButton.three().getName() + '-'
 # For DirectEntry widgets
 OVERFLOW = PGEntry.getOverflowPrefix()
 ACCEPT = PGEntry.getAcceptPrefix() + KeyboardButton.enter().getName() + '-'
+TYPE = PGEntry.getTypePrefix()
+ERASE = PGEntry.getErasePrefix()
+
 
 # For setting the sorting order of a widget's visible components
 IMAGE_SORT_INDEX = 10
