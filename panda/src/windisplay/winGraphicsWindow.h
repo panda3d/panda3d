@@ -103,7 +103,6 @@ private:
   static void update_cursor_window(WinGraphicsWindow *to_window);
   static void hide_or_show_cursor(bool hide_cursor);
 
-  static void register_window_class();
   static bool find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight,
                                            DWORD bpp, DEVMODE &dm);
   static void show_error_message(DWORD message_id = 0);
@@ -118,7 +117,7 @@ private:
   bool _ime_composition_w;
   bool _tracking_mouse_leaving;
   bool _maximized;
-  bool _bCursor_in_WindowClientArea;
+  HCURSOR _cursor;
   DEVMODE _fullscreen_display_mode;
 
   // This is used to remember the state of the keyboard when keyboard
@@ -136,12 +135,6 @@ private:
 
   BYTE _keyboard_state[num_virtual_keys];
   bool _lost_keypresses;
-
-protected:
-  static bool _loaded_custom_cursor;
-  static HCURSOR _mouse_cursor;
-  static const char * const _window_class_name;
-  static bool _window_class_registered;
 
 private:
   // We need this map to support per-window calls to window_proc().
@@ -167,6 +160,35 @@ private:
   static int _saved_mouse_trails;
   static BOOL _saved_cursor_shadow;
   static BOOL _saved_mouse_vanish;
+
+  // Since the Panda API requests icons and cursors by filename, we
+  // need a table mapping filenames to handles, so we can avoid
+  // re-reading the file each time we change icons.
+  typedef pmap<Filename, HANDLE> IconFilenames;
+  static IconFilenames _icon_filenames;
+  static IconFilenames _cursor_filenames;
+
+  static HICON get_icon(const Filename &filename);
+  static HCURSOR get_cursor(const Filename &filename);
+
+  // The table of window classes we have registered.  We need to
+  // register a different window class for each different window icon
+  // (the cursor we can specify dynamically, later).  We might have
+  // other requirements too, later.
+  class WindowClass {
+  public:
+    INLINE WindowClass(const WindowProperties &props);
+    INLINE bool operator < (const WindowClass &other) const;
+
+    string _name;
+    HICON _icon;
+  };
+
+  typedef pset<WindowClass> WindowClasses;
+  static WindowClasses _window_classes;
+  static int _window_class_index;
+
+  static const WindowClass &register_window_class(const WindowProperties &props);
 
 public:
   static TypeHandle get_class_type() {

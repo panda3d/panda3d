@@ -137,3 +137,27 @@ get_ime_hwnd() {
   else
     return NULL;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::WindowClass::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE WinGraphicsWindow::WindowClass::
+WindowClass(const WindowProperties &props) :
+  _icon(0)
+{
+  if (props.has_icon_filename()) {
+    _icon = get_icon(props.get_icon_filename());
+  }
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::WindowClass::operator <
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool WinGraphicsWindow::WindowClass::
+operator < (const WinGraphicsWindow::WindowClass &other) const {
+  return _icon < other._icon;
+}

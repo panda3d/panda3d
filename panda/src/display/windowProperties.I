@@ -531,7 +531,7 @@ set_cursor_hidden(bool cursor_hidden) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WindowProperties::set_cursor_hidden
+//     Function: WindowProperties::get_cursor_hidden
 //       Access: Published
 //  Description: Returns true if the mouse cursor is invisible.
 ////////////////////////////////////////////////////////////////////
@@ -559,6 +559,98 @@ INLINE void WindowProperties::
 clear_cursor_hidden() {
   _specified &= ~S_cursor_hidden;
   _flags &= ~F_cursor_hidden;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::set_icon_filename
+//       Access: Published
+//  Description: Specifies the file that contains the icon to
+//               associate with the window when it is minimized.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+set_icon_filename(const Filename &icon_filename) {
+  _icon_filename = icon_filename;
+  _specified |= S_icon_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::get_icon_filename
+//       Access: Published
+//  Description: Returns the icon filename associated with the window.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &WindowProperties::
+get_icon_filename() const {
+  return _icon_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::has_icon_filename
+//       Access: Published
+//  Description: Returns true if set_icon_filename() has been
+//               specified.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowProperties::
+has_icon_filename() const {
+  return ((_specified & S_icon_filename) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::clear_icon_filename
+//       Access: Published
+//  Description: Removes the icon_filename specification from the
+//               properties.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+clear_icon_filename() {
+  _specified &= ~S_icon_filename;
+  _icon_filename = Filename();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::set_cursor_filename
+//       Access: Published
+//  Description: Specifies the file that contains the icon to
+//               associate with the mouse cursor when it is within the
+//               window (and visible).
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+set_cursor_filename(const Filename &cursor_filename) {
+  _cursor_filename = cursor_filename;
+  _specified |= S_cursor_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::get_cursor_filename
+//       Access: Published
+//  Description: Returns the icon filename associated with the mouse
+//               cursor.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &WindowProperties::
+get_cursor_filename() const {
+  return _cursor_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::has_cursor_filename
+//       Access: Published
+//  Description: Returns true if set_cursor_filename() has been
+//               specified.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowProperties::
+has_cursor_filename() const {
+  return ((_specified & S_cursor_filename) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::clear_cursor_filename
+//       Access: Published
+//  Description: Removes the cursor_filename specification from the
+//               properties.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+clear_cursor_filename() {
+  _specified &= ~S_cursor_filename;
+  _cursor_filename = Filename();
 }
 
 ////////////////////////////////////////////////////////////////////

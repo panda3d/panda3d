@@ -42,6 +42,8 @@ operator = (const WindowProperties &copy) {
   _x_size = copy._x_size;
   _y_size = copy._y_size;
   _title = copy._title;
+  _icon_filename = copy._icon_filename;
+  _cursor_filename = copy._cursor_filename;
   _z_order = copy._z_order;
   _flags = copy._flags;
 }
@@ -58,14 +60,37 @@ get_default() {
   WindowProperties props;
 
   props.set_open(true);
-  props.set_size(win_width, win_height);
-  if (win_origin_x >= 0 && win_origin_y >= 0) {
-    props.set_origin(win_origin_x, win_origin_y);
+
+  if (win_width.has_value() && win_height.has_value() &&
+      !win_size.has_value()) {
+    props.set_size(win_width, win_height);
+
+  } else {
+    if (win_size.get_num_words() == 1) {
+      props.set_size(win_size[0], win_size[0]);
+    } else {
+      props.set_size(win_size[0], win_size[1]);
+    }
   }
+
+  if (win_origin_x.has_value() && win_origin_y.has_value() && 
+      !win_origin.has_value()) {
+    props.set_origin(win_origin_x, win_origin_y);
+
+  } else {
+    props.set_origin(win_origin[0], win_origin[1]);
+  }
+
   props.set_fullscreen(fullscreen);
   props.set_undecorated(undecorated);
   props.set_cursor_hidden(cursor_hidden);
-  if (z_order != WindowProperties::Z_normal) {
+  if (icon_filename.has_value()) {
+    props.set_icon_filename(icon_filename);
+  }
+  if (cursor_filename.has_value()) {
+    props.set_cursor_filename(cursor_filename);
+  }
+  if (z_order.has_value()) {
     props.set_z_order(z_order);
   }
   props.set_title(window_title);
@@ -87,7 +112,9 @@ operator == (const WindowProperties &other) const {
           _x_size == other._x_size &&
           _y_size == other._y_size &&
           _z_order == other._z_order &&
-          _title == other._title);
+          _title == other._title &&
+          _icon_filename == other._icon_filename &&
+          _cursor_filename == other._cursor_filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,6 +132,8 @@ clear() {
   _x_size = 0;
   _y_size = 0;
   _title = string();
+  _icon_filename = Filename();
+  _cursor_filename = Filename();
   _z_order = Z_normal;
   _flags = 0;
 }
@@ -147,6 +176,12 @@ add_properties(const WindowProperties &other) {
   }
   if (other.has_cursor_hidden()) {
     set_cursor_hidden(other.get_cursor_hidden());
+  }
+  if (other.has_icon_filename()) {
+    set_icon_filename(other.get_icon_filename());
+  }
+  if (other.has_cursor_filename()) {
+    set_cursor_filename(other.get_cursor_filename());
   }
   if (other.has_z_order()) {
     set_z_order(other.get_z_order());
@@ -192,7 +227,14 @@ output(ostream &out) const {
   if (has_cursor_hidden()) {
     out << (get_cursor_hidden() ? "cursor_hidden " : "!cursor_hidden ");
   }
+  if (has_icon_filename()) {
+    out << "icon:" << get_icon_filename() << " ";
+  }
+  if (has_cursor_filename()) {
+    out << "cursor:" << get_cursor_filename() << " ";
+  }
   if (has_z_order()) {
+    out << get_z_order() << " ";
   }
 }
 

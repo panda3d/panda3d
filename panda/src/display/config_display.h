@@ -27,6 +27,7 @@
 #include "configVariableList.h"
 #include "configVariableInt.h"
 #include "configVariableEnum.h"
+#include "configVariableFilename.h"
 #include "dconfig.h"
 
 #include "pvector.h"
@@ -53,6 +54,8 @@ extern ConfigVariableBool prefer_single_buffer;
 extern ConfigVariableBool copy_texture_inverted;
 extern ConfigVariableBool window_inverted;
 
+extern ConfigVariableInt win_size;
+extern ConfigVariableInt win_origin;
 extern ConfigVariableInt win_width;
 extern ConfigVariableInt win_height;
 extern ConfigVariableInt win_origin_x;
@@ -60,8 +63,13 @@ extern ConfigVariableInt win_origin_y;
 extern ConfigVariableBool fullscreen;
 extern ConfigVariableBool undecorated;
 extern ConfigVariableBool cursor_hidden;
+extern ConfigVariableFilename icon_filename;
+extern ConfigVariableFilename cursor_filename;
 extern ConfigVariableEnum<WindowProperties::ZOrder> z_order;
 extern ConfigVariableString window_title;
+
+extern ConfigVariableDouble background_color;
+
 
 extern EXPCL_PANDA void init_libdisplay();
 

@@ -20,6 +20,7 @@
 #define WINDOWPROPERTIES_H
 
 #include "pandabase.h"
+#include "filename.h"
 #include "notify.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -102,6 +103,16 @@ PUBLISHED:
   INLINE bool has_cursor_hidden() const;
   INLINE void clear_cursor_hidden();
 
+  INLINE void set_icon_filename(const Filename &icon_filename);
+  INLINE const Filename &get_icon_filename() const;
+  INLINE bool has_icon_filename() const;
+  INLINE void clear_icon_filename();
+
+  INLINE void set_cursor_filename(const Filename &cursor_filename);
+  INLINE const Filename &get_cursor_filename() const;
+  INLINE bool has_cursor_filename() const;
+  INLINE void clear_cursor_filename();
+
   INLINE void set_z_order(ZOrder z_order);
   INLINE ZOrder get_z_order() const;
   INLINE bool has_z_order() const;
@@ -127,6 +138,8 @@ private:
     S_cursor_hidden    = 0x0100,
     S_fixed_size       = 0x0200,
     S_z_order          = 0x0400,
+    S_icon_filename    = 0x0800,
+    S_cursor_filename  = 0x1000,
   };
 
   // This bitmask represents the true/false settings for various
@@ -148,6 +161,8 @@ private:
   int _x_size;
   int _y_size;
   string _title;
+  Filename _cursor_filename;
+  Filename _icon_filename;
   ZOrder _z_order;
   int _flags;
 };

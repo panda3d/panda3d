@@ -868,12 +868,18 @@ set_background_type(WindowFramework::BackgroundType type) {
   switch (_background_type) {
   case BT_other:
     break;
-    
+
   case BT_default:
     _display_region_3d->set_clear_color_active(true);
     _display_region_3d->set_clear_depth_active(true);
-    _display_region_3d->set_clear_color(Colorf(win_background_r, win_background_g, 
-                                               win_background_b, 1.0f));
+    _display_region_3d->set_clear_color(_window->get_clear_color());
+    _display_region_3d->set_clear_depth(_window->get_clear_depth());
+    break;
+    
+  case BT_black:
+    _display_region_3d->set_clear_color_active(true);
+    _display_region_3d->set_clear_depth_active(true);
+    _display_region_3d->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 1.0f));
     _display_region_3d->set_clear_depth(1.0f);
     break;
     
@@ -884,12 +890,12 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_depth(1.0f);
     break;
     
-  case BT_black:
+  case BT_white:
     _display_region_3d->set_clear_color_active(true);
     _display_region_3d->set_clear_depth_active(true);
-    _display_region_3d->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 1.0f));
+    _display_region_3d->set_clear_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
     _display_region_3d->set_clear_depth(1.0f);
-      break;
+    break;
 
   case BT_none:
     _display_region_3d->set_clear_color_active(false);

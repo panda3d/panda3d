@@ -454,20 +454,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     int x, y, width, height;
 
     switch(msg) {
-        case WM_SETCURSOR: {
-            // Turn off any GDI window cursor
-            //  dx9 cursor not working yet
-
-            if(dx_use_dx_cursor && is_fullscreen()) {
-                //            SetCursor( NULL );
-            //                _dxgsg->scrn.pD3DDevice->ShowCursor(true);
-
-                set_cursor_visibility(true);
-                return TRUE; // prevent Windows from setting cursor to window class cursor (see docs on WM_SETCURSOR)
-            }
-            break;
-        }
-
         case WM_PAINT: {
            // primarily seen when app window is 'uncovered'
            if((_WindowAdjustingType != NotAdjusting) || (!DX_IS_READY)) {
@@ -1667,12 +1653,6 @@ init_resized_window() {
   _dxgsg->set_context(&_wcontext); 
   // Note: dx_init will fill in additional fields in _wcontext, like supportedtexfmts
   _dxgsg->dx_init();
-
-  if(dx_use_dx_cursor && is_fullscreen()) {
-      hr = CreateDX9Cursor(_wcontext.pD3DDevice,_mouse_cursor,dx_show_cursor_watermark);
-      if(FAILED(hr))
-          wdxdisplay9_cat.error() << "CreateDX9Cursor failed!" <<  D3DERRORSTRING(hr);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1831,30 +1811,5 @@ open_window(void) {
 bool wdxGraphicsWindow9::
 handle_mouse_motion(int x, int y) {
   (void) WinGraphicsWindow::handle_mouse_motion(x,y);
-  if(dx_use_dx_cursor && is_fullscreen() && (_wcontext.pD3DDevice!=NULL)) {
-      _wcontext.pD3DDevice->SetCursorPosition(x,y,D3DCURSOR_IMMEDIATE_UPDATE);
-      // return true to indicate wind_proc should return 0 instead of going to DefaultWindowProc
-      return true;
-  }
   return false;
 }
-
-#if 0
-// does NOT override _props._bCursorIsVisible
-INLINE void wdxGraphicsWindow::
-set_cursor_visibility(bool bVisible) {
-  if(_props._bCursorIsVisible) {
-      if(dx_use_dx_cursor) {
-          ShowCursor(false);
-          if(IS_VALID_PTR(_wcontext.pD3DDevice))
-              _dxgsg->scrn.pD3DDevice->ShowCursor(bVisible);
-      } else {
-         ShowCursor(bVisible);
-      }
-  } else {
-      ShowCursor(false);
-      if(dx_use_dx_cursor && IS_VALID_PTR(_wcontext.pD3DDevice))
-          _dxgsg->scrn.pD3DDevice->ShowCursor(false);
-  }
-}
-#endif

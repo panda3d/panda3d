@@ -22,14 +22,9 @@
 #include "pandabase.h"
 #include "filename.h"
 #include "notifyCategoryProxy.h"
-#include "configVariableFilename.h"
 #include "configVariableBool.h"
 
 NotifyCategoryDecl(windisplay, EXPCL_PANDAWIN, EXPTP_PANDAWIN);
-
-extern ConfigVariableFilename icon_filename;
-extern ConfigVariableFilename color_cursor_filename;
-extern ConfigVariableFilename mono_cursor_filename;
 
 extern ConfigVariableBool responsive_minimized_fullscreen_window;
 extern ConfigVariableBool hold_keys_across_windows;

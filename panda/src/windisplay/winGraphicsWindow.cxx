@@ -24,15 +24,11 @@
 #include "keyboardButton.h"
 #include "mouseButton.h"
 #include "clockObject.h"
+#include "config_util.h"
 
 #include <tchar.h>
 
 TypeHandle WinGraphicsWindow::_type_handle;
-
-bool WinGraphicsWindow::_loaded_custom_cursor;
-HCURSOR WinGraphicsWindow::_mouse_cursor;
-const char * const WinGraphicsWindow::_window_class_name = "WinGraphicsWindow";
-bool WinGraphicsWindow::_window_class_registered = false;
 
 WinGraphicsWindow::WindowHandles WinGraphicsWindow::_window_handles;
 WinGraphicsWindow *WinGraphicsWindow::_creating_window = NULL;
@@ -47,6 +43,12 @@ bool WinGraphicsWindow::_got_saved_params = false;
 int WinGraphicsWindow::_saved_mouse_trails;
 BOOL WinGraphicsWindow::_saved_cursor_shadow;
 BOOL WinGraphicsWindow::_saved_mouse_vanish;
+
+WinGraphicsWindow::IconFilenames WinGraphicsWindow::_icon_filenames;
+WinGraphicsWindow::IconFilenames WinGraphicsWindow::_cursor_filenames;
+
+WinGraphicsWindow::WindowClasses WinGraphicsWindow::_window_classes;
+int WinGraphicsWindow::_window_class_index = 0;
 
 static const char * const errorbox_title = "Panda3D Error";
 
@@ -245,6 +247,22 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_cursor_hidden();
   }
 
+  if (properties.has_cursor_filename()) {
+    Filename filename = properties.get_cursor_filename();
+    _properties.set_cursor_filename(filename);
+
+    _cursor = get_cursor(filename);
+    if (_cursor == 0) {
+      _cursor = LoadCursor(NULL, IDC_ARROW);
+    }
+
+    if (_cursor_window == this) {
+      SetCursor(_cursor);
+    }
+
+    properties.clear_cursor_filename();
+  }
+
   if (properties.has_z_order()) {
     WindowProperties::ZOrder last_z_order = _properties.get_z_order();
     _properties.set_z_order(properties.get_z_order());
@@ -287,6 +305,13 @@ close_window() {
 ////////////////////////////////////////////////////////////////////
 bool WinGraphicsWindow::
 open_window() {
+  if (_properties.has_cursor_filename()) {
+    _cursor = get_cursor(_properties.get_cursor_filename());
+  }
+  if (_cursor == 0) {
+    _cursor = LoadCursor(NULL, IDC_ARROW);
+  }
+
   // Store the current window pointer in _creating_window, so we can
   // call CreateWindow() and know which window it is sending events to
   // even before it gives us a handle.  Warning: this is not thread
@@ -595,11 +620,11 @@ open_fullscreen_window() {
   // I'd prefer to CreateWindow after DisplayChange in case it messes
   // up GL somehow, but I need the window's black background to cover
   // up the desktop during the mode change
-  register_window_class();
+  const WindowClass &wclass = register_window_class(_properties);
   HINSTANCE hinstance = GetModuleHandle(NULL);
-  _hWnd = CreateWindow(_window_class_name, title.c_str(), window_style,
-                          0, 0, dwWidth, dwHeight, 
-                          hDesktopWindow, NULL, hinstance, 0);
+  _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), window_style,
+                       0, 0, dwWidth, dwHeight, 
+                       hDesktopWindow, NULL, hinstance, 0);
   if (!_hWnd) {
     windisplay_cat.error()
       << "CreateWindow() failed!" << endl;
@@ -686,13 +711,13 @@ open_regular_window() {
     title = _properties.get_title();
   }
 
-  register_window_class();
+  const WindowClass &wclass = register_window_class(_properties);
   HINSTANCE hinstance = GetModuleHandle(NULL);
-  _hWnd = CreateWindow(_window_class_name, title.c_str(), window_style, 
-                          win_rect.left, win_rect.top,
-                          win_rect.right - win_rect.left,
-                          win_rect.bottom - win_rect.top,
-                          NULL, NULL, hinstance, 0);
+  _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), window_style, 
+                       win_rect.left, win_rect.top,
+                       win_rect.right - win_rect.left,
+                       win_rect.bottom - win_rect.top,
+                       NULL, NULL, hinstance, 0);
 
   if (!_hWnd) {
     windisplay_cat.error()
@@ -836,30 +861,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         set_cursor_out_of_window();
         break;
     
-      // if cursor is invisible, make it visible when moving in the window bars & menus, so user can use click in them
-      case WM_NCMOUSEMOVE: {
-            if(!_properties.get_cursor_hidden()) {
-                if(!_bCursor_in_WindowClientArea) {
-                    // SetCursor(_pParentWindowGroup->_hMouseCursor);
-                    hide_or_show_cursor(false);
-                    _bCursor_in_WindowClientArea=true;
-                }
-            }
-            break;
-      }
-    
-      case WM_NCMOUSELEAVE: {
-            if(!_properties.get_cursor_hidden()) {
-                hide_or_show_cursor(true);
-                // SetCursor(NULL);
-                _bCursor_in_WindowClientArea=false;
-            }
-            break;
-      }
-    
       case WM_CREATE: {
         track_mouse_leaving(hwnd);
-        _bCursor_in_WindowClientArea=false;
         ClearToBlack(hwnd,_properties);
     
         POINT cpos;
@@ -1600,8 +1603,10 @@ update_cursor_window(WinGraphicsWindow *to_window) {
       SystemParametersInfo(SPI_SETCURSORSHADOW, NULL, (PVOID)false, NULL);
       SystemParametersInfo(SPI_SETMOUSEVANISH, NULL, (PVOID)false, NULL);
     }
-  }
 
+    SetCursor(to_window->_cursor);
+  }
+  
   hide_or_show_cursor(hide_cursor);
 
   _cursor_window = to_window;
@@ -1628,103 +1633,6 @@ hide_or_show_cursor(bool hide_cursor) {
       _cursor_hidden = false;
     }
   }
-}
-  
-////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsWindow::register_window_class
-//       Access: Private, Static
-//  Description: Registers a Window class for all WinGraphicsWindows.
-//               This only needs to be done once per session.
-////////////////////////////////////////////////////////////////////
-void WinGraphicsWindow::
-register_window_class() {
-  if (_window_class_registered) {
-    return;
-  }
-
-  WNDCLASS wc;
-
-  HINSTANCE instance = GetModuleHandle(NULL);
-
-  // Clear before filling in window structure!
-  ZeroMemory(&wc, sizeof(WNDCLASS));
-  wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-  wc.lpfnWndProc = (WNDPROC)static_window_proc;
-  wc.hInstance = instance;
-
-  // Might be nice to move these properties into the WindowProperties
-  // structure, so they don't have to be global for all windows.
-  string windows_icon_filename = icon_filename.get_value().to_os_specific();
-  string windows_mono_cursor_filename = mono_cursor_filename.get_value().to_os_specific();
-
-  if (!windows_icon_filename.empty()) {
-    // Note: LoadImage seems to cause win2k internal heap corruption
-    // (outputdbgstr warnings) if icon is more than 8bpp
-
-    // loads a .ico fmt file
-    wc.hIcon = (HICON)LoadImage(NULL, windows_icon_filename.c_str(),
-                                IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
-
-    if (wc.hIcon == NULL) {
-      windisplay_cat.warning()
-        << "windows icon filename '" << windows_icon_filename
-        << "' not found!!\n";
-    }
-  } else {
-    wc.hIcon = NULL; // use default app icon
-  }
-
-  _loaded_custom_cursor = false;
-  if (!windows_mono_cursor_filename.empty()) {
-    // Note: LoadImage seems to cause win2k internal heap corruption
-    // (outputdbgstr warnings) if icon is more than 8bpp (because it
-    // was 'mapping' 16bpp colors to the device?)
-    
-    DWORD load_flags = LR_LOADFROMFILE;
-
-    /*
-    if (_props._fullscreen) {
-      // I think cursors should use LR_CREATEDIBSECTION since they
-      // should not be mapped to the device palette (in the case of
-      // 256-color cursors) since they are not going to be used on the
-      // desktop
-      load_flags |= LR_CREATEDIBSECTION;
-
-      // Of course, we can't make this determination here because one
-      // window class is used for all windows, fullscreen as well as
-      // desktop windows.
-    }
-    */
-
-    // loads a .cur fmt file
-    _mouse_cursor = (HCURSOR) LoadImage(NULL, windows_mono_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, load_flags);
-    
-    if (_mouse_cursor == NULL) {
-      windisplay_cat.warning()
-        << "windows cursor filename '" << windows_mono_cursor_filename
-        << "' not found!!\n";
-    } else {
-      _loaded_custom_cursor = true;
-    }
-  }
-
-  if (!_loaded_custom_cursor) {
-    _mouse_cursor = LoadCursor(NULL, IDC_ARROW);
-  }
-
-  // even if cursor isnt visible, we need to load it so its visible
-  // in client-area window border
-  wc.hCursor = _mouse_cursor;  
-  wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-  wc.lpszMenuName = NULL;
-  wc.lpszClassName = _window_class_name;
-  
-  if (!RegisterClass(&wc)) {
-    windisplay_cat.error()
-      << "could not register window class!" << endl;
-    return;
-  }
-  _window_class_registered = true;
 }
 
 // dont pick any video modes < MIN_REFRESH_RATE Hz
@@ -1895,6 +1803,153 @@ void WinGraphicsWindow::
 handle_mouse_exit() {
   // note: 'mouse_motion' is considered the 'entry' event
   _input_devices[0].set_pointer_out_of_window();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::get_icon
+//       Access: Private, Static
+//  Description: Loads and returns an HICON corresponding to the
+//               indicated filename.  If the file cannot be loaded,
+//               returns 0.
+////////////////////////////////////////////////////////////////////
+HICON WinGraphicsWindow::
+get_icon(const Filename &filename) {
+  // First, look for the unresolved filename in our index.
+  IconFilenames::iterator fi = _icon_filenames.find(filename);
+  if (fi != _icon_filenames.end()) {
+    return (HICON)((*fi).second);
+  }
+
+  // If it wasn't found, resolve the filename and search for that.
+
+  // Since we have to use a Windows call to load the image from a
+  // filename, we can't load a virtual file and we can't use the
+  // virtual file system.
+  Filename resolved = filename;
+  if (!resolved.resolve_filename(model_path)) {
+    // The filename doesn't exist.
+    windisplay_cat.warning()
+      << "Could not find icon filename " << filename << "\n";
+    return 0;
+  }
+  fi = _icon_filenames.find(resolved);
+  if (fi != _icon_filenames.end()) {
+    _icon_filenames[filename] = (*fi).second;
+    return (HICON)((*fi).second);
+  }
+
+  Filename os = resolved.to_os_specific();
+
+  HANDLE h = LoadImage(NULL, os.c_str(),
+                       IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
+  if (h == 0) {
+    windisplay_cat.warning()
+      << "windows icon filename '" << os << "' could not be loaded!!\n";
+    show_error_message();
+  }
+
+  _icon_filenames[filename] = h;
+  _icon_filenames[resolved] = h;
+  return (HICON)h;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::get_cursor
+//       Access: Private, Static
+//  Description: Loads and returns an HCURSOR corresponding to the
+//               indicated filename.  If the file cannot be loaded,
+//               returns 0.
+////////////////////////////////////////////////////////////////////
+HCURSOR WinGraphicsWindow::
+get_cursor(const Filename &filename) {
+  // First, look for the unresolved filename in our index.
+  IconFilenames::iterator fi = _cursor_filenames.find(filename);
+  if (fi != _cursor_filenames.end()) {
+    return (HCURSOR)((*fi).second);
+  }
+
+  // If it wasn't found, resolve the filename and search for that.
+
+  // Since we have to use a Windows call to load the image from a
+  // filename, we can't load a virtual file and we can't use the
+  // virtual file system.
+  Filename resolved = filename;
+  if (!resolved.resolve_filename(model_path)) {
+    // The filename doesn't exist.
+    windisplay_cat.warning()
+      << "Could not find cursor filename " << filename << "\n";
+    return 0;
+  }
+  fi = _cursor_filenames.find(resolved);
+  if (fi != _cursor_filenames.end()) {
+    _cursor_filenames[filename] = (*fi).second;
+    return (HCURSOR)((*fi).second);
+  }
+
+  Filename os = resolved.to_os_specific();
+
+  HANDLE h = LoadImage(NULL, os.c_str(),
+                       IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
+  if (h == 0) {
+    windisplay_cat.warning()
+      << "windows cursor filename '" << os << "' could not be loaded!!\n";
+    show_error_message();
+  }
+
+  _cursor_filenames[filename] = h;
+  _cursor_filenames[resolved] = h;
+  return (HCURSOR)h;
+}
+
+static HCURSOR get_cursor(const Filename &filename);
+  
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::register_window_class
+//       Access: Private, Static
+//  Description: Registers a Window class appropriate for the
+//               indicated properties.  This class may be shared by
+//               multiple windows.
+////////////////////////////////////////////////////////////////////
+const WinGraphicsWindow::WindowClass &WinGraphicsWindow::
+register_window_class(const WindowProperties &props) {
+  pair<WindowClasses::iterator, bool> found = 
+    _window_classes.insert(WindowClass(props));
+  WindowClass &wclass = (*found.first);
+
+  if (!found.second) {
+    // We have already created a window class.
+    return wclass;
+  }
+
+  // We have not yet created this window class.
+  ostringstream wclass_name;
+  wclass_name << "WinGraphicsWindow" << _window_class_index;
+  _window_class_index++;
+  wclass._name = wclass_name.str();
+
+  WNDCLASS wc;
+
+  HINSTANCE instance = GetModuleHandle(NULL);
+
+  // Clear before filling in window structure!
+  ZeroMemory(&wc, sizeof(WNDCLASS));
+  wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+  wc.lpfnWndProc = (WNDPROC)static_window_proc;
+  wc.hInstance = instance;
+
+  wc.hIcon = wclass._icon;
+
+  wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+  wc.lpszMenuName = NULL;
+  wc.lpszClassName = wclass._name.c_str();
+  
+  if (!RegisterClass(&wc)) {
+    windisplay_cat.error()
+      << "could not register window class " << wclass._name << "!" << endl;
+    return wclass;
+  }
+
+  return wclass;
 }
 
 // pops up MsgBox w/system error msg

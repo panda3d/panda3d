@@ -92,8 +92,9 @@ public:
   enum BackgroundType {
     BT_other = 0,
     BT_default,
-    BT_gray,
     BT_black,
+    BT_gray,
+    BT_white,
     BT_none
   };
 

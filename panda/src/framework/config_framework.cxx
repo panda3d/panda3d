@@ -29,14 +29,6 @@ ConfigVariableDouble aspect_ratio
 ConfigVariableBool show_frame_rate_meter
 ("show-frame-rate-meter", false);
 
-// The default window background color.
-ConfigVariableDouble win_background_r
-("win-background-r", 0.41);
-ConfigVariableDouble win_background_g
-("win-background-g", 0.41);
-ConfigVariableDouble win_background_b
-("win-background-b", 0.41);
-
 ConfigVariableString record_session
 ("record-session", "");
 ConfigVariableString playback_session

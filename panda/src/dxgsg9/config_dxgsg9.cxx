@@ -133,11 +133,6 @@ ConfigVariableBool dx_debug_view_mipmaps
 ("dx-debug-view-mipmaps", false);
 #endif
 
-// use dx9 or GDI mouse cursor in fullscreen mode?
-// Nvidia dx9 cursor is invisible as of 28.32 drivers, so using GDI in fullscrn by default for now
-ConfigVariableBool dx_use_dx_cursor
-("dx-use-dx-cursor", false);
-
 ConfigVariableBool dx_force_anisotropic_filtering
 ("dx-force-anisotropic-filtering", false);
 

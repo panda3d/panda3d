@@ -32,10 +32,6 @@ NotifyCategoryDecl(framework, EXPCL_FRAMEWORK, EXPTP_FRAMEWORK);
 extern ConfigVariableDouble aspect_ratio;
 extern ConfigVariableBool show_frame_rate_meter;
 
-extern ConfigVariableDouble win_background_r;
-extern ConfigVariableDouble win_background_g;
-extern ConfigVariableDouble win_background_b;
-
 extern ConfigVariableString record_session;
 extern ConfigVariableString playback_session;
 

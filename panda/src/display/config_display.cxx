@@ -119,17 +119,27 @@ ConfigVariableBool window_inverted
           "they will render upside-down and backwards.  Normally this is useful only "
           "for debugging."));
 
+ConfigVariableInt win_size
+("win-size", "640 480",
+ PRC_DESC("This is the default size at which to open a new window.  This "
+          "replaces the deprecated win-width and win-height variables."));
+
+ConfigVariableInt win_origin
+("win-origin", "0 0",
+ PRC_DESC("This is the default position at which to open a new window.  This "
+          "replaces the deprecated win-origin-x and win-origin-y variables."));
+
 ConfigVariableInt win_width
-("win-width", 640);
+("win-width", 0);
 
 ConfigVariableInt win_height
-("win-height", 480);
+("win-height", 0);
 
 ConfigVariableInt win_origin_x
-("win-origin-x", -1);
+("win-origin-x", 0);
 
 ConfigVariableInt win_origin_y
-("win-origin-y", -1);
+("win-origin-y", 0);
 
 ConfigVariableBool fullscreen
 ("fullscreen", false);
@@ -140,11 +150,22 @@ ConfigVariableBool undecorated
 ConfigVariableBool cursor_hidden
 ("cursor-hidden", false);
 
+ConfigVariableFilename icon_filename
+("icon-filename", "");
+
+ConfigVariableFilename cursor_filename
+("cursor-filename", "");
+
 ConfigVariableEnum<WindowProperties::ZOrder> z_order
 ("z-order", WindowProperties::Z_normal);
 
 ConfigVariableString window_title
 ("window-title", "Panda");
+
+ConfigVariableDouble background_color
+("background-color", "0.41 0.41 0.41",
+ PRC_DESC("Specifies the rgb(a) value of the default background color for a "
+          "new window or offscreen buffer."));
 
 
 ////////////////////////////////////////////////////////////////////

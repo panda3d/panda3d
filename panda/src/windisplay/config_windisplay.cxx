@@ -28,15 +28,6 @@ ConfigureFn(config_windisplay) {
   init_libwindisplay();
 }
 
-ConfigVariableFilename icon_filename
-("win32-window-icon", "");
-
-ConfigVariableFilename color_cursor_filename
-("win32-color-cursor", "");
-
-ConfigVariableFilename mono_cursor_filename
-("win32-mono-cursor", "");
-
 ConfigVariableBool responsive_minimized_fullscreen_window
 ("responsive-minimized-fullscreen-window",false);
 

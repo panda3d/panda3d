@@ -48,7 +48,7 @@ PandaFramework() :
   _texture_enabled = true;
   _two_sided_enabled = false;
   _lighting_enabled = false;
-  _background_type = WindowFramework::BT_gray;
+  _background_type = WindowFramework::BT_default;
   _highlight_wireframe = NodePath("wireframe");
   _highlight_wireframe.set_render_mode_wireframe(1);
   _highlight_wireframe.set_color(1.0f, 0.0f, 0.0f, 1.0f, 1);
@@ -1206,9 +1206,10 @@ event_comma(CPT_Event event, void *) {
 
     switch (wf->get_background_type()) {
     case WindowFramework::BT_other:
+    case WindowFramework::BT_none:
       break;
       
-    case WindowFramework::BT_none:
+    case WindowFramework::BT_white:
       wf->set_background_type(WindowFramework::BT_default);
       break;
       

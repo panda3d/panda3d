@@ -40,7 +40,6 @@ extern ConfigVariableBool dx_use_rangebased_fog;
 extern ConfigVariableBool link_tristrips;
 extern ConfigVariableInt dx_multisample_antialiasing_level;
 extern ConfigVariableBool dx_use_triangle_mipgen_filter;
-extern ConfigVariableBool dx_use_dx_cursor;
 
 
 // debug flags we might want to use in full optimized build
