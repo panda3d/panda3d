@@ -566,7 +566,6 @@ download(const string &file_name, Filename file_dest,
 
       // Handle receive timeouts by trying again
       if (ans == RS_timeout) {
-	nassertr(bytes == 0, false);
 	for (int r = 0; r < downloader_timeout_retries; r++) {
 	    ans = safe_receive(_socket, status._next_in, read_size,
 					(long)downloader_timeout, bytes);
