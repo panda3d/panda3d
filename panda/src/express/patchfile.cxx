@@ -786,8 +786,8 @@ emit_COPY(ofstream &write_stream, PN_uint16 length, PN_uint32 COPY_pos,
 //               "Differential Compression: A Generalized Solution
 //               for Binary Files" by Randal C. Burns (p.13).
 //               For an original file of size M and a new file of
-//               size N, this algorithm is O(M) in space and O(M*N)
-//               in time.
+//               size N, this algorithm is O(M) in space and
+//               O(M*N) (worst-case) in time.
 ////////////////////////////////////////////////////////////////////
 bool Patchfile::
 build(Filename file_orig, Filename file_new, Filename patch_name) {
