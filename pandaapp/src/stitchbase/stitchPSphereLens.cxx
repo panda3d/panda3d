@@ -29,7 +29,7 @@
 
 // This is the focal-length constant for fisheye lenses.  See
 // stitchFisheyeLens.h.
-static const double k = 60.0;
+static const double psphere_k = 60.0;
 
 StitchPSphereLens::
 StitchPSphereLens() {
@@ -41,7 +41,7 @@ get_focal_length(double width_mm) const {
     return _focal_length;
   }
   if (_flags & F_fov) {
-    return width_mm * k / _fov;
+    return width_mm * psphere_k / _fov;
   }
   return 0.0;
 }
@@ -52,7 +52,7 @@ get_hfov(double width_mm) const {
     return _fov;
   }
   if (_flags & F_focal_length) {
-    return width_mm * k / _focal_length;
+    return width_mm * psphere_k / _focal_length;
   }
   return 0.0;
 }
@@ -63,8 +63,8 @@ extrude(const LPoint2d &point_mm, double width_mm) const {
 
   double fl = get_focal_length(width_mm);
   return LVector3d::forward() *
-    LMatrix3d::rotate_mat(v2[1] * k / fl, LVector3d::right()) *
-    LMatrix3d::rotate_mat(-v2[0] * k / fl, LVector3d::up());
+    LMatrix3d::rotate_mat(v2[1] * psphere_k / fl, LVector3d::right()) *
+    LMatrix3d::rotate_mat(-v2[0] * psphere_k / fl, LVector3d::up());
 }
 
 
@@ -83,14 +83,14 @@ project(const LVector3d &vec, double width_mm) const {
 
   // The x position is the angle about the Z axis.
   double x =
-    rad_2_deg(atan2(xy[0], xy[1])) * get_focal_length(width_mm) / k;
+    rad_2_deg(atan2(xy[0], xy[1])) * get_focal_length(width_mm) / psphere_k;
 
   // Unroll the Z angle, and the y position is the angle about the X
   // axis.
   xy = normalize(xy);
   LVector2d yz(v3[0]*xy[0] + v3[1]*xy[1], v3[2]);
   double y =
-    rad_2_deg(atan2(yz[1], yz[0])) * get_focal_length(width_mm) / k;
+    rad_2_deg(atan2(yz[1], yz[0])) * get_focal_length(width_mm) / psphere_k;
 
   return LPoint2d(x, y);
 }
@@ -105,12 +105,12 @@ project_left(const LVector3d &vec, double width_mm) const {
   LVector2d xy(v3[0], v3[1]);
   double x =
     (rad_2_deg(atan2(-xy[0], -xy[1])) - 180.0) *
-    get_focal_length(width_mm) / k;
+    get_focal_length(width_mm) / psphere_k;
 
   xy = normalize(xy);
   LVector2d yz(v3[0]*xy[0] + v3[1]*xy[1], v3[2]);
   double y =
-    rad_2_deg(atan2(yz[1], yz[0])) * get_focal_length(width_mm) / k;
+    rad_2_deg(atan2(yz[1], yz[0])) * get_focal_length(width_mm) / psphere_k;
 
   return LPoint2d(x, y);
 }
@@ -125,12 +125,12 @@ project_right(const LVector3d &vec, double width_mm) const {
   LVector2d xy(v3[0], v3[1]);
   double x =
     (rad_2_deg(atan2(-xy[0], -xy[1])) + 180.0) *
-    get_focal_length(width_mm) / k;
+    get_focal_length(width_mm) / psphere_k;
 
   xy = normalize(xy);
   LVector2d yz(v3[0]*xy[0] + v3[1]*xy[1], v3[2]);
   double y =
-    rad_2_deg(atan2(yz[1], yz[0])) * get_focal_length(width_mm) / k;
+    rad_2_deg(atan2(yz[1], yz[0])) * get_focal_length(width_mm) / psphere_k;
 
   return LPoint2d(x, y);
 }

@@ -39,7 +39,7 @@
 // for 35mm film.  Don't know how well this extends to other lenses
 // and other negative sizes.
 
-static const double k = 60.0;
+static const double fisheye_k = 60.0;
 
 StitchFisheyeLens::
 StitchFisheyeLens() {
@@ -51,7 +51,7 @@ get_focal_length(double width_mm) const {
     return _focal_length;
   }
   if (_flags & F_fov) {
-    return width_mm * k / _fov;
+    return width_mm * fisheye_k / _fov;
   }
   return 0.0;
 }
@@ -62,7 +62,7 @@ get_hfov(double width_mm) const {
     return _fov;
   }
   if (_flags & F_focal_length) {
-    return width_mm * k / _focal_length;
+    return width_mm * fisheye_k / _focal_length;
   }
   return 0.0;
 }
@@ -85,7 +85,7 @@ extrude(const LPoint2d &point_mm, double width_mm) const {
   v2 /= r;
 
   // Now get the point r units around the circle in the YZ plane.
-  double dist = r * k / get_focal_length(width_mm);
+  double dist = r * fisheye_k / get_focal_length(width_mm);
   LVector3d p(0.0, cos(deg_2_rad(dist)), sin(deg_2_rad(dist)));
 
   // And rotate this point around the Y axis.
@@ -128,7 +128,7 @@ project(const LVector3d &vec, double width_mm) const {
   // along the great circle to the point.
   double r = 90.0 - rad_2_deg(atan2(x[0], x[1]));
 
-  return y * (r * get_focal_length(width_mm) / k);
+  return y * (r * get_focal_length(width_mm) / fisheye_k);
 }
 
 void StitchFisheyeLens::
@@ -200,9 +200,9 @@ pick_up_singularity(TriangleRasterizer &rast,
     // from forward.
 
     double outer_mm =
-      (180 * get_focal_length(width_mm) / k);
+      (180 * get_focal_length(width_mm) / fisheye_k);
     double inner_mm =
-      ((180 - _singularity_tolerance * 2) * get_focal_length(width_mm) / k);
+      ((180 - _singularity_tolerance * 2) * get_focal_length(width_mm) / fisheye_k);
 
     int xsize = rast._output->get_x_size();
     int ysize = rast._output->get_y_size();

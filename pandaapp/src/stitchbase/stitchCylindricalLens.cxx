@@ -27,7 +27,7 @@
 
 // This is the focal-length constant for fisheye lenses.  See
 // stitchFisheyeLens.h.
-static const double k = 60.0;
+static const double cylindrical_k = 60.0;
 
 StitchCylindricalLens::
 StitchCylindricalLens() {
@@ -39,7 +39,7 @@ get_focal_length(double width_mm) const {
     return _focal_length;
   }
   if (_flags & F_fov) {
-    return width_mm * k / _fov;
+    return width_mm * cylindrical_k / _fov;
   }
   return 0.0;
 }
@@ -50,7 +50,7 @@ get_hfov(double width_mm) const {
     return _fov;
   }
   if (_flags & F_focal_length) {
-    return width_mm * k / _focal_length;
+    return width_mm * cylindrical_k / _focal_length;
   }
   return 0.0;
 }
@@ -66,8 +66,8 @@ extrude(const LPoint2d &point_mm, double width_mm) const {
   LVector2d v2 = point_mm;
 
   double fl = get_focal_length(width_mm);
-  return LVector3d(sin(deg_2_rad(v2[0] * k / fl)) * fl,
-                   cos(deg_2_rad(v2[0] * k / fl)) * fl,
+  return LVector3d(sin(deg_2_rad(v2[0] * cylindrical_k / fl)) * fl,
+                   cos(deg_2_rad(v2[0] * cylindrical_k / fl)) * fl,
                    v2[1]);
 }
 
@@ -88,7 +88,7 @@ project(const LVector3d &vec, double width_mm) const {
 
   // The x position is the angle about the Z axis.
   double x =
-    rad_2_deg(atan2(xy[0], xy[1])) * get_focal_length(width_mm) / k;
+    rad_2_deg(atan2(xy[0], xy[1])) * get_focal_length(width_mm) / cylindrical_k;
 
   // The y position is the Z height divided by the perspective
   // distance.
@@ -107,7 +107,7 @@ project_left(const LVector3d &vec, double width_mm) const {
   LVector2d xy(v3[0], v3[1]);
   double x =
     (rad_2_deg(atan2(-xy[0], -xy[1])) - 180.0) *
-    get_focal_length(width_mm) / k;
+    get_focal_length(width_mm) / cylindrical_k;
 
   double y = v3[2] / length(xy) * get_focal_length(width_mm);
   return LPoint2d(x, y);
@@ -123,7 +123,7 @@ project_right(const LVector3d &vec, double width_mm) const {
   LVector2d xy(v3[0], v3[1]);
   double x =
     (rad_2_deg(atan2(-xy[0], -xy[1])) + 180.0) *
-    get_focal_length(width_mm) / k;
+    get_focal_length(width_mm) / cylindrical_k;
 
   double y = v3[2] / length(xy) * get_focal_length(width_mm);
   return LPoint2d(x, y);
