@@ -49,7 +49,11 @@ get_config_path(const string &config_var_name, DSearchPath *&static_ptr) {
 
     Config::ConfigTable::Symbol all_defs;
     config_express.GetAll(config_var_name, all_defs);
-    if (!all_defs.empty()) {
+    if (all_defs.empty()) {
+      // If the path is undefined, it is implicitly ".".
+      (*static_ptr).append_path(".");
+
+    } else {
       Config::ConfigTable::Symbol::reverse_iterator si =
         all_defs.rbegin();
       string filename = ExecutionEnvironment::expand_string((*si).Val());
