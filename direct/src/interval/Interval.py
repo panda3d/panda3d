@@ -169,12 +169,11 @@ class Interval(DirectObject):
         """ popupControls()
             Popup control panel for interval.
         """
-        base.wantTk = 1
         import TkGlobal
         import fpformat
         import string
         # I moved this here because Toontown does not ship Tk
-        from Tkinter import Toplevel, Frame, Button
+        from Tkinter import Toplevel, Frame, Button, LEFT, X
         import Pmw
         import EntryScale
         if tl == None:

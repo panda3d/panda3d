@@ -292,21 +292,19 @@ def adjust(command = None, parent = None, **kw):
     10.0
     """
     # Make sure we enable Tk
-    base.wantDIRECT = 1
-    base.wantTk = 1
     import TkGlobal
     import Tkinter
     import EntryScale
     import Pmw
     # Create toplevel if needed
     if not parent:
-        parent = Toplevel()
+        parent = Tkinter.Toplevel()
         parent.title('Parameter Adjust')
     # Set command if specified
     if command:
         kw['command'] = command
     es = apply(EntryScale.EntryScale, (parent,), kw)
-    es.pack(expand = 1, fill = X)
+    es.pack(expand = 1, fill = 'x')
     es.parent = parent
     return es
 

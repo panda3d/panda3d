@@ -908,9 +908,6 @@ class Actor(PandaObject, NodePath):
 
     # actions
     def animPanel(self):
-        base.wantDIRECT = 1
-        base.wantTk = 1
-        from ShowBaseGlobal import *
         import TkGlobal
         import AnimPanel
         return AnimPanel.AnimPanel(self)

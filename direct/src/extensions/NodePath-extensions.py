@@ -785,42 +785,37 @@
             return self.__lerp(functorFunc, time, blendType)
             
     def place(self):
-        base.wantDIRECT = 1
         base.wantTk = 1
-        #from ShowBaseGlobal import *
-        #from DirectSession import *
-        import TkGlobal
+        base.wantDIRECT = 1
+        import DirectSession
+        direct.enable()
         import Placer
         return Placer.place(self)
 
     def explore(self):
-        base.wantDIRECT = 1
         base.wantTk = 1
-        #from ShowBaseGlobal import *
+        base.wantDIRECT = 1
         import TkGlobal
         import SceneGraphExplorer
         return SceneGraphExplorer.explore(self)
 
     def rgbPanel(self, cb = None):
-        base.wantDIRECT = 1
         base.wantTk = 1
-        #from ShowBaseGlobal import *
+        base.wantDIRECT = 1
         import TkGlobal
         import EntryScale
         return EntryScale.rgbPanel(self, cb)
 
     def select(self):
-        base.wantDIRECT = 1
         base.wantTk = 1
-        #from ShowBaseGlobal import *
-        import TkGlobal
+        base.wantDIRECT = 1
+        import DirectSession
         direct.select(self)
 
     def deselect(self):
-        base.wantDIRECT = 1
         base.wantTk = 1
-        #from ShowBaseGlobal import *
-        import TkGlobal
+        base.wantDIRECT = 1
+        import DirectSession
         direct.deselect(self)
 
     def setAlphaScale(self, alpha):

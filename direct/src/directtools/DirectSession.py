@@ -165,7 +165,7 @@ class DirectSession(PandaObject):
                             'mouse3', 'mouse3-up']
 
         if base.wantTk:
-            from TkGlobal import tkroot
+            import TkGlobal
             self.panel = DirectSessionPanel(parent = tkroot)
 
         if self.iAmAServer:

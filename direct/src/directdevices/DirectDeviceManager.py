@@ -6,7 +6,7 @@ from PandaModules import *
 ANALOG_MIN = -0.95
 ANALOG_MAX = 0.95
 ANALOG_RANGE = ANALOG_MAX - ANALOG_MIN
-ANALOG_DEADBAND = 0.075
+ANALOG_DEADBAND = 0.125
 
 try:
     myBase = base
