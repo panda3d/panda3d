@@ -172,9 +172,9 @@ initiate(Filename &patch_file, Filename &file) {
   // Open the original file for read
   _orig_file = file;
   _orig_file.set_binary();
-  if (!file.open_read(_origfile_stream)) {
+  if (!_orig_file.open_read(_origfile_stream)) {
     express_cat.error()
-      << "Patchfile::initiate() - Failed to open file: " << file << endl;
+      << "Patchfile::initiate() - Failed to open file: " << _orig_file << endl;
     return get_write_error();
   }
 
@@ -225,10 +225,10 @@ initiate(Filename &patch_file, Filename &file) {
   _datagram.append_data(_buffer->_buffer, name_length);
   DatagramIterator di2(_datagram);
   string name = di2.extract_bytes(name_length);
-  if (name != file.get_basename_wo_extension()) {
+  if (name != _orig_file.get_basename_wo_extension()) {
     express_cat.error()
       << "Patchfile::initiate() - patch intended for file: " << name
-      << ", not file: " << file << endl;
+      << ", not file: " << _orig_file << endl;
     return EU_error_file_invalid;
   }
 
