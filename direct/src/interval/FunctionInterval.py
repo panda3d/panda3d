@@ -3,6 +3,7 @@
 from PandaModules import *
 from Interval import *
 from MessengerGlobal import *
+import types
 
 #############################################################
 ###                                                       ###
@@ -27,6 +28,7 @@ class FunctionInterval(Interval):
         if (name == None):
             name = 'FunctionInterval-%d' % FunctionInterval.functionIntervalNum
             FunctionInterval.functionIntervalNum += 1
+        assert(isinstance(name, types.StringType))
         # Record any arguments
         self.extraArgs = extraArgs
         # Initialize superclass

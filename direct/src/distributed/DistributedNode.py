@@ -45,19 +45,18 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
 
     ### setParent ###
 
-    def b_setParent(self, parentString):
-        self.setParent(parentString)
-        self.d_setParent(parentString)
+    def b_setParent(self, parentToken):
+        self.setParent(parentToken)
+        self.d_setParent(parentToken)
         return None
 
-    def d_setParent(self, parentString):
-        self.sendUpdate("setParent", [parentString])
+    def d_setParent(self, parentToken):
+        self.sendUpdate("setParent", [parentToken])
         return None
 
-    def setParent(self, parentString):
-        # print "setting parent of %s to %s" % (self.getName(), parentString)
-        assert(self.cr.name2nodePath.has_key(parentString))
-        parent = self.cr.name2nodePath[parentString]
+    def setParent(self, parentToken):
+        assert(self.cr.token2nodePath.has_key(parentToken))
+        parent = self.cr.token2nodePath[parentToken]
         self.wrtReparentTo(parent)
         return None
 
