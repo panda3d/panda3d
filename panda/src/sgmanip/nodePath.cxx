@@ -43,9 +43,10 @@
 
 #include "plist.h"
 
-int NodePath::_max_search_depth = 10000;
+// stack seems to overflow on Intel C++ at 8000.  If we need more than 
+// 7500, need to increase stack size.
+int NodePath::_max_search_depth = 7500; 
 TypeHandle NodePath::_type_handle;
-
 
 // This class is used in prepare_scene() to traverse the scene graph
 // and register textures and geoms with the gsg.
