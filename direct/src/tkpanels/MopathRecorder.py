@@ -109,7 +109,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.startStopHook = 'f6'
         self.keyframeHook = 'f10'
         # Curve fitter object
-        self.startPos = Point3(0)
+        self.lastPos = Point3(0)
         self.xyzCurveFitter = CurveFitter()
         self.hprCurveFitter = CurveFitter()
         # Curve variables
@@ -139,6 +139,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.desampleFrequency = 1
         self.numSamples = 100
         self.recordStart = 0.0
+        self.deltaTime = 0.0
         self.controlStart = 0.0
         self.controlStop = 0.0
         self.recordStop = 0.0
@@ -410,7 +411,7 @@ class MopathRecorder(AppShell, PandaObject):
         widget = self.createEntryScale(
             resampleFrame, 'Resample', 'Num. Samples',
             'Number of samples in resampled curve',
-            resolution = 1, max = 1000, command = self.setNumSamples,
+            resolution = 1, min = 2, max = 1000, command = self.setNumSamples,
             side = LEFT)
         widget.component('hull')['relief'] = RIDGE
         widget.onRelease = widget.onReturnRelease = self.sampleCurve
@@ -744,6 +745,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.ignore(self.startStopHook)
         self.ignore(self.keyframeHook)
         self.curveNodePath.reparentTo(self.recorderNodePath)
+        self.trace.reparentTo(self.recorderNodePath)
         self.recorderNodePath.removeNode()
         # Make sure markers are deselected
         direct.deselect(self.playbackMarker)
@@ -937,8 +939,11 @@ class MopathRecorder(AppShell, PandaObject):
             # Keyframe mode?
             if (self.samplingMode == 'Keyframe'):
                 # Record first point
-                self.startPos = Point3(
-                    self['nodePath'].getPos(self.nodePathParent))
+                self.lastPos.assign(Point3(
+                    self['nodePath'].getPos(self.nodePathParent)))
+                # Init delta time
+                self.deltaTime = 0.0
+                # Record first point
                 self.recordPoint(self.recordStart)
             # Everything else
             else:
@@ -1010,15 +1015,19 @@ class MopathRecorder(AppShell, PandaObject):
             # This will automatically add the first point
             self.toggleRecordVar()
         else:
-            time = (self.recordStart +
-                    (Vec3(self['nodePath'].getPos(self.nodePathParent) -
-                          self.startPos).length()))
-            # Did we move at all?
-            if len(self.pointSet) > 0:
-                if time == self.pointSet[-1][0]:
-                    print 'No delta'
-                    return
-            self.recordPoint(time)
+            # Use distance as a time
+            pos = self['nodePath'].getPos(self.nodePathParent)
+            deltaPos = Vec3(pos - self.lastPos).length()
+            if deltaPos != 0:
+                # If we've moved at all, use delta Pos as time
+                self.deltaTime = self.deltaTime + deltaPos
+            else:
+                # Otherwise add one second
+                self.deltaTime = self.deltaTime + 1.0
+            # Record point at new time
+            self.recordPoint(self.recordStart + self.deltaTime)
+            # Update last pos
+            self.lastPos.assign(pos)
 
     def easeInOut(self, t):
         x = t * t
@@ -1320,16 +1329,23 @@ class MopathRecorder(AppShell, PandaObject):
             cTime = state.currentTime + dTime
         # Stop task if not looping and at end of curve
         # Or if refining curve and past recordStop
-        if (((self.loopPlayback == 0) & (cTime > self.maxT)) |
-            ((self.recordingType.get() == 'Extend') & (cTime > self.maxT)) |
-            ((self.recordingType.get() == 'Refine') &
-              (cTime > self.recordStop))):
+        if ((self.recordingType.get() == 'Refine') &
+              (cTime > self.recordStop)):
+            # Go to recordStop
+            self.getWidget('Playback', 'Time').set(self.recordStop)
+            # Then stop playback
             self.stopPlayback()
-            if (self.recordingType.get() == 'Refine'):
-                # Also kill record task
-                self.toggleRecordVar()
+            # Also kill record task
+            self.toggleRecordVar()
             return Task.done
-        # Otherwise go to specified time
+        elif (((self.loopPlayback == 0) & (cTime > self.maxT)) |
+            ((self.recordingType.get() == 'Extend') & (cTime > self.maxT))):
+            # Go to maxT
+            self.getWidget('Playback', 'Time').set(self.maxT)
+            # Then stop playback
+            self.stopPlayback()
+            return Task.done
+        # Otherwise go to specified time and continue
         self.getWidget('Playback', 'Time').set(cTime)
         state.currentTime = cTime
         return Task.cont
@@ -1394,7 +1410,7 @@ class MopathRecorder(AppShell, PandaObject):
             lookAtCS = self.playbackMarker.attachNewNode('lookAt')
         # Now sample the hprNurbsCurve using the same delta T
         for i in range(self.numSamples):
-            t = self.maxT * (i / float(self.numSamples))
+            t = self.maxT * (i / float(self.numSamples - 1))
             hpr = Point3(0)
             if self.fForward:
                 # Use xyz curve tangent
