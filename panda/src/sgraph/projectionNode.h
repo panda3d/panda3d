@@ -41,7 +41,7 @@ PUBLISHED:
 public:
   INLINE ProjectionNode(const ProjectionNode &copy);
   INLINE void operator = (const ProjectionNode &copy);
-
+  void output(ostream &out) const;
   virtual Node *make_copy() const;
 
 PUBLISHED:
@@ -74,7 +74,6 @@ protected:
   PT(Projection) _projection;
 
 public:
-
   static TypeHandle get_class_type( void ) {
     return _type_handle;
   }

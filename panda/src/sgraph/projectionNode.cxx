@@ -184,8 +184,9 @@ void ProjectionNode::
 get_near_far(float &cnear, float &cfar) const {
   if (_projection->get_type() == PerspectiveProjection::get_class_type()) {
     PerspectiveProjection *proj = DCAST(PerspectiveProjection, _projection);
-    cnear = proj->get_frustum()._fnear;
-    cfar = proj->get_frustum()._ffar;
+    Frustumf frust = proj->get_frustum();
+    cnear = frust._fnear;
+    cfar = frust._ffar;
   }
 }
 
@@ -349,3 +350,18 @@ set_far(float cfar) {
   float cnear = get_near();
   set_near_far(cnear, cfar);
 }
+
+void ProjectionNode::
+output(ostream &out) const {
+  if (_projection->get_type() == PerspectiveProjection::get_class_type()) {
+    PerspectiveProjection *proj = DCAST(PerspectiveProjection, _projection);
+    float xfov,yfov,aspect_ratio,cnear,cfar;
+    proj->get_frustum().get_perspective_params(xfov, yfov, aspect_ratio, cnear, cfar);
+
+    out << "X-FOV: " << xfov << " deg, Y-FOV: " << yfov << " deg" 
+        << "Aspect ratio: " << aspect_ratio << ", Near plane: " << cnear << ", Far plane: " << cfar << endl;
+  }
+
+  out << "Projection Matrix: " << _projection->get_projection_mat(CS_default) << endl;
+}
+

@@ -49,3 +49,10 @@ operator = (const ProjectionNode &copy) {
   NamedNode::operator = (copy);
   _projection = copy._projection;
 }
+
+INLINE ostream &operator << (ostream &out, const ProjectionNode &projnode) {
+  projnode.output(out);
+  return out;
+}
+
+
