@@ -18,7 +18,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         Level.Level.__init__(self)
         # this is one of the required fields
         self.zoneId = zoneId
-        self.hasBeenEdited = 0
+        self.modified = 0
 
     def generate(self, levelSpec):
         self.notify.debug('generate')
@@ -38,6 +38,8 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
 
     def delete(self):
         self.notify.debug('delete')
+        if __debug__:
+            self.saveSpec()
         self.destroyLevel()
         DistributedObjectAI.DistributedObjectAI.delete(self)
 
@@ -91,11 +93,33 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
             # send a copy to the client-side level obj
             self.sendUpdate('setAttribChange',
                             [entId, attribName, valueStr])
-            self.hasBeenEdited = 1
 
-        def requestCurrentLevelSpec(self):
+            self.modified = 1
+            self.scheduleSave()
+
+        SavePeriod = simbase.config.GetFloat('factory-save-period', 10)
+
+        def scheduleSave(self):
+            if hasattr(self, 'saveTask'):
+                return
+            self.saveTask = taskMgr.doMethodLater(
+                DistributedLevelAI.SavePeriod,
+                self.saveSpec,
+                self.uniqueName('saveSpec'))
+
+        def saveSpec(self, task=None):
+            DistributedLevelAI.notify.info('saving spec')
+            if hasattr(self, 'saveTask'):
+                del self.saveTask
+            if self.modified:
+                self.levelSpec.saveToDisk()
+                self.modified = 0
+
+        def requestCurrentLevelSpec(self, specHash):
             senderId = self.air.msgSender
-            spec = self.levelSpec
+            spec = None
+            if hash(self.levelSpec) != specHash:
+                spec = self.levelSpec
             specStr = repr(spec)
 
             import DistributedLargeBlobSenderAI

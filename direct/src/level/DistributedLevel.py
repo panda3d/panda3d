@@ -98,24 +98,37 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # announceGenerate(). Note that we have to call
         # gotAllRequired() in the last 'faux-required' DC update
         # handler. If you add another field, move this to the last one.
+        self.privGotAllRequired()
+
+    def privGotAllRequired(self):
+        self.levelAnnounceGenerate()
+    def levelAnnounceGenerate(self):
+        pass
+
+    def initializeLevel(self, levelSpec):
+        """subclass should call this as soon as it's located its level spec.
+        Must be called after obj has been generated."""
         if __debug__:
-            # if we're in debug, ask the server if it wants to send us
+            # if we're in debug, give the server the opportunity to send us
             # a full spec
-            self.sendUpdate('requestCurrentLevelSpec', [])
+            self.candidateSpec = levelSpec
+            self.sendUpdate('requestCurrentLevelSpec', [hash(levelSpec)])
         else:
-            self.gotAllRequired()
+            self.privGotSpec(levelSpec)
 
     if __debug__:
         def setSpecSenderDoId(self, doId):
-            DistributedLevel.notify.debug(
-                'setSpecSenderDoId: %s' % doId)
+            DistributedLevel.notify.debug('setSpecSenderDoId: %s' % doId)
             blobSender = toonbase.tcr.doId2do[doId]
 
             def setSpecBlob(specBlob, blobSender=blobSender, self=self):
                 blobSender.sendAck()
                 from LevelSpec import LevelSpec
-                self.curSpec = eval(specBlob)
-                self.gotAllRequired()
+                spec = eval(specBlob)
+                if spec is None:
+                    spec = self.candidateSpec
+                del self.candidateSpec
+                self.privGotSpec(spec)
 
             if blobSender.isComplete():
                 setSpecBlob(blobSender.getBlob())
@@ -124,17 +137,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 blobSender.setDoneEvent(evtName)
                 self.acceptOnce(evtName, setSpecBlob)
 
-    def gotAllRequired(self):
-        self.levelAnnounceGenerate()
-    def levelAnnounceGenerate(self):
-        pass
-
-    def initializeLevel(self, levelSpec):
-        """subclass should call this as soon as it's located its level spec.
-        Must be called after obj has been generated."""
-        # if the AI sent us a full spec, use it instead
-        if self.curSpec is not None:
-            levelSpec = self.curSpec
+    def privGotSpec(self, levelSpec):
         Level.Level.initializeLevel(self, self.doId, levelSpec,
                                     self.scenarioIndex)
 

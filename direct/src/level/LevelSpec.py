@@ -10,8 +10,9 @@ class LevelSpec:
     saving out modified spec data"""
     notify = DirectNotifyGlobal.directNotify.newCategory("LevelSpec")
     
-    def __init__(self, specDict, scenario=0, entTypeReg=None):
+    def __init__(self, specDict, scenario=0, filename=None, entTypeReg=None):
         self.specDict = specDict
+        self.filename = filename
         self.entTypeReg = entTypeReg
 
         # this maps an entId to the dict that holds its spec;
@@ -141,6 +142,50 @@ class LevelSpec:
             # name of module that should be imported by spec py file
             return 'SpecImports'
 
+        def saveToDisk(self, filename=None):
+            """returns zero on failure"""
+            import os
+
+            if filename is None:
+                filename = self.filename
+
+            # create a backup
+            try:
+                # does the file exist?
+                exists = 0
+                try:
+                    os.stat(filename)
+                    exists = 1
+                except OSError:
+                    pass
+                if exists:
+                    def getBackupFilename(num, filename=filename):
+                        return '%s.%03i' % (filename, num)
+                    numBackups = 50
+                    try:
+                        os.unlink(getBackupFilename(numBackups-1))
+                    except OSError:
+                        pass
+                    for i in range(numBackups-1,0,-1):
+                        try:
+                            os.rename(getBackupFilename(i-1),
+                                      getBackupFilename(i))
+                        except OSError:
+                            pass
+                    os.rename(filename, getBackupFilename(0))
+            except OSError, e:
+                LevelSpec.notify.warning('error during backup: %s' % str(e))
+
+            retval = 1
+            # wb to create a UNIX-format file
+            f = file(filename, 'wb')
+            try:
+                f.write(self.getPrettyString())
+            except IOError:
+                retval = 0
+            f.close()
+            return retval
+
         def getPrettyString(self):
             """Returns a string that contains the spec data, nicely formatted.
             This should be used when writing the spec out to file."""
@@ -255,6 +300,9 @@ class LevelSpec:
                 'specData=%s' %
                 (levelSpec, self.specDict)
                 )
+
+        def __hash__(self):
+            return hash(repr(self))
 
         def __repr__(self):
             return 'LevelSpec(%s, scenario=%s)' % (repr(self.specDict),
