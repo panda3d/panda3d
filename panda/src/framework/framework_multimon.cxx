@@ -1399,6 +1399,9 @@ int framework_main(int argc, char *argv[]) {
   root = new NamedNode("root");
   first_arc = new RenderRelation(render, root, 100);
 
+  // This will hold the AnimControls for animated characters.
+  AnimControlCollection anim_controls;
+
   ////// for gridded stuff
   PT_Node *pNodeArr=NULL;
   RenderRelation **pRRptrArr=NULL;
@@ -1622,7 +1625,6 @@ int framework_main(int argc, char *argv[]) {
 
     // If we happened to load up both a character file and its
     // matching animation file, attempt to bind them together now.
-    AnimControlCollection anim_controls;
     auto_bind(root, anim_controls, ~0);
     anim_controls.loop_all(true);
   }
