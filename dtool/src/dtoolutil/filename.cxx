@@ -52,6 +52,12 @@
 #include <windows.h>
 #endif
 
+// The MSVC 6.0 Win32 SDK lacks the following definitions, so we define them
+// here for compatibility.
+#ifndef FILE_ATTRIBUTE_DEVICE
+#define FILE_ATTRIBUTE_DEVICE	0x00000040
+#endif
+
 // We might have been linked with the Cygwin dll.  This is ideal if it
 // is available, because it allows Panda to access all the Cygwin
 // mount definitions if they are in use.  If the Cygwin dll is not
