@@ -86,22 +86,22 @@ extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
 //               (from Real-time Rendering, p.49)
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LQuaternion)::
-set_hpr(const FLOATNAME(LVecBase3) &hpr) {
+set_hpr(const FLOATNAME(LVecBase3) &hpr, CoordinateSystem cs) {
   FLOATNAME(LQuaternion) quat_h, quat_p, quat_r;
 
   FLOATNAME(LVector3) v;
   FLOATTYPE a, s, c;
 
-  v = FLOATNAME(LVector3)::up();
+  v = FLOATNAME(LVector3)::up(cs);
   a = deg_2_rad(hpr[0] * 0.5f);
   csincos(a, &s, &c);
   quat_h.set(c, v[0] * s, v[1] * s, v[2] * s);
-  v = FLOATNAME(LVector3)::right();
+  v = FLOATNAME(LVector3)::right(cs);
   a = deg_2_rad(hpr[1] * 0.5f);
   csincos(a, &s, &c);
   s = csin(a);
   quat_p.set(c, v[0] * s, v[1] * s, v[2] * s);
-  v = FLOATNAME(LVector3)::forward();
+  v = FLOATNAME(LVector3)::forward(cs);
   a = deg_2_rad(hpr[2] * 0.5f);
   csincos(a, &s, &c);
   quat_r.set(c, v[0] * s, v[1] * s, v[2] * s);
@@ -136,7 +136,7 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr) {
 //               quaternion.
 ////////////////////////////////////////////////////////////////////
 FLOATNAME(LVecBase3) FLOATNAME(LQuaternion)::
-get_hpr() const {
+get_hpr(CoordinateSystem cs) const {
   if (!temp_hpr_fix) {
     // With the old, broken hpr code in place, just go through the
     // existing matrix decomposition code.  Not particularly speedy,
@@ -146,49 +146,67 @@ get_hpr() const {
     FLOATNAME(LMatrix3) mat;
     extract_to_matrix(mat);
     FLOATNAME(LVecBase3) scale, hpr;
-    decompose_matrix(mat, scale, hpr);
+    decompose_matrix(mat, scale, hpr, cs);
     return hpr;
   }
 
-  FLOATNAME(LVecBase3) hpr;
-  FLOATTYPE N = (_v.data[0] * _v.data[0]) + (_v.data[1] * _v.data[1]) + (_v.data[2] * _v.data[2]) + (_v.data[3] * _v.data[3]);
-  FLOATTYPE s = (N == 0.0f) ? 0.0f : (2.0f / N);
-  FLOATTYPE xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz, c1, c2, c3, c4;
-  FLOATTYPE cr, sr, cp, sp, ch, sh;
-
-  xs = _v.data[1] * s;   ys = _v.data[2] * s;   zs = _v.data[3] * s;
-  wx = _v.data[0] * xs;  wy = _v.data[0] * ys;  wz = _v.data[0] * zs;
-  xx = _v.data[1] * xs;  xy = _v.data[1] * ys;  xz = _v.data[1] * zs;
-  yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
-  c1 = xz - wy;
-  c2 = 1.0f - (xx + yy);
-  c3 = 1.0f - (yy + zz);
-  c4 = xy + wz;
-
-  if (c1 == 0.0f) {  // (roll = 0 or 180) or (pitch = +/- 90)
-    if (c2 >= 0.0f) {
-      hpr[2] = 0.0f;
-      ch = c3;
-      sh = c4;
-      cp = c2;
-    } else {
-      hpr[2] = 180.0f;
-      ch = -c3;
-      sh = -c4;
-      cp = -c2;
-    }
-  } else {
-    // this should work all the time, but the above saves some trig operations
-    FLOATTYPE roll = catan2(-c1, c2);
-    csincos(roll, &sr, &cr);
-    hpr[2] = rad_2_deg(roll);
-    ch = (cr * c3) + (sr * (xz + wy));
-    sh = (cr * c4) + (sr * (yz - wx));
-    cp = (cr * c2) - (sr * c1);
+  if (cs == CS_default) {
+    cs = get_default_coordinate_system();
   }
-  sp = yz + wx;
-  hpr[0] = rad_2_deg(catan2(sh, ch));
-  hpr[1] = rad_2_deg(catan2(sp, cp));
+
+  FLOATNAME(LVecBase3) hpr;
+
+  if (cs == CS_zup_right) {
+    FLOATTYPE N = (_v.data[0] * _v.data[0]) + (_v.data[1] * _v.data[1]) + (_v.data[2] * _v.data[2]) + (_v.data[3] * _v.data[3]);
+    FLOATTYPE s = (N == 0.0f) ? 0.0f : (2.0f / N);
+    FLOATTYPE xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz, c1, c2, c3, c4;
+    FLOATTYPE cr, sr, cp, sp, ch, sh;
+    
+    xs = _v.data[1] * s;   ys = _v.data[2] * s;   zs = _v.data[3] * s;
+    wx = _v.data[0] * xs;  wy = _v.data[0] * ys;  wz = _v.data[0] * zs;
+    xx = _v.data[1] * xs;  xy = _v.data[1] * ys;  xz = _v.data[1] * zs;
+    yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
+    c1 = xz - wy;
+    c2 = 1.0f - (xx + yy);
+    c3 = 1.0f - (yy + zz);
+    c4 = xy + wz;
+    
+    if (c1 == 0.0f) {  // (roll = 0 or 180) or (pitch = +/- 90)
+      if (c2 >= 0.0f) {
+        hpr[2] = 0.0f;
+        ch = c3;
+        sh = c4;
+        cp = c2;
+      } else {
+        hpr[2] = 180.0f;
+        ch = -c3;
+        sh = -c4;
+        cp = -c2;
+      }
+    } else {
+      // this should work all the time, but the above saves some trig operations
+      FLOATTYPE roll = catan2(-c1, c2);
+      csincos(roll, &sr, &cr);
+      hpr[2] = rad_2_deg(roll);
+      ch = (cr * c3) + (sr * (xz + wy));
+      sh = (cr * c4) + (sr * (yz - wx));
+      cp = (cr * c2) - (sr * c1);
+    }
+    sp = yz + wx;
+    hpr[0] = rad_2_deg(catan2(sh, ch));
+    hpr[1] = rad_2_deg(catan2(sp, cp));
+
+  } else {
+    // The code above implements quat-to-hpr for CS_zup_right only.
+    // For other coordinate systems, someone is welcome to extend the
+    // implementation; I'm going to choose the lazy path till then.
+    FLOATNAME(LMatrix3) mat;
+    extract_to_matrix(mat);
+    FLOATNAME(LVecBase3) scale;
+    decompose_matrix(mat, scale, hpr, cs);
+    return hpr;
+  }
+
 
 #ifndef NDEBUG
   if (paranoid_hpr_quat) {

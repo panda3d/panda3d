@@ -67,8 +67,8 @@ PUBLISHED:
 
   void set_from_matrix(const FLOATNAME(LMatrix3) &m);
   INLINE_LINMATH void set_from_matrix(const FLOATNAME(LMatrix4) &m);
-  void set_hpr(const FLOATNAME(LVecBase3) &hpr);
-  FLOATNAME(LVecBase3) get_hpr() const;
+  void set_hpr(const FLOATNAME(LVecBase3) &hpr, CoordinateSystem cs = CS_default);
+  FLOATNAME(LVecBase3) get_hpr(CoordinateSystem cs = CS_default) const;
 
   INLINE_LINMATH FLOATNAME(LVector3) get_axis() const;
   INLINE_LINMATH FLOATTYPE get_angle() const;
