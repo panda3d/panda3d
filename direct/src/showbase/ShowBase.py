@@ -355,6 +355,20 @@ class ShowBase:
         self.aspect2d.node().setMouseWatcher(self.mouseWatcherNode)
         self.mouseWatcherNode.addRegion(PGMouseWatcherBackground())
 
+    def enableSoftwareMousePointer(self):
+        """enableSoftwareMousePointer(self)
+
+        Creates some geometry and parents it to render2d to show
+        the currently-known mouse position.  Useful if the mouse
+        pointer is invisible for some reason.
+        """
+        mouseViz = render2d.attachNewNode('mouseViz')
+        lilsmiley = loader.loadModel('lilsmiley')
+        lilsmiley.reparentTo(mouseViz)
+        # Scale the smiley face to 32x32 pixels.
+        lilsmiley.setScale(32.0 / self.win.getHeight() / self.aspectRatio, 1.0, 32.0 / self.win.getHeight())
+        self.mouseWatcherNode.setGeometry(mouseViz.arc())
+        
 
     def getCameras(self, chanConfig):
         """getCameras(self, chanConfig)
