@@ -178,8 +178,12 @@ class ShowBase:
         is closed cleanly, so that we free system resources, restore
         the desktop and keyboard functionality, etc.
         """
-        for win in self.winList:
-            win.closeWindow()
+        try:
+            # Temporary try .. except for new window code
+            for win in self.winList:
+                win.closeWindow()
+        except:
+            pass
         del self.win
         del self.winList
         del self.pipe
@@ -204,14 +208,18 @@ class ShowBase:
             self.pipe = makeGraphicsPipe()
             self.pipeList.append(self.pipe)
 
-        chanConfig = makeGraphicsWindow(self.pipe, self.render)
+        chanConfig = makeGraphicsWindow(self.graphicsEngine, self.pipe, self.render)
         win = chanConfig.getWin()
 
         if self.win == None:
             self.win = win
 
         self.winList.append(win)
-        self.graphicsEngine.addWindow(win)
+        try:
+            # temporary try..except to support new window code
+            self.graphicsEngine.addWindow(win)
+        except:
+            pass
 
         self.getCameras(chanConfig)
 

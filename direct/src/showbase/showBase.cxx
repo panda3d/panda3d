@@ -19,12 +19,23 @@
 #include "showBase.h"
 
 #include "throw_event.h"
-#include "interactiveGraphicsPipe.h"
 #include "graphicsWindow.h"
 #include "chancfg.h"
 #include "renderBuffer.h"
 #include "get_config_path.h"
 #include "camera.h"
+
+// Don't define this unless you have drose's new GraphicsWindow code,
+// which is currently a work in progress.  You probably won't have it
+// unless you are drose.
+//#define NEW_WINDOW_CODE
+
+#ifdef NEW_WINDOW_CODE
+#include "graphicsPipeSelection.h"
+#else
+#include "interactiveGraphicsPipe.h"
+#endif
+
 
 ConfigureDef(config_showbase);
 ConfigureFn(config_showbase) {
@@ -45,6 +56,20 @@ PT(GraphicsPipe)
 make_graphics_pipe() {
   PT(GraphicsPipe) main_pipe;
 
+#ifdef NEW_WINDOW_CODE
+  GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
+  selection->resolve_modules();
+
+  nout << "Known pipe types:" << endl;
+  int num_pipe_types = selection->get_num_pipe_types();
+  for (int i = 0; i < num_pipe_types; i++) {
+    nout << "  " << selection->get_pipe_type(i) << "\n";
+  }
+
+  main_pipe = selection->make_default_pipe();
+
+#else  // NEW_WINDOW_CODE
+
   // load display modules
   GraphicsPipe::resolve_modules();
 
@@ -55,6 +80,8 @@ make_graphics_pipe() {
   main_pipe = GraphicsPipe::get_factory().
     make_instance(InteractiveGraphicsPipe::get_class_type());
 
+#endif  // NEW_WINDOW_CODE
+
   if (main_pipe == (GraphicsPipe*)0L) {
     nout << "No interactive pipe is available!  Check your Configrc!\n";
     return NULL;
@@ -62,23 +89,34 @@ make_graphics_pipe() {
 
   nout << "Opened a '" << main_pipe->get_type().get_name()
        << "' interactive graphics pipe." << endl;
+
   return main_pipe;
 }
 
 ChanConfig
-make_graphics_window(GraphicsPipe *pipe, const NodePath &render) {
+make_graphics_window(GraphicsEngine *engine, GraphicsPipe *pipe, 
+                     const NodePath &render) {
   PT(GraphicsWindow) main_win;
   ChanCfgOverrides override;
 
+  std::string conf = config_showbase.GetString("chan-config", chan_config);
+
   // Now use ChanConfig to create the window.
+#ifdef NEW_WINDOW_CODE
+  ChanConfig chan_config(engine, pipe, conf, render, override);
+
+#else  // NEW_WINDOW_CODE
+
   override.setField(ChanCfgOverrides::Mask,
                     ((unsigned int)(W_DOUBLE|W_DEPTH)));
 
   std::string title = config_showbase.GetString("window-title", window_title);
   override.setField(ChanCfgOverrides::Title, title);
 
-  std::string conf = config_showbase.GetString("chan-config", chan_config);
   ChanConfig chan_config(pipe, conf, render, override);
+#endif  // NEW_WINDOW_CODE
+
+
   main_win = chan_config.get_win();
   assert(main_win != (GraphicsWindow*)0L);
 
@@ -138,7 +176,9 @@ void add_fullscreen_testsize(unsigned int xsize,unsigned int ysize) {
 }
 
 void runtest_fullscreen_sizes(GraphicsWindow *win) {
+#ifndef NEW_WINDOW_CODE
     (void) win->verify_window_sizes(num_fullscreen_testsizes,fullscreen_testsizes);
+#endif  // NEW_WINDOW_CODE
 }
 
 bool query_fullscreen_testresult(unsigned int xsize,unsigned int ysize) {
