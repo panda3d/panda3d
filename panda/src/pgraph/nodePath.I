@@ -317,6 +317,47 @@ is_same_graph(const NodePath &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::is_ancestor_of
+//       Access: Published
+//  Description: Returns true if the node represented by this NodePath
+//               is a parent or other ancestor of the other NodePath,
+//               or false if it is not.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+is_ancestor_of(const NodePath &other) const {
+  int a_count, b_count;
+  if (find_common_ancestor(*this, other, a_count, b_count) == (NodePathComponent *)NULL) {
+    // Not related.
+    return false;
+  }
+
+  // They are related; now b is descended from a only if a is the
+  // common ancestor (which is to say, a_count == 0).
+  return (a_count == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_common_ancestor
+//       Access: Published
+//  Description: Returns the lowest NodePath that both of these two
+//               NodePaths have in common: the first ancestor that
+//               both of them share.  If the two NodePaths are
+//               unrelated, returns NodePath::not_found().
+////////////////////////////////////////////////////////////////////
+INLINE NodePath NodePath::
+get_common_ancestor(const NodePath &other) const {
+  int a_count, b_count;
+  NodePathComponent *common = find_common_ancestor(*this, other, a_count, b_count);
+  if (common == (NodePathComponent *)NULL) {
+    return NodePath::not_found();
+  }
+
+  NodePath result;
+  result._head = common;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_num_children
 //       Access: Published
 //  Description: Returns the number of children of the referenced node.

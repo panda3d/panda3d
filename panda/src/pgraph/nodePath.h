@@ -192,6 +192,8 @@ PUBLISHED:
   INLINE int get_key() const;
 
   INLINE bool is_same_graph(const NodePath &other) const;
+  INLINE bool is_ancestor_of(const NodePath &other) const;
+  INLINE NodePath get_common_ancestor(const NodePath &other) const;
 
   // Methods that return collections of NodePaths derived from or
   // related to this one.
