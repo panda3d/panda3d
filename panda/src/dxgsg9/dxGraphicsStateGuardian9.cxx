@@ -4782,6 +4782,7 @@ void DXGraphicsStateGuardian9::set_render_target() {
 
   _pD3DDevice->GetDepthStencilSurface(&pStencil);
   _pD3DDevice->SetDepthStencilSurface(pStencil);
+  _pD3DDevice->SetRenderTarget(0, pBack);
   if (pBack)
     pBack->Release();
   if (pStencil)
@@ -4823,40 +4824,47 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, DXScreenData **pScrn) {
        _pScrn->pD3D9->GetAdapterDisplayMode(_pScrn->CardIDNum, &_pScrn->DisplayMode);
        pPresParams->BackBufferFormat = _pScrn->DisplayMode.Format;
   }
-  // here we have to look at the device's frame buffer dimension
-  // if current window's dimension is bigger than device's frame buffer
+  // here we have to look at the _PresReset frame buffer dimension
+  // if current window's dimension is bigger than _PresReset 
   // we have to reset the device before creating new swapchain.
   // inorder to reset properly, we need to release all swapchains
-  D3DSURFACE_DESC DeviceDesc;
-  LPDIRECT3DSURFACE9 pDeviceBack;
-  _pD3DDevice->GetBackBuffer(0, 0,D3DBACKBUFFER_TYPE_MONO,&pDeviceBack);
-  pDeviceBack->GetDesc(&DeviceDesc);
-  pDeviceBack->Release();
+
   if ( !(_pScrn->pSwapChain)
-       || (DeviceDesc.Width < pPresParams->BackBufferWidth)
-       || (DeviceDesc.Height < pPresParams->BackBufferHeight) ) {
+       || (_PresReset.BackBufferWidth < pPresParams->BackBufferWidth)
+       || (_PresReset.BackBufferHeight < pPresParams->BackBufferHeight) ) {
+
+    wdxdisplay9_cat.debug() << "Swpachain = " << _pScrn->pSwapChain << " _PresReset = "
+                            << _PresReset.BackBufferWidth << "x" << _PresReset.BackBufferHeight << "pPresParams = "
+                            << pPresParams->BackBufferWidth << "x" << pPresParams->BackBufferHeight << "\n";
 
     get_engine()->reset_all_windows(false);// reset old swapchain by releasing
 
-    _PresReset.BackBufferWidth = pPresParams->BackBufferWidth;
-    _PresReset.BackBufferHeight = pPresParams->BackBufferHeight;
+    _PresReset.BackBufferWidth = max(_PresReset.BackBufferWidth, pPresParams->BackBufferWidth);
+    _PresReset.BackBufferHeight = max(_PresReset.BackBufferHeight, pPresParams->BackBufferHeight);
     hr=_pD3DDevice->Reset(&_PresReset);
     if (FAILED(hr)) {
       return hr;
     }
 
     get_engine()->reset_all_windows(true);// reset with new swapchains by creating
+
+    *pScrn = NULL;
+    if(pPresParams!=&_pScrn->PresParams)
+      memcpy(&_pScrn->PresParams,pPresParams,sizeof(D3DPRESENT_PARAMETERS));
+    return hr;
   }
+
   // release the old swapchain and create a new one
   if (_pScrn->pSwapChain) {
     _pScrn->pSwapChain->Release();
+    wdxdisplay9_cat.debug() << "SwapChain " << _pScrn->pSwapChain << " is released\n";
     _pScrn->pSwapChain = NULL;
     hr=_pD3DDevice->CreateAdditionalSwapChain(pPresParams,&_pScrn->pSwapChain);
   }
   if(SUCCEEDED(hr)) {
      if(pPresParams!=&_pScrn->PresParams)
          memcpy(&_pScrn->PresParams,pPresParams,sizeof(D3DPRESENT_PARAMETERS));
-     if (pScrn)
+     if (pScrn) 
        *pScrn = _pScrn;
   }
   return hr;

@@ -29,9 +29,9 @@ DXGraphicsDevice9::
 DXGraphicsDevice9(wdxGraphicsPipe9 *pipe) :
   GraphicsDevice(pipe) {
 
-    _pScrn = NULL;
-    _pD3DDevice = NULL;
-    _pSwapChain = NULL;
+  ZeroMemory(&_Scrn,sizeof(_Scrn));
+  _pD3DDevice = NULL;
+  _pSwapChain = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -414,6 +414,20 @@ support_overlay_window(bool flag) {
     _dxgsg->support_overlay_window(flag);
   }
 }
+//////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow::close_window
+//       Access: Public
+//  Description: Some cleanup is necessary for directx closeup of window.
+//               Handle close window events for this particular
+//               window.
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsWindow9::
+close_window() {
+  wdxdisplay9_cat.debug() << "wdx closed window\n";
+  if (multiple_windows)
+    _dxgsg->release_swap_chain(&_wcontext);
+  WinGraphicsWindow::close_window();
+}
 
 #if 1
 //////////////////////////////////////////////////////////////////
@@ -1531,16 +1545,17 @@ reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
   DXScreenData *pScrn;
   D3DPRESENT_PARAMETERS d3dpp;
   memcpy(&d3dpp, &_wcontext.PresParams, sizeof(D3DPRESENT_PARAMETERS));
-  d3dpp.BackBufferWidth = new_xsize;
-  d3dpp.BackBufferHeight = new_ysize;
+  _wcontext.PresParams.BackBufferWidth = new_xsize;
+  _wcontext.PresParams.BackBufferHeight = new_ysize;
   make_current();
-  HRESULT hr = _dxgsg->reset_d3d_device(&d3dpp, &pScrn);
+  HRESULT hr = _dxgsg->reset_d3d_device(&_wcontext.PresParams, &pScrn);
   
   if (FAILED(hr)) {
     bRetval = false;
     wdxdisplay9_cat.error()
       << "reset_device_resize_window Reset() failed" << D3DERRORSTRING(hr);
     if (hr == D3DERR_OUTOFVIDEOMEMORY) {
+      memcpy(&_wcontext.PresParams, &d3dpp, sizeof(D3DPRESENT_PARAMETERS));
       hr = _dxgsg->reset_d3d_device(&_wcontext.PresParams, &pScrn);
       if (FAILED(hr)) {
         wdxdisplay9_cat.error()
@@ -1559,7 +1574,8 @@ reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
     }
   }
   // before you init_resized_window you need to copy certain changes to _wcontext
-  _wcontext.pSwapChain = pScrn->pSwapChain;
+  if (pScrn)
+    _wcontext.pSwapChain = pScrn->pSwapChain;
   wdxdisplay9_cat.debug() << "swapchain is " << _wcontext.pSwapChain << "\n";
   init_resized_window();
   return bRetval;
@@ -1635,7 +1651,7 @@ init_resized_window() {
   hr = _wcontext.pD3DDevice->EvictManagedResources();
   if (FAILED(hr)) {
     wdxdisplay9_cat.error()
-      << "ResourceManagerDiscardBytes failed for device #" 
+      << "EvictManagedResources failed for device #" 
       << _wcontext.CardIDNum << D3DERRORSTRING(hr);
   }
 
@@ -1760,6 +1776,8 @@ open_window(void) {
   // In that case just create an additional swapchain for this window
 
   if (dxgsg->get_pipe()->get_device() == NULL) {
+    wdxdisplay9_cat.debug() << "device is null \n";
+
     if (!create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer))
       return false;
     dxgsg->get_pipe()->make_device((void*)(&_wcontext));
@@ -1772,23 +1790,21 @@ open_window(void) {
   } else {
     // fill in the DXScreenData from dxdevice here and change the
     // reference to hWnd.
+    wdxdisplay9_cat.debug() << "device is not null\n";
+
     dxdev = (DXGraphicsDevice9*)dxgsg->get_pipe()->get_device();
     props = get_properties();
 
-    memcpy(&_wcontext,dxdev->_pScrn,sizeof(DXScreenData));
+    memcpy(&_wcontext,&dxdev->_Scrn,sizeof(DXScreenData));
     _wcontext.hWnd = _hWnd;
     _wcontext.PresParams.hDeviceWindow = _hWnd;
     _wcontext.PresParams.BackBufferWidth = props.get_x_size();
     _wcontext.PresParams.BackBufferHeight = props.get_y_size();
 
-    wdxdisplay9_cat.debug()<<"device width "<<_wcontext.PresParams.BackBufferWidth<<"\n";
-
-    init_resized_window();
-
-    if (wdxdisplay9_cat.is_debug()) {
-      wdxdisplay9_cat.debug() << "Current device is " << dxdev << "\n";
-    }
+    //wdxdisplay9_cat.debug()<<"device width "<<_wcontext.PresParams.BackBufferWidth<<"\n";
+    //wdxdisplay9_cat.debug()<<"debug pSwapChain "<<_wcontext.pSwapChain<<"\n";
     dxgsg->create_swap_chain(&_wcontext);
+    init_resized_window();
   }
   wdxdisplay9_cat.debug() << "swapchain is " << _wcontext.pSwapChain << "\n";
   return true;

@@ -38,7 +38,7 @@ public:
   DXGraphicsDevice9(wdxGraphicsPipe9 *pipe);
   ~DXGraphicsDevice9();
 
-  DXScreenData *_pScrn;
+  DXScreenData _Scrn;
   LPDIRECT3DDEVICE9 _pD3DDevice;  // same as pScrn->_pD3DDevice, cached for spd
   IDirect3DSwapChain9 *_pSwapChain;
 

@@ -779,8 +779,8 @@ make_device(void *scrn) {
   // FrameBufferProperties really belongs as part of the window/renderbuffer specification
   // put here because of GLX multithreading requirement
   PT(DXGraphicsDevice9) device = new DXGraphicsDevice9(this);
-  device->_pScrn = (DXScreenData*) scrn;
-  device->_pD3DDevice = device->_pScrn->pD3DDevice;
+  memcpy(&device->_Scrn, scrn, sizeof(device->_Scrn));
+  device->_pD3DDevice = device->_Scrn.pD3DDevice;
 
   _device = device;
   wdxdisplay9_cat.error() << "walla: device" << device << "\n";
