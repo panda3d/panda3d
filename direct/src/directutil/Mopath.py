@@ -5,11 +5,19 @@ import NodePath
 
 class Mopath(PandaObject):
 
-    def __init__(self):
+    nameIndex = 1
+
+    def __init__(self, name = None):
 	self.maxT = 0.0
+	self.loop = 0
+	if (name == None):
+	    name = 'mopath%d' % nameIndex
+	    nameIndex = nameIndex + 1
+	self.name = name
 	self.xyzNurbsCurve = None
 	self.hprNurbsCurve = None
 	self.tNurbsCurve = None
+	self.node = None
 
     def loadFile(self, filename):
 	nodePath = loader.loadModel(filename)
@@ -58,3 +66,34 @@ class Mopath(PandaObject):
 	    hpr = Point3(0)
 	    self.hprNurbsCurve.getPoint(self.playbackTime, hpr)
 	    node.setHpr(hpr)
+
+    def play(self, node, time = 0.0, loop = 0):
+	if (self.xyzNurbsCurve == None) & (self.hprNurbsCurve == None):
+	    print 'Mopath: Mopath has no curves'
+	    return
+	self.node = node
+	self.loop = loop
+	self.stop()
+	t = taskMgr.spawnMethodNamed(self.__playTask, self.name + '-play')
+	t.currentTime = time
+	t.lastTime = globalClock.getTime()
+
+    def stop(self):
+	taskMgr.removeTasksNamed(self.name + '-play')
+
+    def __playTask(self, state):
+	time = globalClock.getTime()
+	dTime = time - state.lastTime
+	state.lastTime = time
+	if (self.loop):
+	    cTime = (state.currentTime + dTime) % self.maxT
+	else:
+	    cTime = state.currentTime + dTime
+	if ((self.loop == 0) & (cTime > self.maxT)):
+	    self.stop()
+	    messenger.send(self.name + '-done')
+	    self.node = None
+	    return Task.done
+	self.goTo(self.node, cTime)
+	state.currentTime = cTime
+	return Task.cont
