@@ -163,11 +163,8 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         """
         # This is a sphere on the ground to detect barrier collisions
         self.avatarRadius = avatarRadius
-        centerHeight = avatarRadius
-        if self.useHeightRay:
-            centerHeight *= 2.0
-        self.cSphere = CollisionSphere(0.0, 0.0, centerHeight, avatarRadius)
-        cSphereNode = CollisionNode('PW.cSphereNode')
+        self.cSphere = CollisionSphere(0.0, 0.0, 0.0, avatarRadius)
+        cSphereNode = CollisionNode('SP.cSphereNode')
         cSphereNode.addSolid(self.cSphere)
         self.cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
         self.cSphereBitMask = bitmask
