@@ -16,4 +16,7 @@
   #define IGATESCAN all
 #end lib_target
 
-#define INSTALL_SCRIPTS ppython
+#if $[CTPROJS]
+  #define INSTALL_SCRIPTS ppython
+#endif
+

@@ -1,126 +1,24 @@
 #! /bin/sh
+#
+# This script is deprecated.  It used to be required by VR Studio
+# users who were using the ctattach tools to de-Cygwinify the
+# directories named in the PYTHONPATH variable after the ctattach
+# tools filled it with Cygwin-style directories, but this is no longer
+# necessary (the ctattach tools no longer touch PYTHONPATH).  In any
+# case, it was never needed outside the VR Studio.
+#
+# It also de-cygwinified each of the directories named by the the
+# $DTOOL, $PANDA, $DIRECT, etc. environment variables that ctattach
+# filled in.  This might still be useful, but it's not clear (since we
+# have the runPythonEmacs that does that instead).  For now, I've
+# taken this behavior out of the script, and we'll see if anyone
+# complains.
+#
+# This means that the only thing this script does nowadays is
+# immediately launch Python.  It could be set up to launch the
+# particular version of Python for which Panda has been built, but at
+# the moment we don't really know that (it would have to be specified
+# in the Config.pp file, and it's not, at least not completely).
+#
 
-# -w will run with WireGL.
-wgl=
-if [ x"$1" = x"-w" ]; then
-  shift 1
-  wgl=wgl
-fi
-
-# Linux case
-if [ -z "$PANDA_ROOT" ]; then
-  # Convert semicolons back to colons
-  PYTHONPATH=`echo $PYTHONPATH | sed 'y/;/:/'`
-  export PYTHONPATH
-  # Run unbuffered output, with any options passed in
-  exec $wgl python -u "$@"
-  exit 1
-fi
-
-# Under Windows/Cygwin, we have to do this whole thing a little differently.
-# We have to de-cygwinify the semicolon separated PYTHONPATH
-# The new path
-NEWPYTHONPATH=
-# Temporarily change the semicolons into spaces
-for path in `echo $PYTHONPATH | sed 'y/;/ /'`; do
-    # For each entry run it through the cygwin filter
-    NEWPYTHONPATH=$NEWPYTHONPATH\;`cygpath -w $path`
-done
-# Set the new PYTHONPATH
-PYTHONPATH=$NEWPYTHONPATH
-export PYTHONPATH
-
-
-# Lets also de-cygwinify the Project variables (so you can use file name 
-# completion)  This is hardcoded for the most popular trees
-if [ "$DTOOL" ]; then
-    DTOOL=`cygpath -w $DTOOL`
-    export DTOOL
-fi
-if [ "$PANDA" ]; then
-    PANDA=`cygpath -w $PANDA`
-    export PANDA
-fi
-if [ "$DIRECT" ]; then
-    DIRECT=`cygpath -w $DIRECT`
-    export DIRECT
-fi
-if [ "$OTP" ]; then
-    OTP=`cygpath -w $OTP`
-    export OTP
-fi
-if [ "$GATEWAY" ]; then
-    GATEWAY=`cygpath -w $GATEWAY`
-    export GATEWAY
-fi
-if [ "$TOONTOWN" ]; then
-    TOONTOWN=`cygpath -w $TOONTOWN`
-    export TOONTOWN
-fi
-if [ "$PIRATES" ]; then
-    PIRATES=`cygpath -w $PIRATES`
-    export PIRATES
-fi
-if [ "$BARTOP" ]; then
-    BARTOP=`cygpath -w $BARTOP`
-    export BARTOP
-fi
-if [ "$TTRADER" ]; then
-    TTRADER=`cygpath -w $TTRADER`
-    export TTRADER
-fi
-if [ "$FOURD" ]; then
-    FOURD=`cygpath -w $FOURD`
-    export FOURD
-fi
-if [ "$MRM" ]; then
-    MRM=`cygpath -w $MRM`
-    export MRM
-fi
-if [ "$PARALLAX" ]; then
-    PARALLAX=`cygpath -w $PARALLAX`
-    export PARALLAX
-fi
-if [ "$MRM" ]; then
-    MRM=`cygpath -w $MRM`
-    export MRM
-fi
-if [ "$TTMODELS" ]; then
-    TTMODELS=`cygpath -w $TTMODELS`
-    export TTMODELS
-fi
-# Pirates models
-if [ "$PMODELS" ]; then
-    PMODELS=`cygpath -w $PMODELS`
-    export PMODELS
-fi
-# Gateway models
-if [ "$GWMODELS" ]; then
-    GWMODELS=`cygpath -w $GWMODELS`
-    export GWMODELS
-fi
-
-# Export the proper home environment variable
-HOME=`cygpath -w "$HOME"`
-export HOME
-
-if [ x"$1" = x"-devenv" ]; then
-  # used for local machine debugging of vc dlls called by python
-  shift 1
-  exec devenv ${1+"$@"} &
-elif [ x"$1" = x"-remotedbg" ]; then
-  # run msvc remote debug setup on local dbg tgt machine, connect using msdev on another machine
-  shift 1
-  exec msvcmon ${1+"$@"} &
-elif [ x"$1" = x"-d" ]; then
-
-# We can't run with -u under windows for some reason.  But we do need to
-# make a distinction between python_d and python.  We'll accept the user
-# parameter -d to indicate we should run python_d.
-
-  shift 1
-  exec $wgl python_d ${1+"$@"}
-else
-  exec $wgl python ${1+"$@"}
-fi
-
+python "$@"
