@@ -616,24 +616,6 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
 
   nassertv(_points.size() >= 3);
 
-  // One other complication: In projecting the polygon onto the plane,
-  // we might have lost its counterclockwise-vertex orientation.  If
-  // this is the case, we must reverse the order of the vertices.
-  _reversed = is_right(_points[2] - _points[0], _points[1] - _points[0]);
-  if (_reversed) {
-    reverse(_points.begin(), _points.end());
-  }
-
-  // Finally, average up all the points to get the median.  This is
-  // the geometric center of the polygon, and (since the polygon must
-  // be convex) is also a point within the polygon.
-
-  _median = _points[0];
-  for (int n = 1; n < (int)_points.size(); n++) {
-    _median += _points[n];
-  }
-  _median /= _points.size();
-
 #ifndef NDEBUG
   // Now make sure the points define a convex polygon.
   if (is_concave()) {
@@ -645,8 +627,26 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
     collide_cat.error(false) 
       << "  normal " << normal << " with length " << normal.length() << "\n";
     _points.clear();
+    nassertv(false);
   }
 #endif
+
+  // Now average up all the points to get the median.  This is the
+  // geometric center of the polygon, and (since the polygon must be
+  // convex) is also a point within the polygon.
+  _median = _points[0];
+  for (int n = 1; n < (int)_points.size(); n++) {
+    _median += _points[n];
+  }
+  _median /= _points.size();
+
+  // One final complication: In projecting the polygon onto the plane,
+  // we might have lost its counterclockwise-vertex orientation.  If
+  // this is the case, we must reverse the order of the vertices.
+  _reversed = is_right(_points[2] - _points[0], _points[1] - _points[0]);
+  if (_reversed) {
+    reverse(_points.begin(), _points.end());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
