@@ -8,9 +8,7 @@ import DistributedGagBarrelAI
 #import DistributedStomperPairAI
 import DistributedSwitchAI
 import DistributedStomperAI
-import AndLoEntityAI
-import OrLoEntityAI
-#import XorLoEntity
+import LogicGateAI
 
 
 def cDE(AIclass, air, levelDoId, entId, zoneId):
@@ -36,9 +34,7 @@ EntityType2Ctor = {
     'stomper': Functor(cDE, DistributedStomperAI.DistributedStomperAI),
     'switch': DistributedSwitchAI.DistributedSwitchAI,
 
-    'andLogicObject': AndLoEntityAI.AndLoEntityAI,
-    'orLogicObject': OrLoEntityAI.OrLoEntityAI,
-    'xorLogicObject': nothing, #XorLoEntity.XorLoEntity,
+    'logicGate': LogicGateAI.LogicGateAI,
     }
 
 def createEntity(entType, air, levelDoId, entId, zoneId):
