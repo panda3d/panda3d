@@ -251,14 +251,18 @@ class MetaInterval(CMetaInterval):
         CMetaInterval.setT(self, t)
 
     def start(self, startT = 0.0, endT = -1.0, playRate = 1.0):
-        self.__updateIvals()
-        self.setupPlay(startT, endT, playRate, 0)
-        self.__manager.addInterval(self)
+        if self.getDuration() == 0.0:
+            self.privInstant()
+        else:
+            self.setupPlay(startT, endT, playRate, 0)
+            self.__manager.addInterval(self)
 
     def loop(self, startT = 0.0, endT = -1.0, playRate = 1.0):
-        self.__updateIvals()
-        self.setupPlay(startT, endT, playRate, 1)
-        self.__manager.addInterval(self)
+        if self.getDuration() == 0.0:
+            self.privInstant()
+        else:
+            self.setupPlay(startT, endT, playRate, 1)
+            self.__manager.addInterval(self)
 
     def pause(self):
         if self.getState() == CInterval.SStarted:
@@ -268,11 +272,13 @@ class MetaInterval(CMetaInterval):
         return self.getT()
 
     def resume(self, t0 = None):
-        self.__updateIvals()
-        if t0 != None:
-            self.setT(t0)
-        self.setupResume()
-        self.__manager.addInterval(self)
+        if self.getDuration() == 0.0:
+            self.privInstant()
+        else:
+            if t0 != None:
+                self.setT(t0)
+            self.setupResume()
+            self.__manager.addInterval(self)
         
     def finish(self):
         self.__updateIvals()

@@ -91,8 +91,12 @@ set_t(double t) {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 start(double start_t, double end_t, double play_rate) {
-  setup_play(start_t, end_t, play_rate, false);
-  _manager->add_c_interval(this, false);
+  if (get_duration() == 0.0) {
+    priv_instant();
+  } else {
+    setup_play(start_t, end_t, play_rate, false);
+    _manager->add_c_interval(this, false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,8 +113,13 @@ start(double start_t, double end_t, double play_rate) {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 loop(double start_t, double end_t, double play_rate) {
-  setup_play(start_t, end_t, play_rate, true);
-  _manager->add_c_interval(this, false);
+  if (get_duration() == 0.0) {
+    // A zero-length interval can't really loop.
+    priv_instant();
+  } else {
+    setup_play(start_t, end_t, play_rate, true);
+    _manager->add_c_interval(this, false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,8 +149,10 @@ pause() {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 resume() {
-  setup_resume();
-  _manager->add_c_interval(this, false);
+  if (get_duration() != 0.0) {
+    setup_resume();
+    _manager->add_c_interval(this, false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -152,9 +163,11 @@ resume() {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 resume(double start_t) {
-  set_t(start_t);
-  setup_resume();
-  _manager->add_c_interval(this, false);
+  if (get_duration() != 0.0) {
+    set_t(start_t);
+    setup_resume();
+    _manager->add_c_interval(this, false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
