@@ -115,14 +115,14 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
   if (_window != (GraphicsWindow *)NULL) {
     _window->request_properties(props);
     set_background_type(_background_type);
-  }
 
-  // Set up a 3-d camera for the window by default.
-  make_camera();
-
-  if (show_frame_rate_meter) {
-    _frame_rate_meter = new FrameRateMeter("frame_rate_meter");
-    _frame_rate_meter->setup_layer(_window);
+    // Set up a 3-d camera for the window by default.
+    make_camera();
+    
+    if (show_frame_rate_meter) {
+      _frame_rate_meter = new FrameRateMeter("frame_rate_meter");
+      _frame_rate_meter->setup_layer(_window);
+    }
   }
 
   return _window;
