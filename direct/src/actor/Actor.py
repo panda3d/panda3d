@@ -671,15 +671,8 @@ class Actor(PandaObject, NodePath):
             return
         
         if mode < 0:
-            # Draw as a decal.  In case people don't have an
-            # up-to-date Panda, we'll fall back on
-            # DirectRenderTransition.
-            
-            try:
-                dt = DecalTransition()
-            except:
-                dt = DirectRenderTransition()
-
+            # Draw as a decal.
+            dt = DecalTransition()
         else:
             dt = DirectRenderTransition()
 

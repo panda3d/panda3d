@@ -101,8 +101,8 @@ GeomBinFixed.
 The order of all the predefined bins (and their predefined sort
 orders) is as follows:
 
-  10 - 'default'    : GeomBinNormal (opaque sub-bin)
-  20 - 'background' : GeomBinFixed
+  10 - 'background' : GeomBinFixed
+  20 - 'default'    : GeomBinNormal (opaque sub-bin)
   30 - 'default'    : GeomBinNormal (transparent sub-bin)
   40 - 'fixed'      : GeomBinFixed
 
@@ -124,7 +124,7 @@ create an bin called 'shadow' to render shadows in no particular
 order, but before any other transparent objects are rendered, you may
 add the line:
 
-  cull-bin shadow 15 unsorted
+  cull-bin shadow 25 unsorted
 
 The valid bin types are normal, unsorted, state-sorted, fixed, or
 back-to-front.

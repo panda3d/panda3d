@@ -24,7 +24,7 @@ GeomBinNormal(const string &name) :
 {
   GeomBinUnsorted *opaque = new GeomBinUnsorted("opaque");
   GeomBinBackToFront *transparent = new GeomBinBackToFront("transparent");
-  opaque->set_sort(10);
+  opaque->set_sort(20);
   transparent->set_sort(30);
 
   add_sub_bin(opaque);

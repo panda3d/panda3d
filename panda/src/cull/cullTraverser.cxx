@@ -252,7 +252,7 @@ setup_initial_bins() {
   GeomBinNormal *default_bin = new GeomBinNormal("default");
   GeomBinFixed *background = new GeomBinFixed("background");
   GeomBinFixed *fixed = new GeomBinFixed("fixed");
-  background->set_sort(20);
+  background->set_sort(10);
   fixed->set_sort(40);
 
   default_bin->set_traverser(this);
