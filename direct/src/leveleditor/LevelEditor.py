@@ -128,12 +128,12 @@ OBJECT_SNAP_POINTS = {
     'street_courtyard_90_exit': [(Vec3(0.0,0,0), Vec3(45,0,0)),
                                  (Vec3(0), Vec3(0))],
     'street_courtyard_70_15': [(Vec3(0.0,0,0), Vec3(45,0,0)),
-                            (Vec3(0), Vec3(0))],
-    'street_courtyard_70_exit_15': [(Vec3(0.0,0,0), Vec3(45,0,0)),
-                                 (Vec3(0), Vec3(0))],
+                               (Vec3(0), Vec3(0))],
+    'street_courtyard_70_15_exit': [(Vec3(0.0,0,0), Vec3(45,0,0)),
+                                    (Vec3(0), Vec3(0))],
     'street_courtyard_90_15': [(Vec3(0.0,0,0), Vec3(45,0,0)),
                             (Vec3(0), Vec3(0))],
-    'street_courtyard_90_exit_15': [(Vec3(0.0,0,0), Vec3(45,0,0)),
+    'street_courtyard_90_15_exit': [(Vec3(0.0,0,0), Vec3(45,0,0)),
                                  (Vec3(0), Vec3(0))],
     'street_50_transition': [(Vec3(10.0,0,0), Vec3(0)),
                              (Vec3(0), Vec3(0))],
@@ -2681,7 +2681,7 @@ class LevelStyleManager:
             center = bounds.getCenter()
             center = center * (sf * node.getScale()[0])
             # Reposition it
-            node.setPos((radius * math.cos(i * angle)) - center[0],
+            node.setXY((radius * math.cos(i * angle)) - center[0],
                         (radius * aspectRatio * math.sin(i * angle)) -
                         center[2])
             node.setScale(node.getScale() * sf)
@@ -2789,7 +2789,7 @@ class LevelStyleManager:
                 bounds = node.getBounds()
                 center = bounds.getCenter()
                 center = center * (sf * node.getScale()[0])
-                node.setPos(radius * math.cos(i * angle) - center[0],
+                node.setXY(radius * math.cos(i * angle) - center[0],
                             ((radius * aspectRatio * math.sin(i * angle)) -
                              center[2]))
                 node.setScale(node.getScale() * sf)
