@@ -17,7 +17,12 @@ class LevelMgr(Entity):
     permanent = 1
     attribs = (
         ('cogLevel', 0, 'int', {'min':0, 'max':11}),
-        ('cogTrack', 'c', 'choice', {'choiceSet':['c','s','l','m']}),
+        ('cogTrack', 'c', 'choice', {'choiceSet':('sellbot','cashbot',
+                                                  'lawbot','bossbot',),
+                                     'valueDict':{'sellbot':'s',
+                                                  'cashbot':'m',
+                                                  'lawbot':'l',
+                                                  'bossbot':'c'}}),
         ('modelFilename', '', 'bamfilename'),
         )
 
