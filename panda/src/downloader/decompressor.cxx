@@ -116,6 +116,20 @@ initiate(const Filename &source_file, const Filename &dest_file) {
 
   ofstream *dest_fstream = new ofstream;
   _dest = dest_fstream;
+  if (dest_filename.exists()) {
+    downloader_cat.info()
+      << dest_filename << " already exists, removing.\n";
+    if (!dest_filename.unlink()) {
+      downloader_cat.error()
+        << "Unable to remove old " << dest_filename << "\n";
+      return get_write_error();
+    }
+  } else {
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << dest_filename << " does not already exist.\n";
+    }
+  }
   if (!dest_filename.open_write(*dest_fstream)) {
     downloader_cat.error()
       << "Unable to write to " << dest_filename << "\n";

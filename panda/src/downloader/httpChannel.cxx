@@ -224,8 +224,15 @@ run() {
         // Come back later.
         return true;
       }
+      int num_potential_updates = (int)(elapsed / _seconds_per_update);
       _last_run_time = now;
-      _bytes_requested += _bytes_per_update;
+      _bytes_requested += _bytes_per_update * num_potential_updates;
+      if (downloader_cat.is_spam()) {
+        downloader_cat.spam()
+          << "elapsed = " << elapsed << " num_potential_updates = " 
+          << num_potential_updates << " bytes_requested = " 
+          << _bytes_requested << "\n";
+      }
     }
     switch (_download_dest) {
     case DD_none:
@@ -568,6 +575,7 @@ reached_done_state() {
       return false;
     } else {
       _started_download = true;
+      _last_run_time = ClockObject::get_global_clock()->get_real_time();
       return true;
     }
   }
