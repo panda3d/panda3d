@@ -80,13 +80,13 @@ class OnscreenImage(PandaObject, NodePath):
             isinstance(hpr, types.ListType)):
             apply(self.setHpr, hpr)
         elif isinstance(hpr, VBase3):
-            self.setPos(hpr)
+            self.setHpr(hpr)
         # Scale
         if (isinstance(scale, types.TupleType) or
             isinstance(scale, types.ListType)):
             apply(self.setScale, scale)
         elif isinstance(scale, VBase3):
-            self.setPos(scale)
+            self.setScale(scale)
         elif (isinstance(scale, types.FloatType) or
               isinstance(scale, types.IntType)):
             self.setScale(scale)
