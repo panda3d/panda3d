@@ -94,7 +94,10 @@ init_libtext() {
   // mipmapping to avoid dropping pixels, but avoids the hideous
   // artifacts that we get from some cards (notably TNT2) from
   // filtering between two different mipmap levels.
-  string text_minfilter_str = config_text.GetString("text-minfilter", "linear_mipmap_nearest");
+
+  // But, full mipmapping still gives smoother blending from small to
+  // large, so maybe we'll use it as the default anyway.
+  string text_minfilter_str = config_text.GetString("text-minfilter", "linear_mipmap_linear");
   string text_magfilter_str = config_text.GetString("text-magfilter", "linear");
 
   text_minfilter = Texture::string_filter_type(text_minfilter_str);
