@@ -592,21 +592,21 @@ bool Filename::
 is_regular_file() const {
 #ifdef WIN32_VC
   struct _stat this_buf;
-  bool isdir = false;
+  bool isreg = false;
 
   if (_stat(to_os_specific().c_str(), &this_buf) == 0) {
-    isdir = S_ISREG(this_buf.st_mode);
+    isreg = (this_buf.st_mode & _S_IFREG) != 0;
   }
 #else  // WIN32_VC
   struct stat this_buf;
-  bool isdir = false;
+  bool isreg = false;
 
   if (stat(to_os_specific().c_str(), &this_buf) == 0) {
-    isdir = S_ISREG(this_buf.st_mode);
+    isreg = S_ISREG(this_buf.st_mode);
   }
 #endif
 
-  return isdir;
+  return isreg;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -622,7 +622,7 @@ is_directory() const {
   bool isdir = false;
 
   if (_stat(to_os_specific().c_str(), &this_buf) == 0) {
-    isdir = S_ISDIR(this_buf.st_mode);
+    isdir = (this_buf.st_mode & _S_IFDIR) != 0;
   }
 #else  // WIN32_VC
   struct stat this_buf;
