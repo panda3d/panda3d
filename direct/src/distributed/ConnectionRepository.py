@@ -121,6 +121,12 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
             if classDef is None and self.dcSuffix == 'UD': #HACK:
                 className = dclass.getName() + 'AI'
                 classDef = dcImports.get(className)
+
+            # Also try it without the dcSuffix.
+            if classDef == None:
+                className = dclass.getName()
+                classDef = dcImports.get(className)
+                
             if classDef is None:
                 self.notify.info("No class definition for %s." % (className))
             else:
