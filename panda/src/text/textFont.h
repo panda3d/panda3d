@@ -29,11 +29,6 @@
 class Node;
 class TextGlyph;
 
-#if defined(__GNUC__) && !defined(HAVE_IOSTREAM)
-// For some reason, early versions of gcc's <string> didn't define this.
-typedef basic_string<wchar_t> wstring;
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //       Class : TextFont
 // Description : An encapsulation of a font; i.e. a set of glyphs that
