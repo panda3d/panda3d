@@ -87,6 +87,21 @@
 #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] /MD /Gi-
 #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] /MD /Gi-
 
+#defer COMPILER cl
+#defer LINKER link
+
+// Define USE_BOUNDSCHECKER for BoundsChecker instrumentaion:
+#if $[USE_BOUNDSCHECKER]
+  #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] /MDd /GZ /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+  #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+  #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] /MD
+  #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] /MD
+  
+  #defer OPTFLAGS /O2 /Ogity /G6
+  #defer COMPILER nmcl
+  #defer LINKER nmlink
+#endif
+
 // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
 #defer LDFLAGS_OPT1 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3
 #defer LDFLAGS_OPT2 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3
@@ -112,7 +127,7 @@
 
 #defer extra_cflags /EHsc /Zm250 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG]
 
-#defer COMPILE_C cl /nologo /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[ipath]] $[flags] $[extra_cflags] $[source]
+#defer COMPILE_C $[COMPILER] /nologo /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[ipath]] $[flags] $[extra_cflags] $[source]
 #defer COMPILE_C++ $[COMPILE_C]
 
 #defer STATIC_LIB_C lib /nologo $[sources] /OUT:"$[osfilename $[target]]" 
@@ -120,10 +135,10 @@
 
 #defer ver_resource $[directory]\ver.res
 
-#defer SHARED_LIB_C link /nologo /dll $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] "$[ver_resource]" $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
+#defer SHARED_LIB_C $[LINKER] /nologo /dll $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] "$[ver_resource]" $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
 
-#defer LINK_BIN_C link /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
+#defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
 #defer LINK_BIN_C++ $[LINK_BIN_C]
 
 #if $[LINK_ALL_STATIC]
