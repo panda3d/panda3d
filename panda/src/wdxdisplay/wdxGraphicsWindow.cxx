@@ -836,12 +836,15 @@ HRESULT CALLBACK EnumDevicesCallback(LPSTR pDeviceDescription, LPSTR pDeviceName
     wdxdisplay_cat.spam() << "Enumerating Device " << pDeviceName << " : " << pDeviceDescription << endl;
 #endif
 
-    // only saves hal and tnl devs
+#define REGHALIDX 0
+#define TNLHALIDX 1
+
+    // only saves hal and tnl devs, not sw rasts
 
     if(IsEqualGUID(pD3DDeviceDesc->deviceGUID,IID_IDirect3DHALDevice)) {
-        CopyMemory(pd3ddevs,pD3DDeviceDesc,sizeof(D3DDEVICEDESC7));
+        CopyMemory(&pd3ddevs[REGHALIDX],pD3DDeviceDesc,sizeof(D3DDEVICEDESC7));
     } else if(IsEqualGUID(pD3DDeviceDesc->deviceGUID,IID_IDirect3DTnLHalDevice)) {
-        CopyMemory(&pd3ddevs[1],pD3DDeviceDesc,sizeof(D3DDEVICEDESC7));
+        CopyMemory(&pd3ddevs[TNLHALIDX],pD3DDeviceDesc,sizeof(D3DDEVICEDESC7));
     }
     return DDENUMRET_OK;
 }
@@ -950,7 +953,7 @@ dx_setup() {
        // just look for HAL and TnL devices right now.  I dont think
        // we have any interest in the sw rasts at this point
 
-    D3DDEVICEDESC7 d3ddevs[2];     // put HAL in 0, TnL in 1
+    D3DDEVICEDESC7 d3ddevs[2];     // put HAL in 0, TnLHAL in 1
     ZeroMemory(d3ddevs,2*sizeof(D3DDEVICEDESC7));
 
     hr = pD3DI->EnumDevices(EnumDevicesCallback,d3ddevs);
@@ -960,9 +963,16 @@ dx_setup() {
         exit(1);
     }
 
-    if(!(d3ddevs[0].dwDevCaps & D3DDEVCAPS_HWRASTERIZATION )) {
+    WORD DeviceIdx=REGHALIDX;
+
+    if(!(d3ddevs[DeviceIdx].dwDevCaps & D3DDEVCAPS_HWRASTERIZATION )) {
         wdxdisplay_cat.fatal() << "No 3D HW present, exiting..." << endl;
         exit(1);
+    }
+
+    // select TNL if present
+    if(d3ddevs[TNLHALIDX].dwDevCaps & D3DDEVCAPS_HWRASTERIZATION) {
+        DeviceIdx=TNLHALIDX;
     }
 
     DX_DECLARE_CLEAN(DDCAPS,DDCaps);
@@ -1013,11 +1023,11 @@ dx_setup() {
 #endif
 
         // note: this chooses 32bpp, which may not be preferred over 16 for memory & speed reasons
-        if((dwSupportedBitDepthMask & DDBD_32) && (d3ddevs[0].dwDeviceRenderBitDepth & DDBD_32)) {
+        if((dwSupportedBitDepthMask & DDBD_32) && (d3ddevs[DeviceIdx].dwDeviceRenderBitDepth & DDBD_32)) {
             dwFullScreenBitDepth=32;              // go for 32bpp if its avail
-        } else if((dwSupportedBitDepthMask & DDBD_24) && (d3ddevs[0].dwDeviceRenderBitDepth & DDBD_24)) {
+        } else if((dwSupportedBitDepthMask & DDBD_24) && (d3ddevs[DeviceIdx].dwDeviceRenderBitDepth & DDBD_24)) {
             dwFullScreenBitDepth=24;              // go for 24bpp if its avail
-        } else if((dwSupportedBitDepthMask & DDBD_16) && (d3ddevs[0].dwDeviceRenderBitDepth & DDBD_16)) {
+        } else if((dwSupportedBitDepthMask & DDBD_16) && (d3ddevs[DeviceIdx].dwDeviceRenderBitDepth & DDBD_16)) {
             dwFullScreenBitDepth=16;              // do 16bpp
         } else {
             wdxdisplay_cat.fatal()
@@ -1052,7 +1062,7 @@ dx_setup() {
         if(memleft < RESERVEDTEXVIDMEM) {
             dwFullScreenBitDepth=16;
             wdxdisplay_cat.debug() << "using 16bpp rendertargets to save tex vidmem\n";
-            assert((dwSupportedBitDepthMask & DDBD_16) && (d3ddevs[0].dwDeviceRenderBitDepth & DDBD_16));   // probably a safe assumption
+            assert((dwSupportedBitDepthMask & DDBD_16) && (d3ddevs[DeviceIdx].dwDeviceRenderBitDepth & DDBD_16));   // probably a safe assumption
             rendertargetmem=dwRenderWidth*dwRenderHeight*(dwFullScreenBitDepth>>3);
             memleft = dwFree-rendertargetmem*2;
 
@@ -1182,7 +1192,7 @@ dx_setup() {
             exit(1);
         }
 
-        if(!(BitDepth_2_DDBDMask(SurfaceDesc.ddpfPixelFormat.dwRGBBitCount) & d3ddevs[0].dwDeviceRenderBitDepth)) {
+        if(!(BitDepth_2_DDBDMask(SurfaceDesc.ddpfPixelFormat.dwRGBBitCount) & d3ddevs[DeviceIdx].dwDeviceRenderBitDepth)) {
             wdxdisplay_cat.fatal() << "3D Device doesnt support rendering at " << SurfaceDesc.ddpfPixelFormat.dwRGBBitCount << "bpp (current desktop bitdepth)" << endl;
             exit(1);
         }
@@ -1292,7 +1302,7 @@ dx_setup() {
 
     // Check if the device supports z-bufferless hidden surface removal. If so,
     // we don't really need a z-buffer
-    if(!(d3ddevs[0].dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR )) {
+    if(!(d3ddevs[DeviceIdx].dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR )) {
 
         // Get z-buffer dimensions from the render target
         DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd);
@@ -1396,7 +1406,7 @@ dx_setup() {
 
     // Create the device. The device is created off of our back buffer, which
     // becomes the render target for the newly created device.
-    hr = pD3DI->CreateDevice( IID_IDirect3DHALDevice, pBackDDSurf, &pD3DDevice );
+    hr = pD3DI->CreateDevice(d3ddevs[DeviceIdx].deviceGUID, pBackDDSurf, &pD3DDevice );
     if(hr != DD_OK) {
         wdxdisplay_cat.fatal()
         << "config() - CreateDevice failed : result = " << ConvD3DErrorToString(hr) << endl;
