@@ -7,13 +7,14 @@ my $WIN_INSTALLDIR="\\\\dimbo\\panda\\win";
 
 # my $WIN_INSTALLDIR="\\\\cxgeorge-d01\\c\\win";
 
+### DEBUG SETTINGS
 # my $DEBUG_TREECOPY = 1;
-
 # my $DEBUG_GENERATE_PYTHON_CODE_ONLY = 1;  $ENV{'PANDA_OPTIMIZE'} ='2';
-
+# my $DO_ARCHIVE_AND_COPY_ONLY = 1;
 my $DONT_ARCHIVE_OLD_BUILDS = 0;
-
 my $BLD_DTOOL_ONLY=0;
+
+
 my $DIRPATH_SEPARATOR=':';   # set to ';' for non-cygwin NT perl
 
 my @inst_dirnames=("archive","debug","install","release");
@@ -381,6 +382,10 @@ sub buildall() {
     $treenum=shift;
 
     # DTOOL ppremake may have already run by DTOOL 'initialize make'
+	
+	if($DO_ARCHIVE_AND_COPY_ONLY) {
+		goto 'ARCHIVE_AND_COPY';
+	}
     
     &logmsg("*** Starting ".uc($inst_dirnames[$treenum])." Build (Opt=".$ENV{'PANDA_OPTIMIZE'}.") at ".&gettimestr()." ***");
 
@@ -424,6 +429,8 @@ sub buildall() {
     if($#dirstodolist>1) {    
        &gen_python_code();  # must run AFTER toontown bld
     }
+
+    ARCHIVE_AND_COPY:
 
     &mychdir($CYGBLDROOT);  # get out of src dirs to allow them to be moved/renamed
 
