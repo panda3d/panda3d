@@ -441,7 +441,7 @@ begin_draw(int, int) {
 //               and end_draw().
 ////////////////////////////////////////////////////////////////////
 void PStatStripChart::
-draw_slice(int, int) {
+draw_slice(int, int, int) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -452,7 +452,7 @@ draw_slice(int, int) {
 //               represent a portion of the chart that has no data.
 ////////////////////////////////////////////////////////////////////
 void PStatStripChart::
-draw_empty(int) {
+draw_empty(int, int) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -629,19 +629,26 @@ draw_pixels(int first_pixel, int last_pixel) {
   const PStatThreadData *thread_data = _view.get_thread_data();
 
   int frame_number = -1;
-  for (int x = first_pixel; x <= last_pixel; x++) {
+  int x = first_pixel;
+  while (x <= last_pixel) {
     if (x == _cursor_pixel && !_scroll_mode) {
       draw_cursor(x);
+      x++;
 
     } else {
       float time = pixel_to_timestamp(x);
       frame_number = thread_data->get_frame_number_at_time(time, frame_number);
-
-      if (thread_data->has_frame(frame_number)) {
-        draw_slice(x, frame_number);
-      } else {
-        draw_empty(x);
+      int w = 1;
+      while (x + w <= last_pixel && 
+             thread_data->get_frame_number_at_time(pixel_to_timestamp(x + w), frame_number) == frame_number) {
+        w++;
       }
+      if (thread_data->has_frame(frame_number)) {
+        draw_slice(x, w, frame_number);
+      } else {
+        draw_empty(x, w);
+      }
+      x += w;
     }
   }
   end_draw(first_pixel, last_pixel);

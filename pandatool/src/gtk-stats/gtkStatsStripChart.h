@@ -57,8 +57,8 @@ public:
 private:
   virtual void clear_region();
   virtual void copy_region(int start_x, int end_x, int dest_x);
-  virtual void draw_slice(int x, int frame_number);
-  virtual void draw_empty(int x);
+  virtual void draw_slice(int x, int w, int frame_number);
+  virtual void draw_empty(int x, int w);
   virtual void draw_cursor(int x);
   virtual void end_draw(int from_x, int to_x);
   virtual void idle();

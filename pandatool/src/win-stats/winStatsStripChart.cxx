@@ -136,7 +136,7 @@ copy_region(int start_x, int end_x, int dest_x) {
 
   RECT rect = { 
     _left_margin + dest_x, _top_margin, 
-    _left_margin + end_x - start_x, _top_margin + get_ysize() 
+    _left_margin + dest_x + end_x - start_x, _top_margin + get_ysize() 
   };
   InvalidateRect(_window, &rect, FALSE);
 }
@@ -149,11 +149,11 @@ copy_region(int start_x, int end_x, int dest_x) {
 //               indicated level data.
 ////////////////////////////////////////////////////////////////////
 void WinStatsStripChart::
-draw_slice(int x, int frame_number) {
+draw_slice(int x, int w, int frame_number) {
   const FrameData &frame = get_frame_data(frame_number);
 
   // Start by clearing the band first.
-  RECT rect = { x, 0, x + 1, get_ysize() };
+  RECT rect = { x, 0, x + w, get_ysize() };
   FillRect(_bitmap_dc, &rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
 
   float overall_time = 0.0;
@@ -189,8 +189,8 @@ draw_slice(int x, int frame_number) {
 //  Description: Draws a single vertical slice of background color.
 ////////////////////////////////////////////////////////////////////
 void WinStatsStripChart::
-draw_empty(int x) {
-  RECT rect = { x, 0, x + 1, get_ysize() };
+draw_empty(int x, int w) {
+  RECT rect = { x, 0, x + w, get_ysize() };
   FillRect(_bitmap_dc, &rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
 }
 
@@ -215,7 +215,10 @@ draw_cursor(int x) {
 ////////////////////////////////////////////////////////////////////
 void WinStatsStripChart::
 end_draw(int from_x, int to_x) {
-  RECT rect = { from_x, 0, to_x + 1, get_ysize() };
+  RECT rect = { 
+    _left_margin + from_x, _top_margin, 
+    _left_margin + to_x, _top_margin + get_ysize() 
+  };
   InvalidateRect(_window, &rect, FALSE);
 }
 

@@ -185,21 +185,6 @@ format_number(float value, int guide_bar_units, const string &unit_name) {
   return label;
 }
 
-// STL function object for sorting labels in order by the collector's
-// sort index, used in update_labels(), below.
-class SortCollectorLabels {
-public:
-  SortCollectorLabels(const PStatClientData *client_data) :
-    _client_data(client_data) {
-  }
-  bool operator () (int a, int b) const {
-    return
-      _client_data->get_collector_def(a)._sort >
-      _client_data->get_collector_def(b)._sort;
-  }
-  const PStatClientData *_client_data;
-};
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatGraph::update_guide_bars
 //       Access: Protected
