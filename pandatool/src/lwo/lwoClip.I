@@ -1,4 +1,4 @@
-// Filename: lwoDiscontinuousVertexMap.I
+// Filename: lwoClip.I
 // Created by:  drose (24Apr01)
 // 
 ////////////////////////////////////////////////////////////////////

@@ -256,7 +256,7 @@ get_chunk() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::get_sub_chunk
+//     Function: IffInputFile::get_subchunk
 //       Access: Public
 //  Description: Similar to get_chunk(), except the chunk size is only
 //               a 16-bit number instead of 32-bit, and it takes a
@@ -266,7 +266,7 @@ get_chunk() {
 //               id's encountered.
 ////////////////////////////////////////////////////////////////////
 PT(IffChunk) IffInputFile::
-get_sub_chunk(IffChunk *context) {
+get_subchunk(IffChunk *context) {
   IffId id = get_id();
   PN_uint16 length = get_be_uint16();
 

@@ -1,39 +1,30 @@
-// Filename: lwoVertexMap.h
+// Filename: lwoSurfaceColor.h
 // Created by:  drose (24Apr01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef LWOVERTEXMAP_H
-#define LWOVERTEXMAP_H
+#ifndef LWOSURFACECOLOR_H
+#define LWOSURFACECOLOR_H
 
 #include <pandatoolbase.h>
 
 #include "lwoChunk.h"
 
-#include <pta_float.h>
+#include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoVertexMap
-// Description : A mapping of floating-point values per integer index.
-//               The meaning of these values is determined by the
-//               mapping type code and/or its name.
+// 	 Class : LwoSurfaceColor
+// Description : Records the base color of a surface, as an entry
+//               within a LwoSurface chunk.
 ////////////////////////////////////////////////////////////////////
-class LwoVertexMap : public LwoChunk {
+class LwoSurfaceColor : public LwoChunk {
 public:
-  bool has_value(int index) const;
-  PTA_float get_value(int index) const;
-
-  IffId _map_type;
-  int _dimension;
-  string _name;
+  RGBColorf _color;
+  int _envelope;
 
 public:
   virtual bool read_iff(IffInputFile *in, size_t stop_at);
   virtual void write(ostream &out, int indent_level = 0) const;
-
-private:
-  typedef map<int, PTA_float> VMap;
-  VMap _vmap;
   
 public:
   virtual TypeHandle get_type() const {
@@ -45,13 +36,15 @@ public:
   }
   static void init_type() {
     LwoChunk::init_type();
-    register_type(_type_handle, "LwoVertexMap",
+    register_type(_type_handle, "LwoSurfaceColor",
 		  LwoChunk::get_class_type());
   }
 
 private:
   static TypeHandle _type_handle;
 };
+
+#include "lwoSurfaceColor.I"
 
 #endif
 

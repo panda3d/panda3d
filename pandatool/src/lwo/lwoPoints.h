@@ -48,8 +48,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "lwoPoints.I"
-
 #endif
 
   

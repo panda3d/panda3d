@@ -49,8 +49,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "lwoTags.I"
-
 #endif
 
   

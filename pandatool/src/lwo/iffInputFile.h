@@ -51,7 +51,7 @@ public:
   IffId get_id();
 
   PT(IffChunk) get_chunk(); 
-  PT(IffChunk) get_sub_chunk(IffChunk *context); 
+  PT(IffChunk) get_subchunk(IffChunk *context); 
 
   bool read_byte(char &byte);
   bool read_bytes(Datagram &datagram, size_t length);

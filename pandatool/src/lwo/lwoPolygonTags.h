@@ -50,8 +50,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "lwoPolygonTags.I"
-
 #endif
 
   

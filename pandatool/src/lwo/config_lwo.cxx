@@ -7,7 +7,9 @@
 #include "iffChunk.h"
 #include "iffGenericChunk.h"
 #include "iffInputFile.h"
+#include "lwoBoundingBox.h"
 #include "lwoChunk.h"
+#include "lwoClip.h"
 #include "lwoDiscontinuousVertexMap.h"
 #include "lwoGroupChunk.h"
 #include "lwoHeader.h"
@@ -16,6 +18,10 @@
 #include "lwoPoints.h"
 #include "lwoPolygons.h"
 #include "lwoPolygonTags.h"
+#include "lwoStillImage.h"
+#include "lwoSurface.h"
+#include "lwoSurfaceColor.h"
+#include "lwoSurfaceParameter.h"
 #include "lwoTags.h"
 #include "lwoVertexMap.h"
 
@@ -27,7 +33,9 @@ ConfigureFn(config_lwo) {
   IffChunk::init_type();
   IffGenericChunk::init_type();
   IffInputFile::init_type();
+  LwoBoundingBox::init_type();
   LwoChunk::init_type();
+  LwoClip::init_type();
   LwoDiscontinuousVertexMap::init_type();
   LwoGroupChunk::init_type();
   LwoHeader::init_type();
@@ -37,6 +45,10 @@ ConfigureFn(config_lwo) {
   LwoPolygons::init_type();
   LwoPolygonTags::init_type();
   LwoTags::init_type();
+  LwoStillImage::init_type();
+  LwoSurface::init_type();
+  LwoSurfaceColor::init_type();
+  LwoSurfaceParameter::init_type();
   LwoVertexMap::init_type();
 }
 

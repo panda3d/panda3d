@@ -65,8 +65,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "lwoPolygons.I"
-
 #endif
 
   

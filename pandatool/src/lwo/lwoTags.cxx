@@ -65,10 +65,10 @@ write(ostream &out, int indent_level) const {
 
   if (!_tags.empty()) {
     Tags::const_iterator ti = _tags.begin();
-    out << *ti;
+    out << '"' << *ti << '"';
     ++ti;
     while (ti != _tags.end()) {
-      out << ", " << *ti;
+      out << ", \"" << *ti << '"';
       ++ti;
     }
   }

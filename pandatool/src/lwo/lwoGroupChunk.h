@@ -22,15 +22,16 @@
 ////////////////////////////////////////////////////////////////////
 class LwoGroupChunk : public LwoChunk {
 public:
-  int get_num_children() const;
-  IffChunk *get_child(int n) const;
+  int get_num_chunks() const;
+  IffChunk *get_chunk(int n) const;
 
 protected:
-  bool read_children_iff(IffInputFile *in, size_t stop_at);
-  void write_children(ostream &out, int indent_level) const;
+  bool read_chunks_iff(IffInputFile *in, size_t stop_at);
+  bool read_subchunks_iff(IffInputFile *in, size_t stop_at);
+  void write_chunks(ostream &out, int indent_level) const;
 
-  typedef vector< PT(IffChunk) > Children;
-  Children _children;
+  typedef vector< PT(IffChunk) > Chunks;
+  Chunks _chunks;
 
 public:
   virtual TypeHandle get_type() const {

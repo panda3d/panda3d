@@ -1,17 +1,17 @@
-// Filename: lwoLayer.cxx
+// Filename: lwoSurfaceColor.cxx
 // Created by:  drose (24Apr01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "lwoLayer.h"
+#include "lwoSurfaceColor.h"
 #include "lwoInputFile.h"
 
 #include <indent.h>
 
-TypeHandle LwoLayer::_type_handle;
+TypeHandle LwoSurfaceColor::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LwoLayer::read_iff
+//     Function: LwoSurfaceColor::read_iff
 //       Access: Public, Virtual
 //  Description: Reads the data of the chunk in from the given input
 //               file, if possible.  The ID and length of the chunk
@@ -20,36 +20,24 @@ TypeHandle LwoLayer::_type_handle;
 //               at in->get_bytes_read()).  Returns true on success,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
-bool LwoLayer::
+bool LwoSurfaceColor::
 read_iff(IffInputFile *in, size_t stop_at) {
   LwoInputFile *lin = DCAST(LwoInputFile, in);
 
-  _number = lin->get_be_uint16();
-  _flags = lin->get_be_uint16();
-  _pivot = lin->get_vec3();
-  _name = lin->get_string();
-
-  if (lin->get_bytes_read() >= stop_at) {
-    _parent = -1;
-  } else {
-    _parent = lin->get_be_uint16();
-    if (_parent == 0xffff) {
-      _parent = -1;
-    }
-  }
+  _color = lin->get_vec3();
+  _envelope = lin->get_vx();
 
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LwoLayer::write
+//     Function: LwoSurfaceColor::write
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void LwoLayer::
+void LwoSurfaceColor::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
-    << get_id() << " { number = " << _number << ", flags = 0x" 
-    << hex << _flags << dec << ", pivot = " << _pivot
-    << ", _name = \"" << _name << "\", _parent = " << _parent << " }\n";
+    << get_id() << " { color = " << _color 
+     << ", envelope = " << _envelope << " }\n";
 }

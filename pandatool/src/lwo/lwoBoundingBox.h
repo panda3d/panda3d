@@ -1,26 +1,31 @@
-// Filename: lwoChunk.h
+// Filename: lwoBoundingBox.h
 // Created by:  drose (24Apr01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef LWOCHUNK_H
-#define LWOCHUNK_H
+#ifndef LWOBOUNDINGBOX_H
+#define LWOBOUNDINGBOX_H
 
 #include <pandatoolbase.h>
 
-#include "iffChunk.h"
+#include "lwoChunk.h"
+
+#include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoChunk
-// Description : A specialization of IffChunk for Lightwave Object
-//               files.  Each kind of chunk that is specific to a
-//               Lightwave file should inherit directly or indirectly
-//               from LwoChunk.
+// 	 Class : LwoBoundingBox
+// Description : Stores the bounding box for the vertex data in a
+//               layer.  Optional.
 ////////////////////////////////////////////////////////////////////
-class LwoChunk : public IffChunk {
+class LwoBoundingBox : public LwoChunk {
 public:
-  // No particular interface here.
+  LVecBase3f _min;
+  LVecBase3f _max;
 
+public:
+  virtual bool read_iff(IffInputFile *in, size_t stop_at);
+  virtual void write(ostream &out, int indent_level = 0) const;
+  
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -30,14 +35,16 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    IffChunk::init_type();
-    register_type(_type_handle, "LwoChunk",
-		  IffChunk::get_class_type());
+    LwoChunk::init_type();
+    register_type(_type_handle, "LwoBoundingBox",
+		  LwoChunk::get_class_type());
   }
 
 private:
   static TypeHandle _type_handle;
 };
+
+#include "lwoBoundingBox.I"
 
 #endif
 

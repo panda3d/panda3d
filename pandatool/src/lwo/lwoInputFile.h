@@ -47,8 +47,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "lwoInputFile.I"
-
 #endif
 
   

@@ -4,14 +4,17 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "lwoInputFile.h"
+#include "lwoBoundingBox.h"
+#include "lwoClip.h"
 #include "lwoDiscontinuousVertexMap.h"
 #include "lwoHeader.h"
 #include "lwoLayer.h"
 #include "lwoPoints.h"
 #include "lwoPolygons.h"
 #include "lwoPolygonTags.h"
-#include "lwoVertexMap.h"
 #include "lwoTags.h"
+#include "lwoSurface.h"
+#include "lwoVertexMap.h"
 
 TypeHandle LwoInputFile::_type_handle;
 
@@ -122,6 +125,15 @@ make_new_chunk(IffId id) {
 
   } else if (id == IffId("PTAG")) {
     return new LwoPolygonTags;
+
+  } else if (id == IffId("CLIP")) {
+    return new LwoClip;
+
+  } else if (id == IffId("SURF")) {
+    return new LwoSurface;
+
+  } else if (id == IffId("BBOX")) {
+    return new LwoBoundingBox;
 
   } else {
     return IffInputFile::make_new_chunk(id);

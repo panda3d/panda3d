@@ -1,39 +1,29 @@
-// Filename: lwoVertexMap.h
+// Filename: lwoSurfaceParameter.h
 // Created by:  drose (24Apr01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef LWOVERTEXMAP_H
-#define LWOVERTEXMAP_H
+#ifndef LWOSURFACEPARAMETER_H
+#define LWOSURFACEPARAMETER_H
 
 #include <pandatoolbase.h>
 
 #include "lwoChunk.h"
 
-#include <pta_float.h>
-
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoVertexMap
-// Description : A mapping of floating-point values per integer index.
-//               The meaning of these values is determined by the
-//               mapping type code and/or its name.
+// 	 Class : LwoSurfaceParameter
+// Description : Records some parameter value of a surface material,
+//               as an entry within a LwoSurface chunk.  The meaning
+//               of the value is determined by the id of this chunk.
 ////////////////////////////////////////////////////////////////////
-class LwoVertexMap : public LwoChunk {
+class LwoSurfaceParameter : public LwoChunk {
 public:
-  bool has_value(int index) const;
-  PTA_float get_value(int index) const;
-
-  IffId _map_type;
-  int _dimension;
-  string _name;
+  float _value;
+  int _envelope;
 
 public:
   virtual bool read_iff(IffInputFile *in, size_t stop_at);
   virtual void write(ostream &out, int indent_level = 0) const;
-
-private:
-  typedef map<int, PTA_float> VMap;
-  VMap _vmap;
   
 public:
   virtual TypeHandle get_type() const {
@@ -45,13 +35,15 @@ public:
   }
   static void init_type() {
     LwoChunk::init_type();
-    register_type(_type_handle, "LwoVertexMap",
+    register_type(_type_handle, "LwoSurfaceParameter",
 		  LwoChunk::get_class_type());
   }
 
 private:
   static TypeHandle _type_handle;
 };
+
+#include "lwoSurfaceParameter.I"
 
 #endif
 

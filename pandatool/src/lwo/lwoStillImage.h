@@ -1,26 +1,29 @@
-// Filename: lwoChunk.h
+// Filename: lwoStillImage.h
 // Created by:  drose (24Apr01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef LWOCHUNK_H
-#define LWOCHUNK_H
+#ifndef LWOSTILLIMAGE_H
+#define LWOSTILLIMAGE_H
 
 #include <pandatoolbase.h>
 
-#include "iffChunk.h"
+#include "lwoChunk.h"
+
+#include <filename.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoChunk
-// Description : A specialization of IffChunk for Lightwave Object
-//               files.  Each kind of chunk that is specific to a
-//               Lightwave file should inherit directly or indirectly
-//               from LwoChunk.
+// 	 Class : LwoStillImage
+// Description : A single still image associated with a LwoClip chunk.
 ////////////////////////////////////////////////////////////////////
-class LwoChunk : public IffChunk {
+class LwoStillImage : public LwoChunk {
 public:
-  // No particular interface here.
+  Filename _filename;
 
+public:
+  virtual bool read_iff(IffInputFile *in, size_t stop_at);
+  virtual void write(ostream &out, int indent_level = 0) const;
+  
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -30,14 +33,16 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    IffChunk::init_type();
-    register_type(_type_handle, "LwoChunk",
-		  IffChunk::get_class_type());
+    LwoChunk::init_type();
+    register_type(_type_handle, "LwoStillImage",
+		  LwoChunk::get_class_type());
   }
 
 private:
   static TypeHandle _type_handle;
 };
+
+#include "lwoStillImage.I"
 
 #endif
 
