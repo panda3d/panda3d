@@ -18,7 +18,7 @@ To use PStats, you first need to build the PStats server program,
 which is part of the Pandatool tree (it's called pstats.exe on
 Windows, and gtk-stats on a Unix platform).  Start by running the
 PStats server program (it runs in the background), and then start your
-Direct/Panda client with the following in your Configrc file:
+Direct/Panda client with the following in your Config.prc file:
 
   want-pstats 1
 
@@ -32,13 +32,13 @@ Any of the above will contact your running PStats server program,
 which will proceed to open a window and start a running graph of your
 client's performance.  If you are running the server on a different
 machine than the client, add the pstats-host variable to your client's
-Configrc file, naming the hostname or IP address of the machine
+Config.prc file, naming the hostname or IP address of the machine
 running the PStats server.
 
 If you are developing Python code, you may be interested in reporting
 the relative time spent within each Python task (by subdividing the
 total time spent in Python, as reported under "Show Code").  To do
-this, add the following lines to your Configrc file before you start
+this, add the following lines to your Config.prc file before you start
 ShowBase:
 
   task-timer-verbose 1
@@ -59,7 +59,8 @@ immediately open a window.  The program name is typically "PStats
 5185", showing the default PStats TCP port number of 5185; see "HOW IT
 WORKS" below for more details about the TCP communication system.  For
 the most part you don't need to worry about the port number, as long
-as server and client agree.
+as server and client agree (and the port is not already being used by
+another application).
 
 Each time a client connects to the PStats server, a new monitor window
 is created.  This monitor window owns all of the graphs that you
@@ -71,14 +72,14 @@ the Graphs pulldown menu.
 Time-based Strip Charts
 
 This is the graph type you will use most frequently to examine
-performance data.  The horizontal axis represents the passage of
-frames; each subsequent frame is represented as a vertical slice on
-the graph.  The overall height of the colored bands represents the
-total amount of time spent on each frame; within the frame, the time
-is further divided into the primary subdivisions represented by
-different color bands (and labeled on the left).  These subdivisions
-are called "collectors" in the PStats terminology, since they
-represent time collected by different tasks.
+performance data.  The horizontal axis represents the passage of time;
+each frame is represented as a vertical slice on the graph.  The
+overall height of the colored bands represents the total amount of
+time spent on each frame; within the frame, the time is further
+divided into the primary subdivisions represented by different color
+bands (and labeled on the left).  These subdivisions are called
+"collectors" in the PStats terminology, since they represent time
+collected by different tasks.
 
 Normally, the three primary collectors are App, Cull, and Draw, the
 three stages of the graphics pipeline.  Atop these three colored
@@ -102,7 +103,7 @@ the horizontal guide bars is drawn in a lighter shade of gray; this
 one represents the actual target frame rate suggested by the client.
 The other, darker, guide bars are drawn automatically at harmonic
 subdvisions of the target frame rate.  You can change the target frame
-rate with the Configrc variable pstats-target-frame-rate on the
+rate with the Config.prc variable pstats-target-frame-rate on the
 client.
 
 You can also create any number of user-defined guide bars by dragging
@@ -199,7 +200,9 @@ separate thread is considered unrelated to the main thread, and may
 have the same or an independent frame rate.  Each separate thread will
 be given its own pulldown menu to create graphs associated with that
 thread; these auxiliary thread menus will appear on the menu bar
-following the Graphs menu.
+following the Graphs menu.  At the time of this writing, support for
+multiple threads within the PStats graph is largely theoretical and
+untested.
 
 
 HOW TO DEFINE YOUR OWN COLLECTORS
@@ -321,7 +324,7 @@ to start() and stop() simply return immediately.
 
 When you call PStatClient.connect(), the client attempts to contact
 the PStatServer via a TCP connection to the hostname and port named in
-the pstats-host and pstats-port Configrc variables, respectively.
+the pstats-host and pstats-port Config.prc variables, respectively.
 (The default hostname and port are localhost and 5185.)  You can also
 pass in a specific hostname and/or port to the connect() call.  Upon
 successful connection and handshake with the server, the PStatClient
@@ -334,11 +337,14 @@ the end of each frame, the PStatClient boils this array into a
 datagram for shipping to the server.  Each start() and stop() event
 requires 6 bytes; if the resulting datagram will fit within a UDP
 packet (1K bytes, or about 84 start/stop pairs), it is sent via UDP;
-otherwise, it is sent on the TCP channel.
+otherwise, it is sent on the TCP channel.  (Some fraction of the
+packets that are eligible for UDP, from 0% to 100%, may be sent via
+TCP instead; you can specify this with the pstats-tcp-ratio Config.prc
+variable.)
 
 Also, to prevent flooding the network and/or overwhelming the PStats
 server, only so many frames of data will be sent per second.  This
-parameter is controlled by the pstats-max-rate Configrc variable and
+parameter is controlled by the pstats-max-rate Config.prc variable and
 is set to 30 by default.  (If the packets are larger than 1K, the max
 transmission rate is also automatically reduced further in
 proportion.)  If the frame rate is higher than this limit, some frames
@@ -368,7 +374,7 @@ generic code in the pstatserver directory.
 
 The PStatServer owns all of the connections, and interfaces with the
 NSPR library to communicate with the clients.  It listens on the
-specified port for new connections, using the pstats-port Configrc
+specified port for new connections, using the pstats-port Config.prc
 variable to determine the port number (this is the same variable that
 specifies the port to the client).  Usually you can leave this at its
 default value of 5185, but there may be some cases in which that port
