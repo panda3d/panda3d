@@ -4054,7 +4054,7 @@ void DXGraphicsStateGuardian::
 issue_color(const ColorAttribute *attrib) {
     
     bool bAttribOn=attrib->is_on();
-    bool bIsReal = attrib->is_real();
+    bool bIsReal = (bAttribOn ? attrib->is_real() : false);
 
     _issued_color_enabled = bAttribOn;
 
