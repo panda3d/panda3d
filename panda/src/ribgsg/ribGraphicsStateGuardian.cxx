@@ -4,15 +4,15 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
 // along with this source code; you will also find a current copy of
-// the license at http://www.panda3d.org/license.txt .
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
 //
 // To contact the maintainers of this program write to
-// panda3d@yahoogroups.com .
+// panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -20,36 +20,36 @@
 #include "ribStuffTraverser.h"
 #include "config_ribgsg.h"
 
-#include <directRenderTraverser.h>
-#include <displayRegion.h>
-#include <projectionNode.h>
-#include <projection.h>
-#include <camera.h>
-#include <renderBuffer.h>
-#include <transformTransition.h>
-#include <colorTransition.h>
-#include <textureTransition.h>
-#include <lightTransition.h>
-#include <geom.h>
-#include <geomprimitives.h>
-#include <geomIssuer.h>
+#include "directRenderTraverser.h"
+#include "displayRegion.h"
+#include "projectionNode.h"
+#include "projection.h"
+#include "camera.h"
+#include "renderBuffer.h"
+#include "transformTransition.h"
+#include "colorTransition.h"
+#include "textureTransition.h"
+#include "lightTransition.h"
+#include "geom.h"
+#include "geomprimitives.h"
+#include "geomIssuer.h"
 #include "graphicsWindow.h"
-#include <graphicsChannel.h>
-#include <indent.h>
-#include <dftraverser.h>
-#include <node.h>
-#include <projectionNode.h>
-#include <texture.h>
-#include <textureContext.h>
-#include <light.h>
-#include <get_rel_pos.h>
-#include <projection.h>
-#include <perspectiveProjection.h>
-#include <frustum.h>
-#include <ambientLight.h>
-#include <directionalLight.h>
-#include <pointLight.h>
-#include <spotlight.h>
+#include "graphicsChannel.h"
+#include "indent.h"
+#include "dftraverser.h"
+#include "node.h"
+#include "projectionNode.h"
+#include "texture.h"
+#include "textureContext.h"
+#include "light.h"
+#include "get_rel_pos.h"
+#include "projection.h"
+#include "perspectiveProjection.h"
+#include "frustum.h"
+#include "ambientLight.h"
+#include "directionalLight.h"
+#include "pointLight.h"
+#include "spotlight.h"
 #include "pandabase.h"
 
 #include <assert.h>

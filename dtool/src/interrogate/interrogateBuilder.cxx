@@ -4,15 +4,15 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
 // along with this source code; you will also find a current copy of
-// the license at http://www.panda3d.org/license.txt .
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
 //
 // To contact the maintainers of this program write to
-// panda3d@yahoogroups.com .
+// panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -26,27 +26,27 @@
 #include "interfaceMakerPythonSimple.h"
 #include "functionRemap.h"
 
-#include <interrogateType.h>
-#include <interrogateDatabase.h>
-#include <indexRemapper.h>
-#include <cppParser.h>
-#include <cppDeclaration.h>
-#include <cppFunctionGroup.h>
-#include <cppFunctionType.h>
-#include <cppParameterList.h>
-#include <cppInstance.h>
-#include <cppSimpleType.h>
-#include <cppPointerType.h>
-#include <cppReferenceType.h>
-#include <cppArrayType.h>
-#include <cppConstType.h>
-#include <cppExtensionType.h>
-#include <cppStructType.h>
-#include <cppExpression.h>
-#include <cppTypedef.h>
-#include <cppTypeDeclaration.h>
-#include <cppEnumType.h>
-#include <cppCommentBlock.h>
+#include "interrogateType.h"
+#include "interrogateDatabase.h"
+#include "indexRemapper.h"
+#include "cppParser.h"
+#include "cppDeclaration.h"
+#include "cppFunctionGroup.h"
+#include "cppFunctionType.h"
+#include "cppParameterList.h"
+#include "cppInstance.h"
+#include "cppSimpleType.h"
+#include "cppPointerType.h"
+#include "cppReferenceType.h"
+#include "cppArrayType.h"
+#include "cppConstType.h"
+#include "cppExtensionType.h"
+#include "cppStructType.h"
+#include "cppExpression.h"
+#include "cppTypedef.h"
+#include "cppTypeDeclaration.h"
+#include "cppEnumType.h"
+#include "cppCommentBlock.h"
 #include "notify.h"
 
 #include <ctype.h>

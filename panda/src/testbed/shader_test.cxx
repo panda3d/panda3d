@@ -4,58 +4,58 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
 // along with this source code; you will also find a current copy of
-// the license at http://www.panda3d.org/license.txt .
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
 //
 // To contact the maintainers of this program write to
-// panda3d@yahoogroups.com .
+// panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <eventHandler.h>
-#include <projtexShader.h>
-#include <shaderTransition.h>
-#include <renderRelation.h>
-#include <nodeRelation.h>
-#include <chancfg.h>
+#include "eventHandler.h"
+#include "projtexShader.h"
+#include "shaderTransition.h"
+#include "renderRelation.h"
+#include "nodeRelation.h"
+#include "chancfg.h"
 #include <string>
-#include <texGenTransition.h>
-#include <colorBlendTransition.h>
-#include <colorMaskTransition.h>
-#include <textureTransition.h>
-#include <texMatrixTransition.h>
-#include <spotlightShader.h>
-#include <light.h>
-#include <eggLoader.h>
-#include <look_at.h>
-#include <transformTransition.h>
-#include <geomNode.h>
-#include <lightTransition.h>
-#include <spotlight.h>
-#include <projtexShadower.h>
-#include <spheretexHighlighter.h>
-#include <spheretexReflector.h>
-#include <trackball.h>
-#include <transform2sg.h>
-#include <mouse.h>
-#include <graphicsWindow.h>
-#include <planarReflector.h>
-#include <stencilTransition.h>
-#include <plane.h>
-#include <renderBuffer.h>
-#include <outlineShader.h>
-#include <pt_NamedNode.h>
-#include <dataRelation.h>
-#include <geomLine.h>
+#include "texGenTransition.h"
+#include "colorBlendTransition.h"
+#include "colorMaskTransition.h"
+#include "textureTransition.h"
+#include "texMatrixTransition.h"
+#include "spotlightShader.h"
+#include "light.h"
+#include "eggLoader.h"
+#include "look_at.h"
+#include "transformTransition.h"
+#include "geomNode.h"
+#include "lightTransition.h"
+#include "spotlight.h"
+#include "projtexShadower.h"
+#include "spheretexHighlighter.h"
+#include "spheretexReflector.h"
+#include "trackball.h"
+#include "transform2sg.h"
+#include "mouse.h"
+#include "graphicsWindow.h"
+#include "planarReflector.h"
+#include "stencilTransition.h"
+#include "plane.h"
+#include "renderBuffer.h"
+#include "outlineShader.h"
+#include "pt_NamedNode.h"
+#include "dataRelation.h"
+#include "geomLine.h"
 
 #include "dconfig.h"
 
 #ifdef SHADER_VERBOSE
-#include <indent.h>
+#include "indent.h"
 #endif
 
 Configure(shader_test);

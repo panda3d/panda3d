@@ -13,7 +13,7 @@ these terms and to the terms of the Panda 3D Public License Version
 compliance with these terms and the terms of the License.  See the
 License for the specific language governing rights and limitations
 under the License.  You may obtain a copy of the License at
-http://www.panda3d.org/license.txt .  ANY DOWNLOADING, INSTALLING,
+http://etc.cmu.edu/panda3d/docs/license/ .  ANY DOWNLOADING, INSTALLING,
 USE, REPRODUCTION OR DISTRIBUTION OF THE SOFTWARE CONSTITUTES THE
 RECIPIENT'S ACCEPTANCE OF THESE TERMS AND THE LICENSE.  IF YOU DO NOT
 AGREE TO THIS LICENSE, DO NOT DOWNLOAD, INSTALL, COPY OR USE THE
@@ -80,7 +80,7 @@ whatsoever without specific prior written permission from Licensor.
 7. Licensor may publish new versions (including revisions) of the
 License from time to time.  Each new version of the License will be
 given a distinguishing version number and will be available at
-http://www.panda3d.org/license.txt .
+http://etc.cmu.edu/panda3d/docs/license/ .
 
 8. The License and the rights to use the Software granted hereunder
 will terminate automatically if You fail to comply with the License or

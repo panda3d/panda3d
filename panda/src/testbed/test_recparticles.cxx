@@ -4,58 +4,58 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
 // along with this source code; you will also find a current copy of
-// the license at http://www.panda3d.org/license.txt .
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
 //
 // To contact the maintainers of this program write to
-// panda3d@yahoogroups.com .
+// panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <framework.h>
+#include "framework.h"
 
-#include <eventHandler.h>
-#include <chancfg.h>
+#include "eventHandler.h"
+#include "chancfg.h"
 #include <string>
-#include <renderModeTransition.h>
-#include <colorTransition.h>
-#include <cullFaceTransition.h>
-#include <depthTestTransition.h>
-#include <depthWriteTransition.h>
-#include <textureTransition.h>
-#include <lightTransition.h>
-#include <materialTransition.h>
-#include <transformTransition.h>
-#include <get_rel_pos.h>
-#include <boundingSphere.h>
-#include <geomSphere.h>
-#include <geomNode.h>
+#include "renderModeTransition.h"
+#include "colorTransition.h"
+#include "cullFaceTransition.h"
+#include "depthTestTransition.h"
+#include "depthWriteTransition.h"
+#include "textureTransition.h"
+#include "lightTransition.h"
+#include "materialTransition.h"
+#include "transformTransition.h"
+#include "get_rel_pos.h"
+#include "boundingSphere.h"
+#include "geomSphere.h"
+#include "geomNode.h"
 #include "notify.h"
-#include <directionalLight.h>
-#include <renderRelation.h>
-#include <camera.h>
-#include <frustum.h>
-#include <orthoProjection.h>
-#include <perspectiveProjection.h>
-#include <textNode.h>
-#include <physicsManager.h>
-#include <particleSystem.h>
-#include <emitters.h>
-#include <forces.h>
-#include <sparkleParticleRenderer.h>
-#include <pointParticleRenderer.h>
-#include <spriteParticleRenderer.h>
-#include <pointParticleFactory.h>
-#include <particleSystemManager.h>
-#include <clockObject.h>
+#include "directionalLight.h"
+#include "renderRelation.h"
+#include "camera.h"
+#include "frustum.h"
+#include "orthoProjection.h"
+#include "perspectiveProjection.h"
+#include "textNode.h"
+#include "physicsManager.h"
+#include "particleSystem.h"
+#include "emitters.h"
+#include "forces.h"
+#include "sparkleParticleRenderer.h"
+#include "pointParticleRenderer.h"
+#include "spriteParticleRenderer.h"
+#include "pointParticleFactory.h"
+#include "particleSystemManager.h"
+#include "clockObject.h"
 #include "nodePath.h"
-#include <memoryUsage.h>
-#include <texture.h>
-#include <texturePool.h>
+#include "memoryUsage.h"
+#include "texture.h"
+#include "texturePool.h"
 
 // physics.  particle systems.
 

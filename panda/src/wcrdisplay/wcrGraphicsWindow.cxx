@@ -4,38 +4,38 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
 // along with this source code; you will also find a current copy of
-// the license at http://www.panda3d.org/license.txt .
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
 //
 // To contact the maintainers of this program write to
-// panda3d@yahoogroups.com .
+// panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
 
 #include "wcrGraphicsWindow.h"
 #include "wcrGraphicsPipe.h"
 #include "config_wcrdisplay.h"
-#include <keyboardButton.h>
-#include <mouseButton.h>
+#include "keyboardButton.h"
+#include "mouseButton.h"
 #include "crGraphicsStateGuardian.h"
 #include <errno.h>
 #include <time.h>
 #include <mmsystem.h>
 #include <tchar.h>
 #include <map>
-#include <throw_event.h>
-//#include <eventQueue.h>
+#include "throw_event.h"
+//#include "eventQueue.h"
 #include <string.h>
 #include "../wgldisplay/Win32Defs.h"
 
 //#include "ChromiumOpenGL.h"
 
 #ifdef DO_PSTATS
-#include <pStatTimer.h>
+#include "pStatTimer.h"
 #endif
 
 #define WCR_WCREXT_PROTOTYPES

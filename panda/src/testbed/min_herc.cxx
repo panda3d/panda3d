@@ -4,72 +4,72 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
 // along with this source code; you will also find a current copy of
-// the license at http://www.panda3d.org/license.txt .
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
 //
 // To contact the maintainers of this program write to
-// panda3d@yahoogroups.com .
+// panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
 
 //Shaders
-#include <projtexShader.h>
-#include <spotlightShader.h>
-#include <projtexShadower.h>
-#include <planarReflector.h>
+#include "projtexShader.h"
+#include "spotlightShader.h"
+#include "projtexShadower.h"
+#include "planarReflector.h"
 
 //Channel stuff
-#include <chancfg.h>
+#include "chancfg.h"
 
 //Textures
-#include <texture.h>
-#include <texturePool.h>
+#include "texture.h"
+#include "texturePool.h"
 
 //Transitions
-#include <textureTransition.h>
-#include <shaderTransition.h>
-#include <lightTransition.h>
-#include <transformTransition.h>
-#include <colorBlendTransition.h>
+#include "textureTransition.h"
+#include "shaderTransition.h"
+#include "lightTransition.h"
+#include "transformTransition.h"
+#include "colorBlendTransition.h"
 
 //Light stuff
-#include <light.h>
-#include <spotlight.h>
+#include "light.h"
+#include "spotlight.h"
 
 //Nodes
-#include <pt_NamedNode.h>
-#include <geomNode.h>
+#include "pt_NamedNode.h"
+#include "geomNode.h"
 
 //Relations (arcs)
-#include <renderRelation.h>
-#include <nodeRelation.h>
-#include <dataRelation.h>
+#include "renderRelation.h"
+#include "nodeRelation.h"
+#include "dataRelation.h"
 
 //Misc
 #include "dconfig.h"
-#include <framework.h>
-#include <loader.h>
-#include <eventHandler.h>
-#include <geomLine.h>
+#include "framework.h"
+#include "loader.h"
+#include "eventHandler.h"
+#include "geomLine.h"
 
 //Math/Matrix/Vector/Transformation stuff
-#include <transform2sg.h>
-#include <look_at.h>
-#include <perspectiveLens.h>
-#include <get_rel_pos.h>
+#include "transform2sg.h"
+#include "look_at.h"
+#include "perspectiveLens.h"
+#include "get_rel_pos.h"
 
 //Control/IO
-#include <planarSlider.h>
-#include <mouse.h>
+#include "planarSlider.h"
+#include "mouse.h"
 
 //Animation
-#include <animControl.h>
-#include <animControlCollection.h>
-#include <auto_bind.h>
+#include "animControl.h"
+#include "animControlCollection.h"
+#include "auto_bind.h"
 
 Configure(min_herc);
 ConfigureFn(min_herc) {

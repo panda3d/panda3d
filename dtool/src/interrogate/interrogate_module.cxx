@@ -4,15 +4,15 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
 // along with this source code; you will also find a current copy of
-// the license at http://www.panda3d.org/license.txt .
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
 //
 // To contact the maintainers of this program write to
-// panda3d@yahoogroups.com .
+// panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -21,16 +21,16 @@
 // together.  Presently, the only thing that goes into the module file
 // is a python table, but who knows what the future holds.
 
-#include <interrogate_interface.h>
-#include <interrogate_request.h>
-#include <load_dso.h>
-#include <pystub.h>
+#include "interrogate_interface.h"
+#include "interrogate_request.h"
+#include "load_dso.h"
+#include "pystub.h"
 #include "notify.h"
 
 // If our system getopt() doesn't come with getopt_long_only(), then use
 // the GNU flavor that we've got in tool for this purpose.
 #ifndef HAVE_GETOPT_LONG_ONLY
-#include <gnu_getopt.h>
+#include "gnu_getopt.h"
 #else
 #include <getopt.h>
 #endif

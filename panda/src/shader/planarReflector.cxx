@@ -4,44 +4,44 @@
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
 // along with this source code; you will also find a current copy of
-// the license at http://www.panda3d.org/license.txt .
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
 //
 // To contact the maintainers of this program write to
-// panda3d@yahoogroups.com .
+// panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
 #include "planarReflector.h"
 #include "config_shader.h"
 
-#include <pt_Node.h>
-#include <dftraverser.h>
-#include <attribTraverser.h>
-#include <displayRegion.h>
-#include <graphicsWindow.h>
-#include <renderBuffer.h>
-#include <perspectiveProjection.h>
-#include <look_at.h>
-#include <get_rel_pos.h>
-#include <lightTransition.h>
-#include <depthTestTransition.h>
-#include <depthWriteTransition.h>
-#include <depthWriteTransition.h>
-#include <textureTransition.h>
-#include <stencilTransition.h>
-#include <colorBlendTransition.h>
-#include <colorBlendAttribute.h>
-#include <cullFaceTransition.h>
-#include <transformTransition.h>
-#include <colorMaskTransition.h>
-#include <colorTransition.h>
-#include <clipPlaneTransition.h>
-#include <directRenderTraverser.h>
-#include <nodeAttributes.h>
+#include "pt_Node.h"
+#include "dftraverser.h"
+#include "attribTraverser.h"
+#include "displayRegion.h"
+#include "graphicsWindow.h"
+#include "renderBuffer.h"
+#include "perspectiveProjection.h"
+#include "look_at.h"
+#include "get_rel_pos.h"
+#include "lightTransition.h"
+#include "depthTestTransition.h"
+#include "depthWriteTransition.h"
+#include "depthWriteTransition.h"
+#include "textureTransition.h"
+#include "stencilTransition.h"
+#include "colorBlendTransition.h"
+#include "colorBlendAttribute.h"
+#include "cullFaceTransition.h"
+#include "transformTransition.h"
+#include "colorMaskTransition.h"
+#include "colorTransition.h"
+#include "clipPlaneTransition.h"
+#include "directRenderTraverser.h"
+#include "nodeAttributes.h"
 
 ////////////////////////////////////////////////////////////////////
 // Static variables

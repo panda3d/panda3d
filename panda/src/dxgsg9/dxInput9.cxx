@@ -9,15 +9,15 @@
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
 // along with this source code; you will also find a current copy of
-// the license at http://www.panda3d.org/license.txt .
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
 //
 // To contact the maintainers of this program write to
-// panda3d@yahoogroups.com .
+// panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
 
 #include "config_wdxdisplay9.h"
-#include <dxInput9.h>
+#include "dxInput9.h"
 
 #define AXIS_RESOLUTION 2000   // use this many levels of resolution by default (could be more if needed and device supported it)
 #define AXIS_RANGE_CENTERED    // if defined, axis range is centered on 0, instead of starting on 0
