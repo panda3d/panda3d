@@ -1287,22 +1287,35 @@ draw_linestrip(const GeomLinestrip* geom) {
 // sprite rendering, and we can't simply sort the vertex arrays as 
 // each vertex may or may not have corresponding information in the
 // x/y texel-world-ratio and rotation arrays.
-class WrappedSprite {
-public:
+typedef struct {
   Vertexf _v;
   D3DCOLOR _c;
   float _x_ratio;
   float _y_ratio;
   float _theta;
+} WrappedSprite;
+
+class WrappedSpriteSortPtr {
+public:
+  float z;
+  WrappedSprite *pSpr;
 };
 
 // this struct exists because the STL can sort faster than i can.
+struct draw_sprite_vertex_less {
+  INLINE bool operator ()(const WrappedSpriteSortPtr& v0, 
+              const WrappedSpriteSortPtr& v1) const {
+    return v0.z > v1.z; // reversed from gl
+  }
+};
+/*
 struct draw_sprite_vertex_less {
   INLINE bool operator ()(const WrappedSprite& v0, 
               const WrappedSprite& v1) const {
     return v0._v[2] > v1._v[2]; // reversed from gl
   }
 };
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_sprite
@@ -1446,47 +1459,60 @@ draw_sprite(const GeomSprite *geom) {
   Colorf v_color;
 
   // sort container and iterator
-  vector< WrappedSprite > cameraspace_vector;
-  vector< WrappedSprite >::iterator vec_iter;
+  vector< WrappedSpriteSortPtr > sorted_sprite_vector;
+  vector< WrappedSpriteSortPtr >::iterator sorted_vec_iter;
 
-  cameraspace_vector.reserve(nprims);   //pre-alloc space for nprims
+  WrappedSprite *SpriteArray = new WrappedSprite[nprims];  
+  
+  //BUGBUG: could we use _fvfbuf for this to avoid perframe alloc?
+  // alternately, alloc once when retained mode becomes available
+
+  if(SpriteArray==NULL) {
+	  dxgsg_cat.fatal() << "draw_sprite() out of memory!!" << endl;
+	  return;
+  }
 
   // the state is set, start running the prims
 
-  // we need to sort indexs, not structs.  no need to compile this info into a struct
-  // for sorting or ever.
-  for (i = 0; i < nprims; i++) {
+  WrappedSprite *pSpr;
+
+  for (pSpr=SpriteArray,i = 0; i < nprims; i++,pSpr++) {
 
     source_vert = geom->get_next_vertex(vi);
     cameraspace_vert = modelview_mat * source_vert;
 
-    WrappedSprite ws;
-    ws._v.set(cameraspace_vert[0],cameraspace_vert[1],cameraspace_vert[2]);
+	pSpr->_v.set(cameraspace_vert[0],cameraspace_vert[1],cameraspace_vert[2]);
 
     if (color_overall == false) {
 	  v_color = geom->get_next_color(ci);
-      ws._c = D3DRGBA(v_color[0], v_color[1], v_color[2], v_color[3]);
+      pSpr->_c = D3DRGBA(v_color[0], v_color[1], v_color[2], v_color[3]);
 	}
     if (x_overall == false)
-      ws._x_ratio = *x_walk++;
+      pSpr->_x_ratio = *x_walk++;
     if (y_overall == false)
-      ws._y_ratio = *y_walk++;    // go along array of ratio values stored in geom
+      pSpr->_y_ratio = *y_walk++;    // go along array of ratio values stored in geom
     if (theta_on && (theta_overall == false))
-	  ws._theta = *theta_walk++;
-
-    cameraspace_vector.push_back(ws);
+	  pSpr->_theta = *theta_walk++;
   }
 
-  // sort the verts properly by alpha (if necessary).  Of course,
-  // the sort is only local, not scene-global, so if you look closely you'll
-  // notice that alphas may be screwy.  It's ok though, because this is fast.
-  // if you want accuracy, use billboards and take the speed hit.
+  if(alpha) {
+	  sorted_sprite_vector.reserve(nprims);   //pre-alloc space for nprims	  
 
+	  for (pSpr=SpriteArray,i = 0; i < nprims; i++,pSpr++) {   // build STL-sortable array
+		  WrappedSpriteSortPtr ws_ptr;
+		  ws_ptr.z=pSpr->_v[2];
+		  ws_ptr.pSpr=pSpr;
+		  sorted_sprite_vector.push_back(ws_ptr);
+	  }
 
-  //////////// why is the sort not scene global???
+	  // sort the verts properly by alpha (if necessary).  Of course,
+	  // the sort is only local, not scene-global, so if you look closely you'll
+	  // notice that alphas may be screwy.  It's ok though, because this is fast.
+	  // if you want accuracy, use billboards and take the speed hit.
 
-  if (alpha) {
-    sort(cameraspace_vector.begin(), cameraspace_vector.end(), draw_sprite_vertex_less());
+	  sort(sorted_sprite_vector.begin(), sorted_sprite_vector.end(), draw_sprite_vertex_less());
+
+	  sorted_vec_iter = sorted_sprite_vector.begin();
   }
 
   Vertexf ul, ur, ll, lr;
@@ -1526,40 +1552,43 @@ draw_sprite(const GeomSprite *geom) {
   DWORD QuadVertIndexList[QUADVERTLISTLEN] = { 0, 1, 2, 3, 2, 1 };
   DWORD CurDPIndexArrLength=0,CurVertCount=0;
 
-  vec_iter = cameraspace_vector.begin();
-  for (; vec_iter != cameraspace_vector.end(); vec_iter++) {
-    WrappedSprite& cur_image = *vec_iter;
+  for (pSpr=SpriteArray,i = 0; i < nprims; i++,pSpr++) {   // build STL-sortable array
+
+	if(alpha) {
+		pSpr = sorted_vec_iter->pSpr;
+		sorted_vec_iter++;
+	}
 
     // if not G_OVERALL, calculate the scale factors    //huh??
     if (x_overall == false)
-      scaled_width = cur_image._x_ratio * half_width;
+      scaled_width = pSpr->_x_ratio * half_width;
 
     if (y_overall == false)
-      scaled_height = cur_image._y_ratio * half_height * aspect_ratio;
+      scaled_height = pSpr->_y_ratio * half_height * aspect_ratio;
 
     // if not G_OVERALL, do some trig for this z rotate   //what is the theta angle??
     if (theta_on) {
   	  if(!theta_overall)
-			theta = cur_image._theta;
+			theta = pSpr->_theta;
 
 	  // create the rotated points.  BUGBUG: this matmult will be slow if we dont get inlining
 	  // rotate_mat calls sin() on an unbounded val, possible to make it faster with lookup table (modulate to 0-360 range?)
 	  LMatrix3f xform_mat = LMatrix3f::rotate_mat(theta) *   
 		  LMatrix3f::scale_mat(scaled_width, scaled_height);
 
-      ur = (xform_mat * LVector3f(1, 1, 0)) + cur_image._v;
-      ul = (xform_mat * LVector3f(-1, 1, 0)) + cur_image._v;
-      lr = (xform_mat * LVector3f(1, -1, 0)) + cur_image._v;
-      ll = (xform_mat * LVector3f(-1, -1, 0)) + cur_image._v;
+      ur = (xform_mat * LVector3f(1, 1, 0)) + pSpr->_v;
+      ul = (xform_mat * LVector3f(-1, 1, 0)) + pSpr->_v;
+      lr = (xform_mat * LVector3f(1, -1, 0)) + pSpr->_v;
+      ll = (xform_mat * LVector3f(-1, -1, 0)) + pSpr->_v;
     } else {
       // create points for unrotated rect sprites
 	  float x,y,negx,negy,z;
 
-	  x = cur_image._v.get_x() + scaled_width;
-	  y = cur_image._v.get_y() + scaled_height;
-	  negx = cur_image._v.get_x() - scaled_width;
-	  negy = cur_image._v.get_y() - scaled_height;
-	  z = cur_image._v.get_z();
+	  x = pSpr->_v[0] + scaled_width;
+	  y = pSpr->_v[1] + scaled_height;
+	  negx = pSpr->_v[0] - scaled_width;
+	  negy = pSpr->_v[1] - scaled_height;
+	  z = pSpr->_v[2];
 
       ur.set(x, y, z);
       ul.set(negx, y, z);
@@ -1570,7 +1599,7 @@ draw_sprite(const GeomSprite *geom) {
     add_to_FVFBuf((void *)ll.get_data(), sizeof(D3DVECTOR));
 	if(bDoColor) {
 		if(!color_overall)  // otherwise its already been set globally
-			CurColor = cur_image._c;
+			CurColor = pSpr->_c;
 		add_DWORD_to_FVFBuf(CurColor); // only need to cpy color on 1st vert, others are just empty ignored space
 	}
 	add_to_FVFBuf((void *)TexCrdSets[0], sizeof(float)*2);
@@ -1597,11 +1626,12 @@ draw_sprite(const GeomSprite *geom) {
 	CurVertCount+=4;
   }
 
-  // cant do tristrip/fan since want to make 1 call for multiple quads which arent connected
-  // best we can do is indexed primitive
+  // cant do tristrip/fan since it would require 1 call want to make 1 call for multiple quads which arent connected
+  // best we can do is indexed primitive, which sends 2 redundant indices instead of sending 2 redundant full verts
   _d3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, p_flags, _pFvfBufBasePtr, 4*nprims, _index_buf,QUADVERTLISTLEN*nprims,NULL);
 
   _pCurFvfBufPtr = NULL;
+  delete SpriteArray;
 
   // restore the matrices
   _d3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &OldD3DWorldMatrix);
