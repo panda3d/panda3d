@@ -28,6 +28,8 @@
 #include "bamReader.h"
 #include "omniBoundingVolume.h"
 
+static const float tolerance_divisor = 100000.0f;
+
 TypeHandle ParametricCurve::_type_handle;
 
 
@@ -268,10 +270,12 @@ find_length(float start_t, float length_offset) const {
   float net = 0.0f;
 
   for (int i = 1; i <= num_segs; i++) {
+    assert(net <= length_offset);
+
     t1 = t2;
     p1 = p2;
 
-    t2 = (max_t - start_t) * (float)i / (float)num_segs + start_t;
+    t2 = start_t + (((max_t - start_t) * (float)i) / (float)num_segs);
     get_point(t2, p2);
 
     float seglength = (p1 - p2).length();
@@ -785,7 +789,9 @@ r_find_length(float target_length, float &found_t,
   right = (pmid - p2).length();
 
   if ((left + right) - seglength < length_tolerance) {
-    // No.  Curve is relatively straight at this point.
+    // No.  Curve is relatively straight over this interval.
+    return find_t_linear(target_length, found_t, t1, t2, p1, p2);
+    /*
     if (target_length <= seglength) {
       // Compute t value that corresponds to target_length
       // Maybe the point is in the left half of the segment?
@@ -798,7 +804,7 @@ r_find_length(float target_length, float &found_t,
       }
     }
     return false;
-
+    */
   } else {
     // Yes.  Keep going.
 
@@ -892,6 +898,81 @@ r_find_t(float target_length, float &found_t,
 
   // not found in either half, keep looking
   return false;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::find_t_linear
+//       Access: Private
+//  Description: non-recursive version of r_find_t (see above)
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+find_t_linear(float target_length, float &found_t,
+	      float t1, float t2,
+	      const LPoint3f &p1, const LPoint3f &p2) const {
+  const float length_tolerance = (p1-p2).length()/tolerance_divisor;
+  const float t_tolerance = (t1+t2)/tolerance_divisor;
+
+  if (parametrics_cat.is_spam()) {
+    parametrics_cat.spam()
+      << "target_length " << target_length << " t1 " << t1 << " t2 " << t2 << "\n";
+  }
+
+  // first, check to make sure this segment contains the point
+  // we're looking for
+  if (target_length > (p1 - p2).length()) {
+    // segment is too short
+    return false;
+  }
+
+  float tleft = t1;
+  float tright = t2;
+  float tmid;
+  LPoint3f pmid;
+  float len;
+
+  while (1) {
+    tmid = (tleft + tright) * 0.5f;
+    get_point(tmid, pmid);
+    len = (pmid - p1).length();
+
+    /*
+    if (parametrics_cat.is_spam()) {
+      parametrics_cat.spam()
+	<< "tleft " << tleft << " tright " << tright <<
+	" tmid " << tmid << " len " << len << endl;
+    }
+    */
+
+    // is our midpoint at the right distance?
+    if (fabs(len - target_length) < length_tolerance) {
+      found_t = tmid;
+      return true;
+    }
+
+    /*
+    if (parametrics_cat.is_spam()) {
+      parametrics_cat.spam()
+	<< "tright-tleft " << tright-tleft << " t_tolerance " << t_tolerance << endl;
+    }
+    */
+
+    // are we out of parametric precision?
+    if ((tright - tleft) < t_tolerance) {
+      // unfortunately, we can't get any closer in parametric space
+      found_t = tmid;
+      return true;
+    }
+
+    // should we look closer or farther?
+    if (len > target_length) {
+      // look closer
+      tright = tmid;
+    } else {
+      // look farther
+      tleft = tmid;
+    }
+  }
 }
 
 
