@@ -20,6 +20,7 @@
 #define CONFIG_WINDISPLAY_H
 
 #include "pandabase.h"
+#include "filename.h"
 #include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(windisplay, EXPCL_PANDAWIN, EXPTP_PANDAWIN);
