@@ -146,7 +146,7 @@ PUBLISHED:
   INLINE void ls(ostream &out, int indent_level) const;
 
   // A node has two bounding volumes: the BoundedObject it inherits
-  // from is the "external" bound and represnts the node and all of
+  // from is the "external" bound and represents the node and all of
   // its children, while the _internal_bound object is the "internal"
   // bounds and represents only the node itself.
 
