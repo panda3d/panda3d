@@ -29,7 +29,6 @@
 #include "parasiteBuffer.h"
 #include "hardwareChannel.h"
 #include "textureContext.h"
-#include "geomContext.h"
 
 ConfigureDef(config_display);
 NotifyCategoryDef(display, "");
@@ -136,5 +135,4 @@ init_libdisplay() {
   HardwareChannel::init_type();
   ParasiteBuffer::init_type();
   TextureContext::init_type();
-  GeomContext::init_type();
 }
