@@ -146,6 +146,7 @@ PUBLISHED:
   // methods
 
   INLINE void render(void);
+  INLINE void induce_labor(void);
   void update(float dt);
 
 public:
