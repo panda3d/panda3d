@@ -691,8 +691,11 @@ write_data(xel *array, xelval *alpha) {
     // This call is a bit of fakery to convert our proper 2-d array of
     // xels to an indirect 2-d array of pixels.  We make it look like a
     // single row of _x_size * _y_size pixels.
+
+    // We can't actually write palettes bigger than 256 colors,
+    // regardless of the number of colors we can read.
     chv = ppm_computecolorhist( (pixel **)&array, _x_size * _y_size, 1,
-                                TIFF_COLORMAP_MAXCOLORS, &colors );
+                                256, &colors );
     if ( chv == (colorhist_vector) 0 ) {
       pnmimage_tiff_cat.debug()
         << colors << " colors found; too many for a palette.\n"
