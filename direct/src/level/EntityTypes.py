@@ -59,7 +59,7 @@ class Zone(Nodepath):
     attribs = (
         ('description', ''),
         ('modelZoneNum', None, 'int'),
-        ('visibility', [], 'modelZoneList'),
+        ('visibility', [], 'visZoneList'),
         )
 
 class CutScene(Entity):
