@@ -35,6 +35,10 @@ public:
   XFileToEgg();
 
   void run();
+
+public:
+  bool _make_char;
+  string _char_name;
 };
 
 #endif

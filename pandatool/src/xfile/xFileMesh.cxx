@@ -21,6 +21,7 @@
 #include "xFileVertex.h"
 #include "xFileNormal.h"
 #include "xFileMaterial.h"
+#include "config_xfile.h"
 
 #include "eggVertexPool.h"
 #include "eggVertex.h"
@@ -38,6 +39,7 @@ XFileMesh(CoordinateSystem cs) : _cs(cs) {
   _has_colors = false;
   _has_uvs = false;
   _has_materials = false;
+  _egg_parent = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -252,29 +254,40 @@ add_material(XFileMaterial *material) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileMesh::set_egg_parent
+//       Access: Public
+//  Description: Specifies the egg node that will eventually be the
+//               parent of this mesh, when create_polygons() is later
+//               called.
+////////////////////////////////////////////////////////////////////
+void XFileMesh::
+set_egg_parent(EggGroupNode *egg_parent) {
+  // We actually put the mesh under its own group.
+  EggGroup *egg_group = new EggGroup(get_name());
+  egg_parent->add_child(egg_group);
+
+  _egg_parent = egg_group;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileMesh::create_polygons
 //       Access: Public
 //  Description: Creates a slew of EggPolygons according to the faces
-//               in the mesh, and adds them to the indicated parent
-//               node.
+//               in the mesh, and adds them to the
+//               previously-indicated parent node.
 ////////////////////////////////////////////////////////////////////
 bool XFileMesh::
-create_polygons(EggGroupNode *egg_parent, XFileToEggConverter *converter) {
-  if (has_name()) {
-    // Put a named mesh within its own group.
-    EggGroup *egg_group = new EggGroup(get_name());
-    egg_parent->add_child(egg_group);
-    egg_parent = egg_group;
-  }
+create_polygons(XFileToEggConverter *converter) {
+  nassertr(_egg_parent != (EggGroupNode *)NULL, false);
 
   EggVertexPool *vpool = new EggVertexPool(get_name());
-  egg_parent->add_child(vpool);
+  _egg_parent->add_child(vpool);
   Faces::const_iterator fi;
   for (fi = _faces.begin(); fi != _faces.end(); ++fi) {
     XFileFace *face = (*fi);
 
     EggPolygon *egg_poly = new EggPolygon;
-    egg_parent->add_child(egg_poly);
+    _egg_parent->add_child(egg_poly);
 
     // Set up the vertices for the polygon.
     XFileFace::Vertices::reverse_iterator vi;
@@ -282,7 +295,8 @@ create_polygons(EggGroupNode *egg_parent, XFileToEggConverter *converter) {
       int vertex_index = (*vi)._vertex_index;
       int normal_index = (*vi)._normal_index;
       if (vertex_index < 0 || vertex_index >= (int)_vertices.size()) {
-        nout << "Vertex index out of range in Mesh.\n";
+        xfile_cat.error()
+          << "Vertex index out of range in Mesh.\n";
         return false;
       }
       XFileVertex *vertex = _vertices[vertex_index];
@@ -294,6 +308,7 @@ create_polygons(EggGroupNode *egg_parent, XFileToEggConverter *converter) {
 
       // Create a temporary EggVertex before adding it to the pool.
       EggVertex temp_vtx;
+      temp_vtx.set_external_index(vertex_index);
       temp_vtx.set_pos(LCAST(double, vertex->_point));
       if (vertex->_has_color) {
         temp_vtx.set_color(vertex->_color);
@@ -311,7 +326,7 @@ create_polygons(EggGroupNode *egg_parent, XFileToEggConverter *converter) {
 
       // Transform the vertex into the appropriate (global) coordinate
       // space.
-      temp_vtx.transform(egg_parent->get_node_to_vertex());
+      temp_vtx.transform(_egg_parent->get_node_to_vertex());
 
       // Now get a real EggVertex matching our template.
       EggVertex *egg_vtx = vpool->create_unique_vertex(temp_vtx);
@@ -326,11 +341,32 @@ create_polygons(EggGroupNode *egg_parent, XFileToEggConverter *converter) {
     }
   }
 
+  // Now go through all of the vertices and skin them up.
+  EggVertexPool::iterator vi;
+  for (vi = vpool->begin(); vi != vpool->end(); ++vi) {
+    EggVertex *egg_vtx = (*vi);
+    int vertex_index = egg_vtx->get_external_index();
+
+    SkinWeights::const_iterator swi;
+    for (swi = _skin_weights.begin(); swi != _skin_weights.end(); ++swi) {
+      const SkinWeightsData &data = (*swi);
+      WeightMap::const_iterator wmi = data._weight_map.find(vertex_index);
+      if (wmi != data._weight_map.end()) {
+        EggGroup *joint = converter->find_joint(data._joint_name,
+                                                data._matrix_offset);
+        if (joint != (EggGroup *)NULL) {
+          double weight = (*wmi).second;
+          joint->ref_vertex(egg_vtx, weight);
+        }
+      }
+    }
+  }
+    
   if (!has_normals()) {
     // If we don't have explicit normals, make some up, per the DX
     // spec.  Since the DX spec doesn't mention anything about a
     // crease angle, we should be as generous as possible.
-    egg_parent->recompute_vertex_normals(180.0, _cs);
+    _egg_parent->recompute_vertex_normals(180.0, _cs);
   }
 
   return true;
@@ -574,7 +610,8 @@ read_mesh_data(const Datagram &raw_data) {
   }
 
   if (di.get_remaining_size() != 0) {
-    nout << "Ignoring " << di.get_remaining_size() << " trailing Mesh.\n";
+    xfile_cat.warning()
+      << "Ignoring " << di.get_remaining_size() << " trailing Mesh.\n";
   }
 
   return true;
@@ -604,7 +641,8 @@ read_normal_data(const Datagram &raw_data) {
   int num_faces = di.get_int32();
 
   if (num_faces != _faces.size()) {
-    nout << "Incorrect number of faces in MeshNormals.\n";
+    xfile_cat.error()
+      << "Incorrect number of faces in MeshNormals.\n";
     return false;
   }
 
@@ -612,7 +650,8 @@ read_normal_data(const Datagram &raw_data) {
     XFileFace *face = _faces[i];
     int num_vertices = di.get_int32();
     if (num_vertices != face->_vertices.size()) {
-      nout << "Incorrect number of vertices for face in MeshNormals.\n";
+      xfile_cat.error() 
+        << "Incorrect number of vertices for face in MeshNormals.\n";
       return false;
     }
     for (int j = 0; j < num_vertices; j++) {
@@ -621,8 +660,9 @@ read_normal_data(const Datagram &raw_data) {
   }
 
   if (di.get_remaining_size() != 0) {
-    nout << "Ignoring " << di.get_remaining_size()
-         << " trailing MeshNormals.\n";
+    xfile_cat.warning()
+      << "Ignoring " << di.get_remaining_size()
+      << " trailing MeshNormals.\n";
   }
 
   return true;
@@ -643,7 +683,8 @@ read_color_data(const Datagram &raw_data) {
   for (i = 0; i < num_colors; i++) {
     unsigned int vertex_index = di.get_int32();
     if (vertex_index < 0 || vertex_index >= _vertices.size()) {
-      nout << "Vertex index out of range in MeshVertexColors.\n";
+      xfile_cat.error()
+        << "Vertex index out of range in MeshVertexColors.\n";
       return false;
     }
     XFileVertex *vertex = _vertices[vertex_index];
@@ -655,8 +696,9 @@ read_color_data(const Datagram &raw_data) {
   }
 
   if (di.get_remaining_size() != 0) {
-    nout << "Ignoring " << di.get_remaining_size()
-         << " trailing MeshVertexColors.\n";
+    xfile_cat.warning()
+      << "Ignoring " << di.get_remaining_size()
+      << " trailing MeshVertexColors.\n";
   }
 
   return true;
@@ -674,7 +716,8 @@ read_uv_data(const Datagram &raw_data) {
 
   int num_vertices = di.get_int32();
   if (num_vertices != _vertices.size()) {
-    nout << "Wrong number of vertices in MeshTextureCoords.\n";
+    xfile_cat.error()
+      << "Wrong number of vertices in MeshTextureCoords.\n";
     return false;
   }
 
@@ -687,9 +730,58 @@ read_uv_data(const Datagram &raw_data) {
   }
 
   if (di.get_remaining_size() != 0) {
-    nout << "Ignoring " << di.get_remaining_size()
-         << " trailing MeshTextureCoords.\n";
+    xfile_cat.warning()
+      << "Ignoring " << di.get_remaining_size()
+      << " trailing MeshTextureCoords.\n";
   }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileMesh::read_skin_weights_data
+//       Access: Public
+//  Description: Fills the structure based on the raw data from the
+//               SkinWeights template.
+////////////////////////////////////////////////////////////////////
+bool XFileMesh::
+read_skin_weights_data(const Datagram &raw_data) {
+  DatagramIterator di(raw_data);
+
+  // Create a new SkinWeightsData record for the table.  We'll need
+  // this data later when we create the vertices.
+  _skin_weights.push_back(SkinWeightsData());
+  SkinWeightsData &data = _skin_weights.back();
+
+  // The DX system encodes a pointer to a character string in four
+  // bytes within the stream.  Weird, in a Microsofty sort of way.
+  data._joint_name = (const char *)di.get_uint32();
+
+  int num_weights = di.get_int32();
+
+  vector_int vindices;
+  vindices.reserve(num_weights);
+
+  // Unpack the list of vertices first
+  int i;
+  for (i = 0; i < num_weights; i++) {
+    int vindex = di.get_int32();
+    if (vindex < 0 || vindex > (int)_vertices.size()) {
+      xfile_cat.error()
+        << "Illegal vertex index " << vindex << " in SkinWeights.\n";
+      return false;
+    }
+    vindices.push_back(vindex);
+  }
+
+  // Then unpack the weight for each vertex.
+  for (i = 0; i < num_weights; i++) {
+    float weight = di.get_float32();
+    data._weight_map[vindices[i]] = weight;
+  }
+
+  // Finally, read the matrix offset.
+  data._matrix_offset.read_datagram(di);
 
   return true;
 }
@@ -708,7 +800,8 @@ read_material_list_data(const Datagram &raw_data) {
   unsigned int num_faces = di.get_int32();
 
   if (num_faces > _faces.size()) {
-    nout << "Too many faces in MaterialList.\n";
+    xfile_cat.error()
+      << "Too many faces in MaterialList.\n";
     return false;
   }
 
@@ -730,8 +823,9 @@ read_material_list_data(const Datagram &raw_data) {
   }
 
   if (di.get_remaining_size() != 0) {
-    nout << "Ignoring " << di.get_remaining_size()
-         << " trailing MeshMaterialList.\n";
+    xfile_cat.warning()
+      << "Ignoring " << di.get_remaining_size()
+      << " trailing MeshMaterialList.\n";
   }
 
   return true;

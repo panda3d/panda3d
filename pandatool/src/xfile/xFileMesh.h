@@ -58,8 +58,9 @@ public:
   int add_normal(XFileNormal *normal);
   int add_material(XFileMaterial *material);
 
-  bool create_polygons(EggGroupNode *egg_parent, 
-                       XFileToEggConverter *converter);
+  void set_egg_parent(EggGroupNode *egg_parent);
+
+  bool create_polygons(XFileToEggConverter *converter);
 
   bool has_normals() const;
   bool has_colors() const;
@@ -79,6 +80,7 @@ public:
   bool read_normal_data(const Datagram &raw_data);
   bool read_color_data(const Datagram &raw_data);
   bool read_uv_data(const Datagram &raw_data);
+  bool read_skin_weights_data(const Datagram &raw_data);
   bool read_material_list_data(const Datagram &raw_data);
 
 private:
@@ -94,6 +96,17 @@ private:
   Materials _materials;
   Faces _faces;
 
+  typedef pmap<int, float> WeightMap;
+
+  class SkinWeightsData {
+  public:
+    string _joint_name;
+    WeightMap _weight_map;
+    LMatrix4f _matrix_offset;
+  };
+  typedef pvector<SkinWeightsData> SkinWeights;
+  SkinWeights _skin_weights;
+
   typedef pmap<XFileVertex *, int, IndirectCompareTo<XFileVertex> > UniqueVertices;
   typedef pmap<XFileNormal *, int, IndirectCompareTo<XFileNormal> > UniqueNormals;
   typedef pmap<XFileMaterial *, int, IndirectCompareTo<XFileMaterial> > UniqueMaterials;
@@ -105,6 +118,8 @@ private:
   bool _has_colors;
   bool _has_uvs;
   bool _has_materials;
+
+  EggGroupNode *_egg_parent;
 };
 
 #endif

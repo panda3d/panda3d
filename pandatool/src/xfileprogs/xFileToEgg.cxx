@@ -36,9 +36,19 @@ XFileToEgg() :
   add_transform_options();
 
   set_program_description
-    ("This program converts DirectX retained-mode (.x) files to egg.  This "
-     "is a simple converter that only supports basic polygons, materials, "
-     "and textures, in a hierarchy; animation is not supported at this time.");
+    ("This program converts DirectX retained-mode (.x) files to egg.  "
+     "Polygon meshes, materials, and textures, as well as skeleton "
+     "animation and skinning data, are supported.  All animations "
+     "found in the source .x file are written together into the same "
+     "egg file.");
+
+  add_option
+    ("a", "name", 0,
+     "Convert as an animatable model, converting Frames into Joints.  This "
+     "should be specified for a model which is intended to be animated.  The "
+     "default is to convert the model as a normal static model, which is "
+     "usually more optimal if animation is not required.",
+     &XFileToEgg::dispatch_string, &_make_char, &_char_name);
 
   redescribe_option
     ("cs",
@@ -59,6 +69,9 @@ run() {
 
   XFileToEggConverter converter;
   converter.set_egg_data(&_data, false);
+
+  converter._make_char = _make_char;
+  converter._char_name = _char_name;
 
   // Copy in the path and animation parameters.
   apply_parameters(converter);

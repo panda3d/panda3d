@@ -20,12 +20,16 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
     
   #define SOURCES \
-     config_xfile.h xFileFace.h xFileMaker.h xFileMaterial.h \
+     config_xfile.h \
+     xFileAnimationSet.h \
+     xFileFace.h xFileMaker.h xFileMaterial.h \
      xFileMesh.h xFileNormal.h xFileTemplates.h \
      xFileToEggConverter.h xFileVertex.h 
 
   #define INCLUDED_SOURCES \
-     config_xfile.cxx xFileFace.cxx xFileMaker.cxx xFileMaterial.cxx \
+     config_xfile.cxx \
+     xFileAnimationSet.cxx \
+     xFileFace.cxx xFileMaker.cxx xFileMaterial.cxx \
      xFileMesh.cxx xFileNormal.cxx xFileTemplates.cxx \
      xFileToEggConverter.cxx xFileVertex.cxx 
 

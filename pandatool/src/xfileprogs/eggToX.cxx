@@ -33,7 +33,7 @@ EggToX() : EggToSomething("DirectX", ".x", true, false) {
     ("This program reads an Egg file and outputs an equivalent, "
      "or nearly equivalent, DirectX-style .x file.  Only simple "
      "hierarchy and polygon meshes are supported; advanced features "
-     "like LOD's, decals, and characters cannot be supported.");
+     "like LOD's, decals, and animation or skinning are not supported.");
 
   add_option
     ("m", "", 0,
