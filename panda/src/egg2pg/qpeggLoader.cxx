@@ -20,7 +20,7 @@
 
 #include "qpeggLoader.h"
 #include "config_egg2pg.h"
-#include "qpnodePath.h"
+#include "nodeChain.h"
 #include "renderState.h"
 #include "transformState.h"
 #include "textureAttrib.h"
@@ -154,14 +154,14 @@ reparent_decals() {
     PandaNode *node = (*di);
     nassertv(node != (PandaNode *)NULL);
 
-    // The qpNodePath interface is best for this.
-    qpNodePath parent(node);
+    // The NodeChain interface is best for this.
+    NodeChain parent(node);
 
     // First, search for the GeomNode.
-    qpNodePath geom_parent;
+    NodeChain geom_parent;
     int num_children = parent.get_num_children();
     for (int i = 0; i < num_children; i++) {
-      qpNodePath child = parent.get_child(i);
+      NodeChain child = parent.get_child(i);
 
       if (child.node()->is_of_type(qpGeomNode::get_class_type())) {
         if (!geom_parent.is_empty()) {
@@ -187,7 +187,7 @@ reparent_decals() {
       // list.
       int i = 0;
       while (i < num_children) {
-        qpNodePath child = parent.get_child(i);
+        NodeChain child = parent.get_child(i);
 
         if (child.node()->is_of_type(qpGeomNode::get_class_type())) {
           i++;
