@@ -51,16 +51,18 @@ class ClientDistUpdate:
 
     def extractArgs(self, di):
         args = []
-        for i in self.types:
-            args.append(di.getArg(i))
+        assert(len(self.types) == len(self.divisors))
+        numTypes = len(self.types)
+        for i in range(numTypes):
+            args.append(di.getArg(self.types[i], self.divisors[i]))
         return args
 
     def addArgs(self, datagram, args):
         # Add the args to the datagram
         numElems = len(args)
-        assert (numElems == len(self.types))
+        assert (numElems == len(self.types) == len(self.divisors))
         for i in range(0, numElems):
-            datagram.putArg(args[i], self.types[i])
+            datagram.putArg(args[i], self.types[i], self.divisors[i])
     
     def sendUpdate(self, cr, do, args):
         datagram = Datagram.Datagram()
