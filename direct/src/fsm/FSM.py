@@ -14,7 +14,7 @@ class FSM(DirectObject):
     # these are flags that tell the FSM what to do when an
     # undefined transition is requested:
     ALLOW = 0            # print a warning, and do the transition
-    DISALLOW = 1         # silently ignore the request
+    DISALLOW = 1         # silently ignore the request (don't do the transition)
     DISALLOW_VERBOSE = 2 # print a warning, and don't do the transition
     ERROR = 3            # print an error message and raise an exception
 
@@ -250,7 +250,7 @@ class FSM(DirectObject):
             transitionAllowed = 1
             if not transitionDefined:
                 # the transition is not defined, but we're going to do it
-                # anyway.
+                # anyway. print a warning.
                 FSM.notify.warning(
                     "[%s]: performing undefined transition from %s to %s" %
                     (self.__name,
