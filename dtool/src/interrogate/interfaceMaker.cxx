@@ -581,7 +581,10 @@ record_object(TypeIndex type_index) {
       record_function(itype, itype.derivation_get_upcast(di));
     }
     if (itype.derivation_has_downcast(di)) {
-      record_function(itype, itype.derivation_get_downcast(di));
+      // Downcasts are methods of the base class, not the child class.
+      TypeIndex base_type_index = itype.get_derivation(di);
+      const InterrogateType &base_type = idb->get_type(base_type_index);
+      record_function(base_type, itype.derivation_get_downcast(di));
     }
   }
 
