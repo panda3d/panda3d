@@ -27,7 +27,6 @@
 #include "milesAudioManager.h"
 #include "mss.h"
 
-
 class EXPCL_MILES_AUDIO MilesAudioSound : public AudioSound {
 public:
   ~MilesAudioSound();
@@ -51,19 +50,19 @@ public:
   
   // 0 = begining; length() = end.
   // inits to 0.0.
-  void set_time(float start_time=0.0);
+  void set_time(float start_time=0.0f);
   float get_time() const;
   
   // 0 = minimum; 1.0 = maximum.
   // inits to 1.0.
-  void set_volume(float volume=1.0);
+  void set_volume(float volume=1.0f);
   float get_volume() const;
   
   // -1.0 is hard left
   // 0.0 is centered
   // 1.0 is hard right
   // inits to 0.0.
-  void set_balance(float balance_right=0.0);
+  void set_balance(float balance_right=0.0f);
   float get_balance() const;
 
   // inits to manager's state.
@@ -90,7 +89,7 @@ private:
   bool _paused;
 
   MilesAudioSound(MilesAudioManager* manager, 
-      HAUDIO audio, string file_name, float length=0.0);
+      HAUDIO audio, string file_name, float length=0.0f);
 
   friend class MilesAudioManager;
 };

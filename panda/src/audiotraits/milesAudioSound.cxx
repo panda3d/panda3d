@@ -1,6 +1,5 @@
 // Filename: milesAudioSound.cxx
 // Created by:  skyler (June 6, 2001)
-// Prior system by: cary
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -22,6 +21,10 @@
 
 #include "milesAudioSound.h"
 #include "milesAudioManager.h"
+
+#if (MSS_MAJOR_VERSION <= 6) && (MSS_MINOR_VERSION < 5)
+#define NEED_MILES_LENGTH_WORKAROUND
+#endif
 
 #ifndef NDEBUG //[
   namespace {
@@ -229,19 +232,24 @@ get_balance() const {
 
 float MilesAudioSound::
 length() const {
-  // hack:
-  // For now, the sound needs to be playing, in order to
-  // get the right length.  I'm in contact with RAD about the problem.  I've
-  // sent them example code.  They've told me they're looking into it.
-  // Until then, we'll play the sound to get the length.
-  if (!_length) {
-    if (AIL_quick_status(_audio)==QSTAT_PLAYING) {
-      _length=((float)AIL_quick_ms_length(_audio))*0.001f;
-    } else {
-      AIL_quick_play(_audio, 1);
-      _length=((float)AIL_quick_ms_length(_audio))*0.001f;
-      AIL_quick_halt(_audio);
-    }
+  if (_length == 0.0f) {
+   #ifndef NEED_MILES_LENGTH_WORKAROUND
+        _length=((float)AIL_quick_ms_length(_audio))*0.001f;   
+   #else
+        // hack:
+        // For now, the sound needs to be playing, in order to
+        // get the right length.  I'm in contact with RAD about the problem.  I've
+        // sent them example code.  They've told me they're looking into it.
+        // Until then, we'll play the sound to get the length.
+   
+        if (AIL_quick_status(_audio)==QSTAT_PLAYING) {
+          _length=((float)AIL_quick_ms_length(_audio))*0.001f;
+        } else {
+          AIL_quick_play(_audio, 1);
+          _length=((float)AIL_quick_ms_length(_audio))*0.001f;
+          AIL_quick_halt(_audio);
+        }
+   #endif
   }
   audio_debug("MilesAudioSound::length() returning "<<_length);
   return _length;
