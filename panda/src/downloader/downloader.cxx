@@ -68,6 +68,7 @@ Downloader(void) {
   _initiated = false;
   _ever_initiated = false;
   _TCP_stack_initialized = false;
+  _total_bytes_written = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -383,6 +384,7 @@ cleanup(void) {
   // connection when the download is complete
   _connected = false;
   _dest_stream.close();
+  _total_bytes_written = _current_status->_total_bytes_written;
   delete _current_status;
   _initiated = false;
 }

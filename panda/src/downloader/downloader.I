@@ -91,8 +91,10 @@ get_bytes_written(void) const {
       << "initiated" << endl;
     return 0.0;
   }
-  nassertr(_current_status != NULL, 0);
-  return _current_status->_total_bytes_written;
+  if (_current_status != NULL)
+    return _current_status->_total_bytes_written;
+  else
+    return _total_bytes_written;
 }
 
 ////////////////////////////////////////////////////////////////////

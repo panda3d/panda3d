@@ -147,6 +147,7 @@ private:
 
   DownloadStatus *_current_status;
   bool _got_any_data;
+  int _total_bytes_written;
 
   double _tlast;
   double _tfirst;
