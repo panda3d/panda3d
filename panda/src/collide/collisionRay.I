@@ -40,6 +40,7 @@ INLINE CollisionRay::
 CollisionRay(const LPoint3f &origin, const LVector3f &direction) :
   _origin(origin), _direction(direction)
 {
+  nassertv(_direction != LPoint3f::zero());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,6 +53,7 @@ CollisionRay(float ox, float oy, float oz,
              float dx, float dy, float dz) :
   _origin(ox, oy, oz), _direction(dx, dy, dz)
 {
+  nassertv(_direction != LPoint3f::zero());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,6 +111,7 @@ set_direction(const LVector3f &direction) {
   _direction = direction;
   mark_bound_stale();
   mark_viz_stale();
+  nassertv(_direction != LPoint3f::zero());
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -40,6 +40,7 @@ INLINE CollisionSegment::
 CollisionSegment(const LPoint3f &a, const LPoint3f &b) :
   _a(a), _b(b)
 {
+  nassertv(_a != _b);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,6 +53,7 @@ CollisionSegment(float ax, float ay, float az,
                  float bx, float by, float bz) :
   _a(ax, ay, az), _b(bx, by, bz)
 {
+  nassertv(_a != _b);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,6 +79,9 @@ set_point_a(const LPoint3f &a) {
   _a = a;
   mark_bound_stale();
   mark_viz_stale();
+  // We don't assert here that a != b, on the assumption that you
+  // might be about to change both at once, and you'll probably start
+  // by changing a first.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,6 +114,7 @@ set_point_b(const LPoint3f &b) {
   _b = b;
   mark_bound_stale();
   mark_viz_stale();
+  nassertv(_a != _b);
 }
 
 ////////////////////////////////////////////////////////////////////
