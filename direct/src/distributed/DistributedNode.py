@@ -34,6 +34,13 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
     def generate(self):
         DistributedObject.DistributedObject.generate(self)
         self.gotStringParentToken = 0
+        if wantOtpServer:
+            parentId, zoneId = self.getLocation()
+            # reparent to parent
+            parent = base.cr.doId2do.get(parentId)
+            if parent and isinstance(parent, NodePath):
+                self.reparentTo(parent)
+            
 
     def __cmp__(self, other):
         # DistributedNode inherits from NodePath, which inherits a
