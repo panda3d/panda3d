@@ -25,9 +25,13 @@
     lwoTags.h lwoTags.cxx \
     lwoStillImage.h lwoStillImage.cxx \
     lwoSurface.h lwoSurface.cxx \
+    lwoSurfaceBlock.h lwoSurfaceBlock.cxx \
+    lwoSurfaceBlockHeader.h lwoSurfaceBlockHeader.cxx \
+    lwoSurfaceBlockTMap.h lwoSurfaceBlockTMap.cxx \
     lwoSurfaceColor.h lwoSurfaceColor.cxx \
     lwoSurfaceParameter.h lwoSurfaceParameter.cxx \
     lwoSurfaceSidedness.h lwoSurfaceSidedness.cxx \
+    lwoSurfaceSmoothingAngle.h lwoSurfaceSmoothingAngle.cxx \
     lwoVertexMap.h lwoVertexMap.cxx
 
   #define INSTALL_HEADERS \
@@ -47,9 +51,13 @@
     lwoTags.h \
     lwoStillImage.h \
     lwoSurface.h \
+    lwoSurfaceBlock.h \
+    lwoSurfaceBlockHeader.h \
+    lwoSurfaceBlockTMap.h \
     lwoSurfaceColor.h \
     lwoSurfaceParameter.h \
     lwoSurfaceSidedness.h \
+    lwoSurfaceSmoothingAngle.h \
     lwoVertexMap.h
 
 #end ss_lib_target

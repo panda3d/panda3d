@@ -225,6 +225,10 @@ get_id() {
 ////////////////////////////////////////////////////////////////////
 PT(IffChunk) IffInputFile::
 get_chunk() {
+  if (is_eof()) {
+    return (IffChunk *)NULL;
+  }
+
   IffId id = get_id();
   PN_uint32 length = get_be_uint32();
 
@@ -236,6 +240,11 @@ get_chunk() {
     size_t end_point = start_point + length;
 
     if (chunk->read_iff(this, end_point)) {
+      if (is_eof()) {
+	nout << "Unexpected EOF on file.\n";
+	return (IffChunk *)NULL;
+      }
+
       size_t num_bytes_read = get_bytes_read() - start_point;
       if (num_bytes_read > length) {
 	nout << *chunk << " read " << num_bytes_read
@@ -267,6 +276,10 @@ get_chunk() {
 ////////////////////////////////////////////////////////////////////
 PT(IffChunk) IffInputFile::
 get_subchunk(IffChunk *context) {
+  if (is_eof()) {
+    return (IffChunk *)NULL;
+  }
+
   IffId id = get_id();
   PN_uint16 length = get_be_uint16();
 
@@ -278,6 +291,11 @@ get_subchunk(IffChunk *context) {
     size_t end_point = start_point + length;
 
     if (chunk->read_iff(this, end_point)) {
+      if (is_eof()) {
+	nout << "Unexpected EOF on file.\n";
+	return (IffChunk *)NULL;
+      }
+
       size_t num_bytes_read = get_bytes_read() - start_point;
       if (num_bytes_read > length) {
 	nout << *chunk << " read " << num_bytes_read

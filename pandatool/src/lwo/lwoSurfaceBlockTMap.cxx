@@ -1,22 +1,17 @@
-// Filename: lwoSurface.cxx
+// Filename: lwoSurfaceBlockTMap.cxx
 // Created by:  drose (24Apr01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "lwoSurface.h"
-#include "iffInputFile.h"
-#include "lwoSurfaceBlock.h"
-#include "lwoSurfaceColor.h"
-#include "lwoSurfaceParameter.h"
-#include "lwoSurfaceSidedness.h"
-#include "lwoSurfaceSmoothingAngle.h"
+#include "lwoSurfaceBlockTMap.h"
+#include "lwoInputFile.h"
 
 #include <indent.h>
 
-TypeHandle LwoSurface::_type_handle;
+TypeHandle LwoSurfaceBlockTMap::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LwoSurface::read_iff
+//     Function: LwoSurfaceBlockTMap::read_iff
 //       Access: Public, Virtual
 //  Description: Reads the data of the chunk in from the given input
 //               file, if possible.  The ID and length of the chunk
@@ -25,39 +20,39 @@ TypeHandle LwoSurface::_type_handle;
 //               at in->get_bytes_read()).  Returns true on success,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
-bool LwoSurface::
+bool LwoSurfaceBlockTMap::
 read_iff(IffInputFile *in, size_t stop_at) {
-  _name = in->get_string();
-  _source = in->get_string();
-  read_subchunks_iff(in, stop_at);
+  LwoInputFile *lin = DCAST(LwoInputFile, in);
+
+  read_subchunks_iff(lin, stop_at);
+
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LwoSurface::write
+//     Function: LwoSurfaceBlockTMap::write
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void LwoSurface::
+void LwoSurfaceBlockTMap::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_id() << " {\n";
-  indent(out, indent_level + 2)
-    << "name = \"" << _name << "\", source = \"" << _source << "\"\n";
   write_chunks(out, indent_level + 2);
   indent(out, indent_level)
     << "}\n";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LwoSurface::make_new_chunk
+//     Function: LwoSurfaceBlockTMap::make_new_chunk
 //       Access: Protected, Virtual
 //  Description: Allocates and returns a new chunk of the appropriate
 //               type based on the given ID, according to the context
 //               given by this chunk itself.
 ////////////////////////////////////////////////////////////////////
-IffChunk *LwoSurface::
+IffChunk *LwoSurfaceBlockTMap::
 make_new_chunk(IffInputFile *in, IffId id) {
+  /*
   if (id == IffId("COLR")) {
     return new LwoSurfaceColor;
   
@@ -79,11 +74,8 @@ make_new_chunk(IffInputFile *in, IffId id) {
 
   } else if (id == IffId("SMAN")) {
     return new LwoSurfaceSmoothingAngle;
-
-  } else if (id == IffId("BLOK")) {
-    return new LwoSurfaceBlock;
   
-  } else {
+    } else */ {
     return IffChunk::make_new_chunk(in, id);
   }
 }

@@ -1,25 +1,22 @@
-// Filename: lwoSurface.h
+// Filename: lwoSurfaceBlockTMap.h
 // Created by:  drose (24Apr01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef LWOSURFACE_H
-#define LWOSURFACE_H
+#ifndef LWOSURFACEBLOCKTMAP_H
+#define LWOSURFACEBLOCKTMAP_H
 
 #include <pandatoolbase.h>
 
 #include "lwoGroupChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurface
-// Description : Describes the shading attributes of a surface.  This
-//               is similar to the concept usually called a "material"
-//               in other file formats.
+// 	 Class : LwoSurfaceBlockTMap
+// Description : The tMap chunk within a LwoSurfaceBlock chunk.
 ////////////////////////////////////////////////////////////////////
-class LwoSurface : public LwoGroupChunk {
+class LwoSurfaceBlockTMap : public LwoGroupChunk {
 public:
-  string _name;
-  string _source;
+  string _ordinal;
 
 public:
   virtual bool read_iff(IffInputFile *in, size_t stop_at);
@@ -37,7 +34,7 @@ public:
   }
   static void init_type() {
     LwoGroupChunk::init_type();
-    register_type(_type_handle, "LwoSurface",
+    register_type(_type_handle, "LwoSurfaceBlockTMap",
 		  LwoGroupChunk::get_class_type());
   }
 

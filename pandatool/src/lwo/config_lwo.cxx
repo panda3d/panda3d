@@ -20,9 +20,13 @@
 #include "lwoPolygonTags.h"
 #include "lwoStillImage.h"
 #include "lwoSurface.h"
+#include "lwoSurfaceBlock.h"
+#include "lwoSurfaceBlockHeader.h"
+#include "lwoSurfaceBlockTMap.h"
 #include "lwoSurfaceColor.h"
 #include "lwoSurfaceParameter.h"
 #include "lwoSurfaceSidedness.h"
+#include "lwoSurfaceSmoothingAngle.h"
 #include "lwoTags.h"
 #include "lwoVertexMap.h"
 
@@ -48,9 +52,13 @@ ConfigureFn(config_lwo) {
   LwoTags::init_type();
   LwoStillImage::init_type();
   LwoSurface::init_type();
+  LwoSurfaceBlock::init_type();
+  LwoSurfaceBlockHeader::init_type();
+  LwoSurfaceBlockTMap::init_type();
   LwoSurfaceColor::init_type();
   LwoSurfaceParameter::init_type();
   LwoSurfaceSidedness::init_type();
+  LwoSurfaceSmoothingAngle::init_type();
   LwoVertexMap::init_type();
 }
 

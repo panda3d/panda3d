@@ -24,7 +24,8 @@ TypeHandle LwoClip::_type_handle;
 bool LwoClip::
 read_iff(IffInputFile *in, size_t stop_at) {
   _index = in->get_be_int32();
-  return read_subchunks_iff(in, stop_at);
+  read_subchunks_iff(in, stop_at);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

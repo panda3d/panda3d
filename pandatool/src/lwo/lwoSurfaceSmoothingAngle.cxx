@@ -1,17 +1,18 @@
-// Filename: lwoHeader.cxx
+// Filename: lwoSurfaceSmoothingAngle.cxx
 // Created by:  drose (24Apr01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "lwoHeader.h"
-#include "iffInputFile.h"
+#include "lwoSurfaceSmoothingAngle.h"
+#include "lwoInputFile.h"
 
 #include <indent.h>
+#include <deg_2_rad.h>
 
-TypeHandle LwoHeader::_type_handle;
+TypeHandle LwoSurfaceSmoothingAngle::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LwoHeader::read_iff
+//     Function: LwoSurfaceSmoothingAngle::read_iff
 //       Access: Public, Virtual
 //  Description: Reads the data of the chunk in from the given input
 //               file, if possible.  The ID and length of the chunk
@@ -20,25 +21,22 @@ TypeHandle LwoHeader::_type_handle;
 //               at in->get_bytes_read()).  Returns true on success,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
-bool LwoHeader::
+bool LwoSurfaceSmoothingAngle::
 read_iff(IffInputFile *in, size_t stop_at) {
-  _lwid = in->get_id();
-  read_chunks_iff(in, stop_at);
+  LwoInputFile *lin = DCAST(LwoInputFile, in);
+
+  _angle = lin->get_be_float32();
+
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LwoHeader::write
+//     Function: LwoSurfaceSmoothingAngle::write
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void LwoHeader::
+void LwoSurfaceSmoothingAngle::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
-    << get_id() << " {\n";
-  indent(out, indent_level + 2)
-    << "id = " << _lwid << "\n";
-  write_chunks(out, indent_level + 2);
-  indent(out, indent_level)
-    << "}\n";
+    << get_id() << " { angle = " << rad_2_deg(_angle) << " degrees }\n";
 }

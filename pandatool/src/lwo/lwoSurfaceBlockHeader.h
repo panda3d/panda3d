@@ -1,25 +1,22 @@
-// Filename: lwoSurface.h
+// Filename: lwoSurfaceBlockHeader.h
 // Created by:  drose (24Apr01)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef LWOSURFACE_H
-#define LWOSURFACE_H
+#ifndef LWOSURFACEBLOCKHEADER_H
+#define LWOSURFACEBLOCKHEADER_H
 
 #include <pandatoolbase.h>
 
 #include "lwoGroupChunk.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : LwoSurface
-// Description : Describes the shading attributes of a surface.  This
-//               is similar to the concept usually called a "material"
-//               in other file formats.
+// 	 Class : LwoSurfaceBlockHeader
+// Description : The header chunk within a LwoSurfaceBlock chunk.
 ////////////////////////////////////////////////////////////////////
-class LwoSurface : public LwoGroupChunk {
+class LwoSurfaceBlockHeader : public LwoGroupChunk {
 public:
-  string _name;
-  string _source;
+  string _ordinal;
 
 public:
   virtual bool read_iff(IffInputFile *in, size_t stop_at);
@@ -37,7 +34,7 @@ public:
   }
   static void init_type() {
     LwoGroupChunk::init_type();
-    register_type(_type_handle, "LwoSurface",
+    register_type(_type_handle, "LwoSurfaceBlockHeader",
 		  LwoGroupChunk::get_class_type());
   }
 
