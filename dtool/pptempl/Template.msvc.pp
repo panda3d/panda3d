@@ -319,12 +319,16 @@ $[osfilename $[directory]] :
 $[varname] = $[osfilename $[sources]]
   #define target $[so_dir]\lib$[TARGET]$[dllext].$[dlllib]
   #define sources $($[varname])
-  #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]  
+  #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
+#if $[GENERATE_BUILDDATE]
 $[target] : $[sources] "$[dtool_ver_dir]\version.rc"
     //  first generate builddate for rc compiler
 	cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[TEMP]\verdate.h"
-	rc /n /I$[TEMP] /fo"$[ver_resource]" $[filter /D%, $[flags]] "$[dtool_ver_dir]\version.rc"
+	rc /n /I$[TEMP] /fo$[ver_resource] $[filter /D%, $[flags]] "$[dtool_ver_dir]\version.rc"
 	rm -f "$[dtool_ver_dir]\verdate.h"
+#else
+$[target] : $[sources]
+#endif
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[SHARED_LIB_C++]
   #else

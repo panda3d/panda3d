@@ -1,0 +1,47 @@
+#
+# Make a directory for installing Panda, e.g. c:\pandadir
+
+md c:\pandadir
+md c:\pandadir\bin
+copy ppremake.exe c:\pandadir\bin
+copy cygwin1.dll c:\pandadir\bin
+
+#
+# Put c:\pandadir\bin and c:\pandadir\lib on your path
+path c:\pandadir\bin;c:\pandadir\lib;%PATH%
+
+
+#
+# Make a directory for building Panda, e.g. c:\pandadir\build
+md c:\pandadir\build
+
+#
+# Create a Config.pp file in the build directory:
+edit c:\pandadir\build\Config.pp
+  # Some local build configuration parameters may be defined in
+  # this file (see Config.pp in the dtool directory).
+
+  # For now, add the following lines:
+#define INSTALL_DIR c:\pandadir
+
+
+# 
+# Set up some environment variables for building and/or running:
+set PANDA_ROOT=c:\
+set PPREMAKE_CONFIG=c:\pandadir\build\Config.pp
+
+#
+# Unpack the sources
+c:
+cd \pandadir\build
+unzip dtool.zip
+unzip panda.zip
+
+#
+# Build
+cd dtool
+ppremake
+nmake install
+cd ..\panda
+ppremake
+nmake install

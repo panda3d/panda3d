@@ -84,11 +84,7 @@
 // control your attachment to the trees; in this case, the install
 // directory for each tree will by default be the root of the tree
 // itself (although this may be overridden).
-#if $[eq $[PLATFORM],Win32]
-  #define INSTALL_DIR /pandadir
-#else
-  #define INSTALL_DIR /usr/local/panda
-#endif
+#define INSTALL_DIR /usr/local/panda
 
 
 // What level of compiler optimization/debug symbols should we build?
@@ -104,7 +100,6 @@
 // case, the compiler optimizations are selected by setting the
 // environment variable OPTIMIZE accordingly at compile time.
 #define OPTIMIZE 2
-
 
 
 ////////////////////////////////////////////////////////////////////
