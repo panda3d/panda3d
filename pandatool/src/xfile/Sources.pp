@@ -1,36 +1,36 @@
-
-// The .x converter takes advantage of the DirectX API's; therefore,
-// it can only be built if we have DX available (and therefore it only
-// builds on Windows--sorry).
-#define BUILD_DIRECTORY $[HAVE_DX]
-#define USE_PACKAGES dx
+#define YACC_PREFIX xyy
+#define LFLAGS -i
 
 #begin ss_lib_target
   #define TARGET xfile
-  #define LOCAL_LIBS eggbase progbase pandatoolbase
+  #define LOCAL_LIBS pandatoolbase
   #define OTHER_LIBS \
-    egg:c pandaegg:m \
-    mathutil:c linmath:c putil:c panda:m \
-    express:c pandaexpress:m \
-    dtoolconfig dtool pystub \
-
-  #define WIN_SYS_LIBS \
-    d3dxof.lib dxguid.lib d3d8.lib d3dx8.lib dxerr8.lib
-    
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
+    mathutil:c linmath:c panda:m \
+    dtoolbase:c dtool:m
     
   #define SOURCES \
-     config_xfile.h \
-     xFileAnimationSet.h \
-     xFileFace.h xFileMaker.h xFileMaterial.h \
-     xFileMesh.h xFileNormal.h xFileTemplates.h \
-     xFileToEggConverter.h xFileVertex.h 
-
-  #define INCLUDED_SOURCES \
-     config_xfile.cxx \
-     xFileAnimationSet.cxx \
-     xFileFace.cxx xFileMaker.cxx xFileMaterial.cxx \
-     xFileMesh.cxx xFileNormal.cxx xFileTemplates.cxx \
-     xFileToEggConverter.cxx xFileVertex.cxx 
+     config_xfile.h config_xfile.cxx \
+     windowsGuid.cxx windowsGuid.h \
+     xLexer.lxx xLexerDefs.h \
+     xParser.yxx xParserDefs.h \
+     xFile.cxx xFile.I xFile.h \
+     xFileArrayDef.cxx xFileArrayDef.I xFileArrayDef.h \
+     xFileDataDef.cxx xFileDataDef.I xFileDataDef.h \
+     xFileNode.cxx xFileNode.I xFileNode.h \
+     xFileTemplate.cxx xFileTemplate.I xFileTemplate.h
 
 #end ss_lib_target
+
+#begin test_bin_target
+  #define TARGET x-trans
+  #define LOCAL_LIBS \
+    progbase xfile
+  #define OTHER_LIBS \
+    linmath:c panda:m \
+    express:c pandaexpress:m \
+    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
+
+  #define SOURCES \
+    xFileTrans.cxx xFileTrans.h
+
+#end test_bin_target

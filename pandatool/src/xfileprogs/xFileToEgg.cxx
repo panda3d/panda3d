@@ -44,10 +44,15 @@ XFileToEgg() :
 
   add_option
     ("a", "name", 0,
+     "Convert as an animatable model, converting Frames into Joints.  "
+     "Note that animation support in x2egg is currently experimental and "
+     "likely to be broken.",
+  /*
      "Convert as an animatable model, converting Frames into Joints.  This "
      "should be specified for a model which is intended to be animated.  The "
      "default is to convert the model as a normal static model, which is "
      "usually more optimal if animation is not required.",
+  */
      &XFileToEgg::dispatch_string, &_make_char, &_char_name);
 
   redescribe_option

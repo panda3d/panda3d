@@ -1,0 +1,86 @@
+// Filename: windowsGuid.cxx
+// Created by:  drose (03Oct04)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#include "windowsGuid.h"
+#include "notify.h"
+
+#include <stdio.h>  // for sscanf, sprintf
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowsGuid::parse_string
+//       Access: Public
+//  Description: Parses the hex representation in the indicated string
+//               and stores it in the WindowsGuid object.  Returns
+//               true if successful, false if the string
+//               representation is malformed.
+////////////////////////////////////////////////////////////////////
+bool WindowsGuid::
+parse_string(const string &str) {
+  long data1;
+  short data2, data3;
+  short b1, b2, b3, b4, b5, b6, b7, b8;
+  int result = sscanf(str.c_str(),
+                      "%08lx-%04hx-%04hx-%02x%02x-%02x%02x%02x%02x%02x%02x",
+                      &data1, &data2, &data3,
+                      &b1, &b2, &b3, &b4, &b5, &b6, &b7, &b8);
+  if (result != 11) {
+    return false;
+  }
+
+  _data1 = data1;
+  _data2 = data2;
+  _data3 = data3;
+  _b1 = b1;
+  _b2 = b2;
+  _b3 = b3;
+  _b4 = b4;
+  _b5 = b5;
+  _b6 = b6;
+  _b7 = b7;
+  _b8 = b8;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowsGuid::format_string
+//       Access: Public
+//  Description: Returns a hex representation of the GUID.
+////////////////////////////////////////////////////////////////////
+string WindowsGuid::
+format_string() const {
+  static const int buf_length = 128;  // Actually, we only need 36 + 1 == 37.
+  char buffer[buf_length];
+  sprintf(buffer, 
+          "%08lx-%04hx-%04hx-%02x%02x-%02x%02x%02x%02x%02x%02x",
+          _data1, _data2, _data3,
+          _b1, _b2, _b3, _b4, _b5, _b6, _b7, _b8);
+  nassertr(strlen(buffer) < buf_length, string());
+
+  return string(buffer);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowsGuid::output
+//       Access: Public
+//  Description: Outputs a hex representation of the GUID.
+////////////////////////////////////////////////////////////////////
+void WindowsGuid::
+output(ostream &out) const {
+  out << format_string();
+}

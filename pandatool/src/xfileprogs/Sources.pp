@@ -7,7 +7,7 @@
 
 #begin bin_target
   #define TARGET egg2x
-  #define LOCAL_LIBS xfile eggbase progbase pandatoolbase
+  #define LOCAL_LIBS xfileegg xfile eggbase progbase pandatoolbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
     mathutil:c linmath:c putil:c panda:m \
@@ -24,7 +24,7 @@
 
 #begin bin_target
   #define TARGET x2egg
-  #define LOCAL_LIBS xfile converter eggbase progbase pandatoolbase
+  #define LOCAL_LIBS xfileegg xfile converter eggbase progbase pandatoolbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
     mathutil:c linmath:c putil:c panda:m \

@@ -17,6 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_xfile.h"
+#include "xFile.h"
+#include "xFileDataDef.h"
+#include "xFileNode.h"
+#include "xFileTemplate.h"
 
 #include "dconfig.h"
 
@@ -48,5 +52,10 @@ init_libxfile() {
     return;
   }
   initialized = true;
+
+  XFile::init_type();
+  XFileDataDef::init_type();
+  XFileNode::init_type();
+  XFileTemplate::init_type();
 }
 

@@ -2,7 +2,7 @@
   #define TARGET ptloader
   #define BUILDING_DLL BUILDING_PTLOADER
   #define LOCAL_LIBS \
-    fltegg flt lwoegg lwo dxfegg dxf vrmlegg pvrml xfile \
+    fltegg flt lwoegg lwo dxfegg dxf vrmlegg pvrml xfileegg xfile \
     converter pandatoolbase
   #define OTHER_LIBS \
     egg2pg:c builder:c egg:c pandaegg:m \

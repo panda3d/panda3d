@@ -1,0 +1,540 @@
+/*
+// Filename: xLexer.lxx
+// Created by:  drose (03Oct04)
+// 
+////////////////////////////////////////////////////////////////////
+*/
+
+%{
+#include "xLexerDefs.h"
+#include "xParserDefs.h"
+#include "xParser.h"
+#include "indent.h"
+#include "notify.h"
+
+static int yyinput(void);        // declared by flex.
+extern "C" int xyywrap();
+
+////////////////////////////////////////////////////////////////////
+// Static variables
+////////////////////////////////////////////////////////////////////
+
+// We'll increment line_number and col_number as we parse the file, so
+// that we can report the position of an error.
+static int line_number = 0;
+static int col_number = 0;
+
+// current_line holds as much of the current line as will fit.  Its
+// only purpose is for printing it out to report an error to the user.
+static const int max_error_width = 1024;
+static char current_line[max_error_width + 1];
+
+static int error_count = 0;
+static int warning_count = 0;
+
+// This is the pointer to the current input stream.
+static istream *inp = NULL;
+
+// This is the name of the x file we're parsing.  We keep it so we
+// can print it out for error messages.
+static string x_filename;
+
+
+////////////////////////////////////////////////////////////////////
+// Defining the interface to the lexer.
+////////////////////////////////////////////////////////////////////
+
+void
+x_init_lexer(istream &in, const string &filename) {
+  inp = &in;
+  x_filename = filename;
+  line_number = 0;
+  col_number = 0;
+  error_count = 0;
+  warning_count = 0;
+}
+
+int
+x_error_count() {
+  return error_count;
+}
+
+int
+x_warning_count() {
+  return warning_count;
+}
+
+
+////////////////////////////////////////////////////////////////////
+// Internal support functions.
+////////////////////////////////////////////////////////////////////
+
+int
+xyywrap(void) {
+  return 1;
+}
+
+void
+xyyerror(const string &msg) {
+  cerr << "\nError";
+  if (!x_filename.empty()) {
+    cerr << " in " << x_filename;
+  }
+  cerr 
+    << " at line " << line_number << ", column " << col_number << ":\n"
+    << current_line << "\n";
+  indent(cerr, col_number-1) 
+    << "^\n" << msg << "\n\n";
+  
+  error_count++;
+}
+
+void
+xyywarning(const string &msg) {
+  cerr << "\nWarning";
+  if (!x_filename.empty()) {
+    cerr << " in " << x_filename;
+  }
+  cerr 
+    << " at line " << line_number << ", column " << col_number << ":\n"
+    << current_line << "\n";
+  indent(cerr, col_number-1) 
+    << "^\n" << msg << "\n\n";
+
+  warning_count++;
+}
+
+// Now define a function to take input from an istream instead of a
+// stdio FILE pointer.  This is flex-specific.
+static void
+input_chars(char *buffer, int &result, int max_size) {
+  nassertv(inp != NULL);
+  if (*inp) {
+    inp->read(buffer, max_size);
+    result = inp->gcount();
+    if (result >= 0 && result < max_size) {
+      // Truncate at the end of the read.
+      buffer[result] = '\0';
+    }
+
+    if (line_number == 0) {
+      // This is a special case.  If we are reading the very first bit
+      // from the stream, copy it into the current_line array.  This
+      // is because the \n.* rule below, which fills current_line
+      // normally, doesn't catch the first line.
+      strncpy(current_line, xyytext, max_error_width);
+      current_line[max_error_width] = '\0';
+      line_number++;
+      col_number = 0;
+
+      // Truncate it at the newline.
+      char *end = strchr(current_line, '\n');
+      if (end != NULL) {
+        *end = '\0';
+      }
+    }
+
+  } else {
+    // End of file or I/O error.
+    result = 0;
+  }
+}
+#undef YY_INPUT
+#define YY_INPUT(buffer, result, max_size) input_chars(buffer, result, max_size)
+
+// read_char reads and returns a single character, incrementing the
+// supplied line and column numbers as appropriate.  A convenience
+// function for the scanning functions below.
+static int
+read_char(int &line, int &col) {
+  int c = yyinput();
+  if (c == '\n') {
+    line++;
+    col = 0;
+  } else {
+    col++;
+  }
+  return c;
+}
+
+// scan_quoted_string reads a string delimited by quotation marks and
+// returns it.
+static string
+scan_quoted_string(char quote_mark) {
+  string result;
+
+  // We don't touch the current line number and column number during
+  // scanning, so that if we detect an error while scanning the string
+  // (e.g. an unterminated string), we'll report the error as
+  // occurring at the start of the string, not at the end--somewhat
+  // more convenient for the user.
+
+  // Instead of adjusting the global line_number and col_number
+  // variables, we'll operate on our own local variables for the
+  // interim.
+  int line = line_number;
+  int col = col_number;
+
+  int c;
+  c = read_char(line, col);
+  while (c != quote_mark && c != EOF) {
+    // A newline is not allowed within a string unless it is escaped.
+    if (c == '\n') {
+      c = EOF;
+      break;
+
+    } else if (c == '\\') {
+      // Backslash escapes the following character.  We also respect
+      // some C conventions.
+      c = read_char(line, col);
+      switch (c) {
+      case 'a':
+        result += '\a';
+        c = read_char(line, col);
+        break;
+
+      case 'n':
+        result += '\n';
+        c = read_char(line, col);
+        break;
+
+      case 'r':
+        result += '\r';
+        c = read_char(line, col);
+        break;
+
+      case 't':
+        result += '\t';
+        c = read_char(line, col);
+        break;
+
+      case 'x':
+        {
+          int hex = 0;
+          c = read_char(line, col);
+          for (int i = 0; i < 2 && isxdigit(c); i++) {
+            hex = hex * 16 + (isdigit(c) ? c - '0' : tolower(c) - 'a' + 10);
+            c = read_char(line, col);
+          }
+
+          result += hex;
+        }
+        break;
+
+      case '0':
+        {
+          int oct = 0;
+          c = read_char(line, col);
+          for (int i = 0; i < 3 && (c >= '0' && c < '7'); i++) {
+            oct = oct * 8 + (c - '0');
+            c = read_char(line, col);
+          }
+
+          result += oct;
+        }
+        break;
+
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+        {
+          int dec = 0;
+          c = read_char(line, col);
+          for (int i = 0; i < 3 && isdigit(c); i++) {
+            dec = dec * 10 + (c - '0');
+            c = read_char(line, col);
+          }
+
+          result += dec;
+        }
+        break;
+
+      case EOF:
+        break;
+
+      default:
+        result += c;
+        c = read_char(line, col);
+      }
+
+    } else {
+      result += c;
+      c = read_char(line, col);
+    }
+  }
+
+  if (c == EOF) {
+    xyyerror("This quotation mark is unterminated.");
+  }
+
+  line_number = line;
+  col_number = col;
+
+  return result;
+}
+
+// scan_guid_string reads a string of hexadecimal digits delimited by
+// angle brackets and returns the corresponding string.
+static string
+scan_guid_string() {
+  // We don't touch the current line number and column number during
+  // scanning, so that if we detect an error while scanning the string
+  // (e.g. an unterminated string), we'll report the error as
+  // occurring at the start of the string, not at the end--somewhat
+  // more convenient for the user.
+
+  // Instead of adjusting the global line_number and col_number
+  // variables, we'll operate on our own local variables for the
+  // interim.
+  int line = line_number;
+  int col = col_number;
+
+  int num_digits = 0;
+  int num_hyphens = 0;
+
+  string result;
+
+  int c;
+  c = read_char(line, col);
+  while (c != '>' && c != EOF) {
+    if (isxdigit(c)) {
+      num_digits++;
+
+    } else if (c == '-') {
+      num_hyphens++;
+
+    } else {
+      line_number = line;
+      col_number = col;
+      xyyerror("Invalid character in GUID.");
+      return string();
+    }
+
+    result += c;
+
+    c = read_char(line, col);
+  }
+
+  if (c == EOF) {
+    xyyerror("This GUID string is unterminated.");
+    return string();
+
+  } else if (num_digits != 32) {
+    xyyerror("Incorrect number of hex digits in GUID.");
+    return string();
+
+  } else if (num_hyphens != 4) {
+    xyyerror("Incorrect number of hyphens in GUID.");
+    return string();
+  }
+
+  line_number = line;
+  col_number = col;
+
+  return result;
+}
+
+
+
+// accept() is called below as each piece is pulled off and
+// accepted by the lexer; it increments the current column number.
+inline void accept() {
+  col_number += yyleng;
+}
+
+%}
+
+INTEGERNUM           ([+-]?([0-9]+))
+UNSIGNED_HEXNUM      (0x[0-9a-fA-F]*)
+REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
+
+%%
+
+%{
+%}
+
+\n.* {
+  // New line.  Save a copy of the line so we can print it out for the
+  // benefit of the user in case we get an error.
+
+  strncpy(current_line, xyytext+1, max_error_width);
+  current_line[max_error_width] = '\0';
+  line_number++;
+  col_number=0;
+
+  // Return the whole line to the lexer, except the newline character,
+  // which we eat.
+  yyless(1);
+}
+
+[ \t\r] { 
+  // Eat whitespace.
+  accept();
+}
+
+"//".* { 
+  // Eat C++-style comments.
+  accept();
+}
+
+"#".* { 
+  // Eat sh-style comments.
+  accept();
+}
+
+
+"array" {
+  accept();
+  return KW_ARRAY;
+}
+
+"byte" {
+  accept();
+  return KW_BYTE;
+}
+
+"char" {
+  accept();
+  return KW_CHAR;
+}
+
+"cstring" {
+  accept();
+  return KW_CSTRING;
+}
+
+"double" {
+  accept();
+  return KW_DOUBLE;
+}
+
+"dword" {
+  accept();
+  return KW_DWORD;
+}
+
+"float" {
+  accept();
+  return KW_FLOAT;
+}
+
+"string" {
+  accept();
+  return KW_STRING;
+}
+
+"template" {
+  accept();
+  return KW_TEMPLATE;
+}
+
+"uchar" {
+  accept();
+  return KW_UCHAR;
+}
+
+"unicode" {
+  accept();
+  return KW_UNICODE;
+}
+
+"word" {
+  accept();
+  return KW_WORD;
+}
+
+[.][.][.] {
+  accept();
+  return ELLIPSIS;
+}
+
+{INTEGERNUM} { 
+  // A signed or unsigned integer number.
+  accept();
+  xyylval.u.s_int = atol(xyytext); 
+  xyylval.str = yytext;
+
+  return INTEGER;
+}
+
+{UNSIGNED_HEXNUM} {
+  // A hexadecimal integer number.
+  accept(); 
+
+  // As above, we'll decode the hex string by hand.
+  xyylval.str = xyytext;
+  xyylval.u.s_int = 0;
+  const char *p = xyytext + 2;
+  while (*p != '\0') {
+    int next_value = xyylval.u.s_int * 16;
+    if (next_value < xyylval.u.s_int) {
+      xyyerror("Number out of range.");
+      xyylval.u.s_int = 1;
+      return INTEGER;
+    }
+
+    if (isalpha(*p)) {
+      xyylval.u.s_int = next_value + (tolower(*p) - 'a' + 10);
+    } else {
+      xyylval.u.s_int = next_value + (*p - '0');
+    }
+    ++p;
+  }
+
+  return INTEGER; 
+}
+
+{REALNUM} { 
+  // A floating-point number.
+  accept(); 
+  xyylval.u.real = atof(xyytext); 
+  xyylval.str = xyytext;
+  return REAL; 
+}
+
+["] {
+  // Quoted string.
+  accept();
+  xyylval.str = scan_quoted_string('"');
+  return STRING;
+}
+
+['] {
+  // Single-quoted string.
+  accept();
+  xyylval.str = scan_quoted_string('\'');
+  return STRING;
+}
+
+[<] {
+  // Long GUID string.
+  accept();
+  xyylval.str = scan_guid_string();
+
+  if (!xyylval.guid.parse_string(xyylval.str)) {
+    xyyerror("Malformed GUID.");
+  }
+
+  return WINDOWS_GUID;
+}
+
+[A-Za-z_-][A-Za-z_0-9-]* { 
+  // Identifier.
+  accept();
+  xyylval.str = xyytext;
+  return IDENTIFIER;
+}
+
+
+. {
+  // Send any other printable character as itself.
+  accept(); 
+  return xyytext[0];
+}
+  

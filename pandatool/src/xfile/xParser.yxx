@@ -1,0 +1,237 @@
+// Filename: xParser.yxx
+// Created by:  drose (03Oct04)
+// 
+////////////////////////////////////////////////////////////////////
+
+%{
+#include "xLexerDefs.h"
+#include "xParserDefs.h"
+#include "xFile.h"
+#include "xFileTemplate.h"
+#include "xFileDataDef.h"
+#include "xFileArrayDef.h"
+#include "dcast.h"
+
+// Because our token type contains objects of type string, which
+// require correct copy construction (and not simply memcpying), we
+// cannot use bison's built-in auto-stack-grow feature.  As an easy
+// solution, we ensure here that we have enough yacc stack to start
+// with, and that it doesn't ever try to grow.
+#define YYINITDEPTH 1000
+#define YYMAXDEPTH 1000
+
+static XFile *x_file = (XFile *)NULL;
+static XFileNode *current_node = (XFileNode *)NULL;
+static XFileDataDef *current_data_def = (XFileDataDef *)NULL;
+
+////////////////////////////////////////////////////////////////////
+// Defining the interface to the parser.
+////////////////////////////////////////////////////////////////////
+
+void
+x_init_parser(istream &in, const string &filename, XFile &file) {
+  x_file = &file;
+  current_node = &file;
+  x_init_lexer(in, filename);
+}
+
+void
+x_cleanup_parser() {
+  x_file = (XFile *)NULL;
+  current_node = (XFileNode *)NULL;
+}
+
+%}
+
+%token <u.s_int> INTEGER
+%token <u.real> REAL
+%token <str> STRING IDENTIFIER
+%token <guid> WINDOWS_GUID
+
+%token KW_ARRAY 
+%token KW_BYTE
+%token KW_CHAR
+%token KW_CSTRING
+%token KW_DOUBLE
+%token KW_DWORD
+%token KW_FLOAT
+%token KW_STRING
+%token KW_TEMPLATE
+%token KW_UCHAR
+%token KW_UNICODE
+%token KW_WORD
+%token ELLIPSIS
+
+%type <u.node> xtemplate
+%type <u.data_def> data_def
+%type <str> optional_identifier
+%type <guid> optional_guid
+
+%%
+
+xfile:
+        empty
+        | xfile xtemplate
+        | xfile data_object
+        ;
+
+xtemplate:
+	KW_TEMPLATE IDENTIFIER '{' WINDOWS_GUID
+{
+  $$ = current_node;
+  XFileTemplate *templ = new XFileTemplate($2, $4);
+  current_node->add_child(templ);
+  current_node = templ;
+}
+	template_members template_restrictions '}'
+{
+  $$ = current_node;
+  current_node = $<u.node>5;
+}
+	;
+
+template_members:
+	empty
+	| template_members template_member ';'
+	;
+
+template_member:
+        data_def
+{
+  current_node->add_child($1);
+}
+        | KW_ARRAY data_def
+{
+  current_node->add_child($2);
+  current_data_def = $2;
+}
+	array_dimensions
+	;
+
+data_def:
+        KW_WORD optional_identifier
+{
+  $$ = new XFileDataDef(XFileDataDef::T_word, $2);
+}
+	| KW_DWORD optional_identifier
+{
+  $$ = new XFileDataDef(XFileDataDef::T_dword, $2);
+}
+	| KW_FLOAT optional_identifier
+{
+  $$ = new XFileDataDef(XFileDataDef::T_float, $2);
+}
+	| KW_DOUBLE optional_identifier
+{
+  $$ = new XFileDataDef(XFileDataDef::T_double, $2);
+}
+	| KW_CHAR optional_identifier
+{
+  $$ = new XFileDataDef(XFileDataDef::T_char, $2);
+}
+	| KW_UCHAR optional_identifier
+{
+  $$ = new XFileDataDef(XFileDataDef::T_uchar, $2);
+}
+	| KW_BYTE optional_identifier
+{
+  $$ = new XFileDataDef(XFileDataDef::T_byte, $2);
+}
+	| KW_STRING optional_identifier
+{
+  $$ = new XFileDataDef(XFileDataDef::T_string, $2);
+}
+	| KW_CSTRING optional_identifier
+{
+  $$ = new XFileDataDef(XFileDataDef::T_cstring, $2);
+}
+	| KW_UNICODE optional_identifier
+{
+  $$ = new XFileDataDef(XFileDataDef::T_unicode, $2);
+}
+	| IDENTIFIER optional_identifier
+{
+  $$ = new XFileDataDef(XFileDataDef::T_word, $2);
+}
+	;
+
+array_dimensions:
+	array_level
+	| array_dimensions array_level
+	;
+
+array_level:
+	'[' INTEGER ']'
+{
+  current_data_def->add_array_def(XFileArrayDef($2));
+}
+	| '[' IDENTIFIER ']'
+{
+  XFileNode *data_def = current_node->find_child($2);
+  if (data_def == (XFileNode *)NULL) {
+    yyerror("Unknown identifier: " + $2);
+  } else {
+    current_data_def->add_array_def(XFileArrayDef(DCAST(XFileDataDef, data_def)));
+  }
+}
+	;
+
+template_restrictions:
+	empty
+	| '[' ELLIPSIS ']'
+        | '[' template_list ']'
+	;
+
+template_list:
+        IDENTIFIER optional_guid
+	| template_list ',' IDENTIFIER optional_guid
+	;
+
+data_object:
+	IDENTIFIER optional_identifier '{'
+{
+}
+	data_object_members '}'
+{
+}
+	;
+
+
+data_object_members:
+	empty
+	| data_object_members data_object_member
+	;
+
+data_object_member:
+	data_object
+        | data_reference
+	| INTEGER
+	| REAL
+        | STRING
+        | ';'
+        | ','
+	;
+
+data_reference:
+	'{' IDENTIFIER '}'
+	;
+
+optional_identifier:
+	empty
+{
+  $$ = string();
+}
+	| IDENTIFIER
+	;
+
+optional_guid:
+	empty
+{
+  $$ = WindowsGuid();
+}
+	| WINDOWS_GUID
+	;
+
+empty:
+        ;
+
