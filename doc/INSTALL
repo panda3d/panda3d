@@ -43,7 +43,7 @@ without some functionality.
   from that, the PStats analysis tools (which depend on networking)
   will not be built without NSPR.  We have compiled Panda with NSPR
   version 3 and 4.0, although other versions should also work.  You
-  can download NSPR from http://www.mozilla.org .
+  can download NSPR from http://www.mozilla.org/projects/nspr/ .
 
 * VRPN, the "Virtual Reality Peripheral Network," a peripheral
   interface library designed by UNC.  This is particularly useful for
