@@ -318,9 +318,9 @@ protected:
   void report_texmgr_stats();
 
   //   for drawing primitives
-  Colorf    p_color;
-  Normalf   p_normal;
-  Vertexf   p_vertex;
+  //  Colorf    p_color;  bypassed by _curD3Dcolor;
+  //  Vertexf   p_vertex;
+  Normalf   p_normal;  // still used to hold G_OVERALL, G_PER_PRIM values
   TexCoordf p_texcoord;
   D3DCOLOR  _curD3Dcolor;
   DWORD     _curFVFflags;
@@ -414,6 +414,7 @@ protected:
 
   // Color/Alpha Matrix Transition stuff
   INLINE void transform_color(Colorf &InColor,D3DCOLOR &OutColor);
+  bool _color_transform_required;  // _color_transform_enabled || _alpha_transform_enabled
   bool _color_transform_enabled;
   bool _alpha_transform_enabled;
   LMatrix4f _current_color_mat;

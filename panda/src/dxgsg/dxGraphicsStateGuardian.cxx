@@ -509,6 +509,8 @@ dx_init(  LPDIRECTDRAW7     context,
     //Color and alpha transform variables
     _color_transform_enabled = false;
     _alpha_transform_enabled = false;
+    _color_transform_required = _color_transform_enabled || _alpha_transform_enabled;
+
     _current_color_mat = LMatrix4f::ident_mat();
     _current_alpha_offset = 0;
     _current_alpha_scale = 1;
@@ -519,7 +521,6 @@ dx_init(  LPDIRECTDRAW7     context,
 
     _line_smooth_enabled = false;
     _d3dDevice->SetRenderState(D3DRENDERSTATE_EDGEANTIALIAS, false);
-
 
     _color_material_enabled = false;
     _normals_enabled = false;
@@ -1796,16 +1797,15 @@ draw_prim_setup(const Geom *geom) {
       assert(geom->get_binding(G_COORD) != G_OFF);
     #endif
 
-#define GET_NEXT_VERTEX() { p_vertex = geom->get_next_vertex(vi); }
+#define GET_NEXT_VERTEX(NEXTVERT) { NEXTVERT = geom->get_next_vertex(vi); }
 #define GET_NEXT_NORMAL() { p_normal = geom->get_next_normal(ni); }
 #define GET_NEXT_TEXCOORD() { p_texcoord = geom->get_next_texcoord(ti); }
 #define GET_NEXT_COLOR() {                                                           \
-    if(_color_transform_enabled || _alpha_transform_enabled) {                       \
-        Colorf tempcolor = geom->get_next_color(ci);                                 \
-        transform_color(tempcolor,_curD3Dcolor);                                     \
+    Colorf tempcolor = geom->get_next_color(ci);                                     \
+    if(!_color_transform_required) {                                                 \
+        _curD3Dcolor = Colorf_to_D3DCOLOR(tempcolor);                                \
     } else {                                                                         \
-        p_color = geom->get_next_color(ci);                                          \
-        _curD3Dcolor = Colorf_to_D3DCOLOR(p_color);                                  \
+        transform_color(tempcolor,_curD3Dcolor);                                     \
     }}
 
 ////////
@@ -1904,11 +1904,15 @@ wants_colors() const {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_prim_inner_loop(int nVerts, const Geom *geom, DWORD perFlags) {
+
+    Vertexf NextVert;
     perFlags &= ~PER_COORD;  // should always be set anyway
 
     for(;nVerts > 0;nVerts--) {
 
-        GET_NEXT_VERTEX();   // coord info will always be _perVertex
+         // coord info will always be _perVertex
+        GET_NEXT_VERTEX(NextVert);     // need to optimize these 
+        add_to_FVFBuf((void *)&NextVert, sizeof(D3DVECTOR));
 
         if(perFlags==0xC) {
             // break out the common case first
@@ -1933,8 +1937,6 @@ draw_prim_inner_loop(int nVerts, const Geom *geom, DWORD perFlags) {
                     break;
             }
         }
-
-        add_to_FVFBuf((void *)&p_vertex, sizeof(D3DVECTOR));
 
         if (_curFVFflags & D3DFVF_NORMAL)
             add_to_FVFBuf((void *)&p_normal, sizeof(D3DVECTOR));
@@ -2063,7 +2065,7 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
             // BUGBUG: eventually this hack every-frame all-colors conversion needs
             // to be done only once as part of a vertex buffer
 
-            if(_color_transform_enabled || _alpha_transform_enabled) {
+            if(_color_transform_required) {
                 for (int i=0;i<nPrims;i++) {
                     D3DCOLOR RGBA_color;
                     transform_color(colors[i],RGBA_color);
@@ -2966,7 +2968,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
                 if (NeededShadeMode!=D3DSHADE_FLAT) {
                     // but if lighting enabled, we need to color every vert since shading will be GOURAUD
 
-                    if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+                    if(!_color_transform_required) {
                         for (uint i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
                             D3DCOLOR newcolr = Colorf_to_D3DCOLOR(*pInColor);
                             *pOutColor     = newcolr;
@@ -2987,7 +2989,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
                     // dont write 2nd,3rd colors in output buffer, these are not used in flat shading
                     // MAKE SURE ShadeMode never set to GOURAUD after this!
 
-                    if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+                    if(!_color_transform_required) {
                         for (uint i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsperPrim) {
                             *pOutColor = Colorf_to_D3DCOLOR(*pInColor);
                         }
@@ -3003,7 +3005,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
                 // want to do this conversion once in retained mode
                 DWORD cNumColors=nPrims*dwVertsperPrim;
 
-                    if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+                    if(!_color_transform_required) {
                         for (uint i=0;i<cNumColors;i++,pInColor++,pOutColor++) {
                             *pOutColor = Colorf_to_D3DCOLOR(*pInColor);
                         }
@@ -3018,7 +3020,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
 #endif
                 // copy the one global color in, set stride to 0
 
-                if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+                if(!_color_transform_required) {
                     if (bDoGlobalSceneGraphColor) {
                         Colorf colr = catt->get_color();
                         *pConvertedColorArray = Colorf_to_D3DCOLOR(colr);
@@ -3370,7 +3372,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             if (ColorBinding==G_PER_VERTEX) {
                 NeededShadeMode = D3DSHADE_GOURAUD;
 
-                if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+                if(!_color_transform_required) {
                     for (uint i=0;i<cTotalVerts;i++,pInColor++,pOutColor++) {
                         *pOutColor = Colorf_to_D3DCOLOR(*pInColor);
                     }
@@ -3386,7 +3388,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
                 // could save 2 clr writes per strip/fan in flat shade mode but not going to bother here
 
-                if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+                if(!_color_transform_required) {
                     for (uint j=0;j<nPrims;j++,pInColor++) {
                         D3DCOLOR lastcolr = Colorf_to_D3DCOLOR(*pInColor);
                         DWORD cStripLength=pLengthArr[j];
@@ -3459,7 +3461,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                     }                                                                        \
                   }
 
-                if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+                if(!_color_transform_required) {
                   COMPONENT_COLOR_COPY_LOOPS(COLOR_CONVERT_COPY_STMT);
                 } else {
                   COMPONENT_COLOR_COPY_LOOPS(COLOR_CONVERT_XFORM_STMT);
@@ -3470,7 +3472,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 #endif
                 // copy the one global color in, set stride to 0
 
-                if(!(_color_transform_enabled || _alpha_transform_enabled)) {
+                if(!_color_transform_required) {
                     if (bDoGlobalSceneGraphColor) {
                         Colorf colr = catt->get_color();
                         *pConvertedColorArray = Colorf_to_D3DCOLOR(colr);
@@ -4856,7 +4858,7 @@ issue_color(const ColorTransition *attrib) {
 
     if(bAttribOn && bIsReal) {
         _issued_color = attrib->get_color();
-        if(_color_transform_enabled || _alpha_transform_enabled) {
+        if(_color_transform_required) {
             transform_color(_issued_color, _issued_color_D3DCOLOR);
         } else {
             _issued_color_D3DCOLOR = Colorf_to_D3DCOLOR(_issued_color);
@@ -4887,6 +4889,7 @@ issue_color_transform(const ColorMatrixTransition *attrib) {
              transform_color(_issued_color, _issued_color_D3DCOLOR);
         }
     }
+    _color_transform_required = _color_transform_enabled || _alpha_transform_enabled;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4910,6 +4913,7 @@ issue_alpha_transform(const AlphaTransformTransition *attrib) {
              transform_color(_issued_color, _issued_color_D3DCOLOR);
         }
     }
+    _color_transform_required = _color_transform_enabled || _alpha_transform_enabled;
 }
 
 ////////////////////////////////////////////////////////////////////
