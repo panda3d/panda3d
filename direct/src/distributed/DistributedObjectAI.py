@@ -31,6 +31,8 @@ class DistributedObjectAI(DirectObject.DirectObject):
             # here.
             self.lastNonQuietZone = None
 
+            self._DOAI_requestedDelete = False
+
             # These are used to implement beginBarrier().
             self.__nextBarrierContext = 0
             self.__barriers = {}
@@ -64,6 +66,12 @@ class DistributedObjectAI(DirectObject.DirectObject):
         if self.air is not None:
             # self.doId may not exist.  The __dict__ syntax works around that.
             assert(self.notify.debug('delete(): %s' % (self.__dict__.get("doId"))))
+
+            if not self._DOAI_requestedDelete:
+                self.notify.warning(
+                    'delete() called but requestDelete never called for %s: %s'
+                    % (self.__dict__.get('doId'), self.__class__.__name__))
+            self._DOAI_requestedDelete = False
 
             # Clean up all the pending barriers.
             for barrier in self.__barriers.values():
@@ -237,7 +245,8 @@ class DistributedObjectAI(DirectObject.DirectObject):
             self.notify.warning("Tried to delete a %s (doId %s) that is already deleted" % (self.__class__, doId))
             return
         self.air.requestDelete(self)
-
+        self._DOAI_requestedDelete = True
+        
     def taskName(self, taskString):
         return (taskString + "-" + str(self.getDoId()))
 
