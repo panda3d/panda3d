@@ -84,7 +84,7 @@ class State(DirectObject):
         self.setExitFunc(exitFunc)
         self.setTransitions(transitions)
         self.setInspectorPos(inspectorPos)
-        self.__FSMList = None
+        self.__FSMList = []
 
 
     # setters and getters
@@ -167,43 +167,40 @@ class State(DirectObject):
     def addChild(self, FSM):
         """addChild(self, FSM)
         Add the given FSM to list of child FSMs"""
-        if (self.__FSMList == None):
-            self.__FSMList = [FSM]
-        else:
-            self.__FSMList.append(FSM)
+        self.__FSMList.append(FSM)
 
     def removeChild(self, FSM):
-        """addChild(self, FSM)
-        Add the given FSM to list of child FSMs"""
+        """removeChild(self, FSM)
+        Remove the given FSM from list of child FSMs"""
         if FSM in self.__FSMList:
             self.__FSMList.remove(FSM)
 
     def hasChildren(self):
         """hasChildren(self)
         Return true if state has child FSMs"""
-        return(self.__FSMList != None)
+        return len(self.__FSMList) > 0
 
     def __enterChildren(self, argList):
         """__enterChildren(self, argList)
         Enter all child FSMs"""
-        if self.hasChildren():
-            for fsm in self.__FSMList:
-                # Check to see if the child fsm is already in a state
-                # if it is, politely request the initial state
-                if fsm.getCurrentState():
-                    fsm.request((fsm.getInitialState()).getName())
-                # If it has no current state, I assume this means it
-                # has never entered the initial state, so enter it
-                # explicitly
-                else:
-                    fsm.enterInitialState()
+        for fsm in self.__FSMList:
+            print "ENTERING CHILD FSM:" + str(fsm)
+            print str(self)
+            # Check to see if the child fsm is already in a state
+            # if it is, politely request the initial state
+            if fsm.getCurrentState():
+                fsm.request((fsm.getInitialState()).getName())
+            # If it has no current state, I assume this means it
+            # has never entered the initial state, so enter it
+            # explicitly
+            else:
+                fsm.enterInitialState()
                     
     def __exitChildren(self, argList):
         """__exitChildren(self, argList)
         Exit all child FSMs"""
-        if self.hasChildren():
-            for fsm in self.__FSMList:
-                fsm.request((fsm.getFinalState()).getName())
+        for fsm in self.__FSMList:
+            fsm.request((fsm.getFinalState()).getName())
 
 
     # basic State functionality
