@@ -3,14 +3,21 @@
 #begin lib_target
   #define TARGET dconfig
   
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx
+  
   #define SOURCES \
-    configTable.I configTable.cxx configTable.h config_dconfig.cxx        \
-    config_dconfig.h config_notify.cxx config_notify.h config_setup.h    \
-    dconfig.I dconfig.cxx dconfig.h expand.I expand.h notify.I           \
-    notify.cxx notify.h notifyCategory.I notifyCategory.cxx               \
-    notifyCategory.h notifyCategoryProxy.I notifyCategoryProxy.h        \
-    notifySeverity.cxx notifySeverity.h serialization.I serialization.h  \
-    symbolEnt.I symbolEnt.cxx symbolEnt.h
+    configTable.I configTable.h \
+    config_dconfig.h config_notify.h config_setup.h \
+    dconfig.I dconfig.h expand.I expand.h notify.I \
+    notify.h notifyCategory.I \
+    notifyCategory.h notifyCategoryProxy.I notifyCategoryProxy.h \
+    notifySeverity.h serialization.I serialization.h  \
+    symbolEnt.I  symbolEnt.h
+    
+ #define INCLUDED_SOURCES \
+    configTable.cxx config_dconfig.cxx dconfig.cxx \
+    config_notify.cxx notify.cxx notifyCategory.cxx \
+    notifySeverity.cxx symbolEnt.cxx 
 
   #define INSTALL_HEADERS                                               \
     configTable.I configTable.h config_dconfig.h config_setup.h         \
