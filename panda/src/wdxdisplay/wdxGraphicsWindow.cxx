@@ -63,6 +63,13 @@ extern bool dx_full_screen_antialiasing;  // defined in dxgsg_config.cxx
 
 LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,LPARAM lparam);
 
+// because we dont have access to ModifierButtons, as a hack just synchronize state of these
+// keys on get/lose keybd focus
+#define NUM_MODIFIER_KEYS 16
+unsigned int hardcoded_modifier_buttons[NUM_MODIFIER_KEYS]={VK_SHIFT,VK_MENU,VK_CONTROL,VK_SPACE,VK_TAB,
+                                         VK_UP,VK_DOWN,VK_LEFT,VK_RIGHT,VK_PRIOR,VK_NEXT,VK_HOME,VK_END,
+                                         VK_INSERT,VK_DELETE,VK_ESCAPE};
+
 static DWORD BitDepth_2_DDBDMask(DWORD iBitDepth) {
     switch(iBitDepth) {
         case 16: return DDBD_16;
@@ -292,18 +299,21 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             return 0;
         }
 
-        case WM_SYSKEYUP:
-        case WM_SYSKEYDOWN:
         case WM_SYSCHAR:
-        case WM_CHAR:
+        case WM_CHAR:  // shouldnt receive WM_CHAR unless WM_KEYDOWN stops returning 0 and passes on to DefWindProc
             break;
 
+        case WM_SYSKEYDOWN:
         case WM_KEYDOWN: {
+
             POINT point;
 
             GetCursorPos(&point);
             ScreenToClient(hwnd, &point);
 
+          #ifdef NDEBUG
+               handle_keypress(lookup_key(wparam), point.x, point.y);
+          #else
             // handle Cntrl-V paste from clipboard
             if(!((wparam=='V') && (GetKeyState(VK_CONTROL) < 0))) {
                handle_keypress(lookup_key(wparam), point.x, point.y);
@@ -330,15 +340,18 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 }
                 CloseClipboard(); 
             }
-            return 0;
+          #endif
+            // want to use defwindproc on Alt syskey so Alt-F4 works, etc
+            // but do want to bypass defwindproc F10 behavior (it activates the
+            // main menu, but we have none)
+            if((msg==WM_SYSKEYDOWN)&&(wparam!=VK_F10))
+              break;
+             else return 0;
         }
 
+        case WM_SYSKEYUP:
         case WM_KEYUP: {
-            POINT point;
-
-            GetCursorPos(&point);
-            ScreenToClient(hwnd, &point);
-            handle_keyrelease(lookup_key(wparam), point.x, point.y);
+            handle_keyrelease(lookup_key(wparam));
             return 0;
         }
 
@@ -375,11 +388,13 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             if(button < 0)
                 button = 2;
             ReleaseCapture();
-            x = LOWORD(lparam);
-            y = HIWORD(lparam);
-            if(x & 1 << 15) x -= (1 << 16);
-            if(y & 1 << 15) y -= (1 << 16);
-            handle_keyrelease(MouseButton::button(button), x, y);
+            #if 0
+               x = LOWORD(lparam);
+               y = HIWORD(lparam);
+               if(x & 1 << 15) x -= (1 << 16);
+               if(y & 1 << 15) y -= (1 << 16);
+            #endif
+            handle_keyrelease(MouseButton::button(button));
             return 0;
 
         case WM_MOUSEMOVE:
@@ -544,19 +559,49 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 break;
             }
 
-        case WM_SETFOCUS:
-            if(!DXREADY)
+        case WM_SETFOCUS: {
+            // wdxdisplay_cat.info() << "got WM_SETFOCUS\n";
+            if(!DXREADY) {
               break;
+            }
+
             if(_mouse_entry_enabled)
                 handle_mouse_entry(MOUSE_ENTERED,_hMouseCursor);
-            return 0;
 
-        case WM_KILLFOCUS:
-            if(!DXREADY)
-              break;
-            if(_mouse_entry_enabled)
-                handle_mouse_entry(MOUSE_EXITED,_hMouseCursor);
+            POINT point;
+            GetCursorPos(&point);
+            ScreenToClient(hwnd, &point);
+
+            // this is a hack to make sure common modifier keys have proper state
+            // since at focus loss, app may never receive key-up event corresponding to
+            // a key-down. it would be better to know the exact set of ModifierButtons the
+            // user is using, since we may miss some here
+
+            int i;
+            for(i=0;i<NUM_MODIFIER_KEYS;i++) {
+              if(GetKeyState(hardcoded_modifier_buttons[i]) < 0) 
+                handle_keypress(lookup_key(hardcoded_modifier_buttons[i]),point.x,point.y);
+            }
             return 0;
+        }
+
+        case WM_KILLFOCUS: {
+            // wdxdisplay_cat.info() << "got WM_KILLFOCUS\n";
+            if(!DXREADY) {
+              break;
+            }
+
+            if(_mouse_entry_enabled)
+                  handle_mouse_entry(MOUSE_EXITED,_hMouseCursor);
+
+            int i;
+            for(i=0;i<NUM_MODIFIER_KEYS;i++) {
+              if(GetKeyState(hardcoded_modifier_buttons[i]) < 0)
+                handle_keyrelease(lookup_key(hardcoded_modifier_buttons[i]));
+            }
+
+            return 0;
+        }
 
 #if 0
         case WM_WINDOWPOSCHANGING: {
@@ -1601,7 +1646,7 @@ void wdxGraphicsWindow::handle_mouse_entry(int state,HCURSOR hCursor) {
     if(state == MOUSE_EXITED) {
         _input_devices[0].set_pointer_out_of_window();
     } else {
-        SetCursor(hCursor);
+//        SetCursor(hCursor);  believe this is not necessary, handled by windows
     }
 }
 
@@ -1634,7 +1679,7 @@ handle_keypress(ButtonHandle key, int x, int y) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow::
-handle_keyrelease(ButtonHandle key, int, int) {
+handle_keyrelease(ButtonHandle key) {
     if(key != ButtonHandle::none()) {
         _input_devices[0].button_up(key);
     }
@@ -1829,6 +1874,10 @@ lookup_key(WPARAM wparam) const {
         case VK_F12: return KeyboardButton::f12();
         case VK_INSERT: return KeyboardButton::insert();
         case VK_DELETE: return KeyboardButton::del();
+        case VK_CAPITAL: return KeyboardButton::caps_lock();
+        case VK_NUMLOCK: return KeyboardButton::num_lock();
+        case VK_SCROLL: return KeyboardButton::scroll_lock();
+        case VK_SNAPSHOT: return KeyboardButton::print_screen();
 
         case VK_SHIFT:
         case VK_LSHIFT:
@@ -1848,10 +1897,15 @@ lookup_key(WPARAM wparam) const {
         default:
             int key = MapVirtualKey(wparam, 2);
             if(isascii(key) && key != 0) {
-                if(GetKeyState(VK_SHIFT) >= 0)
-                    key = tolower(key);
-                else {
+                bool bCapsLockDown=((GetKeyState(VK_CAPITAL) & 0x1)!=0);
+                bool bShiftUp = (GetKeyState(VK_SHIFT) >= 0);
+                if(bShiftUp) {
+                    if(bCapsLockDown) 
+                        key = toupper(key);
+                    else key = tolower(key);
+                } else {
                     switch(key) {
+                        // these keys are unaffected by capslock
                         case '1': key = '!'; break;
                         case '2': key = '@'; break;
                         case '3': key = '#'; break;
@@ -1873,6 +1927,10 @@ lookup_key(WPARAM wparam) const {
                         case ']': key = '}'; break;
                         case '\\': key = '|'; break;
                         case '`': key = '~'; break;
+                        default:
+                            if(bCapsLockDown) 
+                                key = tolower(key);
+                            else key = toupper(key);
                     }
                 }
                 return KeyboardButton::ascii_key((uchar)key);

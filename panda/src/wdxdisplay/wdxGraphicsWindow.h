@@ -72,7 +72,7 @@ public:
   void handle_mouse_motion( int x, int y );
   void handle_mouse_entry( int state, HCURSOR hMouseCursor );
   void handle_keypress( ButtonHandle key, int x, int y );
-  void handle_keyrelease( ButtonHandle key, int x, int y );
+  void handle_keyrelease( ButtonHandle key);
   void dx_setup();
   virtual void begin_frame( void );
   void show_frame();
