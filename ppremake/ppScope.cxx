@@ -1924,6 +1924,7 @@ expand_makeguid(const string &params) {
   
   unsigned int len = names[0].size();
   unsigned char *name = new unsigned char[len];
+  memcpy(name, names[0].c_str(), len);
   MD5Init(&context);
   MD5Update(&context, name, len);
   MD5Final(digest, &context);
