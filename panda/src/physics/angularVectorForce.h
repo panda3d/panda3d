@@ -28,6 +28,7 @@ PUBLISHED:
 
   INLINE void set_vector(const LVector3f& v);
   INLINE void set_vector(float x, float y, float z);
+  INLINE LVector3f get_vector(void) const;
 
 public:
   static TypeHandle get_class_type(void) {

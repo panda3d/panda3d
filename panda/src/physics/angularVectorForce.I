@@ -7,7 +7,7 @@
 // Function : set_vector
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-void AngularVectorForce::
+INLINE void AngularVectorForce::
 set_vector(const LVector3f &v) {
   _fvec = v;
 }
@@ -16,7 +16,16 @@ set_vector(const LVector3f &v) {
 // Function : set_vector
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-void AngularVectorForce::
+INLINE void AngularVectorForce::
 set_vector(float x, float y, float z) {
   _fvec.set(x, y, z);
+}
+
+////////////////////////////////////////////////////////////////////
+// Function : get_vector
+//   Access : public
+////////////////////////////////////////////////////////////////////
+INLINE LVector3f AngularVectorForce::
+get_vector(void) const {
+  return _fvec;
 }
