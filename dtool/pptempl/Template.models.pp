@@ -173,6 +173,26 @@ clean-pal : clean-bam
 $[TAB]rm -rf $[pal_egg_dir]
 #endif
 
+clean-flt :
+#if $[build_flt_eggs]
+$[TAB]rm -f $[build_flt_eggs]
+#endif
+
+clean-lwo :
+#if $[build_lwo_eggs]
+$[TAB]rm -f $[build_lwo_eggs]
+#endif
+
+clean-maya :
+#if $[build_maya_eggs]
+$[TAB]rm -f $[build_maya_eggs]
+#endif
+
+clean-soft :
+#if $[build_soft_eggs]
+$[TAB]rm -f $[build_soft_eggs]
+#endif
+
 clean : clean-pal
 #if $[build_eggs]
 $[TAB]rm -f $[build_eggs] *.pt
@@ -589,7 +609,7 @@ all : egg pal repal $[subdirs]
 
 install : all $[subdirs:%=install-%]
 
-#define sub_targets egg flt lwo maya soft bam pal clean-bam clean-pal clean cleanall unpack-soft install-bam install-other uninstall-bam uninstall-other uninstall
+#define sub_targets egg flt lwo maya soft bam pal clean-bam clean-pal clean-flt clean-lwo clean-maya clean-soft clean cleanall unpack-soft install-bam install-other uninstall-bam uninstall-other uninstall
 
 // Define the rules to propogate these targets to the Makefile within
 // each directory.
