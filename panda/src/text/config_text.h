@@ -28,6 +28,8 @@ NotifyCategoryDecl(text, EXPCL_PANDA, EXPTP_PANDA);
 
 extern const bool text_flatten;
 extern const bool text_update_cleared_glyphs;
+extern const bool text_mipmap;
+extern const int text_anisotropic_degree;
 extern const int text_texture_margin;
 extern const float text_poly_margin;
 extern const int text_page_x_size;

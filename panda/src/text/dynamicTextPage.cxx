@@ -50,7 +50,15 @@ DynamicTextPage(DynamicTextFont *font) :
   // regenerate those every time the texture changes, but we do want
   // at least linear filtering.
   set_magfilter(FT_linear);
-  set_minfilter(FT_linear);
+  if (text_mipmap) {
+    set_minfilter(FT_linear_mipmap_linear);
+  } else {
+    set_minfilter(FT_linear);
+  }
+
+  // Anisotropic filtering can help the look of the text, and doesn't
+  // require generating mipmaps, but does require hardware support.
+  set_anisotropic_degree(text_anisotropic_degree);
 
   // It's slightly better to let the texture clamp, rather than
   // wrapping, so we're less likely to get bleeding at the edges.
