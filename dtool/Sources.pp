@@ -4,3 +4,4 @@
 #define DIR_TYPE toplevel
 
 #define CONFIG_HEADER dtool_config.h
+#define EXTRA_PPREMAKE_SOURCE PandaVersion.pp

@@ -3,7 +3,8 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-// This is a dummy file whose sole purpose is to give the compiler
-// something to compile when making libpanda.so in NO_DEFER mode,
-// which generates an empty library that itself links with all the
-// other shared libraries that make up libpanda.
+// By including checkPandaVersion.h, we guarantee that runtime
+// attempts to load libpandaexpress.so/.dll will fail if they
+// inadvertently link with the wrong version of libdtool.so/.dll.
+
+#include "checkPandaVersion.h"

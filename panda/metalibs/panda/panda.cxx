@@ -25,6 +25,12 @@
 #include "config_particlesystem.h"
 #endif
 
+// By including checkPandaVersion.h, we guarantee that runtime
+// attempts to load libpanda.so/.dll will fail if they inadvertently
+// link with the wrong version of libdtool.so/.dll.
+
+#include "checkPandaVersion.h"
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpanda
 //  Description: Initializes the library.  This must be called at

@@ -1,3 +1,4 @@
+forcetype PandaSystem
 forcetype DSearchPath
 forcetype Filename
 forcetype GlobPattern

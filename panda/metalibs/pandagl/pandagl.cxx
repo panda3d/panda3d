@@ -15,6 +15,12 @@
 */
 #endif
 
+// By including checkPandaVersion.h, we guarantee that runtime
+// attempts to load libpandagl.so/.dll will fail if they inadvertently
+// link with the wrong version of libdtool.so/.dll.
+
+#include "checkPandaVersion.h"
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpandagl
 //  Description: Initializes the library.  This must be called at

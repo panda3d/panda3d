@@ -6,9 +6,15 @@
 #include "pandaphysics.h"
 
 #ifndef LINK_IN_PHYSICS
-#include <config_physics.h>
-#include <config_particlesystem.h>
+#include "config_physics.h"
+#include "config_particlesystem.h"
 #endif
+
+// By including checkPandaVersion.h, we guarantee that runtime
+// attempts to load libpandaphysics.so/.dll will fail if they
+// inadvertently link with the wrong version of libdtool.so/.dll.
+
+#include "checkPandaVersion.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpandaphysics

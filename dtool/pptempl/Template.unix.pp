@@ -751,7 +751,7 @@ $[TAB] $[COMMAND]
 
 
 // Finally, the rules to freshen the Makefile itself.
-Makefile : $[SOURCE_FILENAME]
+Makefile : $[SOURCE_FILENAME] $[EXTRA_PPREMAKE_SOURCE]
 $[TAB] ppremake
 
 #if $[and $[DEPENDENCY_CACHE_FILENAME],$[dep_sources]]
@@ -891,6 +891,10 @@ $[install_headers_dir]/$[CONFIG_HEADER] : $[CONFIG_HEADER]
 #define dest $[install_headers_dir]
 $[TAB] $[INSTALL]
 #endif
+
+// Finally, the rules to freshen the Makefile itself.
+Makefile : $[SOURCE_FILENAME] $[EXTRA_PPREMAKE_SOURCE]
+$[TAB] ppremake
 
 #end Makefile
 

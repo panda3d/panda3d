@@ -933,7 +933,7 @@ $[TAB] $[COMMAND]
 
 
 // Finally, the rules to freshen the Makefile itself.
-Makefile : $[patsubst %,$[osfilename %],$[SOURCE_FILENAME]]
+Makefile : $[patsubst %,$[osfilename %],$[SOURCE_FILENAME] $[EXTRA_PPREMAKE_SOURCE]]
 $[TAB] ppremake
 
 #if $[and $[DEPENDENCY_CACHE_FILENAME],$[dep_sources]]
@@ -1074,6 +1074,10 @@ $[osfilename $[install_headers_dir]/$[CONFIG_HEADER]] : $[patsubst %,$[osfilenam
 #define dest $[install_headers_dir]
 $[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
 #endif
+
+// Finally, the rules to freshen the Makefile itself.
+Makefile : $[patsubst %,$[osfilename %],$[SOURCE_FILENAME] $[EXTRA_PPREMAKE_SOURCE]]
+$[TAB] ppremake
 
 #end Makefile
 

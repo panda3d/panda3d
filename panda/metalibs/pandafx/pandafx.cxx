@@ -5,7 +5,13 @@
 
 #include "pandafx.h"
 
-#include <config_distort.h>
+#include "config_distort.h"
+
+// By including checkPandaVersion.h, we guarantee that runtime
+// attempts to load libpandafx.so/.dll will fail if they inadvertently
+// link with the wrong version of libdtool.so/.dll.
+
+#include "checkPandaVersion.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpandafx

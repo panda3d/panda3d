@@ -17,10 +17,17 @@
   #error You need at least ppremake version 1.11 to process this tree.
 #endif
 
-// What is the name and version of this source tree?
+// Get the current version info for Panda.
+#include $[THISDIRPREFIX]PandaVersion.pp
+#defer PANDA_MAJOR_VERSION $[word 1,$[PANDA_VERSION]]
+#defer PANDA_MINOR_VERSION $[word 2,$[PANDA_VERSION]]
+#defer PANDA_SEQUENCE_VERSION $[word 3,$[PANDA_VERSION]]
+#defer PANDA_VERSION_STR $[PANDA_MAJOR_VERSION].$[PANDA_MINOR_VERSION].$[PANDA_SEQUENCE_VERSION]$[if $[not $[OFFICIAL_VERSION]],c]
+#defer PANDA_VERSION_SYMBOL panda_version_$[PANDA_MAJOR_VERSION]_$[PANDA_MINOR_VERSION]_$[PANDA_SEQUENCE_VERSION]$[if $[not $[OFFICIAL_VERSION]],c]
+
+// What is the name of this source tree?
 #if $[eq $[PACKAGE],]
   #define PACKAGE dtool
-  #define VERSION 0.80
 #endif
 
 // Where should we install DTOOL, specifically?

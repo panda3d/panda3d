@@ -7,6 +7,12 @@
 
 #include "config_dxgsg8.h"
 
+// By including checkPandaVersion.h, we guarantee that runtime
+// attempts to load libpandadx8.dll will fail if they
+// inadvertently link with the wrong version of libdtool.dll.
+
+#include "checkPandaVersion.h"
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpandadx
 //  Description: Initializes the library.  This must be called at

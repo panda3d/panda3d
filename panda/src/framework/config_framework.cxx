@@ -21,6 +21,12 @@
 #include "dconfig.h"
 #include "windowFramework.h"
 
+// By including checkPandaVersion.h, we guarantee that runtime
+// attempts to load libframework.so/.dll will fail if they
+// inadvertently link with the wrong version of libdtool.so/.dll.
+
+#include "checkPandaVersion.h"
+
 Configure(config_framework);
 NotifyCategoryDef(framework, "");
 

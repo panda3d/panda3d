@@ -26,6 +26,7 @@
 
 // We include these files to force them to be instrumented by
 // interrogate.
+#include "pandaSystem.h"
 #include "globPattern.h"
 #include "configFlags.h"
 #include "configPage.h"
