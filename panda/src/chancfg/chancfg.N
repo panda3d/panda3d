@@ -1,2 +1,0 @@
-ignorefile chanlayout.h chanlayout.I chansetup.h chansetup.I
-ignorefile chanwindow.h chanwindow.I

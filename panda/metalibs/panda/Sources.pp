@@ -11,7 +11,7 @@
 
 #define COMPONENT_LIBS \
     recorder pgraph \
-    pvrpn grutil chan chancfg pstatclient \
+    pvrpn grutil chan pstatclient \
     char chat collide cull device \
     dgraph display event gobj graph gsgbase \
     gsgmisc light linmath mathutil net \
