@@ -1,0 +1,5 @@
+#define PANDA_VERSION_MAJOR                0
+#define PANDA_VERSION_MINOR                0
+#define PANDA_VERSION_BUILDSUBVERSION      0
+#define PANDA_VERSION_BUILDSUBSUBVERSION   1
+
