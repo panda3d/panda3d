@@ -108,6 +108,7 @@ do_finish_reparent(EggJointPointer *new_parent) {
     EggGroupNode *egg_parent = _joint->get_parent();
     if (egg_parent != (EggGroupNode *)NULL) {
       egg_parent->remove_child(_joint.p());
+      egg_parent->steal_children(*_joint);
     }
 
   } else {
