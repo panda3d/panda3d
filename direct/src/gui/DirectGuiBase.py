@@ -221,8 +221,8 @@ class DirectGuiBase(PandaObject.PandaObject):
                 
     def initialiseoptions(self, myClass):
         """
-        initialiseoptions(myClass) - call all initialisation functions
-        to initialize widget options to default of keyword value
+        Call all initialisation functions to initialize widget 
+        options to default of keyword value
         """
         # This is to make sure this method class is only called by
         # the most specific class in the class hierarchy

@@ -76,7 +76,7 @@ class ClassicFSM(DirectObject):
         return self.__str__()
 
     def __str__(self):
-        """__str__(self)
+        """
         Print out something useful about the fsm
         """
         currentState = self.getCurrentState()
