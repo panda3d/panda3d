@@ -113,8 +113,7 @@ class TreeNode:
         self.item.OnDoubleClick()
         return "break"
 
-    def selectAndPopupMenu(self, event=None):
-        self.select()
+    def popupMenu(self, event=None):
         if self._popupMenu:
             self._popupMenu.post(event.widget.winfo_pointerx(),
                                  event.widget.winfo_pointery())
@@ -233,7 +232,7 @@ class TreeNode:
         self.image_id = id
         self.canvas.tag_bind(id, "<1>", self.select)
         self.canvas.tag_bind(id, "<Double-1>", self.flip)
-        self.canvas.tag_bind(id, "<3>", self.selectAndPopupMenu)
+        self.canvas.tag_bind(id, "<3>", self.popupMenu)
         
     def drawtext(self):
         textx = self.x+20-1
@@ -244,7 +243,6 @@ class TreeNode:
                                          text=labeltext)
             self.canvas.tag_bind(id, "<1>", self.select)
             self.canvas.tag_bind(id, "<Double-1>", self.flip)
-            self.canvas.tag_bind(id, "<3>", self.selectAndPopupMenu)
             x0, y0, x1, y1 = self.canvas.bbox(id)
             textx = max(x1, 200) + 10
         text = self.item.GetText() or "<no text>"
@@ -267,6 +265,7 @@ class TreeNode:
                                        anchor="nw", window=self.label)
         self.label.bind("<1>", self.select_or_edit)
         self.label.bind("<Double-1>", self.flip)
+        self.label.bind("<3>", self.popupMenu)
         self.text_id = id
 
     def select_or_edit(self, event=None):

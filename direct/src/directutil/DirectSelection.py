@@ -197,8 +197,12 @@ class DirectBoundingBox:
 
     def computeBounds(self):
         self.bounds = self.nodePath.getBounds()
-        self.center = self.bounds.getCenter()
-        self.radius = self.bounds.getRadius()
+        if self.bounds.isEmpty():
+            self.center = Point3(0)
+            self.radius = 1.0
+        else:
+            self.center = self.bounds.getCenter()
+            self.radius = self.bounds.getRadius()
         self.min = Point3(self.center - Point3(self.radius))
         self.max = Point3(self.center + Point3(self.radius))
         

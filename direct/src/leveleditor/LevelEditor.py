@@ -475,6 +475,36 @@ class LevelEditor(NodePath, PandaObject):
 	self.accept('handleMouse3',self.levelHandleMouse3)
 	self.accept('handleMouse3Up',self.levelHandleMouse3Up)
 
+    def useDriveMode(self):
+        pos = base.camera.getPos()
+        pos.setZ(4.0)
+        hpr = base.camera.getHpr()
+        hpr.set(hpr[0], 0.0, 0.0)
+        t = base.camera.lerpPosHpr(pos, hpr, 1.0, blendType = 'easeInOut',
+                                   task = 'manipulateCamera')
+        # Note, if this dies an unatural death, this could screw things up
+        t.uponDeath = self.switchToDriveMode
+
+    def switchToDriveMode(self,state):
+        self.direct.minimumConfiguration()
+        self.disableManipulation()
+        base.useDrive()
+        # Make sure we're where we want to be
+        pos = base.camera.getPos()
+        pos.setZ(4.0)
+        hpr = base.camera.getHpr()
+        hpr.set(hpr[0], 0.0, 0.0)
+        # Fine tune the drive mode
+        base.mouseInterface.getBottomNode().setPos(pos)
+        base.mouseInterface.getBottomNode().setHpr(hpr)
+        base.mouseInterface.getBottomNode().setForwardSpeed(20.0)
+        base.mouseInterface.getBottomNode().setReverseSpeed(20.0)
+
+    def useDirectFly(self):
+        base.disableMouse()
+        self.enableManipulation()
+        self.direct.enable()
+
     def useToontownCentralColors(self):
 	self.attributeDictionary['wallColors'] = (
             self.colorPaletteDictionary['toontownCentralWallColors'])
@@ -613,6 +643,10 @@ class LevelEditor(NodePath, PandaObject):
     def setHprSnap(self,flag):
         self.hprSnap = flag
 
+    def isolateSelectedNodePath(self):
+        if self.direct.selected.last:
+            self.isolateNodePath(self.direct.selected.last)
+    
     def isolateNodePath(self,aNodePath):
 	# First show everything in level
 	self.levelObjects.showAllDescendants()
@@ -1477,7 +1511,8 @@ class LevelEditor(NodePath, PandaObject):
 	dictionary = self.createStyleDictionaryFromFile(
             'level_editor/minniesMelodyLandStyles.txt')
 	# Store this dictionary in the self.attributeDictionary
-	self.attributeDictionary['minniesMelodyLandStyleDictionary'] = dictionary
+	self.attributeDictionary['minniesMelodyLandStyleDictionary'] = (
+            dictionary)
         
         # Record active style dictionary
 	self.styleDictionary = (
@@ -2241,7 +2276,8 @@ class LevelEditor(NodePath, PandaObject):
         
     def outputDNA(self,filename):
 	print 'Saving DNA to: ', filename
-	self.levelObjectsDNA.writeDna(Filename(filename),Notify.out(),self.dnaStore)
+	self.levelObjectsDNA.writeDna(Filename(filename),
+                                      Notify.out(),self.dnaStore)
 
     def preRemoveNodePath(self, aNodePath):
 	# Remove nodePath's DNA from its parent
@@ -2951,7 +2987,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                             command = self.toggleBalloon)
 
         self.editMenu = Pmw.ComboBox(
-            menuFrame, labelpos = W, label_text = 'Edit:', entry_width = 12,
+            menuFrame, labelpos = W,
+            label_text = 'Edit Mode:', entry_width = 12,
             selectioncommand = self.chooseNeighborhood, history = 0,
             scrolledlist_items = ['Toontown Central', 'Donalds Dock',
                                   'The Burrrgh', 'Minnies Melody Land'])
@@ -3119,17 +3156,48 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         buttonFrame2 = Frame(hull)
         self.groupButton = Button(
             buttonFrame2,
-            text = 'New level group',
+            text = 'New group',
             command = self.levelEditor.createNewLevelGroup)
         self.groupButton.pack(side = 'left', expand = 1, fill = 'x')
         
         self.saveButton = Button(
             buttonFrame2,
-            text = 'Set Group Parent',
-            command = self.levelEditor.setGroupParentToSelected())
+            text = 'Set Parent',
+            command = self.levelEditor.setGroupParentToSelected)
         self.saveButton.pack(side = 'left', expand = 1, fill = 'x')
 
+        self.isolateButton = Button(
+            buttonFrame2,
+            text = 'Isolate Selected',
+            command = self.levelEditor.isolateSelectedNodePath)
+        self.isolateButton.pack(side = 'left', expand = 1, fill = 'x')
+
+        self.showAllButton = Button(
+            buttonFrame2,
+            text = 'Show All',
+            command = self.levelEditor.showAll)
+        self.showAllButton.pack(side = 'left', expand = 1, fill = 'x')
+
         buttonFrame2.pack(fill = 'x')
+
+        buttonFrame3 = Frame(hull)
+        self.driveMode = IntVar()
+        self.driveMode.set(1)
+        self.driveModeButton = Radiobutton(
+            buttonFrame3,
+            text = 'Drive Mode',
+            value = 0,
+            variable = self.driveMode,
+            command = self.levelEditor.useDriveMode)
+        self.driveModeButton.pack(side = 'left', expand = 1, fill = 'x')
+        self.directModeButton = Radiobutton(
+            buttonFrame3,
+            text = 'DIRECT Fly',
+            value = 1,
+            variable = self.driveMode,
+            command = self.levelEditor.useDirectFly)
+        self.directModeButton.pack(side = 'left', expand = 1, fill = 'x')
+        buttonFrame3.pack(fill = 'x')
 
         self.sceneGraphExplorer = SceneGraphExplorer(
             parent = sceneGraphPage,

@@ -37,18 +37,18 @@
             
     def showSiblings(self):
         for sib in self.getParent().getChildrenAsList():
-            if sib != self:
+            if sib.node() != self.node():
                 sib.show()
 
     def hideSiblings(self):
         for sib in self.getParent().getChildrenAsList():
-            if sib != aNodePath:
+            if sib.node() != self.node():
                 sib.hide()
 
     def showAllDescendants(self):
 	self.show()
         for child in self.getChildrenAsList():
-            self.showAllDescendants(child)
+            child.showAllDescendants()
 
     def isolate(self):
         self.showAllDescendants()

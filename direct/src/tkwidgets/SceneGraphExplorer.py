@@ -109,6 +109,9 @@ class SceneGraphExplorerItem(TreeItem):
             sublist.append(item)
         return sublist
 
+    def OnSelect(self):
+        messenger.send('SGESelectNodePath', [self.nodePath])
+
     def MenuCommand(self, command):
         if (command == 'Select Node'):
             messenger.send('SGESelectNodePath', [self.nodePath])
