@@ -13,11 +13,8 @@ class Button(DirectObject):
                  width = None,
                  drawOrder = getDefaultDrawOrder(),
                  font = getDefaultFont(),
-                 height = None,
-                 left = None,
-                 right = None,
-                 bottom = None,
-                 top = None):
+                 pos = (0, 0),
+                 geomRect = None):
         self.name = name
         self.width = width
         # if no label given, use the button name
@@ -43,19 +40,10 @@ class Button(DirectObject):
 
         elif (isinstance(label, NodePath)):
             # If it's a NodePath, assume it's a little texture card.
-            if height != None and width != None:
-                self.l1 = Label.modelLabel(label, height, width,
-                                           scale = scale,
-                                           drawOrder = drawOrder)
-            elif left != None and right != None and \
-                 bottom != None and top != None:
-                self.l1 = Label.modelLabel(label, left, right, bottom, top,
-                                           scale = scale,
-                                           drawOrder = drawOrder)
-            else:
-                self.l1 = Label.modelLabel(label, 1, 1,
-                                           scale = scale,
-                                           drawOrder = drawOrder)
+            self.l1 = Label.modelLabel(label,
+                                       geomRect = geomRect,
+                                       scale = scale,
+                                       drawOrder = drawOrder)
 
             if width == None:
                 width = self.l1.getWidth() / scale
@@ -73,6 +61,7 @@ class Button(DirectObject):
         self.button = GuiButton.GuiButton(self.name, self.l1, self.l2,
                                           self.l3, self.l3, self.l1)
         self.button.setDrawOrder(drawOrder)
+        self.setPos(pos[0], pos[1])
         self.managed = 0
 
 	return None

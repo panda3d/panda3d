@@ -113,7 +113,8 @@ def textLabelAndText(string, style,
     return (label, text)
 
 
-def modelLabel(model, height, width, bottom = None, top = None,
+def modelLabel(model,
+               geomRect = None,
                scale = 0.1,
                drawOrder = getDefaultDrawOrder()):
 
@@ -124,13 +125,24 @@ def modelLabel(model, height, width, bottom = None, top = None,
     mi.setScale(scale)
     mi.setBin('fixed', drawOrder)
 
-    if top == None or bottom == None:
+    if geomRect == None:
+        geomRect = (1, 1)
+
+    if len(geomRect) == 2:
         # If we got only two parameters, it's height and width.
-        label = GuiLabel.makeModelLabel(topnode, height * scale, width * scale)
-    else:
+        label = GuiLabel.makeModelLabel(topnode,
+                                        geomRect[0] * scale,
+                                        geomRect[1] * scale)
+    elif len(geomRect) == 4:
         # If we got four, they're left, right, bottom, top.
-        label = GuiLabel.makeModelLabel(topnode, height * scale, width * scale,
-                                        bottom * scale, top * scale)
+        label = GuiLabel.makeModelLabel(topnode,
+                                        geomRect[0] * scale,
+                                        geomRect[1] * scale,
+                                        geomRect[2] * scale,
+                                        geomRect[3] * scale)
+    else:
+        raise ValueError
+    
     label.setDrawOrder(drawOrder)
     return label
                                     

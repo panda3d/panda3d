@@ -26,14 +26,12 @@ class ListBox(DirectObject):
 
         arrowScale = 0.1
         self.up = Button.Button(name + '-up', arrow,
-                                left = -1, right = 1,
-                                bottom = 0, top = 0.5,
+                                geomRect = (-1, 1, 0, 0.5),
                                 scale = arrowScale,
                                 drawOrder = drawOrder)
         arrow.setR(180)
         self.down = Button.Button(name + '-down', arrow,
-                                  left = -1, right = 1,
-                                  bottom = -0.5, top = 0,
+                                  geomRect = (-1, 1, -0.5, 0),
                                   scale = arrowScale,
                                   drawOrder = drawOrder)
         arrow.removeNode()
