@@ -123,17 +123,18 @@ convert_pathname(const string &unix_style_pathname) {
   } else if (unix_style_pathname.length() > 3 &&
              isalpha(unix_style_pathname[1]) &&
              unix_style_pathname[2] == '/') {
-    // This is a pathname that begins with a single letter.  That must
-    // be the drive letter.
+    // This pathname begins with a slash and a single letter.  That
+    // must be the drive letter.
     windows_pathname =
       string(1, toupper(unix_style_pathname[1])) + ":" +
       front_to_back_slash(unix_style_pathname.substr(2));
 
   } else {
-    // It does not begin with a single letter, so prefix "PANDA_ROOT".
+    // It starts with a slash, but the first part is not a single
+    // letter, so prefix $PANDA_ROOT.
 
     windows_pathname =
-      get_panda_root() + front_to_back_slash(unix_style_pathname);
+      get_panda_root() + front_to_back_slash(unix_style_pathname.substr(1));
   }
 
   return windows_pathname;
@@ -609,7 +610,7 @@ make_canonical() {
   if (is_directory()) {
     // If the filename itself represents a directory and not a
     // filename, cd to the named directory, not the one above it.
-    string dirname = get_fullpath();
+    string dirname = to_os_specific();
 
     if (chdir(dirname.c_str()) < 0) {
       return false;
@@ -619,14 +620,15 @@ make_canonical() {
   } else {
     // Otherwise, if the filename represents a regular file (or
     // doesn't even exist), cd to the directory above.
-    string dirname = get_dirname();
+    Filename dir(get_dirname());
 
-    if (dirname.empty()) {
+    if (dir.empty()) {
       // No dirname means the file is in this directory.
       set_dirname(cwd);
       return true;
     }
 
+    string dirname = dir.to_os_specific();
     if (chdir(dirname.c_str()) < 0) {
       return false;
     }
@@ -1301,20 +1303,23 @@ make_dir() const {
   // because the directory was already there.
   size_t slash = dirname.find('/');
   while (slash != string::npos) {
-    string component = dirname.substr(0, slash);
+    Filename component(dirname.substr(0, slash));
+    string os_specific = component.to_os_specific();
 #ifndef WIN32_VC
-    mkdir(component.c_str(), 0777);
+    mkdir(os_specific.c_str(), 0777);
 #else
-    mkdir(component.c_str());
+    mkdir(os_specific.c_str());
 #endif
     slash = dirname.find('/', slash + 1);
   }
 
   // Now make the last one, and check the return value.
+  Filename component(dirname);
+  string os_specific = component.to_os_specific();
 #ifndef WIN32_VC
-  int result = mkdir(dirname.c_str(), 0777);
+  int result = mkdir(os_specific.c_str(), 0777);
 #else
-  int result = mkdir(dirname.c_str());
+  int result = mkdir(os_specific.c_str());
 #endif
 
   return (result == 0);
