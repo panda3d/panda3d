@@ -4709,7 +4709,10 @@ CheckCooperativeLevel(bool bDoReactivateWindow) {
           // I think this shouldnt fail unless I've screwed up the PresParams from the original working ones somehow
           dxgsg8_cat.error()
             << "CheckCooperativeLevel Reset() failed, hr = " << D3DERRORSTRING(hr);
-          exit(1);
+          // drose is commenting out this exit() call; it's getting
+          // triggered on some actual client hardware (with
+          // DRIVERINTERNALERROR) but maybe that's ok.
+          //exit(1);
         }
     
         // BUGBUG: is taking this out wrong??
@@ -4724,7 +4727,9 @@ CheckCooperativeLevel(bool bDoReactivateWindow) {
           // internal chk, shouldnt fail
           dxgsg8_cat.error()
             << "TestCooperativeLevel following Reset() failed, hr = " << D3DERRORSTRING(hr);
-          exit(1);
+
+          // drose is commenting out this exit() call; maybe it's ok if the above fails.
+          //exit(1);
         }
     
         _bDXisReady = TRUE;
