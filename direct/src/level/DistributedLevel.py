@@ -214,6 +214,13 @@ class DistributedLevel(DistributedObject.DistributedObject,
         firstZone = 16
         self.enterZone(firstZone)
 
+        # if no viz, listen to all the zones
+        if not DistributedLevel.WantVisibility:
+            zones = list(self.zoneNums)
+            zones.remove(0)
+            zones.remove(16)
+            self.sendSetZone(16, zones)
+
     def enterZone(self, zoneNum):
         if not DistributedLevel.WantVisibility:
             return
@@ -252,14 +259,18 @@ class DistributedLevel(DistributedObject.DistributedObject,
             for rz in removedZoneNums:
                 self.hideZone(rz)
 
+        self.sendSetZone(zoneNum, visibleZoneNums.keys())
+
+        self.curZoneNum = zoneNum
+        self.curVisibleZoneNums = visibleZoneNums
+
+    def sendSetZone(self, curZone, vizList):
         # convert the zone numbers into their actual zoneIds
         # always include Toontown and factory uberZones
         visibleZoneIds = [ToontownGlobals.UberZone, self.getZoneId(0)]
-        for vz in visibleZoneNums.keys():
+        for vz in vizList:
             visibleZoneIds.append(self.getZoneId(vz))
         assert(uniqueElements(visibleZoneIds))
         self.notify.debug('new viz list: %s' % visibleZoneIds)
 
-        toonbase.tcr.sendSetZoneMsg(self.getZoneId(zoneNum), visibleZoneIds)
-        self.curZoneNum = zoneNum
-        self.curVisibleZoneNums = visibleZoneNums
+        toonbase.tcr.sendSetZoneMsg(self.getZoneId(curZone), visibleZoneIds)
