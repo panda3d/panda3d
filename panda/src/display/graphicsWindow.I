@@ -288,3 +288,26 @@ get_button_event(int device) {
   return _input_devices[device].get_button_event();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::set_sync
+//       Access: Public
+//  Description: Sets flag for whether the buffer swap is done 
+//               implicitely at the end of each frame, or done
+//               explicitely for the purpose of synchronization.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindow::
+set_sync(const bool b) {
+  _is_synced = b;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_sync
+//       Access: Public
+//  Description: Returns whether buffer swap is done explicitely by
+//               call to swap() method.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsWindow::
+get_sync() const {
+  return _is_synced;
+}
+

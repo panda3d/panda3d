@@ -121,6 +121,11 @@ PUBLISHED:
   INLINE void set_frame_number(const int);
   INLINE int get_frame_number() const;
 
+  INLINE void set_sync(const bool);
+  INLINE bool get_sync() const;
+
+  virtual void swap();
+
 public:
   virtual void resized(const int, const int);
 
@@ -195,6 +200,8 @@ protected:
   vfn _idle_function;
   vfnii _resize_function;
   int _frame_number;
+
+  bool _is_synced;
 
 protected:
 

@@ -55,6 +55,8 @@ public:
   virtual void update(void);
   virtual void end_frame( void );
 
+  virtual void swap(void);
+
   INLINE Window get_xwindow(void) { return _xwindow; }
 
   virtual TypeHandle get_gsg_type() const;

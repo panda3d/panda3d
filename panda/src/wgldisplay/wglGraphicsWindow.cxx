@@ -1022,9 +1022,19 @@ void wglGraphicsWindow::end_frame(void) {
 
   {
     PStatTimer timer(_swap_pcollector);
-    SwapBuffers(_hdc);
+	 if(_is_synced) glFinish();
+	 else SwapBuffers(_hdc);
   }
   GraphicsWindow::end_frame();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: swap
+//       Access:
+//  Description: Swaps the front and back buffers explicitly.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsWindow::swap(void) {
+    if(_is_synced)SwapBuffers(_hdc);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -673,10 +673,16 @@ void glxGraphicsWindow::end_frame( void )
 
   {
     PStatTimer timer(_swap_pcollector);
-    glXSwapBuffers(_display, _xwindow);
+    if(_is_synced)glFinish();
+    else glXSwapBuffers(_display, _xwindow);
   }
 
   GraphicsWindow::end_frame();
+}
+
+void glxGraphicsWindow::swap()
+{
+    if(_is_synced) glXSwapBuffers(_display, _xwindow);
 }
 
 ////////////////////////////////////////////////////////////////////

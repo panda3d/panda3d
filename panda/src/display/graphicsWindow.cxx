@@ -140,6 +140,7 @@ GraphicsWindow(GraphicsPipe *pipe) : Configurable() {
   _idle_callback = NULL;
   _resize_callback = NULL;
   _frame_number = 0;
+  _is_synced = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,6 +158,7 @@ GraphicsWindow(GraphicsPipe *pipe,
   _draw_callback = NULL;
   _idle_callback = NULL;
   _resize_callback = NULL;
+  _is_synced = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -599,6 +601,16 @@ void GraphicsWindow::read_priorities(void) {
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::swap
+//       Access: Public
+//  Description: Swaps buffers explicitely as synchronization 
+//               mechanism. 
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+swap() {
 }
 
 void GraphicsWindow::deactivate_window(void) { return; }
