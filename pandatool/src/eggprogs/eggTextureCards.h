@@ -12,6 +12,9 @@
 #include <eggTexture.h>
 #include <luse.h>
 
+class EggVertexPool;
+class EggVertex;
+
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EggTextureCards
 // Description : Generates an egg file featuring a number of polygons,
@@ -27,10 +30,17 @@ protected:
 
   static bool dispatch_wrap_mode(const string &opt, const string &arg, void *var);
 
+private:
+  bool scan_texture(const Filename &filename, LVecBase4d &geometry);
+  void make_vertices(const LPoint4d &geometry, EggVertexPool *vpool,
+                     EggVertex *&v1, EggVertex *&v2, EggVertex *&v3, EggVertex *&v4);
+
 public:
   void run();
 
   LVecBase4d _polygon_geometry;
+  LVecBase2d _pixel_scale;
+  bool _got_pixel_scale;
   Colorf _polygon_color;
   vector_string _texture_names;
   EggTexture::WrapMode _wrap_mode;
