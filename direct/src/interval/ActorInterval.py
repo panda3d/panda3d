@@ -183,7 +183,8 @@ class LerpAnimInterval(CLerpAnimEffectInterval):
 
     def __init__(self, actor, duration, startAnim, endAnim,
                  startWeight = 0.0, endWeight = 1.0,
-                 blendType = 'noBlend', name = None):
+                 blendType = 'noBlend', name = None,
+                 partName=None, lodName=None):
         # Generate unique name if necessary
         if (name == None):
             name = 'LerpAnimInterval-%d' % LerpAnimInterval.lerpAnimNum
@@ -196,13 +197,17 @@ class LerpAnimInterval(CLerpAnimEffectInterval):
         CLerpAnimEffectInterval.__init__(self, name, duration, blendType)
 
         if startAnim != None:
-            controls = actor.getAnimControls(startAnim)
+            controls = actor.getAnimControls(
+                startAnim, partName = partName, lodName = lodName)
+            #controls = actor.getAnimControls(startAnim)
             for control in controls:
                 self.addControl(control, startAnim,
                                 1.0 - startWeight, 1.0 - endWeight)
                 
         if endAnim != None:
-            controls = actor.getAnimControls(endAnim)
+            controls = actor.getAnimControls(
+                endAnim, partName = partName, lodName = lodName)
+            #controls = actor.getAnimControls(endAnim)
             for control in controls:
                 self.addControl(control, endAnim,
                                 startWeight, endWeight)
