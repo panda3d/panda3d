@@ -242,7 +242,7 @@ class LerpFunctionInterval(Interval):
     lerpFunctionIntervalNum = 1
     # Class methods
     def __init__(self, function, fromData = 0, toData = 1, duration = 0.0,
-                 blendType = 'noBlend', name = None):
+                 blendType = 'noBlend', extraArgs = [], name = None):
         """__init__(function, duration, fromData, toData, name)
         """
         # Record instance variables
@@ -250,6 +250,7 @@ class LerpFunctionInterval(Interval):
         self.fromData = fromData
         self.toData = toData
 	self.blendType = self.getBlend(blendType)
+        self.extraArgs = extraArgs
         # Generate unique name if necessary
 	if (name == None):
 	    name = ('LerpFunctionInterval-%d' %
@@ -263,17 +264,17 @@ class LerpFunctionInterval(Interval):
         # Evaluate the function
         if (t >= self.duration):
             # Set to end value
-	    self.function(self.toData)            
+	    apply(self.function, [self.toData] + self.extraArgs)
         else:
             # In the middle of the lerp, compute appropriate blended value
             try:
                 bt = self.blendType(t/self.duration)
                 data = (self.fromData * (1 - bt)) + (self.toData * bt)
                 # Evaluate function
-                self.function(data)
+                apply(self.function, [data] + self.extraArgs)
             except ZeroDivisionError:
                 # Zero duration, just use endpoint
-                self.function(self.toData)
+                apply(self.function, [self.toData] + self.extraArgs)
     def getBlend(self, blendType):
         """__getBlend(self, string)
         Return the C++ blend class corresponding to blendType string
