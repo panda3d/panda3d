@@ -69,6 +69,20 @@ queue_event(CPT_Event event) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EventQueue::clear
+//       Access: Public
+//  Description: Empties all events on the queue, throwing them on the
+//               floor.
+////////////////////////////////////////////////////////////////////
+void EventQueue::
+clear() {
+  while (!_queue.empty()) {
+    _queue.pop_front();
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: EventQueue::is_queue_empty
 //       Access: Public
 //  Description:

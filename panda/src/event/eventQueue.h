@@ -46,7 +46,7 @@ PUBLISHED:
   ~EventQueue();
 
   void queue_event(CPT_Event event);
-
+  void clear();
 
   bool is_queue_empty() const;
   bool is_queue_full() const;

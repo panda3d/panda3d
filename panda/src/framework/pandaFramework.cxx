@@ -966,10 +966,19 @@ event_window_event(CPT_Event event, void *data) {
     const GraphicsWindow *win;
     DCAST_INTO_V(win, param.get_ptr());
 
-    if (!win->get_properties().get_open()) {
-      // If the last window was closed, exit the application.
-      if (self->all_windows_closed()) {
-        self->_exit_flag = true;
+    // Is this a window we've heard about?
+    int window_index = self->find_window(win);
+    if (window_index == -1) {
+      framework_cat.warning()
+        << "Ignoring message from unknown window.\n";
+    } else {
+      if (!win->get_properties().get_open()) {
+        // If the last window was closed, exit the application.
+        if (self->all_windows_closed() && !self->_exit_flag) {
+          framework_cat.info()
+            << "Last window was closed by user.\n";
+          self->_exit_flag = true;
+        }
       }
     }
   }
