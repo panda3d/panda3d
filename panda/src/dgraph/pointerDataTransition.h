@@ -9,6 +9,7 @@
 #include <pandabase.h>
 
 #include <nodeTransition.h>
+#include <indent.h>
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : PointerDataTransition

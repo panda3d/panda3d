@@ -9,6 +9,7 @@
 #include <pandabase.h>
 
 #include <nodeAttribute.h>
+#include <indent.h>
 
 template<class PtrType>
 class PointerDataTransition;

@@ -21,7 +21,8 @@
     color.c colrops.c resolu.c header.c
 
   #define IF_JPEG_SOURCES \
-    pnmFileTypeJPG.cxx pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx
+    pnmFileTypeJPG.cxx pnmFileTypeJPG.h \
+    pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx
 
   #define INSTALL_HEADERS \
     config_pnmimagetypes.h

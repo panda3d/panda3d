@@ -3,9 +3,8 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+/* okcircular */
 #include "vectorDataTransition.h"
-
-#include <indent.h>
 
 template<class VecType, class MatType>
 TypeHandle VectorDataAttribute<VecType, MatType>::_type_handle;

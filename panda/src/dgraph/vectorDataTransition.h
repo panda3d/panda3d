@@ -10,6 +10,8 @@
 
 #include <nodeTransition.h>
 #include <luse.h>
+#include <indent.h>
+#include <pointerTo.h>
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : VectorDataTransition

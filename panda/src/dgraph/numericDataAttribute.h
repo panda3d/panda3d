@@ -8,6 +8,7 @@
 
 #include <pandabase.h>
 
+#include <indent.h>
 #include <nodeAttribute.h>
 
 template<class NumType>

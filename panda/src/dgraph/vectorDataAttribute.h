@@ -9,6 +9,7 @@
 #include <pandabase.h>
 
 #include <nodeAttribute.h>
+#include <indent.h>
 
 template<class VecType, class MatType>
 class VectorDataTransition;

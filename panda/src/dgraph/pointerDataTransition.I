@@ -3,9 +3,8 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+/* okcircular */
 #include "pointerDataAttribute.h"
-
-#include <indent.h>
 
 template<class PtrType>
 TypeHandle PointerDataTransition<PtrType>::_type_handle;

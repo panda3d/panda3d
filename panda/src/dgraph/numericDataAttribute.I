@@ -3,9 +3,9 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+/* okcircular */
 #include "numericDataTransition.h"
 
-#include <indent.h>
 
 template<class NumType>
 TypeHandle NumericDataAttribute<NumType>::_type_handle;

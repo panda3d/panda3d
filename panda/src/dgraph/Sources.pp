@@ -7,29 +7,35 @@
     sgraph graph putil sgattrib mathutil
 
   #define SOURCES \
-    buttonEventDataAttribute.I buttonEventDataAttribute.cxx \
+    buttonEventDataAttribute.I buttonEventDataAttribute.cxx  \
     buttonEventDataAttribute.h buttonEventDataTransition.I \
     buttonEventDataTransition.cxx buttonEventDataTransition.h \
     config_dgraph.cxx config_dgraph.h dataGraphTraversal.cxx \
-    dataGraphTraversal.h \
-    dataGraphTraverser.I dataGraphTraverser.cxx dataGraphTraverser.h \
-    dataNode.cxx dataNode.h dataRelation.I \
+    dataGraphTraversal.h dataGraphTraverser.I dataGraphTraverser.cxx \
+    dataGraphTraverser.h dataNode.cxx dataNode.h dataRelation.I \
     dataRelation.N dataRelation.cxx dataRelation.h \
     describe_data_verbose.cxx describe_data_verbose.h \
-    doubleDataAttribute.I doubleDataAttribute.cxx doubleDataAttribute.h \
-    doubleDataTransition.I doubleDataTransition.cxx \
-    doubleDataTransition.h doublePtrDataAttribute.I \
-    doublePtrDataAttribute.cxx doublePtrDataAttribute.h \
-    doublePtrDataTransition.I doublePtrDataTransition.cxx \
-    doublePtrDataTransition.h intDataAttribute.I intDataAttribute.cxx \
-    intDataAttribute.h intDataTransition.I intDataTransition.cxx \
-    intDataTransition.h matrixDataAttribute.I matrixDataAttribute.cxx \
+    doubleDataAttribute.I doubleDataAttribute.cxx \
+    doubleDataAttribute.h doubleDataTransition.I \
+    doubleDataTransition.cxx doubleDataTransition.h \
+    doublePtrDataAttribute.I doublePtrDataAttribute.cxx \
+    doublePtrDataAttribute.h doublePtrDataTransition.I \
+    doublePtrDataTransition.cxx doublePtrDataTransition.h \
+    intDataAttribute.I intDataAttribute.cxx intDataAttribute.h \
+    intDataTransition.I intDataTransition.cxx intDataTransition.h \
+    matrixDataAttribute.I matrixDataAttribute.cxx \
     matrixDataAttribute.h matrixDataTransition.I \
     matrixDataTransition.cxx matrixDataTransition.h \
+    numericDataAttribute.I numericDataAttribute.h \
+    numericDataTransition.I numericDataTransition.h \
+    pointerDataAttribute.I pointerDataAttribute.h \
+    pointerDataTransition.I pointerDataTransition.h \
     vec3DataAttribute.I vec3DataAttribute.cxx vec3DataAttribute.h \
     vec3DataTransition.I vec3DataTransition.cxx vec3DataTransition.h \
     vec4DataAttribute.I vec4DataAttribute.cxx vec4DataAttribute.h \
-    vec4DataTransition.I vec4DataTransition.cxx vec4DataTransition.h
+    vec4DataTransition.I vec4DataTransition.cxx vec4DataTransition.h \
+    vectorDataAttribute.I vectorDataAttribute.h vectorDataTransition.I \
+    vectorDataTransition.h
 
   #define INSTALL_HEADERS \
     buttonEventDataAttribute.I buttonEventDataAttribute.h \
