@@ -1,3 +1,5 @@
+#define UNIX_SYS_LIBS m
+
 #begin bin_target
   #define TARGET fltcopy
   #define LOCAL_LIBS cvscopy flt
