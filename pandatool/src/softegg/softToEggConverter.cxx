@@ -613,6 +613,11 @@ convert_soft(bool from_selection) {
       all_ok = false;
     }
 
+    // sometimes you need to hard assign some vertices
+    if (!cleanup_soft_skin()) {
+      all_ok = false;
+    }
+
     //  reparent_decals(&get_egg_data());
     softegg_cat.info() << softegg_cat.info() << "Converted Softimage file\n";
 
@@ -1871,64 +1876,105 @@ make_soft_skin() {
   }
   return true;
 }
-#if 0
 ////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::make_locator
-//       Access: Private
-//  Description: Locators are used in Soft to indicate a particular
-//               position in space to the user or the modeler.  We
-//               represent that in egg with an ordinary Group node,
-//               which we transform by the locator's position, so that
-//               the indicated point becomes the origin at this node
-//               and below.
+//     Function: cleanup_soft_skin
+//       Access: Public 
+//  Description: Given a model, make sure all its vertices have been 
+//               soft assigned. If not hard assign to the last
+//               joint we saw.
 ////////////////////////////////////////////////////////////////////
-void SoftToEggConverter::
-make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
-             EggGroup *egg_group) {
-  MStatus status;
+bool SoftToEggConverter::
+cleanup_soft_skin()
+{
+  int num_nodes = _tree.get_num_nodes();
+  SoftNodeDesc *node_desc;
+  SAA_Boolean isSkeleton;
 
-  unsigned int num_children = dag_node.childCount();
-  MObject locator;
-  bool found_locator = false;
-  for (unsigned int ci = 0; ci < num_children && !found_locator; ci++) {
-    locator = dag_node.child(ci);
-    found_locator = (locator.apiType() == MFn::kLocator);
+  softegg_cat.spam() << endl << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+
+  for (int i = 0; i < num_nodes; i++) {
+    node_desc = _tree.get_node(i);
+    SAA_modelIsSkeleton( &scene, node_desc->get_model(), &isSkeleton );
+
+    if (node_desc->is_partial(search_prefix))
+      continue;
+
+    SAA_Elem *model = node_desc->get_model();
+    EggGroup *joint = NULL;
+    EggVertexPool *vpool = NULL;
+    SAA_ModelType type;
+
+    // find out what type of node we're dealing with
+
+    SAA_modelGetType( &scene, model, &type );
+    
+    softegg_cat.debug() << "Cleaning up model " << node_desc->get_name() << endl;
+    
+    // this step is weird - I think I want it here but it seems
+    // to break some models. Files like props-props_wh_cookietime.3-0 in
+    // /ful/rnd/pub/vrml/chip/chips_adventure/char/zone1/rooms/warehouse_final
+    // need to do the "if (skel)" bit.
+
+    /*    
+    if (type != SAA_MSMSH || type != SAA_MNSRF)
+      continue;
+    */
+
+    //find the vpool for this model
+    string vpool_name = node_desc->get_name() + ".verts";
+    EggNode *t = _tree.get_egg_root()->find_child(vpool_name);
+    if (t)
+      DCAST_INTO_R(vpool, t, NULL);
+    
+    if (!vpool) {
+      softegg_cat.spam() << "couldn't find vpool " << vpool_name << endl;
+      continue;
+    }
+    
+    int i;
+    double membership = 1.0f;
+    int numVerts = (int)vpool->size();
+    softegg_cat.spam() << "found vpool " << vpool_name << " w/ " << numVerts << " verts\n";
+    for ( i = 1; i <= numVerts; i++ ) {
+      EggVertex *vert = vpool->get_vertex(i);
+      
+      // find the closest _parentJoint
+      SoftNodeDesc *parentJ = node_desc;
+      while( parentJ && !parentJ->_parentJoint) {
+        if ( parentJ->_parent)
+          parentJ = parentJ->_parent;
+        else
+          break;
+      }
+      if (!parentJ || !parentJ->_parentJoint) {
+        softegg_cat.spam() << node_desc->get_name() << " has no _parentJoint?!" << endl;
+        continue;
+      }
+
+      joint = parentJ->_parentJoint->get_egg_group();
+      // if this vertex has not been soft assigned, then hard assign it to the parentJoint
+      if ( vert->gref_size() == 0 ) {
+        
+        softegg_cat.spam() << "vert " << i << " not assigned!\n";
+        
+        // hard skin this vertex
+        joint->ref_vertex( vert, 1.0f );
+      }
+      else {    
+        membership = joint->get_vertex_membership(vert);
+        if ( membership == 0 ) {
+          
+          softegg_cat.spam() << "vert " << i << " has membership " << membership << endl;
+          softegg_cat.spam() << "adding full weight..\n";
+          
+          // hard skin this vertex
+          joint->ref_vertex( vert, 1.0f );
+        }
+      }
+    }
   }
-
-  if (!found_locator) {
-    softegg_cat.error()
-      << "Couldn't find locator within locator node " 
-      << dag_path.fullPathName().asChar() << "\n";
-    return;
-  }
-
-  LPoint3d p3d;
-  if (!get_vec3d_attribute(locator, "localPosition", p3d _tree.build_node(joint_dag_path))) {
-    softegg_cat.error()
-      << "Couldn't get position of locator " 
-      << dag_path.fullPathName().asChar() << "\n";
-    return;
-  }
-
-  // We need to convert the position to world coordinates.  For some
-  // reason, Soft can only tell it to us in local coordinates.
-  MMatrix mat = dag_path.inclusiveMatrix(&status);
-  if (!status) {
-    status.perror("Can't get coordinate space for locator");
-    return;
-  }
-  LMatrix4d n2w(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
-                mat[1][0], mat[1][1], mat[1][2], mat[1][3],
-                mat[2][0], mat[2][1], mat[2][2], mat[2][3],
-                mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
-  p3d = p3d * n2w;
-
-  // Now convert the locator point into the group's space.
-  p3d = p3d * egg_group->get_node_frame_inv();
-
-  egg_group->add_translate(p3d);
+  return true;
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftShader::set_shader_attributes

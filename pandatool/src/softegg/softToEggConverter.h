@@ -83,6 +83,7 @@ private:
                     double frame_inc, double output_frame_rate);
 
   bool make_soft_skin();
+  bool cleanup_soft_skin();
   bool convert_char_chan();
   bool convert_char_model();
   bool convert_hierarchy(EggGroupNode *egg_root);
