@@ -409,8 +409,10 @@
 // will always have a font available without requiring the user to
 // specify one.  Define it empty not to do this, saving a few
 // kilobytes on the generated library.  Sorry, you can't pick a
-// particular font to be the default; it's hardcoded in the source.
-// This does require the Freetype library, above.
+// particular font to be the default; it's hardcoded in the source
+// (although you can use the text-default-font Configrc variable to
+// specify a particular font file to load as the default, overriding
+// the compiled-in font).
 #define COMPILE_IN_DEFAULT_FONT 1
 
 // Is Maya installed?  This matters only to programs in PANDATOOL.
