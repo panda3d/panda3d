@@ -1,5 +1,6 @@
 """SpecUtil module: contains utility functions for creating and managing level specs"""
 
+from ShowBaseGlobal import *
 import LevelSpec
 import LevelConstants
 import LevelUtil
@@ -13,6 +14,13 @@ def makeNewSpec(filename, modelPath, entTypeModule=EntityTypes):
     spec = LevelSpec.LevelSpec()
     privUpdateSpec(spec, modelPath, entTypeModule)
     spec.saveToDisk(filename, makeBackup=0)
+
+"""
+import SpecUtil
+import SellbotLegFactorySpec
+import FactoryEntityTypes
+SpecUtil.updateSpec(SellbotLegFactorySpec, FactoryEntityTypes, 'phase_9/models/cogHQ/newModel')
+"""
 
 def updateSpec(specModule, entTypeModule=EntityTypes, modelPath=None):
     """Call this to update an existing levelSpec to work with a new level
