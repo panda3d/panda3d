@@ -40,10 +40,10 @@ class SfxPlayer:
         else:
             if SfxPlayer.UseInverseSquare:
                 sd = d*self.distanceScale
-                volume = min(1, 1 / (sd*sd))
+                volume = min(1, 1 / (sd*sd or 1))
                 #print d, sd, volume
             else:
-                volume = 1 - (d / self.cutoffDistance)
+                volume = 1 - (d / (self.cutoffDistance or 1))
                 #print d, volume
         return volume
 
