@@ -21,10 +21,12 @@ class DoInterestManager(DirectObject.DirectObject):
     """
     if __debug__:
         notify = DirectNotifyGlobal.directNotify.newCategory("DoInterestManager")
-        
+
     _interestIdAssign = 1;
     _interestIdScopes = 100;
     _interests = {}
+    if __debug__:
+        _debug_currentInterests = []
 
     def __init__(self):
         assert self.notify.debugCall()
@@ -41,7 +43,7 @@ class DoInterestManager(DirectObject.DirectObject):
         scopeId = DoInterestManager._interestIdScopes
         DoInterestManager._interests[contextId] = [description, scopeId, event, "Active"]
         self._sendAddInterest(contextId, scopeId, parentId, zoneIdList)
-        assert self.printInterests()
+        assert self.printInterestsIfDebug()
         return contextId
 
     def removeInterest(self,  contextId, event=None):
@@ -65,7 +67,7 @@ class DoInterestManager(DirectObject.DirectObject):
             answer = 1
         else:
             self.notify.warning("removeInterest: contextId not found: %s" % (contextId))
-        assert self.printInterests()
+        assert self.printInterestsIfDebug()
         return answer
 
     def alterInterest(self, contextId, parentId, zoneIdList, description=None, event=None):
@@ -83,7 +85,7 @@ class DoInterestManager(DirectObject.DirectObject):
             DoInterestManager._interests[contextId][2] = event;
             self._sendAddInterest(contextId, DoInterestManager._interestIdScopes, parentId, zoneIdList)
             answer = 1
-            assert self.printInterests()
+            assert self.printInterestsIfDebug()
         else:
             self.notify.warning("alterInterest: contextId not found: %s" % (contextId))
         return answer
@@ -125,21 +127,20 @@ class DoInterestManager(DirectObject.DirectObject):
                     del DoInterestManager._interests[handle]
 
     if __debug__:
-        def printInterests(self):
-            """
-            Part of the new otp-server code.
-            """
+        def printInterestsIfDebug(self):
             if self.notify.getDebug():
-                print "*********************** Interest Sets **************"
-                for i in DoInterestManager._interests.keys():
-                    print "Interest ID:%s, Description=%s Scope=%s Event=%s Mode=%s"%(
-                        i,
-                        DoInterestManager._interests[i][0],
-                        DoInterestManager._interests[i][1],
-                        DoInterestManager._interests[i][2],
-                        DoInterestManager._interests[i][3])
-                print "****************************************************"
+                self.printInterests()
             return 1 # for assert()
+
+        def printInterests(self):
+            print "*********************** Interest Sets **************"
+            print "(Interest ID, Description, Scope, Event, Mode)"
+            for i in DoInterestManager._interests.keys():
+                print DoInterestManager._interests[i]
+            print "****************************************************"
+            for i in DoInterestManager._debug_currentInterests:
+                print i
+            print "****************************************************"
 
     def _sendAddInterest(self, contextId, scopeId, parentId, zoneIdList):
         """
@@ -151,6 +152,8 @@ class DoInterestManager(DirectObject.DirectObject):
                 on another client.
         """
         assert self.notify.debugCall()
+        if __debug__:
+            DoInterestManager._debug_currentInterests.append((contextId, scopeId, parentId, zoneIdList))
         datagram = PyDatagram()
         # Add message type
         datagram.addUint16(CLIENT_ADD_INTEREST)
@@ -203,5 +206,5 @@ class DoInterestManager(DirectObject.DirectObject):
         else:
             print "handleInterestDoneMessage--> Scope MisMatch :%s :%s"%(expect_scope,scope);
 
-        assert self.printInterests()
+        assert self.printInterestsIfDebug()
 
