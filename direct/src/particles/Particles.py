@@ -42,9 +42,9 @@ class Particles(ParticleSystem.ParticleSystem):
         else:
             self.name = name
         ParticleSystem.ParticleSystem.__init__(self, poolSize)
-        self.setBirthRate(0.02)
-        self.setLitterSize(10)
-        self.setLitterSpread(0)
+        # self.setBirthRate(0.02)
+        # self.setLitterSize(10)
+        # self.setLitterSpread(0)
 
         # Set up a physical node
         self.node = PhysicalNode(self.name)
@@ -54,13 +54,13 @@ class Particles(ParticleSystem.ParticleSystem):
 
         self.factory = None
         self.factoryType = "undefined"
-        self.setFactory("PointParticleFactory")
+        # self.setFactory("PointParticleFactory")
         self.renderer = None
         self.rendererType = "undefined"
-        self.setRenderer("PointParticleRenderer")
+        # self.setRenderer("PointParticleRenderer")
         self.emitter = None
         self.emitterType = "undefined"
-        self.setEmitter("SphereVolumeEmitter")
+        # self.setEmitter("SphereVolumeEmitter")
 
         # Enable particles by default
         self.fEnabled = 0
