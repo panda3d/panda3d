@@ -1307,6 +1307,14 @@ draw_linestrip(const GeomLinestrip* geom) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_sprite(const GeomSprite *geom) {
+#ifdef _DEBUG
+     static BOOL bPrintedMsg=FALSE;
+
+     if(!bPrintedMsg) {
+         bPrintedMsg=TRUE;
+         dxgsg_cat.error() << "dxgsg sprite drawing not implemented yet!\n";
+     }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3409,8 +3417,8 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode Tex
            _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
            _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
 
-           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG2 );
-           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
 
            break;           
        case TextureApplyProperty::M_replace: 
@@ -3876,6 +3884,7 @@ end_decal(GeomNode *base_geom) {
       // Enable the writing to the depth buffer.
       _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 
+
       // Disable the writing to the color buffer, however we have to
       // do this.  (I don't think this is possible in DX without blending.)
       if (dx_decal_type == GDT_blend) {
@@ -3883,12 +3892,15 @@ end_decal(GeomNode *base_geom) {
             enable_blend(true);
             call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
       }
+
   #if(DIRECT3D_VERSION < 0x700)
       else {  // dx7 doesn't support planemask rstate
         // note: not saving current planemask val, assumes this is always all 1's.  should be ok
         _d3dDevice->SetRenderState(D3DRENDERSTATE_PLANEMASK,0x0);  // note PLANEMASK is supposedly obsolete for DX7
       }
   #endif
+// Note: For DX8, use D3DRS_COLORWRITEENABLE  (check D3DPMISCCAPS_COLORWRITEENABLE first)
+
 
       // No need to have texturing on for this.
       enable_texturing(false);
