@@ -31,12 +31,12 @@ const char * const WinStatsStripChart::_window_class_name = "strip";
 //  Description:
 ////////////////////////////////////////////////////////////////////
 WinStatsStripChart::
-WinStatsStripChart(WinStatsMonitor *monitor, PStatView &view,
+WinStatsStripChart(WinStatsMonitor *monitor, int thread_index,
                    int collector_index) :
-  PStatStripChart(monitor, view, collector_index, 
+  PStatStripChart(monitor, monitor->get_view(thread_index), collector_index, 
                   default_strip_chart_width,
                   default_strip_chart_height),
-  WinStatsGraph(monitor)
+  WinStatsGraph(monitor, thread_index)
 {
   _brush_origin = 0;
 
@@ -117,7 +117,8 @@ update_labels() {
 
   _label_stack.clear_labels();
   for (int i = 0; i < get_num_labels(); i++) {
-    _label_stack.add_label(WinStatsGraph::_monitor, get_label_collector(i));
+    _label_stack.add_label(WinStatsGraph::_monitor, _thread_index,
+                           get_label_collector(i));
   }
   _labels_changed = false;
 }
@@ -266,7 +267,7 @@ create_window() {
 
   _window = 
     CreateWindow(_window_class_name, window_title.c_str(), window_style,
-                 CW_USEDEFAULT, 0, 
+                 CW_USEDEFAULT, CW_USEDEFAULT,
                  win_rect.right - win_rect.left,
                  win_rect.bottom - win_rect.top,
                  WinStatsGraph::_monitor->get_window(), NULL, application, 0);

@@ -34,7 +34,8 @@ class WinStatsMonitor;
 ////////////////////////////////////////////////////////////////////
 class WinStatsLabel {
 public:
-  WinStatsLabel(WinStatsMonitor *monitor, int collector_index);
+  WinStatsLabel(WinStatsMonitor *monitor, int thread_index, 
+                int collector_index);
   ~WinStatsLabel();
 
   void setup(HWND parent_window);
@@ -53,6 +54,8 @@ private:
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   LONG WINAPI window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
+  WinStatsMonitor *_monitor;
+  int _thread_index;
   int _collector_index;
   string _text;
   HWND _window;

@@ -29,8 +29,9 @@ const char * const WinStatsGraph::_graph_window_class_name = "graph";
 //  Description:
 ////////////////////////////////////////////////////////////////////
 WinStatsGraph::
-WinStatsGraph(WinStatsMonitor *monitor) :
-  _monitor(monitor)
+WinStatsGraph(WinStatsMonitor *monitor, int thread_index) :
+  _monitor(monitor),
+  _thread_index(thread_index)
 {
   _window = 0;
   _graph_window = 0;

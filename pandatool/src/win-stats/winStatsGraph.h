@@ -35,7 +35,7 @@ class WinStatsMonitor;
 ////////////////////////////////////////////////////////////////////
 class WinStatsGraph {
 public:
-  WinStatsGraph(WinStatsMonitor *monitor);
+  WinStatsGraph(WinStatsMonitor *monitor, int thread_index);
   virtual ~WinStatsGraph();
 
   virtual void new_collector(int collector_index);
@@ -59,6 +59,7 @@ protected:
   Brushes _brushes;
 
   WinStatsMonitor *_monitor;
+  int _thread_index;
   HWND _window;
   HWND _graph_window;
   WinStatsLabelStack _label_stack;

@@ -33,13 +33,15 @@ const char * const WinStatsLabel::_window_class_name = "label";
 //  Description:
 ////////////////////////////////////////////////////////////////////
 WinStatsLabel::
-WinStatsLabel(WinStatsMonitor *monitor, int collector_index) :
+WinStatsLabel(WinStatsMonitor *monitor, int thread_index, int collector_index) :
+  _monitor(monitor),
+  _thread_index(thread_index),
   _collector_index(collector_index)
 {
   _window = 0;
-  _text = monitor->get_client_data()->get_collector_name(_collector_index);
+  _text = _monitor->get_client_data()->get_collector_name(_collector_index);
 
-  RGBColorf rgb = monitor->get_collector_color(_collector_index);
+  RGBColorf rgb = _monitor->get_collector_color(_collector_index);
   int r = (int)(rgb[0] * 255.0f);
   int g = (int)(rgb[1] * 255.0f);
   int b = (int)(rgb[2] * 255.0f);
@@ -212,7 +214,7 @@ register_window_class(HINSTANCE application) {
   WNDCLASS wc;
 
   ZeroMemory(&wc, sizeof(WNDCLASS));
-  wc.style = 0;
+  wc.style = CS_DBLCLKS;
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = application;
   wc.hCursor = LoadCursor(NULL, IDC_ARROW);
@@ -254,6 +256,10 @@ static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 LONG WinStatsLabel::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
+  case WM_LBUTTONDBLCLK:
+    _monitor->open_strip_chart(_thread_index, _collector_index);
+    return 0;
+
   case WM_PAINT:
     {
       PAINTSTRUCT ps;

@@ -48,7 +48,8 @@ public:
   int get_ideal_width() const;
 
   void clear_labels();
-  void add_label(WinStatsMonitor *monitor, int collector_index);
+  void add_label(WinStatsMonitor *monitor, int thread_index,
+                 int collector_index);
 
 private:
   void create_window(HWND parent_window);

@@ -181,13 +181,14 @@ clear_labels() {
 //  Description: Adds a new label to the top of the stack.
 ////////////////////////////////////////////////////////////////////
 void WinStatsLabelStack::
-add_label(WinStatsMonitor *monitor, int collector_index) {
+add_label(WinStatsMonitor *monitor, int thread_index, int collector_index) {
   int yp = _height;
   if (!_labels.empty()) {
     WinStatsLabel *top_label = _labels.back();
     yp = top_label->get_y() - top_label->get_height();
   }
-  WinStatsLabel *label = new WinStatsLabel(monitor, collector_index);
+  WinStatsLabel *label = 
+    new WinStatsLabel(monitor, thread_index, collector_index);
   if (_window) {
     label->setup(_window);
     label->set_pos(0, yp, _width);

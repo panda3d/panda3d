@@ -103,8 +103,7 @@ initialized() {
 void WinStatsMonitor::
 got_hello() {
   create_window();
-
-  add_graph(new WinStatsStripChart(this, get_view(0), 0));
+  open_strip_chart(0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -244,6 +243,18 @@ has_idle() {
 HWND WinStatsMonitor::
 get_window() const {
   return _window;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::open_strip_chart_
+//       Access: Public
+//  Description: Opens a new strip chart showing the indicated data.
+////////////////////////////////////////////////////////////////////
+void WinStatsMonitor::
+open_strip_chart(int thread_index, int collector_index) {
+  WinStatsStripChart *chart = 
+    new WinStatsStripChart(this, thread_index, collector_index);
+  add_graph(chart);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -414,10 +425,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     if (HIWORD(wparam) <= 1) {
       int menu_id = LOWORD(wparam);
       const MenuDef &menu_def = lookup_menu(menu_id);
-      WinStatsStripChart *chart = 
-        new WinStatsStripChart(this, get_view(menu_def._thread_index), 
-                               menu_def._collector_index);
-      add_graph(chart);
+      open_strip_chart(menu_def._thread_index, menu_def._collector_index);
       return 0;
     }
     break;

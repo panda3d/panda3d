@@ -65,6 +65,7 @@ public:
   virtual bool has_idle();
 
   HWND get_window() const;
+  void open_strip_chart(int thread_index, int collector_index);
 
   const MenuDef &lookup_menu(int menu_id) const;
   int get_menu_id(const MenuDef &menu_def);
