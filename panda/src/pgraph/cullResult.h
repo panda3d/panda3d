@@ -74,7 +74,7 @@ private:
   typedef pvector< PT(CullBin) > Bins;
   Bins _bins;
 
-  typedef pset<CullResult *> CullResults;
+  typedef phash_set<CullResult *, pointer_hash> CullResults;
   static CullResults _cull_results;
 };
 

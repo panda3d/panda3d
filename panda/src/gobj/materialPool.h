@@ -23,7 +23,6 @@
 
 #include "material.h"
 
-#include "indirectCompareTo.h"
 #include "pointerTo.h"
 
 #include "pset.h"
@@ -63,7 +62,7 @@ private:
   static MaterialPool *get_ptr();
 
   static MaterialPool *_global_ptr;
-  typedef pset< CPT(Material), IndirectCompareTo<Material> > Materials;
+  typedef pset< CPT(Material), indirect_compare_to<const Material *> > Materials;
   Materials _materials;
 };
 

@@ -25,7 +25,6 @@
 #include "renderState.h"
 
 #include "typedWritableReferenceCount.h"
-#include "indirectCompareTo.h"
 #include "pointerTo.h"
 #include "pset.h"
 #include "luse.h"
@@ -92,7 +91,7 @@ protected:
   virtual int compare_to_impl(const RenderEffect *other) const;
 
 private:
-  typedef pset<const RenderEffect *, IndirectCompareTo<RenderEffect> > Effects;
+  typedef pset<const RenderEffect *, indirect_compare_to<const RenderEffect *> > Effects;
   static Effects *_effects;
 
   Effects::iterator _saved_entry;

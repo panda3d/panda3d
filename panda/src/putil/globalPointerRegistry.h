@@ -79,7 +79,7 @@ private:
   static GlobalPointerRegistry *_global_ptr;
 
 private:
-  typedef pmap<TypeHandle, void *> Pointers;
+  typedef phash_map<TypeHandle, void *> Pointers;
   Pointers _pointers;
 };
 

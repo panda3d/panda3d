@@ -91,6 +91,10 @@ PUBLISHED:
 
   INLINE_LINMATH int compare_to(const FLOATNAME(LMatrix4) &other) const;
   int compare_to(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const;
+  INLINE_LINMATH size_t get_hash() const;
+  INLINE_LINMATH size_t get_hash(FLOATTYPE threshold) const;
+  INLINE_LINMATH size_t add_hash(size_t hash) const;
+  INLINE_LINMATH size_t add_hash(size_t hash, FLOATTYPE threshold) const;
 
   INLINE_LINMATH FLOATNAME(LVecBase4)
   xform(const FLOATNAME(LVecBase4) &v) const;

@@ -27,7 +27,6 @@
 #include "renderEffect.h"
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
-#include "indirectLess.h"
 #include "ordered_vector.h"
 
 class CullTraverser;
@@ -110,7 +109,7 @@ private:
   void determine_cull_callback();
 
 private:
-  typedef pset<const RenderEffects *, IndirectLess<RenderEffects> > States;
+  typedef pset<const RenderEffects *, indirect_less<const RenderEffects *> > States;
   static States *_states;
   static CPT(RenderEffects) _empty_state;
 

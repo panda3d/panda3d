@@ -64,6 +64,7 @@
 
 #include "pandabase.h"
 
+#include "stl_compares.h"
 #include "lvec2_ops.h"
 #include "lvec3_ops.h"
 #include "lvec4_ops.h"

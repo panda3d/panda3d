@@ -78,7 +78,7 @@ private:
   static TexturePool *get_ptr();
 
   static TexturePool *_global_ptr;
-  typedef pmap<string,  PT(Texture) > Textures;
+  typedef phash_map<string,  PT(Texture), string_hash> Textures;
   Textures _textures;
   string _fake_texture_image;
 };

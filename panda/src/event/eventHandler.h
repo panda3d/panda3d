@@ -72,11 +72,11 @@ public:
 
 protected:
 
-  typedef pset<EventFunction *> Functions;
-  typedef pmap<string, Functions> Hooks;
+  typedef phash_set<EventFunction *, pointer_hash> Functions;
+  typedef phash_map<string, Functions, string_hash> Hooks;
   typedef pair<EventCallbackFunction*, void*> CallbackFunction;
   typedef pset<CallbackFunction> CallbackFunctions;
-  typedef pmap<string, CallbackFunctions> CallbackHooks;
+  typedef phash_map<string, CallbackFunctions, string_hash> CallbackHooks;
 
   Hooks _hooks;
   CallbackHooks _cbhooks;

@@ -44,7 +44,7 @@ public:
 private:
   string add_name_body(const string &name, const string &prefix);
 
-  typedef pset<string> Names;
+  typedef pset<string, string_hash> Names;
   Names _names;
   string _separator;
   string _empty;

@@ -271,6 +271,9 @@ $[cdefine SIMPLE_STRUCT_POINTERS]
 /* Define if we have Dinkumware STL installed.  */
 $[cdefine HAVE_DINKUM]
 
+/* Define if we have STL hash_map etc. available  */
+$[cdefine HAVE_STL_HASH]
+
 /* Define if we have a gettimeofday() function. */
 $[cdefine HAVE_GETTIMEOFDAY]
 

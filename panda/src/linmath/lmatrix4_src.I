@@ -551,6 +551,68 @@ compare_to(const FLOATNAME(LMatrix4) &other) const {
   return compare_to(other, NEARLY_ZERO(FLOATTYPE));
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::get_hash
+//       Access: Public
+//  Description: Returns a suitable hash for phash_map.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LMatrix4)::
+get_hash() const {
+  return add_hash(0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::get_hash
+//       Access: Public
+//  Description: Returns a suitable hash for phash_map.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LMatrix4)::
+get_hash(FLOATTYPE threshold) const {
+  return add_hash(0, threshold);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::add_hash
+//       Access: Public
+//  Description: Adds the vector into the running hash.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LMatrix4)::
+add_hash(size_t hash) const {
+  return add_hash(hash, NEARLY_ZERO(FLOATTYPE));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::add_hash
+//       Access: Public
+//  Description: Adds the vector into the running hash.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LMatrix4)::
+add_hash(size_t hash, FLOATTYPE threshold) const {
+  float_hash fhasher(threshold);
+
+  hash = fhasher.add_hash(hash, _m.m._00);
+  hash = fhasher.add_hash(hash, _m.m._01);
+  hash = fhasher.add_hash(hash, _m.m._02);
+  hash = fhasher.add_hash(hash, _m.m._03);
+
+  hash = fhasher.add_hash(hash, _m.m._10);
+  hash = fhasher.add_hash(hash, _m.m._11);
+  hash = fhasher.add_hash(hash, _m.m._12);
+  hash = fhasher.add_hash(hash, _m.m._13);
+
+  hash = fhasher.add_hash(hash, _m.m._20);
+  hash = fhasher.add_hash(hash, _m.m._21);
+  hash = fhasher.add_hash(hash, _m.m._22);
+  hash = fhasher.add_hash(hash, _m.m._23);
+
+  hash = fhasher.add_hash(hash, _m.m._30);
+  hash = fhasher.add_hash(hash, _m.m._31);
+  hash = fhasher.add_hash(hash, _m.m._32);
+  hash = fhasher.add_hash(hash, _m.m._33);
+
+  return hash;
+}
+
 #define VECTOR4_MATRIX4_PRODUCT(v_res, v, mat)       \
 v_res._v.v._0 = v._v.v._0*mat._m.m._00 + v._v.v._1*mat._m.m._10 + v._v.v._2*mat._m.m._20 + v._v.v._3*mat._m.m._30;   \
 v_res._v.v._1 = v._v.v._0*mat._m.m._01 + v._v.v._1*mat._m.m._11 + v._v.v._2*mat._m.m._21 + v._v.v._3*mat._m.m._31;   \

@@ -168,7 +168,7 @@ private:
   typedef pmap<string, string> Usernames;
   Usernames _usernames;
 
-  typedef pmap<string, PT(HTTPAuthorization) > Realms;
+  typedef pmap<string, PT(HTTPAuthorization)> Realms;
   class Domain {
   public:
     Realms _realms;
@@ -176,6 +176,7 @@ private:
   typedef pmap<string, Domain> Domains;
   Domains _proxy_domains, _www_domains;
 
+  // Not a phash_set, since we want this to be maintained in order.
   typedef pset<HTTPCookie> Cookies;
   Cookies _cookies;
 

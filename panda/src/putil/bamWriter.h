@@ -101,7 +101,7 @@ private:
   int enqueue_object(const TypedWritable *object);
 
   // This is the set of all TypeHandles already written.
-  pset<int> _types_written;
+  pset<int, int_hash> _types_written;
 
   // This keeps track of all of the objects we have written out
   // already (or are about to write out), and associates a unique
@@ -113,7 +113,7 @@ private:
 
     StoreState(int object_id) : _object_id(object_id), _written(false) {}
   };
-  typedef pmap<const TypedWritable *, StoreState> StateMap;
+  typedef phash_map<const TypedWritable *, StoreState, pointer_hash> StateMap;
   StateMap _state_map;
 
   // This is the next object ID that will be assigned to a new object.
@@ -133,7 +133,7 @@ private:
 
   // These are used by register_pta() to unify multiple references to
   // the same PointerToArray.
-  typedef pmap<const void *, int> PTAMap;
+  typedef phash_map<const void *, int, pointer_hash> PTAMap;
   PTAMap _pta_map;
   int _next_pta_id;
   bool _long_pta_id;

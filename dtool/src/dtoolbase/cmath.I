@@ -30,23 +30,23 @@
                               __isnan  ( x ) )
 #endif
 
-INLINE_LINMATH float csqrt(float v) {
+INLINE float csqrt(float v) {
   return sqrtf(v);
 }
 
-INLINE_LINMATH float csin(float v) {
+INLINE float csin(float v) {
   return sinf(v);
 }
 
-INLINE_LINMATH float ccos(float v) {
+INLINE float ccos(float v) {
   return cosf(v);
 }
 
-INLINE_LINMATH float ctan(float v) {
+INLINE float ctan(float v) {
   return tanf(v);
 }
 
-INLINE_LINMATH void
+INLINE void
 sincosf(float v, float *pSinResult, float *pCosResult) {
 
 // MS VC defines _M_IX86 for x86.  gcc should define _X86_
@@ -66,7 +66,7 @@ sincosf(float v, float *pSinResult, float *pCosResult) {
 #endif //!_X86_
 }
 
-INLINE_LINMATH void
+INLINE void
 sincosd(double v, double *pSinResult, double *pCosResult) {
 #if defined(_M_IX86) || defined(_X86_)
 //#define fsincos_opcode __asm _emit 0xd9 __asm _emit 0xfb
@@ -84,23 +84,23 @@ sincosd(double v, double *pSinResult, double *pCosResult) {
 #endif //!_X86_
 }
 
-INLINE_LINMATH void csincos(float v,float *pSinResult, float *pCosResult) {
+INLINE void csincos(float v,float *pSinResult, float *pCosResult) {
   sincosf(v,pSinResult,pCosResult);
 }
 
-INLINE_LINMATH void csincos(double v,double *pSinResult, double *pCosResult) {
+INLINE void csincos(double v,double *pSinResult, double *pCosResult) {
   sincosd(v,pSinResult,pCosResult);
 }
 
-INLINE_LINMATH float cabs(float v) {
+INLINE float cabs(float v) {
   return fabs(v);
 }
 
-INLINE_LINMATH float catan(float v) {
+INLINE float catan(float v) {
   return atanf(v);
 }
 
-INLINE_LINMATH float catan2(float y, float x) {
+INLINE float catan2(float y, float x) {
   return atan2f(y, x);
 }
 
@@ -110,7 +110,7 @@ INLINE_LINMATH float catan2(float y, float x) {
 #define FPU_CONTROLWORD_NEW_SETTING  _CW_DEFAULT
 #endif  
 
-INLINE_LINMATH double cfloor(double f) {
+INLINE double cfloor(double f) {
   #ifdef __INTEL_COMPILER
     // intel floor doesnt work right if fpu mode is not double, so make double-prec mode is on
     unsigned int saved_fpu_control_word=_controlfp(0x0,0x0);
@@ -123,7 +123,7 @@ INLINE_LINMATH double cfloor(double f) {
   #endif
 }
 
-INLINE_LINMATH double cceil(double f) {
+INLINE double cceil(double f) {
   #ifdef __INTEL_COMPILER
     // intel ceil doesnt work right if fpu mode is not double, so make double-prec mode is on
     unsigned int saved_fpu_control_word=_controlfp(0x0,0x0);
@@ -136,35 +136,35 @@ INLINE_LINMATH double cceil(double f) {
   #endif
 }
 
-INLINE_LINMATH double csqrt(double v) {
+INLINE double csqrt(double v) {
   return sqrt(v);
 }
 
-INLINE_LINMATH double csin(double v) {
+INLINE double csin(double v) {
   return sin(v);
 }
 
-INLINE_LINMATH double ccos(double v) {
+INLINE double ccos(double v) {
   return cos(v);
 }
 
-INLINE_LINMATH double ctan(double v) {
+INLINE double ctan(double v) {
   return tan(v);
 }
 
-INLINE_LINMATH double cabs(double v) {
+INLINE double cabs(double v) {
   return fabs(v);
 }
 
-INLINE_LINMATH double catan(double v) {
+INLINE double catan(double v) {
   return atan(v);
 }
 
-INLINE_LINMATH double catan2(double y, double x) {
+INLINE double catan2(double y, double x) {
   return atan2(y, x);
 }
 
-INLINE_LINMATH bool cnan(double v) {
+INLINE bool cnan(double v) {
 #ifndef _WIN32
   return (isnan(v) != 0);
 #else

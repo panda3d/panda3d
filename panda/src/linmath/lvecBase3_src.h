@@ -90,6 +90,10 @@ PUBLISHED:
   INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase3) &other) const;
   INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase3) &other,
                                 FLOATTYPE threshold) const;
+  INLINE_LINMATH size_t get_hash() const;
+  INLINE_LINMATH size_t get_hash(FLOATTYPE threshold) const;
+  INLINE_LINMATH size_t add_hash(size_t hash) const;
+  INLINE_LINMATH size_t add_hash(size_t hash, FLOATTYPE threshold) const;
 
   INLINE_LINMATH FLOATNAME(LVecBase3) operator - () const;
 

@@ -22,7 +22,6 @@
 #include "pandabase.h"
 
 #include "typedWritableReferenceCount.h"
-#include "indirectCompareTo.h"
 #include "pointerTo.h"
 #include "pset.h"
 
@@ -105,7 +104,7 @@ protected:
   bool _always_reissue;
 
 private:
-  typedef pset<const RenderAttrib *, IndirectCompareTo<RenderAttrib> > Attribs;
+  typedef pset<const RenderAttrib *, indirect_compare_to<const RenderAttrib *> > Attribs;
   static Attribs *_attribs;
 
   Attribs::iterator _saved_entry;

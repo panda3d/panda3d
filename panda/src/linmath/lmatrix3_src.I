@@ -399,6 +399,60 @@ compare_to(const FLOATNAME(LMatrix3) &other) const {
   return compare_to(other, NEARLY_ZERO(FLOATTYPE));
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::get_hash
+//       Access: Public
+//  Description: Returns a suitable hash for phash_map.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LMatrix3)::
+get_hash() const {
+  return add_hash(0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::get_hash
+//       Access: Public
+//  Description: Returns a suitable hash for phash_map.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LMatrix3)::
+get_hash(FLOATTYPE threshold) const {
+  return add_hash(0, threshold);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::add_hash
+//       Access: Public
+//  Description: Adds the vector into the running hash.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LMatrix3)::
+add_hash(size_t hash) const {
+  return add_hash(hash, NEARLY_ZERO(FLOATTYPE));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::add_hash
+//       Access: Public
+//  Description: Adds the vector into the running hash.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LMatrix3)::
+add_hash(size_t hash, FLOATTYPE threshold) const {
+  float_hash fhasher(threshold);
+
+  hash = fhasher.add_hash(hash, _m.m._00);
+  hash = fhasher.add_hash(hash, _m.m._01);
+  hash = fhasher.add_hash(hash, _m.m._02);
+
+  hash = fhasher.add_hash(hash, _m.m._10);
+  hash = fhasher.add_hash(hash, _m.m._11);
+  hash = fhasher.add_hash(hash, _m.m._12);
+
+  hash = fhasher.add_hash(hash, _m.m._20);
+  hash = fhasher.add_hash(hash, _m.m._21);
+  hash = fhasher.add_hash(hash, _m.m._22);
+
+  return hash;
+}
+
 #define VECTOR3_MATRIX3_PRODUCT(v_res, v, mat)                                              \
 v_res._v.v._0 = v._v.v._0*mat._m.m._00 + v._v.v._1*mat._m.m._10 + v._v.v._2*mat._m.m._20;   \
 v_res._v.v._1 = v._v.v._0*mat._m.m._01 + v._v.v._1*mat._m.m._11 + v._v.v._2*mat._m.m._21;   \

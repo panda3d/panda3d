@@ -23,7 +23,6 @@
 
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
-#include "indirectLess.h"
 #include "luse.h"
 #include "pset.h"
 #include "event.h"
@@ -66,6 +65,7 @@ public:
 
 PUBLISHED:
   bool operator < (const TransformState &other) const;
+  size_t get_hash() const;
 
   static CPT(TransformState) make_identity();
   static CPT(TransformState) make_invalid();
@@ -159,7 +159,7 @@ private:
                               CompositionCycleDesc &cycle_desc);
 
 private:
-  typedef pset<const TransformState *, IndirectLess<TransformState> > States;
+  typedef phash_set<const TransformState *, indirect_less_hash<const TransformState *> > States;
   static States *_states;
   static CPT(TransformState) _identity_state;
 
@@ -187,7 +187,7 @@ private:
   // is not reference counted within this map; instead we store a
   // companion pointer in the other object, and remove the references
   // explicitly when either object destructs.
-  typedef pmap<const TransformState *, Composition> CompositionCache;
+  typedef phash_map<const TransformState *, Composition, pointer_hash> CompositionCache;
   CompositionCache _composition_cache;
   CompositionCache _invert_composition_cache;
 

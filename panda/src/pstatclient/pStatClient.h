@@ -125,6 +125,7 @@ private:
   // Stats collecting stuff
   ClockObject _clock;
 
+  // Not a phash_map, so the threads remain sorted by name.
   typedef pmap<string, int> ThingsByName;
   ThingsByName _threads_by_name;
 

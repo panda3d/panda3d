@@ -31,7 +31,7 @@
 bool create = false;           // -c
 bool append = false;           // -r
 bool update = false;           // -u
-bool list = false;             // -t
+bool tlist = false;             // -t
 bool extract = false;          // -x
 bool verbose = false;          // -v
 bool compress = false;         // -z
@@ -504,7 +504,7 @@ main(int argc, char *argv[]) {
       update = true;
       break;
     case 't':
-      list = true;
+      tlist = true;
       break;
     case 'x':
       extract = true;
@@ -605,7 +605,7 @@ main(int argc, char *argv[]) {
   argv += (optind - 1);
 
   // We should have exactly one of these options.
-  if ((create?1:0) + (append?1:0) + (update?1:0) + (list?1:0) + (extract?1:0) != 1) {
+  if ((create?1:0) + (append?1:0) + (update?1:0) + (tlist?1:0) + (extract?1:0) != 1) {
     cerr << "Exactly one of -c, -r, -u, -t, -x must be specified.\n";
     usage();
     return 1;

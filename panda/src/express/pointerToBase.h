@@ -74,6 +74,7 @@ public:
   INLINE bool operator < (const To *other) const;
   INLINE bool operator < (const PointerToBase<To> &other) const;
 #endif  // CPPPARSER
+  INLINE size_t get_hash() const;
 
 PUBLISHED:
   INLINE bool is_null() const;

@@ -19,7 +19,7 @@
 #ifndef CMATH_H
 #define CMATH_H
 
-#include "pandabase.h"
+#include "dtoolbase.h"
 
 #include <math.h>
 
@@ -29,31 +29,31 @@
 // explicitly whether we need to call, for instance, sqrtf() or
 // sqrt().
 
-INLINE_LINMATH float csqrt(float v);
-INLINE_LINMATH float csin(float v);
-INLINE_LINMATH float ccos(float v);
-INLINE_LINMATH float ctan(float v);
-INLINE_LINMATH void  csincos(float v, float *pSinResult, float *pCosResult);  // does both at once (faster on x86)
-INLINE_LINMATH float cabs(float v);
-INLINE_LINMATH float catan(float v);
-INLINE_LINMATH float catan2(float y, float x);
-//INLINE_LINMATH float cfloor(float f);
-//INLINE_LINMATH float cceil(float f);
+INLINE float csqrt(float v);
+INLINE float csin(float v);
+INLINE float ccos(float v);
+INLINE float ctan(float v);
+INLINE void  csincos(float v, float *pSinResult, float *pCosResult);  // does both at once (faster on x86)
+INLINE float cabs(float v);
+INLINE float catan(float v);
+INLINE float catan2(float y, float x);
+//INLINE float cfloor(float f);
+//INLINE float cceil(float f);
 
-INLINE_LINMATH double cfloor(double f);
-INLINE_LINMATH double cceil(double f);
-INLINE_LINMATH double csqrt(double v);
-INLINE_LINMATH double csin(double v);
-INLINE_LINMATH double ccos(double v);
-INLINE_LINMATH double ctan(double v);
-INLINE_LINMATH double cabs(double v);
-INLINE_LINMATH double catan(double v);
-INLINE_LINMATH double catan2(double y, double x);
-INLINE_LINMATH void   csincos(double v, double *pSinResult, double *pCosResult);  // does both at once (faster on x86)
+INLINE double cfloor(double f);
+INLINE double cceil(double f);
+INLINE double csqrt(double v);
+INLINE double csin(double v);
+INLINE double ccos(double v);
+INLINE double ctan(double v);
+INLINE double cabs(double v);
+INLINE double catan(double v);
+INLINE double catan2(double y, double x);
+INLINE void   csincos(double v, double *pSinResult, double *pCosResult);  // does both at once (faster on x86)
 
 // Returns true if the number is nan, false if it's a genuine number
 // or infinity.
-INLINE_LINMATH bool cnan(double v);
+INLINE bool cnan(double v);
 
 #include "cmath.I"
 

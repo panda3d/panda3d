@@ -9,7 +9,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
-     cmath.I cmath.h compose_matrix.h compose_matrix_src.I  \
+     compose_matrix.h compose_matrix_src.I  \
      compose_matrix_src.cxx compose_matrix_src.h config_linmath.h  \
      coordinateSystem.h dbl2fltnames.h dblnames.h deg_2_rad.h  \
      flt2dblnames.h fltnames.h ioPtaDatagramLinMath.I  \
@@ -33,7 +33,7 @@
      lvecBase4_src.h lvector2.h lvector2_src.I lvector2_src.cxx  \
      lvector2_src.h lvector3.h lvector3_src.I lvector3_src.cxx  \
      lvector3_src.h lvector4.h lvector4_src.I lvector4_src.cxx  \
-     lvector4_src.h mathNumbers.h nearly_zero.h pta_Colorf.h  \
+     lvector4_src.h mathNumbers.h pta_Colorf.h  \
      pta_Normalf.h pta_TexCoordf.h pta_Vertexf.h vector_Colorf.h  \
      vector_LPoint2f.h vector_LVecBase3f.h vector_Normalf.h  \
      vector_TexCoordf.h vector_Vertexf.h
@@ -50,7 +50,7 @@
      vector_LVecBase3f.cxx vector_Normalf.cxx vector_Vertexf.cxx  \
 
   #define INSTALL_HEADERS \
-    cmath.I cmath.h compose_matrix.h compose_matrix_src.I \
+    compose_matrix.h compose_matrix_src.I \
     compose_matrix_src.h config_linmath.h coordinateSystem.h \
     dbl2fltnames.h dblnames.h deg_2_rad.h \
     flt2dblnames.h fltnames.h ioPtaDatagramLinMath.I \
@@ -68,7 +68,7 @@
     lvecBase3_src.I lvecBase3_src.h lvecBase4.h lvecBase4_src.I \
     lvecBase4_src.h lvector2.h lvector2_src.I lvector2_src.h \
     lvector3.h lvector3_src.I lvector3_src.h lvector4.h lvector4_src.I \
-    lvector4_src.h mathNumbers.h nearly_zero.h pta_Colorf.h \
+    lvector4_src.h mathNumbers.h pta_Colorf.h \
     pta_Normalf.h pta_TexCoordf.h pta_Vertexf.h vector_Colorf.h \
     vector_LPoint2f.h vector_LVecBase3f.h vector_Normalf.h \
     vector_TexCoordf.h vector_Vertexf.h

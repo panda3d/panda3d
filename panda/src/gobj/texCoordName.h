@@ -49,7 +49,7 @@ PUBLISHED:
 private:
   string _name;
 
-  typedef pmap<string, TexCoordName *> TexCoordsByName;
+  typedef phash_map<string, TexCoordName *, string_hash> TexCoordsByName;
   static TexCoordsByName _texcoords_by_name;
 
   static CPT(TexCoordName) _default_name;

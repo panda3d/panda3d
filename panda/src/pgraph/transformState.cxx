@@ -266,6 +266,55 @@ operator < (const TransformState &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_hash()
+//       Access: Published
+//  Description: Computes a suitable hash value for phash_map.
+////////////////////////////////////////////////////////////////////
+size_t TransformState::
+get_hash() const {
+  size_t hash = 0;
+  int_hash ihasher;
+  float_hash fhasher;
+  pointer_hash phasher;
+
+  static const int significant_flags = 
+    (F_is_invalid | F_is_identity | F_components_given | F_hpr_given);
+
+  int flags = (_flags & significant_flags);
+  hash = ihasher.add_hash(hash, flags);
+
+  if ((_flags & (F_is_invalid | F_is_identity)) == 0) {
+    // Only bother to put the rest of the stuff in the hash if the
+    // transform is not invalid or empty.
+    
+    if ((_flags & (F_components_given | F_hpr_given | F_quat_given)) == 
+        (F_components_given | F_hpr_given | F_quat_given)) {
+      // If the transform was specified componentwise, hash it
+      // componentwise.
+      hash = _pos.add_hash(hash);
+      if ((_flags & F_hpr_given) != 0) {
+        hash = _hpr.add_hash(hash);
+
+      } else if ((_flags & F_quat_given) != 0) {
+        hash = _quat.add_hash(hash);
+      }
+
+      hash = _scale.add_hash(hash);
+      hash = _shear.add_hash(hash);
+
+    } else {
+      // Otherwise, hash the pointer only--any two different
+      // matrix-based TransformStates are considered to be different,
+      // even if their matrices have the same values.
+
+      hash = phasher.add_hash(hash, this);
+    }
+  }
+  
+  return hash;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::make_identity
 //       Access: Published, Static
 //  Description: Constructs an identity transform.

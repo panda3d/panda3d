@@ -120,15 +120,15 @@ private:
     bool stale; // can this entry be  purged from the cache?
     char *data; // the memory-mapped audio file.
   } SoundCacheEntry;
-  typedef pmap<string, SoundCacheEntry > SoundMap;
+  typedef phash_map<string, SoundCacheEntry, string_hash> SoundMap;
   SoundMap _sounds;
 
-  typedef pset<FmodAudioSound* > AudioSet;
+  typedef phash_set<FmodAudioSound*, pointer_hash> AudioSet;
   // The offspring of this manager:
   AudioSet _soundsOnLoan;
   unsigned int _concurrent_sound_limit;
 
-  typedef pset<FmodAudioSound* > SoundsPlaying;
+  typedef phash_set<FmodAudioSound*, pointer_hash> SoundsPlaying;
   // The sounds from this manager that are currently playing
   SoundsPlaying _sounds_playing;
 

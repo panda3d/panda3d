@@ -100,7 +100,7 @@ private:
   typedef pvector<TypeRegistryNode *> HandleRegistry;
   HandleRegistry _handle_registry;
 
-  typedef pmap<string, TypeRegistryNode *> NameRegistry;
+  typedef phash_map<string, TypeRegistryNode *, string_hash> NameRegistry;
   NameRegistry _name_registry;
 
   typedef pvector<TypeRegistryNode *> RootClasses;

@@ -40,8 +40,8 @@ public:
   typedef vector_SymbolEnt    Symbol;
 
 private:
-  typedef pmap<ConfigString, Symbol>      SymbolTable;
-  typedef pmap<ConfigString, SymbolTable> TableMap;
+  typedef phash_map<ConfigString, Symbol, sequence_hash<ConfigString> >      SymbolTable;
+  typedef phash_map<ConfigString, SymbolTable, sequence_hash<ConfigString> > TableMap;
   typedef pvector<GlobPattern> Globs;
 
   SymbolTable unqualified;

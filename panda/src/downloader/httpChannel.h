@@ -365,7 +365,7 @@ private:
   };
   ResponseType _response_type;
   
-
+  // Not a phash_map, to maintain sorted order.
   typedef pmap<string, string> Headers;
   Headers _headers;
 

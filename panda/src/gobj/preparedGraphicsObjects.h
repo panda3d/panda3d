@@ -71,10 +71,10 @@ public:
   void update(GraphicsStateGuardianBase *gsg);
 
 private:
-  typedef pset<TextureContext *> Textures;
-  typedef pset< PT(Texture) > EnqueuedTextures;
-  typedef pset<GeomContext *> Geoms;
-  typedef pset< PT(Geom) > EnqueuedGeoms;
+  typedef phash_set<TextureContext *, pointer_hash> Textures;
+  typedef phash_set< PT(Texture) > EnqueuedTextures;
+  typedef phash_set<GeomContext *, pointer_hash> Geoms;
+  typedef phash_set< PT(Geom) > EnqueuedGeoms;
 
   Mutex _lock;
   Textures _prepared_textures, _released_textures;  

@@ -29,5 +29,10 @@ class less {
 public:
 };
 
+template<class key, class comp = less<key> >
+class hash_compare {
+public:
+};
+
 #endif
 

@@ -280,11 +280,11 @@ private:
   // requested a NodePath for.  We don't keep reference counts; when
   // each NodePathComponent destructs, it removes itself from this
   // set.
-  typedef pset<NodePathComponent *> Paths;
+  typedef phash_set<NodePathComponent *, pointer_hash> Paths;
 
   // This is used to maintain a table of keyed data on each node, for
   // the user's purposes.
-  typedef pmap<string, string> TagData;
+  typedef phash_map<string, string, string_hash> TagData;
 
   
   // This is the data that must be cycled between pipeline stages.

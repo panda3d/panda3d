@@ -244,6 +244,15 @@
 #define STL_CFLAGS
 #define STL_LIBS
 
+// Does your STL library provide hashed associative containers like
+// hash_map and hash_set?  Define this true if you have a nonstandard
+// STL library that provides these, like Visual Studio .NET's.  (These
+// hashtable containers are not part of the C++ standard yet, but the
+// Dinkum STL library that VC7 ships with includes a preliminary
+// implementation that Panda can optionally use.)  For now, we assume
+// you have this by default only on a Windows platform.
+#define HAVE_STL_HASH $[WINDOWS_PLATFORM]
+
 // Is OpenSSL installed, and where?
 #define SSL_IPATH /usr/local/ssl/include
 #define SSL_LPATH /usr/local/ssl/lib

@@ -24,7 +24,6 @@
 #include "renderAttrib.h"
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
-#include "indirectLess.h"
 #include "ordered_vector.h"
 
 class GraphicsStateGuardianBase;
@@ -152,7 +151,7 @@ private:
   INLINE bool is_destructing() const;
 
 private:
-  typedef pset<const RenderState *, IndirectLess<RenderState> > States;
+  typedef pset<const RenderState *, indirect_less<const RenderState *> > States;
   static States *_states;
   static CPT(RenderState) _empty_state;
 
@@ -180,7 +179,7 @@ private:
   // is not reference counted within this map; instead we store a
   // companion pointer in the other object, and remove the references
   // explicitly when either object destructs.
-  typedef pmap<const RenderState *, Composition> CompositionCache;
+  typedef phash_map<const RenderState *, Composition, pointer_hash> CompositionCache;
   CompositionCache _composition_cache;
   CompositionCache _invert_composition_cache;
 

@@ -19,16 +19,22 @@
 #ifndef NEARLY_ZERO_H
 #define NEARLY_ZERO_H
 
+#include "dtoolbase.h"
 
 // The following two functions are defined just to make the
 // NEARLY_ZERO() macro work.  They each return a suitable nearly-zero
 // value for their corresponding numeric type.
-INLINE_LINMATH double
+
+// Note that declaring these small numeric values first as a static
+// const identifier, and then returning the value of that identifier,
+// seems to lead to compilation errors (at least in VC7) in which
+// sometimes IS_THRESHOLD_COMPEQ(a, a, get_nearly_zero_value(a)) != 0.
+INLINE double
 get_nearly_zero_value(double) {
   return 1.0e-12;
 }
 
-INLINE_LINMATH float
+INLINE float
 get_nearly_zero_value(float) {
   return 1.0e-6f;
 }

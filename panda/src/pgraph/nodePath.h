@@ -716,7 +716,7 @@ private:
                           CollideMask and_mask, CollideMask or_mask,
                           TypeHandle node_type);
 
-  typedef pset<Texture *> Textures;
+  typedef phash_set<Texture *, pointer_hash> Textures;
   Texture *r_find_texture(PandaNode *node, const RenderState *state,
                           const GlobPattern &glob) const;
   void r_find_all_textures(PandaNode *node, const RenderState *state,
@@ -725,7 +725,7 @@ private:
   void r_find_all_textures(PandaNode *node, TextureStage *stage,
                            Textures &textures) const;
 
-  typedef pset<TextureStage *> TextureStages;
+  typedef phash_set<TextureStage *, pointer_hash> TextureStages;
   TextureStage *r_find_texture_stage(PandaNode *node, const RenderState *state,
                                      const GlobPattern &glob) const;
   void r_find_all_texture_stages(PandaNode *node, const RenderState *state,

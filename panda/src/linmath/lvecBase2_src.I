@@ -416,6 +416,49 @@ compare_to(const FLOATNAME(LVecBase2) &other, FLOATTYPE threshold) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVecBase2::get_hash
+//       Access: Public
+//  Description: Returns a suitable hash for phash_map.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LVecBase2)::
+get_hash() const {
+  return add_hash(0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase2::get_hash
+//       Access: Public
+//  Description: Returns a suitable hash for phash_map.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LVecBase2)::
+get_hash(FLOATTYPE threshold) const {
+  return add_hash(0, threshold);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase2::add_hash
+//       Access: Public
+//  Description: Adds the vector into the running hash.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LVecBase2)::
+add_hash(size_t hash) const {
+  return add_hash(hash, NEARLY_ZERO(FLOATTYPE));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase2::add_hash
+//       Access: Public
+//  Description: Adds the vector into the running hash.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LVecBase2)::
+add_hash(size_t hash, FLOATTYPE threshold) const {
+  float_hash fhasher(threshold);
+  hash = fhasher.add_hash(hash, _v.v._0);
+  hash = fhasher.add_hash(hash, _v.v._1);
+  return hash;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::unary -
 //       Access: Public
 //  Description:

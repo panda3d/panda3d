@@ -118,6 +118,16 @@ compare_to(const TypeHandle &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeHandle::get_hash
+//       Access: Published
+//  Description: Returns a hash code suitable for phash_map.
+////////////////////////////////////////////////////////////////////
+INLINE size_t TypeHandle::
+get_hash() const {
+  return (size_t)_index;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::get_name
 //       Access: Published
 //  Description: Returns the name of the type.

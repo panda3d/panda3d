@@ -163,7 +163,7 @@ private:
 
   // This maps the type index numbers encountered within the Bam file
   // to actual TypeHandles.
-  typedef pmap<int, TypeHandle> IndexMap;
+  typedef phash_map<int, TypeHandle, int_hash> IndexMap;
   IndexMap _index_map;
 
   // This maps the object ID numbers encountered within the Bam file
@@ -173,7 +173,7 @@ private:
     TypedWritable *_ptr;
     ChangeThisFunc _change_this;
   };
-  typedef pmap<int, CreatedObj> CreatedObjs;
+  typedef phash_map<int, CreatedObj, int_hash> CreatedObjs;
   CreatedObjs _created_objs;
   // This is the iterator into the above map for the object we are
   // currently reading in p_read_object().  It is carefully maintained
@@ -188,11 +188,11 @@ private:
   // completed, along with the object ID's of the pointers they need,
   // in the order in which read_pointer() was called, so that we may
   // call the appropriate complete_pointers() later.
-  typedef pmap<int, vector_int> ObjectPointers;
+  typedef phash_map<int, vector_int, int_hash> ObjectPointers;
   ObjectPointers _object_pointers;
 
   // Ditto, for the PiplineCycler objects.
-  typedef pmap<PipelineCyclerBase *, vector_int> CyclerPointers;
+  typedef phash_map<PipelineCyclerBase *, vector_int, pointer_hash> CyclerPointers;
   CyclerPointers _cycler_pointers;
 
   // This is the number of extra objects that must still be read (and
@@ -202,12 +202,12 @@ private:
 
   // This is the set of all objects that registered themselves for
   // finalization.
-  typedef pset<TypedWritable *> Finalize;
+  typedef phash_set<TypedWritable *, pointer_hash> Finalize;
   Finalize _finalize_list;
 
   // These are used by get_pta() and register_pta() to unify multiple
   // references to the same PointerToArray.
-  typedef pmap<int, void *> PTAMap;
+  typedef phash_map<int, void *, int_hash> PTAMap;
   PTAMap _pta_map;
   int _pta_id;
 
@@ -215,11 +215,11 @@ private:
   // on-the-fly to satisfy bam requirements.  We keep track of this
   // just so we can suppress warning messages from attempts to create
   // objects of these types.
-  typedef pset<TypeHandle> NewTypes;
+  typedef phash_set<TypeHandle> NewTypes;
   static NewTypes _new_types;
 
   // This is used in support of set_aux_data() and get_aux_data().
-  typedef pmap<string, void *> AuxData;
+  typedef phash_map<string, void *, string_hash> AuxData;
   AuxData _aux_data;
 
   int _file_major, _file_minor;

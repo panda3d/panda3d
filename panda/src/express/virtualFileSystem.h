@@ -25,7 +25,6 @@
 #include "filename.h"
 #include "dSearchPath.h"
 #include "pointerTo.h"
-#include "pmap.h"
 #include "config_express.h"
 
 class Multifile;

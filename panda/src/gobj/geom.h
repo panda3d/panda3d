@@ -274,6 +274,8 @@ protected:
     PTA_ushort _tindex;
   };
 
+  // A pmap, not a phash_map, to save space because it will probably
+  // have only one element.
   typedef pmap<CPT(TexCoordName), TexCoordDef> TexCoordsByName;
   TexCoordsByName _texcoords_by_name;
 
