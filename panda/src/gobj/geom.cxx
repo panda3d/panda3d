@@ -187,6 +187,7 @@ operator = (const Geom &copy) {
   _tindex = copy._tindex;
 
   _numprims = copy._numprims;
+  _num_vertices = copy._num_vertices;
   _primlengths = copy._primlengths;
   for (int i = 0; i < num_GeomAttrTypes; i++) {
     _bind[i] = copy._bind[i];
@@ -353,26 +354,6 @@ get_texcoords(PTA_TexCoordf &texcoords, GeomBindType &bind,
 bool Geom::
 is_dynamic() const {
   return (_vindex != (ushort*)0L);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_num_vertices
-//       Access: Public
-//  Description: Returns the number of vertices required by all all
-//               the prims in the Geom.
-////////////////////////////////////////////////////////////////////
-int Geom::
-get_num_vertices() const {
-  if (!uses_components()) {
-    return get_num_vertices_per_prim() * get_num_prims();
-  }
-
-  int total = 0;
-  for (int i = 0; i < get_num_prims(); i++) {
-    total += _primlengths[i];
-  }
-
-  return total;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -707,7 +688,16 @@ fillin(DatagramIterator& scan, BamReader* manager) {
   READ_PTA(manager, scan, IPD_ushort::read_datagram, _tindex)
 
   _numprims = scan.get_uint16();
+
+  // is there any point in doing this for uses_components()==false?
   READ_PTA(manager, scan, IPD_int::read_datagram, _primlengths)
+
+  if (uses_components()) {
+      _num_vertices = PTA_int_arraysum(_primlengths);
+  } else {
+      // except for strips & fans with the length arrays, total verts will be simply this
+      _num_vertices = _numprims*get_num_vertices_per_prim();
+  }
 
   //Write out the bindings for vertices, normals,
   //colors and texture coordinates

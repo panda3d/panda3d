@@ -246,7 +246,7 @@ protected:
   PTA_ushort _cindex;
   PTA_ushort _tindex;
 
-  int _numprims;
+  int _numprims,_num_vertices;
   PTA_int _primlengths;
   enum GeomBindType _bind[num_GeomAttrTypes];
 

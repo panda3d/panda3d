@@ -138,6 +138,10 @@ get_texcoords_index() const {
 INLINE void Geom::
 set_num_prims(int num) {
   _numprims = num;
+  if (!uses_components()) {
+    // except for strips & fans with the length arrays, total verts will be simply this
+    _num_vertices = _numprims*get_num_vertices_per_prim();
+  }
   make_dirty();
 }
 
@@ -152,6 +156,30 @@ get_num_prims(void) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_num_vertices
+//       Access: Public
+//  Description: Returns the number of vertices required by all all
+//               the prims in the Geom.
+////////////////////////////////////////////////////////////////////
+INLINE int Geom::
+get_num_vertices() const {
+  return _num_vertices;
+}
+
+INLINE int PTA_int_arraysum(const PTA_int &lengths) {
+    assert(lengths.size()>0);
+    
+    int *pLen=&lengths[0];
+    int *pArrayEnd=pLen+lengths.size();
+    int nVerts = 0;
+    for (;pLen<pArrayEnd;pLen++) {
+      nVerts += *pLen;
+    }
+    return nVerts;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::set_lengths
 //       Access: Public
 //  Description: Sets the array that indicates the length (number of
@@ -163,6 +191,7 @@ get_num_prims(void) const {
 INLINE void Geom::
 set_lengths(const PTA_int &lengths) {
   _primlengths = lengths;
+  _num_vertices = PTA_int_arraysum(lengths);
   make_dirty();
 }
 
