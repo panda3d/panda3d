@@ -39,7 +39,7 @@ PixelBuffer(void) : ImageBuffer()
   _border = 0;
   _format = F_rgb;
   _type = T_unsigned_byte;
-  _components = 3;
+  _num_components = 3;
   _component_width = 1;
   _image = PTA_uchar();
 
@@ -61,11 +61,11 @@ PixelBuffer(int xsize, int ysize, int components, int component_width,
   _xorg = 0;
   _yorg = 0;
   _border = 0;
-  _components = components;
+  _num_components = components;
   _component_width = component_width;
   _type = type;
   _format = format;
-  _image = PTA_uchar::empty_array((unsigned int)(_xsize * _ysize * _components * _component_width));
+  _image = PTA_uchar::empty_array((unsigned int)(_xsize * _ysize * _num_components * _component_width));
   _loaded = true;
 }
 
@@ -83,12 +83,12 @@ PixelBuffer(int xsize, int ysize, int components, int component_width, Type type
   _xorg = 0;
   _yorg = 0;
   _border = 0;
-  _components = components;
+  _num_components = components;
   _component_width = component_width;
   _type = type;
   _format = format;
   if(bAllocateRAM)
-    _image = PTA_uchar::empty_array((unsigned int)(_xsize * _ysize * _components * _component_width));
+    _image = PTA_uchar::empty_array((unsigned int)(_xsize * _ysize * _num_components * _component_width));
    else _image = PTA_uchar();
   _loaded = false;
 }
@@ -105,7 +105,7 @@ PixelBuffer(const PixelBuffer &copy) :
   _xorg(copy._xorg),
   _yorg(copy._yorg),
   _border(copy._border),
-  _components(copy._components),
+  _num_components(copy._num_components),
   _component_width(copy._component_width),
   _format(copy._format),
   _type(copy._type),
@@ -126,7 +126,7 @@ operator = (const PixelBuffer &copy) {
   _xorg = copy._xorg;
   _yorg = copy._yorg;
   _border = copy._border;
-  _components = copy._components;
+  _num_components = copy._num_components;
   _component_width = copy._component_width;
   _format = copy._format;
   _type = copy._type;
@@ -204,7 +204,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
 {
   int num_components = pnmimage.get_num_channels();
 
-  if (!_loaded || num_components != _components) {
+  if (!_loaded || num_components != _num_components) {
     // Come up with a default format based on the number of channels.
     // But only do this the first time the file is loaded, or if the
     // number of channels in the image changes on subsequent loads.
@@ -235,7 +235,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
 
   _xsize = pnmimage.get_x_size();
   _ysize = pnmimage.get_y_size();
-  _components = num_components;
+  _num_components = num_components;
   _loaded = true;
 
   // Now copy the pixel data from the PNMImage into our internal
@@ -248,7 +248,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     // Most common case: one byte per pixel, and the source image
     // shows a maxval of 255.  No scaling is necessary.
     _type = T_unsigned_byte;
-    _image = PTA_uchar::empty_array((int)(_xsize * _ysize * _components));
+    _image = PTA_uchar::empty_array((int)(_xsize * _ysize * _num_components));
     int idx = 0;
     
     for (int j = _ysize-1; j >= 0; j--) {
@@ -270,7 +270,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     // Another possible case: two bytes per pixel, and the source
     // image shows a maxval of 65535.  Again, no scaling is necessary.
     _type = T_unsigned_short;
-//    _image = PTA_uchar::empty_array(_xsize * _ysize * _components * 2);
+//    _image = PTA_uchar::empty_array(_xsize * _ysize * _num_components * 2);
     int idx = 0;
     
     for (int j = _ysize-1; j >= 0; j--) {
@@ -293,7 +293,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     // something other than 255.  In this case, we should scale the
     // pixel values up to the appropriate amount.
     _type = T_unsigned_byte;
-    _image = PTA_uchar::empty_array(_xsize * _ysize * _components);
+    _image = PTA_uchar::empty_array(_xsize * _ysize * _num_components);
     int idx = 0;
     double scale = 255.0 / (double)maxval;
     
@@ -317,7 +317,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     // something other than 65535.  Again, we must scale the pixel
     // values.
     _type = T_unsigned_short;
-    _image = PTA_uchar::empty_array(_xsize * _ysize * _components * 2);
+    _image = PTA_uchar::empty_array(_xsize * _ysize * _num_components * 2);
     int idx = 0;
     double scale = 65535.0 / (double)maxval;
     
@@ -350,7 +350,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
 bool PixelBuffer::
 store(PNMImage &pnmimage) const {
   if (_type == T_unsigned_byte) {
-    pnmimage.clear(_xsize, _ysize, _components);
+    pnmimage.clear(_xsize, _ysize, _num_components);
     bool has_alpha = pnmimage.has_alpha();
     bool is_grayscale = pnmimage.is_grayscale();
 
@@ -371,7 +371,7 @@ store(PNMImage &pnmimage) const {
     return true;
 
   } else if (_type == T_unsigned_short) {
-    pnmimage.clear(_xsize, _ysize, _components, 65535);
+    pnmimage.clear(_xsize, _ysize, _num_components, 65535);
     bool has_alpha = pnmimage.has_alpha();
     bool is_grayscale = pnmimage.is_grayscale();
 
@@ -411,7 +411,8 @@ copy(const PixelBuffer *pb) {
   _xsize = pb->_xsize;
   _ysize = pb->_ysize;
   _border = pb->_border;
-  _components = pb->_components;
+  _num_components = pb->_num_components;
+  _component_width = pb->_component_width;
   _format = pb->_format;
   _image = PTA_uchar::empty_array(0);
   if (!pb->_image.empty())

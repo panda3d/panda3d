@@ -71,19 +71,6 @@ INLINE PixelBuffer::
 }
 
 
-INLINE void PixelBuffer::
-set_size(int x_org, int y_org, int x_size, int y_size) {
-  if ((_xsize != x_size) || (_ysize != y_size) ||
-      (_xorg != x_org) || (_yorg != y_org)) {
-    make_dirty();
-  }
-
-  _xsize = x_size;
-  _ysize = y_size;
-  _xorg = x_org;
-  _yorg = y_org;
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PixelBuffer::set_xsize
 //       Access:
@@ -137,13 +124,47 @@ INLINE void PixelBuffer::set_yorg(int org)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PixelBuffer::set_loaded
-//       Access:
+//     Function: PixelBuffer::set_size
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void PixelBuffer::set_loaded()
-{
-  _loaded = true;
+INLINE void PixelBuffer::
+set_size(int x_org, int y_org, int x_size, int y_size) {
+  if ((_xsize != x_size) || (_ysize != y_size) ||
+      (_xorg != x_org) || (_yorg != y_org)) {
+    make_dirty();
+  }
+
+  _xsize = x_size;
+  _ysize = y_size;
+  _xorg = x_org;
+  _yorg = y_org;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::set_num_components
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::
+set_num_components(int num_components) {
+  if (_num_components != num_components) {
+    _num_components = num_components;
+    make_dirty();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::set_component_width
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::
+set_component_width(int component_width) {
+  if (_component_width != component_width) {
+    _component_width = component_width;
+    make_dirty();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -152,12 +173,21 @@ INLINE void PixelBuffer::set_loaded()
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PixelBuffer::
-set_format(PixelBuffer::Format format)
-{
+set_format(PixelBuffer::Format format) {
   if (_format != format) {
     _format = format;
     make_dirty();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PixelBuffer::set_loaded
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PixelBuffer::set_loaded()
+{
+  _loaded = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -218,7 +248,7 @@ get_border() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PixelBuffer::
 get_num_components() const {
-  return _components;
+  return _num_components;
 }
 
 ////////////////////////////////////////////////////////////////////

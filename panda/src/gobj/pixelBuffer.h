@@ -17,33 +17,24 @@
 ////////////////////////////////////////////////////////////////////
 #ifndef PIXELBUFFER_H
 #define PIXELBUFFER_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
+
+#include "pandabase.h"
 
 #include "imageBuffer.h"
 
-#include <pnmImage.h>
-#include <graphicsStateGuardianBase.h>
-#include <pta_uchar.h>
-
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
+#include "pnmImage.h"
+#include "graphicsStateGuardianBase.h"
+#include "pta_uchar.h"
 
 class RenderBuffer;
 class Filename;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PixelBuffer
-// Description :
-
-//               Maintains an array of pixel data corresponding to an
+// Description : Maintains an array of pixel data corresponding to an
 //               image, e.g. copied from the frame buffer, or as part
 //               of a Texture.
-
+//
 //               Pixel data is stored in a generic, uncompressed
 //               format.  Each row of pixels is laid out horizontally,
 //               from the top to the bottom, with no padding between
@@ -124,6 +115,8 @@ public:
   INLINE void set_xorg(int org);
   INLINE void set_yorg(int org);
   INLINE void set_size(int x_org, int y_org, int x_size, int y_size);
+  INLINE void set_num_components(int num_components);
+  INLINE void set_component_width(int component_width);
   INLINE void set_format(Format format);
   INLINE void set_loaded();
 
@@ -178,7 +171,7 @@ protected:
   int _xorg;
   int _yorg;
   int _border;
-  int _components;
+  int _num_components;
   int _component_width;
   Format _format;
   Type _type;

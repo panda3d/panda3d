@@ -830,11 +830,15 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
     if (_pbuffer != (PixelBuffer *)NULL) {
       if (num_channels == _pbuffer->get_num_components()) {
         // Only reset the format if the number of components hasn't
-        // changed.
+        // changed, since if the number of components has changed our
+        // texture no longer matches what it was when the bam was
+        // written.
         _pbuffer->set_format(format);
       }
 
       if (has_rawdata) {
+        // In the rawdata case, we must always set the format.
+        _pbuffer->set_format(format);
         _pbuffer->set_xsize(scan.get_int32());
         _pbuffer->set_ysize(scan.get_int32());
         _pbuffer->set_xorg(scan.get_int32());
