@@ -132,8 +132,8 @@ consider_downgrade(PNMImage &pnmimage, int num_channels,
 ////////////////////////////////////////////////////////////////////
 Texture::
 Texture() : ImageBuffer() {
-  _magfilter = FT_nearest;
-  _minfilter = FT_nearest;
+  _magfilter = FT_linear;
+  _minfilter = FT_linear;
   _wrapu = WM_repeat;
   _wrapv = WM_repeat;
   _anisotropic_degree = 1;
@@ -153,8 +153,8 @@ Texture() : ImageBuffer() {
 Texture::
 Texture(int xsize, int ysize, int components, int component_width, PixelBuffer::Type type, 
         PixelBuffer::Format format, bool bAllocateRAM) : ImageBuffer() {
-  _magfilter = FT_nearest;
-  _minfilter = FT_nearest;
+  _magfilter = FT_linear;
+  _minfilter = FT_linear;
   _wrapu = WM_repeat;
   _wrapv = WM_repeat;
   _anisotropic_degree = 1;
