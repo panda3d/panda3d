@@ -25,6 +25,10 @@
 ////////////////////////////////////////////////////////////////////
 Decompressor::
 Decompressor(void) {
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "Decompressor::constructor() - Creating buffer of size: "
+      << decompressor_buffer_size << endl;
   PT(Buffer) buffer = new Buffer(decompressor_buffer_size);
   init(buffer);
 }
@@ -162,6 +166,11 @@ run(void) {
   int dest_buffer_length = _buffer->get_length() - _source_buffer_length;
   int avail_out = dest_buffer_length;
   nassertr(avail_out > 0 && avail_in > 0, false);
+  
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "Decompressor::run() - avail_in: " << avail_in << " avail_out: "
+      << avail_out << endl;
 
   while (avail_in > 0) {
     int ret = _decompressor->decompress_to_stream(next_in, avail_in,
@@ -170,13 +179,14 @@ run(void) {
     if (ret == ZCompressorBase::S_error)
       return DS_error_zlib;
     if ((int)_decompressor->get_total_in() == _source_file_length &&
-	  avail_out == dest_buffer_length)
+	  avail_out == dest_buffer_length) {
       _read_stream.close();
       _write_stream.close();
       _source_file.unlink();
       delete _decompressor;
       _decompressor = NULL;
       return DS_success;
+    }
   }
 
   return DS_ok;
