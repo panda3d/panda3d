@@ -274,7 +274,7 @@ new_thread(int) {
 //     Function: PStatMonitor::new_data
 //       Access: Public, Virtual
 //  Description: Called as each frame's data is made available.  There
-//               is no gurantee the frames will arrive in order, or
+//               is no guarantee the frames will arrive in order, or
 //               that all of them will arrive at all.  The monitor
 //               should be prepared to accept frames received
 //               out-of-order or missing.  The use of the
