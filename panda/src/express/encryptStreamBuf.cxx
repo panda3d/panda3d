@@ -131,7 +131,7 @@ open_read(istream *source, bool owns_source, const string &password) {
   result =
     PKCS5_PBKDF2_HMAC_SHA1((const char *)password.data(), password.length(),
                            (unsigned char *)iv.data(), iv.length(), 
-                           count * iteration_count_factor, 
+                           count * iteration_count_factor + 1, 
                            key_length, key);
   nassertv(result > 0);
 
@@ -232,7 +232,7 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   unsigned char *key = (unsigned char *)alloca(key_length);
   result =
     PKCS5_PBKDF2_HMAC_SHA1((const char *)password.data(), password.length(),
-                           iv, iv_length, count * iteration_count_factor,
+                           iv, iv_length, count * iteration_count_factor + 1,
                            key_length, key);
   nassertv(result > 0);
 

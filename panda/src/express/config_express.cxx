@@ -99,7 +99,8 @@ config_express.GetInt("encryption-key-length", 0);
 // a key when encrypting.  Its purpose is to make it computationally
 // more expensive for an attacker to search the key space
 // exhaustively.  This should be a multiple of 1,000 and should not
-// exceed about 65 million.  This value is used only to control
+// exceed about 65 million; the value 0 indicates just one application
+// of the hashing algorithm.  This value is used only to control
 // encryption; the correct count will automatically be selected on
 // decryption.
 const int encryption_iteration_count =
