@@ -32,10 +32,9 @@ int MilesAudioManager::_active_managers;
 HDLSFILEID MilesAudioManager::_dls_field;
 
 PT(AudioManager) Create_AudioManager() {
-  audio_debug("Create_AudioManger() Miles.");
+  audio_debug("Create_AudioManager() Miles.");
   return new MilesAudioManager();
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::MilesAudioManager
@@ -95,6 +94,13 @@ MilesAudioManager() {
         } else {
           audio_debug("  using Miles software midi");
         }
+      }
+
+      if (use_vfs) {
+        AIL_set_file_callbacks(vfs_open_callback,
+                               vfs_close_callback,
+                               vfs_seek_callback,
+                               vfs_read_callback);
       }
     } else {
       audio_debug("  AIL_quick_startup failed: "<<AIL_last_error());
@@ -171,16 +177,10 @@ HAUDIO MilesAudioManager::
 load(Filename file_name) {
   HAUDIO audio;
 
-  /*
-    // This is broken for some reason.
   if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    audio_debug("  vfs load \"" << file_name << "\"");
-    string audio_data;
-    vfs->read_file(file_name, audio_data);
-    audio = AIL_quick_load_mem(audio_data.data(), audio_data.size());
+    audio = AIL_quick_load(file_name.c_str());
 
-    } else */ {
+  } else {
     string stmp = file_name.to_os_specific();
     audio_debug("  \"" << stmp << "\"");
     audio = AIL_quick_load(stmp.c_str());
@@ -505,6 +505,100 @@ get_gm_file_path(string& result) {
   get_registry_entry(HKEY_LOCAL_MACHINE,
       "SOFTWARE\\Microsoft\\DirectMusic", "GMFilePath", result);
   audio_debug("MilesAudioManager::get_gm_file_path() result out=\""<<result<<"\"");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::vfs_open_callback
+//       Access: Private, Static
+//  Description: A Miles callback to open a file for reading from the
+//               VFS system.
+////////////////////////////////////////////////////////////////////
+U32 MilesAudioManager::
+vfs_open_callback(const char *filename, U32 *file_handle) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  istream *istr = vfs->open_read_file(filename);
+  if (istr == (istream *)NULL) {
+    // Unable to open.
+    milesAudio_cat.warning()
+      << "Unable to open " << filename << "\n";
+    *file_handle = 0;
+    return 0;
+  }
+
+  // Successfully opened.  Now we should return a U32 that we can
+  // map back into this istream pointer later.  Strictly speaking,
+  // we should allocate a table of istream pointers and assign each
+  // one a unique number, but for now we'll cheat because we know
+  // that the Miles code (presently) only runs on Win32, which
+  // always has 32-bit pointers.
+  *file_handle = (U32)istr;
+  return 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::vfs_read_callback
+//       Access: Private, Static
+//  Description: A Miles callback to read data from a file opened via
+//               vfs_open_callback().
+////////////////////////////////////////////////////////////////////
+U32 MilesAudioManager::
+vfs_read_callback(U32 file_handle, void *buffer, U32 bytes) {
+  if (file_handle == 0) {
+    // File was not opened.
+    return 0;
+  }
+  istream *istr = (istream *)file_handle;
+  istr->read((char *)buffer, bytes);
+  size_t bytes_read = istr->gcount();
+
+  return bytes_read;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::vfs_seek_callback
+//       Access: Private, Static
+//  Description: A Miles callback to seek within a file opened via
+//               vfs_open_callback().
+////////////////////////////////////////////////////////////////////
+S32 MilesAudioManager::
+vfs_seek_callback(U32 file_handle, S32 offset, U32 type) {
+  if (file_handle == 0) {
+    // File was not opened.
+    return 0;
+  }
+  istream *istr = (istream *)file_handle;
+
+  ios::seekdir dir = ios::beg;
+  switch (type) {
+  case AIL_FILE_SEEK_BEGIN:
+    dir = ios::beg;
+    break;
+  case AIL_FILE_SEEK_CURRENT:
+    dir = ios::cur;
+    break;
+  case AIL_FILE_SEEK_END:
+    dir = ios::end;
+    break;
+  }
+
+  istr->seekg(offset, dir);
+  return istr->tellg();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::vfs_close_callback
+//       Access: Private, Static
+//  Description: A Miles callback to close a file opened via
+//               vfs_open_callback().
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+vfs_close_callback(U32 file_handle) {
+  if (file_handle == 0) {
+    // File was not opened.
+    return;
+  }
+  istream *istr = (istream *)file_handle;
+  delete istr;
 }
 
 

@@ -87,6 +87,13 @@ private:
                           string& result);
   // get the default dls file path:
   void get_gm_file_path(string& result);
+
+  // These are "callback" functions that implement vfs-style I/O for
+  // Miles.
+  static U32 AILCALLBACK vfs_open_callback(const char *filename, U32 *file_handle);
+  static U32 AILCALLBACK vfs_read_callback(U32 file_handle, void *buffer, U32 bytes);
+  static S32 AILCALLBACK vfs_seek_callback(U32 file_handle, S32 offset, U32 type);
+  static void AILCALLBACK vfs_close_callback(U32 file_handle);
   
   friend MilesAudioSound;
 };
