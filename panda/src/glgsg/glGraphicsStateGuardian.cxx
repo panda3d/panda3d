@@ -4474,7 +4474,7 @@ save_mipmap_images(Texture *tex) {
                       pb->get_format());
     glGetTexImage(GL_TEXTURE_2D, mipmap_level, external_format, 
                   type, mpb->_image);
-    Filename mipmap_filename = name + "_" + format_string(mipmap_level) + ".pnm";
+    Filename mipmap_filename = name + "_" + format_string(mipmap_level) + ".rgb";
     nout << "Writing mipmap level " << mipmap_level
          << " (" << xsize << " by " << ysize << ") " 
          << mipmap_filename << "\n";
