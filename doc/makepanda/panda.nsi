@@ -51,7 +51,7 @@ InstType "Typical"
 
 !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
 
-Section "${FULLNAME}" SecCore
+Section "${SMDIRECTORY}" SecCore
         SectionIn 1 2 3 RO
 
         SetOutPath $INSTDIR
@@ -82,7 +82,7 @@ Section "${FULLNAME}" SecCore
             SetOutpath $INSTDIR\${PPGAME}
             File /r ${PSOURCE}\${PPGAME}\*
             SetOutPath $INSTDIR\${PPGAME}
-            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\${FULLNAME}.lnk" "$INSTDIR\bin\ppython.exe" "${PPGAME}.py" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "${FULLNAME}"
+            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Play ${FULLNAME}.lnk" "$INSTDIR\bin\ppython.exe" "${PPGAME}.py" "$INSTDIR\bin\ppython.exe" 0 SW_SHOWMINIMIZED "" "Play ${FULLNAME}"
 
         !else
 
@@ -153,7 +153,7 @@ Section -post
         DetailPrint "Adding the uninstaller ..."
         Delete "$INSTDIR\uninst.exe"
         WriteUninstaller "$INSTDIR\uninst.exe"
-        WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALLKEY}" "DisplayName" "${FULLNAME}"
+        WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALLKEY}" "DisplayName" "${SMDIRECTORY}"
         WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALLKEY}" "UninstallString" '"$INSTDIR\uninst.exe"'
         CreateShortcut "$SMPROGRAMS\${SMDIRECTORY}\Uninstall ${FULLNAME}.lnk" "$INSTDIR\uninst.exe" ""
 SectionEnd
@@ -168,7 +168,7 @@ SectionEnd
 Section Uninstall
 
 !ifndef PPGAME
-        DetailPrint "Removing ${FULLNAME} from PATH ..."
+        DetailPrint "Removing ${SMDIRECTORY} from PATH ..."
         Push "$INSTDIR\bin"
         Call un.RemoveFromPath
 !endif

@@ -6242,7 +6242,7 @@ if (sys.platform == "win32"):
             sys.exit("No such directory "+PPGAME)
         if (os.path.exists(os.path.join(PPGAME,PPGAME+".py"))==0):
             sys.exit("No such file "+PPGAME+"/"+PPGAME+".py")
-        MakeInstaller(PPGAME+"-"+VERSION+".exe", PPGAME+" "+VERSION, PPGAME+" "+VERSION,
+        MakeInstaller(PPGAME+"-"+VERSION+".exe", PPGAME, PPGAME+" "+VERSION,
                       PPGAME+" "+VERSION, "C:\\"+PPGAME+"-"+VERSION, PPGAME)
 
 
