@@ -588,7 +588,7 @@ dx_init(HCURSOR hMouseCursor) {
     _pCurrentGeomContext = NULL;
     _bDrawPrimDoSetupVertexBuffer = false; 
 
-    _last_testcooplevel_result = S_OK;
+    _last_testcooplevel_result = D3D_OK;
 
     // only 1 channel on dx currently
     _panda_gfx_channel = _win->get_channel(0);
@@ -5776,8 +5776,7 @@ dx_resize_window(HWND mwindow, RECT viewrect) {
     if(FAILED(hr)) {
         if(hr==D3DERR_OUTOFVIDEOMEMORY)
             return false;
-
-        dxgsg_cat.error() << "dx_resize_window failed, hr = " << D3DERRORSTRING(hr);
+        dxgsg_cat.error() << "dx_resize_window Reset() failed, hr = " << D3DERRORSTRING(hr);
         exit(1);
     }
         
@@ -5858,6 +5857,11 @@ HRESULT DXGraphicsStateGuardian::RecreateAllDeviceObjects(void) {
   return S_OK;
 }
 
+HRESULT DXGraphicsStateGuardian::ReleaseAllDeviceObjects(void) {
+    // release any D3DPOOL_DEFAULT objects
+    return S_OK;
+}
+
 HRESULT DXGraphicsStateGuardian::RestoreAllDeviceObjects(void) {
   // BUGBUG: this should also restore vertex buffer contents when they are implemented
   // You will need to destroy and recreate
@@ -5898,13 +5902,25 @@ void DXGraphicsStateGuardian::show_frame(void) {
 
   DO_PSTATS_STUFF(PStatTimer timer(_win->_swap_pcollector));  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
 
+  HRESULT hr = scrn.pD3DDevice->Present((CONST RECT*)NULL,(CONST RECT*)NULL,
+                                        (HWND)NULL,NULL);
+  if(FAILED(hr)) {
+    if(hr == D3DERR_DEVICELOST) {
+        CheckCooperativeLevel();
+    } else {
+      dxgsg_cat.error() << "show_frame() - Present() failed, hr = " << D3DERRORSTRING(hr);
+      exit(1);
+    }
+  }
+/*
   if(dx_full_screen) {
     show_full_screen_frame();
   } else {
     show_windowed_frame();
   }
+*/  
 }
-
+/*
 ////////////////////////////////////////////////////////////////////
 //     Function: show_full_screen_frame
 //       Access:
@@ -5931,16 +5947,6 @@ void DXGraphicsStateGuardian::show_full_screen_frame(void) {
   // bugbug: dont we want triple buffering instead of wasting time
   // waiting for vsync?
   hr = scrn.pD3DDevicesPrimary->Flip( NULL, dwFlipFlags);
-
-  if(FAILED(hr)) {
-    if((hr == DDERR_SURFACELOST) || (hr == DDERR_SURFACEBUSY)) {
-      CheckCooperativeLevel();
-    } else {
-      dxgsg_cat.error() << "show_frame() - Flip failed w/unexpected error code: " << D3DERRORSTRING(hr);
-      exit(1);
-    }
-  }
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5991,30 +5997,47 @@ void DXGraphicsStateGuardian::show_windowed_frame(void) {
       exit(1);
     }
   }
-
 }
+*/
 
 bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
 
     HRESULT hr = scrn.pD3DDevice->TestCooperativeLevel();
+    if(SUCCEEDED(hr)) {
+        assert(SUCCEEDED(_last_testcooplevel_result)); 
+        return true;
+    }
 
-    if(SUCCEEDED(_last_testcooplevel_result)) {
+    switch(hr) {
+        case D3DERR_DEVICENOTRESET:
+             _bDXisReady = FALSE;
+             ReleaseAllDeviceObjects();
+             hr=scrn.pD3DDevice->Reset(&scrn.PresParams);
+             if(bDoReactivateWindow)
+                 _win->reactivate_window();  //must reactivate window before you can restore surfaces (otherwise you are in WRONGVIDEOMODE, and DDraw RestoreAllSurfaces fails)
+             RestoreAllDeviceObjects();  
+             hr = scrn.pD3DDevice->TestCooperativeLevel();
+             assert(SUCCEEDED(hr));
+            break;
+
+        case D3DERR_DEVICELOST:
+            if(SUCCEEDED(_last_testcooplevel_result)) {
+                if(_bDXisReady) {
+                   _win->deactivate_window();
+                   _bDXisReady = FALSE;
+                   if(dxgsg_cat.is_debug())
+                       dxgsg_cat.debug() << "D3D Device was Lost, waiting...\n";
+                }
+            }
+    }
+
+/*
         if(SUCCEEDED(hr))  // this means this was just a safety check, dont need to restore surfs
             return true;
 
         // otherwise something just went wrong
 
-        HRESULT hr;
-    
-        // TestCooperativeLevel returns DD_OK: If the current mode is same as the one which the App set.
-        // The following error is returned only for exclusivemode apps.
-        // DDERR_NOEXCLUSIVEMODE: Some other app took exclusive mode.
-
-        hr = scrn.pD3DDevice->TestCooperativeLevel();
-    
-        HRESULT expected_error = (dx_full_screen ? DDERR_NOEXCLUSIVEMODE : DDERR_EXCLUSIVEMODEALREADYSET);
-
-        if(hr == expected_error) {
+        if(hr==D3DERR_DEVICELOST) {
           // This means that mode changes had taken place, surfaces
           // were lost but still we are in the original mode, so we
           // simply restore all surfaces and keep going.
@@ -6025,17 +6048,17 @@ bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
               else dxgsg_cat.debug() << "Another app has DDRAW exclusive mode, waiting...\n";
           }
 
-          if(_bDXisReady) {
-             _win->deactivate_window();
-             _bDXisReady = FALSE;
-          }
-        } else if(hr==DDERR_WRONGMODE) {
-            // This means that the desktop mode has changed
-            // need to destroy all of dx stuff and recreate everything
-            // back again, which is a big hit
-            dxgsg_cat.error() << "detected display mode change in TestCoopLevel, must recreate all DDraw surfaces, D3D devices, this is not handled yet. hr == " << D3DERRORSTRING(hr);
-            exit(1);
-        } else if(FAILED(hr)) {
+        } else if(hr==D3DERR_DEVICENOTRESET) {
+            // need to call Reset()
+
+            // do I want to do it here, or do 
+            HRESULT hr=scrn.pD3DDevice->Reset(&scrn.PresParams);
+            if(FAILED(hr)) {
+                dxgsg_cat.error() << "CheckCooperativeLevel Reset() failed, hr = " << D3DERRORSTRING(hr);
+                exit(1);
+            }
+
+        } else {
             dxgsg_cat.error() << "unexpected return code from TestCoopLevel: " << D3DERRORSTRING(hr);
             exit(1);
         }
@@ -6070,7 +6093,7 @@ bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
                       exit(1);
                   }
     }
-
+*/
     _last_testcooplevel_result = hr;
     return SUCCEEDED(hr);
 }
@@ -6222,7 +6245,7 @@ HRESULT SetViewMatrix( D3DMATRIX& mat, D3DXVECTOR3& vFrom, D3DXVECTOR3& vAt,
 //               contents of the node.
 ////////////////////////////////////////////////////////////////////
 GeomNodeContext *DXGraphicsStateGuardian::
-prepare_geom_node(GeomNode *node) 
+prepare_geom_node(GeomNode *node) {
 
  dxgsg_cat.error() << "prepare_geom_node unimplemented for DX8!\n";
  return NULL;

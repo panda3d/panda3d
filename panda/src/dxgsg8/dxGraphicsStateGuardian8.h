@@ -209,6 +209,7 @@ protected:
                     D3DXVECTOR3 *pCenter, float fRadius,
                     DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
                     DWORD *pNumVertices,DWORD *pNumTris,DWORD fvfFlags,DWORD dwVertSize);
+  HRESULT ReleaseAllDeviceObjects(void);
   HRESULT RestoreAllDeviceObjects(void);
   HRESULT RecreateAllDeviceObjects(void);
   HRESULT DeleteAllDeviceObjects(void);
@@ -398,8 +399,6 @@ public:
 
   bool  dx_resize_window(HWND hWnd, RECT viewrect) ;
   void  show_frame();
-  void  show_full_screen_frame();
-  void  show_windowed_frame();
   void dx_init(HCURSOR hMouseCursor);
   
 private:

@@ -1019,7 +1019,6 @@ HRESULT ConvertD3DSurftoPixBuf(IDirect3DSurface8 *pD3DSurf8,PixelBuffer *pixbuf)
 IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
     HRESULT hr;
     int cNumAlphaBits;     //  number of alpha bits in texture pixfmt
-    D3DFORMAT PixBufD3DFmt;
     D3DFORMAT TargetPixFmt=D3DFMT_UNKNOWN;
     bool bNeedLuminance = false;
 
@@ -1455,7 +1454,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 #ifdef DO_CUSTOM_CONVERSIONS
     dxgsg_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converting " << ConvNameStrs[ConvNeeded] << " \n";
 #else
-    dxgsg_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converting " << D3DFormatStr(PixBufD3DFmt) << " => " << D3DFormatStr(TargetPixFmt) << endl;
+    dxgsg_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converting " << D3DFormatStr(_PixBufD3DFmt) << " => " << D3DFormatStr(TargetPixFmt) << endl;
 #endif
 #endif
 
