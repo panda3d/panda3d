@@ -728,7 +728,6 @@ $[TAB] $[COMPILE_C]
 #define source $[file]
 #define ipath $[file_ipath]
 
-#define pdb_filename $[st_dir]/$[TARGET(lib_target)]
 
 #if $[DO_PCH]
 // best way to find out if file use pch (and needs /Yu) is to check dependencies
@@ -736,10 +735,14 @@ $[TAB] $[COMPILE_C]
 #define target_pch $[subst \./,\,$[patsubst %.h,$[so_dir]\%.pch,$[filter %_headers.h, $[dependencies $[file]]]]]
 #endif
 
+// COMPILE_LINE uses flags which uses pdb_filename
+
 #define flags $[c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
 
 #if $[target_pch]
-#define COMPILE_LINE $[COMPILE_C_WITH_PCH]
+// for pch, pch .pdb filename must match .obj filename
+#define pdb_filename $[osfilename $[so_dir]/$[TARGET(lib_target)]]  // assumes pch only occurs in lib_target scope, not metalib_target or in interrogate
+#define COMPILE_LINE $[patsubst /Fd%, /Fd"$[pdb_filename].pdb",$[COMPILE_C_WITH_PCH]]
 #else
 #define COMPILE_LINE $[COMPILE_C++]
 #endif
@@ -759,7 +762,7 @@ $[TAB] $[COMPILE_LINE]
 #define source $[file]
 #define ipath $[file_ipath]
 
-#define pdb_filename $[st_dir]/$[TARGET(lib_target)]
+#define pdb_filename $[st_dir]/$[TARGET(lib_target metalib_target)]
 
 #if $[DO_PCH]
 // best way to find out if file use pch (and needs /Yu) is to check dependencies
@@ -770,7 +773,9 @@ $[TAB] $[COMPILE_LINE]
 #define flags $[c++flags] $[all_sources $[building_var:%=/D%],$[file]]
 
 #if $[target_pch]
-#define COMPILE_LINE $[COMPILE_C_WITH_PCH]
+// for pch, pch .pdb filename must match .obj filename
+#define pdb_filename $[osfilename $[st_dir]/$[TARGET(lib_target)]]  // assumes pch only occurs in lib_target scope, not metalib_target or in interrogate
+#define COMPILE_LINE $[patsubst /Fd%, /Fd"$[pdb_filename].pdb",$[COMPILE_C_WITH_PCH]]
 #else
 #define COMPILE_LINE $[COMPILE_C++]
 #endif
@@ -787,11 +792,14 @@ $[TAB] $[COMPILE_LINE]
 #foreach file $[pch_header_source]
 #define target_pch $[patsubst %.h,$[st_dir]\%.pch,$[file]]
 #define target_obj $[patsubst %.h,$[st_dir]\%.obj,$[file]]
-#define pdb_filename $[st_dir]/$[TARGET(lib_target)]
 #define target $[target_obj]
 #define source $[file]
 #define ipath $[file_ipath]
 #define flags $[c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
+
+#define pdb_filename $[osfilename $[st_dir]/$[TARGET(lib_target)]]  // assumes pch only occurs in lib_target scope, not metalib_target or in interrogate
+#define COMPILE_CXXSTYLE_PCH $[patsubst /Fd%, /Fd"$[pdb_filename].pdb",$[COMPILE_CXXSTYLE_PCH]]
+
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
 $[target_obj] : $[source] $[dependencies $[file]]

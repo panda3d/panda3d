@@ -74,21 +74,13 @@
   #define dlllib dll
 #endif
 
+// NO_PCH is just a user override, if it is false, 
+// we still only do pch on dirs that request it
 #if $[eq $[NO_PCH],]
 #define DO_PCH 1
 #endif
 
 #define CFLAGS_SHARED
-
-#if $[NO_PCH]
-// different .pdb for every .obj  
-// we can probably just use the second case for everything built w/nmake
-// but I dont want to risk changing it right now, so only change pch case
-#defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"
-#else
-// for pch, .pdb file name must be the same for obj and pch header obj
-#defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[pdb_filename].pdb]"
-#endif
 
 #include $[THISDIRPREFIX]compilerSettings.pp
 
