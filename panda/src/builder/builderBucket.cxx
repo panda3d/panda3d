@@ -16,13 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "builder_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "builderAttrib.h"
 #include "builderBucket.h"
 #include "builderFuncs.h"
 #include "builderMisc.h"
-
 #include <namedNode.h>
 #include <geomNode.h>
+#endif
+
+
 
 BuilderBucket *BuilderBucket::_default_bucket = NULL;
 

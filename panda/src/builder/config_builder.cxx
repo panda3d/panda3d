@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_builder.h"
-
 #include <dconfig.h>
 
 Configure(config_builder);

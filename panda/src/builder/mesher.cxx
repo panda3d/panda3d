@@ -16,7 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "builder_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "mesher.h"
+#endif
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

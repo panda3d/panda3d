@@ -16,9 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "builder_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "builderTypes.h"
 
 #include <notify.h>
+#endif
 
 ostream &operator << (ostream &out, BuilderAttribFlags baf) {
   const char *space = "";
