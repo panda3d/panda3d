@@ -1675,8 +1675,8 @@ class MopathRecorder(AppShell, PandaObject):
 
     def followTerrain(self, height = 1.0):
         self.iRay.rayCollisionNodePath.reparentTo(self.nodePath)
-        node, hitPt, hitPtDist = self.iRay.pickGeom3D()
-        if node:
+        nodePath, hitPt, hitPtDist = self.iRay.pickGeom3D()
+        if nodePath:
             self.nodePath.setZ(self.nodePath, height - hitPtDist)
         self.iRay.rayCollisionNodePath.reparentTo(self.recorderNodePath)
 

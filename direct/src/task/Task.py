@@ -388,7 +388,7 @@ class TaskManager:
             # Alert the world, a new task is born!
             index = len(self.doLaterList)
             messenger.send('TaskManager-spawnDoLater',
-                           sentArgs = [task, task.name, index])
+                           sentArgs = [task, task.name, task.id])
         return task
 
     def doLater(self, delayTime, task, taskName):

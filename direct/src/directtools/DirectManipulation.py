@@ -40,14 +40,14 @@ class DirectManipulationControl(PandaObject):
         # Start out in select mode
         self.mode = 'select'
         # Check for a widget hit point
-        node, hitPt, hitPtDist = direct.iRay.pickWidget()
+        nodePath, hitPt, hitPtDist = direct.iRay.pickWidget()
         # Did we hit a widget?
-        if node:
+        if nodePath:
             # Yes!
             self.hitPt.assign(hitPt)
             self.hitPtDist = hitPtDist
             # Constraint determined by nodes name
-            self.constraint = node.getName()
+            self.constraint = nodePath.getName()
         else:
             # Nope, off the widget, no constraint
             self.constraint = None
@@ -86,18 +86,16 @@ class DirectManipulationControl(PandaObject):
         # depending on flag.....
         if self.mode == 'select':
             # Check for object under mouse
-            if direct.fControl:
-                node, hitPt, hitPtDist = direct.iRay.pickGeom(
-                    fIgnoreCamera = 0)
-            else:
-                node, hitPt, hitPtDist = direct.iRay.pickGeom(
-                    fIgnoreCamera = 1)
-            if node:
+            # Don't intersect with hidden or backfacing objects
+            skipFlags = SKIP_HIDDEN | SKIP_BACKFACE
+            # Skip camera (and its children), unless control key is pressed
+            skipFlags |= SKIP_CAMERA * (1 - base.getControl())
+            nodePath, hitPt, hitPtDist = direct.iRay.pickGeom(
+                skipFlags = skipFlags)
+            if nodePath:
                 # Record hit point information
                 self.hitPt.assign(hitPt)
                 self.hitPtDist = hitPtDist
-                # Find the node path from the node found above
-                nodePath = render.findPathTo(node)
                 # Select it
                 direct.select(nodePath, direct.fShift)
             else:
@@ -153,6 +151,12 @@ class DirectManipulationControl(PandaObject):
         # Ignore events
         for event in self.actionEvents:
             self.ignore(event[0])
+        self.removeManipulateObjectTask()
+        taskMgr.remove('manipulateObject')
+        taskMgr.remove('manip-move-wait')
+        taskMgr.remove('manip-watch-mouse')
+        taskMgr.remove('highlightWidgetTask')
+        taskMgr.remove('resizeObjectHandles')
 
     def toggleObjectHandlesMode(self):
         self.fSetCoa = 1 - self.fSetCoa
@@ -480,10 +484,10 @@ class DirectManipulationControl(PandaObject):
     def plantSelectedNodePath(self):
         """ Move selected object to intersection point of cursor on scene """
         # Check for intersection
-        node, hitPt, hitPtDist = direct.iRay.pickGeom(
-            fIntersectUnpickable = 1)
+        nodePath, hitPt, hitPtDist = direct.iRay.pickGeom(
+            skipFlags = SKIP_HIDDEN | SKIP_BACKFACE | SKIP_CAMERA)
         # MRM: Need to handle moving COA
-        if (node != None) and (direct.selected.last != None):
+        if (nodePath != None) and (direct.selected.last != None):
             # Record undo point
             direct.pushUndo(direct.selected)
             # Record wrt matrix
@@ -503,9 +507,9 @@ class ObjectHandles(NodePath,PandaObject):
 
         # Load up object handles model and assign it to self
         self.assign(loader.loadModel('models/misc/objectHandles'))
-        self.node().setName('objectHandles')
+        self.setName('objectHandles')
         self.scalingNode = self.getChild(0)
-        self.scalingNode.node().setName('ohScalingNode')
+        self.scalingNode.setName('ohScalingNode')
         self.ohScalingFactor = 1.0
         # To avoid recreating a vec every frame
         self.hitPt = Vec3(0)
@@ -847,7 +851,7 @@ class ObjectHandles(NodePath,PandaObject):
         lines.moveTo(-500,0,0)
         lines.drawTo(500,0,0)
         lines.create()
-        lines.node().setName('x-guide')
+        lines.setName('x-guide')
 
         # Y guide lines
         lines = LineNodePath(self.guideLines)
@@ -856,7 +860,7 @@ class ObjectHandles(NodePath,PandaObject):
         lines.moveTo(0,-500,0)
         lines.drawTo(0,500,0)
         lines.create()
-        lines.node().setName('y-guide')
+        lines.setName('y-guide')
 
         # Z guide lines
         lines = LineNodePath(self.guideLines)
@@ -865,7 +869,7 @@ class ObjectHandles(NodePath,PandaObject):
         lines.moveTo(0,0,-500)
         lines.drawTo(0,0,500)
         lines.create()
-        lines.node().setName('z-guide')
+        lines.setName('z-guide')
 
     def getAxisIntersectPt(self, axis):
         # Calc the xfrom from camera to widget

@@ -378,33 +378,45 @@ class DirectBoundingBox:
                 )
 
 
-class SelectionRay:
+class SelectionQueue(CollisionHandlerQueue):
     def __init__(self, parent):
+        # Initialize the superclass
+        CollisionHandlerQueue.__init__(self)
+        # Current entry in collision queue
+        self.index = -1
         # Create a collision node path attached to the given parent
-        self.rayCollisionNodePath = parent.attachNewNode( CollisionNode("ray") )
+        self.collisionNodePath = parent.attachNewNode( CollisionNode("ray") )
         # Don't pay the penalty of drawing this collision ray
-        self.rayCollisionNodePath.hide()
-        self.rayCollisionNode = self.rayCollisionNodePath.node()
+        self.collisionNodePath.hide()
+        self.collisionNode = self.collisionNodePath.node()
         # Intersect with geometry to begin with
         self.collideWithGeom()
-        # Create a collision ray
-        self.ray = CollisionRay()
-        # Add the ray to the collision Node
-        self.rayCollisionNode.addSolid( self.ray )
-        # Create a queue to hold the collision results
-        self.cq = CollisionHandlerQueue()
-        # Number of entries in CollisionHandlerQueue
-        self.numEntries = 0
-        # Current entry in collision queue
-        self.cqIndex = 0
         # And a traverser to do the actual collision tests
         self.ct = CollisionTraverser()
-        # Let the traverser know about the queue and the collision node
-        self.ct.addCollider(self.rayCollisionNode, self.cq )
-        # Reference node path (for picking next)
-        self.collisionRef = direct.group.attachNewNode('collisionRef')
+        # Let the traverser know about the collision node and the queue
+        self.ct.addCollider(self.collisionNode, self)
         # List of objects that can't be selected
         self.unpickable = UNPICKABLE
+        # Derived class must add Collider to complete initialization
+
+    def addCollider(self, collider):
+        # Inherited class must call this function to specify collider object
+        # Record collision object
+        self.collider = collider
+        # Add the collider to the collision Node
+        self.collisionNode.addSolid( self.collider )
+
+    def collideWithGeom(self):
+        self.collisionNode.setIntoCollideMask(BitMask32().allOff())
+        self.collisionNode.setFromCollideMask(BitMask32().allOff())
+        self.collisionNode.setCollideGeom(1)
+
+    def collideWithWidget(self):
+        self.collisionNode.setIntoCollideMask(BitMask32().allOff())
+        mask = BitMask32()
+        mask.setWord(0x80000000)
+        self.collisionNode.setFromCollideMask(mask)
+        self.collisionNode.setCollideGeom(0)
 
     def addUnpickable(self, item):
         if item not in self.unpickable:
@@ -414,168 +426,96 @@ class SelectionRay:
         if item in self.unpickable:
             self.unpickable.remove(item)
 
-    def pickGeom(self, targetNodePath = render, fIntersectUnpickable = 0,
-                 fIgnoreCamera = 0):
-        self.collideWithGeom()
-        self.pick(targetNodePath,
-                  direct.dr.mouseX,
-                  direct.dr.mouseY)
-        # Init self.cqIndex
-        self.cqIndex = -1
-        # Pick out the closest object that isn't a widget
-        for i in range(0,self.numEntries):
-            entry = self.cq.getEntry(i)
-            node = entry.getIntoNode()
-            nodePath = targetNodePath.findPathTo(node)
-            # Don't pick hidden nodes
-            if nodePath.isHidden():
-                pass
-            if fIgnoreCamera and (direct.camera in nodePath.getAncestry()):
-                # This avoids things parented to a camera.  Good idea?
-                pass
-            # Can pick unpickable, use the first visible node
-            elif fIntersectUnpickable:
-                self.cqIndex = i
-                break
-            # Is it a named node?, If so, see if it has a name
-            elif issubclass(node.__class__, PandaNode):
-                name = node.getName()
-                if name in self.unpickable:
-                    pass
-                else:
-                    self.cqIndex = i
-                    break
-            # Not hidden and not one of the widgets, use it
-            else:
-                self.cqIndex = i
-                break
-        # Did we hit an object?
-        if(self.cqIndex >= 0):
-            # Yes!
-            # Find hit point in parent's space
-            entry = self.cq.getEntry(self.cqIndex)
-            hitPt = self.parentToHitPt(entry)
-            hitPtDist = Vec3(hitPt - ZERO_POINT).length()
-            return (node, hitPt, hitPtDist)
+    def getCurrentEntry(self):
+        if self.index < 0:
+            return None
         else:
-            return (None, ZERO_POINT, 0)
+            return self.getEntry(self.index)
+        
+    def isEntryBackfacing(self, entry):
+        # If dot product of collision point surface normal and
+        # ray from camera to collision point is positive, we are
+        # looking at the backface of the polygon
+        v = Vec3(entry.getFromIntersectionPoint())
+        v.normalize()
+        return v.dot(entry.getFromSurfaceNormal()) >= 0
 
-    def pickWidget(self, targetNodePath = render):
-        self.collideWithWidget()
-        self.pick(targetNodePath,
-                  direct.dr.mouseX,
-                  direct.dr.mouseY)
-        # Did we hit a widget?
-        if self.numEntries:
-            # Yes!
-            # Entry 0 is the closest hit point if multiple hits
-            minPt = 0
-            # Find hit point in parent's space
-            entry = self.cq.getEntry(minPt)
-            hitPt = self.parentToHitPt(entry)
-            hitPtDist = Vec3(hitPt).length()
-            # Get the associated collision queue object
-            entry = self.cq.getEntry(minPt)
-            # Extract the node
-            node = entry.getIntoNode()
-            # Return info
-            return (node, hitPt, hitPtDist)
-        else:
-            return (None, ZERO_POINT, 0)
-
-    def pick(self, targetNodePath, mouseX, mouseY):
+class NewSelectionRay(SelectionQueue):
+    def __init__(self,parent):
+        # Initialize the superclass
+        SelectionQueue.__init__(self, parent)
+        self.addCollider(CollisionRay())
+    
+    def pick(self, targetNodePath):
         # Determine ray direction based upon the mouse coordinates
-        # Note! This has to be a cam object (of type LensNode)
-        self.ray.setFromLens( base.camNode, mouseX, mouseY )
+        if direct:
+            mx = direct.dr.mouseX
+            my = direct.dr.mouseY
+        else:
+            mx = base.mouseWatcherNode.getMouseX()
+            my = base.mouseWatcherNode.getMouseY()
+        self.collider.setFromLens( base.camNode, mx, my )
         self.ct.traverse( targetNodePath )
-        self.numEntries = self.cq.getNumEntries()
-        self.cq.sortEntries()
-        # Record cam's current position (used for cycling through
-        # other hit points)
-        self.collisionRef.iPosHprScale(base.cam)
-        return self.numEntries
+        self.sortEntries()
 
-    def getHitPt(self, entry):
-        if self.cqIndex >= 0:
-            self.cqIndex = (self.cqIndex + 1) % self.numEntries
-            entry = self.cq.getEntry(self.cqIndex)
-            node = entry.getIntoNode()
-            # Find hit point in parent's space
-            hitPt = self.parentToHitPt(entry)
-            hitPtDist = Vec3(hitPt - ZERO_POINT).length()
-            return (node, hitPt, hitPtDist)
-        else:
-            return (None, ZERO_POINT, 0)
-
-    def pickGeom3D(self, targetNodePath = render, origin = Point3(0),
-                   dir = Vec3(0,0,-1), fIntersectUnpickable = 0):
+    def pickGeom(self, targetNodePath = render, skipFlags = SKIP_ALL ):
         self.collideWithGeom()
-        numEntries = self.pick3D(targetNodePath, origin, dir)
-        # Init self.cqIndex
-        self.cqIndex = -1
-        # Pick out the closest object that isn't a widget
-        for i in range(0,numEntries):
-            entry = self.cq.getEntry(i)
-            node = entry.getIntoNode()
-            nodePath = targetNodePath.findPathTo(node)
-            # Don't pick hidden nodes
-            if nodePath.isHidden():
-                pass
-            # Can pick unpickable, use the first visible node
-            if fIntersectUnpickable:
-                self.cqIndex = i
-                break
-            # Is it a named node?, If so, see if it has a name
-            elif issubclass(node.__class__, PandaNode):
-                name = node.getName()
-                if name in self.unpickable:
-                    pass
-                else:
-                    self.cqIndex = i
-                    break
-            # Not hidden and not one of the widgets, use it
-            else:
-                self.cqIndex = i
-                break
-        # Did we hit an object?
-        if(self.cqIndex >= 0):
-            # Yes!
-            # Find hit point in parent's space
-            entry = self.cq.getEntry(self.cqIndex)
-            hitPt = self.parentToHitPt(entry)
-            hitPtDist = Vec3(hitPt - ZERO_POINT).length()
-            return (node, hitPt, hitPtDist)
-        else:
-            return (None, ZERO_POINT, 0)
+        self.pick(targetNodePath)
+        # Determine collision entry
+        return self.findCollisionEntry(skipFlags)
+
+    def pickWidget(self, targetNodePath = render, skipFlags = SKIP_NONE ):
+        self.collideWithWidget()
+        self.pick(targetNodePath)
+        # Determine collision entry
+        return self.findCollisionEntry(skipFlags)
 
     def pick3D(self, targetNodePath, origin, dir):
         # Determine ray direction based upon the mouse coordinates
-        # Note! This has to be a cam object (of type ProjectionNode)
-        self.ray.setOrigin( origin )
-        self.ray.setDirection( dir )
+        self.collider.setOrigin( origin )
+        self.collider.setDirection( dir )
         self.ct.traverse( targetNodePath )
-        self.numEntries = self.cq.getNumEntries()
-        self.cq.sortEntries()
-        return self.numEntries
+        self.sortEntries()
 
-    def collideWithGeom(self):
-        self.rayCollisionNode.setIntoCollideMask(BitMask32().allOff())
-        self.rayCollisionNode.setFromCollideMask(BitMask32().allOff())
-        self.rayCollisionNode.setCollideGeom(1)
+    def pickGeom3D(self, targetNodePath = render,
+                   origin = Point3(0), dir = Vec3(0,0,-1),
+                   skipFlags = SKIP_HIDDEN | SKIP_CAMERA ):
+        self.collideWithGeom()
+        self.pick3D(targetNodePath, origin, dir)
+        # Determine collision entry
+        return self.findCollisionEntry(skipFlags)
 
-    def collideWithWidget(self):
-        self.rayCollisionNode.setIntoCollideMask(BitMask32().allOff())
-        mask = BitMask32()
-        mask.setWord(0x80000000)
-        self.rayCollisionNode.setFromCollideMask(mask)
-        self.rayCollisionNode.setCollideGeom(0)
-
-    def objectToHitPt(self, index):
-        return self.cq.getEntry(index).getIntoIntersectionPoint()
-
-    def parentToHitPt(self, entry):
-        # Get hit point
-        hitPt = entry.getIntoIntersectionPoint()
-        # Convert point from object local space to parent's space
-        return entry.getInvWrtSpace().xformPoint(hitPt)
+    def findCollisionEntry(self, skipFlags = SKIP_NONE ):
+        # Init self.index
+        self.index = -1
+        # Pick out the closest object that isn't a widget
+        for i in range(0,self.getNumEntries()):
+            entry = self.getEntry(i)
+            nodePath = entry.getIntoNodePath()
+            if (skipFlags & SKIP_HIDDEN) and nodePath.isHidden():
+                # Skip if hidden node
+                pass
+            elif (skipFlags & SKIP_BACKFACE) and self.isEntryBackfacing(entry):
+                # Skip, if backfacing poly
+                pass
+            elif ((skipFlags & SKIP_CAMERA) and
+                  (camera in nodePath.getAncestry())):
+                # Skip if parented to a camera.
+                pass
+            # Can pick unpickable, use the first visible node
+            elif ((skipFlags & SKIP_UNPICKABLE) and
+                  (nodePath.getName() in self.unpickable)):
+                # Skip if in unpickable list
+                pass
+            else:
+                self.index = i
+                break
+        # Did we hit an object?
+        if(self.index >= 0):
+            # Yes! Find hit point in parent's space
+            hitPt = entry.getFromIntersectionPoint()
+            hitPtDist = Vec3(hitPt).length()
+            return (nodePath, hitPt, hitPtDist)
+        else:
+            return (None, ZERO_POINT, 0)
 

@@ -58,12 +58,7 @@ class NotifyPanel:
         # Severity frame
         Label(severityFrame, text = 'Severity:',
               font=('MSSansSerif', 10, 'bold'),
-<<<<<<< NotifyPanel.py
-              justify = 'right', anchor = 'w').pack(fill = X, padx = 5)
-=======
-              justify = RIGHT, anchor = W).pack(
-            fill = X, padx = 5)
->>>>>>> 1.2
+              justify = RIGHT, anchor = W).pack(fill = X, padx = 5)
         self.severity = IntVar()
         self.severity.set(0)
         self.fatalSeverity = Radiobutton(severityFrame, text = 'Fatal',

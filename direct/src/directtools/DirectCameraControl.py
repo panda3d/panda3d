@@ -1,6 +1,7 @@
 from PandaObject import *
 from DirectUtil import *
 from DirectGeometry import *
+from DirectGlobals import *
 import Task
 
 CAM_MOVE_DURATION = 1.2
@@ -96,16 +97,19 @@ class DirectCameraControl(PandaObject):
             # current mouse position
             # Allow intersection with unpickable objects
             # And then spawn task to determine mouse mode
-            node, hitPt, hitPtDist = direct.iRay.pickGeom(
-                fIntersectUnpickable = 1,
-                fIgnoreCamera = 1 - base.getControl())
-            self.computeCOA(node, hitPt, hitPtDist)
+            # Don't intersect with hidden or backfacing objects
+            skipFlags = SKIP_HIDDEN | SKIP_BACKFACE
+            # Skip camera (and its children), unless control key is pressed
+            skipFlags |= SKIP_CAMERA * (1 - base.getControl())
+            nodePath, hitPt, hitPtDist = direct.iRay.pickGeom(
+                skipFlags = skipFlags)
+            self.computeCOA(nodePath, hitPt, hitPtDist)
             # Record reference point
-            self.coaMarkerRef.iPosHprScale(direct.iRay.collisionRef)
+            self.coaMarkerRef.iPosHprScale(base.cam)
             # Record entries
             self.cqEntries = []
-            for i in range(direct.iRay.cq.getNumEntries()):
-                self.cqEntries.append(direct.iRay.cq.getEntry(i))
+            for i in range(direct.iRay.getNumEntries()):
+                self.cqEntries.append(direct.iRay.getEntry(i))
         # Show the marker
         self.coaMarker.show()
         # Resize it
@@ -292,13 +296,10 @@ class DirectCameraControl(PandaObject):
             entry = self.cqEntries[0]
             self.cqEntries = self.cqEntries[1:] + self.cqEntries[:1]
             # Filter out object's under camera
-            node = entry.getIntoNode()
-            nodePath = render.findPathTo(node)
+            nodePath = entry.getIntoNodePath()
             if direct.camera not in nodePath.getAncestry():
-                # Compute hit point
-                # KEH: use current display region ray
-                # hitPt = direct.iRay.parentToHitPt(entry)
-                hitPt = direct.drList.getCurrentDr().iRay.parentToHitPt(entry)
+                # Compute new hit point
+                hitPt = entry.getFromIntersectionPoint()
                 # Move coa marker to new point
                 self.updateCoa(hitPt, ref = self.coaMarkerRef)
             else:
@@ -306,7 +307,7 @@ class DirectCameraControl(PandaObject):
                 self.cqEntries = self.cqEntries[:-1]
                 self.pickNextCOA()
 
-    def computeCOA(self, node, hitPt, hitPtDist):
+    def computeCOA(self, nodePath, hitPt, hitPtDist):
         coa = Point3(0)
         dr = direct.drList.getCurrentDr()
         if self.fLockCOA:
@@ -315,7 +316,7 @@ class DirectCameraControl(PandaObject):
             coa.assign(self.coaMarker.getPos(direct.camera))
             # Reset hit point count
             self.nullHitPointCount = 0
-        elif node:
+        elif nodePath:
             # Got a hit point (hit point is in camera coordinates)
             # Set center of action
             coa.assign(hitPt)
@@ -639,6 +640,9 @@ class DirectCameraControl(PandaObject):
         # Ignore events
         for event in self.actionEvents:
             self.ignore(event[0])
+        # Kill tasks
+        self.removeManipulateCameraTask()
+        taskMgr.remove('stickToWidget')
         base.enableMouse()
 
     def removeManipulateCameraTask(self):
