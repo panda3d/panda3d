@@ -512,7 +512,6 @@ def bound(value, bound1, bound2):
 def lerp(v0, v1, t):
     """
     returns a value lerped between v0 and v1, according to t
-    t must be in [0,1]
     t == 0 maps to v0, t == 1 maps to v1
     """
     return v0 + (t * (v1 - v0))
