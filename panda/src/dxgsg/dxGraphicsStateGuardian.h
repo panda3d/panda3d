@@ -22,9 +22,6 @@
 //#define GSG_VERBOSE
 
 #include <pandabase.h>
-
-#define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
-
 #include <graphicsStateGuardian.h>
 #include <geomprimitives.h>
 #include <texture.h>
@@ -40,21 +37,12 @@
 #include <colorMatrixTransition.h>
 #include <alphaTransformAttribute.h>
 #include <alphaTransformTransition.h>
+#include <pointerToArray.h>
+#include <planeNode.h>
 
 #include "dxTextureContext.h"
 
 extern char * ConvD3DErrorToString(const HRESULT &error);   // defined in wdxGraphicsPipe.cxx
-
-// Must include windows.h before gl.h on NT
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef WIN32_LEAN_AND_MEAN
-
-
-#include <ddraw.h>
-#include <d3d.h>
-
-#include <pointerToArray.h>
 
 class PlaneNode;
 class Light;

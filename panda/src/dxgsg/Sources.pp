@@ -5,6 +5,8 @@
 #define USE_DX yes
 
 #begin lib_target
+
+
   #define TARGET dxgsg
   #define LOCAL_LIBS \
     cull gsgmisc gsgbase gobj sgattrib sgraphutil graph display light \
@@ -15,7 +17,9 @@
     dxGraphicsStateGuardian.cxx dxGraphicsStateGuardian.h \
     dxSavedFrameBuffer.I dxSavedFrameBuffer.cxx dxSavedFrameBuffer.h \
     dxTextureContext.I dxTextureContext.cxx dxTextureContext.h
-
+    
+  #define PRECOMPILED_HEADER dxgsg_headers.h
+    
   #define INSTALL_HEADERS \
     config_dxgsg.h dxGraphicsStateGuardian.I dxGraphicsStateGuardian.h \
     dxSavedFrameBuffer.I dxSavedFrameBuffer.h dxTextureContext.I \

@@ -21,15 +21,22 @@
 
 #include <pandabase.h>
 
-// Must include windows.h before gl.h on NT
 #define WIN32_LEAN_AND_MEAN
+#ifndef STRICT
+// enable strict type checking in windows.h, see msdn
+#define STRICT
+#endif
+
 #include <windows.h>
+
+#include <ddraw.h>
+
+#define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
+#include <d3d.h>
 #undef WIN32_LEAN_AND_MEAN
 
 #include <texture.h>
 #include <textureContext.h>
-
-#include <d3d.h>
 
 #define MAX_DX_TEXPIXFMTS 20    // should be enough for any card
 

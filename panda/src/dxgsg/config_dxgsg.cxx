@@ -16,12 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_dxgsg.h"
-#include "dxGraphicsStateGuardian.h"
-#include "dxSavedFrameBuffer.h"
-#include "dxTextureContext.h"
-
-#include <dconfig.h>
+#include "dxgsg_headers.h"
+#pragma hdrstop
 
 Configure(config_dxgsg);
 NotifyCategoryDef(dxgsg, ":display:gsg");
