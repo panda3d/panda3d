@@ -530,6 +530,13 @@ def lerp(v0, v1, t):
     """
     return v0 + (t * (v1 - v0))
 
+def boolEqual(a, b):
+    """
+    returns true if a and b are both true or both false.
+    returns false otherwise
+    """
+    return (a and b) or not (a or b)
+
 def lineupPos(i, num, spacing):
     """
     use to line up a series of 'num' objects, in one dimension,
