@@ -1,6 +1,5 @@
 from AppShell import *
 
-
 class TaskManagerPanel(AppShell):
     # Override class variables here
     appname = 'TaskManager Panel'
@@ -13,13 +12,14 @@ class TaskManagerPanel(AppShell):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title',       self.appname,       None),
-            ('taskMgr',     None,            None)
             )
         self.defineoptions(kw, optiondefs)
 
+        self.taskMgr = taskMgr
+        
         # Call superclass initialization function
         AppShell.__init__(self, parent = parent)
-        
+
         self.initialiseoptions(TaskManagerPanel)
 
     def createInterface(self):
@@ -27,7 +27,7 @@ class TaskManagerPanel(AppShell):
         # Get a handle on the file menu so commands can be inserted
         # before quit item
         self.taskMgrWidget = TaskManagerWidget(
-            self.interior(), self['taskMgr'])
+            self.interior(), self.taskMgr)
 
 
     def onDestroy(self, event):
@@ -46,7 +46,7 @@ class TaskManagerWidget(PandaObject):
         tasks managed by the taskManager.
         """
         # Make sure TK mainloop is running
-        from TkGlobal import *
+        import TkGlobal
         # Record parent (used by ok cancel dialog boxes)
         self.parent = parent
         # Record taskManager

@@ -1,5 +1,5 @@
 from PandaObject import *
-from DirectUtil import *
+from DirectUtil import*
 from DirectCameraControl import *
 from DirectManipulation import *
 from DirectSelection import *
@@ -165,7 +165,7 @@ class DirectSession(PandaObject):
                             'mouse3', 'mouse3-up']
 
         if base.wantTk:
-            from TkGlobal import *
+            from TkGlobal import tkroot
             self.panel = DirectSessionPanel(parent = tkroot)
 
         if self.iAmAServer:
