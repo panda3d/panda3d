@@ -18,7 +18,9 @@
   #define SOURCES \
     config_distributed.cxx config_distributed.h \
     cConnectionRepository.cxx cConnectionRepository.I \
-    cConnectionRepository.h
+    cConnectionRepository.h \
+    cDistributedSmoothNodeBase.cxx cDistributedSmoothNodeBase.I \
+    cDistributedSmoothNodeBase.h
 
   #define IGATESCAN all
 #end lib_target

@@ -9,6 +9,8 @@ class DistributedSmoothNodeAI(DistributedNodeAI.DistributedNodeAI,
         DistributedNodeAI.DistributedNodeAI.__init__(self, air, name)
         DistributedSmoothNodeBase.DistributedSmoothNodeBase.__init__(self)
 
+        self.cnode.setRepository(air, 1, air.ourChannel)
+
     def delete(self):
         DistributedSmoothNodeBase.DistributedSmoothNodeBase.delete(self)
         DistributedNodeAI.DistributedNodeAI.delete(self)

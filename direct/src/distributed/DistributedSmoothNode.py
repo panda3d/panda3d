@@ -85,6 +85,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
             self.DistributedSmoothNode_initialized = 1
             DistributedNode.DistributedNode.__init__(self, cr)
             DistributedSmoothNodeBase.DistributedSmoothNodeBase.__init__(self)
+            self.cnode.setRepository(cr, 0, 0)
 
             self.smoother = SmoothMover()
             self.smoothStarted = 0
@@ -308,11 +309,8 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         DistributedNode.DistributedNode.d_setParent(self, parentToken)
 
         self.forceToTruePosition()
-        xyz = self.getPos()
-        hpr = self.getHpr()
-        x=xyz[0]; y=xyz[1]; z=xyz[2]
-        h=hpr[0]; p=hpr[1]; r=hpr[2]
-        self.d_setSmPosHpr(x,y,z,h,p,r)
+        self.cnode.initialize(self, self.dclass, self.doId)
+        self.cnode.sendEverything()
 
     ### Monitor clock sync ###
 
