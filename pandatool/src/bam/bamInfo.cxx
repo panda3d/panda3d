@@ -21,6 +21,9 @@
 #include "bamFile.h"
 #include "pandaNode.h"
 #include "geomNode.h"
+#include "recorderHeader.h"
+#include "recorderFrame.h"
+#include "recorderTable.h"
 #include "dcast.h"
 #include "pvector.h"
 
@@ -125,7 +128,6 @@ get_info(const Filename &filename) {
   nout << filename << " : Bam version " << bam_file.get_file_major_ver()
        << "." << bam_file.get_file_minor_ver() << "\n";
 
-  typedef pvector<TypedWritable *> Objects;
   Objects objects;
   TypedWritable *object = bam_file.read_object();
   while (object != (TypedWritable *)NULL || !bam_file.is_eof()) {
@@ -134,12 +136,17 @@ get_info(const Filename &filename) {
     }
     object = bam_file.read_object();
   }
-  bam_file.resolve();
+  if (!bam_file.resolve()) {
+    nout << "Unable to fully resolve file.\n";
+  }
   bam_file.close();
 
   if (objects.size() == 1 && 
       objects[0]->is_of_type(PandaNode::get_class_type())) {
     describe_scene_graph(DCAST(PandaNode, objects[0]));
+
+  } else if (!objects.empty() && objects[0]->is_of_type(RecorderHeader::get_class_type())) {
+    describe_session(DCAST(RecorderHeader, objects[0]), objects);
 
   } else {
     for (int i = 0; i < (int)objects.size(); i++) {
@@ -180,6 +187,48 @@ describe_scene_graph(PandaNode *node) {
   if (_ls || _verbose_geoms || _verbose_transitions) {
     list_hierarchy(node, 0);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamInfo::describe_session
+//       Access: Private
+//  Description: Called for Bam files that contain a recorded session
+//               table.
+////////////////////////////////////////////////////////////////////
+void BamInfo::
+describe_session(RecorderHeader *header, const BamInfo::Objects &objects) {
+  char time_buffer[1024];
+  strftime(time_buffer, 1024, "%c",
+           localtime(&header->_start_time));
+
+  pset<string> recorders;
+  double last_timestamp = 0.0;
+
+  for (size_t i = 1; i < objects.size(); i++) {
+    if (objects[i]->is_of_type(RecorderFrame::get_class_type())) {
+      RecorderFrame *frame = DCAST(RecorderFrame, objects[i]);
+      if (frame->_table_changed) {
+        RecorderTable::Recorders::const_iterator ri;
+        for (ri = frame->_table->_recorders.begin();
+             ri != frame->_table->_recorders.end();
+             ++ri) {
+          recorders.insert((*ri).first);
+        }
+      }
+      last_timestamp = frame->_timestamp;
+    }
+  }
+    
+  nout << "Session, " << last_timestamp
+       << " secs, " << objects.size() - 1 << " frames, "
+       << time_buffer << ".\n"
+       << "Recorders:";
+  for (pset<string>::iterator ni = recorders.begin();
+       ni != recorders.end();
+       ++ni) {
+    nout << " " << (*ni);
+  }
+  nout << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

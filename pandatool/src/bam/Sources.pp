@@ -3,7 +3,7 @@
   #define LOCAL_LIBS \
     progbase
   #define OTHER_LIBS \
-    parametrics:c collide:c chan:c char:c \
+    recorder:c parametrics:c collide:c chan:c char:c \
     egg:c pnmimagetypes:c pgraph:c gobj:c \
     putil:c linmath:c event:c express:c pandaegg:m panda:m pandaexpress:m \
     interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
