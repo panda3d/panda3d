@@ -78,15 +78,13 @@ class LogicGateAI(Entity.Entity, PandaObject.PandaObject):
         "xnor": xnorTest,
     }
 
-    def __init__(self, air, levelDoId, entId, zoneId=None):
+    def __init__(self, level, entId):
         """entId: """
         assert(self.debugPrint(
-                "LogicGateAI(air=%s, levelDoId=%s, entId=%s, zoneId=%s)"
-                %("the air", levelDoId, entId, zoneId)))
+                "LogicGateAI(entId=%s)"
+                %(entId)))
         self.input1 = None
         self.input2 = None
-        self.levelDoId = levelDoId
-        level = air.doId2do[self.levelDoId]
         Entity.Entity.__init__(self, level, entId)
         self.initializeEntity()
         self.setLogicType(self.logicType)

@@ -7,25 +7,21 @@ class Entity:
     and can be edited with the LevelEditor."""
 
     # these are values that can be changed in the level editor
-    # TODO: pick a good name for these values;
-    # parameters, tweakables, attributes, attribs, traits, 
-    Tweakables = (
+    Attribs = (
         # Name, PythonType, CallSetterOnInitialization
         ('name', str, 0),
         ('comment', str, 0),
         )
 
-    def __init__(self, level, entId, tweakables=None):
+    def __init__(self, level, entId, attribs=None):
         self.level = level
         self.entId = entId
 
-        self.tweakables = Entity.Tweakables
+        self.attribs = Entity.Attribs
         # add any additional tweakable values
-        if tweakables is not None:
-            self.tweakables.update(tweakables)
+        if attribs is not None:
+            self.attribs.update(attribs)
 
-    # TODO: funcs to populate the entity with its spec data, and system
-    # to call back when data changes
     def initializeEntity(self):
         """Call this once on initialization to set this entity's
         spec data"""
@@ -40,16 +36,16 @@ class Entity:
             return getattr(self, setFuncName)
         return None
 
-    def callSetters(self, attribList):
+    def callSetters(self, *attribs):
         """call this with a list of attribs, and any that exist on the
         entity and have setters will be passed to their setter"""
-        for attrib in attribList:
+        for attrib in attribs:
             if hasattr(self, attrib):
                 setter = self.privGetSetter(attrib)
                 if setter is not None:
                     setter(getattr(self, attrib))
 
-    def paramChanged(self):
+    def attribChanged(self):
         """This is called when a parameter is tweaked and no setter
         is called; i.e. the value is set directly on the object.
         Some Entities might want to completely reset every time anything
@@ -58,8 +54,8 @@ class Entity:
         """
         pass
 
-    def getTweakables(self):
-        return self.tweakables
+    def getAttribInfo(self):
+        return self.attribs
 
     def privTweak(self, name, value):
         self.__dict__[name] = value

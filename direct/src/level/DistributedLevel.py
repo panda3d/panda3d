@@ -24,8 +24,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.notify.debug('generate')
         DistributedObject.DistributedObject.generate(self)
 
-        self.setLevelId(self.doId)
-
         # this dict stores entity reparents if the parent hasn't been
         # created yet
         self.parent2ChildIds = {}
@@ -52,10 +50,21 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.scenarioIndex = scenarioIndex
 
     def initializeLevel(self, spec):
-        """ subclass should call this as soon as it's located its spec data """
-        LevelBase.LevelBase.initializeLevel(self, spec, self.scenarioIndex)
+        """subclass should call this as soon as it's located its spec data.
+        Must be called after obj has been generated."""
+        LevelBase.LevelBase.initializeLevel(self, self.doId,
+                                            spec, self.scenarioIndex)
+        self.localEntities = {}
+
+        # get list of entity types we need to create
+        entTypes = self.entType2Ids.keys()
+
+        # create the levelMgr
+        self.levelMgr = self.createEntity(self.entType2Ids['levelMgr'][0])
+        entTypes.remove('levelMgr')
+
         # load stuff
-        self.geom = loader.loadModel(self.spec['modelFilename'])
+        self.geom = loader.loadModel(self.modelFilename)
 
         def findNumberedNodes(baseString, model=self.geom, self=self):
             # finds nodes whose name follows the pattern 'baseString#'
@@ -133,21 +142,29 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         self.initVisibility()
 
-        # create client-side Entities
+        # create the rest of the client-side Entities
         # TODO: only create client-side Entities for the
         # currently-visible zones?
-        self.localEntities = {}
-        for entId, spec in self.entId2Spec.iteritems():
-            entity = self.entityCreator.createEntity(spec['type'], self, entId)
-            if entity is not None:
-                self.localEntities[entId] = entity
+        for entType in entTypes:
+            for entId in self.entType2Ids[entType]:
+                self.createEntity(entId)
 
-        # there should not be any pending reparents left
+        # there should not be any pending reparents left at this point
         assert len(self.parent2ChildIds) == 0
 
     def makeEntityCreator(self):
-        """inheritors, override if desired"""
+        """Create the object that will be used to create Entities.
+        Inheritors, override if desired."""
         return EntityCreator.EntityCreator()
+
+    def createEntity(self, entId):
+        assert not self.localEntities.has_key(entId)
+        spec = self.entId2Spec[entId]
+        self.notify.debug('creating %s %s' % (spec['type'], entId))
+        entity = self.entityCreator.createEntity(spec['type'], self, entId)
+        if entity is not None:
+            self.localEntities[entId] = entity
+        return entity
 
     def announceGenerate(self):
         self.notify.debug('announceGenerate')

@@ -11,9 +11,9 @@ class privNodePathImpl(NodePath.NodePath):
         NodePath.NodePath.__init__(self, node)
 
     def initializeEntity(self):
-        self.callSetters(('pos','x','y','z',
-                          'hpr','h','p','r',
-                          'scale','sx','sx','sz'))
+        self.callSetters('pos','x','y','z',
+                         'hpr','h','p','r',
+                         'scale','sx','sx','sz')
 
         if hasattr(self, 'parent'):
             self.level.requestReparent(self, self.parent)

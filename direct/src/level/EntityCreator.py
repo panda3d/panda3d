@@ -2,6 +2,7 @@
 
 import BasicEntities
 import DirectNotifyGlobal
+import LevelMgr
 
 # some useful constructor functions
 # ctor functions must take (level, entId)
@@ -17,12 +18,16 @@ class EntityCreator:
     def __init__(self):
         self.entType2Ctor = {}
         self.privRegisterTypes({
+            'levelMgr': LevelMgr.LevelMgr,
             'logicGate': nothing,
             'nodepath': BasicEntities.NodePathEntity,
             })
 
     def privRegisterType(self, entType, ctor):
-        assert(not self.entType2Ctor.has_key(entType))
+        if self.entType2Ctor.has_key(entType):
+            EntityCreator.notify.warning(
+                'replacing %s ctor %s with %s' %
+                (entType, self.entType2Ctor[entType], ctor))
         self.entType2Ctor[entType] = ctor
 
     def privRegisterTypes(self, type2ctor):

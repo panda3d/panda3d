@@ -19,12 +19,25 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
     def initializeLevel(self, spec, uberZoneId):
         self.uberZoneId = uberZoneId
 
+        # We need a unique level ID to init the level system, and we need
+        # the level system to get the data for our required fields.
+        # Pre-allocate a doId.
+        self.preAllocateDoId()
+
         # choose a scenario
         wc = WeightedChoice.WeightedChoice(spec['scenarios'], 1)
         scenario = wc.choose()
         scenarioIndex = spec['scenarios'].index(scenario)
 
-        LevelBase.LevelBase.initializeLevel(self, spec, scenarioIndex)
+        LevelBase.LevelBase.initializeLevel(self, self.doId,
+                                            spec, scenarioIndex)
+        self.aiEntities = {}
+        # get list of entity types we need to create
+        self.entTypes = self.entType2Ids.keys()
+
+        # create the levelMgr
+        self.levelMgr = self.createEntity(self.entType2Ids['levelMgr'][0])
+        self.entTypes.remove('levelMgr')
 
         # allocate the rest of the zones; add one for the uber-zone
         self.numZones = len(self.spec['zones']) + 1
@@ -39,8 +52,27 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
             self.startTime, bits=32)
 
     def makeEntityCreator(self):
-        """inheritors, override if desired"""
+        """Create the object that will be used to create Entities.
+        Inheritors, override if desired."""
         return EntityCreatorAI.EntityCreatorAI()
+
+    def createEntity(self, entId):
+        assert not self.aiEntities.has_key(entId)
+        spec = self.entId2Spec[entId]
+        self.notify.debug('creating %s %s' % (spec['type'], entId))
+        zone = spec.get('zone')
+        # we might attempt to create non-distributed entities before
+        # we've been generated
+        if zone is not None:
+            zone = self.getZoneId(zone)
+            entity = self.entityCreator.createEntity(
+                spec['type'], self, entId, self.air, zone)
+        else:
+            entity = self.entityCreator.createEntity(
+                spec['type'], self, entId)
+        if entity is not None:
+            self.aiEntities[entId] = entity
+        return entity
 
     # required-field getters
     def getZoneIds(self):
@@ -56,17 +88,10 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         self.notify.debug('generate')
         DistributedObjectAI.DistributedObjectAI.generate(self)
 
-        self.setLevelId(self.doId)
-
-        # create the Entities
-        self.aiEntities = {}
-        for entId, spec in self.entId2Spec.iteritems():
-            self.notify.debug('creating %s %s' % (spec['type'], entId))
-            entity = self.entityCreator.createEntity(
-                spec['type'], self.air, self.doId, entId,
-                self.getZoneId(spec['zone']))
-            if entity is not None:
-                self.aiEntities[entId] = entity
+        # create the rest of the Entities
+        for entType in self.entTypes:
+            for entId in self.entType2Ids[entType]:
+                self.createEntity(entId)
 
     def delete(self):
         self.notify.debug('delete')

@@ -14,12 +14,10 @@ class LevelBase:
         if levelId is not None:
             self.setLevelId(levelId)
 
-    def setLevelId(self, levelId):
-        self.levelId = levelId
-
-    def initializeLevel(self, spec, scenarioIndex):
+    def initializeLevel(self, levelId, spec, scenarioIndex):
         """ subclass should call this as soon as it has located
         its spec data """
+        self.levelId = levelId
         self.spec = spec
         self.scenarioIndex = scenarioIndex
 
@@ -30,6 +28,23 @@ class LevelBase:
         entId2Spec.update(globalEntities)
         entId2Spec.update(scenarioEntities)
         self.entId2Spec = entId2Spec
+
+        # create some handy tables
+        self.entType2Ids = {}
+        self.entZone2Ids = {}
+        self.nonZoneEntIds = []
+        for entId, spec in self.entId2Spec.items():
+            entType = spec['type']
+            self.entType2Ids.setdefault(entType, [])
+            self.entType2Ids[entType].append(entId)
+
+            entZone = spec.get('zone')
+            # note that entities with no Zone will be filed under 'None'
+            self.entZone2Ids.setdefault(entZone, [])
+            self.entZone2Ids[entZone].append(entId)
+
+        # there should be one and only one levelMgr
+        assert len(self.entType2Ids['levelMgr']) == 1
 
         # this will be filled in as the entities are created and report in
         self.entities = {}
