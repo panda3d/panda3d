@@ -37,7 +37,7 @@ public:
   EggTransform3d &operator = (const EggTransform3d &copy);
   ~EggTransform3d();
 
-  void clear_transform();
+  INLINE void clear_transform();
 
   void add_translate(const LVector3d &translate);
   void add_rotx(double angle); 
@@ -47,7 +47,7 @@ public:
   void add_rotate(const LQuaterniond &quat);
   void add_scale(const LVecBase3d &scale);
   void add_uniform_scale(double scale);
-  void add_matrix(const LMatrix4d &mat);
+  INLINE void add_matrix(const LMatrix4d &mat);
 
   INLINE bool has_transform() const;
   INLINE void set_transform(const LMatrix4d &mat);
@@ -73,6 +73,13 @@ public:
   INLINE const LMatrix4d &get_component_matrix(int n) const;
 
   void write(ostream &out, int indent_level) const;
+
+protected:
+  void internal_clear_transform();
+  void internal_add_matrix(const LMatrix4d &mat);
+  INLINE void internal_set_transform(const LMatrix4d &mat);
+
+  virtual void transform_changed();
 
 private:
   class Component {

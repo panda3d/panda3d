@@ -212,6 +212,26 @@ get_vertex_to_node() const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::get_node_to_vertex
+//       Access: Public
+//  Description: Returns the transformation matrix suitable for
+//               converting vertices in the coordinate space of the
+//               node to the appropriate coordinate space for storing
+//               in the egg file.  This is the same thing as:
+//
+//               get_node_frame() * get_vertex_frame_inv()
+//
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4d &EggNode::
+get_node_to_vertex() const {
+  if (_node_to_vertex == (LMatrix4d *)NULL) {
+    return LMatrix4d::ident_mat();
+  } else {
+    return *_node_to_vertex;
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNode::transform
@@ -259,4 +279,5 @@ transform_vertices_only(const LMatrix4d &mat) {
 INLINE void EggNode::
 flatten_transforms() {
   r_flatten_transforms();
+  update_under(0);
 }

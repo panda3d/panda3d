@@ -28,6 +28,25 @@ get_group_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::is_instance_type
+//       Access: Public
+//  Description: Returns true if this group is an instance type node;
+//               i.e. it begins the root of a local coordinate space.
+//               This is not related to instancing (multiple copies of
+//               a node in a scene graph).
+//
+//               This also includes the case of the node including a
+//               billboard flag without an explicit center, which
+//               implicitly makes the node behave like an instance.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggGroup::
+is_instance_type() const {
+  return 
+    (get_group_type() == GT_instance) ||
+    (get_billboard_type() != BT_none && !has_billboard_center());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::set_billboard_type
 //       Access: Public
 //  Description:
@@ -37,6 +56,8 @@ set_billboard_type(BillboardType type) {
   // Make sure the user didn't give us any stray bits.
   nassertv((type & ~F_billboard_type)==0);
   _flags = (_flags & ~F_billboard_type) | type;
+  // This may change the transform space of this node.
+  update_under(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,6 +95,8 @@ INLINE void EggGroup::
 set_billboard_center(const LPoint3d &billboard_center) {
   _billboard_center = billboard_center;
   _flags2 |= F2_billboard_center;
+  // This may change the transform space of this node.
+  update_under(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,6 +107,8 @@ set_billboard_center(const LPoint3d &billboard_center) {
 INLINE void EggGroup::
 clear_billboard_center() {
   _flags2 &= ~F2_billboard_center;
+  // This may change the transform space of this node.
+  update_under(0);
 }
 
 ////////////////////////////////////////////////////////////////////

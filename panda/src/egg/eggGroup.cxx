@@ -22,9 +22,9 @@
 #include "eggBin.h"
 #include "lexerDefs.h"
 
-#include <indent.h>
-#include <string_utils.h>
-#include <lmatrix.h>
+#include "indent.h"
+#include "string_utils.h"
+#include "lmatrix.h"
 
 
 TypeHandle EggGroup::_type_handle;
@@ -117,6 +117,43 @@ set_group_type(GroupType type) {
     // so we have to recompute the under_flags.
     update_under(0);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::has_object_type
+//       Access: Public
+//  Description: Returns true if the indicated object type has been
+//               added to the group, or false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggGroup::
+has_object_type(const string &object_type) const {
+  vector_string::const_iterator oi;
+  for (oi = _object_types.begin(); oi != _object_types.end(); ++oi) {
+    if (cmp_nocase_uh((*oi), object_type) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::remove_object_type
+//       Access: Public
+//  Description: Removes the first instance of the indicated object
+//               type from the group if it is present.  Returns true
+//               if the object type was found and removed, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggGroup::
+remove_object_type(const string &object_type) {
+  vector_string::iterator oi;
+  for (oi = _object_types.begin(); oi != _object_types.end(); ++oi) {
+    if (cmp_nocase_uh((*oi), object_type) == 0) {
+      _object_types.erase(oi);
+      return true;
+    }
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -680,10 +717,6 @@ egg_start_parse_body() {
 ////////////////////////////////////////////////////////////////////
 void EggGroup::
 adjust_under() {
-  // Billboards without an explicit center are an implicit instance.
-  bool is_billboard_instance =
-    (get_billboard_type() != BT_none && !has_billboard_center());
-
   // If we have our own transform, it carries forward.
 
   // As of 4/18/01, this now also affects the local_coord flag, below.
@@ -699,9 +732,11 @@ adjust_under() {
       new MatrixFrame(invert(get_node_frame()));
     _vertex_to_node =
       new MatrixFrame(get_vertex_frame() * get_node_frame_inv());
+    _node_to_vertex =
+      new MatrixFrame(get_node_frame() * get_vertex_frame_inv());
   }
 
-  if (get_group_type() == GT_instance || is_billboard_instance) {
+  if (is_instance_type()) {
     _under_flags |= UF_under_instance;
     if (_under_flags & UF_under_transform) {
       // If we've reached an instance node and we're under a
@@ -716,6 +751,7 @@ adjust_under() {
     _vertex_frame = _node_frame;
     _vertex_frame_inv = _node_frame_inv;
     _vertex_to_node = NULL;
+    _node_to_vertex = NULL;
   }
 }
 
@@ -753,7 +789,7 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
     mat1.set_row(3, LVector3d(0.0, 0.0, 0.0));
     inv1.set_row(3, LVector3d(0.0, 0.0, 0.0));
 
-    set_transform(inv1 * get_transform() * mat);
+    internal_set_transform(inv1 * get_transform() * mat);
 
     EggGroupNode::r_transform(mat1, inv1, to_cs);
   } else {
@@ -799,10 +835,25 @@ r_flatten_transforms() {
   }
 
   if (get_group_type() != GT_joint) {
-    clear_transform();
+    internal_clear_transform();
   }
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::transform_changed
+//       Access: Protected, Virtual
+//  Description: This virtual method is inherited by EggTransform3d;
+//               it is called whenever the transform is changed.
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+transform_changed() {
+  // Recompute all of the cached transforms at this node and below.
+  // We should probably make this smarter and do lazy evaluation of
+  // these transforms, rather than having to recompute the whole tree
+  // with every change to a parent node's transform.
+  update_under(0);
+}
 
 
 

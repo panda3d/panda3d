@@ -91,6 +91,29 @@ INLINE EggTransform3d::Component::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTransform3d::clear_transform
+//       Access: Public
+//  Description: Resets the transform to empty, identity.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTransform3d::
+clear_transform() {
+  internal_clear_transform();
+  transform_changed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTransform3d::add_matrix
+//       Access: Public
+//  Description: Appends an arbitrary 4x4 matrix to the current
+//               transform.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTransform3d::
+add_matrix(const LMatrix4d &mat) {
+  internal_add_matrix(mat);
+  transform_changed();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTransform3d::has_transform
 //       Access: Public
 //  Description: Returns true if the transform is nonempty, false if
@@ -111,8 +134,8 @@ has_transform() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTransform3d::
 set_transform(const LMatrix4d &mat) {
-  clear_transform();
-  add_matrix(mat);
+  internal_set_transform(mat);
+  transform_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -202,4 +225,16 @@ get_component_matrix(int n) const {
   nassertr(n >= 0 && n < (int)_components.size(), LMatrix4d::ident_mat());
   nassertr(_components[n]._matrix != (LMatrix4d *)NULL, LMatrix4d::ident_mat());
   return *_components[n]._matrix;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTransform3d::internal_set_transform
+//       Access: Protected
+//  Description: Sets the overall transform without calling
+//               transform_changed().
+////////////////////////////////////////////////////////////////////
+INLINE void EggTransform3d::
+internal_set_transform(const LMatrix4d &mat) {
+  internal_clear_transform();
+  internal_add_matrix(mat);
 }

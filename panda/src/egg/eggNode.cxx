@@ -244,6 +244,7 @@ update_under(int depth_offset) {
     _vertex_frame_inv = NULL;
     _node_frame_inv = NULL;
     _vertex_to_node = NULL;
+    _node_to_vertex = NULL;
   } else {
     depth = _parent->_depth + 1;
     _under_flags = _parent->_under_flags;
@@ -252,6 +253,7 @@ update_under(int depth_offset) {
     _vertex_frame_inv = _parent->_vertex_frame_inv;
     _node_frame_inv = _parent->_node_frame_inv;
     _vertex_to_node = _parent->_vertex_to_node;
+    _node_to_vertex = _parent->_node_to_vertex;
   }
 
   if (depth - _depth != depth_offset) {

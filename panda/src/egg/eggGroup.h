@@ -100,6 +100,7 @@ public:
 
   void set_group_type(GroupType type);
   INLINE GroupType get_group_type() const;
+  INLINE bool is_instance_type() const;
 
   INLINE void set_billboard_type(BillboardType type);
   INLINE BillboardType get_billboard_type() const;
@@ -136,6 +137,8 @@ public:
   INLINE void clear_object_types();
   INLINE int get_num_object_types() const;
   INLINE string get_object_type(int index) const;
+  bool has_object_type(const string &object_type) const;
+  bool remove_object_type(const string &object_type);
 
   INLINE void set_model_flag(bool flag);
   INLINE bool get_model_flag() const;
@@ -200,6 +203,8 @@ protected:
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
                            CoordinateSystem to_cs);
   virtual void r_flatten_transforms();
+
+  virtual void transform_changed();
 
 private:
 

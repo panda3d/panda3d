@@ -64,17 +64,6 @@ EggTransform3d::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggTransform3d::clear_transform
-//       Access: Public
-//  Description: Resets the transform to empty, identity.
-////////////////////////////////////////////////////////////////////
-void EggTransform3d::
-clear_transform() {
-  _components.clear();
-  _transform = LMatrix4d::ident_mat();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggTransform3d::add_translate
 //       Access: Public
 //  Description: Appends a translation operation to the current
@@ -85,6 +74,7 @@ add_translate(const LVector3d &translate) {
   _components.push_back(Component(CT_translate));
   _components.back()._vector = new LVector3d(translate);
   _transform *= LMatrix4d::translate_mat(translate);
+  transform_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,6 +88,7 @@ void EggTransform3d::
 add_rotx(double angle) {
   _components.push_back(Component(CT_rotx, angle));
   _transform *= LMatrix4d::rotate_mat_normaxis(angle, LVector3d(1.0, 0.0, 0.0));
+  transform_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,6 +102,7 @@ void EggTransform3d::
 add_roty(double angle) {
   _components.push_back(Component(CT_roty, angle));
   _transform *= LMatrix4d::rotate_mat_normaxis(angle, LVector3d(0.0, 1.0, 0.0));
+  transform_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,6 +116,7 @@ void EggTransform3d::
 add_rotz(double angle) {
   _components.push_back(Component(CT_rotz, angle));
   _transform *= LMatrix4d::rotate_mat_normaxis(angle, LVector3d(0.0, 0.0, 1.0));
+  transform_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -139,6 +132,7 @@ add_rotate(double angle, const LVector3d &axis) {
   _components.push_back(Component(CT_rotate, angle));
   _components.back()._vector = new LVector3d(normaxis);
   _transform *= LMatrix4d::rotate_mat(angle, normaxis);
+  transform_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -151,6 +145,7 @@ add_rotate(double angle, const LVector3d &axis) {
 void EggTransform3d::
 add_rotate(const LQuaterniond &quat) {
   add_rotate(quat.get_angle(), quat.get_axis());
+  transform_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,6 +159,7 @@ add_scale(const LVecBase3d &scale) {
   _components.push_back(Component(CT_scale));
   _components.back()._vector = new LVector3d(scale);
   _transform *= LMatrix4d::scale_mat(scale);
+  transform_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,19 +171,7 @@ void EggTransform3d::
 add_uniform_scale(double scale) {
   _components.push_back(Component(CT_uniform_scale, scale));
   _transform *= LMatrix4d::scale_mat(scale);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggTransform3d::add_matrix
-//       Access: Public
-//  Description: Appends an arbitrary 4x4 matrix to the current
-//               transform.
-////////////////////////////////////////////////////////////////////
-void EggTransform3d::
-add_matrix(const LMatrix4d &mat) {
-  _components.push_back(Component(CT_matrix));
-  _components.back()._matrix = new LMatrix4d(mat);
-  _transform *= mat;
+  transform_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -253,3 +237,41 @@ write(ostream &out, int indent_level) const {
 
   indent(out, indent_level) << "}\n";
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTransform3d::internal_clear_transform
+//       Access: Public
+//  Description: Resets the transform to empty without calling
+//               transform_changed().
+////////////////////////////////////////////////////////////////////
+void EggTransform3d::
+internal_clear_transform() {
+  _components.clear();
+  _transform = LMatrix4d::ident_mat();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTransform3d::internal_add_matrix
+//       Access: Public
+//  Description: Appends an arbitrary 4x4 matrix to the current
+//               transform, without calling transform_changed().
+////////////////////////////////////////////////////////////////////
+void EggTransform3d::
+internal_add_matrix(const LMatrix4d &mat) {
+  _components.push_back(Component(CT_matrix));
+  _components.back()._matrix = new LMatrix4d(mat);
+  _transform *= mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTransform3d::transform_changed
+//       Access: Protected, Virtual
+//  Description: This virtual method is called whenever the transform
+//               is changed; it is intended to provide a hook for
+//               derived classes (e.g. EggGroup) to update their
+//               internal cache appropriately.
+////////////////////////////////////////////////////////////////////
+void EggTransform3d::
+transform_changed() {
+}
+
