@@ -19,9 +19,9 @@
 #ifndef CHARACTERSLIDER_H
 #define CHARACTERSLIDER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <movingPartScalar.h>
+#include "movingPartScalar.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CharacterSlider
@@ -40,7 +40,7 @@ public:
 
   virtual PartGroup *make_copy() const;
 
-  static void register_with_read_factory(void);
+  static void register_with_read_factory();
 
   static TypedWritable *make_CharacterSlider(const FactoryParams &params);
 

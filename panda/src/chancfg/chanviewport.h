@@ -24,20 +24,20 @@ class EXPCL_PANDA ChanViewport {
 private:
   float _left, _right, _bottom, _top;
 
-  INLINE ChanViewport(void);
+  INLINE ChanViewport();
 public:
   INLINE ChanViewport(float, float, float, float);
   INLINE ChanViewport(const ChanViewport&);
-  INLINE ~ChanViewport(void);
+  INLINE ~ChanViewport();
   INLINE ChanViewport& operator=(const ChanViewport&);
 
-  INLINE float left(void) const;
-  INLINE float right(void) const;
-  INLINE float bottom(void) const;
-  INLINE float top(void) const;
+  INLINE float left() const;
+  INLINE float right() const;
+  INLINE float bottom() const;
+  INLINE float top() const;
 };
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "chanviewport.I"
 

@@ -19,7 +19,7 @@
 #ifndef __CHANLAYOUT_H__
 #define __CHANLAYOUT_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pmap.h"
 #include "pvector.h"

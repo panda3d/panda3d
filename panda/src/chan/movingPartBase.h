@@ -19,7 +19,7 @@
 #ifndef MOVINGPARTBASE_H
 #define MOVINGPARTBASE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "partGroup.h"
 #include "partBundle.h"

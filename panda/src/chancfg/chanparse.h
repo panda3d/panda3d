@@ -19,7 +19,7 @@
 #ifndef __CHANPARSE_H__
 #define __CHANPARSE_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <string>
 

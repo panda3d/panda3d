@@ -19,10 +19,10 @@
 #ifndef COMPUTEDVERTICESMORPH_H
 #define COMPUTEDVERTICESMORPH_H
 
-#include <pandabase.h>
-#include <vector_typedWritable.h>
+#include "pandabase.h"
+#include "vector_typedWritable.h"
 
-#include <luse.h>
+#include "luse.h"
 
 class CharacterSlider;
 class BamReader;
@@ -42,7 +42,7 @@ public:
   typedef LVector2f VecType;
 
   INLINE ComputedVerticesMorphValue2(int index, const VecType &mvector);
-  INLINE ComputedVerticesMorphValue2(void);
+  INLINE ComputedVerticesMorphValue2();
 
   ushort _index;
   VecType _vector;
@@ -63,7 +63,7 @@ public:
   typedef LVector3f VecType;
 
   INLINE ComputedVerticesMorphValue3(int index, const VecType &mvector);
-  INLINE ComputedVerticesMorphValue3(void);
+  INLINE ComputedVerticesMorphValue3();
 
   ushort _index;
   VecType _vector;
@@ -84,7 +84,7 @@ public:
   typedef LVector4f VecType;
 
   INLINE ComputedVerticesMorphValue4(int index, const VecType &mvector);
-  INLINE ComputedVerticesMorphValue4(void);
+  INLINE ComputedVerticesMorphValue4();
 
   ushort _index;
   VecType _vector;

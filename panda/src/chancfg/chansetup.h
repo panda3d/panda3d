@@ -19,7 +19,7 @@
 #ifndef __CHANSETUP_H__
 #define __CHANSETUP_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <vector_string.h>
 

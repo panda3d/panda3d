@@ -19,7 +19,7 @@
 #ifndef __CHANWINDOW_H__
 #define __CHANWINDOW_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pmap.h"
 #include "pvector.h"
@@ -35,26 +35,26 @@ private:
   SetupSyms _setups;
   PTA(int) _camera_group;
 public:
-  INLINE WindowItem(void);
+  INLINE WindowItem();
   INLINE WindowItem(const bool, const bool, const int, const std::string&,
                     const SetupSyms&, const int, const int, const bool,
                     const bool, PTA(int) );
   INLINE WindowItem(const WindowItem&);
-  INLINE ~WindowItem(void);
+  INLINE ~WindowItem();
 
   INLINE WindowItem& operator=(const WindowItem&);
 
-  INLINE bool getHWChans(void) const;
-  INLINE bool getDVR(void) const;
-  INLINE bool getBorder(void) const;
-  INLINE bool getCursor(void) const;
-  INLINE int getChanOffset(void) const;
-  INLINE int getSizeX(void) const;
-  INLINE int getSizeY(void) const;
-  INLINE std::string getLayout(void) const;
-  INLINE SetupSyms getSetups(void) const;
+  INLINE bool getHWChans() const;
+  INLINE bool getDVR() const;
+  INLINE bool getBorder() const;
+  INLINE bool getCursor() const;
+  INLINE int getChanOffset() const;
+  INLINE int getSizeX() const;
+  INLINE int getSizeY() const;
+  INLINE std::string getLayout() const;
+  INLINE SetupSyms getSetups() const;
   INLINE int getCameraGroup(int display_region) const;
-  INLINE int getNumCameraGroups(void) const;
+  INLINE int getNumCameraGroups() const;
 };
 
 typedef pmap<std::string, WindowItem> WindowType;

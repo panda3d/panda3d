@@ -19,8 +19,8 @@
 #ifndef CONFIG_CHAR_H
 #define CONFIG_CHAR_H
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
 
 // CPPParser can't handle token-pasting to a keyword.
 #ifndef CPPPARSER
