@@ -46,21 +46,17 @@ class DirectOptionMenu(DirectButton):
         # Make popup marker have the same click sound
         self.popupMarker.guiItem.setSound(
             B1PRESS + self.popupMarker.guiId,self['clickSound'])
-        # Create an invisible frame to hold cancel frame and popup frame
-        # Used to reparent menu and cancel frame to render so that its drawn
-        # on top of everything
-        self.reparentFrame = self.createcomponent(
-            'reparentFrame', (), None,
-            DirectFrame, (self,))
         # This is created when you set the menu's items
         self.popupMenu = None
         self.selectedIndex = None
         # A big screen encompassing frame to catch the cancel clicks
         self.cancelFrame = self.createcomponent(
             'cancelframe', (), None,
-            DirectFrame, (self.reparentFrame,),
+            DirectFrame, (self,),
             frameSize = (-1,1,-1,1),
             relief = None)
+        # Make sure this is on top of all the other widgets
+        self.cancelFrame.setBin('gui-popup', 0)
         self.cancelFrame.bind(B1PRESS, self.hidePopupMenu)
         # Default action on press is to show popup menu
         self.bind(B1PRESS, self.showPopupMenu)
@@ -80,9 +76,11 @@ class DirectOptionMenu(DirectButton):
         # Create new component
         self.popupMenu = self.createcomponent('popupMenu', (), None,
                                               DirectFrame,
-                                              (self.reparentFrame,),
+                                              (self,),
                                               relief = 'raised',
                                               )
+        # Make sure it is on top of all the other gui widgets
+        self.popupMenu.setBin('gui-popup', 0)
         if not self['items']:
             return
         # Create a new component for each item
@@ -168,7 +166,6 @@ class DirectOptionMenu(DirectButton):
         visible screen region
         """
         # Show the menu
-        self.reparentFrame.reparentTo(aspect2d)
         self.popupMenu.show()
         # Make sure its at the right scale
         self.popupMenu.setScale(self, VBase3(1))       
@@ -211,7 +208,6 @@ class DirectOptionMenu(DirectButton):
 
     def hidePopupMenu(self, event = None):
         """ Put away popup and cancel frame """
-        self.reparentFrame.reparentTo(self)
         self.popupMenu.hide()
         self.cancelFrame.hide()
 
@@ -256,12 +252,6 @@ class DirectOptionMenu(DirectButton):
         """
         pass
         
-    def destroy(self):
-        """
-        Make sure you clean up popup menu
-        """
-        self.reparentFrame.reparentTo(self)
-        DirectButton.destroy(self)
 
 
 
