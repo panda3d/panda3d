@@ -106,8 +106,8 @@ class ScrollingLabel(PandaObject.PandaObject):
         return self.items[self.item]
 
     def setItem(self, item):
-        self.itemSign.setText(self.items[self.item])
         self.item = item
+        self.itemSign.setText(self.items[self.item])
         
     def getEventName(self):
         return self.eventName
