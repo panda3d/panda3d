@@ -47,7 +47,7 @@
 // install.
 #define install_lib $[TARGET(metalib_target lib_target static_lib_target)]
 #define install_bin $[TARGET(bin_target)]
-#define install_scripts $[TARGET(sed_bin_target)] $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target bin_target)] $[INSTALL_SCRIPTS]]
+#define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target bin_target)] $[INSTALL_SCRIPTS]]
 #define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target static_lib_target bin_target)] $[INSTALL_HEADERS]]
 #define install_parser_inc $[sort $[INSTALL_PARSER_INC]]
 #define install_data $[sort $[INSTALL_DATA(metalib_target lib_target static_lib_target bin_target)] $[INSTALL_DATA]]

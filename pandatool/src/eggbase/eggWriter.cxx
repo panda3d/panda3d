@@ -71,7 +71,7 @@ EggWriter(bool allow_last_param, bool allow_stdout) {
   redescribe_option
     ("cs",
      "Specify the coordinate system of the resulting egg file.  This may be "
-     " one of 'y-up', 'z-up', 'y-up-left', or 'z-up-left'.  The default is "
+     "one of 'y-up', 'z-up', 'y-up-left', or 'z-up-left'.  The default is "
      "y-up.");
 
   _output_ptr = (ostream *)NULL;
