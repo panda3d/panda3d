@@ -602,6 +602,10 @@ $[target] : $[sources] $[st_dir]/stamp
   #endif
 #endif
 
+#if $[build_pdbs]
+$[st_dir]/$[TARGET].pdb : $[st_dir]/$[TARGET].exe $[st_dir]/stamp
+#endif
+
 #define installed_files \
     $[install_bin_dir]/$[TARGET].exe \
     $[if $[build_pdbs],$[install_bin_dir]/$[TARGET].pdb] \

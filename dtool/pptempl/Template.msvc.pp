@@ -576,6 +576,10 @@ $[target] : $[sources]
 #endif
 #define transitive_link
 
+#if $[build_pdbs]
+$[st_dir]\$[TARGET].pdb : $[st_dir]\$[TARGET].exe
+#endif
+
 #define installed_files \
     $[install_bin_dir]\$[TARGET].exe \
     $[if $[build_pdbs],$[install_bin_dir]\$[TARGET].pdb] \
