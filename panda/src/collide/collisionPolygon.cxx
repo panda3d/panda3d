@@ -397,18 +397,21 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LVector3f from_normal = get_normal() * entry.get_inv_wrt_space();
-  float from_depth = from_radius - dist;
+  float into_depth = from_radius - dist;
   if (moved_from_center) {
     // We have to base the depth of intersection on the sphere's final
     // resting point, not the point from which we tested the
     // intersection.
-    from_depth = from_radius - dist_to_plane(orig_center);
+    into_depth = from_radius - dist_to_plane(orig_center);
   }
 
   new_entry->set_into_surface_normal(get_normal());
+  new_entry->set_into_depth(into_depth);
+
+  LVector3f from_normal = get_normal() * entry.get_inv_wrt_space();
+  LVector3f from_depth_vec = (get_normal() * into_depth) * entry.get_inv_wrt_space();
   new_entry->set_from_surface_normal(from_normal);
-  new_entry->set_from_depth(from_depth);
+  new_entry->set_from_depth(from_depth_vec.length());
 
   new_entry->set_into_intersection_point(from_center - get_normal() * dist);
 

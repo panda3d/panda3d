@@ -144,7 +144,16 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   float dist = sqrtf(dist2);
-  LVector3f into_normal = normalize(vec);
+  LVector3f into_normal;
+  float vec_length = vec.length();
+  if (IS_NEARLY_ZERO(vec_length)) {
+    // If we don't have a collision normal (e.g. the centers are
+    // exactly coincident), then make up an arbitrary normal--any one
+    // is as good as any other.
+    into_normal.set(1.0, 0.0, 0.0);
+  } else {
+    into_normal = vec / vec_length;
+  }
   LPoint3f into_intersection_point = into_normal * (dist - from_radius);
   float into_depth = into_radius + from_radius - dist;
 
@@ -152,11 +161,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   new_entry->set_into_intersection_point(into_intersection_point);
   new_entry->set_into_depth(into_depth);
 
-  // This is a bit of a hack.  This result is incorrect if there is a
-  // scale between the colliding object and this sphere.  We need to
-  // account for that scale, but to account for it correctly
-  // (especially including non-uniform scales) is rather complicated.
-  new_entry->set_from_depth(into_depth);
+  LVector3f from_depth_vec = (into_normal * into_depth) * entry.get_inv_wrt_space();
+  new_entry->set_from_depth(from_depth_vec.length());
 
   return new_entry;
 }
