@@ -146,6 +146,7 @@ get_source() const {
 ////////////////////////////////////////////////////////////////////
 TextureImage *TextureReference::
 get_texture() const {
+  nassertr(_source_texture != (SourceTextureImage *)NULL, (TextureImage *)NULL);
   return _source_texture->get_texture();
 }
 

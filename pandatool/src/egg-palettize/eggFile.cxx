@@ -275,13 +275,16 @@ build_cross_links() {
 
   Textures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
-    (*ti)->get_texture()->note_egg_file(this);
+    TextureReference *reference = (*ti);
+    TextureImage *texture = reference->get_texture();
+    nassertv(texture != (TextureImage *)NULL);
+    texture->note_egg_file(this);
 
     // Actually, this may count the same egg file multiple times for a
     // particular SourceTextureImage, since a given texture may be
     // reference multiples times within an egg file.  No harm done,
     // however.
-    (*ti)->get_source()->increment_egg_count();
+    reference->get_source()->increment_egg_count();
   }
 
   PaletteGroups::const_iterator gi;

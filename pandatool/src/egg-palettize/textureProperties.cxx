@@ -156,6 +156,7 @@ fully_define() {
   if (!_got_num_channels) {
     switch (_format) {
     case EggTexture::F_rgba:
+    case EggTexture::F_rgbm:
     case EggTexture::F_rgba12:
     case EggTexture::F_rgba8:
     case EggTexture::F_rgba4:
@@ -239,6 +240,7 @@ fully_define() {
   case 4:
     switch (_format) {
     case EggTexture::F_rgba:
+    case EggTexture::F_rgbm:
     case EggTexture::F_rgba12:
     case EggTexture::F_rgba8:
     case EggTexture::F_rgba4:
@@ -358,6 +360,9 @@ get_format_string(EggTexture::Format format) {
   case EggTexture::F_rgba:
     return "a";
 
+  case EggTexture::F_rgbm:
+    return "m";
+
   case EggTexture::F_rgba12:
     return "a12";
 
@@ -472,6 +477,7 @@ union_format(EggTexture::Format a, EggTexture::Format b) {
 
   case EggTexture::F_rgba:
     switch (b) {
+    case EggTexture::F_rgbm:
     case EggTexture::F_rgba12:
     case EggTexture::F_rgba8:
     case EggTexture::F_rgba4:

@@ -106,6 +106,17 @@ update() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::first_data
+//       Access: Public
+//  Description: Returns true if the chart has seen its first data
+//               appear on it, false if it is still a virgin chart.
+////////////////////////////////////////////////////////////////////
+bool PStatStripChart::
+first_data() const {
+  return _first_data;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatStripChart::get_collector_under_pixel
 //       Access: Public
 //  Description: Return the collector index associated with the

@@ -39,6 +39,7 @@ public:
 
   void new_data(int frame_number);
   void update();
+  bool first_data() const;
 
   INLINE PStatView &get_view() const;
   INLINE int get_collector_index() const;

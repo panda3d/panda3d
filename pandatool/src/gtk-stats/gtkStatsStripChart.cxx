@@ -52,7 +52,12 @@ mark_dead() {
   _is_dead = true;
 
   setup_white_gc();
-  force_redraw();
+
+  if (!first_data()) {
+    force_redraw();
+  } else {
+    clear_region();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
