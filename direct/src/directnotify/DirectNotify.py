@@ -79,8 +79,10 @@ class DirectNotify:
             level = config.GetString('default-directnotify-level', '')
 
         if level:
-            print ("Setting DirectNotify category: " + categoryName +
-                   " to severity: " + level)
+            # Note - this print statement is making it difficult to
+            # achieve "no output unless there's an error" operation - Josh
+            # print ("Setting DirectNotify category: " + categoryName +
+            #        " to severity: " + level)
             category = self.getCategory(categoryName)
             if level == "error":
                 category.setWarning(0)
