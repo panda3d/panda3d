@@ -28,6 +28,8 @@
 #include "pStatThread.h"
 #include "config_pstats.h"
 #include "pStatProperties.h"
+#include "cmath.h"
+#include "mathNumbers.h"
 
 #include <algorithm>
 
@@ -90,6 +92,23 @@ PStatClient() :
 
   _client_name = get_pstats_name();
   _max_rate = get_pstats_max_rate();
+
+  _tcp_count = 1;
+  _udp_count = 1;
+
+  if (pstats_tcp_ratio >= 1.0f) {
+    _tcp_count_factor = 0.0f;
+    _udp_count_factor = 1.0f;
+
+  } else if (pstats_tcp_ratio <= 0.0f) {
+    _tcp_count_factor = 1.0f;
+    _udp_count_factor = 0.0f;
+
+  } else {
+    csincos(pstats_tcp_ratio * MathNumbers::pi_f / 2.0f,
+            &_udp_count_factor,
+            &_tcp_count_factor);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -856,8 +875,29 @@ transmit_frame_data(int thread_index) {
       _threads[thread_index]._frame_data.write_datagram(datagram);
 
       if (_writer.is_valid_for_udp(datagram)) {
-        nassertv(_got_udp_port);
-        _writer.send(datagram, _udp_connection, _server);
+        if (_udp_count * _udp_count_factor < _tcp_count * _tcp_count_factor) {
+          // Send this one as a UDP packet.
+          nassertv(_got_udp_port);
+          _writer.send(datagram, _udp_connection, _server);
+          _udp_count++;
+
+          if (_udp_count == 0) {
+            // Wraparound!
+            _udp_count = 1;
+            _tcp_count = 1;
+          }
+
+        } else {
+          // Send this one as a TCP packet.
+          _writer.send(datagram, _tcp_connection);
+          _tcp_count++;
+
+          if (_tcp_count == 0) {
+            // Wraparound!
+            _udp_count = 1;
+            _tcp_count = 1;
+          }
+        }
 
       } else {
         _writer.send(datagram, _tcp_connection);

@@ -40,6 +40,7 @@ extern EXPCL_PANDA const float pstats_history;
 extern EXPCL_PANDA const float pstats_average_time;
 
 extern EXPCL_PANDA const bool pstats_threaded_write;
+extern EXPCL_PANDA const float pstats_tcp_ratio;
 
 extern EXPCL_PANDA void init_libpstatclient();
 

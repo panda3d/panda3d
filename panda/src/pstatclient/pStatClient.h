@@ -195,6 +195,11 @@ private:
   string _client_name;
   float _max_rate;
 
+  float _tcp_count_factor;
+  float _udp_count_factor;
+  unsigned int _tcp_count;
+  unsigned int _udp_count;
+
   static PStatClient *_global_pstats;
   friend class PStatCollector;
   friend class PStatThread;

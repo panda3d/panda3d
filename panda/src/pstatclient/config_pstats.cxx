@@ -46,6 +46,12 @@ const float pstats_history = config_pstats.GetFloat("pstats-history", 60.0);
 const float pstats_average_time = config_pstats.GetFloat("pstats-average-time", 3.0);
 const bool pstats_threaded_write = config_pstats.GetBool("pstats-threaded-write", false);
 
+// This specifies the ratio of frame update messages that are eligible
+// for UDP that are sent via TCP instead.  It does not count messages
+// that are too large for UDP and must be sent via TCP anyway.  1.0
+// means all messages are sent TCP; 0.0 means are are sent UDP.
+const float pstats_tcp_ratio = config_pstats.GetFloat("pstats-tcp-ratio", 1.0);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpstatclient
 //  Description: Initializes the library.  This must be called at
