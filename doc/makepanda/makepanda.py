@@ -191,7 +191,6 @@ COMPILER=COMPILERS[0]
 OPTIMIZE="3"
 INSTALLER=0
 PPGAME=0
-COMPLETE=0
 THIRDPARTY="thirdparty"
 VERSION="0.0.0"
 VERBOSE=1
@@ -463,7 +462,6 @@ def usage(problem):
     print "  --compiler X      (currently, compiler can only be MSVC7,LINUXA)"
     print "  --optimize X      (optimization level can be 1,2,3,4)"
     print "  --thirdparty X    (directory containing third-party software)"
-    print "  --complete        (copy samples and direct into the build)"
     print "  --installer       (build an executable installer)"
     print "  --ppgame X        (build a prepackaged game - see manual)"
     print "  --v1 X            (set the major version number)"
@@ -493,7 +491,7 @@ def parseopts(args):
     longopts = [
         "help","package-info","prefix=","compiler=","directx-sdk=","thirdparty=",
         "optimize=","everything","nothing","installer","ppgame=","quiet","verbose",
-        "complete","version=","lzma"]
+        "version=","lzma"]
     anything = 0
     for pkg in PACKAGES: longopts.append("no-"+pkg.lower())
     for pkg in PACKAGES: longopts.append("use-"+pkg.lower())
@@ -511,7 +509,6 @@ def parseopts(args):
             elif (option=="--verbose"): VERBOSE+=1
             elif (option=="--installer"): INSTALLER=1
             elif (option=="--ppgame"): PPGAME=value
-            elif (option=="--complete"): COMPLETE=1
             elif (option=="--everything"): OMIT=[]
             elif (option=="--nothing"): OMIT=PACKAGES[:]
             elif (option=="--version"):
@@ -1895,11 +1892,15 @@ if (sys.platform == "win32"):
 
 ########################################################################
 ##
-## Copy PMW into the build.
+## Copy various stuff into the build.
 ##
 ########################################################################
 
+CopyFile(PREFIX+"/", "doc/LICENSE")
+CopyFile(PREFIX+"/", "doc/ReleaseNotes")
+CopyFile(PREFIX+"/", "doc/InstallerNotes")
 CopyTree(PREFIX+'/pmw', 'thirdparty/pmw')
+CopyTree(PREFIX+'/SceneEditor', 'SceneEditor')
 
 ########################################################################
 ##
@@ -6201,26 +6202,6 @@ except: icache = 0
 if (icache!=0):
     cPickle.dump(CxxIncludeCache, icache, 1)
     icache.close()
-
-##########################################################################################
-#
-# 'Complete' mode.
-#
-# Copies the samples and direct into the build. Note that
-# this isn't usually what you want.  It is usually better to let the
-# compiled panda load this stuff directly from the source tree.
-# The only time you really want to do this is if you plan to move
-# the build somewhere and leave the source tree behind.
-#
-##########################################################################################
-
-if (COMPLETE):
-    CopyFile(PREFIX+'/', 'InstallerNotes')
-    CopyFile(PREFIX+'/', 'LICENSE')
-    CopyFile(PREFIX+'/', 'README')
-    CopyTree(PREFIX+'/samples',     'samples')
-    CopyTree(PREFIX+'/direct/src',  'direct/src')
-    CopyTree(PREFIX+'/SceneEditor', 'SceneEditor')
 
 ##########################################################################################
 #
