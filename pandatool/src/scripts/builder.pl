@@ -465,6 +465,22 @@ close(LOGFILE);
 
 &logmsg("*** Panda Build Log Started at ".&gettimestr()." ***");
 
+my @do_install_dir=(1,1,1,1);
+
+if($#ARGV>=0) {
+    @do_install_dir=(0,0,0,0);
+    if($ARGV[0] eq $inst_dirnames[$INSTALLNUM]) {
+        $do_install_dir[$INSTALLNUM]=1;
+    } elsif($ARGV[0] eq $inst_dirnames[$DEBUGNUM]) {
+        $do_install_dir[$DEBUGNUM]=1;
+    } elsif($ARGV[0] eq $inst_dirnames[$RELEASENUM]) {
+        $do_install_dir[$RELEASENUM]=1;
+    } else {
+        &logmsg("invalid argument '".$ARGV[0]."' to builder.pl.  arg must be 'install','debug', or 'release'\n");
+        exit(1);
+    }
+}
+
 if(!(-e $WIN_INSTALLDIR)) {
     &logmsg("ERROR: Cant access install directory!!  ".$WIN_INSTALLDIR);
     exit(1);
@@ -516,24 +532,30 @@ SKIP_REMOVE:
 # this doesnt work unless you can completely remove the dirs, since cvs checkout
 # bombs if dirs exist but CVS dirs do not. 
 
-$ENV{'PANDA_OPTIMIZE'}='2';
-&buildall($INSTALLNUM);
+if($do_install_dir[$INSTALLNUM]) {
+  $ENV{'PANDA_OPTIMIZE'}='2';
+  &buildall($INSTALLNUM);
+}
 
 BEFORE_DBGBUILD:
 
-$ENV{'USE_BROWSEINFO'}='1';   # make .sbr files, this is probably obsolete
-if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
-    $ENV{'PANDA_OPTIMIZE'}='1';
-}
+if($do_install_dir[$DEBUGNUM]) {
+    $ENV{'USE_BROWSEINFO'}='1';   # make .sbr files, this is probably obsolete
+    if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
+       $ENV{'PANDA_OPTIMIZE'}='1';
+    }
 
-&buildall($DEBUGNUM);
-&make_bsc_file();
-delete $ENV{'USE_BROWSEINFO'};  # this is probably obsolete
+    &buildall($DEBUGNUM);
+    &make_bsc_file();
+    delete $ENV{'USE_BROWSEINFO'};  # this is probably obsolete
+}
 
 AFTER_DBGBUILD:
 
-$ENV{'PANDA_OPTIMIZE'}='3';
-&buildall($RELEASENUM);
+if($do_install_dir[$RELEASENUM]) {
+    $ENV{'PANDA_OPTIMIZE'}='3';
+    &buildall($RELEASENUM);
+}
 
 &logmsg("*** Panda Build Log Finished at ".&gettimestr()." ***");
 
