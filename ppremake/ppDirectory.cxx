@@ -491,6 +491,10 @@ scan_extra_depends(const string &cache_filename) {
     return false;
   }
 
+  if (verbose) {
+    cerr << "Scanning external directory " << get_fullpath() << "\n";
+  }
+
   vector<string>::const_iterator fi;
   for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
     string filename = (*fi);
@@ -512,12 +516,13 @@ scan_extra_depends(const string &cache_filename) {
 ////////////////////////////////////////////////////////////////////
 bool PPDirectory::
 read_source_file(const string &prefix, PPNamedScopes *named_scopes) {
-  string source_filename = prefix + SOURCE_FILENAME;
+  Filename source_filename = prefix + SOURCE_FILENAME;
+  source_filename.set_text();
 
-  ifstream in(source_filename.c_str());
-  if (in) {
+  ifstream in;
+  if (source_filename.open_read(in)) {
     if (verbose) {
-        cerr << "Reading (dir) \"" << source_filename << "\"\n";
+      cerr << "Reading (dir) \"" << source_filename << "\"\n";
     }
 
     named_scopes->set_current(_dirname);
@@ -706,28 +711,33 @@ compute_depends_index() {
 void PPDirectory::
 read_file_dependencies(const string &cache_filename) {
   // Open up the dependency cache file in the directory.
-  string cache_pathname = get_path() + "/" + cache_filename;
-  ifstream in(cache_pathname.c_str());
-  if (!in) {
+  Filename cache_pathname(get_fullpath(), cache_filename);
+  cache_pathname.set_text();
+  ifstream in;
+
+  if (!cache_pathname.open_read(in)) {
     // Can't read it.  Maybe it's not there.  No problem.
-    return;
-  }
-  if (verbose) {
-    cerr << "Reading (dep) \"" << cache_pathname.c_str() << "\"\n";
-  }
-
-  string line;
-  getline(in, line);
-  while (!in.fail() && !in.eof()) {
-    vector<string> words;
-    tokenize_whitespace(line, words);
-    if (words.size() >= 2) {
-      PPDependableFile *file = get_dependable_file(words[0], false);
-      file->update_from_cache(words);
+    if (verbose) {
+      cerr << "Couldn't read \"" << cache_pathname << "\"\n";
     }
-    getline(in, line);
-  }
+  } else {
+    if (verbose) {
+      cerr << "Loading cache \"" << cache_pathname << "\"\n";
+    }
 
+    string line;
+    getline(in, line);
+    while (!in.fail() && !in.eof()) {
+      vector<string> words;
+      tokenize_whitespace(line, words);
+      if (words.size() >= 2) {
+        PPDependableFile *file = get_dependable_file(words[0], false);
+        file->update_from_cache(words);
+      }
+      getline(in, line);
+    }
+  }
+    
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     (*ci)->read_file_dependencies(cache_filename);
@@ -771,13 +781,18 @@ update_file_dependencies(const string &cache_filename) {
         cerr << "Cannot update cache dependency file " << cache_pathname << "\n";
         return;
       }
+
+      if (verbose) {
+        cerr << "Rewriting cache " << cache_pathname << "\n";
+      }
       
       // Walk through our list of dependable files, writing them out the
       // the cache file.
+      bool external_tree = (_tree->get_main_tree() != _tree);
       Dependables::const_iterator di;
       for (di = _dependables.begin(); di != _dependables.end(); ++di) {
         PPDependableFile *file = (*di).second;
-        if (file->was_examined()) {
+        if (file->was_examined() || external_tree) {
           if (file->is_circularity()) {
             cerr << "Warning: circular #include directives:\n"
                  << "  " << file->get_circularity() << "\n";

@@ -5,6 +5,7 @@
 
 #include "ppDirectoryTree.h"
 #include "ppDirectory.h"
+#include "ppDependableFile.h"
 #include "tokenize.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -257,6 +258,16 @@ get_dependable_file_by_dirpath(const string &dirpath, bool is_header) {
   string dirname = dirpath.substr(0, slash);
   string filename = dirpath.substr(slash + 1);
 
+  if (!dirname.empty() && dirname[0] == '+') {
+    // "+dirname/filename" means to look first for the file as an
+    // external file, meaning it has no dirname.
+    dirname = dirname.substr(1);
+    PPDependableFile *result = get_main_tree()->find_dependable_file(filename);
+    if (result != (PPDependableFile *)NULL) {
+      return result;
+    }
+  }
+
   PPDirectory *dir = find_dirname(dirname);
   if (dir == (PPDirectory *)NULL) {
     // No valid directory name.
@@ -276,6 +287,11 @@ get_dependable_file_by_dirpath(const string &dirpath, bool is_header) {
 void PPDirectoryTree::
 read_file_dependencies(const string &cache_filename) {
   _root->read_file_dependencies(cache_filename);
+
+  RelatedTrees::iterator ri;
+  for (ri = _related_trees.begin(); ri != _related_trees.end(); ++ri) {
+    (*ri)->read_file_dependencies(cache_filename);
+  }
 }
 
 

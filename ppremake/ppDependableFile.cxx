@@ -73,7 +73,7 @@ update_from_cache(const vector<string> &words) {
   time_t mtime = strtol(words[1].c_str(), (char **)NULL, 10);
   if (mtime == get_mtime()) {
     // The modification matches; preserve the cache information.
-    PPDirectoryTree *tree = _directory->get_tree()->get_main_tree();
+    PPDirectoryTree *tree = _directory->get_tree();
 
     _dependencies.clear();
     vector<string>::const_iterator wi;
@@ -124,6 +124,9 @@ write_cache(ostream &out) {
     out << " ";
     if ((*di)._okcircular) {
       out << "/";
+    }
+    if ((*di)._file->get_directory()->get_tree() != get_directory()->get_tree()) {
+      out << "+";
     }
     out << (*di)._file->get_dirpath();
   }
@@ -361,18 +364,23 @@ compute_dependencies(string &circularity) {
 
   if ((_flags & F_from_cache) == 0) {
     // Now open the file and scan it for #include statements.
-    ifstream in(get_fullpath().c_str());
-    if (!in) {
+    Filename filename(get_fullpath());
+    filename.set_text();
+    ifstream in;
+    if (!filename.open_read(in)) {
       // Can't read the file, or the file doesn't exist.  Interesting.
       if (exists()) {
-        cerr << "Warning: dependent file " << get_fullpath() 
+        cerr << "Warning: dependent file " << filename
              << " exists but cannot be read.\n";
       } else {
-        cerr << "Warning: dependent file " << get_fullpath() 
+        cerr << "Warning: dependent file " << filename
              << " does not exist.\n";
       }
 
     } else {
+      if (verbose) {
+        cerr << "Reading (dep) \"" << filename << "\"\n";
+      }
       PPDirectoryTree *tree = _directory->get_tree()->get_main_tree();
       
       bool okcircular = false;
