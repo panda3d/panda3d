@@ -180,9 +180,11 @@ write_3d_face(EggPolygon *poly, ostream &out) {
     out << "0\n3DFACE\n"
 	<< "8\n" << _group->get_name() << "\n";
 
+    // Since DXF uses a clockwise ordering convention, we must
+    // reverse the order in which we write out the vertices.
     int i;
-    EggPolygon::iterator vi;
-    for (i = 0, vi = poly->begin(); vi != poly->end(); ++i, ++vi) {
+    EggPolygon::reverse_iterator vi;
+    for (i = 0, vi = poly->rbegin(); vi != poly->rend(); ++i, ++vi) {
       EggVertex *vtx = (*vi);
       LVecBase3d pos = vtx->get_pos3() * _group->get_vertex_frame();
       out << 10 + i << "\n" << pos[0] << "\n"
