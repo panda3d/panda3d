@@ -158,7 +158,9 @@ initialize_ssl() {
 
   // Call RAND_status() here to force the random number generator to
   // initialize early.
-  RAND_status();
+  if (early_random_seed) {
+    RAND_status();
+  }
 
   _ssl_initialized = true;
 }

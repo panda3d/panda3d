@@ -62,6 +62,14 @@ const float extractor_frequency =
 const int patcher_buffer_size =
         config_downloader.GetInt("patcher-buffer-size", 4096);
 
+// Configure this true (the default) to compute the SSL random seed
+// early on in the application (specifically, when the first
+// HTTPClient is created), or false to defer this until it is actually
+// needed, causing a delay the first time a https connection is
+// attempted.
+const bool early_random_seed =
+config_downloader.GetBool("early-random-seed", 1);
+
 ConfigureFn(config_downloader) {
 #ifdef HAVE_SSL
   HTTPDocument::init_type();
