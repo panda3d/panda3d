@@ -412,6 +412,11 @@ bool FFTCompressor::
 read_reals(DatagramIterator &di, vector_float &array) {
   int length = di.get_int32();
 
+  if (mathutil_cat.is_spam()) {
+    mathutil_cat.spam()
+      << "Reading real array of length " << length << "\n";
+  }
+
   if (_quality > 100) {
     // Special case: lossless output.
     for (int i = 0; i < length; i++) {
@@ -477,6 +482,11 @@ read_reals(DatagramIterator &di, vector_float &array) {
 ////////////////////////////////////////////////////////////////////
 bool FFTCompressor::
 read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
+  if (mathutil_cat.is_spam()) {
+    mathutil_cat.spam()
+      << "Reading HPRS\n";
+  }
+
   if (_quality >= 103) {
     // If quality level is at least 103, we don't even convert hpr to
     // quat.
@@ -494,6 +504,10 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
       }
     }
 
+    if (mathutil_cat.is_spam()) {
+      mathutil_cat.spam()
+	<< "HPRS read directly, okflag = " << (int)okflag << "\n";
+    }
     return okflag;
   }
 
@@ -512,6 +526,10 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
     read_reals(di, qk);
 
   if (okflag) {
+    if (mathutil_cat.is_spam()) {
+      mathutil_cat.spam()
+	<< "Decomposing HPRS, length = " << qi.size() << "\n";
+    }
     nassertr(qi.size() == qj.size() && qj.size() == qk.size(), false);
     
     array.reserve(array.size() + qi.size());
@@ -540,6 +558,11 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
       
       array.push_back(hpr);
     }
+  }
+
+  if (mathutil_cat.is_spam()) {
+    mathutil_cat.spam()
+      << "HPRS read, okflag = " << (int)okflag << "\n";
   }
 
   return okflag;
@@ -776,9 +799,19 @@ get_real_compress_plan(int length) {
     return (*pi).second;
   }
 
+  if (mathutil_cat.is_spam()) {
+    mathutil_cat.spam()
+      << "Creating compress plan for length " << length << ".\n";
+  }
+
   rfftw_plan plan;
-  plan = rfftw_create_plan(length, FFTW_REAL_TO_COMPLEX, FFTW_MEASURE);
+  plan = rfftw_create_plan(length, FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE);
   _real_compress_plans.insert(RealPlans::value_type(length, plan));
+
+  if (mathutil_cat.is_spam()) {
+    mathutil_cat.spam()
+      << "Got plan.\n";
+  }
 
   return plan;
 }
@@ -796,9 +829,19 @@ get_real_decompress_plan(int length) {
     return (*pi).second;
   }
 
+  if (mathutil_cat.is_spam()) {
+    mathutil_cat.spam()
+      << "Creating decompress plan for length " << length << ".\n";
+  }
+
   rfftw_plan plan;
-  plan = rfftw_create_plan(length, FFTW_COMPLEX_TO_REAL, FFTW_MEASURE);
+  plan = rfftw_create_plan(length, FFTW_COMPLEX_TO_REAL, FFTW_ESTIMATE);
   _real_decompress_plans.insert(RealPlans::value_type(length, plan));
+
+  if (mathutil_cat.is_spam()) {
+    mathutil_cat.spam()
+      << "Got plan.\n";
+  }
 
   return plan;
 }
