@@ -149,10 +149,23 @@ void ConfigTable::ReadConfigFile(void) {
   DSearchPath::Results config_files;
 
   if (!configsuffix.empty()) {
+    if (microconfig_cat->is_spam())
+      microconfig_cat->spam() << "agregate config name is: "
+			      << (configname + configsuffix) << endl;
     config_search.find_all_files(configname + configsuffix, config_files);
+    if (microconfig_cat->is_spam())
+      microconfig_cat->spam() << "found " << config_files.get_num_files()
+			      << " files" << endl;
   }
 
+  if (microconfig_cat->is_spam())
+    microconfig_cat->spam() << "searching for '" << configname << "'" << endl;
+
   config_search.find_all_files(configname, config_files);
+
+  if (microconfig_cat->is_spam())
+    microconfig_cat->spam() << "found " << config_files.get_num_files()
+			    << " files" << endl;
 
   if (microconfig_cat->is_spam())
     microconfig_cat->spam() << "configpath parsed and searched"
