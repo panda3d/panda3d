@@ -36,8 +36,8 @@ TypeHandle FisheyeLens::_type_handle;
 // know how well this extends to other lenses and other negative
 // sizes.
 
-static const float k = 60.0f;
-// focal_length = film_size * k / fov;
+static const float fisheye_k = 60.0f;
+// focal_length = film_size * fisheye_k / fov;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
 
     // Now get the point r units around the circle in the YZ plane.
     float focal_length = get_focal_length();
-    float angle = r * k / focal_length;
+    float angle = r * fisheye_k / focal_length;
     float sinAngle, cosAngle;
     csincos(deg_2_rad(angle), &sinAngle, &cosAngle);
 
@@ -166,7 +166,7 @@ project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
   float r = 90.0f - rad_2_deg(catan2(x[0], x[1]));
 
   float focal_length = get_focal_length();
-  float factor = r * focal_length / k;
+  float factor = r * focal_length / fisheye_k;
 
   point2d.set
     (y[0] * factor,
@@ -195,7 +195,7 @@ project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
 ////////////////////////////////////////////////////////////////////
 float FisheyeLens::
 fov_to_film(float fov, float focal_length, bool) const {
-  return focal_length * fov / k;
+  return focal_length * fov / fisheye_k;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -209,7 +209,7 @@ fov_to_film(float fov, float focal_length, bool) const {
 ////////////////////////////////////////////////////////////////////
 float FisheyeLens::
 fov_to_focal_length(float fov, float film_size, bool) const {
-  return film_size * k / fov;
+  return film_size * fisheye_k / fov;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -223,6 +223,6 @@ fov_to_focal_length(float fov, float film_size, bool) const {
 ////////////////////////////////////////////////////////////////////
 float FisheyeLens::
 film_to_fov(float film_size, float focal_length, bool) const {
-  return film_size * k / focal_length;
+  return film_size * fisheye_k / focal_length;
 }
 

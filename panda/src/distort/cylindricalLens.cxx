@@ -23,8 +23,8 @@ TypeHandle CylindricalLens::_type_handle;
 
 // This is the focal-length constant for fisheye lenses.  See
 // fisheyeLens.cxx.
-static const float k = 60.0f;
-// focal_length = film_size * k / fov;
+static const float cylindrical_k = 60.0f;
+// focal_length = film_size * cylindrical_k / fov;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
   LPoint3f f = point2d * get_film_mat_inv();
 
   float focal_length = get_focal_length();
-  float angle = f[0] * k / focal_length;
+  float angle = f[0] * cylindrical_k / focal_length;
   float sinAngle, cosAngle;
   csincos(deg_2_rad(angle), &sinAngle, &cosAngle);
 
@@ -118,7 +118,7 @@ project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
   point2d.set
     (
      // The x position is the angle about the Z axis.
-     rad_2_deg(catan2(xy[0], xy[1])) * focal_length / k,
+     rad_2_deg(catan2(xy[0], xy[1])) * focal_length / cylindrical_k,
      // The y position is the Z height divided by the perspective
      // distance.
      p[2] * focal_length / pdist,
@@ -147,7 +147,7 @@ project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
 float CylindricalLens::
 fov_to_film(float fov, float focal_length, bool horiz) const {
   if (horiz) {
-    return focal_length * fov / k;
+    return focal_length * fov / cylindrical_k;
   } else {
     return (ctan(deg_2_rad(fov * 0.5f)) * focal_length) * 2.0f;
   }
@@ -165,7 +165,7 @@ fov_to_film(float fov, float focal_length, bool horiz) const {
 float CylindricalLens::
 fov_to_focal_length(float fov, float film_size, bool horiz) const {
   if (horiz) {
-    return film_size * k / fov;
+    return film_size * cylindrical_k / fov;
   } else {
     return film_size * 0.5f / ctan(deg_2_rad(fov * 0.5f));
   }
@@ -183,7 +183,7 @@ fov_to_focal_length(float fov, float film_size, bool horiz) const {
 float CylindricalLens::
 film_to_fov(float film_size, float focal_length, bool horiz) const {
   if (horiz) {
-    return film_size * k / focal_length;
+    return film_size * cylindrical_k / focal_length;
   } else {
     return rad_2_deg(catan(film_size * 0.5f / focal_length)) * 2.0f;
   }

@@ -23,8 +23,8 @@ TypeHandle PSphereLens::_type_handle;
 
 // This is the focal-length constant for fisheye lenses.  See
 // fisheyeLens.cxx.
-static const float k = 60.0f;
-// focal_length = film_size * k / fov;
+static const float spherical_k = 60.0f;
+// focal_length = film_size * spherical_k / fov;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -65,8 +65,8 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
   // Rotate the forward vector through the rotation angles
   // corresponding to this point.
   LPoint3f v = LPoint3f(0.0f, 1.0f, 0.0f) *
-    LMatrix3f::rotate_mat(f[1] * k / focal_length, LVector3f(1.0f, 0.0f, 0.0f)) *
-    LMatrix3f::rotate_mat(f[0] * k / focal_length, LVector3f(0.0f, 0.0f, -1.0f));
+    LMatrix3f::rotate_mat(f[1] * spherical_k / focal_length, LVector3f(1.0f, 0.0f, 0.0f)) *
+    LMatrix3f::rotate_mat(f[0] * spherical_k / focal_length, LVector3f(0.0f, 0.0f, -1.0f));
 
   // And we'll need to account for the lens's rotations, etc. at the
   // end of the day.
@@ -121,9 +121,9 @@ project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
   point2d.set
     (
      // The x position is the angle about the Z axis.
-     rad_2_deg(catan2(xy[0], xy[1])) * focal_length / k,
+     rad_2_deg(catan2(xy[0], xy[1])) * focal_length / spherical_k,
      // The y position is the angle about the X axis.
-     rad_2_deg(catan2(yz[1], yz[0])) * focal_length / k,
+     rad_2_deg(catan2(yz[1], yz[0])) * focal_length / spherical_k,
      // Z is the distance scaled into the range (1, -1).
      (get_near() - dist) / (get_far() - get_near())
      );
@@ -148,7 +148,7 @@ project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
 ////////////////////////////////////////////////////////////////////
 float PSphereLens::
 fov_to_film(float fov, float focal_length, bool) const {
-  return focal_length * fov / k;
+  return focal_length * fov / spherical_k;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,7 +162,7 @@ fov_to_film(float fov, float focal_length, bool) const {
 ////////////////////////////////////////////////////////////////////
 float PSphereLens::
 fov_to_focal_length(float fov, float film_size, bool) const {
-  return film_size * k / fov;
+  return film_size * spherical_k / fov;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -176,5 +176,5 @@ fov_to_focal_length(float fov, float film_size, bool) const {
 ////////////////////////////////////////////////////////////////////
 float PSphereLens::
 film_to_fov(float film_size, float focal_length, bool) const {
-  return film_size * k / focal_length;
+  return film_size * spherical_k / focal_length;
 }
