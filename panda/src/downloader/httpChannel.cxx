@@ -415,16 +415,42 @@ read_body() {
 //               At this time, it is possible that a communications
 //               error will have left a partial file, so
 //               is_download_complete() may be called to test this.
+//
+//               If first_byte is nonzero, it specifies the first byte
+//               within the file (zero-based) at which to start
+//               writing the downloaded data.  This can work well in
+//               conjunction with get_subdocument() to restart a
+//               previously-interrupted download.
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
-download_to_file(const Filename &filename) {
+download_to_file(const Filename &filename, size_t first_byte) {
   reset_download_to();
   _download_to_filename = filename;
   _download_to_filename.set_binary();
+  _download_to_file.close();
+  _download_to_file.clear();
+
   if (!_download_to_filename.open_write(_download_to_file)) {
     downloader_cat.info()
       << "Could not open " << filename << " for writing.\n";
     return false;
+  }
+
+  if (first_byte != 0) {
+    // Windows doesn't complain if you try to seek past the end of
+    // file--it happily appends enough zero bytes to make the
+    // difference.  Blecch.  That means we need to get the file size
+    // first to check it ourselves.
+    _download_to_file.seekp(0, ios::end);
+    if (first_byte > (size_t)_download_to_file.tellp()) {
+      downloader_cat.info()
+        << "Invalid starting position of byte " << first_byte << " within "
+        << _download_to_filename << " (which has " 
+        << _download_to_file.tellp() << " bytes)\n";
+      _download_to_file.close();
+      return false;
+    }
+    _download_to_file.seekp(first_byte);
   }
 
   _download_dest = DD_file;

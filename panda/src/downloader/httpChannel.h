@@ -115,7 +115,7 @@ PUBLISHED:
   bool run();
 
   ISocketStream *read_body();
-  bool download_to_file(const Filename &filename);
+  bool download_to_file(const Filename &filename, size_t first_byte = 0);
   bool download_to_ram(Ramfile *ramfile);
 
   INLINE size_t get_bytes_downloaded() const;
