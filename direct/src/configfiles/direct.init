@@ -7,5 +7,6 @@ MODREL PYTHONPATH src/ffi
 MODREL PYTHONPATH src/actor
 MODREL PYTHONPATH src/distributed
 MODREL PYTHONPATH src/showbase
+MODREL PYTHONPATH src/directutil
 MODREL PYTHONPATH src/tkwidgets
 MODREL PYTHONPATH src/tkpanels

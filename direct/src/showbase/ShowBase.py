@@ -5,6 +5,7 @@ from MessengerGlobal import *
 from TaskManagerGlobal import *
 from EventManagerGlobal import *
 from AudioManagerGlobal import *
+from PythonUtil import *
 import Task
 import EventManager
 
