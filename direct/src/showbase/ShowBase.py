@@ -150,6 +150,18 @@ class ShowBase:
 	self.physicsMgrEnabled = 0 
 	self.taskMgr.removeTasksNamed('manager-update')
 
+    def toggleParticles(self):
+        if self.particleMgrEnabled == 0:
+            self.enableParticles()
+        else:
+            self.disableParticles()
+
+    def isParticleMgrEnabled(self):
+        return self.particleMgrEnabled
+
+    def isPhysicsMgrEnabled(self):
+        return self.physicsMgrEnabled
+
     def __updateManagers(self, state):
 	"""__updateManagers(self)"""
 	dt = min(globalClock.getDt(), 0.1)

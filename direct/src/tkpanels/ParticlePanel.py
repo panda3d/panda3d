@@ -3,24 +3,28 @@
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from AppShell import *
 from Tkinter import *
+from tkFileDialog import *
+from tkSimpleDialog import askstring
+import os
 import Pmw
 import Dial
 import Floater
 import EntryScale
 import VectorWidgets
 import Placer
+import ForceGroup
 import Particles
 import ParticleEffect
 
 class ParticlePanel(AppShell):
     # Override class variables
     appname = 'Particle Panel'
-    frameWidth  = 400
-    frameHeight = 660
+    frameWidth  = 375
+    frameHeight = 775
     usecommandarea = 0
     usestatusarea  = 0
     balloonState = 'both'
-    
+
     def __init__(self, particleEffect = None, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
@@ -33,7 +37,7 @@ class ParticlePanel(AppShell):
             self.particleEffect = particleEffect
         else:
             # Or create a new one if none given
-            pe = ParticleEffect.ParticleEffect('particle-fx')
+            pe = ParticleEffect.ParticleEffect('effect-1')
             self.particleEffect = pe
             pe.reparentTo(render)
             pe.enable()
@@ -45,42 +49,156 @@ class ParticlePanel(AppShell):
         self.initialiseoptions(ParticlePanel)
 
         # Update panel values to reflect particle effect's state
-        self.selectEffectNamed(self.effectDict.keys()[0])
+        self.selectEffectNamed(self.effectsDict.keys()[0])
+        # Make sure labels/menus reflect current state
+        self.updateMenusAndLabels()
+        # Make sure there is a page for each forceGroup objects
+        for forceGroup in self.particleEffect.getForceGroupList():
+            self.addForceGroupNotebookPage(self.particleEffect, forceGroup)
 
     def appInit(self):
+        # Create dictionaries to keep track of panel objects
         self.widgetDict = {}
         self.variableDict = {}
-        self.effectDict = {}
-        self.effectDict[self.particleEffect.getName()] = (
+        self.effectsDict = {}
+        self.effectsDict[self.particleEffect.getName()] = (
             self.particleEffect)
+        self.forcePagesDict = {}
+        # Make sure particles are enabled
+        base.enableParticles()
 
     def createInterface(self):
         # Handle to the toplevels hull
         interior = self.interior()
 
-        self.menuBar.addmenu('Particles', 'Particle Panel Operations')
-        self.menuBar.addmenuitem(
-            'Particles', 'command',
-            'Print Particle System Parameters',
+        # Create particle panel menu items
+
+        ## MENUBAR ENTRIES ##
+        # FILE MENU
+        # Get a handle on the file menu so commands can be inserted
+        # before quit item
+        fileMenu = self.menuBar.component('File-menu')
+        # MRM: Need to add load and save effects methods
+        fileMenu.insert_command(
+            fileMenu.index('Quit'),
+            label = 'Load Params',
+            command = self.loadParticleEffectFromFile)
+        fileMenu.insert_command(
+            fileMenu.index('Quit'),
+            label = 'Save Params',
+            command = self.saveParticleEffectToFile)
+        fileMenu.insert_command(
+            fileMenu.index('Quit'),
             label = 'Print Params',
             command = lambda s = self: s.particles.printParams())
 
-        # Combo box to switch between particle systems
-        self.effectSelector = Pmw.ComboBox(self.menuFrame,
-                                     labelpos = W,
-                                     label_text = 'Particle System',
-                                     entry_width = 16,
-                                     selectioncommand = self.selectEffectNamed,
-                                     scrolledlist_items = ('system 0',))
-        self.effectSelector.selectitem('system 0')
-        self.effectSelector.pack(side = 'left', expand = 0)
+        # EFFECTS MENU
+        self.menuBar.addmenu('Effects', 'Particle Effects Operations')
+        # Get a handle on this menu
+        effectsMenu = self.menuBar.component('Effects-menu')
+        # Create new particle effect
+        self.menuBar.addmenuitem(
+            'Effects', 'command',
+            'Create New Particle Effect',
+            label = 'Create New Effect',
+            command = self.createNewEffect)
+        # Add cascade menus to view and enable, saving a handle
+        effectsConfigureMenu = Menu(effectsMenu, tearoff = 0)
+        effectsMenu.add_cascade(label = 'Configure',
+                                menu = effectsConfigureMenu)
+        self.effectsEnableMenu = Menu(effectsMenu, tearoff = 0)
+        effectsMenu.add_cascade(label = 'Enable/Disable',
+                                menu = self.effectsEnableMenu)
 
-        self.createCheckbutton(
-            self.menuFrame, 'System', 'Active',
-            'Turn particle systems on/off',
-            self.toggleParticleSystem, 1)
+        # PARTICLES MENU
+        self.menuBar.addmenu('Particles', 'Particles Operations')
+        # Get a handle on this menu
+        particlesMenu = self.menuBar.component('Particles-menu')
+        # Create new particles object
+        self.menuBar.addmenuitem(
+            'Particles', 'command',
+            'Create New Particles Object',
+            label = 'Create New Particles',
+            command = self.createNewParticles)
+        # Add cascade menus to view and enable, saving a handle
+        particlesConfigureMenu = Menu(particlesMenu, tearoff = 0)
+        particlesMenu.add_cascade(label = 'Configure',
+                                menu = particlesConfigureMenu)
+        self.particlesEnableMenu = Menu(particlesMenu, tearoff = 0)
+        particlesMenu.add_cascade(label = 'Enable/Disable',
+                                menu = self.particlesEnableMenu)
 
-        # Create the notebook pages
+        # FORCE GROUP MENU
+        self.menuBar.addmenu('ForceGroup', 'ForceGroup Operations')
+        # Get a handle on this menu
+        forceGroupMenu = self.menuBar.component('ForceGroup-menu')
+        # Create new particle effect
+        self.menuBar.addmenuitem(
+            'ForceGroup', 'command',
+            'Create New ForceGroup Object',
+            label = 'Create New ForceGroup',
+            command = self.createNewForceGroup)
+        # Add cascade menus to view and enable, saving a handle
+        forceGroupConfigureMenu = Menu(forceGroupMenu, tearoff = 0)
+        forceGroupMenu.add_cascade(label = 'Configure',
+                                menu = forceGroupConfigureMenu)
+        self.forceGroupEnableMenu = Menu(forceGroupMenu, tearoff = 0)
+        forceGroupMenu.add_cascade(label = 'Enable/Disable',
+                                menu = self.forceGroupEnableMenu)
+        
+        # PARTICLE MANAGER MENU
+        self.menuBar.addmenu('ParticleMgr', 'ParticleMgr Operations')
+        self.particleMgrActive = IntVar()
+        self.particleMgrActive.set(base.isParticleMgrEnabled())
+        self.menuBar.addmenuitem(
+            'ParticleMgr', 'checkbutton',
+            'Enable/Disable ParticleMgr',
+            label = 'Active',
+            variable = self.particleMgrActive,
+            command = self.toggleParticleMgr)
+
+        ## MENUBUTTON LABELS ##
+        # Menubutton/label to identify the current objects being configured
+        labelFrame = Frame(interior)
+        # Current effect
+        self.effectsLabel = Menubutton(labelFrame, width = 10,
+                                       relief = RAISED,
+                                       borderwidth = 2,
+                                       font=('MSSansSerif', 14, 'bold'),
+                                       activebackground = '#909090')
+        effectsConfigureLabel = Menu(self.effectsLabel, tearoff = 0)
+        self.effectsLabel['menu'] = effectsConfigureLabel
+        self.effectsLabel.pack(side = LEFT, fill = 'x', expand = 0)
+        # Current particles
+        self.particlesLabel = Menubutton(labelFrame, width = 10,
+                                         relief = RAISED,
+                                         borderwidth = 2,
+                                         font=('MSSansSerif', 14, 'bold'),
+                                         activebackground = '#909090')
+        particlesConfigureLabel = Menu(self.particlesLabel, tearoff = 0)
+        self.particlesLabel['menu'] = particlesConfigureLabel
+        self.particlesLabel.pack(side = LEFT, fill = 'x', expand = 0)
+        # Current force
+        self.forceGroupLabel = Menubutton(labelFrame, width = 10,
+                                      relief = RAISED,
+                                      borderwidth = 2,
+                                      font=('MSSansSerif', 14, 'bold'),
+                                      activebackground = '#909090')
+        forceGroupConfigureLabel = Menu(self.forceGroupLabel, tearoff = 0)
+        self.forceGroupLabel['menu'] = forceGroupConfigureLabel
+        self.forceGroupLabel.pack(side = LEFT, fill = 'x', expand = 0)
+        # Pack labels
+        labelFrame.pack(fill = 'x', expand = 0)
+
+        # These get updated together
+        self.effectsConfigureMenus = [effectsConfigureMenu,
+                                      effectsConfigureLabel]
+        self.particlesConfigureMenus = [particlesConfigureMenu,
+                                        particlesConfigureLabel]
+        self.forceGroupConfigureMenus = [forceGroupConfigureMenu,
+                                         forceGroupConfigureLabel]
+                                 
+        # Create the toplevel notebook pages
         self.mainNotebook = Pmw.NoteBook(interior)
         self.mainNotebook.pack(fill = BOTH, expand = 1)
         systemPage = self.mainNotebook.add('System')
@@ -91,7 +209,7 @@ class ParticlePanel(AppShell):
         # Put this here so it isn't called right away
         self.mainNotebook['raisecommand'] = self.updateInfo
 
-        ## SYSTEM PAGE ##
+        ## SYSTEM PAGE WIDGETS ##
         # Create system floaters
         systemFloaterDefs = (
             ('System', 'Pool Size',
@@ -116,17 +234,18 @@ class ParticlePanel(AppShell):
              0.0, None)
             )
         self.createFloaters(systemPage, systemFloaterDefs)
+        
         # Checkboxes
-        # Note: Sense is reversed on this one
         self.createCheckbutton(
-            systemPage, 'System', 'Render Relative Velocities',
+            systemPage, 'System', 'Render Space Velocities',
             ('On: velocities are in render space; ' +
              'Off: velocities are in particle local space'),
             self.toggleSystemLocalVelocity, 0)
         self.createCheckbutton(
-            systemPage, 'System', 'Grows Older',
+            systemPage, 'System', 'System Grows Older',
             'On: system has a lifespan',
             self.toggleSystemGrowsOlder, 0)
+        
         # Vector widgets
         pos = self.createVector3Entry(systemPage, 'System', 'Pos',
                                       'Particle system position',
@@ -138,7 +257,7 @@ class ParticlePanel(AppShell):
                                       command = self.setSystemHpr)
         hpr.addMenuItem('Popup Placer Panel', Placer.Placer)
 
-        ## FACTORY PAGE ##
+        ## FACTORY PAGE WIDGETS ##
         self.createOptionMenu(
             factoryPage,
             'Factory', 'Factory Type',
@@ -200,7 +319,7 @@ class ParticlePanel(AppShell):
                                                            fill = BOTH)
         self.factoryNotebook.pack(expand = 1, fill = BOTH)
 
-        ## EMITTER PAGE ##
+        ## EMITTER PAGE WIDGETS ##
         self.createOptionMenu(
             emitterPage, 'Emitter',
             'Emitter Type',
@@ -354,7 +473,7 @@ class ParticlePanel(AppShell):
                            min = 0.01)
         self.emitterNotebook.pack(fill = X)
 
-        ## RENDERER PAGE ##
+        ## RENDERER PAGE WIDGETS ##
         self.createOptionMenu(
             rendererPage, 'Renderer', 'Renderer Type',
             'Select type of particle renderer',
@@ -503,77 +622,46 @@ class ParticlePanel(AppShell):
             self.toggleRendererSpriteAlphaDisable, 0)
         self.rendererNotebook.pack(fill = X)
 
-        ## FORCE PAGE ##
-        # Menu to select between differnt Forces
-        self.createOptionMenu(
-            forcePage, 'Force',
-            'Active Force',
-            'Select force component', [],
-            self.selectForceType)
-        
-        forceFrame = Frame(forcePage, borderwidth = 2, relief = 'sunken')
-        self.forcesButton = Menubutton(forceFrame, text = 'Forces',
-                                       font=('MSSansSerif', 14, 'bold'),
-                                       activebackground = '#909090')
-        forcesMenu = Menu(self.forcesButton)
-        forcesMenu.add_command(label = 'Add Linear Cylinder Vortex Force',
-                            command = self.addLinearCylinderVortexForce)
-        forcesMenu.add_command(label = 'Add Linear Distance Force',
-                            command = self.addLinearDistanceForce)
-        forcesMenu.add_command(label = 'Add Linear Friction Force',
-                            command = self.addLinearFrictionForce)
-        forcesMenu.add_command(label = 'Add Linear Jitter Force',
-                            command = self.addLinearJitterForce)
-        forcesMenu.add_command(label = 'Add Linear Noise Force',
-                            command = self.addLinearNoiseForce)
-        forcesMenu.add_command(label = 'Add Linear Random Force',
-                            command = self.addLinearRandomForce)
-        forcesMenu.add_command(label = 'Add Linear Sink Force',
-                            command = self.addLinearSinkForce)
-        forcesMenu.add_command(label = 'Add Linear Source Force',
-                            command = self.addLinearSourceForce)
-        forcesMenu.add_command(label = 'Add Linear User Defined Force',
-                            command = self.addLinearUserDefinedForce)
-        forcesMenu.add_command(label = 'Add Linear Vector Force',
+        ## FORCE PAGE WIDGETS ##
+        self.addForceButton = Menubutton(forcePage, text = 'Add Force',
+                                          relief = RAISED,
+                                          borderwidth = 2,
+                                          font=('MSSansSerif', 14, 'bold'),
+                                          activebackground = '#909090')
+        forceMenu = Menu(self.addForceButton)
+        self.addForceButton['menu'] = forceMenu
+        forceMenu.add_command(label = 'Add Linear Vector Force',
                             command = self.addLinearVectorForce)
-        self.forcesButton.pack(expand = 0)
-        self.forcesButton['menu'] = forcesMenu
-        
-        # Notebook pages for force specific controls
-        self.forceNotebook = Pmw.NoteBook(forceFrame, tabpos = None,
-                                          borderwidth = 0)
-        # Put this here so it isn't called right away
-        self.forceNotebook['raisecommand'] = self.updateForceWidgets
+        forceMenu.add_command(label = 'Add Linear Friction Force',
+                            command = self.addLinearFrictionForce)
+        """
+        forceMenu.add_command(label = 'Add Linear Cylinder Vortex Force',
+                            command = self.addLinearCylinderVortexForce)
+        forceMenu.add_command(label = 'Add Linear Distance Force',
+                            command = self.addLinearDistanceForce)
+        forceMenu.add_command(label = 'Add Linear Jitter Force',
+                            command = self.addLinearJitterForce)
+        forceMenu.add_command(label = 'Add Linear Noise Force',
+                            command = self.addLinearNoiseForce)
+        forceMenu.add_command(label = 'Add Linear Random Force',
+                            command = self.addLinearRandomForce)
+        forceMenu.add_command(label = 'Add Linear Sink Force',
+                            command = self.addLinearSinkForce)
+        forceMenu.add_command(label = 'Add Linear Source Force',
+                            command = self.addLinearSourceForce)
+        forceMenu.add_command(label = 'Add Linear User Defined Force',
+                            command = self.addLinearUserDefinedForce)
+        """                 
+        self.addForceButton.pack(expand = 0)
 
-        # Widget to select a force to configure
-        nameList = map(lambda x: x.getName(), self.particleEffect.getForces())
-        forceMenuFrame = Frame(forceFrame)
-        self.forceMenu = Pmw.ComboBox(
-            forceMenuFrame, labelpos = W, label_text = 'Force:',
-            entry_width = 20,
-            selectioncommand = self.selectForceNamed,
-            scrolledlist_items = nameList)
-        self.forceMenu.pack(side = 'left', fill = 'x', expand = 0)
-        self.bind(self.forceMenu, 'Select force to configure')
-        
-        self.createCheckbutton(
-            forceMenuFrame,
-            'Force', 'On/Off',
-            'Turn selected force on/off',
-            self.toggleActiveForce, 0)
-
-        # Pack force menu
-        forceMenuFrame.pack(fill = 'x', expand = 0, padx = 2)
-
-        self.forceNotebook.setnaturalsize()
-        self.forceNotebook.pack(expand = 1, fill = BOTH)
-        
-        forceFrame.pack(expand = 1, fill = BOTH)
-
+        # Notebook to hold force widgets as the are added
+        self.forceGroupNotebook = Pmw.NoteBook(forcePage, tabpos = None)
+        self.forceGroupNotebook.pack(fill = X)
         
         self.factoryNotebook.setnaturalsize()
         self.emitterNotebook.setnaturalsize()
         self.rendererNotebook.setnaturalsize()
+        self.forceGroupNotebook.setnaturalsize()
         self.mainNotebook.setnaturalsize()
         
         # Make sure input variables processed 
@@ -715,28 +803,232 @@ class ParticlePanel(AppShell):
         return optionVar
 
     def createComboBox(self, parent, category, text, balloonHelp,
-                         items, command):
+                         items, command, history = 0):
         widget = Pmw.ComboBox(parent,
                               labelpos = W,
                               label_text = text,
+                              label_anchor = 'w',
+                              label_width = 12,
                               entry_width = 16,
+                              history = history,
                               scrolledlist_items = items)
+        # Don't allow user to edit entryfield
+        widget.configure(entryfield_entry_state = 'disabled')
+        # Select first item if it exists
         if len(items) > 0:
             widget.selectitem(items[0])
-        widget['command'] = command
+        # Bind selection command
+        widget['selectioncommand'] = command
         widget.pack(side = 'left', expand = 0)
-        self.bind(widget.component('menubutton'), balloonHelp)
-        self.widgetDict[category + '-' + text] = optionVar
+        # Bind help
+        self.bind(widget, balloonHelp)
+        # Record widget
+        self.widgetDict[category + '-' + text] = widget
         return widget
+
+    def updateMenusAndLabels(self):
+        self.updateMenus()
+        self.updateLabels()
+
+    def updateLabels(self):
+        self.effectsLabel['text'] = self.particleEffect.getName()
+        self.particlesLabel['text'] = self.particles.getName()
+        if self.forceGroup != None:
+            self.forceGroupLabel['text'] = self.forceGroup.getName()
+        else:
+            self.forceGroupLabel['text'] = ''
+    
+    def updateMenus(self):
+        self.updateEffectsMenus()
+        self.updateParticlesMenus()
+        self.updateForceGroupMenus()
+
+    def updateEffectsMenus(self):
+        # Get rid of old effects entries if any
+        self.effectsEnableMenu.delete(0, 'end')
+        for menu in self.effectsConfigureMenus:
+            menu.delete(0, 'end')
+        # Add in a checkbutton for each effect (to toggle on/off)
+        keys = self.effectsDict.keys()
+        keys.sort()
+        for name in keys: 
+            effect = self.effectsDict[name]
+            for menu in self.effectsConfigureMenus:
+                menu.add_command(
+                    label = effect.getName(),
+                    command = (lambda s = self,
+                               e = effect: s.selectEffectNamed(e.getName()))
+                    )
+            effectActive = IntVar()
+            effectActive.set(effect.isEnabled())
+            self.effectsEnableMenu.add_checkbutton(
+                label = effect.getName(),
+                variable = effectActive,
+                command = (lambda s = self,
+                           e = effect,
+                           v = effectActive: s.toggleEffect(e, v)))
+
+    def updateParticlesMenus(self):
+        # Get rid of old particles entries if any
+        self.particlesEnableMenu.delete(0, 'end')
+        for menu in self.particlesConfigureMenus:
+            menu.delete(0, 'end')
+        # Add in a checkbutton for each effect (to toggle on/off)
+        particles = self.particleEffect.getParticlesList()
+        names = map(lambda x: x.getName(), particles)
+        names.sort()
+        for name in names:
+            particle = self.particleEffect.getParticlesNamed(name)
+            for menu in self.particlesConfigureMenus:
+                menu.add_command(
+                    label = name,
+                    command = (lambda s = self,
+                               n = name: s.selectParticlesNamed(n))
+                    )
+            particleActive = IntVar()
+            particleActive.set(particle.isEnabled())
+            self.particlesEnableMenu.add_checkbutton(
+                label = name,
+                variable = particleActive,
+                command = (lambda s = self,
+                           p = particle,
+                           v = particleActive: s.toggleParticles(p, v)))
+
+    def updateForceGroupMenus(self):
+        # Get rid of old forceGroup entries if any
+        self.forceGroupEnableMenu.delete(0, 'end')
+        for menu in self.forceGroupConfigureMenus:
+            menu.delete(0, 'end')
+        # Add in a checkbutton for each effect (to toggle on/off)
+        forceGroupList = self.particleEffect.getForceGroupList()
+        names = map(lambda x: x.getName(), forceGroupList)
+        names.sort()
+        for name in names:
+            force = self.particleEffect.getForceGroupNamed(name)
+            for menu in self.forceGroupConfigureMenus:
+                menu.add_command(
+                    label = name,
+                    command = (lambda s = self,
+                               n = name: s.selectForceGroupNamed(n))
+                    )
+            forceActive = IntVar()
+            forceActive.set(force.isEnabled())
+            self.forceGroupEnableMenu.add_checkbutton(
+                label = name,
+                variable = forceActive,
+                command = (lambda s = self,
+                           f = force,
+                           v = forceActive: s.toggleForceGroup(f, v)))
+
+    def selectEffectNamed(self, name):
+        effect = self.effectsDict.get(name, None)
+        if effect != None:
+            self.particleEffect = effect
+            # Default to first particle in particlesDict
+            self.particles = self.particleEffect.getParticlesList()[0]
+            # See if particle effect has any forceGroup
+            forceGroupList = self.particleEffect.getForceGroupList()
+            if len(forceGroupList) > 0:
+                self.forceGroup = forceGroupList[0]
+            else:
+                self.forceGroup = None
+            self.mainNotebook.selectpage('System')
+            self.updateInfo('System')
+        else:
+            print 'ParticlePanel: No effect named ' + name
+
+    def toggleEffect(self, effect, var):
+        if var.get():
+            effect.enable()
+        else:
+            effect.disable()
+        
+    def selectParticlesNamed(self, name):
+        particles = self.particleEffect.getParticlesNamed(name)
+        if particles != None:
+            self.particles = particles
+            self.updateInfo()
+
+    def toggleParticles(self, particles, var):
+        if var.get():
+            particles.enable()
+        else:
+            particles.disable()
+
+    def selectForceGroupNamed(self, name):
+        forceGroup = self.particleEffect.getForceGroupNamed(name)
+        if forceGroup != None:
+            self.forceGroup = forceGroup
+            self.updateInfo('Force')
+
+    def toggleForceGroup(self, forceGroup, var):
+        if var.get():
+            forceGroup.enable()
+        else:
+            forceGroup.disable()
+
+    def toggleForce(self, force, pagename, variableName):
+        v = self.getVariable(pagename, variableName)
+        if v.get():
+            if (force.isLinear() == 1):
+                physicsMgr.addLinearForce(force)
+            else:
+                physicsMgr.addAngularForce(force)
+        else:
+            if (force.isLinear() == 1):
+                physicsMgr.removeLinearForce(force)
+            else:
+                physicsMgr.removeAngularForce(force)
+                    
 
     def getWidget(self, category, text):
         return self.widgetDict[category + '-' + text]
 
     def getVariable(self, category, text):
         return self.variableDict[category + '-' + text]
+    
+    def loadParticleEffectFromFile(self):
+        # Find path to particle directory
+        path = getParticlePath().getDirectory(0).toOsSpecific()
+        if not os.path.isdir(path):
+            print 'LevelEditor Warning: Invalid default DNA directory!'
+            print 'Using: C:\\'
+            path = 'C:\\'
+        particleFilename = askopenfilename(
+            defaultextension = '.ptf',
+            filetypes = (('Particle Files', '*.ptf'),('All files', '*')),
+            initialdir = path,
+            title = 'Load Particle Effect',
+            parent = self.parent)
+        if particleFilename:
+            self.particles.loadConfig(Filename(particleFilename))
+
+    def saveParticleEffectToFile(self):
+        # Find path to particle directory
+        path = getParticlePath().getDirectory(0).toOsSpecific()
+        if not os.path.isdir(path):
+            print 'LevelEditor Warning: Invalid default DNA directory!'
+            print 'Using: C:\\'
+            path = 'C:\\'
+        particleFilename = asksaveasfilename(
+            defaultextension = '.ptf',
+            filetypes = (('Particle Files', '*.ptf'),('All files', '*')),
+            initialdir = path,
+            title = 'Save Particle Effect as',
+            parent = self.parent)
+        if particleFilename:
+            self.particles.saveConfig(Filename(particleFilename))
+
+    ### PARTICLE EFFECTS COMMANDS ###
+    def toggleParticleMgr(self):
+        if self.particleMgrActive.get():
+            base.enableParticles()
+        else:
+            base.disableParticles()
 
     ### PARTICLE SYSTEM COMMANDS ###
     def updateInfo(self, page = 'System'):
+        self.updateMenusAndLabels()
         if page == 'System':
             self.updateSystemWidgets()
         elif page == 'Factory':
@@ -749,15 +1041,13 @@ class ParticlePanel(AppShell):
             self.selectRendererPage()
             self.updateRendererWidgets()
         elif page == 'Force':
-            self.selectForcePage()
             self.updateForceWidgets()
 
-    def toggleParticleSystem(self):
-        if self.getWidget('System', 'Active').get():
+    def toggleParticleEffect(self):
+        if self.getVariable('Effect', 'Active').get():
             self.particleEffect.enable()
         else:
             self.particleEffect.disable()
-	return None
             
     ## SYSTEM PAGE ##
     def updateSystemWidgets(self):
@@ -775,9 +1065,9 @@ class ParticlePanel(AppShell):
         self.getWidget('System', 'Pos').set([pos[0], pos[1], pos[2]], 0)
         hpr = self.particles.nodePath.getHpr()
         self.getWidget('System', 'Hpr').set([hpr[0], hpr[1], hpr[2]], 0)
-        self.getVariable('System', 'Render Relative Velocities').set(
+        self.getVariable('System', 'Render Space Velocities').set(
             self.particles.getLocalVelocityFlag())
-        self.getVariable('System', 'Grows Older').set(
+        self.getVariable('System', 'System Grows Older').set(
             self.particles.getSystemGrowsOlderFlag())
     def setSystemPoolSize(self, value):
 	self.particles.setPoolSize(int(value))
@@ -791,10 +1081,10 @@ class ParticlePanel(AppShell):
 	self.particles.setSystemLifespan(value)
     def toggleSystemLocalVelocity(self):
 	self.particles.setLocalVelocityFlag(
-            self.getVariable('System', 'Render Relative Velocities').get())
+            self.getVariable('System', 'Render Space Velocities').get())
     def toggleSystemGrowsOlder(self):
 	self.particles.setSystemGrowsOlderFlag(
-            self.getVariable('System', 'Grows Older').get())
+            self.getVariable('System', 'System Grows Older').get())
     def setSystemPos(self, pos):
 	self.particles.nodePath.setPos(Vec3(pos[0], pos[1], pos[2]))
     def setSystemHpr(self, pos):
@@ -1008,7 +1298,7 @@ class ParticlePanel(AppShell):
         self.particles.emitter.setOuterMagnitude(velocity)
     def toggleEmitterDiscCubicLerping(self):
 	self.particles.emitter.setCubicLerping(
-            self.emitterDiscCubicLerping.get())
+            self.getVariable('Disc Emitter', 'Cubic Lerping').get())
     # Line #
     def setEmitterLinePoint1(self, point):
 	self.particles.emitter.setEndpoint1(Point3(point[0],
@@ -1272,79 +1562,189 @@ class ParticlePanel(AppShell):
 	self.particles.renderer.setAlphaDisable(
             self.getVariable('Sprite Renderer', 'Alpha Disable').get())
         
-    ## FORCES COMMANDS ##
-    def selectForceNamed(self, name):
-        pass
-    def selectForceType(self, type):
-        self.forceNotebook.selectpage(type)
-        self.updateForceWidgets()
-
-    def selectForcePage(self):
-        if self.forces:
-            type = self.forces.__class__.__name__
-            self.forceNotebook.selectpage(type)
-            self.getVariable('Emitter', 'Emitter Type').set(type)
-
-    def toggleActiveForce(self):
-        pass
-        
+    ## FORCEGROUP COMMANDS ##
     def updateForceWidgets(self):
-        pass
+        # Select appropriate notebook page
+        if self.forceGroup != None:
+            self.forceGroupNotebook.pack(fill = X)
+            self.forcePageName = (self.particleEffect.getName() + '-' +
+                                  self.forceGroup.getName())
+            self.forcePage = self.forcePagesDict[self.forcePageName]
+            self.forceGroupNotebook.selectpage(self.forcePageName)
+        else:
+            self.forceGroupNotebook.pack_forget()
 
     def addLinearCylinderVortexForce(self):
-        f = LinearCylinderVortexForce()
-        self.activeForce.addLinearForce(f)
+        self.addForce(LinearCylinderVortexForce())
     def addLinearDistanceForce(self):
-        f = LinearDistanceForce()
-        self.activeForce.addLinearForce(f)
+        self.addForce(LinearDistanceForce())
     def addLinearFrictionForce(self):
-        f = LinearFrictionForce()
-        self.activeForce.addLinearForce(f)
+        self.addForce(LinearFrictionForce())
     def addLinearJitterForce(self):
-        f = LinearJitterForce()
-        self.activeForce.addLinearForce(f)
+        self.addForce(LinearJitterForce())
     def addLinearNoiseForce(self):
-        f = LinearNoiseForce()
-        self.activeForce.addLinearForce(f)
+        self.addForce(LinearNoiseForce())
     def addLinearRandomForce(self):
-        f = LinearRandomForce()
-        self.activeForce.addLinearForce(f)
+        self.addForce(LinearRandomForce())
     def addLinearSinkForce(self):
-        f = LinearSingForce()
-        self.activeForce.addLinearForce(f)
+        self.addForce(LinearSingForce())
     def addLinearSourceForce(self):
-        f = LinearSourceForce()
-        self.activeForce.addLinearForce(f)
+        self.addForce(LinearSourceForce())
     def addLinearUserDefinedForce(self):
-        f = LinearUserDefinedForce()
-        self.activeForce.addLinearForce(f)
+        self.addForce(LinearUserDefinedForce())
     def addLinearVectorForce(self):
-        f = LinearVectorForce()
-        self.activeForce.addLinearForce(f)
+        self.addForce(LinearVectorForce())
+
+    def addForce(self, f):
+        if self.forceGroup == None:
+            self.createNewForceGroup()
+        self.forceGroup.addForce(f)
+        self.addForceWidget(self.forceGroup,f)
 
     ## SYSTEM COMMANDS ##
-    def selectEffectNamed(self, name):
-        effect = self.effectDict.get(name, None)
-        if effect:
-            self.particleEffect = effect
-            # Default to first particle in particlesDict
-            self.particles = self.particleEffect.getParticles()[0]
-            # See if particle effect has any forces
-            forcesList = self.particleEffect.getForces()
-            if len(forcesList) > 0:
-                self.forces = forcesList[0]
-            else:
-                self.forces = None
-            self.mainNotebook.selectpage('System')
-            self.updateInfo('System')
-        else:
-            print 'ParticlePanel: No effect named ' + name
+    def createNewEffect(self):
+        name = askstring('Particle Panel', 'Effect Name:',
+                         parent = self.parent)
+        if name:
+            effect = ParticleEffect.ParticleEffect(name)
+            self.effectsDict[name] = effect
+            self.updateMenusAndLabels()
+            self.selectEffectNamed(name)
+            effect.reparentTo(render)
+            effect.enable()
 
-    def createEffectNamed(self, name):
-        effect = ParticleEffect.ParticleEffect(name)
-        self.effectDict[name] = effect
-        self.selectEffectNamed(name)
-            
+    def createNewParticles(self):
+        name = askstring('Particle Panel', 'Particles Name:',
+                         parent = self.parent)
+        if name:
+            p = Particles.Particles(name)
+            self.particleEffect.addParticles(p)
+            self.updateParticlesMenus()
+            self.selectParticlesNamed(name)
+            p.enable()
+
+    def createNewForceGroup(self):
+        name = askstring('Particle Panel', 'ForceGroup Name:',
+                         parent = self.parent)
+        if name:
+            forceGroup = ForceGroup.ForceGroup(name)
+            self.particleEffect.addForceGroup(forceGroup)
+            self.updateForceGroupMenus()
+            self.addForceGroupNotebookPage(self.particleEffect, forceGroup)
+            self.selectForceGroupNamed(name)
+            forceGroup.enable()
+
+    def addForceGroupNotebookPage(self, particleEffect, forceGroup):
+        self.forcePageName = (particleEffect.getName() + '-' +
+                              forceGroup.getName())
+        self.forcePage = self.forceGroupNotebook.add(self.forcePageName)
+        self.forcePagesDict[self.forcePageName] = self.forcePage
+        for force in forceGroup.asList():
+            self.addForceWidget(forceGroup, force)
+
+    def addForceWidget(self, forceGroup, force):
+        forcePage = self.forcePage
+        pageName = self.forcePageName
+        # How many forces of the same type in the force group object
+        count = 0
+        for f in forceGroup.asList():
+            if f.getClassType().eq(force.getClassType()):
+                count += 1
+        if isinstance(force, LinearVectorForce):
+            # Vector
+            self.createLinearVectorForceWidget(
+                forcePage, pageName, count, force)
+        elif isinstance(force, LinearFrictionForce):
+            # Coef
+            self.createLinearFrictionForceWidget(
+                forcePage, pageName, count, force)
+        elif isinstance(force, LinearCylinderVortexForce):
+            # Coef, length, radius
+            self.createLinearCylinderVortexForceWidget(
+                forcePage, pageName, count, force)
+        elif isinstance(force, LinearDistanceForce):
+            # No constructor
+            # Falloff type, force center, radius
+            pass
+        elif isinstance(force, LinearJitterForce):
+            # Nothing
+            pass
+        elif isinstance(force, LinearNoiseForce):
+            # Nothing
+            pass
+        elif isinstance(force, LinearRandomForce):
+            # Nothing
+            pass
+        elif isinstance(force, LinearSinkForce):
+            # Nothing
+            pass
+        elif isinstance(force, LinearSourceForce):
+            # Nothing
+            pass
+        elif isinstance(force, LinearUserDefinedForce):
+            # Nothing
+            pass
+        self.forceGroupNotebook.setnaturalsize()
+
+    def createLinearVectorForceWidget(self, forcePage, pageName,
+                                      count, force):
+        name = 'Vector Force-' + `count`
+        cbName = name + ' Active'
+        def setVec(vec, f = force):
+            f.setVector(vec[0], vec[1], vec[2])
+        def toggle(s = self, f = force, p = pageName, n = cbName):
+            s.toggleForce(f, p, n)
+        frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
+        self.createVector3Entry(frame, pageName, name,
+                                'Set force direction and magnitude',
+                                command = setVec)
+        self.createCheckbutton(frame, pageName, cbName,
+                               'On: force is enabled; Off: force is disabled',
+                               toggle, 1)
+        frame.pack(fill = 'x', expand =0)
+
+    def createLinearFrictionForceWidget(self, forcePage, pageName,
+                                        count, force):
+        name = 'Friction Force-' + `count`
+        cbName = name + ' Active'
+        def setCoef(coef, f = force):
+            f.setCoef(coef)
+        def toggle(s = self, f = force, p = pageName, n = cbName):
+            s.toggleForce(f, p, n)
+        frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
+        self.createFloater(frame, pageName, name,
+                           'Set linear friction force',
+                           command = setCoef, min = None)
+        self.createCheckbutton(frame, pageName, cbName,
+                               'On: force is enabled; Off: force is disabled',
+                               toggle, 1)
+        frame.pack(fill = 'x', expand =0)
+
+    def createLinearCylinderVortexForceWidget(self, forcePage, pageName,
+                                              count, force):
+        cbName = 'Vortex Force-' + `count` + ' Active'
+        def setCoef(coef, f = force):
+            f.setCoef(coef)
+        def setLength(length, f = force):
+            f.setLength(length)
+        def setRadius(radius, f = force):
+            f.setRadius(radius)
+        def toggle(s = self, f = force, p = pageName, n = cbName):
+            s.toggleForce(f, p, n)
+        frame = Frame(forcePage, relief = RAISED, borderwidth = 2)
+        self.createFloater(frame, pageName, 'Coefficient',
+                           'Set linear cylinder vortex coefficient',
+                           command = setCoef)
+        self.createFloater(frame, pageName, 'Length',
+                           'Set linear cylinder vortex length',
+                           command = setLength)
+        self.createFloater(frame, pageName, 'Radius',
+                           'Set linear cylinder vortex radius',
+                           command = setRadius)
+        self.createCheckbutton(frame, pageName, cbName,
+                               'On: force is enabled; Off: force is disabled',
+                               toggle, 1)
+        frame.pack(fill = 'x', expand =0)
 
 ######################################################################
 

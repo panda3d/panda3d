@@ -2,7 +2,7 @@ from PandaObject import *
 from DirectObject import *
 
 import Particles
-import Forces
+import ForceGroup
 
 class ParticleEffect(NodePath):
     def __init__(self, name = 'ParticleEffect'):
@@ -11,37 +11,48 @@ class ParticleEffect(NodePath):
         self.assign(hidden.attachNewNode(name))
         # Record particle effect name
 	self.name = name
-        # Dictionary of particles and forces
+        # Enabled flag
+        self.fEnabled = 0
+        # Dictionary of particles and forceGroups
 	self.particlesDict = {}
-	self.forcesDict = {}
+	self.forceGroupDict = {}
         # The effect's particle system
 	self.addParticles(Particles.Particles())
 
     def enable(self):
 	"""enable()"""
-	for f in self.forcesDict.values():
+	for f in self.forceGroupDict.values():
 	    f.enable()
 	for p in self.particlesDict.values():
 	    p.enable()
+        self.fEnabled = 1
 
     def disable(self):
 	"""disable()"""
-	for f in self.forcesDict.values():
+	for f in self.forceGroupDict.values():
 	    f.disable()
 	for p in self.particlesDict.values():
 	    p.disable()
+        self.fEnabled = 0
 
-    def addForces(self, forces):
-	"""addForces(forces)"""
-	forces.nodePath.reparentTo(self)
-	self.forcesDict[forces.getName()] = forces
+    def isEnabled(self):
+        """
+        isEnabled()
+        Note: this may be misleading if enable(),disable() not used
+        """
+        return self.fEnabled
+
+    def addForceGroup(self, forceGroup):
+	"""addForceGroup(forceGroup)"""
+	forceGroup.nodePath.reparentTo(self)
+	self.forceGroupDict[forceGroup.getName()] = forceGroup
 
     def addParticles(self, particles):
 	"""addParticles(particles)"""
 	particles.nodePath.reparentTo(self)
 	self.particlesDict[particles.getName()] = particles
 
-    def getParticles(self):
+    def getParticlesList(self):
         """getParticles()"""
         return self.particlesDict.values()
     
@@ -53,15 +64,15 @@ class ParticleEffect(NodePath):
         """getParticlesDict()"""
         return self.particlesDict
 
-    def getForces(self):
-        """getForces()"""
-        return self.forcesDict.values()
+    def getForceGroupList(self):
+        """getForceGroup()"""
+        return self.forceGroupDict.values()
 
-    def getForcesNamed(self, name):
-        """getForcesNamed(name)"""
-        return self.forcesDict.get(name, None)
+    def getForceGroupNamed(self, name):
+        """getForceGroupNamed(name)"""
+        return self.forceGroupDict.get(name, None)
 
-    def getForcesDict(self):
-        """getForces()"""
-        return self.forcesDict
+    def getForceGroupDict(self):
+        """getForceGroup()"""
+        return self.forceGroupDict
 

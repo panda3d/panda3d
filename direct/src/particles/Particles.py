@@ -62,16 +62,22 @@ class Particles(ParticleSystem.ParticleSystem):
 	self.emitter = None 
 	self.emitterType = "undefined"
 	self.setEmitter("SphereVolumeEmitter")
+        self.fEnabled = 0
 
     def enable(self):
 	"""enable()"""
 	physicsMgr.attachPhysical(self)
 	particleMgr.attachParticlesystem(self)
+        self.fEnabled = 1
 
     def disable(self):
 	"""disable()"""
 	physicsMgr.removePhysical(self)
 	particleMgr.removeParticlesystem(self)
+        self.fEnabled = 0
+
+    def isEnabled(self):
+        return self.fEnabled
 
     def setFactory(self, type):
 	"""setFactory(type)"""

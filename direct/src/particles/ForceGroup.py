@@ -4,7 +4,7 @@ from PhysicsManagerGlobal import *
 
 import ForceNode
 
-class Forces(DirectObject):
+class ForceGroup(DirectObject):
 
     forceNum = 1
 
@@ -12,13 +12,14 @@ class Forces(DirectObject):
 	"""__init__(self)"""
 
 	if (name == None):
-	    self.name = 'Forces-%d' % self.forceNum
+	    self.name = 'ForceGroup-%d' % self.forceNum
 	    self.forceNum = self.forceNum + 1
 	else:
 	    self.name = name
 
  	self.node = ForceNode.ForceNode(self.name)
 	self.nodePath = hidden.attachNewNode(self.node)
+        self.fEnabled = 0
 
     def enable(self):
 	"""enable(self)"""
@@ -28,6 +29,7 @@ class Forces(DirectObject):
 		physicsMgr.addLinearForce(f)
 	    else:
 		physicsMgr.addAngularForce(f)
+        self.fEnabled = 1
 
     def disable(self):
 	"""disable(self)"""
@@ -37,6 +39,10 @@ class Forces(DirectObject):
 		physicsMgr.removeLinearForce(f)
 	    else:
 		physicsMgr.removeAngularForce(f)
+        self.fEnabled = 0
+
+    def isEnabled(self):
+        return self.fEnabled
 
     def addForce(self, force):
 	"""addForce(self, force)"""
@@ -44,6 +50,11 @@ class Forces(DirectObject):
 	    # Physics manager will need an angular integrator
 	    base.addAngularIntegrator()
 	self.node.addForce(force)
+        if self.fEnabled:
+	    if (force.isLinear() == 1):
+		physicsMgr.addLinearForce(force)
+	    else:
+		physicsMgr.addAngularForce(force)
 
     def removeForce(self, force):
 	"""removeForce(self, force)"""
@@ -61,7 +72,7 @@ class Forces(DirectObject):
         return self.nodePath
 
     # Utility functions 
-    def __getItem__(self, index):
+    def __getitem__(self, index):
 	"""__getItem__(self, index)"""
 	return self.node.getForce(index)
 
@@ -72,7 +83,7 @@ class Forces(DirectObject):
     def asList(self):
 	"""asList(self)"""
 	l = []
-	for i in self.node.getNumForces():
+	for i in range(self.node.getNumForces()):
 	    l.append(self.node.getForce(i))
 	return l
 

@@ -2,21 +2,21 @@ from DirectSessionGlobal import *
 
 import ParticleEffect
 import ParticlePanel
-import Forces
+import ForceGroup
 
 # Showbase
 base.enableParticles()
 
-# Forces
+# ForceGroup
 gravity = LinearVectorForce(Vec3(0.0, 0.0, -10.0))
-f = Forces.Forces()
-f.addForce(gravity)
+fg = ForceGroup.ForceGroup()
+fg.addForce(gravity)
 
 # Particle effect
 pe = ParticleEffect.ParticleEffect('particle-fx')
 pe.reparentTo(render)
 pe.setPos(0.0, 5.0, 4.0)
-pe.addForces(f)
+pe.addForceGroup(fg)
 pe.enable()
 
 # Particle Panel
