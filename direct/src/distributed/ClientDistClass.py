@@ -13,6 +13,7 @@ class ClientDistClass:
         self.allCDU = self.createAllCDU(self.allFields)
         self.number2CDU = self.createNumber2CDUDict(self.allCDU)
         self.name2CDU = self.createName2CDUDict(self.allCDU)
+        self.broadcastRequiredCDU = self.listBroadcastRequiredCDU(self.allCDU)
         self.allRequiredCDU = self.listRequiredCDU(self.allCDU)
         # Import the class, and store the constructor
         exec("import " + self.name)
@@ -43,12 +44,21 @@ class ClientDistClass:
             dict[i.name] = i
         return dict
 
-    def listRequiredCDU(self, allCDU):
+    def listBroadcastRequiredCDU(self, allCDU):
         requiredCDU = []
         for i in allCDU:
             atom = i.field.asAtomicField()
             if atom:
                 if (atom.isRequired() and atom.isBroadcast()):
+                    requiredCDU.append(i)
+        return requiredCDU
+
+    def listRequiredCDU(self, allCDU):
+        requiredCDU = []
+        for i in allCDU:
+            atom = i.field.asAtomicField()
+            if atom:
+                if (atom.isRequired()):
                     requiredCDU.append(i)
         return requiredCDU
 
