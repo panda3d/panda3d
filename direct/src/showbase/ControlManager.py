@@ -17,7 +17,6 @@ import Task
 
 class ControlManager:
     notify = DirectNotifyGlobal.directNotify.newCategory("ControlManager")
-    wantAvatarPhysics = base.config.GetBool('want-avatar-physics', 0)
     wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     wantAvatarPhysicsDebug = base.config.GetBool('want-avatar-physics-debug', 0)
 
@@ -31,14 +30,12 @@ class ControlManager:
         self.ghostControls=GhostWalker.GhostWalker()
         if __debug__:
             self.devControls=DevWalker.DevWalker()
-        if self.wantAvatarPhysics:
-            self.walkControls=GravityWalker.GravityWalker(
-                    gravity = -32.1740 * 2.0) # * 2.0 is a hack;
-            #self.walkControls=NonPhysicsWalker.NonPhysicsWalker()
-            #self.walkControls=PhysicsWalker.PhysicsWalker(
-            #        gravity = -32.1740 * 2.0) # * 2.0 is a hack;
-        else:
-            self.walkControls=NonPhysicsWalker.NonPhysicsWalker()
+        self.walkControls=GravityWalker.GravityWalker(
+            gravity = -32.1740 * 2.0) # * 2.0 is a hack;
+        
+        # This is the non physics walker if you ever wanted to turn off phys
+        # self.walkControls=NonPhysicsWalker.NonPhysicsWalker()
+        
         self.currentControls = self.walkControls
         self.isEnabled = 1
         #self.monitorTask = taskMgr.add(self.monitor, "ControlManager-%s"%(id(self)), priority=-1)
