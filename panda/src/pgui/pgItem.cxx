@@ -218,7 +218,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       // values, both ints, in the MouseWatcherRegion; but in the
       // interest of expediency we work within the existing interface
       // which only provides one.
-      sort = (bin_sort << 16) | (sort & 0xffff);
+      sort = (bin_sort << 16) | ((sort + 0x8000) & 0xffff);
 
       activate_region(transform, sort);
       pg_trav->_top->add_region(get_region());
