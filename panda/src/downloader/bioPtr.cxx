@@ -54,31 +54,4 @@ BioPtr::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioPtr::connect
-//       Access: Public
-//  Description: Calls BIO_do_connect() to establish a connection on
-//               the previously-named server and port.  Returns true
-//               if successful, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool BioPtr::
-connect() const {
-  nassertr(_bio != (BIO *)NULL && !_server_name.empty(), false);
-  if (downloader_cat.is_debug()) {
-    downloader_cat.debug()
-      << "Connecting to " << _server_name << ":" << _port << "\n";
-  }
-
-  if (BIO_do_connect(_bio) <= 0) {
-    downloader_cat.info()
-      << "Could not connect to " << _server_name << ":" << _port << "\n";
-#ifdef REPORT_SSL_ERRORS
-    ERR_print_errors_fp(stderr);
-#endif
-    return false;
-  }
-
-  return true;
-}
-
 #endif  // HAVE_SSL

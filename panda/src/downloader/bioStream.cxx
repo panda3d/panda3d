@@ -33,3 +33,37 @@ is_closed() {
   clear();
   return false;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: OBioStream::is_closed
+//       Access: Public, Virtual
+//  Description: Returns true if the last write fail condition was
+//               triggered because the socket has genuinely closed, or
+//               false if we can expect to send more data along
+//               shortly.
+////////////////////////////////////////////////////////////////////
+INLINE bool OBioStream::
+is_closed() {
+  if (_buf._is_closed) {
+    return true;
+  }
+  clear();
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BioStream::is_closed
+//       Access: Public, Virtual
+//  Description: Returns true if the last eof or failure condition was
+//               triggered because the socket has genuinely closed, or
+//               false if we can expect to read or send more data
+//               shortly.
+////////////////////////////////////////////////////////////////////
+INLINE bool BioStream::
+is_closed() {
+  if (_buf._is_closed) {
+    return true;
+  }
+  clear();
+  return false;
+}

@@ -27,6 +27,8 @@
 
 #ifdef HAVE_SSL
 
+class Datagram;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : ISocketStream
 // Description : This is a base class for istreams implemented in
@@ -41,8 +43,53 @@ public:
   INLINE ISocketStream(streambuf *buf);
 
 PUBLISHED:
+  bool receive_datagram(Datagram &dg);
+
+  virtual bool is_closed() = 0;
+
+private:
+  size_t _data_expected;
+  string _data_so_far;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : OSocketStream
+// Description : A base class for ostreams that write to a (possibly
+//               non-blocking) socket.  It adds is_closed(), which can
+//               be called after any write operation fails to check
+//               whether the socket has been closed, or whether more
+//               data may be sent later.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEXPRESS OSocketStream : public ostream {
+public:
+  INLINE OSocketStream(streambuf *buf);
+
+PUBLISHED:
+  bool send_datagram(const Datagram &dg);
+
   virtual bool is_closed() = 0;
 };
+
+////////////////////////////////////////////////////////////////////
+//       Class : SocketStream
+// Description : A base class for iostreams that read and write to a
+//               (possibly non-blocking) socket.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEXPRESS SocketStream : public iostream {
+public:
+  INLINE SocketStream(streambuf *buf);
+
+PUBLISHED:
+  bool receive_datagram(Datagram &dg);
+  bool send_datagram(const Datagram &dg);
+
+  virtual bool is_closed() = 0;
+
+private:
+  size_t _data_expected;
+  string _data_so_far;
+};
+
 
 #include "socketStream.I"
 

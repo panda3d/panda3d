@@ -31,6 +31,18 @@ is_valid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::is_connection_ready
+//       Access: Published
+//  Description: Returns true if a connection has been established to
+//               the named server in a previous call to connect_to()
+//               or begin_connect_to(), false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPChannel::
+is_connection_ready() const {
+  return (!_source.is_null() && _state == S_ready);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::get_url
 //       Access: Published
 //  Description: Returns the URL that was used to retrieve the
@@ -312,7 +324,7 @@ reset() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 post_form(const URLSpec &url, const string &body) {
-  begin_request("POST", url, body, false, 0, 0);
+  begin_request(M_post, url, body, false, 0, 0);
   run();
   return is_valid();
 }
@@ -325,7 +337,7 @@ post_form(const URLSpec &url, const string &body) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 get_document(const URLSpec &url) {
-  begin_request("GET", url, string(), false, 0, 0);
+  begin_request(M_get, url, string(), false, 0, 0);
   run();
   return is_valid();
 }
@@ -342,7 +354,7 @@ get_document(const URLSpec &url) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 get_subdocument(const URLSpec &url, size_t first_byte, size_t last_byte) {
-  begin_request("GET", url, string(), false, first_byte, last_byte);
+  begin_request(M_get, url, string(), false, first_byte, last_byte);
   run();
   return is_valid();
 }
@@ -358,9 +370,28 @@ get_subdocument(const URLSpec &url, size_t first_byte, size_t last_byte) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool HTTPChannel::
 get_header(const URLSpec &url) {
-  begin_request("HEAD", url, string(), false, 0, 0);
+  begin_request(M_head, url, string(), false, 0, 0);
   run();
   return is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::connect_to
+//       Access: Published
+//  Description: Establish a direct connection to the server and port
+//               indicated by the URL, but do not issue any HTTP
+//               requests.  If successful, the connection may then be
+//               taken to use for whatever purposes you like by
+//               calling get_connection().
+//
+//               This establishes a blocking I/O socket.  Also see
+//               begin_connect_to().
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPChannel::
+connect_to(const URLSpec &url) {
+  begin_request(M_connect, url, string(), false, 0, 0);
+  run();
+  return is_connection_ready();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -379,7 +410,7 @@ get_header(const URLSpec &url) {
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
 begin_post_form(const URLSpec &url, const string &body) {
-  begin_request("POST", url, body, true, 0, 0);
+  begin_request(M_post, url, body, true, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -398,7 +429,7 @@ begin_post_form(const URLSpec &url, const string &body) {
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
 begin_get_document(const URLSpec &url) {
-  begin_request("GET", url, string(), true, 0, 0);
+  begin_request(M_get, url, string(), true, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -415,7 +446,7 @@ begin_get_document(const URLSpec &url) {
 INLINE void HTTPChannel::
 begin_get_subdocument(const URLSpec &url, size_t first_byte, 
                       size_t last_byte) {
-  begin_request("GET", url, string(), true, first_byte, last_byte);
+  begin_request(M_get, url, string(), true, first_byte, last_byte);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -426,7 +457,30 @@ begin_get_subdocument(const URLSpec &url, size_t first_byte,
 ////////////////////////////////////////////////////////////////////
 INLINE void HTTPChannel::
 begin_get_header(const URLSpec &url) {
-  begin_request("HEAD", url, string(), true, 0, 0);
+  begin_request(M_head, url, string(), true, 0, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::begin_connect_to
+//       Access: Published
+//  Description: Begins a non-blocking request to establish a direct
+//               connection to the server and port indicated by the
+//               URL.  No HTTP requests will be issued beyond what is
+//               necessary to establish the connection.  When run()
+//               has finished, you may call is_connection_ready() to
+//               determine if the connection was successfully
+//               established.
+//
+//               If successful, the connection may then be taken to
+//               use for whatever purposes you like by calling
+//               get_connection().
+//
+//               This establishes a nonblocking I/O socket.  Also see
+//               connect_to().
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+begin_connect_to(const URLSpec &url) {
+  begin_request(M_connect, url, string(), true, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////

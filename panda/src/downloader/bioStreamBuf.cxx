@@ -38,15 +38,21 @@ BioStreamBuf() {
   // In spite of the claims of the MSDN Library to the contrary,
   // Windows doesn't seem to provide an allocate() function, so we'll
   // do it by hand.
-  char *buf = new char[4096];
-  char *ebuf = buf + 4096;
-  setg(buf, ebuf, ebuf);
-  setp(buf, ebuf);
+  char *buf = new char[8192];
+  char *ebuf = buf + 8192;
+  char *mbuf = buf + 4096;
+  setg(buf, mbuf, mbuf);
+  setp(mbuf, ebuf);
 
 #else
   allocate();
-  setg(base(), ebuf(), ebuf());
-  setp(base(), ebuf());
+  // Chop the buffer in half.  The bottom half goes to the get buffer;
+  // the top half goes to the put buffer.
+  char *b = base();
+  char *t = ebuf();
+  char *m = b + (t - b) / 2;
+  setg(b, m, m);
+  setp(b, m);
 #endif
 }
 
@@ -57,27 +63,77 @@ BioStreamBuf() {
 ////////////////////////////////////////////////////////////////////
 BioStreamBuf::
 ~BioStreamBuf() {
-  close_read();
+  close();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BioStreamBuf::open_read
+//     Function: BioStreamBuf::open
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BioStreamBuf::
-open_read(BioPtr *source) {
+open(BioPtr *source) {
   _source = source;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BioStreamBuf::close_read
+//     Function: BioStreamBuf::close
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BioStreamBuf::
-close_read() {
+close() {
+  sync();
   _source.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BioStreamBuf::overflow
+//       Access: Protected, Virtual
+//  Description: Called by the system ostream implementation when its
+//               internal buffer is filled, plus one character.
+////////////////////////////////////////////////////////////////////
+int BioStreamBuf::
+overflow(int ch) {
+  size_t n = pptr() - pbase();
+  if (n != 0) {
+    size_t num_wrote = write_chars(pbase(), n);
+    pbump(-(int)n);
+    if (num_wrote != n) {
+      return EOF;
+    }
+  }
+
+  if (ch != EOF) {
+    // Store the next character back in the buffer.
+    *pptr() = ch;
+    pbump(1);
+  }
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BioStreamBuf::sync
+//       Access: Protected, Virtual
+//  Description: Called by the system iostream implementation to
+//               implement a flush operation.
+////////////////////////////////////////////////////////////////////
+int BioStreamBuf::
+sync() {
+  /*
+  size_t n = egptr() - gptr();
+  gbump(n);
+  */
+
+  size_t n = pptr() - pbase();
+  size_t num_wrote = write_chars(pbase(), n);
+  pbump(-(int)n);
+  if (num_wrote != n) {
+    return EOF;
+  }
+
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,5 +174,51 @@ underflow() {
   return (unsigned char)*gptr();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BioStreamBuf::write_chars
+//       Access: Private
+//  Description: Sends some characters to the dest stream.  Does not
+//               return until all characters are sent or the socket is
+//               closed, even if the underlying BIO is non-blocking.
+////////////////////////////////////////////////////////////////////
+size_t BioStreamBuf::
+write_chars(const char *start, size_t length) {
+  size_t wrote_so_far = 0;
+
+  int write_count = BIO_write(*_source, start, length);
+  while (write_count != (int)(length - wrote_so_far)) {
+    if (write_count <= 0) {
+      _is_closed = !BIO_should_retry(*_source);
+      if (_is_closed) {
+        return wrote_so_far;
+      }
+
+      // Block on the underlying socket before we try to write some
+      // more.
+      int fd = -1;
+      BIO_get_fd(*_source, &fd);
+      if (fd < 0) {
+        downloader_cat.warning()
+          << "socket BIO has no file descriptor.\n";
+      } else {
+        downloader_cat.spam()
+          << "waiting to write to BIO.\n";
+        fd_set wset;
+        FD_ZERO(&wset);
+        FD_SET(fd, &wset);
+        select(fd + 1, NULL, &wset, NULL, NULL);
+      }        
+
+    } else {
+      // wrote some characters.
+      wrote_so_far += write_count;
+    }
+
+    // Try to write some more.
+    write_count = BIO_write(*_source, start + wrote_so_far, length - wrote_so_far);
+  }
+
+  return length;
+}
 
 #endif  // HAVE_SSL

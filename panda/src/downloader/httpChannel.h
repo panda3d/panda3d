@@ -74,6 +74,7 @@ public:
 
 PUBLISHED:
   INLINE bool is_valid() const;
+  INLINE bool is_connection_ready() const;
   INLINE const URLSpec &get_url() const;
   INLINE HTTPClient::HTTPVersion get_http_version() const;
   INLINE const string &get_http_version_string() const;
@@ -106,6 +107,7 @@ PUBLISHED:
   INLINE bool get_subdocument(const URLSpec &url, 
                               size_t first_byte, size_t last_byte);
   INLINE bool get_header(const URLSpec &url);
+  INLINE bool connect_to(const URLSpec &url);
 
   INLINE void begin_post_form(const URLSpec &url, const string &body);
   INLINE void begin_get_document(const URLSpec &url);
@@ -113,16 +115,25 @@ PUBLISHED:
                                     size_t first_byte, size_t last_byte);
   INLINE void begin_get_header(const URLSpec &url);
   bool run();
+  INLINE void begin_connect_to(const URLSpec &url);
 
   ISocketStream *read_body();
   bool download_to_file(const Filename &filename, size_t first_byte = 0);
   bool download_to_ram(Ramfile *ramfile);
+  SocketStream *get_connection();
 
   INLINE size_t get_bytes_downloaded() const;
   INLINE size_t get_bytes_requested() const;
   INLINE bool is_download_complete() const;
 
 private:
+  enum Method {
+    M_get,
+    M_head,
+    M_post,
+    M_connect
+  };
+
   bool reached_done_state();
   bool run_connecting();
   bool run_proxy_ready();
@@ -142,7 +153,7 @@ private:
   bool run_download_to_file();
   bool run_download_to_ram();
 
-  void begin_request(const string &method, const URLSpec &url, 
+  void begin_request(Method method, const URLSpec &url, 
                      const string &body, bool nonblocking,
                      size_t first_byte, size_t last_byte);
   void reset_for_new_request();
@@ -193,9 +204,11 @@ private:
   bool _nonblocking;
 
   URLSpec _url;
-  string _method;
+  Method _method;
   string _header;
   string _body;
+  bool _want_ssl;
+  bool _proxy_serves_document;
   size_t _first_byte;
   size_t _last_byte;
 

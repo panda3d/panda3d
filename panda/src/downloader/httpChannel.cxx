@@ -56,6 +56,8 @@ HTTPChannel(HTTPClient *client) :
   _max_updates_per_second = 1.0f / _seconds_per_update;
   _bytes_per_update = int(_max_bytes_per_second * _seconds_per_update);
   _nonblocking = false;
+  _want_ssl = false;
+  _proxy_serves_document = false;
   _first_byte = 0;
   _last_byte = 0;
   _read_index = 0;
@@ -258,7 +260,7 @@ run() {
       } else {
         _bio = new BioPtr(_proxy);
       }
-      _source = new BioStreamPtr(new IBioStream(_bio));
+      _source = new BioStreamPtr(new BioStream(_bio));
       if (_nonblocking) {
         BIO_set_nbio(*_bio, 1);
       }
@@ -510,6 +512,33 @@ download_to_ram(Ramfile *ramfile) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_connection
+//       Access: Published
+//  Description: Returns the connection that was established via a
+//               previous call to connect_to() or begin_connect_to(),
+//               or NULL if the connection attempt failed or if those
+//               methods have not recently been called.
+//
+//               This stream has been allocated from the free store.
+//               It is the user's responsibility to delete this
+//               pointer when finished with it.
+////////////////////////////////////////////////////////////////////
+SocketStream *HTTPChannel::
+get_connection() {
+  if (!is_connection_ready()) {
+    return NULL;
+  }
+
+  BioStream *stream = _source->get_stream();
+  _source->set_stream(NULL);
+
+  // We're now passing ownership of the connection to the user.
+  free_bio();
+
+  return stream;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::reached_done_state
 //       Access: Private
 //  Description: Called by run() after it reaches the done state, this
@@ -552,6 +581,8 @@ reached_done_state() {
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 run_connecting() {
+  _status_code = 0;
+  _status_string = string();
   if (BIO_do_connect(*_bio) <= 0) {
     if (BIO_should_retry(*_bio)) {
       return true;
@@ -577,11 +608,7 @@ run_connecting() {
     _state = S_proxy_ready;
 
   } else {
-    if (_url.get_scheme() == "https") {
-      _state = S_setup_ssl;
-    } else {
-      _state = S_ready;
-    }
+    _state = _want_ssl ? S_setup_ssl : S_ready;
   }
   return false;
 }
@@ -702,11 +729,7 @@ run_proxy_reading_header() {
   _proxy_tunnel = true;
   make_request_text(string());
 
-  if (_url.get_scheme() == "https") {
-    _state = S_setup_ssl;
-  } else {
-    _state = S_ready;
-  }
+  _state = _want_ssl ? S_setup_ssl : S_ready;
   return false;
 }
 
@@ -978,7 +1001,7 @@ run_reading_header() {
 
   if ((get_status_code() / 100) == 3 && get_status_code() != 305) {
     // Redirect.  Should we handle it automatically?
-    if (!get_redirect().empty() && (_method == "GET" || _method == "HEAD")) {
+    if (!get_redirect().empty() && (_method == M_get || _method == M_head)) {
       // Sure!
       URLSpec new_url = get_redirect();
       if (!_redirect_trail.insert(new_url).second) {
@@ -1049,7 +1072,7 @@ run_begin_body() {
   if (get_status_code() / 100 == 1 ||
       get_status_code() == 204 ||
       get_status_code() == 304 || 
-      _method == "HEAD") {
+      _method == M_head) {
     // These status codes, or method HEAD, indicate we have no body.
     // Therefore, we have already read the (nonexistent) body.
     _state = S_ready;
@@ -1283,8 +1306,9 @@ run_download_to_ram() {
 //               necessary.
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
-begin_request(const string &method, const URLSpec &url, const string &body,
-              bool nonblocking, size_t first_byte, size_t last_byte) {
+begin_request(HTTPChannel::Method method, const URLSpec &url,
+              const string &body, bool nonblocking, 
+              size_t first_byte, size_t last_byte) {
   reset_for_new_request();
 
   // Changing the proxy, or the nonblocking state, is grounds for
@@ -1299,19 +1323,29 @@ begin_request(const string &method, const URLSpec &url, const string &body,
     free_bio();
   }
 
-  _method = method;
   set_url(url);
+  _method = method;
   _body = body;
+
+  // An https-style request means we'll need to establish an SSL
+  // connection.
+  _want_ssl = (_url.get_scheme() == "https");
+
+  // If we have a proxy, we'll be asking the proxy to hand us the
+  // document--except when we also have https, in which case we'll be
+  // tunnelling through the proxy to talk to the server directly.
+  _proxy_serves_document = (!_proxy.empty() && !_want_ssl);
+
   _first_byte = first_byte;
   _last_byte = last_byte;
+
   make_header();
   make_request_text(string());
 
-  if (!_proxy.empty() && _url.get_scheme() == "https") {
-    // HTTPS over proxy requires tunnelling through the proxy to the
-    // server so we can handle the SSL connection directly, rather
-    // than asking the proxy to hand us the particular document(s) in
-    // question.
+  if (!_proxy.empty() && (_want_ssl || _method == M_connect)) {
+    // Maybe we need to tunnel through the proxy to connect to the
+    // server directly.  We need this for HTTPS, or if the user
+    // requested a direct connection somewhere.
     ostringstream request;
     request 
       << "CONNECT " << _url.get_server() << ":" << _url.get_port()
@@ -1338,7 +1372,7 @@ begin_request(const string &method, const URLSpec &url, const string &body,
     _state = S_begin_body;
   }
 
-  _done_state = S_read_header;
+  _done_state = (_method == M_connect) ? S_ready : S_read_header;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1414,6 +1448,8 @@ bool HTTPChannel::
 http_send(const string &str) {
   nassertr(str.length() > _sent_so_far, true);
 
+  // Use the underlying BIO to write to the server, instead of the
+  // BIOStream, which would insist on blocking.
   size_t bytes_to_send = str.length() - _sent_so_far;
   int write_count =
     BIO_write(*_bio, str.data() + _sent_so_far, bytes_to_send);
@@ -1923,24 +1959,51 @@ x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
 make_header() {
-  string path;
-  if (_proxy.empty() || _url.get_scheme() == "https") {
-    // In either of these cases, we contact the server directly for
-    // the document, so we just need the server-relative path.
-    path = _url.get_path();
+  if (_method == M_connect) {
+    // This method doesn't require an HTTP header at all; we'll just
+    // open a plain connection.  (Except when we're using a proxy; but
+    // in that case, it's the proxy_header we'll need, not the regular
+    // HTTP header.)
+    _header = string();
+    return;
+  }
 
-  } else {
-    // In this case (http-over-proxy), we ask the proxy for the
-    // document, so we need its full URL.
+  string path;
+  if (_proxy_serves_document) {
+    // If we'll be asking the proxy for the document, we need its full
+    // URL--but we omit the username, which is information just for us.
     URLSpec url_no_username = _url;
     url_no_username.set_username(string());
     path = url_no_username.get_url();
+
+  } else {
+    // If we'll be asking the server directly for the document, we
+    // just want its path relative to the server.
+    path = _url.get_path();
   }
 
   ostringstream stream;
 
+  switch (_method) {
+  case M_get:
+    stream << "GET";
+    break;
+
+  case M_head:
+    stream << "HEAD";
+    break;
+
+  case M_post:
+    stream << "POST";
+    break;
+
+  case M_connect:
+    stream << "CONNECT";
+    break;
+  }
+
   stream 
-    << _method << " " << path << " " 
+    << " " << path << " " 
     << _client->get_http_version_string() << "\r\n";
 
   if (_client->get_http_version() >= HTTPClient::HV_11) {

@@ -27,9 +27,9 @@
 ////////////////////////////////////////////////////////////////////
 BioStreamPtr::
 ~BioStreamPtr() {
-  if (_stream != (IBioStream *)NULL) {
+  if (_stream != (BioStream *)NULL) {
     delete _stream;
-    _stream = (IBioStream *)NULL;
+    _stream = (BioStream *)NULL;
   }
 }
 

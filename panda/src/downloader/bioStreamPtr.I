@@ -23,7 +23,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE BioStreamPtr::
-BioStreamPtr(IBioStream *stream) : _stream(stream) {
+BioStreamPtr(BioStream *stream) : _stream(stream) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ BioStreamPtr(IBioStream *stream) : _stream(stream) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE IBioStream &BioStreamPtr::
+INLINE BioStream &BioStreamPtr::
 operator *() const {
   return *_stream;
 }
@@ -41,7 +41,7 @@ operator *() const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE IBioStream *BioStreamPtr::
+INLINE BioStream *BioStreamPtr::
 operator ->() const {
   return _stream;
 }
@@ -52,7 +52,7 @@ operator ->() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE BioStreamPtr::
-operator IBioStream * () const {
+operator BioStream * () const {
   return _stream;
 }
 
@@ -62,7 +62,7 @@ operator IBioStream * () const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void BioStreamPtr::
-set_stream(IBioStream *stream) {
+set_stream(BioStream *stream) {
   _stream = stream;
 }
 
@@ -71,7 +71,7 @@ set_stream(IBioStream *stream) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE IBioStream *BioStreamPtr::
+INLINE BioStream *BioStreamPtr::
 get_stream() const {
   return _stream;
 }

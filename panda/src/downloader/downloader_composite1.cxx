@@ -13,5 +13,6 @@
 #include "identityStreamBuf.cxx"
 #include "multiplexStream.cxx"
 #include "multiplexStreamBuf.cxx"
+#include "socketStream.cxx"
 #include "urlSpec.cxx"
 

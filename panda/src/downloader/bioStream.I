@@ -44,7 +44,7 @@ IBioStream(BioPtr *source) : ISocketStream(&_buf) {
 INLINE IBioStream &IBioStream::
 open(BioPtr *source) {
   clear(0);
-  _buf.open_read(source);
+  _buf.open(source);
   return *this;
 }
 
@@ -56,6 +56,92 @@ open(BioPtr *source) {
 ////////////////////////////////////////////////////////////////////
 INLINE IBioStream &IBioStream::
 close() {
-  _buf.close_read();
+  _buf.close();
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OBioStream::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE OBioStream::
+OBioStream() : OSocketStream(&_buf) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OBioStream::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE OBioStream::
+OBioStream(BioPtr *source) : OSocketStream(&_buf) {
+  open(source);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OBioStream::open
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE OBioStream &OBioStream::
+open(BioPtr *source) {
+  clear(0);
+  _buf.open(source);
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OBioStream::close
+//       Access: Public
+//  Description: Resets the BioStream to empty, but does not actually
+//               close the source BIO unless owns_source was true.
+////////////////////////////////////////////////////////////////////
+INLINE OBioStream &OBioStream::
+close() {
+  _buf.close();
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BioStream::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE BioStream::
+BioStream() : SocketStream(&_buf) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BioStream::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE BioStream::
+BioStream(BioPtr *source) : SocketStream(&_buf) {
+  open(source);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BioStream::open
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE BioStream &BioStream::
+open(BioPtr *source) {
+  clear(0);
+  _buf.open(source);
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BioStream::close
+//       Access: Public
+//  Description: Resets the BioStream to empty, but does not actually
+//               close the source BIO unless owns_source was true.
+////////////////////////////////////////////////////////////////////
+INLINE BioStream &BioStream::
+close() {
+  _buf.close();
   return *this;
 }

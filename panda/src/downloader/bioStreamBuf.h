@@ -38,17 +38,23 @@ public:
   BioStreamBuf();
   virtual ~BioStreamBuf();
 
-  void open_read(BioPtr *source);
-  void close_read();
+  void open(BioPtr *source);
+  void close();
 
 protected:
+  virtual int overflow(int c);
+  virtual int sync(void);
   virtual int underflow(void);
 
 private:
+  size_t write_chars(const char *start, size_t length);
+
   PT(BioPtr) _source;
   bool _is_closed;
 
   friend class IBioStream;
+  friend class OBioStream;
+  friend class BioStream;
 };
 
 #endif  // HAVE_SSL

@@ -30,25 +30,25 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BioStreamPtr
-// Description : A wrapper around an IBioStream object to make a
+// Description : A wrapper around an BioStream object to make a
 //               reference-counting pointer to it.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS BioStreamPtr : public ReferenceCount {
 public:
-  INLINE BioStreamPtr(IBioStream *stream);
+  INLINE BioStreamPtr(BioStream *stream);
   virtual ~BioStreamPtr();
 
-  INLINE IBioStream &operator *() const;
-  INLINE IBioStream *operator -> () const;
-  INLINE operator IBioStream * () const;
+  INLINE BioStream &operator *() const;
+  INLINE BioStream *operator -> () const;
+  INLINE operator BioStream * () const;
 
-  INLINE void set_stream(IBioStream *stream);
-  INLINE IBioStream *get_stream() const;
+  INLINE void set_stream(BioStream *stream);
+  INLINE BioStream *get_stream() const;
 
   bool connect() const;
   
 private:
-  IBioStream *_stream;
+  BioStream *_stream;
 };
 
 #include "bioStreamPtr.I"

@@ -41,6 +41,7 @@
     httpChannel.cxx \
     identityStream.cxx identityStreamBuf.cxx \
     multiplexStream.cxx multiplexStreamBuf.cxx \
+    socketStream.cxx \
     urlSpec.cxx \
     $[if $[HAVE_NET], downloadDb.cxx downloader.cxx] \
     $[if $[HAVE_ZLIB], decompressor.cxx download_utils.cxx]

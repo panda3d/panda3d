@@ -50,6 +50,48 @@ private:
   BioStreamBuf _buf;
 };
 
+////////////////////////////////////////////////////////////////////
+//       Class : OBioStream
+// Description : An output stream object that writes data to an
+//               OpenSSL BIO object.  This is used by the HTTPClient
+//               and HTTPChannel classes to provide a C++ interface
+//               to OpenSSL.
+//
+//               Seeking is not supported.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEXPRESS OBioStream : public OSocketStream {
+public:
+  INLINE OBioStream();
+  INLINE OBioStream(BioPtr *source);
+
+  INLINE OBioStream &open(BioPtr *source);
+  INLINE OBioStream &close();
+
+  virtual bool is_closed();
+
+private:
+  BioStreamBuf _buf;
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : BioStream
+// Description : A bi-directional stream object that reads and writes
+//               data to an OpenSSL BIO object.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEXPRESS BioStream : public SocketStream {
+public:
+  INLINE BioStream();
+  INLINE BioStream(BioPtr *source);
+
+  INLINE BioStream &open(BioPtr *source);
+  INLINE BioStream &close();
+
+  virtual bool is_closed();
+
+private:
+  BioStreamBuf _buf;
+};
+
 #include "bioStream.I"
 
 #endif  // HAVE_SSL
