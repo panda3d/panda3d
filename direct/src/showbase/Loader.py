@@ -65,7 +65,7 @@ class Loader:
         anyway--it prevents accumulation of instances of the font
         model under hidden."""
         
-        Loader.notify.info("Loading model for node: %s" % (modelPath))
+        Loader.notify.info("Loading model once node: %s" % (modelPath))
         return ModelPool.loadModel(modelPath)
 
     def unloadModel(self, modelPath):

@@ -10,7 +10,7 @@ class Transitions:
         self.fade.setBin("fixed", 1000)
 
         self.iris.setPos(0,0,0)
-        self.fade.setScale(2.0, 2.0, 2.6666)
+        self.fade.setScale(3)
 
         self.irisTaskName = "irisTask"
         self.fadeTaskName = "fadeTask"
@@ -20,17 +20,17 @@ class Transitions:
         self.fade.reparentTo(hidden)
         return Task.done
             
-    def fadeIn(self, t=0.4, block=0):
+    def fadeIn(self, t=0.5, block=0):
         """
         Play a fade in transition over t seconds.
-        Places a polygon on the render2d plane then lerps the color
+        Places a polygon on the aspect2d plane then lerps the color
         from black to transparent. When the color lerp is finished, it
         parents the fade polygon to hidden. If block is set, return the
         sequence instead of spawning it.
         """
         self.noTransitions()
 
-	self.fade.reparentTo(render2d)
+	self.fade.reparentTo(aspect2d)
 
         if (t == 0):
             # Fade in immediately with no lerp
@@ -49,25 +49,25 @@ class Transitions:
             else:
                 return task
             
-    def fadeInTask(self, task, time=0.4):
+    def fadeInTask(self, task, time=0.5):
         """
         As a sequence: Fade in, execute the given task
         """
         seq = Task.sequence(self.fadeIn(time, block=1), task)
         taskMgr.spawnTaskNamed(seq, 'fadeInTaskSeq')
 
-    def fadeOut(self, t=0.4, block=0):
+    def fadeOut(self, t=0.5, block=0):
         """
         Play a fade out transition over t seconds.
-        Places a polygon on the render2d plane then lerps the color
+        Places a polygon on the aspect2d plane then lerps the color
         from transparent to full black. When the color lerp is finished,
-        it leaves the fade polygon covering the render2d plane until you
+        it leaves the fade polygon covering the aspect2d plane until you
         fadeIn or call noFade. If block is set to 1, performs blocking
         lerp
         """
         self.noTransitions()
 
-	self.fade.reparentTo(render2d)
+	self.fade.reparentTo(aspect2d)
 
         if (t == 0):
             # Fade out immediately with no lerp
@@ -83,7 +83,7 @@ class Transitions:
                                 0,0,0,1,
                                 t)
 
-    def fadeOutTask(self, task, time=0.4, noFade=1):
+    def fadeOutTask(self, task, time=0.5, noFade=1):
         """
         As a sequence: Fade out, execute the given task, then do a noFade
         if requested
@@ -113,10 +113,10 @@ class Transitions:
         self.iris.reparentTo(hidden)
         return Task.done
 
-    def irisIn(self, t=0.4, block=0):
+    def irisIn(self, t=0.5, block=0):
         """
         Play an iris in transition over t seconds.
-        Places a polygon on the render2d plane then lerps the scale
+        Places a polygon on the aspect2d plane then lerps the scale
         of the iris polygon up so it looks like we iris in. When the
         scale lerp is finished, it parents the iris polygon to hidden.
         If block is true, does not execute lerp, but returns the sequence.
@@ -126,13 +126,13 @@ class Transitions:
         if (t == 0):
             self.iris.reparentTo(hidden)
         else:
-            self.iris.reparentTo(render2d)
-            self.iris.setScale(0.0015, 0.0015, 0.002)
+            self.iris.reparentTo(aspect2d)
+            self.iris.setScale(0.0015)
             # Create a sequence that scales the iris up,
             # then parents the fade to hidden
             task = Task.sequence(
-                self.iris.lerpScale(0.1, 0.1, 0.1333,
-                                    t, blendType="easeIn"),
+                self.iris.lerpScale(0.18, 0.18, 0.18,
+                                    t, blendType="noBlend"),
                 Task.Task(self.irisInLerpDone))
             # Spawn the sequence
             if not block:
@@ -140,7 +140,7 @@ class Transitions:
             else:
                 return task
             
-    def irisInTask(self, task, time=0.4):
+    def irisInTask(self, task, time=0.5):
         """
         As a sequence: iris in, execute the given task
         """
@@ -154,26 +154,25 @@ class Transitions:
         self.fadeOut(0)
         return Task.done
 
-    def irisOut(self, t=0.4, block=0):
+    def irisOut(self, t=0.5, block=0):
         """
         Play an iris out transition over t seconds.
-        Places a polygon on the render2d plane then lerps the scale
+        Places a polygon on the aspect2d plane then lerps the scale
         of the iris down so it looks like we iris out. When the scale
         lerp is finished, it leaves the iris polygon covering the
-        render2d plane until you irisIn or call noIris.
+        aspect2d plane until you irisIn or call noIris.
         """
 	self.noTransitions()
-
         if (t == 0):
             self.iris.reparentTo(hidden)
         else:
-            self.iris.reparentTo(render2d)
-            self.iris.setScale(0.1, 0.1, 0.13333)
+            self.iris.reparentTo(aspect2d)
+            self.iris.setScale(0.18)
             # Create a sequence that scales the iris up,
             # then parents the fade to hidden
             task = Task.sequence(
-                self.iris.lerpScale(0.0015, 0.0015, 0.002,
-                                    t, blendType="easeIn"),
+                self.iris.lerpScale(0.0015, 0.0015, 0.0015,
+                                    t, blendType="noBlend"),
                 Task.Task(self.irisOutLerpDone))
             # Spawn the sequence
             if not block:
@@ -181,7 +180,7 @@ class Transitions:
             else:
                 return task
 
-    def irisOutTask(self, task, time=0.4, noIris=1):
+    def irisOutTask(self, task, time=0.5, noIris=1):
         """
         As a sequence: iris out, execute the given task, then do a noIris
         if requested
