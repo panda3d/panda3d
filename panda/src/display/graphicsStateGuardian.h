@@ -327,34 +327,6 @@ private:
 public:
   void traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg);
 
-// factory stuff
-public:
-  typedef Factory<GraphicsStateGuardian> GsgFactory;
-  typedef FactoryParam GsgParam;
-
-  // Make a factory parameter type for the window pointer
-  class EXPCL_PANDA GsgWindow : public GsgParam {
-  public:
-    INLINE GsgWindow(GraphicsWindow* w) : GsgParam(), _w(w) {}
-    virtual ~GsgWindow(void);
-    INLINE GraphicsWindow* get_window(void) { return _w; }
-  public:
-    static TypeHandle get_class_type(void);
-    static void init_type(void);
-    virtual TypeHandle get_type(void) const;
-    virtual TypeHandle force_init_type(void);
-  private:
-    GraphicsWindow* _w;
-    static TypeHandle _type_handle;
-
-    INLINE GsgWindow(void) : GsgParam() {}
-  };
-
-  static GsgFactory &get_factory();
-
-private:
-  static GsgFactory *_factory;
-
 public:
   INLINE GraphicsWindow* get_window(void) const { return _win; }
 

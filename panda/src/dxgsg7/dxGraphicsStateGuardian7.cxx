@@ -4726,21 +4726,6 @@ restore_frame_buffer(SavedFrameBuffer *frame_buffer) {
     return;
 }
 
-// factory and type stuff
-
-GraphicsStateGuardian *DXGraphicsStateGuardian7::
-make_DXGraphicsStateGuardian(const FactoryParams &params) {
-    GraphicsStateGuardian::GsgWindow *win_param;
-    if (!get_param_into(win_param, params)) {
-        dxgsg7_cat.error()
-        << "No window specified for gsg creation!" << endl;
-        return NULL;
-    }
-
-    GraphicsWindow *win = win_param->get_window();
-    return new DXGraphicsStateGuardian7(win);
-}
-
 TypeHandle DXGraphicsStateGuardian7::get_type(void) const {
     return get_class_type();
 }

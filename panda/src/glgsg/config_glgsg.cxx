@@ -110,8 +110,4 @@ init_libglgsg() {
   GLSavedFrameBuffer::init_type();
   GLTextureContext::init_type();
   GLGeomNodeContext::init_type();
-
-  GraphicsStateGuardian::get_factory().register_factory
-    (GLGraphicsStateGuardian::get_class_type(),
-     GLGraphicsStateGuardian::make_GlGraphicsStateGuardian);
 }

@@ -91,8 +91,6 @@ init_libdisplay() {
   initialized = true;
 
   GraphicsStateGuardian::init_type();
-  GraphicsStateGuardian::GsgParam::init_type();
-  GraphicsStateGuardian::GsgWindow::init_type();
   SavedFrameBuffer::init_type();
   GraphicsPipe::init_type();
   GraphicsWindow::init_type();

@@ -74,30 +74,6 @@ PStatCollector GraphicsStateGuardian::_render_states_unused_pcollector("RenderSt
 #endif
 
 TypeHandle GraphicsStateGuardian::_type_handle;
-TypeHandle GraphicsStateGuardian::GsgWindow::_type_handle;
-
-GraphicsStateGuardian::GsgFactory *GraphicsStateGuardian::_factory = NULL;
-
-GraphicsStateGuardian::GsgWindow::~GsgWindow(void) {}
-
-TypeHandle GraphicsStateGuardian::GsgWindow::get_class_type(void) {
-  return _type_handle;
-}
-
-void GraphicsStateGuardian::GsgWindow::init_type(void) {
-  GsgParam::init_type();
-  register_type(_type_handle, "GraphicsStateGuardian::GsgWindow",
-                GsgParam::get_class_type());
-}
-
-TypeHandle GraphicsStateGuardian::GsgWindow::get_type(void) const {
-  return get_class_type();
-}
-
-TypeHandle GraphicsStateGuardian::GsgWindow::force_init_type(void) {
-  init_type();
-  return get_class_type();
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::Constructor
@@ -1573,19 +1549,4 @@ traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),vo
     if(!bResult)
       return;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_factory
-//       Access: Public, Static
-//  Description: Returns the factory object that can be used to
-//               register new kinds of GraphicsStateGuardian objects that may
-//               be created.
-////////////////////////////////////////////////////////////////////
-GraphicsStateGuardian::GsgFactory &GraphicsStateGuardian::
-get_factory() {
-  if (_factory == (GsgFactory *)NULL) {
-    _factory = new GsgFactory;
-  }
-  return (*_factory);
 }

@@ -3971,21 +3971,6 @@ save_mipmap_images(Texture *tex) {
 }
 #endif  // NDEBUG
 
-// factory and type stuff
-
-GraphicsStateGuardian *GLGraphicsStateGuardian::
-make_GlGraphicsStateGuardian(const FactoryParams &params) {
-  GraphicsStateGuardian::GsgWindow *win_param;
-  if (!get_param_into(win_param, params)) {
-    glgsg_cat.error()
-      << "No window specified for gsg creation!" << endl;
-    return NULL;
-  }
-
-  GraphicsWindow *win = win_param->get_window();
-  return new GLGraphicsStateGuardian(win);
-}
-
 TypeHandle GLGraphicsStateGuardian::get_type(void) const {
   return get_class_type();
 }
