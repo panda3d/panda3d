@@ -51,7 +51,7 @@
 #define install_other_dirs $[sort $[forscopes install_audio install_dna install_icons install_misc,$[install_model_dir]]]
 #define installed_other $[sort $[forscopes install_audio install_dna install_icons install_misc,$[SOURCES:%=$[install_model_dir]/%]]]
 
-#define pal_egg_targets $[sort $[patsubst %,$[pal_egg_dir]/%,$[notdir $[SOURCES]]]]
+#define pal_egg_targets $[sort $[patsubst %,$[pal_egg_dir]/%,$[notdir $[SOURCES(install_egg)]]]]
 #define bam_targets $[install_eggs:%.egg=$[bam_dir]/%.bam]
 
 #output Makefile
