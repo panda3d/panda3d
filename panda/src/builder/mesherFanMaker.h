@@ -52,6 +52,8 @@ public:
 
   MesherFanMaker() {}
   MesherFanMaker(const Vertex *vertex, Strip *tri, Mesher *mesher);
+  MesherFanMaker(const MesherFanMaker<PrimType> &copy);
+  void operator = (const MesherFanMaker<PrimType> &copy);
 
   INLINE bool operator < (const MesherFanMaker &other) const;
   INLINE bool operator != (const MesherFanMaker &other) const;

@@ -534,7 +534,10 @@ find_fans() {
              ++si) {
           Strip *strip = *si;
           if (strip->_type == BPT_tri) {
-            fans.push_back(FanMaker(&v, strip, this));
+            FanMaker fan(&v, strip, this);
+            if (!fan._edges.empty()) {
+              fans.push_back(fan);
+            }
           }
         }
       }

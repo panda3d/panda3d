@@ -24,9 +24,62 @@
 
 #include <math.h>
 
+////////////////////////////////////////////////////////////////////
+//     Function: MesherFanMaker::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template <class PrimType>
+MesherFanMaker<PrimType>::
+MesherFanMaker(const Vertex *vertex, Strip *tri, Mesher *mesher) {
+  _vertex = vertex;
+  const Edge *edge = tri->find_opposite_edge(vertex);
+  if (edge != (const Edge *)NULL) {
+    _edges.push_back(edge);
+  }
+  _strips.push_back(tri);
+  _planar = tri->_planar;
+  _mesher = mesher;
+  _bucket = _mesher->_bucket;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MesherFanMaker::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template <class PrimType>
+MesherFanMaker<PrimType>::
+MesherFanMaker(const MesherFanMaker<PrimType> &copy) :
+  _vertex(copy._vertex),
+  _edges(copy._edges),
+  _strips(copy._strips),
+  _planar(copy._planar),
+  _bucket(copy._bucket),
+  _mesher(copy._mesher)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MesherFanMaker::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template <class PrimType>
+void MesherFanMaker<PrimType>::
+operator = (const MesherFanMaker<PrimType> &copy) {
+  _vertex = copy._vertex;
+  _edges = copy._edges;
+  _strips = copy._strips;
+  _planar = copy._planar;
+  _bucket = copy._bucket;
+  _mesher = copy._mesher;
+}
+
 template <class PrimType>
 INLINE bool MesherFanMaker<PrimType>::
 operator < (const MesherFanMaker &other) const {
+  nassertr(!_edges.empty() && !other._edges.empty(), false);
   return _edges.front() < other._edges.front();
 }
 
@@ -66,20 +119,6 @@ is_coplanar_with(const MesherFanMaker &other) const {
   return _planar && other._planar &&
     _strips.front()->is_coplanar_with(*other._strips.front(),
                                     _bucket->_coplanar_threshold);
-}
-
-template <class PrimType>
-MesherFanMaker<PrimType>::
-MesherFanMaker(const Vertex *vertex, Strip *tri, Mesher *mesher) {
-  _vertex = vertex;
-  const Edge *edge = tri->find_opposite_edge(vertex);
-  if (edge != (const Edge *)NULL) {
-    _edges.push_back(edge);
-  }
-  _strips.push_back(tri);
-  _planar = tri->_planar;
-  _mesher = mesher;
-  _bucket = _mesher->_bucket;
 }
 
 template <class PrimType>
