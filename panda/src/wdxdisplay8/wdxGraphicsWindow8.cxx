@@ -2161,8 +2161,8 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
     // for this case, you probably want MIXED processing to use HW for fixed-fn vertex processing
     // and SW for vtx shaders
     _dxgsg->scrn.bIsTNLDevice=((d3dcaps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)!=0);
-    _dxgsg->scrn.bCanUseHWVertexShaders = (d3dcaps.VertexShaderVersion < D3DVS_VERSION(1,0));
-    _dxgsg->scrn.bCanUsePixelShaders = (d3dcaps.PixelShaderVersion < D3DPS_VERSION(1,0));
+    _dxgsg->scrn.bCanUseHWVertexShaders = (d3dcaps.VertexShaderVersion >= D3DVS_VERSION(1,0));
+    _dxgsg->scrn.bCanUsePixelShaders = (d3dcaps.PixelShaderVersion >= D3DPS_VERSION(1,0));
 
     bool bNeedZBuffer = ((!(d3dcaps.RasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR )) 
                          && (_props._mask & W_DEPTH));
