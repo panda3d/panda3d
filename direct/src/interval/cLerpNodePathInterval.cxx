@@ -41,16 +41,33 @@ TypeHandle CLerpNodePathInterval::_type_handle;
 //               set_start_pos(), etc.; otherwise, the starting value
 //               is taken from the actual node's value at the time the
 //               lerp is performed.
+//
+//               The starting values may be explicitly specified or
+//               omitted.  The value of bake_in_start determines the
+//               behavior if the starting values are omitted.  If
+//               bake_in_start is true, the values are obtained the
+//               first time the lerp runs, and thenceforth are stored
+//               within the interval.  If bake_in_start is false, the
+//               starting value is computed each frame, based on
+//               assuming the current value represents the value set
+//               from the last time the interval was run.  This
+//               "smart" behavior allows code to manipulate the object
+//               event while it is being lerped, and the lerp
+//               continues to apply in a sensible way.
 ////////////////////////////////////////////////////////////////////
 CLerpNodePathInterval::
 CLerpNodePathInterval(const string &name, double duration, 
                       CLerpInterval::BlendType blend_type,
+                      bool bake_in_start,
                       const NodePath &node, const NodePath &other) :
   CLerpInterval(name, duration, blend_type),
   _node(node),
   _other(other),
   _flags(0)
 {
+  if (bake_in_start) {
+    _flags |= F_bake_in_start;
+  }
   _prev_d = 0.0;
 }
 
@@ -123,13 +140,23 @@ priv_step(double t) {
       if ((_flags & F_start_pos) != 0) {
         lerp_value(pos, d, _start_pos, _end_pos);
 
+      } else if ((_flags & F_bake_in_start) != 0) {
+        // Get the current starting pos, and bake it in.
+        set_start_pos(transform->get_pos());
+        lerp_value(pos, d, _start_pos, _end_pos);
+
       } else {
+        // "smart" lerp from the current pos to the new pos.
         pos = transform->get_pos();
         lerp_value_from_prev(pos, d, _prev_d, pos, _end_pos);
       }
     }
     if ((_flags & F_end_hpr) != 0) {
       if ((_flags & F_start_hpr) != 0) {
+        lerp_value(hpr, d, _start_hpr, _end_hpr);
+
+      } else if ((_flags & F_bake_in_start) != 0) {
+        set_start_hpr(transform->get_hpr());
         lerp_value(hpr, d, _start_hpr, _end_hpr);
 
       } else {
@@ -139,6 +166,10 @@ priv_step(double t) {
     }
     if ((_flags & F_end_scale) != 0) {
       if ((_flags & F_start_scale) != 0) {
+        lerp_value(scale, d, _start_scale, _end_scale);
+
+      } else if ((_flags & F_bake_in_start) != 0) {
+        set_start_scale(transform->get_scale());
         lerp_value(scale, d, _start_scale, _end_scale);
 
       } else {

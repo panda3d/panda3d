@@ -31,7 +31,7 @@
 class EXPCL_DIRECT CLerpNodePathInterval : public CLerpInterval {
 PUBLISHED:
   CLerpNodePathInterval(const string &name, double duration, 
-                        BlendType blend_type,
+                        BlendType blend_type, bool bake_in_start,
                         const NodePath &node, const NodePath &other);
 
   INLINE const NodePath &get_node() const;
@@ -74,9 +74,11 @@ private:
     F_start_scale        = 0x0400,
     F_start_color        = 0x0800,
     F_start_color_scale  = 0x1000,
+
+    F_bake_in_start      = 0x8000,
   };
   
-  int _flags;
+  unsigned int _flags;
   LPoint3f _start_pos, _end_pos;
   LVecBase3f _start_hpr, _end_hpr;
   LVecBase3f _start_scale, _end_scale;
