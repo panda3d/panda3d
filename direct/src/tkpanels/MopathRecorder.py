@@ -110,8 +110,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.keyframeHook = 'f10'
         # Curve fitter object
         self.lastPos = Point3(0)
-        self.xyzCurveFitter = CurveFitter()
-        self.hprCurveFitter = CurveFitter()
+        self.curveFitter = CurveFitter()
         # Curve variables
         # Number of ticks per parametric unit
         self.numTicks = 1
@@ -119,16 +118,16 @@ class MopathRecorder(AppShell, PandaObject):
         # This just affects the visual appearance of the curve
         self.numSegs = 40
         # The nurbs curves
-        self.xyzNurbsCurve = None
-        self.hprNurbsCurve = None
+        self.curveCollection = None
         # Curve drawers
-        self.xyzNurbsCurveDrawer = NurbsCurveDrawer(NurbsCurve())
-        self.xyzNurbsCurveDrawer.setNumSegs(self.numSegs)
-        self.xyzNurbsCurveDrawer.setShowHull(0)
-        self.xyzNurbsCurveDrawer.setShowCvs(0)
-        self.xyzNurbsCurveDrawer.setNumTicks(0)
+        self.nurbsCurveDrawer = NurbsCurveDrawer()
+        self.nurbsCurveDrawer.setCurves(ParametricCurveCollection())
+        self.nurbsCurveDrawer.setNumSegs(self.numSegs)
+        self.nurbsCurveDrawer.setShowHull(0)
+        self.nurbsCurveDrawer.setShowCvs(0)
+        self.nurbsCurveDrawer.setNumTicks(0)
         self.curveNodePath = self.recorderNodePath.attachNewNode(
-            self.xyzNurbsCurveDrawer.getGeomNode())
+            self.nurbsCurveDrawer.getGeomNode())
         # Playback variables
         self.playbackTime = 0.0
         self.loopPlayback = 1
@@ -677,23 +676,23 @@ class MopathRecorder(AppShell, PandaObject):
             self.tangentGroup.hide()
 
     def curveEditTask(self,state):
-        if self.xyzNurbsCurve != None:
+        if self.curveCollection != None:
             # Update curve position
             if self.manipulandumId == self.playbackMarker.id():
                 # Show playback marker
                 self.playbackMarker.getChild(0).show()
                 pos = Point3(0)
+                hpr = Point3(0)
                 pos = self.playbackMarker.getPos(self.nodePathParent)
-                self.xyzNurbsCurve.adjustPoint(
+                hpr = self.playbackMarker.getHpr(self.nodePathParent)
+                self.curveCollection.getXyzCurve().adjustPoint(
                     self.playbackTime,
                     pos[0], pos[1], pos[2])
-                hpr = Point3(0)
-                hpr = self.playbackMarker.getHpr(self.nodePathParent)
-                self.hprNurbsCurve.adjustPoint(
+                self.curveCollection.getHprCurve().adjustPoint(
                     self.playbackTime,
                     hpr[0], hpr[1], hpr[2])
-                self.hprNurbsCurve.recompute()
-                self.xyzNurbsCurveDrawer.draw()
+                # Note: this calls recompute on the curves
+                self.nurbsCurveDrawer.draw()
             # Update tangent
             if self.manipulandumId == self.tangentMarker.id():
                 # If manipulating marker, update tangent
@@ -706,16 +705,18 @@ class MopathRecorder(AppShell, PandaObject):
                     self.playbackMarker.getMat(
                     self.nodePathParent).xformVec(tan))
                 # Update nurbs curve
-                self.xyzNurbsCurve.adjustTangent(
+                self.curveCollection.getXyzCurve().adjustTangent(
                     self.playbackTime,
                     tan2Curve[0], tan2Curve[1], tan2Curve[2])
-                self.xyzNurbsCurveDrawer.draw()
+                # Note: this calls recompute on the curves
+                self.nurbsCurveDrawer.draw()
             else:
                 # Show playback marker
                 self.playbackMarker.getChild(0).show()
                 # Update tangent marker line
                 tan = Point3(0)
-                self.xyzNurbsCurve.getTangent(self.playbackTime, tan)
+                self.curveCollection.getXyzCurve().getTangent(
+                    self.playbackTime, tan)
                 # Transform this point to playback marker space
                 tan.assign(
                     self.nodePathParent.getMat(
@@ -758,18 +759,16 @@ class MopathRecorder(AppShell, PandaObject):
     def savePointSet(self):
         # Use curve to compute default point set at 30 fps
         # Keep a handle on the original curve
-        xyzCurve = self.xyzNurbsCurve
-        hprCurve = self.hprNurbsCurve
+        curveCollection = self.curveCollection
         # Sample curves
-        self.maxT = self.xyzNurbsCurve.getMaxT()
+        self.maxT = self.curveCollection.getMaxT()
         self.setNumSamples(self.maxT * 30.0)
         self.sampleCurve()
         # Restore curves to those loaded in
-        self.xyzNurbsCurve = xyzCurve
-        self.hprNurbsCurve = hprCurve
+        self.curveCollection = curveCollection
         # Redraw
-        self.xyzNurbsCurveDrawer.setCurve(self.xyzNurbsCurve)
-        self.xyzNurbsCurveDrawer.draw()
+        self.nurbsCurveDrawer.setCurves(self.curveCollection)
+        self.nurbsCurveDrawer.draw()
 
     def createNewPointSet(self):
         self.pointSetName = self.name + '-ps-' + `self.pointSetCount`
@@ -790,12 +789,10 @@ class MopathRecorder(AppShell, PandaObject):
         self.pointSet = self.pointSetDict.get(name, None)
         # Reload points into curve fitter
         # Reset curve fitters
-        self.xyzCurveFitter.reset()
-        self.hprCurveFitter.reset()
+        self.curveFitter.reset()
         for time, pos, hpr in self.pointSet:
             # Add it to the curve fitters
-            self.xyzCurveFitter.addPoint(time, pos )
-            self.hprCurveFitter.addPoint(time, hpr)
+            self.curveFitter.addXyzHpr(time, pos, hpr)
         # Compute curve
         self.computeCurves()
 
@@ -806,15 +803,15 @@ class MopathRecorder(AppShell, PandaObject):
             self.curveNodePath.hide()
         
     def setKnotVis(self):
-        self.xyzNurbsCurveDrawer.setShowKnots(
+        self.nurbsCurveDrawer.setShowKnots(
             self.getVariable('Style', 'Show Knots').get())
 
     def setCvVis(self):
-        self.xyzNurbsCurveDrawer.setShowCvs(
+        self.nurbsCurveDrawer.setShowCvs(
             self.getVariable('Style', 'Show CVs').get())
         
     def setHullVis(self):
-        self.xyzNurbsCurveDrawer.setShowHull(
+        self.nurbsCurveDrawer.setShowHull(
             self.getVariable('Style', 'Show Hull').get())
         
     def setTraceVis(self):
@@ -831,33 +828,33 @@ class MopathRecorder(AppShell, PandaObject):
 
     def setNumSegs(self, value):
         self.numSegs = int(value)
-        self.xyzNurbsCurveDrawer.setNumSegs(self.numSegs)
+        self.nurbsCurveDrawer.setNumSegs(self.numSegs)
         
     def setNumTicks(self, value):
-        self.xyzNurbsCurveDrawer.setNumTicks(float(value))
+        self.nurbsCurveDrawer.setNumTicks(float(value))
         
     def setTickScale(self, value):
-        self.xyzNurbsCurveDrawer.setTickScale(float(value))
+        self.nurbsCurveDrawer.setTickScale(float(value))
 
     def setPathColor(self, color):
-        self.xyzNurbsCurveDrawer.setColor(
+        self.nurbsCurveDrawer.setColor(
             color[0]/255.0,color[1]/255.0,color[2]/255.0)
-        self.xyzNurbsCurveDrawer.draw()
+        self.nurbsCurveDrawer.draw()
 
     def setKnotColor(self, color):
-        self.xyzNurbsCurveDrawer.setKnotColor(
+        self.nurbsCurveDrawer.setKnotColor(
             color[0]/255.0,color[1]/255.0,color[2]/255.0)
 
     def setCvColor(self, color):
-        self.xyzNurbsCurveDrawer.setCvColor(
+        self.nurbsCurveDrawer.setCvColor(
             color[0]/255.0,color[1]/255.0,color[2]/255.0)
 
     def setTickColor(self, color):
-        self.xyzNurbsCurveDrawer.setTickColor(
+        self.nurbsCurveDrawer.setTickColor(
             color[0]/255.0,color[1]/255.0,color[2]/255.0)
 
     def setHullColor(self, color):
-        self.xyzNurbsCurveDrawer.setHullColor(
+        self.nurbsCurveDrawer.setHullColor(
             color[0]/255.0,color[1]/255.0,color[2]/255.0)
 
     def setStartStopHook(self, event = None):
@@ -881,11 +878,9 @@ class MopathRecorder(AppShell, PandaObject):
     def reset(self):
         self.pointSet = []
         self.hasPoints = 0
-        self.xyzNurbsCurve = None
-        self.hprNurbsCurve = None
-        self.xyzCurveFitter.reset()
-        self.hprCurveFitter.reset()
-        self.xyzNurbsCurveDrawer.hide()
+        self.curveCollection = None
+        self.curveFitter.reset()
+        self.nurbsCurveDrawer.hide()
         
     def setSamplingMode(self, mode):
         self.samplingMode = mode
@@ -921,10 +916,9 @@ class MopathRecorder(AppShell, PandaObject):
             taskMgr.removeTasksNamed(self.name + '-recordTask')
             taskMgr.removeTasksNamed(self.name + '-curveEditTask')
             # Remove old curve
-            self.xyzNurbsCurveDrawer.hide()
+            self.nurbsCurveDrawer.hide()
             # Reset curve fitters
-            self.xyzCurveFitter.reset()
-            self.hprCurveFitter.reset()
+            self.curveFitter.reset()
             # Update sampling mode button if necessary
             if self.samplingMode == 'Continuous':
                 self.disableKeyframeButton()
@@ -1073,8 +1067,7 @@ class MopathRecorder(AppShell, PandaObject):
         # Add it to the point set
         self.pointSet.append([time, pos, hpr])
         # Add it to the curve fitters
-        self.xyzCurveFitter.addPoint(time, pos )
-        self.hprCurveFitter.addPoint(time, hpr)
+        self.curveFitter.addXyzHpr(time, pos, hpr)
         # Update trace now if recording keyframes
         if (self.samplingMode == 'Keyframe'):
             self.trace.reset()
@@ -1084,24 +1077,18 @@ class MopathRecorder(AppShell, PandaObject):
 
     def computeCurves(self):
         # Check to make sure curve fitters have points
-        if ((self.xyzCurveFitter.getNumSamples() == 0) or
-            (self.hprCurveFitter.getNumSamples() == 0)):
+        if (self.curveFitter.getNumSamples() == 0):
             print 'MopathRecorder.computeCurves: Must define curve first'
             return
         # Create curves
         # XYZ
-        self.xyzCurveFitter.sortPoints()
-        self.xyzCurveFitter.computeTangents(1)
-        self.xyzNurbsCurve = self.xyzCurveFitter.makeNurbs()
-        self.xyzNurbsCurve.setCurveType(PCTXYZ)
-        self.xyzNurbsCurveDrawer.setCurve(self.xyzNurbsCurve)
-        self.xyzNurbsCurveDrawer.draw()
-        # HPR
-        self.hprCurveFitter.sortPoints()
-        self.hprCurveFitter.wrapHpr()
-        self.hprCurveFitter.computeTangents(1)
-        self.hprNurbsCurve = self.hprCurveFitter.makeNurbs()
-        self.hprNurbsCurve.setCurveType(PCTHPR)
+        self.curveFitter.sortPoints()
+        self.curveFitter.wrapHpr()
+        self.curveFitter.computeTangents(1)
+        # This is really a collection
+        self.curveCollection = self.curveFitter.makeNurbs()
+        self.nurbsCurveDrawer.setCurves(self.curveCollection)
+        self.nurbsCurveDrawer.draw()
         # Update widget based on new curve
         self.updateWidgets()
 
@@ -1113,11 +1100,11 @@ class MopathRecorder(AppShell, PandaObject):
         self.trace.show()
 
     def updateWidgets(self):
-        if not self.xyzNurbsCurve:
+        if not self.curveCollection:
             return
         self.fAdjustingValues = 1
         # Widgets depending on max T
-        maxT = '%.2f' % self.xyzNurbsCurve.getMaxT()
+        maxT = '%.2f' % self.curveCollection.getMaxT()
         # Playback controls
         self.getWidget('Playback', 'Time').configure(max = maxT)
         self.getVariable('Resample', 'Path Duration').set(maxT)
@@ -1150,7 +1137,7 @@ class MopathRecorder(AppShell, PandaObject):
         widget.set(float(maxT))
         self.maxT = float(maxT)
         # Widgets depending on number of samples
-        numSamples = self.xyzCurveFitter.getNumSamples()
+        numSamples = self.curveFitter.getNumSamples()
         widget = self.getWidget('Resample', 'Points Between Samples')
         widget.configure(max=numSamples)
         widget = self.getWidget('Resample', 'Num. Samples')
@@ -1240,8 +1227,9 @@ class MopathRecorder(AppShell, PandaObject):
                     self.playbackMarker.show()
                     # Initialize tangent marker position
                     tan = Point3(0)
-                    if self.xyzNurbsCurve != None:
-                        self.xyzNurbsCurve.getTangent(self.playbackTime, tan)
+                    if self.curveCollection != None:
+                        self.curveCollection.getXyzCurve().getTangent(
+                            self.playbackTime, tan)
                     self.tangentMarker.setPos(tan)
                 else:
                     self.playbackMarker.hide()
@@ -1288,20 +1276,17 @@ class MopathRecorder(AppShell, PandaObject):
         self.loopPlayback = self.getVariable('Playback', 'Loop').get()
 
     def playbackGoTo(self, time):
-        if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
+        if self.curveCollection == None:
             return
         self.playbackTime = CLAMP(time, 0.0, self.maxT)
-        if self.xyzNurbsCurve != None:
+        if self.curveCollection != None:
             pos = Point3(0)
-            self.xyzNurbsCurve.getPoint(self.playbackTime, pos)
-            self.playbackNodePath.setPos(self.nodePathParent, pos)
-        if self.hprNurbsCurve != None:
             hpr = Point3(0)
-            self.hprNurbsCurve.getPoint(self.playbackTime, hpr)
-            self.playbackNodePath.setHpr(self.nodePathParent, hpr)
+            self.curveCollection.evaluate(self.playbackTime, pos, hpr)
+            self.playbackNodePath.setPosHpr(self.nodePathParent, pos, hpr)
 
     def startPlayback(self):
-        if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
+        if self.curveCollection == None:
             return
         # Kill any existing tasks
         self.stopPlayback()
@@ -1360,7 +1345,7 @@ class MopathRecorder(AppShell, PandaObject):
 
     def jumpToEndOfPlayback(self):
         self.stopPlayback()
-        if self.xyzNurbsCurve != None:
+        if self.curveCollection != None:
             self.getWidget('Playback', 'Time').set(self.maxT)
 
     def startStopPlayback(self):
@@ -1373,69 +1358,49 @@ class MopathRecorder(AppShell, PandaObject):
         self.desampleFrequency = frequency
         
     def desampleCurve(self):
-        if ((self.xyzCurveFitter.getNumSamples() == 0) or
-            (self.hprCurveFitter.getNumSamples() == 0)):
+        if (self.curveFitter.getNumSamples() == 0):
             print 'MopathRecorder.desampleCurve: Must define curve first'
             return
         # NOTE: This is destructive, points will be deleted from curve fitter
-        self.xyzCurveFitter.desample(self.desampleFrequency)
-        self.hprCurveFitter.desample(self.desampleFrequency)
+        self.curveFitter.desample(self.desampleFrequency)
         self.computeCurves()
         # Get new point set based on newly created curve
         self.createNewPointSet()
-        for i in range(self.xyzCurveFitter.getNumSamples()):
-            time = self.xyzCurveFitter.getSampleT(i)
-            pos = Point3(self.xyzCurveFitter.getSamplePoint(i))
-            hpr = Point3(self.hprCurveFitter.getSamplePoint(i))
+        for i in range(self.curveFitter.getNumSamples()):
+            time = self.curveFitter.getSampleT(i)
+            pos = Point3(self.curveFitter.getSampleXyz(i))
+            hpr = Point3(self.curveFitter.getSampleHpr(i))
             self.pointSet.append([time, pos, hpr])
 
     def setNumSamples(self, numSamples):
         self.numSamples = int(numSamples)
         
     def sampleCurve(self, even = 'None Given'):
-        if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
+        if self.curveCollection == None:
             print 'MopathRecorder.sampleCurve: Must define curve first'
             return
         # Reset curve fitters
-        self.xyzCurveFitter.reset()
-        self.hprCurveFitter.reset()
+        self.curveFitter.reset()
         # Get new data points based on given curve
         if even == 'None Given':
             even = self.fEven
-        self.xyzCurveFitter.sample(
-            self.xyzNurbsCurve, self.numSamples, even)
+        # Make even if necessary
+        if even:
+            # Note: segments_per_unit = 2 seems to give a good fit
+            self.curveCollection.makeEven(self.maxT, 2)
+        # Face forward if necessary
         if self.fForward:
-            # Use xyz curve tangent
-            tanPt = Point3(0)
-            lookAtCS = self.playbackMarker.attachNewNode('lookAt')
-        # Now sample the hprNurbsCurve using the same delta T
-        for i in range(self.numSamples):
-            t = self.maxT * (i / float(self.numSamples - 1))
-            hpr = Point3(0)
-            if self.fForward:
-                # Use xyz curve tangent
-                self.xyzNurbsCurve.getTangent(t, tanPt)
-                # Transform this point to playback marker space
-                tanPt.assign(
-                    self.nodePathParent.getMat(
-                    self.playbackMarker).xformVec(tanPt))
-                lookAtCS.lookAt(tanPt, Z_AXIS)
-                hpr = lookAtCS.getHpr(self.nodePathParent)
-            else:
-                # Sample existing hpr curve
-                self.hprNurbsCurve.getPoint(t, hpr)
-            self.hprCurveFitter.addPoint(t, hpr)
-        # Clean up
-        if self.fForward:
-            lookAtCS.removeNode()
+            # MRM: To be added, face forward
+            pass
+        self.curveFitter.sample(self.curveCollection, self.numSamples)
         # Now recompute curves
         self.computeCurves()
         # Get new point set based on newly created curve
         self.createNewPointSet()
-        for i in range(self.xyzCurveFitter.getNumSamples()):
-            time = self.xyzCurveFitter.getSampleT(i)
-            pos = Point3(self.xyzCurveFitter.getSamplePoint(i))
-            hpr = Point3(self.hprCurveFitter.getSamplePoint(i))
+        for i in range(self.curveFitter.getNumSamples()):
+            time = self.curveFitter.getSampleT(i)
+            pos = Point3(self.curveFitter.getSampleXyz(i))
+            hpr = Point3(self.curveFitter.getSampleHpr(i))
             self.pointSet.append([time, pos, hpr])
 
     def setEven(self):
@@ -1449,33 +1414,28 @@ class MopathRecorder(AppShell, PandaObject):
         self.setPathDurationTo(newMaxT)
         
     def setPathDurationTo(self, newMaxT):
+        # Compute scale factor
         sf = newMaxT/self.maxT
-        # Scale xyz curve knots
-        for i in range(self.xyzNurbsCurve.getNumKnots()):
-            self.xyzNurbsCurve.setKnot(i, sf * self.xyzNurbsCurve.getKnot(i))
-        self.xyzNurbsCurve.recompute()
-        # Scale hpr curve knots
-        for i in range(self.hprNurbsCurve.getNumKnots()):
-            self.hprNurbsCurve.setKnot(i, sf * self.hprNurbsCurve.getKnot(i))
-        self.hprNurbsCurve.recompute()
+        # Scale curve collection
+        self.curveCollection.resetMaxT(newMaxT)
         # Scale point set
         # Save handle to old point set
         oldPointSet = self.pointSet
         # Create new point set
         self.createNewPointSet()
         # Reset curve fitters
-        self.xyzCurveFitter.reset()
-        self.hprCurveFitter.reset()
+        self.curveFitter.reset()
         # Now scale values
         for time, pos, hpr in oldPointSet:
             newTime = time * sf
             # Update point set
             self.pointSet.append([newTime, Point3(pos), Point3(hpr)])
             # Add it to the curve fitters
-            self.xyzCurveFitter.addPoint(newTime, pos )
-            self.hprCurveFitter.addPoint(newTime, hpr)
+            self.curveFitter.addXyzHpr(newTime, pos, hpr)
+        # Update widgets
+        self.updateWidgets()
         # Compute curve
-        self.computeCurves()
+        #self.computeCurves()
 
     def setRecordStart(self,value):
         self.recordStart = value
@@ -1601,8 +1561,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.pointSet[0:0] = self.prePoints
         for time, pos, hpr in self.prePoints:
             # Add it to the curve fitters
-            self.xyzCurveFitter.addPoint(time, pos )
-            self.hprCurveFitter.addPoint(time, hpr)
+            self.curveFitter.addXyzHpr(time, pos, hpr)
         # And post points
         # What is end time of pointSet?
         endTime = self.pointSet[-1][0]
@@ -1611,8 +1570,7 @@ class MopathRecorder(AppShell, PandaObject):
             # Add it to point set
             self.pointSet.append([adjustedTime, pos, hpr])
             # Add it to the curve fitters
-            self.xyzCurveFitter.addPoint(adjustedTime, pos)
-            self.hprCurveFitter.addPoint(adjustedTime, hpr)
+            self.curveFitter.addXyzHpr(adjustedTime, pos, hpr)
 
     def setCropFrom(self,value):
         self.cropFrom = value
@@ -1650,15 +1608,12 @@ class MopathRecorder(AppShell, PandaObject):
         self.createNewPointSet()
         # Copy over points between from/to
         # Reset curve fitters
-        self.xyzCurveFitter.reset()
-        self.hprCurveFitter.reset()
+        self.curveFitter.reset()
         # Add start point
         pos = Point3(0)
-        self.xyzNurbsCurve.getPoint(self.cropFrom, pos)
-        self.xyzCurveFitter.addPoint(0.0, pos)
         hpr = Point3(0)
-        self.hprNurbsCurve.getPoint(self.cropFrom, hpr)
-        self.hprCurveFitter.addPoint(0.0, hpr)
+        self.curveCollection.evaluate(self.cropFrom, pos, hpr)
+        self.curveFitter.addXyzHpr(0.0, pos, hpr)
         # Get points within bounds
         for time, pos, hpr in oldPoints:
             # Is it within the time?
@@ -1666,17 +1621,14 @@ class MopathRecorder(AppShell, PandaObject):
                 (time < self.cropTo)):
                 # Add it to the curve fitters
                 t = time - self.cropFrom
-                self.xyzCurveFitter.addPoint(t, pos )
-                self.hprCurveFitter.addPoint(t, hpr)
+                self.curveFitter.addXyzHpr(t, pos, hpr)
                 # And the point set
                 self.pointSet.append([t, pos, hpr])
         # Add last point
         pos = Vec3(0)
-        self.xyzNurbsCurve.getPoint(self.cropTo, pos)
-        self.xyzCurveFitter.addPoint(self.cropTo - self.cropFrom, pos)
         hpr = Vec3(0)
-        self.hprNurbsCurve.getPoint(self.cropTo, hpr)
-        self.hprCurveFitter.addPoint(self.cropTo - self.cropFrom, hpr)
+        self.curveCollection.evaluate(self.cropTo, pos, hpr)
+        self.curveFitter.addXyzHpr(self.cropTo - self.cropFrom, pos, hpr)
         # Compute curve
         self.computeCurves()
 
@@ -1704,34 +1656,17 @@ class MopathRecorder(AppShell, PandaObject):
             parent = self.parent)
         if mopathFilename:
             self.reset()
-            nodePath = loader.loadModel(mopathFilename)
-            if nodePath:
-                self.extractCurves(nodePath)
-                if ((self.xyzNurbsCurve != None) and 
-                    (self.hprNurbsCurve != None)):
-                    # Save a pointset for this curve
-                    self.savePointSet()
-                else:
-                    if (self.xyzNurbsCurve != None):
-                        print 'Mopath Recorder: HPR Curve not found'
-                    elif (self.hprNurbsCurve != None):
-                        print 'Mopath Recorder: XYZ Curve not found'
-                    else:
-                        print 'Mopath Recorder: No Curves found'
-                    self.reset()
+            nodePath = loader.loadModel(Filename(mopathFilename))
+            self.curveCollection = ParametricCurveCollection()
+            # MRM: Add error check
+            self.curveCollection.addCurves(nodePath.node())
+            nodePath.removeNode()
+            if self.curveCollection:
+                # Save a pointset for this curve
+                self.savePointSet()
+            else:
+                self.reset()
 
-    def extractCurves(self, nodePath):
-        node = nodePath.node()
-        if isinstance(node, ParametricCurve):
-            if node.getCurveType() == PCTXYZ:
-                self.xyzNurbsCurve = node
-            elif node.getCurveType() == PCTHPR:
-                self.hprNurbsCurve = node
-        else:
-            # Iterate over children if any
-            for child in nodePath.getChildrenAsList():
-                self.extractCurves(child)
-            
     def saveCurveToFile(self):
         # Use first directory in model path
         mPath = getModelPath()
@@ -1755,8 +1690,7 @@ class MopathRecorder(AppShell, PandaObject):
             title = 'Save Nurbs Curve as',
             parent = self.parent)
         if mopathFilename:
-            self.xyzNurbsCurve.writeEgg(mopathFilename)
-            self.hprNurbsCurve.writeEgg(mopathFilename)
+            self.curveCollection.writeEgg(Filename(mopathFilename))
 
     def followTerrain(self, height = 1.0):
         self.iRay.rayCollisionNodePath.reparentTo(self['nodePath'])

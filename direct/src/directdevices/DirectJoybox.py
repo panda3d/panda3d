@@ -61,6 +61,8 @@ class DirectJoybox(PandaObject):
         # Pick initial mode
         self.updateFunc = self.joyboxFly
         self.modeName = 'Joe Mode'
+        # Auxiliary data
+        self.auxData = []
         # Button registry
         self.addButtonEvents()
         # Spawn update task
@@ -206,6 +208,12 @@ class DirectJoybox(PandaObject):
         self.modifier = [1,1,1,-1,-1,0]
         self.setMode(self.joyboxFly, 'Joe Mode')
 
+    def lucMode(self):
+        self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,
+                        R_TWIST, L_TWIST, L_LEFT_RIGHT]
+        self.modifier = [1,1,1,-1,-1,0]
+        self.setMode(self.joyboxFly, 'Luc Mode')
+
     def driveMode(self):
         self.mapping = [L_LEFT_RIGHT, R_FWD_BACK, R_TWIST,
                         R_LEFT_RIGHT, L_FWD_BACK, NULL_AXIS]
@@ -241,6 +249,71 @@ class DirectJoybox(PandaObject):
                         R_TWIST, L_FWD_BACK, L_LEFT_RIGHT]
         self.modifier = [1,1,-1,-1,-1, 1]
         self.setMode(self.joyboxFly, 'Walkthru Mode')
+
+    def spaceMode(self):
+        self.setMode(self.spaceFly, 'Space Mode')
+
+    def spaceFly(self):
+        # Do nothing if no nodePath selected
+        if self.nodePath == None:
+            return
+        hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 100) *
+                    DirectJoybox.hprMultiplier)
+        posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
+                    DirectJoybox.xyzMultiplier)
+        dr = -1 * hprScale * self.aList[R_TWIST] * self.deltaTime
+        dp = -1 * hprScale * self.aList[R_FWD_BACK] * self.deltaTime
+        dh = -1 * hprScale * self.aList[R_LEFT_RIGHT] * self.deltaTime
+        self.nodePath.setHpr(self.nodePath, dh, dp, dr)
+        dy = posScale * self.aList[L_FWD_BACK] * self.deltaTime
+        self.nodePath.setY(self.nodePath, dy)
+
+    def planetMode(self, auxData = []):
+        self.auxData = auxData
+        self.setMode(self.planetFly, 'Space Mode')
+
+    def planetFly(self):
+        # Do nothing if no nodePath selected
+        if self.nodePath == None:
+            return
+        hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 100) *
+                    DirectJoybox.hprMultiplier)
+        posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
+                    DirectJoybox.xyzMultiplier)
+        dr = -1 * hprScale * self.aList[R_TWIST] * self.deltaTime
+        dp = -1 * hprScale * self.aList[R_FWD_BACK] * self.deltaTime
+        dh = -1 * hprScale * self.aList[R_LEFT_RIGHT] * self.deltaTime
+        self.nodePath.setHpr(self.nodePath, dh, dp, dr)
+        dy = posScale * self.aList[L_FWD_BACK] * self.deltaTime
+        dPos = VBase3(0,dy,0)
+        for planet, radius in self.auxData:
+            # Are we within min radius?
+            # How far above planet are we?
+            np2planet = Vec3(self.nodePath.getPos(planet))
+            # Compute dist
+            offsetDist = np2planet.length()
+            # Too high, never mind
+            if offsetDist > (1.2 * radius):
+                pass
+            else:
+                # Getting close, slow things down
+                # Compute normal vector through node Path
+                oNorm = Vec3()
+                oNorm.assign(np2planet)
+                oNorm.normalize()
+                # Xform fly vec to planet space
+                dPlanet = self.nodePath.getMat(planet).xformVec(Vec3(0, dy, 0))
+                # Compute radial component of fly vec
+                radialComponent = oNorm * oNorm.dot(dPlanet)
+                # If within transition zone, begin subtracting radial component
+                above = offsetDist - radius
+                sf = max(1.0 - (max(above, 0.0)/(0.2 * radius)), 0.0)
+                if offsetDist < radius:
+                    dPlanet -= radialComponent * (sf * sf)
+                # Convert back to node path space
+                dPos.assign(planet.getMat(self.nodePath).xformVec(dPlanet))
+        # Set pos accordingly
+        self.nodePath.setPos(self.nodePath, dPos)
 
     def orbitMode(self):
         self.setMode(self.orbitFly, 'Orbit Mode')

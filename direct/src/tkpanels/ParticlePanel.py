@@ -1403,7 +1403,7 @@ class ParticlePanel(AppShell):
             color = renderer.getColor() * 255.0
             texture = renderer.getTexture()
 	    if (texture != None):
-		self.rendererSpriteTexture = texture.getName()
+		self.rendererSpriteTexture.set(texture.getName())
             self.getVariable('Sprite Renderer', 'X Scale').set(
                 renderer.getXScaleFlag())
             self.getVariable('Sprite Renderer', 'Y Scale').set(
