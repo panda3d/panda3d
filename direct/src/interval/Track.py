@@ -195,8 +195,6 @@ class Track(Interval):
                         event = IVAL_INIT
                     # Evaluate interval at interval relative time
                     currentInterval.setT(t - tStart, event)
-                    # Done checking intervals
-                    break
                 elif (t > tEnd):
                     # Crossing over interval end 
                     if (((event == IVAL_NONE) and (self.prev_t < tEnd)) or
