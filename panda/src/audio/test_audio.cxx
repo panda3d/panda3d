@@ -17,9 +17,11 @@ main(int argc, char* argv[]) {
       exit(-1);
     }
 
+  AudioManager::spawn_update();
   {
     {
       PT(AudioSound) tester = AudioPool::load_sound(argv[1]);
+      AudioManager::play(tester);
       AudioPool::release_all_sounds();
       cerr << "all sounds but 1 released" << endl;
     }

@@ -364,6 +364,10 @@ WinSample* WinSample::load_wav(Filename filename) {
   WinSample* ret = (WinSample*)0L;
 
   initialize();
+
+  if (!audio_is_active)
+    return ret;
+
   WAVEFORMATEX wavInfo;
   UINT wavSize = 0;
   BYTE* wavData = NULL;
@@ -393,6 +397,9 @@ WinSample* WinSample::load_raw(unsigned char* data, unsigned long size) {
   WinSample* ret = (WinSample*)0L;
 
   initialize();
+
+  if (!audio_is_active)
+    return ret;
 
   // synth a wav header for this data
   WAVEFORMATEX wavInfo;
@@ -590,6 +597,10 @@ WinMusic* WinMusic::load_midi(Filename filename) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "in WinMusic::load_midi()" << endl;
   initialize();
+
+  if (!audio_is_active)
+    return (WinMusic*)0L;
+
   // WinMusic* ret = (WinMusic*)0L;
   WinMusic* ret = new WinMusic();
   if (ret->_performance && ret->_music) {
@@ -673,6 +684,9 @@ WinSamplePlaying::WinSamplePlaying(AudioTraits::SoundClass* s)
     audio_cat->debug() << "in WinSamplePlaying constructor" << endl;
 
   initialize();
+
+  if (!audio_is_active)
+    return;
 
   WinSample* ws = (WinSample*)s;
 
@@ -816,6 +830,8 @@ void WinSamplePlayer::play_sound(AudioTraits::SoundClass* sample,
   if (audio_cat->is_debug())
     audio_cat->debug() << "in winsampleplayer play_sound" << endl;
   initialize();
+  if (!audio_is_active)
+    return;
   WinSample* wsample = (WinSample*)sample;
   WinSamplePlaying* wplay = (WinSamplePlaying*)play;
   LPDIRECTSOUNDBUFFER chan = wplay->get_channel();
@@ -832,6 +848,8 @@ void WinSamplePlayer::play_sound(AudioTraits::SoundClass* sample,
 void WinSamplePlayer::stop_sound(AudioTraits::SoundClass*,
 			   AudioTraits::PlayingClass* play) {
   initialize();
+  if (!audio_is_active)
+    return;
   WinSamplePlaying* wplay = (WinSamplePlaying*)play;
   LPDIRECTSOUNDBUFFER chan = wplay->get_channel();
   if (chan)
@@ -842,6 +860,8 @@ void WinSamplePlayer::set_volume(AudioTraits::PlayingClass* play, float v) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "winsampleplayer set_volume" << endl;
   initialize();
+  if (!audio_is_active)
+    return;
   WinSamplePlaying* wplay = (WinSamplePlaying*)play;
   LPDIRECTSOUNDBUFFER chan = wplay->get_channel();
   if (chan) {
@@ -873,6 +893,8 @@ void WinMusicPlayer::play_sound(AudioTraits::SoundClass* music,
   if (audio_cat->is_debug())
     audio_cat->debug() << "in WinMusicPlayer::play_sound()" << endl;
   initialize();
+  if (!audio_is_active)
+    return;
   WinMusic* wmusic = (WinMusic*)music;
   IDirectMusicPerformance* _perf = wmusic->get_performance();
   IDirectMusicSegment* _msc = wmusic->get_music();
