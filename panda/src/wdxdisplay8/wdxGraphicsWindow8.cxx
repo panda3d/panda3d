@@ -1143,6 +1143,9 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
 
             pWindowClassName= (dx_use_dx_cursor ? WDX_WINDOWCLASSNAME_NOCURSOR : WDX_WINDOWCLASSNAME);
         } else {
+            // specify client area, use adjustwindowrect to figure out size of final window to
+            // pass to CreateWin
+
             RECT win_rect;
             SetRect(&win_rect, props->_xorg,  props->_yorg, props->_xorg + props->_xsize,
                     props->_yorg + props->_ysize);
@@ -1150,7 +1153,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
             if(props->_border)
                 final_window_style |= WS_OVERLAPPEDWINDOW;  // should we just use WS_THICKFRAME instead?
     
-            AdjustWindowRect(&win_rect, final_window_style, FALSE);  //compute window size based on desired client area size
+            AdjustWindowRect(&win_rect, final_window_style, false);  //compute window size based on desired client area size
     
             // make sure origin is on screen
             if(win_rect.left < 0) {
@@ -1351,21 +1354,44 @@ HRESULT WINAPI EnumDisplayModesCallBack(LPDDSURFACEDESC2 lpDDSurfaceDesc,LPVOID 
 // this handles external programmatic requests for resizing (usually fullscrn resize)
 bool wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
     bool bResizeSucceeded=false;
+
+    if((xsize==_props._xsize)&&(ysize==_props._ysize)) {
+        if(wdxdisplay_cat.is_debug())
+          wdxdisplay_cat.debug() << "redundant resize() called, returning\n";
+        return true;
+    }
     
     if(!_props._fullscreen) {
        if(wdxdisplay_cat.is_debug())
           wdxdisplay_cat.debug() << "resize("<<xsize<<","<<ysize<<") called\n";
-    
-        // is this enough?
-        SetWindowPos(_dxgsg->scrn.hWnd, NULL, 0,0, xsize, ysize, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSENDCHANGING);
-        // WM_ERASEBKGND will be ignored, because _WindowAdjustingType!=NotAdjusting because 
-        // we dont want to redraw as user is manually resizing window, so need to force explicit
-        // background clear for the programmatic resize fn call
-         _WindowAdjustingType=NotAdjusting;
-         
-         //window_proc(_mwindow, WM_ERASEBKGND,(WPARAM)_hdc,0x0);  // this doesnt seem to be working in toontown resize, so I put ddraw blackblt in handle_windowed_resize instead
 
-        return handle_windowed_resize(_dxgsg->scrn.hWnd,true);
+       // need to figure out actual window size based on props client area rect size
+       RECT win_rect;
+       SetRect(&win_rect, _props._xorg, _props._yorg, _props._xorg+xsize, _props._yorg+ysize);
+
+       WINDOWINFO wi;
+       GetWindowInfo(_dxgsg->scrn.hWnd,&wi);
+       AdjustWindowRectEx(&win_rect, wi.dwStyle, false, wi.dwExStyle);  //compute window size based on desired client area size
+
+       // make sure origin is on screen
+       if(win_rect.left < 0) {
+           win_rect.right -= win_rect.left; win_rect.left = 0;
+           _props._xorg=0;
+       }
+       if(win_rect.top < 0) {
+           win_rect.bottom -= win_rect.top; win_rect.top = 0;
+           _props._yorg=0;
+       }
+
+       SetWindowPos(_dxgsg->scrn.hWnd, NULL, win_rect.left,win_rect.top, RECT_XSIZE(win_rect), RECT_YSIZE(win_rect), SWP_NOZORDER | SWP_NOSENDCHANGING);
+       // WM_ERASEBKGND will be ignored, because _WindowAdjustingType!=NotAdjusting because 
+       // we dont want to redraw as user is manually resizing window, so need to force explicit
+       // background clear for the programmatic resize fn call
+        _WindowAdjustingType=NotAdjusting;
+         
+        //window_proc(_mwindow, WM_ERASEBKGND,(WPARAM)_hdc,0x0);  // this doesnt seem to be working in toontown resize, so I put ddraw blackblt in handle_windowed_resize instead
+
+       return handle_windowed_resize(_dxgsg->scrn.hWnd,true);
     }
     
     assert(IS_VALID_PTR(_dxgsg));
