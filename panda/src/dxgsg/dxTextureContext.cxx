@@ -796,7 +796,7 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
 				break;
 		}
 	} else {  // convert to 24bpp pixbuf
-		BYTE *pDstWord = (BYTE *) pbuf;
+		BYTE *pDstByte = (BYTE *) pbuf;
 		switch(ddsd.ddpfPixelFormat.dwRGBBitCount) {
 			
 			case 32: {
@@ -818,16 +818,16 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
 							g = (BYTE)((dwPixel>> 8)&0x000000ff);
 							b = (BYTE)((dwPixel    )&0x000000ff);
 
-							*pDstWord++ = r;
-							*pDstWord++ = g;
-							*pDstWord++ = b;
+							*pDstByte++ = r;
+							*pDstByte++ = g;
+							*pDstByte++ = b;
 						}
 					}
 					break;
 				}
 
 			case 24: {
-						BYTE *pSrcByte,*pDstByte;
+						BYTE *pSrcByte;
 
 						pDDSurfBytes+=ddsd.lPitch*(dwYWindowOffset+dwCopyHeight-1);
 						for(DWORD y=0; y<dwCopyHeight; y++,pDDSurfBytes-=ddsd.lPitch) {
@@ -896,9 +896,9 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
 							g = (dwPixel & greenmask) >> greenshift;
 							r = (dwPixel & redmask) >> redshift;
 
-							*pDstWord++ = r;
-							*pDstWord++ = g;
-							*pDstWord++ = b;
+							*pDstByte++ = r;
+							*pDstByte++ = g;
+							*pDstByte++ = b;
 						}
 					}
 				} 
