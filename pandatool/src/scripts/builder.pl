@@ -44,6 +44,7 @@ my $VC7_BINDIRS="/msvc7/Vc7/bin".$DIRPATH_SEPARATOR."/msvc7/Common7/Tools/Bin".$
 $ENV{'WINTOOLS'} = '/home/builder/player/wintools';
 #$ENV{'PPREMAKE_CONFIG'} = '/usr/local/etc/Config.pp';  old location
 $ENV{'PPREMAKE_CONFIG'} = $ENV{'WINTOOLS'}.'/panda/etc/Config.pp';
+$ENV{'PPREMAKE_PLATFORM'} = 'Win32';  # generate OptX-Win32 dirs instead of OptX-Cygwin
 $ENV{'TCSH_NO_CSHRC_CHDIR'}='1';
 $ENV{'ENABLE_PROFILING'}='1';    # generate .map files
 

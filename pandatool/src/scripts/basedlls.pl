@@ -10,7 +10,6 @@ $archive_root="\\\\dimbo\\panda\\win\\";
 #edit this to where rebase.exe is on your machine, must be cygwin-style path for cygwin perl
 $rebase_path="/msvc7/Common7/Tools/bin";
 $ENV{'PATH'}=$rebase_path.":".$ENV{'PATH'};
-print $ENV{'PATH'},"\n";
 
 # note: this is the order dlls will be laid out in memory
 @dll_names=("libpanda","libpandadx","libpandadx7","libpandagl","libpandaexpress","libpandaphysics","libpandafx","libdtool","libdtoolconfig","libpystub","libdirect","libtoontown","libmiles_audio","libpandaegg");
@@ -97,11 +96,12 @@ $argstr="-v -b $baseaddr -c $dllbasefile -l $basedlllogfilename $dll_names_dbg";
 print $args[0]."\n";
 system(@args);
 
+#cygwin d2u seems to not work rite
+$d2u_path=$ENV{'HOME'}."/player/wintools/bin";
+$ENV{'PATH'}=$d2u_path.":".$ENV{'PATH'};
+print $ENV{'PATH'},"\n";
 @args=("dos2unix",$dllbasefile);
 print $args[0]." ".$args[1]." ".$args[2]."\n";
 system(@args);
 
-
 exit(0);
-
-
