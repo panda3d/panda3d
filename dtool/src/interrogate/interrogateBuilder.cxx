@@ -155,7 +155,6 @@ do_command(const string &command, const string &params) {
       } else {
 	type = type->resolve_type(&parser, &parser);
 	_renametype[type->get_local_name(&parser)] = new_name;
-	nout << "Renaming " << *type << " to " << new_name << "\n";
       }
     }
 

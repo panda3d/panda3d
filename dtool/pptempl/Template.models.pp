@@ -275,12 +275,11 @@ $[dest]/$[local] : $[sourcedir]/$[local]
   #end egg
   #foreach egg $[UNPAL_SOURCES]
     #define local $[egg]
-    #define sourcedir $[SOURCE_DIR]
     #define dest $[install_model_dir]
-$[dest]/$[local] : $[sourcedir]/$[local]
-//	cd ./$[sourcedir] && $[INSTALL]
+$[dest]/$[local] : $[source_prefix]$[local]
+//	$[INSTALL]
 	rm -f $[dest]/$[local]
-	cp $[sourcedir]/$[local] $[dest]
+	cp $[source_prefix]$[local] $[dest]
 
   #end egg
 #end install_egg
