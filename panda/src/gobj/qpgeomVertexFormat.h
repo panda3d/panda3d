@@ -151,7 +151,7 @@ private:
 
   // This is the global registry of all currently-in-use formats.
   typedef pset<qpGeomVertexFormat *, IndirectCompareTo<qpGeomVertexFormat> > Formats;
-  class Registry {
+  class EXPCL_PANDA Registry {
   public:
     Registry();
     CPT(qpGeomVertexFormat) register_format(qpGeomVertexFormat *format);

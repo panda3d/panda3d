@@ -125,7 +125,7 @@ private:
 
   bool _is_registered;
   typedef pset<qpGeomMunger *, IndirectCompareTo<qpGeomMunger> > Mungers;
-  class Registry {
+  class EXPCL_PANDA Registry {
   public:
     Registry();
     CPT(qpGeomMunger) register_munger(qpGeomMunger *munger);
