@@ -1,3 +1,4 @@
+#define DIRECTORY_IF_GL yes
 #define DIRECTORY_IF_WGL yes
 
 #define USE_GL yes
