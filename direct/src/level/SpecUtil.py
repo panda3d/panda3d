@@ -41,6 +41,7 @@ def updateSpec(specModule, entTypeModule=EntityTypes, modelPath=None):
 
 def privUpdateSpec(spec, modelPath, entTypeModule):
     """internal: take a spec and update it to match its level model"""
+    assert __dev__
     assert type(entTypeModule) is types.ModuleType
     import EntityTypeRegistry
     etr = EntityTypeRegistry.EntityTypeRegistry(entTypeModule)
