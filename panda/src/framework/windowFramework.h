@@ -42,7 +42,12 @@ class DisplayRegion;
 ////////////////////////////////////////////////////////////////////
 //       Class : WindowFramework
 // Description : This encapsulates the data that is normally
-//               associated with a single window that we've opened.
+//               associated with a single window, or with a single
+//               display region within a window.  (In the case where a
+//               window has been subdivided with split_window(), there
+//               may be multiple WindowFrameworks objects that share
+//               the same GraphicsWindow pointer, but reference
+//               different display regions within that window).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_FRAMEWORK WindowFramework : public TypedWritableReferenceCount {
 protected:
