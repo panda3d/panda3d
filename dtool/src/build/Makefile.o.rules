@@ -226,7 +226,7 @@ ifeq (,$(IGATEMODULE))
 IGATEMODULE := $(DEFERRED_TARGET)
 endif
 ifeq (,$(IGATEMODULE))
-IGATEMODULE := $(IGATELIBRARY)
+IGATEMODULE := $(patsubst lib%,%,$(IGATELIBRARY))
 endif
 
 ifeq (,$(IGATEDBFILE))
