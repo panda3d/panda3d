@@ -46,6 +46,9 @@
 #include "lightAttrib.h"
 #include "lightLensNode.h"
 #include "lightNode.h"
+#include "loaderFileType.h"
+#include "loaderFileTypeBam.h"
+#include "loaderFileTypeRegistry.h"
 #include "lodNode.h"
 #include "materialAttrib.h"
 #include "modelNode.h"
@@ -69,11 +72,13 @@
 #include "transformState.h"
 #include "transparencyAttrib.h"
 #include "nodePathLerps.h"
+#include "get_config_path.h"
 
 #include "dconfig.h"
 
 ConfigureDef(config_pgraph);
 NotifyCategoryDef(pgraph, "");
+NotifyCategoryDef(loader, "");
 
 ConfigureFn(config_pgraph) {
   init_libpgraph();
@@ -99,6 +104,21 @@ const bool m_dual_transparent = config_pgraph.GetBool("m-dual-transparent", true
 // Set this true to flash any objects that use M_dual, for debugging.
 const bool m_dual_flash = config_pgraph.GetBool("m-dual-flash", false);
 
+// Set this true to support actual asynchronous loads via the
+// request_load()/fetch_load() interface to Loader.  Set it false to
+// map these to blocking, synchronous loads instead.  Currently, the
+// rest of Panda isn't quite ready for asynchronous loads, so leave
+// this false for now.
+const bool asynchronous_loads = config_pgraph.GetBool("asynchronous-loads", false);
+
+Config::ConfigTable::Symbol *load_file_type = (Config::ConfigTable::Symbol *)NULL;
+
+const DSearchPath &
+get_bam_path() {
+  static DSearchPath *bam_path = NULL;
+  return get_config_path("bam-path", bam_path);
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgraph
 //  Description: Initializes the library.  This must be called at
@@ -114,6 +134,9 @@ init_libpgraph() {
     return;
   }
   initialized = true;
+
+  load_file_type = new Config::ConfigTable::Symbol;
+  config_pgraph.GetAll("load-file-type", *load_file_type);
 
   AlphaTestAttrib::init_type();
   AmbientLight::init_type();
@@ -144,6 +167,8 @@ init_libpgraph() {
   LightLensNode::init_type();
   LightNode::init_type();
   LODNode::init_type();
+  LoaderFileType::init_type();
+  LoaderFileTypeBam::init_type();
   MaterialAttrib::init_type();
   ModelNode::init_type();
   ModelRoot::init_type();
@@ -211,4 +236,7 @@ init_libpgraph() {
   TextureAttrib::register_with_read_factory();
   TransformState::register_with_read_factory();
   TransparencyAttrib::register_with_read_factory();
+
+  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
+  reg->register_type(new LoaderFileTypeBam);
 }

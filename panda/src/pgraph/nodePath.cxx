@@ -46,6 +46,7 @@
 #include "textureCollection.h"
 #include "globPattern.h"
 #include "config_gobj.h"
+#include "bamFile.h"
 #include "dcast.h"
 
 // stack seems to overflow on Intel C++ at 7000.  If we need more than 
@@ -2781,7 +2782,6 @@ bool NodePath::
 write_bam_file(const string &filename) const {
   nassertr_always(!is_empty(), false);
 
-  /*
   BamFile bam_file;
 
   bool okflag = false;
@@ -2793,12 +2793,6 @@ write_bam_file(const string &filename) const {
     bam_file.close();
   }
   return okflag;
-  */
-
-  // At the moment, we can't do this because BamFile is defined in
-  // loader and loader depends on pgraph.
-  nassertr(false, false);
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

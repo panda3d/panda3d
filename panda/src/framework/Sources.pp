@@ -5,7 +5,7 @@
   #define TARGET framework
   #define BUILDING_DLL BUILDING_FRAMEWORK
   #define LOCAL_LIBS \
-    pgraph putil collide loader chan text chancfg \
+    pgraph putil collide chan text chancfg \
     pnmimage pnmimagetypes event
 
   #define SOURCES \

@@ -1,6 +1,8 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define LOCAL_LIBS lerp event gsgbase gobj putil linmath express pandabase
+#define LOCAL_LIBS \
+    lerp event gsgbase gobj putil linmath \
+    downloader express pandabase
 
 #begin lib_target
   #define TARGET pgraph
@@ -8,6 +10,7 @@
   #define SOURCES \
     alphaTestAttrib.I alphaTestAttrib.h \  
     ambientLight.I ambientLight.h \
+    bamFile.I bamFile.h \
     billboardEffect.I billboardEffect.h \
     binCullHandler.I binCullHandler.h \
     camera.I camera.h \
@@ -45,9 +48,14 @@
     lightAttrib.I lightAttrib.h \
     lightLensNode.I lightLensNode.h \
     lightNode.I lightNode.h \
+    loader.I loader.h  \
+    loaderFileType.h \
+    loaderFileTypeBam.h  \
+    loaderFileTypeRegistry.h \
     lodNode.I lodNode.h \
     materialAttrib.I materialAttrib.h \
     modelNode.I modelNode.h \
+    modelPool.I modelPool.h \
     modelRoot.I modelRoot.h \
     nodePath.I nodePath.h nodePath.cxx \
     nodePathCollection.I nodePathCollection.h \
@@ -79,6 +87,7 @@
   #define INCLUDED_SOURCES \
     alphaTestAttrib.cxx \  
     ambientLight.cxx \
+    bamFile.cxx \
     billboardEffect.cxx \
     binCullHandler.cxx \
     camera.cxx \
@@ -116,9 +125,14 @@
     lightAttrib.cxx \
     lightLensNode.cxx \
     lightNode.cxx \
+    loader.cxx \
+    loaderFileType.cxx  \
+    loaderFileTypeBam.cxx \
+    loaderFileTypeRegistry.cxx  \
     lodNode.cxx \
     materialAttrib.cxx \
     modelNode.cxx \
+    modelPool.cxx \
     modelRoot.cxx \
     nodePath.cxx \
     nodePathCollection.cxx \
@@ -146,15 +160,10 @@
     transparencyAttrib.cxx \
     workingNodePath.cxx
 
-  #if $[DONT_COMBINE_PGRAPH]    
-    #define SOURCES $[SOURCES] $[INCLUDED_SOURCES]
-    #define INCLUDED_SOURCES
-    #define COMBINED_SOURCES
-  #endif
-
   #define INSTALL_HEADERS \
     alphaTestAttrib.I alphaTestAttrib.h \  
     ambientLight.I ambientLight.h \
+    bamFile.I bamFile.h \
     billboardEffect.I billboardEffect.h \
     binCullHandler.I binCullHandler.h \
     camera.I camera.h \
@@ -189,9 +198,14 @@
     lightAttrib.I lightAttrib.h \
     lightLensNode.I lightLensNode.h \
     lightNode.I lightNode.h \
+    loader.I loader.h \
+    loaderFileType.h \
+    loaderFileTypeBam.h \
+    loaderFileTypeRegistry.h \
     lodNode.I lodNode.h \
     materialAttrib.I materialAttrib.h \
     modelNode.I modelNode.h \
+    modelPool.I modelPool.h \
     modelRoot.I modelRoot.h \
     nodePath.I nodePath.h \
     nodePathCollection.I nodePathCollection.h \

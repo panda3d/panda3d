@@ -18,7 +18,7 @@
 
 #include "modelPool.h"
 #include "loader.h"
-#include "config_loader.h"
+#include "config_pgraph.h"
 
 
 ModelPool *ModelPool::_global_ptr = (ModelPool *)NULL;

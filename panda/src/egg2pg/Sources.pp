@@ -6,7 +6,7 @@
 #begin lib_target
   #define TARGET egg2pg
   #define LOCAL_LIBS \
-    parametrics collide egg builder loader chan char
+    parametrics collide egg builder pgraph chan char
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 

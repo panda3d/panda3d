@@ -17,13 +17,13 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "bamFile.h"
-#include "config_loader.h"
+#include "config_pgraph.h"
 
-#include <bam.h>
-#include <config_util.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <filename.h>
+#include "bam.h"
+#include "config_util.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "filename.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamFile::Constructor

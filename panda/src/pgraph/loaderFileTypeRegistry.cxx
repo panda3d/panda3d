@@ -18,7 +18,7 @@
 
 #include "loaderFileTypeRegistry.h"
 #include "loaderFileType.h"
-#include "config_loader.h"
+#include "config_pgraph.h"
 
 #include <string_utils.h>
 #include <indent.h>

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "loaderFileTypeBam.h"
-#include "config_loader.h"
+#include "config_pgraph.h"
 #include "bamFile.h"
 
 #include "config_util.h"
@@ -31,8 +31,7 @@ TypeHandle LoaderFileTypeBam::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 LoaderFileTypeBam::
-LoaderFileTypeBam()
-{
+LoaderFileTypeBam() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -41,8 +40,7 @@ LoaderFileTypeBam()
 //  Description:
 ////////////////////////////////////////////////////////////////////
 string LoaderFileTypeBam::
-get_name() const
-{
+get_name() const {
   return "Bam";
 }
 
@@ -52,8 +50,7 @@ get_name() const
 //  Description:
 ////////////////////////////////////////////////////////////////////
 string LoaderFileTypeBam::
-get_extension() const
-{
+get_extension() const {
   return "bam";
 }
 

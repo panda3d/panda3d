@@ -1,4 +1,5 @@
 #include "ambientLight.cxx"
+#include "bamFile.cxx"
 #include "billboardEffect.cxx"
 #include "binCullHandler.cxx"
 #include "camera.cxx"
@@ -32,5 +33,3 @@
 #include "fogAttrib.cxx"
 #include "geomNode.cxx"
 #include "geomTransformer.cxx"
-
-

@@ -19,7 +19,7 @@
 #include "loader.h"
 #include "loaderFileType.h"
 #include "loaderFileTypeRegistry.h"
-#include "config_loader.h"
+#include "config_pgraph.h"
 
 #include "event.h"
 #include "pt_Event.h"

@@ -23,8 +23,11 @@
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
 
+class DSearchPath;
+
 ConfigureDecl(config_pgraph, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pgraph, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(loader, EXPCL_PANDA, EXPTP_PANDA);
 
 extern const bool fake_view_frustum_cull;
 extern const bool unambiguous_graph;
@@ -33,6 +36,11 @@ extern const bool m_dual;
 extern const bool m_dual_opaque;
 extern const bool m_dual_transparent;
 extern const bool m_dual_flash;
+
+extern const bool asynchronous_loads;
+const DSearchPath &get_bam_path();
+
+extern Config::ConfigTable::Symbol *load_file_type;
 
 extern EXPCL_PANDA void init_libpgraph();
 
