@@ -109,6 +109,7 @@ private:
   typedef enum { NotAdjusting,MovingOrResizing,Resizing } WindowAdjustType;
   WindowAdjustType _WindowAdjustingType;
   bool              _bIsLowVidMemCard;
+  DWORD             _MaxAvailVidMem;
   bool    _bLoadedCustomCursor;
   HCURSOR _hMouseCursor;
   bool    _bSizeIsMaximized;
@@ -121,6 +122,7 @@ private:
   bool              _active_minimized_fullscreen;
   bool              _return_control_to_app;
   int               _depth_buffer_bpp;
+  HINSTANCE         _hDDraw_DLL;
 
 public:
   static TypeHandle get_class_type(void);

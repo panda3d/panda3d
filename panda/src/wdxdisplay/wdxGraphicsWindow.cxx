@@ -853,6 +853,7 @@ void wdxGraphicsWindow::config(void) {
 
     global_wdxwinptr = this;  // for use during createwin()
 
+    _hDDraw_DLL = NULL;
     _hdc = NULL;
     _mwindow = NULL;
     _gsg = _dxgsg = NULL;
@@ -861,6 +862,7 @@ void wdxGraphicsWindow::config(void) {
     _return_control_to_app = false;
     _active_minimized_fullscreen = false;
     _bIsLowVidMemCard = false;
+    _MaxAvailVidMem = 0;
 
     _hOldForegroundWindow=GetForegroundWindow();
 
@@ -1173,7 +1175,6 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
    DisplayModeInfo DMI;
    DWORD i,*pCurDim=(DWORD *)dimen;
 
-
    for(i=0;i<numsizes;i++,pCurDim+=2) {
       DWORD xsize=pCurDim[0];
       DWORD ysize=pCurDim[1];
@@ -1199,7 +1200,26 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
 
        if(_bIsLowVidMemCard) 
            bIsGoodMode=(((float)xsize*(float)ysize)<=(float)(640*480));
-         else bIsGoodMode=((DMI.supportedBitDepths & (DDBD_16 | DDBD_24 | DDBD_32))!=0);
+         else if(DMI.supportedBitDepths & (DDBD_16 | DDBD_24 | DDBD_32)) {
+             // assume user is testing fullscreen, not windowed, so use the dwTotal value
+             // see if 3 scrnbufs (front/back/z)at 16bpp at xsize*ysize will fit with a few 
+             // extra megs for texmem
+
+             // 8MB Rage Pro says it has 6.8 megs Total free and will run at 1024x768, so
+             // formula makes it so that is OK
+
+             #define REQD_TEXMEM 1800000.0f  
+
+             if(_MaxAvailVidMem==0) {
+                 //assume buggy drivers return bad val of 0 and everything will be OK
+                 bIsGoodMode=true;
+             } else {
+                 bIsGoodMode = ((((float)xsize*(float)ysize)*6+REQD_TEXMEM) < (float)_MaxAvailVidMem);
+             }
+         }
+
+       wdxdisplay_cat.fatal() << "XXXXXXXXXXXXXXXXXXXXX:   " <<  ((1024.0f*768.0f)*6+REQD_TEXMEM)
+                              << "       " << _MaxAvailVidMem  << endl; 
 
        if(bIsGoodMode)
          num_valid_modes++;
@@ -1293,23 +1313,26 @@ dx_setup() {
 
     // Check for DirectX 7 by looking for DirectDrawCreateEx
 
-    HINSTANCE DDHinst = LoadLibrary("ddraw.dll");
-    if(DDHinst == 0) {
+    _hDDraw_DLL = LoadLibrary("ddraw.dll");
+    if(_hDDraw_DLL == 0) {
         wdxdisplay_cat.fatal() << "can't locate DDRAW.DLL!\n";
         exit(1);
     }
+
+    // Note: I dont want to mess with manually doing FreeLibrary(ddraw.dll) for now.  The OS will clean
+    // this up when the app exits, if we need to I'll add this later.
 
     typedef HRESULT (WINAPI * LPDIRECTDRAWCREATEEX)(GUID FAR * lpGuid, LPVOID  *lplpDD, REFIID  iid,IUnknown FAR *pUnkOuter);
 
     // load all ddraw exports dynamically to avoid static link to ddraw.dll, in case system doesnt have it
 
-    LPDIRECTDRAWCREATEEX pDDCreateEx = (LPDIRECTDRAWCREATEEX) GetProcAddress(DDHinst,"DirectDrawCreateEx");
+    LPDIRECTDRAWCREATEEX pDDCreateEx = (LPDIRECTDRAWCREATEEX) GetProcAddress(_hDDraw_DLL,"DirectDrawCreateEx");
     if(pDDCreateEx == NULL) {
         wdxdisplay_cat.fatal() << "Panda currently requires at least DirectX 7.0!\n";
         exit(1);
     }
 
-    LPDIRECTDRAWENUMERATEEX pDDEnumEx = (LPDIRECTDRAWENUMERATEEX) GetProcAddress(DDHinst,"DirectDrawEnumerateEx");
+    LPDIRECTDRAWENUMERATEEX pDDEnumEx = (LPDIRECTDRAWENUMERATEEX) GetProcAddress(_hDDraw_DLL,"DirectDrawEnumerateExA");
     if(pDDEnumEx == NULL) {
         wdxdisplay_cat.fatal() << "GetProcAddr failed for DirectDrawEnumerateEx!\n";
         exit(1);
@@ -1338,8 +1361,6 @@ dx_setup() {
         << "config() - DirectDrawCreateEx failed : result = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
-
-    FreeLibrary(DDHinst);    //undo LoadLib above, decrement ddraw.dll refcnt (after DDrawCreate, since dont want to unload/reload)
 
     pDD->GetDeviceIdentifier(&_DXDeviceID,0x0);
 
@@ -1386,6 +1407,24 @@ dx_setup() {
 
     DWORD dwRenderWidth=0, dwRenderHeight=0;
 
+    // Get Current VidMem avail.  Note this is only an estimate, when we switch to fullscreen
+    // mode from desktop, more vidmem will be available (typically 1.2 meg).  I dont want
+    // to switch to fullscreen more than once due to the annoying monitor flicker, so try
+    // to figure out optimal mode using this estimate
+    DDSCAPS2 ddsGAVMCaps;
+    DWORD dwVidMemTotal=0,dwVidMemFree=0;
+    ZeroMemory(&ddsGAVMCaps,sizeof(DDSCAPS2));
+    ddsGAVMCaps.dwCaps = DDSCAPS_VIDEOMEMORY; //set internally by DX anyway, dont think this any different than 0x0
+    if(FAILED(hr = pDD->GetAvailableVidMem(&ddsGAVMCaps,&dwVidMemTotal,&dwVidMemFree))) {
+        wdxdisplay_cat.error() << "GetAvailableVidMem failed : result = " << ConvD3DErrorToString(hr) << endl;
+        exit(1);
+    }
+
+    // after SetDisplayMode, GetAvailVidMem totalmem seems to go down by 1.2 meg (contradicting above
+    // comment and what I think would be correct behavior (shouldnt FS mode release the desktop vidmem?),
+    // so this is the true value
+    _MaxAvailVidMem = dwVidMemTotal;  
+
     if(dx_full_screen) {
            dwRenderWidth  = _props._xsize;
            dwRenderHeight = _props._ysize;
@@ -1410,28 +1449,14 @@ dx_setup() {
                exit(1);
            }
 
+           #ifdef _DEBUG
+               wdxdisplay_cat.debug() << "before fullscreen switch: GetAvailableVidMem returns Total: " << dwVidMemTotal/1000000.0 << "  Free: " << dwVidMemFree/1000000.0 << endl;
+           #endif
+
            DWORD dwFullScreenBitDepth;
 
            // Now we try to figure out if we can use requested screen resolution and best
            // rendertarget bpp and still have at least 2 meg of texture vidmem
-
-           // Get Current VidMem avail.  Note this is only an estimate, when we switch to fullscreen
-           // mode from desktop, more vidmem will be available (typically 1.2 meg).  I dont want
-           // to switch to fullscreen more than once due to the annoying monitor flicker, so try
-           // to figure out optimal mode using this estimate
-           DDSCAPS2 ddsCaps;
-           DWORD dwTotal,dwFree;
-           ZeroMemory(&ddsCaps,sizeof(DDSCAPS2));
-           ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY; //set internally by DX anyway, dont think this any different than 0x0
-
-           if(FAILED(  hr = pDD->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
-               wdxdisplay_cat.error() << "GetAvailableVidMem failed : result = " << ConvD3DErrorToString(hr) << endl;
-               exit(1);
-           }
-
-   #ifdef _DEBUG
-           wdxdisplay_cat.debug() << "before FullScreen switch: GetAvailableVidMem returns Total: " << dwTotal/1000000.0 << "  Free: " << dwFree/1000000.0 << endl;
-   #endif
 
            DMI.supportedBitDepths &= pD3DDevDesc->dwDeviceRenderBitDepth;
 
@@ -1448,19 +1473,19 @@ dx_setup() {
                exit(1);
            }
 
-           if(dwFree>0) {  // assume buggy drivers (this means you, FireGL2) may return zero for dwTotal, so ignore value if its 0
+           if(dwVidMemFree>0) {  // assume buggy drivers (this means you, FireGL2) may return zero for dwTotal, so ignore value if its 0
 
                // hack: figuring out exactly what res to use is tricky, instead I will
                // just use 640x480 if we have < 3 meg avail
 
        #define LOWVIDMEMTHRESHOLD 3500000
-               if(dwFree< LOWVIDMEMTHRESHOLD) {
+               if(dwVidMemFree< LOWVIDMEMTHRESHOLD) {
                    // we're going to need 800x600 or 640x480 at 16 bit to save enough tex vidmem
                    dwFullScreenBitDepth=16;              // do 16bpp
                    dwRenderWidth=640;
                    dwRenderHeight=480;
                    _bIsLowVidMemCard = true;
-                   wdxdisplay_cat.debug() << " "<<dwFree <<" Available VidMem is under "<< LOWVIDMEMTHRESHOLD <<", using 640x480 16bpp rendertargets to save tex vidmem.\n";
+                   wdxdisplay_cat.debug() << " " << dwVidMemFree << " Available VidMem is under " << LOWVIDMEMTHRESHOLD <<", using 640x480 16bpp rendertargets to save tex vidmem.\n";
                }
 
        #if 0
@@ -1489,25 +1514,20 @@ dx_setup() {
        #endif
            }
 
-   //      extern bool dx_preserve_fpu_state;
-           DWORD SCL_FPUFlag = DDSCL_FPUSETUP;
-
-   //      if(dx_preserve_fpu_state)
-   //         SCL_FPUFlag = DDSCL_FPUPRESERVE;  // tell d3d to preserve the fpu state across calls.  this hurts perf, but is good for dbgging
+           DWORD SCL_FPUFlag;
+           if(dx_preserve_fpu_state)
+              SCL_FPUFlag = DDSCL_FPUPRESERVE;  // tell d3d to preserve the fpu state across calls.  this hurts perf, but is good for dbgging
+            else SCL_FPUFlag = DDSCL_FPUSETUP;
 
            DWORD SCL_FLAGS = SCL_FPUFlag | DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT;
 
-           if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FLAGS))) {
-               wdxdisplay_cat.fatal() << "SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
-               exit(1);
-           }
-
            // s3 savage2000 on w95 seems to set EXCLUSIVE_MODE only if you call SetCoopLevel twice.
            // so we do it, it really shouldnt be necessary if drivers werent buggy
-           if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FLAGS))) {
-               wdxdisplay_cat.fatal()
-               << "SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
-               exit(1);
+           for(int jj=0;jj<2;jj++) {
+               if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FLAGS))) {
+                   wdxdisplay_cat.fatal() << "SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
+                   exit(1);
+               }
            }
 
            if(FAILED(hr = pDD->TestCooperativeLevel())) {
@@ -1529,11 +1549,11 @@ dx_setup() {
               wdxdisplay_cat.debug() << "set displaymode to " << ddsd34.dwWidth << "x" << ddsd34.dwHeight << " at "<< ddsd34.ddpfPixelFormat.dwRGBBitCount << "bpp, " << ddsd34.dwRefreshRate<< "Hz\n";
 
            #ifdef _DEBUG
-              if(FAILED(  hr = pDD->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
+              if(FAILED(hr = pDD->GetAvailableVidMem(&ddsGAVMCaps,&dwVidMemTotal,&dwVidMemFree))) {
                   wdxdisplay_cat.debug() << "GetAvailableVidMem failed : result = " << ConvD3DErrorToString(hr) << endl;
                   exit(1);
               }
-              wdxdisplay_cat.debug() << "after FullScreen switch: GetAvailableVidMem returns Total: " << dwTotal/1000000.0 << "  Free: " << dwFree/1000000.0 << endl;
+              wdxdisplay_cat.debug() << "before fullscreen switch: GetAvailableVidMem returns Total: " << dwVidMemTotal/1000000.0 << "  Free: " << dwVidMemFree/1000000.0 << endl;
            #endif
            }
     }
@@ -1661,11 +1681,10 @@ CreateScreenBuffersAndDevice(DWORD dwRenderWidth, DWORD dwRenderHeight,LPDIRECTD
             exit(1);
         }
 
-//      extern bool dx_preserve_fpu_state;
-        DWORD SCL_FPUFlag = DDSCL_FPUSETUP;
-
-//      if(dx_preserve_fpu_state)
-//         SCL_FPUFlag = DDSCL_FPUPRESERVE;  // tell d3d to preserve the fpu state across calls.  this hurts perf, but is good for dbgging
+        DWORD SCL_FPUFlag;
+        if(dx_preserve_fpu_state)
+           SCL_FPUFlag = DDSCL_FPUPRESERVE;  // tell d3d to preserve the fpu state across calls.  this hurts perf, but is good for dbgging
+         else SCL_FPUFlag = DDSCL_FPUSETUP;
 
         if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FPUFlag | DDSCL_NORMAL))) {
             wdxdisplay_cat.fatal() << "SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
@@ -2351,9 +2370,13 @@ static int iMouseTrails;
 static bool bCursorShadowOn,bMouseVanish;
 
 #ifndef SPI_GETMOUSEVANISH
-// get of this when we upgrade to winxp winuser.h
+// get rid of this when we upgrade to winxp winuser.h in newest platform sdk
 #define SPI_GETMOUSEVANISH                  0x1020
 #define SPI_SETMOUSEVANISH                  0x1021
+#endif
+
+#ifndef SPI_GETCURSORSHADOW
+#error You have old windows headers, need to get latest MS Platform SDK
 #endif
 
 void set_global_parameters(void) {
