@@ -9,4 +9,4 @@ guiTop.node().setMouseWatcher(base.mouseWatcher.node())
 from DirectFrame import *
 from DirectButton import *
 from DirectLabel import *
-
+from DirectScrolledList import *

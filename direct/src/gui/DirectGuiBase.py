@@ -656,6 +656,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             ('pgFunc',         PGItem,       None),
             ('numStates',      1,            None),
             ('invertedFrames', (),           None),
+            ('sortOrder',      0,            None),
             # Widget's initial state
             ('state',          NORMAL,       self.setState),
             # Widget's frame characteristics
@@ -684,7 +685,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             self.guiItem.setId(self['guiId'])
         self.guiId = self.guiItem.getId()
         # Attach button to parent and make that self
-        self.assign(parent.attachNewNode( self.guiItem ) )
+        self.assign(parent.attachNewNode( self.guiItem, self['sortOrder'] ) )
         # Update pose to initial values
         if self['pos']:
             pos = self['pos']
