@@ -204,7 +204,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def announceLeaving(self):
         """call this just before leaving the level; this may result in
         the factory being destroyed on the AI"""
-        DistributedLevel.notify.info('announceLeaving')
+        DistributedLevel.notify.debug('announceLeaving')
         self.doneBarrier()
 
     def placeLocalToon(self):
@@ -439,7 +439,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # listen for camera-ray/floor collision events
         def handleCameraRayFloorCollision(collEntry, self=self):
             name = collEntry.getIntoNode().getName()
-            print 'camera floor ray collided with: %s' % name
+            self.notify.debug('camera floor ray collided with: %s' % name)
             prefixLen = len(DistributedLevel.FloorCollPrefix)
             if (name[:prefixLen] == DistributedLevel.FloorCollPrefix):
                 try:
@@ -478,11 +478,11 @@ class DistributedLevel(DistributedObject.DistributedObject,
         a zone.
         See camEnterZone()
         """
-        DistributedLevel.notify.info('toonEnterZone%s' % zoneNum)
+        DistributedLevel.notify.debug('toonEnterZone%s' % zoneNum)
 
         if zoneNum != self.lastToonZone:
             self.lastToonZone = zoneNum
-            print "toon is standing in zone %s" % zoneNum
+            self.notify.debug("toon is standing in zone %s" % zoneNum)
             messenger.send("factoryZoneChanged", [zoneNum])
 
     def camEnterZone(self, zoneNum):
@@ -493,7 +493,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         a zone.
         See toonEnterZone()
         """
-        DistributedLevel.notify.info('camEnterZone%s' % zoneNum)
+        DistributedLevel.notify.debug('camEnterZone%s' % zoneNum)
         self.enterZone(zoneNum)
 
         if zoneNum != self.lastCamZone:
@@ -516,13 +516,13 @@ class DistributedLevel(DistributedObject.DistributedObject,
         if zoneId is not None:
             zoneNum = self.getZoneNumFromId(zoneId)
 
-        self.notify.info('lockVisibility to zoneNum %s' % zoneNum)
+        self.notify.debug('lockVisibility to zoneNum %s' % zoneNum)
         self.lockVizZone = zoneNum
         self.enterZone(self.lockVizZone)
 
     def unlockVisibility(self):
         """release the visibility lock"""
-        self.notify.info('unlockVisibility')
+        self.notify.debug('unlockVisibility')
         if not hasattr(self, 'lockVizZone'):
             self.notify.warning('visibility already unlocked')
         else:
@@ -548,7 +548,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def updateVisibility(self, zoneNum=None):
         """update the visibility assuming that we're in the specified
         zone; don't check to see if it's the zone we're already in"""
-        #print 'updateVisibility %s' % globalClock.getFrameCount()
+        #self.notify.debug('updateVisibility %s' % globalClock.getFrameCount())
         if zoneNum is None:
             zoneNum = self.curZoneNum
             if zoneNum is None:
@@ -597,17 +597,17 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 removedZoneNums.append(vz)
 
         if (not addedZoneNums) and (not removedZoneNums):
-            DistributedLevel.notify.info(
+            DistributedLevel.notify.debug(
                 'visible zone list has not changed')
             vizZonesChanged = 0
         else:
             # show the new, hide the old
-            DistributedLevel.notify.info('showing zones %s' %
-                                         addedZoneNums)
+            DistributedLevel.notify.debug('showing zones %s' %
+                                          addedZoneNums)
             for az in addedZoneNums:
                 self.showZone(az)
-            DistributedLevel.notify.info('hiding zones %s' %
-                                         removedZoneNums)
+            DistributedLevel.notify.debug('hiding zones %s' %
+                                          removedZoneNums)
             for rz in removedZoneNums:
                 self.hideZone(rz)
 
@@ -637,7 +637,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         for vz in vizList:
             visibleZoneIds.append(self.getZoneId(vz))
         assert(uniqueElements(visibleZoneIds))
-        DistributedLevel.notify.info('new viz list: %s' % visibleZoneIds)
+        DistributedLevel.notify.debug('new viz list: %s' % visibleZoneIds)
 
         toonbase.tcr.sendSetZoneMsg(self.levelZone, visibleZoneIds)
 
@@ -750,7 +750,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     # Ouch!
     def startOuch(self, ouchLevel, period=2):
-        print 'startOuch %s' % ouchLevel
+        self.notify.debug('startOuch %s' % ouchLevel)
         if not hasattr(self, 'doingOuch'):
             def doOuch(task, self=self, ouchLevel=ouchLevel, period=period):
                 self.b_setOuch(ouchLevel)

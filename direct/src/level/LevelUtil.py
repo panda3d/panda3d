@@ -3,7 +3,7 @@
 import string
 import LevelConstants
 
-def getZoneNum2Node(levelModel):
+def getZoneNum2Node(levelModel, logFunc=lambda str:str):
     """ given model, returns dict of ZoneNumber -> ZoneNode """
     def findNumberedNodes(baseString, model, caseInsens=1):
         # finds nodes whose name follows the pattern 'baseString#blah'
@@ -15,7 +15,7 @@ def getZoneNum2Node(levelModel):
         num2node = {}
         for potentialNode in potentialNodes:
             name = potentialNode.getName()
-            print 'potential match for %s: %s' % (baseString, name)
+            logFunc('potential match for %s: %s' % (baseString, name))
             name = name[len(baseString):]
             numDigits = 0
             while numDigits < len(name):
@@ -27,19 +27,19 @@ def getZoneNum2Node(levelModel):
             num = int(name[:numDigits])
             # is this a valid zoneNum?
             if num == LevelConstants.UberZoneEntId:
-                print ('warning: cannot use UberZone zoneNum (%s). '
-                       'ignoring %s' % (LevelConstants.UberZoneEntId,
-                                        potentialNode))
+                logFunc('warning: cannot use UberZone zoneNum (%s). '
+                        'ignoring %s' % (LevelConstants.UberZoneEntId,
+                                         potentialNode))
                 continue
             if (num < LevelConstants.MinZoneNum) or (
                 num > LevelConstants.MaxZoneNum):
-                print 'warning: zone %s is out of range. ignoring %s' % (
-                    num, potentialNode)
+                logFunc('warning: zone %s is out of range. ignoring %s' %
+                        (num, potentialNode))
                 continue
             # do we already have a ZoneNode for this zone num?
             if num in num2node:
-                print 'warning: zone %s already assigned to %s. ignoring %s' % (
-                    num, num2node[num], potentialNode)
+                logFunc('warning: zone %s already assigned to %s. ignoring %s' %
+                        (num, num2node[num], potentialNode))
                 continue
             num2node[num] = potentialNode
 
