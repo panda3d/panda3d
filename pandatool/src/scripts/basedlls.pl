@@ -14,7 +14,7 @@ $ENV{'PATH'}.=";".$rebase_path;
 
 # note: this is the order dlls will be laid out in memory
 @dll_names=("libpanda","libpandadx","libpandagl","libpandaexpress","libpandaphysics",
-            "libshader","libdtool","libdtoolconfig","libpystub","libdirect","libtoontown","libmiles_audio","libpandaegg");
+            "libpandafx","libdtool","libdtoolconfig","libpystub","libdirect","libtoontown","libmiles_audio","libpandaegg");
 
 # old audio dlls
 #            "libaudio_load_midi","libaudio_load_mp3","libaudio_load_st","libaudio_load_wav",
