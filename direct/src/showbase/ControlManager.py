@@ -25,18 +25,12 @@ class ControlManager:
         assert self.notify.debugCall(id(self))
         
         self.enableJumpCounter = 1
-        
-        self.swimControls=NonPhysicsWalker.NonPhysicsWalker()
-        self.ghostControls=GhostWalker.GhostWalker()
-        if __debug__:
-            self.devControls=DevWalker.DevWalker()
-        self.walkControls=GravityWalker.GravityWalker(
-            gravity = -32.1740 * 2.0) # * 2.0 is a hack;
+        self.controls = {}
         
         # This is the non physics walker if you ever wanted to turn off phys
         # self.walkControls=NonPhysicsWalker.NonPhysicsWalker()
         
-        self.currentControls = self.walkControls
+        self.currentControls = None
         self.isEnabled = 1
         #self.monitorTask = taskMgr.add(self.monitor, "ControlManager-%s"%(id(self)), priority=-1)
         inputState.watch("forward", "arrow_up", "arrow_up-up")
@@ -90,10 +84,11 @@ class ControlManager:
 
     def add(self, controls, name="basic"):
         assert self.notify.debugCall(id(self))
-        controls = self.controls.get(name)
-        if controls is not None:
+        assert controls is not None
+        oldControls = self.controls.get(name)
+        if oldControls is not None:
             print "Replacing controls:", name
-            controls.delete()
+            oldControls.delete()
         self.controls[name] = controls
 
     def use(self, name="basic"):
@@ -105,90 +100,42 @@ class ControlManager:
                 self.currentControls.setCollisionsActive(0)
                 self.currentControls = controls
                 self.currentControls.setCollisionsActive(1)
+                if self.isEnabled:
+                    self.currentControls.enableAvatarControls()
+            else:
+                print "Controls are already", name
         else:
             print "Unkown controls:", name
     
-    def setSpeeds_new(self, toonForwardSpeed, toonJumpForce,
-            toonReverseSpeed, toonRotateSpeed):
+    def setSpeeds(self, forwardSpeed, jumpForce,
+            reverseSpeed, rotateSpeed):
         assert self.notify.debugCall(id(self))
         for controls in self.controls.values():
             controls.setWalkSpeed(
-                toonForwardSpeed,
-                toonJumpForce,
-                toonReverseSpeed,
-                toonRotateSpeed)
+                forwardSpeed, jumpForce, reverseSpeed, rotateSpeed)
 
 
-    def useSwimControls(self):
-        assert self.notify.debugCall(id(self))
-        if self.currentControls is not self.swimControls:
-            self.currentControls.disableAvatarControls()
-            self.currentControls.setCollisionsActive(0)
-            self.swimControls.setCollisionsActive(1)
-            self.currentControls = self.swimControls
-            if self.isEnabled:
-                self.currentControls.enableAvatarControls()
+    #def useSwimControls(self):
+    #    assert self.notify.debugCall(id(self))
+    #    self.use("swim")
 
-    def useGhostControls(self):
-        assert self.notify.debugCall(id(self))
-        if self.currentControls is not self.ghostControls:
-            self.currentControls.disableAvatarControls()
-            self.currentControls.setCollisionsActive(0)
-            self.ghostControls.setCollisionsActive(1)
-            self.currentControls = self.ghostControls
-            if self.isEnabled:
-                self.currentControls.enableAvatarControls()
+    #def useGhostControls(self):
+    #    assert self.notify.debugCall(id(self))
+    #    self.use("ghost")
 
-    def useWalkControls(self):
-        assert self.notify.debugCall(id(self))
-        if self.currentControls is not self.walkControls:
-            self.currentControls.disableAvatarControls()
-            self.currentControls.setCollisionsActive(0)
-            self.walkControls.setCollisionsActive(1)
-            self.currentControls = self.walkControls
-            if self.isEnabled:
-                self.currentControls.enableAvatarControls()
+    #def useWalkControls(self):
+    #    assert self.notify.debugCall(id(self))
+    #    self.use("walk")
 
-    if __debug__:
-        def useDevControls(self):
-            assert self.notify.debugCall(id(self))
-            if self.currentControls is not self.devControls:
-                self.currentControls.disableAvatarControls()
-                self.currentControls.setCollisionsActive(0)
-                self.devControls.setCollisionsActive(1)
-                self.currentControls = self.devControls
-                if self.isEnabled:
-                    self.currentControls.enableAvatarControls()
+    #if __debug__:
+    #    def useDevControls(self):
+    #        assert self.notify.debugCall(id(self))
+    #        self.use("dev")
 
     def delete(self):
         assert self.notify.debugCall(id(self))
         self.disable()
         #self.monitorTask.remove()
-    
-    def setSpeeds(self, toonForwardSpeed, toonJumpForce,
-            toonReverseSpeed, toonRotateSpeed):
-        assert self.notify.debugCall(id(self))
-        self.swimControls.setWalkSpeed(
-            toonForwardSpeed,
-            toonJumpForce,
-            toonReverseSpeed,
-            toonRotateSpeed)
-        self.ghostControls.setWalkSpeed(
-            toonForwardSpeed,
-            toonJumpForce,
-            toonReverseSpeed,
-            toonRotateSpeed)
-        self.walkControls.setWalkSpeed(
-            toonForwardSpeed,
-            toonJumpForce,
-            toonReverseSpeed,
-            toonRotateSpeed)
-        if __debug__:
-            self.devControls.setWalkSpeed(
-                toonForwardSpeed,
-                toonJumpForce,
-                toonReverseSpeed,
-                toonRotateSpeed)
     
     def getSpeeds(self):
         return self.currentControls.getSpeeds()
@@ -197,41 +144,49 @@ class ControlManager:
             wallBitmask, floorBitmask, ghostBitmask, avatarRadius, floorOffset, reach = 4.0):
         assert self.notify.debugCall(id(self))
         
-        self.walkControls.initializeCollisions(cTrav, self.avatar,
-                wallBitmask, floorBitmask, avatarRadius, floorOffset, reach)
-        self.walkControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
-        self.walkControls.disableAvatarControls()
-        self.walkControls.setCollisionsActive(0)
+        swimControls=NonPhysicsWalker.NonPhysicsWalker()
+        ghostControls=GhostWalker.GhostWalker()
+        if __debug__:
+            devControls=DevWalker.DevWalker()
+        walkControls=GravityWalker.GravityWalker(
+            gravity = -32.1740 * 2.0) # * 2.0 is a hack;
         
-        self.swimControls.initializeCollisions(cTrav, self.avatar,
+        walkControls.initializeCollisions(cTrav, self.avatar,
                 wallBitmask, floorBitmask, avatarRadius, floorOffset, reach)
-        self.swimControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
-        self.swimControls.disableAvatarControls()
-        self.swimControls.setCollisionsActive(0)
+        walkControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
+        walkControls.disableAvatarControls()
+        walkControls.setCollisionsActive(0)
         
-        self.ghostControls.initializeCollisions(cTrav, self.avatar,
+        swimControls.initializeCollisions(cTrav, self.avatar,
+                wallBitmask, floorBitmask, avatarRadius, floorOffset, reach)
+        swimControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
+        swimControls.disableAvatarControls()
+        swimControls.setCollisionsActive(0)
+        
+        ghostControls.initializeCollisions(cTrav, self.avatar,
                 ghostBitmask, floorBitmask, avatarRadius, floorOffset, reach)
-        self.ghostControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
-        self.ghostControls.disableAvatarControls()
-        self.ghostControls.setCollisionsActive(0)
+        ghostControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
+        ghostControls.disableAvatarControls()
+        ghostControls.setCollisionsActive(0)
         
         if __debug__:
-            self.devControls.initializeCollisions(cTrav, self.avatar,
+            devControls.initializeCollisions(cTrav, self.avatar,
                     wallBitmask, floorBitmask, avatarRadius, floorOffset, reach)
-            self.devControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
-            self.devControls.disableAvatarControls()
-            self.devControls.setCollisionsActive(0)
+            devControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
+            devControls.disableAvatarControls()
+            devControls.setCollisionsActive(0)
 
-        #self.walkControls.setCollisionsActive(1)
-        #self.walkControls.enableAvatarControls()
+        self.add(walkControls, "walk")
+        self.add(swimControls, "swim")
+        self.add(ghostControls, "ghost")
+        self.add(devControls, "dev")
+
+        self.currentControls=walkControls
 
     def deleteCollisions(self):
         assert self.notify.debugCall(id(self))
-        self.walkControls.deleteCollisions()
-        self.swimControls.deleteCollisions()
-        self.ghostControls.deleteCollisions()
-        if __debug__:
-            self.devControls.deleteCollisions()
+        for controls in self.controls.values():
+            controls.deleteCollisions()
 
     def collisionsOn(self):
         assert self.notify.debugCall(id(self))
