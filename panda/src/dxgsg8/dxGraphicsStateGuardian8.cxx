@@ -136,6 +136,26 @@ set_color_clear_value(const Colorf& value) {
   _d3dcolor_clear_value =  Colorf_to_D3DCOLOR(value);
 }
 
+#if defined(_DEBUG) || defined(COUNT_DRAWPRIMS)
+typedef enum {DrawPrim,DrawIndexedPrim} DP_Type;
+static const char *DP_Type_Strs[3] = {"DrawPrimitive","DrawIndexedPrimitive"};
+
+void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,IDirect3DDevice8 *pD3DDevice,DWORD nVerts,DWORD nTris) {
+        if(FAILED(hr)) {
+            // loss of exclusive mode is not a real DrawPrim problem, ignore it
+            HRESULT testcooplvl_hr = pD3DDevice->TestCooperativeLevel();
+            if((testcooplvl_hr != D3DERR_DEVICELOST)||(testcooplvl_hr != D3DERR_DEVICENOTRESET)) {
+                dxgsg8_cat.fatal() << DP_Type_Strs[dptype] << "() failed: result = " << D3DERRORSTRING(hr);
+                exit(1);
+            }
+        }
+
+        CountDPs(nVerts,nTris);
+}
+#else
+#define TestDrawPrimFailure(a,b,c,nVerts,nTris) CountDPs(nVerts,nTris);
+#endif
+
 DXShaderHandle DXGraphicsStateGuardian8::
 read_pixel_shader(string &filename) {
     HRESULT hr;
