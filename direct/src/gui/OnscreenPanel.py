@@ -161,7 +161,7 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
                 # making it safe to put 3-d geometry in front of it.
                 dw = DepthWriteTransition()
                 self.panelGeom.setY(100)
-                self.panelGeom.arc().setTransition(dw, 2)
+                self.panelGeom.arc().setTransition(dw, 1)
 
             # Set up the panel as its own mouse region so mouse clicks on
             # the panel don't inadvertently drive the toon around.  This

@@ -757,15 +757,20 @@ class Actor(PandaObject, NodePath):
         Arrange geometry so the frontPart(s) are drawn in front of
         backPart.
 
-        If mode == 0, the geometry is simply arranged to be drawn in
-        the correct order.
+        If mode == -1, the geometry is simply arranged to be drawn in
+        the correct order, assuming it is already under a
+        direct-render scene graph (like the DirectGui system).
 
-        If mode < 0, one step further is taken: frontPart is drawn
-        as a decal onto backPart.  This assumes that frontPart is
-        mostly coplanar with and does not extend beyond backPart, and
-        that backPart is mostly flat (not self-occluding).
+        If mode == -2, the geometry is arranged to be drawn in the
+        correct order, and depth test/write is turned off for
+        frontPart.
 
-        If mode > 0, the frontPart geometry is placed in the 'fixed'
+        If mode == -3, frontPart is drawn as a decal onto backPart.
+        This assumes that frontPart is mostly coplanar with and does
+        not extend beyond backPart, and that backPart is mostly flat
+        (not self-occluding).
+
+        If mode >= 0, the frontPart geometry is placed in the 'fixed'
         bin, with the indicated drawing order.  This will cause it to
         be drawn after almost all other geometry.  In this case, the
         backPartName is actually unused.
@@ -791,28 +796,34 @@ class Actor(PandaObject, NodePath):
                 root = self
 
         frontParts = root.findAllMatches( "**/" + frontPartName)
+                
         if mode > 0:
             # Use the 'fixed' bin instead of reordering the scene
             # graph.
             numFrontParts = frontParts.getNumPaths()
             for partNum in range(0, numFrontParts):
-                frontParts.getPath(partNum).setBin('fixed', mode)
+                frontParts[partNum].setBin('fixed', mode)
             return
+
+        if mode == -2:
+            # Turn off depth test/write on the frontParts.
+            dw = DepthWriteTransition.off()
+            dt = DepthTestTransition(DepthTestProperty.MNone)
+            numFrontParts = frontParts.getNumPaths()
+            for partNum in range(0, numFrontParts):
+                frontParts[partNum].arc().setTransition(dw, 1)
+                frontParts[partNum].arc().setTransition(dt, 1)
 
         # Find the back part.
         backPart = root.find("**/" + backPartName)
         if (backPart.isEmpty()):
             Actor.notify.warning("no part named %s!" % (backPartName))
             return
-        
-        if mode < 0:
+                
+        if mode == -3:
             # Draw as a decal.
             dt = DecalTransition()
-        else:
-            dt = DirectRenderTransition()
-
-        # make the back part have the proper transition
-        backPart.arc().setTransition(dt)
+            backPart.arc().setTransition(dt)
 
         #reparent all the front parts to the back part
         frontParts.reparentTo(backPart)
