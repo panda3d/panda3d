@@ -53,7 +53,13 @@ HTTPClient::
 HTTPClient() {
   _http_version = HV_11;
   _verify_ssl = verify_ssl ? VS_normal : VS_no_verify;
-  make_ctx();
+  _ssl_ctx = (SSL_CTX *)NULL;
+
+  // The first time we create an HTTPClient, we must initialize the
+  // OpenSSL library.
+  if (!_ssl_initialized) {
+    initialize_ssl();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,7 +73,7 @@ HTTPClient(const HTTPClient &copy) {
   // function will copy them in a second.
   _http_version = HV_11;
   _verify_ssl = verify_ssl ? VS_normal : VS_no_verify;
-  make_ctx();
+  _ssl_ctx = (SSL_CTX *)NULL;
 
   (*this) = copy;
 }
@@ -356,15 +362,15 @@ get_header(const URLSpec &url) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::make_ctx
-//       Access: Private
-//  Description: Creates the OpenSSL context object.  This is only
-//               called by the constructor.
+//     Function: HTTPClient::get_ssl_ctx
+//       Access: Public
+//  Description: Returns the OpenSSL context object, creating it first
+//               if needed.
 ////////////////////////////////////////////////////////////////////
-void HTTPClient::
-make_ctx() {
-  if (!_ssl_initialized) {
-    initialize_ssl();
+SSL_CTX *HTTPClient::
+get_ssl_ctx() {
+  if (_ssl_ctx != (SSL_CTX *)NULL) {
+    return _ssl_ctx;
   }
 
   _ssl_ctx = SSL_CTX_new(SSLv23_client_method());
@@ -428,6 +434,8 @@ make_ctx() {
       }
     }
   }
+
+  return _ssl_ctx;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -670,7 +670,7 @@ run_proxy_reading_header() {
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 run_setup_ssl() {
-  _sbio = BIO_new_ssl(_client->_ssl_ctx, true);
+  _sbio = BIO_new_ssl(_client->get_ssl_ctx(), true);
   BIO_push(_sbio, *_bio);
 
   if (downloader_cat.is_debug()) {
@@ -2120,8 +2120,9 @@ show_send(const string &message) {
   size_t start = 0;
   size_t newline = message.find('\n', start);
   while (newline != string::npos) {
+    // Assume every \n is preceded by a \r.
     downloader_cat.spam()
-      << "send: " << message.substr(start, newline - start + 1);
+      << "send: " << message.substr(start, newline - start - 1) << "\n";
     start = newline + 1;
     newline = message.find('\n', start);
   }

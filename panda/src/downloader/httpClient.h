@@ -95,8 +95,10 @@ PUBLISHED:
                                 const string &body = string());
   PT(HTTPChannel) get_header(const URLSpec &url);
 
+public:
+  SSL_CTX *get_ssl_ctx();
+
 private:
-  void make_ctx();
   static void initialize_ssl();
   static int load_verify_locations(SSL_CTX *ctx, const Filename &ca_file);
 
