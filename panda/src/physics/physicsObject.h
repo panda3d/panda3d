@@ -33,7 +33,7 @@ private:
   bool _process_me;
   bool _oriented;
 
-public:
+PUBLISHED:
   PhysicsObject(void);
   PhysicsObject(const PhysicsObject &copy);
   virtual ~PhysicsObject(void);

@@ -20,7 +20,7 @@ private:
   virtual AngularForce *make_copy(void) const;
   virtual LVector3f get_child_vector(const PhysicsObject *po);
 
-public:
+PUBLISHED:
   AngularVectorForce(const LVector3f& vec);
   AngularVectorForce(float x = 0.0f, float y = 0.0f, float z = 0.0f);
   AngularVectorForce(const AngularVectorForce &copy);
