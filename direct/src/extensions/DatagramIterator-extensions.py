@@ -127,7 +127,7 @@
                     b = self.getUint8()
                     retVal.append((a / float(divisor), b / float(divisor)))
             else:
-                raise Exception("Error: No such type as: " + str(subAtomicType))
+                raise Exception("Error: No such type as: " + str(subatomicType))
 
 
 

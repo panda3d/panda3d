@@ -54,5 +54,5 @@
                 self.addUint32(int(i[0]*divisor))
                 self.addUint8(int(i[1]*divisor))
         else:
-            raise Exception("Error: No such type as: " + subatomicType)
+            raise Exception("Error: No such type as: " + str(subatomicType))
         return None
