@@ -25,7 +25,7 @@ class ParticleInterval(Interval.Interval):
         self.particleEffect = particleEffect 
         self.parent = parent
         self.worldRelative = worldRelative
-        self.loop = loop
+        self.fLoop = loop
         assert(duration > 0.0 or loop == 1)
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)

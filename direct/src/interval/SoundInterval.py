@@ -27,7 +27,7 @@ class SoundInterval(Interval.Interval):
         SoundInterval.soundNum += 1
         # Record instance variables
         self.sound = sound
-        self.loop = loop
+        self.fLoop = loop
         self.volume = volume
         self.startTime = startTime
         # If no duration given use sound's duration as interval's duration
@@ -55,7 +55,7 @@ class SoundInterval(Interval.Interval):
         if self.sound != None:
             self.sound.setVolume(self.volume)
             self.sound.setTime(t1)
-            self.sound.setLoop(self.loop)
+            self.sound.setLoop(self.fLoop)
             self.sound.play()
         self.state = CInterval.SStarted
         self.currT = t1
@@ -66,7 +66,7 @@ class SoundInterval(Interval.Interval):
             if self.sound != None:
                 self.sound.setVolume(self.volume)
                 self.sound.setTime(t)
-                self.sound.setLoop(self.loop)
+                self.sound.setLoop(self.fLoop)
                 self.sound.play()
         self.state = CInterval.SStarted
         self.currT = t

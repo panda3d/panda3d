@@ -42,7 +42,7 @@ class Slider(Valuator):
             style = self['style'],
             command = self.setEntry,
             value = self['value'])
-        self._valuator._widget.bind('<Double-ButtonPress-1>', self.mouseReset)
+        #self._valuator._widget.bind('<Double-ButtonPress-1>', self.mouseReset)
 
         # Add popup bindings to slider widget
         try:
