@@ -1,0 +1,67 @@
+// Filename: qpgeomTransformer.I
+// Created by:  drose (14Mar02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTransformer::SourceVertices::Ordering Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomTransformer::SourceVertices::
+operator < (const qpGeomTransformer::SourceVertices &other) const {
+  if (_coords != other._coords) {
+    return _coords < other._coords;
+  }
+  return (_mat.compare_to(other._mat) < 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTransformer::SourceNormals::Ordering Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomTransformer::SourceNormals::
+operator < (const qpGeomTransformer::SourceNormals &other) const {
+  if (_norms != other._norms) {
+    return _norms < other._norms;
+  }
+  return (_mat.compare_to(other._mat) < 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTransformer::SourceTexCoords::Ordering Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomTransformer::SourceTexCoords::
+operator < (const qpGeomTransformer::SourceTexCoords &other) const {
+  if (_texcoords != other._texcoords) {
+    return _texcoords < other._texcoords;
+  }
+  return (_mat.compare_to(other._mat) < 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomTransformer::SourceColors::Ordering Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomTransformer::SourceColors::
+operator < (const qpGeomTransformer::SourceColors &other) const {
+  return (_scale.compare_to(other._scale) < 0);
+}
