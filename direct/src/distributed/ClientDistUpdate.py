@@ -53,6 +53,9 @@ class ClientDistUpdate:
     def updateField(self, cdc, do, di):
         # Get the arguments into a list
         args = self.extractArgs(di)
+
+        assert(self.notify.debug("Received update for %d: %s.%s(%s)" % (do.doId, cdc.name, self.name, args)))
+
         # Apply the function to the object with the arguments
         if self.func != None:
             apply(self.func, [do] + args)
@@ -74,15 +77,15 @@ class ClientDistUpdate:
             datagram.putArg(args[i], self.types[i], self.divisors[i])
     
     def sendUpdate(self, cr, do, args, sendToId = None):
-        assert(self.notify.debug("sendUpdate() name="+str(self.name)))
+        if sendToId == None:
+            sendToId = do.doId
+
+        assert(self.notify.debug("Sending update for %d: %s(%s)" % (sendToId, self.name, args)))
         datagram = Datagram.Datagram()
         # Add message type
         datagram.addUint16(CLIENT_OBJECT_UPDATE_FIELD)
         # Add the DO id
-        if sendToId == None:
-            datagram.addUint32(do.doId)
-        else:
-            datagram.addUint32(sendToId)
+        datagram.addUint32(sendToId)
         # Add the field id
         datagram.addUint16(self.number)
         # Add the arguments
