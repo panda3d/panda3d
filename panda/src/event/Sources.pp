@@ -6,14 +6,15 @@
   #define TARGET event
   
   #define SOURCES							\
-    config_event.cxx config_event.h event.cxx event.h eventHandler.cxx	\
+    config_event.cxx config_event.h \
+    event.I event.cxx event.h eventHandler.cxx	\
     eventHandler.h eventParameter.I eventParameter.cxx			\
     eventParameter.h eventQueue.I eventQueue.cxx eventQueue.h		\
     eventReceiver.cxx eventReceiver.h pt_Event.cxx pt_Event.h		\
     throw_event.I throw_event.h
 
   #define INSTALL_HEADERS					\
-    event.h eventHandler.h eventParameter.I eventParameter.h	\
+    event.I event.h eventHandler.h eventParameter.I eventParameter.h	\
     eventQueue.h eventQueue.I throw_event.h throw_event.I	\
     eventReceiver.h						\
     pt_Event.h

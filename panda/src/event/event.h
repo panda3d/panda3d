@@ -10,9 +10,7 @@
 
 #include "eventParameter.h"
 
-
 #include <typedReferenceCount.h>
-#include <namable.h>
 
 class EventReceiver;
 
@@ -22,13 +20,22 @@ class EventReceiver;
 //               any thread may throw an event at any time; there will
 //               be one process responsible for reading and dispacting
 //               on the events (but not necessarily immediately).
+//
+//               This function use to inherit from Namable, but that
+//               makes it too expensive to get its name the Python
+//               code.  Now it just copies the Namable interface in.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS Event : public TypedReferenceCount, public Namable {
+class EXPCL_PANDAEXPRESS Event : public TypedReferenceCount {
 PUBLISHED:
   Event(const string &event_name, EventReceiver *receiver = NULL);
   Event(const Event &copy);
   void operator = (const Event &copy);
   ~Event();
+
+  INLINE void set_name(const string &name);
+  INLINE void clear_name();
+  INLINE bool has_name() const;
+  INLINE const string &get_name() const;
 
   void add_parameter(const EventParameter &obj);
 
@@ -40,10 +47,15 @@ PUBLISHED:
   void set_receiver(EventReceiver *receiver);
   void clear_receiver();
 
+  void output(ostream &out) const;
+
 protected:
   typedef vector<EventParameter> ParameterList;
   ParameterList _parameters;
   EventReceiver *_receiver;
+
+private:
+  string _name;
 
 public:
   static TypeHandle get_class_type() {
@@ -51,10 +63,8 @@ public:
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    Namable::init_type();
     register_type(_type_handle, "Event",
-		  TypedReferenceCount::get_class_type(),
-		  Namable::get_class_type());
+		  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -64,5 +74,9 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+INLINE ostream &operator << (ostream &out, const Event &n);
+
+#include "event.I"
 
 #endif

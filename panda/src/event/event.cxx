@@ -15,7 +15,7 @@ TypeHandle Event::_type_handle;
 ////////////////////////////////////////////////////////////////////
 Event::
 Event(const string &event_name, EventReceiver *receiver) :
-  Namable(event_name)
+  _name(event_name)
 {
   _receiver = receiver;
 }
@@ -27,9 +27,9 @@ Event(const string &event_name, EventReceiver *receiver) :
 ////////////////////////////////////////////////////////////////////
 Event::
 Event(const Event &copy) : 
-  Namable(copy), 
   _parameters(copy._parameters),
-  _receiver(copy._receiver)
+  _receiver(copy._receiver),
+  _name(copy._name)
 {
 }
 
@@ -40,9 +40,9 @@ Event(const Event &copy) :
 ////////////////////////////////////////////////////////////////////
 void Event::
 operator = (const Event &copy) {
-  Namable::operator = (copy);
   _parameters = copy._parameters;
   _receiver = copy._receiver;
+  _name = copy._name;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -126,3 +126,13 @@ void Event::
 clear_receiver() {
   _receiver = (EventReceiver *)NULL;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Event::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void Event::
+output(ostream &out) const {
+  out << get_name();
+}    
