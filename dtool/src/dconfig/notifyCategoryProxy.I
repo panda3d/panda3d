@@ -71,7 +71,11 @@ is_on(NotifySeverity severity) {
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
 is_spam() {
+#ifndef NDEBUG
   return get_unsafe_ptr()->is_spam();
+#else
+  return false;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -82,7 +86,11 @@ is_spam() {
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
 is_debug() {
+#ifndef NDEBUG
   return get_unsafe_ptr()->is_debug();
+#else
+  return false;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
