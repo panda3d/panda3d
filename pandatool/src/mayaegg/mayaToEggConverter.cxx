@@ -50,7 +50,6 @@
 #include <maya/MFnNurbsCurve.h>
 #include <maya/MFnMesh.h>
 #include <maya/MFnMeshData.h>
-#include <maya/MItMeshPolygon.h>
 #include <maya/MFnPlugin.h>
 #include <maya/MItDag.h>
 #include <maya/MLibrary.h>
@@ -740,7 +739,6 @@ convert_hierarchy(EggGroupNode *egg_root) {
       return false;
     }
   }
-
   return true;
 }
 
@@ -1652,6 +1650,16 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     }
   }
 
+  MStringArray uvset_names;
+  status = mesh.getUVSetNames(uvset_names);
+  if (!status) {
+    status.perror("MFnMesh getUVSetNames not found");
+    //return;
+  }
+  for (size_t ui=0; ui<uvset_names.length(); ++ui) {
+    mayaegg_cat.debug() << "uv_set[" << ui << "] name: " << uvset_names[ui] << endl;
+  }
+
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
     egg_group->add_child(egg_poly);
@@ -1675,10 +1683,10 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
 
     // And apply the shader properties to the polygon.
     if (shader != (MayaShader *)NULL) {
-      set_shader_attributes(*egg_poly, *shader);
+      set_shader_attributes(*egg_poly, *shader, &pi);
     }
 
-    const MayaShaderColorDef &color_def = shader->_color;
+    const MayaShaderColorDef *color_def = shader->get_color_def();
 
     // Should we extract the color from the vertices?  Normally, in
     // Maya a texture completely replaces the vertex color, so we
@@ -1694,7 +1702,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     // that the "vertex-color" flag is always set.
     bool ignore_vertex_color = false;
     if (shader != (MayaShader *)NULL) {
-      ignore_vertex_color = color_def._has_texture && !(egg_vertex_color || _always_show_vertex_color);
+      ignore_vertex_color = color_def->_has_texture && !(egg_vertex_color || _always_show_vertex_color);
     }
 
     Colorf poly_color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1711,7 +1719,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     long i;
     LPoint3d centroid(0.0, 0.0, 0.0);
 
-    if (shader != (MayaShader *)NULL && color_def.has_projection()) {
+    if (shader != (MayaShader *)NULL && color_def->has_projection()) {
       // If the shader has a projection, we may need to compute the
       // polygon's centroid to avoid seams at the edges.
       for (i = 0; i < num_verts; i++) {
@@ -1722,7 +1730,6 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       }
       centroid /= (double)num_verts;
     }
-
     for (i = 0; i < num_verts; i++) {
       EggVertex vert;
 
@@ -1741,19 +1748,41 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         vert.set_normal(n3d);
       }
 
-      if (shader != (MayaShader *)NULL && color_def.has_projection()) {
-        // If the shader has a projection, use it instead of the
-        // polygon's built-in UV's.
-        vert.set_uv(color_def.project_uv(p3d, centroid));
+      string uv_name("");
+      if (shader != (MayaShader *)NULL && color_def->_has_texture) {
+        // Go thru all the texture references for this primitive and set uvs
+        mayaegg_cat.debug() << "shader->_color.size is " << shader->_color.size() << endl;
+        mayaegg_cat.debug() << "primitive->tref.size is " << egg_poly->get_num_textures() << endl;
+        for (int ti=0; ti< egg_poly->get_num_textures(); ++ti) {
+          // get the eggTexture pointer
+          EggTexture *tex_p = egg_poly->get_texture(ti);
+          mayaegg_cat.debug() << "tex->uvset_name :" << tex_p->get_uv_name() << endl;
 
-      } else if (pi.hasUVs()) {
-        // Get the UV's from the polygon.
-        float2 uvs;
-        status = pi.getUV(i, uvs);
-        if (!status) {
-          status.perror("MItMeshPolygon::getUV");
-        } else {
-          vert.set_uv(TexCoordd(uvs[0], uvs[1]));
+          // get the shader color def that matches this EggTexture
+          for (size_t tj=0; tj< shader->_color.size(); ++tj) {
+            color_def = shader->get_color_def(tj);
+            if (color_def->_texture_name == tex_p->get_uv_name()) {
+              mayaegg_cat.debug() << "matched colordef idx: " << tj << endl;
+              break;
+            }
+          }
+          mayaegg_cat.debug() << "color_def->uvset_name :" << color_def->_uvset_name << endl;
+          uv_name = color_def->_uvset_name;  // this is the name to look up by in maya
+
+          if (color_def->has_projection()) {
+            // If the shader has a projection, use it instead of the
+            // polygon's built-in UV's.
+            vert.set_uv(tex_p->get_uv_name(),color_def->project_uv(p3d, centroid));
+          } else {
+            // Get the UV's from the polygon.
+            float2 uvs;
+            status = pi.getUV(i, uvs, &MString(uv_name.c_str()));
+            if (!status) {
+              status.perror("MItMeshPolygon::getUV");
+            } else {
+              vert.set_uv(tex_p->get_uv_name(),TexCoordd(uvs[0], uvs[1]));
+            }
+          }
         }
       }
 
@@ -1808,7 +1837,9 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     }
       
     pi.next();
+
   }
+  mayaegg_cat.spam() << "done traversing polys" << endl;
 
   // Now that we've added all the polygons (and created all the
   // vertices), go back through the vertex pool and set up the
@@ -2166,99 +2197,134 @@ get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
 //               egg primitive.
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
-set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
+set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader, const MItMeshPolygon *pi) {
   // In Maya, a polygon is either textured or colored.  The texture,
-  // if present, replaces the color.
-  const MayaShaderColorDef &color_def = shader._color;
+  // if present, replaces the color. Also now there could be multiple textures
+  MayaShaderColorDef *color_def;
   const MayaShaderColorDef &trans_def = shader._transparency;
-  if (color_def._has_texture || trans_def._has_texture) {
-    EggTexture tex(shader.get_name(), "");
-
-    if (color_def._has_texture) {
-      // If we have a texture on color, apply it as the filename.
-      Filename filename = Filename::from_os_specific(color_def._texture);
-      Filename fullpath = 
-        _path_replace->match_path(filename, get_texture_path());
-      tex.set_filename(_path_replace->store_path(fullpath));
-      tex.set_fullpath(fullpath);
-      apply_texture_properties(tex, color_def);
-
-      // If we also have a texture on transparency, apply it as the
-      // alpha filename.
-      if (trans_def._has_texture) {
-        if (color_def._wrap_u != trans_def._wrap_u ||
-            color_def._wrap_u != trans_def._wrap_u) {
-          mayaegg_cat.warning()
-            << "Shader " << shader.get_name()
-            << " has contradictory wrap modes on color and texture.\n";
-        }
+  for (size_t i=0; i<shader._color.size(); ++i) {
+    color_def = shader.get_color_def(i);
+    if (color_def->_has_texture || trans_def._has_texture) {
+      EggTexture tex(shader.get_name(), "");
+      string uvset_name = color_def->_texture_name;
+      
+      //maya_cat.debug() << "got shader name:" << shader.get_name() << endl;
+      maya_cat.debug() << "ssa:texture name[" << i << "]: " << color_def->_texture_name << endl;
+      
+      if (color_def->_has_texture) {
+        // If we have a texture on color, apply it as the filename.
+        //mayaegg_cat.debug() << "ssa:got texture name" << color_def->_texture_filename << endl;
+        Filename filename = Filename::from_os_specific(color_def->_texture_filename);
+        Filename fullpath = 
+          _path_replace->match_path(filename, get_texture_path());
+        tex.set_filename(_path_replace->store_path(fullpath));
+        tex.set_fullpath(fullpath);
+        apply_texture_properties(tex, *color_def);
+        
+        // If we also have a texture on transparency, apply it as the
+        // alpha filename.
+        if (trans_def._has_texture) {
+          if (color_def->_wrap_u != trans_def._wrap_u ||
+              color_def->_wrap_u != trans_def._wrap_u) {
+            mayaegg_cat.warning()
+              << "Shader " << shader.get_name()
+              << " has contradictory wrap modes on color and texture.\n";
+          }
           
-        if (!compare_texture_properties(tex, trans_def)) {
-          // Only report each broken shader once.
-          static pset<string> bad_shaders;
-          if (bad_shaders.insert(shader.get_name()).second) {
-            mayaegg_cat.error()
-              << "Color and transparency texture properties differ on shader "
-              << shader.get_name() << "\n";
+          if (!compare_texture_properties(tex, trans_def)) {
+            // Only report each broken shader once.
+            static pset<string> bad_shaders;
+            if (bad_shaders.insert(shader.get_name()).second) {
+              mayaegg_cat.error()
+                << "Color and transparency texture properties differ on shader "
+                << shader.get_name() << "\n";
+            }
+          }
+          //tex.set_format(EggTexture::F_rgba);
+          
+          // We should try to be smarter about whether the transparency
+          // value is connected to the texture's alpha channel or to its
+          // grayscale channel.  However, I'm not sure how to detect
+          // this at the moment; rather than spending days trying to
+          // figure out, for now I'll just assume that if the same
+          // texture image is used for both color and transparency, then
+          // the artist meant to use the alpha channel for transparency.
+          if (trans_def._texture_filename == color_def->_texture_filename) {
+            // That means that we don't need to do anything special: use
+            // all the channels of the texture.
+            
+          } else {
+            // Otherwise, pull the alpha channel from the other image
+            // file.  Ideally, we should figure out which channel from
+            // the other image supplies alpha (and specify this via
+            // set_alpha_file_channel()), but for now we assume it comes
+            // from the grayscale data.
+            filename = Filename::from_os_specific(trans_def._texture_filename);
+            fullpath = _path_replace->match_path(filename, get_texture_path());
+            tex.set_alpha_filename(_path_replace->store_path(fullpath));
+            tex.set_alpha_fullpath(fullpath);
+          }
+        } else {
+          // If there is no transparency texture specified, we don't
+          // have any transparency, so tell the egg format to ignore any
+          // alpha channel that might be on the color texture.
+          //tex.set_format(EggTexture::F_rgb);
+        }
+        
+        // if multi-textured, first texture in maya is on top, so
+        // default it to decal
+        if ((shader._color.size() > 1) && (i!=shader._color.size()-1))
+          tex.set_env_type(EggTexture::ET_decal);
+        
+      } else {  // trans_def._has_texture
+        // We have a texture on transparency only.  Apply it as the
+        // primary filename, and set the format accordingly.
+        Filename filename = Filename::from_os_specific(trans_def._texture_filename);
+        Filename fullpath = 
+          _path_replace->match_path(filename, get_texture_path());
+        tex.set_filename(_path_replace->store_path(fullpath));
+        tex.set_fullpath(fullpath);
+        //tex.set_format(EggTexture::F_alpha);
+        apply_texture_properties(tex, trans_def);
+      }
+      
+      //mayaegg_cat.debug() << "ssa:tref_name:" << tex.get_name() << endl;
+      EggTexture *new_tex =
+        _textures.create_unique_texture(tex, ~0);
+      //_textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
+      
+      if (pi && shader._color.size() > 1) {
+        // see if the uvset_name exists for this polygon, if yes, add the texture to primitive
+        if (pi->hasUVs(MString(uvset_name.c_str()))) {
+          primitive.add_texture(new_tex);
+          color_def->_uvset_name.assign(uvset_name.c_str());
+          new_tex->set_uv_name(color_def->_texture_name);
+        } else {
+          // if the uvset is under different name, try taking out the
+          // numeric from the uv name. This was a compromise to support
+          // one uvset but different layered texture for layer1 texture
+          uvset_name.resize(uvset_name.length()-1);
+          mayaegg_cat.debug() << "ssa:trying uvset_name: " << uvset_name << endl;
+          if (pi->hasUVs(MString(uvset_name.c_str()))) {
+            primitive.add_texture(new_tex);
+            color_def->_uvset_name.assign(uvset_name.c_str());
+            new_tex->set_uv_name(color_def->_texture_name);
+          } else {
+            mayaegg_cat.debug() << "ssa: didn't find uvset_name: " << uvset_name << endl;
           }
         }
-        tex.set_format(EggTexture::F_rgba);
-          
-        // We should try to be smarter about whether the transparency
-        // value is connected to the texture's alpha channel or to its
-        // grayscale channel.  However, I'm not sure how to detect
-        // this at the moment; rather than spending days trying to
-        // figure out, for now I'll just assume that if the same
-        // texture image is used for both color and transparency, then
-        // the artist meant to use the alpha channel for transparency.
-        if (trans_def._texture == color_def._texture) {
-          // That means that we don't need to do anything special: use
-          // all the channels of the texture.
-
-        } else {
-          // Otherwise, pull the alpha channel from the other image
-          // file.  Ideally, we should figure out which channel from
-          // the other image supplies alpha (and specify this via
-          // set_alpha_file_channel()), but for now we assume it comes
-          // from the grayscale data.
-          filename = Filename::from_os_specific(trans_def._texture);
-          fullpath = _path_replace->match_path(filename, get_texture_path());
-          tex.set_alpha_filename(_path_replace->store_path(fullpath));
-          tex.set_alpha_fullpath(fullpath);
-        }
-
       } else {
-        // If there is no transparency texture specified, we don't
-        // have any transparency, so tell the egg format to ignore any
-        // alpha channel that might be on the color texture.
-        tex.set_format(EggTexture::F_rgb);
+        primitive.add_texture(new_tex);
+        new_tex->set_uv_name(color_def->_uvset_name);
       }
-
-    } else {  // trans_def._has_texture
-      // We have a texture on transparency only.  Apply it as the
-      // primary filename, and set the format accordingly.
-      Filename filename = Filename::from_os_specific(trans_def._texture);
-      Filename fullpath = 
-        _path_replace->match_path(filename, get_texture_path());
-      tex.set_filename(_path_replace->store_path(fullpath));
-      tex.set_fullpath(fullpath);
-      tex.set_format(EggTexture::F_alpha);
-      apply_texture_properties(tex, trans_def);
     }
-  
-    EggTexture *new_tex =
-      _textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
-    
-    primitive.set_texture(new_tex);
-
   }
-
   // Also apply an overall color to the primitive.
   Colorf rgba = shader.get_rgba();
 
   // The existence of a texture on either color channel completely
   // replaces the corresponding flat color.
-  if (color_def._has_texture) {
+  if (color_def->_has_texture) {
     rgba[0] = 1.0f;
     rgba[1] = 1.0f;
     rgba[2] = 1.0f;
@@ -2268,10 +2334,10 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
   }
 
   // But the color gain always gets applied.
-  rgba[0] *= color_def._color_gain[0];
-  rgba[1] *= color_def._color_gain[1];
-  rgba[2] *= color_def._color_gain[2];
-  rgba[3] *= color_def._color_gain[3];
+  rgba[0] *= color_def->_color_gain[0];
+  rgba[1] *= color_def->_color_gain[1];
+  rgba[2] *= color_def->_color_gain[2];
+  rgba[3] *= color_def->_color_gain[3];
 
   primitive.set_color(rgba);
 }

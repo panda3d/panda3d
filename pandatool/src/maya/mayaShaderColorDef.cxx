@@ -44,6 +44,8 @@ MayaShaderColorDef() {
   _flat_color.set(0.0, 0.0, 0.0, 0.0);
 
   _has_texture = false;
+  _texture_name = "";
+  _uvset_name = "map1";
   _projection_type = PT_off;
   _map_uvs = NULL;
 
@@ -61,6 +63,44 @@ MayaShaderColorDef() {
   _rotate_uv = 0.0;
 
   _color_object = (MObject *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShaderColorDef::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+MayaShaderColorDef::
+MayaShaderColorDef(MayaShaderColorDef &copy) {
+  _has_texture = copy._has_texture;
+  _texture_filename = copy._texture_filename;
+  _texture_name = copy._texture_name;
+  _uvset_name = copy._uvset_name;
+  _color_gain = copy._color_gain;
+
+  _has_flat_color = copy._has_flat_color;
+  _flat_color = copy._flat_color;
+
+  _projection_type = copy._projection_type;
+  _projection_matrix = copy._projection_matrix;
+  _u_angle = copy._u_angle;
+  _v_angle = copy._v_angle;
+
+  _coverage = copy._coverage;
+  _translate_frame = copy._translate_frame;
+  _rotate_frame = copy._rotate_frame;
+
+  _mirror = copy._mirror;
+  _stagger = copy._stagger;
+  _wrap_u = copy._wrap_u;
+  _wrap_v = copy._wrap_v;
+
+  _repeat_uv = copy._repeat_uv;
+  _offset = copy._offset;
+  _rotate_uv = copy._rotate_uv;
+
+  _map_uvs = copy._map_uvs;
+  _color_object = copy._color_object;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,7 +170,9 @@ project_uv(const LPoint3d &pos, const LPoint3d &centroid) const {
 void MayaShaderColorDef::
 write(ostream &out) const {
   if (_has_texture) {
-    out << "    texture is " << _texture << "\n"
+    out << "    texture filename is " << _texture_filename << "\n"
+        << "    texture name is " << _texture_name << "\n"
+        << "    uv_set name is " << _uvset_name << "\n"
         << "    coverage is " << _coverage << "\n"
         << "    translate_frame is " << _translate_frame << "\n"
         << "    rotate_frame is " << _rotate_frame << "\n"
@@ -159,7 +201,7 @@ reset_maya_texture(const Filename &texture) {
   if (_color_object != (MObject *)NULL) {
     _has_texture = set_string_attribute(*_color_object, "fileTextureName", 
                                         texture.to_os_generic());
-    _texture = texture;
+    _texture_filename = texture;
 
     if (!_has_texture) {
       maya_cat.error()
@@ -182,7 +224,7 @@ reset_maya_texture(const Filename &texture) {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void MayaShaderColorDef::
-read_surface_color(const MayaShader *shader, MObject color) {
+read_surface_color(MayaShader *shader, MObject color, bool trans) {
   RGBColorf color_gain;
   if (get_vec3f_attribute(color, "colorGain", color_gain)) {
     _color_gain[0] *= color_gain[0];
@@ -193,15 +235,14 @@ read_surface_color(const MayaShader *shader, MObject color) {
   if (get_maya_attribute(color, "alphaGain", alpha_gain)) {
     _color_gain[3] *= alpha_gain;
   }
-
   if (color.hasFn(MFn::kFileTexture)) {
     _color_object = new MObject(color);
     string filename;
     _has_texture = get_string_attribute(color, "fileTextureName", filename);
     _has_texture = _has_texture && !filename.empty();
     if (_has_texture) {
-      _texture = Filename::from_os_specific(filename);
-      if (_texture.is_directory()) {
+      _texture_filename = Filename::from_os_specific(filename);
+      if (_texture_filename.is_directory()) {
         maya_cat.warning()
           << "Shader " << shader->get_name() 
           << " references texture filename " << filename
@@ -224,7 +265,13 @@ read_surface_color(const MayaShader *shader, MObject color) {
     get_vec2f_attribute(color, "offset", _offset);
     get_angle_attribute(color, "rotateUV", _rotate_uv);
 
+    if (!trans) {
+      maya_cat.debug() << "pushed a file texture" << endl;
+      shader->_color.push_back(this);
+    }
+
   } else if (color.hasFn(MFn::kProjection)) {
+    maya_cat.debug() << "reading a projection texture" << endl;
     // This is a projected texture.  We will have to step one level
     // deeper to find the actual texture.
     MFnDependencyNode projection_fn(color);
@@ -256,6 +303,60 @@ read_surface_color(const MayaShader *shader, MObject color) {
       set_projection_type(type);
     }
 
+  } else if (color.hasFn(MFn::kLayeredTexture)) {
+    maya_cat.debug() << "Found layered texture" << endl;
+    //list_maya_attributes(color);
+    //shader->_multi_texture = true;
+    //get_enum_attribute(color,"blendMode",shader->_blend_mode);
+    //maya_cat.debug() << "blend mode :" << shader->_blend_mode << endl;
+    MFnDependencyNode layered_fn(color);
+    MPlugArray color_pa;
+    MStatus status = layered_fn.getConnections(color_pa);
+    maya_cat.debug() << "number of connections: " << color_pa.length() << endl;
+    bool first = true;
+    for (size_t i=0; i<color_pa.length(); ++i) {
+      MPlug pl = color_pa[i];
+      MPlugArray pla;
+      pl.connectedTo(pla, true, false);
+      for (size_t j=0; j<pla.length(); ++j) {
+        //maya_cat.debug() << pl.name() << " is(pl) " << pl.node().apiTypeStr() << endl;
+        //maya_cat.debug() << pla[j].name() << " is(pla) " << pla[j].node().apiTypeStr() << endl;
+        if (!first) {
+          maya_cat.debug() << pl.name() << "next:connectedTo: " << pla[j].name() << endl;
+          MayaShaderColorDef *color_p = new MayaShaderColorDef;
+          color_p->read_surface_color(shader, pla[j].node());
+          color_p->_texture_name.assign(pla[j].name().asChar());
+          int loc = color_p->_texture_name.find('.',0);
+          if( loc != string::npos )
+            color_p->_texture_name.resize(loc);
+          maya_cat.debug() << "uv_name : " << color_p->_texture_name << endl;
+        }
+        else {
+          maya_cat.debug() << pl.name() << " first:connectedTo: " << pla[j].name() << endl;
+          read_surface_color(shader, pla[j].node());
+          _texture_name.assign(pla[j].name().asChar());
+          int loc = _texture_name.find('.',0);
+          if( loc != string::npos )
+            _texture_name.resize(loc);
+          maya_cat.debug() << "uv_name : " << _texture_name << endl;
+          first = false;
+        }
+
+        // lets see what this is connected to!?
+        MPlug pl_temp = pla[j];
+        MPlugArray pla_temp;
+        pl_temp.connectedTo(pla_temp, true, false);
+        maya_cat.debug() << pl_temp.name() << "connectedTo:" << pla_temp.length() << " plugs\n";
+      }
+      /*
+      string blah;
+      get_enum_attribute(pl.node(),"blendMode",blah);
+      maya_cat.debug() << "blend mode :" << blah << endl;
+      float alpha;
+      get_maya_attribute(pl.node(),"alpha",alpha);
+      maya_cat.debug() << "alpha :" << alpha << endl;
+      */
+    }
   } else {
     // This shader wasn't understood.
     if (maya_cat.is_debug()) {

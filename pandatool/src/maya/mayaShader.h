@@ -44,10 +44,14 @@ public:
   void output(ostream &out) const;
   void write(ostream &out) const;
 
-  Colorf get_rgba() const;
+  Colorf get_rgba(size_t idx=0) const;
+  MayaShaderColorDef *get_color_def(size_t idx=0) const;
 
-  MayaShaderColorDef _color;
   MayaShaderColorDef _transparency;
+  //MayaShaderColorDef _color;
+  // There could be multiple textures, so create an array of these colordefs
+  typedef pvector<MayaShaderColorDef *> ColorDef;
+  ColorDef _color;
 
 private:
   bool read_surface_shader(MObject shader);

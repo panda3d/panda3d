@@ -29,7 +29,9 @@
 #include <maya/MPlug.h>
 #include <maya/MFnAttribute.h>
 #include <maya/MFnTypedAttribute.h>
+#include <maya/MFnNumericAttribute.h>
 #include <maya/MFnEnumAttribute.h>
+#include <maya/MFnCompoundAttribute.h>
 #include <maya/MFnMatrixData.h>
 #include <maya/MMatrix.h>
 #include "post_maya_include.h"
@@ -170,7 +172,7 @@ get_bool_attribute(MObject &node, const string &attribute_name,
   }
 
   if (!get_maya_attribute(node, attribute_name, value)) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name
       << " does not have a bool value.\n";
     describe_maya_attribute(node, attribute_name);
@@ -189,7 +191,7 @@ get_angle_attribute(MObject &node, const string &attribute_name,
                     double &value) {
   MAngle maya_value;
   if (!get_maya_attribute(node, attribute_name, maya_value)) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name
       << " does not have an angle value.\n";
     describe_maya_attribute(node, attribute_name);
@@ -211,7 +213,7 @@ get_vec2f_attribute(MObject &node, const string &attribute_name,
 
   MObject vec2f_object;
   if (!get_maya_attribute(node, attribute_name, vec2f_object)) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name
       << " does not have a vec2f object value.\n";
     describe_maya_attribute(node, attribute_name);
@@ -220,7 +222,7 @@ get_vec2f_attribute(MObject &node, const string &attribute_name,
 
   MFnNumericData data(vec2f_object, &status);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name << " is of type "
       << vec2f_object.apiTypeStr() << ", not a NumericData.\n";
     return false;
@@ -228,7 +230,7 @@ get_vec2f_attribute(MObject &node, const string &attribute_name,
 
   status = data.getData(value[0], value[1]);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Unable to extract 2 floats from " << attribute_name
       << ", of type " << vec2f_object.apiTypeStr() << "\n";
   }
@@ -248,7 +250,7 @@ get_vec3f_attribute(MObject &node, const string &attribute_name,
 
   MObject vec3f_object;
   if (!get_maya_attribute(node, attribute_name, vec3f_object)) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name
       << " does not have a vec3f object value.\n";
     describe_maya_attribute(node, attribute_name);
@@ -257,7 +259,7 @@ get_vec3f_attribute(MObject &node, const string &attribute_name,
 
   MFnNumericData data(vec3f_object, &status);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name << " is of type "
       << vec3f_object.apiTypeStr() << ", not a NumericData.\n";
     return false;
@@ -265,7 +267,7 @@ get_vec3f_attribute(MObject &node, const string &attribute_name,
 
   status = data.getData(value[0], value[1], value[2]);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Unable to extract 3 floats from " << attribute_name
       << ", of type " << vec3f_object.apiTypeStr() << "\n";
   }
@@ -285,7 +287,7 @@ get_vec2d_attribute(MObject &node, const string &attribute_name,
 
   MObject vec2d_object;
   if (!get_maya_attribute(node, attribute_name, vec2d_object)) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name
       << " does not have a vec2d object value.\n";
     describe_maya_attribute(node, attribute_name);
@@ -294,7 +296,7 @@ get_vec2d_attribute(MObject &node, const string &attribute_name,
 
   MFnNumericData data(vec2d_object, &status);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name << " is of type "
       << vec2d_object.apiTypeStr() << ", not a NumericData.\n";
     return false;
@@ -302,7 +304,7 @@ get_vec2d_attribute(MObject &node, const string &attribute_name,
 
   status = data.getData(value[0], value[1]);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Unable to extract 2 doubles from " << attribute_name
       << ", of type " << vec2d_object.apiTypeStr() << "\n";
   }
@@ -322,7 +324,7 @@ get_vec3d_attribute(MObject &node, const string &attribute_name,
 
   MObject vec3d_object;
   if (!get_maya_attribute(node, attribute_name, vec3d_object)) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name
       << " does not have a vec3d object value.\n";
     describe_maya_attribute(node, attribute_name);
@@ -331,7 +333,7 @@ get_vec3d_attribute(MObject &node, const string &attribute_name,
 
   MFnNumericData data(vec3d_object, &status);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name << " is of type "
       << vec3d_object.apiTypeStr() << ", not a NumericData.\n";
     return false;
@@ -339,7 +341,7 @@ get_vec3d_attribute(MObject &node, const string &attribute_name,
 
   status = data.getData(value[0], value[1], value[2]);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Unable to extract 3 doubles from " << attribute_name
       << ", of type " << vec3d_object.apiTypeStr() << "\n";
   }
@@ -362,7 +364,7 @@ get_mat4d_attribute(MObject &node, const string &attribute_name,
 
   MFnMatrixData matrix_data(matrix, &status);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name << " is of type "
       << node.apiTypeStr() << ", not a Matrix.\n";
     return false;
@@ -395,7 +397,7 @@ get_enum_attribute(MObject &node, const string &attribute_name,
   MObject attrib = plug.attribute();
   MFnEnumAttribute enum_attrib(attrib, &status);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Not an enum attribute: " << attribute_name << "\n";
     return false;
   }
@@ -403,7 +405,7 @@ get_enum_attribute(MObject &node, const string &attribute_name,
   short index;
   status = plug.getValue(index);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Could not get numeric value of " << attribute_name << "\n";
     status.perror("MPlug::getValue(short)");
     return false;
@@ -411,7 +413,7 @@ get_enum_attribute(MObject &node, const string &attribute_name,
 
   MString name = enum_attrib.fieldName(index, &status);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Invalid value for " << attribute_name << ": " << index << "\n";
     status.perror("MFnEnumAttribute::fieldName()");
     return false;
@@ -433,7 +435,7 @@ get_string_attribute(MObject &node, const string &attribute_name,
 
   MObject string_object;
   if (!get_maya_attribute(node, attribute_name, string_object)) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name
       << " does not have an string object value.\n";
     describe_maya_attribute(node, attribute_name);
@@ -442,7 +444,7 @@ get_string_attribute(MObject &node, const string &attribute_name,
 
   MFnStringData data(string_object, &status);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name << " is of type "
       << string_object.apiTypeStr() << ", not a StringData.\n";
     return false;
@@ -465,7 +467,7 @@ set_string_attribute(MObject &node, const string &attribute_name,
   // First, we get the string_object, then we set its string.
   MObject string_object;
   if (!get_maya_attribute(node, attribute_name, string_object)) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name
       << " does not have a string object value.\n";
     describe_maya_attribute(node, attribute_name);
@@ -474,7 +476,7 @@ set_string_attribute(MObject &node, const string &attribute_name,
 
   MFnStringData data(string_object, &status);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name << " is of type "
       << string_object.apiTypeStr() << ", not a StringData.\n";
     return false;
@@ -489,7 +491,7 @@ set_string_attribute(MObject &node, const string &attribute_name,
 
   // And it appears we now need to set the string object back.
   if (!set_maya_attribute(node, attribute_name, string_object)) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Attribute " << attribute_name
       << " suddenly does not have a string object value.\n";
     return false;
@@ -499,8 +501,62 @@ set_string_attribute(MObject &node, const string &attribute_name,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: describe_compound_attribute
+//  Description: Extracts the children of this attribute from the
+//               MObject. test for now
+////////////////////////////////////////////////////////////////////
+bool 
+describe_compound_attribute(MObject &node) {
+  MStatus status;
+  
+  MFnCompoundAttribute comp_attr(node, &status);
+
+  maya_cat.info() << "comp_attr has:" << comp_attr.numChildren() << " children" << endl;
+  for (size_t i = 0; i < comp_attr.numChildren(); i++) {
+    MObject child = comp_attr.child(i, &status);
+    if (child.apiType() == MFn::kAttribute3Float){
+      RGBColorf color;
+      /*
+      if (get_vec3f_attribute(child, "color", color)) {
+        maya_cat.info() << "color: " << color << endl;
+      }
+      */
+    }
+    else if (child.apiType() == MFn::kNumericAttribute) {
+      MFnNumericAttribute numeric(child, &status);
+      if (status) {
+        switch(numeric.unitType()) {
+        case MFnNumericData::kFloat :
+          float alpha;
+          status = numeric.getDefault(alpha);
+          maya_cat.info() << "found a float :" << alpha << endl;
+          break;
+        case MFnNumericData::kBoolean :
+          bool v;
+          status = numeric.getDefault(v);
+          maya_cat.info() << "found a bool :" << v << endl;
+        default:
+          maya_cat.info() << numeric.unitType() << endl;
+        }
+      }
+    }
+    else if (child.apiType() == MFn::kEnumAttribute) {
+      MFnEnumAttribute enu(child, &status);
+      if (status) {
+        MString blah;
+        status = enu.getDefault(blah);
+        maya_cat.info() << "found a string :" << blah << endl;
+        MPlug plug = MPlug(node, child);
+        maya_cat.info() << "plug name" << plug.name() << endl;
+      }
+    }
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: describe_maya_attribute
-//  Description: Writes some error output about the indicated Maya
+//  Description: Writes some warning output about the indicated Maya
 //               attribute.
 ////////////////////////////////////////////////////////////////////
 void
@@ -508,20 +564,20 @@ describe_maya_attribute(MObject &node, const string &attribute_name) {
   MStatus status;
   MFnDependencyNode node_fn(node, &status);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Object is a " << node.apiTypeStr() << ", not a DependencyNode.\n";
     return;
   }
 
   MObject attr = node_fn.attribute(attribute_name.c_str(), &status);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Object " << node_fn.name().asChar() << " does not support attribute "
       << attribute_name << "\n";
     return;
   }
 
-  maya_cat.error()
+  maya_cat.warning()
     << "Attribute " << attribute_name << " on object "
     << node_fn.name().asChar() << " has type " << attr.apiTypeStr() << "\n";
 }
@@ -608,7 +664,7 @@ list_maya_attributes(MObject &node) {
   MStatus status;
   MFnDependencyNode node_fn(node, &status);
   if (!status) {
-    maya_cat.error()
+    maya_cat.warning()
       << "Object is a " << node.apiTypeStr() << ", not a DependencyNode.\n";
     return;
   }
@@ -631,6 +687,10 @@ list_maya_attributes(MObject &node) {
         << "  " << i << ". " << plug.name().asChar() << ", "
         << plug.attribute().apiTypeStr() << ", " 
         << plug.node().apiTypeStr();
+      if (plug.attribute().apiType() == MFn::kCompoundAttribute) {
+        //maya_cat.info() << plug.info();
+        //describe_compound_attribute(plug.attribute());
+      }
       if (plug.isConnected()) {
         maya_cat.info(false)
           << " (*)";
@@ -639,7 +699,7 @@ list_maya_attributes(MObject &node) {
         << "\n";
     }
   }
-    
+
   maya_cat.info()
     << name << " has " << node_fn.attributeCount() << " attributes.\n";
   for (i = 0; i < node_fn.attributeCount(); i++) {

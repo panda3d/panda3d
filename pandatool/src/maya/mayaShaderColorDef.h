@@ -36,6 +36,7 @@ class MayaShader;
 class MayaShaderColorDef {
 public:
   MayaShaderColorDef();
+  MayaShaderColorDef(MayaShaderColorDef&);
   ~MayaShaderColorDef();
   
   LMatrix3d compute_texture_matrix() const;
@@ -58,7 +59,9 @@ public:
   };
 
   bool _has_texture;
-  Filename _texture;
+  Filename _texture_filename;
+  string _texture_name;
+  string _uvset_name;
   Colorf _color_gain;
   
   bool _has_flat_color;
@@ -83,7 +86,7 @@ public:
   double _rotate_uv;
   
 private:
-  void read_surface_color(const MayaShader *shader, MObject color);
+  void read_surface_color(MayaShader *shader, MObject color, bool trans=false);
   void set_projection_type(const string &type);
 
   LPoint2d map_planar(const LPoint3d &pos, const LPoint3d &centroid) const;

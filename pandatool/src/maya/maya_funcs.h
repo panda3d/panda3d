@@ -100,6 +100,9 @@ set_string_attribute(MObject &node, const string &attribute_name,
 void
 describe_maya_attribute(MObject &node, const string &attribute_name);
 
+bool
+describe_compound_attribute(MObject &node);
+
 string
 string_mfndata_type(MFnData::Type type);
 

@@ -167,8 +167,10 @@ copy_maya_file(const Filename &source, const Filename &dest,
   int num_shaders = _shaders.get_num_shaders();
   for (int i = 0; i < num_shaders; i++) {
     MayaShader *shader = _shaders.get_shader(i);
-    if (!extract_texture(shader->_color, dir)) {
-      return false;
+    for (size_t j = 0; j < shader->_color.size(); j++) {
+      if (!extract_texture(*shader->get_color_def(j), dir)) {
+        return false;
+      }
     }
     if (!extract_texture(shader->_transparency, dir)) {
       return false;
@@ -227,7 +229,7 @@ bool MayaCopy::
 extract_texture(MayaShaderColorDef &color_def, CVSSourceDirectory *dir) {
   if (color_def._has_texture) {
     Filename texture_filename = 
-      _path_replace->convert_path(color_def._texture);
+      _path_replace->convert_path(color_def._texture_filename);
     if (!texture_filename.exists()) {
       nout << "*** Warning: texture " << texture_filename
            << " does not exist.\n";

@@ -55,7 +55,6 @@ MayaShader(MObject engine) {
   if (!shader_plug.isNull()) {
     MPlugArray shader_pa;
     shader_plug.connectedTo(shader_pa, true, false);
-
     for (size_t i = 0; i < shader_pa.length() && !found_shader; i++) {
       MObject shader = shader_pa[0].node();
       found_shader = read_surface_shader(shader);
@@ -70,6 +69,9 @@ MayaShader(MObject engine) {
 ////////////////////////////////////////////////////////////////////
 MayaShader::
 ~MayaShader() {
+  for (size_t i=0; i<_color.size(); ++i) {
+    _color.pop_back();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,11 +93,23 @@ void MayaShader::
 write(ostream &out) const {
   out << "Shader " << get_name() << "\n"
       << "  color:\n";
-  _color.write(out);
+  for (size_t i=0; i<_color.size(); ++i) {
+    _color[i]->write(out);
+  }
   out << "  transparency:\n";
   _transparency.write(out);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::get_color_def
+//       Access: Public
+//  Description: Now that the shaders can have multiple textures
+//               return the color def i.e. texture at idx
+////////////////////////////////////////////////////////////////////
+MayaShaderColorDef *MayaShader::
+get_color_def(size_t idx) const {
+  return _color[idx];
+}
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaShader::get_rgba
 //       Access: Public
@@ -110,13 +124,13 @@ write(ostream &out) const {
 //               is true), this value is not used by Maya.
 ////////////////////////////////////////////////////////////////////
 Colorf MayaShader::
-get_rgba() const {
+get_rgba(size_t idx) const {
   Colorf rgba(1.0f, 1.0f, 1.0f, 1.0f);
 
-  if (_color._has_flat_color) {
-    rgba[0] = (float)_color._flat_color[0];
-    rgba[1] = (float)_color._flat_color[1];
-    rgba[2] = (float)_color._flat_color[2];
+  if (_color[idx]->_has_flat_color) {
+    rgba[0] = (float)_color[idx]->_flat_color[0];
+    rgba[1] = (float)_color[idx]->_flat_color[1];
+    rgba[2] = (float)_color[idx]->_flat_color[2];
   }
 
   if (_transparency._has_flat_color) {
@@ -143,7 +157,7 @@ bool MayaShader::
 read_surface_shader(MObject shader) {
   MStatus status;
   MFnDependencyNode shader_fn(shader);
-
+  
   if (maya_cat.is_spam()) {
     maya_cat.spam()
       << "  Reading surface shader " << shader_fn.name().asChar() << "\n";
@@ -160,13 +174,21 @@ read_surface_shader(MObject shader) {
     // used.
     color_plug = shader_fn.findPlug("outColor");
   }
-    
+
   if (!color_plug.isNull()) {
     MPlugArray color_pa;
     color_plug.connectedTo(color_pa, true, false);
 
+    MayaShaderColorDef *color_p = new MayaShaderColorDef;
     for (size_t i = 0; i < color_pa.length(); i++) {
-      _color.read_surface_color(this, color_pa[0].node());
+      maya_cat.spam() << "color_pa[" << i << "]:" << color_pa[i].name() << endl;
+      color_p->read_surface_color(this, color_pa[0].node());
+    }
+
+    if (color_pa.length() < 1) {
+      // assign a blank default color to this shader
+      maya_cat.spam() << shader_fn.name().asChar() << " was not connected to texture" << endl;
+      this->_color.push_back(color_p);
     }
   }
 
@@ -181,32 +203,42 @@ read_surface_shader(MObject shader) {
     trans_plug.connectedTo(trans_pa, true, false);
 
     for (size_t i = 0; i < trans_pa.length(); i++) {
-      _transparency.read_surface_color(this, trans_pa[0].node());
+      maya_cat.spam() << "read a transparency texture" << endl;
+      _transparency.read_surface_color(this, trans_pa[0].node(), true);
     }
   }
 
   // Also try to get the ordinary color directly from the surface
   // shader.
+  bool b_color_def = true;
   if (shader.hasFn(MFn::kLambert)) {
     MFnLambertShader lambert_fn(shader);
     MColor color = lambert_fn.color(&status);
     if (status) {
       // Warning! The alpha component of color doesn't mean
       // transparency in Maya.
-      _color._has_flat_color = true;
-      _color._flat_color.set(color.r, color.g, color.b, color.a);
-      _transparency._flat_color.set(0.0, 0.0, 0.0, 0.0);
+      for (size_t i=0; i<_color.size(); ++i) {
+        _color[i]->_has_flat_color = true;
+        _color[i]->_flat_color.set(color.r, color.g, color.b, color.a);
+        maya_cat.spam() << shader_fn.name().asChar() << " set shader color" << endl;
+        // needed to print the final check
+        if (!_color[i]->_has_flat_color && !_color[i]->_has_texture)
+          b_color_def = false;
 
-      // Get the transparency separately.
-      color = lambert_fn.transparency(&status);
-      if (status) {
-        _transparency._has_flat_color = true;
-        _transparency._flat_color.set(color.r, color.g, color.b, color.a);
+        _transparency._flat_color.set(0.0, 0.0, 0.0, 0.0);
+        
+        // Get the transparency separately.
+        color = lambert_fn.transparency(&status);
+        if (status) {
+          _transparency._has_flat_color = true;
+          _transparency._flat_color.set(color.r, color.g, color.b, color.a);
+        }
       }
     }
   }
-
-  if (!_color._has_flat_color && !_color._has_texture) {
+  //  if (!_color._has_flat_color && !_color._has_texture) {
+  if (!b_color_def) {
+    maya_cat.info() << shader_fn.name().asChar() << "Color def not found" << endl;
     if (maya_cat.is_spam()) {
       maya_cat.spam()
         << "  Color definition not found.\n";

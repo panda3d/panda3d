@@ -33,6 +33,7 @@
 
 #include "pre_maya_include.h"
 #include <maya/MDagPath.h>
+#include <maya/MItMeshPolygon.h>
 #include "post_maya_include.h"
 
 class EggData;
@@ -133,8 +134,10 @@ private:
                           pvector<EggGroup *> &joints, MFloatArray &weights);
   bool get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
                           pvector<EggGroup *> &joints, MFloatArray &weights);
+  //  void set_shader_attributes(EggPrimitive &primitive,
+  //                             const MayaShader &shader);
   void set_shader_attributes(EggPrimitive &primitive,
-                             const MayaShader &shader);
+                             const MayaShader &shader, const MItMeshPolygon *pi=NULL);
   void apply_texture_properties(EggTexture &tex, 
                                 const MayaShaderColorDef &color_def);
   bool compare_texture_properties(EggTexture &tex, 
