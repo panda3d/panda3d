@@ -122,7 +122,7 @@ private:
   Groups _groups;
 
   bool _has_mouse;
-  bool _suppressed;
+  int _suppress_flags;
   LPoint2f _mouse;
 
   PT(MouseWatcherRegion) _current_region;

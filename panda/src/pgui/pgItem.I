@@ -159,6 +159,30 @@ get_background_focus() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::set_suppress_flags
+//       Access: Published
+//  Description: This is just an interface to set the suppress flags
+//               on the underlying MouseWatcherRegion.  See
+//               MouseWatcherRegion::set_suppress_flags().
+////////////////////////////////////////////////////////////////////
+INLINE void PGItem::
+set_suppress_flags(int suppress_flags) {
+  _region->set_suppress_flags(suppress_flags);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_suppress_flags
+//       Access: Published
+//  Description: This is just an interface to get the suppress flags
+//               on the underlying MouseWatcherRegion.  See
+//               MouseWatcherRegion::get_suppress_flags().
+////////////////////////////////////////////////////////////////////
+INLINE int PGItem::
+get_suppress_flags() const {
+  return _region->get_suppress_flags();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::get_id
 //       Access: Published
 //  Description: Returns the unique ID assigned to this PGItem.  This

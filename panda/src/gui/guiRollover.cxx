@@ -87,7 +87,7 @@ GuiRollover::GuiRollover(const string& name, GuiLabel* off, GuiLabel* on)
   GetExtents(off, on, _left, _right, _bottom, _top);
   _rgn = new MouseWatcherRegion("rollover-" + name, _left, _right, _bottom,
                                 _top);
-  _rgn->set_suppress_below(false);
+  _rgn->set_suppress_flags(0);
   rollovers[this->_rgn.p()] = this;
 }
 

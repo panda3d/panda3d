@@ -43,7 +43,7 @@ TypeHandle MouseWatcher::_button_events_type;
 MouseWatcher::
 MouseWatcher(const string &name) : DataNode(name) {
   _has_mouse = false;
-  _suppressed = false;
+  _suppress_flags = 0;
   _current_region = (MouseWatcherRegion *)NULL;
   _button_down_region = (MouseWatcherRegion *)NULL;
   _button_down = false;
@@ -337,11 +337,14 @@ press(ButtonHandle button) {
       // keyboard flag.
       _current_region->press(param);
     }
-    
-    // All the other regions only get the keyboard events if
-    // they set their global keyboard flag.
-    param.set_outside(true);
-    global_keyboard_press(param);
+
+    if ((_suppress_flags & MouseWatcherRegion::SF_other_button) == 0) {
+      // All the other regions only get the keyboard events if they
+      // set their global keyboard flag, *and* the current region does
+      // not suppress keyboard buttons.
+      param.set_outside(true);
+      global_keyboard_press(param);
+    }
   }
 }
 
@@ -506,6 +509,11 @@ transmit_data(AllTransitionsWrapper &data) {
     }
   }
 
+  _suppress_flags = 0;
+  if (_current_region != (MouseWatcherRegion *)NULL) {
+    _suppress_flags = _current_region->get_suppress_flags();
+  }
+
   // Look for button events.
   const ButtonEventDataTransition *b;
   if (get_transition_into(b, data, _button_events_type)) {
@@ -522,18 +530,48 @@ transmit_data(AllTransitionsWrapper &data) {
     }
   }
 
-  _suppressed = false;
-  if (_current_region != (MouseWatcherRegion *)NULL) {
-    _suppressed = _current_region->get_suppress_below();
-  }
-
-  if (_suppressed) {
-    // We used to suppress *everything* below, but on reflection we
-    // really only want to suppress the mouse position information.
-    // Button events must still get through.
-
+  if ((_suppress_flags & MouseWatcherRegion::SF_mouse_position) != 0) {
+    // Suppress the mouse position.
     data.clear_transition(_xyz_type);
     data.clear_transition(_pixel_xyz_type);
+  }
+  int suppress_buttons = (_suppress_flags & MouseWatcherRegion::SF_any_button);
+  if (suppress_buttons == MouseWatcherRegion::SF_any_button) {
+    // Suppress all buttons.
+    data.clear_transition(_button_events_type);
+
+  } else if (suppress_buttons != 0) {
+    // Suppress some buttons.
+    const ButtonEventDataTransition *b;
+    ButtonEventDataTransition *new_b = (ButtonEventDataTransition *)NULL;
+
+    if (get_transition_into(b, data, _button_events_type)) {
+      ButtonEventDataTransition::const_iterator bi;
+      for (bi = b->begin(); bi != b->end(); ++bi) {
+        const ButtonEvent &be = (*bi);
+        bool suppress = true;
+
+        if (MouseButton::is_mouse_button(be._button)) {
+          suppress = ((suppress_buttons & MouseWatcherRegion::SF_mouse_button) != 0);
+        } else {
+          suppress = ((suppress_buttons & MouseWatcherRegion::SF_other_button) != 0);
+        }
+
+        if (!suppress) {
+          // Don't suppress this button event; pass it through.
+          if (new_b == (ButtonEventDataTransition *)NULL) {
+            new_b = new ButtonEventDataTransition;
+          }
+          new_b->push_back(be);
+        }
+      }
+    }
+
+    if (new_b == (ButtonEventDataTransition *)NULL) {
+      data.clear_transition(_button_events_type);
+    } else {
+      data.set_transition(_button_events_type, new_b);
+    }
   }
 }
 

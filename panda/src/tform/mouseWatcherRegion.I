@@ -29,7 +29,7 @@ MouseWatcherRegion(const string &name, float left, float right,
   _frame(left, right, bottom, top)
 {
   _sort = 0;
-  _flags = F_active | F_suppress_below;
+  _flags = F_active;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ MouseWatcherRegion(const string &name, const LVecBase4f &frame) :
   _frame(frame)
 {
   _sort = 0;
-  _flags = F_active | F_suppress_below;
+  _flags = F_active;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,32 +174,32 @@ get_keyboard() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcherRegion::set_suppress_below
+//     Function: MouseWatcherRegion::set_suppress_flags
 //       Access: Published
-//  Description: Sets the suppress_below flag.  When this is true, and
-//               the region is active, then whenever the mouse is
-//               within the region the MouseWatcher will suppress any
-//               mouse and keyboard events further down in the data
-//               graph.
+//  Description: Sets which events are suppressed when the mouse is
+//               over the region.  This is the union of zero or more
+//               various SF_* values.  Normally, this is 0, indicating
+//               that no events are suppressed.
+//
+//               If you set this to a non-zero value, for instance
+//               SF_mouse_position, then the mouse position will not
+//               be sent along the data graph when the mouse is over
+//               this particular region.
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcherRegion::
-set_suppress_below(bool suppress_below) {
-  if (suppress_below) {
-    _flags |= F_suppress_below;
-  } else {
-    _flags &= ~F_suppress_below;
-  }
+set_suppress_flags(int suppress_flags) {
+  _flags = ((_flags & ~F_suppress_flags) | (suppress_flags & F_suppress_flags));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcherRegion::get_suppress_below
+//     Function: MouseWatcherRegion::get_suppress_flags
 //       Access: Published
-//  Description: Returns the suppress_below flag.  See
-//               set_suppress_below().
+//  Description: Returns the current suppress_flags.  See
+//               set_suppress_flags().
 ////////////////////////////////////////////////////////////////////
-INLINE bool MouseWatcherRegion::
-get_suppress_below() const {
-  return ((_flags & F_suppress_below) != 0);
+INLINE int MouseWatcherRegion::
+get_suppress_flags() const {
+  return (_flags & F_suppress_flags);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -102,6 +102,9 @@ PUBLISHED:
   void set_background_focus(bool focus);
   INLINE bool get_background_focus() const;
 
+  INLINE void set_suppress_flags(int suppress_flags);
+  INLINE int get_suppress_flags() const;
+
   int get_num_state_defs() const;
   void clear_state_def(int state);
   bool has_state_def(int state) const;

@@ -175,7 +175,7 @@ void GuiButton::switch_state(GuiButton::States nstate) {
   case NONE:
     if (_mgr->has_region(_rgn))
       _mgr->remove_region(_rgn);
-    _rgn->set_suppress_below(false);
+    _rgn->set_suppress_flags(0);
     break;
   case UP:
     if (!(_mgr->has_region(_rgn)))
@@ -199,7 +199,7 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 #else /* _DEBUG */
     }
 #endif /* _DEBUG */
-    _rgn->set_suppress_below(true);
+    _rgn->set_suppress_flags(MouseWatcherRegion::SF_mouse_position);
     break;
   case UP_ROLLOVER:
     if (!(_mgr->has_region(_rgn)))
@@ -248,7 +248,7 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 #endif /* _DEBUG */
       _state = UP;
     }
-    _rgn->set_suppress_below(true);
+    _rgn->set_suppress_flags(MouseWatcherRegion::SF_mouse_position);
     if ((ostate == UP) &&
     (_rollover_functor != (GuiBehavior::BehaviorFunctor*)0L))
       _rollover_functor->doit(this);
@@ -276,7 +276,7 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 #else /* _DEBUG */
     }
 #endif /* _DEBUG */
-    _rgn->set_suppress_below(true);
+    _rgn->set_suppress_flags(MouseWatcherRegion::SF_mouse_position);
     break;
   case DOWN_ROLLOVER:
     if (!(_mgr->has_region(_rgn)))
@@ -325,7 +325,7 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 #endif /* _DEBUG */
       _state = DOWN;
     }
-    _rgn->set_suppress_below(true);
+    _rgn->set_suppress_flags(MouseWatcherRegion::SF_mouse_position);
     break;
   case INACTIVE:
     if (_mgr->has_region(_rgn))
@@ -347,7 +347,7 @@ void GuiButton::switch_state(GuiButton::States nstate) {
     my_throw(_mgr, _inactive_event, paramthis);
       }
     }
-    _rgn->set_suppress_below(false);
+    _rgn->set_suppress_flags(0);
     break;
   case INACTIVE_ROLLOVER:
     if (_mgr->has_region(_rgn))
@@ -369,7 +369,7 @@ void GuiButton::switch_state(GuiButton::States nstate) {
     my_throw(_mgr, _inactive_event, paramthis);
       }
     }
-    _rgn->set_suppress_below(false);
+    _rgn->set_suppress_flags(0);
     break;
   default:
     gui_cat->warning() << "switched to invalid state (" << (int)_state << ")"
@@ -503,7 +503,7 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down)
          _bottom, _top);
   _rgn = new MouseWatcherRegion("button-" + name, _left, _right, _bottom,
                 _top);
-  _rgn->set_suppress_below(true);
+  _rgn->set_suppress_flags(MouseWatcherRegion::SF_mouse_position);
   buttons[this->_rgn.p()] = this;
 }
 
@@ -523,7 +523,7 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down,
          _bottom, _top);
   _rgn = new MouseWatcherRegion("button-" + name, _left, _right, _bottom,
                 _top);
-  _rgn->set_suppress_below(true);
+  _rgn->set_suppress_flags(MouseWatcherRegion::SF_mouse_position);
   buttons[this->_rgn.p()] = this;
 }
 
@@ -544,7 +544,7 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
          _top);
   _rgn = new MouseWatcherRegion("button-" + name, _left, _right, _bottom,
                 _top);
-  _rgn->set_suppress_below(true);
+  _rgn->set_suppress_flags(MouseWatcherRegion::SF_mouse_position);
   buttons[this->_rgn.p()] = this;
 }
 

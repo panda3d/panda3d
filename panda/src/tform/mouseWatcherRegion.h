@@ -54,8 +54,15 @@ PUBLISHED:
   INLINE void set_keyboard(bool keyboard);
   INLINE bool get_keyboard() const;
 
-  INLINE void set_suppress_below(bool suppress_below);
-  INLINE bool get_suppress_below() const;
+  enum SuppressFlags {
+    SF_mouse_button       = 0x001,
+    SF_other_button       = 0x002,
+    SF_any_button         = 0x003,
+    SF_mouse_position     = 0x004,
+  };
+
+  INLINE void set_suppress_flags(int suppress_flags);
+  INLINE int get_suppress_flags() const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
@@ -74,9 +81,11 @@ private:
   int _sort;
 
   enum Flags {
-    F_active         = 0x001,
-    F_keyboard       = 0x002,
-    F_suppress_below = 0x004,
+    // F_suppress_flags is the union of all of the SuppressFlags,
+    // above.  Presently, we reserve 8 bits for suppress flags.
+    F_suppress_flags = 0x0ff,
+    F_active         = 0x100,
+    F_keyboard       = 0x200,
   };
   int _flags;
   ModifierButtons _mods;
