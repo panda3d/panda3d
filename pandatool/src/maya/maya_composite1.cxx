@@ -1,0 +1,6 @@
+#include "config_maya.cxx"
+#include "mayaApi.cxx"
+#include "mayaShader.cxx"
+#include "mayaShaderColorDef.cxx"
+#include "mayaShaders.cxx"
+#include "maya_funcs.cxx"

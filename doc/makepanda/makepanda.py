@@ -191,7 +191,7 @@ COMPILER=COMPILERS[0]
 OPTIMIZE="3"
 INSTALLER=0
 COMPLETE=0
-THIRDPARTY=""
+THIRDPARTY="thirdparty"
 VERSION="0.0.0"
 VERBOSE=1
 COMPRESSOR="zlib"
@@ -498,7 +498,7 @@ def parseopts(args):
             elif (option=="--prefix"): PREFIX=value
             elif (option=="--compiler"): COMPILER=value
             elif (option=="--directx-sdk"): DIRECTXSDK=value
-            elif (option=="--thirdparty"): THIRDPARTY=value+"/"
+            elif (option=="--thirdparty"): THIRDPARTY=value
             elif (option=="--optimize"): OPTIMIZE=value
             elif (option=="--quiet"): VERBOSE-=1
             elif (option=="--verbose"): VERBOSE+=1
@@ -567,17 +567,6 @@ if ((os.path.exists(os.path.join(PANDASOURCE,"makepanda/makepanda.py"))==0) or
     sys.exit("I am unable to locate the root of the panda source tree.")
 
 os.chdir(PANDASOURCE)
-
-########################################################################
-##
-## Locate the Directory containing the precompiled third-party software,
-## if it wasn't specified on the command-line.
-##
-########################################################################
-
-if (THIRDPARTY == ""):
-    if (COMPILER == "MSVC7"): THIRDPARTY="thirdparty/win-libs-vc7/"
-    if (COMPILER == "LINUXA"): THIRDPARTY="thirdparty/linux-libs-a/"
 
 ########################################################################
 ##
@@ -737,7 +726,7 @@ if (sys.platform != "win32"):
 #
 ##########################################################################################
 
-if (os.path.isdir(os.path.join(THIRDPARTY, "miles"))==0):
+if (os.path.isdir(os.path.join(THIRDPARTY, "win-libs-vc7", "miles"))==0):
     if (OMIT.count("MILES")==0):
         WARNINGS.append("You do not have a copy of MILES sound system")
         WARNINGS.append("I have automatically added this command-line option: --no-miles")
@@ -758,14 +747,14 @@ if (OPTIMIZE <= 3):
 if (OPTIMIZE <= 3):
     DTOOLCONFIG["DO_COLLISION_RECORDING"] = '1'
 
-if (OPTIMIZE <= 2):
-    DTOOLCONFIG["TRACK_IN_INTERPRETER"] = '1'
+#if (OPTIMIZE <= 2):
+#    DTOOLCONFIG["TRACK_IN_INTERPRETER"] = '1'
 
 if (OPTIMIZE <= 3):
     DTOOLCONFIG["DO_MEMORY_USAGE"] = '1'
 
-if (OPTIMIZE <= 1):
-    DTOOLCONFIG["DO_PIPELINING"] = '1'
+#if (OPTIMIZE <= 1):
+#    DTOOLCONFIG["DO_PIPELINING"] = '1'
 
 if (OPTIMIZE <= 3):
     DTOOLCONFIG["NOTIFY_DEBUG"] = '1'
@@ -1156,7 +1145,7 @@ priorIPath=None
 def checkIfNewDir(path):
     global priorIPath
     if priorIPath != path:
-        print "\nStarting compile in \"%s\":\n"%(path,)
+        print "\nStarting compile in \"%s\" (%s):\n"%(path,prettyTime(time.time()-STARTTIME),)
     priorIPath=path
 
 def CompileC(obj=0,src=0,ipath=[],opts=[]):
@@ -1182,14 +1171,15 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
                     cmd = cmd + ' /I"' + MAXSDK[max] + 'include" /I"' + MAXSDKCS[max] + '" /D' + max
             for pkg in PACKAGES:
                 if (pkg != "MAYA5") and (pkg != "MAYA6") and PkgSelected(opts,pkg):
-                    cmd = cmd + " /I" + THIRDPARTY + pkg.lower() + "/include"
+                    cmd = cmd + " /I" + THIRDPARTY + "/win-libs-vc7/" + pkg.lower() + "/include"
             for x in ipath: cmd = cmd + " /I" + x
             if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
             if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
-            if (OPTIMIZE==1): cmd = cmd + " /D_DEBUG /Zc:forScope /MDd /Zi /RTCs /GS "
-            if (OPTIMIZE==2): cmd = cmd + " /D_DEBUG /Zc:forScope /MDd /Zi /RTCs /GS "
-            if (OPTIMIZE==3): cmd = cmd + " /Zc:forScope /MD /O2 /Ob2 /G6 /Zi /DFORCE_INLINING "
-            if (OPTIMIZE==4): cmd = cmd + " /Zc:forScope /MD /O2 /Ob2 /G6 /GL /Zi /DFORCE_INLINING /DNDEBUG "
+#            if (OPTIMIZE==1): cmd = cmd + " /Zc:forScope /MD /Zi /RTCs /GS "
+            if (OPTIMIZE==1): cmd = cmd + " /Zc:forScope /MD /Zi /O2 /Ob2 /G6 /DFORCE_INLINING "
+            if (OPTIMIZE==2): cmd = cmd + " /Zc:forScope /MD /Zi /O2 /Ob2 /G6 /DFORCE_INLINING "
+            if (OPTIMIZE==3): cmd = cmd + " /Zc:forScope /MD /Zi /O2 /Ob2 /G6 /DFORCE_INLINING "
+            if (OPTIMIZE==4): cmd = cmd + " /Zc:forScope /MD /Zi /O2 /Ob2 /G6 /DFORCE_INLINING /GL /DNDEBUG "
             cmd = cmd + " /Fd" + wobj[:-4] + ".pdb"
             building = buildingwhat(opts)
             if (building): cmd = cmd + " /DBUILDING_" + building
@@ -1205,11 +1195,11 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
             if (src[-2:]==".c"): cmd = 'gcc -c -o ' + wobj
             else:                cmd = 'g++ -ftemplate-depth-30 -c -o ' + wobj
             cmd = cmd + ' -I"' + PythonSDK + '"'
-            if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -I' + THIRDPARTY + 'vrpn/include'
-            if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -I' + THIRDPARTY + 'fftw/include'
-            if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -I' + THIRDPARTY + 'fmod/include'
-            if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -I' + THIRDPARTY + 'nvidiacg/include'
-            if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -I' + THIRDPARTY + 'nspr/include'
+            if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/vrpn/include'
+            if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/fftw/include'
+            if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/fmod/include'
+            if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/nvidiacg/include'
+            if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -I' + THIRDPARTY + '/linux-libs-a/nspr/include'
             if (PkgSelected(opts,"FREETYPE")): cmd = cmd + ' -I/usr/include/freetype2'
             for x in ipath: cmd = cmd + ' -I' + x
             if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
@@ -1283,6 +1273,9 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
             if (OPTIMIZE==4): cmd = cmd + ' -DFORCE_INLINING'
             cmd = cmd + ' -S' + dotdots + PREFIX + '/include/parser-inc'
             cmd = cmd + ' -I' + dotdots + PREFIX + '/python/include'
+            for pkg in PACKAGES:
+                if (PkgSelected(opts,pkg)):
+                    cmd = cmd + ' -I' + dotdots + THIRDPARTY + "/win-libs-vc7/" + pkg.lower() + "/include"
         if (COMPILER=="LINUXA"):
             cmd = dotdots + PREFIX + '/bin/interrogate'
             cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__i386__ -D__const=const'
@@ -1292,14 +1285,14 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
             if (OPTIMIZE==4): cmd = cmd + ' '
             cmd = cmd + ' -S' + dotdots + PREFIX + '/include/parser-inc -S/usr/include'
             cmd = cmd + ' -I' + dotdots + PREFIX + '/python/include'
+            for pkg in PACKAGES:
+                if (PkgSelected(opts,pkg)):
+                    cmd = cmd + ' -I' + dotdots + THIRDPARTY + "/linux-libs-a/" + pkg.lower() + "/include"
         cmd = cmd + ' -oc ' + dotdots + outc + ' -od ' + dotdots + outd
         cmd = cmd + ' -fnames -string -refcount -assert -python'
         for x in ipath: cmd = cmd + ' -I' + dotdots + x
         if (building): cmd = cmd + " -DBUILDING_"+building
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
-        for pkg in PACKAGES:
-            if (PkgSelected(opts,pkg)):
-                cmd = cmd + ' -I' + dotdots + THIRDPARTY + pkg.lower() + "/include"
         cmd = cmd + ' -module ' + module + ' -library ' + library
         if ((COMPILER=="MSVC7") and opts.count("DXSDK")): cmd = cmd + ' -I"' + DIRECTXSDK + '/include"'
         if ((COMPILER=="MSVC7") and opts.count("MAYA5")): cmd = cmd + ' -I"' + Maya5SDK + 'include"'
@@ -1393,8 +1386,8 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
         if (older(dll, wobj+xdep)):
             cmd = 'link.exe /nologo /NODEFAULTLIB:LIBCI.LIB'
             if (dll[-4:]!=".exe"): cmd = cmd + " /DLL"
-            if (OPTIMIZE==1): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRT.LIB "
-            if (OPTIMIZE==2): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRT.LIB "
+            if (OPTIMIZE==1): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF "
+            if (OPTIMIZE==2): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF "
             if (OPTIMIZE==3): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF "
             if (OPTIMIZE==4): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF /LTCG "
             cmd = cmd + " /MAP /MAPINFO:EXPORTS /MAPINFO:LINES /fixed:no /incremental:no /stack:4194304 "
@@ -1423,38 +1416,38 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             if (opts.count("WINGDI")):      cmd = cmd + " gdi32.lib"
             if (opts.count("ADVAPI")):      cmd = cmd + " advapi32.lib"
             if (opts.count("GLUT")):        cmd = cmd + " opengl32.lib glu32.lib"
-            if (PkgSelected(opts,"ZLIB")):     cmd = cmd + ' ' + THIRDPARTY + 'zlib/lib/libz.lib'
-            if (PkgSelected(opts,"PNG")):      cmd = cmd + ' ' + THIRDPARTY + 'png/lib/libpng.lib'
-            if (PkgSelected(opts,"JPEG")):     cmd = cmd + ' ' + THIRDPARTY + 'jpeg/lib/libjpeg.lib'
-            if (PkgSelected(opts,"TIFF")):     cmd = cmd + ' ' + THIRDPARTY + 'tiff/lib/libtiff.lib'
+            if (PkgSelected(opts,"ZLIB")):     cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/zlib/lib/libz.lib'
+            if (PkgSelected(opts,"PNG")):      cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/png/lib/libpng.lib'
+            if (PkgSelected(opts,"JPEG")):     cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/jpeg/lib/libjpeg.lib'
+            if (PkgSelected(opts,"TIFF")):     cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/tiff/lib/libtiff.lib'
             if (PkgSelected(opts,"VRPN")):
-                cmd = cmd + ' ' + THIRDPARTY + 'vrpn/lib/vrpn.lib'
-                cmd = cmd + ' ' + THIRDPARTY + 'vrpn/lib/quat.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/vrpn/lib/vrpn.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/vrpn/lib/quat.lib'
             if (PkgSelected(opts,"FMOD")):
-                cmd = cmd + ' ' + THIRDPARTY + 'fmod/lib/fmod.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/fmod/lib/fmod.lib'
             if (PkgSelected(opts,"MILES")):
-                cmd = cmd + ' ' + THIRDPARTY + 'miles/lib/mss32.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/miles/lib/mss32.lib'
             if (PkgSelected(opts,"NVIDIACG")):
                 if (opts.count("CGGL")):
-                    cmd = cmd + ' ' + THIRDPARTY + 'nvidiacg/lib/cgGL.lib'
-                cmd = cmd + ' ' + THIRDPARTY + 'nvidiacg/lib/cg.lib'
+                    cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/nvidiacg/lib/cgGL.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/nvidiacg/lib/cg.lib'
             if (PkgSelected(opts,"HELIX")):
-                cmd = cmd + ' ' + THIRDPARTY + 'helix/lib/runtlib.lib'
-                cmd = cmd + ' ' + THIRDPARTY + 'helix/lib/syslib.lib'
-                cmd = cmd + ' ' + THIRDPARTY + 'helix/lib/contlib.lib'
-                cmd = cmd + ' ' + THIRDPARTY + 'helix/lib/debuglib.lib'
-                cmd = cmd + ' ' + THIRDPARTY + 'helix/lib/utillib.lib'
-                cmd = cmd + ' ' + THIRDPARTY + 'helix/lib/stlport_vc7.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/runtlib.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/syslib.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/contlib.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/debuglib.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/utillib.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/helix/lib/stlport_vc7.lib'
             if (PkgSelected(opts,"NSPR")):
-                cmd = cmd + ' ' + THIRDPARTY + 'nspr/lib/libnspr4.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/nspr/lib/libnspr4.lib'
             if (PkgSelected(opts,"SSL")):
-                cmd = cmd + ' ' + THIRDPARTY + 'ssl/lib/ssleay32.lib'
-                cmd = cmd + ' ' + THIRDPARTY + 'ssl/lib/libeay32.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/ssl/lib/ssleay32.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/ssl/lib/libeay32.lib'
             if (PkgSelected(opts,"FREETYPE")):
-                cmd = cmd + ' ' + THIRDPARTY + 'freetype/lib/libfreetype.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/freetype/lib/libfreetype.lib'
             if (PkgSelected(opts,"FFTW")):
-                cmd = cmd + ' ' + THIRDPARTY + 'fftw/lib/rfftw.lib'
-                cmd = cmd + ' ' + THIRDPARTY + 'fftw/lib/fftw.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/fftw/lib/rfftw.lib'
+                cmd = cmd + ' ' + THIRDPARTY + '/win-libs-vc7/fftw/lib/fftw.lib'
             if (PkgSelected(opts,"MAYA5")):
                 cmd = cmd + ' ' + Maya5SDK +  'lib/Foundation.lib'
                 cmd = cmd + ' ' + Maya5SDK +  'lib/OpenMaya.lib'
@@ -1493,20 +1486,20 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
                 if   (suffix==".obj"): cmd = cmd + ' ' + PREFIX + '/tmp/' + x[:-4] + '.o'
                 elif (suffix==".dll"): cmd = cmd + ' -l' + x[3:-4]
                 elif (suffix==".lib"): cmd = cmd + ' ' + PREFIX + '/lib/' + x[:-4] + '.a'
-            if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -L' + THIRDPARTY + 'fmod/lib -lfmod-3.74'
+            if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -L' + THIRDPARTY + '/linux-libs-a/fmod/lib -lfmod-3.74'
             if (PkgSelected(opts,"NVIDIACG")):
                 cmd = cmd + ' -L' + THIRDPARTY + 'nvidiacg/lib '
                 if (opts.count("CGGL")): cmd = cmd + " -lCgGL"
                 cmd = cmd + " -lCg"
-            if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -L' + THIRDPARTY + 'nspr/lib -lpandanspr4'
+            if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -L' + THIRDPARTY + '/linux-libs-a/nspr/lib -lpandanspr4'
             if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " -lz"
             if (PkgSelected(opts,"PNG")):      cmd = cmd + " -lpng"
             if (PkgSelected(opts,"JPEG")):     cmd = cmd + " -ljpeg"
             if (PkgSelected(opts,"TIFF")):     cmd = cmd + " -ltiff"
             if (PkgSelected(opts,"SSL")):      cmd = cmd + " -lssl"
             if (PkgSelected(opts,"FREETYPE")): cmd = cmd + " -lfreetype"
-            if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L' + THIRDPARTY + 'vrpn/lib -lvrpn -lquat'
-            if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L' + THIRDPARTY + 'fftw/lib -lrfftw -lfftw'
+            if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L' + THIRDPARTY + '/linux-libs-a/vrpn/lib -lvrpn -lquat'
+            if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L' + THIRDPARTY + '/linux-libs-a/fftw/lib -lrfftw -lfftw'
             if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
             oscmd(cmd)
             updatefiledate(wdll)
@@ -1685,20 +1678,19 @@ CopyFile(PREFIX+'/etc/', 'doc/Config.prc')
 #
 ##########################################################################################
 
-for pkg in PACKAGES:
+for pkg in (PACKAGES + ["extras"]):
     if (OMIT.count(pkg)==0):
-        if (sys.platform == "win32"):
-            if (os.path.exists(THIRDPARTY+pkg.lower()+"/bin")):
-                CopyAllFiles(PREFIX+"/bin/", THIRDPARTY + pkg.lower() + "/bin/")
-        else:
-            if (os.path.exists(THIRDPARTY + pkg.lower() + "/lib")):
-                CopyAllFiles(PREFIX+"/lib/", THIRDPARTY + pkg.lower() + "/lib/")
+        if (COMPILER == "MSVC7"):
+            if (os.path.exists(THIRDPARTY+"/win-libs-vc7/"+pkg.lower()+"/bin")):
+                CopyAllFiles(PREFIX+"/bin/",THIRDPARTY+"/win-libs-vc7/"+pkg.lower()+"/bin/")
+        if (COMPILER == "LINUXA"):
+            if (os.path.exists(THIRDPARTY+"/linux-libs-a/"+pkg.lower()+"/lib")):
+                CopyAllFiles(PREFIX+"/lib/",THIRDPARTY+"/linux-libs-a/"+pkg.lower()+"/lib/")
 
-if (os.path.exists(THIRDPARTY+"extras/bin")):
-    CopyAllFiles(PREFIX+"/bin/", THIRDPARTY + "extras/bin/")
 if (sys.platform == "win32"):
     CopyTree(PREFIX+'/python', 'thirdparty/win-python')
-    CopyFile(PREFIX+'/bin/', 'thirdparty/win-python/python22.dll')
+    CopyFile(PREFIX+'/bin/',   'thirdparty/win-python/python22.dll')
+    CopyTree(PREFIX+'/python/lib/epydoc', THIRDPARTY+'/epydoc')
 
 ########################################################################
 ##
@@ -5362,25 +5354,12 @@ CompileLink(dll='lwo2egg.exe', opts=['ADVAPI', 'NSPR'], obj=[
 # DIRECTORY: pandatool/src/maya/
 #
 
-
 for VER in ["5","6"]:
   if (OMIT.count("MAYA"+VER)==0):
     IPATH=['pandatool/src/maya']
     OPTS=['MAYA'+VER, 'NSPR']
-    CompileC(ipath=IPATH, opts=OPTS, src='config_maya.cxx',        obj='maya'+VER+'_config_maya.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='mayaApi.cxx',            obj='maya'+VER+'_mayaApi.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='mayaShader.cxx',         obj='maya'+VER+'_mayaShader.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='mayaShaderColorDef.cxx', obj='maya'+VER+'_mayaShaderColorDef.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='mayaShaders.cxx',        obj='maya'+VER+'_mayaShaders.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='maya_funcs.cxx',         obj='maya'+VER+'_funcs.obj')
-    CompileLIB(lib='libmaya'+VER+'.lib', obj=[
-                 'maya'+VER+'_config_maya.obj',
-                 'maya'+VER+'_mayaApi.obj',
-                 'maya'+VER+'_mayaShader.obj',
-                 'maya'+VER+'_mayaShaderColorDef.obj',
-                 'maya'+VER+'_mayaShaders.obj',
-                 'maya'+VER+'_funcs.obj',
-    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='maya_composite1.cxx',    obj='maya'+VER+'_composite1.obj')
+    CompileLIB(lib='libmaya'+VER+'.lib', obj=[ 'maya'+VER+'_composite1.obj' ])
 
 #
 # DIRECTORY: pandatool/src/mayaegg/
@@ -5390,20 +5369,8 @@ for VER in ["5","6"]:
   if (OMIT.count("MAYA"+VER)==0):
     IPATH=['pandatool/src/mayaegg', 'pandatool/src/maya']
     OPTS=['MAYA'+VER, 'NSPR']
-    CompileC(ipath=IPATH, opts=OPTS, src='config_mayaegg.cxx',       obj='mayaegg'+VER+'_config_mayaegg.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='mayaEggGroupUserData.cxx', obj='mayaegg'+VER+'_mayaEggGroupUserData.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='mayaBlendDesc.cxx',        obj='mayaegg'+VER+'_mayaBlendDesc.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='mayaNodeDesc.cxx',         obj='mayaegg'+VER+'_mayaNodeDesc.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='mayaNodeTree.cxx',         obj='mayaegg'+VER+'_mayaNodeTree.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='mayaToEggConverter.cxx',   obj='mayaegg'+VER+'_mayaToEggConverter.obj')
-    CompileLIB(lib='libmayaegg'+VER+'.lib', obj=[
-                 'mayaegg'+VER+'_config_mayaegg.obj',
-                 'mayaegg'+VER+'_mayaEggGroupUserData.obj',
-                 'mayaegg'+VER+'_mayaBlendDesc.obj',
-                 'mayaegg'+VER+'_mayaNodeDesc.obj',
-                 'mayaegg'+VER+'_mayaNodeTree.obj',
-                 'mayaegg'+VER+'_mayaToEggConverter.obj'
-    ])
+    CompileC(ipath=IPATH, opts=OPTS, src='mayaegg_composite1.cxx',   obj='mayaegg'+VER+'_composite1.obj')
+    CompileLIB(lib='libmayaegg'+VER+'.lib', obj=[ 'mayaegg'+VER+'_composite1.obj' ])
 
 #
 # DIRECTORY: pandatool/src/maxegg/
@@ -5413,23 +5380,10 @@ for VER in ["5", "6", "7"]:
   if (OMIT.count("MAX"+VER)==0):
     IPATH=['pandatool/src/maxegg']
     OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINUSER", "MAXEGGDEF"]
-    CompileC(ipath=IPATH, opts=OPTS, src='DllEntry.cpp',         obj='maxegg'+VER+'_DllEntry.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='Logger.cpp',           obj='maxegg'+VER+'_Logger.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='MaxEgg.cpp',           obj='maxegg'+VER+'_MaxEgg.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='maxNodeDesc.cxx',      obj='maxegg'+VER+'_maxNodeDesc.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='MaxNodeTree.cxx',      obj='maxegg'+VER+'_MaxNodeTree.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='MaxToEgg.cpp',         obj='maxegg'+VER+'_MaxToEgg.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='MaxToEggConverter.cxx',obj='maxegg'+VER+'_MaxToEggConverter.obj')
-    CompileRES(ipath=IPATH, opts=OPTS, src='MaxEgg.rc',          obj='maxegg'+VER+'_MaxEgg.res')
-
+    CompileRES(ipath=IPATH, opts=OPTS, src='MaxEgg.rc', obj='maxegg'+VER+'_MaxEgg.res')
+    CompileC(ipath=IPATH, opts=OPTS, src='maxegg_composite1.cxx',obj='maxegg'+VER+'_composite1.obj')
     CompileLink(opts=OPTS, dll='maxegg'+VER+'.dle', obj=[
-                'maxegg'+VER+'_DllEntry.obj',
-                'maxegg'+VER+'_Logger.obj',
-                'maxegg'+VER+'_MaxEgg.obj',
-                'maxegg'+VER+'_maxNodeDesc.obj',
-                'maxegg'+VER+'_MaxNodeTree.obj',
-                'maxegg'+VER+'_MaxToEgg.obj',
-                'maxegg'+VER+'_MaxToEggConverter.obj',
+                'maxegg'+VER+'_composite1.obj',
                 'maxegg'+VER+'_MaxEgg.res',
                 'libeggbase.lib',
                 'libprogbase.lib',
@@ -5970,9 +5924,9 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
 if (older(PREFIX+'/pandac/PandaModules.pyz',xpaths(PREFIX+"/pandac/input/",ALLIN,""))):
     ALLTARGETS.append(PREFIX+'/pandac/PandaModules.pyz')
     if (sys.platform=="win32"):
-        oscmd(PREFIX+"/bin/genpycode.exe")
+        oscmd(PREFIX+"/bin/genpycode.exe -s")
     else:
-        oscmd(PREFIX+"/bin/genpycode")
+        oscmd(PREFIX+"/bin/genpycode -s")
     updatefiledate(PREFIX+'/pandac/PandaModules.pyz')
 
 ########################################################################

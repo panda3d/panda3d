@@ -1,0 +1,6 @@
+#include "config_mayaegg.cxx"
+#include "mayaEggGroupUserData.cxx"
+#include "mayaBlendDesc.cxx"
+#include "mayaNodeDesc.cxx"
+#include "mayaNodeTree.cxx"
+#include "mayaToEggConverter.cxx"

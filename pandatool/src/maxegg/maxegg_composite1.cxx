@@ -1,0 +1,7 @@
+#include "DllEntry.cpp"
+#include "Logger.cpp"
+#include "MaxEgg.cpp"
+#include "maxNodeDesc.cxx"
+#include "MaxNodeTree.cxx"
+#include "MaxToEgg.cpp"
+#include "MaxToEggConverter.cxx"

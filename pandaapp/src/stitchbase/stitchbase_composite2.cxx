@@ -4,6 +4,7 @@
 #include "stitchFile.cxx"
 #include "stitchFisheyeLens.cxx"
 #include "stitchImage.cxx"
+#include "stitchImageOutputter.cxx"
 #include "stitchImageCommandOutput.cxx"
 #include "stitchImageRasterizer.cxx"
 #include "stitchLens.cxx"
