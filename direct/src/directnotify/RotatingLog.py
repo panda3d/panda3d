@@ -54,7 +54,7 @@ class RotatingLog:
     def filePath(self):
         dateString=time.strftime("%Y_%m_%d_%H", time.localtime())
         for i in range(26):
-            path="%s_%s_%s.txt"%(self.path, dateString, chr(i+97))
+            path="%s_%s_%s.log"%(self.path, dateString, chr(i+97))
             if not os.path.exists(path) or os.stat(path)[6] < self.sizeLimit:
                 return path
         # Hmm, 26 files are full?  throw the rest in z:
