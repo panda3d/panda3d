@@ -3573,6 +3573,8 @@ enable_texturing(bool val) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 issue_transform(const TransformState *transform) {
+  DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
+
   // if we're using ONLY vertex shaders, could get avoid calling SetTrans
   D3DMATRIX *pMat = (D3DMATRIX*)transform->get_mat().get_data();
   _pD3DDevice->SetTransform(D3DTS_WORLD,pMat);
@@ -3625,6 +3627,7 @@ issue_tex_matrix(const TexMatrixAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 issue_texture(const TextureAttrib *attrib) {
+  DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
   if (attrib->is_off()) {
     enable_texturing(false);
   } else {

@@ -49,9 +49,9 @@ class CollisionEntry;
 //               indicated root, calling the appropriate
 //               CollisionHandler for each detected collision.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionTraverser {
+class EXPCL_PANDA CollisionTraverser : public Namable {
 PUBLISHED:
-  CollisionTraverser();
+  CollisionTraverser(const string &name = "ctrav");
   ~CollisionTraverser();
 
   INLINE void set_respect_prev_transform(bool flag);
@@ -136,6 +136,8 @@ private:
 
   // Statistics
   static PStatCollector _collisions_pcollector;
+  static PStatCollector _reset_prev_pcollector;
+  PStatCollector _this_pcollector;
 };
 
 INLINE ostream &operator << (ostream &out, const CollisionTraverser &trav) {

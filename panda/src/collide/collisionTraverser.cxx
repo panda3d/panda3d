@@ -33,6 +33,7 @@
 
 #ifndef CPPPARSER
 PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
+PStatCollector CollisionTraverser::_reset_prev_pcollector("App:Collisions:Reset");
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +42,10 @@ PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionTraverser::
-CollisionTraverser() {
+CollisionTraverser(const string &name) : 
+  Namable(name),
+  _this_pcollector(_collisions_pcollector, name)
+{
   _respect_prev_transform = respect_prev_transform;
 #ifdef DO_COLLISION_RECORDING
   _recorder = (CollisionRecorder *)NULL;
@@ -265,7 +269,7 @@ remove_collider(CollisionNode *node) {
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 traverse(const NodePath &root) {
-  PStatTimer timer(_collisions_pcollector);
+  PStatTimer timer(_this_pcollector);
 
 #ifdef DO_COLLISION_RECORDING
   if (has_recorder()) {
@@ -311,6 +315,7 @@ traverse(const NodePath &root) {
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 reset_prev_transform(const NodePath &root) {
+  PStatTimer timer(_reset_prev_pcollector);
   r_reset_prev_transform(root.node());
 }
 
@@ -808,8 +813,10 @@ remove_handler(CollisionTraverser::Handlers::iterator hi) {
 void CollisionTraverser::
 r_reset_prev_transform(PandaNode *node) {
   node->reset_prev_transform();
-  int num_children = node->get_num_children();
+
+  PandaNode::Children children = node->get_children();
+  int num_children = children.get_num_children();
   for (int i = 0; i < num_children; i++) {
-    r_reset_prev_transform(node->get_child(i));
+    r_reset_prev_transform(children.get_child(i));
   }
 }

@@ -41,6 +41,10 @@
 #ifndef CPPPARSER
 PStatCollector GraphicsEngine::_cull_pcollector("Cull");
 PStatCollector GraphicsEngine::_draw_pcollector("Draw");
+PStatCollector GraphicsEngine::_transform_states_pcollector("TransformStates");
+PStatCollector GraphicsEngine::_transform_states_unused_pcollector("TransformStates:Unused");
+PStatCollector GraphicsEngine::_render_states_pcollector("RenderStates");
+PStatCollector GraphicsEngine::_render_states_unused_pcollector("RenderStates:Unused");
 #endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
@@ -349,11 +353,22 @@ render_frame() {
     RenderThread *thread = (*ti).second;
     thread->_cv_mutex.lock();
   }
-  
+
   // Now cycle the pipeline and officially begin the next frame.
   _pipeline->cycle();
   ClockObject::get_global_clock()->tick();
   PStatClient::main_tick();
+
+  // Reset our pcollectors that track data across the frame.
+  CullTraverser::_nodes_pcollector.clear_level();
+  CullTraverser::_geom_nodes_pcollector.clear_level();
+  
+  _transform_states_pcollector.set_level(TransformState::get_num_states());
+  _render_states_pcollector.set_level(RenderState::get_num_states());
+  if (pstats_unused_states) {
+    _transform_states_unused_pcollector.set_level(TransformState::get_num_unused_states());
+    _render_states_unused_pcollector.set_level(RenderState::get_num_unused_states());
+  }
   
   // Now signal all of our threads to begin their next frame.
   _app.do_frame(this);

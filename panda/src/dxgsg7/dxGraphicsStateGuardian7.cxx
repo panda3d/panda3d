@@ -3845,6 +3845,8 @@ enable_texturing(bool val) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian7::
 issue_transform(const TransformState *transform) {
+  DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
+
   _pScrn->pD3DDevice->SetTransform(D3DTRANSFORMSTATE_WORLD,
                                 (LPD3DMATRIX)transform->get_mat().get_data());
 }
@@ -3883,6 +3885,7 @@ issue_tex_matrix(const TexMatrixAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian7::
 issue_texture(const TextureAttrib *attrib) {
+  DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
   if (attrib->is_off()) {
     enable_texturing(false);
   } else {

@@ -207,7 +207,7 @@ protected:
   void add_to_texture_record(TextureContext *tc);
   void add_to_geom_record(GeomContext *gc);
   void add_to_geom_node_record(GeomNodeContext *gnc);
-  void record_state_change(TypeHandle type);
+
   pset<TextureContext *> _current_textures;
   pset<GeomContext *> _current_geoms;
   pset<GeomNodeContext *> _current_geom_nodes;
@@ -282,24 +282,14 @@ public:
   static PStatCollector _used_texmem_pcollector;
   static PStatCollector _texmgrmem_total_pcollector;
   static PStatCollector _texmgrmem_resident_pcollector;
-  static PStatCollector _vertices_pcollector;
   static PStatCollector _vertices_tristrip_pcollector;
   static PStatCollector _vertices_trifan_pcollector;
   static PStatCollector _vertices_tri_pcollector;
   static PStatCollector _vertices_other_pcollector;
-  static PStatCollector _state_changes_pcollector;
   static PStatCollector _transform_state_pcollector;
   static PStatCollector _texture_state_pcollector;
-  static PStatCollector _nodes_pcollector;
-  static PStatCollector _geom_nodes_pcollector;
-  static PStatCollector _frustum_cull_volumes_pcollector;
-  static PStatCollector _frustum_cull_transforms_pcollector;
-  static PStatCollector _set_state_pcollector;
+  static PStatCollector _other_state_pcollector;
   static PStatCollector _draw_primitive_pcollector;
-  static PStatCollector _transform_states_pcollector;
-  static PStatCollector _transform_states_unused_pcollector;
-  static PStatCollector _render_states_pcollector;
-  static PStatCollector _render_states_unused_pcollector;
 
 private:
   class LightInfo {

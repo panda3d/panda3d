@@ -51,25 +51,14 @@ PStatCollector GraphicsStateGuardian::_total_texmem_pcollector("Texture memory")
 PStatCollector GraphicsStateGuardian::_used_texmem_pcollector("Texture memory:In use");
 PStatCollector GraphicsStateGuardian::_texmgrmem_total_pcollector("Texture manager");
 PStatCollector GraphicsStateGuardian::_texmgrmem_resident_pcollector("Texture manager:Resident");
-PStatCollector GraphicsStateGuardian::_vertices_pcollector("Vertices");
 PStatCollector GraphicsStateGuardian::_vertices_tristrip_pcollector("Vertices:Triangle strips");
 PStatCollector GraphicsStateGuardian::_vertices_trifan_pcollector("Vertices:Triangle fans");
 PStatCollector GraphicsStateGuardian::_vertices_tri_pcollector("Vertices:Triangles");
 PStatCollector GraphicsStateGuardian::_vertices_other_pcollector("Vertices:Other");
-PStatCollector GraphicsStateGuardian::_state_changes_pcollector("State changes");
 PStatCollector GraphicsStateGuardian::_transform_state_pcollector("State changes:Transforms");
 PStatCollector GraphicsStateGuardian::_texture_state_pcollector("State changes:Textures");
-PStatCollector GraphicsStateGuardian::_nodes_pcollector("Nodes");
-PStatCollector GraphicsStateGuardian::_geom_nodes_pcollector("Nodes:GeomNodes");
-PStatCollector GraphicsStateGuardian::_frustum_cull_volumes_pcollector("Cull volumes");
-PStatCollector GraphicsStateGuardian::_frustum_cull_transforms_pcollector("Cull volumes:Transforms");
-
-PStatCollector GraphicsStateGuardian::_set_state_pcollector("Draw:Set state");
+PStatCollector GraphicsStateGuardian::_other_state_pcollector("State changes:Other");
 PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive");
-PStatCollector GraphicsStateGuardian::_transform_states_pcollector("TransformStates");
-PStatCollector GraphicsStateGuardian::_transform_states_unused_pcollector("TransformStates:Unused");
-PStatCollector GraphicsStateGuardian::_render_states_pcollector("RenderStates");
-PStatCollector GraphicsStateGuardian::_render_states_unused_pcollector("RenderStates:Unused");
 
 #endif
 
@@ -1407,23 +1396,9 @@ init_frame_pstats() {
     _vertices_tri_pcollector.clear_level();
     _vertices_other_pcollector.clear_level();
     
-    _state_changes_pcollector.clear_level();
     _transform_state_pcollector.clear_level();
     _texture_state_pcollector.clear_level();
-    
-    _nodes_pcollector.clear_level();
-    _geom_nodes_pcollector.clear_level();
-    
-    // Not to mention the view-frustum-cull counters.
-    _frustum_cull_volumes_pcollector.clear_level();
-    _frustum_cull_transforms_pcollector.clear_level();
-    
-    _transform_states_pcollector.set_level(TransformState::get_num_states());
-    _render_states_pcollector.set_level(RenderState::get_num_states());
-    if (pstats_unused_states) {
-      _transform_states_unused_pcollector.set_level(TransformState::get_num_unused_states());
-      _render_states_unused_pcollector.set_level(RenderState::get_num_unused_states());
-    }
+    _other_state_pcollector.clear_level();
   }
 }
 
@@ -1477,26 +1452,6 @@ add_to_geom_node_record(GeomNodeContext *gnc) {
         _current_geom_nodes.insert(gnc).second) {
       _active_geom_node_pcollector.add_level(1);
     }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::record_state_change
-//       Access: Protected
-//  Description: Indicates a state change request for a property of
-//               the given type.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-record_state_change(TypeHandle type) {
-  _state_changes_pcollector.add_level(1);
-
-  // We can't use the get_class_type() methods since we don't have
-  // those header files available yet.
-  string name = type.get_name();
-  if (name == "TransformTransition") {
-    _transform_state_pcollector.add_level(1);
-  } else if (name == "TextureTransition") {
-    _texture_state_pcollector.add_level(1);
   }
 }
 #endif  // DO_PSTATS

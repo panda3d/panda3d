@@ -32,6 +32,10 @@
 #include "cullFaceAttrib.h"
 #include "depthOffsetAttrib.h"
 
+#ifndef CPPPARSER
+PStatCollector CullTraverser::_nodes_pcollector("Nodes");
+PStatCollector CullTraverser::_geom_nodes_pcollector("Nodes:GeomNodes");
+#endif  // CPPPARSER
 
 TypeHandle CullTraverser::_type_handle;
 
@@ -135,6 +139,7 @@ traverse(CullTraverserData &data) {
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 traverse_below(CullTraverserData &data) {
+  _nodes_pcollector.add_level(1);
   PandaNode *node = data.node();
   const RenderEffects *node_effects = node->get_effects();
   bool has_decal = node_effects->has_decal();
@@ -145,6 +150,7 @@ traverse_below(CullTraverserData &data) {
     
   } else {
     if (node->is_geom_node()) {
+      _geom_nodes_pcollector.add_level(1);
       GeomNode *geom_node = DCAST(GeomNode, node);
       
       // Get all the Geoms, with no decalling.

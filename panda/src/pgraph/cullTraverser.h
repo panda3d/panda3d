@@ -29,6 +29,7 @@
 #include "pointerTo.h"
 #include "drawMask.h"
 #include "typedObject.h"
+#include "pStatCollector.h"
 
 class PandaNode;
 class CullHandler;
@@ -76,6 +77,11 @@ public:
   void traverse(const NodePath &root);
   void traverse(CullTraverserData &data);
   void traverse_below(CullTraverserData &data);
+
+public:
+  // Statistics
+  static PStatCollector _nodes_pcollector;
+  static PStatCollector _geom_nodes_pcollector;
 
 private:
   void show_bounds(CullTraverserData &data);

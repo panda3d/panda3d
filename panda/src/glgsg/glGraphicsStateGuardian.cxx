@@ -2131,6 +2131,7 @@ issue_transform(const TransformState *transform) {
   glgsg_cat.spam()
     << "glLoadMatrix(GL_MODELVIEW): " << transform->get_mat() << endl;
 #endif
+  DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
   glMatrixMode(GL_MODELVIEW);
   glLoadMatrixf(transform->get_mat().get_data());
 
@@ -2156,6 +2157,7 @@ issue_tex_matrix(const TexMatrixAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 issue_texture(const TextureAttrib *attrib) {
+  DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
   if (attrib->is_off()) {
     enable_texturing(false);
   } else {
