@@ -29,6 +29,7 @@
 #include <maya/MPlug.h>
 #include <maya/MFnAttribute.h>
 #include <maya/MFnTypedAttribute.h>
+#include <maya/MFnEnumAttribute.h>
 #include "post_maya_include.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -47,7 +48,7 @@ get_maya_plug(MObject &node, const string &attribute_name, MPlug &plug) {
 
   MObject attr = node_fn.attribute(attribute_name.c_str(), &status);
   if (!status) {
-    maya_cat.error()
+    maya_cat.debug()
       << "Object " << node_fn.name() << " does not support attribute "
       << attribute_name << "\n";
     return false;
@@ -174,6 +175,49 @@ get_vec2d_attribute(MObject &node, const string &attribute_name,
       << ", of type " << vec2d_object.apiTypeStr() << "\n";
   }
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_enum_attribute
+//  Description: Extracts the enum attribute from the MObject as a
+//               string value.
+////////////////////////////////////////////////////////////////////
+bool
+get_enum_attribute(MObject &node, const string &attribute_name,
+                   string &value) {
+  MStatus status;
+
+  MPlug plug;
+  if (!get_maya_plug(node, attribute_name.c_str(), plug)) {
+    return false;
+  }
+
+  MFnEnumAttribute enum_attrib(plug.attribute(), &status);
+  if (!status) {
+    maya_cat.error()
+      << "Not an enum attribute: " << attribute_name << "\n";
+    return false;
+  }
+
+  short index;
+  status = plug.getValue(index);
+  if (!status) {
+    maya_cat.error()
+      << "Could not get numeric value of " << attribute_name << "\n";
+    status.perror("MPlug::getValue(short)");
+    return false;
+  }
+
+  MString name = enum_attrib.fieldName(index, &status);
+  if (!status) {
+    maya_cat.error()
+      << "Invalid value for " << attribute_name << ": " << index << "\n";
+    status.perror("MFnEnumAttribute::fieldName()");
+    return false;
+  }
+
+  value = name.asChar();
   return true;
 }
 
@@ -376,7 +420,7 @@ list_maya_attributes(MObject &node) {
   MPlugArray connections;
   status = node_fn.getConnections(connections);
   if (!status) {
-    status.perror("MFnDependencyNode::getConnections\n");
+    status.perror("MFnDependencyNode::getConnections");
     return;
   }
 

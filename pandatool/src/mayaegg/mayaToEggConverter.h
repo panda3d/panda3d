@@ -113,7 +113,8 @@ private:
   };
 
   EggGroup *get_egg_group(const MDagPath &dag_path, EggGroupNode *egg_root);
-  EggGroup *get_egg_group(const string &name, EggGroupNode *egg_root);
+  EggGroup *r_get_egg_group(const string &name, const MDagPath &dag_path,
+                            EggGroupNode *egg_root);
   JointAnim *get_egg_table(const MDagPath &dag_path, EggGroupNode *egg_root);
   JointAnim *get_egg_table(const string &name, EggGroupNode *egg_root);
   void set_shader_attributes(EggPrimitive &primitive,

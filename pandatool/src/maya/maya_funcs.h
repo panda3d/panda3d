@@ -65,6 +65,10 @@ get_vec2d_attribute(MObject &node, const string &attribute_name,
                     LVecBase2d &value);
 
 bool
+get_enum_attribute(MObject &node, const string &attribute_name,
+                   string &value);
+
+bool
 get_string_attribute(MObject &node, const string &attribute_name,
                      string &value);
 

@@ -1415,16 +1415,17 @@ get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
 ////////////////////////////////////////////////////////////////////
 EggGroup *MayaToEggConverter::
 get_egg_group(const MDagPath &dag_path, EggGroupNode *egg_root) {
-  return get_egg_group(dag_path.fullPathName().asChar(), egg_root);
+  return r_get_egg_group(dag_path.fullPathName().asChar(), dag_path, egg_root);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::get_egg_group
+//     Function: MayaToEggConverter::r_get_egg_group
 //       Access: Private
 //  Description: The recursive implementation of get_egg_group().
 ////////////////////////////////////////////////////////////////////
 EggGroup *MayaToEggConverter::
-get_egg_group(const string &name, EggGroupNode *egg_root) {
+r_get_egg_group(const string &name, const MDagPath &dag_path,
+                EggGroupNode *egg_root) {
   // If we have already encountered this pathname, return the
   // corresponding EggGroup immediately.
   Groups::const_iterator gi = _groups.find(name);
@@ -1453,13 +1454,20 @@ get_egg_group(const string &name, EggGroupNode *egg_root) {
       local_name = name;
     }
 
-    EggGroup *parent_egg_group = get_egg_group(parent_name, egg_root);
+    EggGroup *parent_egg_group = 
+      r_get_egg_group(parent_name, dag_path, egg_root);
     egg_group = new EggGroup(local_name);
 
     if (parent_egg_group != (EggGroup *)NULL) {
       parent_egg_group->add_child(egg_group);
     } else {
       egg_root->add_child(egg_group);
+    }
+
+    // Check for an object type setting, from Oliver's plug-in.
+    string object_type;
+    if (get_enum_attribute(dag_path.node(), "eggObjectTypes", object_type)) {
+      egg_group->add_object_type(object_type);
     }
   }
 
