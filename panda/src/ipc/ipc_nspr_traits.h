@@ -234,7 +234,11 @@ public:
            int numRead;
            char* temp = new char[numBytes];
            if (_fhandle != (PRFileDesc *)NULL){
- 	     numRead = PR_Read(_fhandle, temp, numBytes);
+             numRead = PR_Read(_fhandle, temp, numBytes);
+             if(numRead<=0) {
+                cerr << "PR_Read() in libnspr failed!\n";
+                return 0;
+             }
              block.assign(temp, numRead);
              delete temp;
              return numRead;
