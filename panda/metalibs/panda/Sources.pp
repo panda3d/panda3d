@@ -20,7 +20,7 @@
     audio pgui pandabase glstuff
 
 #define LOCAL_LIBS \
-  downloader event express pandabase
+  downloader express pandabase
 #define OTHER_LIBS \
   interrogatedb:c dconfig:c dtoolconfig:m \
   dtoolutil:c dtoolbase:c dtool:m
