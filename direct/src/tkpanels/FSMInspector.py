@@ -26,6 +26,9 @@ class FSMInspector(AppShell):
         self.defineoptions(kw, optiondefs)
 
         self.fsm = fsm
+        # Tell the fsm we are inspecting it so it will send events
+        # when it changes state
+        self.fsm.inspecting = 1
 
         AppShell.__init__(self)
 
@@ -281,6 +284,7 @@ class FSMInspector(AppShell):
             
     def onDestroy(self, event):
         """ Called on FSM Panel shutdown """
+        self.fsm.inspecting = 0
         for si in self.stateInspectorDict.values():
             self.ignore(self.name + '_' + si.getName() + '_entered')
             self.ignore(self.name + '_' + si.getName() + '_exited')

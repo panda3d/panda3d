@@ -31,6 +31,8 @@ class FSM(DirectObject):
         self.setInitialState(initialStateName)
         self.setFinalState(finalStateName)
 
+        # Flag to see if we are inspecting
+        self.inspecting = 0
 
         # Enter the initial state.
         # It is assumed that the initial state takes no arguments.
@@ -124,8 +126,12 @@ class FSM(DirectObject):
         FSM.notify.debug("[%s]: exiting %s" % (self.__name,
                                                self.__currentState.getName()))
         self.__currentState.exit(argList)
-        messenger.send(self.getName() + '_' +
-                       self.__currentState.getName() + '_exited')
+        # Only send the state change event if we are inspecting it
+        # If this event turns out to be generally useful, we can
+        # turn it on all the time, but for now nobody else is using it
+        if self.inspecting:
+            messenger.send(self.getName() + '_' +
+                           self.__currentState.getName() + '_exited')
         self.__currentState = None
                     
     def __enter(self, aState, argList=[]):
@@ -135,8 +141,12 @@ class FSM(DirectObject):
             FSM.notify.debug("[%s]: entering %s" % (self.__name,
                                                     aState.getName()))
             self.__currentState = aState
-            messenger.send(self.getName() + '_' +
-                           aState.getName() + '_entered')
+            # Only send the state change event if we are inspecting it
+            # If this event turns out to be generally useful, we can
+            # turn it on all the time, but for now nobody else is using it
+            if self.inspecting:
+                messenger.send(self.getName() + '_' +
+                               aState.getName() + '_entered')
             aState.enter(argList)
         else:
             FSM.notify.error("[%s]: enter: no such state" % self.__name)
