@@ -877,6 +877,45 @@ ai_format_generate(PyObject *distobj, int do_id,
   return Datagram(packer.get_data(), packer.get_length());
 }
 #endif  // HAVE_PYTHON
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::ai_database_generate
+//       Access: Published
+//  Description: Generates a datagram containing the message necessary
+//               to create a new database distributed object from the AI.
+//
+// First Pass is to only incldue required values(with Defaults).                   
+////////////////////////////////////////////////////////////////////
+Datagram DCClass::
+ai_database_generate_context(int context_id, 
+                   int parent_id, int zone_id,
+                   CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const 
+{
+  DCPacker packer;
+  packer.RAW_PACK_CHANNEL(database_server_id);
+  packer.RAW_PACK_CHANNEL(from_channel_id);
+  packer.raw_pack_uint8('A');
+  packer.raw_pack_uint16(STATESERVER_OBJECT_CREATE_WITH_REQUIRED_CONTEXT);
+  packer.raw_pack_uint32(parent_id);  
+  packer.raw_pack_uint32(zone_id);
+  packer.raw_pack_uint16(_number); // DCD class ID
+  packer.raw_pack_uint32(context_id);
+
+  // Specify all of the required fields.
+  int num_fields = get_num_inherited_fields();
+  for (int i = 0; i < num_fields; ++i) {
+    DCField *field = get_inherited_field(i);
+    if (field->is_required() && field->as_molecular_field() == NULL) 
+    {
+      packer.begin_pack(field);
+      packer.pack_default_value();
+      packer.end_pack();
+    }
+  }
+
+  return Datagram(packer.get_data(), packer.get_length());
+}
+#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function : DCClass::output

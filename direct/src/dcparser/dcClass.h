@@ -99,6 +99,10 @@ PUBLISHED:
                               PyObject *optional_fields) const;
   Datagram client_format_generate(PyObject *distobj, int do_id, int zone_id,                              
                                   PyObject *optional_fields) const;
+
+  Datagram ai_database_generate_context(int context_id, int parent_id, int zone_id,
+                                CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const;
+  
 #endif 
 
 public:
