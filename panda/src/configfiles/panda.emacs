@@ -23,6 +23,12 @@
 (custom-set-variables
  '(indent-tabs-mode nil))
 
+; Just to belabor the point, we'll explicitly set it to nil for the
+; buffer whenever you switch to C++ mode.
+(setq c++-mode-hook (lambda ()
+		      (setq indent-tabs-mode nil)
+		      ))
+
 ;;
 ;; Scheme customization
 ;;
