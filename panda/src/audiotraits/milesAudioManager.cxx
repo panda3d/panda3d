@@ -24,6 +24,8 @@
 #include "milesAudioManager.h"
 #include "config_audio.h"
 #include "config_util.h"
+#include "config_express.h"
+#include "virtualFileSystem.h"
 #include <algorithm>
 
 int MilesAudioManager::_active_managers;
@@ -167,9 +169,21 @@ is_valid() {
 ////////////////////////////////////////////////////////////////////
 HAUDIO MilesAudioManager::
 load(Filename file_name) {
-  string stmp = file_name.to_os_specific();
-  audio_debug("  \"" << stmp << "\"");
-  HAUDIO audio = AIL_quick_load(stmp.c_str());
+  HAUDIO audio;
+
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    audio_debug("  vfs load \"" << file_name << "\"");
+    string audio_data;
+    vfs->read_file(file_name, audio_data);
+    audio = AIL_quick_load_mem(audio_data.data(), audio_data.size());
+
+  } else {
+    string stmp = file_name.to_os_specific();
+    audio_debug("  \"" << stmp << "\"");
+    audio = AIL_quick_load(stmp.c_str());
+  }
+   
   if (!audio) {
     audio_debug("  MilesAudioManager::load failed "<<AIL_last_error());
   }
@@ -186,7 +200,14 @@ get_sound(const string& file_name) {
   audio_debug("MilesAudioManager::get_sound(file_name=\""<<file_name<<"\")");
   assert(is_valid());
   Filename path = file_name;
-  path.resolve_filename(get_sound_path());
+
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->resolve_filename(path, get_sound_path());
+  } else {
+    path.resolve_filename(get_sound_path());
+  }
+
   audio_debug("  resolved file_name is '"<<path<<"'");
 
   HAUDIO audio=0;
@@ -246,7 +267,14 @@ uncache_sound(const string& file_name) {
       <<file_name<<"\")");
   assert(is_valid());
   Filename path = file_name;
-  path.resolve_filename(get_sound_path());
+
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->resolve_filename(path, get_sound_path());
+  } else {
+    path.resolve_filename(get_sound_path());
+  }
+
   audio_debug("  path=\""<<path<<"\"");
   SoundMap::iterator i=_sounds.find(path);
   if (i != _sounds.end()) {
