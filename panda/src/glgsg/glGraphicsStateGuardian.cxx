@@ -527,7 +527,9 @@ render_frame() {
   report_errors();
   _decal_level = 0;
 
+#ifdef DO_PSTATS
   _vertices_display_list_pcollector.clear_level();
+#endif
 
   // First, clear the entire window.
   clear_framebuffer();
