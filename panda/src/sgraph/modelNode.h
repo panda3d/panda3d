@@ -26,17 +26,28 @@ class EXPCL_PANDA ModelNode : public NamedNode {
 PUBLISHED:
   INLINE ModelNode(const string &name = "");
 
+  INLINE void set_preserve_transform(bool preserve_transform);
+  INLINE bool get_preserve_transform() const;
+
 public:
   INLINE ModelNode(const ModelNode &copy);
   INLINE void operator = (const ModelNode &copy);
   
   virtual Node *make_copy() const;
 
+  virtual bool safe_to_flatten() const;
+  virtual bool safe_to_transform() const;
+
 public:
   static void register_with_read_factory(void);
 
 protected:
+  virtual void write_datagram(BamWriter *manager, Datagram &me);  
+  void fillin(DatagramIterator &scan, BamReader *manager);
   static TypedWriteable *make_ModelNode(const FactoryParams &params);
+
+private:
+  bool _preserve_transform;
 
 public:
   static TypeHandle get_class_type() {

@@ -28,10 +28,11 @@
 //               geometry is *not* coplanar with the base geometry.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DecalTransition : public OnOffTransition {
-public:
+PUBLISHED:
   INLINE DecalTransition();
   INLINE static DecalTransition off();
-  
+
+public:  
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
 
