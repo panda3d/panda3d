@@ -114,8 +114,17 @@ static void ReadChanConfigData(void) {
   ResetSetup();
   ResetWindow();
 
-  DSearchPath path =
-    Filename::from_os_specific(chanconfig.GetString("ETC_PATH", "."));
+  // We have to convert from a space-separated list of paths, which
+  // might be in os-specific form, to a DSearchPath of Panda-form
+  // directories.  We can't just use Filename::from_os_specific() on
+  // the whole string, since that would only work if there were just
+  // one directory on the path; instead, we have to convert the
+  // directories of the path one at a time.
+  DSearchPath orig_path(chanconfig.GetString("ETC_PATH", "."), " \n\t");
+  DSearchPath path;
+  for (int i = 0; i < orig_path.get_num_directories(); i++) {
+    path.append_directory(Filename::from_os_specific(orig_path.get_directory(i)));
+  }
 
   string layoutdbfilename = chanconfig.GetString("layout-db-file","layout_db");
   string windowdbfilename = chanconfig.GetString("window-db-file","window_db");
