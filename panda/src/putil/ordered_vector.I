@@ -358,7 +358,7 @@ clear() {
 template<class Key, class Compare>
 INLINE ordered_vector<Key, Compare>::iterator ordered_vector<Key, Compare>::
 find(const ordered_vector<Key, Compare>::key_type &key) {
-  return (iterator)r_find(begin(), end(), end(), key);
+  return nci(r_find(begin(), end(), end(), key));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -394,7 +394,7 @@ find(const ordered_vector<Key, Compare>::key_type &key) const {
 template<class Key, class Compare>
 INLINE ordered_vector<Key, Compare>::iterator ordered_vector<Key, Compare>::
 find_particular(const ordered_vector<Key, Compare>::key_type &key) {
-  return (iterator)r_find_particular(begin(), end(), end(), key);
+  return nci(r_find_particular(begin(), end(), end(), key));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -437,7 +437,7 @@ count(const key_type &key) const {
 template<class Key, class Compare>
 INLINE ordered_vector<Key, Compare>::iterator ordered_vector<Key, Compare>::
 lower_bound(const ordered_vector<Key, Compare>::key_type &key) {
-  return (iterator)r_lower_bound(begin(), end(), key);
+  return nci(r_lower_bound(begin(), end(), key));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -462,7 +462,7 @@ lower_bound(const ordered_vector<Key, Compare>::key_type &key) const {
 template<class Key, class Compare>
 INLINE ordered_vector<Key, Compare>::iterator ordered_vector<Key, Compare>::
 upper_bound(const ordered_vector<Key, Compare>::key_type &key) {
-  return (iterator)r_upper_bound(begin(), end(), key);
+  return nci(r_upper_bound(begin(), end(), key));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -488,7 +488,7 @@ INLINE pair<ordered_vector<Key, Compare>::iterator, ordered_vector<Key, Compare>
 equal_range(const ordered_vector<Key, Compare>::key_type &key) {
   pair<ordered_vector<Key, Compare>::const_iterator, ordered_vector<Key, Compare>::const_iterator> result;
   result = r_equal_range(begin(), end(), key);
-  return pair<ordered_vector<Key, Compare>::iterator, ordered_vector<Key, Compare>::iterator>((iterator)result.first, (iterator)result.second);
+  return pair<ordered_vector<Key, Compare>::iterator, ordered_vector<Key, Compare>::iterator>(nci(result.first), nci(result.second));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -539,6 +539,20 @@ template<class Key, class Compare>
 INLINE void ordered_vector<Key, Compare>::
 sort() {
   ::sort(begin(), end(), _compare);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::nci
+//       Access: Private
+//  Description: I.e. "non-const iterator".  This function is used to
+//               typecast a const iterator to a non-const iterator for
+//               easy definition of const vs. non-const flavors of
+//               some of these methods.
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE ordered_vector<Key, Compare>::iterator ordered_vector<Key, Compare>::
+nci(ordered_vector<Key, Compare>::const_iterator iterator) {
+  return begin() + (iterator - begin());
 }
 
 ////////////////////////////////////////////////////////////////////

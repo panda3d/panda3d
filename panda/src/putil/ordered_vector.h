@@ -125,6 +125,7 @@ public:
   INLINE void sort();
 
 private:
+  INLINE iterator nci(const_iterator iterator);
   INLINE iterator find_insert_position(iterator first, iterator last, 
                                        const key_type &key);
   iterator r_find_insert_position(iterator first, iterator last, 
