@@ -43,11 +43,7 @@ GraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   }
 
   if (want_texture) {
-    _texture = new Texture();
-    _texture->set_name(_name);
-    _texture->set_wrapu(Texture::WM_clamp);
-    _texture->set_wrapv(Texture::WM_clamp);
-    _copy_texture = true;
+    setup_copy_texture(_name);
   }
 
   _x_size = x_size;

@@ -302,6 +302,8 @@ reset() {
 
   _supports_bgr = has_extension("GL_EXT_bgra");
   _supports_multisample = has_extension("GL_ARB_multisample");
+  _supports_generate_mipmap = 
+    has_extension("GL_SGIS_generate_mipmap") || is_at_least_version(1, 4);
 
   _supports_multitexture = false;
     
@@ -1824,13 +1826,11 @@ TextureContext *CLP(GraphicsStateGuardian)::
 prepare_texture(Texture *tex) {
   CLP(TextureContext) *gtc = new CLP(TextureContext)(tex);
   GLP(GenTextures)(1, &gtc->_index);
-  //cerr << "preparing texture " << tex->get_name() << ", assigning "
-  //     << gtc->_index << "\n";
 
   bind_texture(gtc);
   GLP(PrioritizeTextures)(1, &gtc->_index, &gtc->_priority);
   specify_texture(tex);
-  apply_texture_immediate(tex);
+  apply_texture_immediate(gtc, tex);
 
   report_my_gl_errors();
   return gtc;
@@ -1844,20 +1844,22 @@ prepare_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 apply_texture(TextureContext *tc) {
-  add_to_texture_record(tc);
-  bind_texture(tc);
+  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
-  int dirty = tc->get_dirty_flags();
+  add_to_texture_record(gtc);
+  bind_texture(gtc);
+
+  int dirty = gtc->get_dirty_flags();
   if ((dirty & (Texture::DF_wrap | Texture::DF_filter)) != 0) {
     // We need to re-specify the texture properties.
-    specify_texture(tc->_texture);
+    specify_texture(gtc->_texture);
   }
   if ((dirty & (Texture::DF_image | Texture::DF_mipmap)) != 0) {
     // We need to re-apply the image.
-    apply_texture_immediate(tc->_texture);
+    apply_texture_immediate(gtc, gtc->_texture);
   }
 
-  tc->clear_dirty_flags();
+  gtc->clear_dirty_flags();
 
   report_my_gl_errors();
 }
@@ -3201,21 +3203,28 @@ bind_texture(TextureContext *tc) {
 void CLP(GraphicsStateGuardian)::
 specify_texture(Texture *tex) {
   GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-                  get_texture_wrap_mode(tex->get_wrapu()));
+                     get_texture_wrap_mode(tex->get_wrapu()));
   GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-                  get_texture_wrap_mode(tex->get_wrapv()));
+                     get_texture_wrap_mode(tex->get_wrapv()));
 
+  Texture::FilterType minfilter = tex->get_minfilter();
+  Texture::FilterType magfilter = tex->get_magfilter();
+
+  bool uses_mipmaps = tex->uses_mipmaps();
+
+#ifndef NDEBUG
   if (CLP(force_mipmaps)) {
-    GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                    GL_LINEAR_MIPMAP_LINEAR);
-    GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  } else {
-    GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                    get_texture_filter_type(tex->get_minfilter()));
-    GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                    get_texture_filter_type(tex->get_magfilter()));
+    minfilter = Texture::FT_linear_mipmap_linear;
+    magfilter = Texture::FT_linear;
+    uses_mipmaps = true;
   }
+#endif
+ 
+  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                     get_texture_filter_type(tex->get_minfilter()));
+  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                     get_texture_filter_type(tex->get_magfilter()));
+
   report_my_gl_errors();
 }
 
@@ -3292,20 +3301,22 @@ compute_gl_image_size(int xsize, int ysize, int external_format, int type) {
 //               the texture has no image.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-apply_texture_immediate(Texture *tex) {
+apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
   PixelBuffer *pb = tex->get_ram_image();
   if (pb == (PixelBuffer *)NULL) {
     return false;
   }
 
-  int xsize = pb->get_xsize();
-  int ysize = pb->get_ysize();
+  int width = pb->get_xsize();
+  int height = pb->get_ysize();
 
-  GLenum internal_format = get_internal_image_format(pb->get_format());
-  GLenum external_format = get_external_image_format(pb->get_format());
+  GLint internal_format = get_internal_image_format(pb->get_format());
+  GLint external_format = get_external_image_format(pb->get_format());
   GLenum type = get_image_type(pb->get_image_type());
 
   PTA_uchar image = pb->_image;
+  nassertr(!image.empty(), false);
+
   if (!_supports_bgr) {
     // If the GL doesn't claim to support BGR, we may have to reverse
     // the component ordering of the image.
@@ -3314,7 +3325,7 @@ apply_texture_immediate(Texture *tex) {
 
 #ifndef NDEBUG
   int wanted_size = 
-    compute_gl_image_size(xsize, ysize, external_format, type);
+    compute_gl_image_size(width, height, external_format, type);
   nassertr(wanted_size == (int)pb->_image.size(), false);
 #endif  // NDEBUG
 
@@ -3324,46 +3335,95 @@ apply_texture_immediate(Texture *tex) {
   GLCAT.debug()
     << "glTexImage2D(GL_TEXTURE_2D, "
     << (int)internal_format << ", "
-    << xsize << ", " << ysize << ", "
+    << width << ", " << height << ", "
     << pb->get_border() << ", " << (int)external_format << ", "
     << (int)type << ", " << tex->get_name() << ")\n";
 #endif
 
-  if (!CLP(ignore_mipmaps) || CLP(force_mipmaps)) {
-    if (tex->uses_mipmaps() || CLP(force_mipmaps)) {
-#ifndef NDEBUG
-      if (CLP(show_mipmaps)) {
-        build_phony_mipmaps(tex);
-      } else 
-#endif
-        {
-          GLUP(Build2DMipmaps)(GL_TEXTURE_2D, internal_format,
-                            xsize, ysize,
-                            external_format, type, image);
-#ifndef NDEBUG
-          if (CLP(save_mipmaps)) {
-            save_mipmap_images(tex);
-          }
-#endif
-        }
-      report_my_gl_errors();
+  bool uses_mipmaps = tex->uses_mipmaps() && !CLP(ignore_mipmaps);
 
+#ifndef NDEBUG
+  if (CLP(force_mipmaps)) {
+    uses_mipmaps = true;
+  }
+#endif
+
+  if (uses_mipmaps) {
+#ifndef NDEBUG
+    if (CLP(show_mipmaps)) {
+      build_phony_mipmaps(tex);
+      report_my_gl_errors();
       return true;
+      
+    } else 
+#endif 
+      if (_supports_generate_mipmap) {
+        GLP(TexParameteri)(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+
+      } else {
+        // We only need to build the mipmaps by hand if the GL
+        // doesn't support generating them automatically.
+        GLUP(Build2DMipmaps)(GL_TEXTURE_2D, internal_format,
+                             width, height,
+                             external_format, type, image);
+        
+        gtc->_already_applied = false;
+        gtc->_internal_format = internal_format;
+        gtc->_width = width;
+        gtc->_height = height;
+        gtc->_border = 0;
+        
+#ifndef NDEBUG
+        if (CLP(save_mipmaps)) {
+          save_mipmap_images(tex);
+        }
+#endif
+        report_my_gl_errors();
+        return true;
+      }
+  } else {
+    if (_supports_generate_mipmap) {
+      GLP(TexParameteri)(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_FALSE);
     }
   }
 
-  nassertr(!pb->_image.empty(), false);
-  GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
-               xsize, ysize, pb->get_border(),
-               external_format, type, image);
+  GLint border = pb->get_border();
+
+  if (!gtc->_already_applied || 
+      gtc->_internal_format != internal_format ||
+      gtc->_width != width ||
+      gtc->_height != height ||
+      gtc->_border != border) {
+    // We need to reload a new image.
+    GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
+                    width, height, pb->get_border(),
+                    external_format, type, image);
+    gtc->_already_applied = true;
+    gtc->_internal_format = internal_format;
+    gtc->_width = width;
+    gtc->_height = height;
+    gtc->_border = border;
+
+  } else {
+    // We can reload the image over the previous image, saving on
+    // texture memory fragmentation.
+    GLP(TexSubImage2D)(GL_TEXTURE_2D, 0, 0, 0, width, height,
+                       external_format, type, image);
+  }
 
   //report_my_gl_errors();
   // want to give explict error for texture creation failure
   GLenum error_code = GLP(GetError)();
-  if(error_code != GL_NO_ERROR) {
+  if (error_code != GL_NO_ERROR) {
     const GLubyte *error_string = GLUP(ErrorString)(error_code);
-    GLCAT.error() << "GL texture creation failed for " << tex->get_name() << 
-                        ((error_string != (const GLubyte *)NULL) ? " : " : "") << endl;
+    GLCAT.error()
+      << "GL texture creation failed for " << tex->get_name();
+    if (error_string != (const GLubyte *)NULL) {
+      GLCAT.error(false)
+        << " : " << error_string;
+    }
+    GLCAT.error(false)
+      << "\n";
   }
 
   return true;
@@ -3696,7 +3756,7 @@ get_image_type(PixelBuffer::Type type) {
 //  Description: Maps from the PixelBuffer's Format symbols
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
-GLenum CLP(GraphicsStateGuardian)::
+GLint CLP(GraphicsStateGuardian)::
 get_external_image_format(PixelBuffer::Format format) {
   switch (format) {
   case PixelBuffer::F_color_index:
@@ -3744,7 +3804,7 @@ get_external_image_format(PixelBuffer::Format format) {
 //  Description: Maps from the PixelBuffer's Format symbols to a
 //               suitable internal format for GL textures.
 ////////////////////////////////////////////////////////////////////
-GLenum CLP(GraphicsStateGuardian)::
+GLint CLP(GraphicsStateGuardian)::
 get_internal_image_format(PixelBuffer::Format format) {
   switch (format) {
   case PixelBuffer::F_rgba:
@@ -4621,8 +4681,8 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
   GLenum type = get_image_type(pb->get_image_type());
 
   GLP(TexImage2D)(GL_TEXTURE_2D, level, internal_format,
-               pb->get_xsize(), pb->get_ysize(), pb->get_border(),
-               external_format, type, pb->_image );
+                  pb->get_xsize(), pb->get_ysize(), pb->get_border(),
+                  external_format, type, pb->_image );
 
   delete pb;
 }

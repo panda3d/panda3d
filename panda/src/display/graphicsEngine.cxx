@@ -256,11 +256,7 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
       window->request_properties(props);
 
       if (want_texture) {
-        window->_texture = new Texture();
-        window->_texture->set_name(name);
-        window->_texture->set_wrapu(Texture::WM_clamp);
-        window->_texture->set_wrapv(Texture::WM_clamp);
-        window->_copy_texture = true;
+        window->setup_copy_texture(name);
       }
 
       return window;
@@ -309,10 +305,7 @@ make_parasite(GraphicsOutput *host, const string &name,
       props.set_fixed_size(true);
       props.set_title(name);
       window->request_properties(props);
-
-      window->_texture = new Texture();
-      window->_texture->set_name(name);
-      window->_copy_texture = true;
+      window->setup_copy_texture(name);
 
       return window;
     }

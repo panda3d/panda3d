@@ -222,7 +222,7 @@ protected:
 
   void bind_texture(TextureContext *tc);
   void specify_texture(Texture *tex);
-  bool apply_texture_immediate(Texture *tex);
+  bool apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex);
 
   void draw_texture(TextureContext *tc, const DisplayRegion *dr);
   void draw_texture(TextureContext *tc, const DisplayRegion *dr, 
@@ -234,8 +234,8 @@ protected:
   GLenum get_texture_wrap_mode(Texture::WrapMode wm);
   GLenum get_texture_filter_type(Texture::FilterType ft);
   GLenum get_image_type(PixelBuffer::Type type);
-  GLenum get_external_image_format(PixelBuffer::Format format);
-  GLenum get_internal_image_format(PixelBuffer::Format format);
+  GLint get_external_image_format(PixelBuffer::Format format);
+  GLint get_internal_image_format(PixelBuffer::Format format);
   GLint get_texture_apply_mode_type(TextureStage::Mode am) const;
   GLint get_texture_combine_type(TextureStage::CombineMode cm) const;
   GLint get_texture_src_type(TextureStage::CombineSource cs) const;
@@ -330,6 +330,7 @@ protected:
 public:
   bool _supports_bgr;
   bool _supports_multisample;
+  bool _supports_generate_mipmap;
 
   bool _supports_multitexture;
   PFNGLACTIVETEXTUREPROC _glActiveTexture;

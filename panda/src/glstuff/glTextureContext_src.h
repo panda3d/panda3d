@@ -33,6 +33,15 @@ public:
   // This is a GL texture priority.
   GLfloat _priority;
 
+  // These are the parameters that we specified with the last
+  // glTexImage2D() call.  If none of these have changed, we can
+  // reload the texture image with a glTexSubImage2D().
+  bool _already_applied;
+  GLint _internal_format;
+  GLsizei _width;
+  GLsizei _height;
+  GLint _border;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

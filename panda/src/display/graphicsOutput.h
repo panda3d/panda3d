@@ -145,6 +145,7 @@ public:
 
 protected:
   void declare_channel(int index, GraphicsChannel *chan);
+  void setup_copy_texture(const string &name);
   
 protected:
   PT(GraphicsStateGuardian) _gsg;

@@ -687,6 +687,43 @@ declare_channel(int index, GraphicsChannel *chan) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::setup_copy_texture
+//       Access: Protected
+//  Description: Creates a new Texture object, suitable for copying
+//               the contents of this buffer into, and stores it in
+//               _texture.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+setup_copy_texture(const string &name) {
+  _texture = new Texture();
+  _texture->set_name(name);
+  _texture->set_wrapu(Texture::WM_clamp);
+  _texture->set_wrapv(Texture::WM_clamp);
+
+  // We should match the texture format up with the framebuffer
+  // format.  Easier said than done!
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
+    int mode = _gsg->get_properties().get_frame_buffer_mode();
+    PixelBuffer *pb = _texture->_pbuffer;
+
+    if (mode & FrameBufferProperties::FM_alpha) {
+      pb->set_format(PixelBuffer::F_rgba8);
+      pb->set_num_components(4);
+      pb->set_component_width(1);
+      pb->set_image_type(PixelBuffer::T_unsigned_byte);
+
+    } else {
+      pb->set_format(PixelBuffer::F_rgb8);
+      pb->set_num_components(3);
+      pb->set_component_width(1);
+      pb->set_image_type(PixelBuffer::T_unsigned_byte);
+    }
+  }
+
+  _copy_texture = true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::do_determine_display_regions
 //       Access: Private
 //  Description: Recomputes the list of active DisplayRegions within
