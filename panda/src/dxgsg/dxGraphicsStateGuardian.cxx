@@ -3030,7 +3030,7 @@ apply_texture(TextureContext *tc) {
 	Texture *tex = tc->_texture;
 	Texture::WrapMode wrapU,wrapV;
 	wrapU=tex->get_wrapu();
-	wrapV=tex->get_wrapu();
+	wrapV=tex->get_wrapv();
 
 	if (wrapU!=_CurTexWrapModeU)
 		_d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSU,get_texture_wrap_mode(wrapU));
