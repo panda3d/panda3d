@@ -86,13 +86,16 @@ PUBLISHED:
 
   // Description: Tell the server to do the command cmd.
   //              cmd is one of the following:
-  //                "k"    Kill the most recent application started with
-  //                       client_ready() or "!".
-  //                "q"    Tell the server to quit.
-  //                "!cmd" Exectue the cmd on the server (this is a dos shell
-  //                       command; if you want a bash command, include bash
-  //                       in the command e.g. "!bash pwd").  When you call
-  //                       client_ready(), it prefixes "!" for you.
+  //                "k[<n>]"    Kill the most recent application 
+  //                            started with client_ready() or "!".
+  //                            Or kill the nth most recent or 'a' for All.
+  //                            E.g. "k", "k0", "k2", "ka".
+  //                "q"         Tell the server to quit.
+  //                "!cmd"      Exectue the cmd on the server (this
+  //                            is a dos shell command; if you want
+  //                            a bash command, include bash in the
+  //                            command e.g. "!bash pwd").  When you call
+  //                            client_ready(), it prefixes "!" for you.
   //              A new connection will be created and closed.
   int tell_server(const string& server_host, int port, const string& cmd);
 
@@ -129,7 +132,8 @@ PUBLISHED:
 
 protected:
   void start_app(const string& cmd);
-  void kill_app();
+  void kill_app(int index);
+  void kill_all();
   virtual void handle_command(const string& cmd);
   void handle_datagram(NetDatagram& datagram);
   void send_one_message(const string& host_name, 
@@ -140,7 +144,8 @@ protected:
   ConnectionWriter _writer;
   QueuedConnectionListener _listener;
 
-  intptr_t _app_pid;
+  typedef pvector< long /*intptr_t*/ > PidStack;
+  PidStack _pids;
   typedef pset< PT(Connection) > ConnectionSet;
   ConnectionSet _connections;
 

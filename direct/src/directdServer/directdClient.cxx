@@ -84,7 +84,7 @@ main(int argc, char *argv[]) {
     port=(atoi(argv[argc-1]));
   }
   DirectDClient directd;
-  directd.run_client(port);
+  directd.run_client(host, port);
   
   return 0;
 }

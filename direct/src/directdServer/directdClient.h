@@ -19,7 +19,7 @@
 #include "directd.h"
 
 // Description: DirectDClient is a test app for DriectDServer.
-class EXPCL_DIRECT DirectDClient: public DirectD {
+class DirectDClient: public DirectD {
 public:
   DirectDClient();
   ~DirectDClient();

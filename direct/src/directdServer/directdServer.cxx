@@ -30,7 +30,7 @@ DirectDServer::handle_command(const string& cmd) {
   if (cmd.size()==1) {
     switch (cmd[0]) {
     case 'k':
-      kill_app();
+      kill_app(0);
       break;
     case 'q':
       _shutdown=true;
@@ -41,6 +41,14 @@ DirectDServer::handle_command(const string& cmd) {
     }
   } else {
     switch (cmd[0]) {
+    case 'k':
+      if (cmd[1]=='a') {
+        kill_all();
+      } else {
+        int index = atoi(cmd.substr(1, string::npos).c_str());
+        kill_app(index);
+      }
+      break;
     case '!': {
       string c=cmd.substr(1, string::npos);
       //read_command(c);

@@ -131,7 +131,6 @@ namespace {
 
 
 DirectD::DirectD() :
-    _app_pid(0),
     _reader(&_cm, 1), _writer(&_cm, 0), _listener(&_cm, 0),
     _shutdown(false) {
 }
@@ -143,6 +142,8 @@ DirectD::~DirectD() {
     _cm.close_connection((*ci));
   }
   _connections.clear();
+  
+  kill_all();
 }
 
 int 
@@ -211,16 +212,29 @@ DirectD::server_ready(const string& client_host, int port) {
 void
 DirectD::start_app(const string& cmd) {
   nout<<"start_app(cmd="<<cmd<<")"<<endl;
-  _app_pid=StartApp(cmd);
-  nout<<"    _app_pid="<<_app_pid<<endl;
+  _pids.push_back(StartApp(cmd));
+  nout<<"    pid="<<_pids.back()<<endl;
 }
 
 void
-DirectD::kill_app() {
-  if (_app_pid) {
-    nout<<"trying kill "<<_app_pid<<endl;
-    TerminateApp(_app_pid, 1000);
+DirectD::kill_app(int index) {
+    int i = _pids.size() - 1 - index % _pids.size();
+    PidStack::iterator pi = _pids.begin() + i;
+    if (pi!=_pids.end()) {
+      nout<<"trying kill "<<(*pi)<<endl;
+      TerminateApp((*pi), 1000);
+      _pids.erase(pi);
+    }
+}
+
+void
+DirectD::kill_all() {
+  PidStack::reverse_iterator pi;
+  for (pi = _pids.rbegin(); pi != _pids.rend(); ++pi) {
+    nout<<"trying kill "<<(*pi)<<endl;
+    TerminateApp((*pi), 1000);
   }
+  _pids.clear();
 }
 
 void
