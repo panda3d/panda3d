@@ -31,16 +31,21 @@ class ParticleInterval(Interval):
         # Update stopEvent
         self.stopEvent = id + '_stopEvent'
         self.stopEventList = [self.stopEvent]
+        self.cleanedUp = 0
 
     def updateFunc(self, t, event=IVAL_NONE):
         """ updateFunc(t, event)
         Go to time t
         """
+        if (self.cleanedUp == 1):
+            self.notify.warning('updateFunc() - already cleaned up!')
+            return
         # Update particle effect based on current time
         if (t >= self.getDuration()):
             # If duration reached or stop event received, stop particle effect 
             BattleParticles.cleanupParticleEffect(self.particleEffect)
             self.ignore(self.stopEvent)
+            self.cleanedUp = 1
         elif (event == IVAL_INIT):
             # IVAL_INIT event, start new particle effect
             BattleParticles.startParticleEffect(self.particleEffect,
@@ -50,7 +55,7 @@ class ParticleInterval(Interval):
                         lambda s = self: 
                 BattleParticles.cleanupParticleEffect(s.particleEffect))
         # Print debug information
-        self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
+        assert(self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t)))
             
 
 
