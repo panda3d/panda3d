@@ -6,7 +6,7 @@ import time
 import fnmatch
 import string
 import signal
-
+from bisect import bisect
 
 # MRM: Need to make internal task variables like time, name, index
 # more unique (less likely to have name clashes)
@@ -109,6 +109,7 @@ class Task:
             return ('Task id: %s, name %s' % (self.id, self.name))
         else:
             return ('Task id: %s, no name' % (self.id))
+
 
 def pause(delayTime):
     def func(self):
@@ -257,6 +258,24 @@ class TaskPriorityList(list):
             self.__emptyIndex -= 1
 
 
+class DoLaterList(list):
+    def __init__(self):
+        list.__init__(self)
+        self.__wakeTimeList = []
+
+    def add(self, task):
+        # Find the insertion point with a binary search
+        index = bisect(self.__wakeTimeList, task.wakeTime)
+        # Insert this new wake time
+        self.__wakeTimeList.insert(index, task.wakeTime)
+        # And the task itself
+        list.insert(self, index, task)
+
+    def __delitem__(self, index):
+        del self.__wakeTimeList[index]
+        list.__delitem__(self, index)
+
+
 class TaskManager:
 
     notify = None
@@ -267,7 +286,7 @@ class TaskManager:
         self.taskList = []
         # Dictionary of priority to newTaskLists
         self.pendingTaskDict = {}
-        self.doLaterList = []
+        self.doLaterList = DoLaterList()
         self.currentTime, self.currentFrame = self.__getTimeFrame()
         if (TaskManager.notify == None):
             TaskManager.notify = directNotify.newCategory("TaskManager")
@@ -322,51 +341,43 @@ class TaskManager:
         # Make a temp list of all the dolaters that expired this time
         # through so we can remove them after we are done with the
         # for loop. Removing them during the for loop is a bad idea
-        removedTasks = []
-        for dl in self.doLaterList:
+        while self.doLaterList:
+            # TODO: because this processor breaks out early, some tasks
+            # which have been flagged for removal may stay on the end of
+            # the doLaterList longer than expected. One brute force fix
+            # would be to cycle through all tasks removing the ones that
+            # are flagged each frame.
+            dl = self.doLaterList[0]
             if dl.isRemoved():
-                removedTasks.append(dl)
+                del self.doLaterList[0]
                 continue
             # If the time now is less than the start of the doLater + delay
             # then we are not ready yet, continue to next one
-            if task.time < dl.starttime + dl.delayTime:
+            elif task.time < dl.wakeTime:
                 # Since the list is sorted, the first one we get to, that
                 # is not ready to go, we can return
                 break
             else:
                 assert(TaskManager.notify.debug('__doLaterProcessor: spawning %s' % (dl)))
-                removedTasks.append(dl)
+                del self.doLaterList[0]
                 dl.setStartTimeFrame(self.currentTime, self.currentFrame)
                 self.__addPendingTask(dl)
                 continue
-        # Get the tasks we spawned this frame off the doLaterList
-        if removedTasks:
-            self.doLaterList = unique(self.doLaterList, removedTasks)
         return cont
 
     def __spawnDoLater(self, task):
         assert(TaskManager.notify.debug('spawning doLater: %s' % (task)))
         # Add this task to the nameDict
-        nameList = ifAbsentPut(self.nameDict, task.name, [])
+        nameList = self.nameDict.setdefault(task.name, [])
         nameList.append(task)
         # be sure to ask the globalClock for the current frame time
         # rather than use a cached value; globalClock's frame time may
         # have been synced since the start of this frame
         currentTime = globalClock.getFrameTime()
         task.setStartTimeFrame(currentTime, self.currentFrame)
-        # search from the beginning of the list to put this doLater in
-        # the list in order of execution from earliest to latest
-        # Assume it goes last unless we break out early
-        index = len(self.doLaterList) + 1
-        for i in range(len(self.doLaterList)):
-            dl = self.doLaterList[i]
-            # don't use the cached currentTime, use the one we just
-            # got from globalClock. see comment above
-            remainingTime = ((dl.starttime + dl.delayTime) - currentTime)
-            if task.delayTime < remainingTime:
-                index = i
-                break
-        self.doLaterList.insert(index, task)
+        # Cache the time we should wake up for easier sorting
+        task.wakeTime = task.starttime + task.delayTime
+        self.doLaterList.add(task)
         if self.fVerbose:
             # Alert the world, a new task is born!
             messenger.send('TaskManager-spawnDoLater',
@@ -410,7 +421,7 @@ class TaskManager:
         # have been synced since the start of this frame
         currentTime = globalClock.getFrameTime()
         task.setStartTimeFrame(currentTime, self.currentFrame)
-        nameList = ifAbsentPut(self.nameDict, name, [])
+        nameList = self.nameDict.setdefault(name, [])
         nameList.append(task)
         # Put it on the list for the end of this frame
         self.__addPendingTask(task)
@@ -419,10 +430,14 @@ class TaskManager:
     def __addPendingTask(self, task):
         assert(TaskManager.notify.debug('__addPendingTask: %s' % (task.name)))
         pri = task.getPriority()
-        taskPriList = ifAbsentPut(self.pendingTaskDict, pri, TaskPriorityList(pri))
+        if self.pendingTaskDict.has_key(pri):
+            taskPriList = self.pendingTaskDict[pri]
+        else:
+            taskPriList = TaskPriorityList(pri)
+            self.pendingTaskDict[pri] = taskPriList
         taskPriList.add(task)
 
-    def __addNewTask(self, task):        
+    def __addNewTask(self, task):
         # The taskList is really an ordered list of TaskPriorityLists
         # search back from the end of the list until we find a
         # taskList with a lower priority, or we hit the start of the list
@@ -768,7 +783,7 @@ class TaskManager:
         str = str + ' doLaterList\n'
         str = str + '---------------------------------------------------------------\n'
         for task in self.doLaterList:
-            remainingTime = ((task.starttime + task.delayTime) - self.currentTime)
+            remainingTime = ((task.wakeTime) - self.currentTime)
             if task.isRemoved():
                 taskName = '(R)' + task.name
             else:
