@@ -29,7 +29,7 @@ get_rel_pos(const Node *node, const Node *relative_to,
 ////////////////////////////////////////////////////////////////////
 //     Function: get_mat
 //  Description: Returns the net transform of the node, relative to
-//               another nose (such as render).
+//               another node (such as render).
 ////////////////////////////////////////////////////////////////////
 INLINE void
 get_rel_mat(const Node *node, const Node *relative_to,
