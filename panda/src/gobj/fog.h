@@ -33,7 +33,7 @@ PUBLISHED:
     M_spline,                   // Not implemented yet
   };
 
-  Fog(Mode mode = M_exponential, int hardware_bits = 8);
+  Fog(Mode mode = M_linear, int hardware_bits = 8);
   ~Fog();
 
   INLINE Mode get_mode(void) const;
