@@ -49,6 +49,18 @@ class ShowBase:
         taskMgr.taskTimerVerbose = self.config.GetBool('task-timer-verbose', 0)
         taskMgr.pStatsTasks = self.config.GetBool('pstats-tasks', 0)
 
+        # Set up the TaskManager to reset the PStats clock back
+        # whenever we resume from a pause.  This callback function is
+        # a little hacky, but we can't call it directly from within
+        # the TaskManager because he doesn't know about PStats (and
+        # has to run before libpanda is even loaded).
+        
+        # Temporary try..except for old Pandas.
+        try:
+            taskMgr.resumeFunc = PStatClient.resumeAfterPause
+        except:
+            pass
+
         fsmRedefine = self.config.GetBool('fsm-redefine', 0)
         State.FsmRedefine = fsmRedefine
 

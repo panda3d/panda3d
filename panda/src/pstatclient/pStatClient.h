@@ -85,13 +85,18 @@ PUBLISHED:
   INLINE static void disconnect();
   INLINE static bool is_connected();
 
+  INLINE static void resume_after_pause();
+
 public:
-  static void main_tick();
   static PStatClient *get_global_pstats();
 
+  static void main_tick();
+  void client_main_tick();
   bool client_connect(string hostname, int port);
   void client_disconnect();
   bool client_is_connected() const;
+
+  void client_resume_after_pause();
 
 private:
   PStatCollector make_collector_with_relname(int parent_index, string relname);
@@ -203,6 +208,7 @@ PUBLISHED:
   INLINE static bool connect(const string & = string(), int = -1) { return false; }
   INLINE static void disconnect() { }
   INLINE static bool is_connected() { return false; }
+  INLINE static void resume_after_pause() { }
 
 public:
   static void main_tick() { }

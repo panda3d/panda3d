@@ -209,6 +209,10 @@ get_thread_name(int index) const {
 //               global clock object, so the stats won't get mucked up
 //               if you put the global clock in non-real-time mode or
 //               something.
+//
+//               On second thought, it works better to use the global
+//               clock, so we don't lose a lot of time in the stats
+//               while we're waiting at the prompt.
 ////////////////////////////////////////////////////////////////////
 const ClockObject &PStatClient::
 get_clock() const {
@@ -383,7 +387,19 @@ main_tick() {
     _interpreter_size_pcollector.set_level(MemoryUsage::get_interpreter_size());
   }
 
-  get_global_pstats()->get_main_thread().new_frame();
+  get_global_pstats()->client_main_tick();
+}  
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::main_tick
+//       Access: Public, Static
+//  Description: A convenience function to call new_frame() on the
+//               the given client's main thread.
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+client_main_tick() {
+  _clock.tick();
+  get_main_thread().new_frame();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -492,6 +508,24 @@ client_disconnect() {
 bool PStatClient::
 client_is_connected() const {
   return _is_connected;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::client_resume_after_pause
+//       Access: Published
+//  Description: Resumes the PStatClient after the simulation has been
+//               paused for a while.  This allows the stats to
+//               continue exactly where it left off, instead of
+//               leaving a big gap that would represent a chug.
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+client_resume_after_pause() {
+  // Simply reset the clock to the beginning of the last frame.  This
+  // may lose a frame, but on the other hand we won't skip a whole
+  // slew of frames either.
+
+  double frame_time = _clock.get_frame_time();
+  _clock.set_real_time(frame_time);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -705,7 +739,7 @@ transmit_frame_data(int thread_index) {
 
     // We don't want to send too many packets in a hurry and flood the
     // server.  Check that enough time has elapsed for us to send a
-    // new packet.  If not, we'll drop this packet into the void and
+    // new packet.  If not, we'll drop this packet on the floor and
     // send a new one next time around.
     float now = _clock.get_real_time();
     if (now >= _threads[thread_index]._next_packet) {

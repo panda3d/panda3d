@@ -42,6 +42,7 @@ class Task:
         self.avgDt = 0.0
         self.runningTotal = 0.0
         self.pstats = None
+        self.resumeFunc = None
 
     def getPriority(self):
         return self._priority
@@ -438,6 +439,10 @@ class TaskManager:
         # Paused at the prompt for a long time
         t = globalClock.getFrameTime()
         globalClock.setRealTime(t)
+
+        if self.resumeFunc != None:
+            self.resumeFunc()
+        
         if self.stepping:
             self.step()
         else:

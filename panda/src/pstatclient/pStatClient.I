@@ -103,3 +103,16 @@ INLINE bool PStatClient::
 is_connected() {
   return get_global_pstats()->client_is_connected();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::resume_after_pause
+//       Access: Published
+//  Description: Resumes the PStatClient after the simulation has been
+//               paused for a while.  This allows the stats to
+//               continue exactly where it left off, instead of
+//               leaving a big gap that would represent a chug.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatClient::
+resume_after_pause() {
+  get_global_pstats()->client_resume_after_pause();
+}
