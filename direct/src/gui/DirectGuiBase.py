@@ -614,8 +614,8 @@ class DirectGuiBase(PandaObject.PandaObject):
     def destroy(self):
         # Clean out any hooks
         self.ignoreAll()
-        del(self._optionInfo)
-        del(self.__componentInfo)
+        del self._optionInfo
+        del self.__componentInfo
         del self.postInitialiseFuncList
         
     def bind(self, event, command, extraArgs = []):
@@ -999,9 +999,9 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         
     def printConfig(self, indent = 0):
         space = ' ' * indent
-        print space + self.guiId
-        print space + 'Pos:   ' + `self.getPos()`
-        print space + 'Scale: ' + `self.getScale()`
+        print space + self.guiId, '-', self.__class__.__name__
+        print space + 'Pos:   ' + self.getPos().pPrintValues()
+        print space + 'Scale: ' + self.getScale().pPrintValues()
         # Print out children info
         for child in self.getChildrenAsList():
             messenger.send(PRINT + child.getName(), [indent + 2])
