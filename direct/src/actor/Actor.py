@@ -199,6 +199,17 @@ class Actor(PandaObject, NodePath):
                (self.__partBundleDict, self.__animControlDict)
         
 
+    def cleanup(self):
+        """cleanup(self)
+        Actor cleanup function
+        """
+        self.stop()
+        del(self.__partBundleDict)
+        self.__partBundleDict = None
+        del(self.__animControlDict)
+        self.__animControlDict = None
+        self.removeNode()
+        
     # accessing
     
     def getLODNames(self):
@@ -957,6 +968,9 @@ class Actor(PandaObject, NodePath):
 
             self.__animControlDict[lodName][partName] = animDict
 
+            # clean up after ourselves
+            anim.removeNode()
+            
             # make sure this part dict exists
             #if not (self.__animControlDict[lodName].has_key(partName)):
             #    partDict = {}
@@ -975,16 +989,19 @@ class Actor(PandaObject, NodePath):
         """__copyPartBundles(self, Actor)
         Copy the part bundle dictionary from another actor as this
         instance's own. NOTE: this method does not actually copy geometry"""
-        for partName in other.__partBundleDict.keys():
-            print("copyPart: copying part named = %s" % (partName))
-            # find the part in our tree
-            partBundle = self.find("**/" + Actor.partPrefix + partName) 
-            if (partBundle != None):
-                # store the part bundle
-                self.__partBundleDict[partName] = partBundle
-            else:
-                Actor.notify.error("couldn't find matching part:  %s" % \
-                                   partName)
+        for lodName in other.__partBundleDict.keys():
+            print "copyPart: lodName:", lodName
+            self.__partBundleDict[lodName] = {}            
+            for partName in other.__partBundleDict[lodName].keys():
+                print "    partName: ", partName
+                # find the part in our tree
+                partBundle = self.find("**/" + Actor.partPrefix + partName) 
+                if (partBundle != None):
+                    # store the part bundle
+                    self.__partBundleDict[lodName][partName] = partBundle
+                else:
+                    Actor.notify.error("lod: %s has no matching part: %s" %
+                                       (lodName, partName))
 
 
     def __copyAnimControls(self, other):
@@ -993,22 +1010,25 @@ class Actor(PandaObject, NodePath):
         dictionary of another actor. Bind these anim's to the part
         bundles in our part bundle dict that have matching names, and
         store the resulting anim controls in our own part bundle dict"""
-        for partName in other.__animControlDict.keys():
-            print("copyAnim: partName = %s" % (partName))
-            self.__animControlDict[partName] = {}
-            for animName in other.__animControlDict[partName].keys():
-                print("    anim: %s" % (animName))
-                # get the anim
-                animBundle = \
-                    other.__animControlDict[partName][animName].getAnim()
-                # get the part
-                partBundleNode = (self.__partBundleDict[partName].node())
-                # bind the anim
-                animControl = \
-                    (partBundleNode.getBundle().bindAnim(animBundle, -1))
-                if (animControl == None):
-                    Actor.notify.error("Null animControl: %s" % (animName))
-                else:
-                    # store the anim control
-                    self.__animControlDict[partName][animName] = animControl
+        for lodName in other.__animControlDict.keys():
+            print "copyAnim: lodName: ", lodName
+            self.__animControlDict[lodName] = {}        
+            for partName in other.__animControlDict[lodName].keys():
+                print "    partName: ", partName
+                self.__animControlDict[lodName][partName] = {}
+                for animName in other.__animControlDict[lodName][partName].keys():
+                    print "        anim: ", animName
+                    # get the anim
+                    animBundle = \
+                               other.__animControlDict[lodName][partName][animName].getAnim()
+                    # get the part
+                    partBundleNode = (self.__partBundleDict[lodName][partName].node())
+                    # bind the anim
+                    animControl = \
+                                (partBundleNode.getBundle().bindAnim(animBundle, -1))
+                    if (animControl == None):
+                        Actor.notify.error("Null animControl: %s" % (animName))
+                    else:
+                        # store the anim control
+                        self.__animControlDict[lodName][partName][animName] = animControl
                 
