@@ -357,7 +357,7 @@ class DirectCameraControl(PandaObject):
         taskMgr.removeTasksNamed('manipulateCamera')
 
         # How big is the node?
-        nodeScale = self.direct.widget.getScale(render)
+        nodeScale = self.direct.widget.scalingNode.getScale(render)
         maxScale = max(nodeScale[0],nodeScale[1],nodeScale[2])
         maxDim = min(self.chan.nearWidth, self.chan.nearHeight)
 
@@ -385,7 +385,7 @@ class DirectCameraControl(PandaObject):
                                       task = 'manipulateCamera')
         # Upon death, reparent Cam to parent
         fitTask.parent = parent
-        fitTask.uponDeath = self.reparentCam
+        fitTask.uponDeath = self.reparentCam                                
 
     def enableMouseFly(self):
 	self.enableMouseInteraction()
@@ -404,6 +404,7 @@ class DirectCameraControl(PandaObject):
 	self.accept('u', self.uprightCam, [self.chan])
 	self.accept('c', self.centerCamIn, [self.chan, 0.5])
 	self.accept('h', self.homeCam, [self.chan])
+        self.accept('f', self.fitOnWidget)
         for i in range(1,9):
             self.accept(`i`, self.SpawnMoveToView, [self.chan, i])
 	self.accept('9', self.swingCamAboutWidget, [self.chan, -90.0, t])
@@ -423,6 +424,7 @@ class DirectCameraControl(PandaObject):
 	self.ignore('u')
 	self.ignore('c')
 	self.ignore('h')
+        self.ignore('f')
         for i in range(0,10):
             self.ignore(`i`)
 	self.ignore('=')
