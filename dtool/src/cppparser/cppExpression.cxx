@@ -463,6 +463,23 @@ evaluate() const {
     assert(_u._op._op1 != NULL);
     r1 = _u._op._op1->evaluate();
     if (r1._type == RT_error) {
+      // Here's one more special case: if the first operand is
+      // invalid, it really means we don't know how to evaluate it.
+      // However, if the operator is ||, then it might not matter as
+      // long as we can evaluate the second one *and* that comes out
+      // to be true.
+      if (_u._op._operator == OROR && r2._type == RT_integer &&
+          r2.as_integer() != 0) {
+        return r2;
+      }
+
+      // Ditto for the operator being && and the second one coming out
+      // false.
+      if (_u._op._operator == ANDAND && r2._type == RT_integer &&
+          r2.as_integer() == 0) {
+        return r2;
+      }
+
       return r1;
     }
 
