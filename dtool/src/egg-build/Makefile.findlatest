@@ -1,5 +1,5 @@
 #### Makefile for binaries.  Any fields commented out are optional.
-#### Generated automatically by ppremake 0.20a from Sources.pp.
+#### Generated automatically by ppremake 0.21 from Sources.pp.
 ################################# DO NOT EDIT ###########################
 
 #### Target's name:
@@ -30,9 +30,7 @@ C++FILES = findlatest.cxx
 C++FLAGS =     
 
 #### Additional search directories for C/C++ header files:
-IPATH = \
-    -I/usr/local/mozilla/dist/Linux2.2.10_x86_PTH_DBG.OBJ/include \
-    -I/usr/local/include/python1.6
+IPATH = -I/usr/local/include/nspr  
 
 #### Location to put .o files:
 # ODIR = 

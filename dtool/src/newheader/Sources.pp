@@ -1,2 +1,2 @@
-#define INSTALL_BIN \
+#define INSTALL_SCRIPTS \
     newheader
