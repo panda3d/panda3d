@@ -8,16 +8,11 @@ class Mopath(PandaObject):
     nameIndex = 1
 
     def __init__(self, name = None):
-	self.maxT = 0.0
-	self.loop = 0
 	if (name == None):
-	    name = 'mopath%d' % nameIndex
-	    nameIndex = nameIndex + 1
+	    name = 'mopath%d' % self.nameIndex
+	    self.nameIndex = self.nameIndex + 1
 	self.name = name
-	self.xyzNurbsCurve = None
-	self.hprNurbsCurve = None
-	self.tNurbsCurve = None
-	self.node = None
+	self.reset()
 
     def loadFile(self, filename):
 	nodePath = loader.loadModel(filename)
@@ -33,6 +28,14 @@ class Mopath(PandaObject):
 		print 'Mopath: no valid curves in file: %s' % filename
 	else:
 	    print 'Mopath: no data in file: %s' % filename
+
+    def reset(self):
+	self.maxT = 0.0
+	self.loop = 0
+	self.xyzNurbsCurve = None
+	self.hprNurbsCurve = None
+	self.tNurbsCurve = None
+	self.node = None
 
     def __extractCurves(self, nodePath):
         node = nodePath.node()
