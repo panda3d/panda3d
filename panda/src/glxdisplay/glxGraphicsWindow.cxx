@@ -248,7 +248,7 @@ process_events() {
       break;
 
     case ClientMessage:
-      if (event.xclient.data.l[0] == _wm_delete_window) {
+      if ((Atom)(event.xclient.data.l[0]) == _wm_delete_window) {
         // This is a message from the window manager indicating that
         // the user has requested to close the window.  Honor the
         // request.
