@@ -240,14 +240,14 @@ $[pt] :
     #define source $[pal_egg_dir]/$[egg]
     #define target $[bam_dir]/$[egg:%.egg=%.bam]
 $[target] : $[source]
-	egg2bam -o $[target] $[source]
+	egg2bam -tp $[install_dir] -o $[target] $[source]
 
   #end egg
   #foreach egg $[UNPAL_SOURCES]
     #define source $[source_prefix]$[egg]
     #define target $[bam_dir]/$[egg:%.egg=%.bam]
 $[target] : $[source]
-	egg2bam -o $[target] $[source]
+	egg2bam -tp $[install_dir] -o $[target] $[source]
 
   #end egg
 #end install_egg
@@ -336,7 +336,7 @@ $[dest]/$[local] : $[local]
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
 ################################# DO NOT EDIT ###########################
 
-all : $[subdirs]
+all : egg $[subdirs]
 egg : $[subdirs:%=egg-%]
 pal : $[subdirs:%=pal-%]
 bam : $[subdirs:%=bam-%]
@@ -347,7 +347,7 @@ cleanall : $[subdirs:%=cleanall-%]
 install-egg : $[subdirs:%=install-egg-%]
 install-bam : $[subdirs:%=install-bam-%]
 install-misc : $[subdirs:%=install-misc-%]
-install : $[subdirs:%=install-%]
+install : egg $[subdirs:%=install-%]
 uninstall : $[subdirs:%=uninstall-%]
 
 optimize-palettes : regen-palettes pal
