@@ -26,7 +26,8 @@
     lineStreamBuf.cxx lineStreamBuf.h modifierButtons.I \
     modifierButtons.cxx modifierButtons.h \
     mouseButton.cxx mouseButton.h mouseData.cxx mouseData.h \
-    nameUniquifier.I nameUniquifier.cxx nameUniquifier.h pta_double.cxx \
+    nameUniquifier.I nameUniquifier.cxx nameUniquifier.h \
+    pointerToArray.I pointerToArray.h pta_double.cxx \
     pta_double.h pta_float.cxx pta_float.h pta_int.cxx pta_int.h \
     pta_uchar.cxx pta_uchar.h pta_ushort.cxx pta_ushort.h \
     string_utils.I string_utils.N string_utils.cxx string_utils.h \
