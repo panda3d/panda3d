@@ -8,6 +8,7 @@
 #include "ppScope.h"
 #include "check_include.h"
 #include "tokenize.h"
+#include "sedProcess.h"
 
 #ifdef HAVE_GETOPT
 #include <getopt.h>
@@ -30,6 +31,7 @@ usage() {
     "\n"
     "ppremake [opts] subdir-name [subdir-name..]\n"
     "ppremake\n"
+    "ppremake -s 'sed-command' <input >output\n"
     "\n"
     "This is Panda pre-make: a script preprocessor that scans the source\n"
     "directory hierarchy containing the current directory, looking for\n"
@@ -51,6 +53,11 @@ usage() {
     "generated.  If no parameter is given, then all directories will be\n"
     "processed.\n\n"
 
+    "ppremake -s is a special form of the command that runs as a very limited\n"
+    "sed.  It has nothing to do with building makefiles, but is provided mainly\n"
+    "so platforms that don't have sed built in can still portably run simple sed\n"
+    "scripts.\n\n"
+
     "Options:\n\n"
 
     "  -h           Display this page.\n"
@@ -66,7 +73,11 @@ usage() {
     "               depend on (need) the named subdirectory.  Options -d and\n"
     "               -n may be combined, and you may also name multiple\n"
     "               subdirectories to scan at once.\n\n"
-    "  -p platform  Build as if for the indicated platform name.\n\n";
+    "  -p platform  Build as if for the indicated platform name.\n"
+    "  -c config.pp Read the indicated user-level config.pp file after reading\n"
+    "               the system config.pp file.  If this is omitted, the value\n"
+    "               given in the environment variable PPREMAKE_CONFIG is used\n"
+    "               instead.\n\n";
 }
 
 static void
@@ -188,13 +199,17 @@ main(int argc, char *argv[]) {
   string progname = argv[0];
   extern char *optarg;
   extern int optind;
-  const char *optstr = "hVPD:p:dn";
+  const char *optstr = "hVPD:dnp:c:s:";
 
   bool any_d = false;
   bool dependencies_stale = false;
-  string platform = PLATFORM;
   bool report_depends = false;
   bool report_needs = false;
+  string platform = PLATFORM;
+  string ppremake_config;
+  bool got_ppremake_config = false;
+  string sed_command;
+  bool got_sed_command = false;
   int flag = getopt(argc, argv, optstr);
 
   while (flag != EOF) {
@@ -220,16 +235,26 @@ main(int argc, char *argv[]) {
       any_d = true;
       break;
 
-    case 'p':
-      platform = optarg;
-      break;
-
     case 'd':
       report_depends = true;
       break;
 
     case 'n':
       report_needs = true;
+      break;
+
+    case 'p':
+      platform = optarg;
+      break;
+
+    case 'c':
+      ppremake_config = optarg;
+      got_ppremake_config = true;
+      break;
+
+    case 's':
+      sed_command = optarg;
+      got_sed_command = true;
       break;
 
     default:
@@ -240,6 +265,15 @@ main(int argc, char *argv[]) {
 
   argc -= (optind-1);
   argv += (optind-1);
+
+  if (got_sed_command) {
+    SedProcess sp;
+    if (!sp.add_script_line(sed_command)) {
+      exit(1);
+    }
+    sp.run(cin, cout);
+    exit(0);
+  }
 
   // If the user supplied one or more -d parameters, then we should
   // not continue unless some of the dependencies were stale.
@@ -256,6 +290,13 @@ main(int argc, char *argv[]) {
   global_scope.define_variable("PLATFORM", platform);
   global_scope.define_variable("PACKAGE_FILENAME", PACKAGE_FILENAME);
   global_scope.define_variable("SOURCE_FILENAME", SOURCE_FILENAME);
+
+  if (got_ppremake_config) {
+    // If this came in on the command line, define a variable as such.
+    // Otherwise, the system scripts can pull this value in from the
+    // similarly-named environment variable.
+    global_scope.define_variable("PPREMAKE_CONFIG", ppremake_config);
+  }
 
   PPMain ppmain(&global_scope);
   if (!ppmain.read_source(".")) {
