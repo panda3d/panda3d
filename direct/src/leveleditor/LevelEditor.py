@@ -18,6 +18,7 @@ import getopt
 import sys
 import whrandom
 import Task
+import __builtin__
 
 visualizeZones = base.config.GetBool("visualize-zones", 0)
 dnaDirectory = Filename.expandFrom(base.config.GetString("dna-directory", "$TTMODELS/src/dna"))
@@ -206,7 +207,12 @@ try:
 except NameError:
     print "Loading LevelEditor for hoods: ", hoods
     # DNAStorage instance for storing level DNA info
-    __builtins__["DNASTORE"] = DNASTORE = DNAStorage()
+
+    # We need to use the __builtin__.foo syntax, not the
+    # __builtins__["foo"] syntax, since this file runs at the top
+    # level.
+    __builtin__.DNASTORE = DNASTORE = DNAStorage()
+    
     # Load the generic storage files
     loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
     loadDNAFile(DNASTORE, 'phase_5/dna/storage_town.dna', CSDefault, 1)
@@ -235,7 +241,7 @@ except NameError:
         loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL.dna', CSDefault, 1)
         loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL_sz.dna', CSDefault, 1)
         loadDNAFile(DNASTORE, 'phase_8/dna/storage_DL_town.dna', CSDefault, 1)
-    __builtins__["dnaLoaded"] = 1
+    __builtin__.dnaLoaded = 1
 
 # Precompute class types for type comparisons
 DNA_CORNICE = DNACornice.getClassType()

@@ -5,7 +5,9 @@ level-editor-hoods TT
 # level-editor-hoods TT DD DG MM BR DL
 style-path-prefix /i
 
-load-display pandadx
+# For the moment, pandadx8 is unstable
+#load-display pandadx8
+load-display pandagl
 chan-config-sanity-check #f
 multipass-viz none
 win-width 800
