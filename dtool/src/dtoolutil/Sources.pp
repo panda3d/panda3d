@@ -23,3 +23,11 @@
     pfstreamBuf.h vector_src.cxx vector_src.h
 
 #end lib_target
+
+#begin test_bin_target
+  #define TARGET test_pfstream
+  #define LOCAL_LIBS dtoolbase dtoolutil
+
+  #define SOURCES test_pfstream.cxx
+#end test_bin_target
+
