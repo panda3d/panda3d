@@ -17,10 +17,10 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
             self.gridParent = None
 
     def delete(self):
-        if not self.isEmpty():
-            self.removeNode()
         if self.gridParent:
             self.gridParent.delete()
+        if not self.isEmpty():
+            self.removeNode()
         DistributedObjectAI.DistributedObjectAI.delete(self)
 
     def setLocation(self, parentId, zoneId):
