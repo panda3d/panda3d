@@ -283,6 +283,13 @@
 // is.
 #defer active_target $[if $[build_target],$[TARGET]]
 
+#if $[and $[eq $[NUMBER_OF_PROCESSORS],1], $[eq $[NO_COMBINED_SOURCES],]]
+ // for non-composite dirs, want to avoid returning the composite default name
+#defer get_combined_sources $[if $[ne $[COMBINED_SOURCES],], $[TARGET]_composite.cxx,]
+#else
+#defer get_combined_sources $[COMBINED_SOURCES]
+#endif
+
 // This subroutine will set up the sources variable to reflect the
 // complete set of sources for this target, and also set the
 // alt_cflags, alt_libs, etc. as appropriate according to how the
@@ -294,7 +301,7 @@
 #defer get_sources \
   $[SOURCES] \
   $[PRECOMPILED_HEADER] \
-  $[if $[ne $[NO_COMBINED_SOURCES],], $[INCLUDED_SOURCES], $[COMBINED_SOURCES]] \  
+  $[if $[ne $[NO_COMBINED_SOURCES],], $[INCLUDED_SOURCES], $[get_combined_sources]] \  
   $[if $[HAVE_CRYPTO],$[IF_CRYPTO_SOURCES]] \
   $[if $[HAVE_JPEG],$[IF_JPEG_SOURCES]] \
   $[if $[HAVE_TIFF],$[IF_TIFF_SOURCES]] \
@@ -308,7 +315,7 @@
 #defer all_sources \
   $[SOURCES] \
   $[PRECOMPILED_HEADER] \
-  $[if $[ne $[NO_COMBINED_SOURCES],], $[INCLUDED_SOURCES], $[COMBINED_SOURCES]] \
+  $[if $[ne $[NO_COMBINED_SOURCES],], $[INCLUDED_SOURCES], $[get_combined_sources]] \
   $[IF_CRYPTO_SOURCES] \
   $[IF_JPEG_SOURCES] \
   $[IF_TIFF_SOURCES] \
@@ -318,9 +325,9 @@
   $[if $[HAVE_NET], $[IF_NET_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_NET_INCLUDED_SOURCES], $[IF_NET_COMBINED_SOURCES]]] \    
   $[IF_IPC_SOURCES] \
   $[IF_PYTHON_SOURCES]
-  
-#defer included_sources $[INCLUDED_SOURCES] $[if $[HAVE_ZLIB],$[IF_ZLIB_INCLUDED_SOURCES]] $[if $[HAVE_NET],$[IF_NET_INCLUDED_SOURCES]]
 
+#defer included_sources $[INCLUDED_SOURCES] $[if $[HAVE_ZLIB],$[IF_ZLIB_INCLUDED_SOURCES]] $[if $[HAVE_NET],$[IF_NET_INCLUDED_SOURCES]] $[if $[and $[eq $[NUMBER_OF_PROCESSORS],1], $[eq $[NO_COMBINED_SOURCES],]], $[COMBINED_SOURCES]]
+  
 // This variable returns the set of sources that are to be
 // interrogated for the current target.
 #defer get_igatescan \

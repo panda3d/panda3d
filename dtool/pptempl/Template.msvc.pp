@@ -175,6 +175,23 @@
 // And $[libs] is the set of libraries we will link with.
 #defer libs $[unique $[actual_local_libs:%=%$[dllext]] $[patsubst %:c,,%:m %,%$[dllext],$[OTHER_LIBS]] $[get_libs]]
 
+// for single-processor builds, write out *_composite.cxx files that include all composite
+// files into 1 in order to speed the build of our heavily templated source
+#forscopes lib_target bin_target static_lib_target
+#if $[and $[eq $[NUMBER_OF_PROCESSORS],1], $[eq $[NO_COMBINED_SOURCES],], $[ne $[COMBINED_SOURCES],]]
+#output $[TARGET]_composite.cxx
+#format collapse
+/* Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE]. */
+/* ################################# DO NOT EDIT ########################### */
+
+#foreach file $[COMBINED_SOURCES]
+##include "$[file]"
+#end file
+
+#end $[TARGET]_composite.cxx
+#endif
+#end lib_target bin_target static_lib_target
+
 // Okay, we're ready.  Start outputting the Makefile now.
 #output Makefile
 #format makefile
@@ -218,6 +235,9 @@ $[TAB] -del /f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources] 
 #endif
 #if $[ne $[DEPENDENCY_CACHE_FILENAME],]
 $[TAB] -del /f $[DEPENDENCY_CACHE_FILENAME]
+#endif
+#if $[eq $[NUMBER_OF_PROCESSORS],1]
+$[TAB] rm -f *_composite.cxx  // eliminate generated *_composite.cxx files for uniprocessor builds
 #endif
 
 clean-igate :

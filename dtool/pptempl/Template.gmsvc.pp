@@ -120,6 +120,7 @@
 
 #endif
 
+
 // This map variable gets us all the various source files from all the
 // targets in this directory.  We need it to look up the context in
 // which to build a particular source file, since some targets may
@@ -169,6 +170,23 @@
 // And $[libs] is the set of libraries we will link with.
 #defer libs $[unique $[actual_local_libs:%=%$[dllext]] $[patsubst %:c,,%:m %,%$[dllext],$[OTHER_LIBS]] $[get_libs]]
 
+// for single-processor builds, write out *_composite.cxx files that include all composite
+// files into 1 in order to speed the build of our heavily templated source
+#forscopes lib_target bin_target static_lib_target
+#if $[and $[eq $[NUMBER_OF_PROCESSORS],1], $[eq $[NO_COMBINED_SOURCES],], $[ne $[COMBINED_SOURCES],]]
+#output $[TARGET]_composite.cxx
+#format collapse
+/* Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE]. */
+/* ################################# DO NOT EDIT ########################### */
+
+#foreach file $[COMBINED_SOURCES]
+##include "$[file]"
+#end file
+
+#end $[TARGET]_composite.cxx
+#endif
+#end lib_target bin_target static_lib_target
+
 // Okay, we're ready.  Start outputting the Makefile now.
 #output Makefile
 #format makefile
@@ -206,9 +224,8 @@ $[TAB] rm -rf $[so_dir]
 #if $[st_sources]
 $[TAB] rm -rf $[st_dir]
 #endif
-$[TAB] rm -f *.pyc *.pyo  // Also scrub out old generated Python code.
-
-
+$[TAB] rm -f *.pyc *.pyo // Also scrub out old generated Python code.
+                         
 // 'cleanall' is not much more thorough than 'clean': At the moment,
 // it also cleans up the bison and flex output, as well as the
 // dependency cache file.
@@ -218,6 +235,9 @@ $[TAB] rm -f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources] $[
 #endif
 #if $[ne $[DEPENDENCY_CACHE_FILENAME],]
 $[TAB] rm -f $[DEPENDENCY_CACHE_FILENAME]
+#endif
+#if $[eq $[NUMBER_OF_PROCESSORS],1]
+$[TAB] rm -f *_composite.cxx  // eliminate generated *_composite.cxx files for uniprocessor builds
 #endif
 
 clean-igate :
@@ -758,6 +778,7 @@ $[TAB] $[COMPILE_C]
 #define source $[file]
 #define ipath $[file_ipath]
 #define flags $[c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
+
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
 $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx] $[so_dir]/stamp
@@ -901,9 +922,7 @@ $[DEPENDENCY_CACHE_FILENAME] : $[dep_sources]
 $[TAB] @ppremake -D $[DEPENDENCY_CACHE_FILENAME]
 #endif
 
-
 #end Makefile
-
 
 //////////////////////////////////////////////////////////////////////
 #elif $[eq $[DIR_TYPE], group]
@@ -1025,7 +1044,6 @@ $[TAB] cp -f $[local] $[dest]
 // instructions.
 #sinclude $[TOPDIRPREFIX]LocalSetup.gmsvc.pp
 #sinclude $[TOPDIRPREFIX]LocalSetup.pp
-
 
 
 //////////////////////////////////////////////////////////////////////

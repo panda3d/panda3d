@@ -6,10 +6,10 @@
 // Template.gmsvc.pp.
 //
 
-#define REQUIRED_VERSION 1.00
+#define REQUIRED_PPREMAKE_VERSION 1.02
 
-#if $[< $[PPREMAKE_VERSION],$[REQUIRED_VERSION]]
-  #error You need at least ppremake version $[REQUIRED_VERSION] to use BUILD_TYPE gmsvc.
+#if $[< $[PPREMAKE_VERSION],$[REQUIRED_PPREMAKE_VERSION]]
+  #error You need at least ppremake version $[REQUIRED_PPREMAKE_VERSION] to use BUILD_TYPE gmsvc.
 #endif
 
 #defun get_metalibs target,complete_libs

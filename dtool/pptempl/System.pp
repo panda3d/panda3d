@@ -32,6 +32,7 @@
   #define TEMPLATE_FILE $[THISDIRPREFIX]Template.$[BUILD_TYPE].pp
 #endif
 
+
 #if $[eq $[DEPENDENCY_CACHE_FILENAME],]
   #define DEPENDENCY_CACHE_FILENAME pp.dep
 #endif

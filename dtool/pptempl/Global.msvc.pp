@@ -6,8 +6,10 @@
 // Template.msvc.pp.
 //
 
-#if $[< $[PPREMAKE_VERSION],1.00]
-  #error You need at least ppremake version 1.00 to use BUILD_TYPE msvc.
+#define REQUIRED_PPREMAKE_VERSION 1.02
+
+#if $[< $[PPREMAKE_VERSION],$[REQUIRED_PPREMAKE_VERSION]]
+  #error You need at least ppremake version $[REQUIRED_PPREMAKE_VERSION] to use BUILD_TYPE msvc.
 #endif
 
 #defun get_metalibs target,complete_libs
