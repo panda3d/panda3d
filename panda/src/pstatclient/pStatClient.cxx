@@ -997,7 +997,7 @@ handle_server_control_message(const PStatServerControlMessage &message) {
 //               has been lost.
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
-connection_reset(const PT(Connection) &connection) {
+connection_reset(const PT(Connection) &connection, PRErrorCode) {
   if (connection == _tcp_connection) {
     disconnect();
   } else {

@@ -173,7 +173,8 @@ private:
   void report_new_threads();
   void handle_server_control_message(const PStatServerControlMessage &message);
 
-  virtual void connection_reset(const PT(Connection) &connection);
+  virtual void connection_reset(const PT(Connection) &connection, 
+                                PRErrorCode errcode);
 
   bool _is_connected;
   bool _got_udp_port;
