@@ -36,33 +36,24 @@ class FunctionSpecification:
         It is valid to pass in None for methodClass if you are not in any methodClass
         """
         if FFIConstants.wantTypeChecking:
-            for methodArgSpec in args:
+            for i in range(len(args)):
+                methodArgSpec = args[i]
                 typeDesc = methodArgSpec.typeDescriptor.recursiveTypeDescriptor()
                 typeName = FFIOverload.getTypeName(methodClass, typeDesc)
 
-                # Special case:
-                # If it is looking for a float or a long, accept an int as well
-                # C++ will cast it properly, and it is much more convenient
-                if (typeName == 'types.FloatType'):
-                    indent(file, nesting, 'assert((isinstance(' +
-                           methodArgSpec.name + ', types.FloatType) or isinstance(' +
-                           methodArgSpec.name + ', types.IntType)))\n')
-
-                elif (typeName == 'types.LongType'):
-                    indent(file, nesting, 'assert((isinstance(' +
-                           methodArgSpec.name + ', types.LongType) or isinstance(' +
-                           methodArgSpec.name + ', types.IntType)))\n')
-
-                elif typeDesc.__class__ != FFITypes.PyObjectTypeDescriptor:
+                # We only do type checking on class types.  C++ can do
+                # type checking on the primitive types, and will do a
+                # better job anyway.
+                if typeDesc.__class__ == FFITypes.ClassTypeDescriptor:
                     # Get the real return type (not derived)
                     if ((not typeDesc.isNested) and
                         # Do not put our own module in the import list
-                        (methodClass != typeDesc) and
-                        # If this is a class (not a primitive), put it on the list
-                        (typeDesc.__class__ == FFITypes.ClassTypeDescriptor)):
+                        (methodClass != typeDesc)):
                         indent(file, nesting, 'import ' + typeDesc.foreignTypeName + '\n')
-                    indent(file, nesting, 'assert(isinstance(' +
-                           methodArgSpec.name + ', ' + typeName + '))\n')
+                    indent(file, nesting, 'if not isinstance(' +
+                           methodArgSpec.name + ', ' + typeName + '):\n')
+                    indent(file, nesting + 1,
+                           'raise TypeError, "Invalid argument %s, expected <%s>"\n' % (i, typeDesc.foreignTypeName))
 
     def outputCFunctionComment(self, file, nesting):
         """

@@ -420,12 +420,16 @@ class FFIMethodArgumentTree:
                     # Otherwise, we'll check the particular type of
                     # the object.
                     condition = '(isinstance(_args[' + `level` + '], ' + typeName + '))'
-                    # If it is looking for a float or a long, make it
-                    # accept an integer too
-                    if (typeName == 'types.FloatType' or typeName == 'types.LongType'):
-                        condition += (' or (isinstance(_args[' + `level` + '], '
-                                      + 'types.IntType'
-                                      + '))')
+                    # Legal types for a float parameter include int and long.
+                    if (typeName == 'types.FloatType'):
+                        condition += (' or (isinstance(_args[' + `level` + '], types.IntType))')
+                        condition += (' or (isinstance(_args[' + `level` + '], types.LongType))')
+                    # Legal types for a long parameter include int.
+                    elif (typeName == 'types.LongType'):
+                        condition += (' or (isinstance(_args[' + `level` + '], types.IntType))')
+                    # Legal types for an int parameter include long.
+                    elif (typeName == 'types.IntType'):
+                        condition += (' or (isinstance(_args[' + `level` + '], types.LongType))')
                     
                 indent(file, nesting+2, 'if ' + condition + ':\n')
                     
