@@ -14,6 +14,7 @@ AudioManager::ShutdownFunc* AudioManager::_shutdown_func =
 mutex AudioManager::_manager_mutex;
 bool* AudioManager::_quit = (bool*)0L;
 thread* AudioManager::_spawned = (thread*)0L;
+AudioManager::LoopSet* AudioManager::_loopset = (AudioManager::LoopSet*)0L;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::destructor
@@ -36,6 +37,19 @@ void AudioManager::set_update_func(AudioManager::UpdateFunc* func) {
     audio_cat->error() << "There maybe be more then one audio driver installed"
 		       << endl;
   _update_func = func;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::ns_update
+//       Access: Public, Static
+//  Description: do generic update stuff
+////////////////////////////////////////////////////////////////////
+void AudioManager::ns_update(void) {
+  // handle looping
+  if (_loopset != (LoopSet*)0L)
+    for (LoopSet::iterator i=_loopset->begin(); i!=_loopset->end(); ++i)
+      if ((*i)->status() == AudioSound::READY)
+	AudioManager::play(*i);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,6 +86,42 @@ AudioManager* AudioManager::get_ptr(void) {
 ////////////////////////////////////////////////////////////////////
 void AudioManager::ns_play(AudioSound* sound) {
   sound->get_player()->play_sound(sound->get_sound(), sound->get_state());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::ns_stop (AudioSound)
+//       Access: Private
+//  Description: get the player off the sound, and stop it playing
+////////////////////////////////////////////////////////////////////
+void AudioManager::ns_stop(AudioSound* sound) {
+  this->ns_set_loop(sound, false);
+  sound->get_player()->stop_sound(sound->get_sound(), sound->get_state());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::ns_set_loop (AudioSound)
+//       Access: Private
+//  Description: set the looping state of the given sound
+////////////////////////////////////////////////////////////////////
+void AudioManager::ns_set_loop(AudioSound* sound, bool state) {
+  if ((_loopset == (LoopSet*)0L) && state)
+    _loopset = new LoopSet;
+  if (state)
+    _loopset->insert(sound);
+  else
+    _loopset->erase(sound);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::ns_get_loop (AudioSound)
+//       Access: Private
+//  Description: get the looping state of the given sound
+////////////////////////////////////////////////////////////////////
+bool AudioManager::ns_get_loop(AudioSound* sound) {
+  if (_loopset == (LoopSet*)0L)
+    return false;
+  LoopSet::iterator i = _loopset->find(sound);
+  return (i != _loopset->end());
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -75,6 +75,12 @@ void NullPlayer::play_sound(AudioTraits::SoundClass*,
     audio_cat->debug() << "in play sound in Null audio driver" << endl;
 }
 
+void NullPlayer::stop_sound(AudioTraits::SoundClass*,
+			    AudioTraits::PlayingClass*) {
+  if (audio_cat->is_debug())
+    audio_cat->debug() << "in stop sound in Null audio driver" << endl;
+}
+
 void NullPlayer::set_volume(AudioTraits::PlayingClass*, int) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "in set volume in Null audio driver"

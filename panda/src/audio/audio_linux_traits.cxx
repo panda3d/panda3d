@@ -309,7 +309,6 @@ LinuxSamplePlaying::~LinuxSamplePlaying(void) {
 }
 
 AudioTraits::PlayingClass::PlayingStatus LinuxSamplePlaying::status(void) {
-  LinuxSample* s = (LinuxSample*)_sound;
   BufferSet::iterator i = buffers.find(_buff);
   if (i != buffers.end())
     return AudioTraits::PlayingClass::PLAYING;
@@ -344,6 +343,13 @@ void LinuxSamplePlayer::play_sound(AudioTraits::SoundClass*,
   buffers.insert(lplaying->get_data());
 }
 
+void LinuxSamplePlayer::stop_sound(AudioTraits::SoundClass*,
+				   AudioTraits::PlayingClass* playing) {
+  initialize();
+  LinuxSamplePlaying* lplaying = (LinuxSamplePlaying*)playing;
+  buffers.erase(lplaying->get_data());
+}
+
 void LinuxSamplePlayer::set_volume(AudioTraits::PlayingClass*, int) {
 }
 
@@ -360,6 +366,11 @@ LinuxMusicPlayer::~LinuxMusicPlayer(void) {
 }
 
 void LinuxMusicPlayer::play_sound(AudioTraits::SoundClass*,
+				  AudioTraits::PlayingClass*) {
+  initialize();
+}
+
+void LinuxMusicPlayer::stop_sound(AudioTraits::SoundClass*,
 				  AudioTraits::PlayingClass*) {
   initialize();
 }

@@ -11,27 +11,34 @@
 
 #include <ipc_mutex.h>
 #include <ipc_thread.h>
+#include <set>
 
 class EXPCL_PANDA AudioManager {
 private:
   INLINE AudioManager(void);
 
   void ns_play(AudioSound*);
+  void ns_stop(AudioSound*);
+  void ns_set_loop(AudioSound*, bool);
+  bool ns_get_loop(AudioSound*);
   void ns_set_volume(AudioSound*, int);
   void ns_spawn_update(void);
   void ns_shutdown(void);
+  void ns_update(void);
 
   static AudioManager* get_ptr(void);
   static void* spawned_update(void*);
 
   typedef void UpdateFunc(void);
   typedef void ShutdownFunc(void);
+  typedef set<AudioSound*> LoopSet;
   static AudioManager* _global_ptr;
   static UpdateFunc* _update_func;
   static ShutdownFunc* _shutdown_func;
   static mutex _manager_mutex;
   static bool* _quit;
   static thread* _spawned;
+  static LoopSet* _loopset;
 public:
   virtual ~AudioManager(void);
 
@@ -39,6 +46,9 @@ public:
   static void set_shutdown_func(ShutdownFunc*);
 
   INLINE static void play(AudioSound*);
+  INLINE static void stop(AudioSound*);
+  INLINE static void set_loop(AudioSound*, bool);
+  INLINE static bool get_loop(AudioSound*);
   INLINE static void set_volume(AudioSound*, int);
   INLINE static void update(void);
   INLINE static void spawn_update(void);

@@ -21,6 +21,7 @@ INLINE void AudioManager::update(void) {
   mutex_lock l(_manager_mutex);
   if (_update_func != (UpdateFunc*)0L)
     (*_update_func)();
+  get_ptr()->ns_update();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,6 +49,33 @@ INLINE void AudioManager::shutdown(void) {
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::set_volume(AudioSound* sound, int v) {
   get_ptr()->ns_set_volume(sound, v);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::stop
+//       Access: Public, Static
+//  Description: stop playing a given sound
+////////////////////////////////////////////////////////////////////
+INLINE void AudioManager::stop(AudioSound* sound) {
+  get_ptr()->ns_stop(sound);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::stop
+//       Access: Public, Static
+//  Description: set the looping state of the given sound
+////////////////////////////////////////////////////////////////////
+INLINE void AudioManager::set_loop(AudioSound* sound, bool state) {
+  get_ptr()->ns_set_loop(sound, state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::get_loop
+//       Access: Public, Static
+//  Description: return the looping state of the given sound
+////////////////////////////////////////////////////////////////////
+INLINE bool AudioManager::get_loop(AudioSound* sound) {
+  return get_ptr()->ns_get_loop(sound);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -45,6 +45,7 @@ public:
     virtual ~PlayerClass(void);
 
     virtual void play_sound(SoundClass*, PlayingClass*) = 0;
+    virtual void stop_sound(SoundClass*, PlayingClass*) = 0;
     virtual void set_volume(PlayingClass*, int) = 0;
   };
 };

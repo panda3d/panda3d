@@ -810,6 +810,15 @@ void WinSamplePlayer::play_sound(AudioTraits::SoundClass* sample,
     audio_cat->debug() << "out of winsampleplayer play_sound" << endl;
 }
 
+void WinSamplePlayer::stop_sound(AudioTraits::SoundClass*,
+			   AudioTraits::PlayingClass* play) {
+  initialize();
+  WinSamplePlaying* wplay = (WinSamplePlaying*)play;
+  LPDIRECTSOUNDBUFFER chan = wplay->get_channel();
+  if (chan)
+    chan->Stop();
+}
+
 void WinSamplePlayer::set_volume(AudioTraits::PlayingClass*, int) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "winsampleplayer set_volume" << endl;
@@ -869,6 +878,19 @@ void WinMusicPlayer::play_sound(AudioTraits::SoundClass* music,
   }
   if (audio_cat->is_debug())
     audio_cat->debug() << "out of WinMusicPlayer::play_sound()" << endl;
+}
+
+void WinMusicPlayer::stop_sound(AudioTraits::SoundClass* music,
+				AudioTraits::PlayingClass*) {
+  WinMusic* wmusic = (WinMusic*)music;
+  IDirectMusicPerformance* _perf = wmusic->get_performance();
+  IDirectMusicSegment* _msc = wmusic->get_music();
+
+  if (_perf && _msc) {
+    HRESULT result = _perf->Stop(_msc, 0, 0, 0);
+    if (result != S_OK)
+      audio_cat->error() << "music stop failed" << endl;
+  }
 }
 
 void WinMusicPlayer::set_volume(AudioTraits::PlayingClass*, int) {

@@ -122,6 +122,8 @@ public:
 
   virtual void play_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
+  virtual void stop_sound(AudioTraits::SoundClass*,
+			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, int);
 public:
   // used by the readers
@@ -136,6 +138,8 @@ public:
   virtual ~LinuxMusicPlayer(void);
 
   virtual void play_sound(AudioTraits::SoundClass*,
+			  AudioTraits::PlayingClass*);
+  virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, int);
 public:
