@@ -26,11 +26,13 @@
 
 #include "pvector.h"
 #include "vector_string.h"
+#include "globPattern.h"
 
 class EggCharacterData;
 class EggComponentData;
 class EggJointData;
 class EggSliderData;
+class EggGroupNode;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggOptchar
@@ -52,6 +54,7 @@ protected:
 private:
   static bool dispatch_vector_string_pair(const string &opt, const string &arg, void *var);
   static bool dispatch_name_components(const string &opt, const string &arg, void *var);
+  static bool dispatch_flag_groups(const string &opt, const string &arg, void *var);
 
   void determine_removed_components();
   void move_vertices();
@@ -74,6 +77,9 @@ private:
   void quantize_vertices(EggNode *egg_node);
   void quantize_vertex(EggVertex *egg_vertex);
 
+  void do_flag_groups(EggGroupNode *egg_group);
+  void rename_primitives(EggGroupNode *egg_group, const string &name);
+
   bool _list_hierarchy;
   bool _list_hierarchy_v;
   bool _list_hierarchy_p;
@@ -91,6 +97,16 @@ private:
   vector_string _keep_components;
   vector_string _drop_components;
   vector_string _expose_components;
+
+  typedef pvector<GlobPattern> Globs;
+
+  class FlagGroupsEntry {
+  public:
+    Globs _groups;
+    string _name;
+  };
+  typedef pvector<FlagGroupsEntry> FlagGroups;
+  FlagGroups _flag_groups;
 
   double _vref_quantum;
 };

@@ -26,6 +26,7 @@
 #include "eggCharacterData.h"
 #include "eggBackPointer.h"
 #include "eggGroupNode.h"
+#include "eggPrimitive.h"
 #include "eggVertexPool.h"
 #include "string_utils.h"
 #include "dcast.h"
@@ -88,6 +89,14 @@ EggOptchar() {
      "each one can be found in the scene graph when the character is loaded, "
      "and objects can be parented to it.  This implies -keep.",
      &EggOptchar::dispatch_vector_string_comma, NULL, &_expose_components);
+
+  add_option
+    ("flag", "node[,node...][=name]", 0,
+     "Assign the indicated name to the geometry within the given nodes.  "
+     "This will make the geometry visible as a node in the resulting "
+     "character model when it is loaded in the scene graph (normally, "
+     "the node hierarchy is suppressed when loading characters.",
+     &EggOptchar::dispatch_flag_groups, NULL, &_flag_groups);
 
   add_option
     ("zero", "joint[,hprxyzijkabc]", 0,
@@ -190,6 +199,14 @@ run() {
     // morph sliders can simply be removed, while static sliders need
     // to be applied to the vertices and then removed.
 
+    // Finally, flag all the groups as the user requested.
+    if (!_flag_groups.empty()) {
+      Eggs::iterator ei;
+      for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
+        do_flag_groups(*ei);
+      }
+    }
+
     write_eggs();
   }
 }
@@ -286,6 +303,56 @@ dispatch_name_components(const string &opt, const string &arg, void *var) {
   }
 
   ip->push_back(sp);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_flag_groups
+//       Access: Protected, Static
+//  Description: Accepts a set of comma-delimited group names followed
+//               by an optional name separated with an equal sign.
+//
+//               The data pointer is to a FlagGroups object.
+////////////////////////////////////////////////////////////////////
+bool EggOptchar::
+dispatch_flag_groups(const string &opt, const string &arg, void *var) {
+  FlagGroups *ip = (FlagGroups *)var;
+
+  vector_string words;
+
+  tokenize(arg, words, ",");
+
+  if (words.empty()) {
+    nout << "-" << opt
+         << " requires a series of words separated by a comma.\n";
+    return false;
+  }
+
+  FlagGroupsEntry entry;
+
+  // Check for an equal sign in the last word.  This marks the name to
+  // assign.
+  string &last_word = words.back();
+  size_t equals = last_word.rfind('=');
+  if (equals != string::npos) {
+    entry._name = last_word.substr(equals + 1);
+    last_word = last_word.substr(0, equals);
+
+  } else {
+    // If there's no equal sign, the default is to name all groups
+    // after the last word.
+    entry._name = last_word;
+  }
+
+  // Convert the words to GlobPatterns.
+  vector_string::const_iterator si;
+  for (si = words.begin(); si != words.end(); ++si) {
+    const string &word = (*si);
+    entry._groups.push_back(GlobPattern(word));
+  }
+
+  ip->push_back(entry);
 
   return true;
 }
@@ -950,6 +1017,74 @@ quantize_vertex(EggVertex *egg_vertex) {
   // vertex.
   for (mi = memberships.begin(); mi != memberships.end(); ++mi) {
     (*mi)._group->set_vertex_membership(egg_vertex, (*mi)._membership);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggOptchar::do_flag_groups
+//       Access: Private
+//  Description: Recursively walks the indicated egg hierarchy,
+//               looking for groups that match one of the group names
+//               in _flag_groups, and renaming geometry appropriately.
+////////////////////////////////////////////////////////////////////
+void EggOptchar::
+do_flag_groups(EggGroupNode *egg_group) {
+  bool matched = false;
+  string name;
+  FlagGroups::const_iterator fi;
+  for (fi = _flag_groups.begin(); 
+       fi != _flag_groups.end() && !matched; 
+       ++fi) {
+    const FlagGroupsEntry &entry = (*fi);
+    Globs::const_iterator si;
+    for (si = entry._groups.begin(); 
+         si != entry._groups.end() && !matched; 
+         ++si) {
+      if ((*si).matches(egg_group->get_name())) {
+        matched = true;
+        name = entry._name;
+      }
+    }
+  }
+
+  if (matched) {
+    // Ok, this group matched one of the user's command-line renames.
+    // Rename all the primitives in this group and below to the
+    // indicated name; this will expose the primitives through the
+    // character loader.
+    rename_primitives(egg_group, name);
+  }
+
+  // Now recurse on children.
+  EggGroupNode::iterator gi;
+  for (gi = egg_group->begin(); gi != egg_group->end(); ++gi) {
+    EggNode *child = (*gi);
+    if (child->is_of_type(EggGroupNode::get_class_type())) {
+      EggGroupNode *group = DCAST(EggGroupNode, child);
+      do_flag_groups(group);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggOptchar::rename_primitives
+//       Access: Private
+//  Description: Recursively walks the indicated egg hierarchy,
+//               renaming geometry to the indicated name.
+////////////////////////////////////////////////////////////////////
+void EggOptchar::
+rename_primitives(EggGroupNode *egg_group, const string &name) {
+  EggGroupNode::iterator gi;
+  for (gi = egg_group->begin(); gi != egg_group->end(); ++gi) {
+    EggNode *child = (*gi);
+
+    if (child->is_of_type(EggGroupNode::get_class_type())) {
+      EggGroupNode *group = DCAST(EggGroupNode, child);
+      rename_primitives(group, name);
+
+    } else if (child->is_of_type(EggPrimitive::get_class_type())) {
+      child->set_name(name);
+    }
   }
 }
 
