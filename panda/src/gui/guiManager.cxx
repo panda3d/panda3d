@@ -223,10 +223,17 @@ void GuiManager::sanity_check(void) const {
     for (RegionSet::const_iterator j=_regions.begin(); j!=_regions.end(); ++j) {
       if ((*i) == (*j))
 	continue;
-      if (overlap((*i), (*j)))
+      if (overlap((*i), (*j))) {
+	LVector4f iv = (*i)->get_frame();
+	LVector4f jv = (*j)->get_frame();
 	gui_cat->warning() << "GuiManager::sanity_check: overlapping regions '"
 			   << (*i)->get_name() << "' and '" << (*j)->get_name()
-			   << "'" << endl;
+			   << "'" << endl << "  (" << iv[0] << ", " << iv[1]
+			   << ", " << iv[2] << ", " << iv[3] << ") and ("
+			   << jv[0] << ", " << jv[1] << ", " << jv[2] << ", "
+			   << jv[3] << ")" << endl;
+	
+      }
       if ((*i)->get_name() == (*j)->get_name())
 	gui_cat->warning() << "GuiManager::sanity_check: regions with same "
 			   << "name '" << (*i)->get_name() << " 0x"
