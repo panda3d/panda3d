@@ -696,7 +696,7 @@ do_compose(const TransformState *other) const {
 
   if (compose_componentwise && 
       components_given() && has_uniform_scale() && 
-      other->components_given() && other->has_uniform_scale()) {
+      other->components_given()) {
     // We will do this operation componentwise if both transforms were
     // given componentwise, and no non-uniform scale is involved.
 
@@ -707,10 +707,10 @@ do_compose(const TransformState *other) const {
     pos += quat.xform(other->get_pos()) * scale;
     quat = other->get_quat() * quat;
     quat.normalize();
-    scale *= other->get_uniform_scale();
+    LVecBase3f new_scale = other->get_scale() * scale;
 
     CPT(TransformState) result =
-      make_pos_quat_scale(pos, quat, LVecBase3f(scale, scale, scale));
+      make_pos_quat_scale(pos, quat, new_scale);
 
 #ifndef NDEBUG
     if (paranoid_compose) {
@@ -748,7 +748,7 @@ do_invert_compose(const TransformState *other) const {
   if (compose_componentwise && 
       components_given() && has_uniform_scale() && 
       (other->is_identity() || 
-       (other->components_given() && other->has_uniform_scale()))) {
+       (other->components_given()))) {
     // We will do this operation componentwise if both transforms were
     // given componentwise, and no non-uniform scale is involved.
 
@@ -764,17 +764,18 @@ do_invert_compose(const TransformState *other) const {
     scale = 1.0f / scale;
     quat.invert_in_place();
     pos = quat.xform(-pos) * scale;
+    LVecBase3f new_scale(scale, scale, scale);
 
     // Now compose the inverted transform with the other transform.
     if (!other->is_identity()) {
       pos += quat.xform(other->get_pos()) * scale;
       quat = other->get_quat() * quat;
       quat.normalize();
-      scale *= other->get_uniform_scale();
+      new_scale = other->get_uniform_scale() * scale;
     }
 
     CPT(TransformState) result =
-      make_pos_quat_scale(pos, quat, LVecBase3f(scale, scale, scale));
+      make_pos_quat_scale(pos, quat, new_scale);
 
 #ifndef NDEBUG
     if (paranoid_compose) {
