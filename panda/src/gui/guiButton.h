@@ -103,6 +103,18 @@ PUBLISHED:
   INLINE void set_behavior_event_parameter(int);
   INLINE int get_behavior_event_parameter(void) const;
 
+  INLINE void set_up_label(GuiLabel*);
+  INLINE void set_up_rollover_label(GuiLabel*);
+  INLINE void set_down_label(GuiLabel*);
+  INLINE void set_down_rollover_label(GuiLabel*);
+  INLINE void set_inactive_label(GuiLabel*);
+
+  INLINE GuiLabel* get_up_label(void) const;
+  INLINE GuiLabel* get_up_rollover_label(void) const;
+  INLINE GuiLabel* get_down_label(void) const;
+  INLINE GuiLabel* get_down_rollover_label(void) const;
+  INLINE GuiLabel* get_inactive_label(void) const;
+
   virtual void set_scale(float);
   virtual void set_scale(float, float, float);
   virtual void set_pos(const LVector3f&);
