@@ -23,7 +23,6 @@
 #include <filename.h>
 
 #include <ctype.h>
-#include <time.h>  // for strftime().
 
 #ifdef WIN32
 #include <windows.h>   //for DebugBreak()

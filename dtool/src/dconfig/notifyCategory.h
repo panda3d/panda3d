@@ -76,6 +76,8 @@ PUBLISHED:
   int get_num_children() const;
   NotifyCategory *get_child(int i) const;
 
+  static void set_server_delta(time_t delta);
+
 private:
   string _fullname;
   string _basename;
@@ -83,6 +85,8 @@ private:
   NotifySeverity _severity;
   typedef vector<NotifyCategory *> Children;
   Children _children;
+
+  static time_t _server_delta;
 
   friend class Notify;
 };

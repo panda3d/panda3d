@@ -20,11 +20,14 @@
 #include "notify.h"
 #include "config_notify.h"
 
+#include <time.h>  // for strftime().
 #include <assert.h>
+
+time_t NotifyCategory::_server_delta = 0;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::Constructor
-//       Access: Public
+//       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
 NotifyCategory::
@@ -86,7 +89,7 @@ NotifyCategory(const string &fullname, const string &basename,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::out
-//       Access: Public
+//       Access: Published
 //  Description: Begins a new message to this Category at the
 //               indicated severity level.  If the indicated severity
 //               level is enabled, this writes a prefixing string to
@@ -100,7 +103,7 @@ out(NotifySeverity severity, bool prefix) const {
     if (prefix) {
       if (get_notify_timestamp()) {
         // Format a timestamp to include as a prefix as well.
-        time_t now = time(NULL);
+        time_t now = time(NULL) + _server_delta;
         struct tm *ptm = localtime(&now);
 
         char buffer[128];
@@ -123,7 +126,7 @@ out(NotifySeverity severity, bool prefix) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::get_num_children
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of child Categories of this
 //               particular Category.
 ////////////////////////////////////////////////////////////////////
@@ -134,7 +137,7 @@ get_num_children() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::get_child
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth child Category of this particular
 //               Category.
 ////////////////////////////////////////////////////////////////////
@@ -142,4 +145,17 @@ NotifyCategory *NotifyCategory::
 get_child(int i) const {
   assert(i >= 0 && i < (int)_children.size());
   return _children[i];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NotifyCategory::set_server_delta
+//       Access: Published, Static
+//  Description: Sets a global delta (in seconds) between the local
+//               time and the server's time, for the purpose of
+//               synchronizing the time stamps in the log messages of
+//               the client with that of a known server.
+////////////////////////////////////////////////////////////////////
+void NotifyCategory::
+set_server_delta(time_t delta) {
+  _server_delta = delta;
 }
