@@ -188,7 +188,7 @@ class Actor(PandaObject, NodePath):
     def __str__(self):
         """__str__(self)
         Actor print function"""
-        return "Actor: partBundleDict = %s, animControlDict = %s" % \
+        return "Actor: partBundleDict = %s,\n animControlDict = %s" % \
                (self.__partBundleDict, self.__animControlDict)
         
 
@@ -333,7 +333,6 @@ class Actor(PandaObject, NodePath):
                 return animControl.getFrameRate()
         else:
             Actor.notify.warning("no part named %s" % (partName))
-
         return None
 
     def getPlayRate(self, animName=None, partName=None):
@@ -498,6 +497,25 @@ class Actor(PandaObject, NodePath):
 
         if (partBundleDict.has_key(partName)):
             partBundleDict[partName].show()
+        else:
+            Actor.notify.warning("no part named %s!" % (partName))
+
+    def showAllParts(self, partName, lodName="lodRoot"):
+        """showAllParts(self, string, key="lodRoot")
+        Make the given part and all its children render while in the tree.
+        NOTE: this will affect child geometry"""
+        if (self.__partBundleDict.has_key(lodName)):
+            partBundleDict = self.__partBundleDict[lodName]
+        else:
+            Actor.notify.warning("no lod named: %s" % (lodName))
+            return None
+
+        if (partBundleDict.has_key(partName)):
+            partBundleDict[partName].show()
+            children = partBundleDict[partName].getChildren()
+            numChildren = children.getNumPaths()
+            for childNum in range(0, numChildren):
+                (children.getPath(childNum)).show()
         else:
             Actor.notify.warning("no part named %s!" % (partName))
             
@@ -759,7 +777,7 @@ class Actor(PandaObject, NodePath):
         name(defaults to "modelRoot") and an lod name(defaults to "lodRoot").
         If copy is set to 0, do a lodModelOnce instead of a loadModelCopy.
         """
-        Actor.notify.warning("in loadModel: %s , part: %s, lod: %s, copy: %s" % \
+        Actor.notify.info("in loadModel: %s , part: %s, lod: %s, copy: %s" % \
             (modelPath, partName, lodName, copy))
 
         # load the model and extract its part bundle
@@ -786,10 +804,11 @@ class Actor(PandaObject, NodePath):
                 needsDict = 0
                 
             if (lodName!="lodRoot"):
-                # reparent to appropriate node under LOD switch
-                bundle.reparentTo(self.__LODNode.find("**/" + str(lodName)))
+                # instance to appropriate node under LOD switch
+                bundle = bundle.instanceTo(
+                    self.__LODNode.find("**/" + str(lodName)))
             else:
-                bundle.reparentTo(self.__geomNode)
+                bundle = bundle.instanceTo(self.__geomNode)
 
             if (needsDict):
                 bundleDict[partName] = bundle
