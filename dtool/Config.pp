@@ -254,6 +254,12 @@
 // Should we try to build the SGI-specific glxdisplay?
 #define HAVE_SGIGL $[eq $[PLATFORM],Irix]
 
+// Is DirectX available, and should we try to build with it?
+#define DX_IPATH
+#define DX_LPATH
+#define DX_LIBS
+#define HAVE_DX
+
 // Do you want to build the Renderman interface?
 #define HAVE_RIB
 
