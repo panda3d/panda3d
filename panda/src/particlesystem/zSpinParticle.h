@@ -33,7 +33,7 @@ public:
   virtual void update(void);
   virtual void die(void);
 
-  virtual float get_angle(void) const;
+  virtual float get_theta(void) const;
 
   INLINE void set_initial_angle(float t);
   INLINE float get_initial_angle(void) const;
