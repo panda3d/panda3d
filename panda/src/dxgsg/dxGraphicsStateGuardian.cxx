@@ -2314,9 +2314,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
     GeomVrtFmt=MixedFmtVerts;
 #endif
 
-    if(pLengthArr==NULL) {
-       assert(geom->get_num_vertices_per_prim()==4);
-       // we've been called by draw_quad, which has no lengths array
+    if(!geom->uses_components()) {
        GeomVrtFmt=MixedFmtVerts; // dont need efficiency here, just use simpler codepath
     }
 
@@ -2410,7 +2408,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
         memset(&dps_data,0,sizeof(D3DDRAWPRIMITIVESTRIDEDDATA));
 
 #ifdef _DEBUG
-//        nassertv(geom->uses_components());
+        nassertv(geom->uses_components());
         nassertv(geom->get_binding(G_COORD) == G_PER_VERTEX);
 #endif
 
