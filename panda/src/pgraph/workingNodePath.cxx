@@ -21,9 +21,13 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WorkingNodePath::get_num_nodes
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of nodes in the path from the root
 //               to the current node.
+//
+//               Since a WorkingNodePath always consists of, at
+//               minimum, a nonempty parent NodePath and one child
+//               node, this method will always return at least 2.
 ////////////////////////////////////////////////////////////////////
 int WorkingNodePath::
 get_num_nodes() const {
@@ -32,6 +36,28 @@ get_num_nodes() const {
   }
 
   return _next->get_num_nodes() + 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WorkingNodePath::get_node
+//       Access: Published
+//  Description: Returns the nth node of the path, where 0 is the
+//               referenced (bottom) node and get_num_nodes() - 1 is
+//               the top node.  This requires iterating through the
+//               path.
+////////////////////////////////////////////////////////////////////
+PandaNode *WorkingNodePath::
+get_node(int index) const {
+  nassertr(index >= 0, NULL);
+  if (index == 0) {
+    return _node;
+  }
+
+  if (_next == (WorkingNodePath *)NULL) {
+    return get_node_path().get_node(index - 1);
+  }
+
+  return _next->get_node(index - 1);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -56,6 +56,7 @@ public:
   INLINE PandaNode *node() const;
 
   int get_num_nodes() const;
+  PandaNode *get_node(int index) const;
 
 private:
   PT(NodePathComponent) r_get_node_path() const;
