@@ -113,6 +113,7 @@ private:
   string expand_filter_out(const string &params);
   string expand_wordsubst(const string &params);
   string expand_subst(const string &params);
+  string expand_join(const string &params);
   string expand_sort(const string &params);
   string expand_unique(const string &params);
   string expand_matrix(const string &params);

@@ -1047,6 +1047,8 @@ r_expand_variable(const string &str, size_t &vp,
       return expand_filter(params);
     } else if (funcname == "filter_out" || funcname == "filter-out") {
       return expand_filter_out(params);
+    } else if (funcname == "join") {
+      return expand_join(params);
     } else if (funcname == "sort") {
       return expand_sort(params);
     } else if (funcname == "unique") {
@@ -2387,6 +2389,32 @@ expand_wordsubst(const string &params) {
   }
 
   string result = repaste(words, " ");
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_join
+//       Access: Private
+//  Description: Expands the "join" function variable: joins the list
+//               of words using the specified separator.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_join(const string &params) {
+  // Split the string up into tokens based on the spaces.
+  vector<string> words;
+  tokenize_whitespace(expand_string(params), words);
+
+  if (words.size() < 2) {
+    cerr << "joins requires at least two parameters.\n";
+    return string();
+  }
+
+  const string sep(words[0]);
+
+  // Remove the first word in the list (which we use as the separator).
+  words.erase(words.begin());
+  
+  string result = repaste(words, sep);
   return result;
 }
 
