@@ -35,7 +35,8 @@ COLOR_TYPES = ['wall_color', 'window_color',
 DNA_TYPES = ['wall', 'window', 'sign', 'door', 'cornice', 'toon_landmark',
              'prop', 'street']
 BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10',
-                  '4_21', '3_22', '4_13_8', '3_13_9'
+                  '4_21', '3_22', '4_13_8', '3_13_9', '10',
+                  '12_8', '13_9_8'
                   ]
 # The list of neighborhoods to edit
 NEIGHBORHOODS = ['toontown_central',
@@ -834,8 +835,10 @@ class LevelEditor(NodePath, PandaObject):
         # Select a list of wall heights
         chance = randint(1,100)
         if buildingType == 'random20':
-            if chance <= 65:
+            if chance <= 35:
                 return '10_10'
+            elif chance <= 70:
+                return '12_8'
             else:
                 return '20'
         elif buildingType == 'random25':
