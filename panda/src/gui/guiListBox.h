@@ -9,14 +9,36 @@
 #include "guiItem.h"
 
 #include <vector>
+#include <deque>
 
 class EXPCL_PANDA GuiListBox : public GuiItem {
 private:
+  typedef vector< PT(GuiItem) > ItemVector;
+  typedef deque< PT(GuiItem) > ItemDeque;
+
+  ItemVector _top_stack;
+  ItemDeque _bottom_stack;
+  ItemVector _visible;
+  bool _arrow_top;
+  bool _arrow_bottom;
+  PT(GuiItem) _up_arrow;
+  PT(GuiItem) _down_arrow;
+  unsigned int _n_visible;
+  EventHandler* _eh;
+
   INLINE GuiListBox(void);
   virtual void recompute_frame(void);
+  void visible_patching(void);
 PUBLISHED:
-  GuiListBox(const string&);
+  GuiListBox(const string&, int, GuiItem*, GuiItem*);
   ~GuiListBox(void);
+
+  void scroll_up(void);
+  void scroll_down(void);
+  void add_item(GuiItem*);
+
+  virtual int freeze(void);
+  virtual int thaw(void);
 
   virtual void manage(GuiManager*, EventHandler&);
   virtual void unmanage(void);

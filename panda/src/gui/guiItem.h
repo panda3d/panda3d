@@ -45,6 +45,8 @@ PUBLISHED:
   INLINE float get_bottom(void) const;
   INLINE float get_top(void) const;
   INLINE LVector4f get_frame(void) const;
+  INLINE float get_width(void) const;
+  INLINE float get_height(void) const;
   INLINE Priority get_priority(void) const;
 
   INLINE void recompute(void);

@@ -51,6 +51,14 @@ INLINE LVector4f GuiItem::get_frame(void) const {
   return LVector4f(_left, _right, _bottom, _top);
 }
 
+INLINE float GuiItem::get_width(void) const {
+  return _right - _left;
+}
+
+INLINE float GuiItem::get_height(void) const {
+  return _top - _bottom;
+}
+
 INLINE GuiItem::Priority GuiItem::get_priority(void) const {
   return _pri;
 }
