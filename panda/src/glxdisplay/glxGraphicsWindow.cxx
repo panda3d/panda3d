@@ -449,6 +449,7 @@ set_properties_now(WindowProperties &properties) {
 
   // We hide the cursor by setting it to an invisible pixmap.
   if (properties.has_cursor_hidden()) {
+    _properties.set_cursor_hidden(properties.get_cursor_hidden());
     if (properties.get_cursor_hidden()) {
       XDefineCursor(_display, _xwindow, glx_pipe->get_hidden_cursor());
     } else {
