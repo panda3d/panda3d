@@ -68,11 +68,13 @@ public:
 
   void transform(const LMatrix4d &mat);
 
-
   INLINE GroupRef::const_iterator gref_begin() const;
   INLINE GroupRef::const_iterator gref_end() const;
   INLINE GroupRef::size_type gref_size() const;
   INLINE bool has_gref(const EggGroup *group) const;
+
+  void copy_grefs_from(const EggVertex &other);
+  void clear_grefs();
 
   INLINE PrimitiveRef::const_iterator pref_begin() const;
   INLINE PrimitiveRef::const_iterator pref_end() const;
@@ -80,8 +82,8 @@ public:
   INLINE int has_pref(const EggPrimitive *prim) const;
 
 #ifndef NDEBUG
-  void test_pref_integrity() const;
   void test_gref_integrity() const;
+  void test_pref_integrity() const;
 #else
   void test_gref_integrity() const { }
   void test_pref_integrity() const { }

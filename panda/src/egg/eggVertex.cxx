@@ -260,6 +260,56 @@ transform(const LMatrix4d &mat) {
   EggAttributes::transform(mat);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::copy_grefs_from
+//       Access: Public
+//  Description: Copies all the group references from the other vertex
+//               onto this one.  This assigns the current vertex to
+//               exactly the same groups, with exactly the same
+//               memberships, as the given one.
+////////////////////////////////////////////////////////////////////
+void EggVertex::
+copy_grefs_from(const EggVertex &other) {
+  if (&other == this) {
+    return;
+  }
+  test_gref_integrity();
+  other.test_gref_integrity();
+
+  clear_grefs();
+  test_gref_integrity();
+
+  GroupRef::const_iterator gri;
+
+  for (gri = other.gref_begin(); gri != other.gref_end(); ++gri) {
+    EggGroup *group = *gri;
+    nassertv(group != NULL);
+
+    group->ref_vertex(this, group->get_vertex_membership(&other));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::clear_grefs
+//       Access: Public
+//  Description: Removes all group references from the vertex, so that
+//               it is not assigned to any group.
+////////////////////////////////////////////////////////////////////
+void EggVertex::
+clear_grefs() {
+  GroupRef gref_copy = _gref;
+  GroupRef::const_iterator gri;
+  for (gri = gref_copy.begin(); gri != gref_copy.end(); ++gri) {
+    EggGroup *group = *gri;
+    nassertv(group != NULL);
+    group->unref_vertex(this);
+  }
+
+  // Now we should have no more refs.
+  nassertv(_gref.empty());
+}
+
 #ifndef NDEBUG
 
 ////////////////////////////////////////////////////////////////////
@@ -309,6 +359,7 @@ test_pref_integrity() const {
   }
 }
 
+#endif  // NDEBUG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::output
@@ -323,5 +374,3 @@ output(ostream &out) const {
     out << get_pool()->get_name() << ":" << get_index();
   }
 }
-
-#endif  // NDEBUG
