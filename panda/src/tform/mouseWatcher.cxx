@@ -24,7 +24,6 @@
 #include "mouseData.h"
 #include "buttonEventDataTransition.h"
 #include "buttonEventDataAttribute.h"
-#include "keyboardButton.h"
 #include "mouseButton.h"
 #include "throw_event.h"
 #include "eventParameter.h"
@@ -303,6 +302,159 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::press
+//       Access: Private
+//  Description: Records the indicated mouse or keyboard button as
+//               being depressed.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+press(ButtonHandle button) {
+  MouseWatcherParameter param;
+  param.set_button(button);
+  param.set_modifier_buttons(_mods);
+  param.set_mouse(_mouse);
+
+  if (MouseButton::is_mouse_button(button)) {
+    // Mouse buttons are inextricably linked to the mouse position.
+    
+    if (!_button_down) {
+      _button_down_region = _current_region;
+    }
+    _button_down = true;
+    if (_button_down_region != (MouseWatcherRegion *)NULL) {
+      _button_down_region->press(param);
+      throw_event_pattern(_button_down_pattern, _button_down_region,
+                          button);
+    }
+    
+  } else {
+    // It's a keyboard button; therefore, send the event to every
+    // region that wants keyboard buttons, regardless of the mouse
+    // position.
+    if (_current_region != (MouseWatcherRegion *)NULL) {
+      // Our current region, the one under the mouse, always get
+      // all the keyboard events, even if it doesn't set its
+      // keyboard flag.
+      _current_region->press(param);
+    }
+    
+    // All the other regions only get the keyboard events if
+    // they set their global keyboard flag.
+    param.set_outside(true);
+    global_keyboard_press(param);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::release
+//       Access: Private
+//  Description: Records the indicated mouse or keyboard button as
+//               being released.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+release(ButtonHandle button) {
+  MouseWatcherParameter param;
+  param.set_button(button);
+  param.set_modifier_buttons(_mods);
+  param.set_mouse(_mouse);
+
+  if (MouseButton::is_mouse_button(button)) {
+    // Button up.  Send the up event associated with the region we
+    // were over when the button went down.
+    
+    // There is some danger of losing button-up events here.  If
+    // more than one button goes down together, we won't detect
+    // both of the button-up events properly.
+    if (_button_down_region != (MouseWatcherRegion *)NULL) {
+      param.set_outside(_current_region != _button_down_region);
+      _button_down_region->release(param);
+      throw_event_pattern(_button_up_pattern, _button_down_region,
+                          button);
+    }
+    _button_down = false;
+    
+  } else {
+    // It's a keyboard button; therefore, send the event to every
+    // region that wants keyboard buttons, regardless of the mouse
+    // position.
+    if (_current_region != (MouseWatcherRegion *)NULL) {
+      _current_region->release(param);
+    }
+    
+    param.set_outside(true);
+    global_keyboard_release(param);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::global_keyboard_press
+//       Access: Private
+//  Description: Calls press() on all regions that are interested in
+//               receiving global keyboard events, except for the
+//               current region (which already received this one).
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+global_keyboard_press(const MouseWatcherParameter &param) {
+  Regions::const_iterator ri;
+  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
+    MouseWatcherRegion *region = (*ri);
+
+    if (region != _current_region &&
+        region->get_active() && region->get_keyboard()) {
+      region->press(param);
+    }
+  }
+
+  // Also check all of our sub-groups.
+  Groups::const_iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    MouseWatcherGroup *group = (*gi);
+    for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
+      MouseWatcherRegion *region = (*ri);
+
+      if (region != _current_region &&
+          region->get_active() && region->get_keyboard()) {
+        region->press(param);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::global_keyboard_release
+//       Access: Private
+//  Description: Calls release() on all regions that are interested in
+//               receiving global keyboard events, except for the
+//               current region (which already received this one).
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+global_keyboard_release(const MouseWatcherParameter &param) {
+  Regions::const_iterator ri;
+  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
+    MouseWatcherRegion *region = (*ri);
+
+    if (region != _current_region &&
+        region->get_active() && region->get_keyboard()) {
+      region->release(param);
+    }
+  }
+
+  // Also check all of our sub-groups.
+  Groups::const_iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    MouseWatcherGroup *group = (*gi);
+    for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
+      MouseWatcherRegion *region = (*ri);
+
+      if (region != _current_region &&
+          region->get_active() && region->get_keyboard()) {
+        region->release(param);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::transmit_data
 //       Access: Public
 //  Description: Convert mouse data into a mouseWatcher matrix
@@ -366,39 +518,10 @@ transmit_data(NodeAttributes &data) {
       const ButtonEvent &be = (*bi);
       _mods.add_event(be);
 
-      MouseWatcherParameter param;
-      param.set_button(be._button);
-      param.set_modifier_buttons(_mods);
-      param.set_mouse(_mouse);
-
-      if (!be._down) {
-        // Button up.  Send the up event associated with the region we
-        // were over when the button went down.
-
-        // There is some danger of losing button-up events here.  If
-        // more than one button goes down together, we won't detect
-        // both of the button-up events properly.
-        if (_button_down_region != (MouseWatcherRegion *)NULL) {
-          param.set_outside(_current_region != _button_down_region);
-
-          _button_down_region->release(param);
-          throw_event_pattern(_button_up_pattern, _button_down_region,
-                              be._button);
-        }
-        _button_down = false;
-
+      if (be._down) {
+        press(be._button);
       } else {
-        // Button down.
-
-        if (!_button_down) {
-          _button_down_region = _current_region;
-        }
-        _button_down = true;
-        if (_button_down_region != (MouseWatcherRegion *)NULL) {
-          _button_down_region->press(param);
-          throw_event_pattern(_button_down_pattern, _button_down_region,
-                              be._button);
-        }
+        release(be._button);
       }
     }
   }

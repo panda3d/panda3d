@@ -241,6 +241,21 @@ setup(const ArcChain &ready, const ArcChain &depressed,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGButton::set_active
+//       Access: Published, Virtual
+//  Description: Toggles the active/inactive state of the button.  In
+//               the case of a PGButton, this also changes its visual
+//               appearance.
+////////////////////////////////////////////////////////////////////
+void PGButton:: 
+set_active(bool active) {
+  if (active != get_active()) {
+    PGItem::set_active(active);
+    set_state(active ? S_ready : S_inactive);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGButton::add_click_button
 //       Access: Published
 //  Description: Adds the indicated button to the set of buttons that

@@ -19,6 +19,7 @@
 #include "directRenderTraverser.h"
 #include "config_sgraphutil.h"
 #include "frustumCullTraverser.h"
+#include "dftraverser.h"
 
 #include <wrt.h>
 #include <geomNode.h>
@@ -57,6 +58,7 @@ DirectRenderTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
                       const ArcChain &arc_chain) :
   RenderTraverser(gsg, graph_type, arc_chain)
 {
+  _view_frustum_cull = true;
 }
 
 
@@ -99,24 +101,30 @@ traverse(Node *root,
       }
     }
 
-  // Determine the relative transform matrix from the camera to our
-  // starting node.  This is important for proper view-frustum
-  // culling.
-  LMatrix4f rel_from_camera;
-  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
-  const DisplayRegion *dr = _gsg->get_current_display_region();
-  ProjectionNode *camera = dr->get_cull_frustum();
-  wrt(camera, root, begin(), end(), ntw, get_graph_type());
-  const TransformTransition *tt;
-  if (get_transition_into(tt, ntw)) {
-    rel_from_camera = tt->get_matrix();
-  } else {
-    // No relative transform.
-    rel_from_camera = LMatrix4f::ident_mat();
-  }
+  if (_view_frustum_cull) {
+    // Determine the relative transform matrix from the camera to our
+    // starting node.  This is important for proper view-frustum
+    // culling.
+    LMatrix4f rel_from_camera;
+    NodeTransitionWrapper ntw(TransformTransition::get_class_type());
+    const DisplayRegion *dr = _gsg->get_current_display_region();
+    ProjectionNode *camera = dr->get_cull_frustum();
+    wrt(camera, root, begin(), end(), ntw, get_graph_type());
+    const TransformTransition *tt;
+    if (get_transition_into(tt, ntw)) {
+      rel_from_camera = tt->get_matrix();
+    } else {
+      // No relative transform.
+      rel_from_camera = LMatrix4f::ident_mat();
+    }
+    fc_traverse(_arc_chain, root, rel_from_camera, *this,
+                render_state, level_state, _gsg, _graph_type);
 
-  fc_traverse(_arc_chain, root, rel_from_camera, *this,
-              render_state, level_state, _gsg, _graph_type);
+  } else {
+    // No view-frustum culling is requested; just do a normal
+    // depth-first traversal of the complete tree.
+    df_traverse(root, *this, render_state, level_state, _graph_type);
+  }
 
   if (level_state._decal_mode &&
       root->is_of_type(GeomNode::get_class_type())) {

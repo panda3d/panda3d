@@ -319,7 +319,7 @@ set_modifier_buttons(const ModifierButtons &mods) {
 //  Description: Returns the set of buttons that are being monitored
 //               as modifier buttons, as well as their current state.
 ////////////////////////////////////////////////////////////////////
-INLINE const ModifierButtons &MouseWatcher::
+INLINE ModifierButtons MouseWatcher::
 get_modifier_buttons() const {
   return _mods;
 }

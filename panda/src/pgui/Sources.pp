@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET pgui
   #define LOCAL_LIBS \
-    text tform graph linmath event putil gobj \
+    grutil text tform graph linmath event putil gobj \
     mathutil sgraph sgraphutil
 
 //  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
@@ -12,6 +12,7 @@
   #define SOURCES  \
     config_pgui.h \
     pgButton.I pgButton.h \
+    pgEntry.I pgEntry.h \
     pgMouseWatcherGroup.I pgMouseWatcherGroup.h \
     pgMouseWatcherParameter.I pgMouseWatcherParameter.h \
     pgFrameStyle.I pgFrameStyle.h \
@@ -23,6 +24,7 @@
   #define SOURCES $[SOURCES] \
     config_pgui.cxx \
     pgButton.cxx \
+    pgEntry.cxx \
     pgMouseWatcherGroup.cxx \
     pgMouseWatcherParameter.cxx \
     pgFrameStyle.cxx \
@@ -32,6 +34,7 @@
 
   #define INSTALL_HEADERS \
     pgButton.I pgButton.h \
+    pgEntry.I pgEntry.h \
     pgMouseWatcherGroup.I pgMouseWatcherGroup.h \
     pgMouseWatcherParameter.I pgMouseWatcherParameter.h \
     pgFrameStyle.I pgFrameStyle.h \

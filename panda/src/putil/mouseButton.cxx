@@ -76,6 +76,23 @@ three() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseButton::is_mouse_button
+//       Access: Public, Static
+//  Description: Returns true if the indicated ButtonHandle is a mouse
+//               button, false if it is some other kind of button.
+////////////////////////////////////////////////////////////////////
+bool MouseButton::
+is_mouse_button(ButtonHandle button) {
+  for (int i = 0; i < num_mouse_buttons; i++) {
+    if (button == _buttons[i]) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseButton::init_mouse_buttons
 //       Access: Public, Static
 //  Description: This is intended to be called only once, by the

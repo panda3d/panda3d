@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "pgTop.h"
 #include "pgItem.h"
 #include "pgMouseWatcherParameter.h"
 
@@ -25,9 +26,12 @@
 #include "arcChain.h"
 #include "transformTransition.h"
 #include "sceneGraphReducer.h"
+#include "directRenderTraverser.h"
+#include "allTransitionsWrapper.h"
 
 TypeHandle PGItem::_type_handle;
 PT(TextNode) PGItem::_text_node;
+PGItem *PGItem::_focus_item = (PGItem *)NULL;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PGItem::Constructor
@@ -41,7 +45,7 @@ PGItem(const string &name) : NamedNode(name)
   _frame.set(0, 0, 0, 0);
   _region = new PGMouseWatcherRegion(this);
   _state = 0;
-  _active = true;
+  _flags = F_active;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,6 +57,10 @@ PGItem::
 ~PGItem() {
   nassertv(_region->_item == this);
   _region->_item = (PGItem *)NULL;
+
+  if (_focus_item == this) {
+    _focus_item = (PGItem *)NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,7 +74,7 @@ PGItem(const PGItem &copy) :
   _has_frame(copy._has_frame),
   _frame(copy._frame),
   _state(copy._state),
-  _active(copy._active)
+  _flags(copy._flags)
 {
   _region = new PGMouseWatcherRegion(this);
 }
@@ -82,7 +90,7 @@ operator = (const PGItem &copy) {
   _has_frame = copy._has_frame;
   _frame = copy._frame;
   _state = copy._state;
-  _active = copy._active;
+  _flags = copy._flags;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,7 +165,7 @@ xform(const LMatrix4f &mat) {
 //               as determined by the traversal from PGTop.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-activate_region(const LMatrix4f &transform, int sort) {
+activate_region(PGTop *, const LMatrix4f &transform, int sort) {
   LPoint3f ll(_frame[0], 0.0, _frame[2]);
   LPoint3f ur(_frame[1], 0.0, _frame[3]);
   ll = ll * transform;
@@ -165,6 +173,28 @@ activate_region(const LMatrix4f &transform, int sort) {
   _region->set_frame(ll[0], ur[0], ll[2], ur[2]);
   _region->set_sort(sort);
   _region->set_active(true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::draw_item
+//       Access: Public, Virtual
+//  Description: Called by the PGTop's traversal to draw this
+//               particular item.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+draw_item(PGTop *top, GraphicsStateGuardian *gsg, 
+          const AllAttributesWrapper &attrib) {
+  if (has_state_def(get_state())) {
+    // This item has a current state definition that we should use
+    // to render the item.
+    Node *def = get_state_def(get_state());
+    
+    // We'll use a normal DirectRenderTraverser to do the rendering
+    // of the subgraph.
+    DirectRenderTraverser drt(gsg, RenderRelation::get_class_type());
+    drt.set_view_frustum_cull(false);
+    drt.traverse(def, attrib, AllTransitionsWrapper());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -222,6 +252,70 @@ release(const MouseWatcherParameter &param) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::set_active
+//       Access: Published, Virtual
+//  Description: Sets whether the PGItem is active for mouse watching.
+//               This is not necessarily related to the
+//               active/inactive appearance of the item, which is
+//               controlled by set_state(), but it does affect whether
+//               it responds to mouse events.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+set_active(bool active) {
+  if (active) {
+    _flags |= F_active;
+  } else {
+    _flags &= ~F_active;
+    // Deactivating the item automatically defocuses it too.
+    if (get_focus()) {
+      set_focus(false);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::set_focus
+//       Access: Published, Virtual
+//  Description: Sets whether the PGItem currently has keyboard focus.
+//               This simply means that the item may respond to
+//               keyboard events as well as to mouse events; precisely
+//               what this means is up to the individual item.  
+//
+//               Only one PGItem in the world is allowed to have focus
+//               at any given time.  Setting the focus on any other
+//               item automatically disables the focus from the
+//               previous item.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+set_focus(bool focus) {
+  if (focus) {
+    if (!get_active()) {
+      // Cannot set focus on an inactive item.
+      return;
+    }
+
+    // Set the keyboard focus to this item.
+    if (_focus_item != this) {
+      if (_focus_item != (PGItem *)NULL) {
+        // Clear the focus from whatever item currently has it.
+        _focus_item->set_focus(false);
+      }
+      _focus_item = this;
+    }
+    _flags |= F_focus;
+
+  } else {
+    if (_focus_item == this) {
+      // Remove this item from the focus.
+      _focus_item = (PGItem *)NULL;
+    }
+
+    _flags &= ~F_focus;
+  }
+  _region->set_keyboard(focus);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::get_num_state_defs
 //       Access: Published
 //  Description: Returns one more than the highest-numbered state def
@@ -265,18 +359,7 @@ clear_state_def(int state) {
     return;
   }
 
-  Node *def = _state_defs[state]._node;
-  if (def != (Node *)NULL) {
-    // Remove all the children from this node.
-    int num_children = def->get_num_children(RenderRelation::get_class_type());
-    while (num_children > 0) {
-      nassertv(num_children == def->get_num_children(RenderRelation::get_class_type()));
-      NodeRelation *arc = 
-        def->get_child(RenderRelation::get_class_type(), num_children - 1);
-      remove_arc(arc);
-      num_children--;
-    }
-  }
+  remove_all_children(_state_defs[state]._node);
 
   _state_defs[state]._frame_arc = (NodeRelation *)NULL;
   _state_defs[state]._frame_stale = true;
@@ -292,7 +375,7 @@ clear_state_def(int state) {
 ////////////////////////////////////////////////////////////////////
 Node *PGItem::
 get_state_def(int state) {
-  nassertr(state < 1000, (Node *)NULL);  // Sanity check.
+  nassertr(state >= 0 && state < 1000, (Node *)NULL);  // Sanity check.
   slot_state_def(state);
 
   if (_state_defs[state]._node == (Node *)NULL) {
@@ -375,9 +458,33 @@ get_text_node() {
     _text_node = new TextNode("pguiText");
     _text_node->freeze();
     _text_node->set_text_color(0.0, 0.0, 0.0, 1.0);
-    _text_node->set_align(TM_ALIGN_CENTER);
+
+    // The default TextNode is aligned to the left, for the
+    // convenience of PGEntry.
+    _text_node->set_align(TM_ALIGN_LEFT);
   }
   return _text_node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::remove_all_children
+//       Access: Protected, Static
+//  Description: An internal utility function to remove all the
+//               children of the indicated Node.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+remove_all_children(Node *node) {
+  if (node != (Node *)NULL) {
+    int num_children = 
+      node->get_num_children(RenderRelation::get_class_type());
+    while (num_children > 0) {
+      nassertv(num_children == node->get_num_children(RenderRelation::get_class_type()));
+      NodeRelation *arc = 
+        node->get_child(RenderRelation::get_class_type(), num_children - 1);
+      remove_arc(arc);
+      num_children--;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

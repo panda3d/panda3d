@@ -66,7 +66,7 @@ PUBLISHED:
   void setup(const ArcChain &ready, const ArcChain &depressed,
              const ArcChain &rollover, const ArcChain &inactive);
 
-  INLINE void set_active(bool active);
+  virtual void set_active(bool active);
 
   bool add_click_button(const ButtonHandle &button);
   bool remove_click_button(const ButtonHandle &button);

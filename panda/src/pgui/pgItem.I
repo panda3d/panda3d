@@ -126,20 +126,6 @@ get_state() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGItem::set_active
-//       Access: Published
-//  Description: Sets whether the PGItem is active for mouse watching.
-//               This is not necessarily related to the
-//               active/inactive appearance of the item, which is
-//               controlled by set_state(), but it does affect whether
-//               it responds to mouse events.
-////////////////////////////////////////////////////////////////////
-INLINE void PGItem::
-set_active(bool active) {
-  _active = active;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PGItem::get_active
 //       Access: Published
 //  Description: Returns whether the PGItem is currently active for
@@ -147,7 +133,18 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGItem::
 get_active() const {
-  return _active;
+  return (_flags & F_active) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_focus
+//       Access: Published
+//  Description: Returns whether the PGItem currently has focus for
+//               keyboard events.  See set_focus().
+////////////////////////////////////////////////////////////////////
+INLINE bool PGItem::
+get_focus() const {
+  return (_flags & F_focus) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -271,4 +268,17 @@ get_release_event(const ButtonHandle &button) const {
 INLINE void PGItem::
 set_text_node(TextNode *node) {
   _text_node = node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_focus_item
+//       Access: Published, Static
+//  Description: Returns the one PGItem in the world that currently
+//               has keyboard focus, if any, or NULL if no item has
+//               keyboard focus.  Use PGItem::set_focus() to activate
+//               or deactivate keyboard focus on a particular item.
+////////////////////////////////////////////////////////////////////
+INLINE PGItem *PGItem::
+get_focus_item() {
+  return _focus_item;
 }

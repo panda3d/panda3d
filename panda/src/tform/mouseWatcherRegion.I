@@ -29,8 +29,7 @@ MouseWatcherRegion(const string &name, float left, float right,
   _frame(left, right, bottom, top)
 {
   _sort = 0;
-  _active = true;
-  _suppress_below = true;
+  _flags = F_active | F_suppress_below;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,8 +43,7 @@ MouseWatcherRegion(const string &name, const LVecBase4f &frame) :
   _frame(frame)
 {
   _sort = 0;
-  _active = true;
-  _suppress_below = false;
+  _flags = F_active | F_suppress_below;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,7 +122,11 @@ get_sort() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcherRegion::
 set_active(bool active) {
-  _active = active;
+  if (active) {
+    _flags |= F_active;
+  } else {
+    _flags &= ~F_active;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +137,37 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool MouseWatcherRegion::
 get_active() const {
-  return _active;
+  return ((_flags & F_active) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherRegion::set_keyboard
+//       Access: Published
+//  Description: Sets whether the region is interested in global
+//               keyboard events.  If this is true, then any keyboard
+//               button events will be passed to press() and release()
+//               regardless of the position of the mouse onscreen;
+//               otherwise, these events will only be passed if the
+//               mouse is over the region.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcherRegion::
+set_keyboard(bool keyboard) {
+  if (keyboard) {
+    _flags |= F_keyboard;
+  } else {
+    _flags &= ~F_keyboard;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherRegion::get_keyboard
+//       Access: Published
+//  Description: Returns whether the region is interested in global
+//               keyboard events; see set_keyboard().
+////////////////////////////////////////////////////////////////////
+INLINE bool MouseWatcherRegion::
+get_keyboard() const {
+  return ((_flags & F_keyboard) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,7 +181,11 @@ get_active() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcherRegion::
 set_suppress_below(bool suppress_below) {
-  _suppress_below = suppress_below;
+  if (suppress_below) {
+    _flags |= F_suppress_below;
+  } else {
+    _flags &= ~F_suppress_below;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -160,7 +196,7 @@ set_suppress_below(bool suppress_below) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool MouseWatcherRegion::
 get_suppress_below() const {
-  return _suppress_below;
+  return ((_flags & F_suppress_below) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////

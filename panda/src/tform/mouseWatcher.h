@@ -37,6 +37,8 @@
 
 #include "pset.h"
 
+class MouseWatcherParameter;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : MouseWatcher
 // Description : This TFormer maintains a list of rectangular regions
@@ -96,7 +98,7 @@ PUBLISHED:
   INLINE EventHandler *get_extra_handler(void) const;
 
   INLINE void set_modifier_buttons(const ModifierButtons &mods);
-  INLINE const ModifierButtons &get_modifier_buttons() const;
+  INLINE ModifierButtons get_modifier_buttons() const;
 
 public:
   virtual void output(ostream &out) const;
@@ -110,6 +112,11 @@ private:
   void throw_event_pattern(const string &pattern,
                            const MouseWatcherRegion *region,
                            const ButtonHandle &button);
+
+  void press(ButtonHandle button);
+  void release(ButtonHandle button);
+  void global_keyboard_press(const MouseWatcherParameter &param);
+  void global_keyboard_release(const MouseWatcherParameter &param);
 
   typedef pset< PT(MouseWatcherGroup) > Groups;
   Groups _groups;

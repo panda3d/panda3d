@@ -58,7 +58,7 @@ PUBLISHED:
   INLINE int get_freeze_level() const;
   INLINE int thaw();
 
-  INLINE void set_font(Node *font_node);
+  //  INLINE void set_font(Node *font_node);
   INLINE void set_font(TextFont *font);
   INLINE TextFont *get_font() const;
 

@@ -57,6 +57,8 @@ public:
                         const AllAttributesWrapper &initial_state,
                         const AllTransitionsWrapper &net_trans);
 
+  INLINE void set_view_frustum_cull(bool flag);
+
 public:
   // These methods, from parent class TraverserVisitor, define the
   // behavior of the DirectRenderTraverser as it traverses the graph.
@@ -73,6 +75,8 @@ public:
                     const DirectRenderLevelState &level_state);
 
 private:
+  bool _view_frustum_cull;
+
   // Statistics
   static PStatCollector _draw_pcollector;
 

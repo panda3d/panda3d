@@ -18,7 +18,9 @@
 
 #include "config_pgui.h"
 #include "pgButton.h"
+#include "pgEntry.h"
 #include "pgMouseWatcherParameter.h"
+#include "pgMouseWatcherGroup.h"
 #include "pgItem.h"
 #include "pgMouseWatcherRegion.h"
 #include "pgTop.h"
@@ -30,7 +32,9 @@ NotifyCategoryDef(pgui, "");
 
 ConfigureFn(config_pgui) {
   PGButton::init_type();
+  PGEntry::init_type();
   PGMouseWatcherParameter::init_type();
+  PGMouseWatcherGroup::init_type();
   PGItem::init_type();
   PGMouseWatcherRegion::init_type();
   PGTop::init_type();

@@ -81,7 +81,7 @@ private:
   RenderTraverser *_trav;
   AllAttributesWrapper _attrib;
   int _sort_index;
-
+  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

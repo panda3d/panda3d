@@ -86,6 +86,7 @@ thaw() {
   return _freeze_level;
 }
 
+/*
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_font
 //       Access: Published
@@ -94,12 +95,12 @@ thaw() {
 INLINE void TextNode::
 set_font(Node *font_node) {
   if (font_node == (Node *)NULL) {
-    _font = (TextFont *)NULL;
+    set_font((TextFont *)NULL);
   } else {
-    _font = new TextFont(font_node);
+    set_font(new TextFont(font_node));
   }
-  rebuild(true);
 }
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_font
@@ -108,8 +109,10 @@ set_font(Node *font_node) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_font(TextFont *font) {
-  _font = font;
-  rebuild(true);
+  if (_font != font) {
+    _font = font;
+    rebuild(true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,8 +143,10 @@ get_line_height() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_slant(float slant) {
-  _slant = slant;
-  rebuild(true);
+  if (_slant != slant) {
+    _slant = slant;
+    rebuild(true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -161,8 +166,10 @@ get_slant() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_align(int align_type) {
-  _align = align_type;
-  rebuild(true);
+  if (_align != align_type) {
+    _align = align_type;
+    rebuild(true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -183,9 +190,11 @@ get_align() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_wordwrap(float wordwrap) {
-  _flags |= F_has_wordwrap;
-  _wordwrap_width = wordwrap;
-  rebuild(true);
+  if (!has_wordwrap() || _wordwrap_width != wordwrap) {
+    _flags |= F_has_wordwrap;
+    _wordwrap_width = wordwrap;
+    rebuild(true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -196,8 +205,10 @@ set_wordwrap(float wordwrap) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 clear_wordwrap() {
-  _flags &= ~F_has_wordwrap;
-  rebuild(true);
+  if (has_wordwrap()) {
+    _flags &= ~F_has_wordwrap;
+    rebuild(true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -237,9 +248,11 @@ set_text_color(float r, float g, float b, float a) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_text_color(const Colorf &text_color) {
-  _text_color = text_color;
-  _flags |= F_has_text_color;
-  rebuild(false);
+  if (!has_text_color() || _text_color != text_color) {
+    _text_color = text_color;
+    _flags |= F_has_text_color;
+    rebuild(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -250,7 +263,10 @@ set_text_color(const Colorf &text_color) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 clear_text_color() {
-  _flags &= ~F_has_text_color;
+  if (has_text_color()) {
+    _flags &= ~F_has_text_color;
+    rebuild(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -290,8 +306,10 @@ set_frame_color(float r, float g, float b, float a) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_frame_color(const Colorf &frame_color) {
-  _frame_color = frame_color;
-  rebuild(false);
+  if (_frame_color != frame_color) {
+    _frame_color = frame_color;
+    rebuild(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -311,10 +329,12 @@ get_frame_color() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_card_border(float size, float uv_portion) {
-  _flags |= F_has_card_border;
-  _card_border_size = size;
-  _card_border_uv_portion = uv_portion;
-  rebuild(false);
+  if (!has_card_border() || _card_border_size != size || _card_border_uv_portion != uv_portion) {
+    _flags |= F_has_card_border;
+    _card_border_size = size;
+    _card_border_uv_portion = uv_portion;
+    rebuild(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -324,8 +344,10 @@ set_card_border(float size, float uv_portion) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 clear_card_border() {
-  _flags &= ~F_has_card_border;
-  rebuild(false);
+  if (has_card_border()) {
+    _flags &= ~F_has_card_border;
+    rebuild(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -375,8 +397,10 @@ set_card_color(float r, float g, float b, float a) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_card_color(const Colorf &card_color) {
-  _card_color = card_color;
-  rebuild(false);
+  if (_card_color != card_color) {
+    _card_color = card_color;
+    rebuild(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -396,9 +420,15 @@ get_card_color() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_card_texture(Texture *card_texture) {
-  _flags |= F_has_card_texture;
-  _card_texture = card_texture;
-  rebuild(false);
+  if (card_texture == (Texture *)NULL) {
+    clear_card_texture();
+  } else {
+    if (!has_card_texture() || _card_texture != card_texture) {
+      _flags |= F_has_card_texture;
+      _card_texture = card_texture;
+      rebuild(false);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -408,9 +438,11 @@ set_card_texture(Texture *card_texture) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 clear_card_texture() {
-  _flags &= ~F_has_card_texture;
-  _card_texture = NULL;
-  rebuild(false);
+  if (has_card_texture()) {
+    _flags &= ~F_has_card_texture;
+    _card_texture = NULL;
+    rebuild(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -450,8 +482,10 @@ set_shadow_color(float r, float g, float b, float a) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_shadow_color(const Colorf &shadow_color) {
-  _shadow_color = shadow_color;
-  rebuild(false);
+  if (_shadow_color != shadow_color) {
+    _shadow_color = shadow_color;
+    rebuild(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

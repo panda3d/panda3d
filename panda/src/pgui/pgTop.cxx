@@ -31,7 +31,6 @@
 #include "switchNode.h"
 #include "transformTransition.h"
 #include "nodeTransitionWrapper.h"
-#include "directRenderTraverser.h"
 #include "omniBoundingVolume.h"
 #include "pruneTransition.h"
 
@@ -196,27 +195,21 @@ r_traverse(Node *node, const ArcChain &chain) {
       mat = tt->get_matrix();
       
       // Now apply this transform to the item's frame.
-      pgi->activate_region(mat, _sort_index);
+      pgi->activate_region(this, mat, _sort_index);
       _sort_index++;
 
       add_region(pgi->get_region());
     }
 
-    if (pgi->has_state_def(pgi->get_state())) {
-      // This item has a current state definition that we should use
-      // to render the item.
-      Node *def = pgi->get_state_def(pgi->get_state());
-
-      // Get the net transitions to the PGItem.
-      AllTransitionsWrapper complete_trans;
-      wrt(pgi, chain.begin(), chain.end(), this,
-          complete_trans, RenderRelation::get_class_type());
-
-      // We'll use a normal DirectRenderTraverser to do the rendering
-      // of the subgraph.
-      DirectRenderTraverser drt(_gsg, RenderRelation::get_class_type());
-      drt.traverse(def, _attrib, complete_trans);
-    }
+    // And draw the item, however it wishes to be drawn.
+    
+    // Get the net transitions to the PGItem.
+    AllTransitionsWrapper complete_trans;
+    wrt(pgi, chain.begin(), chain.end(), this,
+        complete_trans, RenderRelation::get_class_type());
+    AllAttributesWrapper render_state;
+    render_state.apply_from(_attrib, complete_trans);
+    pgi->draw_item(this, _gsg, render_state);
 
   } else if (node->is_of_type(GeomNode::get_class_type())) {
     _gsg->_geom_nodes_pcollector.add_level(1);

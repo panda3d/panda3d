@@ -32,8 +32,12 @@
 #include "pt_NodeRelation.h"
 #include "textNode.h"
 
-class ArcChain;
+class PGTop;
+class GraphicsStateGuardian;
+class AllAttributesWrapper;
+class AllTransitionsWrapper;
 class MouseWatcherParameter;
+class ArcChain;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PGItem
@@ -61,8 +65,11 @@ public:
   virtual Node *make_copy() const;
   virtual void xform(const LMatrix4f &mat);
 
-  void activate_region(const LMatrix4f &transform, int sort);
+  void activate_region(PGTop *top, const LMatrix4f &transform, int sort);
   INLINE PGMouseWatcherRegion *get_region() const;
+
+  virtual void draw_item(PGTop *top, GraphicsStateGuardian *gsg, 
+                         const AllAttributesWrapper &attrib);
 
   virtual void enter(const MouseWatcherParameter &param);
   virtual void exit(const MouseWatcherParameter &param);
@@ -79,8 +86,11 @@ PUBLISHED:
   INLINE void set_state(int state);
   INLINE int get_state() const;
 
-  INLINE void set_active(bool active);
+  virtual void set_active(bool active);
   INLINE bool get_active() const;
+
+  virtual void set_focus(bool focus);
+  INLINE bool get_focus() const;
 
   int get_num_state_defs() const;
   void clear_state_def(int state);
@@ -105,6 +115,11 @@ PUBLISHED:
   static TextNode *get_text_node();
   INLINE static void set_text_node(TextNode *node);
 
+  INLINE static PGItem *get_focus_item();
+
+protected:
+  static void remove_all_children(Node *node);
+
 private:
   void slot_state_def(int state);
   void update_frame(int state);
@@ -113,7 +128,11 @@ private:
   bool _has_frame;
   LVecBase4f _frame;
   int _state;
-  bool _active;
+  enum Flags {
+    F_active  = 0x01,
+    F_focus   = 0x02,
+  };
+  int _flags;
 
   PT(PGMouseWatcherRegion) _region;
 
@@ -128,6 +147,7 @@ private:
   StateDefs _state_defs;
 
   static PT(TextNode) _text_node;
+  static PGItem *_focus_item;
 
 public:
   static TypeHandle get_class_type() {

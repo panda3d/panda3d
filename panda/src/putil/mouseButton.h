@@ -36,6 +36,8 @@ PUBLISHED:
   static ButtonHandle two();
   static ButtonHandle three();
 
+  static bool is_mouse_button(ButtonHandle button);
+
 public:
   static void init_mouse_buttons();
 };

@@ -51,6 +51,9 @@ PUBLISHED:
   INLINE void set_active(bool active);
   INLINE bool get_active() const;
 
+  INLINE void set_keyboard(bool keyboard);
+  INLINE bool get_keyboard() const;
+
   INLINE void set_suppress_below(bool suppress_below);
   INLINE bool get_suppress_below() const;
 
@@ -70,9 +73,12 @@ private:
   float _area;
   int _sort;
 
-  bool _active;
-  bool _suppress_below;
-
+  enum Flags {
+    F_active         = 0x001,
+    F_keyboard       = 0x002,
+    F_suppress_below = 0x004,
+  };
+  int _flags;
   ModifierButtons _mods;
 
 public:
