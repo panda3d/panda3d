@@ -37,7 +37,7 @@ void GuiSign::manage(GuiManager* mgr, EventHandler& eh) {
 void GuiSign::unmanage(void) {
   if (_mgr != (GuiManager*)0L)
     _mgr->remove_label(_sign);
-  GuiSign::unmanage();
+  GuiItem::unmanage();
 }
 
 void GuiSign::set_scale(float f) {
