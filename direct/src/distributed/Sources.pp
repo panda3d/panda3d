@@ -8,9 +8,12 @@
   #define LOCAL_LIBS \
     directbase dcparser
   #define OTHER_LIBS \
-    downloader:c net:c panda:m express:c pandaexpress:m \
+    downloader:c panda:m express:c pandaexpress:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
+  #if $[and $[HAVE_NET],$[HAVE_NSPR]] \
+    #define OTHER_LIBS net:c $[OTHER_LIBS]
+  #endif
 
   #define SOURCES \
     config_distributed.cxx config_distributed.h \

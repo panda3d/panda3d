@@ -129,7 +129,8 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
                     dclass.setClassDef(classDef)
 
             self.dclassesByName[className] = dclass
-            self.dclassesByNumber[number] = dclass
+            if number >= 0:
+                self.dclassesByNumber[number] = dclass
 
     def importModule(self, dcImports, moduleName, importSymbols):
         """ Imports the indicated moduleName and all of its symbols
