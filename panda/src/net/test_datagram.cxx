@@ -16,16 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-#include <stdlib.h>
-#include <strstream>
-#include <iomanip>
-
 #include "netDatagram.h"
 #include "datagramIterator.h"
 
-main()
-{
+int
+main() {
   NetDatagram dg;
 
   dg.add_int8((signed char) -10);

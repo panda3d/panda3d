@@ -96,6 +96,16 @@
 #end test_bin_target
 
 #begin test_bin_target
+  #define TARGET test_raw_server
+  #define LOCAL_LIBS net
+  #define OTHER_LIBS $[OTHER_LIBS] pystub
+
+  #define SOURCES \
+    test_raw_server.cxx
+
+#end test_bin_target
+
+#begin test_bin_target
   #define TARGET test_udp
   #define LOCAL_LIBS net
   #define OTHER_LIBS $[OTHER_LIBS] pystub

@@ -358,6 +358,12 @@ connection_reset(const PT(Connection) &connection, PRErrorCode errcode) {
     net_cat.info(false)
       << " (os error = " << PR_GetOSError() << ").\n";
   }
+
+  // Turns out we do need to explicitly mark the connection as closed
+  // immediately, rather than waiting for the user to do it, since
+  // otherwise we'll keep trying to listen for noise on the socket and
+  // we'll always here a "yes" answer.
+  close_connection(connection);
 }
 
 ////////////////////////////////////////////////////////////////////
