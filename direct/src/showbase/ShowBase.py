@@ -679,7 +679,8 @@ class ShowBase(DirectObject.DirectObject):
         # we can move around to move all cameras as a group.
         if self.camera == None:
             self.camera = self.render.attachNewNode('camera')
-        
+            __builtins__["camera"] = self.camera
+            
         cam = self.camera.attachNewNode(camNode)
         dr.setCamera(cam)
 
