@@ -231,7 +231,7 @@ class DirectManipulationControl(PandaObject):
             else:
                 # Mouse started in central region, xlate
                 # Mode depends on shift key
-                if direct.fShift:
+                if direct.fShift or direct.fControl:
                     self.xlateCamXY(state)
                 else:
                     self.xlateCamXZ(state)
@@ -367,7 +367,11 @@ class DirectManipulationControl(PandaObject):
 
     def xlateCamXY(self, state):
         """Constrained 2D motion perpendicular to camera's image plane
-        This moves the object in the camera's XY plane"""
+        This moves the object in the camera's XY plane if shift is held
+        Moves object toward camera if control is held
+        """
+        # Reset scaling init flag
+        self.fScaleInit = 1
         # Now, where is the widget relative to current camera view
         vWidget2Camera = direct.widget.getPos(direct.camera)
         # If this is first time around, record initial y distance
@@ -378,15 +382,26 @@ class DirectManipulationControl(PandaObject):
             # Get widget's current xy coords in screen space
             coaCenter = getNearProjectionPoint(direct.widget)
             self.deltaNearX = coaCenter[0] - direct.dr.nearVec[0]
-        # Reset scaling init flag
-        self.fScaleInit = 1
+        # Which way do we move the object?
+        if direct.fControl:
+            moveDir = Vec3(vWidget2Camera)
+            # If widget is behind camera invert vector
+            if moveDir[1] < 0.0:
+                moveDir.assign(moveDir * -1)
+            moveDir.normalize()
+        else:
+            moveDir = Vec3(Y_AXIS)
         # Move selected objects
         dr = direct.dr
-        # Move object in y axis based on mouse motion
-        newY = vWidget2Camera[1] + self.xlateSF * dr.mouseDeltaY
-        # Put object at same relative point to mouse in X
-        newX = (direct.dr.nearVec[0] + self.deltaNearX) * (newY/dr.near)
-        direct.widget.setPos(direct.camera, newX, newY, vWidget2Camera[2])
+        # Scale move dir
+        moveDir.assign(moveDir * (2.0 * dr.mouseDeltaY * self.xlateSF))
+        # Add it to current widget offset
+        vWidget2Camera += moveDir
+        # The object, however, stays at the same relative point to mouse in X
+        vWidget2Camera.setX((dr.nearVec[0] + self.deltaNearX) *
+                            (vWidget2Camera[1]/dr.near))
+        # Move widget
+        direct.widget.setPos(direct.camera, vWidget2Camera)
 
     def rotate2D(self, state):
         """ Virtual trackball rotation of widget """

@@ -35,7 +35,10 @@ Central Region:
       Up/Down/Left/Right: Moves object in plane parallel to camera's image
          plane 
    Shift + LMB:
-      Up/Down:  Moves object's COA towards camera
+      Up/Down:  Moves object's COA in camera's XY plane
+      Left/Right: Moves object parallel to camera's X axis
+   Control + LMB:
+      Up/Down:  Moves object's COA toward Camera (in Y and Z)
       Left/Right: Moves object parallel to camera's X axis
    Alt + LMB (off of widget):
       Away from COA: scale object up
@@ -70,9 +73,25 @@ COA.  Hit 'Tab' again to return to normal object manipulation mode.
 
 All camera manipulation performed with middle mouse button (MMB).
 
-Window is divided up into three regions: an outer frame, central region, and
-the four corners.  Camera manipulation depends on where mouse interaction
-begins.
+Camera manipulation depends on where mouse interaction begins and the
+current center of action (COA). 
+
+The window is divided up into three regions: an outer frame, central region,
+and the four corners.  A different manipulation mode is defined for each
+region and is described below.
+
+The camera center of action (COA) determines the center of rotation of any
+rotation moves and the scale factor for any translation moves.  
+
+The COA is set by quickly clicking (less than .25 second or 1 frame) with
+the MMB in the central region.  It is defined as the intersection point of
+the ray from the camera's origin, through the mouse with the model.  If no
+intersection occurs, the COA is put out along the camera's Y axis.  Each
+time the MMB is clicked with no intersection the COA moves further out
+along the Y axis.
+
+Pressing 'L' toggles COA lock, when on, the COA is locked in its current
+location.
 
 Central Region:
    MMB:
@@ -85,15 +104,12 @@ Central Region:
       Up/Down/Left/Right: shifts camera in image plane
 Outer Region:
    MMB:
-      Up/Down/Left/Right: Rotates about current COA.  The COA is set every
-        time you press the MMB in the central region.  It is defined as the
-         intersection point of the ray from the camera's origin, through
-         the mouse with the model (if no intersection, no change in the COA
-         will result).  If mouse stays within outer frame, motion about COA
-         is constrained to a single axis. (parallel to camera's X axis when
-         in left and right part of the frame and parallel to the camera's Z
-         axis when in the top or bottom part of the frame)
-   Shift MMB:
+      Up/Down/Left/Right: Rotates about current COA.  If mouse stays within
+      outer frame, motion about COA is constrained to a single axis.
+      (parallel to camera's X axis when in left and right part of the frame
+      and parallel to the camera's Z axis when in the top or bottom part of
+      the frame)
+   Shift + MMB:
       Up/Down: Pitch about camera's X axis
       Left/Right: Yaw about camera's Z axis
 Four corners:

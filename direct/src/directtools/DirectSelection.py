@@ -403,6 +403,8 @@ class SelectionRay:
         self.ct = CollisionTraverser( RenderRelation.getClassType() )
         # Let the traverser know about the queue and the collision node
         self.ct.addCollider(self.rayCollisionNode, self.cq )
+        # Reference node path (for picking next)
+        self.collisionRef = direct.group.attachNewNode('collisionRef')
         # List of objects that can't be selected
         self.unpickable = UNPICKABLE
 
@@ -414,7 +416,8 @@ class SelectionRay:
         if item in self.unpickable:
             self.unpickable.remove(item)
 
-    def pickGeom(self, targetNodePath = render, fIntersectUnpickable = 0):
+    def pickGeom(self, targetNodePath = render, fIntersectUnpickable = 0,
+                 fIgnoreCamera = 0):
         self.collideWithGeom()
         self.pick(targetNodePath,
                   direct.dr.mouseX,
@@ -425,8 +428,12 @@ class SelectionRay:
         for i in range(0,self.numEntries):
             entry = self.cq.getEntry(i)
             node = entry.getIntoNode()
+            nodePath = render.findPathDownTo(node)
             # Don't pick hidden nodes
             if node.isHidden():
+                pass
+            elif fIgnoreCamera and (camera in nodePath.getAncestry()):
+                # This avoids things parented to a camera.  Good idea?
                 pass
             # Can pick unpickable, use the first visible node
             elif fIntersectUnpickable:
@@ -448,7 +455,8 @@ class SelectionRay:
         if(self.cqIndex >= 0):
             # Yes!
             # Find hit point in parent's space
-            hitPt = self.parentToHitPt(self.cqIndex)
+            entry = self.cq.getEntry(self.cqIndex)
+            hitPt = self.parentToHitPt(entry)
             hitPtDist = Vec3(hitPt - ZERO_POINT).length()
             return (node, hitPt, hitPtDist)
         else:
@@ -465,7 +473,8 @@ class SelectionRay:
             # Entry 0 is the closest hit point if multiple hits
             minPt = 0
             # Find hit point in parent's space
-            hitPt = self.parentToHitPt(minPt)
+            entry = self.cq.getEntry(minPt)
+            hitPt = self.parentToHitPt(entry)
             hitPtDist = Vec3(hitPt).length()
             # Get the associated collision queue object
             entry = self.cq.getEntry(minPt)
@@ -483,15 +492,18 @@ class SelectionRay:
         self.ct.traverse( targetNodePath.node() )
         self.numEntries = self.cq.getNumEntries()
         self.cq.sortEntries()
+        # Record cam's current position (used for cycling through
+        # other hit points)
+        self.collisionRef.iPosHprScale(base.cam)
         return self.numEntries
 
-    def pickNext(self):
+    def getHitPt(self, entry):
         if self.cqIndex >= 0:
             self.cqIndex = (self.cqIndex + 1) % self.numEntries
             entry = self.cq.getEntry(self.cqIndex)
             node = entry.getIntoNode()
             # Find hit point in parent's space
-            hitPt = self.parentToHitPt(self.cqIndex)
+            hitPt = self.parentToHitPt(entry)
             hitPtDist = Vec3(hitPt - ZERO_POINT).length()
             return (node, hitPt, hitPtDist)
         else:
@@ -530,7 +542,8 @@ class SelectionRay:
         if(self.cqIndex >= 0):
             # Yes!
             # Find hit point in parent's space
-            hitPt = self.parentToHitPt(self.cqIndex)
+            entry = self.cq.getEntry(self.cqIndex)
+            hitPt = self.parentToHitPt(entry)
             hitPtDist = Vec3(hitPt - ZERO_POINT).length()
             return (node, hitPt, hitPtDist)
         else:
@@ -561,9 +574,8 @@ class SelectionRay:
     def objectToHitPt(self, index):
         return self.cq.getEntry(index).getIntoIntersectionPoint()
 
-    def parentToHitPt(self, index):
-        # Get the specified entry
-        entry = self.cq.getEntry(index)
+    def parentToHitPt(self, entry):
+        # Get hit point
         hitPt = entry.getIntoIntersectionPoint()
         # Convert point from object local space to parent's space
         return entry.getInvWrtSpace().xformPoint(hitPt)

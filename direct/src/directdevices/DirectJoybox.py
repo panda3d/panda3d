@@ -55,7 +55,10 @@ class DirectJoybox(PandaObject):
         self.refCS = direct.cameraControl.coaMarker
         self.tempCS = direct.group.attachNewNode('JoyboxTempCS')
         # Text object to display current mode
-        self.readout = OnscreenText.OnscreenText( pos = (-0.9, 0.95) )
+        self.readout = OnscreenText.OnscreenText(
+            pos = (-0.9, 0.95),
+            font = direct.font,
+            mayChange = 1)
         # List of functions to cycle through
         self.modeList = [self.joeMode, self.driveMode, self.orbitMode]
         # Pick initial mode

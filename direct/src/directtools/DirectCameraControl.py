@@ -8,10 +8,11 @@ Y_AXIS = Vec3(0,1,0)
 class DirectCameraControl(PandaObject):
     def __init__(self):
         # Create the grid
+        self.startT = 0.0
+        self.startF = 0
 	self.orthoViewRoll = 0.0
 	self.lastView = 0
         self.coa = Point3(0,100,0)
-        self.coaDist = 100
         self.coaMarker = loader.loadModel('models/misc/sphere')
         self.coaMarker.setName('DirectCameraCOAMarker')
         self.coaMarker.setTransparency(1)
@@ -19,7 +20,10 @@ class DirectCameraControl(PandaObject):
         self.coaMarker.setPos(0,100,0)
         useDirectRenderStyle(self.coaMarker)
         self.coaMarkerPos = Point3(0)
-        self.fUpdateCOA = 1
+        self.fLockCOA = 1
+        self.nullHitPtCount = 0
+        self.cqEntries = []
+        self.coaMarkerRef = direct.group.attachNewNode('coaMarkerRef')
 	self.camManipRef = direct.group.attachNewNode('camManipRef')
         t = CAM_MOVE_DURATION
         self.actionEvents = [
@@ -64,13 +68,9 @@ class DirectCameraControl(PandaObject):
             # MOUSE IS IN CENTRAL REGION
             # Hide the marker for this kind of motion
             self.coaMarker.hide()
-            # Check for a hit point based on
-            # current mouse position
-            # Allow intersection with unpickable objects
-            # And then spawn task to determine mouse mode
-            node, hitPt, hitPtDist = direct.iRay.pickGeom(
-                fIntersectUnpickable = 1)
-            self.computeCOA(node, hitPt, hitPtDist)
+            # Record time of start of mouse interaction
+            self.startT= globalClock.getFrameTime()
+            self.startF = globalClock.getFrameCount()
             # Start manipulation
             self.spawnXZTranslateOrHPanYZoom()
             # END MOUSE IN CENTRAL REGION
@@ -85,6 +85,24 @@ class DirectCameraControl(PandaObject):
 
     def mouseFlyStop(self):
 	taskMgr.removeTasksNamed('manipulateCamera')
+        stopT = globalClock.getFrameTime()
+        deltaT = stopT - self.startT
+        stopF = globalClock.getFrameCount()
+        deltaF = stopF - self.startF
+        if (deltaT <= 0.25) or (deltaF <= 1):
+            # Check for a hit point based on
+            # current mouse position
+            # Allow intersection with unpickable objects
+            # And then spawn task to determine mouse mode
+            node, hitPt, hitPtDist = direct.iRay.pickGeom(
+                fIntersectUnpickable = 1, fIgnoreCamera = 1)
+            self.computeCOA(node, hitPt, hitPtDist)
+            # Record reference point
+            self.coaMarkerRef.iPosHprScale(direct.iRay.collisionRef)
+            # Record entries
+            self.cqEntries = []
+            for i in range(direct.iRay.cq.getNumEntries()):
+                self.cqEntries.append(direct.iRay.cq.getEntry(i))
         # Show the marker
         self.coaMarker.show()
         # Resize it
@@ -96,7 +114,8 @@ class DirectCameraControl(PandaObject):
         # Spawn the new task
         t = Task.Task(self.XZTranslateOrHPanYZoomTask)
         # For HPanYZoom
-        t.zoomSF = Vec3(self.coa).length()
+        coaDist = Vec3(self.coaMarker.getPos(direct.camera)).length()
+        t.zoomSF = (coaDist / direct.dr.near)
         taskMgr.spawnTaskNamed(t, 'manipulateCamera')
 
     def spawnXZTranslateOrHPPan(self):
@@ -117,7 +136,8 @@ class DirectCameraControl(PandaObject):
 	taskMgr.removeTasksNamed('manipulateCamera')
         # Spawn new task
         t = Task.Task(self.HPanYZoomTask)
-        t.zoomSF = Vec3(self.coa).length()
+        coaDist = Vec3(self.coaMarker.getPos(direct.camera)).length()
+        t.zoomSF = (coaDist / direct.dr.near)
         taskMgr.spawnTaskNamed(t, 'manipulateCamera')
 
     def spawnHPPan(self):
@@ -155,15 +175,17 @@ class DirectCameraControl(PandaObject):
 
     def HPanYZoomTask(self,state):
         if direct.fControl:
-            moveDir = Vec3(Y_AXIS)
-        else:
             moveDir = Vec3(self.coaMarker.getPos(direct.camera))
             # If marker is behind camera invert vector
             if moveDir[1] < 0.0:
                 moveDir.assign(moveDir * -1)
             moveDir.normalize()
+        else:
+            moveDir = Vec3(Y_AXIS)
         moveDir.assign(moveDir * (-2.0 * direct.dr.mouseDeltaY *
                                         state.zoomSF))
+        if direct.dr.mouseDeltaY > 0.0:
+            moveDir.setY(moveDir[1] * 1.0)
         direct.camera.setPosHpr(direct.camera,
                                 moveDir[0],
                                 moveDir[1],
@@ -247,54 +269,85 @@ class DirectCameraControl(PandaObject):
         return Task.cont
 
     def lockCOA(self):
-        self.fUpdateCOA = 0
-
+        self.fLockCOA = 1
+        direct.message('COA Lock On')
+            
     def unlockCOA(self):
-        self.fUpdateCOA = 1
+        self.fLockCOA = 0
+        direct.message('COA Lock Off')
 
     def toggleCOALock(self):
-        self.fUpdateCOA = 1 - self.fUpdateCOA
+        self.fLockCOA = 1 - self.fLockCOA
+        if self.fLockCOA:
+            direct.message('COA Lock On')
+        else:
+            direct.message('COA Lock Off')
 
     def pickNextCOA(self):
         """ Cycle through collision handler entries """
-        node, hitPt, hitPtDist = direct.iRay.pickNext()
-        self.computeCOA(node, hitPt, hitPtDist)
+        if self.cqEntries:
+            # Get next entry and rotate entries
+            entry = self.cqEntries[0]
+            self.cqEntries = self.cqEntries[1:] + self.cqEntries[:1]
+            # Filter out object's under camera
+            node = entry.getIntoNode()
+            nodePath = render.findPathDownTo(node)
+            if camera not in nodePath.getAncestry():
+                # Compute hit point
+                hitPt = direct.iRay.parentToHitPt(entry)
+                # Move coa marker to new point
+                self.updateCoa(hitPt, ref = self.coaMarkerRef)
+            else:
+                # Remove offending entry
+                self.cqEntries = self.cqEntries[:-1]
+                self.pickNextCOA()
 
     def computeCOA(self, node, hitPt, hitPtDist):
         coa = Point3(0)
-        if self.fUpdateCOA and node:
-            # Set center of action
-            coa.assign(hitPt)
-            coaDist = hitPtDist
-            # Handle case of bad coa point (too close or too far)
-            if ((coaDist < (1.1 * direct.dr.near)) or
-                (coaDist > direct.dr.far)):
-                # Just use existing point
-                coa.assign(self.coaMarker.getPos(direct.camera))
-                coaDist = Vec3(coa - ZERO_POINT).length()
-                if coaDist < (1.1 * direct.dr.near):
-                    coa.set(0,100,0)
-                    coaDist = 100
-        else:
-            # If no intersection point or COA is locked:
+        if self.fLockCOA:
+            # COA is locked, use existing point
             # Use existing point
             coa.assign(self.coaMarker.getPos(direct.camera))
-            coaDist = Vec3(coa - ZERO_POINT).length()
-            # Check again its not to close 
-            if coaDist < (1.1 * direct.dr.near):
-                coa.set(0,100,0)
-                coaDist = 100
-        # Update coa and marker
-        self.updateCoa(coa, coaDist)
-
-    def updateCoa(self, cam2point, coaDist = None):
-        self.coa.set(cam2point[0], cam2point[1], cam2point[2])
-        if coaDist:
-            self.coaDist = coaDist
+            # Reset hit point count
+            self.nullHitPointCount = 0
+        elif node:
+            # Got a hit point (hit point is in camera coordinates)
+            # Set center of action
+            coa.assign(hitPt)
+            # Handle case of bad coa point (too close or too far)
+            if ((hitPtDist < (1.1 * direct.dr.near)) or
+                (hitPtDist > direct.dr.far)):
+                # Just use existing point
+                coa.assign(self.coaMarker.getPos(direct.camera))
+            # Reset hit point count
+            self.nullHitPointCount = 0
         else:
-            self.coaDist = Vec3(self.coa - ZERO_POINT).length()
+            # Increment null hit point count
+            self.nullHitPointCount = (self.nullHitPointCount + 1) % 7
+            # No COA lock and no intersection point
+            # Use a point out in front of camera
+            # Distance to point increases on multiple null hit points
+            # MRM: Would be nice to be able to control this
+            # At least display it
+            dist = pow(10.0, self.nullHitPointCount)
+            direct.message('COA Distance: ' + `dist`)
+            coa.set(0,dist,0)
+        # Compute COA Dist
+        coaDist = Vec3(coa - ZERO_POINT).length()
+        if coaDist < (1.1 * direct.dr.near):
+            coa.set(0,100,0)
+            coaDist = 100
+        # Update coa and marker
+        self.updateCoa(coa, coaDist = coaDist)
+
+    def updateCoa(self, ref2point, coaDist = None, ref = None):
+        self.coa.set(ref2point[0], ref2point[1], ref2point[2])
+        if not coaDist:
+            coaDist = Vec3(self.coa - ZERO_POINT).length()
         # Place the marker in render space
-        self.coaMarker.setPos(direct.camera,self.coa)
+        if ref == None:
+            ref = base.cam
+        self.coaMarker.setPos(ref, self.coa)
         # Resize it
         self.updateCoaMarkerSize(coaDist)
         # Record marker pos in render space

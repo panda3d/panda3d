@@ -23,6 +23,10 @@ class DirectSession(PandaObject):
         # Establish a global pointer to the direct object early on
         # so dependant classes can access it in their code
         __builtin__.direct = self
+        # These come early since they are used later on
+        self.group = render.attachNewNode('DIRECT')
+        self.font = loader.loadFont("models/fonts/Comic")
+        
         self.fEnabled = 0
         self.drList = DisplayRegionList()
         self.iRayList = map(lambda x: x.iRay, self.drList)
@@ -30,7 +34,6 @@ class DirectSession(PandaObject):
         self.camera = self.dr.camera
         self.iRay = self.dr.iRay
 
-        self.group = render.attachNewNode('DIRECT')
         self.cameraControl = DirectCameraControl()
         self.manipulationControl = DirectManipulationControl()
         self.useObjectHandles()
@@ -51,17 +54,27 @@ class DirectSession(PandaObject):
 
         self.selectedNPReadout = OnscreenText.OnscreenText(
             pos = (-1.0, -0.9), bg=Vec4(1,1,1,1),
-            scale = 0.05, align = TMALIGNLEFT)
+            scale = 0.05, align = TMALIGNLEFT,
+            mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.selectedNPReadout)
         self.selectedNPReadout.reparentTo( hidden )
 
         self.activeParentReadout = OnscreenText.OnscreenText(
             pos = (-1.0, -0.975), bg=Vec4(1,1,1,1),
-            scale = 0.05, align = TMALIGNLEFT)
+            scale = 0.05, align = TMALIGNLEFT,
+            mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.activeParentReadout)
         self.activeParentReadout.reparentTo( hidden )
+
+        self.directMessageReadout = OnscreenText.OnscreenText(
+            pos = (-1.0, 0.9), bg=Vec4(1,1,1,1),
+            scale = 0.05, align = TMALIGNLEFT,
+            mayChange = 1, font = self.font)
+        # Make sure readout is never lit or drawn in wireframe
+        useDirectRenderStyle(self.directMessageReadout)
+        self.directMessageReadout.reparentTo( hidden )
 
         # Create a vrpn client vrpn-server or default
         if base.config.GetBool('want-vrpn', 0):
@@ -291,6 +304,7 @@ class DirectSession(PandaObject):
             self.selectedNPReadout.reparentTo(aspect2d)
             self.selectedNPReadout.setText(
                 'Selected:' + dnp.name)
+            self.selectedNPReadout.adjustAllPriorities(100)
             # Show the manipulation widget
             self.widget.showWidget()
             # Update camera controls coa to this point
@@ -346,6 +360,7 @@ class DirectSession(PandaObject):
         self.activeParentReadout.reparentTo(aspect2d)
         self.activeParentReadout.setText(
             'Active Parent:' + nodePath.getName())
+        self.activeParentReadout.adjustAllPriorities(100)
         # Alert everyone else
         messenger.send('DIRECT_activeParent', [self.activeParent])
         
@@ -577,6 +592,23 @@ class DirectSession(PandaObject):
             messenger.send('DIRECT_redo')
 
     # UTILITY FUNCTIONS
+    def message(self, text):
+        taskMgr.removeTasksNamed('hideDirectMessage')
+        taskMgr.removeTasksNamed('hideDirectMessageLater')
+        self.directMessageReadout.reparentTo(aspect2d)
+        self.directMessageReadout.setText(text)
+        self.directMessageReadout.adjustAllPriorities(100)
+        self.hideDirectMessageLater()
+
+    def hideDirectMessageLater(self):
+        seq = Task.doLater(3.0, Task.Task(self.hideDirectMessage),
+                           'hideDirectMessage')
+        t = taskMgr.spawnTaskNamed(seq, 'hideDirectMessageLater')
+
+    def hideDirectMessage(self, state):
+        self.directMessageReadout.reparentTo(hidden)
+        return Task.done
+
     def useObjectHandles(self):
         self.widget = self.manipulationControl.objectHandles
         self.widget.reparentTo(direct.group)
