@@ -211,9 +211,7 @@ set_coords(const PTA_Vertexf &coords,
            const PTA_ushort &vindex) {
   _coords = coords;
   _bind[G_COORD] = G_PER_VERTEX;
-
-  if ( vindex )
-    _vindex = vindex;
+  _vindex = vindex;
 
   mark_bound_stale();
   make_dirty();
@@ -228,7 +226,7 @@ void Geom::
 set_coords(const PTA_Vertexf &coords, GeomBindType bind,
            const PTA_ushort &vindex) {
   nassertv(bind==G_PER_VERTEX);
-  set_coords(coords,vindex);
+  set_coords(coords, vindex);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,9 +239,7 @@ set_normals(const PTA_Normalf &norms, GeomBindType bind,
             const PTA_ushort &nindex) {
   _norms = norms;
   _bind[G_NORMAL] = bind;
-
-  if (nindex)
-    _nindex = nindex;
+  _nindex = nindex;
 
   make_dirty();
 }
@@ -258,9 +254,7 @@ set_colors(const PTA_Colorf &colors, GeomBindType bind,
            const PTA_ushort &cindex) {
   _colors = colors;
   _bind[G_COLOR] = bind;
-
-  if ( cindex )
-    _cindex = cindex;
+  _cindex = cindex;
 
   make_dirty();
 }
@@ -276,9 +270,7 @@ set_texcoords(const PTA_TexCoordf &texcoords, GeomBindType bind,
   _texcoords = texcoords;
   assert(bind == G_PER_VERTEX || bind == G_OFF);
   _bind[G_TEXCOORD] = bind;
-
-  if ( tindex )
-    _tindex = tindex;
+  _tindex = tindex;
 
   make_dirty();
 }
