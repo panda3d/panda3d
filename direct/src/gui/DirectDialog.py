@@ -20,6 +20,9 @@ class DirectDialog(DirectFrame):
                                  each button.  If value is [] then the
                                  ordinal rank of the button is used as 
                                  its value
+            buttonHotKeyList     List of hotkeys to bind to each button.
+                                 Typing hotkey is equivalent to pressing
+                                 the corresponding button.
             buttonSize           4-tuple used to specify custom size for
                                  each button (to make bigger then geom/text
                                  for example)
@@ -51,6 +54,7 @@ class DirectDialog(DirectFrame):
             ('buttonGeomList',    [],            INITOPT),
             ('buttonImageList',   [],            INITOPT),
             ('buttonValueList',   [],            INITOPT),
+            ('buttonHotKeyList',  [],            INITOPT),
             ('button_borderWidth',(.01,.01),     None),
             ('button_pad',        (.01,.01),     None),
             ('button_relief',     RAISED,        None),
@@ -93,6 +97,12 @@ class DirectDialog(DirectFrame):
                 value = self['buttonValueList'][i]
             except IndexError:
                 value = i
+            try:
+                print 'HERE'
+                hotKey = self['buttonHotKeyList'][i]
+            except IndexError:
+                print 'THERE'
+                hotKey = None
             button = self.createcomponent(
                 name, (), "button",
                 DirectButton, (self,),
@@ -102,6 +112,21 @@ class DirectDialog(DirectFrame):
                 frameSize = self['buttonSize'],
                 command = lambda s = self, v = value: s.buttonCommand(v)
                 )
+            # Add any hot key binding
+            print "HOTKEY", hotKey
+            if hotKey:
+                print 'DOING IT'
+                if ((type(hotKey) == types.ListType) or
+                    (type(hotKey) == types.TupleType)):
+                    print 'NOW'
+                    for key in hotKey:
+                        print 'REALLY'
+                        button.accept(key, self.buttonCommand,
+                                      extraArgs = [value])
+                else:
+                    print 'NOT'
+                    button.accept(hotKey, self.buttonCommand,
+                                extraArgs = [value])
             self.buttonList.append(button)
         
         # Update dialog when everything has been initialised
@@ -309,4 +334,4 @@ class TTOkCancelDialog(DirectDialog):
         self.defineoptions(kw, optiondefs)
         DirectDialog.__init__(self, parent)
         self.initialiseoptions(TTOkCancelDialog)
-
+        buttons.removeNode()
