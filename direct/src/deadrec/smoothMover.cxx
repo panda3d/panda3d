@@ -260,19 +260,24 @@ compute_smooth_position(double timestamp) {
     // With prediction in effect, we're allowed to anticipate where
     // the avatar is going by a tiny bit, if we don't have current
     // enough data.  This works only if we have at least two points of
-    // old data, and they're not *too* old.
-    if (point_before > 0 && 
-        timestamp - timestamp_before <= _max_position_age) {
+    // old data.
+    if (point_before > 0) {
       // To implement simple prediction, we simply back up in time to
       // the previous two timestamps, and base our linear
       // interpolation off of those two, extending into the future.
       int point_before_before = point_before - 1;
-      const SamplePoint &point = _points[point_before_before];
+      SamplePoint &point = _points[point_before_before];
       if (point._timestamp < timestamp_before) {
         point_after = point_before;
         timestamp_after = timestamp_before;
         point_before = point_before_before;
         timestamp_before = point._timestamp;
+
+        if (timestamp > timestamp_after + _max_position_age) {
+          // Don't allow the prediction to get too far into the
+          // future.
+          timestamp = timestamp_after + _max_position_age;
+        }
       }
     }
   }
