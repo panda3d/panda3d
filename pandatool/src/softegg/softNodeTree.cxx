@@ -505,6 +505,10 @@ build_node(SAA_Scene *scene, SAA_Elem *model) {
   node_name = name;
 
   SoftNodeDesc *node_desc = r_build_node(NULL, node_name);
+  if (stec.notPseudoName && !strcmp(name, stec.notPseudoName)) {
+    node_desc->no_pseudo = true;
+    softegg_cat.debug() << "set no_pseudo" << endl;
+  }
   node_desc->fullname = fullname;
   node_desc->set_model(model);
   SAA_modelIsSkeleton( scene, model, &isSkeleton );
@@ -525,7 +529,7 @@ build_node(SAA_Scene *scene, SAA_Elem *model) {
     children = new SAA_Elem[numChildren];
     SAA_modelGetChildren( scene, model, numChildren, children );
     if (!children)
-      softegg_cat.spam() << "Not enough Memory for children...\n";
+      softegg_cat.info() << "Not enough Memory for children...\n";
     
     for ( thisChild = 0; thisChild < numChildren; thisChild++ ) {
       fullname = GetFullName(scene, &children[thisChild]);
@@ -537,6 +541,10 @@ build_node(SAA_Scene *scene, SAA_Elem *model) {
       softegg_cat.spam() << " building child " << thisChild << "...";
       
       SoftNodeDesc *node_child = r_build_node(node_desc, node_name);
+      if (stec.notPseudoName && !strcmp(node_name.c_str(), stec.notPseudoName)) {
+        node_child->no_pseudo = true;
+        softegg_cat.debug() << "set no_pseudo" << endl;
+      }
       node_child->fullname = fullname;
       node_child->set_model(&children[thisChild]);
       

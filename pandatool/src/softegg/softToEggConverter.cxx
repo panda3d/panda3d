@@ -202,7 +202,8 @@ ShowOpts()
     "  -c         - Cancel morph conversion.\n"
     "  -C         - Cancel duv conversion.\n"
     "  -D         - Don't make the output model a character.\n"
-    "  -o <prefix>- Convert only models with given prefix.\n";
+    "  -o <prefix>- Convert only models with given prefix.\n"
+    "  -E <name>  - Don't make the specified node a pseudo node.\n";
 
   //  EggBase::ShowOpts();
 }
@@ -220,6 +221,7 @@ bool SoftToEggConverter::
 DoGetopts(int &argc, char **&argv) {
   bool okflag = true;
   int i = 0;
+  notPseudoName = NULL;
   softegg_cat.info() << "argc " << argc << "\n";
   if (argc <2) {
     Usage();
@@ -445,6 +447,14 @@ HandleGetopts(int &idx, int argc, char **argv)
       ++idx;
       break;
       
+    case 'E':     // Don't make this node pseudo.
+      if ( strcmp( argv[idx+1], "" ) ) {
+        notPseudoName = argv[idx+1];
+        softegg_cat.info() << "Don't make the following node pseudo:  " << notPseudoName << endl;
+      }
+      ++idx;
+      break;
+
     case 'f':     /// Set animation frame rate.
       if ( strcmp( argv[idx+1], "" ) ) {
         anim_rate = atoi(argv[idx+1]);
@@ -605,7 +615,7 @@ convert_soft(bool from_selection) {
 
   char *root_name = _tree.GetRootName( eggFileName );
 
-  softegg_cat.spam() << "main group name: " << root_name << endl;
+  softegg_cat.debug() << "main group name: " << root_name << endl;
   if (root_name)
     _character_name = root_name;
   
@@ -658,18 +668,22 @@ open_api() {
     softegg_cat.info() << "Error: Couldn't get resource path!\n";
     exit( 1 );
   }
+  //  cout << "got past init" << endl;
   if ((result = SAA_databaseLoad(database_name, &database)) != SI_SUCCESS) {
     softegg_cat.info() << "Error: Couldn't load database!\n";
     exit( 1 );
   }
+  //  cout << "got past database load" << endl;
   if ((result = SAA_sceneGetCurrent(&scene)) != SI_SUCCESS) {
     softegg_cat.info() << "Error: Couldn't get current scene!\n";
     exit( 1 );
   }
+  //  cout << "got past get current" << endl;
   if ((result = SAA_sceneLoad( &database, scene_name, &scene )) != SI_SUCCESS) {
     softegg_cat.info() << "Error: Couldn't load scene " << scene_name << "!\n";
     exit( 1 );
   }
+  //  cout << "got past scene load" << endl;
   if ( SAA_updatelistGet( &scene ) == SI_SUCCESS ) {
     float time;
     
@@ -776,9 +790,11 @@ convert_char_chan() {
   SAA_sceneGetPlayCtrlStartFrame(&scene, &start_frame);
   SAA_sceneGetPlayCtrlEndFrame(&scene, &end_frame);
   SAA_sceneGetPlayCtrlFrameStep( &scene, &frame_inc );
+  if (frame_inc != 1) // Hmmm...some files gave me frame_inc of 0, that can't be good
+    frame_inc = 1;
   
-  softegg_cat.spam() << "animation start frame: " << start_frame << " end frame: " << end_frame << endl;
-  softegg_cat.spam() << "animation frame inc: " << frame_inc << endl;
+  softegg_cat.info() << "animation start frame: " << start_frame << " end frame: " << end_frame << endl;
+  softegg_cat.info() << "animation frame inc: " << frame_inc << endl;
   
   _tree._fps = output_frame_rate / frame_inc;
   //  _tree.clear_egg(&get_egg_data(), NULL, root_node);
@@ -890,7 +906,7 @@ process_model_node(SoftNodeDesc *node_desc) {
   SAA_ModelType type;
 
   name = node_desc->get_name().c_str();
-  softegg_cat.spam() << "element name <" << name << ">\n";
+  softegg_cat.debug() << "element name <" << name << ">\n";
 
   if (node_desc->is_junk()) {
     softegg_cat.spam() << "no processing, it is junk\n";
@@ -899,56 +915,56 @@ process_model_node(SoftNodeDesc *node_desc) {
 
   // split
   if (node_desc->is_partial(search_prefix)) {
-    cout << endl;
+    softegg_cat.debug() << endl;
     return true;
   }
   else
-    cout << endl << name << ":being processed" << endl;
+    softegg_cat.debug() << endl << name << ":being processed" << endl;
 
   egg_group = _tree.get_egg_group(node_desc);
 
   // find out what type of node we're dealing with
   SAA_modelGetType( &scene, node_desc->get_model(), &type );
 
-  softegg_cat.spam() << "encountered ";
+  softegg_cat.debug() << "encountered ";
   switch(type){
   case SAA_MNILL:
-    softegg_cat.spam() << "null\n";
+    softegg_cat.debug() << "null\n";
     break;
   case SAA_MPTCH:
-    softegg_cat.spam() << "patch\n";
+    softegg_cat.debug() << "patch\n";
     break;
   case SAA_MFACE:
-    softegg_cat.spam() << "face\n";
+    softegg_cat.debug() << "face\n";
     break;
   case SAA_MSMSH:
-    softegg_cat.spam() << "mesh\n";
+    softegg_cat.debug() << "mesh\n";
     node_desc->get_transform(&scene, egg_group, TRUE);
     make_polyset(node_desc, egg_group, type);
     break;
   case SAA_MJNT:
-    softegg_cat.spam() << "joint";
-    softegg_cat.spam() << " joint type " << node_desc->is_joint() << endl;
+    softegg_cat.debug() << "joint";
+    softegg_cat.debug() << " joint type " << node_desc->is_joint() << endl;
     break;
   case SAA_MSPLN:
-    softegg_cat.spam() << "spline\n";
+    softegg_cat.debug() << "spline\n";
     break;
   case SAA_MMETA:
-    softegg_cat.spam() << "meta element\n";
+    softegg_cat.debug() << "meta element\n";
     break;
   case SAA_MBALL:
-    softegg_cat.spam() << "meta ball\n";
+    softegg_cat.debug() << "meta ball\n";
     break;
   case SAA_MNCRV:
-    softegg_cat.spam() << "nurbs curve\n";
+    softegg_cat.debug() << "nurbs curve\n";
     break;
   case SAA_MNSRF:
-    softegg_cat.spam() << "nurbs surf\n";
+    softegg_cat.debug() << "nurbs surf\n";
     node_desc->get_transform(&scene, egg_group, TRUE);
     make_nurb_surface(node_desc, egg_group, type);
     break;
   default:
-    softegg_cat.spam() << "unknown type: " << type << "\n";
+    softegg_cat.debug() << "unknown type: " << type << "\n";
   }
 
   if (node_desc->is_joint())
@@ -1067,7 +1083,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
                                             3, uCoords, vCoords );
             }
             else
-              softegg_cat.spam() << "Not enough Memory for texture coords...\n";
+              softegg_cat.info() << "Not enough Memory for texture coords...\n";
             
 #if 1
             for ( i=0; i<3; i++ )
@@ -1089,7 +1105,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
                                                      node_desc->numTexGlb, node_desc->textures, uCoords, vCoords );
             }
             else
-              softegg_cat.spam() << "Not enough Memory for texture coords...\n";
+              softegg_cat.info() << "Not enough Memory for texture coords...\n";
           }
         }
         
@@ -1621,7 +1637,7 @@ make_soft_skin() {
       // allocate envelope array
       envelopes = new SAA_Elem[numEnv];
       if ( envelopes == NULL ) {
-        softegg_cat.spam() << "Out Of Memory" << endl;
+        softegg_cat.info() << "Out Of Memory" << endl;
         exit(1);
       }
       int thisEnv;
@@ -1726,7 +1742,7 @@ make_soft_skin() {
 
               result = SAA_modelGetType( &scene, &envelopes[i], &type );
               if (result != SI_SUCCESS) {
-                softegg_cat.spam() << "choked on get type\n";
+                softegg_cat.debug() << "choked on get type\n";
                 exit(1);
               }
 
@@ -1746,7 +1762,7 @@ make_soft_skin() {
                                                  &envVertices[vertArrayOffset], envVtxIndices );
               
               if (result != SI_SUCCESS) {
-                softegg_cat.spam() << "error: choked on get indices\n";
+                softegg_cat.debug() << "error: choked on get indices\n";
                 exit(1);
               }
 
@@ -1783,7 +1799,7 @@ make_soft_skin() {
               string s_name = envName;
               SoftNodeDesc *mesh_node = find_node(s_name);
               if (!mesh_node) {
-                softegg_cat.spam() << "error: node " << s_name << " not found in tree\n";
+                softegg_cat.debug() << "error: node " << s_name << " not found in tree\n";
                 exit(1);
               }
               string vpool_name = s_name + ".verts";
@@ -1797,7 +1813,7 @@ make_soft_skin() {
                 }
               }
               else {
-                softegg_cat.spam() << "error: vpool " << vpool_name << " not found\n";
+                softegg_cat.debug() << "error: vpool " << vpool_name << " not found\n";
                 exit(1);
               }
 
@@ -1813,7 +1829,7 @@ make_soft_skin() {
                     // assign all referenced control vertices
                     EggVertex *vert = vpool->get_vertex(envVtxIndices[j]);
                     if (!vert) {
-                      softegg_cat.spam() << "possible error: index " << envVtxIndices[j] << ": vert is " << vert << endl;
+                      softegg_cat.debug() << "possible error: index " << envVtxIndices[j] << ": vert is " << vert << endl;
                       continue;
                     }
                     joint->ref_vertex( vert, scaledWeight );
@@ -1836,7 +1852,7 @@ make_soft_skin() {
                         EggVertex *vert = vpool->get_vertex(k+1);
                         //                        EggVertex *vert = mesh_node->get_vpool()->get_vertex(vpoolMap[k]+1);
                         if (!vert) {
-                          softegg_cat.spam() << "possible error: index " << k+1 << ": vert is " << vert << endl;
+                          softegg_cat.debug() << "possible error: index " << k+1 << ": vert is " << vert << endl;
                           break;
                         }
 

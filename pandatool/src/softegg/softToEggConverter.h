@@ -128,6 +128,7 @@ public:
   char        *tex_path;
   char        *tex_filename;
   char        *search_prefix;
+  char        *notPseudoName;
 
   int                    nurbs_step;
   int                    anim_start;

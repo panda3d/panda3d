@@ -47,6 +47,8 @@ SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
   numTexLoc = 0;
   numTexGlb = 0;
 
+  no_pseudo = FALSE;
+
   uScale = NULL; 
   vScale = NULL;
   uOffset = NULL;
@@ -293,12 +295,12 @@ is_partial(char *search_prefix) {
     return false;
   // if name is search_prefix, return false
   if (strstr(name, search_prefix) != NULL) {
-    cout << "matched " << name << " ";
+    softegg_cat.debug() << "matched " << name << " ";
     return false;
   }
   // if name is not search_prefix, look in its parent
   if (strstr(name, search_prefix) == NULL) {
-    cout << "node " << name << " ";
+    softegg_cat.debug() << "node " << name << " ";
     if (_parent) 
       return _parent->is_partial(search_prefix);
   }
@@ -316,12 +318,12 @@ is_partial(char *search_prefix) {
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
 check_pseudo_joints(bool joint_above) {
-  if (_joint_type == JT_joint_parent && joint_above) {
+  if (_joint_type == JT_joint_parent && joint_above && !no_pseudo) {
     // This is one such node: it is the parent of a joint
     // (JT_joint_parent is set), and it is the child of a joint
     // (joint_above is set).
     _joint_type = JT_pseudo_joint;
-    softegg_cat.spam() << "pseudo " << get_name() << " case1\n";
+    softegg_cat.debug() << "pseudo " << get_name() << " case1\n";
   }
 
   if (_joint_type == JT_joint) {
@@ -351,9 +353,9 @@ check_pseudo_joints(bool joint_above) {
       bool all_joints = true;
       for (ci = _children.begin(); ci != _children.end(); ++ci) {
         SoftNodeDesc *child = (*ci);
-        if (child->_joint_type == JT_joint_parent) {
+        if (child->_joint_type == JT_joint_parent && !no_pseudo) {
           child->_joint_type = JT_pseudo_joint;
-          softegg_cat.spam() << "pseudo " << child->get_name() << " case2 by parent " << get_name() << "\n";
+          softegg_cat.debug() << "pseudo " << child->get_name() << " case2 by parent " << get_name() << "\n";
         } else if (child->_joint_type == JT_none || child->_joint_type == JT_junk) {
           all_joints = false;
         }
@@ -361,9 +363,9 @@ check_pseudo_joints(bool joint_above) {
 
       if (all_joints || any_joints) {
         // Finally, if all children or at least one is a joint, then we are too.
-        if (_joint_type == JT_joint_parent) {
+        if (_joint_type == JT_joint_parent && !no_pseudo) {
           _joint_type = JT_pseudo_joint;
-          softegg_cat.spam() << "pseudo " << get_name() << " case3\n";
+          softegg_cat.debug() << "pseudo " << get_name() << " case3\n";
         }
       }
     }
@@ -393,16 +395,16 @@ get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global) {
   if (!global && _parent->is_joint() && !stec.flatten && !scale_joint) {
 
     SAA_modelGetMatrix( scene, get_model(), SAA_COORDSYS_LOCAL,  matrix );
-    softegg_cat.spam() << get_name() << " using local matrix :parent ";
+    softegg_cat.debug() << get_name() << " using local matrix :parent ";
 
   } else {
 
     SAA_modelGetMatrix( scene, get_model(), SAA_COORDSYS_GLOBAL,  matrix );
-    softegg_cat.spam() << get_name() << " using global matrix :parent ";
+    softegg_cat.debug() << get_name() << " using global matrix :parent ";
 
   }
 
-  softegg_cat.spam() << _parent->get_name() << endl;
+  softegg_cat.debug() << _parent->get_name() << endl;
 
   softegg_cat.spam() << "model matrix = " << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2] << " " << matrix[0][3] << "\n";
   softegg_cat.spam() << "model matrix = " << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2] << " " << matrix[1][3] << "\n";
@@ -456,7 +458,7 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
     softegg_cat.spam() << "\n\nanimating child " << name << endl;
 
     if (_parent->is_joint() && !stec.flatten && !scale_joint ) {
-      softegg_cat.spam() << "using local matrix\n";
+      softegg_cat.debug() << "using local matrix\n";
 
       //get SAA orientation
       SAA_modelGetRotation( scene, skeletonPart, SAA_COORDSYS_LOCAL, 
@@ -470,7 +472,7 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
       SAA_modelGetScaling( scene, skeletonPart, SAA_COORDSYS_LOCAL, 
                            &i, &j, &k );
     } else {
-      softegg_cat.spam() << " using global matrix\n";
+      softegg_cat.debug() << " using global matrix\n";
 
       //get SAA orientation
       SAA_modelGetRotation( scene, skeletonPart, SAA_COORDSYS_GLOBAL, 
@@ -504,7 +506,7 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
     anim->add_component_data("z", z);
   }
   else {
-    softegg_cat.spam() << "Cannot build anim table - no skeleton\n";
+    softegg_cat.debug() << "Cannot build anim table - no skeleton\n";
   }
 }
 
@@ -537,7 +539,7 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
   
   if ( result != SI_SUCCESS ) {
     softegg_cat.spam() << "Error: couldn't get number of triangles!\n";
-    softegg_cat.spam() << "\tbailing on model: " << name << "\n";
+    softegg_cat.debug() << "\tbailing on model: " << name << "\n";
     return;    
   }
   
@@ -562,7 +564,7 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
     // allocate array of triangles
     triangles = (SAA_SubElem *) new SAA_SubElem[numTri];
     if (!triangles) {
-      softegg_cat.spam() << "Not enough Memory for triangles...\n";
+      softegg_cat.info() << "Not enough Memory for triangles...\n";
       exit(1);
     }
     // triangulate model and read the triangles into array
@@ -577,7 +579,7 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
     materials = (SAA_Elem*) new SAA_Elem[numTri];
     SAA_triangleGetMaterials( scene, _model, numTri, triangles, materials );
     if (!materials) {
-      softegg_cat.spam() << "Not enough Memory for materials...\n";
+      softegg_cat.info() << "Not enough Memory for materials...\n";
       exit(1);
     }
     softegg_cat.spam() << "got materials\n";
@@ -740,7 +742,7 @@ load_nurbs_model(SAA_Scene *scene, SAA_ModelType type) {
   if ( numNurbMats ) {
     materials = new SAA_Elem[numNurbMats];
     if (!materials) {
-      softegg_cat.spam() << "Out Of Memory on allocating materials\n";
+      softegg_cat.info() << "Out Of Memory on allocating materials\n";
       exit(1);
     }
     

@@ -100,6 +100,8 @@ public:
 
   const char *fullname;
 
+  bool no_pseudo;
+
   int numTri;
   //  int numShapes;
   int numTexLoc;
