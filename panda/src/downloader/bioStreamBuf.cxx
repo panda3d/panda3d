@@ -95,6 +95,10 @@ close() {
 int BioStreamBuf::
 overflow(int ch) {
   size_t n = pptr() - pbase();
+  if (downloader_cat.is_spam()) {
+    downloader_cat.spam()
+      << "BioStreamBuf::overflow, " << n << " bytes\n";
+  }
   if (n != 0) {
     size_t num_wrote = write_chars(pbase(), n);
     pbump(-(int)n);
@@ -126,6 +130,12 @@ sync() {
   */
 
   size_t n = pptr() - pbase();
+
+  if (downloader_cat.is_spam()) {
+    downloader_cat.spam()
+      << "BioStreamBuf::sync, " << n << " bytes\n";
+  }
+
   size_t num_wrote = write_chars(pbase(), n);
   pbump(-(int)n);
   if (num_wrote != n) {
@@ -218,6 +228,10 @@ write_chars(const char *start, size_t length) {
     size_t wrote_so_far = 0;
 
     int write_count = BIO_write(*_source, start, length);
+    if (downloader_cat.is_spam()) {
+      downloader_cat.spam()
+        << "wrote " << write_count << " bytes.\n";
+    }
     while (write_count != (int)(length - wrote_so_far)) {
       if (write_count <= 0) {
         _is_closed = !BIO_should_retry(*_source);
@@ -233,8 +247,10 @@ write_chars(const char *start, size_t length) {
           downloader_cat.warning()
             << "socket BIO has no file descriptor.\n";
         } else {
-          downloader_cat.spam()
-            << "waiting to write to BIO.\n";
+          if (downloader_cat.is_spam()) {
+            downloader_cat.spam()
+              << "waiting to write to BIO.\n";
+          }
           fd_set wset;
           FD_ZERO(&wset);
           FD_SET(fd, &wset);
@@ -248,6 +264,10 @@ write_chars(const char *start, size_t length) {
       
       // Try to write some more.
       write_count = BIO_write(*_source, start + wrote_so_far, length - wrote_so_far);
+      if (downloader_cat.is_spam()) {
+        downloader_cat.spam()
+          << "continued, wrote " << write_count << " bytes.\n";
+      }
     }
   }
 
