@@ -861,8 +861,10 @@ def weightedChoice(choiceList, rng=random.random, sum=None):
     # Return the last item.
     return item
 
-def randFloat(a, b, rng=random.random):
-    """returns a random float in [a,b]"""
+def randFloat(a, b=0., rng=random.random):
+    """returns a random float in [a,b]
+    call with single argument to generate random float between arg and zero
+    """
     return lerp(a,b,rng())
 
 def normalDistrib(a, b, gauss=random.gauss):
@@ -891,7 +893,7 @@ def normalDistrib(a, b, gauss=random.gauss):
     In calculating our standard deviation, we divide (b-a) by 6, since the
     99.7% figure includes 3 standard deviations _on_either_side_ of the mean.
     """
-    return min(a, max(b, gauss((a+b)*.5, (b-a)/6.)))
+    return max(a, min(b, gauss((a+b)*.5, (b-a)/6.)))
 
 def randUint31(rng=random.random):
     """returns a random integer in [0..2^31).
