@@ -25,7 +25,7 @@
 #include "dconfig.h"
 
 ConfigureDef(config_milesAudio);
-NotifyCategoryDef(milesAudio, "");
+NotifyCategoryDef(milesAudio, ":audio");
 
 ConfigureFn(config_milesAudio) {
   init_libMilesAudio();

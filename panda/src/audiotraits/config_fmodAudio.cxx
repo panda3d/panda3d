@@ -25,7 +25,7 @@
 #include "dconfig.h"
 
 ConfigureDef(config_fmodAudio);
-NotifyCategoryDef(fmodAudio, "");
+NotifyCategoryDef(fmodAudio, ":audio");
 
 ConfigureFn(config_fmodAudio) {
   init_libFmodAudio();
