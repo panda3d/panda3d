@@ -300,21 +300,10 @@ choose_fbconfig(FrameBufferProperties &properties) const {
     try_for_fbconfig(frame_buffer_mode, want_depth_bits, want_color_bits,
                      want_alpha_bits, want_stencil_bits, want_multisample_bits);
 
-  // This is the severity level at which we'll report the details of
-  // the fbconfig we actually do find.  Normally, it's debug-level
-  // information: we don't care about that much detail.
-  NotifySeverity show_fbconfig_severity = NS_debug;
-
   if (fbconfig == None) {
     glxdisplay_cat.info()
-      << "glxGraphicsWindow::choose_fbconfig() - fbconfig with requested "
+      << "glxGraphicsPipe::choose_fbconfig() - fbconfig with requested "
       << "capabilities not found; trying for lesser fbconfig.\n";
-
-    // If we're unable to get the fbconfig we asked for, however, we
-    // probably *do* care to know the details about what we actually
-    // got, even if we don't have debug mode set.  So we'll report the
-    // fbconfig at a higher level.
-    show_fbconfig_severity = NS_info;
 
     bool special_size_request =
       (want_depth_bits != 1 || want_color_bits != 1);
@@ -463,11 +452,14 @@ choose_fbconfig(FrameBufferProperties &properties) const {
   }
 
   properties.set_frame_buffer_mode(frame_buffer_mode);
-  properties.set_color_bits(red_size + green_size + blue_size + alpha_size);
+  properties.set_color_bits(red_size + green_size + blue_size);
+  properties.set_alpha_bits(alpha_size);
   properties.set_depth_bits(depth_size);
+  properties.set_stencil_bits(stencil_size);
+  properties.set_multisample_bits(samples);
 
-  if (glxdisplay_cat.is_on(show_fbconfig_severity)) {
-    glxdisplay_cat.out(show_fbconfig_severity)
+  if (glxdisplay_cat.is_debug()) {
+    glxdisplay_cat.debug()
       << "GLX Fbconfig Info (# bits of each):" << endl
       << " RGBA: " << red_size << " " << green_size << " " << blue_size
       << " " << alpha_size << endl
@@ -639,21 +631,10 @@ choose_visual(FrameBufferProperties &properties) const {
     try_for_visual(frame_buffer_mode, want_depth_bits, want_color_bits,
                    want_alpha_bits, want_stencil_bits, want_multisample_bits);
 
-  // This is the severity level at which we'll report the details of
-  // the visual we actually do find.  Normally, it's debug-level
-  // information: we don't care about that much detail.
-  NotifySeverity show_visual_severity = NS_debug;
-
   if (visual == NULL) {
     glxdisplay_cat.info()
-      << "glxGraphicsWindow::choose_visual() - visual with requested\n"
-      << "   capabilities not found; trying for lesser visual.\n";
-
-    // If we're unable to get the visual we asked for, however, we
-    // probably *do* care to know the details about what we actually
-    // got, even if we don't have debug mode set.  So we'll report the
-    // visual at a higher level.
-    show_visual_severity = NS_info;
+      << "glxGraphicsPipe::choose_visual() - visual with requested "
+      << " capabilities not found; trying for lesser visual.\n";
 
     bool special_size_request =
       (want_depth_bits != 1 || want_color_bits != 1);
@@ -800,11 +781,14 @@ choose_visual(FrameBufferProperties &properties) const {
   }
 
   properties.set_frame_buffer_mode(frame_buffer_mode);
-  properties.set_color_bits(red_size + green_size + blue_size + alpha_size);
+  properties.set_color_bits(red_size + green_size + blue_size);
+  properties.set_alpha_bits(alpha_size);
   properties.set_depth_bits(depth_size);
+  properties.set_stencil_bits(stencil_size);
+  properties.set_multisample_bits(samples);
 
-  if (glxdisplay_cat.is_on(show_visual_severity)) {
-    glxdisplay_cat.out(show_visual_severity)
+  if (glxdisplay_cat.is_debug()) {
+    glxdisplay_cat.debug()
       << "GLX Visual Info (# bits of each):" << endl
       << " RGBA: " << red_size << " " << green_size << " " << blue_size
       << " " << alpha_size << endl
