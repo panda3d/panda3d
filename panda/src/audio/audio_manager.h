@@ -44,6 +44,8 @@ private:
   static LoopSet* _loopcopy;
   static bool _sfx_active;
   static bool _music_active;
+  static bool _hard_sfx_active;
+  static bool _hard_music_active;
   static float _master_sfx_volume;
   static float _master_music_volume;
   static bool _master_volume_change;
@@ -72,6 +74,9 @@ PUBLISHED:
   INLINE static void set_music_active(bool);
   INLINE static bool get_sfx_active(void);
   INLINE static bool get_music_active(void);
+public:
+  INLINE static void set_hard_sfx_active(bool);
+  INLINE static void set_hard_music_active(bool);
 };
 
 #include "audio_manager.I"

@@ -36,7 +36,7 @@ static IDirectSound* musicDirectSound = NULL;
   if (FAILED(_result)) { \
     audio_cat->error() << _msg << " at " << __FILE__ << ":" << __LINE__ \
                        << endl; \
-    AudioManager::set_sfx_active(false); \
+    AudioManager::set_hard_sfx_active(false); \
     return; \
   }
 
@@ -44,7 +44,7 @@ static IDirectSound* musicDirectSound = NULL;
   if (FAILED(_result)) { \
     audio_cat->error() << _msg << " at " << __FILE__ << ":" << __LINE__ \
                        << endl; \
-    AudioManager::set_music_active(false); \
+    AudioManager::set_hard_music_active(false); \
     return; \
   }
 
