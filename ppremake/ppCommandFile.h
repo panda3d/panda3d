@@ -24,6 +24,8 @@ public:
   PPCommandFile(PPScope *scope);
   ~PPCommandFile();
 
+  void set_output(ostream *out);
+
   void set_scope(PPScope *scope);
   PPScope *get_scope() const;
 
@@ -43,9 +45,11 @@ protected:
   bool handle_begin_command();
   bool handle_forscopes_command();
   bool handle_foreach_command();
+  bool handle_formap_command();
   bool handle_format_command();
   bool handle_output_command();
-  bool handle_defsub_command();
+  bool handle_print_command();
+  bool handle_defsub_command(bool is_defsub);
   bool handle_end_command();
 
   bool handle_include_command();
@@ -57,12 +61,16 @@ protected:
   bool handle_define_command();
   bool handle_set_command();
   bool handle_map_command();
+  bool handle_addmap_command();
 
   bool include_file(const string &filename);
   bool replay_forscopes(const string &name);
   bool replay_foreach(const string &varname, const vector<string> &words);
+  bool replay_formap(const string &varname, const string &mapvar);
   bool compare_output(const string &temp_name, const string &true_name);
   bool failed_if() const;
+
+  bool is_valid_formal(const string &formal_parameter_name) const;
 
 private:
   class PushFilename {
@@ -98,7 +106,10 @@ private:
     BS_nested_forscopes,
     BS_foreach,
     BS_nested_foreach,
+    BS_formap,
+    BS_nested_formap,
     BS_defsub,
+    BS_defun,
     BS_output
   };
 

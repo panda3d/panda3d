@@ -16,11 +16,6 @@
 #define submakes $[TARGET(static_lib_target):%=%.a] $[TARGET(lib_target noinst_lib_target):%=%.so] $[TARGET(sed_bin_target bin_target noinst_bin_target test_bin_target)]
 #define install $[TARGET(static_lib_target):%=%.a] $[TARGET(lib_target noinst_lib_target):%=%.so] $[TARGET(sed_bin_target bin_target noinst_bin_target)]
 
-
-// This map variable lets us identify which metalib, if any, is
-// including each library built here.
-#map module COMPONENT_LIBS(*/metalib_target)
-
 // Now iterate through the libraries we're building and see which ones
 // actually *are* being included in a metalib.  For each one that is,
 // we install the appropriate deferred file.
@@ -40,7 +35,7 @@
 #define install_bin $[sort $[TARGET(bin_target)] $[INSTALL_BIN]]
 #define install_scripts $[sort $[INSTALL_SCRIPTS(static_lib_target lib_target bin_target)] $[TARGET(sed_bin_target)] $[INSTALL_SCRIPTS]]
 #define install_headers $[sort $[INSTALL_HEADERS(static_lib_target lib_target bin_target)] $[INSTALL_HEADERS]]
-#define install_data $[sort $[INSTALL_DATA(static_lib_target lib_target sed_bin_target bin_target)] $[INSTALL_DATA]]
+#define install_data $[sort $[INSTALL_DATA(static_lib_target lib_target sed_bin_target bin_target)] $[INSTALL_DATA]] $[sort $[INSTALL_CONFIG(static_lib_target lib_target sed_bin_target bin_target)] $[INSTALL_CONFIG]]
 
 // Collect the set of interrogate database files we'll install,
 // possibly one for each library we build.
@@ -71,7 +66,7 @@ INSTALL = $[install]
 MAKEDIR = .
 
 #### The action is here.
-include $(DTOOL)/inc/Makefile.meta.rules
+include $(DTOOL)/include/Makefile.meta.rules
 
 #### Sub-make build order dependencies:
 # foo: bar
@@ -123,14 +118,14 @@ IGATEDB =$[install_igatedb]
 #if $[ne $[INSTALL_PARSER_INC],]
 PARSER_INC = $[INSTALL_PARSER_INC]
 SRC_PARSER_INC = $(addprefix $(PKGROOT)/,$(PARSER_INC))
-INST_PARSER_INC = $(addprefix inc/parser-inc/,$(PARSER_INC))
+INST_PARSER_INC = $(addprefix include/parser-inc/,$(PARSER_INC))
 OTHER = $(INST_PARSER_INC)
 #else
 # OTHER =
 #endif
 
 #### Where the action happens.
-include $(DTOOL)/inc/Makefile.install.rules
+include $(DTOOL)/include/Makefile.install.rules
 
 #### Install actions for OTHER files (source must be in $(PKGROOT)):
 # [ installed file ] : $(PKGROOT)/[ source file ]  # Files must have same name
@@ -140,7 +135,7 @@ include $(DTOOL)/inc/Makefile.install.rules
 #	$(MKINSTALL)			# Also makes directory if needed
 
 #if $[ne $[INSTALL_PARSER_INC],]
-$(INST_PARSER_INC) : inc/parser-inc/% : $(PKGROOT)/%
+$(INST_PARSER_INC) : include/parser-inc/% : $(PKGROOT)/%
 	$(MKINSTALL)
 #endif
 
@@ -226,11 +221,11 @@ C++FLAGS = $[building_var:%=-D%] $[alt_cflags] $[C++FLAGS]
 
 #### Interrogate info
 IGATESCAN  = $[igatescan]
-IGATEFLAGS = $[alt_ipath]
+IGATEFLAGS = $[alt_ipath:%=-I%]
 # IGATEFILE  = # Specify only if you want a specific name
 
 #### Additional search directories for C/C++ header files:
-IPATH = $[alt_ipath]
+IPATH = $[alt_ipath:%=-I%]
 
 #### Location to put .o files:
 # ODIR = 
@@ -246,7 +241,7 @@ LIBS = $[when_either:%=-l%]
 SYSLIBS = $[patsubst %.lib,%.lib,%,-l%,$[unique $[alt_libs]]]
 
 #### Additional search directories for lib:
-LPATH = $[alt_lpath]
+LPATH = $[alt_lpath:%=-L%]
 
 #### Other linker flags. 
 #if $[ne $[alt_ld],]
@@ -255,16 +250,16 @@ LD = $[alt_ld]
 # LDFLAGS = 
 
 #### Pull in standard .o make variables
-include $(DTOOL)/inc/Makefile.o.vars
+include $(DTOOL)/include/Makefile.o.vars
 
 #### The .o action is here.
-include $(DTOOL)/inc/Makefile.o.rules
+include $(DTOOL)/include/Makefile.o.rules
 
 #### Pull in standard binary make variables.
-include $(DTOOL)/inc/Makefile.bin.vars
+include $(DTOOL)/include/Makefile.bin.vars
 
 #### The .so action is here.
-include $(DTOOL)/inc/Makefile.so.rules
+include $(DTOOL)/include/Makefile.so.rules
 #end Makefile.$[TARGET].so
 
 #end lib_target noinst_lib_target
@@ -314,7 +309,7 @@ C++FLAGS = $[building_var:%=-D%] $[alt_cflags] $[C++FLAGS]
 # PTREPOSITORY = # Specify only if you want a specific name
 
 #### Additional search directories for C/C++ header files:
-IPATH = $[alt_ipath]
+IPATH = $[alt_ipath:%=-I%]
 
 #### Location to put .o files:
 # ODIR = 
@@ -332,22 +327,22 @@ LIBS = $[when_either:%=-l%]
 SYSLIBS = $[patsubst %.lib,%.lib,%,-l%,$[unique $[alt_libs]]]
 
 #### Additional search directories for lib:
-LPATH = $[alt_lpath]
+LPATH = $[alt_lpath:%=-L%]
 
 #### Archiver flags
 # ARFLAGS = 
 
 #### Pull in standard .o make variables
-include $(DTOOL)/inc/Makefile.o.vars
+include $(DTOOL)/include/Makefile.o.vars
 
 #### The .o action is here.
-include $(DTOOL)/inc/Makefile.o.rules
+include $(DTOOL)/include/Makefile.o.rules
 
 #### Pull in standard binary make variables.
-include $(DTOOL)/inc/Makefile.bin.vars
+include $(DTOOL)/include/Makefile.bin.vars
 
 #### The .a action is here.
-include $(DTOOL)/inc/Makefile.a.rules
+include $(DTOOL)/include/Makefile.a.rules
 #end Makefile.$[TARGET].a
 
 #end static_lib_target
@@ -395,7 +390,7 @@ C++FILES = $[filter %.cxx,$[sources]]
 C++FLAGS = $[building_var:%=-D%] $[alt_cflags] $[C++FLAGS]
 
 #### Additional search directories for C/C++ header files:
-IPATH = $[alt_ipath]
+IPATH = $[alt_ipath:%=-I%]
 
 #### Location to put .o files:
 # ODIR = 
@@ -411,7 +406,7 @@ LIBS = $[when_either:%=-l%]
 SYSLIBS = $[patsubst %.lib,%.lib,%,-l%,$[unique $[alt_libs]]]
 
 #### Additional search directories for lib:
-LPATH = $[alt_lpath]
+LPATH = $[alt_lpath:%=-L%]
 
 #### Other linker flags. 
 #if $[ne $[alt_ld],]
@@ -420,16 +415,16 @@ LD = $[alt_ld]
 # LDFLAGS =
 
 #### Pull in standard .o make variables
-include $(DTOOL)/inc/Makefile.o.vars
+include $(DTOOL)/include/Makefile.o.vars
 
 #### The .o action is here.
-include $(DTOOL)/inc/Makefile.o.rules
+include $(DTOOL)/include/Makefile.o.rules
 
 #### Pull in standard binary make variables.
-include $(DTOOL)/inc/Makefile.bin.vars
+include $(DTOOL)/include/Makefile.bin.vars
 
 #### The bin action is here.
-include $(DTOOL)/inc/Makefile.bin.rules
+include $(DTOOL)/include/Makefile.bin.rules
 #end Makefile.$[TARGET]
 
 #end bin_target noinst_bin_target test_bin_target
@@ -465,17 +460,13 @@ cleanall :
 #define submakes $[TARGET(metalib_target):%=%.so]
 
 
-// This map variable lets us identify which metalib, if any, is
-// including each library built here.
-#map module COMPONENT_LIBS(*/metalib_target)
-
 // Get the full set of libraries we depend on.
 #call get_depend_libs
 
 // Also get the targets we'll be installing.
 #define install_libs $[TARGET(metalib_target):%=lib%.so]
 #define install_headers $[INSTALL_HEADERS(metalib_target)]
-#define install_data $[INSTALL_DATA(metalib_target)]
+#define install_data $[INSTALL_DATA(metalib_target)] $[INSTALL_CONFIG(metalib_target)]
 
 
 #output Makefile
@@ -495,7 +486,7 @@ INSTALL = $[submakes]
 MAKEDIR = .
 
 #### The action is here.
-include $(DTOOL)/inc/Makefile.meta.rules
+include $(DTOOL)/include/Makefile.meta.rules
 
 #### Sub-make build order dependencies:
 # foo: bar
@@ -544,7 +535,7 @@ INCLUDE = $[install_headers]
 # OTHER = 
 
 #### Where the action happens.
-include $(DTOOL)/inc/Makefile.install.rules
+include $(DTOOL)/include/Makefile.install.rules
 
 #### Install actions for OTHER files (source must be in $(PKGROOT)):
 # [ installed file ] : $(PKGROOT)/[ source file ]  # Files must have same name
@@ -576,7 +567,6 @@ endif
 #call get_libs
 
 #if $[HAVE_PYTHON]
-  #map components TARGET(*/lib_target */noinst_lib_target)
   #if $[ne $[components $[IGATESCAN],$[COMPONENT_LIBS]],]
     #define igatemscan $[TARGET]
   #endif
@@ -627,7 +617,7 @@ IGATEMSCAN = $[igatemscan]
 DEFERRED_FILES = $[TARGET]
 
 #### Additional search directories for C/C++ header files:
-IPATH = $[alt_ipath]
+IPATH = $[alt_ipath:%=-I%]
 
 #### Location to put .o files:
 # ODIR = 
@@ -643,7 +633,7 @@ LIBS = $[when_either:%=-l%]
 SYSLIBS = $[patsubst %.lib,%.lib,%,-l%,$[unique $[alt_libs]]]
 
 #### Additional search directories for lib:
-LPATH = $[alt_lpath]
+LPATH = $[alt_lpath:%=-L%]
 
 #### Other linker flags. 
 #if $[ne $[alt_ld],]
@@ -652,16 +642,16 @@ LD = $[alt_ld]
 # LDFLAGS = 
 
 #### Pull in standard .o make variables
-include $(DTOOL)/inc/Makefile.o.vars
+include $(DTOOL)/include/Makefile.o.vars
 
 #### The .o action is here.
-include $(DTOOL)/inc/Makefile.o.rules
+include $(DTOOL)/include/Makefile.o.rules
 
 #### Pull in standard binary make variables.
-include $(DTOOL)/inc/Makefile.bin.vars
+include $(DTOOL)/include/Makefile.bin.vars
 
 #### The .so action is here.
-include $(DTOOL)/inc/Makefile.so.rules
+include $(DTOOL)/include/Makefile.so.rules
 #end Makefile.$[TARGET].so
 
 #end metalib_target
@@ -694,7 +684,7 @@ include $(DTOOL)/inc/Makefile.so.rules
 CTPROJECT = $[PACKAGE]
 CTPROJROOT = $($[upcase $[PACKAGE]])
 
-include $(DTOOL)/inc/Makefile.project.vars
+include $(DTOOL)/include/Makefile.project.vars
 
 // Iterate through all of our known source files.  Each src and
 // metalib type file gets its corresponding Makefile.install listed

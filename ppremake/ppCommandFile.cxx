@@ -153,6 +153,18 @@ PPCommandFile::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::set_output
+//       Access: Public
+//  Description: Changes the main output stream that will be written
+//               to when text appears outside of a #output .. #end
+//               block.  This is cout by default.
+////////////////////////////////////////////////////////////////////
+void PPCommandFile::
+set_output(ostream *out) {
+  _write_state->_out = out;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPCommandFile::set_scope
 //       Access: Public
 //  Description: Changes the command file to use the indicated scope.
@@ -343,8 +355,17 @@ end_read() {
       cerr << "Unclosed foreach " << _block_nesting->_name << "\n";
       break;
 
+    case BS_formap:
+    case BS_nested_formap:
+      cerr << "Unclosed formap " << _block_nesting->_name << "\n";
+      break;
+
     case BS_defsub:
       cerr << "Unclosed defsub " << _block_nesting->_name << "\n";
+      break;
+
+    case BS_defun:
+      cerr << "Unclosed defun " << _block_nesting->_name << "\n";
       break;
 
     case BS_output:
@@ -424,14 +445,23 @@ handle_command(const string &line) {
   } else if (_command == "foreach") {
     return handle_foreach_command();
 
+  } else if (_command == "formap") {
+    return handle_formap_command();
+
   } else if (_command == "format") {
     return handle_format_command();
 
   } else if (_command == "output") {
     return handle_output_command();
 
+  } else if (_command == "print") {
+    return handle_print_command();
+
   } else if (_command == "defsub") {
-    return handle_defsub_command();
+    return handle_defsub_command(true);
+
+  } else if (_command == "defun") {
+    return handle_defsub_command(false);
 
   } else if (_command == "end") {
     return handle_end_command();
@@ -464,6 +494,9 @@ handle_command(const string &line) {
 
   } else if (_command == "map") {
     return handle_map_command();
+
+  } else if (_command == "addmap") {
+    return handle_addmap_command();
   }
    
   cerr << "Invalid command: " << COMMAND_PREFIX << _command << "\n";
@@ -700,7 +733,51 @@ handle_foreach_command() {
   nest->_scope = _scope;
   nest->_next = _block_nesting;
 
+  // We insert in all but the first word in the words vector.
   nest->_words.insert(nest->_words.end(), words.begin() + 1, words.end());
+
+  _block_nesting = nest;
+
+  if (!_in_for) {
+    _in_for = true;
+    _saved_lines.clear();
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::handle_formap_command
+//       Access: Protected
+//  Description: Handles the #formap command: interpret all the lines
+//               between this command and the corresponding #end
+//               command once for each key in the map, and also within
+//               the corresponding scope of that particular key.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+handle_formap_command() {
+  // Get the parameters of the formap command.  The first word is the
+  // name of the variable to substitute in (and which should appear on
+  // the matching #end command), and the second word is the name of
+  // the map variable.
+  vector<string> words;
+  tokenize_whitespace(_scope->expand_string(_params), words);
+
+  if (words.size() != 2) {
+    cerr << "#formap requires exactly two parameters.\n";
+    return false;
+  }
+
+  string variable_name = words.front();
+
+  BlockNesting *nest = new BlockNesting;
+  nest->_state = _in_for ? BS_nested_formap : BS_formap;
+  nest->_name = words[0];
+  nest->_write_state = _write_state;
+  nest->_scope = _scope;
+  nest->_next = _block_nesting;
+
+  nest->_words.push_back(words[1]);
 
   _block_nesting = nest;
 
@@ -802,35 +879,74 @@ handle_output_command() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPCommandFile::handle_defsub_command
+//     Function: PPCommandFile::handle_print_command
 //       Access: Protected
-//  Description: Handles the #defsub command: save all the lines
-//               between this command and the matching #end as a
-//               callable subroutine to be invoked by a later #call
-//               command.
+//  Description: Handles the #print command: immediately output the
+//               arguments to this line to standard error.
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
-handle_defsub_command() {
-  // The only parameter of #defsub is the name of the subroutine.
-  string subroutine_name = trim_blanks(_scope->expand_string(_params));
+handle_print_command() {
+  if (!_in_for) {
+    cerr << _scope->expand_string(_params) << "\n";
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::handle_defsub_command
+//       Access: Protected
+//  Description: Handles the #defsub (or #defun) command: save all the
+//               lines between this command and the matching #end as a
+//               callable subroutine to be invoked by a later #call
+//               command.  If is_defsub is false, it means this
+//               subroutine was actually defined via a #defun command,
+//               so it is to be invoked by a later variable reference,
+//               instead of by a #call command.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+handle_defsub_command(bool is_defsub) {
+  string command = (is_defsub) ? "#defsub" : "#defun";
+
+  // The first word of the parameter list is the subroutine name; the
+  // rest is the comma-separated list of formal parameter names.
+
+  // Pull off the first word and the rest of the params.
+  size_t p = 0;
+  while (p < _params.length() && !isspace(_params[p])) {
+    p++;
+  }
+  string subroutine_name = trim_blanks(_params.substr(0, p));
 
   if (subroutine_name.empty()) {
-    cerr << "#defsub requires at least one parameter.\n";
+    cerr << command << " requires at least one parameter.\n";
     return false;
   }
 
+  vector<string> formals;
+  _scope->tokenize_params(_params.substr(p), formals, false);
+
+  vector<string>::const_iterator fi;
+  for (fi = formals.begin(); fi != formals.end(); ++fi) {
+    if (!is_valid_formal(*fi)) {
+      cerr << command << " " << subroutine_name
+	   << ": invalid formal parameter name '" << (*fi) << "'\n";
+      return false;
+    }
+  }
+
   if (_in_for) {
-    cerr << "#defsub may not appear within a #forscopes or #foreach block,\n"
-	 << "or within another #defsub block.\n";
+    cerr << command << " may not appear within another block scoping command like\n"
+	 << "#forscopes, #foreach, #formap, #defsub, or #defun.\n";
     return false;
   }
 
   BlockNesting *nest = new BlockNesting;
-  nest->_state = BS_defsub;
+  nest->_state = is_defsub ? BS_defsub : BS_defun;
   nest->_name = subroutine_name;
   nest->_write_state = _write_state;
   nest->_scope = _scope;
   nest->_next = _block_nesting;
+  nest->_words.swap(formals);
 
   _block_nesting = nest;
 
@@ -884,10 +1000,19 @@ handle_end_command() {
       return false;
     }
 
-  } else if (nest->_state == BS_defsub) {
+  } else if (nest->_state == BS_formap) {
+    // Now replay all of the saved lines.
+    _in_for = false;
+    assert(nest->_words.size() == 1);
+    if (!replay_formap(nest->_name, nest->_words[0])) {
+      return false;
+    }
+
+  } else if (nest->_state == BS_defsub || nest->_state == BS_defun) {
     // Save all of the saved lines as a named subroutine.
     _in_for = false;
     PPSubroutine *sub = new PPSubroutine;
+    sub->_formals.swap(nest->_words);
     sub->_lines.swap(_saved_lines);
 
     // Remove the #end command.  This will fail if someone makes an
@@ -895,7 +1020,11 @@ handle_end_command() {
     assert(!sub->_lines.empty());
     sub->_lines.pop_back();
 
-    PPSubroutine::define_sub(nest->_name, sub);
+    if (nest->_state == BS_defsub) {
+      PPSubroutine::define_sub(nest->_name, sub);
+    } else {
+      PPSubroutine::define_func(nest->_name, sub);
+    }
 
   } else if (nest->_state == BS_output) {
     if (!_in_for) {
@@ -976,10 +1105,21 @@ handle_sinclude_command() {
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
 handle_call_command() {
-  string subroutine_name = trim_blanks(_scope->expand_string(_params));
+  // The first word is the name of the subroutine; the rest is the
+  // comma-separated list of expressions to substitute in for the
+  // subroutine's formal parameters.
+
+  // Pull off the first word and the rest of the params.
+  size_t p = 0;
+  while (p < _params.length() && !isspace(_params[p])) {
+    p++;
+  }
+  string subroutine_name = trim_blanks(_params.substr(0, p));
+  string params = _params.substr(p);
 
   if (subroutine_name.empty()) {
-    cerr << "#call with no parameter.\n";
+    cerr << "#call requires at least one parameter.\n";
+    return false;
   }
 
   const PPSubroutine *sub = PPSubroutine::get_sub(subroutine_name);
@@ -987,13 +1127,23 @@ handle_call_command() {
     cerr << "Attempt to call undefined subroutine " << subroutine_name << "\n";
   }
 
+  PPScope *old_scope = _scope;
+  PPScope::push_scope(_scope);
+  PPScope nested_scope(_scope->get_named_scopes());
+  _scope = &nested_scope;
+  nested_scope.define_formals(subroutine_name, sub->_formals, params);
+
   vector<string>::const_iterator li;
   for (li = sub->_lines.begin(); li != sub->_lines.end(); ++li) {
     if (!read_line(*li)) {
+      PPScope::pop_scope();
+      _scope = old_scope;
       return false;
     }
   }
 
+  PPScope::pop_scope();
+  _scope = old_scope;
   return true;
 }
 
@@ -1005,8 +1155,10 @@ handle_call_command() {
 ////////////////////////////////////////////////////////////////////
 bool PPCommandFile::
 handle_error_command() {
-  if (!_params.empty()) {
-    cerr << _params << "\n";
+  string message = trim_blanks(_scope->expand_string(_params));
+  
+  if (!message.empty()) {
+    cerr << message << "\n";
   }
   return false;
 }
@@ -1031,6 +1183,11 @@ handle_defer_command() {
     p++;
   }
   string varname = _params.substr(0, p);
+
+  if (PPSubroutine::get_func(varname) != (const PPSubroutine *)NULL) {
+    cerr << "Warning: variable " << varname
+	 << " shadowed by function definition.\n";
+  }
   
   // Skip whitespace between the variable name and its definition.
   while (p < _params.length() && isspace(_params[p])) {
@@ -1065,6 +1222,11 @@ handle_define_command() {
     p++;
   }
   string varname = _params.substr(0, p);
+
+  if (PPSubroutine::get_func(varname) != (const PPSubroutine *)NULL) {
+    cerr << "Warning: variable " << varname
+	 << " shadowed by function definition.\n";
+  }
   
   // Skip whitespace between the variable name and its definition.
   while (p < _params.length() && isspace(_params[p])) {
@@ -1099,6 +1261,11 @@ handle_set_command() {
     p++;
   }
   string varname = _params.substr(0, p);
+
+  if (PPSubroutine::get_func(varname) != (const PPSubroutine *)NULL) {
+    cerr << "Warning: variable " << varname
+	 << " shadowed by function definition.\n";
+  }
   
   // Skip whitespace between the variable name and its definition.
   while (p < _params.length() && isspace(_params[p])) {
@@ -1136,15 +1303,34 @@ handle_map_command() {
   while (p < _params.length() && isspace(_params[p])) {
     p++;
   }
-  string def = _params.substr(p);
-
-  // We don't expand the variable's definition immediately; it will be
-  // expanded when the variable is referenced later.  However, we
-  // should expand any simple self-reference immediately, to allow for
-  // recursive definitions.
-  def = _scope->expand_string(def);
+  string def = trim_blanks(_params.substr(p));
 
   _scope->define_map_variable(varname, def);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::handle_addmap_command
+//       Access: Protected
+//  Description: Handles the #addmap command: add a new key/scope pair
+//               to an existing map variable.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+handle_addmap_command() {
+  // Pull off the first word and the rest of the params.
+  size_t p = 0;
+  while (p < _params.length() && !isspace(_params[p])) {
+    p++;
+  }
+  string varname = _params.substr(0, p);
+  
+  // Skip whitespace between the variable name and the key.
+  while (p < _params.length() && isspace(_params[p])) {
+    p++;
+  }
+  string key = trim_blanks(_scope->expand_string(_params.substr(p)));
+
+  _scope->add_to_map_variable(varname, key, _scope);
   return true;
 }
 
@@ -1208,23 +1394,24 @@ replay_forscopes(const string &name) {
   vector<string> words;
   tokenize_whitespace(name, words);
 
-  // Now traverse the named scopes with these names.
+  // Now build up the list of scopes with these names.
+  PPNamedScopes::Scopes scopes;
   vector<string>::const_iterator wi;
   for (wi = words.begin(); wi != words.end(); ++wi) {
-    PPNamedScopes::Scopes scopes;
     named_scopes->get_scopes(*wi, scopes);
+  }
+  PPNamedScopes::sort_by_dependency(scopes);
     
-    PPNamedScopes::Scopes::const_iterator si;
-    for (si = scopes.begin(); si != scopes.end(); ++si) {
-      PPScope::push_scope(_scope);
-      _scope = (*si);
-      
-      vector<string>::const_iterator li;
-      for (li = lines.begin(); li != lines.end() && okflag; ++li) {
-	okflag = read_line(*li);
-      }
-      _scope = PPScope::pop_scope();
+  PPNamedScopes::Scopes::const_iterator si;
+  for (si = scopes.begin(); si != scopes.end(); ++si) {
+    PPScope::push_scope(_scope);
+    _scope = (*si);
+    
+    vector<string>::const_iterator li;
+    for (li = lines.begin(); li != lines.end() && okflag; ++li) {
+      okflag = read_line(*li);
     }
+    _scope = PPScope::pop_scope();
   }
 
   return okflag;
@@ -1256,6 +1443,51 @@ replay_foreach(const string &varname, const vector<string> &words) {
     for (li = lines.begin(); li != lines.end() && okflag; ++li) {
       okflag = read_line(*li);
     }
+  }
+
+  return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::replay_formap
+//       Access: Protected
+//  Description: Replays all the lines that were saved during a
+//               previous #formap..#end block.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+replay_formap(const string &varname, const string &mapvar) {
+  bool okflag = true;
+
+  vector<string> lines;
+  lines.swap(_saved_lines);
+
+  // Remove the #end command.  This will fail if someone makes an #end
+  // command that spans multiple lines.  Don't do that.
+  assert(!lines.empty());
+  lines.pop_back();
+
+  // Now look up the map variable.
+  PPScope::MapVariableDefinition &def = _scope->find_map_variable(mapvar);
+  if (&def == &PPScope::_null_map_def) {
+    cerr << "Undefined map variable: #formap " << varname << " " 
+	 << mapvar << "\n";
+    return false;
+  }
+
+  // Now traverse through the map definition.
+  PPScope::MapVariableDefinition::const_iterator di;
+  for (di = def.begin(); di != def.end() && okflag; ++di) {
+    _scope->define_variable(varname, (*di).first);
+
+    PPScope::push_scope(_scope);
+    _scope = (*di).second;
+
+    vector<string>::const_iterator li;
+    for (li = lines.begin(); li != lines.end() && okflag; ++li) {
+      okflag = read_line(*li);
+    }
+
+    _scope = PPScope::pop_scope();
   }
 
   return okflag;
@@ -1324,6 +1556,39 @@ failed_if() const {
 	  (_if_nesting->_state == IS_off || _if_nesting->_state == IS_done));
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PPCommandFile::is_valid_formal_parameter_name
+//       Access: Protected
+//  Description: Returns true if the indicated name is an acceptable
+//               name for a formal parameter.  This means it includes
+//               no whitespace or crazy punctuation.  Mainly this is
+//               to protect the user from making some stupid syntax
+//               mistake.
+////////////////////////////////////////////////////////////////////
+bool PPCommandFile::
+is_valid_formal(const string &formal_parameter_name) const {
+  if (formal_parameter_name.empty()) {
+    return false;
+  }
+  
+  string::const_iterator si;
+  for (si = formal_parameter_name.begin();
+       si != formal_parameter_name.end();
+       ++si) {
+    switch (*si) {
+    case ' ':
+    case '\n':
+    case '\t':
+    case '$':
+    case '[':
+    case ']':
+    case ',':
+      return false;
+    }
+  }
+
+  return true;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPCommandFile::PushFilename::Constructor

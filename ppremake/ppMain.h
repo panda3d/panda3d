@@ -32,6 +32,8 @@ public:
 private:
   bool r_process_all(PPDirectoryTree *dir);
   bool p_process(PPDirectoryTree *dir);
+  bool read_global_file();
+  static string get_cwd();
 
 
   PPScope *_global_scope;

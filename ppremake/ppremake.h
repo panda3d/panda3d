@@ -14,9 +14,11 @@
 #ifdef HAVE_IOSTREAM
 #include <iostream>
 #include <fstream>
+#include <strstream>
 #else
 #include <iostream.h>
 #include <fstream.h>
+#include <strstream.h>
 #endif
 
 #include <string>

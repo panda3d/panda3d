@@ -5,6 +5,43 @@
 
 #include "ppNamedScopes.h"
 #include "ppScope.h"
+#include "ppDirectoryTree.h"
+
+#include <assert.h>
+#include <algorithm>
+
+// An STL object to sort named scopes in order by dependency and then
+// by directory name, used in sort_by_dependency().
+class SortScopesByDependencyAndName {
+public:
+  bool operator () (const PPScope *a, const PPScope *b) const {
+    PPDirectoryTree *da = a->get_directory();
+    PPDirectoryTree *db = b->get_directory();
+
+    // Scopes without associated directories appear first in the list.
+    bool da_is_null = (da == (PPDirectoryTree *)NULL);
+    bool db_is_null = (db == (PPDirectoryTree *)NULL);
+
+    if (da_is_null != db_is_null) {
+      return da_is_null > db_is_null;
+
+    } else if (da_is_null) {
+      // If two scopes have no associated directories (!) they are
+      // considered equivalent.
+      return false;
+
+    } else {
+      // Otherwise, both scopes have associated directories, and we
+      // can properly put them in order by dependencies.
+      assert(da != (PPDirectoryTree *)NULL);
+      assert(db != (PPDirectoryTree *)NULL);
+      if (da->get_depends_index() != db->get_depends_index()) {
+	return da->get_depends_index() < db->get_depends_index();
+      }
+      return da->get_dirname() < db->get_dirname();
+    }
+  }
+};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPNamedScopes::Constructor
@@ -81,6 +118,18 @@ get_scopes(const string &name, Scopes &scopes) const {
       p_get_scopes((*di).second, scopename, scopes);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPNamedScopes::sort_by_dependency
+//       Access: Public, Static
+//  Description: Sorts the previously-generated list of scopes into
+//               order such that the later scopes depend on the
+//               earlier scopes.
+////////////////////////////////////////////////////////////////////
+void PPNamedScopes::
+sort_by_dependency(PPNamedScopes::Scopes &scopes) {
+  sort(scopes.begin(), scopes.end(), SortScopesByDependencyAndName());
 }
 
 ////////////////////////////////////////////////////////////////////

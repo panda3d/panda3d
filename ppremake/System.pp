@@ -21,14 +21,13 @@
 #endif
 
 #if $[eq $[GLOBAL_FILE],]
-  #define GLOBAL_FILE $[PPREMAKE_DIR]/Global.$[BUILD_TYPE].pp
+  #define GLOBAL_FILE $[PPREMAKE_DIR]/Global.pp
+#endif
+
+#if $[eq $[GLOBAL_TYPE_FILE],]
+  #define GLOBAL_TYPE_FILE $[PPREMAKE_DIR]/Global.$[BUILD_TYPE].pp
 #endif
 
 #if $[eq $[TEMPLATE_FILE],]
   #define TEMPLATE_FILE $[PPREMAKE_DIR]/Template.$[BUILD_TYPE].pp
 #endif
-
-// Include the global definitions for the template type, if the file
-// is there.
-#sinclude $[GLOBAL_FILE]
-

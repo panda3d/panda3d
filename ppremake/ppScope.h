@@ -13,6 +13,7 @@
 
 class PPNamedScopes;
 class PPDirectoryTree;
+class PPSubroutine;
 
 ///////////////////////////////////////////////////////////////////
 // 	 Class : PPScope
@@ -23,6 +24,8 @@ class PPDirectoryTree;
 ////////////////////////////////////////////////////////////////////
 class PPScope {
 public:
+  typedef map<string, PPScope *> MapVariableDefinition;
+
   PPScope(PPNamedScopes *named_scopes);
 
   PPNamedScopes *get_named_scopes() const;
@@ -35,9 +38,14 @@ public:
   void define_map_variable(const string &varname, const string &definition);
   void define_map_variable(const string &varname, const string &key_varname,
 			   const string &scope_names);
+  void add_to_map_variable(const string &varname, const string &key,
+			   PPScope *scope);
+  void define_formals(const string &subroutine_name,
+		      const vector<string> &formals, const string &actuals);
 
   string get_variable(const string &varname) const;
   string expand_variable(const string &varname) const;
+  MapVariableDefinition &find_map_variable(const string &varname) const;
 
   PPDirectoryTree *get_directory() const;
   void set_directory(PPDirectoryTree *directory);
@@ -49,6 +57,11 @@ public:
   static PPScope *pop_scope();
   static PPScope *get_bottom_scope();
 
+  void tokenize_params(const string &str, vector<string> &tokens,
+		       bool expand) const;
+
+  static MapVariableDefinition _null_map_def;
+
 private:
   class ExpandedVariable {
   public:
@@ -56,13 +69,8 @@ private:
     ExpandedVariable *_next;
   };
 
-  typedef map<string, PPScope *> MapVariableDefinition;
-
   bool p_set_variable(const string &varname, const string &definition);
   bool p_get_variable(const string &varname, string &result) const;
-
-  void tokenize_params(const string &str, vector<string> &tokens,
-		       bool expand) const;
 
   string r_expand_string(const string &str, ExpandedVariable *expanded) const;
   string r_scan_variable(const string &str, size_t &vp) const;
@@ -73,9 +81,11 @@ private:
 
   string expand_wildcard(const string &params) const;
   string expand_isdir(const string &params) const;
+  string expand_isfile(const string &params) const;
   string expand_libtest(const string &params) const;
   string expand_bintest(const string &params) const;
   string expand_shell(const string &params) const;
+  string expand_standardize(const string &params) const;
   string expand_firstword(const string &params) const;
   string expand_patsubst(const string &params) const;
   string expand_filter(const string &params) const;
@@ -91,14 +101,16 @@ private:
   string expand_and(const string &params) const;
   string expand_upcase(const string &params) const;
   string expand_downcase(const string &params) const;
+  string expand_cdefine(const string &params) const;
   string expand_closure(const string &params) const;
+  string expand_unmapped(const string &params) const;
+  string expand_function(const string &funcname, const PPSubroutine *sub,
+			 const string &params) const;
   string expand_map_variable(const string &varname, const string &params) const;
   string expand_map_variable(const string &varname, const string &expression,
 			     const vector<string> &keys) const;
 
-  const MapVariableDefinition &
-  find_map_variable(const string &varname) const;
-  const MapVariableDefinition &
+  MapVariableDefinition &
   p_find_map_variable(const string &varname) const;
 
   void glob_string(const string &str, vector<string> &results) const;
@@ -112,7 +124,6 @@ private:
 
   typedef map<string, MapVariableDefinition> MapVariables;
   MapVariables _map_variables;
-  static MapVariableDefinition _null_map_def;
 
   PPScope *_parent_scope;
   typedef vector<PPScope *> ScopeStack;

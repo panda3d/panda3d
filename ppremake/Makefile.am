@@ -12,9 +12,11 @@ ppremake_SOURCES =						\
     tokenize.h
 
 data_DATA = \
-    System.pp Depends.pp Template.autoconf.pp \
-    Global.stopgap.pp Template.stopgap.pp
+    System.pp Depends.pp Global.pp Template.autoconf.pp \
+    Global.stopgap.pp Template.stopgap.pp \
+    Global.unix.pp Template.unix.pp
 
 EXTRA_DIST =\
-    System.pp Depends.pp Template.autoconf.pp \
-    Global.stopgap.pp Template.stopgap.pp
+    System.pp Depends.pp Global.pp Template.autoconf.pp \
+    Global.stopgap.pp Template.stopgap.pp \
+    Global.unix.pp Template.unix.pp

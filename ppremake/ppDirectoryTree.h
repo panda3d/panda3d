@@ -33,7 +33,8 @@ protected:
   PPDirectoryTree(const string &dirname, PPDirectoryTree *parent);
 
 public:
-  bool scan(const string &prefix, PPNamedScopes *named_scopes);
+  bool scan_source(PPNamedScopes *named_scopes);
+  bool scan_depends(PPNamedScopes *named_scopes);
 
   int count_source_files() const;
 

@@ -90,22 +90,32 @@ PPDirectoryTree(const string &dirname, PPDirectoryTree *parent) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPDirectoryTree::scan
+//     Function: PPDirectoryTree::scan_source
 //       Access: Public
-//  Description: Reads in the complete hierarchy of source files.
-//               prefix is the pathname to the directory on disk,
-//               ending in slash.
+//  Description: Reads in the complete hierarchy of source files,
+//               beginning at the current directory.
 ////////////////////////////////////////////////////////////////////
 bool PPDirectoryTree::
-scan(const string &prefix, PPNamedScopes *named_scopes) {
-  if (!r_scan(prefix)) {
+scan_source(PPNamedScopes *named_scopes) {
+  if (!r_scan("")) {
     return false;
   }
 
-  if (!read_source_file(prefix, named_scopes)) {
+  if (!read_source_file("", named_scopes)) {
     return false;
   }
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPDirectoryTree::scan_depends
+//       Access: Public
+//  Description: Reads in the depends file for each source file, and
+//               then sorts the files into dependency order.
+////////////////////////////////////////////////////////////////////
+bool PPDirectoryTree::
+scan_depends(PPNamedScopes *named_scopes) {
   if (!read_depends_file(named_scopes)) {
     return false;
   }

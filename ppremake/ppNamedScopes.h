@@ -29,6 +29,7 @@ public:
 
   PPScope *make_scope(const string &name);
   void get_scopes(const string &name, Scopes &scopes) const;
+  static void sort_by_dependency(Scopes &scopes);
 
   void set_current(const string &dirname);
 

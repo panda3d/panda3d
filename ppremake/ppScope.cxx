@@ -7,6 +7,8 @@
 #include "ppNamedScopes.h"
 #include "ppFilenamePattern.h"
 #include "ppDirectoryTree.h"
+#include "ppSubroutine.h"
+#include "ppCommandFile.h"
 #include "tokenize.h"
 #include "find_searchpath.h"
 
@@ -16,7 +18,7 @@
 #include <glob.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <stdio.h>  // for perror().
+#include <stdio.h>  // for perror() and sprintf().
 #include <errno.h>
 #include <signal.h>
 #include <sys/types.h>
@@ -175,6 +177,10 @@ define_map_variable(const string &varname, const string &key_varname,
     return;
   }
 
+  if (key_varname.empty()) {
+    return;
+  }
+
   vector<string> names;
   tokenize_whitespace(scope_names, names);
 
@@ -214,6 +220,71 @@ define_map_variable(const string &varname, const string &key_varname,
   define_variable(varname, repaste(results, " "));
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::add_to_map_variable
+//       Access: Public
+//  Description: Adds a new key/scope pair to a previous map variable
+//               definition.
+////////////////////////////////////////////////////////////////////
+void PPScope::
+add_to_map_variable(const string &varname, const string &key,
+		    PPScope *scope) {
+  MapVariableDefinition &def = find_map_variable(varname);
+  if (&def == &_null_map_def) {
+    cerr << "Warning:  undefined map variable: " << varname << "\n";
+    return;
+  }
+
+  def[key] = scope;
+
+  // We need to do all this work to define the traditional expansion.
+  // Maybe not a great idea.
+  vector<string> results;
+  MapVariableDefinition::const_iterator di;
+  for (di = def.begin(); di != def.end(); ++di) {
+    results.push_back((*di).first);
+  }
+
+  set_variable(varname, repaste(results, " "));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::define_formals
+//       Access: Public
+//  Description: Supplies values to a slew of variables at once,
+//               typically to define actual values for a list of
+//               formal parameters to a user-defined subroutine or
+//               function.
+//
+//               Formals is a vector of variable names to be defined,
+//               and actuals is a comma-separated list of expressions
+//               to be substituted in, one-per-one.  The
+//               subroutine_name is used only for error reporting.
+////////////////////////////////////////////////////////////////////
+void PPScope::
+define_formals(const string &subroutine_name, 
+	       const vector<string> &formals, const string &actuals) {
+  vector<string> actual_words;
+  tokenize_params(actuals, actual_words, true);
+
+  if (actual_words.size() < formals.size()) {
+    cerr << "Warning: not all parameters defined for " << subroutine_name
+	 << ": " << actuals << "\n";
+  } else if (actual_words.size() > formals.size()) {
+    cerr << "Warning: more parameters defined for " << subroutine_name
+	 << " than actually exist: " << actuals << "\n";
+  }
+
+  for (int i = 0; i < (int)formals.size(); i++) {
+    if (i < (int)actual_words.size()) {
+      define_variable(formals[i], actual_words[i]);
+    } else {
+      define_variable(formals[i], string());
+    }
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PPScope::get_variable
 //       Access: Public
@@ -222,6 +293,12 @@ define_map_variable(const string &varname, const string &key_varname,
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 get_variable(const string &varname) const {
+  // Is it a user-defined function?
+  const PPSubroutine *sub = PPSubroutine::get_func(varname);
+  if (sub != (const PPSubroutine *)NULL) {
+    return expand_function(varname, sub, string());
+  }      
+
   string result;
   if (p_get_variable(varname, result)) {
     return result;
@@ -254,6 +331,34 @@ get_variable(const string &varname) const {
 string PPScope::
 expand_variable(const string &varname) const {
   return expand_string(get_variable(varname));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::find_map_variable
+//       Access: Public
+//  Description: Looks for the map variable definition in this scope
+//               or some ancestor scope.  Returns the map variable
+//               definition if it is found, or _null_map_def if it is
+//               not.
+////////////////////////////////////////////////////////////////////
+PPScope::MapVariableDefinition &PPScope::
+find_map_variable(const string &varname) const {
+  MapVariableDefinition &def = p_find_map_variable(varname);
+  if (&def != &_null_map_def) {
+    return def;
+  }
+
+  // No such map variable.  Check the stack.
+  ScopeStack::reverse_iterator si;
+  for (si = _scope_stack.rbegin(); si != _scope_stack.rend(); ++si) {
+    MapVariableDefinition &def = (*si)->p_find_map_variable(varname);
+    if (&def != &_null_map_def) {
+      return def;
+    }
+  }
+
+  // Nada.
+  return _null_map_def;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -385,65 +490,8 @@ get_bottom_scope() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPScope::p_set_variable
-//       Access: Private
-//  Description: The private implementation of p_set_variable.
-//               Returns true if the variable's definition is found
-//               and set, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool PPScope::
-p_set_variable(const string &varname, const string &definition) {
-  Variables::iterator vi;
-  vi = _variables.find(varname);
-  if (vi != _variables.end()) {
-    (*vi).second = definition;
-    return true;
-  }
-
-  if (_parent_scope != (PPScope *)NULL) {
-    return _parent_scope->p_set_variable(varname, definition);
-  }
-
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PPScope::p_get_variable
-//       Access: Private
-//  Description: The private implementation of get_variable().  This
-//               checks the local scope only; it does not check the
-//               stack.  It returns true if the variable is defined,
-//               false otherwise..
-////////////////////////////////////////////////////////////////////
-bool PPScope::
-p_get_variable(const string &varname, string &result) const {
-  Variables::const_iterator vi;
-  vi = _variables.find(varname);
-  if (vi != _variables.end()) {
-    result = (*vi).second;
-    return true;
-  }
-
-  if (varname == "RELDIR" && 
-      _directory != (PPDirectoryTree *)NULL &&
-      current_output_directory != (PPDirectoryTree *)NULL) {
-    // $[RELDIR] is a special variable name that evaluates to the
-    // relative directory of the current scope to the current output
-    // directory.
-    result = current_output_directory->get_rel_to(_directory);
-    return true;
-  }
-
-  if (_parent_scope != (PPScope *)NULL) {
-    return _parent_scope->p_get_variable(varname, result);
-  }
-
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PPScope::tokenize_params
-//       Access: Private
+//       Access: Public
 //  Description: Separates a string into tokens based on comma
 //               delimiters, e.g. for parameters to a function.
 //               Nested variable references are skipped correctly,
@@ -495,6 +543,75 @@ tokenize_params(const string &str, vector<string> &tokens,
       tokens.push_back(string());
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::p_set_variable
+//       Access: Private
+//  Description: The private implementation of p_set_variable.
+//               Returns true if the variable's definition is found
+//               and set, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PPScope::
+p_set_variable(const string &varname, const string &definition) {
+  Variables::iterator vi;
+  vi = _variables.find(varname);
+  if (vi != _variables.end()) {
+    (*vi).second = definition;
+    return true;
+  }
+
+  if (_parent_scope != (PPScope *)NULL) {
+    return _parent_scope->p_set_variable(varname, definition);
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::p_get_variable
+//       Access: Private
+//  Description: The private implementation of get_variable().  This
+//               checks the local scope only; it does not check the
+//               stack.  It returns true if the variable is defined,
+//               false otherwise..
+////////////////////////////////////////////////////////////////////
+bool PPScope::
+p_get_variable(const string &varname, string &result) const {
+  Variables::const_iterator vi;
+  vi = _variables.find(varname);
+  if (vi != _variables.end()) {
+    result = (*vi).second;
+    return true;
+  }
+
+  if (varname == "RELDIR" && 
+      _directory != (PPDirectoryTree *)NULL &&
+      current_output_directory != (PPDirectoryTree *)NULL) {
+    // $[RELDIR] is a special variable name that evaluates to the
+    // relative directory of the current scope to the current output
+    // directory.
+    result = current_output_directory->get_rel_to(_directory);
+    return true;
+  }
+
+  if (varname == "DEPENDS_INDEX" && 
+      _directory != (PPDirectoryTree *)NULL) {
+    // $[DEPENDS_INDEX] is another special variable name that
+    // evaluates to the numeric sorting index assigned to this
+    // directory based on its dependency relationship with other
+    // directories.  It's useful primarily for debugging.
+    char buffer[32];
+    sprintf(buffer, "%d", _directory->get_depends_index());
+    result = buffer;
+    return true;
+  }
+
+  if (_parent_scope != (PPScope *)NULL) {
+    return _parent_scope->p_get_variable(varname, result);
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -639,18 +756,27 @@ r_expand_variable(const string &str, size_t &vp,
     }
     string params = varname.substr(p);
 
-    // Is it a built-in function?
+    // Is it a user-defined function?
+    const PPSubroutine *sub = PPSubroutine::get_func(funcname);
+    if (sub != (const PPSubroutine *)NULL) {
+      return expand_function(funcname, sub, params);
+    }      
 
+    // Is it a built-in function?
     if (funcname == "wildcard") {
       return expand_wildcard(params);
     } else if (funcname == "isdir") {
       return expand_isdir(params);
+    } else if (funcname == "isfile") {
+      return expand_isfile(params);
     } else if (funcname == "libtest") {
       return expand_libtest(params);
     } else if (funcname == "bintest") {
       return expand_bintest(params);
     } else if (funcname == "shell") {
       return expand_shell(params);
+    } else if (funcname == "standardize") {
+      return expand_standardize(params);
     } else if (funcname == "firstword") {
       return expand_firstword(params);
     } else if (funcname == "patsubst") {
@@ -681,8 +807,12 @@ r_expand_variable(const string &str, size_t &vp,
       return expand_upcase(params);
     } else if (funcname == "downcase") {
       return expand_downcase(params);
+    } else if (funcname == "cdefine") {
+      return expand_cdefine(params);
     } else if (funcname == "closure") {
       return expand_closure(params);
+    } else if (funcname == "unmapped") {
+      return expand_unmapped(params);
     }
 
     // It must be a map variable.
@@ -700,6 +830,7 @@ r_expand_variable(const string &str, size_t &vp,
   }
 
   // And now expand the variable.
+
   string expansion;
 
   // Check for a special inline patsubst operation, like GNU make:
@@ -859,6 +990,39 @@ expand_isdir(const string &params) const {
   string result;
   if (stat(filename.c_str(), &stbuf) == 0) {
     if (S_ISDIR(stbuf.st_mode)) {
+      result = filename;
+    }
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_isfile
+//       Access: Private
+//  Description: Expands the "isfile" function variable.  This
+//               returns true if the parameter exists and is a
+//               regular file, or false otherwise.  This actually
+//               expands the parameter(s) with shell globbing
+//               characters, similar to the "wildcard" function, and
+//               looks only at the first expansion.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_isfile(const string &params) const {
+  vector<string> results;
+  glob_string(expand_string(params), results);
+
+  if (results.empty()) {
+    // No matching file, too bad.
+    return string();
+  }
+
+  const string &filename = results[0];
+  struct stat stbuf;
+
+  string result;
+  if (stat(filename.c_str(), &stbuf) == 0) {
+    if (S_ISREG(stbuf.st_mode)) {
       result = filename;
     }
   }
@@ -1108,6 +1272,64 @@ expand_shell(const string &params) const {
   return result;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_standardize
+//       Access: Private
+//  Description: Expands the "standardize" function variable.  This
+//               converts the filename to standard form by removing
+//               consecutive repeated slashes and collapsing /../
+//               where possible.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_standardize(const string &params) const {
+  string filename = expand_string(params);
+  if (filename.empty()) {
+    return string();
+  }
+
+  vector<string> components;
+
+  // Pull off the components of the filename one at a time.
+  bool global = (filename[0] == '/');
+
+  size_t p = 0;
+  while (p < filename.length() && filename[p] == '/') {
+    p++;
+  }
+  while (p < filename.length()) {
+    size_t slash = filename.find('/', p);
+    string component = filename.substr(p, slash - p);
+    if (component == ".") {
+      // Ignore /./.
+    } else if (component == ".." && !components.empty() && 
+	       !(components.back() == "..")) {
+      // Back up.
+      components.pop_back();
+    } else {
+      components.push_back(component);
+    }
+
+    p = slash;
+    while (p < filename.length() && filename[p] == '/') {
+      p++;
+    }
+  }
+   
+  // Now reassemble the filename.
+  string result;
+  if (global) {
+    result = "/";
+  }
+  if (!components.empty()) {
+    result += components[0];
+    for (int i = 1; i < (int)components.size(); i++) {
+      result += "/" + components[i];
+    }
+  }
+
+  return result;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPScope::expand_firstword
@@ -1408,9 +1630,13 @@ expand_unique(const string &params) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPScope::expand_eq
+//     Function: PPScope::expand_if
 //       Access: Private
-//  Description: Expands the "if" function variable.
+//  Description: Expands the "if" function variable.  This evaluates
+//               the first parameter and returns the second parameter
+//               if the result is true (i.e. nonempty) and the third
+//               parameter (if present) if the result is faluse
+//               (i.e. empty).
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_if(const string &params) const {
@@ -1424,7 +1650,7 @@ expand_if(const string &params) const {
     } else {
       return "";
     }
-  } else if (tokens.size() == 2) {
+  } else if (tokens.size() == 3) {
     if (!tokens[0].empty()) {
       return tokens[1];
     } else {
@@ -1515,6 +1741,7 @@ expand_not(const string &params) const {
 //       Access: Private
 //  Description: Expands the "or" function variable.  This returns
 //               nonempty if any of its arguments are nonempty.
+//               Specifically, it returns the first nonempty argument.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_or(const string &params) const {
@@ -1525,10 +1752,10 @@ expand_or(const string &params) const {
   vector<string>::const_iterator ti;
   for (ti = tokens.begin(); ti != tokens.end(); ++ti) {
     if (!(*ti).empty()) {
-      return "1";
+      return (*ti);
     }
   }
-  return "";
+  return string();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1536,6 +1763,7 @@ expand_or(const string &params) const {
 //       Access: Private
 //  Description: Expands the "and" function variable.  This returns
 //               nonempty if all of its arguments are nonempty.
+//               Specifically, it returns the last argument.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_and(const string &params) const {
@@ -1546,10 +1774,15 @@ expand_and(const string &params) const {
   vector<string>::const_iterator ti;
   for (ti = tokens.begin(); ti != tokens.end(); ++ti) {
     if ((*ti).empty()) {
-      return "";
+      return string();
     }
   }
-  return "1";
+
+  if (tokens.empty()) {
+    return "1";
+  } else {
+    return tokens.back();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1583,6 +1816,33 @@ expand_downcase(const string &params) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_cdefine
+//       Access: Private
+//  Description: Expands the "cdefine" function variable.  This is a
+//               convenience function to output a C-style #define or
+//               #undef statement based on the value of the named
+//               variable.  If the named string is a variable whose
+//               definition is nonempty, this returns "#define varname
+//               definition".  Otherwise, it returns "#undef varname".
+//               This is particularly useful for building up a
+//               config.h file.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_cdefine(const string &params) const {
+  string varname = trim_blanks(params);
+  string expansion = trim_blanks(expand_variable(varname));
+
+  string result;
+  if (expansion.empty()) {
+    result = "#undef " + varname;
+  } else {
+    result = "#define " + varname + " " + expansion;
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPScope::expand_closure
 //       Access: Private
 //  Description: Expands the "closure" function variable.  This is a
@@ -1596,15 +1856,21 @@ expand_closure(const string &params) const {
   vector<string> tokens;
   tokenize_params(params, tokens, false);
 
-  if (tokens.size() != 2) {
-    cerr << "closure requires two parameters.\n";
+  if (tokens.size() != 2 && tokens.size() != 3) {
+    cerr << "closure requires two or three parameters.\n";
     return string();
   }
 
   // The first parameter is the map variable name, the second
-  // parameter is the expression to close.
+  // parameter is the expression to evaluate, and the third parameter
+  // (if present) is the expression that leads to the recursive
+  // evaluation of the map variable.
   string varname = expand_string(tokens[0]);
   string expression = tokens[1];
+  string close_on = expression;
+  if (tokens.size() > 2) {
+    close_on = tokens[2];
+  }
 
   const MapVariableDefinition &def = find_map_variable(varname);
   if (&def == &_null_map_def) {
@@ -1619,16 +1885,21 @@ expand_closure(const string &params) const {
   // we also need to keep track of all the partial results we have yet
   // to evaluate (hence the vector of strings).
   set<string> closure;
-  vector<string> partial_results;
+  vector<string> results;
+  vector<string> next_pass;
 
-  partial_results.push_back(expand_string(expression));
+  // Start off with the expression evaluated within the starting
+  // scope.
+  results.push_back(expand_string(expression));
 
-  while (!partial_results.empty()) {
+  next_pass.push_back(expand_string(close_on));
+
+  while (!next_pass.empty()) {
     // Pull off one of the partial results (it doesn't matter which
     // one), and chop it up into its constituent words.
     vector<string> pass;
-    tokenize_whitespace(partial_results.back(), pass);
-    partial_results.pop_back();
+    tokenize_whitespace(next_pass.back(), pass);
+    next_pass.pop_back();
 
     // And then map each of those words into scopes.
     vector<string>::const_iterator wi;
@@ -1636,27 +1907,118 @@ expand_closure(const string &params) const {
       const string &word = (*wi);
       bool inserted = closure.insert(word).second;
       if (inserted) {
-	// This is a new word, which presumably maps to a scope.  What
-	// does the expression evaluate to within that scope?
-	
-	MapVariableDefinition::const_iterator mvi;
-	mvi = def.find(word);
-	if (mvi != def.end()) {
-	  PPScope *scope = (*mvi).second;
-	  partial_results.push_back(scope->expand_string(expression));
+	// This is a new word, which presumably maps to a scope.
+	MapVariableDefinition::const_iterator di;
+	di = def.find(word);
+	if (di != def.end()) {
+	  PPScope *scope = (*di).second;
+	  // Evaluate the expression within this scope.
+	  results.push_back(scope->expand_string(expression));
+	  
+	  // What does close_on evaluate to within this scope?  That
+	  // points us to the next scope(s).
+	  next_pass.push_back(scope->expand_string(close_on));
 	}
       }
     }
   }
 
-  // Now we have the complete transitive closure of $[mapvar expression].
+  // Now we have the complete transitive closure of $[mapvar close_on].
+  string result = repaste(results, " ");
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_unmapped
+//       Access: Private
+//  Description: Expands the "closure" function variable.  This is a
+//               special function that returns all the arguments to a
+//               map variable, unchanged, that did *not* match any of
+//               the keys in the map.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_unmapped(const string &params) const {
+  // Split the string up into tokens based on the commas.
+  vector<string> tokens;
+  tokenize_params(params, tokens, false);
+
+  if (tokens.size() != 2) {
+    cerr << "unmapped requires two parameters.\n";
+    return string();
+  }
+
+  // The first parameter is the map variable name, and the second
+  // parameter is the space-separated list of arguments to the map.
+  string varname = expand_string(tokens[0]);
+  vector<string> keys;
+  tokenize_whitespace(expand_string(tokens[1]), keys);
+
+  const MapVariableDefinition &def = find_map_variable(varname);
+  if (&def == &_null_map_def) {
+    cerr << "Warning:  undefined map variable: " << varname << "\n";
+    return string();
+  }
+
   vector<string> results;
-  set<string>::const_iterator ci;
-  for (ci = closure.begin(); ci != closure.end(); ++ci) {
-    results.push_back(*ci);
+  vector<string>::const_iterator ki;
+  for (ki = keys.begin(); ki != keys.end(); ++ki) {
+    MapVariableDefinition::const_iterator di;
+    di = def.find(*ki);
+    if (di == def.end()) {
+      // This key was undefined.
+      results.push_back(*ki);
+    }
   }
 
   string result = repaste(results, " ");
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_function
+//       Access: Private
+//  Description: Expands the user-defined function reference.  This
+//               invokes the nested commands within the function body,
+//               and returns all the output text as one line.  Quite a
+//               job, really.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_function(const string &funcname, 
+		const PPSubroutine *sub, const string &params) const {
+  PPScope::push_scope((PPScope *)this);
+  PPScope nested_scope(_named_scopes);
+  nested_scope.define_formals(funcname, sub->_formals, params);
+
+  // This won't compile on VC++.  It has only ostringstream, which is
+  // functionally equivalent but has a slightly different interface.
+  ostrstream ostr;
+
+  PPCommandFile command(&nested_scope);
+  command.set_output(&ostr);
+
+  command.begin_read();
+  bool okflag = true;
+  vector<string>::const_iterator li;
+  for (li = sub->_lines.begin(); li != sub->_lines.end() && okflag; ++li) {
+    okflag = command.read_line(*li);
+  }
+  if (okflag) {
+    okflag = command.end_read();
+  }
+
+  PPScope::pop_scope();
+
+  // Now get the output.  We split it into words and then reconnect
+  // it, to replace all whitespace with spaces.
+  ostr << ends;
+  char *str = ostr.str();
+
+  vector<string> results;
+  tokenize_whitespace(str, results);
+
+  string result = repaste(results, " ");
+  delete[] str;
+  
   return result;
 }
 
@@ -1726,47 +2088,21 @@ expand_map_variable(const string &varname, const string &expression,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPScope::find_map_variable
-//       Access: Private
-//  Description: Looks for the map variable definition in this scope
-//               or some ancestor scope.
-////////////////////////////////////////////////////////////////////
-const PPScope::MapVariableDefinition &PPScope::
-find_map_variable(const string &varname) const {
-  const MapVariableDefinition &def = p_find_map_variable(varname);
-  if (&def != &_null_map_def) {
-    return def;
-  }
-
-  // No such map variable.  Check the stack.
-  ScopeStack::reverse_iterator si;
-  for (si = _scope_stack.rbegin(); si != _scope_stack.rend(); ++si) {
-    const MapVariableDefinition &def = (*si)->p_find_map_variable(varname);
-    if (&def != &_null_map_def) {
-      return def;
-    }
-  }
-
-  // Nada.
-  return _null_map_def;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PPScope::p_find_map_variable
 //       Access: Private
 //  Description: The implementation of find_map_variable() for a
 //               particular static scope, without checking the stack.
 ////////////////////////////////////////////////////////////////////
-const PPScope::MapVariableDefinition &PPScope::
+PPScope::MapVariableDefinition &PPScope::
 p_find_map_variable(const string &varname) const {
   MapVariables::const_iterator mvi;
   mvi = _map_variables.find(varname);
   if (mvi != _map_variables.end()) {
-    return (*mvi).second;
+    return (MapVariableDefinition &)(*mvi).second;
   }
 
   if (_parent_scope != (PPScope *)NULL) {
-    return _parent_scope->find_map_variable(varname);
+    return _parent_scope->p_find_map_variable(varname);
   }
 
   return _null_map_def;

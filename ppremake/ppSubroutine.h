@@ -20,14 +20,19 @@
 ////////////////////////////////////////////////////////////////////
 class PPSubroutine {
 public:
+  vector<string> _formals;
   vector<string> _lines;
 
 public:
   static void define_sub(const string &name, PPSubroutine *sub);
   static const PPSubroutine *get_sub(const string &name);
 
+  static void define_func(const string &name, PPSubroutine *sub);
+  static const PPSubroutine *get_func(const string &name);
+
   typedef map<string, PPSubroutine *> Subroutines;
   static Subroutines _subroutines;
+  static Subroutines _functions;
 };
 
 #endif
