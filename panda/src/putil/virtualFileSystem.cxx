@@ -446,6 +446,9 @@ get_global_ptr() {
     // mount.
     _global_ptr->mount("/", "/", 0);
 
+    // And our initial cwd comes from the environment.
+    _global_ptr->chdir(ExecutionEnvironment::get_cwd());
+
     // Then, we add whatever mounts are listed in the Configrc file.
     Config::ConfigTable::Symbol mounts;
     config_util.GetAll("vfs-mount", mounts);
@@ -495,10 +498,6 @@ get_global_ptr() {
         }
       }
     }
-
-    // Finally, our cwd is initially from the environment, if that
-    // maps into our new VFS.
-    _global_ptr->chdir(ExecutionEnvironment::get_cwd());
   }
 
   return _global_ptr;
