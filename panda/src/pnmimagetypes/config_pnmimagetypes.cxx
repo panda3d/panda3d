@@ -21,12 +21,14 @@
 #include "pnmFileTypeSGI.h"
 #include "pnmFileTypeAlias.h"
 #include "pnmFileTypeRadiance.h"
-#include "pnmFileTypeTIFF.h"
 #include "pnmFileTypeTGA.h"
 #include "pnmFileTypeYUV.h"
 #include "pnmFileTypeIMG.h"
 #include "pnmFileTypeSoftImage.h"
 #include "pnmFileTypeBMP.h"
+#ifdef HAVE_TIFF
+  #include "pnmFileTypeTIFF.h"
+#endif
 #ifdef HAVE_JPEG
   #include "pnmFileTypeJPG.h"
 #endif
@@ -125,12 +127,14 @@ init_libpnmimagetypes() {
   PNMFileTypeSGI::init_type();
   PNMFileTypeAlias::init_type();
   PNMFileTypeRadiance::init_type();
-  PNMFileTypeTIFF::init_type();
   PNMFileTypeTGA::init_type();
   PNMFileTypeYUV::init_type();
   PNMFileTypeIMG::init_type();
   PNMFileTypeSoftImage::init_type();
   PNMFileTypeBMP::init_type();
+#ifdef HAVE_TIFF
+  PNMFileTypeTIFF::init_type();
+#endif
 #ifdef HAVE_JPEG
   PNMFileTypeJPG::init_type();
 #endif
@@ -169,12 +173,14 @@ init_libpnmimagetypes() {
   tr->register_type(new PNMFileTypeSGI);
   tr->register_type(new PNMFileTypeAlias);
   tr->register_type(new PNMFileTypeRadiance);
-  tr->register_type(new PNMFileTypeTIFF);
   tr->register_type(new PNMFileTypeTGA);
   tr->register_type(new PNMFileTypeYUV);
   tr->register_type(new PNMFileTypeIMG);
   tr->register_type(new PNMFileTypeSoftImage);
   tr->register_type(new PNMFileTypeBMP);
+#ifdef HAVE_TIFF
+  tr->register_type(new PNMFileTypeTIFF);
+#endif
 #ifdef HAVE_JPEG
   tr->register_type(new PNMFileTypeJPG);
 #endif
@@ -187,12 +193,14 @@ init_libpnmimagetypes() {
   PNMFileTypeSGI::register_with_read_factory();
   PNMFileTypeAlias::register_with_read_factory();
   PNMFileTypeRadiance::register_with_read_factory();
-  PNMFileTypeTIFF::register_with_read_factory();
   PNMFileTypeTGA::register_with_read_factory();
   PNMFileTypeYUV::register_with_read_factory();
   PNMFileTypeIMG::register_with_read_factory();
   PNMFileTypeSoftImage::register_with_read_factory();
   PNMFileTypeBMP::register_with_read_factory();
+#ifdef HAVE_TIFF
+  PNMFileTypeTIFF::register_with_read_factory();
+#endif
 #ifdef HAVE_JPEG
   PNMFileTypeJPG::register_with_read_factory();
 #endif

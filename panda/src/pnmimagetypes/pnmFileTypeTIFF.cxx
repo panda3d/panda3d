@@ -28,8 +28,8 @@
 
 extern "C" {
 #include "../pnm/ppmcmap.h"
-#include "../tiff/tiff.h"
-#include "../tiff/tiffio.h"
+#include <tiff.h>
+#include <tiffio.h>
 }
 
 static const char * const extensions_TIFF[] = {
@@ -37,9 +37,9 @@ static const char * const extensions_TIFF[] = {
 };
 static const int num_extensions_TIFF = sizeof(extensions_TIFF) / sizeof(const char *);
 
-// These are configurable parameters to specify TIFF details on output.
-// See tools/drr/../pnm/libtiff/tiff.h or type man pnmtotiff for a better
-// explanation of options.
+// These are configurable parameters to specify TIFF details on
+// output.  See tiff.h or type man pnmtotiff for a better explanation
+// of options.
 
 unsigned short tiff_compression = COMPRESSION_LZW;
 /* One of:
@@ -83,47 +83,54 @@ long tiff_rowsperstrip = 0;
 // Here's a number of functions to support the stdio-FILE interface
 // via the TIFF library.
 static tsize_t
-StdioReadProc(thandle_t fd, tdata_t buf, tsize_t size)
-{
+stdio_read(thandle_t fd, tdata_t buf, tsize_t size) {
   return ((tsize_t)fread((void *)buf, 1, (size_t) size, (FILE *)fd));
 }
 
 static tsize_t
-StdioWriteProc(thandle_t fd, tdata_t buf, tsize_t size)
-{
+stdio_write(thandle_t fd, tdata_t buf, tsize_t size) {
   return ((tsize_t)fwrite((void *)buf, 1, (size_t) size, (FILE *)fd));
 }
 
+static tsize_t
+stdio_dont_read(thandle_t, tdata_t, tsize_t) {
+  // This no-op variant of stdio_read() is passed in when we open the
+  // file for writing only.  Shouldn't mix reads and writes.
+  return 0;
+}
+
+static tsize_t
+stdio_dont_write(thandle_t, tdata_t, tsize_t) {
+  // This no-op variant of stdio_write() is passed in when we open the
+  // file for reading only.  Shouldn't mix reads and writes.
+  return 0;
+}
+
 static toff_t
-StdioSeekProc(thandle_t fd, off_t off, int whence)
-{
+stdio_seek(thandle_t fd, off_t off, int whence) {
   fseek((FILE *)fd, (long)off, whence);
   return (toff_t)ftell((FILE *)fd);
 }
 
 static int
-StdioCloseProc(thandle_t)
-{
+stdio_dont_close(thandle_t) {
   // We don't actually close the file; we'll leave that to PNMReader.
   return true;
 }
 
 static toff_t
-StdioSizeProc(thandle_t fd)
-{
+stdio_size(thandle_t fd) {
   fseek((FILE *)fd, 0, SEEK_END);
   return (toff_t)ftell((FILE *)fd);
 }
 
 static int
-StdioMapProc(thandle_t, tdata_t*, toff_t*)
-{
+stdio_map(thandle_t, tdata_t*, toff_t*) {
   return (0);
 }
 
 static void
-StdioUnmapProc(thandle_t, tdata_t, toff_t)
-{
+stdio_unmap(thandle_t, tdata_t, toff_t) {
 }
 
 TypeHandle PNMFileTypeTIFF::_type_handle;
@@ -262,10 +269,10 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
 
   tif = TIFFClientOpen("TIFF file", "r",
                        (thandle_t) _file,
-                       StdioReadProc, StdioWriteProc,
-                       (TIFFSeekProc)StdioSeekProc,
-                       StdioCloseProc, StdioSizeProc,
-                       StdioMapProc, StdioUnmapProc);
+                       stdio_read, stdio_dont_write,
+                       (TIFFSeekProc)stdio_seek,
+                       stdio_dont_close, stdio_size,
+                       stdio_map, stdio_unmap);
 
   if ( tif == NULL ) {
     _is_valid = false;
@@ -638,10 +645,10 @@ write_data(xel *array, xelval *alpha) {
   /* Open output file. */
   tif = TIFFClientOpen("TIFF file", "w",
                        (thandle_t) _file,
-                       StdioReadProc, StdioWriteProc,
-                       (TIFFSeekProc)StdioSeekProc,
-                       StdioCloseProc, StdioSizeProc,
-                       StdioMapProc, StdioUnmapProc);
+                       stdio_dont_read, stdio_write,
+                       (TIFFSeekProc)stdio_seek,
+                       stdio_dont_close, stdio_size,
+                       stdio_map, stdio_unmap);
   if ( tif == NULL ) {
     return false;
   }

@@ -1,20 +1,21 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
 
+#define USE_TIFF yes
 #define USE_JPEG yes
 #define USE_JPEG2000 yes
 
 #begin lib_target
   #define TARGET pnmimagetypes
   #define LOCAL_LIBS \
-    pnm tiff pnmimage
+    pnm pnmimage
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES  \
      config_pnmimagetypes.h pnmFileTypeAlias.h pnmFileTypeBMP.h  \
      pnmFileTypeIMG.h pnmFileTypePNM.h pnmFileTypeRadiance.h  \
-     pnmFileTypeSGI.h pnmFileTypeSoftImage.h pnmFileTypeTIFF.h  \
+     pnmFileTypeSGI.h pnmFileTypeSoftImage.h  \
      pnmFileTypeTGA.h pnmFileTypeYUV.h color.c colrops.c resolu.c  \
      header.c  
 
@@ -24,8 +25,11 @@
      pnmFileTypeIMG.cxx pnmFileTypePNM.cxx pnmFileTypeBMP.cxx  \
      pnmFileTypeRadiance.cxx pnmFileTypeSGI.cxx  \
      pnmFileTypeSGIReader.cxx pnmFileTypeSGIWriter.cxx  \
-     pnmFileTypeSoftImage.cxx pnmFileTypeTIFF.cxx  \
+     pnmFileTypeSoftImage.cxx \
      pnmFileTypeTGA.cxx pnmFileTypeYUV.cxx
+    
+  #define IF_TIFF_SOURCES \
+    pnmFileTypeTIFF.cxx pnmFileTypeTIFF.h
      
   #define IF_JPEG_INCLUDED_SOURCES \
     pnmFileTypeJPG.cxx \
