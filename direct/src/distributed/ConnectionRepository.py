@@ -89,6 +89,8 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
             moduleName = suffix[0]
             if self.dcSuffix and self.dcSuffix in suffix[1:]:
                 moduleName += self.dcSuffix
+            elif self.dcSuffix == 'UD' and 'AI' in suffix[1:]: #HACK:
+                moduleName += 'AI'
 
             importSymbols = []
             for i in range(dcFile.getNumImportSymbols(n)):
@@ -99,6 +101,8 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
                 symbolName = suffix[0]
                 if self.dcSuffix and self.dcSuffix in suffix[1:]:
                     symbolName += self.dcSuffix
+                elif self.dcSuffix == 'UD' and 'AI' in suffix[1:]: #HACK:
+                    symbolName += 'AI'
 
                 importSymbols.append(symbolName)
 
@@ -114,7 +118,10 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
             # Does the class have a definition defined in the newly
             # imported namespace?
             classDef = dcImports.get(className)
-            if classDef == None:
+            if classDef is None and self.dcSuffix == 'UD': #HACK:
+                className = dclass.getName() + 'AI'
+                classDef = dcImports.get(className)
+            if classDef is None:
                 self.notify.info("No class definition for %s." % (className))
             else:
                 if type(classDef) == types.ModuleType:
@@ -354,9 +361,9 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
         if self.notify.getDebug():
             print "ConnectionRepository sending datagram:"
             datagram.dumpHex(ostream)
-            
+
         self.sendDatagram(datagram)
-        
+
 
 
     # debugging funcs for simulating a network-plug-pull
