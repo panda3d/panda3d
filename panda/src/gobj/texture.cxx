@@ -463,7 +463,7 @@ clear_gsg(GraphicsStateGuardianBase *gsg) {
 ////////////////////////////////////////////////////////////////////
 PixelBuffer *Texture::
 get_ram_image() {
-  if (!has_ram_image()) {
+  if (!has_ram_image() && has_name()) {
     // Now we have to reload the texture image.
     gobj_cat.info()
       << "Reloading texture " << get_name() << "\n";
@@ -609,12 +609,18 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   //Texture to know how the parent write_datagram works.  And
   //makes the assumption that the only data being written is
   //the name
-  //  scan.get_uint32();  // For historical purposes
+
+  if (manager->get_file_minor_ver() < 5) {
+    // Obsolete parameter.
+    scan.get_uint32();
+  }
   _wrapu = (enum WrapMode) scan.get_uint8();
   _wrapv = (enum WrapMode) scan.get_uint8();
   _minfilter = (enum FilterType) scan.get_uint8();
   _magfilter = (enum FilterType) scan.get_uint8();
-  //  scan.get_uint16(); // placeholder for obsolete settings, remove this when you feel like bumping bam version number
+  if (manager->get_file_minor_ver() < 5) {
+    scan.get_uint16();
+  }
   _anisotropic_degree = scan.get_int16();
 
   if (scan.get_remaining_size() > 0) {
@@ -646,12 +652,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 void Texture::
 write_datagram(BamWriter *manager, Datagram &me) {
   ImageBuffer::write_datagram(manager, me);
-  //  me.add_uint32(0);  // For historical purposes
   me.add_uint8(_wrapu);
   me.add_uint8(_wrapv);
   me.add_uint8(_minfilter);
   me.add_uint8(_magfilter);
-  //  me.add_int16(0);  // placeholder for obsolete settings, remove this when you feel like bumping bam version number
   me.add_int16(_anisotropic_degree);
 
   // We also need to write out the pixel buffer's format, even though
