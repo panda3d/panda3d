@@ -134,6 +134,7 @@ class MopathRecorder(AppShell, PandaObject):
             self.nurbsCurveDrawer.getGeomNode())
         useDirectRenderStyle(self.curveNodePath)
         # Playback variables
+        self.maxT = 0.0
         self.playbackTime = 0.0
         self.loopPlayback = 1
         self.playbackSF = 1.0
