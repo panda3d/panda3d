@@ -23,14 +23,12 @@
 #include <renderRelation.h>
 #include <namedNode.h>
 #include <renderModeTransition.h>
-#include <renderModeAttribute.h>
 #include <textureTransition.h>
-#include <textureAttribute.h>
+#include <textureTransition.h>
 #include <interactiveGraphicsPipe.h>
 #include <graphicsWindow.h>
 #include <chancfg.h>
 #include <cullFaceTransition.h>
-#include <cullFaceAttribute.h>
 #include <dftraverser.h>
 #include <renderBuffer.h>
 #include <clockObject.h>
@@ -38,9 +36,7 @@
 #include <nodeRelation.h>
 #include <dataGraphTraversal.h>
 #include <depthTestTransition.h>
-#include <depthTestAttribute.h>
 #include <depthWriteTransition.h>
-#include <depthWriteAttribute.h>
 #include <lightTransition.h>
 #include <materialTransition.h>
 #include <camera.h>
@@ -48,7 +44,7 @@
 #include <orthoProjection.h>
 #include <appTraverser.h>
 #include <get_config_path.h>
-#include <allAttributesWrapper.h>
+#include <allTransitionsWrapper.h>
 #include <dataGraphTraversal.h>
 
 ConfigureDef(config_showbase);
@@ -65,12 +61,11 @@ get_particle_path() {
 std::string chan_config = "single";
 std::string window_title = "Panda3D";
 
-void render_frame(GraphicsPipe *pipe,
-                  NodeAttributes &initial_state) {
+void render_frame(GraphicsPipe *pipe) {
   int num_windows = pipe->get_num_windows();
   for (int w = 0; w < num_windows; w++) {
     GraphicsWindow *win = pipe->get_window(w);
-    win->get_gsg()->render_frame(initial_state);
+    win->get_gsg()->render_frame();
   }
   ClockObject::get_global_clock()->tick();
   throw_event("NewFrame");
@@ -78,25 +73,22 @@ void render_frame(GraphicsPipe *pipe,
 
 class WindowCallback : public GraphicsWindow::Callback {
 public:
-  WindowCallback(GraphicsPipe *pipe, Node *render,
-                 NodeAttributes *initial_state) :
+  WindowCallback(GraphicsPipe *pipe, Node *render_top) :
     _pipe(pipe),
-    _render(render),
-    _initial_state(initial_state),
+    _render_top(render_top),
     _app_traverser(RenderRelation::get_class_type()) { }
   virtual ~WindowCallback() { }
 
   virtual void draw(bool) {
-    _app_traverser.traverse(_render);
-    render_frame(_pipe, *_initial_state);
+    _app_traverser.traverse(_render_top);
+    render_frame(_pipe);
   }
 
   virtual void idle(void) {
   }
 
   PT(GraphicsPipe) _pipe;
-  PT(Node) _render;
-  NodeAttributes *_initial_state;
+  PT(Node) _render_top;
   AppTraverser _app_traverser;
 };
 
@@ -124,20 +116,20 @@ PT(GraphicsPipe) make_graphics_pipe() {
   return main_pipe;
 }
 
-ChanConfig make_graphics_window(GraphicsPipe *pipe,
-                                NamedNode *render,
-                                NodeAttributes &initial_state) {
+ChanConfig make_graphics_window(GraphicsPipe *pipe, NodeRelation *render_arc) {
   PT(GraphicsWindow) main_win;
   ChanCfgOverrides override;
 
-  // Turn on backface culling
-  CullFaceAttribute *cfa = new CullFaceAttribute;
-  cfa->set_mode(CullFaceProperty::M_cull_clockwise);
-  initial_state.set_attribute(CullFaceTransition::get_class_type(), cfa);
-  DepthTestAttribute *dta = new DepthTestAttribute;
-  initial_state.set_attribute(DepthTestTransition::get_class_type(), dta);
-  DepthWriteAttribute *dwa = new DepthWriteAttribute;
-  initial_state.set_attribute(DepthWriteTransition::get_class_type(), dwa);
+  // Turn on backface culling and depth buffer
+  CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_clockwise);
+  render_arc->set_transition(cfa);
+  DepthTestTransition *dta = new DepthTestTransition;
+  render_arc->set_transition(dta);
+  DepthWriteTransition *dwa = new DepthWriteTransition;
+  render_arc->set_transition(dwa);
+
+  // Now use ChanConfig to create the window.
+  Node *render_top = render_arc->get_parent();
 
   override.setField(ChanCfgOverrides::Mask,
                     ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE)));
@@ -146,12 +138,11 @@ ChanConfig make_graphics_window(GraphicsPipe *pipe,
   override.setField(ChanCfgOverrides::Title, title);
 
   std::string conf = config_showbase.GetString("chan-config", chan_config);
-  ChanConfig chan_config(pipe, conf, render, override);
+  ChanConfig chan_config(pipe, conf, render_top, override);
   main_win = chan_config.get_win();
   assert(main_win != (GraphicsWindow*)0L);
 
-  WindowCallback *wcb =
-    new WindowCallback(pipe, render, &initial_state);
+  WindowCallback *wcb = new WindowCallback(pipe, render_top);
 
   // Set draw callback.  Currently there is no reason to use the idle callback.
   main_win->set_draw_callback(wcb);
@@ -217,33 +208,29 @@ add_render_layer(GraphicsWindow *win, Node *render_top, Camera *camera) {
 
 
 void
-toggle_wireframe(NodeAttributes &initial_state) {
+toggle_wireframe(NodeRelation *render_arc) {
   static bool wireframe_mode = false;
 
   wireframe_mode = !wireframe_mode;
   if (!wireframe_mode) {
     // Set the normal, filled mode on the render arc.
-    RenderModeAttribute *rma = new RenderModeAttribute;
-    rma->set_mode(RenderModeProperty::M_filled);
-    CullFaceAttribute *cfa = new CullFaceAttribute;
-    cfa->set_mode(CullFaceProperty::M_cull_clockwise);
-    initial_state.set_attribute(RenderModeTransition::get_class_type(), rma);
-    initial_state.set_attribute(CullFaceTransition::get_class_type(), cfa);
+    RenderModeTransition *rma = new RenderModeTransition(RenderModeProperty::M_filled);
+    CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_clockwise);
+    render_arc->set_transition(rma);
+    render_arc->set_transition(cfa);
 
   } else {
     // Set the initial state up for wireframe mode.
-    RenderModeAttribute *rma = new RenderModeAttribute;
-    rma->set_mode(RenderModeProperty::M_wireframe);
-    CullFaceAttribute *cfa = new CullFaceAttribute;
-    cfa->set_mode(CullFaceProperty::M_cull_none);
-    initial_state.set_attribute(RenderModeTransition::get_class_type(), rma);
-    initial_state.set_attribute(CullFaceTransition::get_class_type(), cfa);
+    RenderModeTransition *rma = new RenderModeTransition(RenderModeProperty::M_wireframe);
+    CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_none);
+    render_arc->set_transition(rma);
+    render_arc->set_transition(cfa);
   }
 }
 
 
 void
-toggle_backface(NodeAttributes &initial_state) {
+toggle_backface(NodeRelation *render_arc) {
   static bool backface_mode = false;
 
   // Toggle the state variable
@@ -251,30 +238,28 @@ toggle_backface(NodeAttributes &initial_state) {
 
   if (backface_mode) {
     // Turn backface culling off
-    CullFaceAttribute *cfa = new CullFaceAttribute;
-    cfa->set_mode(CullFaceProperty::M_cull_none);
-    initial_state.set_attribute(CullFaceTransition::get_class_type(), cfa);
+    CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_none);
+    render_arc->set_transition(cfa);
   } else {
     // Turn backface culling on
-    CullFaceAttribute *cfa = new CullFaceAttribute;
-    cfa->set_mode(CullFaceProperty::M_cull_clockwise);
-    initial_state.set_attribute(CullFaceTransition::get_class_type(), cfa);
+    CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_clockwise);
+    render_arc->set_transition(cfa);
   }
 }
 
 
-void toggle_texture(NodeAttributes &initial_state) {
+void toggle_texture(NodeRelation *render_arc) {
   static bool textures_enabled = true;
 
   textures_enabled = !textures_enabled;
   if (textures_enabled) {
     // Remove the override from the initial state.
-    initial_state.clear_attribute(TextureTransition::get_class_type());
+    render_arc->clear_transition(TextureTransition::get_class_type());
   } else {
     // Set an override on the initial state to disable texturing.
-    TextureAttribute *ta = new TextureAttribute;
+    TextureTransition *ta = new TextureTransition;
     ta->set_priority(100);
-    initial_state.set_attribute(TextureTransition::get_class_type(), ta);
+    render_arc->set_transition(ta);
   }
 }
 

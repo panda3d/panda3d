@@ -60,13 +60,12 @@ class ShowBase:
         fsmRedefine = self.config.GetBool('fsm-redefine', 0)
         State.FsmRedefine = fsmRedefine
 
-        self.initialState = NodeAttributes()
-        # Set a default "off color" (i.e. use poly color) for color transitions
-        self.initialState.setAttribute(ColorTransition.getClassType(),
-                                       ColorAttribute())
         self.renderTop = NodePath(NamedNode('renderTop'))
         self.render = self.renderTop.attachNewNode('render')
-        
+
+        # Set a default "off color" (i.e. use poly color) for color transitions
+        self.render.setColorOff()
+
         self.hidden = NodePath(NamedNode('hidden'))
         # This will be the list of cameras, one per display region
         # For now, we only have one display region, so just create the
@@ -77,9 +76,7 @@ class ShowBase:
         self.dataRootNode = self.dataRoot.node()
         self.dataUnused = NodePath(NamedNode('dataUnused'), DataRelation.getClassType())
         self.pipe = makeGraphicsPipe()
-        chanConfig = makeGraphicsWindow(self.pipe,
-                                        self.renderTop.node(),
-                                        self.initialState)
+        chanConfig = makeGraphicsWindow(self.pipe, self.render.arc())
         self.win = chanConfig.getWin()
 
         # Now that we've assigned a window, assign an exitfunc.
@@ -382,13 +379,13 @@ class ShowBase:
         self.eventMgr.shutdown()
 
     def toggleBackface(self):
-        toggleBackface(self.initialState)
+        toggleBackface(self.render.arc())
 
     def toggleTexture(self):
-        toggleTexture(self.initialState)
+        toggleTexture(self.render.arc())
 
     def toggleWireframe(self):
-        toggleWireframe(self.initialState)
+        toggleWireframe(self.render.arc())
 
     def disableMouse(self):
         """
