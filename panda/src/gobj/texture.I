@@ -18,6 +18,19 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::has_ram_image
+//       Access: Public
+//  Description: Returns true if the Texture keeps has its image
+//               contents available in main RAM, false if it exists
+//               only in texture memory or in the prepared GSG
+//               context.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+has_ram_image() const {
+  return !_pbuffer->_image.empty();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::apply
 //       Access: Public
 //  Description:
@@ -25,17 +38,6 @@
 INLINE void Texture::
 apply(GraphicsStateGuardianBase *gsg) {
   gsg->apply_texture(prepare(gsg));
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::get_level
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE int Texture::
-get_level() const {
-  return _level;
 }
 
 ////////////////////////////////////////////////////////////////////

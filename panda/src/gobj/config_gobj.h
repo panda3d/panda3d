@@ -30,6 +30,7 @@ extern EXPCL_PANDA bool textures_up_power_2;
 extern EXPCL_PANDA bool textures_down_power_2;
 extern EXPCL_PANDA bool textures_up_square;
 extern EXPCL_PANDA bool textures_down_square;
+extern EXPCL_PANDA bool keep_texture_ram;
 
 enum BamTextureMode {
   BTM_fullpath,

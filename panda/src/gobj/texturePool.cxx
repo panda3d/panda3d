@@ -199,8 +199,10 @@ ns_list_contents(ostream &out) {
   out << _textures.size() << " textures:\n";
   Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    Texture *texture = (*ti).second;
     out << "  " << (*ti).first
-        << " (count = " << (*ti).second->get_ref_count() << ")\n";
+        << " (count = " << texture->get_ref_count() << ", ram = "
+        << texture->_pbuffer->_image.size() / 1024 << " Kb)\n";
   }
 }
 

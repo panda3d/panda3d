@@ -244,7 +244,7 @@ protected:
 
   void bind_texture(TextureContext *tc);
   void specify_texture(Texture *tex);
-  void apply_texture_immediate(Texture *tex);
+  bool apply_texture_immediate(Texture *tex);
 
   GLenum get_texture_wrap_mode(Texture::WrapMode wm);
   GLenum get_texture_filter_type(Texture::FilterType ft);

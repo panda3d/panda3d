@@ -103,7 +103,7 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
       << new_x_size << " by " << new_y_size << "\n";
 
     PNMImage scaled(new_x_size, new_y_size, pnmimage.get_num_channels(),
-            pnmimage.get_maxval(), pnmimage.get_type());
+                    pnmimage.get_maxval(), pnmimage.get_type());
     scaled.quick_filter_from(pnmimage);
     pnmimage = scaled;
   }
@@ -116,7 +116,6 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
 ////////////////////////////////////////////////////////////////////
 Texture::
 Texture() : ImageBuffer() {
-  _level = 0; // Mipmap level
   _magfilter = FT_nearest;
   _minfilter = FT_nearest;
   _wrapu = WM_repeat;
@@ -139,10 +138,10 @@ Texture::
 ////////////////////////////////////////////////////////////////////
 //     Function: read
 //       Access: Published
-//  Description:
+//  Description: Reads the texture from the indicated filename.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-read(const string& name) {
+read(const string &name) {
   PNMImage pnmimage;
 
   if (!pnmimage.read(name)) {
@@ -163,7 +162,7 @@ read(const string& name) {
 //     Function: read
 //       Access: Published
 //  Description: Combine a 3-component image with a grayscale image
-//       to get a 4-component image
+//               to get a 4-component image
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 read(const string &name, const string &gray) {
@@ -193,8 +192,8 @@ read(const string &name, const string &gray) {
       << pnmimage.get_x_size() << " by " << pnmimage.get_y_size() << "\n";
 
     PNMImage scaled(pnmimage.get_x_size(), pnmimage.get_y_size(),
-            grayimage.get_num_channels(),
-            grayimage.get_maxval(), grayimage.get_type());
+                    grayimage.get_num_channels(),
+                    grayimage.get_maxval(), grayimage.get_type());
     scaled.quick_filter_from(grayimage);
     grayimage = scaled;
   }
@@ -215,35 +214,36 @@ read(const string &name, const string &gray) {
 ////////////////////////////////////////////////////////////////////
 //     Function: write
 //       Access: Published
-//  Description:
+//  Description: Writes the texture to the indicated filename.
 ////////////////////////////////////////////////////////////////////
-bool Texture::write(const string& name) const
-{
+bool Texture::
+write(const string &name) const {
+  nassertr(has_ram_image(), false);
   return _pbuffer->write(name);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: load
 //       Access: Public
-//  Description:
+//  Description: Creates the texture from the already-read PNMImage.
 ////////////////////////////////////////////////////////////////////
-bool Texture::load(const PNMImage& pnmimage)
-{
-  if (_pbuffer->load( pnmimage ) == false)
+bool Texture::
+load(const PNMImage &pnmimage) {
+  if (!_pbuffer->load(pnmimage))
     return false;
 
   unprepare();
-
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: store
 //       Access: Public
-//  Description:
+//  Description: Saves the texture to the indicated PNMImage, but does
+//               not write it to disk.
 ////////////////////////////////////////////////////////////////////
-bool Texture::store(PNMImage& pnmimage) const
-{
+bool Texture::
+store(PNMImage &pnmimage) const {
   return _pbuffer->store( pnmimage );
 }
 
@@ -264,6 +264,19 @@ prepare(GraphicsStateGuardianBase *gsg) {
 
   TextureContext *tc = gsg->prepare_texture(this);
   _contexts[gsg] = tc;
+
+  if (!keep_texture_ram) {
+    // Once we have prepared the texture, we can generally safely
+    // remove the pixels from main RAM.  The GSG is now responsible
+    // for remembering what it looks like.
+
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << "Dumping RAM for texture " << get_name() << "\n";
+    }
+    _pbuffer->_image.clear();
+  }
+
   return tc;
 }
 
@@ -331,12 +344,48 @@ clear_gsg(GraphicsStateGuardianBase *gsg) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_ram_image
+//       Access: Public
+//  Description: Returns the PixelBuffer associated with the texture.
+//               If the PixelBuffer does not currently have an
+//               associated RAM image, and the texture was generated
+//               by loading an image from a disk file (the most common
+//               case), this forces the reload of the same texture.
+//               This can happen if keep_texture_ram is configured to
+//               false, and we have previously prepared this texture
+//               with a GSG.
+//
+//               It is possible that the RAM image is still
+//               unavailable.  If that happens, this function returns
+//               NULL.
+////////////////////////////////////////////////////////////////////
+PixelBuffer *Texture::
+get_ram_image() {
+  if (!has_ram_image()) {
+    // Now we have to reload the texture image.
+    gobj_cat.info()
+      << "Reloading texture " << get_name() << "\n";
+    if (has_alpha_name()) {
+      read(get_name(), get_alpha_name());
+    } else {
+      read(get_name());
+    }
+  }
+
+  if (has_ram_image()) {
+    return _pbuffer;
+  } else {
+    return (PixelBuffer *)NULL;
+  }
+}
+
 void Texture::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) {
   gsg->copy_texture(prepare(gsg), dr);
 }
 
 void Texture::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-            const RenderBuffer &rb) {
+                   const RenderBuffer &rb) {
   gsg->copy_texture(prepare(gsg), dr, rb);
 }
 
@@ -350,7 +399,7 @@ void Texture::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) {
 }
 
 void Texture::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-            const RenderBuffer &rb) {
+                   const RenderBuffer &rb) {
   gsg->draw_texture(prepare(gsg), dr, rb);
 }
 
@@ -430,10 +479,9 @@ set_anisotropic_degree(int anisotropic_degree) {
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void Texture::
-write_datagram(BamWriter *manager, Datagram &me)
-{
+write_datagram(BamWriter *manager, Datagram &me) {
   ImageBuffer::write_datagram(manager, me);
-  me.add_uint32(_level);
+  me.add_uint32(0);  // For historical purposes
   me.add_uint8(_wrapu);
   me.add_uint8(_wrapv);
   me.add_uint8(_minfilter);
@@ -469,7 +517,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   //Texture to know how the parent write_datagram works.  And
   //makes the assumption that the only data being written is
   //the name
-  _level = scan.get_uint32();
+  scan.get_uint32();  // For historical purposes
   _wrapu = (enum WrapMode) scan.get_uint8();
   _wrapv = (enum WrapMode) scan.get_uint8();
   _minfilter = (enum FilterType) scan.get_uint8();
@@ -485,15 +533,15 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       PixelBuffer::Format format = (PixelBuffer::Format)scan.get_uint8();
       int num_components = -1;
       if (scan.get_remaining_size() > 0) {
-    num_components = scan.get_uint8();
+        num_components = scan.get_uint8();
       }
 
       if (_pbuffer != (PixelBuffer *)NULL) {
-    if (num_components == _pbuffer->get_num_components()) {
-      // Only reset the format if the number of components hasn't
-      // changed.
-      _pbuffer->set_format(format);
-    }
+        if (num_components == _pbuffer->get_num_components()) {
+          // Only reset the format if the number of components hasn't
+          // changed.
+          _pbuffer->set_format(format);
+        }
       }
     }
   }
@@ -505,8 +553,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 //  Description: Factory method to generate a Texture object
 ////////////////////////////////////////////////////////////////////
 TypedWritable* Texture::
-make_Texture(const FactoryParams &params)
-{
+make_Texture(const FactoryParams &params) {
   //The process of making a texture is slightly
   //different than making other Writable objects.
   //That is because all creation of Textures should
@@ -551,8 +598,7 @@ make_Texture(const FactoryParams &params)
 //  Description: Factory method to generate a Texture object
 ////////////////////////////////////////////////////////////////////
 void Texture::
-register_with_read_factory(void)
-{
+register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_Texture);
 }
 

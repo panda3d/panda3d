@@ -66,6 +66,16 @@ bool textures_down_power_2 = false;
 bool textures_up_square = false;
 bool textures_down_square = false;
 
+
+// Set this to true to retain the ram image for each texture after it
+// has been prepared with the GSG.  This will allow the texture to be
+// prepared with multiple GSG, or to be re-prepared later after it is
+// explicitly released from the GSG, without having to reread the
+// texture image from disk; but it will consume memory somewhat
+// wastefully.
+bool keep_texture_ram = config_gobj.GetBool("keep-texture-ram", false);
+
+
 // Set this to specify how textures should be written into Bam files.
 // Currently, the options are:
 

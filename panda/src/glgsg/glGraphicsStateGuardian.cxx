@@ -148,14 +148,14 @@ issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
   LPoint3f temp(color[0], color[1], color[2]);
   temp = temp * glgsg->get_current_color_mat();
   float alpha = (color[3] * glgsg->get_current_alpha_scale()) +
-                 glgsg->get_current_alpha_offset();
+    glgsg->get_current_alpha_offset();
 
   Colorf transformed(temp[0], temp[1], temp[2], alpha);
 
-//   glgsg_cat.debug() << "Issuing color " << transformed << "\n";
-//   glgsg_cat.debug() << "\tTransformed by " << glgsg->get_current_color_mat() << "\n";
-//   glgsg_cat.debug() << "\tAlpha Transformed by " << glgsg->get_current_alpha_offset() << " "
-//                     << glgsg->get_current_alpha_scale() << "\n";
+  //   glgsg_cat.debug() << "Issuing color " << transformed << "\n";
+  //   glgsg_cat.debug() << "\tTransformed by " << glgsg->get_current_color_mat() << "\n";
+  //   glgsg_cat.debug() << "\tAlpha Transformed by " << glgsg->get_current_alpha_offset() << " "
+  //                     << glgsg->get_current_alpha_scale() << "\n";
   glColor4fv(transformed.get_data());
 }
 ////////////////////////////////////////////////////////////////////
@@ -208,9 +208,9 @@ reset() {
 
   // All GL implementations have the following buffers. (?)
   _buffer_mask = (RenderBuffer::T_color |
-          RenderBuffer::T_depth |
-          RenderBuffer::T_stencil |
-          RenderBuffer::T_accum);
+                  RenderBuffer::T_depth |
+                  RenderBuffer::T_stencil |
+                  RenderBuffer::T_accum);
 
   // Check to see if we have double-buffering.
   GLboolean has_back;
@@ -935,7 +935,7 @@ public:
 // this struct exists because the STL can sort faster than i can.
 struct draw_sprite_vertex_less {
   INLINE bool operator ()(const WrappedSprite& v0,
-              const WrappedSprite& v1) const {
+                          const WrappedSprite& v1) const {
     return v0._v[2] < v1._v[2]; }
 };
 
@@ -985,33 +985,33 @@ draw_sprite(const GeomSprite *geom) {
   // as long as the camera points forward at the view plane, no distortion/warping
   // will be apparent, which is what this special projection was supposed to correct
 
-  #ifdef DO_CHARLES_PROJECTION_MAT
-          // to assure that the scale between the two frustra stays the same
-          // (if they are different, sprites move at different speeds than the world),
-          // we have to apply the frustum inverse to the point, then render it in our
-          // own frustum.  Since the z values are identical and 1:1, we only need
-          // concern ourselves with the x and y mappings, which are conveniently linear.
+#ifdef DO_CHARLES_PROJECTION_MAT
+  // to assure that the scale between the two frustra stays the same
+  // (if they are different, sprites move at different speeds than the world),
+  // we have to apply the frustum inverse to the point, then render it in our
+  // own frustum.  Since the z values are identical and 1:1, we only need
+  // concern ourselves with the x and y mappings, which are conveniently linear.
 
-          float x_frustum_scale, y_frustum_scale;
-          float recip_x_frustum_scale, recip_y_frustum_scale;
-          float tnear, tfar, hfov;
+  float x_frustum_scale, y_frustum_scale;
+  float recip_x_frustum_scale, recip_y_frustum_scale;
+  float tnear, tfar, hfov;
 
-          // get the camera information
-          tnear = _actual_display_region->get_camera()->get_near();
-          tfar = _actual_display_region->get_camera()->get_far();
-          hfov = _actual_display_region->get_camera()->get_hfov();
+  // get the camera information
+  tnear = _actual_display_region->get_camera()->get_near();
+  tfar = _actual_display_region->get_camera()->get_far();
+  hfov = _actual_display_region->get_camera()->get_hfov();
 
-          // extract the left and top bounds of the current camera
-          x_frustum_scale = tanf(hfov * 0.5f * (3.1415926f / 180.0f)) * tnear;
-          recip_x_frustum_scale = 1.0f / x_frustum_scale;
-          y_frustum_scale = x_frustum_scale / aspect_ratio;
-          recip_y_frustum_scale = 1.0f / y_frustum_scale;
+  // extract the left and top bounds of the current camera
+  x_frustum_scale = tanf(hfov * 0.5f * (3.1415926f / 180.0f)) * tnear;
+  recip_x_frustum_scale = 1.0f / x_frustum_scale;
+  y_frustum_scale = x_frustum_scale / aspect_ratio;
+  recip_y_frustum_scale = 1.0f / y_frustum_scale;
 
-          // load up our own matrices
-          glMatrixMode(GL_PROJECTION);
-          glLoadIdentity();
-          glFrustum(-1.0f, 1.0f, -1.0f, 1.0f, tnear, tfar);
-  #endif
+  // load up our own matrices
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glFrustum(-1.0f, 1.0f, -1.0f, 1.0f, tnear, tfar);
+#endif
 
   // load up our own matrices
   glMatrixMode(GL_MODELVIEW);
@@ -1108,7 +1108,7 @@ draw_sprite(const GeomSprite *geom) {
     // this mult converts to y-up cameraspace.
     cameraspace_vert = source_vert * modelview_mat;
 
-  #ifdef DO_CHARLES_PROJECTION_MAT
+#ifdef DO_CHARLES_PROJECTION_MAT
     float x,y,z;
 
     // do the inverse transform on the cameraspace point.
@@ -1118,10 +1118,10 @@ draw_sprite(const GeomSprite *geom) {
 
     // build the final object that will go into the vector.
     ws._v.set(x, y, z);
-  #else
+#else
     // build the final object that will go into the vector.
     ws._v.set(cameraspace_vert[0],cameraspace_vert[1],cameraspace_vert[2]);
-  #endif
+#endif
 
     if (color_overall == false)
       ws._c = geom->get_next_color(ci);
@@ -1131,7 +1131,7 @@ draw_sprite(const GeomSprite *geom) {
       ws._y_ratio = *y_walk++;
     if (theta_on) {
       if (theta_overall == false)
-    ws._theta = *theta_walk++;
+        ws._theta = *theta_walk++;
     }
 
     cameraspace_vector.push_back(ws);
@@ -1143,7 +1143,7 @@ draw_sprite(const GeomSprite *geom) {
   // if you want accuracy, use billboards and take the speed hit.
   if (alpha) {
     sort(cameraspace_vector.begin(), cameraspace_vector.end(),
-     draw_sprite_vertex_less());
+         draw_sprite_vertex_less());
   }
 
   int tex_bottom = 0, tex_top = 1, tex_right = 1, tex_left = 0;
@@ -1173,15 +1173,15 @@ draw_sprite(const GeomSprite *geom) {
     // if not G_OVERALL, do some trig for this z rotate
     if (theta_on) {
       if (theta_overall == false)
-    theta = cur_image._theta;
+        theta = cur_image._theta;
 
       // create the rotated points
       LMatrix3f xform_mat = LMatrix3f::rotate_mat(theta) * LMatrix3f::scale_mat(scaled_width, scaled_height);
 
-          ur = (LVector3f( 1,  1, 0) * xform_mat) + cur_image._v;
-          ul = (LVector3f(-1,  1, 0) * xform_mat) + cur_image._v;
-          lr = (LVector3f( 1, -1, 0) * xform_mat) + cur_image._v;
-          ll = (LVector3f(-1, -1, 0) * xform_mat) + cur_image._v;
+      ur = (LVector3f( 1,  1, 0) * xform_mat) + cur_image._v;
+      ul = (LVector3f(-1,  1, 0) * xform_mat) + cur_image._v;
+      lr = (LVector3f( 1, -1, 0) * xform_mat) + cur_image._v;
+      ll = (LVector3f(-1, -1, 0) * xform_mat) + cur_image._v;
     }
     else {
       // create the normal points
@@ -1213,10 +1213,10 @@ draw_sprite(const GeomSprite *geom) {
   // restore the matrices
   glLoadMatrixf(modelview_mat.get_data());
 
-  #ifdef DO_CHARLES_PROJECTION_MAT
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixf(_current_projection_mat.get_data());
-  #endif
+#ifdef DO_CHARLES_PROJECTION_MAT
+  glMatrixMode(GL_PROJECTION);
+  glLoadMatrixf(_current_projection_mat.get_data());
+#endif
   report_errors();
 }
 
@@ -1818,10 +1818,10 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 
   bind_texture(tc);
 
-  glCopyTexImage2D( GL_TEXTURE_2D, tex->get_level(),
-            get_internal_image_format(pb->get_format()),
-            pb->get_xorg(), pb->get_yorg(),
-            pb->get_xsize(), pb->get_ysize(), pb->get_border() );
+  glCopyTexImage2D(GL_TEXTURE_2D, 0,
+                   get_internal_image_format(pb->get_format()),
+                   pb->get_xorg(), pb->get_yorg(),
+                   pb->get_xsize(), pb->get_ysize(), pb->get_border());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1864,17 +1864,17 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   taa->set_mode(TextureApplyProperty::M_decal);
 
   state.set_attribute(LightTransition::get_class_type(),
-              new LightAttribute);
+                      new LightAttribute);
   state.set_attribute(ColorMaskTransition::get_class_type(),
-              new ColorMaskAttribute);
+                      new ColorMaskAttribute);
   state.set_attribute(RenderModeTransition::get_class_type(),
-              new RenderModeAttribute);
+                      new RenderModeAttribute);
   state.set_attribute(TexMatrixTransition::get_class_type(),
-              new TexMatrixAttribute);
+                      new TexMatrixAttribute);
   state.set_attribute(TransformTransition::get_class_type(),
-              new TransformAttribute);
+                      new TransformAttribute);
   state.set_attribute(ColorBlendTransition::get_class_type(),
-              new ColorBlendAttribute);
+                      new ColorBlendAttribute);
   state.set_attribute(CullFaceTransition::get_class_type(), cfa);
   state.set_attribute(DepthTestTransition::get_class_type(), dta);
   state.set_attribute(DepthWriteTransition::get_class_type(), dwa);
@@ -1903,10 +1903,10 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   // This two-triangle strip is actually a quad.  But it's usually
   // better to render quads as tristrips anyway.
   glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(txl, tyb);   glVertex2i(0, 0);
-    glTexCoord2f(txr, tyb);   glVertex2i(1, 0);
-    glTexCoord2f(txl, tyt);   glVertex2i(0, 1);
-    glTexCoord2f(txr, tyt);   glVertex2i(1, 1);
+  glTexCoord2f(txl, tyb);   glVertex2i(0, 0);
+  glTexCoord2f(txr, tyb);   glVertex2i(1, 0);
+  glTexCoord2f(txl, tyt);   glVertex2i(0, 1);
+  glTexCoord2f(txr, tyt);   glVertex2i(1, 1);
   glEnd();
 
   glMatrixMode(GL_PROJECTION);
@@ -1961,7 +1961,7 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
-            const DisplayRegion *dr) {
+                        const DisplayRegion *dr) {
   nassertv(tc != NULL && pb != NULL && dr != NULL);
   //  activate();
 
@@ -2022,12 +2022,12 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
     break;
   }
   switch (get_image_type(pb->get_image_type())) {
-    case GL_UNSIGNED_BYTE:
-      glgsg_cat.debug(false) << "GL_UNSIGNED_BYTE, ";
-      break;
-    case GL_FLOAT:
-      glgsg_cat.debug(false) << "GL_FLOAT, ";
-      break;
+  case GL_UNSIGNED_BYTE:
+    glgsg_cat.debug(false) << "GL_UNSIGNED_BYTE, ";
+    break;
+  case GL_FLOAT:
+    glgsg_cat.debug(false) << "GL_FLOAT, ";
+    break;
   default:
     glgsg_cat.debug(false) << "unknown, ";
     break;
@@ -2038,13 +2038,13 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
   // pixelbuffer "origin" represents upper left screen point at which
   // pixelbuffer should be drawn using draw_pixel_buffer
-  glReadPixels(pb->get_xorg() + xo, pb->get_yorg() + yo,
-                           pb->get_xsize(), pb->get_ysize(),
-                           get_external_image_format(pb->get_format()),
-                           get_image_type(pb->get_image_type()),
-                           pb->_image.p() );
-
   nassertv(!pb->_image.empty());
+  glReadPixels(pb->get_xorg() + xo, pb->get_yorg() + yo,
+               pb->get_xsize(), pb->get_ysize(),
+               get_external_image_format(pb->get_format()),
+               get_image_type(pb->get_image_type()),
+               pb->_image.p());
+
   report_errors();
 }
 
@@ -2055,7 +2055,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-          const RenderBuffer &rb) {
+                  const RenderBuffer &rb) {
   //  activate();
   set_read_buffer(rb);
   copy_pixel_buffer(pb, dr);
@@ -2068,7 +2068,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-          const NodeAttributes& na) {
+                  const NodeAttributes& na) {
   nassertv(pb != NULL && dr != NULL);
   nassertv(!pb->_image.empty());
   //  activate();
@@ -2078,15 +2078,15 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 
   NodeAttributes state(na);
   state.set_attribute(LightTransition::get_class_type(),
-              new LightAttribute);
+                      new LightAttribute);
   state.set_attribute(TextureTransition::get_class_type(),
-              new TextureAttribute);
+                      new TextureAttribute);
   state.set_attribute(TransformTransition::get_class_type(),
-              new TransformAttribute);
+                      new TransformAttribute);
   //state.set_attribute(ColorBlendTransition::get_class_type(),
   //              new ColorBlendAttribute);
   state.set_attribute(StencilTransition::get_class_type(),
-              new StencilAttribute);
+                      new StencilAttribute);
 
   switch (pb->get_format()) {
   case PixelBuffer::F_depth_component:
@@ -2175,9 +2175,9 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 
   glRasterPos2i( pb->get_xorg(), pb->get_yorg() );
   glDrawPixels( pb->get_xsize(), pb->get_ysize(),
-        get_external_image_format(pb->get_format()),
-        get_image_type(pb->get_image_type()),
-        pb->_image.p() );
+                get_external_image_format(pb->get_format()),
+                get_image_type(pb->get_image_type()),
+                pb->_image.p() );
 
   glMatrixMode( GL_PROJECTION );
   glPopMatrix();
@@ -2254,16 +2254,16 @@ apply_fog(Fog *fog) {
   Fog::Mode fmode=fog->get_mode();
   call_glFogMode(get_fog_mode_type(fmode));
   switch(fmode) {
-    case Fog::M_linear:
-                float fog_start,fog_end;
-                fog->get_range(fog_start,fog_end);
-                call_glFogStart(fog_start);
-                call_glFogEnd(fog_end);
-      break;
-    case Fog::M_exponential:
-    case Fog::M_exponential_squared:
-      call_glFogDensity(fog->get_density());
-      break;
+  case Fog::M_linear:
+    float fog_start,fog_end;
+    fog->get_range(fog_start,fog_end);
+    call_glFogStart(fog_start);
+    call_glFogEnd(fog_end);
+    break;
+  case Fog::M_exponential:
+  case Fog::M_exponential_squared:
+    call_glFogDensity(fog->get_density());
+    break;
   }
   call_glFogColor(fog->get_color());
   report_errors();
@@ -2276,9 +2276,9 @@ apply_fog(Fog *fog) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::apply_light( PointLight* light )
 {
-    // The light position will be relative to the current matrix, so
-    // we have to know what the current matrix is.  Find a better
-    // solution later.
+  // The light position will be relative to the current matrix, so
+  // we have to know what the current matrix is.  Find a better
+  // solution later.
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
     << "glMatrixMode(GL_MODELVIEW)" << endl;
@@ -2287,40 +2287,40 @@ void GLGraphicsStateGuardian::apply_light( PointLight* light )
   glgsg_cat.debug()
     << "glLoadIdentity()" << endl;
 #endif
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
 
-    glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
-          .get_data());
+  glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
+                .get_data());
 
-    GLenum id = get_light_id( _cur_light_id );
-    Colorf black(0, 0, 0, 1);
-    glLightfv(id, GL_AMBIENT, black.get_data());
-    glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-    glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
+  GLenum id = get_light_id( _cur_light_id );
+  Colorf black(0, 0, 0, 1);
+  glLightfv(id, GL_AMBIENT, black.get_data());
+  glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
+  glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
 
     // Position needs to specify x, y, z, and w
     // w == 1 implies non-infinite position
-    LPoint3f pos = get_rel_pos( light, _current_projection_node );
-    LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
-    glLightfv( id, GL_POSITION, fpos.get_data() );
+  LPoint3f pos = get_rel_pos( light, _current_projection_node );
+  LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
+  glLightfv( id, GL_POSITION, fpos.get_data() );
 
-    // GL_SPOT_DIRECTION is not significant when cutoff == 180
+  // GL_SPOT_DIRECTION is not significant when cutoff == 180
 
     // Exponent == 0 implies uniform light distribution
-    glLightf( id, GL_SPOT_EXPONENT, 0 );
+  glLightf( id, GL_SPOT_EXPONENT, 0 );
 
-    // Cutoff == 180 means uniform point light source
-    glLightf( id, GL_SPOT_CUTOFF, 180.0 );
+  // Cutoff == 180 means uniform point light source
+  glLightf( id, GL_SPOT_CUTOFF, 180.0 );
 
-    glLightf( id, GL_CONSTANT_ATTENUATION,
-                light->get_constant_attenuation() );
-    glLightf( id, GL_LINEAR_ATTENUATION,
-                light->get_linear_attenuation() );
-    glLightf( id, GL_QUADRATIC_ATTENUATION,
-                light->get_quadratic_attenuation() );
+  glLightf( id, GL_CONSTANT_ATTENUATION,
+            light->get_constant_attenuation() );
+  glLightf( id, GL_LINEAR_ATTENUATION,
+            light->get_linear_attenuation() );
+  glLightf( id, GL_QUADRATIC_ATTENUATION,
+            light->get_quadratic_attenuation() );
 
-    glPopMatrix();
+  glPopMatrix();
 
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
@@ -2336,9 +2336,9 @@ void GLGraphicsStateGuardian::apply_light( PointLight* light )
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::apply_light( DirectionalLight* light )
 {
-    // The light position will be relative to the current matrix, so
-    // we have to know what the current matrix is.  Find a better
-    // solution later.
+  // The light position will be relative to the current matrix, so
+  // we have to know what the current matrix is.  Find a better
+  // solution later.
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
     << "glMatrixMode(GL_MODELVIEW)" << endl;
@@ -2347,39 +2347,39 @@ void GLGraphicsStateGuardian::apply_light( DirectionalLight* light )
   glgsg_cat.debug()
     << "glLoadIdentity()" << endl;
 #endif
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
-          .get_data());
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
+                .get_data());
 
-    GLenum id = get_light_id( _cur_light_id );
-    Colorf black(0, 0, 0, 1);
-    glLightfv(id, GL_AMBIENT, black.get_data());
-    glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-    glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
+  GLenum id = get_light_id( _cur_light_id );
+  Colorf black(0, 0, 0, 1);
+  glLightfv(id, GL_AMBIENT, black.get_data());
+  glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
+  glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
 
     // Position needs to specify x, y, z, and w
     // w == 0 implies light is at infinity
-    LPoint3f dir = get_rel_forward( light, _current_projection_node,
-                _coordinate_system );
-    LPoint4f pos( -dir[0], -dir[1], -dir[2], 0 );
-    glLightfv( id, GL_POSITION, pos.get_data() );
+  LPoint3f dir = get_rel_forward( light, _current_projection_node,
+                                  _coordinate_system );
+  LPoint4f pos( -dir[0], -dir[1], -dir[2], 0 );
+  glLightfv( id, GL_POSITION, pos.get_data() );
 
-    // GL_SPOT_DIRECTION is not significant when cutoff == 180
-    // In this case, position x, y, z specifies direction
+  // GL_SPOT_DIRECTION is not significant when cutoff == 180
+  // In this case, position x, y, z specifies direction
 
-    // Exponent == 0 implies uniform light distribution
-    glLightf( id, GL_SPOT_EXPONENT, 0 );
+  // Exponent == 0 implies uniform light distribution
+  glLightf( id, GL_SPOT_EXPONENT, 0 );
 
-    // Cutoff == 180 means uniform point light source
-    glLightf( id, GL_SPOT_CUTOFF, 180.0 );
+  // Cutoff == 180 means uniform point light source
+  glLightf( id, GL_SPOT_CUTOFF, 180.0 );
 
-    // Default attenuation values (only spotlight can modify these)
-    glLightf( id, GL_CONSTANT_ATTENUATION, 1 );
-    glLightf( id, GL_LINEAR_ATTENUATION, 0 );
-    glLightf( id, GL_QUADRATIC_ATTENUATION, 0 );
+  // Default attenuation values (only spotlight can modify these)
+  glLightf( id, GL_CONSTANT_ATTENUATION, 1 );
+  glLightf( id, GL_LINEAR_ATTENUATION, 0 );
+  glLightf( id, GL_QUADRATIC_ATTENUATION, 0 );
 
-    glPopMatrix();
+  glPopMatrix();
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
     << "glPopMatrix()" << endl;
@@ -2394,9 +2394,9 @@ void GLGraphicsStateGuardian::apply_light( DirectionalLight* light )
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::apply_light( Spotlight* light )
 {
-    // The light position will be relative to the current matrix, so
-    // we have to know what the current matrix is.  Find a better
-    // solution later.
+  // The light position will be relative to the current matrix, so
+  // we have to know what the current matrix is.  Find a better
+  // solution later.
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
     << "glMatrixMode(GL_MODELVIEW)" << endl;
@@ -2405,37 +2405,37 @@ void GLGraphicsStateGuardian::apply_light( Spotlight* light )
   glgsg_cat.debug()
     << "glLoadIdentity()" << endl;
 #endif
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
-          .get_data());
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
+                .get_data());
 
-    GLenum id = get_light_id( _cur_light_id );
-    Colorf black(0, 0, 0, 1);
-    glLightfv(id, GL_AMBIENT, black.get_data());
-    glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-    glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
+  GLenum id = get_light_id( _cur_light_id );
+  Colorf black(0, 0, 0, 1);
+  glLightfv(id, GL_AMBIENT, black.get_data());
+  glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
+  glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
 
     // Position needs to specify x, y, z, and w
     // w == 1 implies non-infinite position
-    LPoint3f pos = get_rel_pos( light, _current_projection_node );
-    LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
-    glLightfv( id, GL_POSITION, fpos.get_data() );
+  LPoint3f pos = get_rel_pos( light, _current_projection_node );
+  LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
+  glLightfv( id, GL_POSITION, fpos.get_data() );
 
-    glLightfv( id, GL_SPOT_DIRECTION,
-        get_rel_forward( light, _current_projection_node,
-                 _coordinate_system ).get_data() );
-    glLightf( id, GL_SPOT_EXPONENT, light->get_exponent() );
-    glLightf( id, GL_SPOT_CUTOFF,
-        light->get_cutoff_angle() );
-    glLightf( id, GL_CONSTANT_ATTENUATION,
-        light->get_constant_attenuation() );
-    glLightf( id, GL_LINEAR_ATTENUATION,
-        light->get_linear_attenuation() );
-    glLightf( id, GL_QUADRATIC_ATTENUATION,
-        light->get_quadratic_attenuation() );
+  glLightfv( id, GL_SPOT_DIRECTION,
+             get_rel_forward( light, _current_projection_node,
+                              _coordinate_system ).get_data() );
+  glLightf( id, GL_SPOT_EXPONENT, light->get_exponent() );
+  glLightf( id, GL_SPOT_CUTOFF,
+            light->get_cutoff_angle() );
+  glLightf( id, GL_CONSTANT_ATTENUATION,
+            light->get_constant_attenuation() );
+  glLightf( id, GL_LINEAR_ATTENUATION,
+            light->get_linear_attenuation() );
+  glLightf( id, GL_QUADRATIC_ATTENUATION,
+            light->get_quadratic_attenuation() );
 
-    glPopMatrix();
+  glPopMatrix();
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
     << "glPopMatrix()" << endl;
@@ -2983,23 +2983,23 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
     // Check to see if this clip plane has already been bound to an id
     for (i = 0; i < _max_clip_planes; i++) {
       if (_available_clip_plane_ids[i] == plane_node) {
-    // Clip plane has already been bound to an id, we only need
-    // to enable the clip plane, not apply it
-    _cur_clip_plane_id = -2;
-    enable_clip_plane(i, true);
-    _cur_clip_plane_enabled[i] = true;
-    break;
+        // Clip plane has already been bound to an id, we only need
+        // to enable the clip plane, not apply it
+        _cur_clip_plane_id = -2;
+        enable_clip_plane(i, true);
+        _cur_clip_plane_enabled[i] = true;
+        break;
       }
     }
 
     // See if there are any unbound clip plane ids
     if (_cur_clip_plane_id == -1) {
       for (i = 0; i < _max_clip_planes; i++) {
-    if (_available_clip_plane_ids[i] == NULL) {
-      _available_clip_plane_ids[i] = plane_node;
-      _cur_clip_plane_id = i;
-      break;
-    }
+        if (_available_clip_plane_ids[i] == NULL) {
+          _available_clip_plane_ids[i] = plane_node;
+          _cur_clip_plane_id = i;
+          break;
+        }
       }
     }
 
@@ -3007,11 +3007,11 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
     // a currently unused but previously bound id
     if (_cur_clip_plane_id == -1) {
       for (i = 0; i < _max_clip_planes; i++) {
-    if (attrib->is_off(_available_clip_plane_ids[i])) {
-      _available_clip_plane_ids[i] = plane_node;
-      _cur_clip_plane_id = i;
-      break;
-    }
+        if (attrib->is_off(_available_clip_plane_ids[i])) {
+          _available_clip_plane_ids[i] = plane_node;
+          _cur_clip_plane_id = i;
+          break;
+        }
       }
     }
 
@@ -3032,7 +3032,7 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
       glPopMatrix();
     } else if (_cur_clip_plane_id == -1) {
       glgsg_cat.error()
-    << "issue_clip_plane() - failed to bind clip plane to id" << endl;
+        << "issue_clip_plane() - failed to bind clip plane to id" << endl;
     }
   }
 
@@ -3146,18 +3146,18 @@ issue_polygon_offset(const PolygonOffsetAttribute *attrib) {
   //and have zero mean nothing is being done.  So check for a zero
   //offset to decide whether to enable or disable PolygonOffset
   if(attrib->get_units() != 0 || attrib->get_factor() != 0)
-  {
-//    GLfloat newfactor=attrib->get_factor();
-    GLfloat newfactor= 1.0f;
+    {
+      //    GLfloat newfactor=attrib->get_factor();
+      GLfloat newfactor= 1.0f;
 
-    GLfloat newunits=attrib->get_units();
-    glPolygonOffset(newfactor,newunits);
-    enable_polygon_offset(true);
-  }
+      GLfloat newunits=attrib->get_units();
+      glPolygonOffset(newfactor,newunits);
+      enable_polygon_offset(true);
+    }
   else
-  {
-    enable_polygon_offset(false);
-  }
+    {
+      enable_polygon_offset(false);
+    }
   report_errors();
 }
 
@@ -3227,8 +3227,8 @@ begin_decal(GeomNode *base_geom) {
     base_geom->draw(this);
 
 #if 0
-// Note: code below does not work since state engine resets PolygonOffsetAttrib
-//       before decal geom is rendered
+    // Note: code below does not work since state engine resets PolygonOffsetAttrib
+    //       before decal geom is rendered
 
     // And now draw the decal geoms with a polygon offset specified.
     NodeAttributes state;
@@ -3237,7 +3237,7 @@ begin_decal(GeomNode *base_geom) {
     state.set_attribute(PolygonOffsetTransition::get_class_type(), po);
     set_state(state, false);
 #else
-// use old way instead
+    // use old way instead
     glPolygonOffset(0.0f,POLYGON_OFFSET_MULTIPLIER * _decal_level);
     glEnable(GL_POLYGON_OFFSET_FILL);
 #endif
@@ -3279,8 +3279,8 @@ end_decal(GeomNode *base_geom) {
     // GL 1.1-style: use glPolygonOffset to do decals.
 
 #if 0
-// Note: code below does not work since state engine resets PolygonOffsetAttrib
-//       before decal geom is rendered
+    // Note: code below does not work since state engine resets PolygonOffsetAttrib
+    //       before decal geom is rendered
 
     NodeAttributes state;
     PolygonOffsetAttribute *po = new PolygonOffsetAttribute;
@@ -3293,10 +3293,10 @@ end_decal(GeomNode *base_geom) {
     state.set_attribute(PolygonOffsetTransition::get_class_type(), po);
     set_state(state, false);
 #else
-// use old way instead
+    // use old way instead
     glPolygonOffset(0.0f,POLYGON_OFFSET_MULTIPLIER * _decal_level);
     if (_decal_level == 0) {
-        glDisable(GL_POLYGON_OFFSET_FILL);
+      glDisable(GL_POLYGON_OFFSET_FILL);
     }
 #endif
 
@@ -3326,7 +3326,7 @@ end_decal(GeomNode *base_geom) {
         enable_blend(true);
         call_glBlendFunc(GL_ZERO, GL_ONE);
       } else {
-          glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
       }
 
       // No need to have texturing on for this.
@@ -3338,22 +3338,22 @@ end_decal(GeomNode *base_geom) {
       // way they're supposed to be.
       DepthWriteAttribute *depth_write;
       if (get_attribute_into(depth_write, _state,
-                 DepthWriteTransition::get_class_type())) {
-          issue_depth_write(depth_write);
+                             DepthWriteTransition::get_class_type())) {
+        issue_depth_write(depth_write);
       }
 
       if (gl_decal_type == GDT_blend) {
-          enable_blend(was_blend);
-          if (was_blend) {
-              call_glBlendFunc(old_blend_source_func, old_blend_dest_func);
-          }
+        enable_blend(was_blend);
+        if (was_blend) {
+          call_glBlendFunc(old_blend_source_func, old_blend_dest_func);
+        }
       } else {
-          ColorMaskAttribute *color_mask;
-          if (get_attribute_into(color_mask, _state, ColorMaskTransition::get_class_type())) {
-              issue_color_mask(color_mask);
-          } else {
-              glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-          }
+        ColorMaskAttribute *color_mask;
+        if (get_attribute_into(color_mask, _state, ColorMaskTransition::get_class_type())) {
+          issue_color_mask(color_mask);
+        } else {
+          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        }
       }
 
       enable_texturing(was_textured);
@@ -3547,11 +3547,19 @@ specify_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::apply_texture_immediate
 //       Access: Protected
-//  Description:
+//  Description: Sends the texture image to GL.  This can be used to
+//               render a texture in immediate mode, or as part of the
+//               process of creating a GL texture object.
+//
+//               The return value is true if successful, or false if
+//               the texture has no image.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+bool GLGraphicsStateGuardian::
 apply_texture_immediate(Texture *tex) {
-  PixelBuffer *pb = tex->_pbuffer;
+  PixelBuffer *pb = tex->get_ram_image();
+  if (pb == (PixelBuffer *)NULL) {
+    return false;
+  }
 
   GLenum internal_format = get_internal_image_format(pb->get_format());
   GLenum external_format = get_external_image_format(pb->get_format());
@@ -3560,7 +3568,7 @@ apply_texture_immediate(Texture *tex) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
     << "glTexImage2D(GL_TEXTURE_2D, "
-    << tex->get_level() << ", " << (int)internal_format << ", "
+    << (int)internal_format << ", "
     << pb->get_xsize() << ", " << pb->get_ysize() << ", "
     << pb->get_border() << ", " << (int)external_format << ", "
     << (int)type << ", " << tex->get_name() << ")\n";
@@ -3584,20 +3592,23 @@ apply_texture_immediate(Texture *tex) {
 #ifndef NDEBUG
       if (gl_show_mipmaps) {
         build_phony_mipmaps(tex);
-        return;
+        return true;
       }
 #endif
       gluBuild2DMipmaps(GL_TEXTURE_2D, internal_format,
                         pb->get_xsize(), pb->get_ysize(),
                         external_format, type, pb->_image);
-      return;
+      report_errors();
+      return true;
     }
   }
 
-  glTexImage2D( GL_TEXTURE_2D, 0, internal_format,
-                pb->get_xsize(), pb->get_ysize(), pb->get_border(),
-                external_format, type, pb->_image );
+  nassertr(!pb->_image.empty(), false);
+  glTexImage2D(GL_TEXTURE_2D, 0, internal_format,
+               pb->get_xsize(), pb->get_ysize(), pb->get_border(),
+               external_format, type, pb->_image);
   report_errors();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3862,17 +3873,17 @@ get_stencil_func_type(StencilProperty::Mode m) const
 GLenum GLGraphicsStateGuardian::
 get_stencil_action_type(StencilProperty::Action a) const
 {
-    switch(a) {
-        case StencilProperty::A_keep: return GL_KEEP;
-        case StencilProperty::A_zero: return GL_ZERO;
-        case StencilProperty::A_replace: return GL_REPLACE;
-        case StencilProperty::A_increment: return GL_INCR;
-        case StencilProperty::A_decrement: return GL_DECR;
-        case StencilProperty::A_invert: return GL_INVERT;
-    }
-    glgsg_cat.error()
-      << "Invalid StencilProperty::Action value" << endl;
-    return GL_KEEP;
+  switch(a) {
+  case StencilProperty::A_keep: return GL_KEEP;
+  case StencilProperty::A_zero: return GL_ZERO;
+  case StencilProperty::A_replace: return GL_REPLACE;
+  case StencilProperty::A_increment: return GL_INCR;
+  case StencilProperty::A_decrement: return GL_DECR;
+  case StencilProperty::A_invert: return GL_INVERT;
+  }
+  glgsg_cat.error()
+    << "Invalid StencilProperty::Action value" << endl;
+  return GL_KEEP;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3883,14 +3894,14 @@ get_stencil_action_type(StencilProperty::Action a) const
 GLenum GLGraphicsStateGuardian::
 get_fog_mode_type(Fog::Mode m) const {
   switch(m) {
-    case Fog::M_linear: return GL_LINEAR;
-    case Fog::M_exponential: return GL_EXP;
-    case Fog::M_exponential_squared: return GL_EXP2;
-      /*
-#ifdef GL_FOG_FUNC_SGIS
-    case Fog::M_spline: return GL_FOG_FUNC_SGIS;
-#endif
-      */
+  case Fog::M_linear: return GL_LINEAR;
+  case Fog::M_exponential: return GL_EXP;
+  case Fog::M_exponential_squared: return GL_EXP2;
+    /*
+      #ifdef GL_FOG_FUNC_SGIS
+      case Fog::M_spline: return GL_FOG_FUNC_SGIS;
+      #endif
+    */
 
   default:
     glgsg_cat.error() << "Invalid Fog::Mode value" << endl;
@@ -3930,13 +3941,13 @@ print_gfx_visual() {
   glGetIntegerv( GL_STENCIL_BITS, &i ); cout << "Stencil: " << i << endl;
 
   glGetBooleanv( GL_DOUBLEBUFFER, &j ); cout << "DoubleBuffer? "
-                         << (int)j << endl;
+                                             << (int)j << endl;
 
   glGetBooleanv( GL_STEREO, &j ); cout << "Stereo? " << (int)j << endl;
 
 #ifdef GL_MULTISAMPLE_SGIS
   glGetBooleanv( GL_MULTISAMPLE_SGIS, &j ); cout << "Multisample? "
-                         << (int)j << endl;
+                                                 << (int)j << endl;
 #endif
 #ifdef GL_SAMPLES_SGIS
   glGetIntegerv( GL_SAMPLES_SGIS, &i ); cout << "Samples: " << i << endl;
@@ -3944,9 +3955,9 @@ print_gfx_visual() {
 
   glGetBooleanv( GL_BLEND, &j ); cout << "Blend? " << (int)j << endl;
   glGetBooleanv( GL_POINT_SMOOTH, &j ); cout << "Point Smooth? "
-                         << (int)j << endl;
+                                             << (int)j << endl;
   glGetBooleanv( GL_LINE_SMOOTH, &j ); cout << "Line Smooth? "
-                        << (int)j << endl;
+                                            << (int)j << endl;
 
   glGetIntegerv( GL_AUX_BUFFERS, &i ); cout << "Aux Buffers: " << i << endl;
 }
@@ -3985,14 +3996,14 @@ free_pointers() {
 ////////////////////////////////////////////////////////////////////
 PT(SavedFrameBuffer) GLGraphicsStateGuardian::
 save_frame_buffer(const RenderBuffer &buffer,
-          CPT(DisplayRegion) dr) {
+                  CPT(DisplayRegion) dr) {
   GLSavedFrameBuffer *sfb = new GLSavedFrameBuffer(buffer, dr);
 
   if (buffer._buffer_type & RenderBuffer::T_depth) {
     // Save the depth buffer.
     sfb->_depth =
       new PixelBuffer(PixelBuffer::depth_buffer(dr->get_pixel_width(),
-                        dr->get_pixel_height()));
+                                                dr->get_pixel_height()));
     copy_pixel_buffer(sfb->_depth, dr, buffer);
   }
 
@@ -4018,7 +4029,7 @@ restore_frame_buffer(SavedFrameBuffer *frame_buffer) {
       (sfb->_buffer._buffer_type & RenderBuffer::T_back) != 0) {
     // Restore the color buffer.
     draw_texture(sfb->_back_rgba->prepare(this),
-         sfb->_display_region, sfb->_buffer);
+                 sfb->_display_region, sfb->_buffer);
   }
 
   if (sfb->_depth != (PixelBuffer *)NULL &&
@@ -4124,8 +4135,8 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
     glgsg_cat.info(false)
       << "    " << filename << " cannot be read, making solid color mipmap.\n";
     image_sized.fill(level_colors[level][0],
-             level_colors[level][1],
-             level_colors[level][2]);
+                     level_colors[level][1],
+                     level_colors[level][2]);
   }
 
   PixelBuffer *pb = new PixelBuffer;
@@ -4136,8 +4147,8 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
   GLenum type = get_image_type(pb->get_image_type());
 
   glTexImage2D(GL_TEXTURE_2D, level, internal_format,
-           pb->get_xsize(), pb->get_ysize(), pb->get_border(),
-           external_format, type, pb->_image );
+               pb->get_xsize(), pb->get_ysize(), pb->get_border(),
+               external_format, type, pb->_image );
 
   delete pb;
 }
@@ -4169,7 +4180,7 @@ TypeHandle GLGraphicsStateGuardian::get_class_type(void) {
 void GLGraphicsStateGuardian::init_type(void) {
   GraphicsStateGuardian::init_type();
   register_type(_type_handle, "GLGraphicsStateGuardian",
-        GraphicsStateGuardian::get_class_type());
+                GraphicsStateGuardian::get_class_type());
 }
 
 
@@ -4179,35 +4190,35 @@ void GLGraphicsStateGuardian::
 dump_state(void)
 {
   if (glgsg_cat.is_debug())
-  {
-    int i;
-    ostream &dump = glgsg_cat.debug(false);
-    glgsg_cat.debug() << "Dumping GL State" << endl;
-
-    dump << "\t\t" << "GL_LINE_SMOOTH " << _line_smooth_enabled << " " << (bool)glIsEnabled(GL_LINE_SMOOTH) << "\n";
-    dump << "\t\t" << "GL_POINT_SMOOTH " << _point_smooth_enabled << " " << (bool)glIsEnabled(GL_POINT_SMOOTH) << "\n";
-    dump << "\t\t" << "GL_LIGHTING " << _lighting_enabled << " " << (bool)glIsEnabled(GL_LIGHTING) << "\n";
-    for(i = 0; i < _max_lights; i++)
     {
-      dump << "\t\t\t\t" << "GL_LIGHT" << i << " " << _light_info[i]._enabled << " " << (bool)glIsEnabled(GL_LIGHT0+i) << "\n";
-    }
-    dump << "\t\t" << "GL_COLOR_MATERIAL " << _color_material_enabled << " " << (bool)glIsEnabled(GL_COLOR_MATERIAL) << "\n";
-    dump << "\t\t" << "GL_SCISSOR_TEST " << _scissor_enabled << " " << (bool)glIsEnabled(GL_SCISSOR_TEST) << "\n";
-    dump << "\t\t" << "GL_TEXTURE_2D " << _texturing_enabled << " " << (bool)glIsEnabled(GL_TEXTURE_2D) << "\n";
-    dump << "\t\t" << "GL_DITHER " << _dither_enabled << " " << (bool)glIsEnabled(GL_DITHER) << "\n";
-    dump << "\t\t" << "GL_STENCIL_TEST " << " " << (bool)glIsEnabled(GL_STENCIL_TEST) << "\n";
-    for(i = 0; i < _max_clip_planes; i++)
-    {
-      dump << "\t\t\t\t" << "GL_CLIP_PLANE" << i << " " << _clip_plane_enabled[i] << " " << (bool)glIsEnabled(GL_CLIP_PLANE0+i) << "\n";
-    }
-    dump << "\t\t" << "GL_BLEND " << _blend_enabled << " " << (bool)glIsEnabled(GL_BLEND) << "\n";
-    dump << "\t\t" << "GL_DEPTH_TEST " << _depth_test_enabled << " " << (bool)glIsEnabled(GL_DEPTH_TEST) << "\n";
-    dump << "\t\t" << "GL_FOG " << _fog_enabled << " " << (bool)glIsEnabled(GL_FOG) << "\n";
-    dump << "\t\t" << "GL_ALPHA_TEST " << _alpha_test_enabled << " " << (bool)glIsEnabled(GL_ALPHA_TEST) << "\n";
-    dump << "\t\t" << "GL_POLYGON_OFFSET_FILL " << _polygon_offset_enabled << " " << (bool)glIsEnabled(GL_POLYGON_OFFSET_FILL) << "\n";
+      int i;
+      ostream &dump = glgsg_cat.debug(false);
+      glgsg_cat.debug() << "Dumping GL State" << endl;
 
-    dump << endl;
-  }
+      dump << "\t\t" << "GL_LINE_SMOOTH " << _line_smooth_enabled << " " << (bool)glIsEnabled(GL_LINE_SMOOTH) << "\n";
+      dump << "\t\t" << "GL_POINT_SMOOTH " << _point_smooth_enabled << " " << (bool)glIsEnabled(GL_POINT_SMOOTH) << "\n";
+      dump << "\t\t" << "GL_LIGHTING " << _lighting_enabled << " " << (bool)glIsEnabled(GL_LIGHTING) << "\n";
+      for(i = 0; i < _max_lights; i++)
+        {
+          dump << "\t\t\t\t" << "GL_LIGHT" << i << " " << _light_info[i]._enabled << " " << (bool)glIsEnabled(GL_LIGHT0+i) << "\n";
+        }
+      dump << "\t\t" << "GL_COLOR_MATERIAL " << _color_material_enabled << " " << (bool)glIsEnabled(GL_COLOR_MATERIAL) << "\n";
+      dump << "\t\t" << "GL_SCISSOR_TEST " << _scissor_enabled << " " << (bool)glIsEnabled(GL_SCISSOR_TEST) << "\n";
+      dump << "\t\t" << "GL_TEXTURE_2D " << _texturing_enabled << " " << (bool)glIsEnabled(GL_TEXTURE_2D) << "\n";
+      dump << "\t\t" << "GL_DITHER " << _dither_enabled << " " << (bool)glIsEnabled(GL_DITHER) << "\n";
+      dump << "\t\t" << "GL_STENCIL_TEST " << " " << (bool)glIsEnabled(GL_STENCIL_TEST) << "\n";
+      for(i = 0; i < _max_clip_planes; i++)
+        {
+          dump << "\t\t\t\t" << "GL_CLIP_PLANE" << i << " " << _clip_plane_enabled[i] << " " << (bool)glIsEnabled(GL_CLIP_PLANE0+i) << "\n";
+        }
+      dump << "\t\t" << "GL_BLEND " << _blend_enabled << " " << (bool)glIsEnabled(GL_BLEND) << "\n";
+      dump << "\t\t" << "GL_DEPTH_TEST " << _depth_test_enabled << " " << (bool)glIsEnabled(GL_DEPTH_TEST) << "\n";
+      dump << "\t\t" << "GL_FOG " << _fog_enabled << " " << (bool)glIsEnabled(GL_FOG) << "\n";
+      dump << "\t\t" << "GL_ALPHA_TEST " << _alpha_test_enabled << " " << (bool)glIsEnabled(GL_ALPHA_TEST) << "\n";
+      dump << "\t\t" << "GL_POLYGON_OFFSET_FILL " << _polygon_offset_enabled << " " << (bool)glIsEnabled(GL_POLYGON_OFFSET_FILL) << "\n";
+
+      dump << endl;
+    }
 }
 
 #else  // GSG_VERBOSE
@@ -4258,10 +4269,10 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
 
     /* Primitives */
     /*
-  case GL_LINES:
-    return out << "GL_LINES";
-  case GL_POINTS:
-    return out << "GL_POINTS";
+      case GL_LINES:
+      return out << "GL_LINES";
+      case GL_POINTS:
+      return out << "GL_POINTS";
     */
   case GL_LINE_STRIP:
     return out << "GL_LINE_STRIP";
@@ -4602,10 +4613,10 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
   case GL_BLEND_DST:
     return out << "GL_BLEND_DST";
     /*
-  case GL_ZERO:
-    return out << "GL_ZERO";
-  case GL_ONE:
-    return out << "GL_ONE";
+      case GL_ZERO:
+      return out << "GL_ZERO";
+      case GL_ONE:
+      return out << "GL_ONE";
     */
   case GL_SRC_COLOR:
     return out << "GL_SRC_COLOR";
@@ -4708,8 +4719,8 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
   case GL_LOGIC_OP:
     return out << "GL_LOGIC_OP";
     /*
-  case GL_INDEX_LOGIC_OP:
-    return out << "GL_INDEX_LOGIC_OP";
+      case GL_INDEX_LOGIC_OP:
+      return out << "GL_INDEX_LOGIC_OP";
     */
   case GL_COLOR_LOGIC_OP:
     return out << "GL_COLOR_LOGIC_OP";
@@ -4782,8 +4793,8 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
 
     /* Buffers, Pixel Drawing/Reading */
     /*
-  case GL_NONE:
-    return out << "GL_NONE";
+      case GL_NONE:
+      return out << "GL_NONE";
     */
   case GL_LEFT:
     return out << "GL_LEFT";
@@ -5219,8 +5230,8 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
   case GL_TEXTURE_BINDING_2D:
     return out << "GL_TEXTURE_BINDING_2D";
     /*
-  case GL_TEXTURE_INTERNAL_FORMAT:
-    return out << "GL_TEXTURE_INTERNAL_FORMAT";
+      case GL_TEXTURE_INTERNAL_FORMAT:
+      return out << "GL_TEXTURE_INTERNAL_FORMAT";
     */
 
     /* GL 1.2 texturing */

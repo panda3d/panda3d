@@ -1537,7 +1537,11 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 
 HRESULT DXTextureContext::
 FillDDSurfTexturePixels(void) {
-    PixelBuffer *pbuf = _texture->_pbuffer;
+    PixelBuffer *pbuf = _texture->get_ram_image();
+    if (pbuf == (PixelBuffer *)NULL) {
+      // The texture doesn't have an image to load.
+      return E_FAIL;
+    }
     DWORD cNumColorChannels = pbuf->get_num_components();
 
     HRESULT hr = ConvertPixBuftoDDSurf((ConversionType)_PixBufConversionType,pbuf->_image.p(),_surface);

@@ -74,34 +74,31 @@ PUBLISHED:
   Texture();
   ~Texture();
 
-  virtual bool read(const string& name);
+  virtual bool read(const string &name);
   virtual bool read(const string &name, const string &gray);
-  virtual bool write(const string& name = "") const;
+  virtual bool write(const string &name = "") const;
 
 public:
-  bool load( const PNMImage& pnmimage );
-  bool store( PNMImage& pnmimage ) const;
+  bool load(const PNMImage &pnmimage);
+  bool store(PNMImage &pnmimage) const;
 
   TextureContext *prepare(GraphicsStateGuardianBase *gsg);
   void unprepare();
   void unprepare(GraphicsStateGuardianBase *gsg);
   void clear_gsg(GraphicsStateGuardianBase *gsg);
 
-  INLINE void apply( GraphicsStateGuardianBase *gsg );
+  INLINE bool has_ram_image() const;
+  PixelBuffer *get_ram_image();
+
+  INLINE void apply(GraphicsStateGuardianBase *gsg);
 
   virtual void copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr);
   virtual void copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-                        const RenderBuffer &rb);
+                    const RenderBuffer &rb);
   virtual void draw(GraphicsStateGuardianBase *gsg);
   virtual void draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr);
   virtual void draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
-                        const RenderBuffer &rb);
-
-  INLINE bool has_ram_image(void) const {
-    return !_pbuffer->_image.empty();
-  }
-
-  INLINE int get_level() const;
+                    const RenderBuffer &rb);
 
 PUBLISHED:
   void set_wrapu(WrapMode wrap);
@@ -126,7 +123,6 @@ protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
 
 public:
-
   static TypeHandle get_class_type() {
     return _type_handle;
   }
@@ -148,7 +144,6 @@ private:
 
 protected:
 
-  int _level;
   WrapMode _wrapu;
   WrapMode _wrapv;
   FilterType _minfilter;
