@@ -37,6 +37,9 @@
 #include <builderVertex.h>
 #include <texturePool.h>
 #include <textureTransition.h>
+#include <material.h>
+#include <materialPool.h>
+#include <materialTransition.h>
 #include <transformTransition.h>
 #include <transparencyTransition.h>
 #include <cullFaceTransition.h>
@@ -862,6 +865,65 @@ apply_texture_apply_attributes(TextureApplyTransition *apply,
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::get_material_transition
+//       Access: Private
+//  Description: Returns a transition suitable for enabling the
+//               material indicated by the given EggMaterial, and with
+//               the indicated backface flag.
+////////////////////////////////////////////////////////////////////
+MaterialTransition *EggLoader::
+get_material_transition(const EggMaterial *egg_mat, bool bface) {
+  Materials &materials = bface ? _materials_bface : _materials;
+
+  // First, check whether we've seen this material before.
+  Materials::const_iterator mi;
+  mi = materials.find(egg_mat);
+  if (mi != materials.end()) {
+    return (*mi).second;
+  }
+
+  // Ok, this is the first time we've seen this particular
+  // EggMaterial.  Create a new Material that matches it.
+  PT(Material) mat = new Material;
+  if (egg_mat->has_diff()) {
+    RGBColorf diff = egg_mat->get_diff();
+    mat->set_diffuse(Colorf(diff[0], diff[1], diff[2], 1.0));
+    // By default, ambient is the same as diffuse, if diffuse is
+    // specified but ambient is not.
+    mat->set_ambient(Colorf(diff[0], diff[1], diff[2], 1.0));
+  }
+  if (egg_mat->has_amb()) {
+    RGBColorf amb = egg_mat->get_amb();
+    mat->set_ambient(Colorf(amb[0], amb[1], amb[2], 1.0));
+  }
+  if (egg_mat->has_emit()) {
+    RGBColorf emit = egg_mat->get_emit();
+    mat->set_emission(Colorf(emit[0], emit[1], emit[2], 1.0));
+  }
+  if (egg_mat->has_spec()) {
+    RGBColorf spec = egg_mat->get_spec();
+    mat->set_specular(Colorf(spec[0], spec[1], spec[2], 1.0));
+  }
+  if (egg_mat->has_shininess()) {
+    mat->set_shininess(egg_mat->get_shininess());
+  }
+  if (egg_mat->has_local()) {
+    mat->set_local(egg_mat->get_local());
+  }
+
+  mat->set_twoside(bface);
+  
+  // Now get a global Material pointer, shared with other models.
+  const Material *shared_mat = MaterialPool::get_material(mat);
+
+  // And create a MaterialTransition for this Material.
+  PT(MaterialTransition) mt = new MaterialTransition(shared_mat);
+  materials.insert(Materials::value_type(egg_mat, mt));
+
+  return mt;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::setup_bucket
@@ -956,6 +1018,13 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
       }
     }
   }
+
+  if (egg_prim->has_material()) {
+    MaterialTransition *mt = get_material_transition(egg_prim->get_material(),
+						     egg_prim->get_bface_flag());
+    bucket._trans.set_transition(mt);
+  }
+    
 
   // Also check the color of the primitive to see if we should assume
   // alpha based on the alpha values specified in the egg file.

@@ -45,6 +45,8 @@ public:
 
   CLwoSurface *get_surface(const string &name) const;
 
+  bool _make_materials;
+
 private:
   void cleanup();
 

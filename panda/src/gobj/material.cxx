@@ -74,10 +74,22 @@ compare_to(const Material &other) const {
 ////////////////////////////////////////////////////////////////////
 void Material::
 output(ostream &out) const {
-  out << "a" << get_ambient()[0] << ",d" << get_diffuse()[0] 
-      << ",s" << get_specular()[0] << ",e" << get_emission()[0]
-      << ",s" << get_shininess() << ",l" << get_local()
-      << ",t" << get_twoside();
+  out << "material";
+  if (has_ambient()) {
+    out << " a(" << get_ambient() << ")";
+  }
+  if (has_diffuse()) {
+    out << " d(" << get_diffuse() << ")";
+  }
+  if (has_specular()) {
+    out << " s(" << get_specular() << ")";
+  }
+  if (has_emission()) {
+    out << " e(" << get_emission() << ")";
+  }
+  out << " s" << get_shininess() 
+      << " l" << get_local() 
+      << " t" << get_twoside();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,10 +99,23 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void Material::
 write(ostream &out, int indent_level) const {
-  indent(out, indent_level) << "ambient = " << get_ambient() << "\n";
-  indent(out, indent_level) << "diffuse = " << get_diffuse() << "\n";
-  indent(out, indent_level) << "specular = " << get_specular() << "\n";
-  indent(out, indent_level) << "emission = " << get_emission() << "\n";
+  bool any = false;
+  if (has_ambient()) {
+    indent(out, indent_level) << "ambient = " << get_ambient() << "\n";
+    any = true;
+  }
+  if (has_diffuse()) {
+    indent(out, indent_level) << "diffuse = " << get_diffuse() << "\n";
+    any = true;
+  }
+  if (has_specular()) {
+    indent(out, indent_level) << "specular = " << get_specular() << "\n";
+    any = true;
+  }
+  if (has_emission()) {
+    indent(out, indent_level) << "emission = " << get_emission() << "\n";
+    any = true;
+  }
   indent(out, indent_level) << "shininess = " << get_shininess() << "\n";
   indent(out, indent_level) << "local = " << get_local() << "\n";
   indent(out, indent_level) << "twoside = " << get_twoside() << "\n";

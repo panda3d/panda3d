@@ -6,6 +6,7 @@
 #include "eggData.h"
 #include "eggCoordinateSystem.h"
 #include "eggTextureCollection.h"
+#include "eggMaterialCollection.h"
 #include "eggComment.h"
 #include "eggPoolUniquifier.h"
 #include "config_egg.h"
@@ -133,9 +134,9 @@ resolve_externals(const DSearchPath &searchpath) {
 //  Description: Removes duplicate references to the same texture
 //               image with the same properties.  Considers two
 //               texture references with identical properties, but
-//               different tref names, to be the equivalent, and
-//               collapses them, choosing one tref name to keep
-//               arbitrarily.  Returns the number of textures removed.
+//               different tref names, to be equivalent, and collapses
+//               them, choosing one tref name to keep arbitrarily.
+//               Returns the number of textures removed.
 ////////////////////////////////////////////////////////////////////
 int EggData::
 collapse_equivalent_textures() {
@@ -143,6 +144,24 @@ collapse_equivalent_textures() {
   textures.find_used_textures(this);
   return 
     textures.collapse_equivalent_textures(~EggTexture::E_tref_name, this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggData::collapse_equivalent_materials
+//       Access: Public
+//  Description: Removes duplicate references to the same material
+//               with the same properties.  Considers two material
+//               references with identical properties, but different
+//               mref names, to be equivalent, and collapses them,
+//               choosing one mref name to keep arbitrarily.  Returns
+//               the number of materials removed.
+////////////////////////////////////////////////////////////////////
+int EggData::
+collapse_equivalent_materials() {
+  EggMaterialCollection materials;
+  materials.find_used_materials(this);
+  return 
+    materials.collapse_equivalent_materials(~EggMaterial::E_mref_name, this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -286,8 +305,17 @@ pre_write() {
 
   textures.insert_textures(this, ci);
 
-  // Also make sure that the vertex pools and materials are uniquely
-  // named.  This also checks textures, which is kind of redundant
+  // Do the same thing with the materials.
+  EggMaterialCollection materials;
+  materials.extract_materials(this);
+  materials.remove_unused_materials(this);
+  materials.collapse_equivalent_materials(~0, this);
+  materials.uniquify_mrefs();
+  materials.sort_by_mref();
+  materials.insert_materials(this, ci);
+
+  // Also make sure that the vertex pools are uniquely named.  This
+  // also checks textures and materials, which is kind of redundant
   // since we just did that, but we don't mind.
   EggPoolUniquifier pu;
   pu.uniquify(this);

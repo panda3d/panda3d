@@ -31,6 +31,7 @@
 LwoToEggConverter::
 LwoToEggConverter() {
   _generic_layer = (CLwoLayer *)NULL;
+  _make_materials = true;
 }
 
 ////////////////////////////////////////////////////////////////////

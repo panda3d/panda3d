@@ -29,6 +29,8 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
   _surface(surface)
 {
   _flags = 0;
+  _color.set(1.0, 1.0, 1.0);
+  _checked_material = false;
   _checked_texture = false;
   _map_uvs = NULL;
   _block = (CLwoSurfaceBlock *)NULL;
@@ -144,6 +146,10 @@ apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
     if (parent != (CLwoSurface *)NULL && parent != this) {
       parent->apply_properties(egg_prim, egg_vertices, smooth_angle);
     }
+  }
+
+  if (check_material()) {
+    egg_prim->set_material(_egg_material);
   }
 
   // We treat color and transparency separately, because Lightwave
@@ -268,6 +274,50 @@ check_texture() {
 
   return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoSurface::check_material
+//       Access: Public
+//  Description: Checks whether the surface demands a material or not.
+//               Returns true if so, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool CLwoSurface::
+check_material() {
+  if (_checked_material) {
+    return (_egg_material != (EggMaterial *)NULL);
+  }
+  _checked_material = true;
+  _egg_material = (EggMaterial *)NULL;
+
+  if (!_converter->_make_materials) {
+    // If we aren't making materials, then don't make a material.
+    return false;
+  }
+
+  _egg_material = new EggMaterial(get_name());
+
+  RGBColorf color = _color;
+  if (check_texture()) {
+    // Texturing overrides the color.
+    color.set(1.0, 1.0, 1.0);
+  }
+
+  if ((_flags & F_diffuse) != 0) {
+    RGBColorf diffuse = color * _diffuse;
+    _egg_material->set_diff(diffuse);
+  }
+  if ((_flags & F_luminosity) != 0) {
+    RGBColorf luminosity = color * _luminosity;
+    _egg_material->set_emit(luminosity);
+  }
+  if ((_flags & F_specular) != 0) {
+    RGBColorf specular = color * _specular;
+    _egg_material->set_spec(specular);
+  }
+
+  return true;
+}
+  
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLwoSurface::generate_uvs

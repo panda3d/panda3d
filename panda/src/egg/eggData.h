@@ -44,6 +44,7 @@ public:
 
   bool resolve_externals(const DSearchPath &searchpath = DSearchPath());
   int collapse_equivalent_textures();
+  int collapse_equivalent_materials();
 
   bool write_egg(Filename filename);
   bool write_egg(ostream &out);

@@ -23,6 +23,14 @@ public:
 
   virtual void write(ostream &out, int indent_level) const;
 
+  enum Equivalence {
+    E_attributes           = 0x001,
+    E_mref_name            = 0x002,
+  };
+
+  bool is_equivalent_to(const EggMaterial &other, int eq) const;
+  bool sorts_less_than(const EggMaterial &other, int eq) const;
+
   INLINE void set_diff(const RGBColorf &diff);
   INLINE void clear_diff();
   INLINE bool has_diff() const;
@@ -43,18 +51,32 @@ public:
   INLINE bool has_spec() const;
   INLINE RGBColorf get_spec() const;
 
+  INLINE void set_shininess(double shininess);
+  INLINE void clear_shininess();
+  INLINE bool has_shininess() const;
+  INLINE double get_shininess() const;
+
+  INLINE void set_local(bool local);
+  INLINE void clear_local();
+  INLINE bool has_local() const;
+  INLINE bool get_local() const;
+
 private:
   enum Flags {
-    F_diff    = 0x001,
-    F_amb     = 0x002,
-    F_emit    = 0x004,
-    F_spec    = 0x008
+    F_diff      = 0x001,
+    F_amb       = 0x002,
+    F_emit      = 0x004,
+    F_spec      = 0x008,
+    F_shininess = 0x010,
+    F_local     = 0x020
   };
 
   RGBColorf _diff;
   RGBColorf _amb;
   RGBColorf _emit;
   RGBColorf _spec;
+  double _shininess;
+  bool _local;
   int _flags;
 
 
@@ -74,6 +96,21 @@ public:
  
 private:
   static TypeHandle _type_handle;
+};
+
+///////////////////////////////////////////////////////////////////
+//       Class : UniqueEggMaterials
+// Description : An STL function object for sorting materials into
+//               order by properties.  Returns true if the two
+//               referenced EggMaterial pointers are in sorted order,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDAEGG UniqueEggMaterials {
+public:
+  INLINE UniqueEggMaterials(int eq = ~0);
+  INLINE bool operator ()(const EggMaterial *t1, const EggMaterial *t2) const;
+
+  int _eq;
 };
 
 #include "eggMaterial.I"

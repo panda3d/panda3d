@@ -165,7 +165,7 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////
-//   Class : UniqueEggTextures
+//       Class : UniqueEggTextures
 // Description : An STL function object for sorting textures into
 //               order by properties.  Returns true if the two
 //               referenced EggTexture pointers are in sorted order,
@@ -177,16 +177,6 @@ public:
   INLINE bool operator ()(const EggTexture *t1, const EggTexture *t2) const;
 
   int _eq;
-};
-
-///////////////////////////////////////////////////////////////////
-//   Class : TRefEggTextures
-// Description : An STL function object for sorting textures into
-//               order by TRef name.
-////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEGG TRefEggTextures {
-public:
-  INLINE bool operator ()(const EggTexture *t1, const EggTexture *t2) const;
 };
 
 INLINE ostream &operator << (ostream &out, const EggTexture &n) {

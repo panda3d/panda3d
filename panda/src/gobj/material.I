@@ -285,7 +285,11 @@ get_local() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
 set_local(bool local) {
-  _flags |= F_local;
+  if (local) {
+    _flags |= F_local;
+  } else {
+    _flags &= ~F_local;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -305,7 +309,11 @@ get_twoside() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
 set_twoside(bool twoside) {
-  _flags = F_twoside;
+  if (twoside) {
+    _flags |= F_twoside;
+  } else {
+    _flags &= ~F_twoside;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

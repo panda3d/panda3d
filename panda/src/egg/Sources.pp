@@ -19,7 +19,10 @@
     eggFilenameNode.cxx eggFilenameNode.h eggGroup.I eggGroup.cxx \
     eggGroup.h eggGroupNode.I eggGroupNode.cxx eggGroupNode.h \
     eggGroupUniquifier.h eggGroupUniquifier.cxx \
-    eggMaterial.I eggMaterial.cxx eggMaterial.h eggMiscFuncs.I \
+    eggMaterial.I eggMaterial.cxx eggMaterial.h \
+    eggMaterialCollection.I eggMaterialCollection.cxx \
+    eggMaterialCollection.h \
+    eggMiscFuncs.I \
     eggMiscFuncs.cxx eggMiscFuncs.h eggNamedObject.I eggNamedObject.cxx \
     eggNamedObject.h eggNameUniquifier.cxx eggNameUniquifier.h \
     eggNode.I eggNode.cxx eggNode.h eggNurbsCurve.I \
@@ -51,7 +54,8 @@
     eggExternalReference.h eggFilenameNode.I eggFilenameNode.h \
     eggGroup.I eggGroup.h eggGroupNode.I eggGroupNode.h \
     eggGroupUniquifier.h eggMaterial.I \
-    eggMaterial.h eggMorph.I eggMorph.h eggMorphList.I eggMorphList.h \
+    eggMaterial.h eggMaterialCollection.I eggMaterialCollection.h \
+    eggMorph.I eggMorph.h eggMorphList.I eggMorphList.h \
     eggNamedObject.I eggNamedObject.h eggNameUniquifier.h eggNode.I eggNode.h \
     eggNurbsCurve.I eggNurbsCurve.h eggNurbsSurface.I eggNurbsSurface.h \
     eggObject.I eggObject.h eggParameters.h eggPoint.I eggPoint.h \

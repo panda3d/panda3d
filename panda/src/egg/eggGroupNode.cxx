@@ -13,6 +13,7 @@
 #include "eggVertexPool.h"
 #include "eggVertex.h"
 #include "eggTextureCollection.h"
+#include "eggMaterialCollection.h"
 #include "config_egg.h"
 
 #include <dSearchPath.h>
@@ -822,6 +823,52 @@ find_textures(EggTextureCollection *collection) {
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       num_found +=
 	DCAST(EggGroupNode, child)->find_textures(collection);
+    }
+
+    ci = cnext;
+  }
+
+  return num_found;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::find_materials()
+//       Access: Protected
+//  Description: Walks the tree, looking for EggMaterials.  Each
+//               EggMaterial that is found is removed from the
+//               hierarchy and added to the EggMaterialCollection.
+//               Returns the number of EggMaterials found.
+////////////////////////////////////////////////////////////////////
+int EggGroupNode::
+find_materials(EggMaterialCollection *collection) {
+  int num_found = 0;
+
+  // We can do this ci/cnext iteration through the list as we modify
+  // it, only because we know this works with an STL list type
+  // container.  If this were a vector or a set, this wouldn't
+  // necessarily work.
+
+  Children::iterator ci, cnext;
+  ci = _children.begin();
+  while (ci != _children.end()) {
+    cnext = ci;
+    ++cnext;
+    EggNode *child = *ci;
+
+    if (child->is_of_type(EggMaterial::get_class_type())) {
+      PT(EggMaterial) tex = DCAST(EggMaterial, child);
+
+      // Now remove the EggMaterial entry from our child list.
+      prepare_remove_child(tex);
+      _children.erase(ci);
+
+      // And add it to the collection.
+      collection->add_material(tex);
+      num_found++;
+
+    } else if (child->is_of_type(EggGroupNode::get_class_type())) {
+      num_found +=
+	DCAST(EggGroupNode, child)->find_materials(collection);
     }
 
     ci = cnext;

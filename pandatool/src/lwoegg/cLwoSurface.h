@@ -13,6 +13,7 @@
 #include <lwoSurface.h>
 #include <luse.h>
 #include <eggTexture.h>
+#include <eggMaterial.h>
 #include <vector_PT_EggVertex.h>
 
 #include <map>
@@ -38,9 +39,11 @@ public:
 			vector_PT_EggVertex &egg_vertices,
 			float &smooth_angle);
   bool check_texture();
+  bool check_material();
 
   INLINE bool has_named_uvs() const;
   INLINE const string &get_uv_name() const;
+
 
   enum Flags {
     F_color        = 0x0001,
@@ -67,6 +70,9 @@ public:
 
   LwoToEggConverter *_converter;
   CPT(LwoSurface) _surface;
+
+  bool _checked_material;
+  PT(EggMaterial) _egg_material;
 
   bool _checked_texture;
   PT(EggTexture) _egg_texture;

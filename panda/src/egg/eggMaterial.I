@@ -141,7 +141,7 @@ get_emit() const {
   if (has_emit()) {
     return _emit;
   } else {
-    return RGBColorf(1.0, 1.0, 1.0);
+    return RGBColorf(0.0, 0.0, 0.0);
   }
 }
 
@@ -188,6 +188,116 @@ get_spec() const {
   if (has_spec()) {
     return _spec;
   } else {
-    return RGBColorf(1.0, 1.0, 1.0);
+    return RGBColorf(0.0, 0.0, 0.0);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::set_shininess
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void EggMaterial::
+set_shininess(double shininess) {
+  _shininess = shininess;
+  _flags |= F_shininess;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::clear_shininess
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void EggMaterial::
+clear_shininess() {
+  _flags &= ~F_shininess;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::has_shininess
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool EggMaterial::
+has_shininess() const {
+  return (_flags & F_shininess) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::get_shininess
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double EggMaterial::
+get_shininess() const {
+  if (has_shininess()) {
+    return _shininess;
+  } else {
+    return 0.0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::set_local
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void EggMaterial::
+set_local(bool local) {
+  _local = local;
+  _flags |= F_local;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::clear_local
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void EggMaterial::
+clear_local() {
+  _flags &= ~F_local;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::has_local
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool EggMaterial::
+has_local() const {
+  return (_flags & F_local) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMaterial::get_local
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool EggMaterial::
+get_local() const {
+  if (has_local()) {
+    return _local;
+  } else {
+    return 0.0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UniqueEggMaterials::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE UniqueEggMaterials::
+UniqueEggMaterials(int eq) : _eq(eq) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UniqueEggMaterials::Function operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool UniqueEggMaterials::
+operator ()(const EggMaterial *t1, const EggMaterial *t2) const {
+  return t1->sorts_less_than(*t2, _eq);
+}
+

@@ -1159,3 +1159,20 @@ INLINE const float &GLGraphicsStateGuardian::
 get_current_alpha_scale() const {
   return _current_alpha_scale;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::report_errors
+//       Access: Protected
+//  Description: Checks for any outstanding error codes and outputs
+//               them, if found.  If NDEBUG is defined, this function
+//               does nothing.
+////////////////////////////////////////////////////////////////////
+INLINE void GLGraphicsStateGuardian::
+report_errors() const {
+#ifndef NDEBUG
+  GLenum error_code = glGetError();
+  if (error_code != GL_NO_ERROR) {
+    report_errors_loop(error_code);
+  }
+#endif
+}

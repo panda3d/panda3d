@@ -18,6 +18,7 @@
 #include <list>
 
 class EggTextureCollection;
+class EggMaterialCollection;
 class EggPolygon;
 class EggVertex;
 class DSearchPath;
@@ -119,6 +120,7 @@ protected:
 
   CoordinateSystem find_coordsys_entry();
   int find_textures(EggTextureCollection *collection);
+  int find_materials(EggMaterialCollection *collection);
   bool r_resolve_externals(const DSearchPath &searchpath,
 			   CoordinateSystem coordsys);
 
@@ -163,6 +165,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class EggTextureCollection;
+  friend class EggMaterialCollection;
 };
 
 #include "eggGroupNode.I"

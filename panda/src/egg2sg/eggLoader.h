@@ -13,6 +13,7 @@
 #include <eggData.h>
 #include <eggTexture.h>
 #include <eggGroup.h>
+#include <eggMaterial.h>
 #include <texture.h>
 #include <namedNode.h>
 #include <pt_NamedNode.h>
@@ -22,6 +23,7 @@
 #include <indirectCompareTo.h>
 #include <textureTransition.h>
 #include <textureApplyTransition.h>
+#include <materialTransition.h>
 
 class EggNode;
 class EggBin;
@@ -29,6 +31,7 @@ class EggTable;
 class EggNurbsCurve;
 class EggPrimitive;
 class EggPolygon;
+class EggMaterial;
 class ComputedVerticesMaker;
 class RenderRelation;
 class CollisionSolid;
@@ -73,6 +76,9 @@ private:
   void apply_texture_apply_attributes(TextureApplyTransition *apply, 
 				      const EggTexture *egg_tex);
 
+  MaterialTransition *get_material_transition(const EggMaterial *egg_mat, 
+					      bool bface);
+
   void setup_bucket(BuilderBucket &bucket, NamedNode *parent,
 		    EggPrimitive *egg_prim);
 
@@ -115,6 +121,10 @@ private:
 
   typedef map<PT(EggTexture), TextureDef> Textures;
   Textures _textures;
+
+  typedef map<CPT(EggMaterial), PT(MaterialTransition) > Materials;
+  Materials _materials;
+  Materials _materials_bface;
 
   typedef set<RenderRelation *> Decals;
   Decals _decals;

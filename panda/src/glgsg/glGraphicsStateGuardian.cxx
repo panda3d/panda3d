@@ -466,6 +466,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 #endif
 
   _win->begin_frame();
+  report_errors();
   _decal_level = 0;
 
   if (_clear_buffer_type != 0) {
@@ -539,6 +540,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
   // more aware of whether their parameters or positions have changed
   // at all?
 
+  report_errors();
   _win->end_frame();
 
 #ifdef GSG_VERBOSE
@@ -740,6 +742,7 @@ draw_point(const GeomPoint *geom) {
   }
 
   glEnd();
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -799,6 +802,7 @@ draw_line(const GeomLine* geom) {
   }
 
   glEnd();
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -876,6 +880,7 @@ draw_linestrip(const GeomLinestrip* geom) {
     }
     glEnd();
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1181,6 +1186,7 @@ draw_sprite(const GeomSprite *geom) {
     glMatrixMode(GL_PROJECTION);
     glLoadMatrixf(_current_projection_mat.get_data());
   #endif
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1252,6 +1258,7 @@ draw_polygon(const GeomPolygon *geom) {
     }
     glEnd();
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1318,6 +1325,7 @@ draw_tri(const GeomTri *geom) {
   }
 
   glEnd();
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1384,6 +1392,7 @@ draw_quad(const GeomQuad *geom) {
   }
 
   glEnd();
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1472,6 +1481,7 @@ draw_tristrip(const GeomTristrip *geom) {
     }
     glEnd();
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1560,6 +1570,7 @@ draw_trifan(const GeomTrifan *geom) {
     }
     glEnd();
   }
+  report_errors();
 }
 
 
@@ -1639,6 +1650,7 @@ draw_sphere(const GeomSphere *geom) {
   }
 
   gluDeleteQuadric(sph);
+  report_errors();
 }
 
 
@@ -1669,7 +1681,8 @@ prepare_texture(Texture *tex) {
   // which shouldn't be possible, since the texture itself should
   // detect this.
   nassertr(inserted, NULL);
-
+ 
+  report_errors();
   return gtc;
 }
 
@@ -1689,6 +1702,7 @@ apply_texture(TextureContext *tc) {
     specify_texture(tex);
     apply_texture_immediate(tex);
   */
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1715,6 +1729,7 @@ release_texture(TextureContext *tc) {
   tex->clear_gsg(this);
 
   delete gtc;
+  report_errors();
 }
 
 static int logs[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
@@ -1898,6 +1913,7 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
   texture_to_pixel_buffer(tc, pb, dr);
 
   pop_frame_buffer(old_fb);
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1925,6 +1941,7 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
     pb->_image = PTA_uchar(w * h * pb->get_num_components());
     copy_pixel_buffer(pb, dr);
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1994,6 +2011,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 			   pb->_image.p() );
 
   nassertv(!pb->_image.empty());
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2131,6 +2149,7 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
   glPopMatrix();
 
   pop_display_region(old_dr);
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2188,6 +2207,7 @@ void GLGraphicsStateGuardian::apply_material(const Material *material) {
   
   call_glLightModelLocal(material->get_local());
   call_glLightModelTwoSide(material->get_twoside());
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2211,6 +2231,7 @@ apply_fog(Fog *fog) {
       break;
   }
   call_glFogColor(fog->get_color());
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2270,6 +2291,7 @@ void GLGraphicsStateGuardian::apply_light( PointLight* light )
   glgsg_cat.debug()
     << "glPopMatrix()" << endl;
 #endif
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2327,6 +2349,7 @@ void GLGraphicsStateGuardian::apply_light( DirectionalLight* light )
   glgsg_cat.debug()
     << "glPopMatrix()" << endl;
 #endif
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2382,6 +2405,7 @@ void GLGraphicsStateGuardian::apply_light( Spotlight* light )
   glgsg_cat.debug()
     << "glPopMatrix()" << endl;
 #endif
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2438,6 +2462,7 @@ issue_transform(const TransformAttribute *attrib) {
     enable_texturing(texturing_was_enabled);
   }
 #endif
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2489,6 +2514,7 @@ issue_tex_matrix(const TexMatrixAttribute *attrib) {
 #endif
   glMatrixMode(GL_TEXTURE);
   glLoadMatrixf(attrib->get_matrix().get_data());
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2503,6 +2529,7 @@ issue_color(const ColorAttribute *attrib) {
     const Colorf c = attrib->get_color();
     glColor4f(c[0], c[1], c[2], c[3]);
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2522,6 +2549,7 @@ issue_texture(const TextureAttribute *attrib) {
   } else {
     enable_texturing(false);
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2574,6 +2602,7 @@ issue_tex_gen(const TexGenAttribute *attrib) {
       << "Unknown texgen mode " << (int)mode << endl;
     break;
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2589,6 +2618,7 @@ issue_material(const MaterialAttribute *attrib) {
     nassertv(material != (const Material *)NULL);
     apply_material(material);
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2608,6 +2638,7 @@ issue_fog(const FogAttribute *attrib) {
   } else {
     enable_fog(false);
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2636,6 +2667,7 @@ issue_render_mode(const RenderModeAttribute *attrib) {
     glgsg_cat.error()
       << "Unknown render mode " << (int)mode << endl;
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2732,6 +2764,7 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
   } else {
     call_glLightModelAmbient(_cur_ambient_light);
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2769,6 +2802,7 @@ issue_color_blend(const ColorBlendAttribute *attrib) {
       << "Unknown color blend mode " << (int)mode << endl;
     break;
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2781,6 +2815,7 @@ issue_texture_apply(const TextureApplyAttribute *attrib) {
   //  activate();
   GLint glmode = get_texture_apply_mode_type(attrib->get_mode());
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2792,9 +2827,10 @@ void GLGraphicsStateGuardian::
 issue_color_mask(const ColorMaskAttribute *attrib) {
   //  activate();
   glColorMask(attrib->is_write_r(),
-          attrib->is_write_g(),
-          attrib->is_write_b(),
-          attrib->is_write_a());
+	      attrib->is_write_g(),
+	      attrib->is_write_b(),
+	      attrib->is_write_a());
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2813,6 +2849,7 @@ issue_depth_test(const DepthTestAttribute *attrib) {
     enable_depth_test(true);
     glDepthFunc(get_depth_func_type(mode));
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2825,6 +2862,7 @@ issue_depth_write(const DepthWriteAttribute *attrib) {
   //  activate();
   
   call_glDepthMask(attrib->is_on());
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2845,6 +2883,7 @@ issue_stencil(const StencilAttribute *attrib) {
     call_glStencilFunc(get_stencil_func_type(mode));
     call_glStencilOp(get_stencil_action_type(attrib->get_action()));
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2879,6 +2918,7 @@ issue_cull_face(const CullFaceAttribute *attrib) {
       << "invalid cull face mode " << (int)mode << endl;
     break;
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2967,6 +3007,7 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
     if (_cur_clip_plane_enabled[i] == false)
       enable_clip_plane(i, false);
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3027,6 +3068,7 @@ issue_transparency(const TransparencyAttribute *attrib )
       << "invalid transparency mode " << (int)mode << endl;
     break;
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3038,6 +3080,7 @@ void GLGraphicsStateGuardian::
 issue_linesmooth(const LinesmoothAttribute *attrib) {
   //  activate();
   enable_line_smooth(attrib->is_on());
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3053,6 +3096,7 @@ issue_point_shape(const PointShapeAttribute *attrib) {
     glDisable(GL_POINT_SMOOTH);
   else
     glEnable(GL_POINT_SMOOTH);
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3080,6 +3124,7 @@ issue_polygon_offset(const PolygonOffsetAttribute *attrib) {
   {
     enable_polygon_offset(false);
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3180,6 +3225,7 @@ begin_decal(GeomNode *base_geom) {
       // buffer write off during this.
     }
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3279,6 +3325,7 @@ end_decal(GeomNode *base_geom) {
       enable_texturing(was_textured);
     }
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3297,6 +3344,24 @@ compute_distance_to(const LPoint3f &point) const {
   // the camera plane is simply the -z distance.
 
   return -point[2];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::report_errors_loop
+//       Access: Protected
+//  Description: The internal implementation of report_errors().
+//               Don't call this function; use report_errors()
+//               instead.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+report_errors_loop(GLenum error_code) const {
+#ifndef NDEBUG
+  while (error_code != GL_NO_ERROR) {
+    glgsg_cat.error()
+      << gluErrorString(error_code) << "\n";
+    error_code = glGetError();
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3345,6 +3410,7 @@ set_draw_buffer(const RenderBuffer &rb) {
   default:
     call_glDrawBuffer(GL_FRONT_AND_BACK);
   }
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3393,6 +3459,7 @@ set_read_buffer(const RenderBuffer &rb) {
   default:
     call_glReadBuffer(GL_FRONT_AND_BACK);
   }
+  report_errors();
 }
 
 
@@ -3413,6 +3480,7 @@ bind_texture(TextureContext *tc) {
     << ")" << endl;
 #endif
   glBindTexture(GL_TEXTURE_2D, gtc->_index);
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3438,6 +3506,7 @@ specify_texture(Texture *tex) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
             get_texture_filter_type(tex->get_magfilter()));
   }
+  report_errors();
 }
 
 
@@ -3494,6 +3563,7 @@ apply_texture_immediate(Texture *tex) {
   glTexImage2D( GL_TEXTURE_2D, 0, internal_format,
         pb->get_xsize(), pb->get_ysize(), pb->get_border(),
         external_format, type, pb->_image );
+  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3688,17 +3758,16 @@ get_internal_image_format(PixelBuffer::Format format) {
 GLint GLGraphicsStateGuardian::
 get_texture_apply_mode_type( TextureApplyProperty::Mode am ) const
 {
-    switch( am )
-    {
-    case TextureApplyProperty::M_modulate: return GL_MODULATE;
-    case TextureApplyProperty::M_decal: return GL_DECAL;
-    case TextureApplyProperty::M_blend: return GL_BLEND;
-    case TextureApplyProperty::M_replace: return GL_REPLACE;
-    case TextureApplyProperty::M_add: return GL_ADD;
-    }
-    glgsg_cat.error()
-      << "Invalid TextureApplyProperty::Mode value" << endl;
-    return GL_MODULATE;
+  switch( am ) {
+  case TextureApplyProperty::M_modulate: return GL_MODULATE;
+  case TextureApplyProperty::M_decal: return GL_DECAL;
+  case TextureApplyProperty::M_blend: return GL_BLEND;
+  case TextureApplyProperty::M_replace: return GL_REPLACE;
+  case TextureApplyProperty::M_add: return GL_ADD;
+  }
+  glgsg_cat.error()
+    << "Invalid TextureApplyProperty::Mode value" << endl;
+  return GL_MODULATE;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -516,6 +516,12 @@ material_body:
     spec[2] = value;
     material->set_spec(spec);
 
+  } else if (cmp_nocase_uh(name, "shininess") == 0) {
+    material->set_shininess(value);
+
+  } else if (cmp_nocase_uh(name, "local") == 0) {
+    material->set_local(value != 0.0);
+
   } else {
     eggyywarning("Unsupported material scalar: " + name);
   }
