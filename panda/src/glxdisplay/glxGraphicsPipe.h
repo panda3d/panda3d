@@ -53,6 +53,18 @@ typedef int XIC;
 // below.
 #include "glxext.h"
 
+// drose: the version of GL/glx.h that ships with Fedora Core 2 seems
+// to define GLX_VERSION_1_4, but for some reason does not define
+// GLX_SAMPLE_BUFFERS or GLX_SAMPLES.  We work around that here.
+
+#ifndef GLX_SAMPLE_BUFFERS
+#define GLX_SAMPLE_BUFFERS                 100000
+#endif
+#ifndef GLX_SAMPLES
+#define GLX_SAMPLES                        100001
+#endif
+
+
 #if !defined(HAVE_GLXFBCONFIG) && defined(GLX_SGIX_fbconfig) && defined(GLX_SGIX_pbuffer)
   // If the system glx version isn't 1.3, but these were defined as
   // extensions, we can work with that.

@@ -23,6 +23,7 @@
 
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_SSL
+#define OPENSSL_NO_KRB5
 
 #include "bioPtr.h"
 #include "pointerTo.h"

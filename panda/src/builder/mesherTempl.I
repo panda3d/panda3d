@@ -53,8 +53,9 @@ add_prim(const Prim &prim, MesherStripOrigin origin) {
 
   // Get the common vertex pointers for the primitive's vertices.
   for (i = 0; i < num_verts; i++) {
-    TYPENAME Verts::iterator n =
-      _verts.insert(Verts::value_type(prim.get_vertex(i), EdgePtrs())).first;
+    TYPENAME Verts::value_type v(prim.get_vertex(i), EdgePtrs());
+    TYPENAME Verts::iterator n = _verts.insert(v).first;
+
     vptrs[i] = &(*n).first;
     eptrs[i] = &(*n).second;
 

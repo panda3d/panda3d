@@ -27,6 +27,7 @@
 // communications.
 
 #ifdef HAVE_SSL
+#define OPENSSL_NO_KRB5
 
 #include "urlSpec.h"
 #include "httpAuthorization.h"

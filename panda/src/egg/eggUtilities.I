@@ -18,6 +18,7 @@
 
 #include "eggGroup.h"
 #include "eggPrimitive.h"
+#include "eggVertexPool.h"
 
 #include <algorithm>
 

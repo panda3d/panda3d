@@ -30,6 +30,17 @@
 // includes gl.h).
 #include "glxext.h"
 
+// drose: the version of GL/glx.h that ships with Fedora Core 2 seems
+// to define GLX_VERSION_1_4, but for some reason does not define
+// GLX_SAMPLE_BUFFERS or GLX_SAMPLES.  We work around that here.
+
+#ifndef GLX_SAMPLE_BUFFERS
+#define GLX_SAMPLE_BUFFERS                 100000
+#endif
+#ifndef GLX_SAMPLES
+#define GLX_SAMPLES                        100001
+#endif
+
 // These typedefs are declared in glxext.h, but we must repeat them
 // here, mainly because they will not be included from glxext.h if the
 // system GLX version matches or exceeds the GLX version in which

@@ -59,9 +59,9 @@ template <class VT, class NT, class TT, class CT>
 INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
 operator = (const BuilderVertexTempl<VT, NT, TT, CT> &copy) {
   BuilderAttribTempl<VT, NT, TT, CT>::operator = (copy);
-  _coord = copy._coord;
-  _texcoords = copy._texcoords;
-  _pixel_size = copy._pixel_size;
+  this->_coord = copy._coord;
+  this->_texcoords = copy._texcoords;
+  this->_pixel_size = copy._pixel_size;
 
   return *this;
 }
@@ -101,7 +101,7 @@ clear() {
 template <class VT, class NT, class TT, class CT>
 INLINE bool BuilderVertexTempl<VT, NT, TT, CT>::
 has_coord() const {
-  return _flags & BAF_coord;
+  return (this->_flags) & BAF_coord;
 }
 
 
@@ -128,8 +128,8 @@ get_coord() const {
 template <class VT, class NT, class TT, class CT>
 INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
 set_coord(const VType &c) {
-  _flags |= BAF_coord;
-  _coord = c;
+  this->_flags |= BAF_coord;
+  this->_coord = c;
   return *this;
 }
 
@@ -408,16 +408,16 @@ template <class VT, class NT, class TT, class CT>
 ostream &BuilderVertexTempl<VT, NT, TT, CT>::
 output(ostream &out) const {
   if (this!=NULL) {
-    if (has_coord()) {
-      out << get_coord();
+    if (this->has_coord()) {
+      out << this->get_coord();
     }
 
-    if (has_normal()) {
-      out << " normal " << get_normal();
+    if (this->has_normal()) {
+      out << " normal " << this->get_normal();
     }
 
-    if (has_color()) {
-      out << " color " << get_color();
+    if (this->has_color()) {
+      out << " color " << this->get_color();
     }
 
     TYPENAME TexCoords::const_iterator ti;
@@ -426,8 +426,8 @@ output(ostream &out) const {
       out << " texcoord \"" << name->get_name() << "\" " << (*ti).second;
     }
 
-    if (has_pixel_size()) {
-      out << " pixel_size " << get_pixel_size();
+    if (this->has_pixel_size()) {
+      out << " pixel_size " << this->get_pixel_size();
     }
   }
   return out;

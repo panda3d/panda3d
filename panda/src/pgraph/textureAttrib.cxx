@@ -498,8 +498,6 @@ compose_impl(const RenderAttrib *other) const {
 
   // Create a new TextureAttrib that will hold the result.
   TextureAttrib *new_attrib = new TextureAttrib;
-  insert_iterator<OnTextures> result = 
-    inserter(new_attrib->_on_textures, new_attrib->_on_textures.end());
 
   while (ai != _on_textures.end() && 
          bi != ta->_on_textures.end() && 
@@ -508,10 +506,9 @@ compose_impl(const RenderAttrib *other) const {
       if ((*ai).first < (*ci)) {
         // Here is a stage that we have in the original, which is not
         // present in the secondary.
-        *result = *ai;
+	new_attrib->_on_textures.insert(new_attrib->_on_textures.end(), *ai);
         new_attrib->_on_stages.push_back((*ai).first);
         ++ai;
-        ++result;
 
       } else if ((*ci) < (*ai).first) {
         // Here is a stage that is turned off in the secondary, but
@@ -528,18 +525,16 @@ compose_impl(const RenderAttrib *other) const {
     } else if ((*bi).first < (*ai).first) {
       // Here is a new stage we have in the secondary, that was not
       // present in the original.
-      *result = *bi;
+      new_attrib->_on_textures.insert(new_attrib->_on_textures.end(), *bi);
       new_attrib->_on_stages.push_back((*bi).first);
       ++bi;
-      ++result;
 
     } else {  // (*bi).first == (*ai).first
       // Here is a stage we have in both.
-      *result = *bi;
+      new_attrib->_on_textures.insert(new_attrib->_on_textures.end(), *bi);
       new_attrib->_on_stages.push_back((*ai).first);
       ++ai;
       ++bi;
-      ++result;
     }
   }
 
@@ -547,26 +542,23 @@ compose_impl(const RenderAttrib *other) const {
     if ((*ai).first < (*bi).first) {
       // Here is a stage that we have in the original, which is not
       // present in the secondary.
-      *result = *ai;
+      new_attrib->_on_textures.insert(new_attrib->_on_textures.end(), *ai);
       new_attrib->_on_stages.push_back((*ai).first);
       ++ai;
-      ++result;
 
     } else if ((*bi).first < (*ai).first) {
       // Here is a new stage we have in the secondary, that was not
       // present in the original.
-      *result = *bi;
+      new_attrib->_on_textures.insert(new_attrib->_on_textures.end(), *bi);
       new_attrib->_on_stages.push_back((*bi).first);
       ++bi;
-      ++result;
 
     } else {
       // Here is a stage we have in both.
-      *result = *bi;
+      new_attrib->_on_textures.insert(new_attrib->_on_textures.end(), *bi);
       new_attrib->_on_stages.push_back((*ai).first);
       ++ai;
       ++bi;
-      ++result;
     }
   }
 
@@ -574,10 +566,9 @@ compose_impl(const RenderAttrib *other) const {
     if ((*ai).first < (*ci)) {
       // Here is a stage that we have in the original, which is not
       // present in the secondary.
-      *result = *ai;
+      new_attrib->_on_textures.insert(new_attrib->_on_textures.end(), *ai);
       new_attrib->_on_stages.push_back((*ai).first);
       ++ai;
-      ++result;
       
     } else if ((*ci) < (*ai).first) {
       // Here is a stage that is turned off in the secondary, but
@@ -593,17 +584,15 @@ compose_impl(const RenderAttrib *other) const {
   }
 
   while (ai != _on_textures.end()) {
-    *result = *ai;
+    new_attrib->_on_textures.insert(new_attrib->_on_textures.end(), *ai);
     new_attrib->_on_stages.push_back((*ai).first);
     ++ai;
-    ++result;
   }
 
   while (bi != ta->_on_textures.end()) {
-    *result = *bi;
+    new_attrib->_on_textures.insert(new_attrib->_on_textures.end(), *bi);
     new_attrib->_on_stages.push_back((*bi).first);
     ++bi;
-    ++result;
   }
 
   return return_new(new_attrib);

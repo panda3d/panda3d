@@ -53,7 +53,7 @@ template<class Element>
 INLINE PointerToArray<Element>::
 PointerToArray(size_type n, const Element &value) :
   PointerToBase<RefCountObj<pvector<Element> > >(new RefCountObj<pvector<Element> >) {
-  ((To *)_void_ptr)->reserve(n);
+  ((To *)(this->_void_ptr))->reserve(n);
   insert(begin(), n, value);
 }
 
@@ -77,10 +77,10 @@ PointerToArray(const PointerToArray<Element> &copy) :
 template<class Element>
 INLINE TYPENAME PointerToArray<Element>::iterator PointerToArray<Element>::
 begin() const {
-  if (_void_ptr == NULL) {
+  if ((this->_void_ptr) == NULL) {
     return _empty_array.begin();
   }
-  return ((To *)_void_ptr)->begin();
+  return ((To *)(this->_void_ptr))->begin();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,10 +91,10 @@ begin() const {
 template<class Element>
 INLINE TYPENAME PointerToArray<Element>::iterator PointerToArray<Element>::
 end() const {
-  if (_void_ptr == NULL) {
+  if ((this->_void_ptr) == NULL) {
     return _empty_array.begin();
   }
-  return ((To *)_void_ptr)->end();
+  return ((To *)(this->_void_ptr))->end();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,10 +105,10 @@ end() const {
 template<class Element>
 INLINE TYPENAME PointerToArray<Element>::reverse_iterator PointerToArray<Element>::
 rbegin() const {
-  if (_void_ptr == NULL) {
+  if ((this->_void_ptr) == NULL) {
     return _empty_array.rbegin();
   }
-  return ((To *)_void_ptr)->rbegin();
+  return ((To *)(this->_void_ptr))->rbegin();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,10 +119,10 @@ rbegin() const {
 template<class Element>
 INLINE TYPENAME PointerToArray<Element>::reverse_iterator PointerToArray<Element>::
 rend() const {
-  if (_void_ptr == NULL) {
+  if ((this->_void_ptr) == NULL) {
     return _empty_array.rbegin();
   }
-  return ((To *)_void_ptr)->rend();
+  return ((To *)(this->_void_ptr))->rend();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -133,7 +133,7 @@ rend() const {
 template<class Element>
 INLINE TYPENAME PointerToArray<Element>::size_type PointerToArray<Element>::
 size() const {
-  return (_void_ptr == NULL) ? 0 : ((To *)_void_ptr)->size();
+  return ((this->_void_ptr) == NULL) ? 0 : ((To *)(this->_void_ptr))->size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,10 +144,10 @@ size() const {
 template<class Element>
 INLINE TYPENAME PointerToArray<Element>::size_type PointerToArray<Element>::
 max_size() const {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  return ((To *)_void_ptr)->max_size();
+  return ((To *)(this->_void_ptr))->max_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,7 +158,7 @@ max_size() const {
 template<class Element>
 INLINE bool PointerToArray<Element>::
 empty() const {
-  return (_void_ptr == NULL) ? true : ((To *)_void_ptr)->empty();
+  return ((this->_void_ptr) == NULL) ? true : ((To *)(this->_void_ptr))->empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -169,10 +169,10 @@ empty() const {
 template<class Element>
 INLINE void PointerToArray<Element>::
 reserve(TYPENAME PointerToArray<Element>::size_type n) {
-  if (_void_ptr == NULL) {
+  if ((this->_void_ptr) == NULL) {
     reassign(new RefCountObj<pvector<Element> >);
   }
-  ((To *)_void_ptr)->reserve(n);
+  ((To *)(this->_void_ptr))->reserve(n);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -183,8 +183,8 @@ reserve(TYPENAME PointerToArray<Element>::size_type n) {
 template<class Element>
 INLINE TYPENAME PointerToArray<Element>::size_type PointerToArray<Element>::
 capacity() const {
-  nassertr(_void_ptr != NULL, 0);
-  return ((To *)_void_ptr)->capacity();
+  nassertr((this->_void_ptr) != NULL, 0);
+  return ((To *)(this->_void_ptr))->capacity();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -195,13 +195,13 @@ capacity() const {
 template<class Element>
 INLINE TYPENAME PointerToArray<Element>::reference PointerToArray<Element>::
 front() const {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  nassertd(!((To *)_void_ptr)->empty()) {
-    ((To *)_void_ptr)->push_back(Element());
+  nassertd(!((To *)(this->_void_ptr))->empty()) {
+    ((To *)(this->_void_ptr))->push_back(Element());
   }
-  return ((To *)_void_ptr)->front();
+  return ((To *)(this->_void_ptr))->front();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -212,13 +212,13 @@ front() const {
 template<class Element>
 INLINE TYPENAME PointerToArray<Element>::reference PointerToArray<Element>::
 back() const {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  nassertd(!((To *)_void_ptr)->empty()) {
-    ((To *)_void_ptr)->push_back(Element());
+  nassertd(!((To *)(this->_void_ptr))->empty()) {
+    ((To *)(this->_void_ptr))->push_back(Element());
   }
-  return ((To *)_void_ptr)->back();
+  return ((To *)(this->_void_ptr))->back();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -229,10 +229,10 @@ back() const {
 template<class Element>
 INLINE TYPENAME PointerToArray<Element>::iterator PointerToArray<Element>::
 insert(iterator position, const Element &x) const {
-  nassertr(_void_ptr != NULL, position);
-  nassertr(position >= ((To *)_void_ptr)->begin() &&
-           position <= ((To *)_void_ptr)->end(), position);
-  return ((To *)_void_ptr)->insert(position, x);
+  nassertr((this->_void_ptr) != NULL, position);
+  nassertr(position >= ((To *)(this->_void_ptr))->begin() &&
+           position <= ((To *)(this->_void_ptr))->end(), position);
+  return ((To *)(this->_void_ptr))->insert(position, x);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -243,10 +243,10 @@ insert(iterator position, const Element &x) const {
 template<class Element>
 INLINE void PointerToArray<Element>::
 insert(iterator position, size_type n, const Element &x) const {
-  nassertv(_void_ptr != NULL);
-  nassertv(position >= ((To *)_void_ptr)->begin() &&
-           position <= ((To *)_void_ptr)->end());
-  ((To *)_void_ptr)->insert(position, n, x);
+  nassertv((this->_void_ptr) != NULL);
+  nassertv(position >= ((To *)(this->_void_ptr))->begin() &&
+           position <= ((To *)(this->_void_ptr))->end());
+  ((To *)(this->_void_ptr))->insert(position, n, x);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -257,12 +257,12 @@ insert(iterator position, size_type n, const Element &x) const {
 template<class Element>
 INLINE void PointerToArray<Element>::
 erase(iterator position) const {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  nassertv(position >= ((To *)_void_ptr)->begin() &&
-           position <= ((To *)_void_ptr)->end());
-  ((To *)_void_ptr)->erase(position);
+  nassertv(position >= ((To *)(this->_void_ptr))->begin() &&
+           position <= ((To *)(this->_void_ptr))->end());
+  ((To *)(this->_void_ptr))->erase(position);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -273,12 +273,12 @@ erase(iterator position) const {
 template<class Element>
 INLINE void PointerToArray<Element>::
 erase(iterator first, iterator last) const {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  nassertv(first >= ((To *)_void_ptr)->begin() && first <= ((To *)_void_ptr)->end());
-  nassertv(last >= ((To *)_void_ptr)->begin() && last <= ((To *)_void_ptr)->end());
-  ((To *)_void_ptr)->erase(first, last);
+  nassertv(first >= ((To *)(this->_void_ptr))->begin() && first <= ((To *)(this->_void_ptr))->end());
+  nassertv(last >= ((To *)(this->_void_ptr))->begin() && last <= ((To *)(this->_void_ptr))->end());
+  ((To *)(this->_void_ptr))->erase(first, last);
 }
 
 #if !defined(WIN32_VC)
@@ -290,14 +290,14 @@ erase(iterator first, iterator last) const {
 template<class Element>
 INLINE TYPENAME PointerToArray<Element>::reference PointerToArray<Element>::
 operator [](size_type n) const {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  nassertd(!((To *)_void_ptr)->empty()) {
-    ((To *)_void_ptr)->push_back(Element());
+  nassertd(!((To *)(this->_void_ptr))->empty()) {
+    ((To *)(this->_void_ptr))->push_back(Element());
   }
-  nassertr(n < ((To *)_void_ptr)->size(), ((To *)_void_ptr)->operator[](0));
-  return ((To *)_void_ptr)->operator[](n);
+  nassertr(n < ((To *)(this->_void_ptr))->size(), ((To *)(this->_void_ptr))->operator[](0));
+  return ((To *)(this->_void_ptr))->operator[](n);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -339,7 +339,7 @@ get_element(size_type n) const {
 template<class Element>
 INLINE void PointerToArray<Element>::
 set_element(size_type n, const Element &value) {
-  nassertv(n < ((To *)_void_ptr)->size());
+  nassertv(n < ((To *)(this->_void_ptr))->size());
   (*this)[n] = value;
 }
 
@@ -351,10 +351,10 @@ set_element(size_type n, const Element &value) {
 template<class Element>
 INLINE void PointerToArray<Element>::
 push_back(const Element &x) {
-  if (_void_ptr == NULL) {
+  if ((this->_void_ptr) == NULL) {
     reassign(new RefCountObj<pvector<Element> >);
   }
-  ((To *)_void_ptr)->push_back(x);
+  ((To *)(this->_void_ptr))->push_back(x);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -365,11 +365,11 @@ push_back(const Element &x) {
 template<class Element>
 INLINE void PointerToArray<Element>::
 pop_back() {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  nassertv(!((To *)_void_ptr)->empty());
-  ((To *)_void_ptr)->pop_back();
+  nassertv(!((To *)(this->_void_ptr))->empty());
+  ((To *)(this->_void_ptr))->pop_back();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -382,11 +382,11 @@ pop_back() {
 template<class Element>
 INLINE void PointerToArray<Element>::
 make_empty() {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  nassertv(!((To *)_void_ptr)->empty());
-  ((To *)_void_ptr)->clear();
+  nassertv(!((To *)(this->_void_ptr))->empty());
+  ((To *)(this->_void_ptr))->clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -401,7 +401,7 @@ make_empty() {
 template<class Element>
 INLINE PointerToArray<Element>::
 operator Element *() const {
-  return (_void_ptr == NULL) ? (Element *)NULL : &(((To *)_void_ptr)->front());
+  return ((this->_void_ptr) == NULL) ? (Element *)NULL : &(((To *)(this->_void_ptr))->front());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -414,7 +414,7 @@ operator Element *() const {
 template<class Element>
 INLINE Element *PointerToArray<Element>::
 p() const {
-  return (_void_ptr == NULL) ? (Element *)NULL : &(((To *)_void_ptr)->front());
+  return ((this->_void_ptr) == NULL) ? (Element *)NULL : &(((To *)(this->_void_ptr))->front());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -426,14 +426,14 @@ p() const {
 template<class Element>
 INLINE pvector<Element> &PointerToArray<Element>::
 v() const {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((PointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  return *((To *)_void_ptr);
+  return *((To *)(this->_void_ptr));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::get_void_ptr
+//     Function: PointerToArray::get(this->_void_ptr)
 //       Access: Public
 //  Description: Returns the reference to memory where the vector
 //               is stored.  To be used only with set_void_ptr
@@ -441,7 +441,7 @@ v() const {
 template<class Element>
 INLINE void *PointerToArray<Element>::
 get_void_ptr() const {
-  return _void_ptr;
+  return (this->_void_ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -463,7 +463,7 @@ set_void_ptr(void *p) {
 template<class Element>
 INLINE int PointerToArray<Element>::
 get_ref_count() const {
-  return (_void_ptr == NULL) ? 0 : ((To *)_void_ptr)->get_ref_count();
+  return ((this->_void_ptr) == NULL) ? 0 : ((To *)(this->_void_ptr))->get_ref_count();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -549,10 +549,10 @@ ConstPointerToArray(const ConstPointerToArray<Element> &copy) :
 template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::iterator ConstPointerToArray<Element>::
 begin() const {
-  if (_void_ptr == NULL) {
+  if ((this->_void_ptr) == NULL) {
     return _empty_array.begin();
   }
-  return ((To *)_void_ptr)->begin();
+  return ((To *)(this->_void_ptr))->begin();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -563,10 +563,10 @@ begin() const {
 template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::iterator ConstPointerToArray<Element>::
 end() const {
-  if (_void_ptr == NULL) {
+  if ((this->_void_ptr) == NULL) {
     return _empty_array.begin();
   }
-  return ((To *)_void_ptr)->end();
+  return ((To *)(this->_void_ptr))->end();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -577,10 +577,10 @@ end() const {
 template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::reverse_iterator ConstPointerToArray<Element>::
 rbegin() const {
-  if (_void_ptr == NULL) {
+  if ((this->_void_ptr) == NULL) {
     return _empty_array.rbegin();
   }
-  return ((To *)_void_ptr)->rbegin();
+  return ((To *)(this->_void_ptr))->rbegin();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -591,10 +591,10 @@ rbegin() const {
 template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::reverse_iterator ConstPointerToArray<Element>::
 rend() const {
-  if (_void_ptr == NULL) {
+  if ((this->_void_ptr) == NULL) {
     return _empty_array.rbegin();
   }
-  return ((To *)_void_ptr)->rend();
+  return ((To *)(this->_void_ptr))->rend();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -605,7 +605,7 @@ rend() const {
 template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
 size() const {
-  return (_void_ptr == NULL) ? 0 : ((To *)_void_ptr)->size();
+  return ((this->_void_ptr) == NULL) ? 0 : ((To *)(this->_void_ptr))->size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -616,10 +616,10 @@ size() const {
 template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
 max_size() const {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  return ((To *)_void_ptr)->max_size();
+  return ((To *)(this->_void_ptr))->max_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -630,7 +630,7 @@ max_size() const {
 template<class Element>
 INLINE bool ConstPointerToArray<Element>::
 empty() const {
-  return (_void_ptr == NULL) ? true : ((To *)_void_ptr)->empty();
+  return ((this->_void_ptr) == NULL) ? true : ((To *)(this->_void_ptr))->empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -641,10 +641,10 @@ empty() const {
 template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
 capacity() const {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  return ((To *)_void_ptr)->capacity();
+  return ((To *)(this->_void_ptr))->capacity();
 }
 
 #ifndef WIN32_VC
@@ -656,14 +656,14 @@ capacity() const {
 template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
 operator [](size_type n) const {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  nassertd(!((To *)_void_ptr)->empty()) {
-    ((To *)_void_ptr)->push_back(Element());
+  nassertd(!((To *)(this->_void_ptr))->empty()) {
+    ((To *)(this->_void_ptr))->push_back(Element());
   }
-  nassertr(n < ((To *)_void_ptr)->size(), ((To *)_void_ptr)->operator[](0));
-  return ((To *)_void_ptr)->operator[](n);
+  nassertr(n < ((To *)(this->_void_ptr))->size(), ((To *)(this->_void_ptr))->operator[](0));
+  return ((To *)(this->_void_ptr))->operator[](n);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -686,13 +686,13 @@ operator [](int n) const {
 template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
 front() const {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  nassertd(!((To *)_void_ptr)->empty()) {
-    ((To *)_void_ptr)->push_back(Element());
+  nassertd(!((To *)(this->_void_ptr))->empty()) {
+    ((To *)(this->_void_ptr))->push_back(Element());
   }
-  return ((To *)_void_ptr)->front();
+  return ((To *)(this->_void_ptr))->front();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -703,13 +703,13 @@ front() const {
 template<class Element>
 INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
 back() const {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  nassertd(!((To *)_void_ptr)->empty()) {
-    ((To *)_void_ptr)->push_back(Element());
+  nassertd(!((To *)(this->_void_ptr))->empty()) {
+    ((To *)(this->_void_ptr))->push_back(Element());
   }
-  return ((To *)_void_ptr)->back();
+  return ((To *)(this->_void_ptr))->back();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -724,7 +724,7 @@ back() const {
 template<class Element>
 INLINE ConstPointerToArray<Element>::
 operator const Element *() const {
-  return (_void_ptr == NULL) ? (const Element *)NULL : &(((To *)_void_ptr)->front());
+  return ((this->_void_ptr) == NULL) ? (const Element *)NULL : &(((To *)(this->_void_ptr))->front());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -737,7 +737,7 @@ operator const Element *() const {
 template<class Element>
 INLINE const Element *ConstPointerToArray<Element>::
 p() const {
-  return (_void_ptr == NULL) ? (const Element *)NULL : &(((To *)_void_ptr)->front());
+  return ((this->_void_ptr) == NULL) ? (const Element *)NULL : &(((To *)(this->_void_ptr))->front());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -749,10 +749,10 @@ p() const {
 template<class Element>
 INLINE const pvector<Element> &ConstPointerToArray<Element>::
 v() const {
-  nassertd(_void_ptr != NULL) {
+  nassertd((this->_void_ptr) != NULL) {
     ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
   }
-  return *(To *)_void_ptr;
+  return *(To *)(this->_void_ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -763,7 +763,7 @@ v() const {
 template<class Element>
 INLINE int ConstPointerToArray<Element>::
 get_ref_count() const {
-  return (_void_ptr == NULL) ? 0 : ((To *)_void_ptr)->get_ref_count();
+  return ((this->_void_ptr) == NULL) ? 0 : ((To *)(this->_void_ptr))->get_ref_count();
 }
 
 ////////////////////////////////////////////////////////////////////

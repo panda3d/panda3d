@@ -27,6 +27,7 @@
 // communications.
 
 #ifdef HAVE_SSL
+#define OPENSSL_NO_KRB5
 
 #include "httpClient.h"
 #include "httpEnum.h"
@@ -146,7 +147,7 @@ PUBLISHED:
   INLINE double get_max_updates_per_second() const;
 
   INLINE void set_expected_file_size(size_t file_size);
-  INLINE size_t get_file_size() const;
+  size_t get_file_size() const;
   INLINE bool is_file_size_known() const;
 
   void write_headers(ostream &out) const;

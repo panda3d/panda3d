@@ -283,7 +283,7 @@ SimpleQueryLerpFunctor<value>::operator=(const SimpleQueryLerpFunctor& c) {
 
 template <class value>
 void SimpleQueryLerpFunctor<value>::operator()(float t) {
-  _save = interpolate(t);
+  _save = this->interpolate(t);
 }
 
 template <class value>

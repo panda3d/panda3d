@@ -258,8 +258,6 @@ compose_impl(const RenderAttrib *other) const {
   // when a stage is in both attribs, we compose the stages.
 
   TexGenAttrib *attrib = new TexGenAttrib;
-  insert_iterator<Stages> result = 
-    inserter(attrib->_stages, attrib->_stages.end());
 
   Stages::const_iterator ai, bi;
   ai = _stages.begin();
@@ -267,37 +265,32 @@ compose_impl(const RenderAttrib *other) const {
   while (ai != _stages.end() && bi != ta->_stages.end()) {
     if ((*ai).first < (*bi).first) {
       // This stage is in a but not in b.
-      *result = *ai;
+      attrib->_stages.insert(attrib->_stages.end(), *ai);
       ++ai;
-      ++result;
 
     } else if ((*bi).first < (*ai).first) {
       // This stage is in b but not in a.
-      *result = *bi;
+      attrib->_stages.insert(attrib->_stages.end(), *bi);
       ++bi;
-      ++result;
 
     } else {
       // This stage is in both; b wins.
-      *result = *bi;
+      attrib->_stages.insert(attrib->_stages.end(), *bi);
       ++bi;
       ++ai;
-      ++result;
     }
   }
 
   while (ai != _stages.end()) {
     // This stage is in a but not in b.
-    *result = *ai;
+    attrib->_stages.insert(attrib->_stages.end(), *ai);
     ++ai;
-    ++result;
   }
 
   while (bi != ta->_stages.end()) {
     // This stage is in b but not in a.
-    *result = *bi;
+    attrib->_stages.insert(attrib->_stages.end(), *bi);
     ++bi;
-    ++result;
   }
 
   // Now copy from _stages to _no_texcoords.
@@ -329,8 +322,6 @@ invert_compose_impl(const RenderAttrib *other) const {
   // we invert the ai stages.
 
   TexGenAttrib *attrib = new TexGenAttrib;
-  insert_iterator<Stages> result = 
-    inserter(attrib->_stages, attrib->_stages.end());
 
   Stages::const_iterator ai, bi;
   ai = _stages.begin();
@@ -338,37 +329,32 @@ invert_compose_impl(const RenderAttrib *other) const {
   while (ai != _stages.end() && bi != ta->_stages.end()) {
     if ((*ai).first < (*bi).first) {
       // This stage is in a but not in b.  Turn a off.
-      *result = Stages::value_type((*ai).first, M_off);
+      attrib->_stages.insert(attrib->_stages.end(), Stages::value_type((*ai).first, M_off));
       ++ai;
-      ++result;
 
     } else if ((*bi).first < (*ai).first) {
       // This stage is in b but not in a.
-      *result = *bi;
+      attrib->_stages.insert(attrib->_stages.end(), *bi);
       ++bi;
-      ++result;
 
     } else {
       // This stage is in both; b wins.
-      *result = *bi;
+      attrib->_stages.insert(attrib->_stages.end(), *bi);
       ++bi;
       ++ai;
-      ++result;
     }
   }
 
   while (ai != _stages.end()) {
     // This stage is in a but not in b.
-    *result = Stages::value_type((*ai).first, M_off);
+    attrib->_stages.insert(attrib->_stages.end(), Stages::value_type((*ai).first, M_off));
     ++ai;
-    ++result;
   }
 
   while (bi != ta->_stages.end()) {
     // This stage is in b but not in a.
-    *result = *bi;
+    attrib->_stages.insert(attrib->_stages.end(), *bi);
     ++bi;
-    ++result;
   }
 
   // Now copy from _stages to _no_texcoords.

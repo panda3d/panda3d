@@ -47,7 +47,7 @@ PointerTo(const PointerTo<T> &copy) :
 template<class T>
 INLINE TYPENAME PointerTo<T>::To &PointerTo<T>::
 operator *() const {
-  return *((To *)_void_ptr);
+  return *((To *)(this->_void_ptr));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ operator *() const {
 template<class T>
 INLINE TYPENAME PointerTo<T>::To *PointerTo<T>::
 operator -> () const {
-  return (To *)_void_ptr;
+  return (To *)(this->_void_ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,7 +74,7 @@ operator -> () const {
 template<class T>
 INLINE PointerTo<T>::
 operator TYPENAME PointerToBase<T>::To *() const {
-  return (To *)_void_ptr;
+  return (To *)(this->_void_ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ operator TYPENAME PointerToBase<T>::To *() const {
 template<class T>
 INLINE TYPENAME PointerTo<T>::To *PointerTo<T>::
 p() const {
-  return (To *)_void_ptr;
+  return (To *)(this->_void_ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -121,8 +121,8 @@ operator = (const PointerTo<T> &copy) {
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE ConstPointerTo<T>::
-ConstPointerTo(const To *ptr) :
-  PointerToBase<T>((ConstPointerTo<T>::To *)ptr)
+ConstPointerTo(const TYPENAME ConstPointerTo<T>::To *ptr) :
+  PointerToBase<T>((TYPENAME ConstPointerTo<T>::To *)ptr)
 {
 }
 
@@ -158,7 +158,7 @@ ConstPointerTo(const ConstPointerTo<T> &copy) :
 template<class T>
 INLINE const TYPENAME ConstPointerTo<T>::To &ConstPointerTo<T>::
 operator *() const {
-  return *((To *)_void_ptr);
+  return *((To *)(this->_void_ptr));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -169,7 +169,7 @@ operator *() const {
 template<class T>
 INLINE const TYPENAME ConstPointerTo<T>::To *ConstPointerTo<T>::
 operator -> () const {
-  return (To *)_void_ptr;
+  return (To *)(this->_void_ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,7 +186,7 @@ operator -> () const {
 template<class T>
 INLINE ConstPointerTo<T>::
 operator const TYPENAME PointerToBase<T>::To *() const {
-  return (To *)_void_ptr;
+  return (To *)(this->_void_ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -199,7 +199,7 @@ operator const TYPENAME PointerToBase<T>::To *() const {
 template<class T>
 INLINE const TYPENAME ConstPointerTo<T>::To *ConstPointerTo<T>::
 p() const {
-  return (To *)_void_ptr;
+  return (To *)(this->_void_ptr);
 }
 
 ////////////////////////////////////////////////////////////////////

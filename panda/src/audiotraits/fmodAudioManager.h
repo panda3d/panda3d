@@ -54,7 +54,7 @@ public:
   void most_recently_used(const string& path);
 
   // Uncaches the least recently used sound.
-  void uncache_a_sound();
+  bool uncache_a_sound();
 
   virtual void set_volume(float);
   virtual float get_volume() const;

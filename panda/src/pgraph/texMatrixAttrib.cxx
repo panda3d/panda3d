@@ -333,8 +333,6 @@ compose_impl(const RenderAttrib *other) const {
   // when a stage is in both attribs, we compose the stages.
 
   TexMatrixAttrib *attrib = new TexMatrixAttrib;
-  insert_iterator<Stages> result = 
-    inserter(attrib->_stages, attrib->_stages.end());
 
   Stages::const_iterator ai, bi;
   ai = _stages.begin();
@@ -342,38 +340,33 @@ compose_impl(const RenderAttrib *other) const {
   while (ai != _stages.end() && bi != ta->_stages.end()) {
     if ((*ai).first < (*bi).first) {
       // This stage is in a but not in b.
-      *result = *ai;
+      attrib->_stages.insert(attrib->_stages.end(), *ai);
       ++ai;
-      ++result;
 
     } else if ((*bi).first < (*ai).first) {
       // This stage is in b but not in a.
-      *result = *bi;
+      attrib->_stages.insert(attrib->_stages.end(), *bi);
       ++bi;
-      ++result;
 
     } else {
       // This stage is in both; compose the stages.
       CPT(TransformState) new_transform = (*ai).second->compose((*bi).second);
-      *result = Stages::value_type((*ai).first, new_transform);
+      attrib->_stages.insert(attrib->_stages.end(), Stages::value_type((*ai).first, new_transform));
       ++ai;
       ++bi;
-      ++result;
     }
   }
 
   while (ai != _stages.end()) {
     // This stage is in a but not in b.
-    *result = *ai;
+    attrib->_stages.insert(attrib->_stages.end(), *ai);
     ++ai;
-    ++result;
   }
 
   while (bi != ta->_stages.end()) {
     // This stage is in b but not in a.
-    *result = *bi;
+    attrib->_stages.insert(attrib->_stages.end(), *bi);
     ++bi;
-    ++result;
   }
 
   return return_new(attrib);
@@ -397,8 +390,6 @@ invert_compose_impl(const RenderAttrib *other) const {
   // we invert the ai stages.
 
   TexMatrixAttrib *attrib = new TexMatrixAttrib;
-  insert_iterator<Stages> result = 
-    inserter(attrib->_stages, attrib->_stages.end());
 
   Stages::const_iterator ai, bi;
   ai = _stages.begin();
@@ -408,24 +399,21 @@ invert_compose_impl(const RenderAttrib *other) const {
       // This stage is in a but not in b.
       CPT(TransformState) inv_a = 
         (*ai).second->invert_compose(TransformState::make_identity());
-      *result = Stages::value_type((*ai).first, inv_a);
+      attrib->_stages.insert(attrib->_stages.end(), Stages::value_type((*ai).first, inv_a));
       ++ai;
-      ++result;
 
     } else if ((*bi).first < (*ai).first) {
       // This stage is in b but not in a.
-      *result = *bi;
+      attrib->_stages.insert(attrib->_stages.end(), *bi);
       ++bi;
-      ++result;
 
     } else {
       // This stage is in both; compose the stages.
       CPT(TransformState) new_transform = 
         (*ai).second->invert_compose((*bi).second);
-      *result = Stages::value_type((*ai).first, new_transform);
+      attrib->_stages.insert(attrib->_stages.end(), Stages::value_type((*ai).first, new_transform));
       ++ai;
       ++bi;
-      ++result;
     }
   }
 
@@ -433,16 +421,14 @@ invert_compose_impl(const RenderAttrib *other) const {
     // This stage is in a but not in b.
     CPT(TransformState) inv_a = 
       (*ai).second->invert_compose(TransformState::make_identity());
-    *result = Stages::value_type((*ai).first, inv_a);
+    attrib->_stages.insert(attrib->_stages.end(), Stages::value_type((*ai).first, inv_a));
     ++ai;
-    ++result;
   }
 
   while (bi != ta->_stages.end()) {
     // This stage is in b but not in a.
-    *result = *bi;
+    attrib->_stages.insert(attrib->_stages.end(), *bi);
     ++bi;
-    ++result;
   }
 
   return return_new(attrib);

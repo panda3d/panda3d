@@ -255,7 +255,10 @@ get_sound(const string &file_name, bool positional) {
     // Add to the cache
     while (_sounds.size() >= (unsigned int)_cache_limit) {
       nassertr(is_valid(), NULL);
-      uncache_a_sound();
+      if (!uncache_a_sound()) {
+        audio_warning(_sounds.size()+1 << " sounds cached. Limit is " << _cache_limit );
+        break;
+      }
     }
 
     si = _sounds.insert(SoundMap::value_type(path, new_entry)).first;
@@ -386,22 +389,23 @@ uncache_sound(const string& file_name) {
 //       Access: Public
 //  Description: Uncaches the least recently used sound.
 ////////////////////////////////////////////////////////////////////
-void FmodAudioManager::
+bool FmodAudioManager::
 uncache_a_sound() {
   audio_debug("FmodAudioManager::uncache_a_sound()");
-  nassertv(is_valid());
+  nassertr(is_valid(), false);
   // uncache least recently used:
-  nassertv(_lru.size()>0);
-  LRU::reference path=_lru.front();
-  SoundMap::iterator i = _sounds.find(path);
-  nassertv(i != _sounds.end());
-  _lru.pop_front();
+  unsigned int orig_size = _lru.size();
 
-  if (i != _sounds.end()) {
+  for (LRU::iterator it = _lru.begin(); it != _lru.end(); it++) {
+    LRU::reference path=_lru.front();
+    SoundMap::iterator i = _sounds.find(path);
+    if (i == _sounds.end()) continue;
     audio_debug("  uncaching \""<<i->first<<"\"");
     uncache_sound(path);
+    nassertr(is_valid(), false);
+    if (_lru.size() < orig_size) return true;
   }
-  nassertv(is_valid());
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -19,6 +19,7 @@
 #include "bioStreamBuf.h"
 #include "config_downloader.h"
 #include "ssl_utils.h"
+#include <errno.h>
 
 #ifdef HAVE_SSL
 

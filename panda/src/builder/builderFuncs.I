@@ -22,6 +22,7 @@
 #include "config_builder.h"
 #include "geom.h"
 #include "geomprimitives.h"
+#include "geomNode.h"
 
 #include <algorithm>
 
