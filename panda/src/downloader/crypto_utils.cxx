@@ -15,7 +15,7 @@
 USING_NAMESPACE(CryptoPP);
 USING_NAMESPACE(std);
 
-uint 
+static uint 
 read32(istream& is) {
   unsigned int ret = 0x0;
   unsigned char b1, b2, b3, b4;
