@@ -58,7 +58,7 @@ int getVBRHeader(struct vbrHeader *head,unsigned char *buf, struct frame *fr)
 	buf += 4;
     }
 
-    // fprintf(stderr,"Found XING %04lx\n",head->flags);
+    /* fprintf(stderr,"Found XING %04lx\n",head->flags); */
 
     return 1;
 
