@@ -503,9 +503,17 @@ clear_gsg(GraphicsStateGuardianBase *gsg) {
 //               false, and we have previously prepared this texture
 //               with a GSG.
 //
-//               It is possible that the RAM image is still
-//               unavailable.  If that happens, this function returns
-//               NULL.
+//               Note that it is not correct to call has_ram_image()
+//               first to test whether this function will fail.  A
+//               false return value from has_ram_image() indicates
+//               only that get_ram_image() may need to reload the
+//               texture from disk, which it will do automatically.
+//
+//               On the other hand, it is possible that the texture
+//               cannot be found on disk or is otherwise unavailable.
+//               If that happens, this function returns NULL.  There
+//               is no way to predict whether get_ram_image() will
+//               return NULL without calling it first.
 ////////////////////////////////////////////////////////////////////
 PixelBuffer *Texture::
 get_ram_image() {

@@ -90,6 +90,27 @@ uses_mipmaps() const {
 //  Description: Returns true if the Texture has its image contents
 //               available in main RAM, false if it exists only in
 //               texture memory or in the prepared GSG context.
+
+//               Note that this has nothing to do with whether
+//               get_ram_image() will fail or not.  Even if
+//               has_ram_image() returns false, get_ram_image() may
+//               still return a valid RAM image, because
+//               get_ram_image() will automatically load the texture
+//               from disk if necessary.  The only thing
+//               has_ram_image() tells you is whether the texture is
+//               available right now without hitting the disk first.
+//
+//               Note also that if an application uses only one GSG,
+//               it may appear that has_ram_image() returns true if
+//               the texture has not yet been loaded by the GSG, but
+//               this correlation is not true in general and should
+//               not be depended on.  Specifically, if an application
+//               ever uses multiple GSG's in its lifetime (for
+//               instance, by opening more than one window, or by
+//               closing its window and opening another one later),
+//               then has_ram_image() may well return false on
+//               textures that have never been loaded on the current
+//               GSG.
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 has_ram_image() const {
