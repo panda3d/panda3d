@@ -2401,19 +2401,18 @@ expand_wordsubst(const string &params) {
 string PPScope::
 expand_join(const string &params) {
   // Split the string up into tokens based on the spaces.
-  vector<string> words;
-  tokenize_whitespace(expand_string(params), words);
+  vector<string> tokens;
+  tokenize_params(params, tokens, true);
 
-  if (words.size() < 2) {
-    cerr << "joins requires at least two parameters.\n";
+  if (tokens.size() != 2) {
+    cerr << "join requires two parameters.\n";
     return string();
   }
 
-  const string sep(words[0]);
+  const string &sep = tokens[0];
+  vector<string> words;
+  tokenize_whitespace(expand_string(tokens[1]), words);
 
-  // Remove the first word in the list (which we use as the separator).
-  words.erase(words.begin());
-  
   string result = repaste(words, sep);
   return result;
 }
