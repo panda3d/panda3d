@@ -193,12 +193,19 @@ class FSM(DirectObject):
             return 1
         # We can implicitly always transition to our final state.
         elif (aStateName == self.__finalState.getName()):
-            FSM.notify.debug("[%s]: implicit transition to final state: %s" %
-                             (self.__name, aStateName))
-            self.__transition(aState,
-                              enterArgList,
-                              exitArgList)
-            return 1
+            if (self.__currentState == self.__finalState):
+                # Do not do the transition if we are already in the final state
+                FSM.notify.debug("[%s]: already in final state: %s" %
+                                 (self.__name, aStateName))
+                return 1
+            else:
+                # Force a transition to allow for cleanup
+                FSM.notify.debug("[%s]: implicit transition to final state: %s" %
+                                 (self.__name, aStateName))
+                self.__transition(aState,
+                                  enterArgList,
+                                  exitArgList)
+                return 1
         else:
             FSM.notify.warning("[%s]: no transition exists from %s to %s" %
                                (self.__name,
