@@ -35,6 +35,7 @@ class DirectJoybox(PandaObject):
         if direct.deviceManager == None:
             direct.deviceManager = DirectDeviceManager()
         # Set name
+        DirectJoybox.joyboxCount += 1
         self.name = 'Joybox-' + `DirectJoybox.joyboxCount`
         # Get buttons and analogs
         self.device = device

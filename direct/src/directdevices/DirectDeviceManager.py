@@ -26,6 +26,9 @@ class DirectDeviceManager(VrpnClient, PandaObject):
     def createAnalogs(self, device):
         return DirectAnalogs(self, device)
 
+    def createTracker(self, device):
+        return DirectTracker(self, device)
+
     def createDials(self, device):
         return DirectDials(self, device)
 
@@ -119,6 +122,36 @@ class DirectAnalogs(AnalogNode, PandaObject):
         except IndexError:
             return 0.0
 
+    def getName(self):
+        return self.name
+    
+    def getNodePath(self):
+        return self.nodePath
+    
+    def __repr__(self):
+        str = self.name + ': '
+        for val in self:
+            str = str + '%.3f' % val + ' '
+        return str
+
+class DirectTracker(TrackerNode, PandaObject):
+    trackerCount = 0
+    def __init__(self, vrpnClient, device):
+        # Keep track of number of trackers created
+        DirectTracker.trackerCount += 1
+        # Create a unique name for this tracker object
+        self.name = 'DirectTracker-' + `DirectTracker.trackerCount`
+        # Create a new tracker node for the given device
+        TrackerNode.__init__(self, vrpnClient, device)
+        # Attach node to data graph
+        self.nodePath = base.dataRoot.attachNewNode(self)
+    
+    def enable(self):
+        self.nodePath.reparentTo(base.dataRoot)
+    
+    def disable(self):
+        self.nodePath.reparentTo(base.dataUnused)
+    
     def getName(self):
         return self.name
     
