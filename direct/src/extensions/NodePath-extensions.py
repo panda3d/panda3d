@@ -1,7 +1,22 @@
+
     """
     NodePath-extensions module: contains methods to extend functionality
     of the NodePath class
     """
+
+    def getNodePathName(self):
+        from PandaModules import *
+        # Initialize to a default value
+        name = '<noname>'
+        # Get the bottom node
+        node = self.node()
+        # Is it a named node?, If so, see if it has a name
+        if issubclass(node.__class__, NamedNode):
+            namedNodeName = node.getName()
+            # Is it not zero length?
+            if len(namedNodeName) != 0:
+                name = namedNodeName
+        return name
 
     # For iterating over children
     def getChildrenAsList(self):
@@ -9,6 +24,39 @@
         for childNum in range(self.getNumChildren()):
             childrenList.append(self.getChild(childNum))
         return childrenList
+
+    def toggleViz(self):
+        if self.isHidden():
+            self.show()
+        else:
+            self.hide()
+            
+    def showSiblings(self):
+        for sib in self.getParent().getChildrenAsList():
+            if sib != self:
+                sib.show()
+
+    def hideSiblings(self):
+        for sib in self.getParent().getChildrenAsList():
+            if sib != aNodePath:
+                sib.hide()
+
+    def showAllDescendants(self):
+	self.show()
+        for child in self.getChildrenAsList():
+            self.showAllDescendants(child)
+
+    def isolate(self):
+        self.showAllDescendants()
+        self.hideSiblings()
+
+    def remove(self):
+	# Send message in case anyone needs to do something
+        # before node is deleted
+	messenger.send('preRemoveNodePath', [self])
+	# Remove nodePath
+	self.reparentTo(hidden)
+	self.removeNode()
 
     # private methods
     

@@ -1,11 +1,13 @@
 from PandaObject import *
 from DirectCameraControl import *
+from DirectManipulation import *
 from DirectSelection import *
 from DirectGeometry import *
 import OnscreenText
 
+
 class DirectSession(PandaObject):
-    
+
     def __init__(self):
         self.contextList = []
         self.iRayList = []
@@ -15,11 +17,10 @@ class DirectSession(PandaObject):
         self.chanCenter = self.getChanData(0)
 
         self.cameraControls = DirectCameraControl(self)
+        self.manipulationControls = DirectManipulationControl(self)
 
         # Initialize the collection of selected nodePaths
-        self.selectedNodePaths = {}
-        self.selectedNodePath = None
-        self.lastSelected = None
+        self.selected = SelectedNodePaths()
 
         self.readout = OnscreenText.OnscreenText( '', 0.1, -0.95 )
         # self.readout.textNode.setCardColor(0.5, 0.5, 0.5, 0.5)
@@ -28,24 +29,23 @@ class DirectSession(PandaObject):
         self.createObjectHandles()
         self.useObjectHandles()
         
-        self.createBBox()
-        self.bboxList = []
-
         self.fControl = 0
         self.fAlt = 0
         self.fShift = 0
         self.in2DWidget = 0
 
         self.iRay = self.iRayList[0]
-        self.iRay.rayCollisionNodePath.node().setFromCollideMask(BitMask32().allOff())
-        self.iRay.rayCollisionNodePath.node().setIntoCollideMask(BitMask32().allOff())
+        self.iRay.rayCollisionNodePath.node().setFromCollideMask(
+            BitMask32().allOff())
+        self.iRay.rayCollisionNodePath.node().setIntoCollideMask(
+            BitMask32().allOff())
         self.hitPt = Point3(0.0)
 
-        self.actionEvents = [('selectNodePath', self.selectNodePath),
-                             ('deselectNodePath', self.deselectNodePath),
+        self.actionEvents = [('select', self.select),
+                             ('deselect', self.deselect),
                              ('deselectAll', self.deselectAll),
-                             ('highlightNodePath', self.highlightNodePath),
-                             ('removeNodePath', self.removeNodePath),
+                             ('highlightAll', self.selected.highlightAll),
+                             ('preRemoveNodePath', self.deselect),
                              ('in2DWidget', self.in2DWidget)]
         self.keyEvents = ['left', 'right', 'up', 'down',
                           'escape', 'space', 'delete',
@@ -57,147 +57,59 @@ class DirectSession(PandaObject):
                             'mouse2', 'mouse2-up',
                             'mouse3', 'mouse3-up']
 
-    def selectNodePath(self, aNodePath, multiSelect = 0):
-	self.lastSelected = aNodePath
+    def select(self, nodePath):
+        dnp = self.selected.select(nodePath)
+        if dnp:
+            # Update the readout
+            self.readout.reparentTo(render2d)
+            self.readout.setText(dnp.name)
+            # Show the manipulation widget
+            self.objectHandles.reparentTo(render)
+            # Adjust its size
+            self.objectHandles.setScale(dnp.getRadius())
 
-	# Do nothing if nothing selected
-        if not aNodePath:
-            print 'Nothing selected!!'
-            return 0
-
-	# Reset selected objects and highlight if multiSelect is false
-        if not multiSelect:
-            self.deselectAll()
-
-	# Record newly selected object
-        # Use this pointer as an index
-	self.selectedNodePaths[aNodePath.this] = aNodePath
-        self.highlightNodePath(aNodePath)
-	self.readout.reparentTo(render2d)
-	self.readout.setText(self.getNodeName(aNodePath))
-
-    def getNodeName(self, aNodePath):
-        node = aNodePath.node()
-        name = '<noname>'
-        if issubclass(node.__class__, NamedNode):
-            namableName = node.getName()
-            if len(namableName) != 0:
-                name = namableName
-        return name
-
-    def in2DWidget(self):
-        self.in2DWidget = 1
-
-    def deselectNodePath(self, aNodePath):
-	# remove nodePath from selectedNodePaths dictionary if it exists
-        key = aNodePath.this
-        if self.selectedNodePaths.has_key(key):
-            del self.selectedNodePaths[key]
-	# Hide the manipulation widget
-	self.objectHandles.reparentTo(hidden)
-	self.readout.reparentTo(hidden)
-	self.readout.setText(' ')
-	taskMgr.removeTasksNamed('followSelectedNodePath')
-
-    def deselectAll(self):
-	self.selectedNodePaths = {}
-	# Hide the manipulation widget
-	self.objectHandles.reparentTo(hidden)
-	self.readout.reparentTo(hidden)
-	self.readout.setText(' ')
-	taskMgr.removeTasksNamed('followSelectedNodePath')
-
-    def highlightNodePath(self, aNodePath):
-	selectedBounds = self.getBounds(aNodePath)
-        # Does this work?
-	radius = selectedBounds.getRadius()
-	# radius = 5.0.
-	# Place the manipulation widget on the object too
-	self.objectHandles.reparentTo(render)
-	self.objectHandles.setScale(radius)
-        # Spawn task to have object handles follow the selected object
-	taskMgr.removeTasksNamed('followSelectedNodePath')
-        t = Task.Task(self.followSelectedNodePathTask)
-        t.aNodePath = aNodePath
-        taskMgr.spawnTaskNamed(t, 'followSelectedNodePath')
+            # TBD Compute widget COA
+            
+            # Update camera controls coa to this point
+            wrtMat = dnp.getMat(base.camera)
+            self.cameraControls.updateCoa(
+                wrtMat.xformPoint(dnp.getCenter()))
+            
+            # Spawn task to have object handles follow the selected object
+            taskMgr.removeTasksNamed('followSelectedNodePath')
+            t = Task.Task(self.followSelectedNodePathTask)
+            t.nodePath = dnp
+            taskMgr.spawnTaskNamed(t, 'followSelectedNodePath')
+            # Send an message marking the event
+            messenger.send('selectedNodePath', [dnp])
 
     def followSelectedNodePathTask(self, state):
-        aNodePath = state.aNodePath
-        pos = aNodePath.getPos(render)
+        nodePath = state.nodePath
+        pos = nodePath.getPos(render)
         self.objectHandles.setPos(pos)
         return Task.cont
 
-    def isolateSelected(self):
-	selected = self.selectedNodePath
-        if selected:
-            self.showAllDescendants(selected.getParent())
-            self.hideSiblings(selected)
+    def deselect(self, nodePath):
+        dnp = self.snp.deselect(nodePath)
+        if dnp:
+            # Hide the manipulation widget
+            self.objectHandles.reparentTo(hidden)
+            self.readout.reparentTo(hidden)
+            self.readout.setText(' ')
+            taskMgr.removeTasksNamed('followSelectedNodePath')
+            # Send an message marking the event
+            messenger.send('deselectedNodePath', [dnp])
 
-    def removeNodePath(self, aNodePath):
-	# Method to handle the remove event sent by the Scene Graph Explorer
-	# Remove highlight and deselect nodePath
-	self.deselectNodePath(aNodePath)
-	# Send message in case anyone needs to do something
-        # before node is deleted
-	messenger.send('preRemoveNodePath', [aNodePath])
-	# Remove nodePath
-	aNodePath.reparentTo(hidden)
-	aNodePath.removeNode()
+    def deselectAll(self):
+        self.selected.deselectAll()
+        # Hide the manipulation widget
+        self.objectHandles.reparentTo(hidden)
+        self.readout.reparentTo(hidden)
+        self.readout.setText(' ')
+        taskMgr.removeTasksNamed('followSelectedNodePath')
 
-    def removeSelectedNodePaths(self):
-	# Remove all selected nodePaths from the Scene Graph
-        for key in self.selectedNodePaths.keys():
-            np = self.selectedNodePaths[key]
-            self.removeNodePath(np)
-
-    def toggleVizSelectedNodePaths(self):
-        # Toggle visibility of selected node paths
-        for key in self.selectedNodePaths.keys():
-            path = self.selectedNodePaths[key]
-            if path.isHidden():
-                path.show()
-            else:
-                path.hide()
-
-    def getBounds(self, aNodePath):
-        # Get a node path's bounds
-        nodeBounds = aNodePath.node().getBound()
-        for kid in aNodePath.getChildrenAsList():
-            nodeBounds.extendBy(kid.getBottomArc().getBound())
-            return nodeBounds.makeCopy()
-
-    def showAllDescendantsSelectedNodePath(self):
-        # Show the descendants of the selectedNodePath
-	selected = self.selectedNodePath
-        if selected:
-            self.showAllDescendants(selected)
-
-    def showAllDescendants(self, aNodePath):
-	aNodePath.show()
-        for child in aNodePath.getChildrenAsList():
-            self.showAllDescendants(child)
-
-    def showSelectedNodePathSiblings(self):
-	selected = self.selectedNodePath
-        if selected:
-            self.showSiblings(selected)
-
-    def showSiblings(self, aNodePath):
-	aNodePath.show()
-        for sib in aNodePath.getParent().getChildrenAsList():
-            if sib != aNodePath:
-                sib.hide()
-
-    def hideSelectedNodePathSiblings(self):
-	selected = self.selectedNodePath
-	if selected:
-            self.hideSiblings(selected)
-
-    def hideSiblings(self, aNodePath):
-	aNodePath.show()
-        for sib in aNodePath.getParent().getChildrenAsList():
-            if sib != aNodePath:
-                sib.hide()
+    def in2DWidget(self):
+        self.in2DWidget = 1
 
     def enable(self):
 	# Start all display region context tasks
@@ -205,6 +117,8 @@ class DirectSession(PandaObject):
             context.spawnContextTask()
 	# Turn on mouse Flying
 	self.cameraControls.enableMouseFly()
+        # Turn on object manipulation
+        self.manipulationControls.enableManipulation()
 	# Accept appropriate hooks
 	self.enableKeyEvents()
 	self.enableMouseEvents()
@@ -216,6 +130,8 @@ class DirectSession(PandaObject):
             context.removeContextTask()
 	# Turn off camera fly
 	self.cameraControls.disableMouseFly()
+        # Turn off object manipulation
+        self.manipulationControls.disableManipulation()
 	self.disableKeyEvents()
 	self.disableMouseEvents()
 	self.disableActionEvents()
@@ -285,6 +201,10 @@ class DirectSession(PandaObject):
             messenger.send('handle2DMouse1Up')
             if not self.in2DWidget:
                 messenger.send('handleMouse1Up')
+        elif input == 'mouse2': 
+            messenger.send('handleMouse2')
+        elif input == 'mouse2-up':
+            messenger.send('handleMouse2Up')
         elif input == 'mouse3': 
             messenger.send('handleMouse3')
         elif input == 'mouse3-up':
@@ -304,51 +224,18 @@ class DirectSession(PandaObject):
         elif input == 'escape':
             self.deselectAll()
         elif input == 'l':
-            if not self.lastSelected:
-                self.selectNodePath(self.lastSelected)
+            if self.selected.last:
+                self.select(self.selected.last)
         elif input == 'delete':
-            self.removeSelectedNodePaths()
+            self.selected.removeAll()
         elif input == 'v':
-            self.toggleVizSelectedNodePaths()
+            self.selected.toggleVizAll()
         elif input == 'b':
             base.toggleBackface()
         elif input == 't':
             base.toggleTexture()
         elif input == 'w':
             base.toggleWireframe()
-
-    def createBBox(self, parent = None):
-        # Create a line segments object for the bbox
-        if parent is None:
-            parent = hidden
-	bbox = self.bbox = LineNodePath(parent)
-	#bbox.setName('bbox')
-        bbox.setColor( VBase4( 1., 0., 0., 1. ) )
-	bbox.setThickness( 0.5 )
-
-        # Bottom face
-	bbox.drawTo( 0.0, 0.0, 0.0 )
-	bbox.drawTo( 1.0, 0.0, 0.0 )
-	bbox.drawTo( 1.0, 1.0, 0.0 )
-	bbox.drawTo( 0.0, 1.0, 0.0 )
-	bbox.drawTo( 0.0, 0.0, 0.0 )
-
-	# Front Edge/Top face
-	bbox.drawTo( 0.0, 0.0, 1.0 )
-	bbox.drawTo( 1.0, 0.0, 1.0 )
-	bbox.drawTo( 1.0, 1.0, 1.0 )
-	bbox.drawTo( 0.0, 1.0, 1.0 )
-	bbox.drawTo( 0.0, 0.0, 1.0 )
-
-	# Three remaining edges
-	bbox.moveTo( Point3( 1.0, 0.0, 0.0 ) )
-	bbox.drawTo( 1.0, 0.0, 1.0 )
-	bbox.moveTo( Point3( 1.0, 1.0, 0.0 ) )
-	bbox.drawTo( 1.0, 1.0, 1.0 )
-	bbox.moveTo( Point3( 0.0, 1.0, 0.0 ) )
-	bbox.drawTo( 0.0, 1.0, 1.0 )
-
-	bbox.create()
 
     def createObjectHandles(self):
 	oh = self.objectHandles = hidden.attachNewNode(
@@ -429,3 +316,4 @@ class DisplayRegionContext(PandaObject):
         self.mouseDeltaY = self.mouseY - self.mouseLastY
         # Continue the task
         return Task.cont
+

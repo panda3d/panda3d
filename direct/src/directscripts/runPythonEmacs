@@ -1,6 +1,20 @@
 #! /bin/sh
 
-# Note: De-cygwin-ifying the PYTHONPATH is now the job of ppython
+# Under Windows/Cygwin, we have to de-cygwinify the semicolon 
+# separated PYTHONPATH
+
+# First, initialize the new path
+NEWPYTHONPATH=
+
+# To iterate, temporarily change the semicolons into spaces
+for path in `echo $PYTHONPATH | sed 'y/;/ /'`; do
+    # Then for each entry run it through the cygwin filter
+    NEWPYTHONPATH=$NEWPYTHONPATH\;`cygpath -w $path`
+done
+
+# Export the new PYTHONPATH
+PYTHONPATH=$NEWPYTHONPATH
+export PYTHONPATH
 
 # Lets also de-cygwinify the Project variables (so you can use file name 
 # completion)  This is hardcoded for the most popular trees

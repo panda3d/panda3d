@@ -101,12 +101,12 @@ See the Python Mode home page for details:
   :group 'languages
   :prefix "py-")
 
-(defcustom py-python-command "ppython"
+(defcustom py-python-command "python"
   "*Shell command used to start Python interpreter."
   :type 'string
   :group 'python)
 
-(defcustom pyd-python-command "ppython"
+(defcustom pyd-python-command "python_d"
   "*Shell command used to start Python interpreter."
   :type 'string
   :group 'python)
@@ -142,7 +142,7 @@ mode buffer is visited during an Emacs session.  After that, use
   :group 'python)
 
 
-(defcustom pyd-python-command-args '("-d -i")
+(defcustom pyd-python-command-args '("-i")
   "*List of string arguments to be used when starting a Python shell."
   :type '(repeat string)
   :group 'python)
@@ -562,6 +562,8 @@ Currently-active file is at the head of the list.")
   (define-key py-shell-map "\C-c=" 'py-down-exception)
   ;; VR STUDIO ENHANCEMENTS
   (define-key py-shell-map "\C-d"  'comint-delchar-or-maybe-python-resume)
+  (define-key py-shell-map [return] 'comint-interrupt-subjob-or-maybe-return)
+  (define-key py-shell-map [C-return] 'comint-send-input)
   (define-key py-shell-map "\C-c\C-r" 'python-resume)
   (define-key py-shell-map "\C-c\C-s" 'pyd-shell)
   )
@@ -3164,6 +3166,15 @@ These are Python temporary files awaiting execution."
     (if (and (eobp) proc (= (point) (marker-position (process-mark proc))))
 	(python-resume)
       (delete-char arg))))
+
+(defun comint-interrupt-subjob-or-maybe-return (arg)
+  "Enter a return (comint-send-input) or send a comint-interrupt-subjob
+   if point is at the end of the buffer and there is no input"
+  (interactive "p")
+  (let ((proc (get-buffer-process (current-buffer))))
+    (if (and (eobp) proc (= (point) (marker-position (process-mark proc))))
+	(comint-interrupt-subjob)
+      (comint-send-input))))
 
 ;; Function to try to resume panda mainloop
 (defun python-resume ()
