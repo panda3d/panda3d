@@ -67,11 +67,8 @@ BACKGROUND_SORT_INDEX = -100
 MIDGROUND_SORT_INDEX = 0
 FOREGROUND_SORT_INDEX = 100
 
-def loadDefaultFont():
-    return loader.loadFont("models/fonts/Comic")
-
 defaultFont = None
-defaultFontFunc = loadDefaultFont
+defaultFontFunc = TextNode.getDefaultFont
 defaultClickSound = None
 defaultRolloverSound = None
 defaultDialogGeom = None
