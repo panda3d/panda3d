@@ -36,7 +36,7 @@ bool
 get_bool_attribute(MObject &node, const string &attribute_name,
                    bool &value) {
   if (!get_maya_attribute(node, attribute_name, value)) {
-    mayaegg_cat.error()
+    maya_cat.error()
       << "Attribute " << attribute_name
       << " does not have an bool value.\n";
     describe_maya_attribute(node, attribute_name);
@@ -55,7 +55,7 @@ get_angle_attribute(MObject &node, const string &attribute_name,
                     double &value) {
   MAngle maya_value;
   if (!get_maya_attribute(node, attribute_name, maya_value)) {
-    mayaegg_cat.error()
+    maya_cat.error()
       << "Attribute " << attribute_name
       << " does not have an angle value.\n";
     describe_maya_attribute(node, attribute_name);
@@ -77,7 +77,7 @@ get_vec2f_attribute(MObject &node, const string &attribute_name,
 
   MObject vec2f_object;
   if (!get_maya_attribute(node, attribute_name, vec2f_object)) {
-    mayaegg_cat.error()
+    maya_cat.error()
       << "Attribute " << attribute_name
       << " does not have a vec2f object value.\n";
     describe_maya_attribute(node, attribute_name);
@@ -86,7 +86,7 @@ get_vec2f_attribute(MObject &node, const string &attribute_name,
 
   MFnNumericData data(vec2f_object, &status);
   if (!status) {
-    mayaegg_cat.error()
+    maya_cat.error()
       << "Attribute " << attribute_name << " is of type "
       << vec2f_object.apiTypeStr() << ", not a NumericData.\n";
     return false;
@@ -94,7 +94,7 @@ get_vec2f_attribute(MObject &node, const string &attribute_name,
 
   status = data.getData(value[0], value[1]);
   if (!status) {
-    mayaegg_cat.error()
+    maya_cat.error()
       << "Unable to extract 2 floats from " << attribute_name
       << ", of type " << vec2f_object.apiTypeStr() << "\n";
   }
@@ -114,7 +114,7 @@ get_vec2d_attribute(MObject &node, const string &attribute_name,
 
   MObject vec2d_object;
   if (!get_maya_attribute(node, attribute_name, vec2d_object)) {
-    mayaegg_cat.error()
+    maya_cat.error()
       << "Attribute " << attribute_name
       << " does not have a vec2d object value.\n";
     describe_maya_attribute(node, attribute_name);
@@ -123,7 +123,7 @@ get_vec2d_attribute(MObject &node, const string &attribute_name,
 
   MFnNumericData data(vec2d_object, &status);
   if (!status) {
-    mayaegg_cat.error()
+    maya_cat.error()
       << "Attribute " << attribute_name << " is of type "
       << vec2d_object.apiTypeStr() << ", not a NumericData.\n";
     return false;
@@ -131,7 +131,7 @@ get_vec2d_attribute(MObject &node, const string &attribute_name,
 
   status = data.getData(value[0], value[1]);
   if (!status) {
-    mayaegg_cat.error()
+    maya_cat.error()
       << "Unable to extract 2 doubles from " << attribute_name
       << ", of type " << vec2d_object.apiTypeStr() << "\n";
   }
@@ -151,7 +151,7 @@ get_string_attribute(MObject &node, const string &attribute_name,
 
   MObject string_object;
   if (!get_maya_attribute(node, attribute_name, string_object)) {
-    mayaegg_cat.error()
+    maya_cat.error()
       << "Attribute " << attribute_name
       << " does not have an string object value.\n";
     describe_maya_attribute(node, attribute_name);
@@ -160,7 +160,7 @@ get_string_attribute(MObject &node, const string &attribute_name,
 
   MFnStringData data(string_object, &status);
   if (!status) {
-    mayaegg_cat.error()
+    maya_cat.error()
       << "Attribute " << attribute_name << " is of type "
       << string_object.apiTypeStr() << ", not a StringData.\n";
     return false;
@@ -180,20 +180,20 @@ describe_maya_attribute(MObject &node, const string &attribute_name) {
   MStatus status;
   MFnDependencyNode node_fn(node, &status);
   if (!status) {
-    mayaegg_cat.error()
+    maya_cat.error()
       << "Object is a " << node.apiTypeStr() << ", not a DependencyNode.\n";
     return;
   }
 
   MObject attr = node_fn.attribute(attribute_name.c_str(), &status);
   if (!status) {
-    mayaegg_cat.error()
+    maya_cat.error()
       << "Object " << node_fn.name() << " does not support attribute "
       << attribute_name << "\n";
     return;
   }
 
-  mayaegg_cat.error()
+  maya_cat.error()
     << "Attribute " << attribute_name << " on object "
     << node_fn.name() << " has type " << attr.apiTypeStr() << "\n";
 }

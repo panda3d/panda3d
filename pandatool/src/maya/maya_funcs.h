@@ -21,7 +21,7 @@
 
 #include "pandatoolbase.h"
 #include "luse.h"
-#include "config_mayaegg.h"
+#include "config_maya.h"
 
 #include "pre_maya_include.h"
 #include <maya/MFnAttribute.h>

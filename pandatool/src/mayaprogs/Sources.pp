@@ -25,7 +25,7 @@
   #define USE_MAYA yes
   #define TARGET $[binary_name]
   #define LOCAL_LIBS \
-    mayaegg eggbase progbase
+    mayaegg maya eggbase progbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
     linmath:c putil:c panda:m \

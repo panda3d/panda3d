@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "mayaApi.h"
-#include "config_mayaegg.h"
+#include "config_maya.h"
 
 #include "pre_maya_include.h"
 #include <maya/MGlobal.h>
@@ -150,7 +150,7 @@ bool MayaApi::
 read(const Filename &filename) {
   MFileIO::newFile(true);
 
-  mayaegg_cat.info() << "Reading " << filename << "\n";
+  maya_cat.info() << "Reading " << filename << "\n";
   // Load the file into Maya
   string os_filename = filename.to_os_specific();
 

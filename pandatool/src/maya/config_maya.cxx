@@ -1,4 +1,4 @@
-// Filename: config_mayaegg.cxx
+// Filename: config_maya.cxx
 // Created by:  drose (15Apr02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,19 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_mayaegg.h"
+#include "config_maya.h"
 
 #include <dconfig.h>
 
-Configure(config_mayaegg);
-NotifyCategoryDef(mayaegg, ":maya");
+Configure(config_maya);
+NotifyCategoryDef(maya, "");
 
-ConfigureFn(config_mayaegg) {
-  init_libmayaegg();
+ConfigureFn(config_maya) {
+  init_libmaya();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: init_libmayaegg
+//     Function: init_libmaya
 //  Description: Initializes the library.  This must be called at
 //               least once before any of the functions or classes in
 //               this library can be used.  Normally it will be
@@ -36,7 +36,7 @@ ConfigureFn(config_mayaegg) {
 //               called explicitly, but special cases exist.
 ////////////////////////////////////////////////////////////////////
 void
-init_libmayaegg() {
+init_libmaya() {
   static bool initialized = false;
   if (initialized) {
     return;
