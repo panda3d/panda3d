@@ -8,7 +8,7 @@ import time
 import fnmatch
 import string
 import signal
-from bisect import bisect
+from libheapq import heappush, heappop
 
 # MRM: Need to make internal task variables like time, name, index
 # more unique (less likely to have name clashes)
@@ -65,14 +65,41 @@ class Task:
         Task.count += 1
         self.__call__ = callback
         self.__priority = priority
-        self.dt = 0.0
-        self.maxDt = 0.0
-        self.avgDt = 0.0
-        self.runningTotal = 0.0
-        self.pstats = None
         self.__removed = 0
-        self.onDoLaterList = 0
+        if TaskManager.taskTimerVerbose:
+            self.dt = 0.0
+            self.avgDt = 0.0
+            self.maxDt = 0.0
+            self.runningTotal = 0.0
+            self.pstats = None
         self.extraArgs = None
+        # Used for doLaters
+        self.wakeTime = 0.0
+
+    # Used for putting into the doLaterList
+    # the heapq calls __cmp__ via the rich compare function
+    def __cmp__(self, other):
+        if isinstance(other, Task):
+            if self.wakeTime < other.wakeTime:
+                return -1
+            elif self.wakeTime > other.wakeTime:
+                return 1
+            # If the wakeTimes happen to be the same, just
+            # sort them based on id
+            else:
+                return cmp(self.id, other.id)
+        # Not sure what to do here, I guess we should just make sure it is
+        # not equal since it cannot be. Should it be less than or greater
+        # than? Not sure anybody will care.
+        else:
+            return -1
+
+    # According to the Python manual (3.3.1), if you define a cmp operator
+    # you should also define a hash operator or your objects will not be
+    # usable in dictionaries. Since no two task objects are unique, we can
+    # just return the unique id.
+    def __hash__(self):
+        return self.id
 
     def remove(self):
         if not self.__removed:
@@ -80,6 +107,7 @@ class Task:
             # Remove any refs to real objects
             # In case we hang around the doLaterList for a while
             del self.__call__
+            del self.extraArgs
 
     def isRemoved(self):
         return self.__removed
@@ -100,7 +128,7 @@ class Task:
         self.frame = currentFrame - self.startframe
 
     def setupPStats(self, name):
-        if __debug__:
+        if __debug__ and TaskManager.taskTimerVerbose:
             from pandac import PStatCollector
             self.pstats = PStatCollector.PStatCollector("App:Show code:" + name)
 
@@ -166,8 +194,7 @@ def make_sequence(taskList):
 
             # If we got to the end of the list, this sequence is done
             if (self.index >= len(self.taskList)):
-                if TaskManager.notify.getDebug():
-                    TaskManager.notify.debug('sequence done: ' + self.name)
+                # TaskManager.notify.debug('sequence done: ' + self.name)
                 frameFinished = 1
                 taskDoneStatus = done
                 
@@ -242,10 +269,6 @@ class TaskPriorityList(list):
         self.__emptyIndex = 0
     def getPriority(self):
         return self.__priority
-    def getEmptyIndex(self):
-        return self.__emptyIndex
-    def setEmptyIndex(self, index):
-        self.__emptyIndex = index
     def add(self, task):
         if (self.__emptyIndex >= len(self)):
             self.append(task)
@@ -265,57 +288,18 @@ class TaskPriorityList(list):
             self[self.__emptyIndex-1] = None
             self.__emptyIndex -= 1
 
-
-class DoLaterList(list):
-    """
-    This is a list that maintains sorted order of wakeTimes on tasks
-    """
-    def __init__(self):
-        list.__init__(self)
-
-    def peek(self):
-        return self[-1]
-
-    def add(self, task):
-        """
-        Add task, keeping the list reverse sorted so we can pop off the end efficiently.
-        This does a binary search for the index to insert into.
-        Returns the index at which task was inserted.
-        """
-        lo = 0
-        hi = len(self)
-        wakeTime = task.wakeTime
-        while lo < hi:
-            mid = (lo+hi)//2
-            if wakeTime > self[mid].wakeTime:
-                hi = mid
-            else:
-                lo = mid+1
-        list.insert(self, lo, task)
-
-    def remove(self, task):
-        """
-        This does a binary search for the index of the task
-        Then deletes the entry from the list
-        """
-        lo = 0
-        hi = len(self)
-        wakeTime = task.wakeTime
-        while lo < hi:
-            mid = (lo+hi)//2
-            if task is self[mid]:
-                del self[mid]
-                return 1
-            elif wakeTime > self[mid].wakeTime:
-                hi = mid
-            else:
-                lo = mid+1
-        return 0
-
-
 class TaskManager:
 
+    # These class vars are generally overwritten by Config variables which
+    # are read in at the start of a show (ShowBase.py or AIStart.py)
+
     notify = None
+    # TODO: there is a bit of a bug when you default this to 0. The first
+    # task we make, the doLaterProcessor, needs to have this set to 1 or
+    # else we get an error.
+    taskTimerVerbose = 1 
+    extendedExceptions = 0
+    pStatsTasks = 0
 
     def __init__(self):
         self.running = 0
@@ -323,15 +307,13 @@ class TaskManager:
         self.taskList = []
         # Dictionary of priority to newTaskLists
         self.pendingTaskDict = {}
-        self.doLaterList = DoLaterList()
+        # List of tasks scheduled to execute in the future
+        self.doLaterList = []
         self.currentTime, self.currentFrame = self.__getTimeFrame()
         if (TaskManager.notify == None):
             TaskManager.notify = directNotify.newCategory("TaskManager")
-        self.taskTimerVerbose = 0
-        self.extendedExceptions = 0
         self.fKeyboardInterrupt = 0
         self.interruptCount = 0
-        self.pStatsTasks = 0
         self.resumeFunc = None
         self.fVerbose = 0
         # Dictionary of task name to list of tasks with that name
@@ -379,13 +361,11 @@ class TaskManager:
         # Instead we just flag them as removed
         # Later, somebody else cleans them out
         while self.doLaterList:
-            # Check the first one on the list (actually the last one on
-            # the list since it is reverse sorted)
-            dl = self.doLaterList.peek()
+            # Check the first one on the list to see if it is ready
+            dl = self.doLaterList[0]
             if dl.isRemoved():
                 # Get rid of this task forever
-                self.doLaterList.pop()
-                dl.onDoLaterList = 0
+                heappop(self.doLaterList)
                 continue
             # If the time now is less than the start of the doLater + delay
             # then we are not ready yet, continue to next one
@@ -394,28 +374,23 @@ class TaskManager:
                 # is not ready to go, we can return
                 break
             else:
-                if TaskManager.notify.getDebug():
-                    TaskManager.notify.debug('__doLaterProcessor: spawning %s' % (dl))
-                self.doLaterList.pop()
+                # Take it off the doLaterList, set its time, and make it pending
+                # TaskManager.notify.debug('__doLaterProcessor: spawning %s' % (dl))
+                heappop(self.doLaterList)
                 dl.setStartTimeFrame(self.currentTime, self.currentFrame)
-                # No longer on the doLaterList
-                dl.onDoLaterList = 0
                 self.__addPendingTask(dl)
                 continue
         return cont
 
     def doMethodLater(self, delayTime, func, taskName, extraArgs=None, uponDeath=None):
         task = Task(func)
-        task.delayTime = delayTime
         task.name = taskName
         if extraArgs:
             task.extraArgs = extraArgs
         if uponDeath:
             task.uponDeath = uponDeath
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('spawning doLater: %s' % (task))
+        # TaskManager.notify.debug('spawning doLater: %s' % (task))
         # Add this task to the nameDict
-        # nameList = self.nameDict.setdefault(task.name, [])
         nameList = self.nameDict.get(taskName)
         if nameList:
             nameList.append(task)
@@ -425,12 +400,10 @@ class TaskManager:
         # rather than use a cached value; globalClock's frame time may
         # have been synced since the start of this frame
         currentTime = globalClock.getFrameTime()
-        task.setStartTimeFrame(currentTime, self.currentFrame)
         # Cache the time we should wake up for easier sorting
         task.wakeTime = currentTime + delayTime
-        # For more efficient removal, note that it is on the doLaterList
-        task.onDoLaterList = 1
-        self.doLaterList.add(task)
+        # Push this onto the doLaterList. The heap maintains the sorting.
+        heappush(self.doLaterList, task)
         if self.fVerbose:
             # Alert the world, a new task is born!
             messenger.send('TaskManager-spawnDoLater',
@@ -442,8 +415,7 @@ class TaskManager:
         Add a new task to the taskMgr.
         You can add a Task object or a method that takes one argument.
         """
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('add: %s' % (name))
+        # TaskManager.notify.debug('add: %s' % (name))
         if isinstance(funcOrTask, Task):
             task = funcOrTask
         elif callable(funcOrTask):
@@ -461,7 +433,6 @@ class TaskManager:
         # have been synced since the start of this frame
         currentTime = globalClock.getFrameTime()
         task.setStartTimeFrame(currentTime, self.currentFrame)
-        # nameList = self.nameDict.setdefault(name, [])
         nameList = self.nameDict.get(name)
         if nameList:
             nameList.append(task)
@@ -472,12 +443,8 @@ class TaskManager:
         return task
 
     def __addPendingTask(self, task):
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('__addPendingTask: %s' % (task.name))
+        # TaskManager.notify.debug('__addPendingTask: %s' % (task.name))
         pri = task.getPriority()
-        # setdefault here is bad because we create and then throw away the
-        # TaskPriorityList object
-        # taskPriList = self.pendingTaskDict.setdefault(pri, TaskPriorityList(pri))
         taskPriList = self.pendingTaskDict.get(pri)
         if not taskPriList:
             taskPriList = TaskPriorityList(pri)
@@ -547,8 +514,7 @@ class TaskManager:
         Removes tasks whose names match the pattern, which can include
         standard shell globbing characters like *, ?, and [].
         """
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('removing tasks matching: ' + taskPattern)
+        # TaskManager.notify.debug('removing tasks matching: ' + taskPattern)
         num = 0
         keyList = filter(lambda key: fnmatch.fnmatchcase(key, taskPattern), self.nameDict.keys())
         for key in keyList:
@@ -558,13 +524,9 @@ class TaskManager:
     def __removeTasksEqual(self, task):
         # Remove this task from the nameDict (should be a short list)
         if self.__removeTaskFromNameDict(task):
-            if TaskManager.notify.getDebug():
-                TaskManager.notify.debug('__removeTasksEqual: removing task: %s' % (task))
+            # TaskManager.notify.debug('__removeTasksEqual: removing task: %s' % (task))
             # Flag the task for removal from the real list
             task.remove()
-            if task.onDoLaterList:
-                self.doLaterList.remove(task)
-            # Cleanup stuff
             task.finishTask(self.fVerbose)
             return 1
         else:
@@ -573,14 +535,10 @@ class TaskManager:
     def __removeTasksNamed(self, taskName):
         if not self.nameDict.has_key(taskName):
             return 0
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('__removeTasksNamed: removing tasks named: %s' % (taskName))
+        # TaskManager.notify.debug('__removeTasksNamed: removing tasks named: %s' % (taskName))
         for task in self.nameDict[taskName]:
             # Flag for removal
             task.remove()
-            if task.onDoLaterList:
-                self.doLaterList.remove(task)
-            # Cleanup stuff
             task.finishTask(self.fVerbose)
         # Record the number of tasks removed
         num = len(self.nameDict[taskName])
@@ -594,9 +552,12 @@ class TaskManager:
         tasksWithName = self.nameDict.get(taskName)
         if tasksWithName:
             if task in tasksWithName:
-                tasksWithName.remove(task)
-                if len(tasksWithName) == 0:
+                # If this is the last element, just remove the entry
+                # from the dictionary
+                if len(tasksWithName) == 1:
                     del self.nameDict[taskName]
+                else:
+                    tasksWithName.remove(task)
                 return 1
         return 0
 
@@ -647,8 +608,7 @@ class TaskManager:
                 break
             # See if this task has been removed in show code
             if task.isRemoved():
-                if TaskManager.notify.getDebug():
-                    assert(TaskManager.notify.debug('__stepThroughList: task is flagged for removal %s' % (task)))
+                # assert(TaskManager.notify.debug('__stepThroughList: task is flagged for removal %s' % (task)))
                 # If it was removed in show code, it will need finishTask run
                 # If it was removed by the taskMgr, it will not, but that is ok
                 # because finishTask is safe to call twice
@@ -663,20 +623,17 @@ class TaskManager:
                 # Leave it for next frame, its not done yet
                 pass
             elif ((ret == done) or (ret == exit) or (ret == None)):
-                if TaskManager.notify.getDebug():
-                    assert(TaskManager.notify.debug('__stepThroughList: task is finished %s' % (task)))
+                # assert(TaskManager.notify.debug('__stepThroughList: task is finished %s' % (task)))
                 # Remove the task
                 if not task.isRemoved():
-                    if TaskManager.notify.getDebug():
-                        assert(TaskManager.notify.debug('__stepThroughList: task not removed %s' % (task)))
+                    # assert(TaskManager.notify.debug('__stepThroughList: task not removed %s' % (task)))
                     task.remove()
                     # Note: Should not need to remove from doLaterList here because
                     # this task is not in the doLaterList
                     task.finishTask(self.fVerbose)
                     self.__removeTaskFromNameDict(task)
                 else:
-                    if TaskManager.notify.getDebug():
-                        assert(TaskManager.notify.debug('__stepThroughList: task already removed %s' % (task)))
+                    # assert(TaskManager.notify.debug('__stepThroughList: task already removed %s' % (task)))
                     self.__removeTaskFromNameDict(task)
                 taskPriList.remove(i)
                 # Do not increment the iterator
@@ -692,14 +649,12 @@ class TaskManager:
         for taskList in self.pendingTaskDict.values():
             for task in taskList:
                 if (task and not task.isRemoved()):
-                    if TaskManager.notify.getDebug():
-                        assert(TaskManager.notify.debug('step: moving %s from pending to taskList' % (task.name)))
+                    # assert(TaskManager.notify.debug('step: moving %s from pending to taskList' % (task.name)))
                     self.__addNewTask(task)
         self.pendingTaskDict.clear()
     
     def step(self):
-        if TaskManager.notify.getDebug():
-            assert(TaskManager.notify.debug('step: begin'))
+        # assert(TaskManager.notify.debug('step: begin'))
         self.currentTime, self.currentFrame = self.__getTimeFrame()
         # Replace keyboard interrupt handler during task list processing
         # so we catch the keyboard interrupt but don't handle it until
@@ -708,22 +663,18 @@ class TaskManager:
         self.interruptCount = 0
         signal.signal(signal.SIGINT, self.keyboardInterruptHandler)
 
-
-
         # Traverse the task list in order because it is in priority order
         priIndex = 0
         while priIndex < len(self.taskList):
             taskPriList = self.taskList[priIndex]
             pri = taskPriList.getPriority()
-            if TaskManager.notify.getDebug():
-                assert(TaskManager.notify.debug('step: running through taskList at pri: %s, priIndex: %s' % (pri, priIndex)))
+            # assert(TaskManager.notify.debug('step: running through taskList at pri: %s, priIndex: %s' % (pri, priIndex)))
             self.__stepThroughList(taskPriList)
 
             # Now see if that generated any pending tasks for this taskPriList
-            pendingTasks = self.pendingTaskDict.get(pri, [])
+            pendingTasks = self.pendingTaskDict.get(pri)
             while pendingTasks:
-                if TaskManager.notify.getDebug():
-                    assert(TaskManager.notify.debug('step: running through pending tasks at pri: %s' % (pri)))
+                # assert(TaskManager.notify.debug('step: running through pending tasks at pri: %s' % (pri)))
                 # Remove them from the pendingTaskDict
                 del self.pendingTaskDict[pri]
                 # Execute them
@@ -731,11 +682,10 @@ class TaskManager:
                 # Add these to the real taskList
                 for task in pendingTasks:
                     if (task and not task.isRemoved()):
-                        if TaskManager.notify.getDebug():
-                            assert(TaskManager.notify.debug('step: moving %s from pending to taskList' % (task.name)))
+                        # assert(TaskManager.notify.debug('step: moving %s from pending to taskList' % (task.name)))
                         self.__addNewTask(task)
                 # See if we generated any more for this pri level
-                pendingTasks = self.pendingTaskDict.get(pri, [])
+                pendingTasks = self.pendingTaskDict.get(pri)
 
             # Any new tasks that were made pending should be converted
             # to real tasks now in case they need to run this frame at a
@@ -823,56 +773,63 @@ class TaskManager:
                + 'max'.rjust(dtWidth)
                + 'priority'.rjust(priorityWidth)
                + '\n')
-        str += '---------------------------------------------------------------\n'
+        str += '-------------------------------------------------------------------------\n'
         for taskPriList in self.taskList:
             priority = `taskPriList.getPriority()`
             for task in taskPriList:
                 if task is None:
                     break
-                totalDt = totalDt + task.dt
-                totalAvgDt = totalAvgDt + task.avgDt
                 if task.isRemoved():
                     taskName = '(R)' + task.name
                 else:
                     taskName = task.name
-                if (self.taskTimerVerbose):
+                if self.taskTimerVerbose:
                     import fpformat
-                    str = str + (taskName.ljust(taskNameWidth)
-                                 + fpformat.fix(task.dt*1000, 2).rjust(dtWidth)
-                                 + fpformat.fix(task.avgDt*1000, 2).rjust(dtWidth)
-                                 + fpformat.fix(task.maxDt*1000, 2).rjust(dtWidth)
-                                 + priority.rjust(priorityWidth)
-                                 + '\n')
+                    totalDt = totalDt + task.dt
+                    totalAvgDt = totalAvgDt + task.avgDt
+                    str += (taskName.ljust(taskNameWidth)
+                            + fpformat.fix(task.dt*1000, 2).rjust(dtWidth)
+                            + fpformat.fix(task.avgDt*1000, 2).rjust(dtWidth)
+                            + fpformat.fix(task.maxDt*1000, 2).rjust(dtWidth)
+                            + priority.rjust(priorityWidth)
+                            + '\n')
                 else:
-                    str = str + (task.name.ljust(taskNameWidth)
-                                 + '----'.rjust(dtWidth)
-                                 + '----'.rjust(dtWidth)
-                                 + '----'.rjust(dtWidth)
-                                 + priority.rjust(priorityWidth)
-                                 + '\n')
-        str += '---------------------------------------------------------------\n'
-        str += ' pendingTasks\n'
-        str += '---------------------------------------------------------------\n'
+                    str += (task.name.ljust(taskNameWidth)
+                            + '----'.rjust(dtWidth)
+                            + '----'.rjust(dtWidth)
+                            + '----'.rjust(dtWidth)
+                            + priority.rjust(priorityWidth)
+                            + '\n')
+        str += '-------------------------------------------------------------------------\n'
+        str += 'pendingTasks\n'
+        str += '-------------------------------------------------------------------------\n'
         for pri, taskList in self.pendingTaskDict.items():
             for task in taskList:
-                remainingTime = ((task.starttime) - self.currentTime)
                 if task.isRemoved():
                     taskName = '(PR)' + task.name
                 else:
                     taskName = '(P)' + task.name
                 if (self.taskTimerVerbose):
                     import fpformat
-                    str = str + ('  ' + taskName.ljust(taskNameWidth-2)
-                                 +  fpformat.fix(pri, 2).rjust(dtWidth)
-                                 + '\n')
+                    str += ('  ' + taskName.ljust(taskNameWidth-2)
+                            +  fpformat.fix(pri, 2).rjust(dtWidth)
+                            + '\n')
                 else:
-                    str = str + ('  ' + taskName.ljust(taskNameWidth-2)
-                                 +  '----'.rjust(dtWidth)
-                                 + '\n')
-        str = str + '---------------------------------------------------------------\n'
-        str = str + ' doLaterList\n'
-        str = str + '---------------------------------------------------------------\n'
-        for task in self.doLaterList:
+                    str += ('  ' + taskName.ljust(taskNameWidth-2)
+                            +  '----'.rjust(dtWidth)
+                            + '\n')
+        str += '-------------------------------------------------------------------------\n'
+        str += ('doLaterList'.ljust(taskNameWidth)
+               + 'waitTime(s)'.rjust(dtWidth)
+               + '\n')
+        str += '-------------------------------------------------------------------------\n'
+        # When we print, show the doLaterList in actual sorted order.
+        # The priority heap is not actually in order - it is a tree
+        # Make a shallow copy so we can sort it
+        sortedDoLaterList = self.doLaterList[:]
+        sortedDoLaterList.sort()
+        sortedDoLaterList.reverse()
+        for task in sortedDoLaterList:
             remainingTime = ((task.wakeTime) - self.currentTime)
             if task.isRemoved():
                 taskName = '(R)' + task.name
@@ -880,36 +837,37 @@ class TaskManager:
                 taskName = task.name
             if (self.taskTimerVerbose):
                 import fpformat
-                str = str + ('  ' + taskName.ljust(taskNameWidth-2)
-                             +  fpformat.fix(remainingTime, 2).rjust(dtWidth)
-                             + '\n')
+                str += ('  ' + taskName.ljust(taskNameWidth-2)
+                        +  fpformat.fix(remainingTime, 2).rjust(dtWidth)
+                        + '\n')
             else:
-                str = str + ('  ' + taskName.ljust(taskNameWidth-2)
-                             +  '----'.rjust(dtWidth)
-                             + '\n')
-        str = str + '---------------------------------------------------------------\n'
+                str += ('  ' + taskName.ljust(taskNameWidth-2)
+                        +  '----'.rjust(dtWidth)
+                        + '\n')
+        str += '-------------------------------------------------------------------------\n'
         if (self.taskTimerVerbose):
             import fpformat
-            str = str + ('total'.ljust(taskNameWidth)
-                         + fpformat.fix(totalDt*1000, 2).rjust(dtWidth)
-                         + fpformat.fix(totalAvgDt*1000, 2).rjust(dtWidth)
-                         + '\n')
+            str += ('total'.ljust(taskNameWidth)
+                    + fpformat.fix(totalDt*1000, 2).rjust(dtWidth)
+                    + fpformat.fix(totalAvgDt*1000, 2).rjust(dtWidth)
+                    + '\n')
         else:
-            str = str + ('total'.ljust(taskNameWidth)
-                         + '----'.rjust(dtWidth)
-                         + '----'.rjust(dtWidth)
-                         + '\n')
+            str += ('total'.ljust(taskNameWidth)
+                    + '----'.rjust(dtWidth)
+                    + '----'.rjust(dtWidth)
+                    + '\n')
         str += "End of taskMgr info\n"
         return str
 
     def resetStats(self):
         # WARNING: this screws up your do-later timings
-        for task in self.taskList:
-            task.dt = 0
-            task.avgDt = 0
-            task.maxDt = 0
-            task.runningTotal = 0
-            task.setStartTimeFrame(self.currentTime, self.currentFrame)
+        if self.taskTimerVerbose:
+            for task in self.taskList:
+                task.dt = 0
+                task.avgDt = 0
+                task.maxDt = 0
+                task.runningTotal = 0
+                task.setStartTimeFrame(self.currentTime, self.currentFrame)
 
     def popupControls(self):
         from direct.tkpanels import TaskManagerPanel
