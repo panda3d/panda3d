@@ -917,13 +917,13 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
                                 // pixel buffer is in ABGR format(it stores big-endian RGBA)
                                 // need to change byte order from ARGB
 
-                                r = *pSrcByte++;
-                                g = *pSrcByte++;
                                 b = *pSrcByte++;
+                                g = *pSrcByte++;
+                                r = *pSrcByte++;
 
-                                *pDstByte++ = b;
-                                *pDstByte++ = g;
                                 *pDstByte++ = r;
+                                *pDstByte++ = g;
+                                *pDstByte++ = b;
                             }
                           #endif
                         }
