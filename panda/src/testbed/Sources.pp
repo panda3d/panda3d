@@ -120,6 +120,15 @@
 #end test_bin_target
 
 #begin test_bin_target
+  #define TARGET test_sprite_particles
+
+  #define SOURCES \
+    test_sprite_particles.cxx
+  #define LOCAL_LIBS $[LOCAL_LIBS] physics particlesystem
+
+#end test_bin_target
+
+#begin test_bin_target
   #define TARGET test_recparticles
 
   #define SOURCES \
