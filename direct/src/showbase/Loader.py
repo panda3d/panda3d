@@ -59,22 +59,28 @@ class Loader:
             nodePath = None
         return nodePath
 
-    def loadModelOnceUnder(self, modelPath, nodeName):
-        """loadModelOnceUnder(self, string, string)
+    def loadModelOnceUnder(self, modelPath, underNode):
+        """loadModelOnceUnder(self, string, string | node | NodePath)
         Behaves like loadModelOnce, but also implicitly creates a new
         node to attach the model under, which helps to differentiate
-        different instances.  This is useful when you want to load a
-        model once several times before parenting each instance
-        somewhere, or when you want to load a model and immediately
-        set a transform on it.  But also consider loadModelCopy().
+        different instances.
+
+        underNode may be either a node name, or a NodePath or a Node
+        to an already-existing node.
+
+        This is useful when you want to load a model once several
+        times before parenting each instance somewhere, or when you
+        want to load a model and immediately set a transform on it.
+        But also consider loadModelCopy().
+        
         """
 
-        Loader.notify.debug("Loading model once: %s under %s" % (modelPath, nodeName))
+        Loader.notify.debug("Loading model once: %s under %s" % (modelPath, underNode))
         if phaseChecker:
             phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
         if (node != None):
-            nodePath = NodePath(nodeName)
+            nodePath = NodePath(underNode)
             nodePath.attachNewNode(node)
         else:
             nodePath = None
