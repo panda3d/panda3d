@@ -6,7 +6,7 @@
 // parameters, in particular the default display types.
 //
 
-#output _70_direct.prc
+#output 70_direct.prc
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
 ################################# DO NOT EDIT ###########################
 
@@ -21,4 +21,4 @@ egg-object-type-direct-widget   <Scalar> collide-mask { 0x80000000 } <Collide> {
 
 cull-bin gui-popup 60 unsorted
 
-#end _70_direct.prc
+#end 70_direct.prc
