@@ -101,27 +101,28 @@ else:
   def backslashify(exp):
     return(exp)
 
-def oslocalcmd(cd, cmd):
-  if (cd != "."):
-    print "cd "+cd+" ; "+cmd
-    base=os.getcwd()
-    os.chdir(cd)
-  else:
-    print cmd
-  sys.stdout.flush()
-  if (sys.platform == "win32"):
-    exe = cmd.split()[0]
-    if (os.path.isfile(exe)==0):
-      for i in os.environ["PATH"].split(";"):
-        if os.path.isfile(os.path.join(i, exe)):
-          exe = os.path.join(i, exe)
-          break
+if 0:
+  def oslocalcmd(cd, cmd):
+    if (cd != "."):
+      print "cd "+cd+" ; "+cmd
+      base=os.getcwd()
+      os.chdir(cd)
+    else:
+      print cmd
+    sys.stdout.flush()
+    if (sys.platform == "win32"):
+      exe = cmd.split()[0]
       if (os.path.isfile(exe)==0):
-        sys.exit("Cannot find "+exe+" on search path")
-    os.spawnl(os.P_WAIT, exe, cmd)
-  else: os.system(cmd)
-  if (cd != "."):
-    os.chdir(base)
+        for i in os.environ["PATH"].split(";"):
+          if os.path.isfile(os.path.join(i, exe)):
+            exe = os.path.join(i, exe)
+            break
+        if (os.path.isfile(exe)==0):
+          sys.exit("Cannot find "+exe+" on search path")
+      os.spawnl(os.P_WAIT, exe, cmd)
+    else: os.system(cmd)
+    if (cd != "."):
+      os.chdir(base)
 
 if 1:
   def getExecutablePath(cmd):
@@ -211,24 +212,6 @@ def WriteFile(wfile,data):
     dsthandle.write(data)
     dsthandle.close()
   except: sys.exit("Cannot write "+wfile)
-
-
-
-
-def ConditionalWriteFile(dest,desiredcontents):
-  try:
-    rfile = open(dest, 'rb');
-    contents = rfile.read(-1);
-    rfile.close();
-  except: contents=0;
-  if (contents != desiredcontents):
-    print "Regenerating file: "+dest
-    sys.stdout.flush()
-    try:
-      wfile = open(dest, 'wb');
-      wfile.write(desiredcontents);
-      wfile.close();
-    except: sys.exit("Cannot write to "+dest);
 
 ########################################################################
 ##
@@ -777,7 +760,7 @@ if (OMIT.count("MILES")==0):
   WARNINGS.append("Miles audio not yet supported by makepanda")
   WARNINGS.append("I have automatically added this command-line option: --no-miles")
   OMIT.append("MILES")
-  
+
 ##########################################################################################
 #
 # Enable or Disable runtime debugging mechanisms based on optimize level.
@@ -1059,16 +1042,15 @@ def CxxCalcDependenciesAll(srcfiles, ipath):
 ########################################################################
 
 def ConditionalWriteFile(dest,desiredcontents):
-  wdest = backslashify(dest)
   try:
-    rfile = open(wdest, 'rb');
+    rfile = open(dest, 'rb');
     contents = rfile.read(-1);
     rfile.close();
   except: contents=0;
   if (contents != desiredcontents):
     print "Regenerating file: "+dest
     sys.stdout.flush()
-    WriteFile(wdest,desiredcontents)
+    WriteFile(dest,desiredcontents)
 
 ########################################################################
 ##
@@ -4118,7 +4100,7 @@ InterrogateModule(outc='libpanda_module.cxx', module='panda', library='libpanda'
 CompileC(ipath=IPATH, opts=OPTS, src='panda.cxx', obj='panda_panda.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='libpanda_module.cxx', obj='libpanda_module.obj')
 CompileLink(opts=['ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'HELIX', 'VRPN', 'NSPR',
-		  'ZLIB', 'JPEG', 'PNG', 'TIFF', 'FFTW', 'FREETYPE'],
+                  'ZLIB', 'JPEG', 'PNG', 'TIFF', 'FFTW', 'FREETYPE'],
             xdep=['built/tmp/dtool_have_helix.dat'],  dll='libpanda.dll', obj=OBJFILES)
 
 #
