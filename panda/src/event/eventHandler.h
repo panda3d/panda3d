@@ -45,7 +45,7 @@ class EXPCL_PANDAEXPRESS EventHandler : public TypedObject {
 public:
   // Define a function type suitable for receiving events.
   typedef void EventFunction(CPT_Event);
-  typedef void EventCallbackFunction(CPT(Event), void*);
+  typedef void EventCallbackFunction(CPT_Event, void *);
 
 PUBLISHED:
   EventHandler(EventQueue *queue);
@@ -59,10 +59,11 @@ PUBLISHED:
 public:
   bool add_hook(const string &event_name, EventFunction *function);
   bool add_hook(const string &event_name, EventCallbackFunction *function,
-                void*);
+                void *data);
+  bool has_hook(const string &event_name) const;
   bool remove_hook(const string &event_name, EventFunction *function);
   bool remove_hook(const string &event_name, EventCallbackFunction *function,
-                   void*);
+                   void *data);
 
   void remove_all_hooks();
 

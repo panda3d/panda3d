@@ -163,8 +163,35 @@ add_hook(const string &event_name, EventFunction *function) {
 ////////////////////////////////////////////////////////////////////
 bool EventHandler::
 add_hook(const string &event_name, EventCallbackFunction *function,
-     void *data) {
+         void *data) {
   return _cbhooks[event_name].insert(CallbackFunction(function, data)).second;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventHandler::has_hook
+//       Access: Public
+//  Description: Returns true if there is any hook added on the
+//               indicated event name, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EventHandler::
+has_hook(const string &event_name) const {
+  Hooks::const_iterator hi;
+  hi = _hooks.find(event_name);
+  if (hi != _hooks.end()) {
+    if (!(*hi).second.empty()) {
+      return true;
+    }
+  }
+
+  CallbackHooks::const_iterator chi;
+  chi = _cbhooks.find(event_name);
+  if (chi != _cbhooks.end()) {
+    if (!(*chi).second.empty()) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 
@@ -191,7 +218,7 @@ remove_hook(const string &event_name, EventFunction *function) {
 ////////////////////////////////////////////////////////////////////
 bool EventHandler::
 remove_hook(const string &event_name, EventCallbackFunction *function,
-        void *data) {
+            void *data) {
   return _cbhooks[event_name].erase(CallbackFunction(function, data)) != 0;
 }
 
