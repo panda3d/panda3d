@@ -114,7 +114,7 @@ compute_child(const LPoint3f &cam_pos, const LPoint3f &center) const {
       // since lowest level LOD is lev 0, must invert the meaning of
       // so minimum_LOD_number 0 will screen out no LODs, and increasing it
       // will screen out successively higher levels
-      int max_allowed_LOD_number = (_switch_vector.size()-1) - minimum_LOD_number;
+      int max_allowed_LOD_number = _switch_vector.size() - minimum_LOD_number;
       if(child > max_allowed_LOD_number) {
           child = max_allowed_LOD_number;
       }
