@@ -336,6 +336,9 @@ class DistributedObject(PandaObject):
             self.__barrierContext = None
 
     if wantOtpServer:
+        def addInterest(self, zoneId, note=""):
+            self.cr.addInterest(self.getDoId(), zoneId, note)
+        
         def setLocation(self, parentId, zoneId):
             # The store must run first so we know the old location
             self.cr.storeObjectLocation(self.doId, parentId, zoneId)
