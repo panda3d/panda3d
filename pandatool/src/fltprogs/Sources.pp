@@ -7,7 +7,7 @@
   #define OTHER_LIBS \
     linmath:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dconfig:c dtoolconfig:m dtool:m pystub
+    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     fltCopy.cxx fltCopy.h
@@ -21,7 +21,7 @@
   #define OTHER_LIBS \
     linmath:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dconfig:c dtoolconfig:m dtool:m pystub
+    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     fltTrans.cxx fltTrans.h
@@ -36,7 +36,7 @@
     egg:c pandaegg:m \
     linmath:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dconfig:c dtoolconfig:m dtool:m pystub
+    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     fltToEgg.cxx fltToEgg.h

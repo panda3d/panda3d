@@ -7,7 +7,7 @@
     cull:c loader:c egg:c sgraphutil:c sgattrib:c \
     sgraph:c pnmimagetypes:c \
     graph:c putil:c linmath:c express:c panda:m pandaexpress:m \
-    interrogatedb:c dtoolutil:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS \
     m
 
@@ -27,7 +27,7 @@
     loader:c egg2sg:c builder:c egg:c pnmimagetypes:c gobj:c \
     chan:c graph:c putil:c linmath:c \
     express:c pandaegg:m panda:m pandaexpress:m \
-    interrogatedb:c dtoolutil:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS \
     m
 

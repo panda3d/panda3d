@@ -6,7 +6,7 @@
     egg:c pandaegg:m \
     linmath:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dconfig:c dtoolconfig:m dtool:m pystub
+    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     lwoToEgg.cxx lwoToEgg.h
@@ -20,7 +20,7 @@
   #define OTHER_LIBS \
     linmath:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dconfig:c dtoolconfig:m dtool:m pystub
+    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     lwoScan.cxx lwoScan.h

@@ -6,7 +6,8 @@
     imagebase progbase
   #define OTHER_LIBS \
     pnmimagetypes:c pnmimage:c putil:c express:c panda:m \
-    pandaexpress:m dtoolconfig dtool pystub
+    pandaexpress:m \
+    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS \
     m
 

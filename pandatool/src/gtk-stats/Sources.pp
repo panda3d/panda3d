@@ -9,7 +9,7 @@
     gtkbase progbase pstatserver
   #define OTHER_LIBS \
     pstatclient:c linmath:c putil:c express:c panda:m \
-    dtoolutil:c dconfig:c dtoolconfig:m dtool:m
+    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m
   #define UNIX_SYS_LIBS \
     m
 

@@ -15,7 +15,7 @@
     eggbase progbase
   #define OTHER_LIBS \
     egg:c linmath:c putil:c express:c panda:m \
-    dtoolutil:c dconfig:c dtool:m
+    dtoolutil:c dtoolbase:c dconfig:c dtool:m
   #define UNIX_SYS_LIBS \
     m
 
