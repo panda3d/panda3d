@@ -20,6 +20,8 @@ class ForceGroup(DirectObject):
  	self.node = ForceNode.ForceNode(self.name)
 	self.nodePath = hidden.attachNewNode(self.node)
         self.fEnabled = 0
+
+	self.particleEffect = None
 	
 	# Default to enabled
 	self.enable()
@@ -46,10 +48,14 @@ class ForceGroup(DirectObject):
     def addForce(self, force):
 	"""addForce(self, force)"""
 	self.node.addForce(force)
+	if (self.particleEffect):
+	    self.particleEffect.addForce(force)
 
     def removeForce(self, force):
 	"""removeForce(self, force)"""
 	self.node.removeForce(force)
+	if (self.particleEffect):
+	    self.particleEffect.removeForce(force)
 
     # Get/set
     def getName(self):
