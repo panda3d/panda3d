@@ -191,7 +191,16 @@ get_page() const {
 ////////////////////////////////////////////////////////////////////
 bool PaletteImage::
 is_empty() const {
-  return _placements.size() < 2;
+  if (pal->_omit_solitary) {
+    // If we're omitting solitary textures, the image is considered
+    // empty even if it has one texture.
+    return _placements.size() < 2;
+
+  } else {
+    // If we're not omitting solitary textures, the image is only
+    // empty if it has no textures.
+    return _placements.empty();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -239,6 +248,9 @@ unplace(TexturePlacement *placement) {
 //               texture on the image.  If there is, it is flagged as
 //               'solitary' so that the egg files will not needlessly
 //               reference the palettized image.
+//
+//               However, if pal->_omit_solitary is false, we
+//               generally don't change textures to solitary state.
 ////////////////////////////////////////////////////////////////////
 void PaletteImage::
 check_solitary() {
@@ -247,7 +259,14 @@ check_solitary() {
     TexturePlacement *placement = *_placements.begin();
     nassertv(placement->get_omit_reason() == OR_none ||
 	     placement->get_omit_reason() == OR_solitary);
-    placement->omit_solitary();
+
+    if (pal->_omit_solitary || placement->get_omit_reason() == OR_solitary) {
+      // We only omit the solitary texture if (a) we have
+      // omit_solitary in effect, or (b) we don't have omit_solitary
+      // in effect now, but we did before, and the texture is still
+      // flagged as solitary from that previous pass.
+      placement->omit_solitary();
+    }
 
   } else {
     // Zero or multiple.

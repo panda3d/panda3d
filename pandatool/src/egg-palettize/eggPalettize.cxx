@@ -134,7 +134,7 @@ EggPalettize() : EggMultiFilter(true) {
      "suboptimal packing.  Including this switch forces the palettes "
      "to be rebuilt if necessary to optimize the packing, but this "
      "may invalidate other egg files which share this palette.",
-     &EggPalettize::dispatch_none, &_force_optimal);
+     &EggPalettize::dispatch_none, &_optimal);
 
   add_option
     ("nolock", "", 0, 
@@ -343,6 +343,12 @@ run() {
     FilenameUnifier::set_rel_dirname(_rel_dirname);
   }
 
+  // We only omit solitary textures from palettes if we're running in
+  // optimal mode.  Otherwise, we're likely to invalidate old egg
+  // files by changing a texture from solitary to nonsolitary state or
+  // vice-versa.
+  pal->_omit_solitary = _optimal;
+
   pal->all_params_set();
 
   Eggs::const_iterator ei;
@@ -358,7 +364,7 @@ run() {
     pal->_command_line_eggs.push_back(egg_file);
   }
 
-  if (_force_optimal) {
+  if (_optimal) {
     // If we're asking for an optimal packing, throw away the old
     // packing and start fresh.
     pal->reset_images();
@@ -374,7 +380,7 @@ run() {
     pal->process_command_line_eggs(_redo_all);
   }
 
-  if (_force_optimal) {
+  if (_optimal) {
     // If we're asking for optimal packing, this also implies we want
     // to resize the big empty palette images down.
     pal->optimal_resize();

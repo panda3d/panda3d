@@ -40,6 +40,7 @@ Palettizer() {
   _map_dirname = "%g";
   _shadow_dirname = "shadow";
   _margin = 2;
+  _omit_solitary = false;
   _coverage_threshold = 2.5;
   _aggressively_clean_mapdir = true;
   _force_power_2 = true;
@@ -644,6 +645,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_int32(_pal_x_size);
   datagram.add_int32(_pal_y_size);
   datagram.add_int32(_margin);
+  datagram.add_bool(_omit_solitary);
   datagram.add_float64(_coverage_threshold);
   datagram.add_bool(_force_power_2);
   datagram.add_bool(_aggressively_clean_mapdir);
@@ -775,6 +777,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _pal_x_size = scan.get_int32();
   _pal_y_size = scan.get_int32();
   _margin = scan.get_int32();
+  _omit_solitary = scan.get_bool();
   _coverage_threshold = scan.get_float64();
   _force_power_2 = scan.get_bool();
   _aggressively_clean_mapdir = scan.get_bool();

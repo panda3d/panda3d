@@ -37,6 +37,7 @@ DestTextureImage(TexturePlacement *placement) {
   _size_known = true;
   _x_size = texture->get_x_size();
   _y_size = texture->get_y_size();
+
   set_filename(placement->get_group(), texture->get_name());
 }
 

@@ -46,7 +46,7 @@ private:
   bool _report_pi;
   bool _statistics_only;
   bool _all_textures; 
-  bool _force_optimal;
+  bool _optimal;
   bool _redo_all;
   bool _redo_eggs;
   bool _dont_lock_pi;
