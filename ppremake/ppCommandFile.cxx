@@ -1434,23 +1434,19 @@ handle_mkdir_command() {
   vector<string> words;
   tokenize_whitespace(_scope->expand_string(_params), words);
 
-  if (words.empty()) {
-    cerr << "No directory name specifed to #mkdir.\n";
-  } else {
-    vector<string>::const_iterator wi;
-    for (wi = words.begin(); wi != words.end(); ++wi) {
-      Filename dirname(*wi);
-
-      if (dirname.is_local()) {
-        string prefix = _scope->expand_variable("DIRPREFIX");
-        dirname = Filename(prefix, dirname);
-      }
-
-      Filename filename(dirname, "file");
-      if (!filename.make_dir()) {
-        if (!dirname.is_directory()) {
-          cerr << "Unable to create directory " << dirname << "\n";
-        }
+  vector<string>::const_iterator wi;
+  for (wi = words.begin(); wi != words.end(); ++wi) {
+    Filename dirname(*wi);
+    
+    if (dirname.is_local()) {
+      string prefix = _scope->expand_variable("DIRPREFIX");
+      dirname = Filename(prefix, dirname);
+    }
+    
+    Filename filename(dirname, "file");
+    if (!filename.make_dir()) {
+      if (!dirname.is_directory()) {
+        cerr << "Unable to create directory " << dirname << "\n";
       }
     }
   }
@@ -1655,7 +1651,7 @@ handle_push_command() {
   while (p < _params.length()) {
     // Pull off the next varname.
     size_t q = _scope->scan_to_whitespace(_params, p);
-    string varname = trim_blanks(_scope->expand_string(_params.substr(p, q)));
+    string varname = trim_blanks(_scope->expand_string(_params.substr(p, q - p)));
     string def = _scope->get_variable(varname);
     enclosing_scope->define_variable(varname, def);
 
