@@ -1,7 +1,4 @@
 // Filename: wglGraphicsWindow.cxx
-// Created by:  mike (09Jan97)
-//
-////////////////////////////////////////////////////////////////////
 //
 ////////////////////////////////////////////////////////////////////
 // Includes
@@ -54,7 +51,11 @@ wglGraphicsWindow(GraphicsPipe* pipe, const
 ////////////////////////////////////////////////////////////////////
 wglGraphicsWindow::~wglGraphicsWindow(void) {
 //  DestroyWindow(_mwindow);
-  free(_visual);
+  if(_visual!=NULL)
+    free(_visual);
+  wglDeleteContext(_context);
+  ReleaseDC(_mwindow,_hdc);
+  DestroyWindow(_mwindow);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,8 +211,7 @@ try_for_visual(wglGraphicsPipe *pipe, int mask,
     if (stereo) {
       if (!(match->dwFlags & PFD_STEREO)) {
 	wgldisplay_cat.info()
-	  << "wglGraphicsWindow::try_for_visual() - request for "
-		<< "stereo failed" << endl;	
+	  << "wglGraphicsWindow::try_for_visual() - request for stereo failed" << endl;	
       }
     }
   }
@@ -296,15 +296,21 @@ get_config(PIXELFORMATDESCRIPTOR *visual, int attrib, int *value) {
   }
 }
 
+#if 0
 ////////////////////////////////////////////////////////////////////
 //     Function: choose visual
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::choose_visual(void) {
+int wglGraphicsWindow::choose_visual(void) {
   wglGraphicsPipe* pipe = DCAST(wglGraphicsPipe, _pipe);
 
   int mask = _props._mask;
+
+    wgldisplay_cat.info()
+      << "wglGraphicsWindow::mask =0x" << (void*) _props._mask
+	<< endl;
+
   int want_depth_bits = _props._want_depth_bits;
   int want_color_bits = _props._want_color_bits;
 
@@ -458,6 +464,135 @@ void wglGraphicsWindow::choose_visual(void) {
       << " Stereo? " << stereo << endl;
   }
 }
+#else
+
+typedef enum {Software, MCD, ICD} OGLDriverType;
+#ifdef _DEBUG
+void PrintPFD(PIXELFORMATDESCRIPTOR *pfd,char *msg) {
+
+  wgldisplay_cat.spam() << msg << endl 
+                         << "PFD flags: 0x" << (void*)pfd->dwFlags << " (" <<
+            ((pfd->dwFlags &  PFD_GENERIC_ACCELERATED) ? " PFD_GENERIC_ACCELERATED |" : "") <<
+            ((pfd->dwFlags &  PFD_GENERIC_FORMAT) ? " PFD_GENERIC_FORMAT |" : "") <<
+            ((pfd->dwFlags &  PFD_DOUBLEBUFFER) ? " PFD_DOUBLEBUFFER |" : "") <<
+            ((pfd->dwFlags &  PFD_DRAW_TO_WINDOW) ? " PFD_DRAW_TO_WINDOW |" : "") <<
+            ((pfd->dwFlags &  PFD_SUPPORT_OPENGL) ? " PFD_SUPPORT_OPENGL |" : "") <<
+            ((pfd->dwFlags & PFD_SWAP_EXCHANGE) ? " PFD_SWAP_EXCHANGE |" : "") <<
+            ((pfd->dwFlags & PFD_SWAP_COPY) ? " PFD_SWAP_COPY |" : "") << ")\n"
+                         << "PFD iPixelType: " << ((pfd->iPixelType==PFD_TYPE_RGBA) ? "PFD_TYPE_RGBA":"PFD_TYPE_COLORINDEX") << endl
+                         << "PFD cColorBits: " << (DWORD)pfd->cColorBits << "  R: " << (DWORD)pfd->cRedBits <<" G: " << (DWORD)pfd->cGreenBits <<" B: " << (DWORD)pfd->cBlueBits << endl
+                         << "PFD cAlphaBits: " << (DWORD)pfd->cAlphaBits << "  DepthBits: " << (DWORD)pfd->cDepthBits <<" StencilBits: " << (DWORD)pfd->cStencilBits <<" AccumBits: " << (DWORD)pfd->cAccumBits << endl;
+}
+#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: choose visual
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+int wglGraphicsWindow::choose_visual(void) {
+  wglGraphicsPipe* pipe = DCAST(wglGraphicsPipe, _pipe);
+
+  int mask = _props._mask;
+  int want_depth_bits = _props._want_depth_bits;
+  int want_color_bits = _props._want_color_bits;
+  OGLDriverType drvtype;
+
+  if (mask & W_MULTISAMPLE) {
+    wgldisplay_cat.info()
+      << "wglGraphicsWindow::config() - multisample not supported"<< endl;
+    mask &= ~W_MULTISAMPLE;
+  }
+    wgldisplay_cat.info()
+      << "wglGraphicsWindow::mask =0x" << (void*) mask
+	<< endl;
+
+  PIXELFORMATDESCRIPTOR pfd;
+  ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR));
+  pfd.nSize=sizeof(PIXELFORMATDESCRIPTOR);
+  pfd.nVersion=1;
+
+//  if (_props._fullscreen) {  
+//  do anything different for fullscrn?
+
+  // just use the pixfmt of the current desktop
+
+  int MaxPixFmtNum=DescribePixelFormat(_hdc, 1, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+  int cur_bpp=GetDeviceCaps(_hdc,BITSPIXEL);
+  int i;
+
+  for(i=1;i<=MaxPixFmtNum;i++) {
+      DescribePixelFormat(_hdc, i, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+
+      if((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
+          drvtype=MCD;
+       else if(!(pfd.dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd.dwFlags & PFD_GENERIC_FORMAT))
+          drvtype=ICD;
+       else {
+         drvtype=Software;
+         continue;  // skipping all SW fmts
+       }
+
+      if((pfd.iPixelType == PFD_TYPE_COLORINDEX) && !(mask & W_INDEX))
+          continue;
+
+#if 0
+    // use wglinfo.exe instead
+    char msg[200];
+    sprintf(msg,"\nGL PixelFormat[%d]",i);
+    PrintPFD(&pfd,msg);
+#endif
+
+       DWORD dwReqFlags=(PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW);
+       if(mask & W_DOUBLE)
+           dwReqFlags|= PFD_DOUBLEBUFFER;
+       if((mask & W_ALPHA) && (pfd.cAlphaBits==0))
+           continue;
+       if((mask & W_DEPTH) && (pfd.cDepthBits==0))
+           continue;
+       if((mask & W_STENCIL) && (pfd.cStencilBits==0))
+           continue;
+       if((pfd.dwFlags & dwReqFlags)!=dwReqFlags)
+           continue;
+
+       // now we ignore the specified want_color_bits for windowed mode
+       // instead we use the current screen depth
+
+       if((pfd.cColorBits!=cur_bpp) && (!((cur_bpp==16) && (pfd.cColorBits==15)))
+                                    && (!((cur_bpp==32) && (pfd.cColorBits==24))))
+           continue;
+       // we've passed all the tests, go ahead and pick this fmt
+       // note: could go continue looping looking for more alpha bits or more depth bits
+       // so this would pick 16bpp depth buffer, probably not 24bpp
+
+       break;
+  }
+
+  if(i>MaxPixFmtNum) {
+      wgldisplay_cat.error() << "wglGraphicsWindow:: ERROR: couldn't find HW-accelerated OpenGL pixfmt appropriate for this desktop!!\n";
+      if(cur_bpp>16) 
+        wgldisplay_cat.error() << "wglGraphicsWindow:: try reducing the screen resolution or reducing the screen pixeldepth\n";
+       else wgldisplay_cat.error() << "wglGraphicsWindow:: try reducing the screen resolution\n";
+      exit(1);
+  }
+
+  _visual = (PIXELFORMATDESCRIPTOR*)malloc(sizeof(PIXELFORMATDESCRIPTOR));
+  if(_visual==NULL) {
+      wgldisplay_cat.error() << "wglGraphicsWindow:: couldnt alloc mem for PIXELFORMATDESCRIPTOR\n";
+      exit(1);
+  }
+
+  #ifdef _DEBUG
+    char msg[200];
+    sprintf(msg,"Selected GL PixelFormat is #%d",i);
+    PrintPFD(&pfd,msg);
+  #endif
+
+  *_visual = pfd;
+  return i;
+}
+
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: adjust_coords 
@@ -507,6 +642,16 @@ void wglGraphicsWindow::config(void) {
   HWND desktop = GetDesktopWindow();
 
   if (_props._fullscreen) {
+      // Note: to set fullscreen, use 'fullscreen #t' in Configurc
+      // This just runs fullscrn at current display res & depth
+      // want to be smarter about this like wdxdisplay and pick a res
+      // that will have HW acceleration and adequate texmem, but we cant
+      // get the appropriate info yet in GL (unlike DX). 
+      
+      // BUGBUG: The Configrc res vars (_props.x/ysize) are ignored; 
+      // instead we should consider switching to the specified res
+      // (cant use DDraw for this though due to inconsistent driver support)
+
     _props._xorg = 0;
     _props._yorg = 0;
     _props._xsize = GetSystemMetrics(SM_CXSCREEN);
@@ -515,6 +660,7 @@ void wglGraphicsWindow::config(void) {
                 WS_POPUP | WS_MAXIMIZE, 
 		_props._xorg, _props._yorg, _props._xsize, _props._ysize,
                 desktop, NULL, hinstance, 0);
+
   } else {
 
     int xorg = _props._xorg;
@@ -536,20 +682,23 @@ void wglGraphicsWindow::config(void) {
   if (!_mwindow) {
     wgldisplay_cat.fatal()
       << "wglGraphicsWindow::config() - failed to create Mwindow" << endl;
-    exit(0);
+    exit(1);
   }
 
   _hdc = GetDC(_mwindow);
 
   // Configure the framebuffer according to parameters specified in _props
   // Initializes _visual
-  choose_visual();
+  int pfnum=choose_visual();
 
-  if (!SetPixelFormat(_hdc, ChoosePixelFormat(_hdc, _visual), _visual)) {
+//  int pfnum=ChoosePixelFormat(_hdc, _visual);
+  wgldisplay_cat.debug()
+      << "wglGraphicsWindow::config() - picking pixfmt #"<< pfnum <<endl;
+
+  if (!SetPixelFormat(_hdc, pfnum, _visual)) {
     wgldisplay_cat.fatal()
-      << "wglGraphicsWindow::config() - SetPixelFormat failed during "
-	<< "window create" << endl;
-    exit(0);
+      << "wglGraphicsWindow::config() - SetPixelFormat failed after window create" << endl;
+    exit(1);
   }
 
   // Initializes _colormap
@@ -560,7 +709,7 @@ void wglGraphicsWindow::config(void) {
     wgldisplay_cat.fatal()
       << "wglGraphicsWindow::config() - failed to create Win32 rendering "
       << "context" << endl;
-    exit(0);
+    exit(1);
   }
 
   _change_mask = 0;
@@ -589,6 +738,20 @@ void wglGraphicsWindow::config(void) {
   // to configure itself in the gsg
   make_current();
   make_gsg();
+
+//#ifdef _DEBUG
+#if 1
+  const GLubyte *vendorname=glGetString(GL_VENDOR);
+  if(vendorname!=NULL) {
+      if(strncmp((const char *)vendorname,"Microsoft",9)==0) {
+          wgldisplay_cat.info() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << " (Software Rendering)" << endl;
+      } else {
+          wgldisplay_cat.info() << "wglGraphicsWindow:: GL VendorID: " <<   glGetString(GL_VENDOR) << endl;
+      }
+  } else {
+     wgldisplay_cat.info() << "wglGraphicsWindow:: glGetString(GL_VENDOR) returns NULL!!!\n";
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

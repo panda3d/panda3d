@@ -79,7 +79,7 @@ public:
 protected:
   PIXELFORMATDESCRIPTOR* try_for_visual(wglGraphicsPipe *pipe,
 	int mask, int want_depth_bits = 1, int want_color_bits = 1);
-  void choose_visual(void);
+  int choose_visual(void);
   static void get_config(PIXELFORMATDESCRIPTOR* visual, int attrib, int *value);
   virtual void config( void );
   void setup_colormap(void);
