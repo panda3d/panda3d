@@ -36,11 +36,17 @@
 // Do we have a true stringstream class defined in <sstream>?
 #define HAVE_SSTREAM
 
+// Do we have <io.h>?
+#define HAVE_IO_H
+
 // Do we have <malloc.h>?
 #define HAVE_MALLOC_H 1
 
 // Do we have <alloca.h>?
 #define HAVE_ALLOCA_H 1
+
+// Do we have <minmax.h>?
+#define HAVE_MINMAX_H
 
 // Do we have <sys/types.h>?
 #define HAVE_SYS_TYPES_H 1

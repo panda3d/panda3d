@@ -156,11 +156,12 @@ $[define] HAVE_GETOPT_LONG_ONLY 1
 $[undef] HAVE_GETOPT_LONG_ONLY
 #endif
 
-/* Define if you have the <alloca.h> header file.  */
-$[define] HAVE_ALLOCA_H 1
-
 /* Define if you have the <io.h> header file.  */
+#if $[HAVE_IO_H]
+$[define] HAVE_IO_H 1
+#else
 $[undef] HAVE_IO_H
+#endif
 
 /* Define if you have the <iostream> header file.  */
 #if $[HAVE_IOSTREAM]

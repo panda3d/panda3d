@@ -36,6 +36,9 @@
 // Do we have a true stringstream class defined in <sstream>?
 #define HAVE_SSTREAM
 
+// Do we have <io.h>?
+#define HAVE_IO_H
+
 // Do we have <malloc.h>?
 #define HAVE_MALLOC_H 1
 
