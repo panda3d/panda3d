@@ -111,6 +111,13 @@ class DistributedObjectAI(DirectObject.DirectObject):
         self.air.changeDOZoneInTables(self, newZoneId, oldZoneId)
         messenger.send(self.getZoneChangeEvent(), [newZoneId, oldZoneId])
 
+    def getRender(self):
+        # note that this will return a different node if we change zones
+        return self.air.getRender(self.zoneId)
+
+    def getParentMgr(self):
+        return self.air.getParentMgr(self.zoneId)
+
     def sendUpdate(self, fieldName, args = []):
         if self.air:
             self.air.sendUpdate(self, fieldName, args)

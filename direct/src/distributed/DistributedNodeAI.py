@@ -14,13 +14,6 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
             self.removeNode()
         DistributedObjectAI.DistributedObjectAI.delete(self)
 
-    def getRender(self):
-        # note that this will return a different node if we change zones
-        return self.air.getRender(self.zoneId)
-
-    def getParentMgr(self):
-        return self.air.getParentMgr(self.zoneId)
-
     ### setParent ###
 
     def b_setParent(self, parentToken):
