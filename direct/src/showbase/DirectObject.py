@@ -11,7 +11,7 @@ class DirectObject:
 	"""
 	try: 
 	    self.cleanup()
-	except:
+	except NameError:
 	    print "No cleanup() method defined!"
 
     # Event Handling

@@ -32,25 +32,28 @@ class PickList(PandaObject.PandaObject):
         
         # display the menu
         self.__displayChoices(choiceList)
+	self.isClean = 0
 	return None
 
     def cleanup(self):
 	"""cleanup(self)
 	"""
-        # remove keyboard events
-        self.ignore("up-up")
-        self.ignore("down-up")
-        self.ignore("enter-up")
+	if self.isClean == 0:
+	    self.isClean = 1
+            # remove keyboard events
+            self.ignore("up-up")
+            self.ignore("down-up")
+            self.ignore("enter-up")
 
-        # ignore all the buttons
-        for item in self.frame.getItems():
-            self.ignore(item.getGuiItem().getUpEvent())
-            self.ignore(item.getGuiItem().getUpRolloverEvent())
-            self.ignore(item.getGuiItem().getDownRolloverEvent())
+            # ignore all the buttons
+            for item in self.frame.getItems():
+            	self.ignore(item.getGuiItem().getUpEvent())
+            	self.ignore(item.getGuiItem().getUpRolloverEvent())
+            	self.ignore(item.getGuiItem().getDownRolloverEvent())
 
-        # reset the display
-        self.frame.unmanage()
-	self.frame = None
+            # reset the display
+            self.frame.unmanage()
+	    self.frame = None
 	return None
         
     # accessing
