@@ -588,7 +588,18 @@ begin_frame() {
     }
     make_gsg();
     if (_gsg == (GraphicsStateGuardian *)NULL) {
-      // Still couldn't make the GSG for some reason.
+      // Still couldn't make the GSG for some reason.  We should pass
+      // an appropriate diagnostic up to the application; for now,
+      // we'll just shut down the window.
+
+      // WARNING: this is a non-thread-safe hack.  This really should
+      // happen in the window thread, not here in the draw thread.
+      display_cat.info()
+        << "Could not open GSG, closing " << get_type() << ".\n";
+      close_window();
+      WindowProperties properties;
+      properties.set_open(false);
+      system_changed_properties(properties);
       return false;
     }
   } else {
