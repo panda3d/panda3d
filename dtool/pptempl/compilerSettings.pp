@@ -5,6 +5,7 @@
   #define LIBBER lib
   #define COMMONFLAGS /Gi-
   #define OPTFLAGS /O2 /Ob1 /G6
+  #define OPT1FLAGS /GZ 
   #defer DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
   #define RELEASEFLAGS /MD
   
@@ -17,6 +18,7 @@
   #define LIBBER lib
   #define COMMONFLAGS
   #define OPTFLAGS /O2 /Ogity /G6
+  #define OPT1FLAGS /GZ   
   #defer DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
   #define RELEASEFLAGS /MD
   #define EXTRA_LIBPATH
@@ -29,6 +31,7 @@
 //  #define OPTFLAGS /O3 /G6 /Qvc6 /Qipo /QaxW /Qvec_report1 
   #define OPTFLAGS /O3 /G6 /Qvc6 /Qip
   #define DEBUGFLAGS /MDd /Zi /Qinline_debug_info
+  #define OPT1FLAGS /GZ /Od
   #define RELEASEFLAGS /MD
   // We assume the Intel compiler installation dir is mounted as /ia32.
   #define EXTRA_LIBPATH /ia32/lib
@@ -36,4 +39,17 @@
 #else
   #error Invalid value specified for USE_COMPILER.
 #endif
+
+#if $[CHECK_SYNTAX_ONLY]
+#define END_CFLAGS $[END_CFLAGS] /Zs 
+#endif 
+  
+#if $[GEN_ASSEMBLY]
+#define END_CFLAGS $[END_CFLAGS] /FAs
+#endif 
+
+#if $[PREPROCESSOR_OUTPUT]
+#define END_CFLAGS $[END_CFLAGS] /E 
+#endif 
+
 

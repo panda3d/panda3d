@@ -77,25 +77,13 @@
 
 #include $[DTOOL]/pptempl/compilerSettings.pp
 
-#if $[CHECK_SYNTAX_ONLY]
-#define END_CFLAGS $[END_CFLAGS] /Zs 
-#endif 
-  
-#if $[GEN_ASSEMBLY]
-#define END_CFLAGS $[END_CFLAGS] /FAs
-#endif 
-
-#if $[PREPROCESSOR_OUTPUT]
-#define END_CFLAGS $[END_CFLAGS] /E 
-#endif 
-
 #defer CDEFINES_OPT1 _DEBUG $[dlink_all_static]
 #defer CDEFINES_OPT2 _DEBUG $[dlink_all_static]
 #defer CDEFINES_OPT3 $[dlink_all_static]
 #defer CDEFINES_OPT4 NDEBUG $[dlink_all_static]
 
 //  /GZ disables OPT flags, so OPT1 only
-#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] /GZ $[DEBUGFLAGS] 
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[OPT1FLAGS] $[DEBUGFLAGS] 
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS] 
 #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] 
 #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] 
