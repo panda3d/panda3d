@@ -18,7 +18,7 @@
 
 #include "config_physics.h"
 #include "linearCylinderVortexForce.h"
-#include <nearly_zero.h>
+#include "nearly_zero.h"
 
 TypeHandle LinearCylinderVortexForce::_type_handle;
 
@@ -31,8 +31,7 @@ LinearCylinderVortexForce::
 LinearCylinderVortexForce(float radius, float length, float coef,
                     float a, bool md) :
   LinearForce(a, md),
-  _radius(radius), _length(length), _coef(coef)
-{
+  _radius(radius), _length(length), _coef(coef) {
 }
 
 ////////////////////////////////////////////////////////////////////
