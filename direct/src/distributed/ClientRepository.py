@@ -68,6 +68,10 @@ class ClientRepository(DirectObject.DirectObject):
         taskMgr.spawnTaskNamed(task, "readerPollTask")
         return None
 
+    def stopReaderPollTask(self):
+        taskMgr.removeTasksNamed("readerPollTask")
+        return None
+
     def readerPollUntilEmpty(self, task):
         while self.readerPollOnce():
             pass

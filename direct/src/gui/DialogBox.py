@@ -2,11 +2,15 @@ from DirectObject import *
 from ShowBaseGlobal import *
 from GuiGlobals import *
 
+import DirectNotifyGlobal
 import string
 import OnscreenText
 import Button
 import StateData
 import OnscreenPanel
+
+# No buttons at aall
+NoButtons = 0
 
 # just an OK button
 Acknowledge = 1
@@ -16,10 +20,16 @@ TwoChoice = 2
 
 class DialogBox(OnscreenPanel.OnscreenPanel):
 
-    def __init__(self, doneEvent, message = "", style = Acknowledge,
+    notify = DirectNotifyGlobal.directNotify.newCategory("DialogBox")
+
+    def __init__(self, message = "", doneEvent = None, style = NoButtons,
                  font = getDefaultFont(), wordwrap = 12):
 	"""___init___(self, Event, string="", int, model, int=12)"""
 
+        # Sanity check
+        if (doneEvent == None) and (style != NoButtons):
+            self.notify.error("Boxes with buttons must specify a doneEvent.")
+            
         self.doneEvent = doneEvent
         self.message = message
         self.style = style
@@ -76,9 +86,15 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
                             func = self.__handleOk)
             self.makeButton("Cancel", pos = (0.2, -0.25),
                             func = self.__handleCancel)
-        else:
+        elif (self.style == Acknowledge):
             # create a centered OK  button
             self.makeButton("OK", pos = (0.0, -0.25), func = self.__handleOk)
+        elif (self.style == NoButtons):
+            # No buttons at all
+            pass
+        else:
+            "Sanity check"
+            self.notify.error("No such style as: " + str(self.style))
             
 	self.isLoaded = 1
 	return None
@@ -99,10 +115,12 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
 	return None
 
     def __handleOk(self):
+        assert(self.style != NoButtons)
 	self.doneStatus = "ok"	
 	messenger.send(self.doneEvent)
 
     def __handleCancel(self):
+        assert(self.style == TwoChoice)
         self.doneStatus = "cancel"
 	messenger.send(self.doneEvent)
 
@@ -111,10 +129,3 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
         """
         if self.isLoaded == 1:
             self.panelText[0].setText(message)
-        
-        
-
-
-
-
-
