@@ -44,7 +44,7 @@ class DirectManipulationControl(PandaObject):
         # Did we hit a widget?
         if entry:
             # Yes!
-            self.hitPt.assign(entry.getFromIntersectionPoint())
+            self.hitPt.assign(entry.getSurfacePoint(entry.getFromNodePath()))
             self.hitPtDist = Vec3(self.hitPt).length()
             # Constraint determined by nodes name
             self.constraint = entry.getIntoNodePath().getName()
@@ -93,7 +93,7 @@ class DirectManipulationControl(PandaObject):
             entry = direct.iRay.pickGeom(skipFlags = skipFlags)
             if entry:
                 # Record hit point information
-                self.hitPt.assign(entry.getFromIntersectionPoint())
+                self.hitPt.assign(entry.getSurfacePoint(entry.getFromNodePath()))
                 self.hitPtDist = Vec3(self.hitPt).length()
                 # Select it
                 direct.select(entry.getIntoNodePath(), direct.fShift)
@@ -494,7 +494,7 @@ class DirectManipulationControl(PandaObject):
             direct.selected.getWrtAll()
             # Move selected
             direct.widget.setPos(
-                direct.camera,entry.getFromIntersectionPoint())
+                direct.camera,entry.getSurfacePoint(entry.getFromNodePath()))
             # Move all the selected objects with widget
             # Move the objects with the widget
             direct.selected.moveWrtWidgetAll()

@@ -299,7 +299,7 @@ class DirectCameraControl(PandaObject):
             nodePath = entry.getIntoNodePath()
             if direct.camera not in nodePath.getAncestry():
                 # Compute new hit point
-                hitPt = entry.getFromIntersectionPoint()
+                hitPt = entry.getSurfacePoint(entry.getFromNodePath())
                 # Move coa marker to new point
                 self.updateCoa(hitPt, ref = self.coaMarkerRef)
             else:
@@ -319,7 +319,7 @@ class DirectCameraControl(PandaObject):
         elif entry:
             # Got a hit point (hit point is in camera coordinates)
             # Set center of action
-            hitPt = entry.getFromIntersectionPoint()
+            hitPt = entry.getSurfacePoint(entry.getFromNodePath())
             hitPtDist = Vec3(hitPt).length()
             coa.assign(hitPt)
             # Handle case of bad coa point (too close or too far)
