@@ -8,7 +8,7 @@
 
 #include <pandatoolbase.h>
 
-#include <eggToSomething.h>
+#include <programBase.h>
 #include <filename.h>
 #include <pt_Node.h>
 #include <sceneGraphAnalyzer.h>
