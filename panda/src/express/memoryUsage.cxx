@@ -72,7 +72,7 @@ public:
   {
   }
   bool operator < (const TypeHistogramCountSorter &other) const {
-    return _count > other._count;
+    return other._count < _count;
   }
   MemoryUsagePointerCounts _count;
   TypeHandle _type;
@@ -269,7 +269,7 @@ operator_new_handler(size_t size) {
 void MemoryUsage::
 operator_delete_handler(void *ptr) {
   get_global_ptr()->ns_remove_void_pointer(ptr);
-  return default_operator_delete(ptr);
+  default_operator_delete(ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
