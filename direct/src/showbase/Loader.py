@@ -125,7 +125,7 @@ class Loader:
         ModelPool.releaseModel(modelPath)
 
     # font loading funcs
-    def loadFont(self, modelPath, priority = 0, faceIndex = 0,
+    def loadFont(self, modelPath, priority = 0,
                  spaceAdvance = None, pointSize = None,
                  pixelsPerUnit = None, scaleFactor = None,
                  textureMargin = None, polyMargin = None,
