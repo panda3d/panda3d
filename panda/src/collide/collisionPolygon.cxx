@@ -424,7 +424,9 @@ test_intersection_from_ray(CollisionHandler *record,
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   new_entry->set_into_intersection_point(plane_point);
-  new_entry->set_into_surface_normal(get_normal());
+
+  LVector3f into_normal = get_normal() * entry.get_inv_wrt_space();
+  new_entry->set_into_surface_normal(into_normal);
 
   record->add_entry(new_entry);
   return 1;
@@ -475,7 +477,9 @@ test_intersection_from_segment(CollisionHandler *record,
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   new_entry->set_into_intersection_point(plane_point);
-  new_entry->set_into_surface_normal(get_normal());
+
+  LVector3f into_normal = get_normal() * entry.get_inv_wrt_space();
+  new_entry->set_into_surface_normal(into_normal);
 
   record->add_entry(new_entry);
   return 1;
