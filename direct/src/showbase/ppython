@@ -57,6 +57,10 @@ if [ "$TTRADER" ]; then
     TTRADER=`cygpath -w $TTRADER`
     export TTRADER
 fi
+if [ "$FOURD" ]; then
+    FOURD=`cygpath -w $FOURD`
+    export FOURD
+fi
 if [ "$TTMODELS" ]; then
     TTMODELS=`cygpath -w $TTMODELS`
     export TTMODELS
