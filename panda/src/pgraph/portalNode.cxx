@@ -276,6 +276,13 @@ register_with_read_factory() {
 void PortalNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
+
+  dg.add_uint16(_vertices.size());
+  for (Vertices::const_iterator vi = _vertices.begin();
+       vi != _vertices.end();
+       ++vi) {
+    (*vi).write_datagram(dg);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -323,7 +330,17 @@ void PortalNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
 
+  int num_vertices = scan.get_uint16();
+  _vertices.reserve(num_vertices);
+  for (int i = 0; i < num_vertices; i++) {
+    LPoint3f vertex;
+    vertex.read_datagram(scan);
+    _vertices.push_back(vertex);
+  }
+
+  /*
   _from_portal_mask.set_word(scan.get_uint32());
   _into_portal_mask.set_word(scan.get_uint32());
   _flags = scan.get_uint8();
+  */
 }

@@ -62,6 +62,7 @@
 #include "pandaNode.h"
 #include "planeNode.h"
 #include "pointLight.h"
+#include "portalNode.h"
 #include "portalClipper.h"
 #include "renderAttrib.h"
 #include "renderEffect.h"
@@ -208,6 +209,7 @@ init_libpgraph() {
   PandaNode::init_type();
   PlaneNode::init_type();
   PointLight::init_type();
+  PortalNode::init_type();
   PortalClipper::init_type();
   RenderAttrib::init_type();
   RenderEffect::init_type();
@@ -262,7 +264,7 @@ init_libpgraph() {
   PandaNode::register_with_read_factory();
   PlaneNode::register_with_read_factory();
   PointLight::register_with_read_factory();
-  //PortalClipper::register_with_read_factory();
+  PortalNode::register_with_read_factory();
   RenderEffects::register_with_read_factory();
   RenderModeAttrib::register_with_read_factory();
   RenderState::register_with_read_factory();

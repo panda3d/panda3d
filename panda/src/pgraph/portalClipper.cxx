@@ -236,6 +236,7 @@ prepare_portal(int idx)
   pgraph_cat.debug() << "creating portal clipper " << idx << endl;
 
   // walk the portal
+  _num_vert = 0;
   sprintf(portal_name, "**/portal%d", idx);
   NodePath portal_nodepath = _scene_setup->get_scene_root().find(portal_name);
   if (!portal_nodepath.is_empty()) {
@@ -255,62 +256,37 @@ prepare_portal(int idx)
     pgraph_cat.debug() << cmat << endl;
     
     // Get the geometry from the portal    
-    PandaNode *portal_node = portal_nodepath.node();
-    GeomNode *portal_geom = DCAST(GeomNode, portal_node);
+    PandaNode *node = portal_nodepath.node();
+    if (node->is_of_type(PortalNode::get_class_type())) {
+      PortalNode *portal_node = DCAST(PortalNode, node);
+      pgraph_cat.debug() << *portal_node << endl;
     
-    //portal_geom->write_verbose(pgraph_cat.debug(false), 0);
-    
-    int num_geoms = portal_geom->get_num_geoms();
-    pgraph_cat.debug() << "num geometry in portal " << num_geoms << endl;
-    
-    PTA_ushort index;
-    PT(Geom) geom = portal_geom->get_geom(0);
-    _num_vert = geom->get_num_vertices();
-    PTA_Vertexf coords;
-    geom->get_coords(coords, index);
-
-    /*    
-    pgraph_cat.debug() << "before transformation to camera space" << endl;
-    pgraph_cat.debug() << coords[0] << endl;
-    pgraph_cat.debug() << coords[1] << endl;
-    pgraph_cat.debug() << coords[2] << endl;
-    pgraph_cat.debug() << coords[3] << endl;
-    */
-    
-    _coords[0] = coords[0]*cmat;
-    _coords[1] = coords[1]*cmat;
-    _coords[2] = coords[3]*cmat;  // flip with 3rd vertex
-    _coords[3] = coords[2]*cmat;  // flip with 2nd vertex
-    
-    /*
-    pgraph_cat.debug() << "after transformation to camera space" << endl;
-    pgraph_cat.debug() << _coords[0] << endl;
-    pgraph_cat.debug() << _coords[1] << endl;
-    pgraph_cat.debug() << _coords[2] << endl;
-    pgraph_cat.debug() << _coords[3] << endl;
-    */
-    
-    //geom->write_verbose(pgraph_cat.debug(false), 0);
-
-    // check if facing camera
-    if (is_facing_camera()) {
-    
-      // ok, now lets add the near plane to this portal
-      _color = Colorf(1,0,0,1);
-      move_to(_coords[0]);
-      draw_to(_coords[1]);
-      draw_to(_coords[2]);
-      draw_to(_coords[3]);
-      draw_to(_coords[0]);
-    
-      pgraph_cat.debug() << "assembled portal" << idx << " frustum points" << endl;
+      _coords[0] = portal_node->get_vertex(0)*cmat;
+      _coords[1] = portal_node->get_vertex(1)*cmat;
+      _coords[2] = portal_node->get_vertex(2)*cmat;
+      _coords[3] = portal_node->get_vertex(3)*cmat;
+      
+      pgraph_cat.debug() << "after transformation to camera space" << endl;
+      pgraph_cat.debug() << _coords[0] << endl;
+      pgraph_cat.debug() << _coords[1] << endl;
+      pgraph_cat.debug() << _coords[2] << endl;
+      pgraph_cat.debug() << _coords[3] << endl;
+      
+      // check if facing camera
+      if (is_facing_camera()) {
+        
+        // ok, now lets add the near plane to this portal
+        _color = Colorf(1,0,0,1);
+        move_to(_coords[0]);
+        draw_to(_coords[1]);
+        draw_to(_coords[2]);
+        draw_to(_coords[3]);
+        draw_to(_coords[0]);
+        
+        pgraph_cat.debug() << "assembled portal" << idx << " frustum points" << endl;
+        _num_vert = portal_node->get_num_vertices();
+      }
     }
-    else {
-      _num_vert = 0;
-    }
-  }
-  else {
-    _num_vert = 0;
   }
 }
 
@@ -324,6 +300,9 @@ void PortalClipper::
 clip_portal(int idx)
 {
   int num_planes = _hex_frustum->get_num_planes();
+
+  if (!_num_vert)
+    return;
 
   /*
   pgraph_cat.debug() << "Number of planes " << num_planes << endl;

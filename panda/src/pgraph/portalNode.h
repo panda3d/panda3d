@@ -68,6 +68,9 @@ PUBLISHED:
   INLINE int get_num_vertices() const;
   INLINE const LPoint3f &get_vertex(int n) const;
 
+  INLINE void set_zone(PandaNode *zone);
+  INLINE PandaNode *get_zone() const;
+
 protected:
   virtual BoundingVolume *recompute_bound();
   virtual BoundingVolume *recompute_internal_bound();
@@ -89,6 +92,8 @@ private:
 
   typedef pvector<LPoint3f> Vertices;
   Vertices _vertices;
+
+  PT(PandaNode) _zone_node;  // This is the zone it belongs to
 
 public:
   static void register_with_read_factory();

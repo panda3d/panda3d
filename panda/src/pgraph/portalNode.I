@@ -167,3 +167,21 @@ get_vertex(int n) const {
   nassertr(n >= 0 && n < (int)_vertices.size(), LPoint3f::zero());
   return _vertices[n];
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::set_zone
+//       Access: Published
+//  Description: Sets the zone that this portal belongs to
+////////////////////////////////////////////////////////////////////
+INLINE void PortalNode::set_zone(PandaNode *zone) {
+  _zone_node = zone;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalNode::set_zone
+//       Access: Published
+//  Description: Sets the zone that this portal belongs to
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode *PortalNode::get_zone() const {
+  return _zone_node;
+}

@@ -111,8 +111,25 @@ is_facing_camera()
 {
   Planef portal_plane(_coords[0], _coords[1], _coords[2]);
   Planef camera_plane(_hex_frustum->get_point(4), _hex_frustum->get_point(5), _hex_frustum->get_point(6));
+#if 0
+  // use the camera's near plane to calculate direction
   pgraph_cat.debug() << portal_plane.get_normal() << "; " << -camera_plane.get_normal() << endl;
   float direction = portal_plane.get_normal().dot(-camera_plane.get_normal());
+  pgraph_cat.debug() << "Found direction of " << direction << endl;
+  return (direction < _FACING_THRESHOLD);
+#else
+  // use the center of camera's near plane to the center of the
+  // portal_plane to calulate the direction
+  LPoint3f portal_center = (_coords[0] + _coords[1] + _coords[2] + _coords[3]) / 4;
+  LPoint3f camera_center = (_hex_frustum->get_point(4) + _hex_frustum->get_point(5) + _hex_frustum->get_point(6) + _hex_frustum->get_point(7)) / 4;
+  LVector3f camera_to_portal = portal_center - camera_center;
+  camera_to_portal.normalize();
+  pgraph_cat.debug() << "portal_center " << portal_center << "; camera_center " << camera_center << "; camera_to_portal " << camera_to_portal << endl;
+  float direction = camera_plane.get_normal().dot(camera_to_portal);
+  _color = Colorf(0,1,0,1);
+  move_to(camera_center);
+  draw_to(portal_center);
+#endif
   pgraph_cat.debug() << "Found direction of " << direction << endl;
   return (direction < _FACING_THRESHOLD);
 }

@@ -77,7 +77,7 @@ traverse(const NodePath &root, bool python_cull_control) {
   nassertv(_cull_handler != (CullHandler *)NULL);
   nassertv(_scene_setup != (SceneSetup *)NULL);
 
-  if (1) {
+  if (allow_portal_cull || python_cull_control) {
     // This _view_frustum is in cull_center space
     PT(GeometricBoundingVolume) vf = _view_frustum;
     pgraph_cat.debug() << "_view_frustum is " << *_view_frustum << "\n";
@@ -93,41 +93,37 @@ traverse(const NodePath &root, bool python_cull_control) {
       
     // This local_frustum is in camera space
     PortalClipper portal_viewer(local_frustum, _scene_setup);
-    if (allow_portal_cull || python_cull_control) {
-      portal_viewer.draw_camera_frustum();
-    }
+    portal_viewer.draw_camera_frustum();
 
-    if (allow_portal_cull || python_cull_control) {
-      // for each portal draw its frustum
-      for (int portal_idx=1; portal_idx<2; ++portal_idx) {
-        PT(BoundingVolume) reduced_frustum;
+    // for each portal draw its frustum
+    for (int portal_idx=1; portal_idx<2; ++portal_idx) {
+      PT(BoundingVolume) reduced_frustum;
+      
+      portal_viewer.prepare_portal(portal_idx);
+      portal_viewer.clip_portal(portal_idx);
+      if ((reduced_frustum = portal_viewer.get_reduced_frustum(portal_idx))) {
+        // This reduced frustum is in camera space
+        pgraph_cat.debug() << "got reduced frustum " << reduced_frustum << endl;
+        vf = DCAST(GeometricBoundingVolume, reduced_frustum);
         
-        portal_viewer.prepare_portal(portal_idx);
-        portal_viewer.clip_portal(portal_idx);
-        if ((reduced_frustum = portal_viewer.get_reduced_frustum(portal_idx))) {
-          // This reduced frustum is in camera space
-          pgraph_cat.debug() << "got reduced frustum " << reduced_frustum << endl;
-          vf = DCAST(GeometricBoundingVolume, reduced_frustum);
-          
-          // trasform it to cull_center space
-          CPT(TransformState) cull_center_transform = 
-            _scene_setup->get_cull_center().get_transform(_scene_setup->get_scene_root());
-          vf->xform(cull_center_transform->get_mat());
-        }
+        // trasform it to cull_center space
+        CPT(TransformState) cull_center_transform = 
+          _scene_setup->get_cull_center().get_transform(_scene_setup->get_scene_root());
+        vf->xform(cull_center_transform->get_mat());
       }
     }
     pgraph_cat.debug() << "vf is " << *vf << "\n";
-
+    
     CullTraverserData data(root, get_render_transform(),
                            TransformState::make_identity(),
                            _initial_state, _view_frustum, 
                            vf, _guard_band);
-
+    
     traverse(data);
     
     // finally add the lines to be drawn
     portal_viewer.draw_lines();
-      
+    
     // Render the frustum relative to the cull center.
     NodePath cull_center = _scene_setup->get_cull_center();
     CPT(TransformState) transform = cull_center.get_transform(root);
@@ -167,7 +163,7 @@ traverse(CullTraverserData &data) {
     // let me see the names, curious
     unsigned int loc = node->get_name().find("pTypeArchway");
     if (loc != string::npos) {
-      node->output(pgraph_cat.debug());
+      node->output(pgraph_cat.spam());
       pgraph_cat.spam() << endl;
       if (data._reduced_frustum) {
         pgraph_cat.debug() << "setting reduced frustum to this node\n";
