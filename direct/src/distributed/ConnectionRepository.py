@@ -354,8 +354,9 @@ class ConnectionRepository(DoInterestManager, CConnectionRepository):
         if self.notify.getDebug():
             print "ConnectionRepository sending datagram:"
             datagram.dumpHex(ostream)
-
+            
         self.sendDatagram(datagram)
+        
 
 
     # debugging funcs for simulating a network-plug-pull

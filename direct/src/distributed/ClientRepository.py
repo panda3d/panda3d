@@ -809,6 +809,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             print "ClientRepository received datagram:"
             di.getDatagram().dumpHex(ostream)
             
+                        
         msgType = self.getMsgType()
 
         if not wantOtpServer:

@@ -65,5 +65,5 @@ class DistributedLargeBlobSenderAI(DistributedObjectAI.DistributedObjectAI):
 
     def setAck(self):
         DistributedLargeBlobSenderAI.notify.debug('setAck')
-        assert self.air.msgSender == self.targetAvId
+        assert self.air.GetAvatarIDFromSender() == self.targetAvId
         self.requestDelete()
