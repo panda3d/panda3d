@@ -117,7 +117,6 @@ class ShowBase:
         # one is in use at a given time.
         self.trackball = self.dataUnused.attachNewNode(Trackball('trackball'))
         self.drive = self.dataUnused.attachNewNode(DriveInterface('drive'))
-        self.noMouse = self.dataUnused.attachNewNode('noMouse')
         self.mouse2cam = self.dataUnused.attachNewNode(Transform2SG('mouse2cam'))
         self.mouse2cam.node().setArc(self.camera.getBottomArc())
         self.useDrive()
@@ -253,12 +252,25 @@ class ShowBase:
         toggleWireframe(self.initialState)
 
     def disableMouse(self):
-        self.drive.reparentTo(self.dataUnused)
-        self.trackball.reparentTo(self.dataUnused)
-        self.noMouse.reparentTo(self.mouseValve, 0)
+        """
+        Temporarily disable the mouse control of the camera, either
+        via the drive interface or the trackball, whichever is
+        currently in use.
+        """
+        # We don't reparent the drive interface or the trackball;
+        # whichever one was there before will remain in the data graph
+        # and active.  This way they won't lose button events while
+        # the mouse is disabled.  However, we do move the mouse2cam
+        # object out of there, so we won't be updating the camera any
+        # more.
         self.mouse2cam.reparentTo(self.dataUnused)
-        self.mouseInterface = None
-        self.mouseInterfaceNode = None
+
+    def enableMouse(self):
+        """
+        Reverse the effect of a previous call to disableMouse().
+        useDrive() also implicitly enables the mouse.
+        """
+        self.mouse2cam.reparentTo(self.mouseInterface)
 
     def setMouseOnArc(self, newArc):
         self.mouse2cam.node().setArc(newArc)
@@ -269,7 +281,6 @@ class ShowBase:
         """
         # Get rid of the trackball
         self.trackball.reparentTo(self.dataUnused)
-        self.noMouse.reparentTo(self.dataUnused)
         # Update the mouseInterface to point to the drive
         self.mouseInterface = self.drive
         self.mouseInterfaceNode = self.mouseInterface.getBottomNode()
@@ -287,7 +298,6 @@ class ShowBase:
         """
         # Get rid of the drive
         self.drive.reparentTo(self.dataUnused)
-        self.noMouse.reparentTo(self.dataUnused)
         # Update the mouseInterface to point to the trackball
         self.mouseInterface = self.trackball
         self.mouseInterfaceNode = self.mouseInterface.getBottomNode()
