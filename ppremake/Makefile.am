@@ -1,7 +1,10 @@
 bin_PROGRAMS = ppremake
 
 ppremake_SOURCES =							\
-    check_include.cxx check_include.h filename.cxx filename.h		\
+    check_include.cxx check_include.h					\
+    dSearchPath.I dSearchPath.cxx dSearchPath.h				\
+    executionEnvironment.cxx executionEnvironment.h			\
+    filename.I filename.cxx filename.h					\
     find_searchpath.cxx find_searchpath.h				\
     gnu_getopt.c gnu_getopt.h gnu_regex.c gnu_regex.h			\
     ppCommandFile.cxx ppCommandFile.h ppDependableFile.cxx		\
@@ -14,4 +17,4 @@ ppremake_SOURCES =							\
     ppremake.cxx ppremake.h sedAddress.cxx sedAddress.h sedCommand.cxx	\
     sedCommand.h sedContext.cxx sedContext.h sedProcess.cxx		\
     sedProcess.h sedScript.cxx sedScript.h tokenize.cxx			\
-    tokenize.h
+    tokenize.h vector_string.h

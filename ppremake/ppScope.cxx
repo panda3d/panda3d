@@ -1145,10 +1145,10 @@ expand_variable_nested(const string &varname,
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_isfullpath(const string &params) {
-  string filename = trim_blanks(expand_string(params));
+  Filename filename = trim_blanks(expand_string(params));
 
   string result;
-  if (is_fullpath(filename)) {
+  if (filename.is_fully_qualified()) {
     result = filename;
   }
   return result;
@@ -1160,15 +1160,12 @@ expand_isfullpath(const string &params) {
 //  Description: Expands the "osfilename" function variable.  This
 //               converts the filename from a Unix-style filename
 //               (e.g. with slash separators) to a platform-specific
-//               filename.  Currently, this only has an effect when
-//               generating code for a Windows platform: it simply
-//               converts forward slashes to backslashes.  On other
-//               platforms it has no effect.
+//               filename.
 //
-//               This is different from cygpath_w in that (a) it works
-//               regardless of whether we are actually running under
-//               Cygwin, and (b) it does nothing more intelligent than
-//               reverse slashes.
+//               This follows the same rules of Panda filename
+//               conversion; i.e. forward slashes become backslashes,
+//               and $PANDA_ROOT prefixes full pathnames, unless the
+//               topmost directory name is a single letter.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_osfilename(const string &params) {
@@ -1178,7 +1175,8 @@ expand_osfilename(const string &params) {
 
   vector<string>::iterator wi;
   for (wi = words.begin(); wi != words.end(); ++wi) {
-    (*wi) = to_os_filename(*wi);
+    Filename filename = (*wi);
+    (*wi) = filename.to_os_specific();
   }
 
   string result = repaste(words, " ");
@@ -1191,15 +1189,9 @@ expand_osfilename(const string &params) {
 //  Description: Expands the "unixfilename" function variable.  This
 //               converts the filename from a platform-specific
 //               filename to a Unix-style filename (e.g. with slash
-//               separators).  Currently, this only has an effect when
-//               generating code for a Windows platform: it simply
-//               converts backslashes to forward slashes.  On other
-//               platforms it has no effect.
+//               separators).
 //
-//               This is different from cygpath_p in that (a) it works
-//               regardless of whether we are actually running under
-//               Cygwin, and (b) it does nothing more intelligent than
-//               reverse slashes.
+//               This follows the rules of Panda filename conversion.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_unixfilename(const string &params) {
@@ -1209,7 +1201,8 @@ expand_unixfilename(const string &params) {
 
   vector<string>::iterator wi;
   for (wi = words.begin(); wi != words.end(); ++wi) {
-    (*wi) = to_unix_filename(*wi);
+    Filename filename = Filename::from_os_specific(*wi);
+    (*wi) = filename;
   }
 
   string result = repaste(words, " ");
@@ -1219,10 +1212,15 @@ expand_unixfilename(const string &params) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PPScope::expand_cygpath_w
 //       Access: Private
-//  Description: Expands the "cygpath_w" function variable.  This is
-//               equivalent to $[shell cygpath -w ...] when running
-//               under Cygwin, and returns the parameter itself when
-//               not running under Cygwin.
+//  Description: Expands the "cygpath_w" function variable.  
+//
+//               This converts the Unix-style filename to a Windows
+//               filename using the Cygwin rules when ppremake has
+//               been compiled with Cygwin; it is thus equivalent to
+//               the result of the cygpath -w command.
+//
+//               When ppremake has not been compiled with Cygwin, this
+//               returns the same as the "osfilename" variable.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_cygpath_w(const string &params) {
@@ -1233,6 +1231,9 @@ expand_cygpath_w(const string &params) {
 
   cygwin_conv_to_win32_path(filename.c_str(), result);
   filename = result;
+#else
+  Filename fn(filename);
+  filename = fn.to_os_specific();
 #endif
 
   return filename;
@@ -1241,10 +1242,15 @@ expand_cygpath_w(const string &params) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PPScope::expand_cygpath_p
 //       Access: Private
-//  Description: Expands the "cygpath_p" function variable.  This is
-//               equivalent to $[shell cygpath -p ...] when running
-//               under Cygwin, and returns the parameter itself when
-//               not running under Cygwin.
+//  Description: Expands the "cygpath_p" function variable.
+//
+//               This converts the Windows filename to a Unix-style
+//               filename using the Cygwin rules when ppremake has
+//               been compiled with Cygwin; it is thus equivalent to
+//               the result of the cygpath -p command.
+//
+//               When ppremake has not been compiled with Cygwin, this
+//               returns the same as the "unixfilename" variable.
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_cygpath_p(const string &params) {
@@ -1255,6 +1261,8 @@ expand_cygpath_p(const string &params) {
 
   cygwin_conv_to_posix_path(filename.c_str(), result);
   filename = result;
+#else
+  filename = Filename::from_os_specific(filename);
 #endif
 
   return filename;
@@ -1389,7 +1397,7 @@ expand_libtest(const string &params) {
 
   // Also add the system directories to the list, whatever we think
   // those should be.  Here we have to make a few assumptions.
-#ifdef PLATFORM_WIN32
+#ifdef WIN32
   const char *windir = getenv("WINDIR");
   if (windir != (const char *)NULL) {
     directories.push_back(string(windir) + "\\System");
@@ -1427,7 +1435,7 @@ expand_libtest(const string &params) {
 
   string found;
 
-#ifdef PLATFORM_WIN32
+#ifdef WIN32
   if (libname.length() > 4 && libname.substr(libname.length() - 4) == ".lib") {
     found = find_searchpath(directories, libname);    
     if (found.empty()) {
@@ -1472,7 +1480,7 @@ expand_bintest(const string &params) {
   }
 
   // An explicit path from the root does not require a search.
-#ifdef PLATFORM_WIN32
+#ifdef WIN32
   if ((binname.length() > 2 && binname[1] == ':') || binname[0] == '/')
 #else
     if (binname[0] == '/')
@@ -1494,7 +1502,7 @@ expand_bintest(const string &params) {
 
   vector<string> directories;
 
-#ifdef PLATFORM_WIN32
+#ifdef WIN32
   if (pathvar.find(';') != string::npos) {
     // If the path contains semicolons, it's a native Windows-style
     // path: split it up based on semicolons.
@@ -1511,7 +1519,7 @@ expand_bintest(const string &params) {
 
   string found;
 
-#ifdef PLATFORM_WIN32
+#ifdef WIN32
   found = find_searchpath(directories, binname + ".exe");
   if (found.empty()) {
     found = find_searchpath(directories, binname);

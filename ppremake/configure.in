@@ -1,6 +1,13 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(ppremake.cxx)
-AM_INIT_AUTOMAKE(ppremake, 1.03)
+
+dnl ****************  UPDATE VERSION NUMBER HERE  ****************
+dnl **         Also be sure to change the version number        **
+dnl **                at the end of config_msvc.h.              **
+dnl ****************                              ****************
+AM_INIT_AUTOMAKE(ppremake, 1.04)
+dnl ****************  UPDATE VERSION NUMBER HERE  ****************
+
 AM_CONFIG_HEADER(config.h)
 
 AC_PREFIX_DEFAULT(/usr/local/panda)
@@ -60,14 +67,14 @@ else
   case "$host_os" in
     irix*) PLATFORM=Irix;;
     linux*) PLATFORM=Linux;;
-    cygwin*) PLATFORM=Win32;;
+    cygwin*) PLATFORM=Cygwin;;
     *) echo "Cannot determine platform; use --with-platform=name."
        exit 1;;
   esac
 fi
 
-if test "$PLATFORM" = "Win32"; then
-  AC_DEFINE(PLATFORM_WIN32)
+if test "$PLATFORM" = "Cygwin"; then
+  AC_DEFINE(PLATFORM_CYGWIN)
 fi
 
 AC_DEFINE_UNQUOTED(PLATFORM, "$PLATFORM")

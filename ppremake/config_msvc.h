@@ -12,8 +12,8 @@
 /* Define if the C++ iostream library supports ios::binary.  */
 /* #undef HAVE_IOS_BINARY */
 
-/* Define if we're compiling for a Windows platform.  */
-#define PLATFORM_WIN32 1
+/* Define if we're compiling for Cygwin. */
+/* #undef PLATFORM_CYGWIN */
 
 /* Define if we're compiling using Windows Microsoft Visual C++. */
 #define WIN32_VC 1
@@ -79,5 +79,9 @@
 /* Define if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
-/* Version number of package */
-#define VERSION "1.03"
+/****************  UPDATE VERSION NUMBER HERE  ****************
+ **         Also be sure to change the version number        **
+ **             at the beginning of configure.in.            **
+ ****************                              ****************/
+#define VERSION "1.04"
+/****************  UPDATE VERSION NUMBER HERE  ****************/

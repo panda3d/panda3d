@@ -27,6 +27,11 @@
 #include <strstream.h>
 #endif
 
+#if defined(PLATFORM_CYGWIN) || defined(WIN32_VC)
+// Either Cygwin or Visual C++ is a Win32 environment.
+#define WIN32
+#endif
+
 #include <string>
 
 #ifdef HAVE_NAMESPACE
@@ -66,5 +71,17 @@ using namespace std;
 extern bool unix_platform;
 extern bool windows_platform;
 #endif
+
+/* These are defined so that we may build Filename and DSearchPath,
+   which are copied from dtool.  We have to copy these files from
+   dtool since ppremake must be built first, and stands outside of
+   Panda; but we want to minimize the changes we must make to these
+   files so that we can easily recopy them at need. 
+
+   These symbols just make the build environment a bit more
+   Panda-like. */
+#define PUBLISHED public
+#define INLINE inline
+#define EXPCL_DTOOL
 
 #endif
