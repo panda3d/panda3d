@@ -781,9 +781,10 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
         #rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
         #speed=rotMat.xform(speed)
-        f = Vec3(self.__vel)
-        f.normalize()
-        self.momentumForce.setVector(Vec3(f*(speed.length()*0.9)))
+        # The momentumForce makes it feel like we are sliding on ice -- Joe
+        # f = Vec3(self.__vel)
+        # f.normalize()
+        # self.momentumForce.setVector(Vec3(f*(speed.length()*0.9)))
 
 
         if __debug__:
