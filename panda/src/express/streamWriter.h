@@ -70,6 +70,7 @@ PUBLISHED:
   INLINE void add_be_float64(PN_float64 value);
 
   INLINE void add_string(const string &str);
+  INLINE void add_string32(const string &str);
   INLINE void add_z_string(string str);
   INLINE void add_fixed_string(const string &str, size_t size);
 

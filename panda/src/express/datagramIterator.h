@@ -62,6 +62,7 @@ PUBLISHED:
   INLINE PN_float64 get_be_float64();
 
   string get_string();
+  string get_string32();
   string get_z_string();
   string get_fixed_string(size_t size);
 

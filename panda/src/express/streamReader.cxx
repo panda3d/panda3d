@@ -40,6 +40,27 @@ get_string() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: StreamReader::get_string32
+//       Access: Published
+//  Description: Extracts a variable-length string with a 32-bit
+//               length field.
+////////////////////////////////////////////////////////////////////
+string StreamReader::
+get_string32() {
+  nassertr(!_in->eof() && !_in->fail(), string());
+
+  // First, get the length of the string
+  size_t s_len = get_uint32();
+
+  string result;
+  result.reserve(s_len);
+  for (size_t p = 0; !_in->eof() && !_in->fail() && p < s_len; p++) {
+    result += _in->get();
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_z_string
 //       Access: Published
 //  Description: Extracts a variable-length string, as a

@@ -42,6 +42,28 @@ get_string() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DatagramIterator::get_string32
+//       Access: Public
+//  Description: Extracts a variable-length string with a 32-bit
+//               length field.
+////////////////////////////////////////////////////////////////////
+string DatagramIterator::
+get_string32() {
+  // First, get the length of the string
+  PN_uint32 s_len = get_uint32();
+
+  nassertr(_datagram != (const Datagram *)NULL &&
+           _current_index + s_len <= _datagram->get_length(), "");
+
+  const char *ptr = (const char *)_datagram->get_data();
+  int last_index = _current_index;
+
+  _current_index += s_len;
+
+  return string(ptr + last_index, s_len);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DatagramIterator::get_z_string
 //       Access: Public
 //  Description: Extracts a variable-length string, as a

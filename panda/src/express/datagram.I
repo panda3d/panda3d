@@ -312,6 +312,21 @@ add_string(const string &str) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Datagram::add_string32
+//       Access: Public
+//  Description: Adds a variable-length string to the datagram, using
+//               a 32-bit length field to allow very long strings.
+////////////////////////////////////////////////////////////////////
+INLINE void Datagram::
+add_string32(const string &str) {
+  // Strings always are preceded by their length
+  add_uint32(str.length());
+
+  // Add the string
+  append_data(str);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Datagram::add_z_string
 //       Access: Public
 //  Description: Adds a variable-length string to the datagram, as a
