@@ -40,9 +40,12 @@
   #define COMPILER cl
   #define LINKER link
   #define LIBBER lib
-  
-  // is it too late to turn this on?
-  #define UNKNOWN_ALLOCATOR 1  
+
+  // currently wont build pvector stuff, so need this
+  #define CDEFINES_OPT1 UNKNOWN_ALLOCATOR
+  #define CDEFINES_OPT2 UNKNOWN_ALLOCATOR
+  #define CDEFINES_OPT3 UNKNOWN_ALLOCATOR
+  #define CDEFINES_OPT4 UNKNOWN_ALLOCATOR      
 
   #define COMMONFLAGS /DHAVE_DINKUM 
   #define OPTFLAGS /O2 /Ob1 /G6 /QIfist
