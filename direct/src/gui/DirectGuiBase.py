@@ -1,5 +1,5 @@
 from DirectGuiGlobals import *
-from DirectGeometry import ROUND_TO
+from DirectUtil import ROUND_TO
 import PandaObject
 import Task
 import string

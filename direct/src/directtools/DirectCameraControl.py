@@ -1,4 +1,5 @@
 from PandaObject import *
+from DirectUtil import *
 from DirectGeometry import *
 
 CAM_MOVE_DURATION = 1.2
@@ -16,7 +17,7 @@ class DirectCameraControl(PandaObject):
         self.coaMarker = loader.loadModel('models/misc/sphere')
         self.coaMarker.setName('DirectCameraCOAMarker')
         self.coaMarker.setTransparency(1)
-        self.coaMarker.setColor(1,0,0)
+        self.coaMarker.setColor(1,0,0,0)
         self.coaMarker.setPos(0,100,0)
         useDirectRenderStyle(self.coaMarker)
         self.coaMarkerPos = Point3(0)
@@ -27,8 +28,8 @@ class DirectCameraControl(PandaObject):
         self.camManipRef = direct.group.attachNewNode('camManipRef')
         t = CAM_MOVE_DURATION
         self.actionEvents = [
-            ['DIRECT_mouse2', self.mouseFlyStart],
-            ['DIRECT_mouse2Up', self.mouseFlyStop],
+            ['DIRECT-mouse2', self.mouseFlyStart],
+            ['DIRECT-mouse2Up', self.mouseFlyStop],
             ['c', self.centerCamIn, 0.5],
             ['f', self.fitOnWidget],
             ['h', self.homeCam],
@@ -60,7 +61,7 @@ class DirectCameraControl(PandaObject):
         else:
             direct.cameraControl.coaMarker.hide()
 
-    def mouseFlyStart(self):
+    def mouseFlyStart(self, modifiers):
         # Record undo point
         direct.pushUndo([direct.camera])
         # Where are we in the display region?

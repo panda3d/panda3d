@@ -3,6 +3,7 @@ from PandaObject import *
 from PieMenu import *
 from DirectGuiGlobals import *
 from Tkinter import *
+from DirectUtil import *
 from DirectGeometry import *
 from SceneGraphExplorer import *
 from tkMessageBox import showinfo
@@ -494,10 +495,14 @@ class LevelEditor(NodePath, PandaObject):
             # Hot key actions
             ('a', self.autoPositionGrid),
             ('j', self.jumpToInsertionPoint),
-            ('left', self.keyboardXformSelected, ['left']),
-            ('right', self.keyboardXformSelected, ['right']),
-            ('up', self.keyboardXformSelected, ['up']),
-            ('down', self.keyboardXformSelected, ['down']),
+            ('left', self.keyboardXformSelected, ['left', 'xlate']),
+            ('right', self.keyboardXformSelected, ['right', 'xlate']),
+            ('up', self.keyboardXformSelected, ['up','xlate']),
+            ('down', self.keyboardXformSelected, ['down','xlate']),
+            ('control-left', self.keyboardXformSelected, ['left', 'rotate']),
+            ('control-right', self.keyboardXformSelected, ['right', 'rotate']),
+            ('control-up', self.keyboardXformSelected, ['up', 'rotate']),
+            ('control-down', self.keyboardXformSelected, ['down', 'rotate']),
             ('shift-s', self.placeSuitPoint),
             ('shift-c', self.placeBattleCell),
             ('o', self.addToLandmarkBlock),
@@ -967,14 +972,14 @@ class LevelEditor(NodePath, PandaObject):
         # Turn off player camera control
         base.disableMouse()
         # Handle mouse events for pie menus
-        self.accept('DIRECT_mouse3',self.levelHandleMouse3)
-        self.accept('DIRECT_mouse3Up',self.levelHandleMouse3Up)
+        self.accept('DIRECT-mouse3',self.levelHandleMouse3)
+        self.accept('DIRECT-mouse3Up',self.levelHandleMouse3Up)
 
     def disableMouse(self):
         """ Disable Pie Menu interaction """
         # Disable handling of mouse events
-        self.ignore('DIRECT_mouse3')
-        self.ignore('DIRECT_mouse3Up')
+        self.ignore('DIRECT-mouse3')
+        self.ignore('DIRECT-mouse3Up')
 
     # LEVEL OBJECT MANAGEMENT FUNCTIONS
     def findDNANode(self, nodePath):
@@ -1571,7 +1576,7 @@ class LevelEditor(NodePath, PandaObject):
         DNARemoveChildOfClass(parent, DNA_WINDOWS)
 
     # LEVEL-OBJECT MODIFICATION FUNCTIONS
-    def levelHandleMouse3(self):
+    def levelHandleMouse3(self, modifiers):
         # Initialize dna target
         self.DNATarget = None
         
@@ -1588,7 +1593,7 @@ class LevelEditor(NodePath, PandaObject):
         # Pick a menu based upon object type
         if DNAClassEqual(dnaObject, DNA_FLAT_BUILDING):
             # FLAT BUILDING OPERATIONS
-            menuMode, wallNum = self.getFlatBuildingMode(dnaObject)
+            menuMode, wallNum = self.getFlatBuildingMode(dnaObject, modifiers)
             # Check menuMode
             if menuMode == None:
                 return
@@ -1614,11 +1619,11 @@ class LevelEditor(NodePath, PandaObject):
         elif DNAClassEqual(dnaObject, DNA_PROP):
             # PROP OPERATIONS
             self.DNATarget = dnaObject
-            if direct.fControl:
+            if direct.gotControl(modifiers):
                 menuMode = 'prop_color'
-            elif direct.fAlt and self.panel.currentBaselineDNA:
+            elif direct.gotAlt(modifiers) and self.panel.currentBaselineDNA:
                 menuMode = 'baseline_style'
-            elif direct.fShift:
+            elif direct.gotShift(modifiers):
                 menuMode = 'sign_texture'
                 self.DNATarget = DNAGetChildOfClass(dnaObject, DNA_SIGN)
                 self.DNATargetParent = dnaObject
@@ -1627,7 +1632,7 @@ class LevelEditor(NodePath, PandaObject):
         elif DNAClassEqual(dnaObject, DNA_LANDMARK_BUILDING):
             # INSERT HERE
             # LANDMARK BUILDING OPERATIONS
-            menuMode = self.getLandmarkBuildingMode(dnaObject)
+            menuMode = self.getLandmarkBuildingMode(dnaObject, modifiers)
             if string.find(menuMode, 'door') >= 0:
                 self.DNATarget = DNAGetChildOfClass(dnaObject, DNA_DOOR)
                 self.DNATargetParent = dnaObject
@@ -1677,41 +1682,36 @@ class LevelEditor(NodePath, PandaObject):
         # Spawn active menu's task
         self.activeMenu.spawnPieMenuTask()
 
-    def getLandmarkBuildingMode(self, dnaObject):
+    def getLandmarkBuildingMode(self, dnaObject, modifiers):
         # Where are we hitting the building?
         hitPt = self.getWallIntersectionPoint(self.selectedNPRoot)
         if hitPt[2] < 10.0:
             # Do door operations
-            if direct.fControl:
+            if direct.gotControl(modifiers):
                 menuMode = 'door_color'
-            elif direct.fAlt:
+            elif direct.gotAlt(modifiers):
                 menuMode = 'door_orientation'
             else:
                 menuMode = 'door_texture'
         else:
             # Do sign operations
-            if direct.fControl:
+            if direct.gotControl(modifiers):
                 menuMode = 'sign_color'
-            elif direct.fAlt and self.panel.currentBaselineDNA:
+            elif direct.gotAlt(modifiers) and self.panel.currentBaselineDNA:
                 menuMode = 'baseline_style'
-            elif direct.fAlt:
+            elif direct.gotAlt(modifiers):
                 menuMode = 'sign_orientation'
             else:
                 menuMode = 'sign_texture'
         return menuMode
 
-    def getFlatBuildingMode(self, dnaObject):
+    def getFlatBuildingMode(self, dnaObject, modifiers):
         # Where are we hitting the building?
         hitPt = self.getWallIntersectionPoint(self.selectedNPRoot)
         wallNum = self.computeWallNum(dnaObject, hitPt)
         if wallNum < 0:
             # Do building related operations
-            """
-            if direct.fShift:
-                menuMode = 'building_type'
-            elif direct.fAlt:
-            """
-            if direct.fAlt:
+            if direct.gotAlt(modifiers):
                 menuMode = 'building_width'
             else:
                 menuMode = 'building_style_all'
@@ -1729,37 +1729,37 @@ class LevelEditor(NodePath, PandaObject):
             # Determine which zone you are pointing at
             if (zPt > 0.8):
                 # Do cornice operations
-                if direct.fControl:
+                if direct.gotControl(modifiers):
                     menuMode = 'cornice_color'
-                elif direct.fAlt:
+                elif direct.gotAlt(modifiers):
                     menuMode = 'cornice_orientation'
                 else:
                     menuMode = 'cornice_texture'
             elif ((xPt < 0.3) or (xPt > 0.7)):
                 # Do wall operations
-                if direct.fControl:
+                if direct.gotControl(modifiers):
                     menuMode = 'wall_color'
-                elif direct.fAlt:
+                elif direct.gotAlt(modifiers):
                     menuMode = 'wall_orientation'
-                elif direct.fShift:
+                elif direct.gotShift(modifiers):
                     menuMode = 'wall_texture'
                 else:
                     menuMode = 'wall_style'
             elif (zPt < 0.4):
                 # Do door operations
-                if direct.fControl:
+                if direct.gotControl(modifiers):
                     menuMode = 'door_color'
-                elif direct.fAlt:
+                elif direct.gotAlt(modifiers):
                     menuMode = 'door_orientation'
                 else:
                     menuMode = 'door_texture'
             else:
                 # Do window operations
-                if direct.fControl:
+                if direct.gotControl(modifiers):
                     menuMode = 'window_color'
-                elif direct.fAlt:
+                elif direct.gotAlt(modifiers):
                     menuMode = 'window_orientation'
-                elif direct.fShift:
+                elif direct.gotShift(modifiers):
                     menuMode = 'window_count'
                 else:
                     menuMode = 'window_texture'
@@ -2019,7 +2019,6 @@ class LevelEditor(NodePath, PandaObject):
             oldSnapAngle = direct.grid.snapAngle
             direct.grid.setSnapAngle(1.0)
         snapAngle = direct.grid.snapAngle
-        print direct.fShift, snapAngle
         # Compute new angle
         if ((arrowDirection == 'left') or (arrowDirection == 'up')):
             self.setLastAngle(self.getLastAngle() + snapAngle)
@@ -2091,8 +2090,8 @@ class LevelEditor(NodePath, PandaObject):
             # Use back door to set grid spacing to avoid grid update
             direct.grid.gridSpacing = oldGridSpacing
 
-    def keyboardXformSelected(self, arrowDirection):
-        if direct.fControl:
+    def keyboardXformSelected(self, arrowDirection, mode):
+        if mode == 'rotate':
             self.keyboardRotateSelected(arrowDirection)
         else:
             self.keyboardTranslateSelected(arrowDirection)

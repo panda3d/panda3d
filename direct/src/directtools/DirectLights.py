@@ -1,5 +1,4 @@
 from PandaObject import *
-from DirectGeometry import *
 from string import lower
 
 class DirectLight(NodePath):

@@ -1,7 +1,7 @@
 from PandaObject import *
+from DirectGlobals import *
+from DirectUtil import *
 from DirectGeometry import *
-
-MANIPULATION_MOVE_DELAY = 0.65
 
 class DirectManipulationControl(PandaObject):
     def __init__(self):
@@ -24,8 +24,8 @@ class DirectManipulationControl(PandaObject):
         self.fScaling = 0
         self.mode = None
         self.actionEvents = [
-            ['DIRECT_mouse1', self.manipulationStart],
-            ['DIRECT_mouse1Up', self.manipulationStop],
+            ['DIRECT-mouse1', self.manipulationStart],
+            ['DIRECT-mouse1Up', self.manipulationStop],
             ['tab', self.toggleObjectHandlesMode],
             ['.', self.objectHandles.multiplyScalingFactorBy, 2.0],
             ['>', self.objectHandles.multiplyScalingFactorBy, 2.0],
@@ -35,12 +35,11 @@ class DirectManipulationControl(PandaObject):
             ['i', self.plantSelectedNodePath],
             ]
 
-    def manipulationStart(self):
+    def manipulationStart(self, modifiers):
         # Start out in select mode
         self.mode = 'select'
         # Check for a widget hit point
         node, hitPt, hitPtDist = direct.iRay.pickWidget()
-        print node, hitPt, hitPtDist
         # Did we hit a widget?
         if node:
             # Yes!

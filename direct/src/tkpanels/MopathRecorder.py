@@ -4,9 +4,10 @@
 from PandaObject import *
 from Tkinter import *
 from AppShell import *
+from DirectGlobals import *
+from DirectUtil import *
 from DirectGeometry import *
 from DirectSelection import *
-from DirectUtil import *
 from tkFileDialog import *
 import os
 import string

@@ -22,8 +22,9 @@ CLUSTER_EXIT = 100
 CLUSTER_SERVER_PORT = 1970
 CLUSTER_DAEMON_PORT = 8001
 
+# Precede command string with ! to tell server to execute command string
 SERVER_STARTUP_STRING = (
-    'bash ppython -c ' + 
+    '!bash ppython -c ' + 
     '"import __builtin__; ' +
     '__builtin__.clusterServerPort = %s;' +
     '__builtin__.clusterSyncFlag = %d;' +

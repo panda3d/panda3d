@@ -1,7 +1,7 @@
 """ Class used to create and control joybox device """
 from PandaObject import *
 from DirectDeviceManager import *
-from DirectGeometry import *
+from DirectUtil import *
 import OnscreenText
 
 """
@@ -162,8 +162,7 @@ class DirectJoybox(PandaObject):
             else:
                 val = max(val - ANALOG_DEADBAND, 0.0)
             # Scale up rotating knob values
-            if (chan == 2) or (chan == 6):
-                print "got twist in unrolled!"
+            if (chan == L_TWIST) or (chan == R_TWIST):
                 val *= 3.0
             # Now clamp value between minVal and maxVal
             val = CLAMP(val, JOYBOX_MIN, JOYBOX_MAX)
@@ -219,14 +218,10 @@ class DirectJoybox(PandaObject):
         # Do nothing if no nodePath selected
         if self.nodePath == None:
             return
-        """
-        hprScale = (self.normalizeChannel(L_SLIDE, 0.1, 100) *
-                    DirectJoybox.hprMultiplier)
-        posScale = (self.normalizeChannel(R_SLIDE, 0.1, 100) *
-                    DirectJoybox.xyzMultiplier)
-        """
-        hprScale = (self.aList[L_SLIDE] + 1.0) * 50.0 * DirectJoybox.hprMultiplier
-        posScale = (self.aList[R_SLIDE] + 1.0) * 50.0 * DirectJoybox.xyzMultiplier
+        hprScale = ((self.aList[L_SLIDE] + 1.0) *
+                    50.0 * DirectJoybox.hprMultiplier)
+        posScale = ((self.aList[R_SLIDE] + 1.0) *
+                    50.0 * DirectJoybox.xyzMultiplier)
         def getAxisVal(index, s = self):
             try:
                 return s.aList[s.mapping[index]]
@@ -412,12 +407,12 @@ class DirectJoybox(PandaObject):
     def normalizeChannel(self, chan, minVal = -1, maxVal = 1):
         try:
             if (chan == L_TWIST) or (chan == R_TWIST):
-                print "in Joybox normalize channel: got *_TWIST!"
                 # These channels have reduced range
-                return self.analogs.normalize(self.analogs.getControlState(chan) * 3.0, minVal, maxVal)
+                return self.analogs.normalize(
+                    self.analogs.getControlState(chan) * 3.0, minVal, maxVal)
             else:
-                print "in Joybox normalize channel..."
-                return self.analogs.normalize(self.analogs.getControlState(chan), minVal, maxVal)
+                return self.analogs.normalize(
+                    self.analogs.getControlState(chan), minVal, maxVal)
         except IndexError:
             return 0.0
 

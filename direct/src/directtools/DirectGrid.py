@@ -1,4 +1,5 @@
 from PandaObject import *
+from DirectUtil import *
 from DirectGeometry import *
 
 class DirectGrid(NodePath,PandaObject):

@@ -1,4 +1,5 @@
 from PandaObject import *
+from DirectGlobals import *
 from DirectUtil import*
 from DirectCameraControl import *
 from DirectManipulation import *
@@ -17,8 +18,6 @@ import OnscreenText
 import types
 import string
 import __builtin__
-
-DIRECT_FLASH_DURATION = 1.5
 
 class DirectSession(PandaObject):
 
@@ -156,11 +155,19 @@ class DirectSession(PandaObject):
                           '[', '{', ']', '}',
                           'shift-a', 'b', 'l', 'shift-l', 'o', 'p', 'r',
                           'shift-r', 's', 't', 'v', 'w']
-        self.mouseEvents = ['mouse1', 'shift-mouse1', 'control-mouse1',
-                            'alt-mouse1', 'mouse1-up',
-                            'mouse2', 'shift-mouse2', 'control-mouse2',
-                            'alt-mouse2', 'mouse2-up',
-                            'mouse3', 'mouse3-up']
+        self.mouseEvents = ['mouse1', 'mouse1-up',
+                            'shift-mouse1', 'shift-mouse1-up',
+                            'control-mouse1', 'control-mouse1-up',
+                            'alt-mouse1', 'alt-mouse1-up',
+                            'mouse2', 'mouse2-up',
+                            'shift-mouse2', 'shift-mouse2-up',
+                            'control-mouse2', 'control-mouse2-up',
+                            'alt-mouse2', 'alt-mouse2-up',
+                            'mouse3', 'mouse3-up',
+                            'shift-mouse3', 'shift-mouse3-up',
+                            'control-mouse3', 'control-mouse3-up',
+                            'alt-mouse3', 'alt-mouse3-up',
+                            ]
 
         if base.wantTk:
             import TkGlobal
@@ -321,20 +328,21 @@ class DirectSession(PandaObject):
 
     def inputHandler(self, input):
         # Deal with keyboard and mouse input
-        if ((input == 'mouse1') or (input == 'shift-mouse1') or
-            (input == 'control-mouse1') or (input == 'alt-mouse1')):
-            messenger.send('DIRECT_mouse1')
-        elif input == 'mouse1-up':
-            messenger.send('DIRECT_mouse1Up')
-        elif ((input == 'mouse2') or (input == 'shift-mouse2') or
-              (input == 'control-mouse2') or (input == 'alt-mouse2')): 
-            messenger.send('DIRECT_mouse2')
+        if input == 'mouse1-up':
+            messenger.send('DIRECT-mouse1Up')
+        elif input.find('mouse1') != -1:
+            modifiers = self.getModifiers(input, 'mouse1')
+            messenger.send('DIRECT-mouse1', sentArgs = [modifiers])
         elif input == 'mouse2-up':
-            messenger.send('DIRECT_mouse2Up')
-        elif input == 'mouse3': 
-            messenger.send('DIRECT_mouse3')
+            messenger.send('DIRECT-mouse2Up')
+        elif input.find('mouse2') != -1:
+            modifiers = self.getModifiers(input, 'mouse2')
+            messenger.send('DIRECT-mouse2', sentArgs = [modifiers])
         elif input == 'mouse3-up':
-            messenger.send('DIRECT_mouse3Up')
+            messenger.send('DIRECT-mouse3Up')
+        elif input.find('mouse3') != -1:
+            modifiers = self.getModifiers(input, 'mouse3')
+            messenger.send('DIRECT-mouse3', sentArgs = [modifiers])
         elif input == 'shift':
             self.fShift = 1
         elif input == 'shift-up':
@@ -396,6 +404,26 @@ class DirectSession(PandaObject):
                          'shift-a', 'w'):
                 self.cluster.cmd('messenger.send("%s")' % input,0)
         
+    def getModifiers(self, input, base):
+        modifiers = DIRECT_NO_MOD
+        modifierString = input[: input.find(base)]
+        if modifierString.find('shift') != -1:
+            modifiers |= DIRECT_SHIFT_MOD
+        if modifierString.find('control') != -1:
+            modifiers |= DIRECT_CONTROL_MOD
+        if modifierString.find('alt') != -1:
+            modifiers |= DIRECT_ALT_MOD
+        return modifiers
+
+    def gotShift(self, modifiers):
+        return modifiers & DIRECT_SHIFT_MOD
+
+    def gotControl(self, modifiers):
+        return modifiers & DIRECT_CONTROL_MOD
+
+    def gotAlt(self, modifiers):
+        return modifiers & DIRECT_ALT_MOD
+
     def select(self, nodePath, fMultiSelect = 0, fResetAncestry = 1):
         dnp = self.selected.select(nodePath, fMultiSelect)
         if dnp:
@@ -761,12 +789,12 @@ class DisplayRegionList(PandaObject):
                     self.displayRegionLookup[camera.getName()]=i
                     i = i + 1
         self.accept("CamChange",self.camUpdate)
-        self.accept("DIRECT_mouse1",self.mouseUpdate)
-        self.accept("DIRECT_mouse2",self.mouseUpdate)
-        self.accept("DIRECT_mouse3",self.mouseUpdate)
-        self.accept("DIRECT_mouse1Up",self.mouseUpdate)
-        self.accept("DIRECT_mouse2Up",self.mouseUpdate)
-        self.accept("DIRECT_mouse3Up",self.mouseUpdate)
+        self.accept("DIRECT-mouse1",self.mouseUpdate)
+        self.accept("DIRECT-mouse2",self.mouseUpdate)
+        self.accept("DIRECT-mouse3",self.mouseUpdate)
+        self.accept("DIRECT-mouse1Up",self.mouseUpdate)
+        self.accept("DIRECT-mouse2Up",self.mouseUpdate)
+        self.accept("DIRECT-mouse3Up",self.mouseUpdate)
 
         #setting up array of camera nodes
         cameraList = []
@@ -813,7 +841,7 @@ class DisplayRegionList(PandaObject):
             for dr in self.displayRegionList:
                 dr.camUpdate()
 
-    def mouseUpdate(self):
+    def mouseUpdate(self, modifiers = DIRECT_NO_MOD):
         for dr in self.displayRegionList:
             dr.mouseUpdate()
         direct.dr = self.getCurrentDr()

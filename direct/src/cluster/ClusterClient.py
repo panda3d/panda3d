@@ -26,14 +26,19 @@ class ClusterClient(DirectObject.DirectObject):
         self.daemon.listenTo(clusterDaemonPort)
         # Contact server daemons and start up remote server application
         for serverConfig in configList:
+            # First kill existing application
+            self.daemon.tellServer(serverConfig.serverName,
+                                   clusterDaemonPort,
+                                   'ka')
+            # Now start up new application
             serverCommand = (SERVER_STARTUP_STRING %
                              (serverConfig.serverPort,
                               clusterSyncFlag,
                               clusterDaemonClient,
                               clusterDaemonPort))
-            self.daemon.clientReady(serverConfig.serverName,
-                                    clusterDaemonPort,
-                                    serverCommand)
+            self.daemon.tellServer(serverConfig.serverName,
+                                   clusterDaemonPort,
+                                   serverCommand)
         if not self.daemon.waitForServers(len(configList)):
             print 'Cluster Client, no response from servers'
         self.qcm=QueuedConnectionManager()

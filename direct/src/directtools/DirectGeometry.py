@@ -1,16 +1,8 @@
 from PandaModules import *
 from PandaObject import *
+from DirectGlobals import *
+from DirectUtil import *
 import math
-
-X_AXIS = Vec3(1,0,0)
-Y_AXIS = Vec3(0,1,0)
-Z_AXIS = Vec3(0,0,1)
-NEG_X_AXIS = Vec3(-1,0,0)
-NEG_Y_AXIS = Vec3(0,-1,0)
-NEG_Z_AXIS = Vec3(0,0,-1)
-ZERO_VEC = ORIGIN = Vec3(0)
-UNIT_VEC = Vec3(1)
-ZERO_POINT = Point3(0)
 
 class LineNodePath(NodePath):
     def __init__(self, parent = None, name = None,
@@ -141,18 +133,6 @@ def planeIntersect (lineOrigin, lineDir, planeOrigin, normal):
     hitPt = lineDir * t
     return hitPt + lineOrigin
 
-def ROUND_TO(value, divisor):
-    return round(value/float(divisor)) * divisor
-def ROUND_INT(val):
-    return int(round(val))
-def CLAMP(val, min, max):
-    if val < min:
-        return min
-    elif val > max:
-        return max
-    else:
-        return val
-
 def getNearProjectionPoint(nodePath):
     # Find the position of the projection of the specified node path
     # on the near plane
@@ -207,8 +187,57 @@ def relHpr(nodePath, base, h, p, r):
                     CSDefault)
     nodePath.setHpr(hpr)
 
-# Set direct drawing style for an object
-# Never light object or draw in wireframe
-def useDirectRenderStyle(nodePath):
-    nodePath.node().setAttrib(LightAttrib.makeAllOff())
-    nodePath.setRenderModeFilled()
+# Quaternion interpolation
+def qSlerp(startQuat, endQuat, t):
+    startQ = Quat(startQuat)
+    destQuat = Quat.identQuat()
+    # Calc dot product
+    cosOmega = (startQ.getI() * endQuat.getI() +
+                startQ.getJ() * endQuat.getJ() + 
+                startQ.getK() * endQuat.getK() +
+                startQ.getR() * endQuat.getR())
+    # If the above dot product is negative, it would be better to
+    # go between the negative of the initial and the final, so that
+    # we take the shorter path.  
+    if ( cosOmega < 0.0 ):
+        cosOmega *= -1
+        startQ.setI(-1 * startQ.getI())
+        startQ.setJ(-1 * startQ.getJ())
+        startQ.setK(-1 * startQ.getK())
+        startQ.setR(-1 * startQ.getR())
+    if ((1.0 + cosOmega) > Q_EPSILON):
+        # usual case
+        if ((1.0 - cosOmega) > Q_EPSILON):
+            # usual case
+            omega = math.acos(cosOmega)
+            sinOmega = math.sin(omega)
+            startScale = math.sin((1.0 - t) * omega)/sinOmega
+            endScale = math.sin(t * omega)/sinOmega
+        else:
+            # ends very close 
+            startScale = 1.0 - t
+            endScale = t
+        destQuat.setI(startScale * startQ.getI() +
+                      endScale * endQuat.getI())
+        destQuat.setJ(startScale * startQ.getJ() +
+                      endScale * endQuat.getJ())
+        destQuat.setK(startScale * startQ.getK() +
+                      endScale * endQuat.getK())
+        destQuat.setR(startScale * startQ.getR() +
+                      endScale * endQuat.getR())
+    else:
+        # ends nearly opposite
+        destQuat.setI(-startQ.getJ())
+        destQuat.setJ(startQ.getI())
+        destQuat.setK(-startQ.getR())
+        destQuat.setR(startQ.getK())
+        startScale = math.sin((0.5 - t) * math.pi)
+        endScale = math.sin(t * math.pi)
+        destQuat.setI(startScale * startQ.getI() +
+                      endScale * endQuat.getI())
+        destQuat.setJ(startScale * startQ.getJ() +
+                      endScale * endQuat.getJ())
+        destQuat.setK(startScale * startQ.getK() +
+                      endScale * endQuat.getK())
+    return destQuat
+

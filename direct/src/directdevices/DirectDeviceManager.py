@@ -93,13 +93,13 @@ class DirectAnalogs(AnalogNode, DirectObject):
         self.nodePath = myBase.dataRoot.attachNewNode(self)
         # See if any of the general analog parameters are dconfig'd
         self.analogDeadband = myBase.config.GetFloat('vrpn-analog-deadband',
-                                                       ANALOG_DEADBAND)
+                                                     ANALOG_DEADBAND)
         self.analogMin = myBase.config.GetFloat('vrpn-analog-min',
-                                                  ANALOG_MIN)
+                                                ANALOG_MIN)
         self.analogMax = myBase.config.GetFloat('vrpn-analog-max',
-                                                  ANALOG_MAX)
-        self.analogMax = myBase.config.GetFloat('vrpn-analog-center',
-                                                  ANALOG_CENTER)
+                                                ANALOG_MAX)
+        self.analogCenter = myBase.config.GetFloat('vrpn-analog-center',
+                                                   ANALOG_CENTER)
         self.analogRange = self.analogMax - self.analogMin
 
     

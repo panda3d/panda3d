@@ -4,7 +4,6 @@
 from PandaObject import *
 from Tkinter import *
 from AppShell import *
-from DirectGeometry import *
 import Pmw
 import Dial
 import Floater

@@ -1,23 +1,42 @@
 from PandaObject import *
+from DirectGlobals import *
+
+# Routines to adjust values
+def ROUND_TO(value, divisor):
+    return round(value/float(divisor)) * divisor
+
+def ROUND_INT(val):
+    return int(round(val))
+
+def CLAMP(val, min, max):
+    if val < min:
+        return min
+    elif val > max:
+        return max
+    else:
+        return val
 
 # Create a tk compatible color string
 def getTkColorString(color):
-        def toHex(intVal):
-            val = int(round(intVal))
-            if val < 16:
-                return "0" + hex(val)[2:]
-            else:
-                return hex(val)[2:]
-        r = toHex(color[0])
-        g = toHex(color[1])
-        b = toHex(color[2])
-        return "#" + r + g + b
+    """ Print out a Tk compatible version of a color string """
+    def toHex(intVal):
+        val = int(round(intVal))
+        if val < 16:
+            return "0" + hex(val)[2:]
+        else:
+            return hex(val)[2:]
+    r = toHex(color[0])
+    g = toHex(color[1])
+    b = toHex(color[2])
+    return "#" + r + g + b
 
 ## Background Color ##
 def setBackgroundColor(r,g,b):
+    """ Wrapper function to set background color """
     base.win.getGsg().setColorClearValue(VBase4(r, g, b, 1.0))
 
 def lerpBackgroundColor(r,g,b,duration):
+    """ Function to lerp background color to a new value """
     def lerpColor(state):
         dt = globalClock.getDt()
         state.time += dt
@@ -38,61 +57,15 @@ def lerpBackgroundColor(r,g,b,duration):
     t.sc = base.win.getGsg().getColorClearValue()
     t.ec = VBase4(r,g,b,1)
 
-Q_EPSILON = 1e-10
-
-# Quaternion interpolation
-def qSlerp(startQuat, endQuat, t):
-    startQ = Quat(startQuat)
-    destQuat = Quat.identQuat()
-    # Calc dot product
-    cosOmega = (startQ.getI() * endQuat.getI() +
-                startQ.getJ() * endQuat.getJ() + 
-                startQ.getK() * endQuat.getK() +
-                startQ.getR() * endQuat.getR())
-    # If the above dot product is negative, it would be better to
-    # go between the negative of the initial and the final, so that
-    # we take the shorter path.  
-    if ( cosOmega < 0.0 ):
-        cosOmega *= -1
-        startQ.setI(-1 * startQ.getI())
-        startQ.setJ(-1 * startQ.getJ())
-        startQ.setK(-1 * startQ.getK())
-        startQ.setR(-1 * startQ.getR())
-    if ((1.0 + cosOmega) > Q_EPSILON):
-        # usual case
-        if ((1.0 - cosOmega) > Q_EPSILON):
-            # usual case
-            omega = math.acos(cosOmega)
-            sinOmega = math.sin(omega)
-            startScale = math.sin((1.0 - t) * omega)/sinOmega
-            endScale = math.sin(t * omega)/sinOmega
-        else:
-            # ends very close 
-            startScale = 1.0 - t
-            endScale = t
-        destQuat.setI(startScale * startQ.getI() +
-                      endScale * endQuat.getI())
-        destQuat.setJ(startScale * startQ.getJ() +
-                      endScale * endQuat.getJ())
-        destQuat.setK(startScale * startQ.getK() +
-                      endScale * endQuat.getK())
-        destQuat.setR(startScale * startQ.getR() +
-                      endScale * endQuat.getR())
-    else:
-        # ends nearly opposite
-        destQuat.setI(-startQ.getJ())
-        destQuat.setJ(startQ.getI())
-        destQuat.setK(-startQ.getR())
-        destQuat.setR(startQ.getK())
-        startScale = math.sin((0.5 - t) * math.pi)
-        endScale = math.sin(t * math.pi)
-        destQuat.setI(startScale * startQ.getI() +
-                      endScale * endQuat.getI())
-        destQuat.setJ(startScale * startQ.getJ() +
-                      endScale * endQuat.getJ())
-        destQuat.setK(startScale * startQ.getK() +
-                      endScale * endQuat.getK())
-    return destQuat
+# Set direct drawing style for an object
+# Never light object or draw in wireframe
+def useDirectRenderStyle(nodePath):
+    """
+    Function to force a node path to use direct render style:
+    no lighting, and no wireframe
+    """
+    nodePath.node().setAttrib(LightAttrib.makeAllOff())
+    nodePath.setRenderModeFilled()
 
 # File data util
 def getFileData(filename, separator = ','):
