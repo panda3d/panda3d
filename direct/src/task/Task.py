@@ -99,38 +99,42 @@ def sequence(*taskList):
 
 def make_sequence(taskList):
     def func(self):
-        # If we got to the end of the list, this sequence is done
-        if (self.index >= len(self.taskList)):
-            # TaskManager.notify.debug('sequence done: ' + self.name)
-            return done
-        else:
+        frameFinished = 0
+        taskDoneStatus = -1
+        while (not frameFinished):
             task = self.taskList[self.index]
             # If this is a new task, set its start time and frame
             if (self.index > self.prevIndex):
                 task.setStartTimeFrame(self.time, self.frame)
             self.prevIndex = self.index
-
             # Calculate this task's time since it started
             task.setCurrentTimeFrame(self.time, self.frame)
-
             # Execute the current task
             ret = task(task)
-
             # Check the return value from the task
             # If this current task wants to continue,
             # come back to it next frame
             if (ret == cont):
-                return cont
-
+                taskDoneStatus = cont
+                frameFinished = 1
             # If this task is done, increment the index so that next frame
             # we will start executing the next task on the list
             elif (ret == done):
                 self.index = self.index + 1
-                return cont
-
+                taskDoneStatus = cont
+                frameFinished = 0
             # If this task wants to exit, the sequence exits
             elif (ret == exit):
-                return exit
+                taskDoneStatus = exit
+                frameFinished = 1
+
+            # If we got to the end of the list, this sequence is done
+            if (self.index >= len(self.taskList)):
+                # TaskManager.notify.debug('sequence done: ' + self.name)
+                frameFinished = 1
+                taskDoneStatus = done
+                
+        return taskDoneStatus 
 
     task = Task(func)
     task.name = 'sequence'
@@ -152,40 +156,43 @@ def loop(*taskList):
 
 def make_loop(taskList):
     def func(self):
-        # If we got to the end of the list, this sequence is done
-        if (self.index >= len(self.taskList)):
-            # TaskManager.notify.debug('sequence done, looping: ' + self.name)
-            self.prevIndex = -1
-            self.index = 0
-            return cont
-        else:
+        frameFinished = 0
+        taskDoneStatus = -1
+        while (not frameFinished):
             task = self.taskList[self.index]
             # If this is a new task, set its start time and frame
             if (self.index > self.prevIndex):
                 task.setStartTimeFrame(self.time, self.frame)
             self.prevIndex = self.index
-
             # Calculate this task's time since it started
             task.setCurrentTimeFrame(self.time, self.frame)
-
             # Execute the current task
             ret = task(task)
-
             # Check the return value from the task
             # If this current task wants to continue,
             # come back to it next frame
             if (ret == cont):
-                return cont
-
+                taskDoneStatus = cont
+                frameFinished = 1
             # If this task is done, increment the index so that next frame
             # we will start executing the next task on the list
+            # TODO: we should go to the next frame now
             elif (ret == done):
                 self.index = self.index + 1
-                return cont
-
+                taskDoneStatus = cont
+                frameFinished = 0
             # If this task wants to exit, the sequence exits
             elif (ret == exit):
-                return exit
+                taskDoneStatus = exit
+                frameFinished = 1
+
+            # If we got to the end of the list, wrap back around
+            if (self.index >= len(self.taskList)):
+                self.prevIndex = -1
+                self.index = 0
+                frameFinished = 1
+
+        return taskDoneStatus
 
     task = Task(func)
     task.name = 'loop'
