@@ -416,6 +416,8 @@ class LevelEditor(NodePath, PandaObject):
         self.pointDict = {}
         self.point2edgeDict = {}
         self.cellDict = {}
+        self.visitedPoints = []
+        self.visitedEdges = []
         
         # Initialize LevelEditor variables DNAData, DNAToplevel, NPToplevel
         # DNAParent, NPParent, groupNum, lastAngle
