@@ -18,11 +18,12 @@
     collisionHandlerPhysical.I collisionHandlerPhysical.h  \
     collisionHandlerPusher.I collisionHandlerPusher.h  \
     collisionHandlerQueue.h \
+    collisionLine.I collisionLine.h \
     collisionLevelState.I collisionLevelState.h \
     collisionNode.I collisionNode.h \
     collisionPlane.I collisionPlane.h  \
-    collisionPolygon.I collisionPolygon.h collisionRay.I  \
-    collisionRay.h \
+    collisionPolygon.I collisionPolygon.h \
+    collisionRay.I collisionRay.h \
     collisionRecorder.I collisionRecorder.h \
     collisionSegment.I collisionSegment.h  \
     collisionSolid.I collisionSolid.h \
@@ -42,9 +43,11 @@
     collisionHandlerPusher.cxx \
     collisionHandlerQueue.cxx  \
     collisionLevelState.cxx \
+    collisionLine.cxx \
     collisionNode.cxx \
     collisionPlane.cxx  \
-    collisionPolygon.cxx collisionRay.cxx \
+    collisionPolygon.cxx \
+    collisionRay.cxx \
     collisionRecorder.cxx \
     collisionSegment.cxx  \
     collisionSolid.cxx \
@@ -64,9 +67,11 @@
     collisionHandlerPusher.I collisionHandlerPusher.h \
     collisionHandlerQueue.h \
     collisionLevelState.I collisionLevelState.h \
+    collisionLine.I collisionLine.h \
     collisionNode.I collisionNode.h \
     collisionPlane.I collisionPlane.h \
-    collisionPolygon.I collisionPolygon.h collisionRay.I collisionRay.h \
+    collisionPolygon.I collisionPolygon.h \
+    collisionRay.I collisionRay.h \
     collisionRecorder.I collisionRecorder.h \
     collisionSegment.I collisionSegment.h \
     collisionSolid.I collisionSolid.h \

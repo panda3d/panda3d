@@ -8,5 +8,6 @@
 #include "collisionHandlerPusher.cxx"
 #include "collisionHandlerQueue.cxx"
 #include "collisionLevelState.cxx"
+#include "collisionLine.cxx"
 #include "collisionNode.cxx"
 

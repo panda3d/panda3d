@@ -19,6 +19,7 @@
 #include "collisionSolid.h"
 #include "config_collide.h"
 #include "collisionSphere.h"
+#include "collisionLine.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
 
@@ -150,6 +151,20 @@ write(ostream &out, int indent_level) const {
 PT(CollisionEntry) CollisionSolid::
 test_intersection_from_sphere(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionSphere::get_class_type(),
+                                     get_type());
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::test_intersection_from_line
+//       Access: Protected, Virtual
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a line.
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionSolid::
+test_intersection_from_line(const CollisionEntry &) const {
+  report_undefined_intersection_test(CollisionLine::get_class_type(),
                                      get_type());
   return NULL;
 }

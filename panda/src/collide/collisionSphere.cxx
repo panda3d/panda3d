@@ -18,6 +18,7 @@
 
 
 #include "collisionSphere.h"
+#include "collisionLine.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
 #include "collisionHandler.h"
@@ -165,6 +166,48 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionSphere::test_intersection_from_line
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionSphere::
+test_intersection_from_line(const CollisionEntry &entry) const {
+  const CollisionLine *line;
+  DCAST_INTO_R(line, entry.get_from(), 0);
+
+  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3f from_origin = line->get_origin() * wrt_mat;
+  LVector3f from_direction = line->get_direction() * wrt_mat;
+
+  double t1, t2;
+  if (!intersects_line(t1, t2, from_origin, from_direction)) {
+    // No intersection.
+    return NULL;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LPoint3f into_intersection_point = from_origin + t1 * from_direction;
+  new_entry->set_surface_point(into_intersection_point);
+
+  if (has_effective_normal() && line->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    LVector3f normal = into_intersection_point - _center;
+    normal.normalize();
+    new_entry->set_surface_normal(normal);
+  }
+
+  return new_entry;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::test_intersection_from_ray
 //       Access: Public, Virtual
 //  Description:
@@ -192,8 +235,8 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << entry.get_from_node_path() << " into "
-      << entry.get_into_node_path() << "\n";
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
@@ -208,6 +251,14 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
     into_intersection_point = from_origin + t1 * from_direction;
   }
   new_entry->set_surface_point(into_intersection_point);
+
+  if (has_effective_normal() && ray->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    LVector3f normal = into_intersection_point - _center;
+    normal.normalize();
+    new_entry->set_surface_normal(normal);
+  }
 
   return new_entry;
 }
@@ -242,8 +293,8 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << entry.get_from_node_path() << " into "
-      << entry.get_into_node_path() << "\n";
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
@@ -258,6 +309,14 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
     into_intersection_point = from_a + t1 * from_direction;
   }
   new_entry->set_surface_point(into_intersection_point);
+
+  if (has_effective_normal() && segment->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    LVector3f normal = into_intersection_point - _center;
+    normal.normalize();
+    new_entry->set_surface_normal(normal);
+  }
 
   return new_entry;
 }

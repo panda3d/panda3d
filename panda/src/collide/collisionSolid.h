@@ -87,6 +87,8 @@ protected:
   virtual PT(CollisionEntry)
   test_intersection_from_sphere(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
+  test_intersection_from_line(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
   test_intersection_from_ray(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_segment(const CollisionEntry &entry) const;
@@ -143,6 +145,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class CollisionSphere;
+  friend class CollisionLine;
   friend class CollisionRay;
   friend class CollisionSegment;
 };

@@ -20,6 +20,7 @@
 #include "collisionHandler.h"
 #include "collisionEntry.h"
 #include "collisionSphere.h"
+#include "collisionLine.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
 #include "config_collide.h"
@@ -553,6 +554,70 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::test_intersection_from_line
+//       Access: Protected, Virtual
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a line.
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionPolygon::
+test_intersection_from_line(const CollisionEntry &entry) const {
+  if (_points.size() < 3) {
+    return NULL;
+  }
+
+  const CollisionLine *line;
+  DCAST_INTO_R(line, entry.get_from(), 0);
+
+  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3f from_origin = line->get_origin() * wrt_mat;
+  LVector3f from_direction = line->get_direction() * wrt_mat;
+
+  float t;
+  if (!get_plane().intersects_line(t, from_origin, from_direction)) {
+    // No intersection.
+    return NULL;
+  }
+
+  LPoint3f plane_point = from_origin + t * from_direction;
+  LPoint2f p = to_2d(plane_point);
+
+  const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
+  if (cpa != (ClipPlaneAttrib *)NULL) {
+    // We have a clip plane; apply it.
+    Points new_points;
+    apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform());
+    if (new_points.size() < 3) {
+      return NULL;
+    }
+    if (!point_is_inside(p, new_points)) {
+      return NULL;
+    }
+
+  } else {
+    // No clip plane is in effect.  Do the default test.
+    if (!point_is_inside(p, _points)) {
+      return NULL;
+    }
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LVector3f normal = (has_effective_normal() && line->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+
+  new_entry->set_surface_normal(normal);
+  new_entry->set_surface_point(plane_point);
+
+  return new_entry;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::test_intersection_from_ray
 //       Access: Protected, Virtual
 //  Description: This is part of the double-dispatch implementation of
@@ -608,8 +673,8 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << entry.get_from_node_path() << " into "
-      << entry.get_into_node_path() << "\n";
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
@@ -679,8 +744,8 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << entry.get_from_node_path() << " into "
-      << entry.get_into_node_path() << "\n";
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 

@@ -21,7 +21,9 @@
 #include "collisionHandler.h"
 #include "collisionEntry.h"
 #include "collisionSphere.h"
+#include "collisionLine.h"
 #include "collisionRay.h"
+#include "collisionSegment.h"
 #include "config_collide.h"
 
 #include "pointerToArray.h"
@@ -139,6 +141,44 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPlane::test_intersection_from_line
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionPlane::
+test_intersection_from_line(const CollisionEntry &entry) const {
+  const CollisionLine *line;
+  DCAST_INTO_R(line, entry.get_from(), 0);
+
+  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3f from_origin = line->get_origin() * wrt_mat;
+  LVector3f from_direction = line->get_direction() * wrt_mat;
+
+  float t;
+  if (!_plane.intersects_line(t, from_origin, from_direction)) {
+    // No intersection.
+    return NULL;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LPoint3f into_intersection_point = from_origin + t * from_direction;
+
+  LVector3f normal = (has_effective_normal() && line->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+
+  new_entry->set_surface_normal(normal);
+  new_entry->set_surface_point(into_intersection_point);
+
+  return new_entry;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::test_intersection_from_ray
 //       Access: Public, Virtual
 //  Description:
@@ -166,14 +206,59 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << entry.get_from_node_path() << " into "
-      << entry.get_into_node_path() << "\n";
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   LPoint3f into_intersection_point = from_origin + t * from_direction;
 
   LVector3f normal = (has_effective_normal() && ray->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+
+  new_entry->set_surface_normal(normal);
+  new_entry->set_surface_point(into_intersection_point);
+
+  return new_entry;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPlane::test_intersection_from_segment
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionPlane::
+test_intersection_from_segment(const CollisionEntry &entry) const {
+  const CollisionSegment *segment;
+  DCAST_INTO_R(segment, entry.get_from(), 0);
+
+  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3f from_a = segment->get_point_a() * wrt_mat;
+  LPoint3f from_b = segment->get_point_b() * wrt_mat;
+  LVector3f from_direction = from_b - from_a;
+
+  float t;
+  if (!_plane.intersects_line(t, from_a, from_direction)) {
+    // No intersection.
+    return NULL;
+  }
+
+  if (t < 0.0f || t > 1.0f) {
+    // The intersection point is before the start of the segment or
+    // after the end of the segment.
+    return NULL;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LPoint3f into_intersection_point = from_a + t * from_direction;
+
+  LVector3f normal = (has_effective_normal() && segment->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
 
   new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(into_intersection_point);
