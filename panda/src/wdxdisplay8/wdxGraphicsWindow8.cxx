@@ -310,7 +310,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             SET_MOUSE_COORD(y,newY);
 
             handle_mouse_motion(x, y);
-            if((_dxgsg!=NULL) && (_dxgsg->scrn.pD3DDevice!=NULL))
+            if(dx_full_screen && (_dxgsg!=NULL) && (_dxgsg->scrn.pD3DDevice!=NULL))
                 _dxgsg->scrn.pD3DDevice->SetCursorPosition(newX,newY,D3DCURSOR_IMMEDIATE_UPDATE);
             return 0;
         }
@@ -454,10 +454,12 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
         case WM_SETCURSOR:
             // Turn off any GDI window cursor 
-//  dx8 cursor not working yet
-            SetCursor( NULL );
-            _dxgsg->scrn.pD3DDevice->ShowCursor(true);
-            return TRUE; // prevent Windows from setting cursor to window class cursor (see docs on WM_SETCURSOR)
+            //  dx8 cursor not working yet
+            if(dx_full_screen) {
+                SetCursor( NULL );
+                _dxgsg->scrn.pD3DDevice->ShowCursor(true);
+                return TRUE; // prevent Windows from setting cursor to window class cursor (see docs on WM_SETCURSOR)
+            }
             break;
 
         case WM_MOVE:
@@ -683,7 +685,6 @@ bool wdxGraphicsWindow::reset_device_resize_window(UINT new_xsize, UINT new_ysiz
     return true;
 }
 
-  
 ////////////////////////////////////////////////////////////////////
 //     Function: handle_reshape
 //       Access:
