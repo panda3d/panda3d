@@ -176,7 +176,7 @@ class ParticlePanel(AppShell):
                                 command = self.setEmitterBoxVelocityVector)
         # Disc page #
         discPage = self.emitterNotebook.add('Disc')
-        self.emitter
+        #self.emitter
         self.createFloater(discPage, 'Radius', 'Radius of disc',
                            command = self.setEmitterDiscRadius)
         self.createAngleDial(discPage, 'Inner angle',

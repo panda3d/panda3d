@@ -25,6 +25,37 @@ enum SparkleParticleLifeScale {
 ////////////////////////////////////////////////////////////////////
 
 class EXPCL_PANDAPHYSICS SparkleParticleRenderer : public BaseParticleRenderer {
+PUBLISHED:
+  enum SparkleParticleLifeScale {
+    SP_NO_SCALE,
+    SP_SCALE
+  };
+
+  SparkleParticleRenderer(void);
+  SparkleParticleRenderer(const SparkleParticleRenderer& copy);
+  SparkleParticleRenderer(const Colorf& center,
+			  const Colorf& edge,
+			  float birth_radius,
+			  float death_radius,
+			  SparkleParticleLifeScale life_scale,
+			  ParticleRendererAlphaMode alpha_mode);
+
+  virtual ~SparkleParticleRenderer(void);
+
+  virtual BaseParticleRenderer *make_copy(void);
+
+  INLINE void set_center_color(const Colorf& c);
+  INLINE void set_edge_color(const Colorf& c);
+  INLINE void set_birth_radius(float radius);
+  INLINE void set_death_radius(float radius);
+  INLINE void set_life_scale(SparkleParticleLifeScale);
+
+  INLINE const Colorf& get_center_color(void) const;
+  INLINE const Colorf& get_edge_color(void) const;
+  INLINE float get_birth_radius(void) const;
+  INLINE float get_death_radius(void) const;
+  INLINE SparkleParticleLifeScale get_life_scale(void) const;
+
 private:
 
   Colorf _center_color;
@@ -51,32 +82,6 @@ private:
   virtual void render(vector< PT(PhysicsObject) >& po_vector,
 		      int ttl_particles);
   virtual void resize_pool(int new_size);
-
-PUBLISHED:
-  SparkleParticleRenderer(void);
-  SparkleParticleRenderer(const SparkleParticleRenderer& copy);
-  SparkleParticleRenderer(const Colorf& center,
-			  const Colorf& edge,
-			  float birth_radius,
-			  float death_radius,
-			  SparkleParticleLifeScale life_scale,
-			  ParticleRendererAlphaMode alpha_mode);
-
-  virtual ~SparkleParticleRenderer(void);
-
-  virtual BaseParticleRenderer *make_copy(void);
-
-  INLINE void set_center_color(const Colorf& c);
-  INLINE void set_edge_color(const Colorf& c);
-  INLINE void set_birth_radius(float radius);
-  INLINE void set_death_radius(float radius);
-  INLINE void set_life_scale(SparkleParticleLifeScale);
-
-  INLINE const Colorf& get_center_color(void) const;
-  INLINE const Colorf& get_edge_color(void) const;
-  INLINE float get_birth_radius(void) const;
-  INLINE float get_death_radius(void) const;
-  INLINE SparkleParticleLifeScale get_life_scale(void) const;
 };
 
 #include "sparkleParticleRenderer.I"

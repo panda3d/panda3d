@@ -26,7 +26,7 @@ set_edge_color(const Colorf& c) {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SparkleParticleRenderer::
-set_life_scale(SparkleParticleLifeScale ls) {
+set_life_scale(SparkleParticleRenderer::SparkleParticleLifeScale ls) {
   _life_scale = ls;
 }
 
@@ -70,7 +70,7 @@ get_edge_color(void) const {
 //    Function : get_life_scale
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE SparkleParticleLifeScale SparkleParticleRenderer::
+INLINE SparkleParticleRenderer::SparkleParticleLifeScale SparkleParticleRenderer::
 get_life_scale(void) const {
   return _life_scale;
 }
