@@ -144,7 +144,7 @@ void ProgramBase::
 show_usage() {
   nout << "\rUsage:\n";
   Runlines::const_iterator ri;
-  string prog = "  " +_program_name.get_basename();
+  string prog = "  " +_program_name.get_basename_wo_extension();
 
   for (ri = _runlines.begin(); ri != _runlines.end(); ++ri) {
     show_text(prog, prog.length() + 1, *ri);
@@ -203,7 +203,7 @@ show_text(const string &prefix, int indent_width, string text) {
 ////////////////////////////////////////////////////////////////////
 void ProgramBase::
 parse_command_line(int argc, char *argv[]) {
-  _program_name = argv[0];
+  _program_name = Filename::from_os_specific(argv[0]);
   int i;
   for (i = 1; i < argc; i++) {
     _program_args.push_back(argv[i]);
@@ -355,7 +355,7 @@ string ProgramBase::
 get_exec_command() const {
   string command;
 
-  command = _program_name;
+  command = _program_name.get_basename_wo_extension();
   Args::const_iterator ai;
   for (ai = _program_args.begin(); ai != _program_args.end(); ++ai) {
     const string &arg = (*ai);
