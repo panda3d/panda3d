@@ -4,6 +4,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "framework.h"
+#include <renderRelation.h>
+#include <queuedConnectionManager.h>
+#include <modelPool.h>
 
 #include <dconfig.h>
 
@@ -34,19 +37,19 @@ static void deadrec_setup(void) {
   my_arc = new RenderRelation(render, smiley);
   // open a connection to the receiver
   NetAddress host;
-  if (!host.set_host(hostname, port)) {
+  if (!host.set_host(hostname, hostport)) {
     deadrec_cat->fatal() << "Unknown host: " << hostname << endl;
-    exit();
+    exit(0);
   }
   conn = cm.open_TCP_client_connection(host, 5000);
   if (conn.is_null()) {
     deadrec_cat->fatal() << "no connection." << endl;
-    exit();
+    exit(0);
   }
-  if (deadrec->is_debug())
-    deadrec->debug() << "opened TCP connection to " << hostname << " on port "
-		     << c->get_address().get_port() << " and IP "
-		     << c->get_address() << endl;
+  if (deadrec_cat->is_debug())
+    deadrec_cat->debug() << "opened TCP connection to " << hostname
+			 << " on port " << conn->get_address().get_port()
+			 << " and IP " << conn->get_address() << endl;
   writer = new ConnectionWriter(&cm, 0);
 }
 

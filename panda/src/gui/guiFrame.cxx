@@ -181,7 +181,7 @@ void GuiFrame::add_item(GuiItem* item) {
       found = true;
   if (!found) {
     _items.push_back(Box(item));
-    this->recompute_frame();
+    //    this->recompute_frame();
   }
 }
 
@@ -189,6 +189,7 @@ void GuiFrame::remove_item(GuiItem* item) {
   Boxes::iterator i = find_box(item);
   if (i == _items.end())
     return;
+  item->unmanage();
   (*i).erase_all_links();
   // should NEVER link forward in the items, only backward, so it should be
   // safe to start here, and go to the end
@@ -207,7 +208,6 @@ void GuiFrame::remove_item(GuiItem* item) {
   // now get rid of the thing itself
   _items.erase(i);
   this->recompute();
-  item->unmanage();
 }
 
 void GuiFrame::pack_item(GuiItem* item, Packing rel, GuiItem* to, float gap) {
@@ -223,19 +223,19 @@ void GuiFrame::pack_item(GuiItem* item, Packing rel, GuiItem* to, float gap) {
     return;
   }
   (*box).add_link(Connection(rel, to, gap));
-  this->recompute_frame();
+  //  this->recompute_frame();
 }
 
 void GuiFrame::clear_packing(GuiItem* item) {
   Boxes::iterator box = find_box(item);
   (*box).erase_all_links();
-  this->recompute_frame();
+  //  this->recompute_frame();
 }
 
 void GuiFrame::clear_all_packing(void) {
   for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
     (*i).erase_all_links();
-  this->recompute_frame();
+  //  this->recompute_frame();
 }
 
 void GuiFrame::manage(GuiManager* mgr, EventHandler& eh) {
@@ -261,14 +261,14 @@ void GuiFrame::set_scale(float f) {
   for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
     (*i).get_item()->set_scale(f * (*i).get_scale());
   GuiItem::set_scale(f);
-  this->recompute_frame();
+  //  this->recompute_frame();
 }
 
 void GuiFrame::set_pos(const LVector3f& p) {
   for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
     (*i).get_item()->set_pos(p);
   GuiItem::set_pos(p);
-  this->recompute_frame();
+  //  this->recompute_frame();
 }
 
 void GuiFrame::output(ostream& os) const {

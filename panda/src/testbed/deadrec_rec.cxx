@@ -4,6 +4,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "framework.h"
+#include <renderRelation.h>
+#include <queuedConnectionManager.h>
+#include <queuedConnectionListener.h>
+#include <modelPool.h>
+#include <ipc_thread.h>
 
 #include <dconfig.h>
 
@@ -28,8 +33,8 @@ Clients clients;
 QueuedConnectionReader* reader;
 
 static void* internal_monitor(void*) {
-  if (deadrec->is_debug())
-    deadrec->debug() << "internal monitoring thread started" << endl;
+  if (deadrec_cat->is_debug())
+    deadrec_cat->debug() << "internal monitoring thread started" << endl;
   while (!stop_monitoring) {
     // check for new clients
     while (listener->new_connection_available()) {
@@ -58,9 +63,12 @@ static void* internal_monitor(void*) {
     while (reader->data_available()) {
       NetDatagram datagram;
       if (reader->get_data(datagram)) {
-	if (deadrec_cat->is_debug())
-	  deadrec_cat->debug() << "Got datagram " << datagram << " from "
-			       << datagram.get_address() << endl;
+	if (deadrec_cat->is_debug()) {
+	  deadrec_cat->debug() << "Got datagram ";
+	  datagram.dump_hex(deadrec_cat->debug(false));
+	  deadrec_cat->debug(false) << " from " << datagram.get_address()
+				    << endl;
+	}
 	// unpack and deal with the datagram now
 	// DO THIS
 	// part of this includes logic on when to shutdown, I hope
@@ -69,8 +77,8 @@ static void* internal_monitor(void*) {
     // sleep for about 100 milliseconds
     ipc_traits::sleep(0, 100000);
   }
-  if (deadrec->is_debug())
-    deadrec->debug() << "internal monitoring thread exiting" << endl;
+  if (deadrec_cat->is_debug())
+    deadrec_cat->debug() << "internal monitoring thread exiting" << endl;
   return (void*)0L;
 }
 
@@ -86,10 +94,10 @@ static void deadrec_setup(void) {
   PT(Connection) rendezvous = cm.open_TCP_server_rendezvous(hostport, 5);
   if (rendezvous.is_null()) {
     deadrec_cat->fatal() << "cannot get port " << hostport << endl;
-    exit();
+    exit(0);
   }
   if (deadrec_cat->is_debug())
-    deadrec_cat->debug() << "Listening for connections on port " << port
+    deadrec_cat->debug() << "Listening for connections on port " << hostport
 			 << endl;
   listener = new QueuedConnectionListener(&cm, 0);
   listener->add_connection(rendezvous);
