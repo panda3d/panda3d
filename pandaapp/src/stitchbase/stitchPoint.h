@@ -21,9 +21,9 @@
 
 #include "pandaappbase.h"
 
-#include <luse.h>
+#include "luse.h"
+#include "pset.h"
 
-#include <string>
 
 class StitchImage;
 
@@ -37,7 +37,7 @@ public:
   bool _space_known;
   LVector3d _space;
 
-  typedef set<StitchImage *> Images;
+  typedef pset<StitchImage *> Images;
   Images _images;
 };
 
