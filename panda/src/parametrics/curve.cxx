@@ -1479,7 +1479,7 @@ GetBezierSeg(BezierSeg &seg) const {
 
 // We need this operator since Performer didn't supply it.
 inline LVecBase4f
-operator * (const LMatrix4f &M, const LVecBase4f &v) {
+col_mult(const LMatrix4f &M, const LVecBase4f &v) {
   return LVecBase4f(M(0,0)*v[0] + M(0,1)*v[1] + M(0,2)*v[2] + M(0,3)*v[3],
                 M(1,0)*v[0] + M(1,1)*v[1] + M(1,2)*v[2] + M(1,3)*v[3],
                 M(2,0)*v[0] + M(2,1)*v[1] + M(2,2)*v[2] + M(2,3)*v[3],
@@ -1515,7 +1515,8 @@ compute_seg_col(int c,
   case RT_POINT:
     T.set_col(c, LVecBase4f(t*t*t, t*t, t, 1.0));
     if (keep_orig) {
-      LVecBase4f ov = GB * LVecBase4f(t*t*t, t*t, t, 1.0);
+      LVecBase4f vec(t*t*t, t*t, t, 1.0);
+      LVecBase4f ov = col_mult(GB, vec);
       if (parametrics_cat.is_debug()) {
 	parametrics_cat.debug()
 	  << "orig point = " << ov << "\n";
@@ -1531,13 +1532,14 @@ compute_seg_col(int c,
   case RT_TANGENT:
     T.set_col(c, LVecBase4f(3.0*t*t, 2.0*t, 1.0, 0.0));
     if (keep_orig) {
-      LVecBase4f ov = GB * LVecBase4f(3.0*t*t, 2.0*t, 1.0, 0.0);
+      LVecBase4f vec(3.0*t*t, 2.0*t, 1.0, 0.0);
+      LVecBase4f ov = col_mult(GB, vec);
       if (parametrics_cat.is_debug()) {
 	parametrics_cat.debug()
 	  << "Matrix is:\n";
 	GB.write(parametrics_cat.debug(false), 2);
 	parametrics_cat.debug(false)
-	  << "vector is " << LVecBase4f(3.0*t*t, 2.0*t, 1.0, 0.0) << "\n"
+	  << "vector is " << vec << "\n"
 	  << "orig tangent = " << ov << "\n";
       }
       P.set_col(c, ov);
