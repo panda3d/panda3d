@@ -1,4 +1,4 @@
-#define OTHER_LIBS interrogatedb dconfig dtoolutil dtoolbase pystub
+#define OTHER_LIBS dtool pystub
 #define LOCAL_LIBS downloader express event ipc
 
 #begin bin_target
