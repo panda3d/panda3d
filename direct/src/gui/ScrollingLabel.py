@@ -65,8 +65,11 @@ class ScrollingLabel(PandaObject.PandaObject):
                             self.title)
         
         # create the scroll buttons
-        self.leftButton = Button.Button(self.eventName + "-left", " < ",
-                                        scale, None, drawOrder, font)
+        self.leftButton = Button.Button(self.eventName + "-left",
+                                        label = " < ",
+                                        scale = scale,
+                                        drawOrder = drawOrder,
+                                        font = font)
         self.leftButton.getGuiItem().setDownRolloverEvent(self.eventName + "-left")
         self.leftButton.getGuiItem().setUpRolloverEvent(self.eventName + "-rollover")
         self.frame.addItem(self.leftButton)
@@ -74,8 +77,11 @@ class ScrollingLabel(PandaObject.PandaObject):
                             self.title)
         self.frame.packItem(self.leftButton, GuiFrame.GuiFrame.LEFT,
                             self.title)        
-        self.rightButton = Button.Button(self.eventName + "-right", " > ",
-                                         scale, None, drawOrder, font)
+        self.rightButton = Button.Button(self.eventName + "-right",
+                                         label = " > ",
+                                         scale = scale,
+                                         drawOrder = drawOrder,
+                                         font = font)
         self.rightButton.getGuiItem().setDownRolloverEvent(self.eventName +
                                                            "-right")    
         self.rightButton.getGuiItem().setUpRolloverEvent(self.eventName + "-rollover")
