@@ -1712,9 +1712,6 @@ case 80:
       // Maybe it's a class name.
       DCClass *dclass = dc_file->get_class_by_name(yyvsp[0].str);
       if (dclass != (DCClass *)NULL) {
-        if (!dclass->is_struct()) {
-          yyerror("cannot embed a dclass object within a message; use a struct");
-        }
         // Create an implicit typedef for this.
         dtypedef = new DCTypedef(new DCClassParameter(dclass), true);
       } else {

@@ -655,9 +655,6 @@ type_name:
       // Maybe it's a class name.
       DCClass *dclass = dc_file->get_class_by_name($1);
       if (dclass != (DCClass *)NULL) {
-        if (!dclass->is_struct()) {
-          yyerror("cannot embed a dclass object within a message; use a struct");
-        }
         // Create an implicit typedef for this.
         dtypedef = new DCTypedef(new DCClassParameter(dclass), true);
       } else {
