@@ -27,9 +27,9 @@ alias ctuna 'ctunattach'
 #Modifications to emacs alias by Jason
 #To allow for NTEmacs to run like emacs on unix boxes
 if (($OS == "CYGWIN_NT-4.0") || ($OS == "CYGWIN_NT-5.0" ) || ($OS == "CYGWIN_NT-5.1" )) then
-  alias emacs 'emacs -T "`logname`@`uname -n`  $CTPROJS" -xrm "Emacs*iconName: `echo $CTPROJS | cut -f1 -d:`(`uname -n`)" -bg #002040 -fg #00C0FF -cr yellow -ms yellow -l `cygpath -w ~/.emacs` $CTEMACS_OPTS'
+  alias emacs 'emacs -T "$USER@$HOST  $CTPROJS" -xrm "Emacs*iconName: `echo $CTPROJS | cut -f1 -d:`($HOST)" -bg #002040 -fg #00C0FF -cr yellow -ms yellow -l `cygpath -w ~/.emacs` $CTEMACS_OPTS'
 else
-  alias emacs 'emacs -T "`logname`@`uname -n`  $CTPROJS" -xrm "Emacs*iconName: `echo $CTPROJS | cut -f1 -d:`(`uname -n`)" $CTEMACS_OPTS'
+  alias emacs 'emacs -T "$USER@$HOST  $CTPROJS" -xrm "Emacs*iconName: `echo $CTPROJS | cut -f1 -d:`($HOST)" $CTEMACS_OPTS'
 endif
 
 alias rlogin 'rlogin \!*; ctshowprojs'
