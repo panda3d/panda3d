@@ -11,7 +11,6 @@ boat.reparentTo(render)
 donald = Actor()
 donald.loadModel("phase_3/models/char/donald-wheel-mod")
 donald.loadAnims({"steer":"phase_3/models/char/donald-wheel-chan"})
-steerAnimControl = donald.getAnimControl('steer', 'modelRoot')
 donald.reparentTo(boat)
 
 dock = loader.loadModel('models/directmodels/smiley')
@@ -29,10 +28,10 @@ BOAT_START = boatTrack.getIntervalStartTime('boatpath')
 BOAT_END = boatTrack.getIntervalEndTime('boatpath')
 
 # This will create an anim interval that is posed every frame
-donaldSteerInterval = AnimInterval(steerAnimControl)
+donaldSteerInterval = ActorInterval(donald, 'steer')
 # This will create an anim interval that is started at t = 0 and then
 # loops for 10 seconds
-donaldLoopInterval = AnimInterval(steerAnimControl, loop = 1, duration = 10.0)
+donaldLoopInterval = ActorInterval(donald, 'steer', loop=1, duration = 10.0)
 donaldSteerTrack = Track([donaldSteerInterval, donaldLoopInterval],
                          name = 'steerTrack')
 
