@@ -28,7 +28,7 @@ CData() {
   _render_mode = RopeNode::RM_thread;
   _uv_mode = RopeNode::UV_none;
   _u_dominant = true;
-  _uv_scale.set(1.0f, 1.0f);
+  _uv_scale = 1.0f;
   _use_vertex_color = false;
   _num_subdiv = 10;
   _thickness = 1.0f;
@@ -54,7 +54,7 @@ CData(const RopeNode::CData &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: set_curve
-//       Access: Public
+//       Access: Published
 //  Description: Sets the particular curve represented by the
 //               RopeNode.
 ////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ set_curve(NurbsCurveEvaluator *curve) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_curve
-//       Access: Public
+//       Access: Published
 //  Description: Returns the curve represented by the RopeNode.
 ////////////////////////////////////////////////////////////////////
 INLINE NurbsCurveEvaluator *RopeNode::
@@ -77,7 +77,7 @@ get_curve() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: set_render_mode
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the method used to render the rope.  The
 //               simplest is RM_thread, which just draws a one-pixel
 //               line segment.
@@ -90,7 +90,7 @@ set_render_mode(RopeNode::RenderMode render_mode) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_render_mode
-//       Access: Public
+//       Access: Published
 //  Description: Returns the method used to render the rope.  See
 //               set_render_mode().
 ////////////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ get_render_mode() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: set_uv_mode
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the algorithm to use to generate UV's for
 //               the rope.
 ////////////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ set_uv_mode(RopeNode::UVMode uv_mode) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_uv_mode
-//       Access: Public
+//       Access: Published
 //  Description: Returns the algorithm to use to generate UV's for the
 //               rope.
 ////////////////////////////////////////////////////////////////////
@@ -126,7 +126,7 @@ get_uv_mode() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: set_uv_direction
-//       Access: Public
+//       Access: Published
 //  Description: Specify true to vary the U coordinate down the length
 //               of the rope, or false to vary the V coordinate.
 ////////////////////////////////////////////////////////////////////
@@ -138,7 +138,7 @@ set_uv_direction(bool u_dominant) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_uv_direction
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the rope runs down the U coordinate
 //               of the texture, or false if it runs down the V
 //               coordinate.
@@ -151,23 +151,42 @@ get_uv_direction() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: set_uv_scale
-//       Access: Public
+//       Access: Published
 //  Description: Specifies an additional scaling factor to apply to
-//               generated UV's for the rope.
+//               generated UV's for the rope.  This is a deprecated
+//               interface; use set_uv_scale() that accepts a single
+//               float, instead.
 ////////////////////////////////////////////////////////////////////
 INLINE void RopeNode::
 set_uv_scale(const LVecBase2f &uv_scale) {
+  if (get_uv_direction()) {
+    set_uv_scale(uv_scale[0]);
+  } else {
+    set_uv_scale(uv_scale[1]);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_uv_scale
+//       Access: Published
+//  Description: Specifies an additional scaling factor to apply to
+//               generated UV's along the rope.  This scale factor is
+//               applied in whichever direction is along the rope, as
+//               specified by set_uv_direction().
+////////////////////////////////////////////////////////////////////
+INLINE void RopeNode::
+set_uv_scale(float uv_scale) {
   CDWriter cdata(_cycler);
   cdata->_uv_scale = uv_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_uv_scale
-//       Access: Public
+//       Access: Published
 //  Description: Returns the scaling factor to apply to generated UV's
 //               for the rope.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase2f &RopeNode::
+INLINE float RopeNode::
 get_uv_scale() const {
   CDReader cdata(_cycler);
   return cdata->_uv_scale;
@@ -175,7 +194,7 @@ get_uv_scale() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: set_use_vertex_color
-//       Access: Public
+//       Access: Published
 //  Description: Sets the "use vertex color" flag.  When this is true,
 //               the R, G, B, A vertex color is assumed to be stored
 //               as the dimensions 0, 1, 2, 3, respectively, of the
@@ -191,7 +210,7 @@ set_use_vertex_color(bool flag) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_use_vertex_color
-//       Access: Public
+//       Access: Published
 //  Description: Returns the "use vertex color" flag.  See
 //               set_use_vertex_color().
 ////////////////////////////////////////////////////////////////////
@@ -203,7 +222,7 @@ get_use_vertex_color() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: set_num_subdiv
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the number of subdivisions per cubic
 //               segment (that is, per unique knot value) to draw in a
 //               fixed uniform tesselation of the curve.
@@ -217,7 +236,7 @@ set_num_subdiv(int num_subdiv) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_num_subdiv
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of subdivisions per cubic segment
 //               to draw.  See set_num_subdiv().
 ////////////////////////////////////////////////////////////////////
@@ -229,7 +248,7 @@ get_num_subdiv() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: set_thickness
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the thickness of the rope, in pixels or in
 //               spatial units, depending on the render mode.  See
 //               set_render_mode().
@@ -243,7 +262,7 @@ set_thickness(float thickness) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_thickness
-//       Access: Public
+//       Access: Published
 //  Description: Returns the thickness of the rope.  See
 //               set_thickness().
 ////////////////////////////////////////////////////////////////////

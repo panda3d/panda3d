@@ -96,7 +96,8 @@ PUBLISHED:
   INLINE bool get_uv_direction() const;
 
   INLINE void set_uv_scale(const LVecBase2f &uv_scale);
-  INLINE const LVecBase2f &get_uv_scale() const;
+  INLINE void set_uv_scale(float scale);
+  INLINE float get_uv_scale() const;
 
   INLINE void set_use_vertex_color(bool flag);
   INLINE bool get_use_vertex_color() const;
@@ -133,7 +134,7 @@ private:
     RenderMode _render_mode;
     UVMode _uv_mode;
     bool _u_dominant;
-    LVecBase2f _uv_scale;
+    float _uv_scale;
     bool _use_vertex_color;
     int _num_subdiv;
     float _thickness;
