@@ -58,9 +58,9 @@ set_on(const string &bin, int draw_order) {
 //               represents.  It is only valid to call this if is_on()
 //               has returned true.
 ////////////////////////////////////////////////////////////////////
-INLINE string GeomBinTransition::
+INLINE const string &GeomBinTransition::
 get_bin() const {
-  nassertr(is_on(), string());
+  nassertr(is_on(), _value);
   return _value;
 }
 

@@ -23,6 +23,7 @@
 #include <config_sgraphutil.h>  // for implicit_app_traversal
 #include <config_sgattrib.h>    // for support_decals
 #include <pStatTimer.h>
+#include <string_utils.h>
 
 TypeHandle CullTraverser::_type_handle;
 
@@ -43,16 +44,9 @@ CullTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
 	      const ArcChain &arc_chain) :
   RenderTraverser(gsg, graph_type, arc_chain)
 {
-  GeomBinNormal *default_bin = new GeomBinNormal("default");
-  GeomBinFixed *fixed = new GeomBinFixed("fixed");
-  fixed->set_sort(30);
-
-  default_bin->set_traverser(this);
-  fixed->set_traverser(this);
-
-  _default_bin = default_bin;
-
   _nested_count = 0;
+
+  setup_initial_bins();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,6 +57,48 @@ CullTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
 CullTraverser::
 ~CullTraverser() {
   // We should detach each of our associated bins when we destruct.
+  clear_bins();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::has_bin
+//       Access: Public
+//  Description: Returns true if a bin by the given name has been
+//               attached to the CullTraverser, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool CullTraverser::
+has_bin(const string &name) const {
+  return (_toplevel_bins.count(name) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::get_bin
+//       Access: Public
+//  Description: Returns the GeomBin that was previously attached to
+//               the CullTraverser that shares the indicated name, or
+//               NULL if no GeomBin with a matching name was added.
+////////////////////////////////////////////////////////////////////
+GeomBin *CullTraverser::
+get_bin(const string &name) const {
+  ToplevelBins::const_iterator tbi;
+  tbi = _toplevel_bins.find(name);
+  if (tbi == _toplevel_bins.end()) {
+    return NULL;
+  }
+  return (*tbi).second;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::clear_bins
+//       Access: Public
+//  Description: Disassociates all the GeomBins previously associated
+//               with this traverser (and deletes them, if they have
+//               no other references).  You must add new GeomBins
+//               before rendering by calling set_traverser() on the
+//               appropriate bins.
+////////////////////////////////////////////////////////////////////
+void CullTraverser::
+clear_bins() {
   // We can't just run a for loop, because this is a self-modifying
   // operation.
   while (!_toplevel_bins.empty()) {
@@ -73,6 +109,54 @@ CullTraverser::
   }
 
   nassertv(_sub_bins.empty());
+  nassertv(_default_bin == (GeomBin *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CullTraverser::
+output(ostream &out) const {
+  int node_count = 0;
+  int used_states = 0;
+
+  States::const_iterator si;
+  for (si = _states.begin(); si != _states.end(); ++si) {
+    const CullState *cs = (*si);
+    int c = cs->count_current_nodes();
+    if (c != 0) {
+      node_count += c;
+      used_states++;
+    }
+  }
+
+  out << node_count << " nodes with " << used_states << " states; "
+      << _states.size() - used_states << " unused states.";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CullTraverser::
+write(ostream &out, int indent_level) const {
+  /*
+  States::const_iterator si;
+  for (si = _states.begin(); si != _states.end(); ++si) {
+    const CullState *cs = (*si);
+    cs->write(out, indent_level);
+    out << "\n";
+  }
+  */
+
+  ToplevelBins::const_iterator tbi;
+  for (tbi = _toplevel_bins.begin(); tbi != _toplevel_bins.end(); ++tbi) {
+    (*tbi).second->write(out, indent_level);
+  }
+  _lookup.write(out, indent_level);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -96,9 +180,6 @@ traverse(Node *root,
       << "Beginning level " << _nested_count << " cull traversal at "
       << *root << "\n";
   }
-
-  nassertv(!_toplevel_bins.empty());
-  nassertv(!_sub_bins.empty());
 
   bool is_initial = (_nested_count == 0);
   if (is_initial) {
@@ -157,51 +238,67 @@ traverse(Node *root,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::output
-//       Access: Public
-//  Description: 
+//     Function: CullTraverser::setup_initial_bins
+//       Access: Private
+//  Description: Creates all the appropriate rendering bins as
+//               requested from the Configrc file.
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
-output(ostream &out) const {
-  int node_count = 0;
-  int used_states = 0;
+setup_initial_bins() {
+  // We always have "default" and "fixed" hardcoded in, although these
+  // may be overridden by specifing a new bin with the same name in
+  // the Configrc file.
 
-  States::const_iterator si;
-  for (si = _states.begin(); si != _states.end(); ++si) {
-    const CullState *cs = (*si);
-    int c = cs->count_current_nodes();
-    if (c != 0) {
-      node_count += c;
-      used_states++;
+  GeomBinNormal *default_bin = new GeomBinNormal("default");
+  GeomBinFixed *fixed = new GeomBinFixed("fixed");
+  fixed->set_sort(30);
+
+  default_bin->set_traverser(this);
+  fixed->set_traverser(this);
+
+
+  // Now get the config options.
+  Config::ConfigTable::Symbol cull_bins;
+  config_cull.GetAll("cull-bin", cull_bins);
+
+  Config::ConfigTable::Symbol::iterator bi;
+  for (bi = cull_bins.begin(); bi != cull_bins.end(); ++bi) {
+    ConfigString def = (*bi).Val();
+
+    // This is a string in three tokens, separated by whitespace:
+    //    bin_name sort type
+
+    vector_string words;
+    extract_words(def, words);
+
+    if (words.size() != 3) {
+      cull_cat.error()
+	<< "Invalid cull-bin definition: " << def << "\n"
+	<< "Definition should be three words: bin_name sort type\n";
+    } else {
+      int sort;
+      if (!string_to_int(words[1], sort)) {
+	cull_cat.error()
+	  << "Invalid cull-bin definition: " << def << "\n"
+	  << "Sort token " << words[1] << " is not an integer.\n";
+
+      } else {
+	TypeHandle type = GeomBin::parse_bin_type(words[2]);
+	if (type == TypeHandle::none()) {
+	  cull_cat.error()
+	    << "Invalid cull-bin definition: " << def << "\n"
+	    << "Bin type " << words[2] << " is not known.\n";
+	} else {
+	  PT(GeomBin) bin = GeomBin::make_bin(type, words[0]);
+	  nassertv(bin != (GeomBin *)NULL);
+	  bin->set_sort(sort);
+	  bin->set_traverser(this);
+	}
+      }
     }
   }
-
-  out << node_count << " nodes with " << used_states << " states; "
-      << _states.size() - used_states << " unused states.";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void CullTraverser::
-write(ostream &out, int indent_level) const {
-  /*
-  States::const_iterator si;
-  for (si = _states.begin(); si != _states.end(); ++si) {
-    const CullState *cs = (*si);
-    cs->write(out, indent_level);
-    out << "\n";
-  }
-  */
-
-  ToplevelBins::const_iterator tbi;
-  for (tbi = _toplevel_bins.begin(); tbi != _toplevel_bins.end(); ++tbi) {
-    (*tbi).second->write(out, indent_level);
-  }
-  _lookup.write(out, indent_level);
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::draw
@@ -238,15 +335,32 @@ draw() {
     if (!cs->is_empty()) {
       cs->apply_to(_initial_state);
 
-      // Check the requested bin for the Geoms in this state.
+      static string default_bin_name = "default";
+      string bin_name = default_bin_name;
       GeomBin *requested_bin = _default_bin;
       int draw_order = 0;
 
+      // Check the requested bin for the Geoms in this state.
       const GeomBinAttribute *bin_attrib;
       if (get_attribute_into(bin_attrib, cs->get_attributes(),
 			     GeomBinTransition::get_class_type())) {
-	requested_bin = get_bin(bin_attrib->get_bin());
 	draw_order = bin_attrib->get_draw_order();
+	bin_name = bin_attrib->get_bin();
+	requested_bin = get_bin(bin_name);
+      }
+
+      if (requested_bin == (GeomBin *)NULL) {
+	// If we don't have a bin by this name, create one.
+	cull_cat.warning()
+	  << "Bin " << bin_name << " is unknown; creating a default bin.\n";
+
+	if (bin_name == "fixed") {
+	  requested_bin = new GeomBinFixed(bin_name);
+	  requested_bin->set_sort(20);
+	} else {
+	  requested_bin = new GeomBinNormal(bin_name);
+	}
+	requested_bin->set_traverser(this);
       }
 
       requested_bin->record_current_state(_gsg, cs, draw_order, this);
@@ -259,7 +373,10 @@ draw() {
 	<< "Drawing " << _sub_bins.size() << " bins.\n";
     }
     for (sbi = _sub_bins.begin(); sbi != _sub_bins.end(); ++sbi) {
-      (*sbi).second->draw(this);
+      GeomBin *bin = (*sbi).second;
+      if (bin->is_active()) {
+	bin->draw(this);
+      }
     }
   }
 }
@@ -565,13 +682,28 @@ attach_toplevel_bin(GeomBin *bin) {
       << "Attaching toplevel bin " << *bin << "\n";
   }
 
-  // Insert the new bin by name.
-  bool inserted = 
-    _toplevel_bins.insert(ToplevelBins::value_type(bin->get_name(), bin)).second;
+  const string &bin_name = bin->get_name();
 
-  // If this assertion fails, there was already a bin by the same name
-  // in this traverser, an error condition.
-  nassertv(inserted);
+  // Insert the new bin by name.
+  pair<ToplevelBins::iterator, bool> result = 
+    _toplevel_bins.insert(ToplevelBins::value_type(bin_name, bin));
+
+  if (!result.second) {
+    // There was already a bin by the same name name in this
+    // traverser.  We should therefore detach this bin.
+    GeomBin *other_bin = (*result.first).second;
+    if (other_bin != bin) {
+      other_bin->clear_traverser();
+    }
+
+    result =
+      _toplevel_bins.insert(ToplevelBins::value_type(bin_name, bin));
+    nassertv(result.second);
+  }
+
+  if (bin_name == "default") {
+    _default_bin = bin;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -612,9 +744,15 @@ detach_toplevel_bin(GeomBin *bin) {
       << "Detaching toplevel bin " << *bin << "\n";
   }
 
-  ToplevelBins::iterator tbi = _toplevel_bins.find(bin->get_name());
+  const string &bin_name = bin->get_name();
+
+  ToplevelBins::iterator tbi = _toplevel_bins.find(bin_name);
   nassertv(tbi != _toplevel_bins.end());
   _toplevel_bins.erase(tbi);
+
+  if (bin_name == "default") {
+    _default_bin = (GeomBin *)NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -34,9 +34,13 @@ private:
   bool get_info(const Filename &filename);
   void describe_scene_graph(Node *node);
   void describe_general_object(TypedWriteable *object);
+  void list_hierarchy(Node *node, int indent_level);
 
   typedef vector<Filename> Filenames;
   Filenames _filenames;
+
+  bool _verbose_geoms;
+  bool _verbose_transitions;
 
   int _num_scene_graphs;
   SceneGraphAnalyzer _analyzer;

@@ -3,7 +3,7 @@
   #define LOCAL_LIBS \
     eggbase progbase
   #define OTHER_LIBS \
-    loader:c egg:c sgraphutil:c sgattrib:c sgraph:c pnmimagetypes:c \
+    cull:c loader:c egg:c sgraphutil:c sgattrib:c sgraph:c pnmimagetypes:c \
     graph:c putil:c express:c panda:m pandaexpress:m \
     interrogatedb:c dtoolutil:c dconfig:c dtool:m pystub
   #define UNIX_SYS_LIBS \

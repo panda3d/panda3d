@@ -17,7 +17,7 @@
 
 #include <dconfig.h>
 
-Configure(config_cull);
+ConfigureDef(config_cull);
 NotifyCategoryDef(cull, "");
 
 ConfigureFn(config_cull) {

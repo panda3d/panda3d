@@ -6,10 +6,15 @@
 #include "geomBin.h"
 #include "cullTraverser.h"
 #include "config_cull.h"
+#include "geomBinNormal.h"
+#include "geomBinUnsorted.h"
+#include "geomBinFixed.h"
+#include "geomBinBackToFront.h"
 
 #include <indent.h>
 #include <nodeAttributes.h>
 #include <graphicsStateGuardian.h>
+#include <string_utils.h>
 
 TypeHandle GeomBin::_type_handle;
 
@@ -106,6 +111,18 @@ set_sort(int sort) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomBin::set_active
+//       Access: Public, Virtual
+//  Description: Sets the active flag of this particular bin.  If the
+//               flag is false, the contents of the bin are not
+//               rendered.
+////////////////////////////////////////////////////////////////////
+void GeomBin::
+set_active(bool active) {
+  _active = active;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomBin::set_traverser
 //       Access: Public
 //  Description: Associates the GeomBin with the indicated
@@ -155,6 +172,72 @@ clear_traverser() {
   }
   
   return keep;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomBin::parse_bin_type
+//       Access: Public, Static
+//  Description: Converts from the given string representation to one
+//               of the derived GeomBin type handles.  Returns
+//               TypeHandle::none() if the string does not match any
+//               known bin type.
+////////////////////////////////////////////////////////////////////
+TypeHandle GeomBin::
+parse_bin_type(const string &bin_type) {
+  if (cmp_nocase_uh(bin_type, "normal") == 0) {
+    return GeomBinNormal::get_class_type();
+
+  } else if (cmp_nocase_uh(bin_type, "unsorted") == 0) {
+    return GeomBinUnsorted::get_class_type();
+
+  } else if (cmp_nocase_uh(bin_type, "state_sorted") == 0) {
+    // For now, GeomBinUnsorted stands in surprisingly well for
+    // GeomBinStateSorted.  This is because the states are already
+    // reasonably sorted as they come out of the CullTraverser, so it
+    // doesn't matter much whether the bin sorts it further.
+    return GeomBinUnsorted::get_class_type();
+
+  } else if (cmp_nocase_uh(bin_type, "statesorted") == 0) {
+    return GeomBinUnsorted::get_class_type();
+
+  } else if (cmp_nocase_uh(bin_type, "fixed") == 0) {
+    return GeomBinFixed::get_class_type();
+
+  } else if (cmp_nocase_uh(bin_type, "back_to_front") == 0) {
+    return GeomBinBackToFront::get_class_type();
+
+  } else if (cmp_nocase_uh(bin_type, "backtofront") == 0) {
+    return GeomBinBackToFront::get_class_type();
+
+  } else {
+    return TypeHandle::none();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomBin::make_bin
+//       Access: Public, Static
+//  Description: Creates and returns a new GeomBin of the appropriate
+//               type as indicated by the TypeHandle.  Returns NULL if
+//               the TypeHandle does not reflect a known GeomBin type.
+////////////////////////////////////////////////////////////////////
+PT(GeomBin) GeomBin::
+make_bin(TypeHandle type, const string &name) {
+  if (type == GeomBinNormal::get_class_type()) {
+    return new GeomBinNormal(name);
+
+  } else if (type == GeomBinUnsorted::get_class_type()) {
+    return new GeomBinUnsorted(name);
+
+  } else if (type == GeomBinFixed::get_class_type()) {
+    return new GeomBinFixed(name);
+
+  } else if (type == GeomBinBackToFront::get_class_type()) {
+    return new GeomBinBackToFront(name);
+
+  } else {
+    return NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

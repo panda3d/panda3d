@@ -32,6 +32,8 @@ PUBLISHED:
   INLINE GeomBin *get_bin(int n);
   PT(GeomBin) remove_bin(int n);
 
+  virtual void set_active(bool active);
+
 public:
   virtual int choose_bin(CullState *cs) const=0;
 

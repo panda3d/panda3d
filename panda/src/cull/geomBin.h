@@ -45,6 +45,9 @@ PUBLISHED:
   INLINE int get_sort() const;
   void set_sort(int sort);
 
+  virtual void set_active(bool active);
+  INLINE bool is_active() const;
+
   void set_traverser(CullTraverser *traverser);
   INLINE bool has_traverser() const;
   INLINE CullTraverser *get_traverser() const;
@@ -67,6 +70,9 @@ public:
 
   virtual void draw(CullTraverser *trav)=0;
 
+  static TypeHandle parse_bin_type(const string &bin_type);
+  static PT(GeomBin) make_bin(TypeHandle type, const string &name);
+
 protected:
   INLINE void claim_cull_state(CullState *cs);
   INLINE void disclaim_cull_state(CullState *cs);
@@ -77,6 +83,7 @@ protected:
   CullTraverser *_traverser;
   bool _is_attached;
   int _sort;
+  bool _active;
   GeomBin *_parent;
 
 public:

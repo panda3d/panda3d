@@ -22,7 +22,7 @@ PUBLISHED:
   INLINE static GeomBinTransition off();
 
   INLINE void set_on(const string &bin, int draw_order);
-  INLINE string get_bin() const;
+  INLINE const string &get_bin() const;
   INLINE int get_draw_order() const;
 
 public:  

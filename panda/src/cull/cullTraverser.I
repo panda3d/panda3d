@@ -10,63 +10,6 @@
 #include <graphicsStateGuardian.h>
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::set_default_bin
-//       Access: Public
-//  Description: Specifies the default GeomBin that any geometry will
-//               be assigned to if the scene graph doesn't specify
-//               otherwise.  There must always be some default GeomBin
-//               in effect.
-////////////////////////////////////////////////////////////////////
-INLINE void CullTraverser::
-set_default_bin(GeomBin *bin) {
-  nassertv(bin != (GeomBin *)NULL);
-  nassertv(bin->is_attached());
-  nassertv(bin->get_traverser() == this);
-  _default_bin = bin;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::get_default_bin
-//       Access: Public
-//  Description: Returns the default GeomBin that any geometry will
-//               be assigned to if the scene graph doesn't specify
-//               otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE GeomBin *CullTraverser::
-get_default_bin() const {
-  return _default_bin;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::has_bin
-//       Access: Public
-//  Description: Returns true if a bin by the given name has been
-//               attached to the CullTraverser, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool CullTraverser::
-has_bin(const string &name) const {
-  return (_toplevel_bins.count(name) != 0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::get_bin
-//       Access: Public
-//  Description: Returns the GeomBin that was previously attached to
-//               the CullTraverser that shares the indicated name, or
-//               the default bin if no GeomBin with a matching name
-//               was added.
-////////////////////////////////////////////////////////////////////
-INLINE GeomBin *CullTraverser::
-get_bin(const string &name) const {
-  ToplevelBins::const_iterator tbi;
-  tbi = _toplevel_bins.find(name);
-  if (tbi == _toplevel_bins.end()) {
-    return get_default_bin();
-  }
-  return (*tbi).second;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::draw_geom
 //       Access: Public
 //  Description: Sets up the GSG to draw the indicated GeomNode in the

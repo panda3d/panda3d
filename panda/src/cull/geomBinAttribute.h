@@ -22,7 +22,7 @@ public:
   INLINE GeomBinAttribute(const string &bin, int draw_order = 0);
 
   INLINE void set_on(const string &bin, int draw_order = 0);
-  INLINE string get_bin() const;
+  INLINE const string &get_bin() const;
   INLINE int get_draw_order() const;
 
   virtual TypeHandle get_handle() const;

@@ -8,6 +8,7 @@
 #include <bamFile.h>
 #include <node.h>
 #include <renderRelation.h>
+#include <geomNode.h>
 
 #include <vector>
 
@@ -24,6 +25,16 @@ BamInfo() {
 
   clear_runlines();
   add_runline("[opts] input.bam [input.bam ... ]");
+
+  add_option
+    ("t", "", 0, 
+     "List explicitly each transition in the hierarchy.",
+     &BamInfo::dispatch_none, &_verbose_transitions);
+
+  add_option
+    ("g", "", 0, 
+     "Output verbose information about the each Geom in the Bam file.",
+     &BamInfo::dispatch_none, &_verbose_geoms);
 
   _num_scene_graphs = 0;
 }
@@ -46,10 +57,10 @@ run() {
   }
 
   if (_num_scene_graphs > 0) {
-    nout << "\rScene graph statistics:\n";
+    nout << "\nScene graph statistics:\n";
     _analyzer.write(nout, 2);
   }
-  nout << "\r";
+  nout << "\n";
 
   if (!okflag) {
     // Exit with an error if any of the files was unreadable.
@@ -145,6 +156,10 @@ describe_scene_graph(Node *node) {
 
   nout << "  " << num_nodes << " nodes, bounding volume is "
        << arc->get_bound() << "\n";
+
+  if (_verbose_geoms || _verbose_transitions) {
+    list_hierarchy(node, 0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,6 +172,37 @@ describe_scene_graph(Node *node) {
 void BamInfo::
 describe_general_object(TypedWriteable *object) {
   nout << "  " << object->get_type() << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamInfo::list_hierarchy
+//       Access: Private
+//  Description: Outputs the hierarchy and all of the verbose GeomNode
+//               information.
+////////////////////////////////////////////////////////////////////
+void BamInfo::
+list_hierarchy(Node *node, int indent_level) {
+  indent(nout, indent_level) << *node << "\n";
+
+  if (_verbose_geoms && node->is_of_type(GeomNode::get_class_type())) {
+    GeomNode *geom_node;
+    DCAST_INTO_V(geom_node, node);
+    geom_node->write_verbose(nout, indent_level);
+  }
+
+  int num_children = node->get_num_children(RenderRelation::get_class_type());
+  for (int i = 0; i < num_children; i++) {
+    NodeRelation *arc = node->get_child(RenderRelation::get_class_type(), i);
+    nout << "\n";
+    indent(nout, indent_level + 2) << *arc << "\n";
+
+    if (_verbose_transitions) {
+      arc->write_transitions(nout, indent_level + 2);
+      nout << "\n";
+    }
+
+    list_hierarchy(arc->get_child(), indent_level + 4);
+  }
 }
 
 int main(int argc, char *argv[]) {

@@ -82,6 +82,23 @@ remove_bin(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomBinGroup::set_active
+//       Access: Public, Virtual
+//  Description: Sets the active flag of this particular bin, and all
+//               of its child bins.  If the flag is false, the
+//               contents of the bin are not rendered.
+////////////////////////////////////////////////////////////////////
+void GeomBinGroup::
+set_active(bool active) {
+  GeomBin::set_active(active);
+
+  SubBins::iterator sbi;
+  for (sbi = _sub_bins.begin(); sbi != _sub_bins.end(); ++sbi) {
+    (*sbi)->set_active(active);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomBinGroup::clear_current_states
 //       Access: Public, Virtual
 //  Description: Called each frame by the CullTraverser to reset the

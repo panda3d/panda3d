@@ -15,6 +15,7 @@ GeomBin(const string &name) :
   _traverser = (CullTraverser *)NULL;
   _is_attached = false;
   _sort = 0;
+  _active = true;
   _parent = (GeomBin *)NULL;
 }
 
@@ -28,6 +29,18 @@ GeomBin(const string &name) :
 INLINE int GeomBin::
 get_sort() const {
   return _sort;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomBin::get_active
+//       Access: Public
+//  Description: Returns the active flag of this particular bin.  If
+//               the flag is false, the contents of the bin are not
+//               rendered.
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomBin::
+is_active() const {
+  return _active;
 }
 
 ////////////////////////////////////////////////////////////////////

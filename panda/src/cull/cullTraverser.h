@@ -41,10 +41,15 @@ public:
 		const ArcChain &arc_chain = ArcChain());
   virtual ~CullTraverser();
 
-  INLINE void set_default_bin(GeomBin *bin);
-  INLINE GeomBin *get_default_bin() const;
-  INLINE bool has_bin(const string &name) const;
-  INLINE GeomBin *get_bin(const string &name) const;
+PUBLISHED:
+  bool has_bin(const string &name) const;
+  GeomBin *get_bin(const string &name) const;
+  void clear_bins();
+
+  void output(ostream &out) const;
+  void write(ostream &out, int indent_level = 0) const;
+
+public:
 
   virtual void traverse(Node *root, 
 			const AllAttributesWrapper &initial_state,
@@ -57,11 +62,9 @@ public:
   INLINE void draw_direct(const ArcChain &arc_chain,
 			  const AllAttributesWrapper &initial_state);
 
-PUBLISHED:
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
-
 private:
+  void setup_initial_bins();
+
   void draw();
   void clean_out_old_states();
 
