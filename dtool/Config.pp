@@ -138,8 +138,8 @@
 #defer HAVE_PYTHON $[isdir $[PYTHON_IPATH]]
 
 // Is NSPR installed, and where?
-#define NSPR_IPATH /usr/local/include/nspr
-#define NSPR_LPATH /usr/local/lib
+#define NSPR_IPATH /usr/include/nspr
+#define NSPR_LPATH
 #define NSPR_LIBS nspr4
 #defer HAVE_NSPR $[libtest $[NSPR_LPATH],$[NSPR_LIBS]]
 
