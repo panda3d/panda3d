@@ -14,5 +14,6 @@ NotifyCategoryDecl(chan, EXPCL_PANDA, EXPTP_PANDA);
 
 EXPCL_PANDA extern bool compress_channels;
 EXPCL_PANDA extern int compress_chan_quality;
+EXPCL_PANDA extern bool read_compressed;
 
 #endif

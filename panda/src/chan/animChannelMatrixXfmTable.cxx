@@ -308,6 +308,14 @@ fillin(DatagramIterator& scan, BamReader* manager)
     if (manager->get_file_minor_ver() < 1) {
       chan_cat.error()
 	<< "Cannot read old-style quantized channels.\n";
+      clear_all_tables();
+      return;
+    }
+
+    if (!read_compressed) {
+      chan_cat.info()
+	<< "Not reading compressed animation channels.\n";
+      clear_all_tables();
       return;
     }
 
