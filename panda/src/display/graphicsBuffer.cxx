@@ -111,7 +111,12 @@ set_close_now() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsBuffer::
 process_events() {
-  switch (_open_request) {
+  // Save the current request and reset it immediately, in case we end
+  // up calling recursively back into this function.
+  OpenRequest this_request = _open_request;
+  _open_request = OR_none;
+
+  switch (this_request) {
   case OR_none:
     return;
 
@@ -123,8 +128,6 @@ process_events() {
     close_buffer();
     break;
   }
-
-  _open_request = OR_none;
 }
 
 ////////////////////////////////////////////////////////////////////
