@@ -18,15 +18,10 @@
 
 
 INLINE void ConfigTable::ConfigDbgDefault(void) {
-#ifdef NDEBUG
+  // this should not be called if  CONFIG_CONFIG=:configdbg=1 
   configdbg = false;
   microconfig_cat->set_severity(NS_info);
   dconfig_cat->set_severity(NS_info);
-#else
-  configdbg = true;
-  microconfig_cat->set_severity(NS_spam);
-  dconfig_cat->set_severity(NS_spam);
-#endif 
 }
 
 INLINE void ConfigTable::ReadArgsDefault(void) {
