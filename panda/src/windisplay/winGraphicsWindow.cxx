@@ -774,11 +774,13 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       }
     
       case WM_CLOSE:
-        GraphicsWindow::close_window();
+        //GraphicsWindow::close_window();  //M.A. changed to the following line
+        close_window();
         properties.set_open(false);
         system_changed_properties(properties);
     
         // TODO: make sure we release the GSG properly.
+        windisplay_cat.debug() << "ta ta" << endl;
         break;
     
       case WM_ACTIVATE:
