@@ -22,6 +22,7 @@
 #include "eggXfmSAnim.h"
 #include "eggSAnimData.h"
 #include "softToEggConverter.h"
+#include "dcast.h"
 
 TypeHandle SoftNodeDesc::_type_handle;
 
