@@ -61,7 +61,7 @@ operator = (const EggGroup &copy) {
   EggTransform3d::operator = (copy);
   _flags = copy._flags;
   _flags2 = copy._flags2;
-  _objecttype = copy._objecttype;
+  _object_types = copy._object_types;
   _collision_name = copy._collision_name;
   _fps = copy._fps;
 
@@ -220,10 +220,11 @@ write(ostream &out, int indent_level) const {
     EggTransform3d::write(out, indent_level + 2);
   }
 
-  if (has_objecttype()) {
+  vector_string::const_iterator oi;
+  for (oi = _object_types.begin(); oi != _object_types.end(); ++oi) {
     indent(out, indent_level + 2)
       << "<ObjectType> { ";
-    enquote_string(out, get_objecttype()) << " }\n";
+    enquote_string(out, (*oi)) << " }\n";
   }
 
   if (get_model_flag()) {

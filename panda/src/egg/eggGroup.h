@@ -19,7 +19,7 @@
 #ifndef EGGGROUP_H
 #define EGGGROUP_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggGroupNode.h"
 #include "eggRenderMode.h"
@@ -28,8 +28,9 @@
 #include "eggSwitchCondition.h"
 #include "pt_EggVertex.h"
 
-#include <luse.h>
-#include <collideMask.h>
+#include "luse.h"
+#include "collideMask.h"
+#include "vector_string.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggGroup
@@ -131,10 +132,10 @@ public:
   INLINE void set_switch_fps(double fps);
   INLINE double get_switch_fps() const;
 
-  INLINE void set_objecttype(const string &objecttype);
-  INLINE void clear_objecttype();
-  INLINE bool has_objecttype() const;
-  INLINE const string &get_objecttype() const;
+  INLINE void add_object_type(const string &object_type);
+  INLINE void clear_object_types();
+  INLINE int get_num_object_types() const;
+  INLINE string get_object_type(int index) const;
 
   INLINE void set_model_flag(bool flag);
   INLINE bool get_model_flag() const;
@@ -227,7 +228,7 @@ private:
   int _flags2;
   CollideMask _collide_mask, _from_collide_mask, _into_collide_mask;
   LPoint3d _billboard_center;
-  string _objecttype;
+  vector_string _object_types;
   string _collision_name;
   double _fps;
   PT(EggSwitchCondition) _lod;

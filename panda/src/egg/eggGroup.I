@@ -282,43 +282,44 @@ get_switch_fps() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::set_objecttype
+//     Function: EggGroup::add_object_type
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggGroup::
-set_objecttype(const string &objecttype) {
-  _objecttype = objecttype;
+add_object_type(const string &object_type) {
+  _object_types.push_back(object_type);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::clear_objecttype
+//     Function: EggGroup::clear_object_types
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggGroup::
-clear_objecttype() {
-  _objecttype = "";
+clear_object_types() {
+  _object_types.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::has_objecttype
+//     Function: EggGroup::get_num_object_types
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool EggGroup::
-has_objecttype() const {
-  return !_objecttype.empty();
+INLINE int EggGroup::
+get_num_object_types() const {
+  return _object_types.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::get_objecttype
+//     Function: EggGroup::get_object_type
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const string &EggGroup::
-get_objecttype() const {
-  return _objecttype;
+INLINE string EggGroup::
+get_object_type(int index) const {
+  nassertr(index >= 0 && index < (int)_object_types.size(), string());
+  return _object_types[index];
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -122,6 +122,11 @@ private:
                                  EggGroup::CollideFlags flags);
 
   void apply_deferred_nodes(PandaNode *node, const DeferredNodeProperty &prop);
+  bool expand_object_types(EggGroup *egg_group, const pset<string> &expanded,
+                           const pvector<string> &expanded_history);
+  bool do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
+                             const pvector<string> &expanded_history,
+                             const string &object_type);
 
   CPT(TransformState) make_transform(const EggTransform3d *egg_transform);
 

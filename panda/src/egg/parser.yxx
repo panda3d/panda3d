@@ -970,7 +970,7 @@ group_body:
 {
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   string type = $4;
-  group->set_objecttype(type);
+  group->add_object_type(type);
 }
         | group_body MODEL '{' integer '}'
 {

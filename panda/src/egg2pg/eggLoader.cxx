@@ -1284,93 +1284,11 @@ PandaNode *EggLoader::
 make_node(EggGroup *egg_group, PandaNode *parent) {
   PT(PandaNode) node = NULL;
 
-  if (egg_group->has_objecttype()) {
-    // We'll allow recursive expansion of ObjectType strings--but we
-    // don't want to get caught in a cycle.  Keep track of the strings
-    // we've expanded so far.
+  if (egg_group->get_num_object_types() != 0) {
     pset<string> expanded;
     pvector<string> expanded_history;
-
-    while (egg_group->has_objecttype()) {
-      string objecttype = egg_group->get_objecttype();
-      if (!expanded.insert(objecttype).second) {
-        egg2pg_cat.error()
-          << "Cycle in ObjectType expansions:\n";
-	pvector<string>::const_iterator pi;
-	for (pi = expanded_history.begin();
-	     pi != expanded_history.end();
-	     ++pi) {
-	  egg2pg_cat.error(false) 
-	    << (*pi) << " -> ";
-	}
-        egg2pg_cat.error(false) << objecttype << "\n";
-        _error = true;
-        break;
-      }
-      expanded_history.push_back(objecttype);
-
-      // Now clear the group's ObjectType flag.  We'll only loop back
-      // here again if we end up setting this during the ObjectType
-      // expansion; e.g. the expansion string itself contains an
-      // <ObjectType> reference.
-      egg_group->clear_objecttype();
-
-      // Now try to find the egg syntax that the given objecttype is
-      // shorthand for.  First, look in the config file.
-
-      string egg_syntax =
-        config_egg2pg.GetString("egg-object-type-" + objecttype, "none");
-
-      if (egg_syntax == "none") {
-        // It wasn't defined in a config file.  Maybe it's built in?
-
-        if (cmp_nocase_uh(objecttype, "barrier") == 0) {
-          egg_syntax = "<Collide> { Polyset descend }";
-
-        } else if (cmp_nocase_uh(objecttype, "solidpoly") == 0) {
-          egg_syntax = "<Collide> { Polyset descend solid }";
-
-        } else if (cmp_nocase_uh(objecttype, "turnstile") == 0) {
-          egg_syntax = "<Collide> { Polyset descend turnstile }";
-
-        } else if (cmp_nocase_uh(objecttype, "sphere") == 0) {
-          egg_syntax = "<Collide> { Sphere descend }";
-
-        } else if (cmp_nocase_uh(objecttype, "trigger") == 0) {
-          egg_syntax = "<Collide> { Polyset descend intangible }";
-
-        } else if (cmp_nocase_uh(objecttype, "trigger_sphere") == 0) {
-          egg_syntax = "<Collide> { Sphere descend intangible }";
-
-        } else if (cmp_nocase_uh(objecttype, "eye_trigger") == 0) {
-          egg_syntax = "<Collide> { Polyset descend intangible center }";
-
-        } else if (cmp_nocase_uh(objecttype, "bubble") == 0) {
-          egg_syntax = "<Collide> { Sphere keep descend }";
-
-        } else if (cmp_nocase_uh(objecttype, "ghost") == 0) {
-          egg_syntax = "<Scalar> collide-mask { 0 }";
-
-        } else if (cmp_nocase_uh(objecttype, "backstage") == 0) {
-          // Ignore "backstage" geometry.
-          return NULL;
-
-        } else {
-          egg2pg_cat.error()
-            << "Unknown ObjectType " << objecttype << "\n";
-          _error = true;
-          break;
-        }
-      }
-
-      if (!egg_syntax.empty()) {
-        if (!egg_group->parse_egg(egg_syntax)) {
-          egg2pg_cat.error()
-            << "Error while parsing definition for ObjectType "
-            << objecttype << "\n";
-          _error = true;
-        }
-      }
+    if (!expand_object_types(egg_group, expanded, expanded_history)) {
+      return NULL;
     }
   }
 
@@ -1947,6 +1865,153 @@ apply_deferred_nodes(PandaNode *node, const DeferredNodeProperty &prop) {
   for (int i = 0; i < num_children; i++) {
     apply_deferred_nodes(node->get_child(i), next_prop);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::expand_object_types
+//       Access: Private
+//  Description: Recursively expands the group's ObjectType string(s).
+//               It's recursive because an ObjectType string might
+//               itself expand to another ObjectType string, which is
+//               allowed; but we don't want to get caught in a cycle.
+//
+//               The return value is true if the object type is
+//               expanded and the node is valid, or false if the node
+//               should be ignored (e.g. ObjectType "backstage").
+////////////////////////////////////////////////////////////////////
+bool EggLoader::
+expand_object_types(EggGroup *egg_group, const pset<string> &expanded,
+                    const pvector<string> &expanded_history) {
+  int num_object_types = egg_group->get_num_object_types();
+
+  // First, copy out the object types so we can recursively modify the
+  // list.
+  vector_string object_types;
+  int i;
+  for (i = 0; i < num_object_types; i++) {
+    object_types.push_back(egg_group->get_object_type(i));
+  }
+  egg_group->clear_object_types();
+
+  for (i = 0; i < num_object_types; i++) {
+    string object_type = object_types[i];
+    pset<string> new_expanded(expanded);
+
+    // Check for a cycle.
+    if (!new_expanded.insert(object_type).second) {
+      egg2pg_cat.error()
+        << "Cycle in ObjectType expansions:\n";
+      pvector<string>::const_iterator pi;
+      for (pi = expanded_history.begin();
+           pi != expanded_history.end();
+           ++pi) {
+        egg2pg_cat.error(false) 
+          << (*pi) << " -> ";
+      }
+      egg2pg_cat.error(false) << object_type << "\n";
+      _error = true;
+
+    } else {
+      // No cycle; continue.
+      pvector<string> new_expanded_history(expanded_history);
+      new_expanded_history.push_back(object_type);
+
+      if (!do_expand_object_type(egg_group, new_expanded, 
+                                 new_expanded_history, object_type)) {
+        // Ignorable group; stop here.
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::expand_object_type
+//       Access: Private
+//  Description: Further implementation of expand_object_types().
+////////////////////////////////////////////////////////////////////
+bool EggLoader::
+do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
+                      const pvector<string> &expanded_history,
+                      const string &object_type) {
+  // Try to find the egg syntax that the given objecttype is
+  // shorthand for.  First, look in the config file.
+
+  string egg_syntax =
+    config_egg2pg.GetString("egg-object-type-" + object_type, "none");
+
+  if (egg_syntax == "none") {
+    // It wasn't defined in a config file.  Maybe it's built in?
+    
+    if (cmp_nocase_uh(object_type, "barrier") == 0) {
+      egg_syntax = "<Collide> { Polyset descend }";
+      
+    } else if (cmp_nocase_uh(object_type, "solidpoly") == 0) {
+      egg_syntax = "<Collide> { Polyset descend solid }";
+      
+    } else if (cmp_nocase_uh(object_type, "turnstile") == 0) {
+      egg_syntax = "<Collide> { Polyset descend turnstile }";
+      
+    } else if (cmp_nocase_uh(object_type, "sphere") == 0) {
+      egg_syntax = "<Collide> { Sphere descend }";
+      
+    } else if (cmp_nocase_uh(object_type, "trigger") == 0) {
+      egg_syntax = "<Collide> { Polyset descend intangible }";
+      
+    } else if (cmp_nocase_uh(object_type, "trigger_sphere") == 0) {
+      egg_syntax = "<Collide> { Sphere descend intangible }";
+      
+    } else if (cmp_nocase_uh(object_type, "eye_trigger") == 0) {
+      egg_syntax = "<Collide> { Polyset descend intangible center }";
+      
+    } else if (cmp_nocase_uh(object_type, "bubble") == 0) {
+      egg_syntax = "<Collide> { Sphere keep descend }";
+      
+    } else if (cmp_nocase_uh(object_type, "ghost") == 0) {
+      egg_syntax = "<Scalar> collide-mask { 0 }";
+      
+    } else if (cmp_nocase_uh(object_type, "dcs") == 0) {
+      egg_syntax = "<DCS> { 1 }";
+      
+    } else if (cmp_nocase_uh(object_type, "model") == 0) {
+      egg_syntax = "<Model> { 1 }";
+      
+    } else if (cmp_nocase_uh(object_type, "decal") == 0) {
+      egg_syntax = "<Decal> { 1 }";
+      
+    } else if (cmp_nocase_uh(object_type, "backstage") == 0) {
+      // Ignore "backstage" geometry.
+      return false;
+      
+    } else {
+      egg2pg_cat.error()
+        << "Unknown ObjectType " << object_type << "\n";
+      _error = true;
+      return true;
+    }
+  }
+
+  if (!egg_syntax.empty()) {
+    if (!egg_group->parse_egg(egg_syntax)) {
+      egg2pg_cat.error()
+        << "Error while parsing definition for ObjectType "
+        << object_type << "\n";
+      _error = true;
+
+    } else {
+      // Now we've parsed the object type syntax, which might have
+      // added more object types.  Recurse if necessary.
+      if (egg_group->get_num_object_types() != 0) {
+        if (!expand_object_types(egg_group, expanded, expanded_history)) {
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
