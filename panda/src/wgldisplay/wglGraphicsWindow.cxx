@@ -618,15 +618,20 @@ void wglGraphicsWindow::config(void) {
      wglUseFontBitmaps(_hdc, 0, 128, FONT_BITMAP_OGLDISPLAYLISTNUM);
   }
 
-  if(wgldisplay_cat.is_debug()) {
-      const GLubyte *vendorname=glGetString(GL_VENDOR);
-      if(vendorname!=NULL) {
-              wgldisplay_cat.debug() << endl
-                                     << " GL_VENDOR: " <<   glGetString(GL_VENDOR) << endl
-                                     << " GL_RENDERER: " <<   glGetString(GL_RENDERER) << endl
-                                     << " GL_VERSION: " <<   glGetString(GL_VERSION) << endl;
+  if(wgldisplay_cat.is_info()) {
+     const char *vendStr=(const char *) glGetString(GL_VENDOR);
+     const char *rendStr=(const char *) glGetString(GL_RENDERER);
+     const char *versStr=(const char *) glGetString(GL_VERSION);
+
+     // Note:  glGetString will never return a valid value until you do wglMakeCurrent
+
+     if(vendStr!=NULL) {
+         wgldisplay_cat.info() 
+              << "GL_VENDOR: " <<  vendStr
+              << "  GL_RENDERER: " << ((rendStr==NULL) ? "" : rendStr)
+              << "  GL_VERSION: " <<  ((versStr==NULL) ? "" : versStr) << endl;
       } else {
-         wgldisplay_cat.info() << " glGetString(GL_VENDOR) returns NULL!!!\n";
+         wgldisplay_cat.info() << "glGetString(GL_VENDOR) returns NULL!\n";
       }
   }
 }
