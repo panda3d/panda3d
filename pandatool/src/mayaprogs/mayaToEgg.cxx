@@ -55,21 +55,21 @@ MayaToEgg() :
      &MayaToEgg::dispatch_double, NULL, &_polygon_tolerance);
 
   add_option
-    ("notrans", "", 0,
-     "Don't convert explicit DAG transformations given in the Maya file.  "
-     "Instead, convert all vertices to world space and write the file as "
-     "one big transform space.  Using this option doesn't change the "
-     "position of objects in the scene, just the number of explicit "
-     "transforms appearing in the resulting egg file.",
-     &MayaToEgg::dispatch_none, &_ignore_transforms);
+    ("trans", "type", 0,
+     "Specifies which transforms in the Maya file should be converted to "
+     "transforms in the egg file.  The option may be one of all, model, "
+     "dcs, or none.  The default is model, which means only transforms on "
+     "nodes that have the model flag or the dcs flag are preserved.",
+     &MayaToEgg::dispatch_transform_type, NULL, &_transform_type);
 
   add_option
     ("v", "", 0,
      "Increase verbosity.  More v's means more verbose.",
      &MayaToEgg::dispatch_count, NULL, &_verbose);
 
-  _polygon_tolerance = 0.01;
   _verbose = 0;
+  _polygon_tolerance = 0.01;
+  _transform_type = MayaToEggConverter::TT_model;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -108,7 +108,7 @@ run() {
   // Copy in the command-line parameters.
   converter._polygon_output = _polygon_output;
   converter._polygon_tolerance = _polygon_tolerance;
-  converter._ignore_transforms = _ignore_transforms;
+  converter._transform_type = _transform_type;
 
   // Copy in the path and animation parameters.
   apply_parameters(converter);
@@ -139,6 +139,25 @@ run() {
   nout << "\n";
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEgg::dispatch_transform_type
+//       Access: Protected, Static
+//  Description: Dispatches a parameter that expects a
+//               MayaToEggConverter::TransformType option.
+////////////////////////////////////////////////////////////////////
+bool MayaToEgg::
+dispatch_transform_type(const string &opt, const string &arg, void *var) {
+  MayaToEggConverter::TransformType *ip = (MayaToEggConverter::TransformType *)var;
+  (*ip) = MayaToEggConverter::string_transform_type(arg);
+
+  if ((*ip) == MayaToEggConverter::TT_invalid) {
+    nout << "Invalid type for -" << opt << ": " << arg << "\n"
+         << "Valid types are all, model, dcs, and none.\n";
+    return false;
+  }
+
+  return true;
+}
 
 int main(int argc, char *argv[]) {
   MayaToEgg prog;

@@ -138,7 +138,17 @@ public:
 
   bool _polygon_output;
   double _polygon_tolerance;
-  bool _ignore_transforms;
+
+  enum TransformType {
+    TT_invalid,
+    TT_all,
+    TT_model,
+    TT_dcs,
+    TT_none,
+  };
+  TransformType _transform_type;
+
+  static TransformType string_transform_type(const string &arg);
 };
 
 

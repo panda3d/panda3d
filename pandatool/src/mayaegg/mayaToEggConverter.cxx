@@ -86,7 +86,7 @@ MayaToEggConverter(const string &program_name) :
   _from_selection = false;
   _polygon_output = false;
   _polygon_tolerance = 0.01;
-  _ignore_transforms = false;
+  _transform_type = TT_model;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -816,7 +816,25 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
     return;
   }
 
-  if (_ignore_transforms) {
+  switch (_transform_type) {
+  case TT_all:
+    break;
+
+  case TT_model:
+    if (!egg_group->get_model_flag() &&
+        !egg_group->get_dcs_flag()) {
+      return;
+    }
+    break;
+
+  case TT_dcs:
+    if (!egg_group->get_dcs_flag()) {
+      return;
+    }
+    break;
+
+  case TT_none:
+  case TT_invalid:
     return;
   }
 
@@ -850,15 +868,24 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
   }
 
   MMatrix mat = matrix.asMatrix();
-  MMatrix ident_mat;
-  ident_mat.setToIdentity();
+  LMatrix4d m4d(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
+                mat[1][0], mat[1][1], mat[1][2], mat[1][3],
+                mat[2][0], mat[2][1], mat[2][2], mat[2][3],
+                mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
 
-  if (!mat.isEquivalent(ident_mat, 0.0001)) {
-    egg_group->set_transform
-      (LMatrix4d(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
-                 mat[1][0], mat[1][1], mat[1][2], mat[1][3],
-                 mat[2][0], mat[2][1], mat[2][2], mat[2][3],
-                 mat[3][0], mat[3][1], mat[3][2], mat[3][3]));
+  // Now convert the matrix to the local frame.
+  mat = dag_path.inclusiveMatrix(&status);
+  if (!status) {
+    status.perror("Can't get coordinate space for matrix");
+    return;
+  }
+  LMatrix4d n2w(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
+                mat[1][0], mat[1][1], mat[1][2], mat[1][3],
+                mat[2][0], mat[2][1], mat[2][2], mat[2][3],
+                mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
+  m4d = m4d * n2w * egg_group->get_node_frame_inv();
+  if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
+    egg_group->set_transform(m4d);
   }
 }
 
@@ -1658,6 +1685,22 @@ r_get_egg_group(const string &name, const MDagPath &dag_path,
       egg_group->remove_object_type("billboard");
       egg_group->set_group_type(EggGroup::GT_instance);
       egg_group->set_billboard_type(EggGroup::BT_axis);
+
+    } else if (egg_group->has_object_type("billboard-point")) {    
+      egg_group->remove_object_type("billboard-point");
+      egg_group->set_group_type(EggGroup::GT_instance);
+      egg_group->set_billboard_type(EggGroup::BT_point_camera_relative);
+    }
+
+    // We also treat the object type "dcs" and "model" as a special
+    // case, so we can test for these flags later.
+    if (egg_group->has_object_type("dcs")) {
+      egg_group->remove_object_type("dcs");
+      egg_group->set_dcs_flag(true);
+    }
+    if (egg_group->has_object_type("model")) {
+      egg_group->remove_object_type("model");
+      egg_group->set_model_flag(true);
     }
   }
 
@@ -1860,4 +1903,25 @@ reparent_decals(EggGroupNode *egg_parent) {
   }
 
   return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::string_transform_type
+//       Access: Public, Static
+//  Description: Returns the TransformType value corresponding to the
+//               indicated string, or TT_invalid.
+////////////////////////////////////////////////////////////////////
+MayaToEggConverter::TransformType MayaToEggConverter::
+string_transform_type(const string &arg) {
+  if (cmp_nocase(arg, "all") == 0) {
+    return TT_all;
+  } else if (cmp_nocase(arg, "model") == 0) {
+    return TT_model;
+  } else if (cmp_nocase(arg, "dcs") == 0) {
+    return TT_dcs;
+  } else if (cmp_nocase(arg, "none") == 0) {
+    return TT_none;
+  } else {
+    return TT_invalid;
+  }
 }

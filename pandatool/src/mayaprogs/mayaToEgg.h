@@ -21,6 +21,7 @@
 
 #include "pandatoolbase.h"
 #include "somethingToEgg.h"
+#include "mayaToEggConverter.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MayaToEgg
@@ -32,10 +33,13 @@ public:
 
   void run();
 
+protected:
+  static bool dispatch_transform_type(const string &opt, const string &arg, void *var);
+
   int _verbose;
   bool _polygon_output;
   double _polygon_tolerance;
-  bool _ignore_transforms;
+  MayaToEggConverter::TransformType _transform_type;
 };
 
 #endif
