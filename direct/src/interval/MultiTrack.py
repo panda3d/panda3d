@@ -35,19 +35,17 @@ class MultiTrack(Interval):
 		duration = dur
 	return duration
 
-    def setT(self, t, entry=0):
-	""" setT(t, entry)
+    def updateFunc(self, t, event = IVAL_NONE):
+	""" updateFunc(t, event)
 	    Go to time t
 	"""
-	if (t > self.duration):
-            pass
 	for track in self.tlist:
-	    track.setT(t, entry)
+	    track.setT(min(t, track.getDuration()), event)
 
     def __repr__(self, indent=0):
 	""" __repr__(indent)
 	"""
-	str = Interval.__repr__(self, indent)
+	str = Interval.__repr__(self, indent) + '\n'
 	for t in self.tlist:
 	    str = str + t.__repr__(indent+1)
         return str

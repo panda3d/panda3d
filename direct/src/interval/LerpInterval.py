@@ -9,21 +9,20 @@ class LerpInterval(Interval):
     def __init__(self, name, duration, functorFunc, blendType='noBlend'):
         """__init__(name, duration, functorFunc, blendType)
         """
+        self.lerp = None
 	self.functorFunc = functorFunc
 	self.blendType = self.getBlend(blendType)
 	Interval.__init__(self, name, duration)
-    def setT(self, t, entry=0):
-	""" setT(t, entry)
+    def updateFunc(self, t, event = IVAL_NONE):
+	""" updateFunc(t, event)
 	"""
-	if (t < 0):
-	    return
-	elif (entry == 1):
+        # First check to see if we need to create the lerp
+	if (event == IVAL_INIT):
 	    self.lerp = Lerp.Lerp(self.functorFunc(), self.duration, 
-						self.blendType)
-	if (entry == 1) and (t > self.duration):
-	    self.lerp.setT(self.duration)
-	elif (t <= self.duration):
-	    self.lerp.setT(t)
+                                  self.blendType)
+        # Now evaluate the lerp
+        if self.lerp:
+            self.lerp.setT(t)
     def getBlend(self, blendType):
         """__getBlend(self, string)
         Return the C++ blend class corresponding to blendType string
@@ -42,9 +41,9 @@ class LerpInterval(Interval):
 		'Error: LerpInterval.__getBlend: Unknown blend type')
 
 class LerpPosInterval(LerpInterval):
-
+    # Name counter
     lerpPosNum = 1
-
+    # Class methods
     def __init__(self, node, duration, pos, startPos=None,
 				other=None, blendType='noBlend', name=None):
 	""" __init__(node, duration, pos, startPos, other, blendType, name)
@@ -66,18 +65,15 @@ class LerpPosInterval(LerpInterval):
             	functor = PosLerpFunctor.PosLerpFunctor(
                     node, startPos, pos)
 	    return functor
-
+        # Generate unique name if necessary
 	if (name == None):
-	    n = 'LerpPosInterval-%d' % LerpPosInterval.lerpPosNum
+	    name = 'LerpPosInterval-%d' % LerpPosInterval.lerpPosNum
 	    LerpPosInterval.lerpPosNum += 1
-	else:
-	    n = name
-
-	LerpInterval.__init__(self, n, duration, functorFunc, blendType) 
+        # Initialize superclass
+	LerpInterval.__init__(self, name, duration, functorFunc, blendType) 
 
 class LerpHprInterval(LerpInterval):
-
-    # Interval counter
+    # Name counter
     lerpHprNum = 1
     # Class methods
     def __init__(self, node, duration, hpr, startHpr=None,
@@ -101,14 +97,12 @@ class LerpHprInterval(LerpInterval):
             	functor = HprLerpFunctor.HprLerpFunctor(
                     node, startHpr, hpr)
 	    return functor
-
+        # Generate unique name if necessary
 	if (name == None):
-	    n = 'LerpHprInterval-%d' % LerpHprInterval.lerpHprNum
+	    name = 'LerpHprInterval-%d' % LerpHprInterval.lerpHprNum
 	    LerpHprInterval.lerpHprNum += 1
-	else:
-	    n = name
-
-	LerpInterval.__init__(self, n, duration, functorFunc, blendType) 
+        # Initialize superclass
+	LerpInterval.__init__(self, name, duration, functorFunc, blendType) 
 
 class LerpScaleInterval(LerpInterval):
 
@@ -137,13 +131,12 @@ class LerpScaleInterval(LerpInterval):
                     node, startScale, scale)
 	    return functor
 
+        # Generate unique name if necessary
 	if (name == None):
-	    n = 'LerpScaleInterval-%d' % LerpScaleInterval.lerpScaleNum
+	    name = 'LerpScaleInterval-%d' % LerpScaleInterval.lerpScaleNum
 	    LerpScaleInterval.lerpScaleNum += 1
-	else:
-	    n = name
-
-	LerpInterval.__init__(self, n, duration, functorFunc, blendType) 
+        # Initialize superclass
+	LerpInterval.__init__(self, name, duration, functorFunc, blendType) 
 
 class LerpPosHprInterval(LerpInterval):
     # Interval counter
@@ -179,13 +172,12 @@ class LerpPosHprInterval(LerpInterval):
                     startHpr, hpr)
 	    return functor
 
+        # Generate unique name if necessary
 	if (name == None):
-	    n = 'LerpPosHpr-%d' % LerpPosHprInterval.lerpPosHprNum
+	    name = 'LerpPosHpr-%d' % LerpPosHprInterval.lerpPosHprNum
 	    LerpPosHprInterval.lerpPosHprNum += 1
-	else:
-	    n = name
-
-	LerpInterval.__init__(self, n, duration, functorFunc, blendType)
+        # Initialize superclass
+	LerpInterval.__init__(self, name, duration, functorFunc, blendType)
 
 class LerpPosHprScaleInterval(LerpInterval):
     # Interval counter
@@ -226,14 +218,13 @@ class LerpPosHprScaleInterval(LerpInterval):
                     node, startPos, pos, startHpr, hpr, startScale, scale)
 	    return functor
 
+        # Generate unique name if necessary
 	if (name == None):
-	    n = ('LerpPosHprScale-%d' %
-                 LerpPosHprScaleInterval.lerpPosHprScaleNum)
+	    name = ('LerpPosHprScale-%d' %
+                    LerpPosHprScaleInterval.lerpPosHprScaleNum)
 	    LerpPosHprScaleInterval.lerpPosHprScaleNum += 1
-	else:
-	    n = name
-
-	LerpInterval.__init__(self, n, duration, functorFunc, blendType)
+        # Initialize superclass
+	LerpInterval.__init__(self, name, duration, functorFunc, blendType)
 
 # Class used to execute a function over time.  Function can access fromData
 # and toData to perform blend
@@ -245,27 +236,29 @@ class LerpFunctionInterval(Interval):
                  blendType = 'noBlend', name = None):
         """__init__(function, duration, fromData, toData, name)
         """
+        # Record instance variables
 	self.function = function
         self.fromData = fromData
         self.toData = toData
 	self.blendType = self.getBlend(blendType)
+        # Generate unique name if necessary
 	if (name == None):
 	    name = ('LerpFunctionInterval-%d' %
                     LerpFunctionInterval.lerpFunctionIntervalNum)
             LerpFunctionInterval.lerpFunctionIntervalNum += 1
         # Initialize superclass
 	Interval.__init__(self, name, duration)
-    def setT(self, t, entry=0):
-	""" setT(t, entry)
+    def updateFunc(self, t, event = IVAL_NONE):
+	""" updateFunc(t, event)
 	"""
-	if (t < 0):
-	    return
-	if (entry == 1) and (t > self.duration):
-	    self.function(self.toData)
-	elif (t <= self.duration):
+        # Evaluate the function
+        if (t == self.duration):
+            # Set to end value
+	    self.function(self.toData)            
+        else:
+            # In the middle of the lerp, compute appropriate value
             try:
-                #bt = self.blendType(t/self.duration)
-                bt = t/self.duration
+                bt = self.blendType(t/self.duration)
                 data = (self.fromData * (1 - bt)) + (self.toData * bt)
                 self.function(data)
             except ZeroDivisionError:

@@ -5,31 +5,25 @@ from Interval import *
 import Mopath
 
 class MopathInterval(Interval):
-
+    # Name counter
     mopathNum = 1
-
-    # special methods
-    
+    # Class methods
     def __init__(self, mopath, node, name=None):
         """__init__(mopath, node, name)
         """
-	self.node = node	
 	self.mopath = mopath 
-	duration = self.mopath.getMaxT()
+	self.node = node
+        # Generate unique name if necessary
 	if (name == None):
-	    n = 'Mopath-%d' % self.mopathNum
-	    self.mopathNum = self.mopathNum + 1
-	else:
-	    n = name
-	Interval.__init__(self, n, duration)
+	    name = 'Mopath-%d' % MopathInterval.mopathNum
+	    MopathInterval.mopathNum += 1
+        # Compute duration
+	duration = self.mopath.getMaxT()
+        # Initialize superclass
+	Interval.__init__(self, name, duration)
 
-    def setT(self, t, entry=0):
-	""" setT(t, entry)
+    def updateFunc(self, t, event = IVAL_NONE):
+	""" updateFunc(t, event)
 	    Go to time t
 	"""
-	if (t < 0):
-	    return
-	elif (entry == 1) and (t > self.duration):
-	    self.mopath.goTo(self.node, self.duration)
-	else:
-	    self.mopath.goTo(self.node, t)
+        self.mopath.goTo(self.node, t)

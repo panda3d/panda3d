@@ -5,33 +5,28 @@ from Interval import *
 from MessengerGlobal import *
 
 class FunctionInterval(Interval):
-
+    # Name counter
     functionIntervalNum = 1
-    
-    # special methods
-    def __init__(self, function, name = None):
+    # Class methods
+    def __init__(self, function, name = None, openEnded = 1):
         """__init__(function, name = None)
         """
-	duration = 0.0
-	self.prevt = 0.0
+        # Record instance variables
 	self.function = function
-        
+        # Create a unique name for the interval if necessary
 	if (name == None):
 	    name = 'FunctionInterval-%d' % FunctionInterval.functionIntervalNum
 	    FunctionInterval.functionIntervalNum += 1
-
-	Interval.__init__(self, name, duration)
-
-    def setT(self, t, entry=0):
-	""" setT(t, entry)
+        # Initialize superclass
+        # Set openEnded true if calls after end time cause interval
+        # function to be called
+	Interval.__init__(self, name, duration = 0.0, openEnded = openEnded)
+    def updateFunc(self, t, event = IVAL_NONE):
+	""" updateFunc(t, event)
 	    Go to time t
 	"""
-	if (t < 0):
-	    self.prevt = t
-	    return
-	elif (t == 0) or (self.prevt < 0):
-	    self.function()
-	    self.prevt = 0.0
+        # Evaluate the function
+        self.function()
 
 ### FunctionInterval subclass for throwing events ###
 class EventInterval(FunctionInterval):
@@ -42,7 +37,8 @@ class EventInterval(FunctionInterval):
         def sendFunc(event = event, sentArgs = sentArgs):
             messenger.send(event, sentArgs)
         # Create function interval
-	FunctionInterval.__init__(self, sendFunc, name = event)
+	FunctionInterval.__init__(self, sendFunc, name = event,
+                                  openEnded = 0)
 
 ### FunctionInterval subclass for accepting hooks ###
 class AcceptInterval(FunctionInterval):
@@ -54,7 +50,8 @@ class AcceptInterval(FunctionInterval):
             print "accepting..."
             dirObj.accept(event, function)
         # Create function interval
-	FunctionInterval.__init__(self, acceptFunc, name = name)
+	FunctionInterval.__init__(self, acceptFunc, name = name,
+                                  openEnded = 0)
 
 ### FunctionInterval subclass for throwing events ###
 class IgnoreInterval(FunctionInterval):
@@ -66,7 +63,8 @@ class IgnoreInterval(FunctionInterval):
             print "ignoring..."
             dirObj.ignore(event)
         # Create function interval
-	FunctionInterval.__init__(self, ignoreFunc, name = name)
+	FunctionInterval.__init__(self, ignoreFunc, name = name,
+                                  openEnded = 0)
 
 ### Function Interval subclass for adjusting scene graph hierarchy ###
 class ParentInterval(FunctionInterval):
@@ -97,7 +95,8 @@ class WrtParentInterval(FunctionInterval):
             nodePath.wrtReparentTo(parent)
         # Determine name
 	if (name == None):
-	    name = 'WrtParentInterval-%d' % WrtParentInterval.wrtParentIntervalNum
+	    name = ('WrtParentInterval-%d' %
+                    WrtParentInterval.wrtParentIntervalNum)
 	    WrtParentInterval.wrtParentIntervalNum += 1
         # Create function interval
 	FunctionInterval.__init__(self, wrtReparentFunc, name = name)
@@ -210,7 +209,6 @@ class PosHprScaleInterval(FunctionInterval):
         # Create function interval
         FunctionInterval.__init__(self, posHprScaleFunc, name = name)
 
-
 """
 SAMPLE CODE
 from IntervalGlobal import *
@@ -226,6 +224,7 @@ def printHello():
 i3 = FunctionInterval(printHello)
 # Create track
 t1 = Track([(0.0, i1), (2.0, i2), (4.0, i3)], name = 'demo')
+
 # Play track
 t1.play()
 

@@ -4,43 +4,46 @@ from PandaModules import *
 from Interval import *
 
 class AnimInterval(Interval):
-
+    # Name counter
     animNum = 1
-
-    # special methods
-    
+    # Class methods
     def __init__(self, animControl, loop=0, name=None):
         """__init__(name)
         """
+        # Record class specific variables
 	self.animControl = animControl
-	duration = (float(animControl.getNumFrames()) / 
-			animControl.getFrameRate())
 	self.loop = loop
+        # Generate unique name if necessary
 	if (name == None):
-	    n = 'Anim-%d' % self.animNum
-	    self.animNum = self.animNum + 1
-	else:
-	    n = name
-	Interval.__init__(self, n, duration)
+	    name = 'Anim-%d' % AnimInterval.animNum
+	    AnimInterval.animNum += 1
+        # Compute anim duration
+	duration = (float(animControl.getNumFrames()) /
+			animControl.getFrameRate())
+        # Initialize superclass
+	Interval.__init__(self, name, duration)
 
-    def setT(self, t, entry=0):
-	""" setT(t, entry)
+    def updateFunc(self, t, event = IVAL_NONE):
+	""" updateFunc(t, event)
 	    Go to time t
 	"""
-	if (t < 0):
-	    return
-	elif (t > self.duration):
+        # Update animation based upon current time
+        if (t == self.getDuration()):
 	    if (self.isPlaying == 1):
 		self.isPlaying = 0
 		if (self.loop):
 		    self.animControl.stop()
-	    return
-	elif (entry == 1):
+        else:
+            # Set flag
 	    self.isPlaying = 1
 	    # Determine the current frame
 	    frame = int(self.animControl.getFrameRate() * t)
+            # Pose anim
 	    if (self.loop):
 		self.animControl.pos(frame)	
 		self.animControl.loop(0)
 	    else:
 		self.animControl.play(frame, self.animControl.getNumFrames())
+
+
+

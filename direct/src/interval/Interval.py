@@ -4,6 +4,10 @@ from DirectObject import *
 import ClockObject
 import Task
 
+# Interval events
+IVAL_NONE = 0
+IVAL_INIT = 1
+
 class Interval(DirectObject):
     """Interval class: Base class for timeline functionality"""
 
@@ -13,13 +17,17 @@ class Interval(DirectObject):
 
     # special methods
     
-    def __init__(self, name, duration):
+    def __init__(self, name, duration, openEnded = 1):
         """__init__(name, duration)
         """
 	self.name = name
 	self.duration = duration
 	self.clock = ClockObject.ClockObject.getGlobalClock()
 	self.curr_t = 0.0
+	self.prev_t = 0.0
+        self.setTHooks = []
+        # Set true if interval responds to setT(t): t>duration
+        self.fOpenEnded = openEnded
 
     def getName(self):
 	""" getName()
@@ -31,16 +39,40 @@ class Interval(DirectObject):
 	"""
 	return self.duration
 
-    def setT(self, t, entry=0):
-	""" setT(t, entry)
+    def setfOpenEnded(self, openEnded):
+        """ setfOpenEnded(openEnded)
+        """
+        self.fOpenEnded = openEnded
+
+    def getfOpenEnded(self):
+        """ getfOpenEnded()
+        """
+        return self.fOpenEnded
+
+    def setT(self, t, event = IVAL_NONE):
+	""" setT(t, event)
 	    Go to time t
 	"""
-	pass
+        # Update current time
+	self.curr_t = t
+        # Perform interval actions
+        self.updateFunc(t, event)
+        # Call setT Hook
+        for func in self.setTHooks:
+            func(t)
+        # Record t for next time around
+        self.prev_t = self.curr_t
+
+    def updateFunc(self, t, event = IVAL_NONE):
+        pass
+
+    def setTHook(self, t):
+        pass
 
     def setFinalT(self):
 	""" setFinalT()
 	"""
-	self.setT(self.getDuration(), entry=1)
+	self.setT(self.getDuration(), event=IVAL_NONE)
 
     def play(self, t0=0.0, duration=0.0, scale=1.0):
         """ play(t0, duration)
@@ -51,10 +83,10 @@ class Interval(DirectObject):
 	self.scale = scale
 	self.firstTime = 1
         if (duration == 0.0):
-            self.playDuration = self.duration
+            self.endTime = self.offset + self.duration
         else:
-            self.playDuration = duration
-	assert(t0 <= self.playDuration)
+            self.endTime = self.offset + duration
+	assert(t0 <= self.endTime)
         taskMgr.spawnMethodNamed(self.__playTask, self.name + '-play')
 
     def stop(self):
@@ -68,16 +100,15 @@ class Interval(DirectObject):
         """
         t = self.clock.getFrameTime()
         te = self.offset + ((t - self.startT) * self.scale)
-	self.curr_t = te
-        if (te <= self.playDuration):
+        if (te <= self.endTime):
 	    if (self.firstTime):
-		self.setT(te, entry=1)
+		self.setT(te, event = IVAL_INIT)
 		self.firstTime = 0
 	    else:
             	self.setT(te)
             return Task.cont
         else:
-	    self.setT(self.playDuration)
+	    self.setT(self.endTime)
             return Task.done
 
     def __repr__(self, indent=0):
@@ -86,16 +117,54 @@ class Interval(DirectObject):
 	space = ''
 	for l in range(indent):
 	    space = space + ' '
-	return (space + self.name + ' dur: %.2f\n' % self.duration)
+	return (space + self.name + ' dur: %.2f' % self.duration)
 
     def popupControls(self):
+        import fpformat
+        import string
         # I moved this here because Toontown does not ship Tk
         from Tkinter import *
         import Pmw
         import EntryScale
         tl = Toplevel()
+        tl.title(self.getName() + ' Interval Controls')
         es = EntryScale.EntryScale(
-            tl, min = 0, max = self.duration,
+            tl, text = 'Time',
+            min = 0, max = string.atof(fpformat.fix(self.duration, 2)),
             command = lambda t, s = self: s.setT(t))
-        es.onPress = lambda s=self: s.setT(s.curr_t, entry = 1)
+        es.onRelease = lambda s=self, es = es: s.setT(es.get(),
+                                                      event = IVAL_INIT)
+        es.onReturnRelease = lambda s=self, es = es: s.setT(es.get(),
+                                                            event = IVAL_INIT)
         es.pack(expand = 1, fill = X)
+        f = Frame(tl)
+        def toStart(s=self, es=es):
+            s.stop()
+            s.setT(0.0, event = IVAL_INIT)
+        def toEnd(s=self):
+            s.stop()
+            s.setT(s.getDuration(), event = IVAL_INIT)
+        jumpToStart = Button(tl, text = '<<', command = toStart)
+        stop = Button(tl, text = 'Stop',
+                      command = lambda s=self: s.stop())
+        play = Button(
+            tl, text = 'Play',
+            command = lambda s=self, es=es: s.play(es.get()))
+        jumpToEnd = Button(tl, text = '>>', command = toEnd)
+        jumpToStart.pack(side = LEFT, expand = 1, fill = X)
+        play.pack(side = LEFT, expand = 1, fill = X)
+        stop.pack(side = LEFT, expand = 1, fill = X)
+        jumpToEnd.pack(side = LEFT, expand = 1, fill = X)
+        f.pack(expand = 1, fill = X)
+        # Add hook to update slider on changes in curr_t
+        def update(t,es=es):
+            es.set(t, fCommand = 0)
+        self.setTHooks.append(update)
+        # Clear out hook on destroy
+        def onDestroy(e, s=self, u=update):
+            if u in s.setTHooks:
+                s.setTHooks.remove(u)
+        tl.bind('<Destroy>', onDestroy)
+
+        
+        

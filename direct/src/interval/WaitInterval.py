@@ -4,17 +4,15 @@ from PandaModules import *
 from Interval import *
 
 class WaitInterval(Interval):
-
+    # Name counter
     waitNum = 1
-
-    # special methods
-    
+    # Class methods
     def __init__(self, duration, name=None):
         """__init__(duration, name)
         """
+        # Generate unique name if necessary
 	if (name == None):
-	    n = 'Wait-%d' % self.waitNum
-	    self.waitNum = self.waitNum + 1
-	else:
-	    n = name
-	Interval.__init__(self, n, duration)
+	    name = 'Wait-%d' % WaitInterval.waitNum
+	    WaitInterval.waitNum += 1
+        # Initialize superclass
+	Interval.__init__(self, name, duration)
