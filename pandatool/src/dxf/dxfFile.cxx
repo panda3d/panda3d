@@ -861,7 +861,7 @@ state_entity() {
     break;
 
   case 66:  // Vertices-follow.
-    _vertices_follow = string_to_int(_string, tail);
+    _vertices_follow = (string_to_int(_string, tail) != 0);
     break;
 
   case 70:  // Polyline flags.
