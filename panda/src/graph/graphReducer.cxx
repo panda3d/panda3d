@@ -377,6 +377,12 @@ collapse_siblings(Node *parent, NodeRelation *arc1, NodeRelation *arc2) {
 ////////////////////////////////////////////////////////////////////
 Node *GraphReducer::
 collapse_nodes(Node *node1, Node *node2, bool) {
+  if (!node1->safe_to_combine() || !node2->safe_to_combine()) {
+    // One or both nodes cannot be safely combined with another node;
+    // do nothing.
+    return NULL;
+  }
+
   // We get to choose whether to remove node1 or node2.
   if (node2->is_exact_type(Node::get_class_type()) ||
       node2->is_exact_type(NamedNode::get_class_type())) {

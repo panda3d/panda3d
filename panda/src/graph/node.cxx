@@ -160,6 +160,20 @@ safe_to_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Node::safe_to_combine
+//       Access: Public, Virtual
+//  Description: Returns true if it is generally safe to combine
+//               this particular kind of Node with other kinds of
+//               Nodes, adding children or whatever.  For instance, an
+//               LODNode should not be combined with any other node,
+//               because its set of children is meaningful.
+////////////////////////////////////////////////////////////////////
+bool Node::
+safe_to_combine() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Node::xform
 //       Access: Public, Virtual
 //  Description: Transforms the contents of this node by the indicated

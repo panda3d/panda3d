@@ -44,6 +44,7 @@ PUBLISHED:
   INLINE void operator = (const SwitchNode &copy);
 
 public:
+  virtual bool safe_to_combine() const;
   virtual void compute_switch(RenderTraverser *trav)=0;
 
   virtual bool is_child_visible(TypeHandle type, int index)=0;
