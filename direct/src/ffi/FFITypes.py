@@ -228,6 +228,18 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         """
         return self.foreignTypeName + '-extensions.py'
 
+    def getCModulesRecursively(self, parent):
+        # Now look at all the methods that we might inherit if we are at
+        # a multiple inheritance node and get their C modules
+        for parentType in parent.parentTypes:
+            for method in parentType.instanceMethods:
+                if (not (method.typeDescriptor.moduleName in self.CModules)):
+                    self.CModules.append(method.typeDescriptor.moduleName)
+            for method in parentType.upcastMethods:
+                if (not (method.typeDescriptor.moduleName in self.CModules)):
+                        self.CModules.append(method.typeDescriptor.moduleName)
+            self.getCModulesRecursively(parentType)
+
     def getCModules(self):
         """
         Return a list of all the C modules this class references
@@ -244,16 +256,8 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
                 if method:
                     if (not (method.typeDescriptor.moduleName in self.CModules)):
                         self.CModules.append(method.typeDescriptor.moduleName)
-                        # Now look at all the methods that we might inherit if we are at
-                        # a multiple inheritance node and get their C modules
-                        if (len(self.parentTypes) >= 2):
-                            for parentType in self.parentTypes:
-                                for method in parentType.instanceMethods:
-                                    if (not (method.typeDescriptor.moduleName in self.CModules)):
-                                        self.CModules.append(method.typeDescriptor.moduleName)
-                                for method in parentType.upcastMethods:
-                                    if (not (method.typeDescriptor.moduleName in self.CModules)):
-                                        self.CModules.append(method.typeDescriptor.moduleName)
+            self.getCModulesRecursively(self)
+
             return self.CModules
 
 

@@ -428,6 +428,7 @@ class MethodSpecification(FunctionSpecification):
         argTypes = self.typeDescriptor.argumentTypes
         thislessArgTypes = self.typeDescriptor.thislessArgTypes()
         self.outputTypeChecking(methodClass, thislessArgTypes, file, nesting+2)
+        indent(file, nesting+2, 'upcastSelf = self\n')
         for i in range(len(parentList)):
             # Only output the upcast call if that parent class defines it
             parentClass = parentList[i]
@@ -435,10 +436,10 @@ class MethodSpecification(FunctionSpecification):
             if (i != 0):
                 childClass = parentList[i-1]
                 if childClass.hasMethodNamed(methodName):
-                    indent(file, nesting+2, 'upcastSelf = self.' + methodName + '()\n')
+                    indent(file, nesting+2, 'upcastSelf = upcastSelf.' + methodName + '()\n')
             else:
                 if methodClass.hasMethodNamed(methodName):
-                    indent(file, nesting+2, 'upcastSelf = self.' + methodName + '()\n')
+                    indent(file, nesting+2, 'upcastSelf = upcastSelf.' + methodName + '()\n')
         indent(file, nesting+2, 'returnValue = ' + self.typeDescriptor.moduleName
                + '.' + self.typeDescriptor.wrapperName + '(upcastSelf.this')
         if (len(thislessArgTypes) > 0):
