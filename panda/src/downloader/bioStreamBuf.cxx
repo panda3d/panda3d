@@ -157,6 +157,15 @@ underflow() {
     if (read_count != (int)num_bytes) {
       // Oops, we didn't read what we thought we would.
       if (read_count <= 0) {
+        // Immediately save the os error in case we screw up and do
+        // something that will change its value before we can output
+        // it.
+#ifdef WIN32_VC
+        int os_error = WSAGetLastError();
+#else
+        int os_error = errno;
+#endif  // WIN32_VC
+
         _is_closed = !BIO_should_retry(*_source);
         if (_is_closed) {
           downloader_cat.info()
@@ -175,10 +184,10 @@ underflow() {
 
 #ifdef WIN32_VC
           downloader_cat.warning()
-            << "Windows error code: " << WSAGetLastError() << "\n";
+            << "Windows error code: " << os_error << "\n";
 #else
           downloader_cat.warning()
-            << "Unix error code: " << errno << "\n";
+            << "Unix error code: " << os_error << "\n";
 #endif  // WIN32_VC
         }
         gbump(num_bytes);
