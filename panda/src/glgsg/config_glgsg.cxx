@@ -68,7 +68,12 @@ bool gl_auto_normalize_lighting = config_glgsg.GetBool("auto-normalize-lighting"
 // Configure this true to indicate the current version of GL fully
 // supports textures with B, G, R ordering; false if it only supports
 // R, G, B.
+#ifdef GL_BGR
 bool gl_supports_bgr = config_glgsg.GetBool("gl-supports-bgr", true);
+#else
+// If it's not even defined, we can't use it.
+bool gl_supports_bgr = false;
+#endif  // GL_BGR
 
 GLDecalType gl_decal_type = GDT_offset;
 

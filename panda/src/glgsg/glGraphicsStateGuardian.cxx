@@ -2223,18 +2223,20 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   case GL_DEPTH_COMPONENT:
     glgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, ";
     break;
-  case GL_BGR:
-    glgsg_cat.debug(false) << "GL_BGR, ";
-    break;
   case GL_RGB:
     glgsg_cat.debug(false) << "GL_RGB, ";
-    break;
-  case GL_BGRA:
-    glgsg_cat.debug(false) << "GL_BGRA, ";
     break;
   case GL_RGBA:
     glgsg_cat.debug(false) << "GL_RGBA, ";
     break;
+#ifdef GL_BGR
+  case GL_BGR:
+    glgsg_cat.debug(false) << "GL_BGR, ";
+    break;
+  case GL_BGRA:
+    glgsg_cat.debug(false) << "GL_BGRA, ";
+    break;
+#endif  // GL_BGR
   default:
     glgsg_cat.debug(false) << "unknown, ";
     break;
@@ -2356,18 +2358,20 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
   case GL_DEPTH_COMPONENT:
     glgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, ";
     break;
-  case GL_BGR:
-    glgsg_cat.debug(false) << "GL_BGR, ";
-    break;
   case GL_RGB:
     glgsg_cat.debug(false) << "GL_RGB, ";
-    break;
-  case GL_BGRA:
-    glgsg_cat.debug(false) << "GL_BGRA, ";
     break;
   case GL_RGBA:
     glgsg_cat.debug(false) << "GL_RGBA, ";
     break;
+#ifdef GL_BGR
+  case GL_BGR:
+    glgsg_cat.debug(false) << "GL_BGR, ";
+    break;
+  case GL_BGRA:
+    glgsg_cat.debug(false) << "GL_BGRA, ";
+    break;
+#endif  // GL_BGR
   default:
     glgsg_cat.debug(false) << "unknown, ";
     break;
@@ -3796,12 +3800,16 @@ compute_gl_image_size(int xsize, int ysize, int external_format, int type) {
     num_components = 2;
     break;
 
+#ifdef GL_BGR
   case GL_BGR:
+#endif
   case GL_RGB:
     num_components = 3;
     break;
 
+#ifdef GL_BGR
   case GL_BGRA:
+#endif
   case GL_RGBA:
     num_components = 4;
     break;
@@ -4070,14 +4078,22 @@ get_external_image_format(PixelBuffer::Format format) {
   case PixelBuffer::F_rgb8:
   case PixelBuffer::F_rgb12:
   case PixelBuffer::F_rgb332:
+#ifdef GL_BGR
     return gl_supports_bgr ? GL_BGR : GL_RGB;
+#else
+    return GL_RGB;
+#endif  // GL_BGR
   case PixelBuffer::F_rgba:
   case PixelBuffer::F_rgbm:
   case PixelBuffer::F_rgba4:
   case PixelBuffer::F_rgba5:
   case PixelBuffer::F_rgba8:
   case PixelBuffer::F_rgba12:
+#ifdef GL_BGR
     return gl_supports_bgr ? GL_BGRA : GL_RGBA;
+#else
+    return GL_RGBA;
+#endif  // GL_BGR
   case PixelBuffer::F_luminance:
     return GL_LUMINANCE;
   case PixelBuffer::F_luminance_alphamask:
@@ -4087,7 +4103,7 @@ get_external_image_format(PixelBuffer::Format format) {
   glgsg_cat.error()
     << "Invalid PixelBuffer::Format value in get_external_image_format(): "
     << (int)format << "\n";
-  return GL_BGR;
+  return GL_RGB;
 }
 
 ////////////////////////////////////////////////////////////////////
