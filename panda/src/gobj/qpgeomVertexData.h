@@ -123,6 +123,13 @@ public:
                       qpGeomVertexDataType::NumericType &numeric_type, 
                       int &start, int &stride) const;
 
+  static INLINE PN_uint32 pack_8888(unsigned int a, unsigned int b,
+                                    unsigned int c, unsigned int d);
+  static INLINE unsigned int unpack_8888_a(PN_uint32 data);
+  static INLINE unsigned int unpack_8888_b(PN_uint32 data);
+  static INLINE unsigned int unpack_8888_c(PN_uint32 data);
+  static INLINE unsigned int unpack_8888_d(PN_uint32 data);
+
 private:
   static void bytewise_copy(unsigned char *to, int to_stride,
                             const unsigned char *from, int from_stride,

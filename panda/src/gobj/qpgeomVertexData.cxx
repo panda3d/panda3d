@@ -723,18 +723,13 @@ packed_argb_to_uint8_rgba(unsigned char *to, int to_stride,
       << ", " << (const void *)from << ", " << from_stride
       << ", " << num_records << ")\n";
   }
-  typedef union {
-    unsigned char _b[4];
-    PN_uint32 _i;
-  } packed_8888;
 
   while (num_records > 0) {
-    packed_8888 dword;
-    dword._i = *(const PN_uint32 *)from;
-    to[0] = dword._b[1];
-    to[1] = dword._b[2];
-    to[2] = dword._b[3];
-    to[3] = dword._b[0];
+    PN_uint32 dword = *(const PN_uint32 *)from;
+    to[0] = unpack_8888_b(dword);
+    to[1] = unpack_8888_c(dword);
+    to[2] = unpack_8888_d(dword);
+    to[3] = unpack_8888_a(dword);
 
     to += to_stride;
     from += from_stride;
@@ -758,18 +753,9 @@ uint8_rgba_to_packed_argb(unsigned char *to, int to_stride,
       << ", " << (const void *)from << ", " << from_stride
       << ", " << num_records << ")\n";
   }
-  typedef union {
-    unsigned char _b[4];
-    PN_uint32 _i;
-  } packed_8888;
 
   while (num_records > 0) {
-    packed_8888 dword;
-    dword._b[0] = from[3];
-    dword._b[1] = from[0];
-    dword._b[2] = from[1];
-    dword._b[3] = from[2];
-    *(PN_uint32 *)to = dword._i;
+    *(PN_uint32 *)to = pack_8888(from[3], from[0], from[1], from[2]);
 
     to += to_stride;
     from += from_stride;

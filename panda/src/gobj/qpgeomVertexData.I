@@ -161,6 +161,65 @@ get_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::pack_8888
+//       Access: Public, Static
+//  Description: Packs four values in a DirectX-style NT_packed_8888
+//               value.
+////////////////////////////////////////////////////////////////////
+INLINE PN_uint32 qpGeomVertexData::
+pack_8888(unsigned int a, unsigned int b,
+          unsigned int c, unsigned int d) {
+  return (((a & 0xff) << 24) |
+          ((b & 0xff) << 16) |
+          ((c & 0xff) << 8) |
+          (d & 0xff));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::unpack_8888_a
+//       Access: Public, Static
+//  Description: Returns the first packed value from a DirectX-style
+//               NT_packed_8888.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int qpGeomVertexData::
+unpack_8888_a(PN_uint32 data) {
+  return (data >> 24) & 0xff;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::unpack_8888_b
+//       Access: Public, Static
+//  Description: Returns the second packed value from a DirectX-style
+//               NT_packed_8888.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int qpGeomVertexData::
+unpack_8888_b(PN_uint32 data) {
+  return (data >> 16) & 0xff;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::unpack_8888_c
+//       Access: Public, Static
+//  Description: Returns the third packed value from a DirectX-style
+//               NT_packed_8888.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int qpGeomVertexData::
+unpack_8888_c(PN_uint32 data) {
+  return (data >> 8) & 0xff;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::unpack_8888_d
+//       Access: Public, Static
+//  Description: Returns the fourth packed value from a DirectX-style
+//               NT_packed_8888.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int qpGeomVertexData::
+unpack_8888_d(PN_uint32 data) {
+  return data & 0xff;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::CData::Constructor
 //       Access: Public
 //  Description:

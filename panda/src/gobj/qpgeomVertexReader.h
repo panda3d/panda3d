@@ -97,12 +97,6 @@ private:
 
   Reader *_reader;
 
-  // This union is handy for unpacking an NT_packed_8888 value.
-  typedef union {
-    unsigned char _b[4];
-    PN_uint32 _i;
-  } packed_8888;
-
   // This nested class provides the implementation for unpacking data
   // in a very general way, but also provides the hooks for
   // implementing the common, very direct code paths (for instance,

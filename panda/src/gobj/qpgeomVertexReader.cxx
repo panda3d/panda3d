@@ -200,21 +200,20 @@ get_data1f(const unsigned char *pointer) {
     return maybe_scale_color(*pointer);
 
   case qpGeomVertexDataType::NT_uint16:
-    return *(PN_uint16 *)pointer;
+    return *(const PN_uint16 *)pointer;
 
   case qpGeomVertexDataType::NT_packed_8888:
     {
-      packed_8888 dword;
-      dword._i = *(PN_uint32 *)pointer;
+      PN_uint32 dword = *(const PN_uint32 *)pointer;
       if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-        return maybe_scale_color(dword._b[1]);
+        return maybe_scale_color(qpGeomVertexData::unpack_8888_b(dword));
       } else {
-        return maybe_scale_color(dword._b[0]);
+        return maybe_scale_color(qpGeomVertexData::unpack_8888_a(dword));
       }
     }
 
   case qpGeomVertexDataType::NT_float32:
-    return *(PN_float32 *)pointer;
+    return *(const PN_float32 *)pointer;
   }
 
   return 0.0f;
@@ -239,26 +238,27 @@ get_data2f(const unsigned char *pointer) {
       
     case qpGeomVertexDataType::NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        const PN_uint16 *pi = (const PN_uint16 *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
       
     case qpGeomVertexDataType::NT_packed_8888:
       {
-        packed_8888 dword;
-        dword._i = *(PN_uint32 *)pointer;
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
         if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          maybe_scale_color(dword._b[1], dword._b[2]);
+          maybe_scale_color(qpGeomVertexData::unpack_8888_b(dword),
+                            qpGeomVertexData::unpack_8888_c(dword));
         } else {
-          maybe_scale_color(dword._b[0], dword._b[1]);
+          maybe_scale_color(qpGeomVertexData::unpack_8888_a(dword),
+                            qpGeomVertexData::unpack_8888_b(dword));
         }
       }
       return _v2;
       
     case qpGeomVertexDataType::NT_float32:
       {
-        PN_float32 *pi = (PN_float32 *)pointer;
+        const PN_float32 *pi = (const PN_float32 *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
@@ -295,26 +295,29 @@ get_data3f(const unsigned char *pointer) {
       
     case qpGeomVertexDataType::NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        const PN_uint16 *pi = (const PN_uint16 *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
       
     case qpGeomVertexDataType::NT_packed_8888:
       {
-        packed_8888 dword;
-        dword._i = *(PN_uint32 *)pointer;
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
         if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          maybe_scale_color(dword._b[1], dword._b[2], dword._b[3]);
+          maybe_scale_color(qpGeomVertexData::unpack_8888_b(dword),
+                            qpGeomVertexData::unpack_8888_c(dword),
+                            qpGeomVertexData::unpack_8888_d(dword));
         } else {
-          maybe_scale_color(dword._b[0], dword._b[1], dword._b[2]);
+          maybe_scale_color(qpGeomVertexData::unpack_8888_a(dword),
+                            qpGeomVertexData::unpack_8888_b(dword),
+                            qpGeomVertexData::unpack_8888_c(dword));
         }
       }
       return _v3;
       
     case qpGeomVertexDataType::NT_float32:
       {
-        PN_float32 *pi = (PN_float32 *)pointer;
+        const PN_float32 *pi = (const PN_float32 *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
@@ -358,26 +361,31 @@ get_data4f(const unsigned char *pointer) {
       
     case qpGeomVertexDataType::NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        const PN_uint16 *pi = (const PN_uint16 *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
       
     case qpGeomVertexDataType::NT_packed_8888:
       {
-        packed_8888 dword;
-        dword._i = *(PN_uint32 *)pointer;
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
         if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          maybe_scale_color(dword._b[1], dword._b[2], dword._b[3], dword._b[0]);
+          maybe_scale_color(qpGeomVertexData::unpack_8888_b(dword),
+                            qpGeomVertexData::unpack_8888_c(dword),
+                            qpGeomVertexData::unpack_8888_d(dword),
+                            qpGeomVertexData::unpack_8888_a(dword));
         } else {
-          maybe_scale_color(dword._b[0], dword._b[1], dword._b[2], dword._b[3]);
+          maybe_scale_color(qpGeomVertexData::unpack_8888_a(dword),
+                            qpGeomVertexData::unpack_8888_b(dword),
+                            qpGeomVertexData::unpack_8888_c(dword),
+                            qpGeomVertexData::unpack_8888_d(dword));
         }
       }
       return _v4;
       
     case qpGeomVertexDataType::NT_float32:
       {
-        PN_float32 *pi = (PN_float32 *)pointer;
+        const PN_float32 *pi = (const PN_float32 *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
@@ -399,18 +407,17 @@ get_data1i(const unsigned char *pointer) {
     return *pointer;
 
   case qpGeomVertexDataType::NT_uint16:
-    return *(PN_uint16 *)pointer;
+    return *(const PN_uint16 *)pointer;
 
   case qpGeomVertexDataType::NT_packed_8888:
     {
-      packed_8888 dword;
-      dword._i = *(PN_uint32 *)pointer;
-      return dword._b[0];
+      PN_uint32 dword = *(const PN_uint32 *)pointer;
+      return qpGeomVertexData::unpack_8888_a(dword);
     }
     break;
 
   case qpGeomVertexDataType::NT_float32:
-    return (int)*(PN_float32 *)pointer;
+    return (int)*(const PN_float32 *)pointer;
   }
 
   return 0;
@@ -497,26 +504,31 @@ get_data4f(const unsigned char *pointer) {
       
     case qpGeomVertexDataType::NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        const PN_uint16 *pi = (const PN_uint16 *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
       
     case qpGeomVertexDataType::NT_packed_8888:
       {
-        packed_8888 dword;
-        dword._i = *(PN_uint32 *)pointer;
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
         if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          maybe_scale_color(dword._b[1], dword._b[2], dword._b[3], dword._b[0]);
+          maybe_scale_color(qpGeomVertexData::unpack_8888_b(dword),
+                            qpGeomVertexData::unpack_8888_c(dword),
+                            qpGeomVertexData::unpack_8888_d(dword),
+                            qpGeomVertexData::unpack_8888_a(dword));
         } else {
-          maybe_scale_color(dword._b[0], dword._b[1], dword._b[2], dword._b[3]);
+          maybe_scale_color(qpGeomVertexData::unpack_8888_a(dword),
+                            qpGeomVertexData::unpack_8888_b(dword),
+                            qpGeomVertexData::unpack_8888_c(dword),
+                            qpGeomVertexData::unpack_8888_d(dword));
         }
       }
       return _v4;
       
     case qpGeomVertexDataType::NT_float32:
       {
-        PN_float32 *pi = (PN_float32 *)pointer;
+        const PN_float32 *pi = (const PN_float32 *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
@@ -560,26 +572,31 @@ get_data4f(const unsigned char *pointer) {
       
     case qpGeomVertexDataType::NT_uint16:
       {
-        PN_uint16 *pi = (PN_uint16 *)pointer;
+        const PN_uint16 *pi = (const PN_uint16 *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
       
     case qpGeomVertexDataType::NT_packed_8888:
       {
-        packed_8888 dword;
-        dword._i = *(PN_uint32 *)pointer;
+        PN_uint32 dword = *(const PN_uint32 *)pointer;
         if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          maybe_scale_color(dword._b[1], dword._b[2], dword._b[3], dword._b[0]);
+          maybe_scale_color(qpGeomVertexData::unpack_8888_b(dword),
+                            qpGeomVertexData::unpack_8888_c(dword),
+                            qpGeomVertexData::unpack_8888_d(dword),
+                            qpGeomVertexData::unpack_8888_a(dword));
         } else {
-          maybe_scale_color(dword._b[0], dword._b[1], dword._b[2], dword._b[3]);
+          maybe_scale_color(qpGeomVertexData::unpack_8888_a(dword),
+                            qpGeomVertexData::unpack_8888_b(dword),
+                            qpGeomVertexData::unpack_8888_c(dword),
+                            qpGeomVertexData::unpack_8888_d(dword));
         }
       }
       return _v4;
       
     case qpGeomVertexDataType::NT_float32:
       {
-        PN_float32 *pi = (PN_float32 *)pointer;
+        const PN_float32 *pi = (const PN_float32 *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
@@ -596,7 +613,7 @@ get_data4f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const LVecBase3f &qpGeomVertexReader::Reader_float32_3::
 get_data3f(const unsigned char *pointer) {
-  PN_float32 *pi = (PN_float32 *)pointer;
+  const PN_float32 *pi = (const PN_float32 *)pointer;
   _v3.set(pi[0], pi[1], pi[2]);
   return _v3;
 }
@@ -608,7 +625,7 @@ get_data3f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const LVecBase2f &qpGeomVertexReader::Reader_point_float32_2::
 get_data2f(const unsigned char *pointer) {
-  PN_float32 *pi = (PN_float32 *)pointer;
+  const PN_float32 *pi = (const PN_float32 *)pointer;
   _v2.set(pi[0], pi[1]);
   return _v2;
 }
@@ -620,7 +637,7 @@ get_data2f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const LVecBase3f &qpGeomVertexReader::Reader_point_float32_3::
 get_data3f(const unsigned char *pointer) {
-  PN_float32 *pi = (PN_float32 *)pointer;
+  const PN_float32 *pi = (const PN_float32 *)pointer;
   _v3.set(pi[0], pi[1], pi[2]);
   return _v3;
 }
@@ -632,7 +649,7 @@ get_data3f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const LVecBase4f &qpGeomVertexReader::Reader_point_float32_4::
 get_data4f(const unsigned char *pointer) {
-  PN_float32 *pi = (PN_float32 *)pointer;
+  const PN_float32 *pi = (const PN_float32 *)pointer;
   _v4.set(pi[0], pi[1], pi[2], pi[3]);
   return _v4;
 }
@@ -684,12 +701,11 @@ get_data4f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const LVecBase4f &qpGeomVertexReader::Reader_argb_packed_8888::
 get_data4f(const unsigned char *pointer) {
-  packed_8888 dword;
-  dword._i = *(PN_uint32 *)pointer;
-  _v4.set((float)dword._b[1] / 255.0f,
-          (float)dword._b[2] / 255.0f,
-          (float)dword._b[3] / 255.0f,
-          (float)dword._b[0] / 255.0f);
+  PN_uint32 dword = *(const PN_uint32 *)pointer;
+  _v4.set((float)qpGeomVertexData::unpack_8888_b(dword) / 255.0f,
+          (float)qpGeomVertexData::unpack_8888_c(dword) / 255.0f,
+          (float)qpGeomVertexData::unpack_8888_d(dword) / 255.0f,
+          (float)qpGeomVertexData::unpack_8888_a(dword) / 255.0f);
   return _v4;
 }
 
@@ -714,7 +730,7 @@ get_data4f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const LVecBase4f &qpGeomVertexReader::Reader_rgba_float32_4::
 get_data4f(const unsigned char *pointer) {
-  PN_float32 *pi = (PN_float32 *)pointer;
+  const PN_float32 *pi = (const PN_float32 *)pointer;
   _v4.set(pi[0], pi[1], pi[2], pi[3]);
   return _v4;
 }
@@ -736,5 +752,5 @@ get_data4f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 int qpGeomVertexReader::Reader_uint16_1::
 get_data1i(const unsigned char *pointer) {
-  return *(PN_uint16 *)pointer;
+  return *(const PN_uint16 *)pointer;
 }

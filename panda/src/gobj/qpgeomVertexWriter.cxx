@@ -186,14 +186,12 @@ set_data1f(unsigned char *pointer, float data) {
       
     case qpGeomVertexDataType::NT_packed_8888:
       {
-        packed_8888 dword;
-        dword._i = 0;
+        maybe_scale_color(data);
         if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          dword._b[1] = maybe_scale_color(data);
+          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(0, _a, 0, 0);
         } else {
-          dword._b[0] = maybe_scale_color(data);
+          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_a, 0, 0, 0);
         }
-        *(PN_uint32 *)pointer = dword._i;
       }
       break;
       
@@ -246,17 +244,12 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
       
     case qpGeomVertexDataType::NT_packed_8888:
       {
-        packed_8888 dword;
         maybe_scale_color(data);
-        dword._i = 0;
         if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          dword._b[1] = _a;
-          dword._b[2] = _b;
+          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(0, _a, _b, 0);
         } else {
-          dword._b[0] = _a;
-          dword._b[1] = _b;
+          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_a, _b, 0, 0);
         }
-        *(PN_uint32 *)pointer = dword._i;
       }
       break;
       
@@ -316,20 +309,12 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
       
     case qpGeomVertexDataType::NT_packed_8888:
       {
-        packed_8888 dword;
         maybe_scale_color(data);
         if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          dword._b[0] = 0;
-          dword._b[1] = _a;
-          dword._b[2] = _b;
-          dword._b[3] = _c;
+          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(0, _a, _b, _c);
         } else {
-          dword._b[0] = _a;
-          dword._b[1] = _b;
-          dword._b[2] = _c;
-          dword._b[3] = 0;
+          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_a, _b, _c, 0);
         }
-        *(PN_uint32 *)pointer = dword._i;
       }
       break;
       
@@ -392,20 +377,12 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       
     case qpGeomVertexDataType::NT_packed_8888:
       {
-        packed_8888 dword;
         maybe_scale_color(data);
         if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          dword._b[0] = _d;
-          dword._b[1] = _a;
-          dword._b[2] = _b;
-          dword._b[3] = _c;
+          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_d, _a, _b, _c);
         } else {
-          dword._b[0] = _a;
-          dword._b[1] = _b;
-          dword._b[2] = _c;
-          dword._b[3] = _d;
+          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_a, _b, _c, _d);
         }
-        *(PN_uint32 *)pointer = dword._i;
       }
       break;
       
@@ -441,14 +418,11 @@ set_data1i(unsigned char *pointer, int data) {
 
   case qpGeomVertexDataType::NT_packed_8888:
     {
-      packed_8888 dword;
-      dword._i = 0;
       if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-        dword._b[1] = data;
+        *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(0, data, 0, 0);
       } else {
-        dword._b[0] = data;
+        *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_a, data, 0, 0);
       }
-      *(PN_uint32 *)pointer = dword._i;
     }
     break;
 
@@ -542,20 +516,12 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       
     case qpGeomVertexDataType::NT_packed_8888:
       {
-        packed_8888 dword;
         maybe_scale_color(data);
         if (_data_type->get_contents() == qpGeomVertexDataType::C_argb) {
-          dword._b[0] = _d;
-          dword._b[1] = _a;
-          dword._b[2] = _b;
-          dword._b[3] = _c;
+          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_d, _a, _b, _c);
         } else {
-          dword._b[0] = _a;
-          dword._b[1] = _b;
-          dword._b[2] = _c;
-          dword._b[3] = _d;
+          *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888(_a, _b, _c, _d);
         }
-        *(PN_uint32 *)pointer = dword._i;
       }
       break;
       
@@ -674,13 +640,11 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer_argb_packed_8888::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
-  packed_8888 dword;
-  dword._b[0] = (unsigned int)(data[3] * 255.0f);
-  dword._b[1] = (unsigned int)(data[0] * 255.0f);
-  dword._b[2] = (unsigned int)(data[1] * 255.0f);
-  dword._b[3] = (unsigned int)(data[2] * 255.0f);
-
-  *(PN_uint32 *)pointer = dword._i;
+  *(PN_uint32 *)pointer = qpGeomVertexData::pack_8888
+    ((unsigned int)(data[3] * 255.0f),
+     (unsigned int)(data[0] * 255.0f),
+     (unsigned int)(data[1] * 255.0f),
+     (unsigned int)(data[2] * 255.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
