@@ -687,6 +687,37 @@ tokenize_numeric_pair(const string &str, double &a, double &b) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPScope::tokenize_ints
+//       Access: Public
+//  Description: This function is used by the arithmetic functions +,
+//               -, etc.  It separates the string into parameters
+//               based on the comma, interprets each parameter as an
+//               integer, and fills up the indicated vector.
+////////////////////////////////////////////////////////////////////
+bool PPScope::
+tokenize_ints(const string &str, vector<int> &tokens) {
+  vector<string> words;
+  tokenize_params(str, words, true);
+
+  vector<string>::const_iterator wi;
+  for (wi = words.begin(); wi != words.end(); ++wi) {
+    const char *param = (*wi).c_str();
+    char *n;
+    int result = strtol(param, &n, 0);
+    if (*n != '\0') {
+      // strtol failed--not an integer.
+      cerr << "Warning: " << param << " is not an integer.\n";
+      if (n == param) {
+        result = 0;
+      }
+    }
+
+    tokens.push_back(result);
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPScope::scan_to_whitespace
 //       Access: Public
 //  Description: Scans to the end of the first whitespace-delimited
@@ -2574,14 +2605,18 @@ expand_gen(const string &params) {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_plus(const string &params) {
-  double a, b;
-  if (!tokenize_numeric_pair(params, a, b)) {
+  vector<int> tokens;
+  if (!tokenize_ints(params, tokens)) {
     return string();
   }
 
-  int ai = (int)a;
-  int bi = (int)b;
-  return format_int(ai + bi);
+  int result = 0;
+  vector<int>::const_iterator ti;
+  for (ti = tokens.begin(); ti != tokens.end(); ++ti) {
+    result += (*ti);
+  }
+
+  return format_int(result);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2592,41 +2627,25 @@ expand_plus(const string &params) {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_minus(const string &params) {
-  // We cannot use tokenize_numeric_pair(), because we also support
-  // unary minus.
-
-  vector<string> words;
-  tokenize_params(params, words, true);
-  double results[2];
-  int num_words = words.size();
-
-  if (num_words == 1) {
-    // Simulate unary minus by setting the first operand to 0.
-    results[0] = 0.0;
-    
-  } else if (num_words != 2) {
-    cerr << num_words << " parameters supplied when two were expected:\n"
-         << params << "\n";
+  vector<int> tokens;
+  if (!tokenize_ints(params, tokens)) {
     return string();
   }
 
-  for (int i = 0; i < num_words; i++) {
-    const char *param = words[i].c_str();
-    char *n;
-    int j = 2 - num_words + i;
-    results[j] = strtod(param, &n);
-    if (*n != '\0') {
-      // strtod failed--not a numeric representation.
-      cerr << "Warning: " << words[i] << " is not a number.\n";
-      if (n == param) {
-        results[j] = 0.0;
-      }
+  int result = 0;
+
+  if (tokens.size() == 1) {
+    // A special case: unary minus.
+    result = -tokens[0];
+
+  } else if (tokens.size() > 1) {
+    result = tokens[0];
+    for (int i = 1; i < (int)tokens.size(); i++) {
+      result -= tokens[i];
     }
   }
 
-  int ai = (int)results[0];
-  int bi = (int)results[1];
-  return format_int(ai - bi);
+  return format_int(result);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2637,14 +2656,18 @@ expand_minus(const string &params) {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_times(const string &params) {
-  double a, b;
-  if (!tokenize_numeric_pair(params, a, b)) {
+  vector<int> tokens;
+  if (!tokenize_ints(params, tokens)) {
     return string();
   }
 
-  int ai = (int)a;
-  int bi = (int)b;
-  return format_int(ai * bi);
+  int result = 1;
+  vector<int>::const_iterator ti;
+  for (ti = tokens.begin(); ti != tokens.end(); ++ti) {
+    result *= (*ti);
+  }
+
+  return format_int(result);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2655,14 +2678,18 @@ expand_times(const string &params) {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_divide(const string &params) {
-  double a, b;
-  if (!tokenize_numeric_pair(params, a, b)) {
+  vector<int> tokens;
+  if (!tokenize_ints(params, tokens)) {
     return string();
   }
 
-  int ai = (int)a;
-  int bi = (int)b;
-  return format_int(ai / bi);
+  if (tokens.size() != 2) {
+    cerr << tokens.size() << " parameters supplied when two were expected:\n"
+         << params << "\n";
+    return string();
+  }
+
+  return format_int(tokens[0] / tokens[1]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2673,14 +2700,18 @@ expand_divide(const string &params) {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_modulo(const string &params) {
-  double a, b;
-  if (!tokenize_numeric_pair(params, a, b)) {
+  vector<int> tokens;
+  if (!tokenize_ints(params, tokens)) {
     return string();
   }
 
-  int ai = (int)a;
-  int bi = (int)b;
-  return format_int(ai % bi);
+  if (tokens.size() != 2) {
+    cerr << tokens.size() << " parameters supplied when two were expected:\n"
+         << params << "\n";
+    return string();
+  }
+
+  return format_int(tokens[0] % tokens[1]);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -61,6 +61,7 @@ public:
   void tokenize_params(const string &str, vector<string> &tokens,
                        bool expand);
   bool tokenize_numeric_pair(const string &str, double &a, double &b);
+  bool tokenize_ints(const string &str, vector<int> &tokens);
   size_t scan_to_whitespace(const string &str, size_t start = 0);
   static string format_int(int num);
 
