@@ -53,6 +53,7 @@ public:
   virtual LPoint3f get_collision_origin() const;
 
   virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
   INLINE CollisionPolygon(void);

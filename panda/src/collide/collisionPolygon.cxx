@@ -193,7 +193,40 @@ get_collision_origin() const {
 ////////////////////////////////////////////////////////////////////
 void CollisionPolygon::
 output(ostream &out) const {
-  out << "cpolygon";
+  out << "cpolygon, (" << get_plane()
+      << "), ";
+  switch (_axis) {
+  case AT_x:
+    out << "x-aligned, ";
+    break;
+
+  case AT_y:
+    out << "y-aligned, ";
+    break;
+
+  case AT_z:
+    out << "z-aligned, ";
+    break;
+  }
+
+  out << _points.size() << " vertices";
+  if (_reversed){
+    out << " (reversed)";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::write
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CollisionPolygon::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << (*this) << "\n";
+  Points::const_iterator pi;
+  for (pi = _points.begin(); pi != _points.end(); ++pi) {
+    indent(out, indent_level + 2) << (*pi) << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -607,14 +640,16 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
   // Tell the base CollisionPlane class what its plane will be.  We
   // can determine this from the first three 3-d points (unless these
   // first three points happen to be collinear).
-  bool got_normal = false;
-  for (int i = 2; i < num_points && !got_normal; i++) {
-    Planef plane(begin[0], begin[1], begin[2]);
-    got_normal = (plane.get_normal().length_squared() > 0.1);
-    if (got_normal) {
+  int first_p = 2;
+  while (first_p < num_points) {
+    Planef plane(begin[0], begin[1], begin[first_p]);
+    if (plane.get_normal().length_squared() > 0.1) {
       set_plane(plane);
+      break;
     }
+    first_p++;
   }
+  nassertv(first_p < num_points);
 
   LVector3f normal = get_normal();
 
@@ -720,7 +755,7 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
   // One final complication: In projecting the polygon onto the plane,
   // we might have lost its counterclockwise-vertex orientation.  If
   // this is the case, we must reverse the order of the vertices.
-  _reversed = is_right(_points[2] - _points[0], _points[1] - _points[0]);
+  _reversed = is_right(_points[first_p] - _points[0], _points[1] - _points[0]);
   if (_reversed) {
     reverse(_points.begin(), _points.end());
   }
