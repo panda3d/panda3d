@@ -140,13 +140,12 @@ static bool bTexStatsRetrievalImpossible=false;
 //#define Colorf_to_D3DCOLOR(out_color) (D3DRGBA((out_color)[0], (out_color)[1], (out_color)[2], (out_color)[3]))
 
 INLINE DWORD
-//Colorf_to_D3DCOLOR(float *alpha,float *red,float *grn,float *blue) {
 Colorf_to_D3DCOLOR(Colorf &cColorf) {
 // MS VC defines _M_IX86 for x86.  gcc should define _X86_
-//#if defined(_M_IX86) || defined(_X86_)
-#if 1
+#if defined(_M_IX86) || defined(_X86_)
     DWORD d3dcolor,tempcolorval=255;
 //    DWORD *Colorf_addr=(DWORD*)&cColorf;
+
     // note the default FPU rounding mode will give 255*0.5f=0x80, not 0x7F as VC would force it to by resetting rounding mode
     // dont think this makes much difference
 
@@ -191,7 +190,6 @@ Colorf_to_D3DCOLOR(Colorf &cColorf) {
     }
 
 //   dxgsg_cat.debug() << (void*)d3dcolor << endl;
-
    return d3dcolor;
 #else //!_X86_
    return D3DRGBA(cColorf[0], cColorf[1], cColorf[2], cColorf[3]);
