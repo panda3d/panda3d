@@ -80,7 +80,7 @@ private:
   };
 
   void init(PT(Buffer) buffer);
-  bool download(const string &file_name, Filename file_dest, 
+  int download(const string &file_name, Filename file_dest, 
 			const string &event_name, int first_byte,
 			int last_byte, int total_bytes, bool partial_content,
 			uint id);

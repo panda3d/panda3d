@@ -61,7 +61,7 @@ create_thread(void) {
   if (_threaded == false && _threads_enabled == true) {
     downloader_cat.debug() 
       << "AsyncUtility::create_thread()" << endl;
-    _thread = thread::create(&st_callback, this, thread::PRIORITY_HIGH);
+    _thread = thread::create(&st_callback, this, thread::PRIORITY_NORMAL);
     _threaded = true;
   }
 #endif

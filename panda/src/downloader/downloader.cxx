@@ -42,6 +42,12 @@ enum receive_status {
   RS_eof
 };
 
+enum download_status {
+  D_error = -2,
+  D_timeout = -1,
+  D_success = 1
+};
+
 ////////////////////////////////////////////////////////////////////
 //       Class : DownloaderToken
 // Description : Holds a request for the downloader.
@@ -334,9 +340,10 @@ process_request() {
   // If there is actually a request token - process it
   while (!_token_board->_waiting.is_empty()) {
     PT(DownloaderToken) tok = _token_board->_waiting.extract();
-    if (download(tok->_file_name, tok->_file_dest, tok->_event_name,
+    int ret = download(tok->_file_name, tok->_file_dest, tok->_event_name,
 		 tok->_first_byte, tok->_last_byte, tok->_total_bytes,
-		 tok->_partial_content, tok->_id)) {
+		 tok->_partial_content, tok->_id);
+    if (ret == D_success) {
       _token_board->_done.insert(tok);
 
       // Throw a "done" event now.
@@ -355,7 +362,7 @@ process_request() {
       PT_Event failure = new Event(tok->_event_name);
       failure->add_parameter(EventParameter((int)tok->_id));
       failure->add_parameter(EventParameter(0));
-      failure->add_parameter(EventParameter(-1));
+      failure->add_parameter(EventParameter(ret));
       throw_event(failure);
     }
   }
@@ -518,7 +525,7 @@ attempt_read(int length, DownloadStatus &status, int &bytes_read) {
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool Downloader::
+int Downloader::
 download(const string &file_name, Filename file_dest, 
 		const string &event_name, int first_byte, int last_byte,
 		int total_bytes, bool partial_content, uint id) {
@@ -527,12 +534,12 @@ download(const string &file_name, Filename file_dest,
     if (downloader_cat.is_debug())
       downloader_cat.debug()
 	<< "Downloader::download() - downloading is disabled" << endl;
-    return false;
+    return D_error;
   }
 
   // Make sure we are still connected to the server
   if (connect_to_server() == false)
-    return false;
+    return D_error;
 
   // Attempt to open the destination file
   file_dest.set_binary();
@@ -545,7 +552,7 @@ download(const string &file_name, Filename file_dest,
     downloader_cat.error()
       << "Downloader::download() - Error opening file: " << file_dest
       << " for writing" << endl;
-    return false;
+    return D_error;
   }
 
   // Send an HTTP request for the file to the server
@@ -585,17 +592,12 @@ download(const string &file_name, Filename file_dest,
       downloader_cat.error()
         << "Downloader::download() - send timed out after: " 
         << downloader_timeout_retries << " retries" << endl;
-      PT_Event timeout_event = new Event(event_name);
-      timeout_event->add_parameter(EventParameter((int)id));
-      timeout_event->add_parameter(EventParameter(0));
-      timeout_event->add_parameter(EventParameter(-1));
-      throw_event(timeout_event);
-      return false;
+      return D_timeout;
     }
   }
 
   if (send_ret == SS_error)
-    return false;
+    return D_error;
 
   // Create a download status to maintain download progress information
   DownloadStatus status(_buffer->_buffer, event_name, first_byte, last_byte,
@@ -628,7 +630,7 @@ download(const string &file_name, Filename file_dest,
         downloader_cat.error()
           << "Downloader::download() - Error reading from socket: "
     	  << strerror(errno) << endl;
-	return false;
+	return D_error;
 
       case RS_timeout: 
 
@@ -642,17 +644,10 @@ download(const string &file_name, Filename file_dest,
 	      downloader_cat.error()
 	        << "Downloader::download() - write to disk failed after "
 	        << "timeout!" << endl;
-	      return false;
+	      return D_error;
 	    }
 	  }
-
-	  // Throw a timeout event
-          PT_Event timeout_event = new Event(status._event_name);
-          timeout_event->add_parameter(EventParameter((int)status._id));
-          timeout_event->add_parameter(EventParameter(0));
-	  timeout_event->add_parameter(EventParameter(-1));
-          throw_event(timeout_event);
-	  return false;
+	  return D_timeout;
  	}
 
       case RS_success:
@@ -680,7 +675,9 @@ download(const string &file_name, Filename file_dest,
 	    // The "Connection: close" line tells server to close connection
 	    // when the download is complete
 	    _connected = false;
-	    return ret;
+	    if (ret == false)
+	      return D_error;
+	    return D_success;
 	  } else {
 	    if (downloader_cat.is_debug())
 	      downloader_cat.debug()
@@ -694,7 +691,7 @@ download(const string &file_name, Filename file_dest,
 	downloader_cat.error()
 	  << "Downloader::download() - Unknown return value from "
 	  << "attempt_read() : " << ret << endl;
-	return false;
+	return D_error;
 
     } // switch(ret)
 
@@ -706,7 +703,7 @@ download(const string &file_name, Filename file_dest,
   downloader_cat.error()
     << "Downloader::download() - Dropped out of for loop without returning!"
     << endl;
-  return false;
+  return D_error;
 }
 
 ////////////////////////////////////////////////////////////////////
