@@ -32,11 +32,13 @@
 #include "typedObject.h"
 
 class qpNodePathCollection;
+class TextureCollection;
 class qpFindApproxLevel;
 class qpFindApproxPath;
 class Texture;
 class Material;
 class qpFog;
+class GlobPattern;
 
 //
 // A NodePath is the fundamental unit of high-level interaction with
@@ -140,6 +142,9 @@ PUBLISHED:
     ET_not_found,  // returned from a failed find() or similar function.
     ET_removed,    // remove_node() was previously called on this qpNodePath.
     ET_fail,       // general failure return from some function.
+
+    // Also see qpNodePathComponent::_next_key, which initializes
+    // itself to the last enumerated type here plus one.
   };
 
   INLINE qpNodePath();
@@ -153,6 +158,9 @@ PUBLISHED:
   INLINE static qpNodePath removed();
   INLINE static qpNodePath fail();
 
+  INLINE static void set_max_search_depth(int max_search_depth);
+  INLINE static int get_max_search_depth();
+
   // Methods to query a qpNodePath's contents.
   INLINE bool is_empty() const;
   INLINE bool is_singleton() const;
@@ -163,6 +171,8 @@ PUBLISHED:
 
   PandaNode *get_top_node() const;
   INLINE PandaNode *node() const;
+
+  INLINE int get_key() const;
 
   // Methods that return collections of NodePaths derived from or
   // related to this one.
@@ -194,7 +204,7 @@ PUBLISHED:
   // Handy ways to look at what's there, and other miscellaneous
   // operations.
 
-  INLINE void output(ostream &out) const;
+  void output(ostream &out) const;
 
   INLINE void ls() const;
   INLINE void ls(ostream &out, int indent_level = 0) const;
@@ -391,6 +401,10 @@ PUBLISHED:
   bool has_texture_off() const;
   Texture *get_texture() const;
 
+  Texture *find_texture(const string &name) const;
+  TextureCollection find_all_textures() const;
+  TextureCollection find_all_textures(const string &name) const;
+
   void set_material(Material *tex, int priority = 0);
   void set_material_off(int priority = 0);
   void clear_material();
@@ -493,6 +507,12 @@ private:
                            LPoint3f &min_point, LPoint3f &max_point,
                            bool &found_any, const TransformState *transform);
 
+  typedef pset<Texture *> Textures;
+  Texture *r_find_texture(PandaNode *node, const RenderState *state,
+                          const GlobPattern &glob) const;
+  void r_find_all_textures(PandaNode *node, const RenderState *state,
+                           Textures &textures) const;
+
   PT(qpNodePathComponent) _head;
   ErrorType _error_type;
   static int _max_search_depth;
@@ -507,6 +527,9 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class qpNodePathCollection;
+  friend WorkingNodePath;
 };
 
 INLINE ostream &operator << (ostream &out, const qpNodePath &node_path);

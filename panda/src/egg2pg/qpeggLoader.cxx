@@ -467,11 +467,11 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
   }
 
   if (egg_keep_texture_pathnames) {
-    tex->set_name(egg_tex->get_filename());
+    tex->set_filename(egg_tex->get_filename());
     if (egg_tex->has_alpha_file()) {
-      tex->set_alpha_name(egg_tex->get_alpha_file());
+      tex->set_alpha_filename(egg_tex->get_alpha_file());
     } else {
-      tex->clear_alpha_name();
+      tex->clear_alpha_filename();
     }
   }
 
@@ -492,8 +492,6 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
 ////////////////////////////////////////////////////////////////////
 void qpEggLoader::
 apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
-  tex->set_name(egg_tex->get_filename().get_fullpath());
-
   switch (egg_tex->determine_wrap_u()) {
   case EggTexture::WM_repeat:
     tex->set_wrapu(Texture::WM_repeat);

@@ -19,11 +19,12 @@
 #ifndef COLLISIONSEGMENT_H
 #define COLLISIONSEGMENT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "collisionSolid.h"
 
 class LensNode;
+class qpLensNode;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CollisionSegment
@@ -52,6 +53,11 @@ public:
                     const CollisionEntry &entry,
                     const CollisionSolid *into) const;
 
+  virtual int
+  test_intersection(qpCollisionHandler *record,
+                    const qpCollisionEntry &entry,
+                    const CollisionSolid *into) const;
+
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
 
@@ -68,6 +74,9 @@ PUBLISHED:
 
   bool set_from_lens(LensNode *camera, const LPoint2f &point);
   INLINE bool set_from_lens(LensNode *camera, float px, float py);
+
+  bool set_from_lens(qpLensNode *camera, const LPoint2f &point);
+  INLINE bool set_from_lens(qpLensNode *camera, float px, float py);
 
 protected:
   virtual BoundingVolume *recompute_bound();

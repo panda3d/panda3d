@@ -153,6 +153,45 @@ fail() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::set_max_search_depth
+//       Access: Published, Static
+//  Description: Certain operations, such as extend_down_to() or
+//               find_all_matches(), require a traversal of the scene
+//               graph to search for the target node or nodes.  This
+//               traversal does not attempt to detect cycles, so an
+//               arbitrary cap is set on the depth of the traversal as
+//               a poor man's cycle detection, in the event that a
+//               cycle has inadvertently been introduced into the
+//               scene graph.
+//
+//               There may be other reasons you'd want to truncate a
+//               search before the bottom of the scene graph has been
+//               reached.  In any event, this function sets the limit
+//               on the number of levels that a traversal will
+//               continue, and hence the maximum length of a path that
+//               may be returned by a traversal.
+//
+//               This is a static method, and so changing this
+//               parameter affects all of the NodePaths in the
+//               universe.
+////////////////////////////////////////////////////////////////////
+INLINE void qpNodePath::
+set_max_search_depth(int max_search_depth) {
+  _max_search_depth = max_search_depth;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::get_max_search_depth
+//       Access: Published, Static
+//  Description: Returns the current setting of the search depth
+//               limit.  See set_max_search_depth.
+////////////////////////////////////////////////////////////////////
+INLINE int qpNodePath::
+get_max_search_depth() {
+  return _max_search_depth;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::is_empty
 //       Access: Published
 //  Description: Returns true if the qpNodePath contains no nodes.
@@ -201,13 +240,38 @@ node() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::get_key
+//       Access: Published
+//  Description: Returns an integer that is guaranteed to be the same
+//               for all NodePaths that represent the same node
+//               instance, and different for all NodePaths that
+//               represent a different node instance.  
+//
+//               The same key will be returned for a particular
+//               instance as long as at least one NodePath exists that
+//               represents that instance; if all NodePaths for a
+//               particular instance destruct and a new one is later
+//               created, it may have a different index.  However, a
+//               given key will never be reused for a different
+//               instance (unless the app has been running long enough
+//               that we overflow the integer key value).
+////////////////////////////////////////////////////////////////////
+INLINE int qpNodePath::
+get_key() const {
+  if (is_empty()) {
+    return 0;
+  }
+  return _head->get_key();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::get_num_children
 //       Access: Published
 //  Description: Returns the number of children of the referenced node.
 ////////////////////////////////////////////////////////////////////
 INLINE int qpNodePath::
 get_num_children() const {
-  nassertr(!is_empty(), 0);
+  nassertr_always(!is_empty(), 0);
   return _head->get_node()->get_num_children();
 }
 
@@ -260,25 +324,9 @@ get_parent() const {
 INLINE qpNodePath qpNodePath::
 attach_new_node(const string &name, int sort) const {
   nassertr(verify_complete(), qpNodePath::fail());
-  nassertr(!is_empty(), *this);
+  nassertr_always(!is_empty(), *this);
 
   return attach_new_node(new PandaNode(name), sort);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::output
-//       Access: Published
-//  Description: Writes a sensible description of the qpNodePath to the
-//               indicated output stream.
-////////////////////////////////////////////////////////////////////
-INLINE void qpNodePath::
-output(ostream &out) const {
-  uncollapse_head();
-  if (_head == (qpNodePathComponent *)NULL) {
-    out << "(empty)";
-  } else {
-    r_output(out, _head);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -334,7 +382,7 @@ ls_transforms() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(RenderState) qpNodePath::
 get_state() const {
-  nassertr(!is_empty(), RenderState::make_empty());
+  nassertr_always(!is_empty(), RenderState::make_empty());
   return node()->get_state();
 }
 
@@ -345,7 +393,7 @@ get_state() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePath::
 set_state(const RenderState *state) const {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->set_state(state);
 }
 
@@ -367,7 +415,7 @@ get_net_state() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(TransformState) qpNodePath::
 get_transform() const {
-  nassertr(!is_empty(), TransformState::make_identity());
+  nassertr_always(!is_empty(), TransformState::make_identity());
   return node()->get_transform();
 }
 
@@ -378,7 +426,7 @@ get_transform() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePath::
 set_transform(const TransformState *transform) const {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->set_transform(transform);
 }
 
@@ -519,7 +567,7 @@ set_pos_hpr_scale(float x, float y, float z, float h, float p, float r,
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePath::
 clear_mat() {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->clear_transform();
 }
 
@@ -531,7 +579,7 @@ clear_mat() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpNodePath::
 has_mat() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   return !node()->get_transform()->is_identity();
 }
 
@@ -544,7 +592,7 @@ has_mat() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4f &qpNodePath::
 get_mat() const {
-  nassertr(!is_empty(), LMatrix4f::ident_mat());
+  nassertr_always(!is_empty(), LMatrix4f::ident_mat());
 
   return node()->get_transform()->get_mat();
 }
@@ -882,7 +930,7 @@ get_distance(const qpNodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePath::
 adjust_all_priorities(int adjustment) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   r_adjust_all_priorities(node(), adjustment);
 }
 
@@ -895,7 +943,7 @@ adjust_all_priorities(int adjustment) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePath::
 show() {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->set_draw_mask(DrawMask::all_on());
 }
 
@@ -909,7 +957,7 @@ show() {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePath::
 show(DrawMask camera_mask) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->set_draw_mask(node()->get_draw_mask() | camera_mask);
 }
 
@@ -924,7 +972,7 @@ show(DrawMask camera_mask) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePath::
 hide() {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->set_draw_mask(DrawMask::all_off());
 }
 
@@ -938,7 +986,7 @@ hide() {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePath::
 hide(DrawMask camera_mask) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->set_draw_mask(node()->get_draw_mask() & ~camera_mask);
 }
 

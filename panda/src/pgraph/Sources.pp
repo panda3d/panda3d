@@ -56,8 +56,10 @@
     texMatrixAttrib.I texMatrixAttrib.h \
     textureApplyAttrib.I textureApplyAttrib.h \
     textureAttrib.I textureAttrib.h \
+    textureCollection.I textureCollection.h \
     transformState.I transformState.h \
-    transparencyAttrib.I transparencyAttrib.h
+    transparencyAttrib.I transparencyAttrib.h \
+    workingNodePath.I workingNodePath.h
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
   #define INCLUDED_SOURCES \
@@ -111,8 +113,10 @@
     texMatrixAttrib.cxx \
     textureApplyAttrib.cxx \
     textureAttrib.cxx \
+    textureCollection.cxx \
     transformState.cxx \
-    transparencyAttrib.cxx
+    transparencyAttrib.cxx \
+    workingNodePath.cxx
 
   #if $[DONT_COMBINE_PGRAPH]    
     #define SOURCES $[SOURCES] $[INCLUDED_SOURCES]
@@ -168,8 +172,10 @@
     texMatrixAttrib.I texMatrixAttrib.h \
     textureApplyAttrib.I textureApplyAttrib.h \
     textureAttrib.I textureAttrib.h \
+    textureCollection.I textureCollection.h \
     transformState.I transformState.h \
-    transparencyAttrib.I transparencyAttrib.h
+    transparencyAttrib.I transparencyAttrib.h \
+    workingNodePath.I workingNodePath.h
 
 // No need to install these.
 //    qpfindApproxLevel.I qpfindApproxLevel.h \

@@ -19,22 +19,25 @@
 #ifndef COLLISIONSOLID_H
 #define COLLISIONSOLID_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <typedWritableReferenceCount.h>
-#include <boundedObject.h>
-#include <luse.h>
-#include <nodeRelation.h>
-#include <pointerTo.h>
-#include <node.h>
-#include <vector_PT_NodeRelation.h>
+#include "typedWritableReferenceCount.h"
+#include "boundedObject.h"
+#include "luse.h"
+#include "nodeRelation.h"
+#include "pointerTo.h"
+#include "node.h"
+#include "vector_PT_NodeRelation.h"
 
 class CollisionHandler;
+class qpCollisionHandler;
 class CollisionEntry;
+class qpCollisionEntry;
 class CollisionSphere;
 class Node;
 class GeomNode;
 class CollisionNode;
+class qpCollisionNode;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : CollisionSolid
@@ -68,6 +71,10 @@ public:
   test_intersection(CollisionHandler *record,
                     const CollisionEntry &entry,
                     const CollisionSolid *into) const=0;
+  virtual int
+  test_intersection(qpCollisionHandler *record,
+                    const qpCollisionEntry &entry,
+                    const CollisionSolid *into) const=0;
 
   virtual void xform(const LMatrix4f &mat)=0;
 
@@ -87,6 +94,15 @@ protected:
   virtual int
   test_intersection_from_segment(CollisionHandler *record,
                                  const CollisionEntry &entry) const;
+  virtual int
+  test_intersection_from_sphere(qpCollisionHandler *record,
+                                const qpCollisionEntry &entry) const;
+  virtual int
+  test_intersection_from_ray(qpCollisionHandler *record,
+                             const qpCollisionEntry &entry) const;
+  virtual int
+  test_intersection_from_segment(qpCollisionHandler *record,
+                                 const qpCollisionEntry &entry) const;
 
   static void
   report_undefined_intersection_test(TypeHandle from_type,

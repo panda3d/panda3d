@@ -19,21 +19,23 @@
 
 #include "collisionPlane.h"
 #include "collisionHandler.h"
+#include "qpcollisionHandler.h"
 #include "collisionEntry.h"
+#include "qpcollisionEntry.h"
 #include "collisionSphere.h"
 #include "collisionRay.h"
 #include "config_collide.h"
 
-#include <pointerToArray.h>
-#include <geomNode.h>
-#include <geom.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "pointerToArray.h"
+#include "geomNode.h"
+#include "geom.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
-#include <omniBoundingVolume.h>
-#include <geomQuad.h>
+#include "omniBoundingVolume.h"
+#include "geomQuad.h"
 
 TypeHandle CollisionPlane::_type_handle;
 
@@ -54,6 +56,20 @@ make_copy() {
 ////////////////////////////////////////////////////////////////////
 int CollisionPlane::
 test_intersection(CollisionHandler *, const CollisionEntry &,
+                  const CollisionSolid *) const {
+  // Planes cannot currently be intersected from, only into.  Do not
+  // add a CollisionPlane to a CollisionTraverser.
+  nassertr(false, 0);
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPlane::test_intersection
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+int CollisionPlane::
+test_intersection(qpCollisionHandler *, const qpCollisionEntry &,
                   const CollisionSolid *) const {
   // Planes cannot currently be intersected from, only into.  Do not
   // add a CollisionPlane to a CollisionTraverser.
@@ -183,6 +199,84 @@ test_intersection_from_ray(CollisionHandler *record,
       << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LPoint3f into_intersection_point = from_origin + t * from_direction;
+  new_entry->set_into_intersection_point(into_intersection_point);
+
+  record->add_entry(new_entry);
+  return 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPlane::test_intersection_from_sphere
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+int CollisionPlane::
+test_intersection_from_sphere(qpCollisionHandler *record,
+                              const qpCollisionEntry &entry) const {
+  const CollisionSphere *sphere;
+  DCAST_INTO_R(sphere, entry.get_from(), 0);
+
+  LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
+  LVector3f from_radius_v =
+    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
+  float from_radius = length(from_radius_v);
+
+  float dist = dist_to_plane(from_center);
+  if (dist > from_radius) {
+    // No intersection.
+    return 0;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << *entry.get_from_node() << " into "
+      << entry.get_into_node_path() << "\n";
+  }
+  PT(qpCollisionEntry) new_entry = new qpCollisionEntry(entry);
+
+  LVector3f into_normal = get_normal() * entry.get_inv_wrt_space();
+  float into_depth = from_radius - dist;
+
+  new_entry->set_into_surface_normal(into_normal);
+  new_entry->set_into_depth(into_depth);
+
+  record->add_entry(new_entry);
+  return 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPlane::test_intersection_from_ray
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+int CollisionPlane::
+test_intersection_from_ray(qpCollisionHandler *record,
+                           const qpCollisionEntry &entry) const {
+  const CollisionRay *ray;
+  DCAST_INTO_R(ray, entry.get_from(), 0);
+
+  LPoint3f from_origin = ray->get_origin() * entry.get_wrt_space();
+  LVector3f from_direction = ray->get_direction() * entry.get_wrt_space();
+
+  float t;
+  if (!_plane.intersects_line(t, from_origin, from_direction)) {
+    // No intersection.
+    return 0;
+  }
+
+  if (t < 0.0f) {
+    // The intersection point is before the start of the ray.
+    return 0;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << *entry.get_from_node() << " into "
+      << entry.get_into_node_path() << "\n";
+  }
+  PT(qpCollisionEntry) new_entry = new qpCollisionEntry(entry);
 
   LPoint3f into_intersection_point = from_origin + t * from_direction;
   new_entry->set_into_intersection_point(into_intersection_point);

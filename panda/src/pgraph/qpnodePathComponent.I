@@ -48,7 +48,8 @@ CData(const qpNodePathComponent::CData &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE qpNodePathComponent::
 qpNodePathComponent(PandaNode *node, qpNodePathComponent *next) :
-  _node(node)
+  _node(node),
+  _key(0)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, get_class_type());
@@ -101,6 +102,27 @@ INLINE qpNodePathComponent::
 INLINE PandaNode *qpNodePathComponent::
 get_node() const {
   return _node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePathComponent::get_key
+//       Access: Public
+//  Description: Returns an index number that is guaranteed to be
+//               unique for this particular NodePathComponent, and not
+//               to be reused for the lifetime of the application
+//               (barring integer overflow).
+////////////////////////////////////////////////////////////////////
+INLINE int qpNodePathComponent::
+get_key() const {
+  if (_key == 0) {
+    // The first time someone asks for a particular component's key,
+    // we make it up on the spot.  This helps keep us from wasting
+    // index numbers generating a unique number for *every* component
+    // in the world (we only have 4.2 billion 32-bit integers, after
+    // all)
+    ((qpNodePathComponent *)this)->_key = _next_key++;
+  }
+  return _key;
 }
 
 ////////////////////////////////////////////////////////////////////

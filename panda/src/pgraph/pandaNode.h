@@ -347,6 +347,7 @@ private:
   friend class PandaNode::Children;
   friend class qpNodePath;
   friend class qpNodePathComponent;
+  friend class WorkingNodePath;
 };
 
 INLINE ostream &operator << (ostream &out, const PandaNode &node) {

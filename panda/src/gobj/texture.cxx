@@ -145,7 +145,7 @@ Texture::
 //  Description: Reads the texture from the indicated filename.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-read(const string &name) {
+read(const Filename &name) {
   PNMImage pnmimage;
 
   if (!pnmimage.read(name)) {
@@ -157,8 +157,9 @@ read(const string &name) {
   // Check to see if we need to scale it.
   consider_rescale(pnmimage, name);
 
-  set_name(name);
-  clear_alpha_name();
+  set_name(name.get_basename_wo_extension());
+  set_filename(name);
+  clear_alpha_filename();
   return load(pnmimage);
 }
 
@@ -169,7 +170,7 @@ read(const string &name) {
 //               to get a 4-component image
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-read(const string &name, const string &gray) {
+read(const Filename &name, const Filename &gray) {
   PNMImage pnmimage;
   if (!pnmimage.read(name)) {
     gobj_cat.error()
@@ -210,8 +211,9 @@ read(const string &name, const string &gray) {
     }
   }
 
-  set_name(name);
-  set_alpha_name(gray);
+  set_name(name.get_basename_wo_extension());
+  set_filename(name);
+  set_alpha_filename(gray);
   return load(pnmimage);
 }
 
@@ -221,9 +223,19 @@ read(const string &name, const string &gray) {
 //  Description: Writes the texture to the indicated filename.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-write(const string &name) const {
+write(const Filename &name) const {
   nassertr(has_ram_image(), false);
-  return _pbuffer->write(name);
+  PNMImage pnmimage;
+  if (!_pbuffer->store(pnmimage)) {
+    return false;
+  }
+
+  if (!pnmimage.write(name)) {
+    gobj_cat.error()
+      << "Texture::write() - couldn't write: " << name << endl;
+    return false;
+  }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -476,15 +488,21 @@ clear_gsg(GraphicsStateGuardianBase *gsg) {
 ////////////////////////////////////////////////////////////////////
 PixelBuffer *Texture::
 get_ram_image() {
-  if (!has_ram_image() && has_name()) {
+  if (!has_ram_image() && has_filename()) {
     // Now we have to reload the texture image.
+    string name = get_name();
     gobj_cat.info()
-      << "Reloading texture " << get_name() << "\n";
-    if (has_alpha_name()) {
-      read(get_name(), get_alpha_name());
+      << "Reloading texture " << name << "\n";
+    
+    if (has_alpha_filename()) {
+      read(get_filename(), get_alpha_filename());
     } else {
-      read(get_name());
+      read(get_filename());
     }
+
+    // Just in case the read operation changed our name, we should
+    // change it back.
+    set_name(name);
   }
 
   if (has_ram_image()) {
@@ -631,15 +649,26 @@ make_Texture(const FactoryParams &params) {
 
   parse_params(params, scan, manager);
 
-  string name = scan.get_string();
-  string alpha_name = scan.get_string();
+  string name;
+  Filename filename, alpha_filename;
+
+  if (manager->get_file_minor_ver() < 6) {
+    // No _filename before bams 3.6.
+    filename = scan.get_string();
+    name = filename.get_basename_wo_extension();
+  } else {
+    name = scan.get_string();
+    filename = scan.get_string();
+  }
+
+  alpha_filename = scan.get_string();
 
   PT(Texture) me;
 
-  if (alpha_name.empty()) {
-    me = TexturePool::load_texture(name);
+  if (alpha_filename.empty()) {
+    me = TexturePool::load_texture(filename);
   } else {
-    me = TexturePool::load_texture(name, alpha_name);
+    me = TexturePool::load_texture(filename, alpha_filename);
   }
 
   if (me == (Texture *)NULL) {
@@ -650,6 +679,7 @@ make_Texture(const FactoryParams &params) {
     dummy->fillin(scan, manager);
 
   } else {
+    me->set_name(name);
     if (gobj_cat.is_debug()) {
       gobj_cat->debug() << "Created texture " << me->get_name() << endl;
     }

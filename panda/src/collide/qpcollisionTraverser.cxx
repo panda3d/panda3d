@@ -18,7 +18,7 @@
 
 #include "qpcollisionTraverser.h"
 #include "qpcollisionNode.h"
-#include "collisionEntry.h"
+#include "qpcollisionEntry.h"
 #include "collisionPolygon.h"
 #include "config_collide.h"
 
@@ -65,17 +65,17 @@ qpCollisionTraverser::
 //               again on the same node.
 ////////////////////////////////////////////////////////////////////
 void qpCollisionTraverser::
-add_collider(qpCollisionNode *node, CollisionHandler *handler) {
+add_collider(qpCollisionNode *node, qpCollisionHandler *handler) {
   nassertv(_ordered_colliders.size() == _colliders.size());
   nassertv(node != (qpCollisionNode *)NULL);
-  nassertv(handler != (CollisionHandler *)NULL);
+  nassertv(handler != (qpCollisionHandler *)NULL);
 
   Colliders::iterator ci = _colliders.find(node);
   if (ci != _colliders.end()) {
     // We already knew about this collider.
     if ((*ci).second != handler) {
       // Change the handler.
-      PT(CollisionHandler) old_handler = (*ci).second;
+      PT(qpCollisionHandler) old_handler = (*ci).second;
       (*ci).second = handler;
 
       // Now update our own reference counts within our handler set.
@@ -130,7 +130,7 @@ remove_collider(qpCollisionNode *node) {
     return false;
   }
 
-  CollisionHandler *handler = (*ci).second;
+  qpCollisionHandler *handler = (*ci).second;
 
   // Update the set of handlers.
   Handlers::iterator hi = _handlers.find(handler);
@@ -197,7 +197,7 @@ get_collider(int n) const {
 //               serve the indicated collision node, or NULL if the
 //               node is not on the traverser's set of active nodes.
 ////////////////////////////////////////////////////////////////////
-CollisionHandler *qpCollisionTraverser::
+qpCollisionHandler *qpCollisionTraverser::
 get_handler(qpCollisionNode *node) const {
   Colliders::const_iterator ci = _colliders.find(node);
   if (ci != _colliders.end()) {
@@ -226,10 +226,9 @@ clear_colliders() {
 ////////////////////////////////////////////////////////////////////
 void qpCollisionTraverser::
 traverse(const qpNodePath &root) {
-  /*
   PStatTimer timer(_collisions_pcollector);
 
-  CollisionLevelState level_state(root);
+  qpCollisionLevelState level_state(root);
   prepare_colliders(level_state);
 
   Handlers::iterator hi;
@@ -237,8 +236,7 @@ traverse(const qpNodePath &root) {
     (*hi).first->begin_group();
   }
 
-  df_traverse(root.node(), *this, NullTransitionWrapper(),
-              level_state, _graph_type);
+  //  r_traverse(root.node(), level_state);
 
   hi = _handlers.begin();
   while (hi != _handlers.end()) {
@@ -252,7 +250,6 @@ traverse(const qpNodePath &root) {
       ++hi;
     }
   }
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -279,9 +276,9 @@ write(ostream &out, int indent_level) const {
   Colliders::const_iterator ci;
   for (ci = _colliders.begin(); ci != _colliders.end(); ++ci) {
     qpCollisionNode *cnode = (*ci).first;
-    CollisionHandler *handler = (*ci).second;
+    qpCollisionHandler *handler = (*ci).second;
     nassertv(cnode != (qpCollisionNode *)NULL);
-    nassertv(handler != (CollisionHandler *)NULL);
+    nassertv(handler != (qpCollisionHandler *)NULL);
 
     indent(out, indent_level + 2)
       << *cnode << " handled by " << handler->get_type() << "\n";
@@ -299,8 +296,7 @@ write(ostream &out, int indent_level) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void qpCollisionTraverser::
-prepare_colliders(CollisionLevelState &level_state) {
-  /*
+prepare_colliders(qpCollisionLevelState &level_state) {
   level_state.clear();
   level_state.reserve(_colliders.size());
 
@@ -308,10 +304,12 @@ prepare_colliders(CollisionLevelState &level_state) {
   while (i < (int)_ordered_colliders.size()) {
     qpCollisionNode *cnode = _ordered_colliders[i];
 
-    CollisionLevelState::ColliderDef def;
+    qpCollisionLevelState::ColliderDef def;
     def._node = cnode;
-    get_rel_mat(cnode, NULL, def._space, _graph_type);
-    def._inv_space.invert_from(def._space);
+    qpNodePath root;
+    qpNodePath cnode_path(cnode);
+    def._space = cnode_path.get_mat(root);
+    def._inv_space = root.get_mat(cnode_path);
 
 #ifndef NDEBUG
     if (def._space.is_nan()) {
@@ -333,32 +331,29 @@ prepare_colliders(CollisionLevelState &level_state) {
         i++;
       }
   }
-  */
 }
 
-/*
 ////////////////////////////////////////////////////////////////////
-//     Function: qpCollisionTraverser::reached_node
-//       Access: Public
+//     Function: qpCollisionTraverser::r_traverse
+//       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool qpCollisionTraverser::
-reached_node(Node *node, NullTransitionWrapper &,
-             CollisionLevelState &level_state) {
-  if (node->is_of_type(qpCollisionNode::get_class_type())) {
+void qpCollisionTraverser::
+r_traverse(PandaNode *node, qpCollisionLevelState &level_state) {
+  if (node->is_exact_type(qpCollisionNode::get_class_type())) {
     level_state.reached_collision_node();
 
     qpCollisionNode *cnode;
-    DCAST_INTO_R(cnode, node, false);
+    DCAST_INTO_V(cnode, node);
     const BoundingVolume &node_bv = cnode->get_bound();
     const GeometricBoundingVolume *node_gbv = NULL;
     if (node_bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
-      DCAST_INTO_R(node_gbv, &node_bv, false);
+      DCAST_INTO_V(node_gbv, &node_bv);
     }
 
-    CollisionEntry entry;
+    qpCollisionEntry entry;
     entry._into_node = cnode;
-    entry._into_node_path = qpNodePath(level_state.get_arc_chain(), _graph_type);
+    entry._into_node_path = level_state.get_node_path();
     entry._into_space = entry._into_node_path.get_mat(qpNodePath());
 
     int num_colliders = level_state.get_num_colliders();
@@ -372,7 +367,8 @@ reached_node(Node *node, NullTransitionWrapper &,
           entry._from_space = level_state.get_space(c);
 
           qpNodePath root;
-          LMatrix4f into_space_inv = root.get_mat(entry._into_node_path);
+          const LMatrix4f &into_space_inv = 
+            root.get_mat(entry._into_node_path);
           entry._wrt_space = entry._from_space * into_space_inv;
           entry._inv_wrt_space =
             entry._into_space * level_state.get_inv_space(c);
@@ -385,19 +381,19 @@ reached_node(Node *node, NullTransitionWrapper &,
       }
     }
 
-  } else if (node->is_of_type(qpGeomNode::get_class_type()) &&
-             level_state.has_any_collide_geom()) {
+  } else if (node->is_geom_node() && level_state.has_any_collide_geom()) {
     qpGeomNode *gnode;
-    DCAST_INTO_R(gnode, node, false);
+    DCAST_INTO_V(gnode, node);
     const BoundingVolume &node_bv = gnode->get_bound();
     const GeometricBoundingVolume *node_gbv = NULL;
     if (node_bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
-      DCAST_INTO_R(node_gbv, &node_bv, false);
+      DCAST_INTO_V(node_gbv, &node_bv);
     }
 
-    CollisionEntry entry;
+    qpCollisionEntry entry;
     entry._into_node = gnode;
-    get_rel_mat(node, NULL, entry._into_space, _graph_type);
+    entry._into_node_path = level_state.get_node_path();
+    entry._into_space = entry._into_node_path.get_mat(qpNodePath());
 
     int num_colliders = level_state.get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
@@ -407,8 +403,9 @@ reached_node(Node *node, NullTransitionWrapper &,
         entry._from = level_state.get_collider(c);
         entry._from_space = level_state.get_space(c);
 
-        LMatrix4f into_space_inv;
-        get_rel_mat(NULL, node, into_space_inv, _graph_type);
+        qpNodePath root;
+        const LMatrix4f &into_space_inv = 
+          root.get_mat(entry._into_node_path);
         entry._wrt_space = entry._from_space * into_space_inv;
         entry._inv_wrt_space =
           entry._into_space * level_state.get_inv_space(c);
@@ -421,9 +418,13 @@ reached_node(Node *node, NullTransitionWrapper &,
     }
   }
 
-  return true;
+  int num_children = node->get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child_node = node->get_child(i);
+    qpCollisionLevelState next_state(level_state, child_node);
+    r_traverse(child_node, next_state);
+  }
 }
-*/
 
 /*
 ////////////////////////////////////////////////////////////////////
@@ -434,7 +435,7 @@ reached_node(Node *node, NullTransitionWrapper &,
 bool qpCollisionTraverser::
 forward_arc(NodeRelation *arc, NullTransitionWrapper &,
             NullTransitionWrapper &, NullTransitionWrapper &,
-            CollisionLevelState &level_state) {
+            qpCollisionLevelState &level_state) {
   // Check the bounding volume on the arc against each of our
   // colliders.
   const BoundingVolume &arc_bv = arc->get_bound();
@@ -485,10 +486,9 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void qpCollisionTraverser::
-compare_collider_to_node(CollisionEntry &entry,
+compare_collider_to_node(qpCollisionEntry &entry,
                          const GeometricBoundingVolume *from_node_gbv,
                          const GeometricBoundingVolume *into_node_gbv) {
-  /*
   bool within_node_bounds = true;
   if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
       into_node_gbv != (GeometricBoundingVolume *)NULL) {
@@ -518,7 +518,6 @@ compare_collider_to_node(CollisionEntry &entry,
       }
     }
   }
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -527,10 +526,9 @@ compare_collider_to_node(CollisionEntry &entry,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void qpCollisionTraverser::
-compare_collider_to_geom_node(CollisionEntry &entry,
+compare_collider_to_geom_node(qpCollisionEntry &entry,
                               const GeometricBoundingVolume *from_node_gbv,
                               const GeometricBoundingVolume *into_node_gbv) {
-  /*
   bool within_node_bounds = true;
   if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
       into_node_gbv != (GeometricBoundingVolume *)NULL) {
@@ -561,7 +559,6 @@ compare_collider_to_geom_node(CollisionEntry &entry,
       }
     }
   }
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -570,10 +567,9 @@ compare_collider_to_geom_node(CollisionEntry &entry,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void qpCollisionTraverser::
-compare_collider_to_solid(CollisionEntry &entry,
+compare_collider_to_solid(qpCollisionEntry &entry,
                           const GeometricBoundingVolume *from_node_gbv,
                           const GeometricBoundingVolume *solid_gbv) {
-  /*
   bool within_solid_bounds = true;
   if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
       solid_gbv != (GeometricBoundingVolume *)NULL) {
@@ -585,7 +581,6 @@ compare_collider_to_solid(CollisionEntry &entry,
     nassertv(ci != _colliders.end());
     entry.get_from()->test_intersection((*ci).second, entry, entry.get_into());
   }
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -594,10 +589,9 @@ compare_collider_to_solid(CollisionEntry &entry,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void qpCollisionTraverser::
-compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
+compare_collider_to_geom(qpCollisionEntry &entry, Geom *geom,
                          const GeometricBoundingVolume *from_node_gbv,
                          const GeometricBoundingVolume *geom_gbv) {
-  /*
   bool within_geom_bounds = true;
   if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
       geom_gbv != (GeometricBoundingVolume *)NULL) {
@@ -627,5 +621,4 @@ compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
       }
     }
   }
-  */
 }

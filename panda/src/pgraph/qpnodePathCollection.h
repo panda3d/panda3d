@@ -54,7 +54,7 @@ PUBLISHED:
   INLINE void ls() const;
   void ls(ostream &out, int indent_level = 0) const;
 
-  //  qpNodePathCollection find_all_matches(const string &path) const;
+  qpNodePathCollection find_all_matches(const string &path) const;
   void reparent_to(const qpNodePath &other);
   void wrt_reparent_to(const qpNodePath &other);
 

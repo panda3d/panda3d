@@ -41,6 +41,11 @@ public:
                     const CollisionEntry &entry,
                     const CollisionSolid *into) const;
 
+  virtual int
+  test_intersection(qpCollisionHandler *record,
+                    const qpCollisionEntry &entry,
+                    const CollisionSolid *into) const;
+
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
 
@@ -68,6 +73,15 @@ protected:
   virtual int
   test_intersection_from_segment(CollisionHandler *record,
                                  const CollisionEntry &entry) const;
+  virtual int
+  test_intersection_from_sphere(qpCollisionHandler *record,
+                                const qpCollisionEntry &entry) const;
+  virtual int
+  test_intersection_from_ray(qpCollisionHandler *record,
+                             const qpCollisionEntry &entry) const;
+  virtual int
+  test_intersection_from_segment(qpCollisionHandler *record,
+                                 const qpCollisionEntry &entry) const;
 
   virtual void recompute_viz(Node *parent);
 

@@ -39,6 +39,8 @@
 #include "boundingSphere.h"
 #include "qpgeomNode.h"
 #include "qpsceneGraphReducer.h"
+#include "textureCollection.h"
+#include "globPattern.h"
 
 // stack seems to overflow on Intel C++ at 7000.  If we need more than 
 // 7000, need to increase stack size.
@@ -119,7 +121,7 @@ get_top_node() const {
 qpNodePathCollection qpNodePath::
 get_children() const {
   qpNodePathCollection result;
-  nassertr(!is_empty(), result);
+  nassertr_always(!is_empty(), result);
 
   PandaNode *bottom_node = node();
 
@@ -144,7 +146,7 @@ get_children() const {
 ////////////////////////////////////////////////////////////////////
 qpNodePath qpNodePath::
 find(const string &path) const {
-  nassertr(!is_empty(), fail());
+  nassertr_always(!is_empty(), fail());
 
   qpNodePathCollection col;
   find_matches(col, path, 1);
@@ -167,7 +169,7 @@ find(const string &path) const {
 qpNodePathCollection qpNodePath::
 find_all_matches(const string &path) const {
   qpNodePathCollection col;
-  nassertr(!is_empty(), col);
+  nassertr_always(!is_empty(), col);
   nassertr(verify_complete(), col);
   find_matches(col, path, -1);
   return col;
@@ -183,7 +185,7 @@ find_all_matches(const string &path) const {
 qpNodePathCollection qpNodePath::
 find_all_paths_to(PandaNode *node) const {
   qpNodePathCollection col;
-  nassertr(!is_empty(), col);
+  nassertr_always(!is_empty(), col);
   nassertr(verify_complete(), col);
   nassertr(node != (PandaNode *)NULL, col);
   qpFindApproxPath approx_path;
@@ -250,7 +252,7 @@ wrt_reparent_to(const qpNodePath &other, int sort) {
 qpNodePath qpNodePath::
 instance_to(const qpNodePath &other, int sort) const {
   nassertr(verify_complete(), qpNodePath::fail());
-  nassertr(!is_empty(), qpNodePath::fail());
+  nassertr_always(!is_empty(), qpNodePath::fail());
   nassertr(!other.is_empty(), qpNodePath::fail());
 
   uncollapse_head();
@@ -279,7 +281,7 @@ instance_to(const qpNodePath &other, int sort) const {
 qpNodePath qpNodePath::
 copy_to(const qpNodePath &other, int sort) const {
   nassertr(verify_complete(), fail());
-  nassertr(!is_empty(), fail());
+  nassertr_always(!is_empty(), fail());
   nassertr(!other.is_empty(), fail());
 
   PandaNode *source_node = node();
@@ -305,7 +307,7 @@ copy_to(const qpNodePath &other, int sort) const {
 qpNodePath qpNodePath::
 attach_new_node(PandaNode *node, int sort) const {
   nassertr(verify_complete(), qpNodePath::fail());
-  nassertr(!is_empty(), qpNodePath());
+  nassertr_always(!is_empty(), qpNodePath());
   nassertr(node != (PandaNode *)NULL, qpNodePath());
 
   uncollapse_head();
@@ -346,6 +348,37 @@ remove_node() {
   PandaNode::detach(_head);
 
   (*this) = qpNodePath::removed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::output
+//       Access: Published
+//  Description: Writes a sensible description of the qpNodePath to the
+//               indicated output stream.
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+output(ostream &out) const {
+  uncollapse_head();
+
+  switch (_error_type) {
+  case ET_not_found:
+    out << "**not found**";
+    return;
+  case ET_removed:
+    out << "**removed**";
+    return;
+  case ET_fail:
+    out << "**error**";
+    return;
+  default:
+    break;
+  }
+
+  if (_head == (qpNodePathComponent *)NULL) {
+    out << "(empty)";
+  } else {
+    r_output(out, _head);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -452,13 +485,13 @@ set_transform(const qpNodePath &other, const TransformState *transform) const {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 set_pos(const LVecBase3f &pos) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   set_transform(get_transform()->set_pos(pos));
 }
 
 void qpNodePath::
 set_x(float x) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   LPoint3f pos = get_pos();
   pos[0] = x;
   set_pos(pos);
@@ -466,7 +499,7 @@ set_x(float x) {
 
 void qpNodePath::
 set_y(float y) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   LPoint3f pos = get_pos();
   pos[1] = y;
   set_pos(pos);
@@ -474,7 +507,7 @@ set_y(float y) {
 
 void qpNodePath::
 set_z(float z) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   LPoint3f pos = get_pos();
   pos[2] = z;
   set_pos(pos);
@@ -487,7 +520,7 @@ set_z(float z) {
 ////////////////////////////////////////////////////////////////////
 LPoint3f qpNodePath::
 get_pos() const {
-  nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
   return get_transform()->get_pos();
 }
 
@@ -499,7 +532,7 @@ get_pos() const {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 set_hpr(const LVecBase3f &hpr) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   nassertv(transform->has_components());
   set_transform(transform->set_hpr(hpr));
@@ -507,7 +540,7 @@ set_hpr(const LVecBase3f &hpr) {
 
 void qpNodePath::
 set_h(float h) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   nassertv(transform->has_components());
   LVecBase3f hpr = transform->get_hpr();
@@ -517,7 +550,7 @@ set_h(float h) {
 
 void qpNodePath::
 set_p(float p) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   nassertv(transform->has_components());
   LVecBase3f hpr = transform->get_hpr();
@@ -527,7 +560,7 @@ set_p(float p) {
 
 void qpNodePath::
 set_r(float r) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   nassertv(transform->has_components());
   LVecBase3f hpr = transform->get_hpr();
@@ -542,7 +575,7 @@ set_r(float r) {
 ////////////////////////////////////////////////////////////////////
 LVecBase3f qpNodePath::
 get_hpr() const {
-  nassertr(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform();
   nassertr(transform->has_components(), LVecBase3f(0.0f, 0.0f, 0.0f));
   return transform->get_hpr();
@@ -569,7 +602,7 @@ get_hpr(float roll) const {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 set_scale(const LVecBase3f &scale) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   nassertv(transform->has_components());
   set_transform(transform->set_scale(scale));
@@ -577,7 +610,7 @@ set_scale(const LVecBase3f &scale) {
 
 void qpNodePath::
 set_sx(float sx) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   nassertv(transform->has_components());
   LVecBase3f scale = transform->get_scale();
@@ -587,7 +620,7 @@ set_sx(float sx) {
 
 void qpNodePath::
 set_sy(float sy) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   nassertv(transform->has_components());
   LVecBase3f scale = transform->get_scale();
@@ -597,7 +630,7 @@ set_sy(float sy) {
 
 void qpNodePath::
 set_sz(float sz) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   nassertv(transform->has_components());
   LVecBase3f scale = transform->get_scale();
@@ -612,7 +645,7 @@ set_sz(float sz) {
 ////////////////////////////////////////////////////////////////////
 LVecBase3f qpNodePath::
 get_scale() const {
-  nassertr(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform();
   nassertr(transform->has_components(), LVecBase3f(0.0f, 0.0f, 0.0f));
   return transform->get_scale();
@@ -696,7 +729,7 @@ set_color_scale(const LVecBase4f &scale) {
 const LVecBase4f &qpNodePath::
 get_color_scale() const {
   static const LVecBase4f ident_scale(1.0f, 1.0f, 1.0f, 1.0f);
-  nassertr(!is_empty(), ident_scale);
+  nassertr_always(!is_empty(), ident_scale);
   const RenderAttrib *attrib =
     node()->get_attrib(ColorScaleAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -715,7 +748,7 @@ get_color_scale() const {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 look_at(const LPoint3f &point, const LVector3f &up) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
 
   LPoint3f pos = get_pos();
 
@@ -736,7 +769,7 @@ look_at(const LPoint3f &point, const LVector3f &up) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 heads_up(const LPoint3f &point, const LVector3f &up) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
 
   LPoint3f pos = get_pos();
 
@@ -756,13 +789,13 @@ heads_up(const LPoint3f &point, const LVector3f &up) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 set_pos(const qpNodePath &other, const LVecBase3f &pos) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   set_transform(other, get_transform(other)->set_pos(pos));
 }
 
 void qpNodePath::
 set_x(const qpNodePath &other, float x) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   LPoint3f pos = get_pos(other);
   pos[0] = x;
   set_pos(other, pos);
@@ -770,7 +803,7 @@ set_x(const qpNodePath &other, float x) {
 
 void qpNodePath::
 set_y(const qpNodePath &other, float y) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   LPoint3f pos = get_pos(other);
   pos[1] = y;
   set_pos(other, pos);
@@ -778,7 +811,7 @@ set_y(const qpNodePath &other, float y) {
 
 void qpNodePath::
 set_z(const qpNodePath &other, float z) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   LPoint3f pos = get_pos(other);
   pos[2] = z;
   set_pos(other, pos);
@@ -792,7 +825,7 @@ set_z(const qpNodePath &other, float z) {
 ////////////////////////////////////////////////////////////////////
 LPoint3f qpNodePath::
 get_pos(const qpNodePath &other) const {
-  nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
   return get_transform(other)->get_pos();
 }
 
@@ -804,7 +837,7 @@ get_pos(const qpNodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 set_hpr(const qpNodePath &other, const LVecBase3f &hpr) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform(other);
   nassertv(transform->has_components());
   set_transform(other, transform->set_hpr(hpr));
@@ -812,7 +845,7 @@ set_hpr(const qpNodePath &other, const LVecBase3f &hpr) {
 
 void qpNodePath::
 set_h(const qpNodePath &other, float h) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform(other);
   nassertv(transform->has_components());
   LVecBase3f hpr = transform->get_hpr();
@@ -822,7 +855,7 @@ set_h(const qpNodePath &other, float h) {
 
 void qpNodePath::
 set_p(const qpNodePath &other, float p) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform(other);
   nassertv(transform->has_components());
   LVecBase3f hpr = transform->get_hpr();
@@ -832,7 +865,7 @@ set_p(const qpNodePath &other, float p) {
 
 void qpNodePath::
 set_r(const qpNodePath &other, float r) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform(other);
   nassertv(transform->has_components());
   LVecBase3f hpr = transform->get_hpr();
@@ -848,7 +881,7 @@ set_r(const qpNodePath &other, float r) {
 ////////////////////////////////////////////////////////////////////
 LVecBase3f qpNodePath::
 get_hpr(const qpNodePath &other) const {
-  nassertr(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform(other);
   nassertr(transform->has_components(), LVecBase3f(0.0f, 0.0f, 0.0f));
   return transform->get_hpr();
@@ -878,7 +911,7 @@ get_hpr(const qpNodePath &other, float roll) const {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 set_scale(const qpNodePath &other, const LVecBase3f &scale) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform(other);
   nassertv(transform->has_components());
   set_transform(other, transform->set_scale(scale));
@@ -886,7 +919,7 @@ set_scale(const qpNodePath &other, const LVecBase3f &scale) {
 
 void qpNodePath::
 set_sx(const qpNodePath &other, float sx) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform(other);
   nassertv(transform->has_components());
   LVecBase3f scale = transform->get_scale();
@@ -896,7 +929,7 @@ set_sx(const qpNodePath &other, float sx) {
 
 void qpNodePath::
 set_sy(const qpNodePath &other, float sy) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform(other);
   nassertv(transform->has_components());
   LVecBase3f scale = transform->get_scale();
@@ -906,7 +939,7 @@ set_sy(const qpNodePath &other, float sy) {
 
 void qpNodePath::
 set_sz(const qpNodePath &other, float sz) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform(other);
   nassertv(transform->has_components());
   LVecBase3f scale = transform->get_scale();
@@ -922,7 +955,7 @@ set_sz(const qpNodePath &other, float sz) {
 ////////////////////////////////////////////////////////////////////
 LVecBase3f qpNodePath::
 get_scale(const qpNodePath &other) const {
-  nassertr(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform(other);
   nassertr(transform->has_components(), LVecBase3f(0.0f, 0.0f, 0.0f));
   return transform->get_scale();
@@ -1033,7 +1066,7 @@ get_relative_point(const qpNodePath &other, const LVecBase3f &point) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 look_at(const qpNodePath &other, const LPoint3f &point, const LVector3f &up) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
 
   qpNodePath parent = get_parent();
   LPoint3f rel_point = point * other.get_mat(parent);
@@ -1057,7 +1090,7 @@ look_at(const qpNodePath &other, const LPoint3f &point, const LVector3f &up) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 heads_up(const qpNodePath &other, const LPoint3f &point, const LVector3f &up) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
 
   qpNodePath parent = get_parent();
   LPoint3f rel_point = point * other.get_mat(parent);
@@ -1126,7 +1159,7 @@ set_color_off(int priority) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 clear_color() {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->clear_attrib(ColorAttrib::get_class_type());
 }
 
@@ -1138,7 +1171,7 @@ clear_color() {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_color() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   return node()->has_attrib(ColorAttrib::get_class_type());
 }
 
@@ -1150,7 +1183,7 @@ has_color() const {
 ////////////////////////////////////////////////////////////////////
 Colorf qpNodePath::
 get_color() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(ColorAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1204,7 +1237,7 @@ set_bin(const string &bin_name, int draw_order, int priority) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 clear_bin() {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->clear_attrib(CullBinAttrib::get_class_type());
 }
 
@@ -1217,7 +1250,7 @@ clear_bin() {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_bin() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   return node()->has_attrib(CullBinAttrib::get_class_type());
 }
 
@@ -1230,7 +1263,7 @@ has_bin() const {
 ////////////////////////////////////////////////////////////////////
 string qpNodePath::
 get_bin_name() const {
-  nassertr(!is_empty(), string());
+  nassertr_always(!is_empty(), string());
   const RenderAttrib *attrib =
     node()->get_attrib(ColorAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1251,7 +1284,7 @@ get_bin_name() const {
 ////////////////////////////////////////////////////////////////////
 int qpNodePath::
 get_bin_draw_order() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(ColorAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1301,7 +1334,7 @@ set_texture_off(int priority) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 clear_texture() {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->clear_attrib(TextureAttrib::get_class_type());
 }
 
@@ -1317,7 +1350,7 @@ clear_texture() {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_texture() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(TextureAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1340,7 +1373,7 @@ has_texture() const {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_texture_off() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(ColorAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1360,10 +1393,12 @@ has_texture_off() const {
 //               applied to the geometry at or below this level, as
 //               another texture at a higher or lower level may
 //               override.
+//
+//               See also find_texture().
 ////////////////////////////////////////////////////////////////////
 Texture *qpNodePath::
 get_texture() const {
-  nassertr(!is_empty(), NULL);
+  nassertr_always(!is_empty(), NULL);
   const RenderAttrib *attrib =
     node()->get_attrib(TextureAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1372,6 +1407,64 @@ get_texture() const {
   }
 
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::find_texture
+//       Access: Published
+//  Description: Returns the first texture found applied to geometry
+//               at this node or below that matches the indicated name
+//               (which may contain wildcards).  Returns the texture
+//               if it is found, or NULL if it is not.
+////////////////////////////////////////////////////////////////////
+Texture *qpNodePath::
+find_texture(const string &name) const {
+  GlobPattern glob(name);
+  return r_find_texture(node(), RenderState::make_empty(), glob);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::find_all_textures
+//       Access: Published
+//  Description: Returns a list of a textures applied to geometry at
+//               this node and below.
+////////////////////////////////////////////////////////////////////
+TextureCollection qpNodePath::
+find_all_textures() const {
+  Textures textures;
+  r_find_all_textures(node(), RenderState::make_empty(), textures);
+
+  TextureCollection tc;
+  Textures::iterator ti;
+  for (ti = textures.begin(); ti != textures.end(); ++ti) {
+    tc.add_texture(*ti);
+  }
+  return tc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::find_all_textures
+//       Access: Published
+//  Description: Returns a list of a textures applied to geometry at
+//               this node and below that match the indicated name
+//               (which may contain wildcard characters).
+////////////////////////////////////////////////////////////////////
+TextureCollection qpNodePath::
+find_all_textures(const string &name) const {
+  Textures textures;
+  r_find_all_textures(node(), RenderState::make_empty(), textures);
+
+  GlobPattern glob(name);
+
+  TextureCollection tc;
+  Textures::iterator ti;
+  for (ti = textures.begin(); ti != textures.end(); ++ti) {
+    Texture *texture = (*ti);
+    if (glob.matches(texture->get_name())) {
+      tc.add_texture(texture);
+    }
+  }
+  return tc;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1425,7 +1518,7 @@ set_material_off(int priority) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 clear_material() {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->clear_attrib(MaterialAttrib::get_class_type());
 }
 
@@ -1437,7 +1530,7 @@ clear_material() {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_material() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(MaterialAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1464,7 +1557,7 @@ has_material() const {
 ////////////////////////////////////////////////////////////////////
 PT(Material) qpNodePath::
 get_material() const {
-  nassertr(!is_empty(), NULL);
+  nassertr_always(!is_empty(), NULL);
   const RenderAttrib *attrib =
     node()->get_attrib(MaterialAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1514,7 +1607,7 @@ set_fog_off(int priority) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 clear_fog() {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->clear_attrib(FogAttrib::get_class_type());
 }
 
@@ -1530,7 +1623,7 @@ clear_fog() {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_fog() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(FogAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1553,7 +1646,7 @@ has_fog() const {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_fog_off() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(FogAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1576,7 +1669,7 @@ has_fog_off() const {
 ////////////////////////////////////////////////////////////////////
 qpFog *qpNodePath::
 get_fog() const {
-  nassertr(!is_empty(), NULL);
+  nassertr_always(!is_empty(), NULL);
   const RenderAttrib *attrib =
     node()->get_attrib(FogAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1622,7 +1715,7 @@ set_render_mode_filled(int priority) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 clear_render_mode() {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->clear_attrib(RenderModeAttrib::get_class_type());
 }
 
@@ -1636,7 +1729,7 @@ clear_render_mode() {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_render_mode() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   return node()->has_attrib(RenderModeAttrib::get_class_type());
 }
 
@@ -1674,7 +1767,7 @@ set_two_sided(bool two_sided, int priority) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 clear_two_sided() {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->clear_attrib(CullFaceAttrib::get_class_type());
 }
 
@@ -1689,7 +1782,7 @@ clear_two_sided() {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_two_sided() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   return node()->has_attrib(CullFaceAttrib::get_class_type());
 }
 
@@ -1706,7 +1799,7 @@ has_two_sided() const {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 get_two_sided() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(CullFaceAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -1728,7 +1821,7 @@ get_two_sided() const {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 do_billboard_axis(const qpNodePath &camera, float offset) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
 
   qpNodePath parent = get_parent();
   LMatrix4f rel_mat = camera.get_mat(parent);
@@ -1762,7 +1855,7 @@ do_billboard_axis(const qpNodePath &camera, float offset) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 do_billboard_point_eye(const qpNodePath &camera, float offset) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
 
   qpNodePath parent = get_parent();
   LMatrix4f rel_mat = camera.get_mat(parent);
@@ -1794,7 +1887,7 @@ do_billboard_point_eye(const qpNodePath &camera, float offset) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 do_billboard_point_world(const qpNodePath &camera, float offset) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
 
   qpNodePath parent = get_parent();
   LMatrix4f rel_mat = camera.get_mat(parent);
@@ -1825,7 +1918,7 @@ do_billboard_point_world(const qpNodePath &camera, float offset) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 set_billboard_axis(float offset) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(RenderEffect) billboard = BillboardEffect::make
     (LVector3f::up(), false, true, 
      offset, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
@@ -1842,7 +1935,7 @@ set_billboard_axis(float offset) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 set_billboard_point_eye(float offset) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(RenderEffect) billboard = BillboardEffect::make
     (LVector3f::up(), true, false,
      offset, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
@@ -1858,7 +1951,7 @@ set_billboard_point_eye(float offset) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 set_billboard_point_world(float offset) {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   CPT(RenderEffect) billboard = BillboardEffect::make
     (LVector3f::up(), false, false,
      offset, qpNodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
@@ -1872,7 +1965,7 @@ set_billboard_point_world(float offset) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 clear_billboard() {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->clear_effect(BillboardEffect::get_class_type());
 }
 
@@ -1884,7 +1977,7 @@ clear_billboard() {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_billboard() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   return node()->has_effect(BillboardEffect::get_class_type());
 }
 
@@ -1920,7 +2013,7 @@ set_transparency(bool transparency, int priority) {
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 clear_transparency() {
-  nassertv(!is_empty());
+  nassertv_always(!is_empty());
   node()->clear_attrib(TransparencyAttrib::get_class_type());
 }
 
@@ -1936,7 +2029,7 @@ clear_transparency() {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 has_transparency() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   return node()->has_attrib(TransparencyAttrib::get_class_type());
 }
 
@@ -1953,7 +2046,7 @@ has_transparency() const {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 get_transparency() const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(TransparencyAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
@@ -2127,7 +2220,7 @@ hide_bounds() {
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) qpNodePath::
 get_bounds() const {
-  nassertr(!is_empty(), new BoundingSphere);
+  nassertr_always(!is_empty(), new BoundingSphere);
 
   PandaNode *this_node = node();
   PT(BoundingVolume) bv = this_node->get_bound().make_copy();
@@ -2208,7 +2301,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) {
 ////////////////////////////////////////////////////////////////////
 int qpNodePath::
 flatten_light() {
-  nassertr(!is_empty(), 0);
+  nassertr_always(!is_empty(), 0);
   qpSceneGraphReducer gr;
   gr.apply_attribs(node());
 
@@ -2241,7 +2334,7 @@ flatten_light() {
 ////////////////////////////////////////////////////////////////////
 int qpNodePath::
 flatten_medium() {
-  nassertr(!is_empty(), 0);
+  nassertr_always(!is_empty(), 0);
   qpSceneGraphReducer gr;
   gr.apply_attribs(node());
   int num_removed = gr.flatten(node(), false);
@@ -2268,7 +2361,7 @@ flatten_medium() {
 ////////////////////////////////////////////////////////////////////
 int qpNodePath::
 flatten_strong() {
-  nassertr(!is_empty(), 0);
+  nassertr_always(!is_empty(), 0);
   qpSceneGraphReducer gr;
   gr.apply_attribs(node());
   int num_removed = gr.flatten(node(), true);
@@ -2287,7 +2380,7 @@ flatten_strong() {
 ////////////////////////////////////////////////////////////////////
 bool qpNodePath::
 write_bam_file(const string &filename) const {
-  nassertr(!is_empty(), false);
+  nassertr_always(!is_empty(), false);
 
   /*
   BamFile bam_file;
@@ -2633,5 +2726,92 @@ r_calc_tight_bounds(PandaNode *node, LPoint3f &min_point, LPoint3f &max_point,
   for (int i = 0; i < num_children; i++) {
     r_calc_tight_bounds(cr.get_child(i), min_point, max_point,
                         found_any, next_transform);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::r_find_texture
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+Texture * qpNodePath::
+r_find_texture(PandaNode *node, const RenderState *state,
+               const GlobPattern &glob) const {
+  CPT(RenderState) next_state = state->compose(node->get_state());
+
+  if (node->is_geom_node()) {
+    qpGeomNode *gnode;
+    DCAST_INTO_R(gnode, node, NULL);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(RenderState) geom_state = 
+        next_state->compose(gnode->get_geom_state(i));
+
+      // Look for a TextureAttrib on the state.
+      const RenderAttrib *attrib =
+        geom_state->get_attrib(TextureAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+        Texture *texture = ta->get_texture();
+        if (texture != (Texture *)NULL) {
+          if (glob.matches(texture->get_name())) {
+            return texture;
+          }
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    Texture *result = r_find_texture(cr.get_child(i), next_state, glob);
+    if (result != (Texture *)NULL) {
+      return result;
+    }
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::r_find_all_textures
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+r_find_all_textures(PandaNode *node, const RenderState *state,
+                    qpNodePath::Textures &textures) const {
+  CPT(RenderState) next_state = state->compose(node->get_state());
+
+  if (node->is_geom_node()) {
+    qpGeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(RenderState) geom_state = 
+        next_state->compose(gnode->get_geom_state(i));
+
+      // Look for a TextureAttrib on the state.
+      const RenderAttrib *attrib =
+        geom_state->get_attrib(TextureAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+        Texture *texture = ta->get_texture();
+        if (texture != (Texture *)NULL) {
+          textures.insert(texture);
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    r_find_all_textures(cr.get_child(i), next_state, textures);
   }
 }

@@ -18,17 +18,14 @@
 
 #ifndef IMAGEBUFFER_H
 #define IMAGEBUFFER_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
+
+#include "pandabase.h"
 
 #include "drawable.h"
-#include <pointerToArray.h>
-#include <typedef.h>
-#include <filename.h>
-#include <namable.h>
+#include "pointerToArray.h"
+#include "typedef.h"
+#include "filename.h"
+#include "namable.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defines
@@ -41,16 +38,12 @@ class DisplayRegion;
 //       Class : ImageBuffer
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ImageBuffer : public dDrawable, public Namable
-{
+class EXPCL_PANDA ImageBuffer : public dDrawable, public Namable {
 PUBLISHED:
-  ImageBuffer( void ) : dDrawable() { }
-  virtual ~ImageBuffer( void ) { }
+  ImageBuffer() : dDrawable() { }
+  virtual ~ImageBuffer() { }
 
 public:
-  virtual bool read( const string& name ) = 0;
-  virtual bool write( const string& name = "" ) const = 0;
-
   virtual void config( void ) { WritableConfigurable::config(); }
 
   virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *)=0;
@@ -61,13 +54,21 @@ public:
   virtual void draw(GraphicsStateGuardianBase *, const DisplayRegion *,
                     const RenderBuffer &rb)=0;
 
-  INLINE void set_alpha_name(const string &alpha_name);
-  INLINE void clear_alpha_name();
-  INLINE bool has_alpha_name() const;
-  INLINE const string &get_alpha_name() const;
+PUBLISHED:
+  INLINE bool has_filename() const;
+  INLINE const Filename &get_filename() const;
+  INLINE bool has_alpha_filename() const;
+  INLINE const Filename &get_alpha_filename() const;
+
+public:
+  INLINE void set_filename(const Filename &filename);
+  INLINE void clear_filename();
+  INLINE void set_alpha_filename(const Filename &alpha_filename);
+  INLINE void clear_alpha_filename();
 
 private:
-  string _alpha_name;
+  Filename _filename;
+  Filename _alpha_filename;
 
 public:
   //Abstract class, so no factory methods for Reading and Writing

@@ -1,0 +1,70 @@
+// Filename: workingNodePath.I
+// Created by:  drose (16Mar02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: WorkingNodePath::Constructor
+//       Access: Public
+//  Description: Creates a WorkingNodePath that is the same as the
+//               indicated NodePath.  This is generally used to begin
+//               the traversal of a scene graph with the root
+//               NodePath.
+////////////////////////////////////////////////////////////////////
+INLINE WorkingNodePath::
+WorkingNodePath(const qpNodePath &start) {
+  nassertv(!start.is_empty());
+  _start = start._head;
+  _node = start.node();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WorkingNodePath::Constructor
+//       Access: Public
+//  Description: Creates a WorkingNodePath that is the same as the
+//               indicated WorkingNodePath, plus one node.  This is
+//               generally used to continue the traversal to the next
+//               node.
+////////////////////////////////////////////////////////////////////
+INLINE WorkingNodePath::
+WorkingNodePath(const WorkingNodePath &parent, PandaNode *child) {
+  _next = &parent;
+  _node = child;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WorkingNodePath::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE WorkingNodePath::
+~WorkingNodePath() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WorkingNodePath::get_node_path
+//       Access: Public
+//  Description: Constructs and returns an actual NodePath that
+//               represents the same path we have just traversed.
+////////////////////////////////////////////////////////////////////
+INLINE qpNodePath WorkingNodePath::
+get_node_path() const {
+  qpNodePath result;
+  result._head = r_get_node_path();
+  nassertr(result._head != (qpNodePathComponent *)NULL, qpNodePath::fail());
+  return result;
+}

@@ -83,9 +83,9 @@ PUBLISHED:
   Texture();
   ~Texture();
 
-  virtual bool read(const string &name);
-  virtual bool read(const string &name, const string &gray);
-  virtual bool write(const string &name = "") const;
+  bool read(const Filename &name);
+  bool read(const Filename &name, const Filename &gray);
+  bool write(const Filename &name = "") const;
 
   void set_wrapu(WrapMode wrap);
   void set_wrapv(WrapMode wrap);

@@ -18,6 +18,10 @@
 
 #include "qpnodePathComponent.h"
 
+
+// We start the key counters off at 1, since 0 is reserved for an
+// empty NodePath (and also for an unassigned key).
+int qpNodePathComponent::_next_key = 1;
 TypeHandle qpNodePathComponent::_type_handle;
 
 

@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpnodePathCollection.h"
-//#include "findApproxPath.h"
-//#include "findApproxLevel.h"
+#include "qpfindApproxPath.h"
+#include "qpfindApproxLevel.h"
 
 #include "indent.h"
 
@@ -65,8 +65,8 @@ add_path(const qpNodePath &node_path) {
   // objects.
 
   if (_node_paths.get_ref_count() > 1) {
-    PTA(qpNodePath) old_node_paths = _node_paths;
-    _node_paths = PTA(qpNodePath)::empty_array(0);
+    NodePaths old_node_paths = _node_paths;
+    _node_paths = NodePaths::empty_array(0);
     _node_paths.v() = old_node_paths.v();
   }
 
@@ -100,8 +100,8 @@ remove_path(const qpNodePath &node_path) {
   // objects.
 
   if (_node_paths.get_ref_count() > 1) {
-    PTA(qpNodePath) old_node_paths = _node_paths;
-    _node_paths = PTA(qpNodePath)::empty_array(0);
+    NodePaths old_node_paths = _node_paths;
+    _node_paths = NodePaths::empty_array(0);
     _node_paths.v() = old_node_paths.v();
   }
 
@@ -263,7 +263,6 @@ ls(ostream &out, int indent_level) const {
   }
 }
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePathCollection::find_all_matches
 //       Access: Published
@@ -276,12 +275,12 @@ qpNodePathCollection qpNodePathCollection::
 find_all_matches(const string &path) const {
   qpNodePathCollection result;
 
-  FindApproxPath approx_path;
+  qpFindApproxPath approx_path;
   if (approx_path.add_string(path)) {
     if (!is_empty()) {
-      FindApproxLevel level;
+      qpFindApproxLevel level;
       for (int i = 0; i < get_num_paths(); i++) {
-        FindApproxLevelEntry start(get_path(i), approx_path);
+        qpFindApproxLevelEntry start(get_path(i), approx_path);
         level.add_entry(start);
       }
       get_path(0).r_find_matches(result, level, -1,
@@ -291,7 +290,6 @@ find_all_matches(const string &path) const {
 
   return result;
 }
-*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePathCollection::reparent_to

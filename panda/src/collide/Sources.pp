@@ -10,13 +10,22 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
-    collisionEntry.I collisionEntry.h collisionHandler.h  \
+    collisionEntry.I collisionEntry.h \
+    qpcollisionEntry.I qpcollisionEntry.h \
+    collisionHandler.h  \
+    qpcollisionHandler.h  \
     collisionHandlerEvent.I collisionHandlerEvent.h  \
+    qpcollisionHandlerEvent.I qpcollisionHandlerEvent.h  \
     collisionHandlerFloor.I collisionHandlerFloor.h  \
+    qpcollisionHandlerFloor.I qpcollisionHandlerFloor.h  \
     collisionHandlerPhysical.I collisionHandlerPhysical.h  \
+    qpcollisionHandlerPhysical.I qpcollisionHandlerPhysical.h  \
     collisionHandlerPusher.I collisionHandlerPusher.h  \
-    collisionHandlerQueue.h collisionLevelState.I  \
-    collisionLevelState.N collisionLevelState.h \
+    qpcollisionHandlerPusher.I qpcollisionHandlerPusher.h  \
+    collisionHandlerQueue.h \
+    qpcollisionHandlerQueue.h \
+    collisionLevelState.I collisionLevelState.h \
+    qpcollisionLevelState.I qpcollisionLevelState.h \
     collisionNode.I collisionNode.h \
     qpcollisionNode.I qpcollisionNode.h \
     collisionPlane.I collisionPlane.h  \
@@ -29,10 +38,22 @@
     config_collide.h
     
  #define INCLUDED_SOURCES \
-    collisionEntry.cxx collisionHandler.cxx collisionHandlerEvent.cxx  \
-    collisionHandlerFloor.cxx collisionHandlerPhysical.cxx  \
-    collisionHandlerPusher.cxx collisionHandlerQueue.cxx  \
+    collisionEntry.cxx \
+    qpcollisionEntry.cxx \
+    collisionHandler.cxx \
+    qpcollisionHandler.cxx \
+    collisionHandlerEvent.cxx  \
+    qpcollisionHandlerEvent.cxx  \
+    collisionHandlerFloor.cxx \
+    qpcollisionHandlerFloor.cxx \
+    collisionHandlerPhysical.cxx  \
+    qpcollisionHandlerPhysical.cxx  \
+    collisionHandlerPusher.cxx \
+    qpcollisionHandlerPusher.cxx \
+    collisionHandlerQueue.cxx  \
+    qpcollisionHandlerQueue.cxx  \
     collisionLevelState.cxx \
+    qpcollisionLevelState.cxx \
     collisionNode.cxx \
     qpcollisionNode.cxx \
     collisionPlane.cxx  \
@@ -43,12 +64,22 @@
     config_collide.cxx 
 
   #define INSTALL_HEADERS \
-    collisionEntry.I collisionEntry.h collisionHandler.h \
+    collisionEntry.I collisionEntry.h \
+    qpcollisionEntry.I qpcollisionEntry.h \
+    collisionHandler.h \
+    qpcollisionHandler.h \
     collisionHandlerEvent.I collisionHandlerEvent.h \
+    qpcollisionHandlerEvent.I qpcollisionHandlerEvent.h \
     collisionHandlerFloor.I collisionHandlerFloor.h \
+    qpcollisionHandlerFloor.I qpcollisionHandlerFloor.h \
     collisionHandlerPhysical.I collisionHandlerPhysical.h \
+    qpcollisionHandlerPhysical.I qpcollisionHandlerPhysical.h \
     collisionHandlerPusher.I collisionHandlerPusher.h \
-    collisionHandlerQueue.h collisionLevelState.I collisionLevelState.h \
+    qpcollisionHandlerPusher.I qpcollisionHandlerPusher.h \
+    collisionHandlerQueue.h \
+    qpcollisionHandlerQueue.h \
+    collisionLevelState.I collisionLevelState.h \
+    qpcollisionLevelState.I qpcollisionLevelState.h \
     collisionNode.I collisionNode.h \
     qpcollisionNode.I qpcollisionNode.h \
     collisionPlane.I collisionPlane.h \

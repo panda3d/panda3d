@@ -34,6 +34,7 @@
 ////////////////////////////////////////////////////////////////////
 
 class RenderBuffer;
+class Filename;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PixelBuffer
@@ -100,8 +101,8 @@ public:
 
   virtual void config( void );
 
-  virtual bool read( const string& name );
-  virtual bool write( const string& name = "" ) const;
+  bool read(const Filename &name);
+  bool write(const Filename &name) const;
 
   bool load( const PNMImage& pnmimage );
   bool store( PNMImage& pnmimage ) const;

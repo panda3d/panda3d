@@ -54,6 +54,7 @@ public:
   INLINE ~qpNodePathComponent();
   
   INLINE PandaNode *get_node() const;
+  INLINE int get_key() const;
   INLINE bool is_top_node() const;
   INLINE bool is_collapsed() const;
   
@@ -70,6 +71,7 @@ private:
   INLINE void collapse_with(qpNodePathComponent *next);
 
   PT(PandaNode) _node;
+  int _key;
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
@@ -85,6 +87,8 @@ private:
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+
+  static int _next_key;
 
 public:
   static TypeHandle get_class_type() {

@@ -26,5 +26,7 @@
 #include "texMatrixAttrib.cxx"
 #include "textureApplyAttrib.cxx"
 #include "textureAttrib.cxx"
+#include "textureCollection.cxx"
 #include "transformState.cxx"
 #include "transparencyAttrib.cxx"
+#include "workingNodePath.cxx"

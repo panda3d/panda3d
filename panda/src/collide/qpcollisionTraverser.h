@@ -21,8 +21,8 @@
 
 #include "pandabase.h"
 
-#include "collisionHandler.h"
-#include "collisionLevelState.h"
+#include "qpcollisionHandler.h"
+#include "qpcollisionLevelState.h"
 
 #include "traverserVisitor.h"
 #include "nullTransitionWrapper.h"
@@ -36,6 +36,7 @@
 class qpCollisionNode;
 class Geom;
 class qpNodePath;
+class qpCollisionEntry;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : qpCollisionTraverser
@@ -46,12 +47,12 @@ PUBLISHED:
   qpCollisionTraverser();
   ~qpCollisionTraverser();
 
-  void add_collider(qpCollisionNode *node, CollisionHandler *handler);
+  void add_collider(qpCollisionNode *node, qpCollisionHandler *handler);
   bool remove_collider(qpCollisionNode *node);
   bool has_collider(qpCollisionNode *node) const;
   int get_num_colliders() const;
   qpCollisionNode *get_collider(int n) const;
-  CollisionHandler *get_handler(qpCollisionNode *node) const;
+  qpCollisionHandler *get_handler(qpCollisionNode *node) const;
   void clear_colliders();
 
   void traverse(const qpNodePath &root);
@@ -60,31 +61,33 @@ PUBLISHED:
   void write(ostream &out, int indent_level) const;
 
 private:
-  void prepare_colliders(CollisionLevelState &state);
+  void prepare_colliders(qpCollisionLevelState &state);
 
-  void compare_collider_to_node(CollisionEntry &entry,
+  void r_traverse(PandaNode *node, qpCollisionLevelState &level_state);
+
+  void compare_collider_to_node(qpCollisionEntry &entry,
                                 const GeometricBoundingVolume *from_node_gbv,
                                 const GeometricBoundingVolume *into_node_gbv);
-  void compare_collider_to_geom_node(CollisionEntry &entry,
+  void compare_collider_to_geom_node(qpCollisionEntry &entry,
                                      const GeometricBoundingVolume *from_node_gbv,
                                      const GeometricBoundingVolume *into_node_gbv);
-  void compare_collider_to_solid(CollisionEntry &entry,
+  void compare_collider_to_solid(qpCollisionEntry &entry,
                                  const GeometricBoundingVolume *from_node_gbv,
                                  const GeometricBoundingVolume *solid_gbv);
-  void compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
+  void compare_collider_to_geom(qpCollisionEntry &entry, Geom *geom,
                                 const GeometricBoundingVolume *from_node_gbv,
                                 const GeometricBoundingVolume *solid_gbv);
 
 private:
-  PT(CollisionHandler) _default_handler;
+  PT(qpCollisionHandler) _default_handler;
   TypeHandle _graph_type;
 
-  typedef pmap<PT(qpCollisionNode),  PT(CollisionHandler) > Colliders;
+  typedef pmap<PT(qpCollisionNode),  PT(qpCollisionHandler) > Colliders;
   Colliders _colliders;
   typedef pvector<qpCollisionNode *> OrderedColliders;
   OrderedColliders _ordered_colliders;
 
-  typedef pmap<PT(CollisionHandler), int> Handlers;
+  typedef pmap<PT(qpCollisionHandler), int> Handlers;
   Handlers _handlers;
 
   // Statistics

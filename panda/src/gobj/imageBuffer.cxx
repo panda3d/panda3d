@@ -43,8 +43,8 @@ TypeHandle ImageBuffer::_type_handle;
 void ImageBuffer::
 write_datagram(BamWriter *, Datagram &me)
 {
-  Filename filename = get_name();
-  Filename alpha_filename = get_alpha_name();
+  Filename filename = get_filename();
+  Filename alpha_filename = get_alpha_filename();
 
   switch (bam_texture_mode) {
   case BTM_fullpath:
@@ -55,13 +55,13 @@ write_datagram(BamWriter *, Datagram &me)
     filename.find_on_searchpath(get_model_path());
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
-        << "Texture file " << get_name() << " found as " << filename << "\n";
+        << "Texture file " << get_filename() << " found as " << filename << "\n";
     }
     alpha_filename.find_on_searchpath(get_texture_path());
     alpha_filename.find_on_searchpath(get_model_path());
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
-        << "Alpha image " << get_alpha_name() << " found as " << alpha_filename << "\n";
+        << "Alpha image " << get_alpha_filename() << " found as " << alpha_filename << "\n";
     }
     break;
 
@@ -75,6 +75,7 @@ write_datagram(BamWriter *, Datagram &me)
       << "Unsupported bam-texture-mode: " << (int)bam_texture_mode << "\n";
   }
 
+  me.add_string(get_name());
   me.add_string(filename);
   me.add_string(alpha_filename);
 }
@@ -89,6 +90,13 @@ write_datagram(BamWriter *, Datagram &me)
 ////////////////////////////////////////////////////////////////////
 void ImageBuffer::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  set_name(scan.get_string());
-  set_alpha_name(scan.get_string());
+  if (manager->get_file_minor_ver() < 6) {
+    // No _filename before bams 3.6.
+    set_filename(scan.get_string());
+    set_name(_filename.get_basename_wo_extension());
+  } else {
+    set_name(scan.get_string());
+    set_filename(scan.get_string());
+  }
+  set_alpha_filename(scan.get_string());
 }

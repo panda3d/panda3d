@@ -127,7 +127,7 @@ ns_load_texture(Filename filename, Filename grayfilename) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 ns_add_texture(Texture *tex) {
-  string filename = tex->get_name();
+  string filename = tex->get_filename();
   if (filename.empty()) {
     gobj_cat.error() << "Attempt to call add_texture() on an unnamed texture.\n";
   }
@@ -143,7 +143,7 @@ ns_add_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 ns_release_texture(Texture *tex) {
-  string filename = tex->get_name();
+  string filename = tex->get_filename();
   Textures::iterator ti;
   ti = _textures.find(filename);
   if (ti != _textures.end() && (*ti).second == tex) {

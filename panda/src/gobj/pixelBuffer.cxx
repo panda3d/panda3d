@@ -125,8 +125,8 @@ void PixelBuffer::config(void)
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool PixelBuffer::read(const string& name)
-{
+bool PixelBuffer::
+read(const Filename &name) {
   PNMImage pnmimage;
 
   if (!pnmimage.read(name)) {
@@ -135,8 +135,9 @@ bool PixelBuffer::read(const string& name)
     return false;
   }
 
-  set_name(name);
-  clear_alpha_name();
+  set_name(name.get_basename_wo_extension());
+  set_filename(name);
+  clear_alpha_filename();
   return load(pnmimage);
 }
 
@@ -145,16 +146,16 @@ bool PixelBuffer::read(const string& name)
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool PixelBuffer::write( const string& name ) const
-{
+bool PixelBuffer::
+write(const Filename &name) const {
   PNMImage pnmimage;
   if (!store(pnmimage)) {
     return false;
   }
 
-  string tname;
+  Filename tname;
   if (name.empty()) {
-    tname = get_name();
+    tname = get_filename();
   } else {
     tname = name;
   }

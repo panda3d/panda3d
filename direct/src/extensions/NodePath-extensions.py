@@ -6,10 +6,12 @@
 
     def id(self):
         """Returns a unique id identifying the NodePath instance"""
-        # Nowadays, the NodePath itself serves as that unique id.
-        # This function is therefore deprecated and should be removed
-        # soon.
-        return self
+        try:
+            # Old style scene graph
+            return self.arc()
+        except:
+            # New style scene graph
+            return self.getKey()
 
     def getName(self):
         """Returns the name of the bottom node if it exists, or <noname>"""

@@ -148,6 +148,45 @@ test_intersection_from_segment(CollisionHandler *,
   return 0;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::test_intersection_from_sphere
+//       Access: Protected, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+int CollisionSolid::
+test_intersection_from_sphere(qpCollisionHandler *,
+                              const qpCollisionEntry &) const {
+  report_undefined_intersection_test(CollisionSphere::get_class_type(),
+                                     get_type());
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::test_intersection_from_ray
+//       Access: Protected, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+int CollisionSolid::
+test_intersection_from_ray(qpCollisionHandler *,
+                           const qpCollisionEntry &) const {
+  report_undefined_intersection_test(CollisionRay::get_class_type(),
+                                     get_type());
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::test_intersection_from_segment
+//       Access: Protected, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+int CollisionSolid::
+test_intersection_from_segment(qpCollisionHandler *,
+                               const qpCollisionEntry &) const {
+  report_undefined_intersection_test(CollisionSegment::get_class_type(),
+                                     get_type());
+  return 0;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::report_undefined_intersection_test
