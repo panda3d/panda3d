@@ -51,6 +51,7 @@ PUBLISHED:
   void clear_window();
 
   INLINE GraphicsOutput *get_window() const;
+  INLINE DisplayRegion *get_display_region() const;
 
   INLINE void set_update_interval(double update_interval);
   INLINE double get_update_interval() const;

@@ -20,14 +20,25 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameRateMeter::get_window
 //       Access: Published
-//  Description: Returns the GraphicsOutput that the meter has created
-//               to render itself into the window or channel supplied
-//               to setup_window(), or NULL if setup_window() has not
+//  Description: Returns the GraphicsOutput that was passed to
+//               setup_window(), or NULL if setup_window() has not
 //               been called.
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsOutput *FrameRateMeter::
 get_window() const {
   return _window;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameRateMeter::get_display_region
+//       Access: Published
+//  Description: Returns the DisplayRegion that the meter has created
+//               to render itself into the window to setup_window(),
+//               or NULL if setup_window() has not been called.
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegion *FrameRateMeter::
+get_display_region() const {
+  return _display_region;
 }
 
 ////////////////////////////////////////////////////////////////////

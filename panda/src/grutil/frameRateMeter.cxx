@@ -44,7 +44,7 @@ FrameRateMeter(const string &name) : TextNode(name) {
 
   set_align(A_right);
   set_transform(LMatrix4f::scale_mat(frame_rate_meter_scale) * 
-                LMatrix4f::translate_mat(1.0f - frame_rate_meter_side_margins * frame_rate_meter_scale, 0.0f, 1.0f - frame_rate_meter_scale));
+                LMatrix4f::translate_mat(LVector3f::rfu(1.0f - frame_rate_meter_side_margins * frame_rate_meter_scale, 0.0f, 1.0f - frame_rate_meter_scale)));
   set_card_color(0.0f, 0.0f, 0.0f, 0.4f);
   set_card_as_margin(frame_rate_meter_side_margins, frame_rate_meter_side_margins, 0.1f, 0.0f);
 
@@ -86,6 +86,7 @@ setup_window(GraphicsOutput *window) {
     
   // Create a display region that covers the entire window.
   _display_region = _window->make_display_region();
+  _display_region->set_sort(frame_rate_meter_layer_sort);
     
   // Finally, we need a camera to associate with the display region.
   PT(Camera) camera = new Camera("frame_rate_camera");
@@ -114,8 +115,11 @@ setup_window(GraphicsOutput *window) {
 ////////////////////////////////////////////////////////////////////
 void FrameRateMeter::
 clear_window() {
-  _window = (GraphicsOutput *)NULL;
-  _display_region = (DisplayRegion *)NULL;
+  if (_window != (GraphicsOutput *)NULL) {
+    _window->remove_display_region(_display_region);
+    _window = (GraphicsOutput *)NULL;
+    _display_region = (DisplayRegion *)NULL;
+  }
   _root = NodePath();
 }
 
