@@ -282,41 +282,6 @@ get_switch_fps() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::has_transform
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE bool EggGroup::
-has_transform() const {
-  return (_flags & F_has_transform) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::get_transform
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE LMatrix4d EggGroup::
-get_transform() const {
-  nassertr(_flags & F_has_transform, _transform);
-  return _transform;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::transform_is_identity()
-//       Access: Public
-//  Description: Returns true if no transform matrix has been
-//               specified, or if the one specified is the identity
-//               transform.  Returns false only if a nonidentity
-//               transform has been applied.
-////////////////////////////////////////////////////////////////////
-INLINE bool EggGroup::
-transform_is_identity() const {
-  return (!has_transform() ||
-          _transform.almost_equal(LMatrix4d::ident_mat(), 0.0001));
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::set_objecttype
 //       Access: Public
 //  Description:

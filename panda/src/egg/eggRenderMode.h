@@ -19,11 +19,8 @@
 #ifndef EGGRENDERMODE_H
 #define EGGRENDERMODE_H
 
-#include <pandabase.h>
-
-#include <typedObject.h>
-
-#include <string>
+#include "pandabase.h"
+#include "typedObject.h"
 
 
 ////////////////////////////////////////////////////////////////////

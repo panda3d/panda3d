@@ -1431,8 +1431,7 @@ create_group_arc(EggGroup *egg_group, PandaNode *parent, PandaNode *node) {
 
   // If the group had a transform, apply it to the arc.
   if (egg_group->has_transform()) {
-    LMatrix4f matf = LCAST(float, egg_group->get_transform());
-    node->set_transform(TransformState::make_mat(matf));
+    node->set_transform(make_transform(egg_group));
   }
 
   // If the group has a billboard flag, apply that.
@@ -1923,4 +1922,89 @@ apply_deferred_nodes(PandaNode *node, const DeferredNodeProperty &prop) {
   for (int i = 0; i < num_children; i++) {
     apply_deferred_nodes(node->get_child(i), next_prop);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::make_transform
+//       Access: Private
+//  Description: Walks back over the tree and applies the
+//               DeferredNodeProperties that were saved up along the
+//               way.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) EggLoader::
+make_transform(const EggTransform3d *egg_transform) {
+  // We'll build up the transform componentwise, so we preserve any
+  // componentwise properties of the egg transform.
+
+  CPT(TransformState) ts = TransformState::make_identity();
+  int num_components = egg_transform->get_num_components();
+  for (int i = 0; i < num_components; i++) {
+    switch (egg_transform->get_component_type(i)) {
+    case EggTransform3d::CT_translate:
+      {
+        LVector3f trans(LCAST(float, egg_transform->get_component_vector(i)));
+        ts = TransformState::make_pos(trans)->compose(ts);
+      }
+      break;
+
+    case EggTransform3d::CT_rotx:
+      {
+        LRotationf rot(LVector3f(1.0f, 0.0f, 0.0f),
+                       (float)egg_transform->get_component_number(i));
+        ts = TransformState::make_quat(rot)->compose(ts);
+      }
+      break;
+
+    case EggTransform3d::CT_roty:
+      {
+        LRotationf rot(LVector3f(0.0f, 1.0f, 0.0f),
+                       (float)egg_transform->get_component_number(i));
+        ts = TransformState::make_quat(rot)->compose(ts);
+      }
+      break;
+
+    case EggTransform3d::CT_rotz:
+      {
+        LRotationf rot(LVector3f(0.0f, 0.0f, 1.0f),
+                       (float)egg_transform->get_component_number(i));
+        ts = TransformState::make_quat(rot)->compose(ts);
+      }
+      break;
+
+    case EggTransform3d::CT_rotate:
+      {
+        LRotationf rot(LCAST(float, egg_transform->get_component_vector(i)),
+                       (float)egg_transform->get_component_number(i));
+        ts = TransformState::make_quat(rot)->compose(ts);
+      }
+      break;
+
+    case EggTransform3d::CT_scale:
+      {
+        LVecBase3f scale(LCAST(float, egg_transform->get_component_vector(i)));
+        ts = TransformState::make_scale(scale)->compose(ts);
+      }
+      break;
+
+    case EggTransform3d::CT_uniform_scale:
+      {
+        float scale = (float)egg_transform->get_component_number(i);
+        ts = TransformState::make_scale(scale)->compose(ts);
+      }
+      break;
+
+    case EggTransform3d::CT_matrix:
+      {
+        LMatrix4f mat(LCAST(float, egg_transform->get_component_matrix(i)));
+        ts = TransformState::make_mat(mat)->compose(ts);
+      }
+      break;
+
+    case EggTransform3d::CT_invalid:
+      nassertr(false, ts);
+      break;
+    }
+  }
+
+  return ts;
 }

@@ -16,10 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include "eggMiscFuncs.h"
-
-#include <indent.h>
+#include "indent.h"
 
 #include <ctype.h>
 
@@ -93,61 +92,5 @@ write_transform(ostream &out, const LMatrix3d &mat, int indent_level) {
     out << "\n";
   }
   indent(out, indent_level+2) << "}\n";
-  indent(out, indent_level) << "}\n";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: write_transform
-//  Description: A helper function to write out a 4x4 transform
-//               matrix.
-////////////////////////////////////////////////////////////////////
-void
-write_transform(ostream &out, const LMatrix4d &mat, int indent_level) {
-  indent(out, indent_level) << "<Transform> {\n";
-
-  bool written = false;
-
-  /*
-  int mat_type = mat.getMatType();
-  if ((mat_type &
-       ~(PFMAT_TRANS | PFMAT_ROT | PFMAT_SCALE | PFMAT_NONORTHO))==0) {
-    // Write out the matrix componentwise if possible.
-    pfVec3 s, r, t;
-    if (ExtractMatrix(mat, s, r, t)) {
-      if (!s.almostEqual(pfVec3(1.0, 1.0, 1.0), 0.0001)) {
-        Indent(out, indent+2) << "<Scale> { " << s << " }\n";
-      }
-      if (fabs(r[0]) > 0.0001) {
-        Indent(out, indent+2) << "<RotX> { " << r[0] << " }\n";
-      }
-      if (fabs(r[1]) > 0.0001) {
-        Indent(out, indent+2) << "<RotY> { " << r[1] << " }\n";
-      }
-      if (fabs(r[2]) > 0.0001) {
-        Indent(out, indent+2) << "<RotZ> { " << r[2] << " }\n";
-      }
-      if (!t.almostEqual(pfVec3(0.0, 0.0, 0.0), 0.0001)) {
-        Indent(out, indent+2) << "<Translate> { " << t << " }\n";
-      }
-      written = true;
-    }
-  }
-  */
-
-  if (!written) {
-    // It's some non-affine matrix, or it has a shear; write out the
-    // general 4x4.
-    indent(out, indent_level+2) << "<Matrix4> {\n";
-
-    for (int r = 0; r < 4; r++) {
-      indent(out, indent_level+3);
-      for (int c = 0; c < 4; c++) {
-        out << " " << mat(r, c);
-      }
-      out << "\n";
-    }
-    indent(out, indent_level+2) << "}\n";
-  }
-
   indent(out, indent_level) << "}\n";
 }

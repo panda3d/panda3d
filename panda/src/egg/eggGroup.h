@@ -23,6 +23,7 @@
 
 #include "eggGroupNode.h"
 #include "eggRenderMode.h"
+#include "eggTransform3d.h"
 #include "eggVertex.h"
 #include "eggSwitchCondition.h"
 #include "pt_EggVertex.h"
@@ -35,7 +36,7 @@
 // Description : The main glue of the egg hierarchy, this corresponds
 //               to the <Group>, <Instance>, and <Joint> type nodes.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode {
+class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode, public EggTransform3d {
 public:
   typedef pmap<PT_EggVertex, double> VertexRef;
 
@@ -130,12 +131,6 @@ public:
   INLINE void set_switch_fps(double fps);
   INLINE double get_switch_fps() const;
 
-  void set_transform(const LMatrix4d &transform);
-  void clear_transform();
-  INLINE bool has_transform() const;
-  INLINE LMatrix4d get_transform() const;
-  INLINE bool transform_is_identity() const;
-
   INLINE void set_objecttype(const string &objecttype);
   INLINE void clear_objecttype();
   INLINE bool has_objecttype() const;
@@ -213,7 +208,6 @@ private:
     F_dcs_flag               = 0x00000010,
     F_billboard_type         = 0x000000e0,
     F_switch_flag            = 0x00000100,
-    F_has_transform          = 0x00000200,
     F_model_flag             = 0x00000400,
     F_texlist_flag           = 0x00000800,
     F_nofog_flag             = 0x00001000,
@@ -231,7 +225,6 @@ private:
 
   int _flags;
   int _flags2;
-  LMatrix4d _transform;
   CollideMask _collide_mask, _from_collide_mask, _into_collide_mask;
   LPoint3d _billboard_center;
   string _objecttype;

@@ -38,7 +38,6 @@ EggGroup::
 EggGroup(const string &name) : EggGroupNode(name) {
   _flags = 0;
   _flags2 = 0;
-  _transform = LMatrix4d::ident_mat();
   _fps = 0.0;
 }
 
@@ -59,9 +58,9 @@ EggGroup(const EggGroup &copy) {
 ////////////////////////////////////////////////////////////////////
 EggGroup &EggGroup::
 operator = (const EggGroup &copy) {
+  EggTransform3d::operator = (copy);
   _flags = copy._flags;
   _flags2 = copy._flags2;
-  _transform = copy._transform;
   _objecttype = copy._objecttype;
   _collision_name = copy._collision_name;
   _fps = copy._fps;
@@ -116,38 +115,6 @@ set_group_type(GroupType type) {
 
     // Now we might have changed the type to or from an instance node,
     // so we have to recompute the under_flags.
-    update_under(0);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::set_transform
-//       Access: Public
-//  Description: Sets the indicated transformation matrix on the node.
-////////////////////////////////////////////////////////////////////
-void EggGroup::
-set_transform(const LMatrix4d &transform) {
-  _transform = transform;
-  if (!has_transform()) {
-    _flags |= F_has_transform;
-
-    // Now we have to update the under_flags.
-    update_under(0);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::clear_transform
-//       Access: Public
-//  Description: Removes any transformation matrix from the node.
-////////////////////////////////////////////////////////////////////
-void EggGroup::
-clear_transform() {
-  _transform = LMatrix4d::ident_mat();
-  if (has_transform()) {
-    _flags &= ~F_has_transform;
-
-    // Now we have to update the under_flags.
     update_under(0);
   }
 }
@@ -250,7 +217,7 @@ write(ostream &out, int indent_level) const {
   }
 
   if (has_transform()) {
-    write_transform(out, _transform, indent_level + 2);
+    EggTransform3d::write(out, indent_level + 2);
   }
 
   if (has_objecttype()) {
@@ -767,7 +734,7 @@ adjust_under() {
 void EggGroup::
 r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
             CoordinateSystem to_cs) {
-  if (has_transform()) {
+  if (!transform_is_identity()) {
     // Since we want to apply this transform to all matrices,
     // including nested matrices, we can't simply premult it in and
     // leave it, because that would leave the rotational component in
@@ -785,7 +752,7 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
     mat1.set_row(3, LVector3d(0.0, 0.0, 0.0));
     inv1.set_row(3, LVector3d(0.0, 0.0, 0.0));
 
-    _transform = inv1 * _transform * mat;
+    set_transform(inv1 * get_transform() * mat);
 
     EggGroupNode::r_transform(mat1, inv1, to_cs);
   } else {

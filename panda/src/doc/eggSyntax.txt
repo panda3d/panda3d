@@ -1090,6 +1090,9 @@ GROUPING ENTRIES
     The transform definition may be any sequence of zero or more of
     the following.  Transformations are post multiplied in the order
     they are encountered to produce a net transformation matrix.
+    Rotations are defined as a counterclockwise angle in degrees about
+    a particular axis, either implicit (x, y, or z axis), or
+    arbitrary.
 
     <Translate> { x y z }
     <RotX> { degrees }
@@ -1097,12 +1100,7 @@ GROUPING ENTRIES
     <RotZ> { degrees }
     <Rotate> { degrees x y z }
     <Scale> { x y z }
-
-    <Matrix3> {
-      00 01 02
-      10 11 12
-      20 21 22
-    }    
+    <Scale> { s }
 
     <Matrix4> {
       00 01 02 03
@@ -1111,6 +1109,20 @@ GROUPING ENTRIES
       30 31 32 33
     }
 
+    In the context of texture coordinates, the transform is defined in
+    2-d space, and the allowable components correspondingly reflect
+    two-dimensional transforms:
+
+    <Translate> { x y }
+    <Rotate> { degrees }
+    <Scale> { x y }
+    <Scale> { s }
+
+    <Matrix3> {
+      00 01 02
+      10 11 12
+      20 21 22
+    }    
 
   <VertexRef> { indices <Ref> { pool-name } }
 

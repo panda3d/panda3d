@@ -29,16 +29,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
-
-#include <lmatrix.h>
-#include <typedef.h>
-
-#include <string>
-
-#ifndef WIN32_VC
-class ostream;
-#endif
+#include "pandabase.h"
+#include "lmatrix.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -63,14 +55,6 @@ enquote_string(ostream &out, const string &str,
 void
 write_transform(ostream &out, const LMatrix3d &mat, int indent_level);
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: write_transform
-//  Description: A helper function to write out a 4x4 transform
-//               matrix.
-////////////////////////////////////////////////////////////////////
-void
-write_transform(ostream &out, const LMatrix4d &mat, int indent_level);
 
 #include "eggMiscFuncs.I"
 

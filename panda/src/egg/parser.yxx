@@ -77,7 +77,6 @@ static int vertex_index;
 
 // We need to hold a matrix for a little bit while parsing the
 // <Transform> entries.
-static LMatrix4d matrix_3d;
 static LMatrix3d matrix_2d;
 
 
@@ -1049,12 +1048,9 @@ collide_flags:
 transform_3d:
         TRANSFORM
 {
-  matrix_3d = LMatrix4d::ident_mat();
+  DCAST(EggGroup, egg_stack.back())->clear_transform();
 }
         '{' transform_3d_body '}'
-{
-  DCAST(EggGroup, egg_stack.back())->set_transform(matrix_3d);
-}
         ;
 
 
@@ -1067,49 +1063,52 @@ transform_3d:
  */
 transform_3d_body:
           empty
-        | transform_3d_body matrix3_3d
-        | transform_3d_body matrix4_3d
         | transform_3d_body translate_3d
         | transform_3d_body rotx_3d
         | transform_3d_body roty_3d
         | transform_3d_body rotz_3d
         | transform_3d_body rotate_3d
         | transform_3d_body scale_3d
+        | transform_3d_body matrix4_3d
         ;
 
 translate_3d: TRANSLATE '{' real real real '}'
 {
-  matrix_3d *= LMatrix4d::translate_mat($3, $4, $5);
+  DCAST(EggGroup, egg_stack.back())->add_translate(LVector3d($3, $4, $5));
 }
         ;
 
 rotx_3d: ROTX '{' real '}'
 {
-  matrix_3d *= LMatrix4d::rotate_mat_normaxis($3, LVector3d(1.0, 0.0, 0.0));
+  DCAST(EggGroup, egg_stack.back())->add_rotx($3);
 }
         ;
 
 roty_3d: ROTY '{' real '}'
 {
-  matrix_3d *= LMatrix4d::rotate_mat_normaxis($3, LVector3d(0.0, 1.0, 0.0));
+  DCAST(EggGroup, egg_stack.back())->add_roty($3);
 }
         ;
 
 rotz_3d: ROTZ '{' real '}'
 {
-  matrix_3d *= LMatrix4d::rotate_mat_normaxis($3, LVector3d(0.0, 0.0, 1.0));
+  DCAST(EggGroup, egg_stack.back())->add_rotz($3);
 }
         ;
 
 rotate_3d: ROTATE '{' real real real real '}'
 {
-  matrix_3d *= LMatrix4d::rotate_mat($3, LVector3d($4, $5, $6));
+  DCAST(EggGroup, egg_stack.back())->add_rotate($3, LVector3d($4, $5, $6));
 }
         ;
 
 scale_3d: SCALE '{' real real real '}'
 {
-  matrix_3d *= LMatrix4d::scale_mat($3, $4, $5);
+  DCAST(EggGroup, egg_stack.back())->add_scale(LVecBase3d($3, $4, $5));
+}
+	| SCALE '{' real '}'
+{
+  DCAST(EggGroup, egg_stack.back())->add_uniform_scale($3);
 }
         ;
 
@@ -1124,25 +1123,11 @@ matrix4_3d_body:
           real real real real 
           real real real real 
 {
-  matrix_3d *= LMatrix4d($1, $2, $3, $4,
-                         $5, $6, $7, $8,
-                         $9, $10, $11, $12,
-                         $13, $14, $15, $16);
-}
-        ;
-
-matrix3_3d: MATRIX3 '{' matrix3_3d_body '}'
-        ;
-
-matrix3_3d_body: 
-          empty
-        | real real real
-          real real real
-          real real real
-{
-  matrix_3d *= LMatrix4d(LMatrix3d($1, $2, $3,
-                                   $4, $5, $6,
-                                   $7, $8, $9));
+  DCAST(EggGroup, egg_stack.back())->add_matrix
+    (LMatrix4d($1, $2, $3, $4,
+               $5, $6, $7, $8,
+               $9, $10, $11, $12,
+               $13, $14, $15, $16));
 }
         ;
 

@@ -35,6 +35,7 @@
 #include "lmatrix.h"
 #include "indirectCompareTo.h"
 #include "textureAttrib.h"
+#include "eggTransform3d.h"
 
 class EggNode;
 class EggBin;
@@ -121,6 +122,8 @@ private:
                                  EggGroup::CollideFlags flags);
 
   void apply_deferred_nodes(PandaNode *node, const DeferredNodeProperty &prop);
+
+  CPT(TransformState) make_transform(const EggTransform3d *egg_transform);
 
   Builder _builder;
 

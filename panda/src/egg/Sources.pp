@@ -30,6 +30,7 @@
      eggSAnimData.I eggSAnimData.h eggSurface.I eggSurface.h  \
      eggSwitchCondition.h eggTable.I eggTable.h eggTexture.I  \
      eggTexture.h eggTextureCollection.I eggTextureCollection.h  \
+     eggTransform3d.I eggTransform3d.h \
      eggUtilities.I eggUtilities.h eggVertex.I eggVertex.h  \
      eggVertexPool.I eggVertexPool.h eggXfmAnimData.I  \
      eggXfmAnimData.h eggXfmSAnim.I eggXfmSAnim.h parserDefs.h  \
@@ -50,6 +51,7 @@
      eggPoolUniquifier.cxx eggPrimitive.cxx eggRenderMode.cxx  \
      eggSAnimData.cxx eggSurface.cxx eggSwitchCondition.cxx  \
      eggTable.cxx eggTexture.cxx eggTextureCollection.cxx  \
+     eggTransform3d.cxx \
      eggUtilities.cxx eggVertex.cxx eggVertexPool.cxx  \
      eggXfmAnimData.cxx eggXfmSAnim.cxx xx xx pt_EggMaterial.cxx  \
      vector_PT_EggMaterial.cxx pt_EggTexture.cxx  \
@@ -74,6 +76,7 @@
     eggSAnimData.I eggSAnimData.h eggSurface.I eggSurface.h \
     eggSwitchCondition.h eggTable.I eggTable.h eggTexture.I \
     eggTexture.h eggTextureCollection.I eggTextureCollection.h \
+    eggTransform3d.I eggTransform3d.h \
     eggUtilities.I eggUtilities.h eggVertex.I eggVertex.h \
     eggVertexPool.I eggVertexPool.h eggXfmAnimData.I eggXfmAnimData.h \
     eggXfmSAnim.I eggXfmSAnim.h \

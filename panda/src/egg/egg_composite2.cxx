@@ -13,6 +13,7 @@
 #include "eggTable.cxx"
 #include "eggTexture.cxx"
 #include "eggTextureCollection.cxx"
+#include "eggTransform3d.cxx"
 #include "eggUtilities.cxx"
 #include "eggVertex.cxx"
 #include "eggVertexPool.cxx"
