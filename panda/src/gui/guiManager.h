@@ -34,6 +34,8 @@ private:
   typedef set<GuiLabel*, SortComp> SortSet;
   SortSet _sorts;
 
+  int _next_draw_order;
+
   Node* _root;
   MouseWatcher* _watcher;
 
@@ -48,6 +50,9 @@ PUBLISHED:
   void remove_label(GuiLabel*);
 
   void recompute_priorities(void);
+
+  INLINE int get_next_draw_order(void) const;
+  INLINE void set_next_draw_order(int);
 };
 
 #include "guiManager.I"

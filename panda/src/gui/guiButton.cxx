@@ -523,6 +523,15 @@ void GuiButton::set_priority(GuiItem* i, const GuiItem::Priority p) {
       _down_rollover->set_priority(_up, GuiLabel::P_HIGHEST);
     if (_inactive != (GuiLabel*)0L)
       _inactive->set_priority(_up, GuiLabel::P_HIGHEST);
+  } else if (p == P_Lowest) {
+    _up->set_priority(_up, GuiLabel::P_LOWEST);
+    _down->set_priority(_up, GuiLabel::P_LOWEST);
+    if (_up_rollover != (GuiLabel*)0L)
+      _up_rollover->set_priority(_up, GuiLabel::P_LOWEST);
+    if (_down_rollover != (GuiLabel*)0L)
+      _down_rollover->set_priority(_up, GuiLabel::P_LOWEST);
+    if (_inactive != (GuiLabel*)0L)
+      _inactive->set_priority(_up, GuiLabel::P_LOWEST);
   } else {
     i->set_priority(_up, ((p==P_Low)?P_High:P_Low));
     i->set_priority(_down, ((p==P_Low)?P_High:P_Low));

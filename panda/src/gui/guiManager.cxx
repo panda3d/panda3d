@@ -185,4 +185,5 @@ void GuiManager::recompute_priorities(void) {
   for (SortSet::iterator j=_sorts.begin(); j!=_sorts.end(); ++j) {
     p = (*j)->set_draw_order(p);
   }
+  _next_draw_order = p;
 }

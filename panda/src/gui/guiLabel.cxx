@@ -25,6 +25,7 @@ void GuiLabel::recompute_transform(void) {
     break;
   case SIMPLE_TEXTURE:
   case SIMPLE_CARD:
+  case L_NULL:
     {
       LMatrix4f mat = LMatrix4f::scale_mat(_scale) *
 	LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.:1.), 1.,
@@ -100,6 +101,7 @@ void GuiLabel::set_properties(void) {
     break;
   case SIMPLE_TEXTURE:
   case MODEL:
+  case L_NULL:
     _internal->set_transition(new ColorTransition(_foreground));
     break;
   case SIMPLE_CARD:
@@ -232,6 +234,17 @@ GuiLabel* GuiLabel::make_simple_card_label(void) {
   return ret;
 }
 
+GuiLabel* GuiLabel::make_null_label(void) {
+  GuiLabel* ret = new GuiLabel();
+  ret->_type = L_NULL;
+  ret->_geom = new NamedNode("GUI label");
+  NamedNode* n2 = new NamedNode("dummy");
+  ret->_internal = new RenderRelation(ret->_geom, n2);
+  ret->_internal->set_transition(
+				new ColorTransition(Colorf(ret->_foreground)));
+  return ret;
+}
+
 GuiLabel* GuiLabel::make_model_label(Node* geom, float w, float h) {
   GuiLabel* ret = new GuiLabel();
   ret->_type = MODEL;
@@ -345,6 +358,20 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
       t += y;
     }
     break;
+  case L_NULL:
+    {
+      float x = _pos.dot(LVector3f::rfu(1., 0., 0.));
+      float y = _pos.dot(LVector3f::rfu(0., 0., 1.));
+      l = _have_width?-(_width*0.5):-0.000005;
+      r = _have_width?(_width*0.5):0.000005;
+      l += x;
+      r += x;
+      b = _have_height?-(_height*0.5):-0.000005;
+      t = _have_height?(_height*0.5):0.000005;
+      b += y;
+      t += y;
+    }
+    break;
   case MODEL:
     {
       float x = _pos.dot(LVector3f::rfu(1., 0., 0.));
@@ -390,6 +417,9 @@ float GuiLabel::get_width(void) {
   case MODEL:
     w = _have_width?(_width*_model_width):_model_width;
     break;
+  case L_NULL:
+    w = _have_width?_width:0.00001;
+    break;
   default:
     gui_cat->warning()
       << "trying to get width from something I don't know how to" << endl;
@@ -420,6 +450,9 @@ float GuiLabel::get_height(void) {
     break;
   case MODEL:
     h = _have_height?(_height*_model_height):_model_height;
+    break;
+  case L_NULL:
+    h = _have_height?_height:0.00001;
     break;
   default:
     gui_cat->warning()
@@ -459,8 +492,94 @@ void GuiLabel::set_text(const string& val) {
   case MODEL:
     gui_cat->warning() << "tried to set text on a model label" << endl;
     break;
+  case L_NULL:
+    gui_cat->warning() << "tried to set text on a null label" << endl;
+    break;
   default:
     gui_cat->warning() << "trying to set text on an unknown label type ("
+		       << (int)_type << ")" << endl;
+  }
+  recompute();
+}
+
+void GuiLabel::set_shadow_color(const Colorf& c) {
+  switch (_type) {
+  case SIMPLE_TEXT:
+    {
+      TextNode* n = DCAST(TextNode, _geom);
+      n->set_shadow_color(c);
+    }
+    break;
+  case SIMPLE_TEXTURE:
+    gui_cat->warning() << "tried to set shadow color on a texture label"
+		       << endl;
+    break;
+  case SIMPLE_CARD:
+    gui_cat->warning() << "tried to set shadow color on a card label" << endl;
+    break;
+  case MODEL:
+    gui_cat->warning() << "tried to set shadow color on a model label" << endl;
+    break;
+  case L_NULL:
+    gui_cat->warning() << "tried to set shadow color on a null label" << endl;
+    break;
+  default:
+    gui_cat->warning()
+      << "trying to set shadow color on an unknown label type (" << (int)_type
+      << ")" << endl;
+  }
+  recompute();
+}
+
+void GuiLabel::set_shadow(float x, float y) {
+  switch (_type) {
+  case SIMPLE_TEXT:
+    {
+      TextNode* n = DCAST(TextNode, _geom);
+      n->set_shadow(x, y);
+    }
+    break;
+  case SIMPLE_TEXTURE:
+    gui_cat->warning() << "tried to set shadow on a texture label" << endl;
+    break;
+  case SIMPLE_CARD:
+    gui_cat->warning() << "tried to set shadow on a card label" << endl;
+    break;
+  case MODEL:
+    gui_cat->warning() << "tried to set shadow on a model label" << endl;
+    break;
+  case L_NULL:
+    gui_cat->warning() << "tried to set shadow on a null label" << endl;
+    break;
+  default:
+    gui_cat->warning() << "trying to set shadow on an unknown label type ("
+		       << (int)_type << ")" << endl;
+  }
+  recompute();
+}
+
+void GuiLabel::set_align(int a) {
+  switch (_type) {
+  case SIMPLE_TEXT:
+    {
+      TextNode* n = DCAST(TextNode, _geom);
+      n->set_align(a);
+    }
+    break;
+  case SIMPLE_TEXTURE:
+    gui_cat->warning() << "tried to set align on a texture label" << endl;
+    break;
+  case SIMPLE_CARD:
+    gui_cat->warning() << "tried to set align on a card label" << endl;
+    break;
+  case MODEL:
+    gui_cat->warning() << "tried to set align on a model label" << endl;
+    break;
+  case L_NULL:
+    gui_cat->warning() << "tried to set align on a null label" << endl;
+    break;
+  default:
+    gui_cat->warning() << "trying to set align on an unknown label type ("
 		       << (int)_type << ")" << endl;
   }
   recompute();
@@ -471,6 +590,10 @@ bool GuiLabel::operator<(const GuiLabel& c) const {
     return false;
   if (c._highest_pri)
     return true;
+  if (_lowest_pri)
+    return true;
+  if (c._lowest_pri)
+    return false;
   PriorityMap::const_iterator pi;
   pi = _priorities.find((GuiLabel*)(&c));
   if (pi != _priorities.end()) {
@@ -506,6 +629,7 @@ int GuiLabel::set_draw_order(int order) {
     break;
   case SIMPLE_TEXTURE:
   case SIMPLE_CARD:
+  case L_NULL:
   case MODEL:
     _arc->set_transition(new GeomBinTransition("fixed", order));
     break;
@@ -536,6 +660,9 @@ void GuiLabel::write(ostream& os) const {
     break;
   case MODEL:
     os << "MODEL";
+    break;
+  case L_NULL:
+    os << "NULL";
     break;
   default:
     os << "bad";

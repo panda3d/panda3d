@@ -5,6 +5,10 @@
 
 INLINE GuiChooser::GuiChooser(void) {}
 
+INLINE int GuiChooser::get_curr_item(void) const {
+  return _curr;
+}
+
 INLINE void GuiChooser::set_loop(bool b) {
   _loop = b;
 }

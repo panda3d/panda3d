@@ -70,6 +70,8 @@ void GuiSign::set_pos(const LVector3f& p) {
 void GuiSign::set_priority(GuiItem* i, const GuiItem::Priority p) {
   if (p == P_Highest)
     _sign->set_priority(_sign, GuiLabel::P_HIGHEST);
+  else if (p == P_Lowest)
+    _sign->set_priority(_sign, GuiLabel::P_LOWEST);
   else
     i->set_priority(_sign, ((p==P_Low)?P_High:P_Low));
   GuiItem::set_priority(i, p);

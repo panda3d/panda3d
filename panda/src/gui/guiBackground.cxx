@@ -103,6 +103,8 @@ void GuiBackground::set_priority(GuiItem* it, const GuiItem::Priority p) {
   _item->set_priority(it, p);
   if (p == P_Highest)
     _bg->set_priority(_bg, GuiLabel::P_HIGHEST);
+  else if (p == P_Lowest)
+    _bg->set_priority(_bg, GuiLabel::P_LOWEST);
   else 
     it->set_priority(_bg, ((p==P_Low)?P_High:P_Low));
   GuiItem::set_priority(it, p);

@@ -22,10 +22,10 @@ class GuiManager;
 
 class EXPCL_PANDA GuiLabel : public TypedReferenceCount {
 PUBLISHED:
-  enum PriorityType { P_NONE, P_LOWER, P_HIGHER, P_HIGHEST };
+  enum PriorityType { P_NONE, P_LOWEST, P_LOWER, P_HIGHER, P_HIGHEST };
 private:
   typedef map<GuiLabel*, PriorityType> PriorityMap;
-  enum LabelType { NONE, SIMPLE_TEXTURE, SIMPLE_TEXT, SIMPLE_CARD, MODEL };
+  enum LabelType { NONE, L_NULL, SIMPLE_TEXTURE, SIMPLE_TEXT, SIMPLE_CARD, MODEL };
 
   LabelType _type;
   PT_Node _geom;
@@ -50,6 +50,7 @@ private:
   PriorityMap _priorities;
   int _hard_pri;
   bool _highest_pri;
+  bool _lowest_pri;
 
   INLINE Node* get_geometry(void) const;
   INLINE void set_arc(RenderRelation*);
@@ -68,6 +69,7 @@ PUBLISHED:
   static GuiLabel* make_simple_text_label(const string&, Node*,
 					  Texture* = (Texture*)0L);
   static GuiLabel* make_simple_card_label(void);
+  static GuiLabel* make_null_label(void);
   static GuiLabel* make_model_label(Node*, float, float);
 
   int freeze();
@@ -100,6 +102,10 @@ PUBLISHED:
   INLINE Colorf get_background_color(void) const;
 
   void set_text(const string&);
+  INLINE void set_shadow_color(float, float, float, float);
+  void set_shadow_color(const Colorf&);
+  void set_shadow(float, float);
+  void set_align(int);
 
   INLINE void recompute(void);
 

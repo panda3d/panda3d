@@ -12,7 +12,7 @@
 
 class EXPCL_PANDA GuiItem : public TypedReferenceCount, public Namable {
 PUBLISHED:
-  enum Priority { P_Low, P_Normal, P_High, P_Highest };
+  enum Priority { P_Lowest, P_Low, P_Normal, P_High, P_Highest };
 
 protected:
   bool _added_hooks;

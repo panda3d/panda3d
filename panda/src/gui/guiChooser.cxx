@@ -92,9 +92,10 @@ void GuiChooser::move_prev(void) {
   if (_mgr != (GuiManager*)0L) {
     _items[_curr]->unmanage();
     _items[tmp]->manage(_mgr, *_eh);
-    if (tmp == 0)
+    if (tmp == 0) {
+      _prev_button->exit();
       _prev_button->inactive();
-    else {
+    } else {
       _prev_button->up();
       if (_behavior_running) {
 	_prev_button->start_behavior();
@@ -102,9 +103,10 @@ void GuiChooser::move_prev(void) {
       }
     }
     int foo = _items.size() - 1;
-    if (tmp == foo)
+    if (tmp == foo) {
+      _next_button->exit();
       _next_button->inactive();
-    else {
+    } else {
       _next_button->up();
       if (_behavior_running) {
 	_next_button->start_behavior();
@@ -131,9 +133,10 @@ void GuiChooser::move_next(void) {
   if (_mgr != (GuiManager*)0L) {
     _items[_curr]->unmanage();
     _items[tmp]->manage(_mgr, *_eh);
-    if (tmp == 0)
+    if (tmp == 0) {
+      _prev_button->exit();
       _prev_button->inactive();
-    else {
+    } else {
       _prev_button->up();
       if (_behavior_running) {
 	_prev_button->start_behavior();
@@ -141,9 +144,10 @@ void GuiChooser::move_next(void) {
       }
     }
     int foo = _items.size() - 1;
-    if (tmp == foo)
+    if (tmp == foo) {
+      _next_button->exit();
       _next_button->inactive();
-    else {
+    } else {
       _next_button->up();
       if (_behavior_running) {
 	_next_button->start_behavior();

@@ -49,6 +49,8 @@ PUBLISHED:
   void move_next(void);
   void add_item(GuiItem*);
 
+  INLINE int get_curr_item(void) const;
+
   virtual int freeze(void);
   virtual int thaw(void);
 

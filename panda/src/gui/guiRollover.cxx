@@ -148,6 +148,9 @@ void GuiRollover::set_priority(GuiItem* i, const GuiItem::Priority p) {
   if (p == P_Highest) {
     _off->set_priority(_off, GuiLabel::P_HIGHEST);
     _on->set_priority(_on, GuiLabel::P_HIGHEST);
+  } else if (p == P_Lowest) {
+    _off->set_priority(_off, GuiLabel::P_LOWEST);
+    _on->set_priority(_on, GuiLabel::P_LOWEST);
   } else {
     i->set_priority(_off, ((p==P_Low)?P_High:P_Low));
     i->set_priority(_on, ((p==P_Low)?P_High:P_Low));
