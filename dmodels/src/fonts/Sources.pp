@@ -3,6 +3,6 @@
 
 
 #begin install_egg
-  #define SOURCES ttf-comic.egg
+  #define SOURCES Comic.egg
 #end install_egg
 
