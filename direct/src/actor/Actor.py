@@ -1178,46 +1178,45 @@ class Actor(PandaObject, NodePath):
 
         if (model == None):
             print "model = None!!!"
-        return self.prepareModel(model, partName, lodName)
-
-    def prepareModel(self, model, partName="modelRoot", lodName="lodRoot"):
         bundle = model.find("**/+PartBundleNode")
         if (bundle.isEmpty()):
             Actor.notify.warning("%s is not a character!" % (modelPath))
         else:
-            # Rename the node at the top of the hierarchy, if we
-            # haven't already, to make it easier to identify this
-            # actor in the scene graph.
-            if not self.gotName:
-                self.node().setName(bundle.node().getName())
-                self.gotName = 1
-                
-            # we rename this node to make Actor copying easier
-            bundle.node().setName(Actor.partPrefix + partName)
-
-            if (self.__partBundleDict.has_key(lodName) == 0):
-                # make a dictionary to store these parts in
-                needsDict = 1
-                bundleDict = {}
-            else:
-                needsDict = 0
-                
-            if (lodName!="lodRoot"):
-                # instance to appropriate node under LOD switch
-                #bundle = bundle.instanceTo(
-                #    self.__LODNode.find("**/" + str(lodName)))
-                bundle.reparentTo(self.__LODNode.find("**/" + str(lodName)))
-            else:
-                #bundle = bundle.instanceTo(self.__geomNode)
-                bundle.reparentTo(self.__geomNode)
-
-            if (needsDict):
-                bundleDict[partName] = bundle
-                self.__partBundleDict[lodName] = bundleDict
-            else:
-                self.__partBundleDict[lodName][partName] = bundle
-
+            self.prepareBundle(bundle, partName, lodName)
             model.removeNode()        
+
+    def prepareBundle(self, bundle, partName="modelRoot", lodName="lodRoot"):
+        # Rename the node at the top of the hierarchy, if we
+        # haven't already, to make it easier to identify this
+        # actor in the scene graph.
+        if not self.gotName:
+            self.node().setName(bundle.node().getName())
+            self.gotName = 1
+
+        # we rename this node to make Actor copying easier
+        bundle.node().setName(Actor.partPrefix + partName)
+
+        if (self.__partBundleDict.has_key(lodName) == 0):
+            # make a dictionary to store these parts in
+            needsDict = 1
+            bundleDict = {}
+        else:
+            needsDict = 0
+
+        if (lodName!="lodRoot"):
+            # instance to appropriate node under LOD switch
+            #bundle = bundle.instanceTo(
+            #    self.__LODNode.find("**/" + str(lodName)))
+            bundle.reparentTo(self.__LODNode.find("**/" + str(lodName)))
+        else:
+            #bundle = bundle.instanceTo(self.__geomNode)
+            bundle.reparentTo(self.__geomNode)
+
+        if (needsDict):
+            bundleDict[partName] = bundle
+            self.__partBundleDict[lodName] = bundleDict
+        else:
+            self.__partBundleDict[lodName][partName] = bundle
 
     def loadAnims(self, anims, partName="modelRoot", lodName="lodRoot"):
         """loadAnims(self, string:string{}, string='modelRoot',
