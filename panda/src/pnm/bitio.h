@@ -1,6 +1,4 @@
 /*\
- * $Id$
- *
  * bitio.h - bitstream I/O
  *
  * Works for (sizeof(unsigned long)-1)*8 bits.
@@ -13,26 +11,6 @@
  * that both that copyright notice and this permission notice appear
  * in supporting documentation.  This software is provided "as is"
  * without express or implied warranty.
- *
- * $Log$
- * Revision 1.2  2001/05/25 15:59:19  drose
- * remove tab characters
- *
- * Revision 1.1.1.1  2000/10/04 01:14:42  drose
- *
- *
- * Revision 1.4  1992/11/24  19:37:02  dws
- * Added copyright
- *
- * Revision 1.3  1992/11/17  03:37:59  dws
- * updated comment
- *
- * Revision 1.2  1992/11/10  23:10:22  dws
- * Generalized to handle more than one bitstream at a time.
- *
- * Revision 1.1  1992/11/10  18:33:51  dws
- * Initial revision
- *
 \*/
 
 #ifndef _BITIO_H_

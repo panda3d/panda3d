@@ -25,9 +25,7 @@ extern "C" {
 }
 
 // Much code in this file is borrowed from Netpbm, specifically bmptoppm.c.
-/*\
- * $Id$
- *
+/*
  * bmptoppm.c - Converts from a Microsoft Windows or OS/2 .BMP file to a
  * PPM file.
  *
@@ -42,53 +40,7 @@ extern "C" {
  * that both that copyright notice and this permission notice appear
  * in supporting documentation.  This software is provided "as is"
  * without express or implied warranty.
- *
- * $Log$
- * Revision 1.4  2001/05/25 21:30:42  drose
- * Update copyright header
- *
- * Revision 1.3  2001/05/25 15:59:19  drose
- * remove tab characters
- *
- * Revision 1.2  2000/11/09 21:14:02  drose
- * *** empty log message ***
- *
- * Revision 1.1.1.1  2000/10/04 01:14:42  drose
- *
- *
- * Revision 1.10  1992/11/24  19:38:17  dws
- * Added code to verify that reading occurred at the correct offsets.
- * Added copyright.
- *
- * Revision 1.9  1992/11/17  02:15:24  dws
- * Changed to include bmp.h.
- * Eliminated need for fseek(), and therefore the need for a
- * temporary file.
- *
- * Revision 1.8  1992/11/13  23:48:57  dws
- * Made definition of Seekable() static, to match its prototype.
- *
- * Revision 1.7  1992/11/11  00:17:50  dws
- * Generalized to use bitio routines.
- *
- * Revision 1.6  1992/11/10  23:51:44  dws
- * Enhanced command-line handling.
- *
- * Revision 1.5  1992/11/08  00:38:46  dws
- * Changed some names to help w/ addition of ppmtobmp.
- *
- * Revision 1.4  1992/10/27  06:28:28  dws
- * Corrected stupid typo.
- *
- * Revision 1.3  1992/10/27  06:17:10  dws
- * Removed a magic constant value.
- *
- * Revision 1.2  1992/10/27  06:09:58  dws
- * Made stdin seekable.
- *
- * Revision 1.1  1992/10/27  05:31:41  dws
- * Initial revision
-\*/
+ */
 
 /*
  * Utilities

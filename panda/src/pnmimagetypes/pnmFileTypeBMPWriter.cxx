@@ -29,9 +29,7 @@ extern "C" {
 }
 
 // Much code in this file is borrowed from Netpbm, specifically ppmtobmp.c.
-/*\
- * $Id$
- *
+/*
  * ppmtobmp.c - Converts from a PPM file to a Microsoft Windows or OS/2
  * .BMP file.
  *
@@ -46,53 +44,7 @@ extern "C" {
  * that both that copyright notice and this permission notice appear
  * in supporting documentation.  This software is provided "as is"
  * without express or implied warranty.
- *
- * $Log$
- * Revision 1.6  2001/08/02 21:26:39  drose
- * fix bmp-bpp when requested size is too small
- *
- * Revision 1.5  2001/08/02 20:01:58  drose
- * add bmp-bpp
- *
- * Revision 1.4  2001/05/25 21:30:42  drose
- * Update copyright header
- *
- * Revision 1.3  2001/05/25 15:59:19  drose
- * remove tab characters
- *
- * Revision 1.2  2000/11/09 21:14:02  drose
- * *** empty log message ***
- *
- * Revision 1.1.1.1  2000/10/04 01:14:42  drose
- *
- *
- * Revision 1.9  1992/11/24  19:39:33  dws
- * Added copyright.
- *
- * Revision 1.8  1992/11/17  02:16:52  dws
- * Moved length functions to bmp.h.
- *
- * Revision 1.7  1992/11/11  23:18:16  dws
- * Modified to adjust the bits per pixel to 1, 4, or 8.
- *
- * Revision 1.6  1992/11/11  22:43:39  dws
- * Commented out a superfluous message.
- *
- * Revision 1.5  1992/11/11  05:58:06  dws
- * First version that works.
- *
- * Revision 1.4  1992/11/11  03:40:32  dws
- * Moved calculation of bits per pixel to BMPEncode.
- *
- * Revision 1.3  1992/11/11  03:02:34  dws
- * Added BMPEncode function.
- *
- * Revision 1.2  1992/11/08  01:44:35  dws
- * Added option processing and reading of PPM file.
- *
- * Revision 1.1  1992/11/08  00:46:07  dws
- * Initial revision
-\*/
+ */
 
 #define MAXCOLORS 256
 
