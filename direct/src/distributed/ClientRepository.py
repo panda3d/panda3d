@@ -353,6 +353,23 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                 "Asked to delete non-existent DistObj " + str(doId))
 
     def handleUpdateField(self, di):
+        """
+        This method is called when a CLIENT_OBJECT_UPDATE_FIELD
+        message is received; it decodes the update, unpacks the
+        arguments, and calls the corresponding method on the indicated
+        DistributedObject.
+
+        In fact, this method is exactly duplicated by the C++ method
+        cConnectionRepository::handle_update_field(), which was
+        written to optimize the message loop by handling all of the
+        CLIENT_OBJECT_UPDATE_FIELD messages in C++.  That means that
+        nowadays, this Python method will probably never be called,
+        since UPDATE_FIELD messages will not even be passed to the
+        Python message handlers.  But this method remains for
+        documentation purposes, and also as a "just in case" handler
+        in case we ever do come across a situation in the future in
+        which python might handle the UPDATE_FIELD message.
+        """
         # Get the DO Id
         doId = di.getUint32()
         #print("Updating " + str(doId))
@@ -394,7 +411,17 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         return message
 
     def handleUnexpectedMsgType(self, msgType, di):
-        if msgType == CLIENT_GO_GET_LOST:
+        if msgType == CLIENT_CREATE_OBJECT_REQUIRED:
+            self.handleGenerateWithRequired(di)
+        elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:
+            self.handleGenerateWithRequiredOther(di)
+        elif msgType == CLIENT_OBJECT_UPDATE_FIELD:
+            self.handleUpdateField(di)
+        elif msgType == CLIENT_OBJECT_DISABLE_RESP:
+            self.handleDisable(di)
+        elif msgType == CLIENT_OBJECT_DELETE_RESP:
+            self.handleDelete(di)
+        elif msgType == CLIENT_GO_GET_LOST:
             self.handleGoGetLost(di)
         elif msgType == CLIENT_HEARTBEAT:
             self.handleServerHeartbeat(di)
