@@ -233,7 +233,7 @@ class ShowBase:
         # You must specify a pstats-host in your configrc
         # The default is localhost
         if self.wantStats:
-            PStatClient.getGlobalPstats().connect()
+            PStatClient.connect()
 
     def createAudioManager(self):
         if self.wantAnySound:

@@ -26,13 +26,15 @@ Notes:
     precise at the ftp prompt for now ("delete" doesn't work either).
     If this really bugs you, you can create a shortcut on the Desktop to
     "tcsh.exe" and run ftp properly from there rather than from rxvt.
-  Occasionally, a freshly opened shell will hang in the middle of attaching
-    or something.  If this happens, go ahead and kill the tcsh process (or
-    ftp or rxvt process) using the Task Manager and try again.
+  Occasionally, a freshly opened shell will hang in the middle of
+    attaching or something.  This appears to be a race condition in
+    cshrc that appears only on multiprocessor machines.  If this
+    happens, go ahead and kill the tcsh process (or ftp or rxvt
+    process) using the Task Manager and try again.
   Make sure your machine has enough disk space - I'd start with the largest
     open space on any of your partitions.
   Make sure your machine has networking (IP, gateway, etc.) so you can use
-    ftp to get to dumbo.
+    ftp to get to mother.
     
 Step 0: Map network drive to build tools drive
   - right click on Network Places, choose Map Network Drive
@@ -119,15 +121,6 @@ Step 3: Install Cygwin (v1.0)
 Step 4: Create your home directory
   - Create a HOME directory:
     > mkdir /usr/<yourname>
-  - Copy important startup files into your home directory:
-    > cd /v/win/install/wintools/panda
-    > cp .cshrc .emacs Configrc Config.pp /usr/<yourname>
-  - Make sure the contents of .cshrc are correct for your setup.  In
-    particular, make sure the definition for PANDA_ROOT matches the
-    directory you have installed Cygwin to (normally C:\Cygwin), and
-    that CVSROOT is correct for your CVS login (if $USERNAME is not
-    the same as your CVS/Unix account name, edit the variable as
-    necessary).
   - Set the $HOME environment variable:
     - On WinNT use the Registry:
       - Select "My Computer" icon from the desktop.
@@ -146,6 +139,15 @@ Step 4: Create your home directory
     - Note: We've seen a problem where we can't source ~/.cshrc if the home
       directory /usr/<yourname> does not match the user name exactly. 
       To be safe, be sure and name your home directory to be /usr/<yourname>.
+  - Copy important startup files into your home directory:
+    > cd /v/win/install/wintools/panda
+    > cp .cshrc .emacs Configrc Config.pp /usr/<yourname>
+  - Make sure the contents of .cshrc are correct for your setup.  In
+    particular, make sure the definition for PANDA_ROOT matches the
+    directory you have installed Cygwin to (normally C:\Cygwin), and
+    that CVSROOT is correct for your CVS login (if $USERNAME is not
+    the same as your CVS/Unix account name, edit the variable as
+    necessary).
 
 Step 5: Update /usr/local/etc:
   - Copy vspec files from $WINTOOLS to /usr/local/etc
@@ -155,7 +157,7 @@ Step 5: Update /usr/local/etc:
     - If you are setting up a new user, edit the *.vspec files
       in /usr/local/etc to reflect the new username and path to the player
       tree.  
-    - Also edit (on the SGI, for instance on dumbo) the file 
+    - Also edit (on the SGI, for instance on mother) the file 
       /fit/cvs/CVSROOT/passwd to add the new username as a valid user of
       CVS.
   - (Optional) Update default values in vspec files
@@ -183,7 +185,7 @@ Step 6: Grab the cvs trees
     built OPTIMIZE 2, release is built OPTIMIZE 3).
 
 Step 7: (Optional) Build $DTOOL
-  - Now you must use the tcsh shortcut to open a new shell - it should attach
+  - When you opened a new shell in step 6, it should have attached
     to $DTOOL:install automatically, but you will need to attach to your
     own DTOOL if you want to build your own.
     > cta dtool personal
