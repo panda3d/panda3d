@@ -67,7 +67,7 @@ for opt in opts:
         print helpString
         sys.exit()
     elif (flag == '-v'):
-        FFIConstants.notify.setVerbose(1)
+        FFIConstants.notify.setInfo(1)
     elif (flag == '-d'):
         outputDir = value
     elif (flag == '-e'):
