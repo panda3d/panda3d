@@ -112,16 +112,14 @@ AudioSound* AudioPool::ns_load_sound(Filename filename) {
 //  Description: The nonstatic implementation of release_sound().
 ////////////////////////////////////////////////////////////////////
 void AudioPool::ns_release_sound(AudioSound* sound) {
+  if (audio_cat->is_debug())
+    audio_cat->debug() << "AudioPool: releasing sound 0x" << (void*)sound
+		       << endl;
   string filename = sound->get_name();
   SoundMap::iterator si;
   si = _sounds.find(filename);
-  if (si != _sounds.end() && (*si).second == sound->get_sound()) {
-    // REFCOUNT
-    // don't do this with refcounting
-    //    AudioTraits::SoundClass* sc = (*si).second;
-    //    (*(sc->get_destroy()))(sc);
+  if (si != _sounds.end() && (*si).second == sound->get_sound())
     _sounds.erase(si);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,12 +128,8 @@ void AudioPool::ns_release_sound(AudioSound* sound) {
 //  Description: The nonstatic implementation of release_all_sounds().
 ////////////////////////////////////////////////////////////////////
 void AudioPool::ns_release_all_sounds(void) {
-  // REFCOUNT
-  //  for (SoundMap::iterator i=_sounds.begin(); i!=_sounds.end(); ++i) {
-    // don't do this with refcounting
-    //    AudioTraits::SoundClass* sc = (*i).second;
-    //    (*(sc->get_destroy()))(sc);
-  //  }
+  if (audio_cat->is_debug())
+    audio_cat->debug() << "AudioPool: releasing all sounds" << endl;
   _sounds.clear();
 }
 
