@@ -5474,6 +5474,7 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
     return out << "GL_ONE_MINUS_DST_ALPHA";
   case GL_SRC_ALPHA_SATURATE:
     return out << "GL_SRC_ALPHA_SATURATE";
+  #ifdef USING_OPENGL_1_2 //[
   case GL_CONSTANT_COLOR:
     return out << "GL_CONSTANT_COLOR";
   case GL_ONE_MINUS_CONSTANT_COLOR:
@@ -5482,6 +5483,7 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
     return out << "GL_CONSTANT_ALPHA";
   case GL_ONE_MINUS_CONSTANT_ALPHA:
     return out << "GL_ONE_MINUS_CONSTANT_ALPHA";
+  #endif //]
 
     /* Render Mode */
   case GL_FEEDBACK:
@@ -6073,6 +6075,7 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
     */
 
     /* GL 1.2 texturing */
+  #ifdef USING_OPENGL_1_2 //[
   case GL_PACK_SKIP_IMAGES:
     return out << "GL_PACK_SKIP_IMAGES";
   case GL_PACK_IMAGE_HEIGHT:
@@ -6095,6 +6098,7 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
   case GL_TEXTURE_BINDING_3D:
     return out << "GL_TEXTURE_BINDING_3D";
 #endif
+  #endif //]
 
     /* Internal texture formats (GL 1.1) */
   case GL_ALPHA4:
@@ -6189,6 +6193,7 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
     return out << "GL_OUT_OF_MEMORY";
 
     /* OpenGL 1.2 */
+  #ifdef USING_OPENGL_1_2 //[
   case GL_RESCALE_NORMAL:
     return out << "GL_RESCALE_NORMAL";
   case GL_CLAMP_TO_EDGE:
@@ -6239,6 +6244,7 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
     return out << "GL_TEXTURE_BASE_LEVEL";
   case GL_TEXTURE_MAX_LEVEL:
     return out << "GL_TEXTURE_MAX_LEVEL";
+  #endif //]
   }
 
   return out << (int)v;
