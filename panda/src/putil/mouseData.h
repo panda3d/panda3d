@@ -33,9 +33,9 @@ class EXPCL_PANDA MouseData {
 PUBLISHED:
   MouseData();
 
-  int get_x() const;
-  int get_y() const;
-  bool get_in_window() const;
+  INLINE int get_x() const {return _xpos;};
+  INLINE int get_y() const {return _ypos;};
+  INLINE bool get_in_window() const {return _in_window;};
 
 public:
   bool _in_window;
