@@ -24,8 +24,8 @@
 #include "lerpfunctor.h"
 #include "lerpblend.h"
 
-#include <typedReferenceCount.h>
-#include <eventHandler.h>
+#include "typedReferenceCount.h"
+#include "eventHandler.h"
 
 class EXPCL_PANDA Lerp : public TypedReferenceCount {
 private:
@@ -41,31 +41,31 @@ PUBLISHED:
   Lerp(LerpFunctor* func, float endt, LerpBlendType* blend);
   Lerp(LerpFunctor* func, float startt, float endt, LerpBlendType* blend);
   Lerp(const Lerp&);
-  virtual ~Lerp(void);
+  virtual ~Lerp();
   Lerp& operator=(const Lerp&);
-  void step(void);
+  void step();
   void set_step_size(float);
-  float get_step_size(void) const;
+  float get_step_size() const;
   void set_t(float);
-  float get_t(void) const;
-  bool is_done(void) const;
-  LerpFunctor* get_functor(void) const;
+  float get_t() const;
+  bool is_done() const;
+  LerpFunctor* get_functor() const;
   void set_end_event(const std::string&);
-  std::string get_end_event(void) const;
+  std::string get_end_event() const;
 
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "Lerp", TypedReferenceCount::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
@@ -92,32 +92,32 @@ PUBLISHED:
   AutonomousLerp(LerpFunctor* func, float startt, float endt,
                  LerpBlendType* blend, EventHandler* handler);
   AutonomousLerp(const AutonomousLerp&);
-  virtual ~AutonomousLerp(void);
+  virtual ~AutonomousLerp();
   AutonomousLerp& operator=(const AutonomousLerp&);
-  void start(void);
-  void stop(void);
-  void resume(void);
-  bool is_done(void) const;
-  LerpFunctor* get_functor(void) const;
+  void start();
+  void stop();
+  void resume();
+  bool is_done() const;
+  LerpFunctor* get_functor() const;
   void set_t(float);
-  float get_t(void) const;
+  float get_t() const;
   void set_end_event(const std::string&);
-  std::string get_end_event(void) const;
+  std::string get_end_event() const;
 
 public:
   // now for typehandle stuff
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "AutonomousLerp",
                   TypedReferenceCount::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type(void) {
+  virtual TypeHandle force_init_type() {
     init_type();
     return get_class_type();
   }
