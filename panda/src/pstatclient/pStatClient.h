@@ -87,10 +87,11 @@ PUBLISHED:
 
   INLINE static void resume_after_pause();
 
+  static void main_tick();
+
 public:
   static PStatClient *get_global_pstats();
 
-  static void main_tick();
   void client_main_tick();
   bool client_connect(string hostname, int port);
   void client_disconnect();
@@ -214,7 +215,6 @@ PUBLISHED:
   INLINE static bool is_connected() { return false; }
   INLINE static void resume_after_pause() { }
 
-public:
   static void main_tick() { }
 };
 
