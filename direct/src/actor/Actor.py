@@ -1031,7 +1031,79 @@ class Actor(PandaObject, NodePath):
                                                     thisLod)
                 if (animControl != None):
                     animControl.pose(frame)
-        
+
+    def enableBlend(self, partName = None):
+        """Enables blending of multiple animations simultaneously.
+        After this is called, you may call play(), loop(), or pose()
+        on multiple animations and have all of them contribute to the
+        final pose each frame.
+
+        With blending in effect, starting a particular animation with
+        play(), loop(), or pose() does not implicitly make the
+        animation visible; you must also call setControlEffect() for
+        each animation you wish to use to indicate how much each
+        animation contributes to the final pose.
+        """
+        for lodName, bundleDict in self.__partBundleDict.items():
+            if partName == None:
+                for partBundle in bundleDict.values():
+                    partBundle.node().getBundle().setBlendType(PartBundle.BTNormalizedLinear)
+            else:
+                partBundle = bundleDict.get(partName)
+                if partBundle != None:
+                    partBundle.node().getBundle().setBlendType(PartBundle.BTNormalizedLinear)
+                else:
+                    Actor.notify.warning("Couldn't find part: %s" % (partName))
+
+    def disableBlend(self, partName = None):
+        """ Restores normal one-animation-at-a-time operation after a
+        previous call to enableBlend().
+        """
+        for lodName, bundleDict in self.__partBundleDict.items():
+            if partName == None:
+                for partBundle in bundleDict.values():
+                    partBundle.node().getBundle().setBlendType(PartBundle.BTSingle)
+            else:
+                partBundle = bundleDict.get(partName)
+                if partBundle != None:
+                    partBundle.node().getBundle().setBlendType(PartBundle.BTSingle)
+                else:
+                    Actor.notify.warning("Couldn't find part: %s" % (partName))
+
+    def setControlEffect(self, animName, effect,
+                         partName = None, lodName = None):
+        """ Sets the amount by which the named animation contributes to
+        the overall pose.  This controls blending of multiple
+        animations; it only makes sense to call this after a previous
+        call to enableBlend().
+        """
+        if lodName == None:
+            for lodName, controlDict in self.__animControlDict.items():
+                if partName == None:
+                    for part in controlDict.keys():
+                        ac = self.getAnimControl(animName, part, lodName)
+                        if ac != None:
+                            ac.getPart().setControlEffect(ac, effect)
+                else:
+                    ac = self.getAnimControl(animName, partName, lodName)
+                    if ac != None:
+                        ac.getPart().setControlEffect(ac, effect)
+        else:
+            if partName == None:
+                controlDict = self.__animControlDict.get(lodName)
+                if controlDict != None:
+                    for part in controlDict.keys():
+                        ac = self.getAnimControl(animName, part, lodName)
+                        if ac != None:
+                            ac.getPart().setControlEffect(ac, effect)
+                else:
+                    Actor.notify.warning("couldn't find lod: %s" % (lodName))
+            else:
+                ac = self.getAnimControl(animName, partName, lodName)
+                if ac != None:
+                    ac.getPart().setControlEffect(ac, effect)
+            
+
     def getAnimControl(self, animName, partName, lodName="lodRoot"):
         """getAnimControl(self, string, string, string="lodRoot")
         Search the animControl dictionary indicated by lodName for
