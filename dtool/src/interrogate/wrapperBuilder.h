@@ -112,6 +112,7 @@ protected:
 		       bool convert_result = true,
 		       const vector<string> &pexprs = vector<string>()) const;
 
+  void write_spam_message(ostream &out) const;
   void write_quoted_string(ostream &out, const string &str) const;
 
   bool _is_valid;
