@@ -55,7 +55,9 @@ double CLerpInterval::
 compute_delta(double t) const {
   double duration = get_duration();
   if (duration == 0.0) {
-    return 0.0;
+    // If duration is 0, the lerp works as a set.  Thus, the delta is
+    // always 1.0, the terminating value.
+    return 1.0;
   }
   t /= duration;
   t = min(max(t, 0.0), 1.0);
