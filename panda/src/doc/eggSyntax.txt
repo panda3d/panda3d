@@ -135,19 +135,29 @@ appear before they are referenced.
     This defines the load format of the image file.  The
     format-definition is one of:
 
-    RGBA, RGBA12, RGBA8, RGBA4,
+    RGBA, RGBM, RGBA12, RGBA8, RGBA4,
     RGB, RGB12, RGB8, RGB5, RGB332,
     LUMINANCE_ALPHA,
     RED, GREEN, BLUE, ALPHA, LUMINANCE
 
-    RGB12 and RGBA12 specify 48-bit texels with or without alpha;
-    RGB8 and RGBA8 specify 32-bit texels, and RGB5 and RGBA4 specify
-    16-bit texels.  Otherwise, the size of the texels is determined by
-    the width of the components in the image file.
+    The formats whose names end in digits specifically request a
+    particular texel width.  RGB12 and RGBA12 specify 48-bit texels
+    with or without alpha; RGB8 and RGBA8 specify 32-bit texels, and
+    RGB5 and RGBA4 specify 16-bit texels.  RGB332 specifies 8-bit
+    texels.
 
-    The number of components of the image file must match the format
-    specified; otherwise, it is an error and the format specification
-    is ignored.
+    The remaining formats are generic and specify only the semantic
+    meaning of the channels.  The size of the texels is determined by
+    the width of the components in the image file.  RGBA is the most
+    general; RGB is the same, but without any alpha channel.  RGBM is
+    like RGBA, except that it requests only one bit of alpha, if the
+    graphics card can provide that, to leave more room for the RGB
+    components, which is especially important for older 16-bit
+    graphics cards (the "M" stands for "mask", as in a cutout).
+
+    The number of components of the image file should match the format
+    specified; if it does not, the egg loader will attempt to provide
+    the closest match that does.
 
   <Scalar> wrap { repeat-definition }
   <Scalar> wrapu { repeat-definition }
@@ -190,6 +200,12 @@ appear before they are referenced.
       BLEND
       REPLACE
       ADD
+
+    The default environment type is MODULATE, which means the texture
+    color is multiplied with the base polygon (or vertex) color.  This
+    is the most common texture environment by far.  Other environment
+    types are more esoteric and are especially useful in the presence
+    of multitexture.
 
   <Scalar> combine-rgb { combine-mode }
   <Scalar> combine-alpha { combine-mode }
@@ -310,11 +326,11 @@ appear before they are referenced.
       MS_MASK
 
     If alpha-type is OFF, it means not to enable transparency, even if
-    the image filename ends in .rgba or the format is RGBA12.  If
+    the image contains an alpha channel or the format is RGBA12.  If
     alpha-type is ON, it means to enable the default transparency,
-    even if the image filename does not end in .rgba.  If alpha-type
-    is any of the other options, it specifies the type of transparency
-    to be enabled.
+    even if the image filename does not contain an alpha channel.  If
+    alpha-type is any of the other options, it specifies the type of
+    transparency to be enabled.
 
   <Scalar> bin { bin-name }
 
@@ -447,7 +463,11 @@ appear before they are referenced.
     <DynamicVertexPool>; see below.)
 
     In neither case does it make a difference whether the vertex pool
-    is itself declared under a transform or an <Instance> node.
+    is itself declared under a transform or an <Instance> node.  The
+    only deciding factor is whether the geometry that *uses* the
+    vertex pool appears under an <Instance> node.  It is possible for
+    a single vertex to be interpreted in different coordinate spaces
+    by different polygons.
 
     While each vertex must at least have a position, it may also have
     a color, normal, pair of UV coordinates, and/or a set of morph
@@ -481,7 +501,7 @@ appear before they are referenced.
     (1 1 1 1).  The morph-list is an optional list of <DRGBA> entries.
 
 
-    <UV> name { u v [morph-list] }
+    <UV> [name] { u v [morph-list] }
 
     This gives the texture coordinates of the vertex.  This must be
     specified if a texture is to be mapped onto this geometry.  As
@@ -493,26 +513,13 @@ appear before they are referenced.
     the default UV's.
 
 
-    In addition to the above, when the vertex serves as a control
-    vertex for a parametric curve the following attributes may be
-    supplied:
-
-
-    <Scalar> continuity-type { type }
-
-    This has meaning for a Bezier curve only.  It indicates the type
-    of continuity that should be forced for the given CV: cut, free,
-    g1, or smooth.  This only applies to the end CV's of each curve
-    segment: every third CV.
-
-
 <DynamicVertexPool> name { vertices }
 
   A dynamic vertex pool is similar to a vertex pool in most respects,
   except that each vertex might be animated by substituting in values
   from a <VertexAnim> table.  Also, the vertices defined within a
-  dynamic vertex pool are given in local coordinates, instead of world
-  coordinates.
+  dynamic vertex pool are always given in local coordinates, instead
+  of world coordinates.
 
   The presence of a dynamic vertex pool makes sense only within a
   character model, and a single dynamic vertex pool may not span
@@ -558,6 +565,10 @@ GEOMETRY ENTRIES
     the given texture to the polygon.  This requires that all the
     polygon's vertices have been assigned texture coordinates.
 
+    This attribute may be repeated multiple times to specify
+    multitexture.  In this case, each named texture is applied to the
+    polygon, in the order specified.
+
 
   <Texture> { filename }
 
@@ -567,7 +578,7 @@ GEOMETRY ENTRIES
     specify texture attributes given this form.
 
     There's no advantage to this syntax for texture mapping.  It's
-    supported only because it's required by some egg files.
+    supported only because it's required by some older egg files.
 
 
   <MRef> { material-name }
@@ -582,7 +593,11 @@ GEOMETRY ENTRIES
     used unless all vertices also have a normal.  If no normal is
     defined, none will be supplied.  The polygon normal, like the
     vertex normal, may be morphed by specifying a series of <DNormal>
-    entries.
+    entries.  
+
+    The polygon normal is used only for lighting and environment
+    mapping calculations, and is not related to the implicit normal
+    calculated for CollisionPolygons.
 
 
   <RGBA> { r g b a [morph-list] }
@@ -633,8 +648,9 @@ GEOMETRY ENTRIES
     fixed order that all geometry in the same will be rendered, from
     smaller numbers to larger numbers.
 
-    If no bin scalar is specified, the default is a bin named "fixed",
-    which is a CullBinFixed object that always exists by default.
+    If the draw_order scalar is specified but no bin scalar is
+    specified, the default is a bin named "fixed", which is a
+    CullBinFixed object that always exists by default.
 
 
   <Scalar> visibility { hidden | normal }
@@ -682,9 +698,10 @@ GEOMETRY ENTRIES
 
   A Line is a connected set of line segments.  The listed N vertices
   define a series of N-1 line segments, drawn between vertex 0 and
-  vertex 1, vertex 1 and vertex 2, etc.  As with a PointLight,
-  normals, textures, colors, draw_order, and the "thick" attribute are
-  all valid.
+  vertex 1, vertex 1 and vertex 2, etc.  The line is not implicitly
+  closed; if you wish to represent a loop, you must repeat vertex 0 at
+  the end.  As with a PointLight, normals, textures, colors,
+  draw_order, and the "thick" attribute are all valid.
 
 
 
@@ -697,12 +714,13 @@ have specific meaning to the application.  However, Panda can create
 visible representations of these parametrics to aid visualization.
 
 These entries might also have meaning to external tools outside of an
-interactive Panda session, such as a smart polygon mesher.
+interactive Panda session, such as egg-qtess, which can be used to
+convert NURBS surfaces to polygons at different levels of resolution.
 
 In general, dynamic attributes such as morphs and joint assignment are
 legal for the control vertices of the following parametrics, but Panda
 itself doesn't support them and will always create static curves and
-surfaces.  External tools, however, may respect them.
+surfaces.  External tools like egg-qtess, however, may respect them.
 
 <NURBSCurve> {
     [attributes] 
@@ -749,8 +767,8 @@ surfaces.  External tools, however, may respect them.
 
 
   NURBS control vertices may also be given color and/or morph
-  attributes (though Panda ignores these), but <Normal> and <UV>
-  entries do not apply to NURBS vertices.
+  attributes, but <Normal> and <UV> entries do not apply to NURBS
+  vertices.
 
 
 
@@ -840,7 +858,9 @@ surfaces.  External tools, however, may respect them.
     [ <Loop> { ... } ... ]
   }
 
-
+  Although the egg syntax supports trim curves, there are at present
+  no egg processing tools that respect them.  For instance, egg-qtess
+  ignores trim curves and always tesselates the entire NURBS surface.
 
 
 MORPH DESCRIPTION ENTRIES
@@ -858,14 +878,12 @@ run time, the morph target's value may be animated to any scalar value
 offset is added to the attribute each frame.
 
 There is no explicit morph target definition; a morph target exists
-solely as the set of all offsets that share the same target name.
-Formerly, the target name must have been a nonnegative integer, but
-this restriction no longer applies.
+solely as the set of all offsets that share the same target name.  The
+target name may be any arbitrary string; like any name in an egg file,
+it should be quoted if it contains special characters.
 
 The following types of morph offsets may be defined, within their
-corresponding attribute entries (an older, still supported, syntax
-defined the target name after the first curly brace, instead of before
-it):
+corresponding attribute entries:
 
 <Dxyz> target { x y z }
 
@@ -879,7 +897,8 @@ it):
   A normal delta, similar to the position delta, valid within a
   <Normal> entry (for vertex or polygon normals).  The given offset
   vector, scaled by the morph target's value, is added to the normal
-  vector each frame.
+  vector each frame.  The resulting vector may not be automatically
+  normalized to unit length.
 
 
 <DUV> target { u v }
@@ -946,11 +965,15 @@ GROUPING ENTRIES
 
 
   <Dart> { boolean-value }
-  <Global> { boolean-value }
 
-    These two attributes are lexically equivalent, and indicate that
-    this group begins a character.  A Character node will be created
-    for this group.
+    This indicates that this group begins an animated character.  A
+    Character node, which is the fundamental animatable object of
+    Panda's high-level Actor class, will be created for this group.
+
+    This flag should always be present within the <Group> entry at the
+    top of any hierarchy of <Joint>'s and/or geometry with morphed
+    vertices; joints and morphs appearing outside of a hierarchy
+    identified with a <Dart> flag are undefined.
 
   <Switch> { boolean-value }
 
@@ -1001,6 +1024,16 @@ GROUPING ENTRIES
     this level will be rendered "on top of" this geometry, but without
     the Z-fighting artifacts one might expect without the use of the
     decal flag.
+
+  <Scalar> decalbase { boolean-value }
+
+    This can optionally be used with the "decal" scalar, above.  If
+    present, it should be applied to a sibling of one or more nodes
+    with the "decal" scalar on.  It indicates which of the sibling
+    nodes should be treated as the base of the decal.  In the absence
+    of this scalar, the parent of all decal nodes is used as the decal
+    base.  This scalar is useful when the modeling package is unable
+    to parent geometry nodes to other geometry nodes.
 
   <Scalar> collide-mask { value }
   <Scalar> from-collide-mask { value }
