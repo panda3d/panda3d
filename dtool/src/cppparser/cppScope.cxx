@@ -205,7 +205,21 @@ define_extension_type(CPPExtensionType *type) {
   }
 
   if (type->is_template()) {
-    _templates.insert(Templates::value_type(name, type));
+    pair<Templates::iterator, bool> result =
+      _templates.insert(Templates::value_type(name, type));
+
+    if (!result.second) {
+      // The template was not inserted because we already had a
+      // template definition with the given name.  If the previous
+      // definition was incomplete, replace it.
+      CPPDeclaration *old_templ = (*result.first).second;
+      CPPType *old_templ_type = old_templ->as_type();
+      if (old_templ_type == NULL || old_templ_type->is_incomplete()) {
+        // The previous template definition was incomplete, maybe a
+        // forward reference; replace it with the good one.
+        (*result.first).second = type;
+      }
+    }
   }
 }
 
