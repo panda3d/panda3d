@@ -18,7 +18,7 @@ TypeHandle AudioSound::_type_handle;
 AudioSound::~AudioSound(void) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "AudioSound destructor" << endl;
-  //AudioManager::stop(this);
+  AudioManager::stop(this);
   (*_delstate)(_state);
 }
 
