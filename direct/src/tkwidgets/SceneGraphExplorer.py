@@ -8,7 +8,9 @@ class SceneGraphExplorer(Pmw.MegaWidget):
     "Graphical display of a scene graph"
     def __init__(self, root = render, parent = None, **kw):
         # Define the megawidget options.
-        optiondefs = ()
+        optiondefs = (
+            ('menuItems',   ['Select'],   None),
+            )
         self.defineoptions(kw, optiondefs)
  
         # Initialise superclass
@@ -45,7 +47,7 @@ class SceneGraphExplorer(Pmw.MegaWidget):
         self._treeItem = SceneGraphExplorerItem(self.root)
 
         self._node = TreeNode(self._canvas, None, self._treeItem,
-                              ['Select Node'])
+                              self['menuItems'])
         self._node.expand()
 
         # Check keywords and initialise options based on input values.
@@ -113,7 +115,6 @@ class SceneGraphExplorerItem(TreeItem):
         messenger.send('SGESelectNodePath', [self.nodePath])
 
     def MenuCommand(self, command):
-        if (command == 'Select Node'):
-            messenger.send('SGESelectNodePath', [self.nodePath])
+        messenger.send('SGE' + command + 'NodePath', [self.nodePath])
 
 

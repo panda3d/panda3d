@@ -65,24 +65,22 @@ class DirectSession(PandaObject):
     def select(self, nodePath):
         dnp = self.selected.select(nodePath)
         if dnp:
+            messenger.send('preSelectNodePath', [dnp])
             # Update the readout
             self.readout.reparentTo(render2d)
             self.readout.setText(dnp.name)
             # Show the manipulation widget
             self.widget.reparentTo(render)
-
             # Update camera controls coa to this point
             # Coa2Camera = Coa2Dnp * Dnp2Camera
             mCoa2Camera = dnp.mCoa2Dnp * dnp.getMat(base.camera)
             row = mCoa2Camera.getRow(3)
             coa = Vec3(row[0], row[1], row[2])
             self.cameraControl.updateCoa(coa)
-
             # Adjust widgets size
             # This uses the additional scaling factor used to grow and
             # shrink the widget            
             self.widget.setScalingFactor(dnp.getRadius())
-
             # Spawn task to have object handles follow the selected object
             taskMgr.removeTasksNamed('followSelectedNodePath')
             t = Task.Task(self.followSelectedNodePathTask)

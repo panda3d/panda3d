@@ -79,7 +79,7 @@
     def getAncestry(self):
         from PandaObject import *
         node = self.node()
-        if ((node != render.node()) | (node != hidden.node())):
+        if (self.hasParent()):
             ancestry = self.getParent().getAncestry()
             ancestry.append(self)
             return ancestry

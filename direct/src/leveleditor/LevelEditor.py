@@ -373,15 +373,16 @@ class LevelEditor(NodePath, PandaObject):
 	self.grid.ignore('insert')
         self.ignore('selectedNodePath')
 	self.ignore('preRemoveNodePath')
-	self.ignore('preSelectNodePath')
+	#self.ignore('preSelectNodePath')
         self.ignore('toggleMapViz')
-	self.ignore('setGroupParent')
-	self.ignore('isolateNodePath')
 	self.ignore('reparentNodePath')
 	self.ignore('createNewLevelGroup')
         self.ignore('setNodePathName')
         self.ignore('manipulateObjectCleanup')
         self.ignore('SGESelectNodePath')
+        self.ignore('SGEIsolateNodePath')
+        self.ignore('SGESet ParentNodePath')
+        self.ignore('SGEAdd GroupNodePath')
 	self.ignore('showAll')
 	self.ignore('p')
 	self.disableManipulation()
@@ -453,15 +454,16 @@ class LevelEditor(NodePath, PandaObject):
 	self.show()
         self.accept('selectedNodePath', self.selectDNARoot)
 	self.accept('preRemoveNodePath', self.preRemoveNodePath)
-	self.accept('preSelectNodePath', self.preSelectNodePath)
 	self.accept('toggleMapViz', self.toggleMapViz)
-	self.accept('setGroupParent', self.setGroupParent)
-	self.accept('isolateNodePath', self.isolateNodePath)
 	self.accept('reparentNodePath', self.reparentNodePath)
 	self.accept('createNewLevelGroup', self.createNewLevelGroup)
 	self.accept('setNodePathName', self.setNodePathName)
         self.accept('manipulateObjectCleanup', self.updateSelectedPose)
         self.accept('SGESelectNodePath', self.selectNodePath)
+	self.accept('SGESelectNodePath', self.preSelectNodePath)
+        self.accept('SGEIsolateNodePath', self.isolateNodePath)
+        self.accept('SGESet ParentNodePath', self.setGroupParent)
+        self.accept('SGEAdd GroupNodePath', self.addGroupToSelected)
 	self.accept('showAll', self.showAll)
 	self.accept('p',self.plantSelectedNodePath)
 	self.enableManipulation()
@@ -699,14 +701,12 @@ class LevelEditor(NodePath, PandaObject):
 	# Otherwise, find its dictionary entry
 	self.selectedLevelObject = (
             self.getLevelObject(self.direct.selected.last))
-
 	# If not None, determine interaction type
         if self.selectedLevelObject:
             selectedObjectDNA = self.selectedLevelObject['DNA']
             # Default target/menu
             target = None
             menuType = None
-
             # Interaction type depends on selected object's class
             objClass = selectedObjectDNA.__class__.getClassType()
             if objClass.eq(DNAFlatBuilding.getClassType()):
@@ -774,7 +774,6 @@ class LevelEditor(NodePath, PandaObject):
                         target =  selectedObjectDNA
                     else:
                         target = None
-                        
             elif objClass.eq(DNALandmarkBuilding.getClassType()):
                 menuType = 'door'
                 target = self.getDoor(selectedObjectDNA)
@@ -787,7 +786,6 @@ class LevelEditor(NodePath, PandaObject):
                 target = selectedObjectDNA
                 if self.direct.fControl:
                     menuType = 'propColor'
-            
             # Now spawn apropriate menu task
             if ((target != None) | (menuType == 'cornice')):
                 self.spawnMenuTask(menuType, target)
@@ -803,20 +801,21 @@ class LevelEditor(NodePath, PandaObject):
         t.initState = t.hidden = aNodePath.isHidden()
         t.count = 0
         t.uponDeath = self.preSelectDone
-        #taskMgr.spawnTaskNamed(t, 'preselectNodePath')
+        taskMgr.spawnTaskNamed(t, 'preselectNodePath')
 
     def preSelectNodePathTask(self, state):
         aNodePath = state.aNodePath
 	initState = state.initState
         hidden = state.hidden
-        count = t.count
-        if (t.count < 4):
-            if hidden:
-                aNodePath.show()
-            else:
-                aNodePath.hide()
-                t.count = count + 1
-            t.hidden = not t.hidden
+        count = state.count
+        if (state.count < 21):
+            if (state.count % 5) == 0:
+                if hidden:
+                    aNodePath.show()
+                else:
+                    aNodePath.hide()
+                state.hidden = not state.hidden
+            state.count = count + 1
             return Task.cont
         else:
             return Task.done
@@ -1740,7 +1739,7 @@ class LevelEditor(NodePath, PandaObject):
 
     def addFlatBuilding(self, buildingType):
 	# Create new building
-	#newDNAFlatBuilding = DNAFlatBuilding(buildingType + '_DNARoot')
+	newDNAFlatBuilding = DNAFlatBuilding(buildingType + '_DNARoot')
         newDNAFlatBuilding = DNAFlatBuilding(buildingType)
 
 	# Select walls
@@ -1792,7 +1791,7 @@ class LevelEditor(NodePath, PandaObject):
                                    self.addFlatBuilding)
 
     def addLandmark(self, landmarkType):
-	#newDNALandmarkBuilding = DNALandmarkBuilding(landmarkType + '_DNARoot')
+	newDNALandmarkBuilding = DNALandmarkBuilding(landmarkType + '_DNARoot')
         newDNALandmarkBuilding = DNALandmarkBuilding(landmarkType)
 	newDNALandmarkBuilding.setCode(self.getDNACode(landmarkType))
 	newDNALandmarkBuilding.setPos(VBase3(0))
@@ -1811,7 +1810,7 @@ class LevelEditor(NodePath, PandaObject):
         return objectDictionary
 
     def addProp(self, newPropType):
-	#newDNAProp = DNAProp(newPropType + '_DNARoot')
+	newDNAProp = DNAProp(newPropType + '_DNARoot')
         newDNAProp = DNAProp(newPropType)
 	newDNAProp.setCode(self.getDNACode(newPropType))
 	newDNAProp.setPos(VBase3(0))
@@ -1821,7 +1820,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.setPropType(newPropType)
 
     def addStreetModule(self, streetType):
-	#newDNAStreet = DNAStreet(streetType + '_DNARoot')
+	newDNAStreet = DNAStreet(streetType + '_DNARoot')
         newDNAStreet = DNAStreet(streetType)
 	newDNAStreet.setCode(self.getDNACode(streetType))
 	newDNAStreet.setPos(VBase3(0))
@@ -1859,6 +1858,10 @@ class LevelEditor(NodePath, PandaObject):
         colors = self.getDoorColors()
 	newDNADoor.setColor(colors[randint(0,len(colors) - 1)])
 	return newDNADoor
+
+    def addGroupToSelected(self, aNodePath):
+        self.setGroupParent(aNodePath)
+        self.createNewLevelGroup()
 
     def createNewLevelGroup(self):
 	newGroupParentDNA = DNAGroup('group=' + `self.groupNum`)
@@ -2100,7 +2103,7 @@ class LevelEditor(NodePath, PandaObject):
         if (dnaGroup.__class__.getClassType().eq(DNAFlatBuilding.getClassType())):
             dnaGroup.setWidth(self.getWallWidth())
 	newNodePath = dnaGroup.traverse(parent,self.dnaStore)
-        newNodePath.node().setName(newNodePath.node().getName() + '_DNARoot')
+        #newNodePath.node().setName(newNodePath.node().getName() + '_DNARoot')
         
 	# Add it to the level dictionary
 	self.addObject(newNodePath, dnaGroup)
@@ -2128,7 +2131,7 @@ class LevelEditor(NodePath, PandaObject):
         if dnaGroup.__class__.getClassType().eq(DNAFlatBuilding.getClassType()):
             dnaGroup.setWidth(self.getWallWidth())
 	newNodePath = dnaGroup.traverse(parent, self.dnaStore)
-        newNodePath.node().setName(newNodePath.node().getName() + '_DNARoot')        
+        #newNodePath.node().setName(newNodePath.node().getName() + '_DNARoot')        
 	# Add it to the level dictionary
 	self.addObject(newNodePath, dnaGroup)
         
@@ -2215,22 +2218,19 @@ class LevelEditor(NodePath, PandaObject):
 	# Get rid of default group and root node
 	self.preRemoveNodePath(self.groupParent)
 	self.removeNodePath(self.groupParent)
-
 	# Clear self.dnaStore
 	self.dnaStore.resetDNAGroups()
-
+        # Reset DNA VIS Groups
+        self.dnaStore.resetDNAVisGroups()
 	# Now load in new file
 	self.groupParent = loadDNAFile(self.dnaStore, filename,
                                        getDefaultCoordinateSystem())
-
  	# Make sure the topmost level object gets put under level objects dna
  	self.groupParentDNA = self.dnaStore.findDNAGroup(
             self.groupParent.getBottomArc())
  	self.levelObjectsDNA.add(self.groupParentDNA)
-
 	# No level objects node found, just add the whole thing
 	self.groupParent.reparentTo(self.levelObjects)
-
         if 0:
             newLevelObjects = nodePath.find('**/LevelObjects')
             if newLevelObjects.isEmpty():
@@ -2245,28 +2245,26 @@ class LevelEditor(NodePath, PandaObject):
                 # (since there is probably one in the dnafile
                 self.preRemoveNodePath(self.groupParent)
                 self.removeNodePath(self.groupParent)
-
                 # Now add the children from the DNA File
                 children = newLevelObjects.getChildren()
                 for i in range(children.getNumPaths()):
                     children.getPath(i).reparentTo(self.levelObjects)
                 # Now create a new top level group with next group number
                 self.createTopLevelGroup()
-	
         # Add these objects to the levelDictionary
 	numPaths = self.dnaStore.getNumNodeRelations()
         for pathNum in range(numPaths):
             relation = self.dnaStore.getNodeRelationAt(pathNum)
             if relation:
-                newNodePath = NodePath(relation)
-                group = self.dnaStore.findDNAGroup(relation)
-                if newNodePath.isSingleton():
-                    print 'Singleton!!'
-                else: 
-                    self.addObject(newNodePath, group)
+                if (relation.getChild() and relation.getParent()):
+                    newNodePath = NodePath(relation)
+                    group = self.dnaStore.findDNAGroup(relation)
+                    if newNodePath.isSingleton():
+                        print 'Singleton!!'
+                    else: 
+                        self.addObject(newNodePath, group)
             else:
                 print'blah'
-
 	self.createNewLevelGroup()
 
     def outputDNADefaultFile(self):
@@ -2353,7 +2351,7 @@ class LevelEditor(NodePath, PandaObject):
 
 	# Traverse the dna to create the new node path
 	newNodePath = dnaGroup.traverse(parent, self.dnaStore)
-        newNodePath.node().setName(newNodePath.node().getName() + '_DNARoot')
+        #newNodePath.node().setName(newNodePath.node().getName() + '_DNARoot')
 	self.selectNodePath(newNodePath)
 
 	# Add it to the levelObjects dictionary
@@ -2372,7 +2370,7 @@ class LevelEditor(NodePath, PandaObject):
 
 	# Traverse the dna to create the new node path
 	newNodePath = dnaGroup.traverse(parent, self.dnaStore)
-        newNodePath.node().setName(newNodePath.node().getName() + '_DNARoot')
+        #newNodePath.node().setName(newNodePath.node().getName() + '_DNARoot')
 	self.selectNodePath(newNodePath)
 
 	# Add it to the levelObjects dictionary
@@ -3200,7 +3198,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
 
         self.sceneGraphExplorer = SceneGraphExplorer(
             parent = sceneGraphPage,
-            root = self.levelEditor.getLevelObjects())
+            root = self.levelEditor.getLevelObjects(),
+            menuItems = ['Select', 'Isolate', 'Set Parent', 'Add Group'])
         self.sceneGraphExplorer.pack(expand = 1, fill = 'both')
         
     def toggleGrid(self):
