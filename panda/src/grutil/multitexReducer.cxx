@@ -20,6 +20,9 @@
 #include "pandaNode.h"
 #include "geomNode.h"
 #include "geom.h"
+#include "geomTransformer.h"
+#include "accumulatedAttribs.h"
+#include "sceneGraphReducer.h"
 #include "renderState.h"
 #include "transformState.h"
 #include "graphicsOutput.h"
@@ -65,6 +68,7 @@ MultitexReducer::
 void MultitexReducer::
 clear() {
   _stages.clear();
+  _geom_node_list.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -288,17 +292,45 @@ flatten(GraphicsOutput *window) {
     NodePath cam = render.attach_new_node(cam_node);
     dr->set_camera(cam);
 
-    if (!_use_geom) {
-      // Put one plain white card in the background for the first
-      // texture layer to apply onto.
+    // If the geometry has vertex color and M_decal is in use, we must
+    // render with use_geom in effect.  Otherwise we need not (and we
+    // might prefer not to).
+    bool force_use_geom = _use_geom;
+    bool bake_in_color = _use_geom;
+
+    Colorf geom_color(1.0f, 1.0f, 1.0f, 1.0f);
+    if (!force_use_geom) {
+      bool uses_decal = scan_decal(stage_list);
+      if (uses_decal) {
+        // If we have M_decal, we need to bake in the flat color
+        // even if there is no vertex color.
+        bake_in_color = true;
+
+        int num_colors = 0;
+        scan_color(geom_list, geom_color, num_colors);
+        if (num_colors > 1) {
+          // But if there is also vertex color, then we need to render
+          // with the geometry.
+          force_use_geom = true;
+        }
+      }
+    }
+    
+    if (!force_use_geom) {
+      // Put one plain white (or flat-colored) card in the background
+      // for the first texture layer to apply onto.
       
       CardMaker cm("background");
       cm.set_frame(0.0f, 1.0f, 0.0f, 1.0f);
+      if (bake_in_color) {
+        cm.set_color(geom_color);
+      }
       render.attach_new_node(cm.generate());
 
     } else {
-      // Put a colored model of the geometry in the background for the
-      // first texture layer to apply only.
+      // Put a vertex-colored model of the geometry in the background
+      // for the first texture layer to apply only.
+      nassertv(bake_in_color);
       PT(GeomNode) geom_node = new GeomNode("background");
       transfer_geom(geom_node, NULL, geom_list, true);
       
@@ -309,7 +341,7 @@ flatten(GraphicsOutput *window) {
     for (si = stage_list.begin(); si != stage_list.end(); ++si) {
       const StageInfo &stage_info = (*si);
 
-      make_texture_layer(render, stage_info, geom_list);
+      make_texture_layer(render, stage_info, geom_list, force_use_geom);
     }
 
     // Now modify the geometry to apply the new texture, instead of
@@ -325,10 +357,9 @@ flatten(GraphicsOutput *window) {
         geom_info._geom_node->get_geom_state(geom_info._index);
       geom_state = geom_state->add_attrib(new_ta);
 
-      if (_use_geom) {
-        // If we have use_geom in effect, we have to be sure to
-        // disable coloring on the new fragment (the color has been
-        // baked into the texture).
+      if (bake_in_color) {
+        // If we have baked the color into the texture, we have to be
+        // sure to disable coloring on the new fragment.
         geom_state = geom_state->add_attrib(ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 1.0f, 1.0f)));
 
         // And we invent a ColorScaleAttrib to undo the effect of any
@@ -374,6 +405,20 @@ flatten(GraphicsOutput *window) {
       geom_info._geom_node->set_geom_state(geom_info._index, geom_state);
     }
   }
+
+  // Now that we've copied all of the geometry and applied texture
+  // matrices, flatten out those texture matrices where possible.
+  GeomTransformer transformer;
+
+  GeomNodeList::const_iterator gni;
+  for (gni = _geom_node_list.begin(); gni != _geom_node_list.end(); ++gni) {
+    const GeomNodeInfo &geom_node_info = (*gni);
+    AccumulatedAttribs attribs;
+    attribs._texture = 
+      geom_node_info._state->get_attrib(TextureAttrib::get_class_type());
+    geom_node_info._geom_node->apply_attribs_to_vertices
+      (attribs, SceneGraphReducer::TT_tex_matrix, transformer);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -390,6 +435,8 @@ scan_geom_node(GeomNode *node, const RenderState *state,
       << "scan_geom_node(" << *node << ", " << *state << ", "
       << *transform << ")\n";
   }
+
+  _geom_node_list.push_back(GeomNodeInfo(state, node));
 
   int num_geoms = node->get_num_geoms();
   for (int gi = 0; gi < num_geoms; gi++) {
@@ -653,7 +700,8 @@ choose_texture_size(int &x_size, int &y_size,
 void MultitexReducer::
 make_texture_layer(const NodePath &render, 
                    const MultitexReducer::StageInfo &stage_info, 
-                   const MultitexReducer::GeomList &geom_list) {
+                   const MultitexReducer::GeomList &geom_list,
+                   bool force_use_geom) {
   CPT(RenderAttrib) cba;
 
   switch (stage_info._stage->get_mode()) {
@@ -697,7 +745,7 @@ make_texture_layer(const NodePath &render,
 
   NodePath geom;
 
-  if (!_use_geom && stage_info._stage->get_texcoord_name() == _target_stage->get_texcoord_name()) {
+  if (!force_use_geom && stage_info._stage->get_texcoord_name() == _target_stage->get_texcoord_name()) {
     // If this TextureStage uses the target texcoords, we can just
     // generate a simple card the fills the entire buffer.
     CardMaker cm(stage_info._tex->get_name());
@@ -787,6 +835,111 @@ transfer_geom(GeomNode *geom_node, const TexCoordName *texcoord_name,
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MultitexReducer::scan_color
+//       Access: Private
+//  Description: Checks all the geoms in the list to see if they all
+//               use flat color, or if there is per-vertex color in
+//               use.
+//
+//               Assumption: num_colors = 0 on entry.  On exit,
+//               num_colors = 1 if there is exactly one color in use,
+//               or 2 if there is more than one color in use.  If
+//               num_colors = 1, then geom_color is filled in with the
+//               color in use.
+////////////////////////////////////////////////////////////////////
+void MultitexReducer::
+scan_color(const MultitexReducer::GeomList &geom_list, Colorf &geom_color, 
+           int &num_colors) const {
+  GeomList::const_iterator gi;
+  for (gi = geom_list.begin(); gi != geom_list.end() && num_colors < 2; ++gi) {
+    const GeomInfo &geom_info = (*gi);
+    
+    Colorf flat_color;
+    bool has_flat_color = false;
+    bool has_vertex_color = false;
+
+    Colorf color_scale(1.0f, 1.0f, 1.0f, 1.0f);
+    const RenderAttrib *csa = geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_type());
+    if (csa != (const RenderAttrib *)NULL) {
+      const ColorScaleAttrib *a = DCAST(ColorScaleAttrib, csa);
+      if (a->has_scale()) {
+        color_scale = a->get_scale();
+      }
+    }
+
+    ColorAttrib::Type color_type = ColorAttrib::T_vertex;
+    const RenderAttrib *ca = geom_info._geom_net_state->get_attrib(ColorAttrib::get_class_type());
+    if (ca != (const RenderAttrib *)NULL) {
+      color_type = DCAST(ColorAttrib, ca)->get_color_type();
+    }
+
+    if (color_type == ColorAttrib::T_flat) {
+      // This geom has a flat color attrib, which overrides the vertices.
+      flat_color = DCAST(ColorAttrib, ca)->get_color();
+      has_flat_color = true;
+
+    } else if (color_type == ColorAttrib::T_vertex) {
+      // This geom gets its color from its vertices.
+      const Geom *geom = geom_info._geom_node->get_geom(geom_info._index);
+
+      int binding = geom->get_binding(G_COLOR);
+      if (binding == G_OVERALL) {
+        // This geom has a flat color on its vertices.
+        Geom::ColorIterator ci = geom->make_color_iterator();
+        flat_color = geom->get_next_color(ci);
+        has_flat_color = true;
+
+      } else if (binding != G_OFF) {
+        // This geom has per-vertex (or per-prim, or per-component)
+        // color.  Assume the colors in the table are actually
+        // different.
+        has_vertex_color = true;
+      }
+    }
+
+    if (has_vertex_color) {
+      num_colors = 2;
+
+    } else if (has_flat_color) {
+      flat_color.set(flat_color[0] * color_scale[0],
+                     flat_color[1] * color_scale[1],
+                     flat_color[2] * color_scale[2],
+                     flat_color[3] * color_scale[3]);
+
+      if (num_colors == 0) {
+        num_colors = 1;
+        geom_color = flat_color;
+
+      } else if (!flat_color.almost_equal(geom_color)) {
+        // Too bad; there are multiple colors.
+        num_colors = 2;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MultitexReducer::scan_decal
+//       Access: Private
+//  Description: Checks all the stages in the list to see if any of
+//               them apply a texture via M_decal.  Returns true if
+//               so, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool MultitexReducer::
+scan_decal(const MultitexReducer::StageList &stage_list) const {
+  StageList::const_iterator si;
+  for (si = stage_list.begin(); si != stage_list.end(); ++si) {
+    const StageInfo &stage_info = (*si);
+
+    if (stage_info._stage->get_mode() == TextureStage::M_decal) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MultitexReducer::StageInfo::Constructor
@@ -804,3 +957,4 @@ StageInfo(TextureStage *stage, const TextureAttrib *ta,
     _tex_mat = tma->get_transform(stage);
   }
 }
+

@@ -99,3 +99,15 @@ GeomInfo(const RenderState *state, const RenderState *geom_net_state,
   _index(index)
 {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MultitexReducer::GeomNodeInfo::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE MultitexReducer::GeomNodeInfo::
+GeomNodeInfo(const RenderState *state, GeomNode *geom_node) :
+  _state(state),
+  _geom_node(geom_node)
+{
+}

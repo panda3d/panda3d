@@ -126,7 +126,7 @@ event_0(CPT_Event event, void *) {
   } else {
     cerr << "flattening\n";
     MultitexReducer mr;
-    mr.set_use_geom(true);
+    //mr.set_use_geom(true);
     mr.scan(models);
     
     WindowFramework *wf = framework.get_window(0);
@@ -138,7 +138,7 @@ event_0(CPT_Event event, void *) {
       if (tex != (Texture *)NULL) {
         cerr << "Reapplying\n";
         
-        ts->set_mode(TextureStage::M_decal);
+        ts->set_mode(TextureStage::M_add);
         models.set_texture(ts, tex);
      
         if (count > 3 && (count % 2) == 1) {

@@ -98,8 +98,18 @@ private:
 
   typedef pvector<GeomInfo> GeomList;
 
+  class GeomNodeInfo {
+  public:
+    INLINE GeomNodeInfo(const RenderState *state, GeomNode *geom_node);
+    CPT(RenderState) _state;
+    PT(GeomNode) _geom_node;
+  };
+
+  typedef pvector<GeomNodeInfo> GeomNodeList;
+
   typedef pmap<StageList, GeomList> Stages;
   Stages _stages;
+  GeomNodeList _geom_node_list;
 
   PT(TextureStage) _target_stage;
   bool _use_geom;
@@ -127,9 +137,15 @@ private:
 
   void make_texture_layer(const NodePath &render, 
                           const StageInfo &stage_info, 
-                          const GeomList &geom_list);
+                          const GeomList &geom_list,
+                          bool force_use_geom);
   void transfer_geom(GeomNode *geom_node, const TexCoordName *texcoord_name,
                      const GeomList &geom_list, bool preserve_color);
+
+  void scan_color(const GeomList &geom_list, Colorf &geom_color, 
+                  int &num_colors) const;
+  bool scan_decal(const StageList &stage_list) const;
+
 };
 
 #include "multitexReducer.I"
