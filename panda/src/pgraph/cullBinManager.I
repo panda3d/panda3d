@@ -123,3 +123,22 @@ get_bin_sort(int bin_index) const {
   nassertr(_bin_definitions[bin_index]._in_use, 0);
   return _bin_definitions[bin_index]._sort;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinManager::set_bin_sort
+//       Access: Published
+//  Description: Changes the sort order of the bin with the indicated
+//               bin_index (where bin_index was retrieved by get_bin()
+//               or find_bin()).
+//
+//               The bins are rendered in increasing order by their
+//               sort order; this number may be changed from time to
+//               time to reorder the bins.
+////////////////////////////////////////////////////////////////////
+INLINE void CullBinManager::
+set_bin_sort(int bin_index, int sort) {
+  nassertv(bin_index >= 0 && bin_index < (int)_bin_definitions.size());
+  nassertv(_bin_definitions[bin_index]._in_use);
+  _bin_definitions[bin_index]._sort = sort;
+  _bins_are_sorted = false;
+}

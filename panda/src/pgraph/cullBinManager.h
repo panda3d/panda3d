@@ -24,6 +24,7 @@
 #include "pointerTo.h"
 #include "pvector.h"
 #include "pmap.h"
+#include "vector_int.h"
 
 class CullResult;
 class GraphicsStateGuardianBase;
@@ -91,7 +92,7 @@ private:
   typedef pmap<string, int> BinsByName;
   BinsByName _bins_by_name;
 
-  typedef pvector<int> SortedBins;
+  typedef vector_int SortedBins;
   SortedBins _sorted_bins;
   bool _bins_are_sorted;
   bool _unused_bin_index;
