@@ -35,6 +35,9 @@ public:
   void apply_properties(EggPrimitive *egg_prim, float &smooth_angle);
   bool check_texture();
 
+  INLINE bool has_uvs() const;
+  LPoint2d get_uv(const LPoint3d &pos) const;
+
   enum Flags {
     F_color        = 0x0001,
     F_diffuse      = 0x0002,
@@ -63,6 +66,7 @@ public:
 
   bool _checked_texture;
   PT(EggTexture) _egg_texture;
+  bool _has_uvs;
 
   CLwoSurfaceBlock *_block;
 };

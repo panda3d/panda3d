@@ -42,4 +42,4 @@ int ppm_addtocolorhash ARGS(( colorhash_table cht, pixel* colorP, int value ));
 
 colorhash_table ppm_alloccolorhash ARGS(( void ));
 
-void ppm_freecolorhash ARGS(( colorhash_table cht ));
+void ppm_freecolorhash( colorhash_table cht );

@@ -5,6 +5,7 @@
 
 #include "lwoToEggConverter.h"
 #include "cLwoLayer.h"
+#include "cLwoClip.h"
 #include "cLwoPoints.h"
 #include "cLwoPolygons.h"
 #include "cLwoSurface.h"
@@ -47,6 +48,14 @@ LwoToEggConverter::
     CLwoLayer *layer = (*li);
     if (layer != (CLwoLayer *)NULL) {
       delete layer;
+    }
+  }
+
+  Clips::iterator ci;
+  for (ci = _clips.begin(); ci != _clips.end(); ++ci) {
+    CLwoClip *clip = (*ci);
+    if (clip != (CLwoClip *)NULL) {
+      delete clip;
     }
   }
 
@@ -179,12 +188,12 @@ get_layer(int number) const {
 //  Description: Returns a pointer to the clip with the given index
 //               number, or NULL if there is no such clip.
 ////////////////////////////////////////////////////////////////////
-const LwoClip *LwoToEggConverter::
+CLwoClip *LwoToEggConverter::
 get_clip(int number) const {
   if (number >= 0 && number < (int)_clips.size()) {
     return _clips[number];
   }
-  return (const LwoClip *)NULL;
+  return (CLwoClip *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -237,13 +246,15 @@ collect_lwo() {
 
     } else if (chunk->is_of_type(LwoClip::get_class_type())) {
       const LwoClip *lwo_clip = DCAST(LwoClip, chunk);
-      int index = lwo_clip->_index;
+      CLwoClip *clip = new CLwoClip(this, lwo_clip);
+
+      int index = clip->get_index();
       slot_clip(index);
 
-      if (_clips[index] != (LwoClip *)NULL) {
+      if (_clips[index] != (CLwoClip *)NULL) {
 	nout << "Warning: multiple clips with index " << index << "\n";
       }
-      _clips[index] = lwo_clip;
+      _clips[index] = clip;
 
     } else if (chunk->is_of_type(LwoPoints::get_class_type())) {
       if (last_layer == (CLwoLayer *)NULL) {
@@ -394,7 +405,7 @@ void LwoToEggConverter::
 slot_clip(int number) {
   nassertv(number - (int)_clips.size() < 1000);
   while (number >= (int)_clips.size()) {
-    _clips.push_back((LwoClip *)NULL);
+    _clips.push_back((CLwoClip *)NULL);
   }
   nassertv(number >= 0 && number < (int)_clips.size());
 }

@@ -141,6 +141,7 @@ make_faces() {
   int num_polygons = _polygons->get_num_polygons();
   for (int i = 0; i < num_polygons; i++) {
     LwoPolygons::Polygon *poly = _polygons->get_polygon(i);
+    CLwoSurface *surface = get_surface(i);
     
     bool is_valid = true;
 
@@ -162,6 +163,10 @@ make_faces() {
       egg_prim = new EggPolygon;
     }
 
+    if (surface != (CLwoSurface *)NULL) {
+      surface->apply_properties(egg_prim, smooth_angle);
+    }
+
     for (int vi = num_vertices; vi > 0; vi--) {
       int vindex = poly->_vertices[vi % num_vertices];
       if (vindex < 0 || vindex >= num_points) {
@@ -170,18 +175,17 @@ make_faces() {
 
       } else {
 	EggVertex egg_vert;
-	egg_vert.set_pos(LCAST(double, points->get_point(vindex)));
+	LPoint3d pos = LCAST(double, points->get_point(vindex));
+	egg_vert.set_pos(pos);
+	if (surface != (CLwoSurface *)NULL && surface->has_uvs()) {
+	  egg_vert.set_uv(surface->get_uv(pos));
+	}
 	EggVertex *new_vert = egg_vpool->create_unique_vertex(egg_vert);
 	egg_prim->add_vertex(new_vert);
       }
     }
 
     if (is_valid) {
-      CLwoSurface *surface = get_surface(i);
-      if (surface != (CLwoSurface *)NULL) {
-	surface->apply_properties(egg_prim, smooth_angle);
-      }
-
       _egg_group->add_child(egg_prim.p());
     }
   }

@@ -16,6 +16,7 @@
 #include <map>
 
 class CLwoLayer;
+class CLwoClip;
 class CLwoPoints;
 class CLwoPolygons;
 class CLwoSurface;
@@ -40,7 +41,7 @@ public:
   bool convert_lwo(const LwoHeader *lwo_header);
 
   CLwoLayer *get_layer(int number) const;
-  const LwoClip *get_clip(int number) const;
+  CLwoClip *get_clip(int number) const;
 
   CLwoSurface *get_surface(const string &name) const;
 
@@ -59,7 +60,7 @@ private:
   typedef vector<CLwoLayer *> Layers;
   Layers _layers;
 
-  typedef vector<const LwoClip *> Clips;
+  typedef vector<CLwoClip *> Clips;
   Clips _clips;
 
   typedef vector<CLwoPoints *> Points;

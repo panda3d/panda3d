@@ -346,10 +346,7 @@ convert_ext_ref(const FltExternalReference *flt_ext, FltToEggLevelState &state) 
     state.get_synthetic_group("", flt_ext->get_transform());
 
   Filename filename = 
-    convert_path(flt_ext->_filename,
-		 flt_ext->get_ref_filename(),
-		 _mpc_directory,
-		 _mpc);
+    convert_model_path(flt_ext->_filename, _flt_header->get_model_path());
 
   filename.set_extension("egg");
 
@@ -699,10 +696,8 @@ make_egg_texture(const FltTexture *flt_texture) {
   // Create a new one.
   string tref_name = format_string(flt_texture->_pattern_index);
   Filename filename = 
-    convert_path(flt_texture->_filename,
-		 flt_texture->get_texture_filename(),
-		 _tpc_directory,
-		 _tpc);
+    convert_texture_path(flt_texture->_filename,
+			 _flt_header->get_texture_path());
 		 
   PT(EggTexture) egg_texture = new EggTexture(tref_name, filename);
 

@@ -8,6 +8,7 @@
     m
 
   #define SOURCES \
+    cLwoClip.I cLwoClip.cxx cLwoClip.h \
     cLwoLayer.I cLwoLayer.cxx cLwoLayer.h \
     cLwoPoints.I cLwoPoints.cxx cLwoPoints.h \
     cLwoPolygons.I cLwoPolygons.cxx cLwoPolygons.h \

@@ -58,15 +58,25 @@ set_egg_data(EggData *egg_data, bool owns_egg_data) {
 //               relative, or leave it alone.
 //
 //               orig_filename is the filename as it actually appeared
-//               in the source file; as_found is the full pathname to the
-//               file as it actually exists on disk, assuming it was
-//               found on the search path.  rel_dir is the directory
-//               to make the pathname relative to in the case of
-//               PC_relative or PC_rel_abs.
+//               in the source file; searchpath is the search path to
+//               look for it along.  rel_dir is the directory to make
+//               the pathname relative to in the case of PC_relative
+//               or PC_rel_abs.
 ////////////////////////////////////////////////////////////////////
 Filename SomethingToEggConverter::
-convert_path(const Filename &orig_filename, const Filename &as_found,
+convert_path(const Filename &orig_filename, const DSearchPath &searchpath,
 	     const Filename &rel_dir, PathConvert path_convert) {
+  // Try to look up the filename along the search path.
+  Filename as_found = orig_filename;
+  if (!as_found.resolve_filename(searchpath)) {
+    // If the filename can't be found, try just the truncated
+    // filename.
+    Filename truncated = orig_filename.get_basename();
+    if (truncated.resolve_filename(searchpath)) {
+      as_found = truncated;
+    }
+  }
+
   Filename result;
 
   switch (path_convert) {
@@ -77,8 +87,8 @@ convert_path(const Filename &orig_filename, const Filename &as_found,
 
   case PC_absolute:
     result = as_found;
-    if (as_found.is_local()) {
-      nout << "Warning: file " << as_found << " not found; cannot make absolute.\n";
+    if (result.is_local()) {
+      nout << "Warning: file " << orig_filename << " not found.\n";
       return result;
     }
     result.make_absolute();

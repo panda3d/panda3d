@@ -11,6 +11,7 @@
 #include "eggConverter.h"
 
 #include <distanceUnit.h>
+#include <somethingToEggConverter.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -27,17 +28,37 @@ public:
 		 bool allow_stdout = true);
 
   void add_units_options();
+  void add_texture_path_options();
+  void add_model_path_options();
+  void add_rel_dir_options();
+  void add_search_path_options();
 
 protected:
   void apply_units_scale(EggData &data);
 
   virtual bool handle_args(Args &args);
+  virtual bool post_command_line();
   virtual void post_process_egg_file();
+
+  static bool dispatch_path_convert_relative(const string &opt, const string &arg, void *var);
+  static bool dispatch_path_convert_absolute(const string &opt, const string &arg, void *var);
+  static bool dispatch_path_convert_rel_abs(const string &opt, const string &arg, void *var);
+  static bool dispatch_path_convert_strip(const string &opt, const string &arg, void *var);
+  static bool dispatch_path_convert_unchanged(const string &opt, const string &arg, void *var);
+
 
   Filename _input_filename;
 
   DistanceUnit _input_units;
   DistanceUnit _output_units;
+
+  SomethingToEggConverter::PathConvert _texture_path_convert;
+  SomethingToEggConverter::PathConvert _model_path_convert;
+
+  Filename _make_rel_dir;
+  bool _got_make_rel_dir;
+
+  DSearchPath _search_path;
 };
 
 #endif

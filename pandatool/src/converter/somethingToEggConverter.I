@@ -72,3 +72,54 @@ INLINE EggData &SomethingToEggConverter::
 get_egg_data() {
   return *_egg_data;
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::convert_texture_path
+//       Access: Public
+//  Description: Converts the indicated texture filename to a relative
+//               or absolute or whatever filename, according to _tpc
+//               and _tpc_directory.  See convert_path().
+////////////////////////////////////////////////////////////////////
+INLINE Filename SomethingToEggConverter::
+convert_texture_path(const Filename &orig_filename) {
+  return convert_path(orig_filename, get_texture_path(), _tpc_directory, _tpc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::convert_texture_path
+//       Access: Public
+//  Description: Converts the indicated texture filename to a relative
+//               or absolute or whatever filename, according to _tpc
+//               and _tpc_directory.  See convert_path().
+////////////////////////////////////////////////////////////////////
+INLINE Filename SomethingToEggConverter::
+convert_texture_path(const Filename &orig_filename,
+		     const DSearchPath &searchpath) {
+  return convert_path(orig_filename, searchpath, _tpc_directory, _tpc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::convert_model_path
+//       Access: Public
+//  Description: Converts the indicated model filename to a relative
+//               or absolute or whatever filename, according to _mpc
+//               and _mpc_directory.  See convert_path().
+////////////////////////////////////////////////////////////////////
+INLINE Filename SomethingToEggConverter::
+convert_model_path(const Filename &orig_filename) {
+  return convert_path(orig_filename, get_model_path(), _mpc_directory, _mpc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::convert_model_path
+//       Access: Public
+//  Description: Converts the indicated model filename to a relative
+//               or absolute or whatever filename, according to _mpc
+//               and _mpc_directory.  See convert_path().
+////////////////////////////////////////////////////////////////////
+INLINE Filename SomethingToEggConverter::
+convert_model_path(const Filename &orig_filename,
+		   const DSearchPath &searchpath) {
+  return convert_path(orig_filename, searchpath, _mpc_directory, _mpc);
+}

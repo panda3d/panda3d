@@ -9,6 +9,7 @@
 #include <pandatoolbase.h>
 
 #include <filename.h>
+#include <config_util.h>  // for get_texture_path() and get_model_path()
 
 class EggData;
 
@@ -48,9 +49,17 @@ public:
 
   virtual bool convert_file(const Filename &filename)=0;
 
+
+  INLINE Filename convert_texture_path(const Filename &orig_filename);
+  INLINE Filename convert_texture_path(const Filename &orig_filename,
+				       const DSearchPath &searchpath);
+  INLINE Filename convert_model_path(const Filename &orig_filename);
+  INLINE Filename convert_model_path(const Filename &orig_filename,
+				     const DSearchPath &searchpath);
+
 protected:
   static Filename convert_path(const Filename &orig_filename,
-			       const Filename &as_found,
+			       const DSearchPath &searchpath,
 			       const Filename &rel_dir,
 			       PathConvert path_convert);
 

@@ -22,11 +22,16 @@ class LwoToEggConverter;
 ////////////////////////////////////////////////////////////////////
 class CLwoClip {
 public:
-  INLINE CLwoClip(LwoToEggConverter *converter, const LwoClip *clip);
-  INLINE int get_number() const;
+  CLwoClip(LwoToEggConverter *converter, const LwoClip *clip);
+
+  INLINE int get_index() const;
+  INLINE bool is_still_image() const;
 
   LwoToEggConverter *_converter;
   CPT(LwoClip) _clip;
+
+  Filename _filename;
+  bool _still_image;
 };
 
 #include "cLwoClip.I"

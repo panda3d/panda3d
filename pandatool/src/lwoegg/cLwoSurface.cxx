@@ -5,6 +5,7 @@
 
 #include "cLwoSurface.h"
 #include "cLwoSurfaceBlock.h"
+#include "cLwoClip.h"
 #include "lwoToEggConverter.h"
 
 #include <lwoSurfaceColor.h>
@@ -13,6 +14,8 @@
 #include <lwoSurfaceSidedness.h>
 #include <lwoSurfaceBlock.h>
 #include <eggPrimitive.h>
+#include <string_utils.h>
+#include <mathNumbers.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -27,6 +30,7 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
 {
   _flags = 0;
   _checked_texture = false;
+  _has_uvs = false;
   _block = (CLwoSurfaceBlock *)NULL;
 
   // Walk through the chunk list, looking for some basic properties.
@@ -157,6 +161,12 @@ apply_properties(EggPrimitive *egg_prim, float &smooth_angle) {
     egg_prim->set_color(color);
   }
 
+  if (check_texture()) {
+    // Texture overrides the primitive's natural color.
+    egg_prim->set_texture(_egg_texture);
+    egg_prim->clear_color();
+  }
+
   if ((_flags & F_transparency) != 0) {
     Colorf color(1.0, 1.0, 1.0, 1.0);
     if (egg_prim->has_color()) {
@@ -174,8 +184,6 @@ apply_properties(EggPrimitive *egg_prim, float &smooth_angle) {
   if ((_flags & F_smooth_angle) != 0) {
     smooth_angle = max(smooth_angle, _smooth_angle);
   }
-
-  check_texture();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -194,11 +202,63 @@ check_texture() {
     return (_egg_texture != (EggTexture *)NULL);
   }
   _checked_texture = true;
+  _egg_texture = (EggTexture *)NULL;
 
-  /*
-  cerr << "Got texture:\n";
-  _block->_block->write(cerr, 2);
-  */
+  if (_block == (CLwoSurfaceBlock *)NULL) {
+    // No texture.  Not even a shader block.
+    return false;
+  }
+
+  int clip_index = _block->_clip_index;
+  if (clip_index < 0) {
+    // No image file associated with the texture.
+    return false;
+  }
+
+  CLwoClip *clip = _converter->get_clip(clip_index);
+  if (clip == (CLwoClip *)NULL) {
+    nout << "No clip image with index " << clip_index << "\n";
+    return false;
+  }
+
+  if (!clip->is_still_image()) {
+    // Can't do anything with an animated image right now.
+    return false;
+  }
+
+  Filename pathname = _converter->convert_texture_path(clip->_filename);
+
+  _egg_texture = new EggTexture("clip" + format_string(clip_index), pathname);
+  _has_uvs = true;
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoSurface::get_uv
+//       Access: Public
+//  Description: Computes or looks up the appropriate UV for the given
+//               vertex.
+////////////////////////////////////////////////////////////////////
+LPoint2d CLwoSurface::
+get_uv(const LPoint3d &pos) const {
+  // For now, we always compute spherical UV's.
+
+  // To compute the x position on the frame, we only need to consider
+  // the angle of the vector about the Y axis.  Project the vector
+  // into the XZ plane to do this.
+
+  LVector2d xz(pos[0], pos[2]);
+
+  // The x position is longitude: the angle about the Y axis.
+  double x = 
+    (atan2(xz[0], -xz[1]) / (2.0 * MathNumbers::pi) + 0.5) * _block->_w_repeat;
+
+  // Now rotate the vector into the YZ plane, and the y position is
+  // latitude: the angle about the X axis.
+  LVector2d yz(pos[1], xz.length());
+  double y = 
+    (atan2(yz[0], yz[1]) / MathNumbers::pi + 0.5) * _block->_h_repeat;
+
+  return LPoint2d(x, y);
 }

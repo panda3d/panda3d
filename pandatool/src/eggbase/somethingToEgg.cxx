@@ -38,6 +38,8 @@ SomethingToEgg(const string &format_name,
 
   _input_units = DU_invalid;
   _output_units = DU_invalid;
+  _texture_path_convert = SomethingToEggConverter::PC_unchanged;
+  _model_path_convert = SomethingToEggConverter::PC_unchanged;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -64,6 +66,126 @@ add_units_options() {
      "necessary to make the appropriate units conversion; otherwise, "
      "the vertices will be left as they are.",
      &SomethingToEgg::dispatch_units, NULL, &_output_units);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::add_texture_path_options
+//       Access: Public
+//  Description: Adds -rt etc. as valid options for this program.
+//               These specify how the texture pathnames that appear
+//               in the source file should be changed for the egg
+//               file.
+////////////////////////////////////////////////////////////////////
+void SomethingToEgg::
+add_texture_path_options() {
+  add_option
+    ("rt", "", 40,
+     "Convert texture filenames to relative pathnames, relative to the "
+     "directory specified by -rd.",
+     &SomethingToEgg::dispatch_path_convert_relative, NULL, &_texture_path_convert);
+
+  add_option
+    ("rta", "", 40,
+     "Convert texture filenames to absolute pathnames.",
+     &SomethingToEgg::dispatch_path_convert_absolute, NULL, &_texture_path_convert);
+
+  add_option
+    ("rtA", "", 40,
+     "Convert texture filenames to absolute pathnames that begin with the "
+     "prefix specified by -rd.",
+     &SomethingToEgg::dispatch_path_convert_rel_abs, NULL, &_texture_path_convert);
+
+  add_option
+    ("rts", "", 40,
+     "Strip paths from texture filenames.  Only the basename of the texture "
+     "will be preserved.",
+     &SomethingToEgg::dispatch_path_convert_strip, NULL, &_texture_path_convert);
+
+  add_option
+    ("rtu", "", 40,
+     "Leave texture filenames unchanged.  They will be relative if they "
+     "are relative in the source file, or absolute if they are absolute in "
+     "the source file.",
+     &SomethingToEgg::dispatch_path_convert_unchanged, NULL, &_texture_path_convert);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::add_model_path_options
+//       Access: Public
+//  Description: Adds -re etc. as valid options for this program.
+//               These specify how the model pathnames that appear
+//               in the source file should be changed for the egg
+//               file.
+////////////////////////////////////////////////////////////////////
+void SomethingToEgg::
+add_model_path_options() {
+  add_option
+    ("re", "", 40,
+     "Convert model filenames (external references) to relative pathnames, "
+     "relative to the directory specified by -rd.",
+     &SomethingToEgg::dispatch_path_convert_relative, NULL, &_model_path_convert);
+
+  add_option
+    ("rea", "", 40,
+     "Convert model filenames to absolute pathnames.",
+     &SomethingToEgg::dispatch_path_convert_absolute, NULL, &_model_path_convert);
+
+  add_option
+    ("reA", "", 40,
+     "Convert model filenames to absolute pathnames that begin with the "
+     "prefix specified by -rd.",
+     &SomethingToEgg::dispatch_path_convert_rel_abs, NULL, &_model_path_convert);
+
+  add_option
+    ("res", "", 40,
+     "Strip paths from model filenames.  Only the basename of the model "
+     "will be preserved.",
+     &SomethingToEgg::dispatch_path_convert_strip, NULL, &_model_path_convert);
+
+  add_option
+    ("reu", "", 40,
+     "Leave model filenames unchanged.  They will be relative if they "
+     "are relative in the source file, or absolute if they are absolute in "
+     "the source file.",
+     &SomethingToEgg::dispatch_path_convert_unchanged, NULL, &_model_path_convert);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::add_rel_dir_options
+//       Access: Public
+//  Description: Adds -rd.  This should generally be called if
+//               add_texture_path_options() or
+//               add_model_path_options() is called.
+////////////////////////////////////////////////////////////////////
+void SomethingToEgg::
+add_rel_dir_options() {
+  add_option
+    ("rd", "dir", 40,
+     "Specify the directory to make relative to.  This is the "
+     "directory that all pathnames given in the source file will be "
+     "rewritten to be relative to, if -re or -rt is given.  It is "
+     "ignored if one of these options is not given.  If omitted, it "
+     "is taken from the source filename.",
+     &SomethingToEgg::dispatch_string, &_got_make_rel_dir, &_make_rel_dir);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::add_search_path_options
+//       Access: Public
+//  Description: Adds -rs.
+////////////////////////////////////////////////////////////////////
+void SomethingToEgg::
+add_search_path_options() {
+  add_option
+    ("rs", "path", 0, 
+     "A search path for textures and external file references.  This "
+     "is a colon-separated set of directories that will be searched "
+     "for filenames that are not fully specified in the source file.  It "
+     "is unrelated to -re and -rt, and is used only if the source file "
+     "does not store absolute pathnames.  The directory containing "
+     "the source filename is always implicitly included.",
+     &SomethingToEgg::dispatch_search_path, NULL, &_search_path);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,6 +256,25 @@ handle_args(Args &args) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::post_command_line
+//       Access: Protected, Virtual
+//  Description: This is called after the command line has been
+//               completely processed, and it gives the program a
+//               chance to do some last-minute processing and
+//               validation of the options and arguments.  It should
+//               return true if everything is fine, false if there is
+//               an error.
+////////////////////////////////////////////////////////////////////
+bool SomethingToEgg::
+post_command_line() {
+  if (!_got_make_rel_dir) {
+    _make_rel_dir = _input_filename.get_dirname();
+  }
+
+  return EggConverter::post_command_line();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEgg::post_process_egg_file
 //       Access: Protected, Virtual
 //  Description: Performs any processing of the egg file that is
@@ -149,4 +290,74 @@ void SomethingToEgg::
 post_process_egg_file() {
   apply_units_scale(_data);
   EggConverter::post_process_egg_file();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::dispatch_path_convert_relative
+//       Access: Protected, Static
+//  Description: Dispatch function to set the given path convert mode
+//               to PC_relative.  var is a pointer to a
+//               SomethingToEggConverter::PathConvert variable.
+////////////////////////////////////////////////////////////////////
+bool SomethingToEgg::
+dispatch_path_convert_relative(const string &opt, const string &, void *var) {
+  SomethingToEggConverter::PathConvert *ip = (SomethingToEggConverter::PathConvert *)var;
+  (*ip) = SomethingToEggConverter::PC_relative;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::dispatch_path_convert_absolute
+//       Access: Protected, Static
+//  Description: Dispatch function to set the given path convert mode
+//               to PC_absolute.  var is a pointer to a
+//               SomethingToEggConverter::PathConvert variable.
+////////////////////////////////////////////////////////////////////
+bool SomethingToEgg::
+dispatch_path_convert_absolute(const string &opt, const string &, void *var) {
+  SomethingToEggConverter::PathConvert *ip = (SomethingToEggConverter::PathConvert *)var;
+  (*ip) = SomethingToEggConverter::PC_absolute;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::dispatch_path_convert_rel_abs
+//       Access: Protected, Static
+//  Description: Dispatch function to set the given path convert mode
+//               to PC_rel_abs.  var is a pointer to a
+//               SomethingToEggConverter::PathConvert variable.
+////////////////////////////////////////////////////////////////////
+bool SomethingToEgg::
+dispatch_path_convert_rel_abs(const string &opt, const string &, void *var) {
+  SomethingToEggConverter::PathConvert *ip = (SomethingToEggConverter::PathConvert *)var;
+  (*ip) = SomethingToEggConverter::PC_rel_abs;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::dispatch_path_convert_strip
+//       Access: Protected, Static
+//  Description: Dispatch function to set the given path convert mode
+//               to PC_strip.  var is a pointer to a
+//               SomethingToEggConverter::PathConvert variable.
+////////////////////////////////////////////////////////////////////
+bool SomethingToEgg::
+dispatch_path_convert_strip(const string &opt, const string &, void *var) {
+  SomethingToEggConverter::PathConvert *ip = (SomethingToEggConverter::PathConvert *)var;
+  (*ip) = SomethingToEggConverter::PC_strip;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::dispatch_path_convert_unchanged
+//       Access: Protected, Static
+//  Description: Dispatch function to set the given path convert mode
+//               to PC_unchanged.  var is a pointer to a
+//               SomethingToEggConverter::PathConvert variable.
+////////////////////////////////////////////////////////////////////
+bool SomethingToEgg::
+dispatch_path_convert_unchanged(const string &opt, const string &, void *var) {
+  SomethingToEggConverter::PathConvert *ip = (SomethingToEggConverter::PathConvert *)var;
+  (*ip) = SomethingToEggConverter::PC_unchanged;
+  return true;
 }
