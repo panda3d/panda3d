@@ -63,6 +63,7 @@ void SheetNode::CData::
 fillin(DatagramIterator &scan, BamReader *reader) {
   // For now, we skip over the NULL pointer that we wrote out.
   reader->skip_pointer(scan);
+  _surface.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -188,7 +189,12 @@ output(ostream &out) const {
 void SheetNode::
 write(ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
-  indent(out, indent_level) << get_surface() << "\n";
+  NurbsSurfaceEvaluator *surface = get_surface();
+  if (surface != (NurbsSurfaceEvaluator *)NULL) {
+    indent(out, indent_level + 2) << *surface << "\n";
+  } else {
+    indent(out, indent_level + 2) << "(no surface)\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
