@@ -114,7 +114,10 @@ run() {
   }
   _data.set_coordinate_system(_coordinate_system);
 
-  // Get the units from the Maya file, if the user didn't override.
+  // Use the standard Maya units, if the user didn't specify
+  // otherwise.  This always returns centimeters, which is the way all
+  // Maya files are stored internally (and is the units returned by
+  // all of the API functions called here).
   if (_input_units == DU_invalid) {
     _input_units = converter._maya->get_units();
   }
