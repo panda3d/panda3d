@@ -145,6 +145,31 @@ get_children() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_stashed_children
+//       Access: Published
+//  Description: Returns the set of all child nodes of the referenced
+//               node that have been stashed.  These children are not
+//               normally visible on the node, and do not appear in
+//               the list returned by get_children().
+////////////////////////////////////////////////////////////////////
+NodePathCollection NodePath::
+get_stashed_children() const {
+  NodePathCollection result;
+  nassertr_always(!is_empty(), result);
+
+  PandaNode *bottom_node = node();
+
+  int num_stashed = bottom_node->get_num_stashed();
+  for (int i = 0; i < num_stashed; i++) {
+    NodePath stashed;
+    stashed._head = PandaNode::get_component(_head, bottom_node->get_stashed(i));
+    result.add_path(stashed);
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::find
 //       Access: Published
 //  Description: Searches for a node below the referenced node that
@@ -377,11 +402,16 @@ attach_new_node(PandaNode *node, int sort) const {
 //               Normally, this should be called only when you are
 //               really done with the node.  If you want to remove a
 //               node from the scene graph but keep it around for
-//               later, you should probably use reparent_to() and put
-//               it under a holding node instead.
+//               later, you should probably use detach_node() instead.
 //
-//               After the node is removed, the NodePath will have
-//               been cleared.
+//               In practice, the only difference between
+//               remove_node() and detach_node() is that remove_node()
+//               also resets the NodePath to empty, which will cause
+//               the node to be deleted immediately if there are no
+//               other references.  On the other hand, detach_node()
+//               leaves the NodePath referencing the node, which will
+//               keep at least one reference to the node for as long
+//               as the NodePath exists.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 remove_node() {
@@ -409,9 +439,14 @@ remove_node() {
 //               NodePath; otherwise, this NodePath becomes the same
 //               as another arbitrary instance.
 //
-//               If the NodePath later goes out of scope or is
-//               reassigned to something else, this will have the same
-//               effect as remove_node().
+//               In practice, the only difference between
+//               remove_node() and detach_node() is that remove_node()
+//               also resets the NodePath to empty, which will cause
+//               the node to be deleted immediately if there are no
+//               other references.  On the other hand, detach_node()
+//               leaves the NodePath referencing the node, which will
+//               keep at least one reference to the node for as long
+//               as the NodePath exists.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 detach_node() {

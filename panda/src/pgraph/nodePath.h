@@ -182,6 +182,7 @@ PUBLISHED:
   NodePathCollection get_children() const;
   INLINE int get_num_children() const;
   INLINE NodePath get_child(int n) const;
+  NodePathCollection get_stashed_children() const;
 
   INLINE bool has_parent() const;
   INLINE NodePath get_parent() const;
