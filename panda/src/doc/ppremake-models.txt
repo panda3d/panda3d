@@ -146,7 +146,7 @@ install_egg - Runs egg-palettize on the named egg files, then runs
   UNPAL_SOURCES - a list of egg files to install, omitting the
     egg-palettize step.  This is normally done for animation files
     that do not contain any geometry; there is no point in attempting
-    to palettize these files since they contain to textures, and
+    to palettize these files since they contain no textures, and
     omitting the palettize step saves a bit of time building the model
     tree.  You should not name any egg files that include geometry or
     textures on the UNPAL_SOURCES line, it should only name animation
@@ -334,6 +334,7 @@ optchar_egg - Runs egg-optchar on a character model (and/or multiple
 
        -no                 - strip surface normals from the model.
        -expose joint-name  - expose joint-name to the show code.
+       -flag polyset-name  - flag geometry for the show code.
        -TR x,y,z           - rotate about x, y, and z axes.
        -TS scale           - scale model by the indicated factor.
 
@@ -347,10 +348,10 @@ optchar_egg - Runs egg-optchar on a character model (and/or multiple
       #define OPTCHAR_OPTS \
          $[OPTCHAR_OPTS] \
          -no -TR 0,180,0 -TS 0.25 \
-         -Dp joint-Rhold \
-         -Dp joint-Lhold -Dp joint-head \
-         -Dp joint-shadow \
-         -Dp joint-nameTag 
+         -expose joint-Rhold \
+         -expose joint-Lhold -Dp joint-head \
+         -expose joint-shadow \
+         -expose joint-nameTag 
     #end optchar_egg
        
 
@@ -455,7 +456,7 @@ by hand (using -kb to indicate a binary file, of course).
 
 Maya, on the other hand, for some reason insists on storing texture
 references as full pathnames, even if you enter a relative path.  It
-is not possible using the Maya API to create an .mb file that
+is not possible using the Maya interface to create an .mb file that
 references its textures using relative pathnames.  This makes it
 impossible to add a Maya file to a CVS repository in the normal way.
 
@@ -510,8 +511,8 @@ completely different hierarchy, or to update a file already within the
 source tree.  It is particularly important to re-run mayacopy after
 modifying any .mb file using Maya, since Maya will replace all of the
 local pathnames with full pathnames each time you save the file.
-Re-running mayacopy on the same file will restore the relative
-pathnames again.
+Re-running mayacopy on the same file, in place, will restore the
+relative pathnames again.
 
 
 
