@@ -40,7 +40,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 bool BillboardTransition::
 sub_render(NodeRelation *arc, const AllAttributesWrapper &,
-	   AllTransitionsWrapper &trans, RenderTraverser *trav) {
+       AllTransitionsWrapper &trans, RenderTraverser *trav) {
   Node *node = arc->get_child();
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
@@ -76,11 +76,13 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &,
     up = _up_vector * rel_mat;
     camera_pos = LVector3f::forward(coordsys) * rel_mat;
   } else {
-//	  camera_pos= -rel_mat.get_row3(pos,3);
-  	  camera_pos._v.v._0 = -rel_mat._m.m._30;
-  	  camera_pos._v.v._1 = -rel_mat._m.m._31;
-  	  camera_pos._v.v._2 = -rel_mat._m.m._32;
-	  up = _up_vector;
+//    camera_pos= -rel_mat.get_row3(3);
+
+      camera_pos[0] = -rel_mat(3,0);
+      camera_pos[1] = -rel_mat(3,1);
+      camera_pos[2] = -rel_mat(3,2);
+
+      up = _up_vector;
   }
 
   // Now determine the rotation matrix for the Billboard.
