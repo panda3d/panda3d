@@ -22,6 +22,7 @@ import DirectObject
 class DevWalker(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("DevWalker")
+    wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
 
     # Ghost mode overrides this:
     slideName = "slide-is-disabled"
@@ -69,6 +70,12 @@ class DevWalker(DirectObject.DirectObject):
     def oneTimeCollide(self):
         pass
 
+    def displayDebugInfo(self):
+        """
+        For debug use.
+        """
+        onScreenDebug.add("controls", "DevWalker")
+
     def handleAvatarControls(self, task):
         """
         Check on the arrow keys and update the avatar.
@@ -96,6 +103,9 @@ class DevWalker(DirectObject.DirectObject):
         self.rotationSpeed=(
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
+           
+        if self.wantDebugIndicator:
+            self.displayDebugInfo()
             
         # Check to see if we're moving at all:
         if self.speed or self.liftSpeed or self.slideSpeed or self.rotationSpeed:
