@@ -1,3 +1,4 @@
+#include "qpcamera.cxx"
 #include "colorAttrib.cxx"
 #include "config_pgraph.cxx"
 #include "cullHandler.cxx"
