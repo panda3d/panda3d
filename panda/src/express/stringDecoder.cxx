@@ -84,7 +84,7 @@ get_next_character() {
       unsigned int two = 0;
       if (test_eof()) {
         express_cat.warning()
-          << "utf-8 encoded string ends abruptly.\n";
+          << "utf-8 encoded string '" << _input << "' ends abruptly.\n";
         return -1;
       }
       two = (unsigned char)_input[_p++];
@@ -95,13 +95,13 @@ get_next_character() {
       // First byte of three.
       if (test_eof()) {
         express_cat.warning()
-          << "utf-8 encoded string ends abruptly.\n";
+          << "utf-8 encoded string '" << _input << "' ends abruptly.\n";
         return -1;
       }
       unsigned int two = (unsigned char)_input[_p++];
       if (test_eof()) {
         express_cat.warning()
-          << "utf-8 encoded string ends abruptly.\n";
+          << "utf-8 encoded string '" << _input << "' ends abruptly.\n";
         return -1;
       }
       unsigned int three = (unsigned char)_input[_p++];
@@ -112,7 +112,8 @@ get_next_character() {
     // Otherwise--the high bit is set but it is not one of the
     // introductory utf-8 bytes--we have an error.
     express_cat.warning()
-      << "Non utf-8 byte in string: 0x" << hex << result << dec << "\n";
+      << "Non utf-8 byte in string: 0x" << hex << result << dec
+      << ", string is '" << _input << "'\n";
   }
 
   // End of string reached.
