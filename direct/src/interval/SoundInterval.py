@@ -32,6 +32,8 @@ class SoundInterval(Interval):
         if duration == 0.0:
             if self.wantSound:
                 duration = self.sound.length()
+		if (duration == 0):
+		    self.notify.warning('zero length duration!')
             else:
                 # This will screw up any intervals that base their
                 # time on the duration of this sound interval
