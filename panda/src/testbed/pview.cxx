@@ -109,9 +109,9 @@ void
 event_0(CPT_Event event, void *) {
   // 0: run hacky test.
   MultitexReducer mr;
+  mr.set_use_geom(true);
 
-  NodePath models = framework.get_models();
-  mr.scan(models.node(), models.get_net_state(), models.get_net_transform());
+  mr.scan(framework.get_models());
 
   WindowFramework *wf = framework.get_window(0);
   GraphicsWindow *win = wf->get_graphics_window();

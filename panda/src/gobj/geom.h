@@ -223,6 +223,7 @@ public:
   INLINE const Normalf &get_next_normal(NormalIterator &niterator) const;
 
   INLINE TexCoordIterator make_texcoord_iterator() const;
+  INLINE TexCoordIterator make_texcoord_iterator(const TexCoordName *texcoord_name) const;
   INLINE const TexCoordf &get_next_texcoord(TexCoordIterator &tciterator) const;
   void setup_multitexcoord_iterator(MultiTexCoordIterator &iterator,
                                     const ActiveTextureStages &active_stages,

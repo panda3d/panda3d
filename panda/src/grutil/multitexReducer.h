@@ -26,6 +26,7 @@
 #include "texMatrixAttrib.h"
 #include "transformState.h"
 #include "geomNode.h"
+#include "nodePath.h"
 #include "luse.h"
 #include "pointerTo.h"
 #include "pmap.h"
@@ -58,10 +59,13 @@ PUBLISHED:
   ~MultitexReducer();
 
   void clear();
+  INLINE void scan(const NodePath &node, const NodePath &state_from = NodePath());
   void scan(PandaNode *node, const RenderState *state, 
             const TransformState *transform);
 
   void set_target(TextureStage *stage);
+  void set_use_geom(bool use_geom);
+  void set_allow_tex_mat(bool allow_tex_mat);
 
   void flatten(GraphicsOutput *window);
 
@@ -82,8 +86,11 @@ private:
 
   class GeomInfo {
   public:
-    INLINE GeomInfo(GeomNode *geom_node, int index);
+    INLINE GeomInfo(const RenderState *state, const RenderState *geom_net_state,
+                    GeomNode *geom_node, int index);
 
+    CPT(RenderState) _state;
+    CPT(RenderState) _geom_net_state;
     PT(GeomNode) _geom_node;
     int _index;
   };
@@ -94,6 +101,8 @@ private:
   Stages _stages;
 
   PT(TextureStage) _target_stage;
+  bool _use_geom;
+  bool _allow_tex_mat;
 
 private:
   void scan_geom_node(GeomNode *node, const RenderState *state, 
@@ -102,16 +111,24 @@ private:
   void record_stage_list(const StageList &stage_list, 
                          const GeomInfo &geom_info);
 
-  void determine_size(int &x_size, int &y_size, int &aniso_degree,
-                      Texture::FilterType &minfilter, 
-                      Texture::FilterType &magfilter, 
-                      const MultitexReducer::StageList &stage_list) const;
+  size_t choose_model_stage(const StageList &stage_list) const;
+  bool determine_uv_range(TexCoordf &min_uv, TexCoordf &max_uv,
+                          const StageInfo &model_stage,
+                          const GeomList &geom_list) const;
+
+  void get_uv_scale(LVecBase2f &uv_scale, LVecBase2f &uv_trans,
+                    const TexCoordf &min_uv, const TexCoordf &max_uv) const;
+
+  void choose_texture_size(int &x_size, int &y_size,
+                           const StageInfo &model_stage,
+                           const LVecBase2f &uv_scale,
+                           GraphicsOutput *window) const;
 
   void make_texture_layer(const NodePath &render, 
                           const StageInfo &stage_info, 
                           const GeomList &geom_list);
   void transfer_geom(GeomNode *geom_node, const TexCoordName *texcoord_name,
-                     const MultitexReducer::GeomList &geom_list);
+                     const GeomList &geom_list, bool preserve_color);
 };
 
 #include "multitexReducer.I"

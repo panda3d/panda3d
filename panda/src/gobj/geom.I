@@ -368,11 +368,21 @@ get_next_normal(NormalIterator &niterator) const {
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::TexCoordIterator Geom::
 make_texcoord_iterator() const {
+  return make_texcoord_iterator(TexCoordName::get_default());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::make_texcoord_iterator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Geom::TexCoordIterator Geom::
+make_texcoord_iterator(const TexCoordName *texcoord_name) const {
   check_config();
   TexCoordIterator i;
 
   TexCoordsByName::const_iterator tci = 
-    _texcoords_by_name.find(TexCoordName::get_default());
+    _texcoords_by_name.find(texcoord_name);
   if (tci != _texcoords_by_name.end()) {
     i._array = (*tci).second._texcoords;
     i._index = (*tci).second._tindex;;

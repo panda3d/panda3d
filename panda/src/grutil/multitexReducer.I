@@ -18,6 +18,33 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MultitexReducer::scan
+//       Access: Published
+//  Description: Starts scanning the hierarchy beginning at the
+//               indicated node.  Any GeomNodes discovered in the
+//               hierarchy with multitexture will be added to internal
+//               structures in the MultitexReducer so that a future
+//               call to flatten() will operate on all of these at
+//               once.
+//
+//               The second parameter represents the NodePath from
+//               which to accumulate the state that is considered for
+//               the multitexture.  The default is to accumulate all
+//               the state from the root of the graph, but you may
+//               specify some other node here in order to not consider
+//               nodes above that as contributing to the state to be
+//               flattened.  This is particularly useful if you have
+//               some texture stage which is applied globally to a
+//               scene (for instance, a caustics effect), which you
+//               don't want to be considered for flattening by the
+//               MultitexReducer.
+////////////////////////////////////////////////////////////////////
+INLINE void MultitexReducer::
+scan(const NodePath &node, const NodePath &state_from) {
+  scan(node.node(), node.get_state(state_from), node.get_transform(state_from));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MultitexReducer::StageInfo::operator <
 //       Access: Public
 //  Description: 
@@ -43,7 +70,10 @@ operator < (const MultitexReducer::StageInfo &other) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE MultitexReducer::GeomInfo::
-GeomInfo(GeomNode *geom_node, int index) :
+GeomInfo(const RenderState *state, const RenderState *geom_net_state,
+         GeomNode *geom_node, int index) :
+  _state(state),
+  _geom_net_state(geom_net_state),
   _geom_node(geom_node),
   _index(index)
 {

@@ -26,12 +26,14 @@
 #include "graphicsChannel.h"
 #include "graphicsLayer.h"
 #include "displayRegion.h"
-#include "nodePath.h"
 #include "camera.h"
 #include "orthographicLens.h"
 #include "cardMaker.h"
+#include "colorAttrib.h"
+#include "colorScaleAttrib.h"
 #include "colorBlendAttrib.h"
 #include "config_grutil.h"
+#include "config_gobj.h"
 #include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -42,6 +44,8 @@
 MultitexReducer::
 MultitexReducer() {
   _target_stage = TextureStage::get_default();
+  _use_geom = false;
+  _allow_tex_mat = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,8 +85,8 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 void MultitexReducer::
 scan(PandaNode *node, const RenderState *state, const TransformState *transform) {
-  CPT(RenderState) next_state = node->get_state()->compose(state);
-  CPT(TransformState) next_transform = node->get_transform()->compose(transform);
+  CPT(RenderState) next_state = state->compose(node->get_state());
+  CPT(TransformState) next_transform = transform->compose(node->get_transform());
 
   if (node->is_geom_node()) {
     scan_geom_node(DCAST(GeomNode, node), next_state, next_transform);
@@ -105,6 +109,61 @@ scan(PandaNode *node, const RenderState *state, const TransformState *transform)
 void MultitexReducer::
 set_target(TextureStage *stage) {
   _target_stage = stage;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MultitexReducer::set_use_geom
+//       Access: Published
+//  Description: Indicates whether the actual geometry will be used to
+//               generate the textures.  
+//
+//               If this is set to true, the geometry discovered by
+//               scan() will be used to generate the textures, which
+//               allows for the vertex and polygon colors to be made
+//               part of the texture itself (and makes the M_decal
+//               multitexture mode more reliable).  However, this only
+//               works if the geometry does not contain multiple
+//               different polygons that map to the same UV range.
+//
+//               If this is set to false (the default), a plain flat
+//               card will be used to generate the textures, which is
+//               more robust in general, but the resulting texture
+//               will not include vertex colors and M_decal won't work
+//               properly.
+//
+//               Note that in case multiple sets of texture
+//               coordinates are in effect, then the additional sets
+//               will always use the geometry anyway regardless of the
+//               setting of this flag (but this will not affect vertex
+//               color).
+////////////////////////////////////////////////////////////////////
+void MultitexReducer::
+set_use_geom(bool use_geom) {
+  _use_geom = use_geom;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MultitexReducer::set_allow_tex_mat
+//       Access: Published
+//  Description: Indicates whether the resulting texture should be
+//               expected to be animated beyond its current range via
+//               a texture matrix (true), or whether the current range
+//               of texture coordinates will be sufficient forever
+//               (false).
+//
+//               If this is set to true, then the entire texture image
+//               must be generated, in the assumption that the user
+//               may animate the texture around on the surface after
+//               it has been composed.
+//
+//               If this is set to false (the default), then only the
+//               portion of the texture image which is actually in use
+//               must be generated, which may be a significant savings
+//               in texture memory.
+////////////////////////////////////////////////////////////////////
+void MultitexReducer::
+set_allow_tex_mat(bool allow_tex_mat) {
+  _allow_tex_mat = allow_tex_mat;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -155,10 +214,35 @@ flatten(GraphicsOutput *window) {
     const GeomList &geom_list = (*mi).second;
 
     // Create an offscreen buffer in which to render the new texture.
-    int x_size, y_size, aniso_degree;
-    Texture::FilterType minfilter, magfilter;
-    determine_size(x_size, y_size, aniso_degree,
-                   minfilter, magfilter, stage_list);
+
+    // Start by choosing a model TextureStage to determine the new
+    // texture's properties.
+    const StageInfo &model_stage = stage_list[choose_model_stage(stage_list)];
+
+    Texture *model_tex = model_stage._tex;
+    int aniso_degree = model_tex->get_anisotropic_degree();
+    Texture::FilterType minfilter = model_tex->get_minfilter();
+    Texture::FilterType magfilter = model_tex->get_magfilter();
+
+    // What is the UV range of the model stage?
+    TexCoordf min_uv, max_uv;
+    determine_uv_range(min_uv, max_uv, model_stage, geom_list);
+
+    // Maybe we only use a small portion of the texture, or maybe we
+    // need to repeat the texture several times.
+    LVecBase2f uv_scale;
+    LVecBase2f uv_trans;
+    get_uv_scale(uv_scale, uv_trans, min_uv, max_uv);
+
+    // Also, if there is now a scale on the UV's (in conjunction with
+    // whatever texture matrix might be applied on the model stage),
+    // we may be able to adjust the image size accordingly, to keep
+    // the pixels at about the same scale--but we have to keep it to a
+    // power of 2.
+    int x_size;
+    int y_size;
+    choose_texture_size(x_size, y_size, model_stage, uv_scale,
+                        window);
 
     GraphicsOutput *buffer = 
       window->make_texture_buffer("multitex", x_size, y_size);
@@ -178,6 +262,10 @@ flatten(GraphicsOutput *window) {
     lens->set_film_size(1.0f, 1.0f);
     lens->set_film_offset(0.5f, 0.5f);
     lens->set_near_far(-1000.0f, 1000.0f);
+    lens->set_view_mat(LMatrix4f(uv_scale[0], 0.0f, 0.0, 0.0f,
+                                 0.0f, 1.0f, 0.0, 0.0f,
+                                 0.0f, 0.0f, uv_scale[1], 0.0f,
+                                 uv_trans[0], 0.0f, uv_trans[1], 1.0f));
     cam_node->set_lens(lens);
 
     // Create a root node for the buffer's scene graph, and set up
@@ -191,11 +279,22 @@ flatten(GraphicsOutput *window) {
     NodePath cam = render.attach_new_node(cam_node);
     dr->set_camera(cam);
 
-    // Put one plain white card in the background for the first
-    // texture layer to apply onto.
-    CardMaker cm("background");
-    cm.set_frame(0.0f, 1.0f, 0.0f, 1.0f);
-    render.attach_new_node(cm.generate());
+    if (!_use_geom) {
+      // Put one plain white card in the background for the first
+      // texture layer to apply onto.
+      
+      CardMaker cm("background");
+      cm.set_frame(0.0f, 1.0f, 0.0f, 1.0f);
+      render.attach_new_node(cm.generate());
+
+    } else {
+      // Put a colored model of the geometry in the background for the
+      // first texture layer to apply only.
+      PT(GeomNode) geom_node = new GeomNode("background");
+      transfer_geom(geom_node, NULL, geom_list, true);
+      
+      render.attach_new_node(geom_node);
+    }
 
     StageList::const_iterator si;
     for (si = stage_list.begin(); si != stage_list.end(); ++si) {
@@ -216,6 +315,42 @@ flatten(GraphicsOutput *window) {
       CPT(RenderState) geom_state = 
         geom_info._geom_node->get_geom_state(geom_info._index);
       geom_state = geom_state->add_attrib(new_ta);
+
+      if (_use_geom) {
+        // If we have use_geom in effect, we have to be sure to
+        // disable coloring on the new fragment (the color has been
+        // baked into the texture).
+        geom_state = geom_state->add_attrib(ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 1.0f, 1.0f)));
+        geom_state = geom_state->add_attrib(ColorScaleAttrib::make_off());
+      }
+
+      // Determine what tex matrix should be on the Geom.
+      CPT(TransformState) tex_mat = TransformState::make_identity();
+
+      const RenderAttrib *ra = geom_info._state->get_attrib(TexMatrixAttrib::get_class_type());
+      if (ra != (const RenderAttrib *)NULL) {
+        // There is a texture matrix inherited from above; put an
+        // inverse matrix on the Geom to compensate.
+        const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, ra);
+        CPT(TransformState) tex_mat = tma->get_transform(_target_stage);
+      }
+
+      tex_mat = tex_mat->compose(TransformState::make_pos_hpr_scale
+                                 (LVecBase3f(uv_trans[0], uv_trans[1], 0.0f),
+                                  LVecBase3f(0.0f, 0.0f, 0.0f),
+                                  LVecBase3f(uv_scale[0], uv_scale[1], 1.0f)));
+
+      if (tex_mat->is_identity()) {
+        // There should be no texture matrix on the Geom.
+        geom_state = geom_state->remove_attrib(TexMatrixAttrib::get_class_type());
+      } else {
+        // The texture matrix should be as computed.
+        CPT(RenderAttrib) new_tma = TexMatrixAttrib::make
+          (_target_stage, tex_mat->invert_compose(TransformState::make_identity()));
+        geom_state = geom_state->add_attrib(new_tma);
+      }
+
+
       geom_info._geom_node->set_geom_state(geom_info._index, geom_state);
     }
   }
@@ -239,7 +374,7 @@ scan_geom_node(GeomNode *node, const RenderState *state,
   int num_geoms = node->get_num_geoms();
   for (int gi = 0; gi < num_geoms; gi++) {
     CPT(RenderState) geom_net_state = 
-      node->get_geom_state(gi)->compose(state);
+      state->compose(node->get_geom_state(gi));
 
     // Get out the net TextureAttrib and TexMatrixAttrib from the state.
     const RenderAttrib *attrib;
@@ -267,7 +402,7 @@ scan_geom_node(GeomNode *node, const RenderState *state,
         stage_list.push_back(StageInfo(stage, ta, tma));
       }
 
-      record_stage_list(stage_list, GeomInfo(node, gi));
+      record_stage_list(stage_list, GeomInfo(state, geom_net_state, node, gi));
     }
   }
 }
@@ -298,45 +433,182 @@ record_stage_list(const MultitexReducer::StageList &stage_list,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MultitexReducer::determine_size
+//     Function: MultitexReducer::choose_model_stage
 //       Access: Private
-//  Description: Tries to guess what size to make the new, collapsed
-//               texture based on the sizes of all of the textures
-//               used in the stage_list.
+//  Description: Chooses one of the TextureStages in the stage_list to
+//               serve as the model to determine the size and
+//               properties of the resulting texture.
 ////////////////////////////////////////////////////////////////////
-void MultitexReducer::
-determine_size(int &x_size, int &y_size, int &aniso_degree,
-               Texture::FilterType &minfilter, Texture::FilterType &magfilter, 
-               const MultitexReducer::StageList &stage_list) const {
-  x_size = 0;
-  y_size = 0;
-  aniso_degree = 0;
-  minfilter = Texture::FT_nearest;
-  magfilter = Texture::FT_nearest;
-
-  StageList::const_iterator si;
-  for (si = stage_list.begin(); si != stage_list.end(); ++si) {
-    const StageInfo &stage_info = (*si);
-    Texture *tex = stage_info._tex;
-    PixelBuffer *pbuffer = tex->_pbuffer;
-
+size_t MultitexReducer::
+choose_model_stage(const MultitexReducer::StageList &stage_list) const {
+  for (size_t si = 0; si < stage_list.size(); si++) {
+    const StageInfo &stage_info = stage_list[si];
     if (stage_info._stage == _target_stage) {
       // If we find the target stage, use that.
-      x_size = pbuffer->get_xsize();
-      y_size = pbuffer->get_ysize();
-      aniso_degree = tex->get_anisotropic_degree();
-      minfilter = tex->get_minfilter();
-      magfilter = tex->get_magfilter();
-      return;
+      return si;
     }
+  }
 
-    // If we never run across the target stage, just use the maximum
-    // of all encountered textures.
-    x_size = max(x_size, pbuffer->get_xsize());
-    y_size = max(y_size, pbuffer->get_ysize());
-    aniso_degree = max(aniso_degree, tex->get_anisotropic_degree());
-    minfilter = (Texture::FilterType)max((int)minfilter, (int)tex->get_minfilter());
-    magfilter = (Texture::FilterType)max((int)magfilter, (int)tex->get_magfilter());
+  // If none of the stages are the target stage, use the bottom image.
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MultitexReducer::determine_uv_range
+//       Access: Private
+//  Description: Determines what the effective UV range for the
+//               indicated texture is across its geoms.  Returns true
+//               if any UV's are found, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool MultitexReducer::
+determine_uv_range(TexCoordf &min_uv, TexCoordf &max_uv,
+                   const MultitexReducer::StageInfo &model_stage,
+                   const MultitexReducer::GeomList &geom_list) const {
+  const TexCoordName *model_name = model_stage._stage->get_texcoord_name();
+  bool got_any = false;
+
+  GeomList::const_iterator gi;
+  for (gi = geom_list.begin(); gi != geom_list.end(); ++gi) {
+    const GeomInfo &geom_info = (*gi);
+    
+    PT(Geom) geom = 
+      geom_info._geom_node->get_geom(geom_info._index)->make_copy();
+
+    int num_vertices = geom->get_num_vertices();
+    if (geom->has_texcoords(model_name) && num_vertices > 0) {
+      Geom::TexCoordIterator ti = geom->make_texcoord_iterator(model_name);
+
+      int i = 0;
+      const TexCoordf &uv = geom->get_next_texcoord(ti);
+      if (!got_any) {
+        min_uv = max_uv = uv;
+        got_any = true;
+
+      } else {
+        min_uv.set(min(min_uv[0], uv[0]), min(min_uv[1], uv[1]));
+        max_uv.set(max(max_uv[0], uv[0]), max(max_uv[1], uv[1]));
+      }
+      ++i;
+
+      while (i < num_vertices) {
+        const TexCoordf &uv = geom->get_next_texcoord(ti);
+        min_uv.set(min(min_uv[0], uv[0]), min(min_uv[1], uv[1]));
+        max_uv.set(max(max_uv[0], uv[0]), max(max_uv[1], uv[1]));
+        ++i;
+      }
+    }
+  }
+
+  if (!got_any) {
+    min_uv.set(0.0f, 0.0f);
+    max_uv.set(1.0f, 1.0f);
+  }
+
+  return got_any;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MultitexReducer::get_uv_scale
+//       Access: Private
+//  Description: Chooses an appropriate transform to apply to all of
+//               the UV's on the generated texture, based on the
+//               coverage of the model stage.  If only a portion of
+//               the model stage is used, we scale the UV's up to zoom
+//               into that one portion; on the other hand, if the
+//               texture repeats many times, we scale the UV's down to
+//               to include all of the repeating image.
+////////////////////////////////////////////////////////////////////
+void MultitexReducer::
+get_uv_scale(LVecBase2f &uv_scale, LVecBase2f &uv_trans,
+             const TexCoordf &min_uv, const TexCoordf &max_uv) const {
+  if (max_uv[0] != min_uv[0]) {
+    uv_scale[0] = (max_uv[0] - min_uv[0]);
+  } else {
+    uv_scale[0] = 1.0f;
+  }
+
+  if (max_uv[1] != min_uv[1]) {
+    uv_scale[1] = (max_uv[1] - min_uv[1]);
+  } else {
+    uv_scale[1] = 1.0f;
+  }
+
+  uv_trans[0] = (min_uv[0] + max_uv[0]) / 2.0f - uv_scale[0] * 0.5f;
+  uv_trans[1] = (min_uv[1] + max_uv[1]) / 2.0f - uv_scale[1] * 0.5f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MultitexReducer::choose_texture_size
+//       Access: Private
+//  Description: Chooses an appropriate size to make the new texture,
+//               based on the size of the original model stage's
+//               texture, and the scale applied to the UV's.
+////////////////////////////////////////////////////////////////////
+void MultitexReducer::
+choose_texture_size(int &x_size, int &y_size, 
+                    const MultitexReducer::StageInfo &model_stage, 
+                    const LVecBase2f &uv_scale,
+                    GraphicsOutput *window) const {
+  Texture *model_tex = model_stage._tex;
+  PixelBuffer *model_pbuffer = model_tex->_pbuffer;
+  
+  // Start with the same size as the model texture.
+  x_size = model_pbuffer->get_xsize();
+  y_size = model_pbuffer->get_ysize();
+
+  // But we might be looking at just a subset of that texture (scale <
+  // 1) or a superset of the texture (scale > 1).  In this case, we
+  // should adjust the pixel size accordingly, although we have to
+  // keep it to a power of 2.
+
+  LVecBase3f inherited_scale = model_stage._tex_mat->get_scale();
+  
+  float u_scale = inherited_scale[0] * uv_scale[0];
+  if (u_scale != 0.0f) {
+    while (u_scale >= 2.0f) {
+      x_size *= 2;
+      u_scale *= 0.5f;
+    }
+    while (u_scale <= 0.5f) {
+      x_size /= 2;
+      u_scale *= 2.0f;
+    }
+  }
+
+  float v_scale = inherited_scale[1] * uv_scale[1];
+  if (v_scale != 0.0f) {
+    while (v_scale >= 2.0f) {
+      y_size *= 2;
+      v_scale *= 0.5f;
+    }
+    while (v_scale <= 0.5f) {
+      y_size /= 2;
+      v_scale *= 2.0f;
+    }
+  }
+
+  // Constrain the x_size and y_size to the max_texture_dimension.
+  if (max_texture_dimension > 0) {
+    x_size = min(x_size, max_texture_dimension);
+    y_size = min(y_size, max_texture_dimension);
+  }
+
+  // Finally, make sure the new sizes fit within the window, so we can
+  // use a parasite buffer.
+  int win_x_size = window->get_x_size();
+  if (win_x_size != 0 && x_size > win_x_size) {
+    x_size /= 2;
+    while (x_size > win_x_size) {
+      x_size /= 2;
+    }
+  }
+
+  int win_y_size = window->get_y_size();
+  if (win_y_size != 0 && y_size > win_y_size) {
+    y_size /= 2;
+    while (y_size > win_y_size) {
+      y_size /= 2;
+    }
   }
 }
 
@@ -394,7 +666,7 @@ make_texture_layer(const NodePath &render,
 
   NodePath geom;
 
-  if (stage_info._stage->get_texcoord_name() == _target_stage->get_texcoord_name()) {
+  if (!_use_geom && stage_info._stage->get_texcoord_name() == _target_stage->get_texcoord_name()) {
     // If this TextureStage uses the target texcoords, we can just
     // generate a simple card the fills the entire buffer.
     CardMaker cm(stage_info._tex->get_name());
@@ -405,18 +677,19 @@ make_texture_layer(const NodePath &render,
     geom = render.attach_new_node(cm.generate());
 
   } else {
-    // If this TextureStage uses some other texcoords, we have to
-    // generate geometry that maps the texcoords to the target space.
-    // This will work only for very simple cases where the geometry is
-    // not too extensive and doesn't repeat over the same UV's.
+    // If this TextureStage uses some other texcoords (or if use_geom
+    // is true), we have to generate geometry that maps the texcoords
+    // to the target space.  This will work only for very simple cases
+    // where the geometry is not too extensive and doesn't repeat over
+    // the same UV's.
     PT(GeomNode) geom_node = new GeomNode(stage_info._tex->get_name());
     transfer_geom(geom_node, stage_info._stage->get_texcoord_name(), 
-                  geom_list);
+                  geom_list, false);
     
     geom = render.attach_new_node(geom_node);
 
-    // Make sure we override the vertex color, so we don't pollute the
-    // texture with geometry color.
+    // Make sure we override the vertex color, so we don't pollute
+    // the texture with geometry color.
     geom.set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
   }
 
@@ -439,7 +712,8 @@ make_texture_layer(const NodePath &render,
 ////////////////////////////////////////////////////////////////////
 void MultitexReducer::
 transfer_geom(GeomNode *geom_node, const TexCoordName *texcoord_name,
-              const MultitexReducer::GeomList &geom_list) {
+              const MultitexReducer::GeomList &geom_list,
+              bool preserve_color) {
   GeomList::const_iterator gi;
   for (gi = geom_list.begin(); gi != geom_list.end(); ++gi) {
     const GeomInfo &geom_info = (*gi);
@@ -458,11 +732,26 @@ transfer_geom(GeomNode *geom_node, const TexCoordName *texcoord_name,
       }
       
       geom->set_coords(coords, geom->get_texcoords_index(_target_stage->get_texcoord_name()));
-      geom->set_texcoords(TexCoordName::get_default(),
-                          geom->get_texcoords_array(texcoord_name),
-                          geom->get_texcoords_index(texcoord_name));
+      if (texcoord_name != (const TexCoordName *)NULL) {
+        geom->set_texcoords(TexCoordName::get_default(),
+                            geom->get_texcoords_array(texcoord_name),
+                            geom->get_texcoords_index(texcoord_name));
+      }
+
+      CPT(RenderState) geom_state = RenderState::make_empty();
+      if (preserve_color) {
+        // Be sure to preserve whatever colors are on the geom.
+        const RenderAttrib *ca = geom_info._geom_net_state->get_attrib(ColorAttrib::get_class_type());
+        if (ca != (const RenderAttrib *)NULL) {
+          geom_state->add_attrib(ca);
+        }
+        const RenderAttrib *csa = geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_type());
+        if (csa != (const RenderAttrib *)NULL) {
+          geom_state->add_attrib(csa);
+        }
+      }
       
-      geom_node->add_geom(geom);
+      geom_node->add_geom(geom, geom_state);
     }
   }
 }
