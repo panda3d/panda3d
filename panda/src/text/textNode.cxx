@@ -1026,7 +1026,8 @@ measure_row(wstring::iterator &si, const wstring::iterator &send,
 
       const TextGlyph *glyph;
       float glyph_scale;
-      if (font->get_glyph(character, glyph, glyph_scale)) {
+      font->get_glyph(character, glyph, glyph_scale);
+      if (glyph != (TextGlyph *)NULL) {
         xpos += glyph->get_advance() * glyph_scale;
       }
     }
