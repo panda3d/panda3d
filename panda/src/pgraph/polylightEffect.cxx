@@ -36,7 +36,7 @@ TypeHandle PolylightEffect::_type_handle;
 CPT(RenderEffect) PolylightEffect::
 make() {
   PolylightEffect *effect = new PolylightEffect;
-  effect->_contribution_type = CPROXIMAL;
+  effect->_contribution_type = CT_proximal;
   effect->_weight = 0.9;
   effect->_effect_center = LPoint3f(0.0,0.0,0.0);
   return return_new(effect);
@@ -48,7 +48,7 @@ make() {
 //  Description: Constructs a new PolylightEffect object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-make(float weight, Contrib_Type contrib, LPoint3f effect_center) {
+make(float weight, ContribType contrib, LPoint3f effect_center) {
   PolylightEffect *effect = new PolylightEffect;
   effect->_contribution_type = contrib;
   effect->_weight = weight;
@@ -62,7 +62,8 @@ make(float weight, Contrib_Type contrib, LPoint3f effect_center) {
 //  Description: Constructs a new PolylightEffect object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-make(float weight, Contrib_Type contrib, LPoint3f effect_center, LIGHTGROUP lights) {
+make(float weight, ContribType contrib, LPoint3f effect_center,
+     const LightGroup &lights) {
   PolylightEffect *effect = new PolylightEffect;
   effect->_contribution_type = contrib;
   effect->_weight = weight;
@@ -82,7 +83,7 @@ make(float weight, Contrib_Type contrib, LPoint3f effect_center, LIGHTGROUP ligh
 ////////////////////////////////////////////////////////////////////
 bool PolylightEffect::
 has_cull_callback() const {
-  return true;
+  return !_lightgroup.empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -129,7 +130,7 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
   r = 1.0;
   g = 1.0;
   b = 1.0;
-  LIGHTGROUP::const_iterator light_iter; 
+  LightGroup::const_iterator light_iter; 
   // Cycle through all the lights in this effect's lightgroup
   for (light_iter = _lightgroup.begin(); light_iter != _lightgroup.end(); light_iter++){
     const PolylightNode *light = DCAST(PolylightNode, (*light_iter).node()); 
@@ -179,7 +180,7 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
   } // for all lights
 
 
-  if ( _contribution_type == CALL) {
+  if ( _contribution_type == CT_all) {
     // Sometimes to prevent snapping of color at light volume boundaries
     // just divide total contribution by all the lights in the effect
     // whether or not they contribute color
@@ -202,6 +203,24 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
   }
 
   return ColorScaleAttrib::make(LVecBase4f(r, g, b, 1.0));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PolylightEffect::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PolylightEffect::
+output(ostream &out) const {
+  out << get_type() << ":";
+    
+  LightGroup::const_iterator li;
+  for (li = _lightgroup.begin(); li != _lightgroup.end(); ++li) {
+    NodePath light = (*li);
+    out << " " << light;
+  }
+  out << " weight " << _weight << " contrib " << _contribution_type
+      << " center " << _effect_center;
 }
 
 
@@ -265,10 +284,11 @@ add_light(const NodePath &newlight) const {
 CPT(RenderEffect) PolylightEffect::
 remove_light(const NodePath &newlight) const {
   PolylightEffect *effect = new PolylightEffect(*this);
-  LIGHTGROUP::iterator light_iter;
+  LightGroup::iterator light_iter;
   light_iter = find(effect->_lightgroup.begin(),effect->_lightgroup.end(), newlight); 
-  if(light_iter == effect->_lightgroup.end()) {
-    cerr << "Light Not Found!\n";
+  if (light_iter == effect->_lightgroup.end()) {
+    pgraph_cat.debug()
+      << "Attempt to remove Polylight " << newlight << "; not found.\n";
   } else {
     // Remove light
     effect->_lightgroup.erase(light_iter);
@@ -303,7 +323,7 @@ set_weight(float w) const {
 //               Here, we just pass that to the make
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-set_contrib(Contrib_Type ct) const {
+set_contrib(ContribType ct) const {
   PolylightEffect *effect = new PolylightEffect(*this);
   effect->_contribution_type = ct;
   return return_new(effect);
@@ -325,3 +345,28 @@ set_effect_center(LPoint3f ec) const{
   return return_new(effect);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PolylightEffect::has_light
+//       Access: Published
+//  Description: Returns true if the indicated light is listed in the
+//               PolylightEffect, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PolylightEffect::
+has_light(const NodePath &light) const {
+  LightGroup::const_iterator li;
+  li = find(_lightgroup.begin(), _lightgroup.end(), light); 
+  return (li != _lightgroup.end());
+}
+
+ostream &
+operator << (ostream &out, PolylightEffect::ContribType ct) {
+  switch (ct) {
+  case PolylightEffect::CT_proximal:
+    return out << "proximal";
+
+  case PolylightEffect::CT_all:
+    return out << "all";
+  }
+
+  return out << "**Invalid ContribType(" << (int)ct << ")**";
+}

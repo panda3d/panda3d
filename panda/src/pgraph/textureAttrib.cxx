@@ -780,8 +780,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     
     // Push back a NULL pointer for each off TextureStage for now, until
     // we get the actual list of pointers later in complete_pointers().
-    //_off_stages.reserve(num_off_stages);
-    for (int i = 0; i < num_off_stages; i++) {
+    int i;
+    _off_stages.reserve(num_off_stages);
+    for (i = 0; i < num_off_stages; i++) {
       manager->read_pointer(scan);
       _off_stages.push_back(NULL);
     }
@@ -790,7 +791,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     // just read the pointers, all allocation will happen from
     // complete_pointers because, it is a map template we get the
     // actual list of pointers later in complete_pointers().
-    for (int i = 0; i < _num_on_textures; i++) {
+    for (i = 0; i < _num_on_textures; i++) {
       manager->read_pointer(scan);
       manager->read_pointer(scan);
     }

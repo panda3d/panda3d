@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureAttrib::Constructor
-//       Access: Private
+//       Access: Protected
 //  Description: Use TextureAttrib::make() to construct a new
 //               TextureAttrib object.
 ////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ TextureAttrib() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureAttrib::Copy Constructor
-//       Access: Private
+//       Access: Protected
 //  Description: Use TextureAttrib::make() to construct a new
 //               TextureAttrib object.  The copy constructor is only
 //               defined to facilitate methods like add_on_stage().

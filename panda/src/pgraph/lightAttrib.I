@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LightAttrib::Constructor
-//       Access: Private
+//       Access: Protected
 //  Description: Use LightAttrib::make() to construct a new
 //               LightAttrib object.
 ////////////////////////////////////////////////////////////////////
@@ -30,7 +30,7 @@ LightAttrib() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LightAttrib::Copy Constructor
-//       Access: Private
+//       Access: Protected
 //  Description: Use LightAttrib::make() to construct a new
 //               LightAttrib object.  The copy constructor is only
 //               defined to facilitate methods like add_on_light().

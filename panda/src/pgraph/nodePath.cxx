@@ -2095,6 +2095,7 @@ set_light(const NodePath &light, int priority) {
   if (!light.is_empty()) {
     Light *light_obj = light.node()->as_light();
     if (light_obj != (Light *)NULL) {
+      // It's an actual Light object.
       const RenderAttrib *attrib =
         node()->get_attrib(LightAttrib::get_class_type());
       if (attrib != (const RenderAttrib *)NULL) {
@@ -2110,6 +2111,31 @@ set_light(const NodePath &light, int priority) {
         // Create a new LightAttrib for this node.
         CPT(LightAttrib) la = DCAST(LightAttrib, LightAttrib::make());
         node()->set_attrib(la->add_on_light(light), priority);
+      }
+      return;
+
+    } else if (light.node()->is_of_type(PolylightNode::get_class_type())) {
+      // It's a Polylight object.
+      if (priority != 0) {
+        // PolylightEffects can't have a priority, since they're just
+        // an effect to be applied immediately.
+        pgraph_cat.warning()
+          << "Ignoring priority on set_light(" << light << ")\n";
+      }
+
+      const RenderEffect *effect =
+        node()->get_effect(PolylightEffect::get_class_type());
+      if (effect != (const RenderEffect *)NULL) {
+        const PolylightEffect *ple = DCAST(PolylightEffect, effect);
+        
+        // Modify the existing PolylightEffect to add the indicated
+        // light.
+        node()->set_effect(ple->add_light(light));
+        
+      } else {
+        // Create a new PolylightEffect for this node.
+        CPT(PolylightEffect) ple = DCAST(PolylightEffect, PolylightEffect::make());
+        node()->set_effect(ple->add_light(light));
       }
       return;
     }
@@ -2135,6 +2161,7 @@ void NodePath::
 set_light_off(int priority) {
   nassertv_always(!is_empty());
   node()->set_attrib(LightAttrib::make_all_off(), priority);
+  node()->clear_effect(PolylightEffect::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2224,6 +2251,16 @@ clear_light(const NodePath &light) {
         }
       }
       return;
+
+    } else if (light.node()->is_of_type(PolylightNode::get_class_type())) {
+      const RenderEffect *effect =
+        node()->get_effect(PolylightEffect::get_class_type());
+      if (effect != (const RenderEffect *)NULL) {
+        CPT(PolylightEffect) ple = DCAST(PolylightEffect, effect);
+        ple = DCAST(PolylightEffect, ple->remove_light(light));
+        node()->set_effect(ple);
+      }
+      return;
     }
   }
   nassert_raise("Not a Light object.");
@@ -2250,6 +2287,16 @@ has_light(const NodePath &light) const {
         const LightAttrib *la = DCAST(LightAttrib, attrib);
         return la->has_on_light(light);
       }
+      return false;
+
+    } else if (light.node()->is_of_type(PolylightNode::get_class_type())) {
+      const RenderEffect *effect =
+        node()->get_effect(PolylightEffect::get_class_type());
+      if (effect != (const RenderEffect *)NULL) {
+        const PolylightEffect *ple = DCAST(PolylightEffect, effect);
+        return ple->has_light(light);
+      }
+      return false;
     }
   }
   nassert_raise("Not a Light object.");

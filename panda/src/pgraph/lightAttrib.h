@@ -34,7 +34,7 @@
 //               from the total set of "on" lights.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA LightAttrib : public RenderAttrib {
-private:
+protected:
   INLINE LightAttrib();
   INLINE LightAttrib(const LightAttrib &copy);
 

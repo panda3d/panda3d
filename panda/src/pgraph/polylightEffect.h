@@ -40,35 +40,32 @@
 //               specially for night scenes
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PolylightEffect : public RenderEffect {
-
-
 PUBLISHED:
-  enum Contrib_Type {
-    CPROXIMAL,
-    CALL,
+  enum ContribType {
+    CT_proximal,
+    CT_all,
   };
 
-private:
+  typedef pvector< NodePath > LightGroup;
+
+protected:
   INLINE PolylightEffect();
   INLINE PolylightEffect(const PolylightEffect &copy);
-  Contrib_Type _contribution_type;
-  float _weight;
-  typedef pvector< NodePath > LIGHTGROUP;
-  LIGHTGROUP _lightgroup;
-  LPoint3f _effect_center;
 
 PUBLISHED:
   static CPT(RenderEffect) make();
-  static CPT(RenderEffect) make(float weight, Contrib_Type contrib, LPoint3f effect_center);
-  static CPT(RenderEffect) make(float weight, Contrib_Type contrib, LPoint3f effect_center, LIGHTGROUP lights);
+  static CPT(RenderEffect) make(float weight, ContribType contrib, LPoint3f effect_center);
+  static CPT(RenderEffect) make(float weight, ContribType contrib, LPoint3f effect_center, const LightGroup &lights);
   CPT(RenderEffect) add_light(const NodePath &newlight) const;
   CPT(RenderEffect) remove_light(const NodePath &newlight) const;
   CPT(RenderEffect) set_weight(float w) const;
-  CPT(RenderEffect) set_contrib(Contrib_Type c) const;
+  CPT(RenderEffect) set_contrib(ContribType c) const;
   CPT(RenderEffect) set_effect_center(LPoint3f ec) const;
   INLINE float get_weight() const;
-  INLINE Contrib_Type get_contrib() const;
+  INLINE ContribType get_contrib() const;
   INLINE LPoint3f get_effect_center()const;
+
+  bool has_light(const NodePath &light) const;
 
 public:
   virtual bool has_cull_callback() const;
@@ -77,6 +74,14 @@ public:
                              CPT(RenderState) &node_state) const;
 
   CPT(RenderAttrib) do_poly_light(const CullTraverserData *data, const TransformState *node_transform) const;
+
+  virtual void output(ostream &out) const;
+
+private:
+  ContribType _contribution_type;
+  float _weight;
+  LightGroup _lightgroup;
+  LPoint3f _effect_center;
 
 protected:
   virtual int compare_to_impl(const RenderEffect *other) const;
@@ -100,6 +105,8 @@ private:
 };
 
 #include "polylightEffect.I"
+
+ostream &operator << (ostream &out, PolylightEffect::ContribType ct);
 
 #endif
 

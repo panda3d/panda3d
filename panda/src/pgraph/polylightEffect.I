@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightEffect::Constructor
-//       Access: Private
+//       Access: Protected
 //  Description: Use PolylightEffect::make() to construct a new
 //               PolylightEffect object.
 ////////////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ PolylightEffect() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightEffect::Constructor
-//       Access: Private
+//       Access: Protected
 //  Description: Copy Constructor used by the const methods
 //               to modify data on a copy and return a new one
 ////////////////////////////////////////////////////////////////////
@@ -55,9 +55,9 @@ get_weight() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightEffect::get_contrib
 //       Access: Published
-//  Description: Returns CALL or CPROXIMAL
+//  Description: Returns CT_all or CT_proximal
 ////////////////////////////////////////////////////////////////////
-INLINE PolylightEffect::Contrib_Type PolylightEffect::
+INLINE PolylightEffect::ContribType PolylightEffect::
 get_contrib() const {
   return _contribution_type;
 }
