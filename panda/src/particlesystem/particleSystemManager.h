@@ -29,8 +29,8 @@
 // Description : Manages a set of individual ParticleSystem objects,
 //               so that each individual one doesn't have to be
 //               updated and rendered every frame
+//    See Also : particleSystemManager.cxx
 ////////////////////////////////////////////////////////////////////
-
 class EXPCL_PANDAPHYSICS ParticleSystemManager {
 PUBLISHED:
   ParticleSystemManager(int every_nth_frame = 1);
