@@ -314,7 +314,6 @@ class GravityWalker(DirectObject.DirectObject):
         turnRight = inputState.isSet("turnRight")
         slide = 0 #hack -- was: inputState.isSet("slide")
         jump = inputState.isSet("jump")
-        pie = inputState.isSet("pie")
         # Determine what the speeds are based on the buttons:
         self.speed=(forward and self.avatarControlForwardSpeed or 
                     reverse and -self.avatarControlReverseSpeed)
@@ -325,13 +324,6 @@ class GravityWalker(DirectObject.DirectObject):
         self.rotationSpeed=not slide and (
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
-
-        # No moving allowed while throwing a pie.
-        if pie:
-            self.speed = 0
-            self.slideSpeed = 0
-            self.rotationSpeed = 0
-            jump = 0
 
         if self.wantDebugIndicator:
             onScreenDebug.add("airborneHeight", self.lifter.getAirborneHeight()) #*#
