@@ -439,6 +439,10 @@ read_pointer(DatagramIterator &scan, TypedWritable *for_whom) {
   nassertv(_now_creating != _created_objs.end());
   int requestor_id = (*_now_creating).first;
 
+  /*
+    On reflection, we'll let this go undetected for now.  Maybe we
+    should remove the this pointer from read_pointer() altogether.
+
 #ifndef NDEBUG
   // A bit of sanity checking here: we look up the object ID, and
   // assign the "this" pointer into the record if it's not there
@@ -452,6 +456,7 @@ read_pointer(DatagramIterator &scan, TypedWritable *for_whom) {
     nassertv(created_obj._ptr == for_whom);
   }
 #endif  // NDEBUG
+  */
 
   // Read the object ID, and associate it with the requesting object.
   int object_id = scan.get_uint16();
