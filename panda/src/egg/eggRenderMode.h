@@ -48,9 +48,16 @@ public:
 
   void write(ostream &out, int indent_level) const;
 
-  enum AlphaMode {
-    AM_unspecified, AM_off, AM_on,
-    AM_blend, AM_blend_no_occlude, AM_ms, AM_ms_mask
+  enum AlphaMode {  // Specifies implementation of transparency.
+    AM_unspecified, 
+    AM_off,     // No transparency.
+    AM_on,      // Use whatever the default model is.
+    AM_blend,   // Normal alpha blending, e.g. TransparencyAttrib::M_alpha.
+    AM_blend_no_occlude,  // Alpha blending w/o depth write.
+    AM_ms,      // TransparencyAttrib::M_multisample
+    AM_ms_mask, // TransparencyAttrib::M_multisample_mask
+    AM_binary,  // TransparencyAttrib::M_binary
+    AM_dual     // TransparencyAttrib::M_dual
   };
 
   enum DepthWriteMode {

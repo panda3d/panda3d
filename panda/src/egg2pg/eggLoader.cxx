@@ -997,6 +997,11 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
     }
   }
 
+  if (am == EggRenderMode::AM_on) {
+    // Alpha type "on" means to get the default transparency type.
+    am = egg_alpha_mode;
+  }
+
   switch (am) {
   case EggRenderMode::AM_on:
   case EggRenderMode::AM_blend:
@@ -1014,6 +1019,14 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
 
   case EggRenderMode::AM_ms_mask:
     bucket.add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_multisample_mask));
+    break;
+
+  case EggRenderMode::AM_binary:
+    bucket.add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_binary));
+    break;
+
+  case EggRenderMode::AM_dual:
+    bucket.add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_dual));
     break;
 
   default:

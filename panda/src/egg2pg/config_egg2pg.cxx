@@ -74,7 +74,8 @@ bool egg_load_classic_nurbs_curves = config_egg2pg.GetBool("egg-load-classic-nur
 // be loaded.
 bool egg_accept_errors = config_egg2pg.GetBool("egg-accept-errors", true);
 
-CoordinateSystem egg_coordinate_system;
+CoordinateSystem egg_coordinate_system = CS_invalid;
+EggRenderMode::AlphaMode egg_alpha_mode = EggRenderMode::AM_unspecified;
 
 ConfigureFn(config_egg2pg) {
   init_libegg2pg();
@@ -96,6 +97,7 @@ init_libegg2pg() {
   }
   initialized = true;
 
+  // Get egg-coordinate-system
   string csstr = config_egg2pg.GetString("egg-coordinate-system", "default");
   CoordinateSystem cs = parse_coordinate_system_string(csstr);
 
@@ -106,6 +108,18 @@ init_libegg2pg() {
   }
   egg_coordinate_system = (cs == CS_default) ?
     default_coordinate_system : cs;
+
+  // Get egg-alpha-mode
+  string amstr = config_egg2pg.GetString("egg-alpha-mode", "blend");
+  EggRenderMode::AlphaMode am = EggRenderMode::string_alpha_mode(amstr);
+
+  if (am == EggRenderMode::AM_unspecified) {
+    egg2pg_cat.error()
+      << "Unexpected egg-alpha-mode string: " << amstr << "\n";
+    egg_alpha_mode = EggRenderMode::AM_on;
+  } else {
+    egg_alpha_mode = am;
+  }
 
   LoaderFileTypeEgg::init_type();
 

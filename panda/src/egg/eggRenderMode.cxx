@@ -135,6 +135,10 @@ string_alpha_mode(const string &string) {
     return AM_ms;
   } else if (cmp_nocase_uh(string, "ms_mask") == 0) {
     return AM_ms_mask;
+  } else if (cmp_nocase_uh(string, "binary") == 0) {
+    return AM_binary;
+  } else if (cmp_nocase_uh(string, "dual") == 0) {
+    return AM_dual;
   } else {
     return AM_unspecified;
   }
@@ -199,6 +203,10 @@ ostream &operator << (ostream &out, EggRenderMode::AlphaMode mode) {
     return out << "ms";
   case EggRenderMode::AM_ms_mask:
     return out << "ms_mask";
+  case EggRenderMode::AM_binary:
+    return out << "binary";
+  case EggRenderMode::AM_dual:
+    return out << "dual";
   }
 
   nassertr(false, out);
