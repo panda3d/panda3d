@@ -340,8 +340,11 @@ class GravityWalker(DirectObject.DirectObject):
             # more pass to ensure we aren't standing in a wall.
             self.oneTimeCollide()
             if active:
-                assert self.avatarNodePath.getP() == 0.0 # maybe we should just setP(0.0)
-                assert self.avatarNodePath.getR() == 0.0 # maybe we should just setR(0.0)
+                if 1:
+                    # Please let skyler or drose know if this is causing a problem
+                    # This is a bit of a hack fix:
+                    self.avatarNodePath.setP(0.0)
+                    self.avatarNodePath.setR(0.0)
                 self.cTrav.addCollider(self.cWallSphereNodePath, self.pusher)
                 if self.wantFloorSphere:
                     self.cTrav.addCollider(self.cFloorSphereNodePath, self.pusherFloor)
@@ -409,19 +412,19 @@ class GravityWalker(DirectObject.DirectObject):
         """
         For debug use.
         """
-        onScreenDebug.add("controls", "GravityWalker")
+        onScreenDebug.add("w controls", "GravityWalker")
         
-        onScreenDebug.add("airborneHeight", self.lifter.getAirborneHeight())
-        onScreenDebug.add("falling", self.falling)
-        onScreenDebug.add("isOnGround", self.lifter.isOnGround())
-        #onScreenDebug.add("gravity", self.lifter.getGravity())
-        #onScreenDebug.add("jumpForce", self.avatarControlJumpForce)
-        onScreenDebug.add("contact normal", self.lifter.getContactNormal())
-        onScreenDebug.add("mayJump", self.mayJump)
-        onScreenDebug.add("impact", self.lifter.getImpactVelocity())
-        onScreenDebug.add("velocity", self.lifter.getVelocity())
-        onScreenDebug.add("isAirborne", self.isAirborne)
-        onScreenDebug.add("hasContact", self.lifter.hasContact())
+        onScreenDebug.add("w airborneHeight", self.lifter.getAirborneHeight())
+        onScreenDebug.add("w falling", self.falling)
+        onScreenDebug.add("w isOnGround", self.lifter.isOnGround())
+        #onScreenDebug.add("w gravity", self.lifter.getGravity())
+        #onScreenDebug.add("w jumpForce", self.avatarControlJumpForce)
+        onScreenDebug.add("w contact normal", self.lifter.getContactNormal().pPrintValues())
+        onScreenDebug.add("w mayJump", self.mayJump)
+        onScreenDebug.add("w impact", self.lifter.getImpactVelocity())
+        onScreenDebug.add("w velocity", self.lifter.getVelocity())
+        onScreenDebug.add("w isAirborne", self.isAirborne)
+        onScreenDebug.add("w hasContact", self.lifter.hasContact())
 
     def handleAvatarControls(self, task):
         """
@@ -511,8 +514,22 @@ class GravityWalker(DirectObject.DirectObject):
                     # rotMat is the rotation matrix corresponding to
                     # our previous heading.
                     rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
-                    rotMat2=Mat3.rotateMatNormaxis(0.0, self.lifter.getContactNormal())
-                    step=rotMat.xform(rotMat2.xform(self.vel)) + (self.priorParent * dt)
+                    forward = Vec3(rotMat.xform(Vec3.forward()))
+                    up      = Vec3(rotMat.xform(self.lifter.getContactNormal()))
+                    rotMat2=Mat3()
+                    headsUp(rotMat2, forward, up)
+                    #rotMat2=Mat3.rotateMatNormaxis(0.0, )
+                    step=rotMat2.xform(self.vel) + (self.priorParent * dt)
+                    if 1:
+                        onScreenDebug.add("a getH()", self.avatarNodePath.getH())
+                        onScreenDebug.add("a forward", forward.pPrintValues())
+                        onScreenDebug.add("a up", up.pPrintValues())
+                        onScreenDebug.add("a Vec3.forward()", Vec3.forward().pPrintValues())
+                        onScreenDebug.add("a Vec3.up()", Vec3.up().pPrintValues())
+                        onScreenDebug.add("a Vec3.right()", Vec3.right().pPrintValues())
+                        onScreenDebug.add("a contactNormal()", self.lifter.getContactNormal().pPrintValues())
+                        onScreenDebug.add("a rotMat", rotMat.pPrintValues())
+                        onScreenDebug.add("a rotMat2", rotMat2.pPrintValues())
                     self.avatarNodePath.setFluidPos(Point3(
                             self.avatarNodePath.getPos()+step))
             self.avatarNodePath.setH(self.avatarNodePath.getH()+rotation)
