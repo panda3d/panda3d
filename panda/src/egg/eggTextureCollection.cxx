@@ -94,6 +94,40 @@ extract_textures(EggGroupNode *node) {
   return node->find_textures(this);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTextureCollection::is_empty
+//       Access: Published
+//  Description: Returns true if there are no EggTexures in the
+//               collection, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggTextureCollection::
+is_empty() const {
+  return _ordered_textures.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTextureCollection::get_num_textures
+//       Access: Published
+//  Description: Returns the number of EggTextures in the collection.
+////////////////////////////////////////////////////////////////////
+int EggTextureCollection::
+get_num_textures() const {
+  return _ordered_textures.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTextureCollection::get_texture
+//       Access: Published
+//  Description: Returns the nth EggTexture in the collection.
+////////////////////////////////////////////////////////////////////
+EggTexture EggTextureCollection::
+get_texture(int index) const {
+  nassertr(index >= 0 && index < (int)_ordered_textures.size(), EggTexture(0,0));
+
+  return *_ordered_textures[index];
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTextureCollection::insert_textures
 //       Access: Public

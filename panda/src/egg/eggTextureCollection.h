@@ -64,6 +64,10 @@ PUBLISHED:
 
   int extract_textures(EggGroupNode *node);
 
+  bool is_empty() const;
+  int get_num_textures() const;
+  EggTexture get_texture(int index) const;
+
 public:
   EggGroupNode::iterator insert_textures(EggGroupNode *node);
   EggGroupNode::iterator insert_textures(EggGroupNode *node, EggGroupNode::iterator position);
