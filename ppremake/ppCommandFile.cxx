@@ -1229,7 +1229,7 @@ handle_end_command() {
       // Now compare the file we generated to the file that's already
       // there, if there is one.
 
-      nest->_output << ends;
+      //      nest->_output << ends;
       string generated_file = nest->_output.str();
       if (!compare_output(generated_file, nest->_params,
                           (nest->_flags & OF_notouch) != 0)) {
