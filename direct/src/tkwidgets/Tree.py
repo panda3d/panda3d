@@ -162,6 +162,7 @@ class TreeNode:
         self.canvas.yview_moveto(fraction)
 
     def reveal(self):
+        # Make sure all parent nodes are marked as expanded
         parent = self.parent
         while parent:
             if parent.state == 'collapsed':
@@ -169,7 +170,9 @@ class TreeNode:
                 parent = parent.parent
             else:
                 break
+        # Redraw tree accordingly
         self.update()
+        # Bring this item into view
         self.view()
 
     def lastvisiblechild(self):
@@ -329,20 +332,27 @@ class TreeNode:
         self.canvas.focus_set()
 
     def find(self, searchKey):
+        # Search for a node who's key matches the given key
+        # Is it this node
         if searchKey == self.item.GetKey():
             return self
+        # Nope, check the children
         sublist = self.item._GetSubList()
         for item in sublist:
             key = item.GetKey()
+            # Use existing child or create new TreeNode if none exists
             if self.children.has_key(key):
                 child = self.children[key]
             else:
                 child = TreeNode(self.canvas, self, item, self.menuList)
+                # Update local list of children and keys
                 self.children[key] = child
                 self.kidKeys.append(key)
+            # See if node is child (or one of child's descendants)
             retVal = child.find(searchKey)
             if retVal:
                 return retVal
+        # Not here
         return None
 
 class TreeItem:
