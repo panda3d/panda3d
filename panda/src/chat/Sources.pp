@@ -6,14 +6,18 @@
   #define LOCAL_LIBS \
     putil dgraph display text event graph
 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx
+
   #define SOURCES \
-    chatHelpers.cxx chatHelpers.h chatInput.I chatInput.cxx chatInput.h \
-    config_chat.cxx config_chat.h
+    chatHelpers.h chatInput.I chatInput.h config_chat.h
+    
+  #define INCLUDED_SOURCES \
+    chatHelpers.cxx chatInput.cxx config_chat.cxx
 
   #define INSTALL_HEADERS \
     chatHelpers.h chatInput.I chatInput.h
 
-  #define PRECOMPILED_HEADER chat_headers.h 
+//  #define PRECOMPILED_HEADER chat_headers.h 
 
   #define IGATESCAN all
 
