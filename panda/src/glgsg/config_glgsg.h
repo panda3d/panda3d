@@ -24,9 +24,10 @@
 
 NotifyCategoryDecl(glgsg, EXPCL_PANDAGL, EXPTP_PANDAGL);
 
-extern bool gl_show_transforms;
 extern bool gl_cheap_textures;
-extern bool gl_cull_traversal;
+extern bool gl_always_decal_textures;
+extern bool gl_ignore_clamp;
+extern bool gl_ignore_filters;
 extern bool gl_ignore_mipmaps;
 extern bool gl_force_mipmaps;
 extern bool gl_show_mipmaps;

@@ -27,23 +27,25 @@
 Configure(config_glgsg);
 NotifyCategoryDef(glgsg, ":display:gsg");
 
-// Configure this variable true to cause the GLGSG to show each
-// transform space it renders by drawing a little unit axis.  This
-// cannot be enabled when the player is compiled in NDEBUG mode.
-bool gl_show_transforms = config_glgsg.GetBool("gl-show-transforms", false);
-
 // Configure this true to glHint the textures into the cheapest
 // possible mode.
 bool gl_cheap_textures = config_glgsg.GetBool("gl-cheap-textures", false);
 
-// Configure this true to perform a cull traversal over the geometry
-// by default, false otherwise.  The cull traversal provides support
-// for state-sorting, z-sorting, and binning.
-bool gl_cull_traversal = config_glgsg.GetBool("gl-cull-traversal", true);
+// Configure this true to ignore texture modes like modulate that
+// blend texture color with polygon color (a little cheaper for
+// software renderers).
+bool gl_always_decal_textures = config_glgsg.GetBool("gl-always-decal-textures", false);
 
-// Configure this true to disable the use of mipmapping in the
-// renderer.
-bool gl_ignore_mipmaps = config_glgsg.GetBool("gl-ignore-mipmaps", false);
+// Configure this true to disable texture clamp mode (all textures
+// repeat, a little cheaper for software renderers).
+bool gl_ignore_clamp = config_glgsg.GetBool("gl-ignore-clamp", false);
+
+// Configure this true to disable any texture filters at all (forcing
+// point sampling).
+bool gl_ignore_filters = config_glgsg.GetBool("gl-ignore-filters", false);
+
+// Configure this true to disable mipmapping only.
+bool gl_ignore_mipmaps = config_glgsg.GetBool("gl-ignore-mipmaps", false) || gl_ignore_filters;
 
 // Configure this true to enable full trilinear mipmapping on every
 // texture, whether it asks for it or not.

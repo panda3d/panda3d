@@ -3142,6 +3142,9 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 ////////////////////////////////////////////////////////////////////
 GLenum GLGraphicsStateGuardian::
 get_texture_wrap_mode(Texture::WrapMode wm) {
+  if (gl_ignore_clamp) {
+    return GL_REPEAT;
+  }
   switch (wm) {
   case Texture::WM_clamp:
     return GL_CLAMP;
@@ -3169,7 +3172,10 @@ get_texture_wrap_mode(Texture::WrapMode wm) {
 ////////////////////////////////////////////////////////////////////
 GLenum GLGraphicsStateGuardian::
 get_texture_filter_type(Texture::FilterType ft) {
-  if (gl_ignore_mipmaps) {
+  if (gl_ignore_filters) {
+    return GL_NEAREST;
+
+  } else if (gl_ignore_mipmaps) {
     switch (ft) {
     case Texture::FT_nearest_mipmap_nearest:
     case Texture::FT_nearest:
@@ -3182,6 +3188,7 @@ get_texture_filter_type(Texture::FilterType ft) {
     case Texture::FT_invalid:
       break;
     }
+
   } else {
     switch (ft) {
     case Texture::FT_nearest:
@@ -3346,6 +3353,9 @@ get_internal_image_format(PixelBuffer::Format format) {
 ////////////////////////////////////////////////////////////////////
 GLint GLGraphicsStateGuardian::
 get_texture_apply_mode_type(TextureApplyAttrib::Mode am) const {
+  if (gl_always_decal_textures) {
+    return GL_DECAL;
+  }
   switch (am) {
   case TextureApplyAttrib::M_modulate: return GL_MODULATE;
   case TextureApplyAttrib::M_decal: return GL_DECAL;
