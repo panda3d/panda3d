@@ -469,7 +469,7 @@ get_frame_data(int frame_number) {
   cd._collector_index = (unsigned short)level->get_collector();
   cd._i = (unsigned short)num_children;
   cd._net_value = level->get_value_alone();
-  if (cd._net_value != 0.0) {
+  if (cd._net_value > 0.0) {
     fdata.push_back(cd);
   }
 
