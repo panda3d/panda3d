@@ -25,7 +25,7 @@
   #endif
 
   #define INSTALL_HEADERS \
-    config_egg2pg.cxx \
+    config_egg2pg.h \
     qpeggLoader.h \
     qpload_egg_file.h
 
