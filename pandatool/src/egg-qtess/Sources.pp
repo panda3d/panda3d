@@ -3,10 +3,11 @@
   #define LOCAL_LIBS \
     eggbase progbase
   #define OTHER_LIBS \
-    egg2pg:c egg:c pandaegg:m \
+    egg2pg:c event:c parametrics:c pgraph:c egg:c pandaegg:m \
     pnmimagetypes:c pnmimage:c mathutil:c linmath:c putil:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
+  #define UNIX_SYS_LIBS m
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
   
