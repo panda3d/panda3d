@@ -591,6 +591,20 @@ connect_to(const DocumentSpec &url) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_options
+//       Access: Published
+//  Description: Sends an OPTIONS message to the server, which should
+//               query the available options, possibly in relation to
+//               a specified URL.
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPChannel::
+get_options(const DocumentSpec &url) {
+  begin_request(HTTPEnum::M_options, url, string(), false, 0, 0);
+  run();
+  return is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::begin_get_document
 //       Access: Published
 //  Description: Begins a non-blocking request to retrieve a given

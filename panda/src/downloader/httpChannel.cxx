@@ -2306,6 +2306,13 @@ make_header() {
     request_path = _request.get_url().get_path();
   }
 
+  // HTTP syntax always requires something in the request path.  If it
+  // is empty, put in a star as a placeholder (OPTIONS, for instance,
+  // uses this).
+  if (request_path.empty()) {
+    request_path = "*";
+  }
+
   ostringstream stream;
 
   stream 

@@ -27,6 +27,10 @@
 ostream &
 operator << (ostream &out, HTTPEnum::Method method) {
   switch (method) {
+  case HTTPEnum::M_options:
+    out << "OPTIONS";
+    break;
+
   case HTTPEnum::M_get:
     out << "GET";
     break;

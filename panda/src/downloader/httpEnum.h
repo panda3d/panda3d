@@ -44,6 +44,7 @@ public:
   };
 
   enum Method {
+    M_options,
     M_get,
     M_head,
     M_post,

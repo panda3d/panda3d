@@ -126,6 +126,7 @@ PUBLISHED:
   INLINE bool delete_document(const DocumentSpec &url);
   INLINE bool get_trace(const DocumentSpec &url);
   INLINE bool connect_to(const DocumentSpec &url);
+  INLINE bool get_options(const DocumentSpec &url);
 
   INLINE void begin_get_document(const DocumentSpec &url);
   INLINE void begin_get_subdocument(const DocumentSpec &url, 
