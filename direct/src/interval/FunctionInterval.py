@@ -256,15 +256,24 @@ class PosHprScaleInterval(FunctionInterval):
         # Create function interval
         FunctionInterval.__init__(self, posHprScaleFunc, name = name)
 
+
+
+
+class Func(FunctionInterval):
+    def __init__(self, *args, **kw):
+        function = args[0]
+        assert(callable(function))
+        extraArgs = args[1:]
+        kw['extraArgs'] = extraArgs
+        FunctionInterval.__init__(self, function, **kw)
+
 """
 SAMPLE CODE
 
 from IntervalGlobal import *
 
-### Using lambdas and functions ###
-# Using a lambda
-i1 = FunctionInterval(lambda: base.transitions.fadeOut())
-i2 = FunctionInterval(lambda: base.transitions.fadeIn())
+i1 = Func(base.transitions.fadeOut)
+i2 = Func(base.transitions.fadeIn)
 
 def caughtIt():
     print 'Caught here-is-an-event'
@@ -273,20 +282,20 @@ class DummyAcceptor(DirectObject):
     pass
 
 da = DummyAcceptor()
-i3 = AcceptInterval(da, 'here-is-an-event', caughtIt)
+i3 = Func(da.accept, 'here-is-an-event', caughtIt)
 
-i4 = EventInterval('here-is-an-event')
+i4 = Func(messenger.send, 'here-is-an-event')
 
-i5 = IgnoreInterval(da, 'here-is-an-event')
+i5 = Func(da.ignore, 'here-is-an-event')
 
 # Using a function
 def printDone():
     print 'done'
 
-i6 = FunctionInterval(printDone)
+i6 = Func(printDone)
 
 # Create track
-t1 = Track([
+t1 = Sequence([
     # Fade out
     (0.0, i1),
     # Fade in
@@ -332,7 +341,7 @@ def printTrackStart():
     currTime = globalClock.getFrameTime()
     print 'TRACK_START %0.2f' % (currTime - startTime)
 
-i1 = FunctionInterval(printStart)
+i1 = Func(printStart)
 # Just to take time
 i2 = LerpPosInterval(camera, 2.0, Point3(0,10,5))
 # This will be relative to end of camera move
@@ -354,5 +363,36 @@ t2 = Track([(0.0, i1),                 # i1 start at t = 0, duration = 0.0
           name = 'startTimeDemo')
 
 t2.play()
+
+
+smiley = loader.loadModel('models/misc/smiley')
+
+import Actor
+donald = Actor.Actor()
+donald.loadModel("phase_6/models/char/donald-wheel-1000")
+donald.loadAnims({"steer":"phase_6/models/char/donald-wheel-wheel"})
+donald.reparentTo(render)
+
+
+seq = Sequence(Func(donald.setPos, 0,0,0),
+               donald.actorInterval('steer', duration=1.0),
+               donald.posInterval(1, Point3(0,0,1)),
+               Parallel(donald.actorInterval('steer', duration=1.0),
+                        donald.posInterval(1, Point3(0,0,0)),
+                        ),
+               Wait(1.0),
+               Func(base.toggleWireframe),
+               Wait(1.0),
+               Parallel(donald.actorInterval('steer', duration=1.0),
+                        donald.posInterval(1, Point3(0,0,-1)),
+                        Sequence(donald.hprInterval(1, Vec3(180,0,0)),
+                                 donald.hprInterval(1, Vec3(0,0,0)),
+                                 ),
+                        ),
+               Func(base.toggleWireframe),               
+               Func(messenger.send, 'hello'),               
+               )
+
+
 
 """

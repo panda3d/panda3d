@@ -13,6 +13,8 @@ IDATA_TYPE = 2
 IDATA_START = 3
 IDATA_END = 4
 
+
+
 class Track(Interval):
     # Name counter
     trackNum = 1
@@ -240,3 +242,8 @@ class Track(Interval):
                     (idata[IDATA_START], idata[IDATA_END])) + '\n'
                    )
         return str
+
+
+class Sequence(Track):
+    def __init__(self, *intervals, **kw):
+        Track.__init__(self, intervals, **kw)

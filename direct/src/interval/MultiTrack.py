@@ -3,6 +3,8 @@
 from Interval import *
 from Track import *
 
+
+
 class MultiTrack(Interval):
     # Name counter
     multiTrackNum = 1
@@ -72,3 +74,7 @@ class MultiTrack(Interval):
 
 
 
+
+class Parallel(MultiTrack):
+    def __init__(self, *tracks, **kw):
+        MultiTrack.__init__(self, tracks, **kw)

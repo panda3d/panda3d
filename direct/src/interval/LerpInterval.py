@@ -357,6 +357,11 @@ class LerpFunctionInterval(Interval):
             raise Exception(
                 'Error: LerpInterval.__getBlend: Unknown blend type')
 
+# New interface
+class LerpFunc(LerpFunctionInterval):
+    def __init__(self, *args, **kw):
+        LerpFunctionInterval.__init__(self, *args, **kw)
+
 
 class LerpColorScaleInterval(LerpInterval):
     # Name counter

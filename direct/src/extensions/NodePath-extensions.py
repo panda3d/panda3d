@@ -854,3 +854,35 @@
             np = npc[p]
             if (mask == None or (np.node().getIntoCollideMask() & mask).getWord()):
                 np.hide()
+
+    def posInterval(self, *args, **kw):
+        import LerpInterval
+        return LerpInterval.LerpPosInterval(self, *args, **kw)
+    
+    def hprInterval(self, *args, **kw):
+        import LerpInterval
+        return LerpInterval.LerpHprInterval(self, *args, **kw)
+
+    def scaleInterval(self, *args, **kw):
+        import LerpInterval
+        return LerpInterval.LerpScaleInterval(self, *args, **kw)
+
+    def posHprInterval(self, *args, **kw):
+        import LerpInterval
+        return LerpInterval.LerpPosHprInterval(self, *args, **kw)
+
+    def hprScaleInterval(self, *args, **kw):
+        import LerpInterval
+        return LerpInterval.LerpHprScaleInterval(self, *args, **kw)
+
+    def posHprScaleInterval(self, *args, **kw):
+        import LerpInterval
+        return LerpInterval.LerpPosHprScaleInterval(self, *args, **kw)
+
+    def colorInterval(self, *args, **kw):
+        import LerpInterval
+        return LerpInterval.LerpColorInterval(self, *args, **kw)
+
+    def colorScaleInterval(self, *args, **kw):
+        import LerpInterval
+        return LerpInterval.LerpColorScaleInterval(self, *args, **kw)

@@ -16,3 +16,8 @@ class WaitInterval(Interval):
             WaitInterval.waitNum += 1
         # Initialize superclass
         Interval.__init__(self, name, duration)
+
+
+class Wait(WaitInterval):
+    def __init__(self, *args, **kw):
+        WaitInterval.__init__(self, *args, **kw)

@@ -1280,5 +1280,7 @@ class Actor(PandaObject, NodePath):
                     self.__animControlDict[lodName][partName][animName] = \
                         [other.__animControlDict[lodName][partName][animName][0], None]
 
-
+    def actorInterval(self, *args, **kw):
+        import ActorInterval
+        return ActorInterval.ActorInterval(self, *args, **kw)
 
