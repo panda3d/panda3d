@@ -92,8 +92,8 @@ xform(const LMatrix4f &mat) {
       new_bounds.push_back((GeometricBoundingVolume *)NULL);
     } else {
       const GeometricBoundingVolume *old_bound = get_local_bound(c);
-      GeometricBoundingVolume *new_bound;
-      DCAST_INTO_V(new_bound, old_bound->make_copy());
+      GeometricBoundingVolume *new_bound = 
+        DCAST(GeometricBoundingVolume, old_bound->make_copy());
       new_bound->xform(mat);
       new_bounds.push_back(new_bound);
     }
