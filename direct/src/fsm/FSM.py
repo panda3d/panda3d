@@ -1,6 +1,7 @@
 """Finite State Machine module: contains the FSM class"""
 
 from DirectObject import *
+import types
 
 class FSM(DirectObject):
     """FSM class: Finite State Machine class"""
@@ -168,7 +169,14 @@ class FSM(DirectObject):
         false otherwise. 
         """
 
-        aState = self.getStateNamed(aStateName)
+        if isinstance(aStateName, types.StringType):
+            aState = self.getStateNamed(aStateName)
+        else:
+            # Allow the caller to pass in a state in itself, not just
+            # the name of a state.
+            aState = aStateName
+            aStateName = aState.getName()
+            
         if aState == None:
             FSM.notify.error("[%s]: request: %s, no such state" %
                              (self.__name, aStateName))
