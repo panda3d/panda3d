@@ -16,8 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "device_headers.h"
+#endif
+
 #pragma hdrstop
+
+#include "trackerData.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TrackerData::Copy Assignment Operator

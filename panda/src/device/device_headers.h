@@ -16,12 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <buttonEvent.h>
-#include <buttonEventDataTransition.h>
-#include <buttonHandle.h>
-#include <dconfig.h>
 #include <indent.h>
-#include <mouseData.h>
 
 #include "analogNode.h"
 #include "buttonNode.h"
@@ -34,7 +29,6 @@
 #include "config_device.h"
 #include "dialNode.h"
 #include "mouse.h"
-#include "trackerData.h"
 #include "trackerNode.h"
 
 #pragma hdrstop

@@ -16,8 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "device_headers.h"
+#endif
+
 #pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "config_device.h"
+#include "analogNode.h"
+#include "buttonNode.h"
+#include "clientAnalogDevice.h"
+#include "clientBase.h"
+#include "clientButtonDevice.h"
+#include "clientDevice.h"
+#include "clientDialDevice.h"
+#include "clientTrackerDevice.h"
+#include "dialNode.h"
+#include "mouse.h"
+#include "trackerNode.h"
+#endif
+
+#include <dconfig.h>
 
 Configure(config_device);
 NotifyCategoryDef(device, "");
