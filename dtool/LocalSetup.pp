@@ -10,13 +10,6 @@
 //
 
 #print
-#if $[and $[HAVE_INTERROGATE],$[HAVE_PYTHON]]
-#print Configuring Panda to generate Python interfaces.
-#else
-#print Configuring Panda WITHOUT Python interfaces.
-#endif
-
-#print
 #print Configuring support for the following optional third-party packages:
 #if $[HAVE_NSPR]
 #print - NSPR
@@ -57,6 +50,14 @@
 #if $[HAVE_DX]
 #print - DirectX
 #endif
+
+#print
+#if $[and $[HAVE_INTERROGATE],$[HAVE_PYTHON]]
+#print Compilation will generate Python interfaces.
+#else
+#print Configuring Panda WITHOUT Python interfaces.
+#endif
+
 #print
 #print See dtool_config.h for more details about the specified configuration.
 
