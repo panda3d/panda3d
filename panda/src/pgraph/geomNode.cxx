@@ -25,6 +25,7 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "indent.h"
+#include "pset.h"
 
 TypeHandle GeomNode::_type_handle;
 
@@ -376,8 +377,36 @@ write_verbose(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
 output(ostream &out) const {
+  // Accumulate the total set of RenderAttrib types that are applied
+  // to any of our Geoms, so we can output them too.  The result will
+  // be the list of attrib types that might be applied to some Geoms,
+  // but not necessarily to all Geoms.
+
+  CDReader cdata(_cycler);
+
+  pset<TypeHandle> attrib_types;
+  Geoms::const_iterator gi;
+  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+    const GeomEntry &entry = (*gi);
+    int num_attribs = entry._state->get_num_attribs();
+    for (int i = 0; i < num_attribs; i++) {
+      const RenderAttrib *attrib = entry._state->get_attrib(i);
+      attrib_types.insert(attrib->get_type());
+    }
+  }
+
   PandaNode::output(out);
-  out << " (" << get_num_geoms() << " geoms)";
+  out << " (" << cdata->_geoms.size() << " geoms";
+
+  if (!attrib_types.empty()) {
+    out << ":";
+    pset<TypeHandle>::const_iterator ai;
+    for (ai = attrib_types.begin(); ai != attrib_types.end(); ++ai) {
+      out << " " << (*ai);
+    }
+  }
+
+  out << ")";
 }
 
 ////////////////////////////////////////////////////////////////////
