@@ -231,12 +231,18 @@ get_modified() const {
   for (pi = cdata->_primitives.begin(); 
        pi != cdata->_primitives.end();
        ++pi) {
-    seq = max(seq, (*pi)->get_modified());
+    UpdateSeq pseq = (*pi)->get_modified();
+    if (seq < pseq) {
+      seq = pseq;
+    }
   }
 
   int num_arrays = cdata->_data->get_num_arrays();
   for (int i = 0; i < num_arrays; ++i) {
-    seq = max(seq, cdata->_data->get_array(i)->get_modified());
+    UpdateSeq aseq = cdata->_data->get_array(i)->get_modified();
+    if (seq < aseq) {
+      seq = aseq;
+    }
   }
 
   return seq;
