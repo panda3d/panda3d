@@ -419,6 +419,10 @@ priv_instant() {
   _next_event_index = _events.size();
   _curr_t = get_duration();
   _state = S_final;
+
+  if (_event_queue.empty()) {
+    interval_done();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -510,6 +514,10 @@ priv_finalize() {
 
   _curr_t = duration;
   _state = S_final;
+
+  if (_event_queue.empty()) {
+    interval_done();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -660,6 +668,36 @@ priv_interrupt() {
 
   if (_state == S_started) {
     _state = S_paused;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CMetaInterval::pop_event
+//       Access: Published
+//  Description: Acknowledges that the external interval on the top of
+//               the queue has been extracted, and is about to be
+//               serviced by the scripting language.  This prepares
+//               the interval so the next call to is_event_ready()
+//               will return information about the next external
+//               interval on the queue, if any.
+////////////////////////////////////////////////////////////////////
+void CMetaInterval::
+pop_event() {
+#ifndef NDEBUG
+  nassertv(!_event_queue.empty());
+  const EventQueueEntry &entry = _event_queue.front();
+  const IntervalDef &def = _defs[entry._n];
+  nassertv(def._type == DT_ext_index);
+#endif
+  _event_queue.pop_front();
+
+  // Really, we should set a flag to call this at the next call to
+  // service_event_queue(), instead of calling it immediately, because
+  // the just-popped event probably hasn't been processed yet.  But we
+  // can get away with calling this here for now because Python
+  // doesn't process C++ events immediately.
+  if (_state == S_final) {
+    interval_done();
   }
 }
 
@@ -1017,6 +1055,13 @@ enqueue_self_event(CInterval::EventType event_type, double t) {
 ////////////////////////////////////////////////////////////////////
 bool CMetaInterval::
 service_event_queue() {
+  if (_event_queue.empty()) {
+    // Return early if we're empty on entry, so we don't throw the
+    // done event more than once.
+    nassertr(!_processing_events, false);
+    return false;
+  }
+
   while (!_event_queue.empty()) {
     nassertr(!_processing_events, true);
     const EventQueueEntry &entry = _event_queue.front();
@@ -1043,6 +1088,10 @@ service_event_queue() {
       }
     }
     _event_queue.pop_front();
+  }
+
+  if (_state == S_final) {
+    interval_done();
   }
 
   // No more events on the queue.

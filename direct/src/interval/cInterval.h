@@ -68,6 +68,9 @@ PUBLISHED:
   INLINE bool is_stopped() const;
   INLINE double get_t() const;
 
+  INLINE void set_done_event(const string &event);
+  INLINE const string &get_done_event() const;
+
   void setup_play(double start_time, double end_time, double play_rate);
   void setup_resume();
   int step_play();
@@ -78,7 +81,7 @@ PUBLISHED:
   // interface.
 
   // These cannot be declared private because they must be accessible
-  // Python, but the method names are prefixed with priv_ to remind
+  // to Python, but the method names are prefixed with priv_ to remind
   // you that you probably don't want to be using them directly.
   void priv_do_event(double t, EventType event);
   virtual void priv_initialize(double t);
@@ -97,6 +100,8 @@ public:
   void mark_dirty();
 
 protected:
+  void interval_done();
+
   INLINE void recompute() const;
   virtual void do_recompute();
   INLINE void check_stopped(const char *method_name) const;
@@ -105,6 +110,7 @@ protected:
   State _state;
   double _curr_t;
   string _name;
+  string _done_event;
   double _duration;
 
   // For setup_play() and step_play().

@@ -21,6 +21,7 @@ class Interval(DirectObject):
         self.duration = duration
         self.state = CInterval.SInitial
         self.currT = 0.0
+        self.doneEvent = None
         self.setTHooks = []
         self.__startT = 0
         self.__startTAtStart = 1
@@ -56,6 +57,12 @@ class Interval(DirectObject):
     def getT(self):
         return self.currT
 
+    def setDoneEvent(self, event):
+        self.doneEvent = event
+
+    def getDoneEvent(self):
+        return self.doneEvent
+
     def privDoEvent(self, t, event):
         if event == CInterval.ETStep:
             self.privStep(t)
@@ -87,6 +94,7 @@ class Interval(DirectObject):
         self.state = CInterval.SStarted
         self.privStep(self.getDuration())
         self.state = CInterval.SFinal
+        self.intervalDone()
 
     def privStep(self, t):
         # Subclasses may redefine this function
@@ -97,6 +105,7 @@ class Interval(DirectObject):
         # Subclasses may redefine this function
         self.privStep(self.getDuration())
         self.state = CInterval.SFinal
+        self.intervalDone()
 
     def privReverseInitialize(self, t):
         # Subclasses may redefine this function
@@ -117,6 +126,12 @@ class Interval(DirectObject):
     def privInterrupt(self):
         # Subclasses may redefine this function
         self.state = CInterval.SPaused
+
+    def intervalDone(self):
+        # Subclasses should call this when the interval transitions to
+        # its final state.
+        if self.doneEvent:
+            messenger.throw(self.doneEvent)
 
     def setupPlay(self, startT, endT, playRate):
         duration = self.getDuration()

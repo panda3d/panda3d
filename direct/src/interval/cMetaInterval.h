@@ -87,7 +87,7 @@ PUBLISHED:
   INLINE int get_event_index() const;
   INLINE double get_event_t() const;
   INLINE EventType get_event_type() const;
-  INLINE void pop_event();
+  void pop_event();
 
   virtual void write(ostream &out, int indent_level) const;
 

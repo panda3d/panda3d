@@ -91,6 +91,32 @@ get_t() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CInterval::set_done_event
+//       Access: Published
+//  Description: Sets the event that is generated whenever the
+//               interval reaches its final state, whether it is
+//               explicitly finished or whether it gets there on its
+//               own.
+////////////////////////////////////////////////////////////////////
+INLINE void CInterval::
+set_done_event(const string &event) {
+  _done_event = event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::get_done_event
+//       Access: Published
+//  Description: Returns the event that is generated whenever the
+//               interval reaches its final state, whether it is
+//               explicitly finished or whether it gets there on its
+//               own.
+////////////////////////////////////////////////////////////////////
+INLINE const string &CInterval::
+get_done_event() const {
+  return _done_event;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CInterval::recompute
 //       Access: Protected
 //  Description: Calls do_recompute() if the dirty flag has been set.

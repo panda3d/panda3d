@@ -156,27 +156,6 @@ get_event_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CMetaInterval::pop_event
-//       Access: Published
-//  Description: Acknowledges that the external interval on the top of
-//               the queue has been extracted, and is about to be
-//               serviced by the scripting language.  This prepares
-//               the interval so the next call to is_event_ready()
-//               will return information about the next external
-//               interval on the queue, if any.
-////////////////////////////////////////////////////////////////////
-INLINE void CMetaInterval::
-pop_event() {
-#ifndef NDEBUG
-  nassertv(!_event_queue.empty());
-  const EventQueueEntry &entry = _event_queue.front();
-  const IntervalDef &def = _defs[entry._n];
-  nassertv(def._type == DT_ext_index);
-#endif
-  _event_queue.pop_front();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CMetaInterval::double_to_int_time
 //       Access: Private
 //  Description: Converts from an external double time value or offset

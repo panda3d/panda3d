@@ -19,6 +19,7 @@
 #include "cInterval.h"
 #include "indent.h"
 #include "clockObject.h"
+#include "throw_event.h"
 #include <math.h>
 
 TypeHandle CInterval::_type_handle;
@@ -308,6 +309,7 @@ priv_instant() {
   _state = S_started;
   priv_step(get_duration());
   _state = S_final;
+  interval_done();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -338,6 +340,7 @@ priv_finalize() {
   double duration = get_duration();
   priv_step(duration);
   _state = S_final;
+  interval_done();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -446,6 +449,19 @@ mark_dirty() {
     for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
       (*pi)->mark_dirty();
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::interval_done
+//       Access: Protected
+//  Description: Called internally whenever the interval reaches its
+//               final state.
+////////////////////////////////////////////////////////////////////
+void CInterval::
+interval_done() {
+  if (!_done_event.empty()) {
+    throw_event(_done_event);
   }
 }
 
