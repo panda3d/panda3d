@@ -130,12 +130,12 @@ void AudioPool::ns_release_sound(AudioSound* sound) {
 //  Description: The nonstatic implementation of release_all_sounds().
 ////////////////////////////////////////////////////////////////////
 void AudioPool::ns_release_all_sounds(void) {
-  for (SoundMap::iterator i=_sounds.begin(); i!=_sounds.end(); ++i) {
-    // REFCOUNT
+  // REFCOUNT
+  //  for (SoundMap::iterator i=_sounds.begin(); i!=_sounds.end(); ++i) {
     // don't do this with refcounting
     //    AudioTraits::SoundClass* sc = (*i).second;
     //    (*(sc->get_destroy()))(sc);
-  }
+  //  }
   _sounds.clear();
 }
 
