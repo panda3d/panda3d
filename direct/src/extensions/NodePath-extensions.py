@@ -821,14 +821,29 @@
 
     def setAlphaScale(self, alpha):
         self.setColorScale(1, 1, 1, alpha)
-        
 
+    def showCS(self, mask = None):
+        """showCS(self, mask)
+        Shows the collision solids at or below this node.  If mask is
+        not None, it is a BitMask32 object (e.g. WallBitmask,
+        CameraBitmask) that indicates which particular collision
+        solids should be made visible; otherwise, all of them will be.
+        """
+        npc = self.findAllMatches('**/+CollisionNode')
+        for p in range(0, npc.getNumPaths()):
+            np = npc[p]
+            if (mask == None or (np.node().getIntoCollideMask() & mask).getWord()):
+                np.show()
 
-
-
-
-
-
-
-
-
+    def hideCS(self, mask = None):
+        """hideCS(self, mask)
+        Hides the collision solids at or below this node.  If mask is
+        not None, it is a BitMask32 object (e.g. WallBitmask,
+        CameraBitmask) that indicates which particular collision
+        solids should be hidden; otherwise, all of them will be.
+        """
+        npc = self.findAllMatches('**/+CollisionNode')
+        for p in range(0, npc.getNumPaths()):
+            np = npc[p]
+            if (mask == None or (np.node().getIntoCollideMask() & mask).getWord()):
+                np.hide()
