@@ -38,7 +38,10 @@ CLIENT_GET_STATE =                           46
 CLIENT_GET_STATE_RESP =                      47
 CLIENT_DONE_SET_ZONE_RESP =                  48
 CLIENT_DELETE_AVATAR =                       49
-CLIENT_DELETE_AVATAR_RESP =                  50
+
+# I think this is 5 to look like a CLIENT_GET_AVATARS_RESP
+# which is really what the server sends us when we delete an avatar
+CLIENT_DELETE_AVATAR_RESP =                  5
 
 CLIENT_HEARTBEAT =                           52
 CLIENT_FRIEND_ONLINE =                       53
