@@ -180,6 +180,8 @@ class Floater(Pmw.MegaWidget):
         if fCommand & (self['command'] is not None):
             self['command']( newVal )
 
+    def reset(self):
+        self.set(self['initialValue'])
 
 class FloaterGroup(Pmw.MegaToplevel):
     def __init__(self, parent = None, **kw):

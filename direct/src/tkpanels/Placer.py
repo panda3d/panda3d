@@ -1,9 +1,11 @@
 "DIRECT Nine DoF Placer demonstration"
 
 # Import Tkinter, Pmw, and the dial code from this directory tree.
+from PandaObject import *
 from Tkinter import *
 import Pmw
 import Dial
+import Floater
 
 class Placer(Pmw.MegaToplevel):
     def __init__(self, parent = None, **kw):
@@ -18,6 +20,20 @@ class Placer(Pmw.MegaToplevel):
         # Initialize the superclass
         Pmw.MegaToplevel.__init__(self, parent)
 
+        # Initialize state
+        self.hotPt = render.attachNewNode(NamedNode('hotPt'))
+        # Dictionary keeping track of all node paths manipulated so far
+        self.nodePathDict = {}
+        self.nodePathDict['camera'] = camera
+        self.nodePathDict['hot point'] = self.hotPt
+        self.nodePathNames = ['selected', 'hot point', 'camera']
+
+        # Get initial state
+        self.initPos = Vec3(0)
+        self.initHpr = Vec3(0)
+        self.initScale = Vec3(1)
+
+        # Create panel
         # Handle to the toplevels hull
         hull = self.component('hull')
 
@@ -83,19 +99,22 @@ class Placer(Pmw.MegaToplevel):
                             variable = self.toggleBalloonVar,
                             command = self.toggleBalloon)
 
-        nodePathMenu = Pmw.ComboBox(menuFrame,
-                                    labelpos = W,
-                                    label_text = 'Node Path:',
-                                    entry_width = 12,
-                                    selectioncommand = self.selectNodePathNamed,
-                                    scrolledlist_items = ('selected',
-                                                          'hot point',
-                                                          'camera'))
-        nodePathMenu.selectitem('selected')
-        nodePathMenu.pack(side = 'left', expand = 0)
+        self.nodePathMenu = Pmw.ComboBox(
+            menuFrame,
+            labelpos = W,
+            label_text = 'Node Path:',
+            entry_width = 12,
+            selectioncommand = self.selectNodePathNamed,
+            scrolledlist_items = self.nodePathNames)
+        self.nodePathMenu.selectitem('selected')
+        self.nodePathMenuEntry = (
+            self.nodePathMenu.component('entryfield_entry'))
+        self.nodePathMenuBG = (
+            self.nodePathMenuEntry.configure('background')[3])
+        self.nodePathMenu.pack(side = 'left', expand = 0)
 
         mode = StringVar()
-        mode.set('Drive')
+        mode.set('Absolute')
         modeMenu = Pmw.OptionMenu(menuFrame,
                                   menubutton_textvariable=mode,
                                   items = ('Drive', 'Orbit',
@@ -108,7 +127,7 @@ class Placer(Pmw.MegaToplevel):
                                labelpos = W,
                                label_text = 'WRT:',
                                entry_width = 12,
-                               selectioncommand = self.selectNodePathNamed,
+                               selectioncommand = self.selectWrtNodePathNamed,
                                scrolledlist_items = ('render',
                                                      'selected',
                                                      'camera'))
@@ -138,24 +157,27 @@ class Placer(Pmw.MegaToplevel):
 
         # Create the dials
 	self.posX = self.createcomponent('posX', (), None,
-                                         Dial.Dial, (posInterior,),
+                                         Floater.Floater, (posInterior,),
                                          text = 'X',
+                                         initialValue = self.initPos[0],
                                          label_foreground = 'Red')
-        self.posX['command'] = self.printCommand
+        self.posX['command'] = self.setX
         self.posX.pack(expand=1,fill='x')
         
 	self.posY = self.createcomponent('posY', (), None,
-                                         Dial.Dial, (posInterior,),
+                                         Floater.Floater, (posInterior,),
                                          text = 'Y',
+                                         initialValue = self.initPos[1],
                                          label_foreground = '#00A000')
-        self.posY['command'] = self.printCommand
+        self.posY['command'] = self.setY
         self.posY.pack(expand=1,fill='x')
         
 	self.posZ = self.createcomponent('posZ', (), None,
-                                         Dial.Dial, (posInterior,),
+                                         Floater.Floater, (posInterior,),
                                          text = 'Z',
+                                         initialValue = self.initPos[2],
                                          label_foreground = 'Blue')
-        self.posZ['command'] = self.printCommand
+        self.posZ['command'] = self.setZ
         self.posZ.pack(expand=1,fill='x')
 
 	# Create and pack the Hpr Controls
@@ -180,24 +202,27 @@ class Placer(Pmw.MegaToplevel):
                                          Dial.Dial, (hprInterior,),
                                          text = 'H', fRollover = 0,
                                          max = 360.0, numTicks = 12,
+                                         initialValue = self.initHpr[0],
                                          label_foreground = 'blue')
-        self.hprH['command'] = self.printCommand
+        self.hprH['command'] = self.setH
         self.hprH.pack(expand=1,fill='x')
         
 	self.hprP = self.createcomponent('hprP', (), None,
                                          Dial.Dial, (hprInterior,),
                                          text = 'P', fRollover = 0,
                                          max = 360.0, numTicks = 12,
+                                         initialValue = self.initHpr[1],
                                          label_foreground = 'red')
-        self.hprP['command'] = self.printCommand
+        self.hprP['command'] = self.setP
         self.hprP.pack(expand=1,fill='x')
         
 	self.hprR = self.createcomponent('hprR', (), None,
                                          Dial.Dial, (hprInterior,),
                                          text = 'R', fRollover = 0,
                                          max = 360.0, numTicks = 12,
+                                         initialValue = self.initHpr[2],
                                          label_foreground = '#00A000')
-        self.hprR['command'] = self.printCommand
+        self.hprR['command'] = self.setR
         self.hprR.pack(expand=1,fill='x')
 
         # Create and pack the Scale Controls
@@ -237,39 +262,110 @@ class Placer(Pmw.MegaToplevel):
 	self.scaleX = self.createcomponent('scaleX', (), None,
                                            Dial.Dial, (scaleInterior,),
                                            text = 'X Scale',
-                                           initialValue = 1.0,
+                                           initialValue = self.initScale[0],
                                            label_foreground = 'Red')
-        self.scaleX['command'] = self.printCommand
+        self.scaleX['command'] = self.setSx
         self.scaleX.pack(expand=1,fill='x')
         
 	self.scaleY = self.createcomponent('scaleY', (), None,
                                            Dial.Dial, (scaleInterior,),
                                            text = 'Y Scale',
-                                           initialValue = 1.0,
+                                           initialValue = self.initScale[1],
                                            label_foreground = '#00A000')
-        self.scaleY['command'] = self.printCommand
+        self.scaleY['command'] = self.setSy
         self.scaleY.pack(expand=1,fill='x')
         
 	self.scaleZ = self.createcomponent('scaleZ', (), None,
                                            Dial.Dial, (scaleInterior,),
                                            text = 'Z Scale',
-                                           initialValue = 1.0,
+                                           initialValue = self.initScale[2],
                                            label_foreground = 'Blue')
-        self.scaleZ['command'] = self.printCommand
+        self.scaleZ['command'] = self.setSz
         self.scaleZ.pack(expand=1,fill='x')
 
         # Make sure appropriate labels are showing
-        self._updateDialLabels('Drive')
+        self._updateDialLabels('Absolute')
+
+        # Initialize the widgets
+        self._initAll()
 
         # Make sure input variables processed 
         self.initialiseoptions(Placer)
 
+    def setX(self, val):
+        self['nodePath'].setX(val)
+    def setY(self, val):
+        self['nodePath'].setY(val)
+    def setZ(self, val):
+        self['nodePath'].setZ(val)
 
-    def printCommand(self, val):
-	print 'Current value: %s' % val
+    def setH(self, val):
+        self['nodePath'].setH(val)
+    def setP(self, val):
+        self['nodePath'].setP(val)
+    def setR(self, val):
+        self['nodePath'].setR(val)
 
+    def setSx(self, val):
+        self['nodePath'].setSx(val)
+    def setSy(self, val):
+        self['nodePath'].setSy(val)
+    def setSz(self, val):
+        self['nodePath'].setSz(val)
+
+    def addNodePath(self, nodePath):
+        # Get node path's name
+        name = nodePath.getName()
+        # Generate a unique name for the dict
+        dictName = name + '-' + `nodePath.id().this`
+        if not self.nodePathDict.has_key(dictName):
+            # Update combo box to include new item
+            self.nodePathNames.append(dictName)
+            listbox = self.nodePathMenu.component('scrolledlist')
+            listbox.setlist(self.nodePathNames)
+            # Add new item to dictionary
+            self.nodePathDict[dictName] = nodePath
+        self.nodePathMenu.selectitem(dictName)
+
+    def manip(self, nodePath):
+        self['nodePath'] = nodePath
+        # Record initial value and initialize the widgets
+        self._initAll()
+        
     def selectNodePathNamed(self, name):
         print 'Selected Node Path: ' + name
+        nodePath = None
+        if name == 'selected':
+            nodePath = direct.selected.last
+            # Add Combo box entry for this selected object
+            self.addNodePath(nodePath)
+        else:
+            nodePath = self.nodePathDict.get(name, None)
+            if (nodePath == None):
+                # See if this evaluates into a node path
+                try:
+                    nodePath = eval(name)
+                    if isinstance(nodePath, NodePath):
+                        self.addNodePath(nodePath)
+                    else:
+                        # Good eval but not a node path, give up
+                        nodePath = None
+                except:
+                    # Bogus eval
+                    nodePath = None
+                    # Clear bogus entry from listbox
+                    listbox = self.nodePathMenu.component('scrolledlist')
+                    listbox.setlist(self.nodePathNames)
+        if nodePath:
+            self.manip(nodePath)
+            self.nodePathMenuEntry.configure(
+                background = self.nodePathMenuBG)
+        else:
+            # Flash entry
+            self.nodePathMenuEntry.configure(background = 'Pink')
+
+    def selectWrtNodePathNamed(self, name):
+        print 'Selected Wrt Node Path: ' + name
 
     def printNodePathInfo(self):
         print 'Print Node Path info here'
@@ -286,10 +382,13 @@ class Placer(Pmw.MegaToplevel):
     def _redoPos(self):
         print 'redo pos'
 
+    def _initPos(self, pos):
+        self.posX.set(pos[0])
+        self.posY.set(pos[1])
+        self.posZ.set(pos[2])
+
     def _resetPos(self):
-        self.posX.reset()
-        self.posY.reset()
-        self.posZ.reset()
+        self._initPos(self.initPos)
 
     def _zeroPos(self):
         self.posX.set(0.0)
@@ -302,20 +401,26 @@ class Placer(Pmw.MegaToplevel):
     def _redoHpr(self):
         print 'redo hpr'
 
+    def _initHpr(self, hpr):
+        self.hprH.set(hpr[0])
+        self.hprP.set(hpr[1])
+        self.hprR.set(hpr[2])
+
     def _resetHpr(self):
-        self.hprH.reset()
-        self.hprP.reset()
-        self.hprR.reset()
+        self._initHpr(self.initHpr)
 
     def _zeroHpr(self):
         self.hprH.set(0.0)
         self.hprP.set(0.0)
         self.hprR.set(0.0)
 
+    def _initScale(self, scale):
+        self.scaleX.set(scale[0])
+        self.scaleY.set(scale[1])
+        self.scaleZ.set(scale[2])
+
     def _resetScale(self):
-        self.scaleX.reset()
-        self.scaleY.reset()
-        self.scaleZ.reset()
+        self._initScale(self.initScale)
 
     def _undoScale(self):
         print 'undo scale'
@@ -337,6 +442,17 @@ class Placer(Pmw.MegaToplevel):
         self._redoPos()
         self._redoHpr()
         self._redoScale()
+
+    def _initAll(self):
+        if self['nodePath']:
+            np = self['nodePath']
+            if isinstance(np, NodePath):
+                self.initPos.assign(np.getPos())
+                self.initHpr.assign(np.getHpr())
+                self.initScale.assign(np.getScale())
+        self._initPos(self.initPos)
+        self._initHpr(self.initHpr)
+        self._initScale(self.initScale)
 
     def _resetAll(self):
         self._resetPos()
@@ -378,6 +494,9 @@ class Placer(Pmw.MegaToplevel):
             self.balloon.configure(state = 'balloon')
         else:
             self.balloon.configure(state = 'none')
+
+def place(nodePath):
+    return Placer(nodePath = nodePath)
 
 ######################################################################
 

@@ -1172,7 +1172,7 @@ class LevelEditor(NodePath, PandaObject):
         else:
             # If reached the top: fail
             if not nodePath.hasParent():
-                return 0
+                return None
             else:
                 # Try parent
                 return self.findDNARoot(nodePath.getParent())
