@@ -43,10 +43,13 @@ framebuffer-mode rgba double-buffer depth multisample hardware software
 # want to set this to a sensible path for yourself.  $THIS_PRC_DIR is
 # a special variable that indicates the same directory as this
 # particular Config.prc file.
-model-path  .
-model-path  $THIS_PRC_DIR/..
-sound-path  .
-sound-path  $THIS_PRC_DIR/..
+
+model-path    .
+model-path    $THIS_PRC_DIR/..
+sound-path    .
+sound-path    $THIS_PRC_DIR/..
+texture-path  .
+texture-path  $THIS_PRC_DIR/..
 
 # This makes the egg loader available to load egg files.
 load-file-type pandaegg
