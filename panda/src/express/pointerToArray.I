@@ -509,7 +509,7 @@ clear() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -521,7 +521,7 @@ ConstPointerToArray() :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -533,7 +533,7 @@ ConstPointerToArray(const PointerToArray<Element> &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -601,7 +601,7 @@ rend() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::size
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -649,37 +649,6 @@ capacity() const {
   return ((To *)(this->_void_ptr))->capacity();
 }
 
-#ifndef WIN32_VC
-////////////////////////////////////////////////////////////////////
-//     Function: ConstPointerToArray::Indexing operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class Element>
-INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
-operator [](size_type n) const {
-  nassertd((this->_void_ptr) != NULL) {
-    ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
-  }
-  nassertd(!((To *)(this->_void_ptr))->empty()) {
-    ((To *)(this->_void_ptr))->push_back(Element());
-  }
-  nassertr(n < ((To *)(this->_void_ptr))->size(), ((To *)(this->_void_ptr))->operator[](0));
-  return ((To *)(this->_void_ptr))->operator[](n);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConstPointerToArray::Indexing operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class Element>
-INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
-operator [](int n) const {
-  return operator[]((size_type)n);
-}
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::front
 //       Access: Public
@@ -712,6 +681,52 @@ back() const {
     ((To *)(this->_void_ptr))->push_back(Element());
   }
   return ((To *)(this->_void_ptr))->back();
+}
+
+#ifndef WIN32_VC
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::Indexing operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
+operator [](size_type n) const {
+  nassertd((this->_void_ptr) != NULL) {
+    ((ConstPointerToArray<Element> *)this)->reassign(new RefCountObj<pvector<Element> >);
+  }
+  nassertd(!((To *)(this->_void_ptr))->empty()) {
+    ((To *)(this->_void_ptr))->push_back(Element());
+  }
+  nassertr(n < ((To *)(this->_void_ptr))->size(), ((To *)(this->_void_ptr))->operator[](0));
+  return ((To *)(this->_void_ptr))->operator[](n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::Indexing operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE TYPENAME ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
+operator [](int n) const {
+  return operator[]((size_type)n);
+}
+#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::get_element
+//       Access: Published
+//  Description: This method exists mainly to access the elements of
+//               the array easily from a high-level language such as
+//               Python, especially on Windows, where the above index
+//               element accessor methods can't be defined because of
+//               a confusion with the pointer typecast operator.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE const Element &ConstPointerToArray<Element>::
+get_element(size_type n) const {
+  return (*this)[n];
 }
 
 ////////////////////////////////////////////////////////////////////

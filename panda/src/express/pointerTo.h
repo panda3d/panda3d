@@ -155,11 +155,10 @@ PUBLISHED:
   INLINE ConstPointerTo<T> &operator = (const PointerTo<T> &copy);
   INLINE ConstPointerTo<T> &operator = (const ConstPointerTo<T> &copy);
 
-  // These functions normally wouldn't need to be redefined here, but
+  // This functions normally wouldn't need to be redefined here, but
   // we do so anyway just to help out interrogate (which doesn't seem
   // to want to automatically export the PointerToBase class).  When
-  // this works again in interrogate, we can remove these.
-  INLINE bool is_null() const { return PointerToBase<T>::is_null(); }
+  // this works again in interrogate, we can remove this.
   INLINE void clear() { PointerToBase<T>::clear(); }
 };
 

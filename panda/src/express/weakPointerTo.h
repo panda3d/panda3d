@@ -52,11 +52,10 @@ PUBLISHED:
   INLINE WeakPointerTo<T> &operator = (const PointerTo<T> &copy);
   INLINE WeakPointerTo<T> &operator = (const WeakPointerTo<T> &copy);
 
-  // These functions normally wouldn't need to be redefined here, but
+  // This function normally wouldn't need to be redefined here, but
   // we do so anyway just to help out interrogate (which doesn't seem
   // to want to automatically export the WeakPointerToBase class).  When
-  // this works again in interrogate, we can remove these.
-  INLINE bool is_null() const { return WeakPointerToBase<T>::is_null(); }
+  // this works again in interrogate, we can remove this.
   INLINE void clear() { WeakPointerToBase<T>::clear(); }
 };
 

@@ -82,7 +82,6 @@ public:
 #endif  // CPPPARSER
 
 PUBLISHED:
-  INLINE bool is_null() const;
   INLINE void clear();
 
   void output(ostream &out) const;

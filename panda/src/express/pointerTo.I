@@ -79,7 +79,7 @@ operator TYPENAME PointerToBase<T>::To *() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerTo::p
-//       Access: Public
+//       Access: Published
 //  Description: Returns an ordinary pointer instead of a PointerTo.
 //               Useful to work around compiler problems, particularly
 //               for implicit upcasts.
@@ -92,7 +92,7 @@ p() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerTo::Assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
@@ -104,7 +104,7 @@ operator = (To *ptr) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerTo::Assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
@@ -191,7 +191,7 @@ operator const TYPENAME PointerToBase<T>::To *() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::p
-//       Access: Public
+//       Access: Published
 //  Description: Returns an ordinary pointer instead of a ConstPointerTo.
 //               Useful to work around compiler problems, particularly
 //               for implicit upcasts.
@@ -204,7 +204,7 @@ p() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::Assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
@@ -216,7 +216,7 @@ operator = (const To *ptr) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::Assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
@@ -228,7 +228,7 @@ operator = (const PointerTo<T> &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::Assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>

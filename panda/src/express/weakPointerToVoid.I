@@ -43,11 +43,22 @@ mark_deleted() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WeakPointerToVoid::was_deleted
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the object we are pointing to has
 //               been deleted, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool WeakPointerToVoid::
 was_deleted() const {
   return _ptr_was_deleted;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WeakPointerToVoid::is_valid_pointer
+//       Access: Published
+//  Description: Returns true if the pointer is not null and the
+//               object has not been deleted.
+////////////////////////////////////////////////////////////////////
+INLINE bool WeakPointerToVoid::
+is_valid_pointer() const {
+  return (_void_ptr != (void *)NULL) && !_ptr_was_deleted;
 }

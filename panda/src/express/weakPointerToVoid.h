@@ -37,6 +37,7 @@ public:
 
 PUBLISHED:
   INLINE bool was_deleted() const;
+  INLINE bool is_valid_pointer() const;
 
 protected:
   bool _ptr_was_deleted;

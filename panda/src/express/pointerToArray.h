@@ -104,7 +104,6 @@ public:
 
 PUBLISHED:
   INLINE PointerToArray();
-  //  INLINE PointerToArray(size_type n);  this is too dangerous to use, since arrays created automatically for any const parameter, use empty_array instead
   INLINE static PointerToArray<Element> empty_array(size_type n);
   INLINE PointerToArray(size_type n, const Element &value);
   INLINE PointerToArray(const PointerToArray<Element> &copy);
@@ -217,10 +216,12 @@ public:
   typedef TYPENAME pvector<Element>::difference_type difference_type;
   typedef TYPENAME pvector<Element>::size_type size_type;
 
+PUBLISHED:
   INLINE ConstPointerToArray();
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
 
+public:
   // Duplicating the interface of vector.
 
   INLINE iterator begin() const;
@@ -231,19 +232,26 @@ public:
   // Equality and comparison operators are pointerwise for
   // PointerToArrays, not elementwise as in vector.
 
+PUBLISHED:
   INLINE size_type size() const;
+
+public:
   INLINE size_type max_size() const;
   INLINE bool empty() const;
 
   // Functions specific to vectors.
   INLINE size_type capacity() const;
+  INLINE reference front() const;
+  INLINE reference back() const;
+
+PUBLISHED:
 #ifndef WIN32_VC
   INLINE reference operator [](size_type n) const;
   INLINE reference operator [](int n) const;
 #endif
-  INLINE reference front() const;
-  INLINE reference back() const;
+  INLINE const Element &get_element(size_type n) const;
 
+public:
   INLINE operator const Element *() const;
   INLINE const Element *p() const;
   INLINE const pvector<Element> &v() const;

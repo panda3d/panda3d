@@ -77,7 +77,6 @@ public:
   INLINE size_t get_hash() const;
 
 PUBLISHED:
-  INLINE bool is_null() const;
   INLINE void clear();
 
   void output(ostream &out) const;

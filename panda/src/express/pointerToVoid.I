@@ -36,3 +36,15 @@ INLINE PointerToVoid::
 ~PointerToVoid() {
   nassertv(_void_ptr == (void *)NULL);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToVoid::is_null
+//       Access: Published
+//  Description: Returns true if the PointerTo is a NULL pointer,
+//               false otherwise.  (Direct comparison to a NULL
+//               pointer also works.)
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerToVoid::
+is_null() const {
+  return (_void_ptr == (void *)NULL);
+}

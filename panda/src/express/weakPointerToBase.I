@@ -388,21 +388,8 @@ operator < (const PointerToBase<To> &other) const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WeakPointerToBase::is_null
-//       Access: Public
-//  Description: Returns true if the PointerTo is a NULL pointer,
-//               false otherwise.  (Direct comparison to a NULL
-//               pointer also works.)
-////////////////////////////////////////////////////////////////////
-template<class T>
-INLINE bool WeakPointerToBase<T>::
-is_null() const {
-  return (_void_ptr == (void *)NULL);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: WeakPointerToBase::clear
-//       Access: Public
+//       Access: Published
 //  Description: A convenient way to set the PointerTo object to NULL.
 //               (Assignment to a NULL pointer also works, of course.)
 ////////////////////////////////////////////////////////////////////
@@ -414,7 +401,7 @@ clear() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WeakPointerToBase::output
-//       Access: Public
+//       Access: Published
 //  Description: A handy function to output PointerTo's as a hex
 //               pointer followed by a reference count.
 ////////////////////////////////////////////////////////////////////

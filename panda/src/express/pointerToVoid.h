@@ -38,6 +38,10 @@ protected:
   INLINE PointerToVoid();
   INLINE ~PointerToVoid();
 
+PUBLISHED:
+  INLINE bool is_null() const;
+
+protected:
   // Within the PointerToVoid class, we only store a void pointer.
   // This is actually the (To *) pointer that is typecast to (void *)
   // from the derived template classes.
