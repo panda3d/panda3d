@@ -125,6 +125,48 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         if av and (penalty > 0):
             av.takeDamage(penalty * self.levelMgrEntity.ouchMultiplier)
         
+    def requestCurrentLevelSpec(self, specHash, entTypeRegHash):
+        senderId = self.air.msgSender
+
+        self.notify.info('av %s: specHash %s, entTypeRegHash %s' %
+                         (senderId, specHash, entTypeRegHash))
+
+        if not __dev__:
+            # client is running in dev mode and we're not; that won't fly
+            self.notify.info("client is in dev mode and we are not")
+            self.sendUpdateToAvatarId(
+                senderId, 'setSpecDeny',
+                ['AI server is not running in dev mode. '
+                 'Set want-dev to false on your client or true on the AI.'])
+            return
+
+        # first check the typeReg hash -- if it doesn't match, the
+        # client should not be connecting. Their entityTypeRegistry
+        # is different from ours.
+        srvHash = self.levelSpec.entTypeReg.getHashStr()
+        self.notify.info('srv entTypeRegHash %s' % srvHash)
+        if srvHash != entTypeRegHash:
+            self.sendUpdateToAvatarId(
+                senderId, 'setSpecDeny',
+                ['EntityTypeRegistry hashes do not match! '
+                 '(server:%s, client:%s' % (srvHash, entTypeRegHash)])
+            return
+        spec = None
+        # don't need to hit disk if we're just sending 'None' over the wire
+        useDisk = 0
+        if hash(self.levelSpec) != specHash:
+            spec = self.levelSpec
+            useDisk=simbase.config.GetBool('spec-by-disk', 0)
+        specStr = repr(spec)
+
+        import DistributedLargeBlobSenderAI
+        largeBlob = DistributedLargeBlobSenderAI.\
+                    DistributedLargeBlobSenderAI(
+            self.air, self.zoneId, senderId, specStr,
+            useDisk=useDisk)
+        self.sendUpdateToAvatarId(senderId,
+                                  'setSpecSenderDoId', [largeBlob.doId])
+
     if __dev__:
         # level editors should call this func to tweak attributes of level
         # entities
@@ -176,36 +218,3 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
                 return
             self.levelSpec.saveToDisk()
             self.modified = 0
-
-        def requestCurrentLevelSpec(self, specHash, entTypeRegHash):
-            senderId = self.air.msgSender
-
-            self.notify.info('av %s: specHash %s, entTypeRegHash %s' %
-                             (senderId, specHash, entTypeRegHash))
-
-            # first check the typeReg hash -- if it doesn't match, the
-            # client should not be connecting. Their entityTypeRegistry
-            # is different from ours.
-            srvHash = self.levelSpec.entTypeReg.getHashStr()
-            self.notify.info('srv entTypeRegHash %s' % srvHash)
-            if srvHash != entTypeRegHash:
-                self.sendUpdateToAvatarId(
-                    senderId, 'setSpecDeny',
-                    ['EntityTypeRegistry hashes do not match! '
-                     '(server:%s, client:%s' % (srvHash, entTypeRegHash)])
-                return
-            spec = None
-            # don't need to hit disk if we're just sending 'None' over the wire
-            useDisk = 0
-            if hash(self.levelSpec) != specHash:
-                spec = self.levelSpec
-                useDisk=simbase.config.GetBool('spec-by-disk', 0)
-            specStr = repr(spec)
-
-            import DistributedLargeBlobSenderAI
-            largeBlob = DistributedLargeBlobSenderAI.\
-                        DistributedLargeBlobSenderAI(
-                self.air, self.zoneId, senderId, specStr,
-                useDisk=useDisk)
-            self.sendUpdateToAvatarId(senderId,
-                                      'setSpecSenderDoId', [largeBlob.doId])
