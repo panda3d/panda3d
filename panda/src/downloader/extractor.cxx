@@ -100,7 +100,7 @@ request_extract(const Filename &source_file, const string &event_name,
     // Make sure we actually are threaded
     if (!_threaded) {
       downloader_cat.info()
-        << "Extractor::request_decompress() - create_thread() was "
+        << "Extractor::request_extract() - create_thread() was "
         << "never called!  Calling it now..." << endl;
       create_thread();
     }
