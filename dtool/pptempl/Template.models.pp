@@ -248,14 +248,14 @@ $[pt] :
     #define source $[pal_egg_dir]/$[egg]
     #define target $[bam_dir]/$[egg:%.egg=%.bam]
 $[target] : $[source] $[bam_dir]/stamp
-	egg2bam -kp -tp $[install_dir] -o $[target] $[source]
+	egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
 
   #end egg
   #foreach egg $[UNPAL_SOURCES]
     #define source $[source_prefix]$[egg]
     #define target $[bam_dir]/$[egg:%.egg=%.bam]
 $[target] : $[source] $[bam_dir]/stamp
-	egg2bam -kp -tp $[install_dir] -o $[target] $[source]
+	egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
 
   #end egg
 #end install_egg
