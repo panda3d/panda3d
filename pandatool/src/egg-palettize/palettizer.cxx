@@ -215,11 +215,11 @@ report_statistics() const {
 
   Placements overall_placements;
 
-  vector<PaletteGroup *>::const_iterator sgi;
-  for (sgi = sorted_groups.begin();
-       sgi != sorted_groups.end();
-       ++sgi) {
-    PaletteGroup *group = (*sgi);
+  vector<PaletteGroup *>::const_iterator si;
+  for (si = sorted_groups.begin();
+       si != sorted_groups.end();
+       ++si) {
+    PaletteGroup *group = (*si);
 
     Placements placements;
     group->get_placements(placements);
