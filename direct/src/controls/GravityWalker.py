@@ -454,8 +454,8 @@ class GravityWalker(DirectObject.DirectObject):
         # Determine what the speeds are based on the buttons:
         self.speed=(forward and self.avatarControlForwardSpeed or 
                     reverse and -self.avatarControlReverseSpeed)
-        if run and self.speed>0.0:
-            self.speed*=2.0 #*#
+        #if run and self.speed>0.0:
+        #    self.speed*=2.0 #*#
         # Should fSlide be renamed slideButton?
         self.slideSpeed=slide and (
                 (turnLeft and -self.avatarControlForwardSpeed) or 
