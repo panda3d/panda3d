@@ -58,6 +58,12 @@ SomethingToEgg(const string &format_name,
 
   _input_units = DU_invalid;
   _output_units = DU_invalid;
+  _animation_convert = AC_none;
+  _got_start_frame = false;
+  _got_end_frame = false;
+  _got_frame_inc = false;
+  _got_input_frame_rate = false;
+  _got_output_frame_rate = false;
   _texture_path_convert = SomethingToEggConverter::PC_unchanged;
   _model_path_convert = SomethingToEggConverter::PC_unchanged;
   _append_to_sys_paths = false;
@@ -88,6 +94,53 @@ add_units_options() {
      "necessary to make the appropriate units conversion; otherwise, "
      "the vertices will be left as they are.",
      &SomethingToEgg::dispatch_units, NULL, &_output_units);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::add_animation_options
+//       Access: Public
+//  Description: Adds options appropriate to animation packages.
+////////////////////////////////////////////////////////////////////
+void SomethingToEgg::
+add_animation_options() {
+  add_option
+    ("a", "animation-mode", 40,
+     "Specifies how animation from the " + _format_name + " file is "
+     "converted to egg, if at all.  At present, the following keywords "
+     "are supported: none and flip.",
+     &SomethingToEgg::dispatch_animation_convert, NULL, &_animation_convert);
+
+  add_option
+    ("sf", "start-frame", 40,
+     "Specifies the starting frame of animation to extract.  If omitted, "
+     "the first frame of the time slider will be used.",
+     &SomethingToEgg::dispatch_double, &_got_start_frame, &_start_frame);
+
+  add_option
+    ("ef", "end-frame", 40,
+     "Specifies the ending frame of animation to extract.  If omitted, "
+     "the last frame of the time slider will be used.",
+     &SomethingToEgg::dispatch_double, &_got_end_frame, &_end_frame);
+
+  add_option
+    ("if", "frame-inc", 40,
+     "Specifies the increment between successive frames.  If omitted, "
+     "this is taken from the time slider settings, or 1.0 if the time "
+     "slider does not specify.",
+     &SomethingToEgg::dispatch_double, &_got_frame_inc, &_frame_inc);
+
+  add_option
+    ("fri", "fps", 40,
+     "Specify the frame rate (frames per second) of the input " + _format_name +
+     " file.  Normally, this can be inferred from the file itself.",
+     &SomethingToEgg::dispatch_double, &_got_input_frame_rate, &_input_frame_rate);
+
+  add_option
+    ("fro", "fps", 40,
+     "Specify the frame rate (frames per second) of the generated animation.  "
+     "If this is specified, the animation speed is scaled by the appropriate "
+     "factor based on the frame rate of the input file (see -ri).",
+     &SomethingToEgg::dispatch_double, &_got_output_frame_rate, &_output_frame_rate);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -352,6 +405,25 @@ void SomethingToEgg::
 post_process_egg_file() {
   apply_units_scale(_data);
   EggConverter::post_process_egg_file();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::dispatch_animation_convert
+//       Access: Protected, Static
+//  Description: Dispatch function to set the given animation convert mode
+//               according to the specified parameter.  var is a
+//               pointer to an AnimationConvert variable.
+////////////////////////////////////////////////////////////////////
+bool SomethingToEgg::
+dispatch_animation_convert(const string &opt, const string &arg, void *var) {
+  AnimationConvert *ip = (AnimationConvert *)var;
+  (*ip) = string_animation_convert(arg);
+  if ((*ip) == AC_invalid) {
+    nout << "Invalid keyword for -" << opt << ": " << arg << "\n";
+    return false;
+  }    
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

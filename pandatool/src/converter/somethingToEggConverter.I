@@ -66,6 +66,309 @@ set_model_path_convert(PathConvert mpc,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::set_animation_convert
+//       Access: Public
+//  Description: Specifies how source animation will be converted into
+//               egg structures.  The default is AC_none, which means
+//               animation tables will be ignored.  This is only
+//               meaningful for converters that understand animation.
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+set_animation_convert(AnimationConvert animation_convert) {
+  _animation_convert = animation_convert;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::get_animation_convert
+//       Access: Public
+//  Description: Returns how source animation will be converted into
+//               egg structures.
+////////////////////////////////////////////////////////////////////
+INLINE AnimationConvert SomethingToEggConverter::
+get_animation_convert() const {
+  return _animation_convert;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::set_start_frame
+//       Access: Public
+//  Description: Specifies the starting frame of the animation to
+//               convert, in the units specified by
+//               set_input_frame_rate().  If this is unspecified, the
+//               starting frame is taken from the source, for instance
+//               from the first frame of the animation slider.
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+set_start_frame(double start_frame) {
+  _start_frame = start_frame;
+  _control_flags |= CF_start_frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::has_start_frame
+//       Access: Public
+//  Description: Returns true if the starting frame has been
+//               explicitly specified via set_start_frame(), or false
+//               if the starting frame should be implicit based on the
+//               source.
+////////////////////////////////////////////////////////////////////
+INLINE bool SomethingToEggConverter::
+has_start_frame() const {
+  return (_control_flags & CF_start_frame) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::get_start_frame
+//       Access: Public
+//  Description: Returns the value set by a previous call to
+//               set_start_frame().  It is an error to call this if
+//               has_start_frame() returns false.
+////////////////////////////////////////////////////////////////////
+INLINE double SomethingToEggConverter::
+get_start_frame() const {
+  nassertr(has_start_frame(), 0.0);
+  return _start_frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::clear_start_frame
+//       Access: Public
+//  Description: Removes the value previously set by
+//               set_start_frame().
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+clear_start_frame() {
+  _start_frame = 0.0;
+  _control_flags &= ~CF_start_frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::set_end_frame
+//       Access: Public
+//  Description: Specifies the ending frame of the animation to
+//               convert, in the units specified by
+//               set_input_frame_rate().  If this is unspecified, the
+//               ending frame is taken from the source, for instance
+//               from the last frame of the animation slider.
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+set_end_frame(double end_frame) {
+  _end_frame = end_frame;
+  _control_flags |= CF_end_frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::has_end_frame
+//       Access: Public
+//  Description: Returns true if the ending frame has been
+//               explicitly specified via set_end_frame(), or false
+//               if the ending frame should be implicit based on the
+//               source.
+////////////////////////////////////////////////////////////////////
+INLINE bool SomethingToEggConverter::
+has_end_frame() const {
+  return (_control_flags & CF_end_frame) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::get_end_frame
+//       Access: Public
+//  Description: Returns the value set by a previous call to
+//               set_end_frame().  It is an error to call this if
+//               has_end_frame() returns false.
+////////////////////////////////////////////////////////////////////
+INLINE double SomethingToEggConverter::
+get_end_frame() const {
+  nassertr(has_end_frame(), 0.0);
+  return _end_frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::clear_end_frame
+//       Access: Public
+//  Description: Removes the value previously set by
+//               set_end_frame().
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+clear_end_frame() {
+  _end_frame = 0.0;
+  _control_flags &= ~CF_end_frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::set_frame_inc
+//       Access: Public
+//  Description: Specifies the increment between frames to extract.
+//               This is the amount to increment the time slider (in
+//               units of internal_frame_rate) between extracting each
+//               frame.  If this is not specified, the default is
+//               taken from the animation package, or 1.0 if the
+//               animation package does not specified a frame
+//               increment.
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+set_frame_inc(double frame_inc) {
+  _frame_inc = frame_inc;
+  _control_flags |= CF_frame_inc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::has_frame_inc
+//       Access: Public
+//  Description: Returns true if the frame increment has been
+//               explicitly specified via set_frame_inc(), or false
+//               if the ending frame should be implicit based on the
+//               source.
+////////////////////////////////////////////////////////////////////
+INLINE bool SomethingToEggConverter::
+has_frame_inc() const {
+  return (_control_flags & CF_frame_inc) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::get_frame_inc
+//       Access: Public
+//  Description: Returns the value set by a previous call to
+//               set_frame_inc().  It is an error to call this if
+//               has_frame_inc() returns false.
+////////////////////////////////////////////////////////////////////
+INLINE double SomethingToEggConverter::
+get_frame_inc() const {
+  nassertr(has_frame_inc(), 0.0);
+  return _frame_inc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::clear_frame_inc
+//       Access: Public
+//  Description: Removes the value previously set by
+//               set_frame_inc().
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+clear_frame_inc() {
+  _frame_inc = 0.0;
+  _control_flags &= ~CF_frame_inc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::set_input_frame_rate
+//       Access: Public
+//  Description: Specifies the number of frames per second that is
+//               represented by the "frame" unit in the animation
+//               package.  If this is omitted, it is taken from
+//               whatever the file header indicates.  Some animation
+//               packages do not encode a frame rate, in which case
+//               the default if this is omitted is the same as the
+//               output frame rate.
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+set_input_frame_rate(double input_frame_rate) {
+  _input_frame_rate = input_frame_rate;
+  _control_flags |= CF_input_frame_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::has_input_frame_rate
+//       Access: Public
+//  Description: Returns true if the frame rate has been
+//               explicitly specified via set_input_frame_rate(), or
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool SomethingToEggConverter::
+has_input_frame_rate() const {
+  return (_control_flags & CF_input_frame_rate) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::get_input_frame_rate
+//       Access: Public
+//  Description: Returns the value set by a previous call to
+//               set_input_frame_rate().  It is an error to call this
+//               if has_input_frame_rate() returns false.
+////////////////////////////////////////////////////////////////////
+INLINE double SomethingToEggConverter::
+get_input_frame_rate() const {
+  nassertr(has_input_frame_rate(), 0.0);
+  return _input_frame_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::clear_input_frame_rate
+//       Access: Public
+//  Description: Removes the value previously set by
+//               set_input_frame_rate().
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+clear_input_frame_rate() {
+  _input_frame_rate = 0.0;
+  _control_flags &= ~CF_input_frame_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::set_output_frame_rate
+//       Access: Public
+//  Description: Specifies the number of frames per second that the
+//               resulting animation should be played at.  If this is
+//               omitted, it is taken to be the same as the input
+//               frame rate.
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+set_output_frame_rate(double output_frame_rate) {
+  _output_frame_rate = output_frame_rate;
+  _control_flags |= CF_output_frame_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::has_output_frame_rate
+//       Access: Public
+//  Description: Returns true if the frame rate has been
+//               explicitly specified via set_output_frame_rate(), or
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool SomethingToEggConverter::
+has_output_frame_rate() const {
+  return (_control_flags & CF_output_frame_rate) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::get_output_frame_rate
+//       Access: Public
+//  Description: Returns the value set by a previous call to
+//               set_output_frame_rate().  It is an error to call this
+//               if has_output_frame_rate() returns false.
+////////////////////////////////////////////////////////////////////
+INLINE double SomethingToEggConverter::
+get_output_frame_rate() const {
+  nassertr(has_output_frame_rate(), 0.0);
+  return _output_frame_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::clear_output_frame_rate
+//       Access: Public
+//  Description: Removes the value previously set by
+//               set_output_frame_rate().
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+clear_output_frame_rate() {
+  _output_frame_rate = 0.0;
+  _control_flags &= ~CF_output_frame_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::get_default_frame_rate
+//       Access: Public, Static
+//  Description: Returns the default frame rate if nothing is
+//               specified for input_frame_rate or output_frame_rate,
+//               and the animation package does not have an implicit
+//               frame rate.
+////////////////////////////////////////////////////////////////////
+INLINE double SomethingToEggConverter::
+get_default_frame_rate() {
+  return 24.0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEggConverter::set_merge_externals
 //       Access: Public
 //  Description: Sets the merge_externals flag.  When this is true,

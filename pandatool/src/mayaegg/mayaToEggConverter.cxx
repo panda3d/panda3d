@@ -60,6 +60,8 @@
 #include <maya/MTransformationMatrix.h>
 #include <maya/MVector.h>
 #include <maya/MTesselationParams.h>
+#include <maya/MAnimControl.h>
+#include <maya/MGlobal.h>
 #include "post_maya_include.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -138,8 +140,7 @@ get_extension() const {
 //
 //               This is designed to be as generic as possible,
 //               generally in support of run-time loading.
-//               Command-line converters may choose to use
-//               convert_maya() instead, as it provides more control.
+//               Also see convert_maya().
 ////////////////////////////////////////////////////////////////////
 bool MayaToEggConverter::
 convert_file(const Filename &filename) {
@@ -179,34 +180,50 @@ convert_maya() {
     _egg_data->set_coordinate_system(_maya->get_coordinate_system());
   }
 
-  MStatus status;
-
-  MItDag dag_iterator(MItDag::kDepthFirst, MFn::kTransform, &status);
-  if (!status) {
-    status.perror("MItDag constructor");
-    return false;
-  }
-
   mayaegg_cat.info()
     << "Converting from Maya.\n";
 
-  // This while loop walks through the entire Maya hierarchy, one node
-  // at a time.  Maya's MItDag object automatically performs a
-  // depth-first traversal of its scene graph.
-  bool all_ok = true;
-  while (!dag_iterator.isDone()) {
-    MDagPath dag_path;
-    status = dag_iterator.getPath(dag_path);
-    if (!status) {
-      status.perror("MItDag::getPath");
-    } else {
-      if (!process_node(dag_path, get_egg_data())) {
-        all_ok = false;
-      }
-    }
-
-    dag_iterator.next();
+  // Figure out the animation parameters.
+  double start_frame, end_frame, frame_inc, input_frame_rate, output_frame_rate;
+  if (has_start_frame()) {
+    start_frame = get_start_frame();
+  } else {
+    start_frame = MAnimControl::minTime().value();
   }
+  if (has_end_frame()) {
+    end_frame = get_end_frame();
+  } else {
+    end_frame = MAnimControl::maxTime().value();
+  }
+  if (has_frame_inc()) {
+    frame_inc = get_frame_inc();
+  } else {
+    frame_inc = 1.0;
+  }
+  if (has_input_frame_rate()) {
+    input_frame_rate = get_input_frame_rate();
+  } else {
+    MTime time(1.0, MTime::kSeconds);
+    input_frame_rate = time.as(MTime::uiUnit());
+  }
+  if (has_output_frame_rate()) {
+    output_frame_rate = get_output_frame_rate();
+  } else {
+    output_frame_rate = input_frame_rate;
+  }
+
+  bool all_ok = true;
+
+  switch (get_animation_convert()) {
+  case AC_none:
+    all_ok = convert_hierarchy(&get_egg_data());
+    break;
+
+  case AC_flip:
+    all_ok = convert_flip(start_frame, end_frame, frame_inc,
+                          output_frame_rate);
+    break;
+  };
 
   if (all_ok) {
     mayaegg_cat.info()
@@ -249,6 +266,87 @@ close_api() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::convert_flip
+//       Access: Private
+//  Description: Converts the animation as a series of models that
+//               cycle (flip) from one to the next at the appropriate
+//               frame rate.  This is the most likely to convert
+//               precisely (since we ask Maya to tell us the vertex
+//               position each time) but it is the most wasteful in
+//               terms of memory utilization (since a complete of the
+//               model is stored for each frame).
+////////////////////////////////////////////////////////////////////
+bool MayaToEggConverter::
+convert_flip(double start_frame, double end_frame, double frame_inc,
+             double output_frame_rate) {
+  bool all_ok = true;
+
+  EggGroup *sequence_node = new EggGroup("model");
+  get_egg_data().add_child(sequence_node);
+  sequence_node->set_switch_flag(true);
+  sequence_node->set_switch_fps(output_frame_rate / frame_inc);
+
+  MTime frame(start_frame, MTime::uiUnit());
+  MTime frame_stop(end_frame, MTime::uiUnit());
+  while (frame <= frame_stop) {
+    nout << "frame " << frame.value() << "\n";
+    ostringstream name_strm;
+    name_strm << "frame" << frame.value();
+    EggGroup *frame_root = new EggGroup(name_strm.str());
+    sequence_node->add_child(frame_root);
+
+    MGlobal::viewFrame(frame);
+    if (!convert_hierarchy(frame_root)) {
+      all_ok = false;
+    }
+    _groups.clear();
+
+    frame += frame_inc;
+  }
+
+  return all_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::convert_hierarchy
+//       Access: Private
+//  Description: Walks the entire Maya hierarchy, converting it to a
+//               corresponding egg hierarchy under the indicated root
+//               node.
+////////////////////////////////////////////////////////////////////
+bool MayaToEggConverter::
+convert_hierarchy(EggGroupNode *egg_root) {
+  MStatus status;
+
+  MItDag dag_iterator(MItDag::kDepthFirst, MFn::kTransform, &status);
+  if (!status) {
+    status.perror("MItDag constructor");
+    return false;
+  }
+
+  // This while loop walks through the entire Maya hierarchy, one node
+  // at a time.  Maya's MItDag object automatically performs a
+  // depth-first traversal of its scene graph.
+
+  bool all_ok = true;
+  while (!dag_iterator.isDone()) {
+    MDagPath dag_path;
+    status = dag_iterator.getPath(dag_path);
+    if (!status) {
+      status.perror("MItDag::getPath");
+    } else {
+      if (!process_node(dag_path, egg_root)) {
+        all_ok = false;
+      }
+    }
+
+    dag_iterator.next();
+  }
+
+  return all_ok;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaToEggConverter::process_node
 //       Access: Private
 //  Description: Converts the indicated Maya node (given a MDagPath,
@@ -257,7 +355,7 @@ close_api() {
 //               successful, false if an error was encountered.
 ////////////////////////////////////////////////////////////////////
 bool MayaToEggConverter::
-process_node(const MDagPath &dag_path, EggData &data) {
+process_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
   MStatus status;
   MFnDagNode dag_node(dag_path, &status);
   if (!status) {
@@ -285,7 +383,7 @@ process_node(const MDagPath &dag_path, EggData &data) {
 
   } else if (dag_path.hasFn(MFn::kNurbsSurface)) {
     EggGroup *egg_group =
-      get_egg_group(dag_path.fullPathName().asChar(), data);
+      get_egg_group(dag_path.fullPathName().asChar(), egg_root);
 
     if (egg_group == (EggGroup *)NULL) {
       mayaegg_cat.error()
@@ -307,7 +405,7 @@ process_node(const MDagPath &dag_path, EggData &data) {
 
   } else if (dag_path.hasFn(MFn::kNurbsCurve)) {
     EggGroup *egg_group =
-      get_egg_group(dag_path.fullPathName().asChar(), data);
+      get_egg_group(dag_path.fullPathName().asChar(), egg_root);
 
     if (egg_group == (EggGroup *)NULL) {
       nout << "Cannot determine group node.\n";
@@ -327,7 +425,7 @@ process_node(const MDagPath &dag_path, EggData &data) {
 
   } else if (dag_path.hasFn(MFn::kMesh)) {
     EggGroup *egg_group =
-      get_egg_group(dag_path.fullPathName().asChar(), data);
+      get_egg_group(dag_path.fullPathName().asChar(), egg_root);
 
     if (egg_group == (EggGroup *)NULL) {
       mayaegg_cat.error()
@@ -350,7 +448,7 @@ process_node(const MDagPath &dag_path, EggData &data) {
   } else {
     // Get the translation/rotation/scale data
     EggGroup *egg_group =
-      get_egg_group(dag_path.fullPathName().asChar(), data);
+      get_egg_group(dag_path.fullPathName().asChar(), egg_root);
 
     if (egg_group != (EggGroup *)NULL) {
       get_transform(dag_path, egg_group);
@@ -938,7 +1036,7 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
 //               Maya hierarchy sensibly.
 ////////////////////////////////////////////////////////////////////
 EggGroup *MayaToEggConverter::
-get_egg_group(const string &name, EggData &data) {
+get_egg_group(const string &name, EggGroupNode *egg_root) {
   // If we have already encountered this pathname, return the
   // corresponding EggGroup immediately.
   Groups::const_iterator gi = _groups.find(name);
@@ -967,13 +1065,13 @@ get_egg_group(const string &name, EggData &data) {
       local_name = name;
     }
 
-    EggGroup *parent_egg_group = get_egg_group(parent_name, data);
+    EggGroup *parent_egg_group = get_egg_group(parent_name, egg_root);
     egg_group = new EggGroup(local_name);
 
     if (parent_egg_group != (EggGroup *)NULL) {
       parent_egg_group->add_child(egg_group);
     } else {
-      data.add_child(egg_group);
+      egg_root->add_child(egg_group);
     }
   }
 

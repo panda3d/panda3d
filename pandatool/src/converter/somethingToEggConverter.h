@@ -19,10 +19,11 @@
 #ifndef SOMETHINGTOEGGCONVERTER_H
 #define SOMETHINGTOEGGCONVERTER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <filename.h>
-#include <config_util.h>  // for get_texture_path() and get_model_path()
+#include "filename.h"
+#include "config_util.h"  // for get_texture_path() and get_model_path()
+#include "animationConvert.h"
 
 class EggData;
 class EggGroupNode;
@@ -56,7 +57,38 @@ public:
                                        const Filename &tpc_directory = Filename());
   INLINE void set_model_path_convert(PathConvert mpc,
                                      const Filename &mpc_directory = Filename());
+  // These methods dealing with animation and frame rate are only
+  // relevant to converter types that understand animation.
+  INLINE void set_animation_convert(AnimationConvert animation_convert);
+  INLINE AnimationConvert get_animation_convert() const;
 
+  INLINE void set_start_frame(double start_frame);
+  INLINE bool has_start_frame() const;
+  INLINE double get_start_frame() const;
+  INLINE void clear_start_frame();
+
+  INLINE void set_end_frame(double end_frame);
+  INLINE bool has_end_frame() const;
+  INLINE double get_end_frame() const;
+  INLINE void clear_end_frame();
+
+  INLINE void set_frame_inc(double frame_inc);
+  INLINE bool has_frame_inc() const;
+  INLINE double get_frame_inc() const;
+  INLINE void clear_frame_inc();
+
+  INLINE void set_input_frame_rate(double input_frame_rate);
+  INLINE bool has_input_frame_rate() const;
+  INLINE double get_input_frame_rate() const;
+  INLINE void clear_input_frame_rate();
+
+  INLINE void set_output_frame_rate(double output_frame_rate);
+  INLINE bool has_output_frame_rate() const;
+  INLINE double get_output_frame_rate() const;
+  INLINE void clear_output_frame_rate();
+
+  INLINE static double get_default_frame_rate();
+  
   INLINE void set_merge_externals(bool merge_externals);
   INLINE bool get_merge_externals() const;
 
@@ -98,6 +130,21 @@ protected:
   Filename _tpc_directory;
   PathConvert _mpc;
   Filename _mpc_directory;
+
+  AnimationConvert _animation_convert;
+  double _start_frame;
+  double _end_frame;
+  double _frame_inc;
+  double _input_frame_rate;   // frames per second
+  double _output_frame_rate;  // frames per second
+  enum ControlFlags {
+    CF_start_frame        = 0x0001,
+    CF_end_frame          = 0x0002,
+    CF_frame_inc          = 0x0004,
+    CF_input_frame_rate   = 0x0008,
+    CF_output_frame_rate  = 0x0010,
+  };
+  int _control_flags;
 
   bool _merge_externals;
 

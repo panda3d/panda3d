@@ -95,7 +95,7 @@ find_shader_for_node(MObject node) {
   }
 
   // Well, we didn't find a ShadingEngine after all.  Huh.
-  maya_cat.info()
+  maya_cat.debug()
     << node_fn.name() << " : no shading engine found.\n";
   return (MayaShader *)NULL;
 }

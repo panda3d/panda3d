@@ -31,6 +31,13 @@ SomethingToEggConverter() {
   _allow_errors = false;
   _tpc = PC_absolute;
   _mpc = PC_absolute;
+  _animation_convert = AC_none;
+  _start_frame = 0.0;
+  _end_frame = 0.0;
+  _frame_inc = 0.0;
+  _input_frame_rate = 0.0;
+  _output_frame_rate = 0.0;
+  _control_flags = 0;
   _merge_externals = false;
   _egg_data = (EggData *)NULL;
   _owns_egg_data = false;

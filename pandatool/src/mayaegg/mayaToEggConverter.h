@@ -68,7 +68,10 @@ public:
   void close_api();
 
 private:
-  bool process_node(const MDagPath &dag_path, EggData &data);
+  bool convert_flip(double start_frame, double end_frame, double frame_inc,
+                    double output_frame_rate);
+  bool convert_hierarchy(EggGroupNode *egg_root);
+  bool process_node(const MDagPath &dag_path, EggGroupNode *egg_root);
   void get_transform(const MDagPath &dag_path, EggGroup *egg_group);
 
   // I ran into core dumps trying to pass around a MFnMesh object by
@@ -89,7 +92,7 @@ private:
                     EggGroup *egg_group,
                     MayaShader *default_shader = NULL);
 
-  EggGroup *get_egg_group(const string &name, EggData &data);
+  EggGroup *get_egg_group(const string &name, EggGroupNode *egg_root);
   void set_shader_attributes(EggPrimitive &primitive,
                              const MayaShader &shader);
 

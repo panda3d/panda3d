@@ -8,11 +8,13 @@
     m
 
   #define SOURCES \
+    animationConvert.cxx animationConvert.h \
     distanceUnit.cxx distanceUnit.h \
     somethingToEggConverter.I somethingToEggConverter.cxx \
     somethingToEggConverter.h
 
   #define INSTALL_HEADERS \
+    animationConvert.h \
     distanceUnit.h \
     somethingToEggConverter.I somethingToEggConverter.h
 

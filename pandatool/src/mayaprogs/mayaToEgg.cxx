@@ -29,6 +29,7 @@ MayaToEgg::
 MayaToEgg() :
   SomethingToEgg("Maya", ".mb")
 {
+  add_animation_options();
   add_units_options();
   add_normals_options();
   add_transform_options();
@@ -96,6 +97,24 @@ run() {
   converter._polygon_output = _polygon_output;
   converter._polygon_tolerance = _polygon_tolerance;
   converter._ignore_transforms = _ignore_transforms;
+
+  // Copy in the animation parameters.
+  converter.set_animation_convert(_animation_convert);
+  if (_got_start_frame) {
+    converter.set_start_frame(_start_frame);
+  }
+  if (_got_end_frame) {
+    converter.set_end_frame(_end_frame);
+  }
+  if (_got_frame_inc) {
+    converter.set_frame_inc(_frame_inc);
+  }
+  if (_got_input_frame_rate) {
+    converter.set_input_frame_rate(_input_frame_rate);
+  }
+  if (_got_output_frame_rate) {
+    converter.set_output_frame_rate(_output_frame_rate);
+  }
 
   // Set the coordinate system to match Maya's.
   if (!_got_coordinate_system) {

@@ -41,6 +41,7 @@ public:
                  bool allow_stdout = true);
 
   void add_units_options();
+  void add_animation_options();
   void add_texture_path_options();
   void add_model_path_options();
   void add_rel_dir_options();
@@ -54,6 +55,7 @@ protected:
   virtual bool post_command_line();
   virtual void post_process_egg_file();
 
+  static bool dispatch_animation_convert(const string &opt, const string &arg, void *var);
   static bool dispatch_path_convert_relative(const string &opt, const string &arg, void *var);
   static bool dispatch_path_convert_absolute(const string &opt, const string &arg, void *var);
   static bool dispatch_path_convert_rel_abs(const string &opt, const string &arg, void *var);
@@ -65,6 +67,18 @@ protected:
 
   DistanceUnit _input_units;
   DistanceUnit _output_units;
+
+  AnimationConvert _animation_convert;
+  double _start_frame;
+  double _end_frame;
+  double _frame_inc;
+  double _input_frame_rate;
+  double _output_frame_rate;
+  bool _got_start_frame;
+  bool _got_end_frame;
+  bool _got_frame_inc;
+  bool _got_input_frame_rate;
+  bool _got_output_frame_rate;
 
   SomethingToEggConverter::PathConvert _texture_path_convert;
   SomethingToEggConverter::PathConvert _model_path_convert;
