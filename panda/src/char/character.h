@@ -15,10 +15,7 @@
 #include <vector_PartGroupStar.h>
 #include <pointerTo.h>
 #include <geom.h>
-
-#ifdef DO_PSTATS
 #include <pStatCollector.h>
-#endif
 
 class CharacterJointBundle;
 class ComputedVertices;
@@ -82,11 +79,9 @@ private:
   typedef vector_PartGroupStar Parts;
   Parts _parts;
 
-  #ifdef DO_PSTATS
-	// Statistics
-        PStatCollector _char_pcollector;
-	static PStatCollector _anim_pcollector;
-  #endif
+  // Statistics
+  PStatCollector _char_pcollector;
+  static PStatCollector _anim_pcollector;
 
 public:
   static void register_with_read_factory(void);

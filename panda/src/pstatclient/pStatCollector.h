@@ -54,7 +54,7 @@ private:
 friend class PStatClient;
 
 #else  // DO_PSTATS
-
+public:
   INLINE PStatCollector(const string &, 
 			const RGBColorf & = RGBColorf::zero(),
 			int = -1,
