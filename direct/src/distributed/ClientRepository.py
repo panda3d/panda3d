@@ -59,7 +59,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         precisely measured and may drift slightly after startup, but
         it should be accurate plus or minus a couple of seconds.
         """
-        return time.time() + self.cr.getServerDelta()
+        return time.time() + self.serverDelta
 
     def parseDcFile(self, dcFileName):
         self.dcFile = DCFile()

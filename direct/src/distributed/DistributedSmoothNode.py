@@ -283,17 +283,20 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
         
         now = globalClock.getFrameTime()
         local = globalClockDelta.networkToLocalTime(timestamp, now)
-        chug = globalClock.getRealTime() - now
+        real = globalClock.getRealTime()
+        chug = real - now
 
         # Sanity check the timestamp from the other avatar.  It should
         # be just slightly in the past, but it might be off by as much
         # as this frame's amount of time forward or back.
         howFarFuture = local - now
         if howFarFuture - chug >= MaxFuture:
-            # Too far off; resync both of us.
-            if self.cr.timeManager != None:
-                self.cr.timeManager.synchronize("Packets from %d off by %.1f s" % (self.doId, howFarFuture))
-            self.d_suggestResync(self.cr.localToonDoId)
+            # Too far off; advise the other client of our clock information.
+            if globalClockDelta.getUncertainty() != None:
+                self.d_suggestResync(self.cr.localToonDoId, timestamp,
+                                     globalClockDelta.getRealNetworkTime(),
+                                     real - globalClockDelta.getDelta(),
+                                     globalClockDelta.getUncertainty())
         
         self.smoother.setTimestamp(local)
         self.smoother.markPosition()
@@ -334,16 +337,48 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
 
     ### Monitor clock sync ###
 
-    def d_suggestResync(self, avId):
-        self.sendUpdate("suggestResync", [avId])
+    def d_suggestResync(self, avId, timestampA, timestampB, serverTime, uncertainty):
+        self.sendUpdate("suggestResync", [avId, timestampA, timestampB, serverTime, uncertainty])
         
-    def suggestResync(self, avId):
+    def suggestResync(self, avId, timestampA, timestampB, serverTime, uncertainty):
         """suggestResync(self, avId)
 
         This message is sent from one client to another when the other
         client receives a timestamp from this client that is so far
         out of date as to suggest that one or both clients needs to
-        resynchronize with the AI.
+        resynchronize their clock information.
         """
-        if self.cr.timeManager != None:
-            self.cr.timeManager.synchronize("suggested by %d" % (avId))
+        result = \
+               self.peerToPeerResync(avId, timestampA, serverTime, uncertainty)
+        if result >= 0 and \
+           globalClockDelta.getUncertainty() != None:
+            other = self.cr.doId2do.get(avId)
+            if other and hasattr(other, "d_returnResync"):
+                real = globalClock.getRealTime()
+                other.d_returnResync(self.cr.localToonDoId, timestampB,
+                                     real - globalClockDelta.getDelta(),
+                                     globalClockDelta.getUncertainty())
+        
+
+    def d_returnResync(self, avId, timestampB, serverTime, uncertainty):
+        self.sendUpdate("returnResync", [avId, timestampB, serverTime, uncertainty])
+        
+    def returnResync(self, avId, timestampB, serverTime, uncertainty):
+        """returnResync(self, avId)
+
+        A reply sent by a client whom we recently sent suggestResync
+        to, this reports the client's new delta information so we can
+        adjust our clock as well.
+        """
+        self.peerToPeerResync(avId, timestampB, serverTime, uncertainty)
+
+    def peerToPeerResync(self, avId, timestamp, serverTime, uncertainty):
+        gotSync = globalClockDelta.peerToPeerResync(avId, timestamp, serverTime, uncertainty)
+
+        # If we didn't get anything useful from the other client,
+        # maybe our clock is just completely hosed.  Go ask the AI.
+        if not gotSync:
+            if self.cr.timeManager != None:
+                self.cr.timeManager.synchronize("suggested by %d" % (avId))
+
+        return gotSync
