@@ -85,6 +85,20 @@ static void test3(GuiManager* mgr, Node* font) {
   l4->set_background_color(1., 1., 1., 0.5);
   b1->thaw();
   b1->manage(mgr, event_handler);
+  GuiLabel* ll1 = GuiLabel::make_simple_text_label("lup", font);
+  GuiLabel* ll2 = GuiLabel::make_simple_text_label("lupr", font);
+  GuiLabel* ll3 = GuiLabel::make_simple_text_label("ldown", font);
+  GuiLabel* ll4 = GuiLabel::make_simple_text_label("ldownr", font);
+  GuiLabel* ll5 = GuiLabel::make_simple_text_label("lnone", font);
+  GuiButton* b2 = new GuiButton("test3_2", ll1, ll2, ll3, ll4, ll5);
+  b2->set_scale(0.1);
+  b2->set_pos(LVector3f::rfu(0.25, 0., 0.25));
+  ll2->set_foreground_color(1., 1., 0., 1.);
+  ll4->set_foreground_color(1., 1., 0., 1.);
+  ll3->set_background_color(1., 1., 1., 0.5);
+  ll4->set_background_color(1., 1., 1., 0.5);
+  b2->thaw();
+  b2->manage(mgr, event_handler);
 }
 
 static void test4(GuiManager* mgr, Node* font) {
@@ -624,6 +638,27 @@ static void test11(GuiManager* mgr, Node* font) {
   lb1->manage(mgr, event_handler);
 }
 
+static void test12(GuiManager* mgr, Node* font) {
+  GuiLabel* l1 = GuiLabel::make_simple_text_label("up", font);
+  GuiLabel* l2 = GuiLabel::make_simple_text_label("upr", font);
+  GuiLabel* l3 = GuiLabel::make_simple_text_label("down", font);
+  GuiLabel* l4 = GuiLabel::make_simple_text_label("downr", font);
+  GuiLabel* l5 = GuiLabel::make_simple_text_label("none", font);
+  GuiButton* b1 = new GuiButton("test3", l1, l2, l3, l4, l5);
+  b1->set_scale(0.1);
+  b1->set_pos(LVector3f::rfu(-0.25, 0., 0.25));
+  l2->set_foreground_color(1., 1., 0., 1.);
+  l4->set_foreground_color(1., 1., 0., 1.);
+  l1->set_background_color(0., 0., 0., 1.);
+  l2->set_background_color(0., 0., 0., 1.);
+  l3->set_background_color(1., 1., 1., 0.5);
+  l4->set_background_color(1., 1., 1., 0.5);
+  b1->thaw();
+  b1->manage(mgr, event_handler);
+  b1->set_behavior_event("demo-event-thing");
+  b1->start_behavior();
+}
+
 static void setup_gui(void) {
   GuiManager* mgr = GuiManager::get_ptr(main_win, mak, (Node*)0L);
   PT_Node font = ModelPool::load_model("ttf-comic");
@@ -632,7 +667,7 @@ static void setup_gui(void) {
   // test 2
   //  test2(mgr, font);
   // test 3
-  test3(mgr, font);
+  //  test3(mgr, font);
   // test 4
   //  test4(mgr, font);
   // test 5
@@ -652,6 +687,8 @@ static void setup_gui(void) {
   //  test10(mgr, font);
   // test 11
   //  test11(mgr, font);
+  // test 12
+  test12(mgr, font);
 }
 
 static void event_2(CPT_Event) {
@@ -743,6 +780,10 @@ static void event_4(CPT_Event) {
   cout << *lb1;
 }
 
+static void event_demo(CPT_Event) {
+  cout << "got demo-event-thing event!" << endl;
+}
+
 void gui_keys(EventHandler&) {
   new RenderRelation( lights, dlight );
   have_dlight = true;
@@ -754,6 +795,7 @@ void gui_keys(EventHandler&) {
   // for test 11
   event_handler.add_hook("4", event_4);
   */
+  event_handler.add_hook("demo-event-thing", event_demo);
 }
 
 int main(int argc, char *argv[]) {

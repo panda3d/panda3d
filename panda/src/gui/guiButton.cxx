@@ -148,19 +148,29 @@ void GuiButton::switch_state(GuiButton::States nstate) {
     break;
   case UP:
     _mgr->add_label(_up);
-    if (!_up_event.empty())
+    if (!_up_event.empty()) {
+      gui_cat->debug() << "throwing _up_event '" << _up_event << "'" << endl;
       throw_event(_up_event);
+    } else
+      gui_cat->debug() << "_up_event is empty!" << endl;
     _rgn->trap_clicks(true);
     break;
   case UP_ROLLOVER:
     if (_up_rollover != (GuiLabel*)0L) {
       _mgr->add_label(_up_rollover);
-      if (!_up_rollover_event.empty())
+      if (!_up_rollover_event.empty()) {
+	gui_cat->debug() << "throwing _up_rollover_event '" << _up_rollover_event << "'"
+	     << endl;
 	throw_event(_up_rollover_event);
+      } else
+	gui_cat->debug() << "_up_rollover_event is empty!" << endl;
     } else {
       _mgr->add_label(_up);
-      if (!_up_event.empty())
+      if (!_up_event.empty()) {
+	gui_cat->debug() << "throwing _up_event '" << _up_event << "'" << endl;
 	throw_event(_up_event);
+      } else
+	gui_cat->debug() << "_up_event is empty!" << endl;
       _state = UP;
     }
     _rgn->trap_clicks(true);
@@ -169,6 +179,8 @@ void GuiButton::switch_state(GuiButton::States nstate) {
     _mgr->add_label(_down);
     if (!_down_event.empty())
       throw_event(_down_event);
+    else
+      gui_cat->debug() << "_down_event is empty!" << endl;
     _rgn->trap_clicks(true);
     break;
   case DOWN_ROLLOVER:
@@ -176,10 +188,14 @@ void GuiButton::switch_state(GuiButton::States nstate) {
       _mgr->add_label(_down_rollover);
       if (!_down_rollover_event.empty())
 	throw_event(_down_rollover_event);
+      else
+	gui_cat->debug() << "_down_rollover_event is empty!" << endl;
     } else {
       _mgr->add_label(_down);
       if (!_down_event.empty())
 	throw_event(_down_event);
+      else
+	gui_cat->debug() << "_down_event is empty!" << endl;
       _state = DOWN;
     }
     _rgn->trap_clicks(true);
@@ -223,17 +239,22 @@ void GuiButton::recompute_frame(void) {
 
 void GuiButton::behavior_up(CPT_Event, void* data) {
   GuiButton* button = (GuiButton*)data;
+  gui_cat->debug() << "behavior_up (0x" << data << ")" << endl;
   button->run_button_up();
 }
 
 void GuiButton::behavior_down(CPT_Event, void* data) {
   GuiButton* button = (GuiButton*)data;
+  gui_cat->debug() << "behavior_down (0x" << data << ")" << endl;
   button->run_button_down();
 }
 
 void GuiButton::run_button_up(void) {
+  gui_cat->debug() << "run_button_up (0x" << (void*)this << " '" << this->get_name()
+       << "')" << endl;
   if (_eh == (EventHandler*)0L)
     return;
+  gui_cat->debug() << "doing work" << endl;
   _eh->remove_hook(_up_event, GuiButton::behavior_up, (void*)this);
   _eh->remove_hook(_up_rollover_event, GuiButton::behavior_up, (void*)this);
   if (!_behavior_event.empty())
@@ -243,8 +264,12 @@ void GuiButton::run_button_up(void) {
 }
 
 void GuiButton::run_button_down(void) {
+  gui_cat->debug() << "run_button_down (0x" << (void*)this << " '" << this->get_name()
+       << "')" << endl;
   if (_eh == (EventHandler*)0L)
     return;
+  gui_cat->debug() << "doing work, up_event is '" << _up_event << "' '"
+       << _up_rollover_event << "'" << endl;
   _eh->add_hook(_up_event, GuiButton::behavior_up, (void*)this);
   _eh->add_hook(_up_rollover_event, GuiButton::behavior_up, (void*)this);
 }
