@@ -47,11 +47,6 @@
   #defer PANDATOOL_INSTALL_OTHER $[unixfilename $[INSTALL_DIR]]
 #endif
 
-
-// Define the inter-tree dependencies.
-#define NEEDS_TREES $[NEEDS_TREES] panda
-
-
 // Also get the PANDA Package file and everything that includes.
 #if $[not $[isfile $[PANDA_SOURCE]/Package.pp]]
   #error PANDA source directory not found!  Are you attached properly?
@@ -59,5 +54,6 @@
 
 #include $[PANDA_SOURCE]/Package.pp
 
-// Now define the intra-tree dependencies.
+// Define the inter-tree dependencies.
+#define NEEDS_TREES panda $[NEEDS_TREES]
 #define DEPENDABLE_HEADER_DIRS $[DEPENDABLE_HEADER_DIRS] $[PANDA_INSTALL]/include

@@ -45,11 +45,6 @@
   #defer PANDA_INSTALL_OTHER $[unixfilename $[INSTALL_DIR]]
 #endif
 
-
-// Define the inter-tree dependencies.
-#define NEEDS_TREES $[NEEDS_TREES] dtool
-
-
 // Also get the DTOOL Package file and everything that includes.
 #if $[not $[isfile $[DTOOL_SOURCE]/Package.pp]]
   #error DTOOL source directory not found!  Are you attached properly?
@@ -57,5 +52,6 @@
 
 #include $[DTOOL_SOURCE]/Package.pp
 
-// Now define the intra-tree dependencies.
+// Define the inter-tree dependencies.
+#define NEEDS_TREES dtool $[NEEDS_TREES]
 #define DEPENDABLE_HEADER_DIRS $[DEPENDABLE_HEADER_DIRS] $[DTOOL_INSTALL]/include

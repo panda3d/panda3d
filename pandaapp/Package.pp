@@ -46,11 +46,6 @@
   #defer PANDAAPP_INSTALL_OTHER $[INSTALL_DIR]
 #endif
 
-
-// Define the inter-tree dependencies.
-#define NEEDS_TREES $[NEEDS_TREES] pandatool
-
-
 // Also get the PANDATOOL Package file and everything that includes.
 #if $[not $[isfile $[PANDATOOL_SOURCE]/Package.pp]]
   #error PANDATOOL source directory not found!  Are you attached properly?
@@ -58,5 +53,6 @@
 
 #include $[PANDATOOL_SOURCE]/Package.pp
 
-// Now define the intra-tree dependencies.
+// Define the inter-tree dependencies.
+#define NEEDS_TREES pandatool $[NEEDS_TREES]
 #define DEPENDABLE_HEADER_DIRS $[DEPENDABLE_HEADER_DIRS] $[PANDATOOL_INSTALL]/include
