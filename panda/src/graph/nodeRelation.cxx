@@ -438,7 +438,7 @@ unref_parent() {
   if (_parent_ref == 0 && _attached) {
     // If we are the last to request a reference count on the parent,
     // actually decrement it now.
-    _parent->unref();
+    unref_delete(_parent);
   }
 }
 
@@ -684,7 +684,7 @@ attach() {
 //               when its last reference count is removed, and it is
 //               generally a bad idea to destruct a class within its
 //               own method.
-
+//
 //               It must be a PT(TypedWritableReferenceCount), and
 //               not PT_NodeRelation, because of circularity problems
 //               trying to export the template class PT_NodeRelation.
@@ -718,7 +718,7 @@ detach() {
 
   _attached = false;
   if (_parent_ref != 0) {
-    _parent->unref();
+    unref_delete(_parent);
   }
 
   // Blow out the cache and increment the current update sequence.
