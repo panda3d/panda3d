@@ -20,7 +20,7 @@
 #ifdef HAVE_IOSTREAM
 #include <iostream>
 #include <fstream>
-#include <strstream>
+#include <sstream>
 #else
 #include <iostream.h>
 #include <fstream.h>

@@ -3128,10 +3128,10 @@ expand_function(const string &funcname,
   PPScope nested_scope(_named_scopes);
   nested_scope.define_formals(funcname, sub->_formals, params);
 
-  // This won't compile on VC++ with the new iostream library.  It has
-  // only ostringstream, which is functionally equivalent but has a
-  // slightly different interface.
-  ostrstream ostr;
+  // This won't compile older C++ libraries that do not have
+  // ostrstring.  (The earlier interface was ostrstream, which is
+  // functionally equivalent but slightly different.)
+  ostringstream ostr;
 
   PPCommandFile command(&nested_scope);
   command.set_output(&ostr);
@@ -3151,14 +3151,14 @@ expand_function(const string &funcname,
 
   // Now get the output.  We split it into words and then reconnect
   // it, to replace all whitespace with spaces.
-  ostr << ends;
-  char *str = ostr.str();
+  //  ostr << ends;
+  string str = ostr.str();
 
   vector<string> results;
   tokenize_whitespace(str, results);
 
   string result = repaste(results, " ");
-  delete[] str;
+  //  delete[] str;
   
   return result;
 }

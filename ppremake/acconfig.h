@@ -20,6 +20,9 @@
 /* Define if the C++ iostream library supports ios::binary.  */
 #undef HAVE_IOS_BINARY
 
+/* Define if fstream::open() accepts a third parameter for umask. */
+#undef HAVE_OPEN_MASK
+
 /* Define if we're compiling with Cygwin. */
 #undef HAVE_CYGWIN
 

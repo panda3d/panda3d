@@ -9,7 +9,7 @@ if test $have_iostream = yes; then
   AC_TRY_COMPILE([
 #include <iostream>
   ],[
-  int x; x = ios::binary;
+  int x; x = std::ios::binary;
   ], ac_cv_ios_binary=yes, ac_cv_ios_binary=no)
 else
   AC_TRY_COMPILE([
@@ -22,6 +22,30 @@ fi
 ])
 if test $ac_cv_ios_binary = yes; then
   AC_DEFINE(HAVE_IOS_BINARY)
+fi
+])
+
+AC_DEFUN(AC_OPEN_MASK,
+[AC_CACHE_CHECK([for third umask parameter to open],
+  ac_cv_open_mask,
+[
+if test $have_iostream = yes; then
+  AC_TRY_COMPILE([
+#include <fstream>
+  ],[
+  std::ofstream x; x.open("foo", std::ios::out, 0666);
+  ], ac_cv_open_mask=yes, ac_cv_open_mask=no)
+else
+  AC_TRY_COMPILE([
+#include <fstream.h>
+  ],[
+  ofstream x; x.open("foo", ios::out, 0666);
+  ], ac_cv_open_mask=yes, ac_cv_open_mask=no)
+fi
+
+])
+if test $ac_cv_open_mask = yes; then
+  AC_DEFINE(HAVE_OPEN_MASK)
 fi
 ])
 

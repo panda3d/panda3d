@@ -54,6 +54,8 @@ dnl Now we can test some C++-specific features.
 AC_LANG_CPLUSPLUS
 AC_HEADER_IOSTREAM
 AC_NAMESPACE
+AC_IOS_BINARY
+AC_OPEN_MASK
 
 
 AC_LANG_C

@@ -167,7 +167,7 @@ private:
     WriteState *_write_state;
     PPScope *_scope;
     string _params;
-    ostrstream _output;
+    ostringstream _output;
     vector<string> _words;
     int _flags;
     BlockNesting *_next;
@@ -185,9 +185,9 @@ private:
 
   vector<string> _saved_lines;
 
-  friend PPCommandFile::IfNesting;
-  friend PPCommandFile::WriteState;
-  friend PPCommandFile::BlockNesting;
+  friend class PPCommandFile::IfNesting;
+  friend class PPCommandFile::WriteState;
+  friend class PPCommandFile::BlockNesting;
 };
 
 
