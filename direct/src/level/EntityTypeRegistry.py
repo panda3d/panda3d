@@ -6,6 +6,7 @@ import types
 import AttribDesc
 import EntityTypeDesc
 from direct.showbase.PythonUtil import mostDerivedLast
+import os
 
 class EntityTypeRegistry:
     notify = DirectNotifyGlobal.directNotify.newCategory('EntityTypeRegistry')
@@ -19,10 +20,25 @@ class EntityTypeRegistry:
         import EntityTypes
         reload(EntityTypes)
         reload(self.entTypeModule)
-        hv.hashFile(Filename.fromOsSpecific(EntityTypes.__file__))
+
+        # Convert a pyc or pyo to a py
+        # If the client runs genPyCode -n then ihooks will not be installed
+        # and you will get a pyc file instead of a py file. Then the AI and
+        # client will be mismatched because the AI automatically installs
+        # ihooks and thus will hash the py instead of the pyc. Then the
+        # hashes do not match and everybody is sad. Let's just make sure
+        # for once and for all that we use the .py file and not a .pyc or a
+        # .pyo in case that ever happened.
+        def getPyExtVersion(filename):
+            base, ext = os.path.splitext(filename)
+            if (ext == ".pyc") or (ext == ".pyo"):
+                filename = base + ".py"
+            return filename
+        
+        hv.hashFile(Filename.fromOsSpecific(getPyExtVersion(EntityTypes.__file__))
         s = str(hv.asHex())
         s += '.'
-        hv.hashFile(Filename.fromOsSpecific(self.entTypeModule.__file__))
+        hv.hashFile(Filename.fromOsSpecific(getPyExtVersion(self.entTypeModule.__file__)))
         s += str(hv.asHex())
         self.hashStr = s
 
