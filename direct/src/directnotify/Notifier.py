@@ -213,6 +213,7 @@ class Notifier:
         call followed by the [fsm state] notifier category and
         the function call (with parameters).
         """
+        #f.f_locals['self'].__init__.im_class.__name__
         if (self.__debug):
             state = ''
             doId = ''
@@ -234,20 +235,18 @@ class Notifier:
 
                 if hasattr(obj, 'doId'):
                     doId = " doId:%s"%(obj.doId,)
-            if 1 or type(obj) == types.ClassType:
-                name = "%s."%(obj.__class__.__name__,)
-            else:
-                name = "%s "%(self.__name,)
-            string = ":%s [%-7s]%s %s %s%s"%(
+            #if type(obj) == types.ClassType:
+            #    name = "%s."%(obj.__class__.__name__,)
+            string = ":%s:%s [%-7s] id(%s)%s %s"%(
                 self.getOnlyTime(),
+                self.__name,
                 state,
-                doId,
                 id(obj),
-                name,
+                doId,
                 PythonUtil.traceParentCall())
             self.__log(string)
             self.__print(string)
-        return 1 # to allow assert(myNotify.debug("blah"))
+        return 1 # to allow assert self.notify.debugStateCall(self)
 
     def debugCall(self, debugString=''):
         """
@@ -256,12 +255,12 @@ class Notifier:
         the function call (with parameters).
         """
         if (self.__debug):
-            string = ":%s %s %s.%s"%(
+            string = ":%s:%s \"%s\" %s"%(
                 self.getOnlyTime(),
-                debugString,
                 self.__name,
+                debugString,
                 PythonUtil.traceParentCall())
             self.__log(string)
             self.__print(string)
-        return 1 # to allow assert(myNotify.debug("blah"))
+        return 1 # to allow assert self.notify.debugCall("blah")
 
