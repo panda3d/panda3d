@@ -1597,7 +1597,7 @@ FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert ) {
     LPoint3d p3d = vert->get_pos3();
 
     // find closest model vertex 
-    for ( j = 0; j < numVert-1; j++ ) {
+    for ( j = 0; j < numVert; j++ ) {
       // calculate distance
       thisDist = sqrtf( 
                        powf( p3d[0] - vertices[j].x , 2 ) + 
@@ -1610,18 +1610,17 @@ FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert ) {
         closestDist = thisDist;
       }
     }
+
     vertMap[i] = closest;
-    
     softegg_cat.spam() << "mapping v " << i << " of " << vpoolSize-1 << ":( "
-         << p3d[0] << " "
-         << p3d[1] << " "
-         << p3d[2] << ")\n";
-
+                       << p3d[0] << " "
+                       << p3d[1] << " "
+                       << p3d[2] << ")\n";
+    
     softegg_cat.spam() << "    to cv " << closest << " of " << numVert-1 << ":( "
-         << vertices[closest].x << " "
-         << vertices[closest].y << " "
-         << vertices[closest].z << " )\tdelta = " << closestDist << endl;
-
+                       << vertices[closest].x << " "
+                       << vertices[closest].y << " "
+                       << vertices[closest].z << " )\tdelta = " << closestDist << endl;
   }
   return vertMap;
 }
@@ -1825,7 +1824,7 @@ make_soft_skin() {
               
               // first get the global matrix
               SAA_modelGetMatrix( &scene, &envelopes[i], SAA_COORDSYS_GLOBAL,  matrix );
-              
+
               // populate array of global model verts
               for ( j = 0; j < modelNumVert; j++ ) {
                 _VCT_X_MAT( globalModelVertices[j], 
@@ -1889,7 +1888,7 @@ make_soft_skin() {
                     for ( k = 0; k < (int)vpool->size(); k++ ) {
                       if ( vpoolMap[k] == envVtxIndices[j] ) {
                         EggVertex *vert = vpool->get_vertex(k+1);
-                        //                        EggVertex *vert = mesh_node->get_vpool()->get_vertex(vpoolMap[k]+1);
+                        // EggVertex *vert = mesh_node->get_vpool()->get_vertex(vpoolMap[k]+1);
                         if (!vert) {
                           softegg_cat.debug() << "possible error: index " << k+1 << ": vert is " << vert << endl;
                           break;
