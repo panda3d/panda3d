@@ -2688,8 +2688,8 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
   } else {
     // We're not using vertex blending.
     if (_vertex_blending_enabled) {
-      _pD3DDevice->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
       _pD3DDevice->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE);
+      _pD3DDevice->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
       _vertex_blending_enabled = false;
     }
 
@@ -2797,8 +2797,8 @@ end_draw_primitives() {
   // Turn off vertex blending--it seems to cause problems if we leave
   // it on.
   if (_vertex_blending_enabled) {
-    _pD3DDevice->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
     _pD3DDevice->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE);
+    _pD3DDevice->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
     _vertex_blending_enabled = false;
   }
 }

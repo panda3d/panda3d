@@ -129,6 +129,19 @@ ConfigVariableBool hardware_animated_vertices
           "necessary on your computer's bus.  However, in some cases it "
           "may actually reduce performance."));
 
+ConfigVariableBool matrix_palette
+("matrix-palette", false,
+ PRC_DESC("Set this true to allow the use of the matrix palette when "
+          "animating vertices in hardware (if hardware-animated-vertices "
+          "is also true).  The matrix palette is not supported by all "
+          "devices, but if it is, using it can allow animation of more "
+          "sophisticated meshes in hardware, and it can also improve the "
+          "performance of animating some simpler meshes.  Without "
+          "this option, certain meshes will have to be animated in "
+          "software.  However, this option is not enabled by default, "
+          "because its support seems to be buggy in certain drivers "
+          "(ATI FireGL T2 8.103 in particular.)"));
+
 ConfigVariableBool use_qpgeom
 ("use-qpgeom", false,
  PRC_DESC("A temporary variable while the experimental Geom rewrite is "

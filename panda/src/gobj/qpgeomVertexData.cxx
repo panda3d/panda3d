@@ -763,6 +763,9 @@ replace_column(const InternalName *name, int num_components,
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
 output(ostream &out) const {
+  if (!get_name().empty()) {
+    out << get_name() << " ";
+  }
   out << get_num_vertices() << ": " << *get_format();
 }
 
@@ -773,6 +776,9 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
 write(ostream &out, int indent_level) const {
+  if (!get_name().empty()) {
+    indent(out, indent_level) << get_name() << "\n";
+  }
   _format->write_with_data(out, indent_level, this);
   if (get_transform_blend_palette() != (TransformBlendPalette *)NULL) {
     indent(out, indent_level)

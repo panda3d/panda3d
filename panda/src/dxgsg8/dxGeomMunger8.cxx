@@ -80,6 +80,14 @@ munge_format_impl(const qpGeomVertexFormat *orig,
         (InternalName::get_transform_index(), 1,
          qpGeomVertexColumn::NT_packed_dcba, qpGeomVertexColumn::C_index);
     }                                    
+
+    // Make sure the old weights and indices are removed, just in
+    // case.
+    new_format->remove_column(InternalName::get_transform_weight());
+    new_format->remove_column(InternalName::get_transform_index());
+
+    // And we don't need the transform_blend table any more.
+    new_format->remove_column(InternalName::get_transform_blend());
   }
 
   if (normal_type != (const qpGeomVertexColumn *)NULL) {
@@ -112,8 +120,8 @@ munge_format_impl(const qpGeomVertexFormat *orig,
     return orig;
   }
 
-  // Use the new format; make sure the DX8-friendly array is first in
-  // the list.
+  // Use the new format; make sure the FVF-style array we just built
+  // up is first in the list.
   new_format->insert_array(0, new_array_format);
   return qpGeomVertexFormat::register_format(new_format);
 }

@@ -96,8 +96,8 @@ munge_data_impl(const qpGeomVertexData *data) {
     if (palette != (TransformBlendPalette *)NULL &&
         palette->get_max_simultaneous_transforms() <= 
         _gsg->get_max_vertex_transforms()) {
-      if (palette->get_num_transforms() <= 
-          _gsg->get_max_vertex_transform_indices()) {
+      if (matrix_palette && 
+          palette->get_num_transforms() <= _gsg->get_max_vertex_transform_indices()) {
 
         if (palette->get_num_transforms() == palette->get_max_simultaneous_transforms()) {
           // We can support an indexed palette, but since that won't
