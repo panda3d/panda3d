@@ -509,7 +509,7 @@ PUBLISHED:
   INLINE bool is_stashed() const;
   NodePath get_stashed_ancestor() const;
 
-  void prepare_scene(GraphicsStateGuardianBase *gsg);
+  void prepare_scene(GraphicsStateGuardianBase *gsg, bool force_retained_mode = false);
   INLINE void clear_wrt_cache();
 
   void show_bounds();

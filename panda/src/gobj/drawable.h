@@ -53,6 +53,7 @@ public:
   virtual ~dDrawable();
 
   virtual void draw(GraphicsStateGuardianBase *);
+  virtual bool is_dynamic() const;
 
 protected:
   virtual void propagate_stale_bound();

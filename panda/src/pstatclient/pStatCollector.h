@@ -74,6 +74,7 @@ PUBLISHED:
   INLINE void set_level(float level);
   INLINE void add_level(float increment);
   INLINE void sub_level(float decrement);
+  INLINE float get_level();
 
 public:
   INLINE bool is_active(const PStatThread &thread);
@@ -86,6 +87,7 @@ public:
   INLINE void set_level(const PStatThread &thread, float level);
   INLINE void add_level(const PStatThread &thread, float increment);
   INLINE void sub_level(const PStatThread &thread, float decrement);
+  INLINE float get_level(const PStatThread &thread);
 
 private:
   PStatClient *_client;
@@ -108,6 +110,7 @@ PUBLISHED:
   INLINE void set_level(float) { }
   INLINE void add_level(float) { }
   INLINE void sub_level(float) { }
+  INLINE float get_level() { return 0.0; }
 
 public:
   INLINE bool is_active(const PStatThread &) { return false; }
@@ -120,6 +123,7 @@ public:
   INLINE void set_level(const PStatThread &, float) { }
   INLINE void add_level(const PStatThread &, float) { }
   INLINE void sub_level(const PStatThread &, float) { }
+  INLINE float get_level(const PStatThread &) { return 0.0; }
 
 #endif  // DO_PSTATS
 };

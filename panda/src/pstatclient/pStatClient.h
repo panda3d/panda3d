@@ -106,6 +106,7 @@ private:
   void clear_level(int collector_index, int thread_index);
   void set_level(int collector_index, int thread_index, float level);
   void add_level(int collector_index, int thread_index, float increment);
+  float get_level(int collector_index, int thread_index) const;
 
   void new_frame(int thread_index);
   void transmit_frame_data(int thread_index);

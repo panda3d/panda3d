@@ -414,6 +414,24 @@ release_all_textures() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 release_all_geoms() {
+  // As above, for both Geoms and GeomNodes.
+
+  Geoms temp_geoms = _prepared_geoms;
+  for (Geoms::const_iterator gi = temp_geoms.begin();
+       gi != temp_geoms.end();
+       ++gi) {
+    release_geom(*gi);
+  }
+
+  GeomNodes temp_geom_nodes = _prepared_geom_nodes;
+  for (GeomNodes::const_iterator gni = temp_geom_nodes.begin();
+       gni != temp_geom_nodes.end();
+       ++gni) {
+    release_geom_node(*gni);
+  }
+
+  nassertv(_prepared_geoms.empty());
+  nassertv(_prepared_geom_nodes.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -723,9 +741,11 @@ unmark_prepared_geom_node(GeomNodeContext *gnc) {
 void GraphicsStateGuardian::
 init_frame_pstats() {
   _current_textures.clear();
+  _current_geoms.clear();
+  _current_geom_nodes.clear();
   _active_texusage_pcollector.clear_level();
-  _total_geom_pcollector.clear_level();
-  _total_geom_node_pcollector.clear_level();
+  _active_geom_pcollector.clear_level();
+  _active_geom_node_pcollector.clear_level();
 
   // Also clear out our other counters while we're here.
   _vertices_tristrip_pcollector.clear_level();
@@ -752,8 +772,10 @@ init_frame_pstats() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 add_to_texture_record(TextureContext *tc) {
-  if (_current_textures.insert(tc).second) {
-    _active_texusage_pcollector.add_level(tc->estimate_texture_memory());
+  if (PStatClient::is_connected()) {
+    if (_current_textures.insert(tc).second) {
+      _active_texusage_pcollector.add_level(tc->estimate_texture_memory());
+    }
   }
 }
 
@@ -767,8 +789,10 @@ add_to_texture_record(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 add_to_geom_record(GeomContext *gc) {
-  if (gc != (GeomContext *)NULL && _current_geoms.insert(gc).second) {
-    _active_geom_pcollector.add_level(1);
+  if (PStatClient::is_connected()) {
+    if (gc != (GeomContext *)NULL && _current_geoms.insert(gc).second) {
+      _active_geom_pcollector.add_level(1);
+    }
   }
 }
 
@@ -782,9 +806,11 @@ add_to_geom_record(GeomContext *gc) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 add_to_geom_node_record(GeomNodeContext *gnc) {
-  if (gnc != (GeomNodeContext *)NULL && 
-      _current_geom_nodes.insert(gnc).second) {
-    _active_geom_node_pcollector.add_level(1);
+  if (PStatClient::is_connected()) {
+    if (gnc != (GeomNodeContext *)NULL && 
+        _current_geom_nodes.insert(gnc).second) {
+      _active_geom_node_pcollector.add_level(1);
+    }
   }
 }
 

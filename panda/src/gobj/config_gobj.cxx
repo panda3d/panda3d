@@ -75,6 +75,18 @@ bool textures_down_square = false;
 // wastefully.
 bool keep_texture_ram = config_gobj.GetBool("keep-texture-ram", false);
 
+// Ditto for Geom's.  This is a little more dangerous, because if
+// anyone calls release_all_geoms() on the GSG, we won't be able to
+// restore them automatically.
+bool keep_geom_ram = config_gobj.GetBool("keep-geom-ram", false);
+
+// Set this true to allow the use of retained mode rendering, which
+// creates specific cache information (like display lists or vertex
+// buffers) with the GSG for static geometry, when supported by the
+// GSG.  Set it false to use only immediate mode, which sends the
+// vertices to the GSG every frame.
+bool retained_mode = config_gobj.GetBool("retained-mode", true);
+
 
 // Set this to specify how textures should be written into Bam files.
 // Currently, the options are:

@@ -27,6 +27,8 @@
 #include "graphicsChannel.h"
 #include "hardwareChannel.h"
 #include "textureContext.h"
+#include "geomNodeContext.h"
+#include "geomContext.h"
 
 Configure(config_display);
 NotifyCategoryDef(display, "");
@@ -130,6 +132,8 @@ init_libdisplay() {
   GraphicsChannel::init_type();
   HardwareChannel::init_type();
   TextureContext::init_type();
+  GeomNodeContext::init_type();
+  GeomContext::init_type();
 
   disp = new Config::ConfigTable::Symbol;
   guard = new Config::ConfigTable::Symbol;

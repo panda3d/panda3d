@@ -213,6 +213,16 @@ sub_level(float decrement) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::get_level
+//       Access: Published
+//  Description: Returns the current level value of the given collector.
+////////////////////////////////////////////////////////////////////
+INLINE float PStatCollector::
+get_level() {
+  return _client->get_level(_index, 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::is_active
 //       Access: Public
 //  Description: Returns true if this particular collector is active
@@ -323,6 +333,16 @@ add_level(const PStatThread &thread, float increment) {
 INLINE void PStatCollector::
 sub_level(const PStatThread &thread, float decrement) {
   _client->add_level(_index, thread._index, -decrement);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::get_level
+//       Access: Public
+//  Description: Returns the current level value of the given collector.
+////////////////////////////////////////////////////////////////////
+INLINE float PStatCollector::
+get_level(const PStatThread &thread) {
+  return _client->get_level(_index, thread._index);
 }
 
 #endif  // DO_PSTATS

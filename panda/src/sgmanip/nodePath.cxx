@@ -40,6 +40,7 @@
 #include <bamFile.h>
 #include <materialPool.h>
 #include <pt_NodeRelation.h>
+#include <config_gobj.h>
 
 #include "plist.h"
 
@@ -47,7 +48,7 @@ TypeHandle NodePath::_type_handle;
 
 
 // This class is used in prepare_scene() to traverse the scene graph
-// and register textures with the gsg.
+// and register textures and geoms with the gsg.
 class ScenePrepareVisitor : public TraverserVisitor<NodeTransitionWrapper, NullLevelState> {
 public:
   bool forward_arc(NodeRelation *, NodeTransitionWrapper &trans,
@@ -62,7 +63,17 @@ public:
     return true;
   }
 
+  bool reached_node(Node *node, NodeAttributeWrapper &,
+                    NullLevelState &) {
+    if (_retained_mode && node->is_of_type(GeomNode::get_class_type())) {
+      GeomNode *gnode = DCAST(GeomNode, node);
+      gnode->prepare(_gsg);
+    }
+    return true;
+  }
+
   GraphicsStateGuardianBase *_gsg;
+  bool _retained_mode;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -2760,9 +2771,15 @@ get_stashed_ancestor() const {
 //               will initialize itself when the scene is rendered,
 //               but this may take some of the overhead away from that
 //               process.
+//
+//               If force_retained_mode is true, retained mode is set
+//               on the geometry encountered, regardless of the
+//               setting of the retained-mode Config variable.
+//               Otherwise, retained mode is set only if the
+//               retained-mode Config variable is true.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-prepare_scene(GraphicsStateGuardianBase *gsg) {
+prepare_scene(GraphicsStateGuardianBase *gsg, bool force_retained_mode) {
   nassertv_always(!is_empty());
 
   // Use the ScenePrepareVisitor and fire off a traversal of the scene
@@ -2771,6 +2788,7 @@ prepare_scene(GraphicsStateGuardianBase *gsg) {
   // graph at this point and below.
   ScenePrepareVisitor visitor;
   visitor._gsg = gsg;
+  visitor._retained_mode = retained_mode || force_retained_mode;
 
   NodeAttributeWrapper initial(TextureTransition::get_class_type());
   df_traverse(node(), visitor, initial, NullLevelState(),

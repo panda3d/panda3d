@@ -171,6 +171,8 @@ public:
                      GeomBindType &bind,
                      PTA_ushort &tindex) const;
 
+  virtual bool is_dynamic() const;
+
 PUBLISHED:
   INLINE GeomBindType get_binding(int attr) const;
   INLINE const PTA_Vertexf &get_coords_array() const;

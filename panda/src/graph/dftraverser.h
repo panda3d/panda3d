@@ -42,8 +42,8 @@ public:
   typedef TYPENAME Visitor::AttributeWrapper AttributeWrapper;
 
   INLINE_GRAPH DFTraverser(Visitor &visitor,
-                     const AttributeWrapper &initial_render_state,
-                     TypeHandle graph_type);
+                           const AttributeWrapper &initial_render_state,
+                           TypeHandle graph_type);
 
   INLINE_GRAPH void start(NodeRelation *arc, const LevelState &initial_level_state);
   INLINE_GRAPH void start(Node *root, const LevelState &initial_level_state);

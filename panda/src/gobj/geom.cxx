@@ -325,6 +325,20 @@ get_texcoords(PTA_TexCoordf &texcoords, GeomBindType &bind,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::is_dynamic
+//       Access: Public, Virtual
+//  Description: Returns true if the Geom has any dynamic properties
+//               that are expected to change from one frame to the
+//               next, or false if the Geom is largely static.  For
+//               now, this is the same thing as asking whether its
+//               vertices are indexed.
+////////////////////////////////////////////////////////////////////
+bool Geom::
+is_dynamic() const {
+  return (_vindex != (ushort*)0L);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::get_num_vertices
 //       Access: Public
 //  Description: Returns the number of vertices required by all all

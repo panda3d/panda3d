@@ -53,6 +53,19 @@ draw(GraphicsStateGuardianBase *) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Drawable::draw
+//       Access: Public, Virtual
+//  Description: Returns true if the Drawable has any dynamic
+//               properties that are expected to change from one frame
+//               to the next, or false if the Drawable is largely
+//               static.
+////////////////////////////////////////////////////////////////////
+bool dDrawable::
+is_dynamic() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Drawable::propagate_stale_bound
 //       Access: Protected, Virtual
 //  Description: Called by BoundedObject::mark_bound_stale(), this

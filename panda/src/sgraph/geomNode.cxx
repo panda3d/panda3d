@@ -15,12 +15,15 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #include "geomNode.h"
 #include "geomTransformer.h"
+#include "config_sgraph.h"
 
 #include <geom.h>
 #include <allTransitionsWrapper.h>
 #include <indent.h>
+#include <config_gobj.h>
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -182,6 +185,25 @@ prepare(GraphicsStateGuardianBase *gsg) {
       unprepare();
       _prepared_context = gc;
       _prepared_gsg = gsg;
+
+      if (!keep_geom_ram) {
+        // Once we have prepared the GeomNode, we can generally safely
+        // remove the vertices from main RAM.  The GSG is now
+        // responsible for remembering what it looks like.
+        
+        if (sgraph_cat.is_debug()) {
+          sgraph_cat.debug()
+            << "Dumping RAM for " << *this << "\n";
+        }
+
+        // First, change our bounding volume to a static volume, so it
+        // won't try to recompute itself once we clear out the Geoms.
+        set_bound(get_bound());
+
+        // Now remove the set of Geoms, since we don't need them any
+        // more.
+        _geoms.clear();
+      }
     }
     return gc;
   }
