@@ -13,6 +13,11 @@
 #define install_bin_dir $[or $[INSTALL_BIN_DIR],$[install_dir]/bin]
 #define install_igatedb_dir $[or $[INSTALL_IGATEDB_DIR],$[install_dir]/etc]
 
+#define python python
+#if $[< $[OPTIMIZE],3]
+  #define python $[python]_d
+#endif
+
 // If we're on Win32 without Cygwin, generate a genPyCode.bat file;
 // for all other platforms, generate a genPyCode sh script.  Although
 // it's true that on non-Win32 platforms we don't need the script
@@ -27,7 +32,7 @@
 rem #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 rem ################################# DO NOT EDIT ###########################
 
-python -u $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 %8 %9
+$[python] -u $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 %8 %9
 #end genPyCode.bat
 
 #else  // Win32
@@ -37,7 +42,7 @@ python -u $[osfilename $[install_bin_dir]/genPyCode.py] %1 %2 %3 %4 %5 %6 %7 %8 
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 ################################# DO NOT EDIT ###########################
 
-python -u '$[osfilename $[install_bin_dir]/genPyCode.py]' "$@"
+$[python] -u '$[osfilename $[install_bin_dir]/genPyCode.py]' "$@"
 #end genPyCode
 
 #endif  // Win32
@@ -102,11 +107,11 @@ from direct.ffi import FFIConstants
 
 # The following parameters were baked in to this script at the time
 # ppremake was run in Direct.
-DoGenPyCode.outputDir = '$[osfilename $[install_lib_dir]/pandac]'
-DoGenPyCode.extensionsDir = '$[osfilename $[TOPDIR]/src/extensions]'
-DoGenPyCode.interrogateLib = 'libdtoolconfig'
-DoGenPyCode.codeLibs = '$[GENPYCODE_LIBS]'.split()
-DoGenPyCode.etcPath = ['$[osfilename $[install_igatedb_dir]]']
+DoGenPyCode.outputDir = r'$[osfilename $[install_lib_dir]/pandac]'
+DoGenPyCode.extensionsDir = r'$[osfilename $[TOPDIR]/src/extensions]'
+DoGenPyCode.interrogateLib = r'libdtoolconfig'
+DoGenPyCode.codeLibs = r'$[GENPYCODE_LIBS]'.split()
+DoGenPyCode.etcPath = [r'$[osfilename $[install_igatedb_dir]]']
 
 #if $[>= $[OPTIMIZE], 4]
 FFIConstants.wantComments = 0
