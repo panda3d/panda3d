@@ -13,7 +13,7 @@ drawOrder = 100
 def getDefaultFont():
     global font
     if font == None:
-        font = loader.loadModelNode("models/fonts/ttf-comic")
+        font = loader.loadModelNode("models/fonts/Comic")
     return font
 
 def setDefaultFont(newFont):
