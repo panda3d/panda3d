@@ -44,6 +44,9 @@ glxGraphicsPipe(const string &display) {
   if (display_spec.empty()) {
     display_spec = ExecutionEnvironment::get_environment_variable("DISPLAY");
   }
+  if (display_spec.empty()) {
+    display_spec = ":0.0";
+  }
 
   setlocale(LC_ALL, "");
 
@@ -52,6 +55,7 @@ glxGraphicsPipe(const string &display) {
   _display = NULL;
   _screen = 0;
   _root = (Window)NULL;
+  _im = (XIM)NULL;
 
   install_error_handlers();
 
