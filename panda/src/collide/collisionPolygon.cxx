@@ -617,6 +617,7 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
   nassertv(_points.size() >= 3);
 
 #ifndef NDEBUG
+  /*
   // Now make sure the points define a convex polygon.
   if (is_concave()) {
     collide_cat.error() << "Invalid concave CollisionPolygon defined:\n";
@@ -627,8 +628,8 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
     collide_cat.error(false) 
       << "  normal " << normal << " with length " << normal.length() << "\n";
     _points.clear();
-    nassertv(false);
   }
+  */
 #endif
 
   // Now average up all the points to get the median.  This is the

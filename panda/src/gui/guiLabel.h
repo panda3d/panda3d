@@ -19,6 +19,7 @@
 // label-ish behavior for GUI objects (labels, buttons, rollovers)
 
 class GuiManager;
+class TextFont;
 
 class EXPCL_PANDA GuiLabel : public TypedReferenceCount {
 PUBLISHED:
@@ -70,7 +71,7 @@ PUBLISHED:
   virtual ~GuiLabel(void);
 
   static GuiLabel* make_simple_texture_label(Texture*);
-  static GuiLabel* make_simple_text_label(const string&, Node*,
+  static GuiLabel* make_simple_text_label(const string&, TextFont*,
 					  Texture* = (Texture*)0L);
   static GuiLabel* make_simple_card_label(void);
   static GuiLabel* make_null_label(void);

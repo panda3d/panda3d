@@ -207,7 +207,7 @@ GuiLabel* GuiLabel::make_simple_texture_label(Texture* texture) {
   return ret;
 }
 
-GuiLabel* GuiLabel::make_simple_text_label(const string& text, Node* font,
+GuiLabel* GuiLabel::make_simple_text_label(const string& text, TextFont* font,
 					   Texture* tex) {
   GuiLabel* ret = new GuiLabel();
   ret->_type = SIMPLE_TEXT;

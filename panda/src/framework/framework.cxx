@@ -140,7 +140,7 @@ RenderRelation *framerate_arc = (RenderRelation*)0L;
 PT_NamedNode framerate_node;
 
 PT(GraphicsLayer) framerate_layer;
-PT_Node framerate_font;
+PT(TextFont) framerate_font;
 PT(TextNode) framerate_text;
 
 Loader loader;
@@ -502,9 +502,10 @@ void setup_framerate(void) {
   dr->set_camera(cam2d);
 
   // load the font
-  framerate_font = loader.load_sync("cmtt12");
+  PT_Node font_model = loader.load_sync("cmtt12");
 
-  if (framerate_font != (NamedNode *)0L) {
+  if (font_model != (NamedNode *)0L) {
+    framerate_font = new TextFont(font_model);
     framerate_text = new TextNode("framerate_text");
     new RenderRelation(framerate_node, framerate_text);
 
@@ -512,7 +513,7 @@ void setup_framerate(void) {
       LMatrix4f::translate_mat(-0.95, 0.0, 0.95);
 
     framerate_text->set_transform(mat);
-    framerate_text->set_font(framerate_font.p());
+    framerate_text->set_font(framerate_font);
     framerate_text->set_card_color(0.5, 0.5, 0.5, 0.5);
     framerate_text->set_card_as_margin(0.5, 0.5, 0.2, 0.2);
     framerate_text->set_frame_color(1., 0., 0., 1.);
