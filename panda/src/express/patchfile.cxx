@@ -23,17 +23,15 @@
 #include "patchfile.h"
 #include "crypto_utils.h" // MD5 stuff
 
+// PROFILING ///////////////////////////////////////////////////////
 //#define PROFILE_PATCH_BUILD
 #ifdef PROFILE_PATCH_BUILD
 
 #include "clockObject.h"
-
 ClockObject *globalClock = ClockObject::get_global_clock();
 
 #define GET_PROFILE_TIME() globalClock->get_real_time()
-
 #define START_PROFILE(var) double var = GET_PROFILE_TIME()
-
 #define END_PROFILE(startTime, name) \
   cout << name << " took " << (GET_PROFILE_TIME() - (startTime)) << " seconds" << endl
 
@@ -41,6 +39,7 @@ ClockObject *globalClock = ClockObject::get_global_clock();
 #define START_PROFILE(var)
 #define END_PROFILE(startTime, name)
 #endif
+////////////////////////////////////////////////////////////////////
 
 // this actually slows things down...
 //#define USE_MD5_FOR_HASHTABLE_INDEX_VALUES
@@ -538,8 +537,8 @@ build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
   }
 
 #ifdef PROFILE_PATCH_BUILD
-  cout << "time spent calculating footprint hashes: " << hashCalc << endl;
-  cout << "time spent traversing the link table: " << linkSearch << endl;
+  cout << "calculating footprint hashes took " << hashCalc << " seconds" << endl;
+  cout << "traversing the link table took " << linkSearch << " seconds" << endl;
 #endif
 
   END_PROFILE(hashingFootprints, "hashing footprints");
