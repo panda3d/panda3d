@@ -174,6 +174,12 @@ traverse_subdir(const Filename &directory) {
   if (dirname == "SCENES") {
     is_scenes = true;
 
+  } else if (dirname == "CAMERAS") {
+    // We don't want anything in the cameras directory.  These may
+    // change arbitrarily and have no bearing on the model or
+    // animation that we will extract, so avoid them altogether.
+    return;
+
   } else if (dirname == "PICTURES") {
     // In the pictures directory, we must keep everything, since the
     // scene files don't explicitly reference these but they're still
