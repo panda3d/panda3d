@@ -2,6 +2,7 @@
 
 from PandaModules import *
 from TaskManagerGlobal import *
+from MsgTypes import *
 import Task
 import DirectNotifyGlobal
 
@@ -74,10 +75,22 @@ class ServerRepository:
         print dgi.getUint16()
 
         newDatagram = Datagram()
-        datagram.addUint16(2)
-        datagram.addUint8(ord('s'))
-        self.cw.send(datagram, self.lastConnection)
+        newDatagram.addUint16(LOGIN_RESPONSE)
+        newDatagram.addUint8(ord('s'))
+        self.cw.send(newDatagram, self.lastConnection)
         return None
+
+    def sendAvatarGenerate(self):
+        datagram = Datagram()
+        # Message type is 1
+        datagram.addUint16(ALL_OBJECT_GENERATE_WITH_REQUIRED)
+        # Avatar class type is 2
+        datagram.addUint8(2)
+        # A sample id
+        datagram.addUint32(10)
+        # The only required field is the zone field
+        datagram.addUint32(999)
+        self.cw.send(datagram, self.lastConnection)
 
     def startResetPollTask(self):
         return None

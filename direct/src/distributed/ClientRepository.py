@@ -2,9 +2,12 @@
 
 from PandaModules import *
 from TaskManagerGlobal import *
+from MsgTypes import *
 import Task
 import DirectNotifyGlobal
 import ClientDistClass
+# The repository must import all known types of Distributed Objects
+import DistributedObject
 
 class ClientRepository:
     defaultServerPort = 5150
@@ -41,6 +44,7 @@ class ClientRepository:
         self.tcpConn = self.qcm.openTCPClientConnection(
             serverName, serverPort, 1000)
         self.qcr=QueuedConnectionReader(self.qcm, 0)
+        self.qcr.addConnection(self.tcpConn)
         self.cw=ConnectionWriter(self.qcm, 0)
         self.startReaderPollTask()
 
@@ -57,6 +61,7 @@ class ClientRepository:
     def readerPollOnce(self):
         availGetVal = self.qcr.dataAvailable()
         if availGetVal:
+            print "Client: Incoming message!"
             datagram = NetDatagram()
             readRetVal = self.qcr.getData(datagram)
             if readRetVal:
@@ -65,11 +70,13 @@ class ClientRepository:
                 ClientRepository.notify.warning("getData returned false")
         return availGetVal
 
-    def handleDatagram(datagram):
+    def handleDatagram(self, datagram):
         di = DatagramIterator(datagram)
-        msgType = di.getArg(ST_uint16)
+        msgType = di.getArg(STUint16)
 
-        if msgType == ALL_OBJECT_GENERATE_WITH_REQUIRED:
+        if msgType == LOGIN_RESPONSE:
+            self.handleLoginResponse(di)
+        elif msgType == ALL_OBJECT_GENERATE_WITH_REQUIRED:
             self.handleGenerateWithRequired(di)
         elif msgType == ALL_OBJECT_UPDATE_FIELD:
             self.handleUpdateField(di)
@@ -78,20 +85,24 @@ class ClientRepository:
                                             + str(msgType))
         return None
 
-    def handleGenerateWithRequired(di):
+    def handleLoginResponse(self, di):
+        # Pull the security byte
+        secByte = di.getUint8()
+        # Print the byte
+        print ("Got login with security: " + chr(secByte))
+
+    def handleGenerateWithRequired(self, di):
         # Get the class Id
-        classId = di.getArg(ST_uint8);
+        classId = di.getArg(STUint8);
         # Get the DO Id
-        doId = di.getArg(ST_uint32)
-        # Get the echo context
-        echoContext = di.getArg(ST_uint32);
+        doId = di.getArg(STUint32)
         # Look up the cdc
         cdc = self.number2cdc[classId]
         # Create a new distributed object, and put it in the dictionary
         distObj = self.generateWithRequiredFields(cdc, doId, di)
         return None
 
-    def generateWithRequiredFields(cdc, doId, di):
+    def generateWithRequiredFields(self, cdc, doId, di):
         # Someday, this function will look in a cache of old distributed
         # objects to see if this object is in there, and pull it
         # out if necessary. For now, we'll just check to see if
@@ -105,15 +116,15 @@ class ClientRepository:
                                             " was generated again")
             distObj = self.doId2do(doId)
         else:
-            distObj = \
-                    eval(cdc.name).generateWithRequiredFields(doId, di)
+            # Construct a new one
+            distObj = eval(cdc.name + "." + cdc.name)(doId, di)
             # Put the new do in both dictionaries
             self.doId2do[doId] = distObj
             self.doId2cdc[doId] = cdc
             
         return distObj
 
-    def handleUpdateField(di):
+    def handleUpdateField(self, di):
         # Get the DO Id
         doId = di.getArg(ST_uint32)
         # Find the DO

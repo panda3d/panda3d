@@ -1,23 +1,23 @@
 
-    def putArg(self, arg, subatomicType):
+    def putArg(self, arg, subatomicType, divisor=1):
         # Import the type numbers
         from DCSubatomicType import *
         if subatomicType == STInt8:
-            self.addInt8(arg)
+            self.addInt8(int(arg*divisor))
         elif subatomicType == STInt16:
-            self.addInt16(arg)
+            self.addInt16(int(arg*divisor))
         elif subatomicType == STInt32:
-            self.addInt32(arg)
+            self.addInt32(int(arg*divisor))
         elif subatomicType == STInt64:
-            self.addInt64(arg)
+            self.addInt64(int(arg*divisor))
         elif subatomicType == STUint8:
-            self.addUint8(arg)
+            self.addUint8(int(arg*divisor))
         elif subatomicType == STUint16:
-            self.addUint16(arg)
+            self.addUint16(int(arg*divisor))
         elif subatomicType == STUint32:
-            self.addUint32(arg)
+            self.addUint32(int(arg*divisor))
         elif subatomicType == STUint64:
-            self.addUint64(arg)
+            self.addUint64(int(arg*divisor))
         elif subatomicType == STFloat64:
             self.addFloat64(arg)
         elif subatomicType == STString:

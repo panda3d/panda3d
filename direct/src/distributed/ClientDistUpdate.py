@@ -8,24 +8,27 @@ class ClientDistUpdate:
     def __init__(self, dcField):
         self.number = dcField.getNumber()
         self.name = dcField.getName()
-        self.types = self.deriveTypesFromParticle(dcField)
+        self.types = []
+        self.divisors = []
+        self.deriveTypesFromParticle(dcField)        
         return None
 
     def deriveTypesFromParticle(self, dcField):
-        typeList=[]
         dcFieldAtomic = dcField.asAtomicField()
         dcFieldMolecular = dcField.asMolecularField()
         if dcFieldAtomic:
             for i in range(0, dcFieldAtomic.getNumElements()):
-                typeList.append(dcFieldAtomic.getElementType(i))
+                self.types.append(dcFieldAtomic.getElementType(i))
+                self.divisors.append(dcFieldAtomic.getElementDivisor(i))
         elif dcFieldMolecular:
             for i in range(0, dcFieldMolecular.getNumAtomics()):
                 componentField = dcFieldMolecular.getAtomic(i)
                 for j in range(0, componentField.getNumElements()):
-                    typeList.append(componentField.getElementType(j))
+                    self.types.append(componentField.getElementType(j))
+                    self.types.append(componentField.getElementDivisor(j))
         else:
             ClientDistUpdate.notify.error("field is neither atom nor molecule")
-        return typeList
+        return None
 
     def updateField(self, cdc, do, di):
         # Look up the class

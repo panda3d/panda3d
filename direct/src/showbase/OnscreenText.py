@@ -4,7 +4,7 @@ from PandaObject import *
 
 
 
-class OnscreenText(PandaObject, ShowBase.NodePath):
+class OnscreenText(PandaObject, NodePath):
 
     Font = loader.loadModelOnce("fonts/ttf-comic").node()
 
@@ -17,7 +17,7 @@ class OnscreenText(PandaObject, ShowBase.NodePath):
         NodePath.__init__(self)
 
         # make a text node
-        textNode = ShowBase.TextNode()
+        textNode = TextNode()
         textNode.setBillboard(0)
         textNode.setTextColor(0.0, 0.0, 0.0, 1.0)
         textNode.setCardColor(1.0, 1.0, 1.0, 1.0)

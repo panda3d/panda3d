@@ -2,7 +2,7 @@
 
 from PandaObject import *
 
-class Actor(PandaObject, ShowBase.NodePath):
+class Actor(PandaObject, NodePath):
     """Actor class: Contains methods for creating, manipulating
     and playing animations on characters"""
 

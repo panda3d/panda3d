@@ -34,10 +34,11 @@ def getTypeName(classTypeDesc, typeDesc):
     # Python types. This code sorts out the mapping
     if typeDesc.isAtomic():
         
-        # Ints and bools are treated as ints.
+        # Ints, bools, and chars are treated as ints.
         # Enums are special and are not atomic, see below
         if ((typeDesc.atomicType == AT_int) or
-            (typeDesc.atomicType == AT_bool)):
+            (typeDesc.atomicType == AT_bool) or
+            (typeDesc.atomicType == AT_char)):
             return 'types.IntType'
         
         # Floats and doubles are both floats in Python
@@ -45,9 +46,8 @@ def getTypeName(classTypeDesc, typeDesc):
             (typeDesc.atomicType == AT_double)):
             return 'types.FloatType'
 
-        # Strings and individual chars are treated as Python strings
-        elif ((typeDesc.atomicType == AT_char) or
-            (typeDesc.atomicType == AT_string)):
+        # Strings are treated as Python strings
+        elif ((typeDesc.atomicType == AT_string)):
             return 'types.StringType'
         
         elif (typeDesc.atomicType == AT_void):
