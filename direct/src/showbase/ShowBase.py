@@ -271,6 +271,9 @@ class ShowBase(DirectObject.DirectObject):
 
         ShowBase.notify.info('__dev__ == %s' % __dev__)
 
+        # This is temporary:
+        __builtins__["wantOtpServer"] = self.config.GetBool('want-otp-server', 0)
+
         # Now hang a hook on the window-event from Panda.  This allows
         # us to detect when the user resizes, minimizes, or closes the
         # main window.
