@@ -1136,7 +1136,7 @@ class ShowBase(DirectObject.DirectObject):
         if g != None:
             color = VBase4(r, g, b, 1.0)
         else:
-            arg = args[0]
+            arg = r
             color = VBase4(arg[0], arg[1], arg[2], 1.0)
 
         if win == None:
