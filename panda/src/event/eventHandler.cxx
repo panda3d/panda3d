@@ -5,6 +5,7 @@
 
 #include "eventHandler.h"
 #include "eventQueue.h"
+#include "config_event.h"
 
 TypeHandle EventHandler::_type_handle;
 
@@ -52,6 +53,10 @@ dispatch_event(const CPT_Event &event) {
 
     Functions::const_iterator fi;
     for (fi = functions.begin(); fi != functions.end(); ++fi) {
+      if (event_cat->is_spam())
+	event_cat->spam() << "calling callback 0x" << (void*)(*fi)
+			  << " for event '" << event->get_name() << "'"
+			  << endl;
       (*fi)(event);
     }
   }
@@ -84,6 +89,9 @@ dispatch_event(const CPT_Event &event) {
 ////////////////////////////////////////////////////////////////////
 bool EventHandler::
 add_hook(const string &event_name, EventFunction *function) {
+  if (event_cat->is_debug())
+    event_cat->debug() << "adding hook for event '" << event_name
+		       << "' with function 0x" << (void*)function << endl;
   return _hooks[event_name].insert(function).second;
 }
 
