@@ -394,6 +394,9 @@ class Placer(AppShell):
             helpMessage='Toggle Widget Move/COA Mode',
             statusMessage='Toggle Widget Move/COA Mode',
             command=direct.manipulationControl.toggleObjectHandlesMode)
+        
+        # Make all buttons as wide as widest
+        self.alignbuttons()
 
     ### WIDGET OPERATIONS ###
     def setMovementMode(self, movementMode):
@@ -606,6 +609,7 @@ class Placer(AppShell):
 
     def xformRelative(self, value, axis):
         nodePath = self['nodePath']
+        
         if (nodePath != None) & (self.refCS != None):
             if axis == 'x':
                 nodePath.setX(self.refCS, value)
