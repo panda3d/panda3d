@@ -49,10 +49,6 @@ class Level:
 
         # create some handy tables
 
-        # entity type -> list of entIds
-        self.entType2ids = self.levelSpec.getEntType2ids(
-            self.levelSpec.getAllEntIds())
-
         # entranceId to entrance entity
         self.entranceId2entity = {}
 
@@ -65,9 +61,18 @@ class Level:
 
         # get an entity creator object
         self.entityCreator = self.createEntityCreator()
+
+        # entity type -> list of entIds
+        self.entType2ids = self.levelSpec.getEntType2ids(
+            self.levelSpec.getAllEntIds())
+        # create empty list for any entity types that are not represented
+        # in the spec
+        for entType in self.entityCreator.getEntityTypes():
+            self.entType2ids.setdefault(entType, [])
+
         # create all the entities
         # TODO: maybe we should leave this to a subclass or the level user
-        self.createAllEntities(priorityTypes=['levelMgr','zone'])
+        self.createAllEntities(priorityTypes=['levelMgr','zone','propSpinner'])
 
         # check on the singleton entities
         # we make our own references to them rather than expect them to
@@ -116,7 +121,7 @@ class Level:
         self.entities = {}
 
         # get list of all entity types we need to create
-        entTypes = self.entType2ids.keys()
+        entTypes = self.entityCreator.getEntityTypes()
 
         self.onLevelPreCreate()
 
@@ -149,7 +154,7 @@ class Level:
 
     def createAllEntitiesOfType(self, entType):
         """creates all entities of a given type"""
-        assert entType in self.entType2ids
+        assert entType in self.entityCreator.getEntityTypes()
 
         self.onEntityTypePreCreate(entType)
 
@@ -357,7 +362,6 @@ class Level:
 
         def handleEntityInsert(self, entId):
             # update our local type->entId table
-            self.entType2ids.setdefault(self.getEntityType(entId), [])
             self.entType2ids[self.getEntityType(entId)].append(entId)
             self.createEntity(entId)
             messenger.send(self.getInsertEntityEventName(), [entId])

@@ -12,6 +12,7 @@ import ZoneEntity
 import ModelEntity
 import PathEntity
 import VisibilityExtender
+import PropSpinner
 
 # some useful constructor functions
 # ctor functions must take (level, entId)
@@ -39,6 +40,7 @@ class EntityCreator(EntityCreatorBase.EntityCreatorBase):
             'model' : ModelEntity.ModelEntity,
             'nodepath': BasicEntities.NodePathEntity,
             'path' : PathEntity.PathEntity,
+            'propSpinner' : PropSpinner.PropSpinner,
             'visibilityExtender': VisibilityExtender.VisibilityExtender,
             'zone': ZoneEntity.ZoneEntity,
             })

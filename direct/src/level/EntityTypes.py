@@ -116,3 +116,6 @@ class VisibilityExtender(Entity):
         ('event', None, 'entId', {'output':'bool'}),
         ('newZones', [], 'visZoneList'),
         )
+
+class PropSpinner(Entity):
+    type = 'propSpinner'
