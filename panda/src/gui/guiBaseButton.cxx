@@ -1,6 +1,0 @@
-// Filename: guiBaseButton.cxx
-// Created by:  cary (26Oct00)
-// 
-////////////////////////////////////////////////////////////////////
-
-#include "guiBaseButton.h"
