@@ -488,6 +488,7 @@ do_enable_default_keys() {
   _event_handler.add_hook("b", event_b, this);
   _event_handler.add_hook("l", event_l, this);
   _event_handler.add_hook("c", event_c, this);
+  _event_handler.add_hook("shift-l", event_L, this);
   _event_handler.add_hook("h", event_h, this);
   _event_handler.add_hook("arrow_up", event_arrow_up, this);
   _event_handler.add_hook("arrow_down", event_arrow_down, this);
@@ -576,16 +577,34 @@ void PandaFramework::
 event_c(CPT_Event, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
-  NodePath center_around = self->get_highlight();
-  if (center_around.is_empty()) {
-    center_around = self->get_models();
+  NodePath node = self->get_highlight();
+  if (node.is_empty()) {
+    node = self->get_models();
   }
 
   Windows::iterator wi;
   for (wi = self->_windows.begin(); wi != self->_windows.end(); ++wi) {
     WindowFramework *wf = (*wi);
-    wf->center_trackball(center_around);
+    wf->center_trackball(node);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_L
+//       Access: Protected, Static
+//  Description: Default handler for shift-L key: list the contents of
+//               the scene graph, or the highlighted node.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_L(CPT_Event, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  NodePath node = self->get_highlight();
+  if (node.is_empty()) {
+    node = self->get_models();
+  }
+
+  node.ls();
 }
 
 ////////////////////////////////////////////////////////////////////

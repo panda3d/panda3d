@@ -102,6 +102,7 @@ protected:
   static void event_b(CPT_Event, void *data);
   static void event_l(CPT_Event, void *data);
   static void event_c(CPT_Event, void *data);
+  static void event_L(CPT_Event, void *data);
   static void event_h(CPT_Event, void *data);
   static void event_arrow_up(CPT_Event, void *data);
   static void event_arrow_down(CPT_Event, void *data);
