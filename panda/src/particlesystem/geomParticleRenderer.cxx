@@ -189,11 +189,12 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
         float alpha_scalar;
 
         if(_alpha_mode == PR_ALPHA_USER) {
-          alpha_scalar=get_user_alpha();
+          alpha_scalar = get_user_alpha();
         } else {
           alpha_scalar = cur_particle->get_parameterized_age();
           if (_alpha_mode == PR_ALPHA_OUT)
             alpha_scalar = 1.0f - alpha_scalar;
+          alpha_scalar *= get_user_alpha();
         }
         
         cur_node->set_attrib(ColorAttrib::make_flat
