@@ -25,6 +25,8 @@
 
 #include "audioManager.h"
 #include "mss.h"
+#include "pset.h"
+#include "pmap.h"
 
 class MilesAudioSound;
 
