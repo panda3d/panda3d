@@ -3,6 +3,7 @@
 import DirectNotifyGlobal
 from PyDatagram import PyDatagram
 from MsgTypes import *
+import ihooks
 
 # These are stored here so that the distributed classes we load on the fly
 # can be exec'ed in the module namespace as if we imported them normally.
@@ -21,24 +22,19 @@ class ClientDistUpdate:
         self.types = []
         self.divisors = []
         self.deriveTypesFromParticle(dcField)
-        # Figure out our function pointer
-        try:
-            exec("import " + cdc.name, moduleGlobals, moduleLocals)
-        except ImportError, e:
-            # Don't bother reporting this error; the ClientDistClass
-            # will catch it.
-            #self.notify.warning("Unable to import %s.py: %s" % (cdc.name, e))
+
+        stuff = ihooks.current_importer.get_loader().find_module(cdc.name)
+        if not stuff:
+            # This will be printed by ClientDistClass
+            # self.notify.warning("Unable to import %s.py" % (cdc.name))
             self.func = None
             return
-
-        try:
-            self.func = eval(cdc.name + "." + cdc.name + "." + self.name)
-        except (NameError, AttributeError), e:
-            # Only catch name and attribute errors
-            # as all other errors are legit errors
-            #self.notify.warning(cdc.name + "." + self.name + " does not exist")
-            self.func = None
-        return
+            
+        module = __import__(cdc.name, moduleGlobals, moduleLocals)
+        # If there is no class here, that is an error
+        classObj = getattr(module, cdc.name)
+        # If there is no func, it will just be None
+        self.func = getattr(classObj, self.name, None)
 
     def deriveTypesFromParticle(self, dcField):
         dcFieldAtomic = dcField.asAtomicField()

@@ -4,6 +4,7 @@ from PandaModules import *
 import DirectNotifyGlobal
 import ClientDistUpdate
 import sys
+import ihooks
 
 # These are stored here so that the distributed classes we load on the fly
 # can be exec'ed in the module namespace as if we imported them normally.
@@ -24,26 +25,18 @@ class ClientDistClass:
         self.broadcastRequiredCDU = self.listBroadcastRequiredCDU(self.allCDU)
         self.allRequiredCDU = self.listRequiredCDU(self.allCDU)
 
-        # Import the class, and store the constructor
-        try:
-             exec("import " + self.name, moduleGlobals, moduleLocals)
-        except ImportError, e:
-            self.notify.warning("Unable to import %s.py: %s" % (self.name, e))
+        stuff = ihooks.current_importer.get_loader().find_module(self.name)
+        if not stuff:
+            self.notify.warning("Unable to import %s.py" % (self.name))
             self.constructor = None
             return
 
-        try:
-            self.constructor = eval(self.name + "." + self.name)
-        except (NameError, AttributeError), e:
-            self.notify.warning("%s.%s does not exist: %s" % (self.name, self.name, e))
-            self.constructor = None
-
+        module = __import__(self.name, moduleGlobals, moduleLocals)
+        self.constructor = getattr(module, self.name, None)
         # If this assertion fails, you probably had an import error in
         # a file named in your toon.dc file, or in some file included
         # in a file named in your toon.dc file.
         assert(self.constructor != None)
-        
-        return
 
     def parseFields(self, dcClass):
         fields=[]
