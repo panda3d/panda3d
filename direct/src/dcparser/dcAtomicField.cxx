@@ -373,35 +373,35 @@ pack_arg(Datagram &datagram, PyObject *item, DCSubatomicType type) const {
   } else {
     switch (type) {
     case ST_int8:
-      datagram.add_int8(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      datagram.add_int8((PN_int8)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
       break;
 
     case ST_int16:
-      datagram.add_int16(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      datagram.add_int16((PN_int16)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
       break;
 
     case ST_int32:
-      datagram.add_int32(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      datagram.add_int32((PN_int32)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
       break;
 
     case ST_int64:
-      datagram.add_int64(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      datagram.add_int64((PN_int64)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
       break;
 
     case ST_uint8:
-      datagram.add_uint8(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      datagram.add_uint8((PN_uint8)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
       break;
 
     case ST_uint16:
-      datagram.add_uint16(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      datagram.add_uint16((PN_uint16)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
       break;
 
     case ST_uint32:
-      datagram.add_uint32(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      datagram.add_uint32((PN_uint32)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
       break;
 
     case ST_uint64:
-      datagram.add_uint64(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      datagram.add_uint64((PN_uint64)floor(PyFloat_AsDouble(item) * _divisor + 0.5));
       break;
 
     case ST_float64:
@@ -417,6 +417,9 @@ pack_arg(Datagram &datagram, PyObject *item, DCSubatomicType type) const {
     case ST_blob32:
       PyString_AsStringAndSize(item, &str, &size);
       datagram.add_string32(string(str, size));
+      break;
+
+    default:
       break;
     }
   }

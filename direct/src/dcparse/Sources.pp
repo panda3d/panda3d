@@ -9,7 +9,7 @@
 #begin bin_target
   #define TARGET dcparse
   #define LOCAL_LIBS dcparser
-  #define OTHER_LIBS $[OTHER_LIBS] pystub
+  #define USE_PACKAGES python
 
   #define SOURCES \
     dcparse.cxx

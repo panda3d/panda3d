@@ -7,6 +7,7 @@
 #define YACC_PREFIX dcyy
 #define C++FLAGS -DWITHIN_PANDA
 #define UNIX_SYS_LIBS m
+#define USE_PACKAGES python
 
 #begin lib_target
   #define TARGET dcparser
