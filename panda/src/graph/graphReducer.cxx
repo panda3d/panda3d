@@ -33,6 +33,7 @@ GraphReducer::
 GraphReducer(TypeHandle graph_type) :
   _graph_type(graph_type)
 {
+  _max_children = 1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,6 +45,25 @@ GraphReducer::
 ~GraphReducer() {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphReducer::set_max_children
+//       Access: Public
+//  Description: Sets the maximum number of children a node is allowed
+//               to have and still be flattened.  Normally, this is 1;
+//               we don't typically want to flatten a node that has
+//               multiple children.  However, sometimes this may be
+//               desirable; set this parameter to control the limit.
+//               If this is set to -1, there is no limit.
+//
+//               If any of a node's arcs cannot be flattened,
+//               generally none of them will be, although this depends
+//               on how late the inability to flatten a particular arc
+//               is discovered.
+////////////////////////////////////////////////////////////////////
+void GraphReducer::
+set_max_children(int count) {
+  _max_children = count;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphReducer::flatten
@@ -128,12 +148,26 @@ r_flatten(Node *root, bool combine_siblings) {
     num_nodes += flatten_siblings(root);
   }
 
-  if (drp.size() == 1) {
-    // If we have exactly one child, consider flattening it.
-    NodeRelation *arc = *drp.begin();
-    if (consider_arc(arc)) {
-      if (flatten_arc(arc)) {
-        num_nodes++;
+  if (!drp.empty() && (_max_children < 0 || (int)drp.size() <= _max_children)) {
+    // If we don't have too many children, consider flattening each of
+    // our child arcs.
+    bool all_ok = true;
+    for (drpi = drp_copy.begin(); drpi != drp_copy.end() && all_ok; ++drpi) {
+      NodeRelation *arc = (*drpi);
+      all_ok = consider_arc(arc);
+    }
+
+    if (all_ok) {
+      // All our arcs can (potentially) be flattened; do it.
+
+      // Get a new copy of the children list.
+      drp_copy = drp;
+      
+      for (drpi = drp_copy.begin(); drpi != drp_copy.end(); ++drpi) {
+        NodeRelation *arc = (*drpi);
+        if (flatten_arc(arc)) {
+          num_nodes++;
+        }
       }
     }
   }

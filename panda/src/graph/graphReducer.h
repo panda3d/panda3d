@@ -39,6 +39,7 @@ public:
   GraphReducer(TypeHandle graph_type);
   virtual ~GraphReducer();
 
+  void set_max_children(int count);
   int flatten(Node *root, bool combine_siblings);
 
 protected:
@@ -61,6 +62,7 @@ protected:
   void copy_children(Node *to, Node *from);
 
 protected:
+  int _max_children;
   TypeHandle _graph_type;
 };
 

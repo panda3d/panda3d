@@ -255,8 +255,8 @@ PUBLISHED:
   void analyze() const;
 
   int flatten_light();
-  int flatten_medium();
-  int flatten_strong();
+  int flatten_medium(int max_children = 1);
+  int flatten_strong(int max_children = 1);
 
   bool write_bam_file(const string &filename) const;
 

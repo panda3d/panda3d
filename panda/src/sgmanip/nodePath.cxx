@@ -1147,12 +1147,21 @@ flatten_light() {
 //               flatten_light() because the number of nodes in the
 //               scene graph is reduced.
 //
+//               If max_children is specified, it represents the
+//               maximum number of children a node is allowed to have
+//               and still be flattened.  Normally, this is 1; we
+//               don't typically want to flatten a node that has
+//               multiple children.  However, sometimes this may be
+//               desirable; set this parameter to control the limit.
+//               If this is set to -1, there is no limit.
+//
 //               The return value is the number of arcs removed.
 ////////////////////////////////////////////////////////////////////
 int NodePath::
-flatten_medium() {
+flatten_medium(int max_children) {
   nassertr(!is_empty(), 0);
   SceneGraphReducer gr(_graph_type);
+  gr.set_max_children(max_children);
   gr.apply_transitions(arc());
   int num_removed = gr.flatten(node(), false);
 
@@ -1182,9 +1191,10 @@ flatten_medium() {
 //               because of less-effective culling.
 ////////////////////////////////////////////////////////////////////
 int NodePath::
-flatten_strong() {
+flatten_strong(int max_children) {
   nassertr(!is_empty(), 0);
   SceneGraphReducer gr(_graph_type);
+  gr.set_max_children(max_children);
   gr.apply_transitions(arc());
   int num_removed = gr.flatten(node(), true);
 
