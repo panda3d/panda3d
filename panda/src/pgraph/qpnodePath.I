@@ -20,11 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::Default Constructor
 //       Access: Published
-//  Description: This constructs an empty qpNodePath with no nodes.  It
-//               cannot be extended, since you cannot add nodes without
-//               first specifying the top node.  Use the constructor
-//               that receives a node if you ever want to do anything
-//               with this path.
+//  Description: This constructs an empty qpNodePath with no nodes.
 ////////////////////////////////////////////////////////////////////
 INLINE qpNodePath::
 qpNodePath() :
@@ -35,9 +31,9 @@ qpNodePath() :
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::Constructor
 //       Access: Published
-//  Description: This constructs an empty qpNodePath with a single
-//               node.  An ordinary PandaNode is created with the
-//               indicated name.
+//  Description: This constructs a new qpNodePath with a single
+//               node.  An ordinary, unattached PandaNode is created
+//               with the indicated name.
 ////////////////////////////////////////////////////////////////////
 INLINE qpNodePath::
 qpNodePath(const string &top_node_name) :
@@ -52,18 +48,37 @@ qpNodePath(const string &top_node_name) :
 //       Access: Published
 //  Description: This constructs a NodePath for the indicated node.
 //               If the node does not have any parents, this creates a
-//               single NodePath; otherwise, it automatically finds
+//               singleton NodePath; otherwise, it automatically finds
 //               the path from the node to the root.  If the node has
 //               multiple paths to the root, one path is chosen
-//               arbitrarily and a warning message is printed.
+//               arbitrarily and a warning message is printed (but see
+//               also NodePath::any_path(), below).
 ////////////////////////////////////////////////////////////////////
 INLINE qpNodePath::
-qpNodePath(PandaNode *top_node) :
+qpNodePath(PandaNode *node) :
   _error_type(ET_ok)
 {
-  if (top_node != (PandaNode *)NULL) {
-    _head = top_node->get_generic_component(false);
+  if (node != (PandaNode *)NULL) {
+    _head = node->get_generic_component(false);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::any_path named constructor
+//       Access: Published, Static
+//  Description: Returns a new NodePath that represents any arbitrary
+//               path from the root to the indicated node.  This is
+//               the same thing that would be returned by
+//               NodePath(node), except that no warning is issued if
+//               the path is ambiguous.
+////////////////////////////////////////////////////////////////////
+INLINE qpNodePath qpNodePath::
+any_path(PandaNode *node) {
+  qpNodePath result;
+  if (node != (PandaNode *)NULL) {
+    result._head = node->get_generic_component(true);
+  }
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,16 +86,15 @@ qpNodePath(PandaNode *top_node) :
 //       Access: Published
 //  Description: Constructs a NodePath with the indicated parent
 //               NodePath and child node; the child node must be a
-
 //               stashed or unstashed child of the parent.
 ////////////////////////////////////////////////////////////////////
 INLINE qpNodePath::
-qpNodePath(const qpNodePath &parent, PandaNode *child) :
+qpNodePath(const qpNodePath &parent, PandaNode *child_node) :
   _error_type(ET_fail)
 {
   nassertv(!parent.is_empty());
-  nassertv(child != (PandaNode *)NULL);
-  _head = PandaNode::get_component(parent._head, child);
+  nassertv(child_node != (PandaNode *)NULL);
+  _head = PandaNode::get_component(parent._head, child_node);
   nassertv(_head != (qpNodePathComponent *)NULL);
 
   if (_head != (qpNodePathComponent *)NULL) {
@@ -155,7 +169,7 @@ fail() {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::set_max_search_depth
 //       Access: Published, Static
-//  Description: Certain operations, such as extend_down_to() or
+//  Description: Certain operations, such as find() or
 //               find_all_matches(), require a traversal of the scene
 //               graph to search for the target node or nodes.  This
 //               traversal does not attempt to detect cycles, so an
@@ -252,6 +266,13 @@ node() const {
 //               given key will never be reused for a different
 //               instance (unless the app has been running long enough
 //               that we overflow the integer key value).
+//
+//               There are a few special case circumstances that can
+//               cause the key for a particular instance to be
+//               changed.  These all involve different instances being
+//               collapsed into the same instance by some scene graph
+//               operation (for instance, detaching a node below an
+//               instanced node).
 ////////////////////////////////////////////////////////////////////
 INLINE int qpNodePath::
 get_key() const {
@@ -348,28 +369,6 @@ ls(ostream &out, int indent_level) const {
   } else {
     node()->ls(out, indent_level);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::ls_transitions
-//       Access: Published
-//  Description: Lists the hierarchy at and below the referenced node,
-//               along with the state transitions at each level.
-////////////////////////////////////////////////////////////////////
-INLINE void qpNodePath::
-ls_transitions() const {
-  nassertv(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::ls_transforms
-//       Access: Published
-//  Description: Lists the hierarchy at and below the referenced node,
-//               along with the transforms at each level.
-////////////////////////////////////////////////////////////////////
-INLINE void qpNodePath::
-ls_transforms() const {
-  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1078,7 +1077,7 @@ compare_to(const qpNodePath &other) const {
   other.uncollapse_head();
 
   // Nowadays, the NodePathComponents at the head are pointerwise
-  // equivalent if and only iff the NodePaths are equivalent.  So we
+  // equivalent if and only if the NodePaths are equivalent.  So we
   // only have to compare pointers.
   return _head - other._head;
 }

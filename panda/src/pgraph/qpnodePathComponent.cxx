@@ -193,3 +193,30 @@ set_top_node() {
     cdata->_next = (qpNodePathComponent *)NULL;
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePathComponent::collapse_with
+//       Access: Private
+//  Description: Indicates that this component pointer is no longer
+//               valid, and that the indicated component should be
+//               used instead.  This is done whenever two
+//               qpNodePathComponents have been collapsed together due
+//               to an instance being removed higher up in the graph.
+////////////////////////////////////////////////////////////////////
+void qpNodePathComponent::
+collapse_with(qpNodePathComponent *next) {
+  nassertv(!is_collapsed());
+  nassertv(next != (qpNodePathComponent *)NULL);
+  CDWriter cdata(_cycler);
+
+  // We indicate a component has been collapsed by setting its length
+  // to zero.
+  cdata->_next = next;
+  cdata->_length = 0;
+
+  if (_key != 0 && next->_key == 0) {
+    // If we had a key set and the other one didn't, it inherits our
+    // key.  Otherwise, we inherit the other's key.
+    next->_key = _key;
+  }
+}

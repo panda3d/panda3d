@@ -68,7 +68,7 @@ public:
 private:
   void set_next(qpNodePathComponent *next);
   void set_top_node();
-  INLINE void collapse_with(qpNodePathComponent *next);
+  void collapse_with(qpNodePathComponent *next);
 
   // We don't have to cycle the _node and _key elements, since these
   // are permanent properties of this object.  (Well, the _key is

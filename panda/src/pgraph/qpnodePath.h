@@ -149,9 +149,11 @@ PUBLISHED:
 
   INLINE qpNodePath();
   INLINE qpNodePath(const string &top_node_name);
-  INLINE qpNodePath(PandaNode *top_node);
-  INLINE qpNodePath(const qpNodePath &copy);
+  INLINE qpNodePath(PandaNode *node);
+  INLINE static qpNodePath any_path(PandaNode *node);
   INLINE qpNodePath(const qpNodePath &parent, PandaNode *child_node);
+
+  INLINE qpNodePath(const qpNodePath &copy);
   INLINE void operator = (const qpNodePath &copy);
 
   INLINE static qpNodePath not_found();
@@ -202,6 +204,7 @@ PUBLISHED:
   qpNodePath attach_new_node(PandaNode *node, int sort = 0) const;
   INLINE qpNodePath attach_new_node(const string &name, int sort = 0) const;
   void remove_node();
+  void detach_node();
 
   // Handy ways to look at what's there, and other miscellaneous
   // operations.
@@ -210,8 +213,6 @@ PUBLISHED:
 
   INLINE void ls() const;
   INLINE void ls(ostream &out, int indent_level = 0) const;
-  INLINE void ls_transitions() const;
-  INLINE void ls_transforms() const;
 
 
   // Aggregate transform and state information.

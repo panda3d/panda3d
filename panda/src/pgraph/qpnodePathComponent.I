@@ -135,24 +135,3 @@ get_collapsed() const {
   CDReader cdata(_cycler);
   return cdata->_next;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePathComponent::collapse_with
-//       Access: Private
-//  Description: Indicates that this component pointer is no longer
-//               valid, and that the indicated component should be
-//               used instead.  This is done whenever two
-//               qpNodePathComponents have been collapsed together due
-//               to an instance being removed higher up in the graph.
-////////////////////////////////////////////////////////////////////
-INLINE void qpNodePathComponent::
-collapse_with(qpNodePathComponent *next) {
-  nassertv(!is_collapsed());
-  nassertv(next != (qpNodePathComponent *)NULL);
-  CDWriter cdata(_cycler);
-  cdata->_next = next;
-  cdata->_length = 0;
-
-  // We indicate a component has been collapsed by setting its length
-  // to zero.
-}

@@ -357,19 +357,40 @@ attach_new_node(PandaNode *node, int sort) const {
 void qpNodePath::
 remove_node() {
   nassertv(_error_type != ET_not_found);
-  if (is_empty() || is_singleton()) {
-    // If we have no parents, remove_node() is just a do-nothing
-    // operation; if we have no nodes, maybe we were already removed.
-    // In either case, quietly do nothing except to ensure the
-    // qpNodePath is clear.
-    (*this) = qpNodePath::removed();
-    return;
+
+  // If we have no parents, remove_node() is just a do-nothing
+  // operation; if we have no nodes, maybe we were already removed.
+  // In either case, quietly do nothing except to ensure the
+  // qpNodePath is clear.
+  if (!is_empty() && !is_singleton()) {
+    uncollapse_head();
+    PandaNode::detach(_head);
   }
 
-  uncollapse_head();
-  PandaNode::detach(_head);
-
   (*this) = qpNodePath::removed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::detach_node
+//       Access: Published
+//  Description: Disconnects the referenced node from its parent, but
+//               does not immediately delete it.  The NodePath retains
+//               a pointer to the node.  If there are no other
+//               instances to the node, this becomes a singleton
+//               NodePath; otherwise, this NodePath becomes the same
+//               as another arbitrary instance.
+//
+//               If the NodePath later goes out of scope or is
+//               reassigned to something else, this will have the same
+//               effect as remove_node().
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+detach_node() {
+  nassertv(_error_type != ET_not_found);
+  if (!is_empty() && !is_singleton()) {
+    uncollapse_head();
+    PandaNode::detach(_head);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
