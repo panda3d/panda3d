@@ -351,6 +351,11 @@ process_request() {
           << "Downloader::process_request() - downloading complete for " 
 	  << tok->_file_name << "\n";
       }
+    } else {
+      PT_Event failure = new Event(tok->_event_name);
+      failure->add_parameter(EventParameter((int)tok->_id));
+      failure->add_parameter(EventParameter(0));
+      failure->add_parameter(EventParameter(-1));
     }
   }
 
@@ -701,13 +706,22 @@ parse_header(DownloadStatus &status) {
   if (status._header_is_complete == true)
     return true;
 
+  if (status._total_bytes == 0) {
+    downloader_cat.error()
+      << "Downloader::parse_header() - Total bytes == 0!" << endl;
+    return false;
+  }
+
   string bufstr((char *)status._start, status._bytes_in_buffer);
   size_t p  = 0;
   while (p < bufstr.length()) {
     // Server sends out CR LF (\r\n) as newline delimiter
     size_t nl = bufstr.find("\015\012", p);
-    if (nl == string::npos)
-      return true;
+    if (nl == string::npos) {
+      downloader_cat.error()
+	<< "Downloader::parse_header() - No newlines in buffer!" << endl;
+      return false;
+    }
 
     string component = bufstr.substr(p, nl - p);
 
@@ -768,10 +782,12 @@ parse_header(DownloadStatus &status) {
     p = nl + 2;
   }
 
-  if (status._total_bytes == 0) {
-    downloader_cat.error()
-      << "Downloader::parse_header() - Total bytes == 0!" << endl;
-    return false;
+  if (status._header_is_complete == false) {
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+        << "Downloader::parse_header() - Reached end of buffer without "
+	<< "successfully parsing the header - buffer size: " 
+	<< status._bytes_in_buffer << endl;
   }
 
   return true;
