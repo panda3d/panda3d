@@ -106,46 +106,67 @@
         else:
             return [self]
 
-    def pprintPos(self, sd = 2):
+    def pprintPos(self, other = None, sd = 2):
         """ Pretty print a node path's pos """
         from PandaObject import *
         formatString = '%0.' + '%d' % sd + 'f'
-        pos = self.getPos()
-        print (self.getName() + '.setPos(' +
+        if other:
+            pos = self.getPos(other)
+            otherString = other.getName() + ', '
+        else:
+            pos = self.getPos()
+            otherString = ''
+        print (self.getName() + '.setPos(' + otherString + 
                formatString % pos[0] + ', ' +
                formatString % pos[1] + ', ' +
                formatString % pos[2] +
                ')\n')
 
-    def pprintHpr(self, sd = 2):
+    def pprintHpr(self, other = None, sd = 2):
         """ Pretty print a node path's hpr """
         from PandaObject import *
         formatString = '%0.' + '%d' % sd + 'f'
-        hpr = self.getHpr()
-        print (self.getName() + '.setHpr(' +
+        if other:
+            hpr = self.getHpr(other)
+            otherString = other.getName() + ', '
+        else:
+            hpr = self.getHpr()
+            otherString = ''
+        print (self.getName() + '.setHpr(' + otherString + 
                formatString % hpr[0] + ', ' +
                formatString % hpr[1] + ', ' +
                formatString % hpr[2] +
                ')\n')
 
-    def pprintScale(self, sd = 2):
+    def pprintScale(self, other = None, sd = 2):
         """ Pretty print a node path's scale """
         from PandaObject import *
         formatString = '%0.' + '%d' % sd + 'f'
-        scale = self.getScale()
-        print (self.getName() + '.setScale(' +
+        if other:
+            scale = self.getScale(other)
+            otherString = other.getName() + ', '
+        else:
+            scale = self.getScale()
+            otherString = ''
+        print (self.getName() + '.setScale(' + otherString + 
                formatString % scale[0] + ', ' +
                formatString % scale[1] + ', ' +
                formatString % scale[2] +
                ')\n')
 
-    def pprintPosHpr(self, sd = 2):
+    def pprintPosHpr(self, other = None, sd = 2):
         """ Pretty print a node path's pos and, hpr """
         from PandaObject import *
         formatString = '%0.' + '%d' % sd + 'f'
-        pos = self.getPos()
-        hpr = self.getHpr()
-        print (self.getName() + '.setPosHpr(' +
+        if other:
+            pos = self.getPos(other)
+            hpr = self.getHpr(other)
+            otherString = other.getName() + ', '
+        else:
+            pos = self.getPos()
+            hpr = self.getHpr()
+            otherString = ''
+        print (self.getName() + '.setPosHpr(' + otherString + 
                formatString % pos[0] + ', ' +
                formatString % pos[1] + ', ' +
                formatString % pos[2] + ', ' +
@@ -154,14 +175,21 @@
                formatString % hpr[2] +
                ')\n')
 
-    def pprintPosHprScale(self, sd = 2):
+    def pprintPosHprScale(self, other = None, sd = 2):
         """ Pretty print a node path's pos, hpr, and scale """
         from PandaObject import *
         formatString = '%0.' + '%d' % sd + 'f'
-        pos = self.getPos()
-        hpr = self.getHpr()
-        scale = self.getScale()
-        print (self.getName() + '.setPosHprScale(' +
+        if other:
+            pos = self.getPos(other)
+            hpr = self.getHpr(other)
+            scale = self.getScale(other)
+            otherString = other.getName() + ', '
+        else:
+            pos = self.getPos()
+            hpr = self.getHpr()
+            scale = self.getScale()
+            otherString = ''
+        print (self.getName() + '.setPosHprScale(' + otherString + 
                formatString % pos[0] + ', ' +
                formatString % pos[1] + ', ' +
                formatString % pos[2] + ', ' +
@@ -173,25 +201,40 @@
                formatString % scale[2] +
                ')\n')
 
-    def zeroPos(self):
+    def iPos(self, other = None):
         """ Set node path's pos to 0,0,0 """
-        self.setPos(0,0,0)
+        if other:
+            self.setPos(other, 0,0,0)
+        else:
+            self.setPos(0,0,0)
 
-    def zeroHpr(self):
+    def iHpr(self, other = None):
         """ Set node path's hpr to 0,0,0 """
-        self.setHpr(0,0,0)
+        if other:
+            self.setHpr(other, 0,0,0)
+        else:
+            self.setHpr(0,0,0)
 
-    def unitScale(self):
+    def iScale(self, other = None):
         """ SEt node path's scale to 1,1,1 """
-        self.setScale(1,1,1)
+        if other:
+            self.setScale(other, 1,1,1)
+        else:
+            self.setScale(1,1,1)
 
-    def zeroPosHpr(self):
+    def iPosHpr(self, other = None):
         """ Set node path's pos and hpr to 0,0,0 """
-        self.setPosHpr(0,0,0,0,0,0)
+        if other:
+            self.setPosHpr(other,0,0,0,0,0,0)
+        else:
+            self.setPosHpr(0,0,0,0,0,0)
 
-    def reset(self):
+    def iPosHprScale(self, other = None):
         """ Set node path's pos and hpr to 0,0,0 and scale to 1,1,1 """
-        self.setPosHprScale(0,0,0,0,0,0,1,1,1)
+        if other:
+            self.setPosHprScale(other, 0,0,0,0,0,0,1,1,1)
+        else:
+            self.setPosHprScale(0,0,0,0,0,0,1,1,1)
 
     # private methods
     
