@@ -91,21 +91,24 @@ PStatCollector GLGraphicsStateGuardian::_vertices_display_list_pcollector("Verti
 #endif
 
 static void
-issue_vertex_gl(const Geom *geom, Geom::VertexIterator &viterator) {
+issue_vertex_gl(const Geom *geom, Geom::VertexIterator &viterator, 
+                GraphicsStateGuardianBase *) {
   const Vertexf &vertex = geom->get_next_vertex(viterator);
   // glgsg_cat.debug() << "Issuing vertex " << vertex << "\n";
   glVertex3fv(vertex.get_data());
 }
 
 static void
-issue_normal_gl(const Geom *geom, Geom::NormalIterator &niterator) {
+issue_normal_gl(const Geom *geom, Geom::NormalIterator &niterator, 
+                GraphicsStateGuardianBase *) {
   const Normalf &normal = geom->get_next_normal(niterator);
   // glgsg_cat.debug() << "Issuing normal " << normal << "\n";
   glNormal3fv(normal.get_data());
 }
 
 static void
-issue_texcoord_gl(const Geom *geom, Geom::TexCoordIterator &tciterator) {
+issue_texcoord_gl(const Geom *geom, Geom::TexCoordIterator &tciterator, 
+                GraphicsStateGuardianBase *) {
   const TexCoordf &texcoord = geom->get_next_texcoord(tciterator);
   //  glgsg_cat.debug() << "Issuing texcoord " << texcoord << "\n";
   glTexCoord2fv(texcoord.get_data());
@@ -113,7 +116,7 @@ issue_texcoord_gl(const Geom *geom, Geom::TexCoordIterator &tciterator) {
 
 static void
 issue_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
-               const GraphicsStateGuardianBase *) {
+               GraphicsStateGuardianBase *) {
   const Colorf &color = geom->get_next_color(citerator);
   //  glgsg_cat.debug() << "Issuing color " << color << "\n";
   glColor4fv(color.get_data());
@@ -121,7 +124,7 @@ issue_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
 
 static void
 issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
-                           const GraphicsStateGuardianBase *gsg) {
+                           GraphicsStateGuardianBase *gsg) {
   const GLGraphicsStateGuardian *glgsg = DCAST(GLGraphicsStateGuardian, gsg);
   const Colorf &color = geom->get_next_color(citerator);
   glgsg->issue_transformed_color(color);

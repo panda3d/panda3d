@@ -21,19 +21,23 @@
 #include <graphicsStateGuardianBase.h>
 
 static void
-issue_vertex_noop(const Geom *, Geom::VertexIterator &) {
+issue_vertex_noop(const Geom *, Geom::VertexIterator &,
+                  GraphicsStateGuardianBase *) {
 }
 
 static void
-issue_normal_noop(const Geom *, Geom::NormalIterator &) {
+issue_normal_noop(const Geom *, Geom::NormalIterator &,
+                  GraphicsStateGuardianBase *) {
 }
 
 static void
-issue_texcoord_noop(const Geom *, Geom::TexCoordIterator &) {
+issue_texcoord_noop(const Geom *, Geom::TexCoordIterator &,
+                  GraphicsStateGuardianBase *) {
 }
 
 static void
-issue_color_noop(const Geom *, Geom::ColorIterator &, const GraphicsStateGuardianBase *) {
+issue_color_noop(const Geom *, Geom::ColorIterator &, 
+                 GraphicsStateGuardianBase *) {
 }
 
 static GeomIssuer noop_issuer;
@@ -73,7 +77,7 @@ GeomIssuer() {
 ////////////////////////////////////////////////////////////////////
 GeomIssuer::
 GeomIssuer(const Geom *geom,
-           const GraphicsStateGuardianBase *gsg,
+           GraphicsStateGuardianBase *gsg,
            IssueVertex *vertex,
            IssueNormal *normal,
            IssueTexCoord *texcoord,

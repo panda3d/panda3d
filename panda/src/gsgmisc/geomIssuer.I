@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomIssuer::
 issue_vertex(GeomBindType bind, Geom::VertexIterator &i) {
-  _vertex_command[bind](_geom, i);
+  _vertex_command[bind](_geom, i, _gsg);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ issue_vertex(GeomBindType bind, Geom::VertexIterator &i) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomIssuer::
 issue_normal(GeomBindType bind, Geom::NormalIterator &i) {
-  _normal_command[bind](_geom, i);
+  _normal_command[bind](_geom, i, _gsg);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,7 +53,7 @@ issue_normal(GeomBindType bind, Geom::NormalIterator &i) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomIssuer::
 issue_texcoord(GeomBindType bind, Geom::TexCoordIterator &i) {
-  _texcoord_command[bind](_geom, i);
+  _texcoord_command[bind](_geom, i, _gsg);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -51,14 +51,14 @@ public:
   // when given a Geom and an associated iterator, will issue the
   // vertex (or whatever) referenced by the iterator to the rendering
   // backend, and increment the iterator.
-  typedef void IssueVertex(const Geom *, Geom::VertexIterator &);
-  typedef void IssueNormal(const Geom *, Geom::NormalIterator &);
-  typedef void IssueTexCoord(const Geom *, Geom::TexCoordIterator &);
-  typedef void IssueColor(const Geom *, Geom::ColorIterator &, const GraphicsStateGuardianBase *gsg);
+  typedef void IssueVertex(const Geom *, Geom::VertexIterator &, GraphicsStateGuardianBase *gsg);
+  typedef void IssueNormal(const Geom *, Geom::NormalIterator &, GraphicsStateGuardianBase *gsg);
+  typedef void IssueTexCoord(const Geom *, Geom::TexCoordIterator &, GraphicsStateGuardianBase *gsg);
+  typedef void IssueColor(const Geom *, Geom::ColorIterator &, GraphicsStateGuardianBase *gsg);
 
   GeomIssuer();
   GeomIssuer(const Geom *geom,
-             const GraphicsStateGuardianBase *gsg,
+             GraphicsStateGuardianBase *gsg,
              IssueVertex *vertex,
              IssueNormal *normal,
              IssueTexCoord *texcoord,
@@ -75,7 +75,7 @@ public:
 
 protected:
   const Geom *_geom;
-  const GraphicsStateGuardianBase *_gsg;
+  GraphicsStateGuardianBase *_gsg;
   IssueVertex *_vertex_command[num_GeomBindTypes];
   IssueNormal *_normal_command[num_GeomBindTypes];
   IssueTexCoord *_texcoord_command[num_GeomBindTypes];
