@@ -34,6 +34,8 @@ class SoundInterval(Interval):
                 duration = self.sound.length()
 		if (duration == 0):
 		    self.notify.warning('zero length duration!')
+	  	# MPG - hack for Miles bug
+		duration += 1.5
             else:
                 # This will screw up any intervals that base their
                 # time on the duration of this sound interval
