@@ -35,9 +35,8 @@ PUBLISHED:
     DS_write = 2,
     DS_success = 1,
     DS_error = -1,
-    DS_timeout = -2,
-    DS_error_write = -3,
-    DS_error_connect = -4,
+    DS_error_write = -2,
+    DS_error_connect = -3,
   };
 
   Download(void);
