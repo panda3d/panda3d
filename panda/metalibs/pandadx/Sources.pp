@@ -15,7 +15,7 @@
 #define OTHER_LIBS dtoolconfig dtool
 
 #begin metalib_target
-  #define TARGET pandadx
+  #define TARGET pandadx7
   #define SOURCES pandadx.cxx  
   #define WIN_SYS_LIBS \
      ddraw.lib d3dim.lib dxguid.lib winmm.lib \
