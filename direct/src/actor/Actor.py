@@ -787,7 +787,7 @@ class Actor(PandaObject, NodePath):
         for lodName in self.__animControlDict.keys():
             animControlDict = self.__animControlDict[lodName]
             if (partName == None):
-                # loop all parts
+                # play all parts
                 for thisPart in animControlDict.keys():            
                     animControl = self.getAnimControl(animName, thisPart,
                                                         lodName)
@@ -944,17 +944,31 @@ class Actor(PandaObject, NodePath):
                 self.__partBundleDict[lodName][partName]).node()
                 
             animControl = (bundleNode.getBundle()).bindAnim(animBundle, -1)
+
             if (animControl == None):
                 Actor.notify.error("Null AnimControl: %s" % (animName))
             else:
                 animDict[animName] = animControl
-            
-            # add this part's dictionary to animation dictionary
+
+            # make sure this lod in in anim control dict
             if not (self.__animControlDict.has_key(lodName)):
                 lodDict = {}
                 self.__animControlDict[lodName] = lodDict
-                
+
             self.__animControlDict[lodName][partName] = animDict
+
+            # make sure this part dict exists
+            #if not (self.__animControlDict[lodName].has_key(partName)):
+            #    partDict = {}
+            #    self.__animControlDict[lodName][partName] = partDict
+
+            # make sure this an anim dict exists
+            #if not (len(self.__animControlDict[lodName][partName].keys())):
+            #    animDict = {}
+            #    self.__animControlDict[lodName][partName] = animDict
+
+            # add this part's dictionary to animation dictionary
+            #self.__animControlDict[lodName][partName][animName] = animControl
                 
 
     def __copyPartBundles(self, other):
