@@ -54,8 +54,8 @@ BEGIN_PUBLISH //[
 END_PUBLISH //]
 
 
-//#define LVector3f LVector3f
-//typedef LVector3f LVector3f;
+//#define LVecBase3f LVecBase3f
+//typedef LVecBase3f LVecBase3f;
 
 
 // These symbols are used to define the shape of the curve segment to
@@ -84,6 +84,9 @@ class NurbsCurve;
 class EXPCL_PANDA ParametricCurve : public TypedWriteableReferenceCount,
     public Namable {
 PUBLISHED:
+  ParametricCurve();
+  virtual ~ParametricCurve();
+
   virtual bool is_valid() const;
 
   virtual double get_max_t() const;
@@ -105,21 +108,19 @@ PUBLISHED:
   void ascii_draw() const;
 
 public:
-  virtual bool get_point(double t, LVector3f &point) const=0;
-  virtual bool get_tangent(double t, LVector3f &tangent) const=0;
-  virtual bool get_pt(double t, LVector3f &point, LVector3f &tangent) const=0;
-  virtual bool get_2ndtangent(double t, LVector3f &tangent2) const=0;
+  virtual bool get_point(double t, LVecBase3f &point) const=0;
+  virtual bool get_tangent(double t, LVecBase3f &tangent) const=0;
+  virtual bool get_pt(double t, LVecBase3f &point, LVecBase3f &tangent) const=0;
+  virtual bool get_2ndtangent(double t, LVecBase3f &tangent2) const=0;
 
 public:
 
   struct BezierSeg {
   public:
-    LVector3f _v[4];
+    LVecBase3f _v[4];
     double _t;
   };
   typedef vector<BezierSeg> BezierSegs;
-
-  ParametricCurve();
 
   virtual void write_datagram(BamWriter *, Datagram &);
 
@@ -135,13 +136,11 @@ public:
   void unregister_drawer(ParametricCurveDrawer *drawer);
 
 protected:
-  virtual ~ParametricCurve();
-
   void invalidate(double t1, double t2);
   void invalidate_all();
 
   float r_calc_length(double t1, double t2,
-                      const LVector3f &p1, const LVector3f &p2,
+                      const LPoint3f &p1, const LPoint3f &p2,
                       float seglength) const;
 
   typedef list< ParametricCurveDrawer * > DrawerList;
@@ -155,7 +154,11 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    register_type(_type_handle, "ParametricCurve");
+    TypedWriteableReferenceCount::init_type();
+    Namable::init_type();
+    register_type(_type_handle, "ParametricCurve",
+		  TypedWriteableReferenceCount::get_class_type(),
+		  Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -176,13 +179,16 @@ private:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PiecewiseCurve : public ParametricCurve {
 PUBLISHED:
+  PiecewiseCurve();
+  ~PiecewiseCurve();
+
   virtual bool is_valid() const;
   virtual double get_max_t() const;
 
-  virtual bool get_point(double t, LVector3f &point) const;
-  virtual bool get_tangent(double t, LVector3f &tangent) const;
-  virtual bool get_pt(double t, LVector3f &point, LVector3f &tangent) const;
-  virtual bool get_2ndtangent(double t, LVector3f &tangent2) const;
+  virtual bool get_point(double t, LVecBase3f &point) const;
+  virtual bool get_tangent(double t, LVecBase3f &tangent) const;
+  virtual bool get_pt(double t, LVecBase3f &point, LVecBase3f &tangent) const;
+  virtual bool get_2ndtangent(double t, LVecBase3f &tangent2) const;
 
   bool adjust_point(double t,
                        float px, float py, float pz);
@@ -193,8 +199,6 @@ PUBLISHED:
                     float tx, float ty, float tz);
 
 public:
-  PiecewiseCurve();
-
   int get_num_segs() const;
 
   ParametricCurve *get_curveseg(int ti);
@@ -209,19 +213,17 @@ public:
   bool set_tlength(int ti, double tlength);
 
   void make_nurbs(int order, int num_cvs,
-                  const double knots[], const LVector4f cvs[]);
+                  const double knots[], const LVecBase4f cvs[]);
 
   virtual bool GetBezierSegs(BezierSegs &bz_segs) const;
 
   virtual bool
-  rebuild_curveseg(int rtype0, double t0, const LVector4f &v0,
-                   int rtype1, double t1, const LVector4f &v1,
-                   int rtype2, double t2, const LVector4f &v2,
-                   int rtype3, double t3, const LVector4f &v3);
+  rebuild_curveseg(int rtype0, double t0, const LVecBase4f &v0,
+                   int rtype1, double t1, const LVecBase4f &v1,
+                   int rtype2, double t2, const LVecBase4f &v2,
+                   int rtype3, double t3, const LVecBase4f &v3);
 
 protected:
-  ~PiecewiseCurve();
-
   bool find_curve(const ParametricCurve *&curve, double &t) const;
   double current_seg_range(double t) const;
 
@@ -289,22 +291,24 @@ private:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CubicCurveseg : public ParametricCurve {
 PUBLISHED:
-  virtual bool get_point(double t, LVector3f &point) const;
-  virtual bool get_tangent(double t, LVector3f &tangent) const;
-  virtual bool get_pt(double t, LVector3f &point, LVector3f &tangent) const;
-  virtual bool get_2ndtangent(double t, LVector3f &tangent2) const;
+  virtual bool get_point(double t, LVecBase3f &point) const;
+  virtual bool get_tangent(double t, LVecBase3f &tangent) const;
+  virtual bool get_pt(double t, LVecBase3f &point, LVecBase3f &tangent) const;
+  virtual bool get_2ndtangent(double t, LVecBase3f &tangent2) const;
 
 public:
   CubicCurveseg();
   CubicCurveseg(const LMatrix4f &basis);
   CubicCurveseg(const BezierSeg &seg);
-  CubicCurveseg(int order, const double knots[], const LVector4f cvs[]);
+  CubicCurveseg(int order, const double knots[], const LVecBase4f cvs[]);
+
+  virtual ~CubicCurveseg();
 
   void hermite_basis(const HermiteCurveCV &cv0,
           const HermiteCurveCV &cv1,
           double tlength = 1.0);
   void bezier_basis(const BezierSeg &seg);
-  void nurbs_basis(int order, const double knots[], const LVector4f cvs[]);
+  void nurbs_basis(int order, const double knots[], const LVecBase4f cvs[]);
 
   // evaluate_point() and evaluate_vector() both evaluate the curve at
   // a given point by applying the basis vector against the vector
@@ -317,14 +321,14 @@ public:
   // points, and will never scale by the homogeneous coordinate (which
   // would be zero anyway).
 
-  void evaluate_point(const LVector4f &tv, LVector3f &result) const {
+  void evaluate_point(const LVecBase4f &tv, LVecBase3f &result) const {
     double h = (rational) ? tv.dot(Bw) : 1.0;
     result.set(tv.dot(Bx) / h,
                tv.dot(By) / h,
                tv.dot(Bz) / h);
   }
 
-  void evaluate_vector(const LVector4f &tv, LVector3f &result) const {
+  void evaluate_vector(const LVecBase4f &tv, LVecBase3f &result) const {
     result.set(tv.dot(Bx),
                tv.dot(By),
                tv.dot(Bz));
@@ -332,20 +336,16 @@ public:
 
   virtual bool GetBezierSeg(BezierSeg &seg) const;
 
-  static bool compute_seg(int rtype0, double t0, const LVector4f &v0,
-                             int rtype1, double t1, const LVector4f &v1,
-                             int rtype2, double t2, const LVector4f &v2,
-                             int rtype3, double t3, const LVector4f &v3,
+  static bool compute_seg(int rtype0, double t0, const LVecBase4f &v0,
+                             int rtype1, double t1, const LVecBase4f &v1,
+                             int rtype2, double t2, const LVecBase4f &v2,
+                             int rtype3, double t3, const LVecBase4f &v3,
                              const LMatrix4f &B,
                              const LMatrix4f &Bi,
                              LMatrix4f &G);
 
-  LVector4f Bx, By, Bz, Bw;
+  LVecBase4f Bx, By, Bz, Bw;
   bool rational;
-
-protected:
-  virtual ~CubicCurveseg();
-
 
 public:
   static TypeHandle get_class_type() {

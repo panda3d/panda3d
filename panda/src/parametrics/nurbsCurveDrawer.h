@@ -65,7 +65,7 @@ PUBLISHED:
 // Member functions not visible to Scheme
 ////////////////////////////////////////////////////////////////////
 protected:
-  LVector3f _cv_color, _hull_color, _knot_color;
+  LVecBase3f _cv_color, _hull_color, _knot_color;
   int _num_cvs, _num_hull, _num_knots;
   LineSegs _hull, _knots, _cvs;
   vector<int> _knotnums;

@@ -30,8 +30,11 @@ class ParametricCurve;
 ////////////////////////////////////////////////////////////////////
 class CurveFitter {
 PUBLISHED:
+  CurveFitter();
+  ~CurveFitter();
+
   void reset();
-  void add_point(double t, const LVector3f &point);
+  void add_point(double t, const LVecBase3f &point);
 
   void sample(ParametricCurve *curve, int count, bool even);
   void generate_even(int count, double net_distance, double net_time);
@@ -42,8 +45,8 @@ PUBLISHED:
   void desample(double factor);
 
   void compute_tangents(double scale);
-  HermiteCurve *make_hermite() const;
-  NurbsCurve *make_nurbs() const;
+  PT(HermiteCurve) make_hermite() const;
+  PT(NurbsCurve) make_nurbs() const;
   
   void print() const;
 
@@ -62,8 +65,8 @@ public:
     }
     
     double _t;
-    LVector3f _point;
-    LVector3f _tangent;
+    LVecBase3f _point;
+    LVecBase3f _tangent;
   };
   
   typedef vector<DataPoint> Data;
@@ -76,10 +79,6 @@ public:
   static void init_type() {
     register_type(_type_handle, "CurveFitter");
   }
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
  
 private:
   static TypeHandle _type_handle;

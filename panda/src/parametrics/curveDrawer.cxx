@@ -298,11 +298,11 @@ draw() {
   }
 
   // Otherwise, let's go to town!
-  int total_segs = floor(_curve->get_max_t() * _num_segs + 0.5);
+  int total_segs = (int)floor(_curve->get_max_t() * _num_segs + 0.5);
 
   double scale = _curve->get_max_t() / (double)(total_segs-1);
   double t;
-  LVector3f point, tangent;
+  LVecBase3f point, tangent;
   bool last_in, next_in;
 
   last_in = false;
@@ -316,7 +316,7 @@ draw() {
 
     next_in = _curve->get_pt(t, point, tangent);
 
-    LVector3f p = _mapper(point, tangent, t);
+    LVecBase3f p = _mapper(point, tangent, t);
 
     if (!next_in || !last_in) {
       _lines.move_to(p);
@@ -331,8 +331,8 @@ draw() {
 
   // Now draw the time tick marks.
   if (_num_ticks > 0) {
-    LVector3f tangent2;
-    int total_ticks = floor(_curve->get_max_t() * _num_ticks + 0.5);
+    LVecBase3f tangent2;
+    int total_ticks = (int)floor(_curve->get_max_t() * _num_ticks + 0.5);
 
     scale = get_max_t() / (double)(total_ticks-1);
     for (i = 0; i<total_ticks; i++) {
@@ -345,8 +345,8 @@ draw() {
       _curve->get_pt(t, point, tangent);
       _curve->get_2ndtangent(t, tangent2);
       
-      LVector3f pt = _mapper(point, tangent, t);
-      LVector3f t1, t2;
+      LVecBase3f pt = _mapper(point, tangent, t);
+      LVecBase3f t1, t2;
       get_tick_marks(_mapper(tangent, tangent2, t + 1.0), t1, t2);
       
       _ticks.move_to(pt - t1 * _tick_scale);
@@ -397,13 +397,13 @@ recompute(double t1, double t2, ParametricCurve *curve) {
 
   int n1, n2, i;
   double scale, t;
-  LVector3f point, tangent;
+  LVecBase3f point, tangent;
 
   if (redraw_curve) {
     // Compute the number of total segments we will draw.  This is based
     // on the parametric length of the curve, _curve->get_max_t().
     
-    int total_segs = floor(_curve->get_max_t() * _num_segs + 0.5);
+    int total_segs = (int)floor(_curve->get_max_t() * _num_segs + 0.5);
     
     n1 = (int)floor(t1 * (total_segs-1));
     n2 = (int)ceil(t2 * (total_segs-1));
@@ -419,14 +419,14 @@ recompute(double t1, double t2, ParametricCurve *curve) {
       
       _curve->get_pt(t, point, tangent);
 
-      LVector3f p = _mapper(point, tangent, t);
+      LVecBase3f p = _mapper(point, tangent, t);
       _lines.set_vertex(i, p);
     }
   }
     
   if (_num_ticks > 0) {
-    LVector3f tangent2;
-    int total_ticks = floor(_curve->get_max_t() * _num_ticks + 0.5);
+    LVecBase3f tangent2;
+    int total_ticks = (int)floor(_curve->get_max_t() * _num_ticks + 0.5);
 
     n1 = (int)floor(t1 * (total_ticks-1));
     n2 = (int)ceil(t2 * (total_ticks-1));
@@ -442,8 +442,8 @@ recompute(double t1, double t2, ParametricCurve *curve) {
       _curve->get_pt(t, point, tangent);
       _curve->get_2ndtangent(t, tangent2);
       
-      LVector3f pt = _mapper(point, tangent, t);
-      LVector3f t1, t2;
+      LVecBase3f pt = _mapper(point, tangent, t);
+      LVecBase3f t1, t2;
       get_tick_marks(_mapper(tangent, tangent2, t + 1.0), 
 		     t1, t2);
       
@@ -583,7 +583,7 @@ disable(ParametricCurve *curve) {
 //               it to a three-dimensional representation.
 ////////////////////////////////////////////////////////////////////
 void ParametricCurveDrawer::
-set_mapper(LVector3fMapper *mapper) {
+set_mapper(LVecBase3fMapper *mapper) {
   // If the mapper hasn't changed, don't force a redraw.
   if (_mapper != mapper) {
     _mapper = mapper;
@@ -601,9 +601,9 @@ set_mapper(LVector3fMapper *mapper) {
 //               each point, showing the line's three-dimensional
 //               shape.
 ////////////////////////////////////////////////////////////////////
-LVector3f ParametricCurveDrawer::
-DefaultMap(const LVector3f &point, const LVector3f &, double) {
-  return LVector3f(point[0], point[1], point[2]);
+LVecBase3f ParametricCurveDrawer::
+DefaultMap(const LVecBase3f &point, const LVecBase3f &, double) {
+  return LVecBase3f(point[0], point[1], point[2]);
 }
 
 
@@ -613,9 +613,9 @@ DefaultMap(const LVector3f &point, const LVector3f &, double) {
 //  Description: This mapping function shows a graph of X(t), with the
 //               x along the Y axis and t along the X axis.
 ////////////////////////////////////////////////////////////////////
-LVector3f ParametricCurveDrawer::
-XvsT(const LVector3f &point, const LVector3f &, double t) {
-  return LVector3f(t, point[0], 0.0);
+LVecBase3f ParametricCurveDrawer::
+XvsT(const LVecBase3f &point, const LVecBase3f &, double t) {
+  return LVecBase3f(t, point[0], 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -624,9 +624,9 @@ XvsT(const LVector3f &point, const LVector3f &, double t) {
 //  Description: This mapping function shows a graph of X(t), with the
 //               x along the X axis and t along the Y axis.
 ////////////////////////////////////////////////////////////////////
-LVector3f ParametricCurveDrawer::
-iXvsT(const LVector3f &point, const LVector3f &, double t) {
-  return LVector3f(point[0], t, 0.0);
+LVecBase3f ParametricCurveDrawer::
+iXvsT(const LVecBase3f &point, const LVecBase3f &, double t) {
+  return LVecBase3f(point[0], t, 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -635,9 +635,9 @@ iXvsT(const LVector3f &point, const LVector3f &, double t) {
 //  Description: This mapping function shows a graph of Y(t), with the
 //               y along the Y axis and t along the X axis.
 ////////////////////////////////////////////////////////////////////
-LVector3f ParametricCurveDrawer::
-YvsT(const LVector3f &point, const LVector3f &, double t) {
-  return LVector3f(t, point[1], 0.0);
+LVecBase3f ParametricCurveDrawer::
+YvsT(const LVecBase3f &point, const LVecBase3f &, double t) {
+  return LVecBase3f(t, point[1], 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -646,9 +646,9 @@ YvsT(const LVector3f &point, const LVector3f &, double t) {
 //  Description: This mapping function shows a graph of Y(t), with the
 //               y along the X axis and t along the Y axis.
 ////////////////////////////////////////////////////////////////////
-LVector3f ParametricCurveDrawer::
-iYvsT(const LVector3f &point, const LVector3f &, double t) {
-  return LVector3f(point[1], t, 0.0);
+LVecBase3f ParametricCurveDrawer::
+iYvsT(const LVecBase3f &point, const LVecBase3f &, double t) {
+  return LVecBase3f(point[1], t, 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -657,9 +657,9 @@ iYvsT(const LVector3f &point, const LVector3f &, double t) {
 //  Description: This mapping function shows a graph of Z(t), with the
 //               z along the Y axis and t along the X axis.
 ////////////////////////////////////////////////////////////////////
-LVector3f ParametricCurveDrawer::
-ZvsT(const LVector3f &point, const LVector3f &, double t) {
-  return LVector3f(t, point[2], 0.0);
+LVecBase3f ParametricCurveDrawer::
+ZvsT(const LVecBase3f &point, const LVecBase3f &, double t) {
+  return LVecBase3f(t, point[2], 0.0);
 }
 
 
@@ -669,9 +669,9 @@ ZvsT(const LVector3f &point, const LVector3f &, double t) {
 //  Description: This mapping function shows a graph of dX(t), the
 //               derivative of X(t).
 ////////////////////////////////////////////////////////////////////
-LVector3f ParametricCurveDrawer::
-dXvsT(const LVector3f &, const LVector3f &tangent, double t) {
-  return LVector3f(t, tangent[0], 0.0);
+LVecBase3f ParametricCurveDrawer::
+dXvsT(const LVecBase3f &, const LVecBase3f &tangent, double t) {
+  return LVecBase3f(t, tangent[0], 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -680,9 +680,9 @@ dXvsT(const LVector3f &, const LVector3f &tangent, double t) {
 //  Description: This mapping function shows a graph of dY(t), the
 //               derivative of Y(t).
 ////////////////////////////////////////////////////////////////////
-LVector3f ParametricCurveDrawer::
-dYvsT(const LVector3f &, const LVector3f &tangent, double t) {
-  return LVector3f(t, tangent[1], 0.0);
+LVecBase3f ParametricCurveDrawer::
+dYvsT(const LVecBase3f &, const LVecBase3f &tangent, double t) {
+  return LVecBase3f(t, tangent[1], 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -691,9 +691,9 @@ dYvsT(const LVector3f &, const LVector3f &tangent, double t) {
 //  Description: This mapping function shows a graph of dZ(t), the
 //               derivative of Z(t).
 ////////////////////////////////////////////////////////////////////
-LVector3f ParametricCurveDrawer::
-dZvsT(const LVector3f &, const LVector3f &tangent, double t) {
-  return LVector3f(t, tangent[2], 0.0);
+LVecBase3f ParametricCurveDrawer::
+dZvsT(const LVecBase3f &, const LVecBase3f &tangent, double t) {
+  return LVecBase3f(t, tangent[2], 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -704,7 +704,7 @@ dZvsT(const LVector3f &, const LVector3f &tangent, double t) {
 //               drawing as tick marks.
 ////////////////////////////////////////////////////////////////////
 void ParametricCurveDrawer::
-get_tick_marks(const LVector3f &tangent, LVector3f &t1, LVector3f &t2) {
+get_tick_marks(const LVecBase3f &tangent, LVecBase3f &t1, LVecBase3f &t2) {
   LVector3f tn = tangent;
   tn.normalize();
 

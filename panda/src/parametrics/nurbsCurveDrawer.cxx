@@ -128,7 +128,7 @@ draw() {
       double t = nurbs->GetKnot(i);
       if (t != lt) {
 	lt = t;
-	LVector3f knot_pos, knot_tan;
+	LVecBase3f knot_pos, knot_tan;
 	nurbs->get_pt(nurbs->GetKnot(i), knot_pos, knot_tan);
 	_knots.move_to(_mapper(knot_pos, knot_tan, t));
 	ki++;
@@ -142,7 +142,7 @@ draw() {
   if (_show_cvs) {
     _num_cvs = nurbs->get_num_cvs();
     for (i = 0; i < _num_cvs; i++) {
-      _cvs.move_to(_mapper(nurbs->get_cv_point(i), LVector3f(0.0, 0.0, 0.0),
+      _cvs.move_to(_mapper(nurbs->get_cv_point(i), LVecBase3f(0.0, 0.0, 0.0),
 			   nurbs->GetKnot(i+1)));
     }
 
@@ -152,7 +152,7 @@ draw() {
   if (_show_hull) {
     _num_cvs = nurbs->get_num_cvs();
     for (i = 0; i < _num_cvs; i++) {
-      _hull.draw_to(_mapper(nurbs->get_cv_point(i), LVector3f(0.0, 0.0, 0.0),
+      _hull.draw_to(_mapper(nurbs->get_cv_point(i), LVecBase3f(0.0, 0.0, 0.0),
 			    nurbs->GetKnot(i+1)));
     }
 
@@ -264,7 +264,7 @@ hilight(int n, float hr, float hg, float hb) {
     return false;
   }
 
-  NurbsCurve *nurbs = (NurbsCurve *)_curve;
+  //  NurbsCurve *nurbs = (NurbsCurve *)_curve;
   if (_show_cvs) {
     _cvs.set_vertex_color(n, hr, hg, hb);
   }
@@ -292,7 +292,7 @@ unhilight(int n) {
     return false;
   }
 
-  NurbsCurve *nurbs = (NurbsCurve *)_curve;
+  //  NurbsCurve *nurbs = (NurbsCurve *)_curve;
   if (_show_cvs) {
     _cvs.set_vertex_color(n, _cv_color[0], _cv_color[1], _cv_color[2]);
   }

@@ -24,8 +24,8 @@
 // Defines 
 ////////////////////////////////////////////////////////////////////
 
-////#define LVector3f pfVec3
-//typedef pfVec3 LVector3f;
+////#define LVecBase3f pfVec3
+//typedef pfVec3 LVecBase3f;
 
 
 class HermiteCurve;
@@ -50,7 +50,8 @@ PUBLISHED:
   NurbsCurve();
   NurbsCurve(const ParametricCurve &hc);
   NurbsCurve(int order, int num_cvs,
-	     const double knots[], const LVector4f cvs[]);
+	     const double knots[], const LVecBase4f cvs[]);
+  virtual ~NurbsCurve();
 
   void set_order(int order);
   int get_order() const;
@@ -62,10 +63,10 @@ PUBLISHED:
 
   int insert_cv(double t);
   int append_cv(float x, float y, float z);
-  inline int append_cv(const LVector3f &v) {
-    return append_cv(LVector4f(v[0], v[1], v[2], 1.0));
+  inline int append_cv(const LVecBase3f &v) {
+    return append_cv(LVecBase4f(v[0], v[1], v[2], 1.0));
   }
-  inline int append_cv(const LVector4f &v) {
+  inline int append_cv(const LVecBase4f &v) {
     _cvs.push_back(CV(v, GetKnot(_cvs.size())+1.0));
     return _cvs.size()-1;
   }
@@ -74,11 +75,11 @@ PUBLISHED:
   void remove_all_cvs();
 
   bool set_cv_point(int n, float x, float y, float z);
-  inline bool set_cv_point(int n, const LVector3f &v) {
+  inline bool set_cv_point(int n, const LVecBase3f &v) {
     return set_cv_point(n, v[0], v[1], v[2]);
   }
-  void get_cv_point(int n, LVector3f &v) const;
-  const LVector3f &get_cv_point(int n) const;
+  void get_cv_point(int n, LVecBase3f &v) const;
+  const LVecBase3f &get_cv_point(int n) const;
 
   bool set_cv_weight(int n, float w);
   float get_cv_weight(int n) const;
@@ -103,10 +104,10 @@ PUBLISHED:
 ////////////////////////////////////////////////////////////////////
 public:
   virtual bool
-  rebuild_curveseg(int rtype0, double t0, const LVector4f &v0,
-		   int rtype1, double t1, const LVector4f &v1,
-		   int rtype2, double t2, const LVector4f &v2,
-		   int rtype3, double t3, const LVector4f &v3);
+  rebuild_curveseg(int rtype0, double t0, const LVecBase4f &v0,
+		   int rtype1, double t1, const LVecBase4f &v1,
+		   int rtype2, double t2, const LVecBase4f &v2,
+		   int rtype3, double t3, const LVecBase4f &v3);
 
   CubicCurveseg *get_curveseg(int ti) {
     return (CubicCurveseg *)PiecewiseCurve::get_curveseg(ti);
@@ -116,7 +117,7 @@ public:
   GetKnot(int n) const {
     if (n < _order || _cvs.empty()) {
       return 0.0;
-    } else if (n-1 >= _cvs.size()) {
+    } else if (n-1 >= (int)_cvs.size()) {
       return _cvs.back()._t;
     } else {
       return _cvs[n-1]._t;
@@ -126,8 +127,6 @@ public:
   void Output(ostream &out, int indent=0) const;
 
 protected:
-  virtual ~NurbsCurve();
-
   int FindCV(double t);
 
   int _order;
@@ -135,8 +134,8 @@ protected:
   class CV {
   public:
     CV() {}
-    CV(const LVector4f &p, double t) : _p(p), _t(t) {}
-    LVector4f _p;
+    CV(const LVecBase4f &p, double t) : _p(p), _t(t) {}
+    LVecBase4f _p;
     double _t;
   };
 

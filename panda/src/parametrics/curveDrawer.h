@@ -22,12 +22,14 @@
 #include "curve.h"
 #include "lineSegs.h"
 
+#include <typeHandle.h>
+
 ////////////////////////////////////////////////////////////////////
 // Defines 
 ////////////////////////////////////////////////////////////////////
 
-typedef LVector3f LVector3fMapper(const LVector3f &point, 
-			     const LVector3f &tangent, 
+typedef LVecBase3f LVecBase3fMapper(const LVecBase3f &point, 
+			     const LVecBase3f &tangent, 
 			     double t);
 
 BEGIN_PUBLISH //[
@@ -50,7 +52,7 @@ class ParametricSurface;
 // Description : Draws a 3-d parametric curve in the scene by creating
 //               a series of line segments to approximate the curve.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ParametricCurveDrawer {
+class EXPCL_PANDA ParametricCurveDrawer : public TypedObject {
 
 ////////////////////////////////////////////////////////////////////
 // Member functions visible to Scheme
@@ -101,20 +103,20 @@ public:
 
   void disable(ParametricCurve *curve);
 
-  void set_mapper(LVector3fMapper *mapper);
+  void set_mapper(LVecBase3fMapper *mapper);
 
-  static LVector3f DefaultMap(const LVector3f &point, const LVector3f &, double);
-  static LVector3f XvsT(const LVector3f &point, const LVector3f &, double t);
-  static LVector3f iXvsT(const LVector3f &point, const LVector3f &, double t);
-  static LVector3f YvsT(const LVector3f &point, const LVector3f &, double t);
-  static LVector3f iYvsT(const LVector3f &point, const LVector3f &, double t);
-  static LVector3f ZvsT(const LVector3f &point, const LVector3f &, double t);
-  static LVector3f dXvsT(const LVector3f &, const LVector3f &tangent, double t);
-  static LVector3f dYvsT(const LVector3f &, const LVector3f &tangent, double t);
-  static LVector3f dZvsT(const LVector3f &, const LVector3f &tangent, double t);
+  static LVecBase3f DefaultMap(const LVecBase3f &point, const LVecBase3f &, double);
+  static LVecBase3f XvsT(const LVecBase3f &point, const LVecBase3f &, double t);
+  static LVecBase3f iXvsT(const LVecBase3f &point, const LVecBase3f &, double t);
+  static LVecBase3f YvsT(const LVecBase3f &point, const LVecBase3f &, double t);
+  static LVecBase3f iYvsT(const LVecBase3f &point, const LVecBase3f &, double t);
+  static LVecBase3f ZvsT(const LVecBase3f &point, const LVecBase3f &, double t);
+  static LVecBase3f dXvsT(const LVecBase3f &, const LVecBase3f &tangent, double t);
+  static LVecBase3f dYvsT(const LVecBase3f &, const LVecBase3f &tangent, double t);
+  static LVecBase3f dZvsT(const LVecBase3f &, const LVecBase3f &tangent, double t);
 
 protected:
-  static void get_tick_marks(const LVector3f &tangent, LVector3f &t1, LVector3f &t2);
+  static void get_tick_marks(const LVecBase3f &tangent, LVecBase3f &t1, LVecBase3f &t2);
 
   PT(GeomNode) _geom_node;
   int _num_segs;
@@ -124,7 +126,7 @@ protected:
   int _num_ticks;
   double _tick_scale;
   bool _frame_accurate;
-  LVector3fMapper *_mapper;
+  LVecBase3fMapper *_mapper;
 
 
 public:
@@ -132,7 +134,8 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    register_type(_type_handle, "ParametricCurveDrawer");
+    register_type(_type_handle, "ParametricCurveDrawer",
+		  TypedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -21,7 +21,7 @@
 
 TypeHandle NurbsCurve::_type_handle;
 
-static const LVector3f zero = LVector3f(0.0, 0.0, 0.0);
+static const LVecBase3f zero = LVecBase3f(0.0, 0.0, 0.0);
 // This is returned occasionally from some of the functions, and is
 // used from time to time as an initializer.
 
@@ -75,7 +75,7 @@ NurbsCurve(const ParametricCurve &pc) {
 ////////////////////////////////////////////////////////////////////
 NurbsCurve::
 NurbsCurve(int order, int num_cvs,
-	   const double knots[], const LVector4f cvs[]) {
+	   const double knots[], const LVecBase4f cvs[]) {
   _order = order;
 
   int i;
@@ -90,6 +90,15 @@ NurbsCurve(int order, int num_cvs,
   }
 
   recompute();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NurbsCurve::Destructor
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+NurbsCurve::
+~NurbsCurve() {
 }
 
 
@@ -168,7 +177,7 @@ insert_cv(double t) {
   // First, get the new values of all the CV's that will change.
   // These are the CV's in the range [k - (_order-1), k-1].
 
-  LVector4f new_cvs[3];
+  LVecBase4f new_cvs[3];
   int i;
   for (i = 0; i < _order-1; i++) {
     int nk = i + k - (_order-1);
@@ -206,7 +215,7 @@ insert_cv(double t) {
 ////////////////////////////////////////////////////////////////////
 int NurbsCurve::
 append_cv(float x, float y, float z) {
-  return append_cv(LVector4f(x, y, z, 1.0));
+  return append_cv(LVecBase4f(x, y, z, 1.0));
 }
 
 
@@ -218,7 +227,7 @@ append_cv(float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurve::
 remove_cv(int n) {
-  if (n < 0 || n >= _cvs.size()) {
+  if (n < 0 || n >= (int)_cvs.size()) {
     return false;
   }
 
@@ -245,7 +254,7 @@ remove_all_cvs() {
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurve::
 set_cv_point(int n, float x, float y, float z) {
-  if (n < 0 || n >= _cvs.size()) {
+  if (n < 0 || n >= (int)_cvs.size()) {
     return false;
   }
 
@@ -260,11 +269,11 @@ set_cv_point(int n, float x, float y, float z) {
 //  Description: Returns the position of the indicated CV.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurve::
-get_cv_point(int n, LVector3f &v) const {
-  if (n < 0 || n >= _cvs.size()) {
+get_cv_point(int n, LVecBase3f &v) const {
+  if (n < 0 || n >= (int)_cvs.size()) {
     v = zero;
   } else {
-    v = (const LVector3f &)_cvs[n]._p / _cvs[n]._p[3];
+    v = (const LVecBase3f &)_cvs[n]._p / _cvs[n]._p[3];
   }
 }
 
@@ -273,13 +282,13 @@ get_cv_point(int n, LVector3f &v) const {
 //       Access: Public, Scheme
 //  Description: Returns the position of the indicated CV.
 ////////////////////////////////////////////////////////////////////
-const LVector3f &NurbsCurve::
+const LVecBase3f &NurbsCurve::
 get_cv_point(int n) const {
-  if (n < 0 || n >= _cvs.size()) {
+  if (n < 0 || n >= (int)_cvs.size()) {
     return zero;
   } else {
-    static LVector3f result;
-    result = (LVector3f &)_cvs[n]._p / _cvs[n]._p[3];
+    static LVecBase3f result;
+    result = (LVecBase3f &)_cvs[n]._p / _cvs[n]._p[3];
     return result;
   }
 }
@@ -292,7 +301,7 @@ get_cv_point(int n) const {
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurve::
 set_cv_weight(int n, float w) {
-  if (n < 0 || n >= _cvs.size()) {
+  if (n < 0 || n >= (int)_cvs.size()) {
     return false;
   }
 
@@ -307,7 +316,7 @@ set_cv_weight(int n, float w) {
 ////////////////////////////////////////////////////////////////////
 float NurbsCurve::
 get_cv_weight(int n) const {
-  if (n < 0 || n >= _cvs.size()) {
+  if (n < 0 || n >= (int)_cvs.size()) {
     return 0.0;
   }
 
@@ -326,7 +335,7 @@ get_cv_weight(int n) const {
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurve::
 set_knot(int n, double t) {
-  if (n < _order || n-1 >= _cvs.size()) {
+  if (n < _order || n-1 >= (int)_cvs.size()) {
     return false;
   }
 
@@ -374,13 +383,13 @@ print() const {
 
   cout << "CV's:\n";
   int i;
-  for (i = 0; i < _cvs.size(); i++) {
-    LVector3f p = (const LVector3f &)_cvs[i]._p / _cvs[i]._p[3];
+  for (i = 0; i < (int)_cvs.size(); i++) {
+    LVecBase3f p = (const LVecBase3f &)_cvs[i]._p / _cvs[i]._p[3];
     cout << i << ") " << p << ", weight " << _cvs[i]._p[3] << "\n";
   }
 
   cout << "Knots: ";
-  for (i = 0; i < _cvs.size()+_order; i++) {
+  for (i = 0; i < (int)_cvs.size()+_order; i++) {
     cout << " " << GetKnot(i);
   }
   cout << "\n" << flush;
@@ -393,10 +402,10 @@ print() const {
 ////////////////////////////////////////////////////////////////////
 void NurbsCurve::
 print_cv(int n) const {
-  if (n < 0 || n >= _cvs.size()) {
+  if (n < 0 || n >= (int)_cvs.size()) {
     cout << "No such CV: " << n << "\n";
   } else {
-    LVector3f p = (const LVector3f &)_cvs[n]._p / _cvs[n]._p[3];
+    LVecBase3f p = (const LVecBase3f &)_cvs[n]._p / _cvs[n]._p[3];
     cout << "CV " << n << ": " << p << ", weight " 
 	 << _cvs[n]._p[3] << "\n";
   }
@@ -419,10 +428,10 @@ recompute() {
   _segs.erase(_segs.begin(), _segs.end());
 
   double knots[8];
-  LVector4f cvs[4];
+  LVecBase4f cvs[4];
 
-  if (_cvs.size() > _order-1) {
-    for (int cv = 0; cv < _cvs.size()-(_order-1); cv++) {
+  if ((int)_cvs.size() > _order-1) {
+    for (int cv = 0; cv < (int)_cvs.size()-(_order-1); cv++) {
       if (GetKnot(cv+_order-1) < GetKnot(cv+_order)) {
 	// There are _order consecutive CV's that define each segment,
 	// beginning at cv.  Collect the CV's and knot values that define
@@ -520,11 +529,11 @@ adjust_pt(double t,
 
   // Now copy the cvs and knots in question.
   double knots[8];
-  LVector4f cvs[4];
+  LVecBase4f cvs[4];
 
   int c;
   for (c = 0; c < 4; c++) {
-    cvs[c] = (c < _order) ? _cvs[c+cv]._p : LVector4f(0.0, 0.0, 0.0, 0.0);
+    cvs[c] = (c < _order) ? _cvs[c+cv]._p : LVecBase4f(0.0, 0.0, 0.0, 0.0);
   }
   for (c = 0; c < _order+_order; c++) {
     knots[c] = GetKnot(c+cv);
@@ -592,7 +601,7 @@ adjust_pt(double t,
   // Now extract the new CV's from the new G matrix, and restore them
   // to the curve.
   for (c = 0; c < _order; c++) {
-    LVector4f &s = _cvs[c+cv]._p;
+    LVecBase4f &s = _cvs[c+cv]._p;
     G.getCol(c, &s[0], &s[1], &s[2], &s[3]);
   }
 }
@@ -608,17 +617,17 @@ adjust_pt(double t,
 //               possible, false if something goes horribly wrong.
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurve::
-rebuild_curveseg(int rtype0, double t0, const LVector4f &v0,
-		 int rtype1, double t1, const LVector4f &v1,
-		 int rtype2, double t2, const LVector4f &v2,
-		 int rtype3, double t3, const LVector4f &v3) {
+rebuild_curveseg(int rtype0, double t0, const LVecBase4f &v0,
+		 int rtype1, double t1, const LVecBase4f &v1,
+		 int rtype2, double t2, const LVecBase4f &v2,
+		 int rtype3, double t3, const LVecBase4f &v3) {
   // Figure out which CV's contributed to this segment.
   int seg = 0;
 
-  nassertr(_cvs.size() > _order-1, false);
+  nassertr((int)_cvs.size() > _order-1, false);
 
   int cv = 0;
-  for (cv = 0; cv < _cvs.size()-(_order-1); cv++) {
+  for (cv = 0; cv < (int)_cvs.size()-(_order-1); cv++) {
     if (GetKnot(cv+_order-1) < GetKnot(cv+_order)) {
       if (seg == _last_ti) {
 	break;
@@ -637,8 +646,8 @@ rebuild_curveseg(int rtype0, double t0, const LVector4f &v0,
   // properties depends on the original value.
   if ((rtype0 | rtype1 | rtype2 | rtype3) & RT_KEEP_ORIG) {
     for (c = 0; c < 4; c++) {
-      static const LVector4f zero(0.0, 0.0, 0.0, 0.0);
-      const LVector4f &s = (c < _order) ? _cvs[c+cv]._p : zero;
+      static const LVecBase4f zero(0.0, 0.0, 0.0, 0.0);
+      const LVecBase4f &s = (c < _order) ? _cvs[c+cv]._p : zero;
       
       G.set_col(c, s);
     }
@@ -775,7 +784,7 @@ splice(double t, const NurbsCurve &other) {
 
   // Now add all the new CV's.
   int cv;
-  for (cv = 0; cv < other._cvs.size(); cv++) {
+  for (cv = 0; cv < (int)other._cvs.size(); cv++) {
     CV new_cv(other._cvs[cv]);
 
     if (cv+1 < _order) {
@@ -805,7 +814,7 @@ Output(ostream &out, int indent) const {
     << "<VertexPool> " << get_name() << ".pool {\n";
 
   int cv;
-  for (cv = 0; cv < _cvs.size(); cv++) {
+  for (cv = 0; cv < (int)_cvs.size(); cv++) {
     Indent(out, indent+2) << "<Vertex> " << cv << " { " 
 			  << _cvs[cv]._p << " }\n";
   }
@@ -848,7 +857,7 @@ Output(ostream &out, int indent) const {
   Indent(out, indent+2) << "}\n";
 
   Indent(out, indent+2) << "<VertexRef> {";
-  for (cv = 0; cv < _cvs.size(); cv++) {
+  for (cv = 0; cv < (int)_cvs.size(); cv++) {
     if (cv%10 == 1) {
       out << "\n";
       Indent(out, indent+3);
@@ -863,15 +872,6 @@ Output(ostream &out, int indent) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurve::Destructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
-NurbsCurve::
-~NurbsCurve() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurve::FindCV
 //       Access: Protected
 //  Description: Finds the first knot whose value is >= t, or -1 if t
@@ -880,7 +880,7 @@ NurbsCurve::
 int NurbsCurve::
 FindCV(double t) {
   int i;
-  for (i = _order-1; i < _cvs.size(); i++) {
+  for (i = _order-1; i < (int)_cvs.size(); i++) {
     if (_cvs[i]._t >= t) {
       return i+1;
     }

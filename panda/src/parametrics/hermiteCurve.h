@@ -64,9 +64,9 @@ public:
   HermiteCurveCV(const HermiteCurveCV &c);
   ~HermiteCurveCV();
   
-  void set_point(const LVector3f &point) { _p = point; }
-  void set_in(const LVector3f &in);
-  void set_out(const LVector3f &out);
+  void set_point(const LVecBase3f &point) { _p = point; }
+  void set_in(const LVecBase3f &in);
+  void set_out(const LVecBase3f &out);
   void set_type(int type);
   void set_name(const char *name);
 
@@ -74,7 +74,7 @@ public:
 	      bool show_in, bool show_out,
 	      double scale_in, double scale_out) const;
   
-  LVector3f _p, _in, _out;
+  LVecBase3f _p, _in, _out;
   int _type;
   char *_name;
 };
@@ -95,12 +95,13 @@ class HermiteCurve : public PiecewiseCurve {
 PUBLISHED:
   HermiteCurve();
   HermiteCurve(const ParametricCurve &pc);
+  virtual ~HermiteCurve();
 
   int get_num_cvs() const;
 
   int insert_cv(double t);
   int append_cv(int type, float x, float y, float z);
-  inline int append_cv(int type, const LVector3f &v) {
+  inline int append_cv(int type, const LVecBase3f &v) {
     return append_cv(type, v[0], v[1], v[2]);
   }
 
@@ -109,15 +110,15 @@ PUBLISHED:
 
   bool set_cv_type(int n, int type);
   bool set_cv_point(int n, float x, float y, float z);
-  inline bool set_cv_point(int n, const LVector3f &v) {
+  inline bool set_cv_point(int n, const LVecBase3f &v) {
     return set_cv_point(n, v[0], v[1], v[2]);
   }
   bool set_cv_in(int n, float x, float y, float z);
-  inline bool set_cv_in(int n, const LVector3f &v) {
+  inline bool set_cv_in(int n, const LVecBase3f &v) {
     return set_cv_in(n, v[0], v[1], v[2]);
   }
   bool set_cv_out(int n, float x, float y, float z);
-  inline bool set_cv_out(int n, const LVector3f &v) {
+  inline bool set_cv_out(int n, const LVecBase3f &v) {
     return set_cv_out(n, v[0], v[1], v[2]);
   }
   bool set_cv_tstart(int n, double tstart);
@@ -125,12 +126,12 @@ PUBLISHED:
 
 
   int get_cv_type(int n) const;
-  const LVector3f &get_cv_point(int n) const;
-  void get_cv_point(int n, LVector3f &v) const;
-  const LVector3f &get_cv_in(int n) const;
-  void get_cv_in(int n, LVector3f &v) const;
-  const LVector3f &get_cv_out(int n) const;
-  void get_cv_out(int n, LVector3f &v) const;
+  const LVecBase3f &get_cv_point(int n) const;
+  void get_cv_point(int n, LVecBase3f &v) const;
+  const LVecBase3f &get_cv_in(int n) const;
+  void get_cv_in(int n, LVecBase3f &v) const;
+  const LVecBase3f &get_cv_out(int n) const;
+  void get_cv_out(int n, LVecBase3f &v) const;
   double get_cv_tstart(int n) const;
   const char *get_cv_name(int n) const;
 
@@ -147,14 +148,13 @@ public:
   }
 
   virtual bool
-  rebuild_curveseg(int rtype0, double t0, const LVector4f &v0,
-		   int rtype1, double t1, const LVector4f &v1,
-		   int rtype2, double t2, const LVector4f &v2,
-		   int rtype3, double t3, const LVector4f &v3);
+  rebuild_curveseg(int rtype0, double t0, const LVecBase4f &v0,
+		   int rtype1, double t1, const LVecBase4f &v1,
+		   int rtype2, double t2, const LVecBase4f &v2,
+		   int rtype3, double t3, const LVecBase4f &v3);
 
   void Output(ostream &out, int indent=0) const;
 
-  virtual ~HermiteCurve();////
 protected:
 
   void invalidate_cv(int n, bool redo_all);
