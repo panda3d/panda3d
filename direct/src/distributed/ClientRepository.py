@@ -8,7 +8,6 @@ import Task
 import DirectNotifyGlobal
 import ClientDistClass
 import CRCache
-import Datagram
 # The repository must import all known types of Distributed Objects
 #import DistributedObject
 #import DistributedToon
@@ -26,6 +25,23 @@ class ClientRepository(DirectObject.DirectObject):
         self.doId2cdc={}
         self.parseDcFile(dcFileName)
         self.cache=CRCache.CRCache()
+
+        # Set this true to establish a connection to the server using
+        # the HTTPClient interface, which ultimately uses the OpenSSL
+        # socket library (even though SSL is not involved).  This is
+        # not as robust a socket library as NSPR's, but the HTTPClient
+        # interface does a good job of negotiating the connection over
+        # an HTTP proxy if one is in use.
+
+        # Set it false to use Panda's net interface
+        # (e.g. QueuedConnectionManager, etc.) to establish the
+        # connection, which ultimately uses the NSPR socket library.
+        # This is a much better socket library, but it may be more
+        # than you need for most applications; and the Panda net
+        # interface doesn't support proxies at all.
+        self.connectHttp = base.config.GetBool('connect-http', 1)
+
+        self.tcpConn = None
         return None
 
     def parseDcFile(self, dcFileName):
@@ -47,66 +63,64 @@ class ClientRepository(DirectObject.DirectObject):
             self.name2cdc[dcClass.getName()]=clientDistClass
         return None
 
-    def connect(self, serverName, serverPort):
-        self.qcm=QueuedConnectionManager()
-        gameServerTimeoutMs = base.config.GetInt("game-server-timeout-ms",
-                                                 20000)
-        # A big old 20 second timeout.
-        self.tcpConn = self.qcm.openTCPClientConnection(
-            serverName, serverPort, gameServerTimeoutMs)
-        # Test for bad connection
-        if self.tcpConn == None:
-            return None
+    def connect(self, serverURL,
+                successCallback = None, successArgs = [],
+                failureCallback = None, failureArgs = []):
+        """
+        Attempts to establish a connection to the server.  May return
+        before the connection is established.  The two callbacks
+        represent the two functions to call (and their arguments) on
+        success or failure, respectively.  The failure callback also
+        gets one additional parameter, which will be passed in first:
+        the return status code giving reason for failure, if it is
+        known.
+        """
+
+        if self.connectHttp:
+            ch = self.http.makeChannel(0)
+            ch.beginConnectTo(serverURL)
+            ch.spawnTask(name = 'connect-to-server',
+                         callback = self.httpConnectCallback,
+                         extraArgs = [ch, successCallback, successArgs,
+                                      failureCallback, failureArgs])
         else:
-            self.tcpConn.setNoDelay(1)
-            self.qcr=QueuedConnectionReader(self.qcm, 0)
-            self.qcr.addConnection(self.tcpConn)
-            self.cw=ConnectionWriter(self.qcm, 0)
-            self.startReaderPollTask()
-            return self.tcpConn
+            self.qcm = QueuedConnectionManager()
+            gameServerTimeoutMs = base.config.GetInt("game-server-timeout-ms",
+                                                     20000)
+            # A big old 20 second timeout.
+            self.tcpConn = self.qcm.openTCPClientConnection(
+                serverURL.getServer(), serverURL.getPort(),
+                gameServerTimeoutMs)
 
-    def startRawReaderPollTask(self):
-        # Stop any tasks we are running now
-        self.stopRawReaderPollTask()
-        self.stopReaderPollTask()
-        task = Task.Task(self.rawReaderPollUntilEmpty)
-        # Start with empty string
-        task.currentRawString = ""
-        taskMgr.add(task, "rawReaderPollTask", priority=self.TASK_PRIORITY)
-        return None
-
-    def stopRawReaderPollTask(self):
-        taskMgr.remove("rawReaderPollTask")
-        return None
-
-    def rawReaderPollUntilEmpty(self, task):
-        while self.rawReaderPollOnce():
-            pass
-        return Task.cont
-
-    def rawReaderPollOnce(self):
-        self.notify.debug("rawReaderPollOnce")
-        self.ensureValidConnection()
-        availGetVal = self.qcr.dataAvailable()
-        if availGetVal:
-            datagram = NetDatagram()
-            readRetVal = self.qcr.getData(datagram)
-            if readRetVal:
-                str = datagram.getMessage()
-                self.notify.debug("rawReaderPollOnce: found str: " + str)
-                self.handleRawString(str)
+            if self.tcpConn:
+                self.tcpConn.setNoDelay(1)
+                self.qcr=QueuedConnectionReader(self.qcm, 0)
+                self.qcr.addConnection(self.tcpConn)
+                self.cw=ConnectionWriter(self.qcm, 0)
+                self.startReaderPollTask()
+                if successCallback:
+                    successCallback(*successArgs)
             else:
-                ClientRepository.notify.warning("getData returned false")
-        return availGetVal
+                # Failed to connect.
+                if failureCallback:
+                    failureCallback(0, *failureArgs)
 
-    def handleRawString(self, str):
-        # This method is meant to be pure virtual, and any classes that
-        # inherit from it need to make their own handleRawString method
-        pass
+    def httpConnectCallback(self, ch, successCallback, successArgs,
+                            failureCallback, failureArgs):
+        if ch.isConnectionReady():
+            self.tcpConn = ch.getConnection()
+            self.tcpConn.userManagesMemory = 1
+            self.startReaderPollTask()
+            if successCallback:
+                successCallback(*successArgs)
 
+        else:
+            # Failed to connect.
+            if failureCallback:
+                failureCallback(ch.getStatusCode(), *failureArgs)
+            
     def startReaderPollTask(self):
         # Stop any tasks we are running now
-        self.stopRawReaderPollTask()
         self.stopReaderPollTask()
         taskMgr.add(self.readerPollUntilEmpty, "readerPollTask",
                     priority=self.TASK_PRIORITY)
@@ -122,25 +136,42 @@ class ClientRepository(DirectObject.DirectObject):
         return Task.cont
 
     def readerPollOnce(self):
-        self.ensureValidConnection()
-        availGetVal = self.qcr.dataAvailable()
-        if availGetVal:
-            # print "Client: Incoming message!"
-            datagram = NetDatagram()
-            readRetVal = self.qcr.getData(datagram)
-            if readRetVal:
+        if self.connectHttp:
+            datagram = Datagram()
+            if self.tcpConn.receiveDatagram(datagram):
                 self.handleDatagram(datagram)
-            else:
-                ClientRepository.notify.warning("getData returned false")
-        return availGetVal
+                return 1
+
+            # Unable to receive a datagram: did we lose the connection?
+            if self.tcpConn.isClosed():
+                self.tcpConn = None
+                self.loginFSM.request("noConnection")
+            return 0
+        
+        else:
+            self.ensureValidConnection()
+            if self.qcr.dataAvailable():
+                datagram = NetDatagram()
+                if self.qcr.getData(datagram):
+                    self.handleDatagram(datagram)
+                    return 1
+            return 0
 
     def ensureValidConnection(self):
         # Was the connection reset?
-        if self.qcm.resetConnectionAvailable():
-            resetConnectionPointer = PointerToConnection()
-            if self.qcm.getResetConnection(resetConnectionPointer):
-                self.qcm.closeConnection(resetConnectionPointer.p())
-                self.loginFSM.request("noConnection")
+        if self.connectHttp:
+            pass
+        else:
+            if self.qcm.resetConnectionAvailable():
+                resetConnectionPointer = PointerToConnection()
+                if self.qcm.getResetConnection(resetConnectionPointer):
+                    resetConn = resetConnectionPointer.p()
+                    self.qcm.closeConnection(resetConn)
+                    if self.tcpConn.this == resetConn.this:
+                        self.tcpConn = None
+                        self.loginFSM.request("noConnection")
+                    else:
+                        self.notify.warning("Lost unknown connection.")
         return None
 
     def handleDatagram(self, datagram):
@@ -386,7 +417,7 @@ class ClientRepository(DirectObject.DirectObject):
         return None
 
     def sendSetShardMsg(self, shardId):
-        datagram = Datagram.Datagram()
+        datagram = Datagram()
         # Add message type
         datagram.addUint16(CLIENT_SET_SHARD)
         # Add shard id
@@ -396,7 +427,7 @@ class ClientRepository(DirectObject.DirectObject):
         return None
 
     def sendSetZoneMsg(self, zoneId):
-        datagram = Datagram.Datagram()
+        datagram = Datagram()
         # Add message type
         datagram.addUint16(CLIENT_SET_ZONE)
         # Add zone id
@@ -420,7 +451,15 @@ class ClientRepository(DirectObject.DirectObject):
             print "ClientRepository sending datagram:"
             datagram.dumpHex(ostream)
 
-        self.cw.send(datagram, self.tcpConn)
+        if not self.tcpConn:
+            self.notify.warning("Unable to send message after connection is closed.")
+            return
+
+        if self.connectHttp:
+            if not self.tcpConn.sendDatagram(datagram):
+                self.notify.warning("Could not send datagram.")
+        else:
+            self.cw.send(datagram, self.tcpConn)
         return None
 
     def replaceMethod(self, oldMethod, newFunction):
