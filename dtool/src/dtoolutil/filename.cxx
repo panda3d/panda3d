@@ -705,44 +705,14 @@ make_canonical() {
     return false;
   }
 
+  if (get_fullpath() == "/") {
+    // The root directory is a special case.
+    return true;
+  }
+
   // Temporarily save the current working directory.
   Filename cwd = ExecutionEnvironment::get_cwd();
-
-  if (is_directory()) {
-    // If the filename itself represents a directory and not a
-    // filename, cd to the named directory, not the one above it.
-    string dirname = to_os_specific();
-
-    if (chdir(dirname.c_str()) < 0) {
-      return false;
-    }
-    (*this) = ExecutionEnvironment::get_cwd();
-
-  } else {
-    // Otherwise, if the filename represents a regular file (or
-    // doesn't even exist), cd to the directory above.
-    Filename dir(get_dirname());
-
-    if (dir.empty()) {
-      // No dirname means the file is in this directory.
-      set_dirname(cwd);
-      return true;
-    }
-
-    string dirname = dir.to_os_specific();
-    if (chdir(dirname.c_str()) < 0) {
-      return false;
-    }
-    set_dirname(ExecutionEnvironment::get_cwd().get_fullpath());
-  }
-
-  // Now restore the current working directory.
-  string osdir = cwd.to_os_specific();
-  if (chdir(osdir.c_str()) < 0) {
-    cerr << "Error!  Cannot change back to " << cwd << "\n";
-  }
-
-  return true;
+  return r_make_canonical(cwd);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1729,5 +1699,52 @@ count_slashes(const string &str) {
   }
 
   return count;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::r_make_canonical
+//       Access: Private
+//  Description: The recursive implementation of make_canonical().
+////////////////////////////////////////////////////////////////////
+bool Filename::
+r_make_canonical(const Filename &cwd) {
+  if (get_fullpath() == "/") {
+    // If we reached the root, the whole path doesn't exist.  Report
+    // failure.
+    return false;
+  }
+
+  // First, try to cd to the filename directly.
+  string os_specific = to_os_specific();
+
+  if (chdir(os_specific.c_str()) >= 0) {
+    // That worked, save the full path string.
+    (*this) = ExecutionEnvironment::get_cwd();
+
+    // And restore the current working directory.
+    string osdir = cwd.to_os_specific();
+    if (chdir(osdir.c_str()) < 0) {
+      cerr << "Error!  Cannot change back to " << cwd << "\n";
+    }
+    return true;
+  }
+
+  // That didn't work; maybe it's not a directory.  Recursively go to
+  // the directory above.
+
+  Filename dir(get_dirname());
+  
+  if (dir.empty()) {
+    // No dirname means the file is in this directory.
+    set_dirname(cwd);
+    return true;
+  }
+  
+  if (!dir.r_make_canonical(cwd)) {
+    return false;
+  }
+  set_dirname(dir);
+  return true;
 }
 

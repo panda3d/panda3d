@@ -175,6 +175,7 @@ private:
   void locate_extension();
   size_t get_common_prefix(const string &other) const;
   static int count_slashes(const string &str);
+  bool r_make_canonical(const Filename &cwd);
 
   string _filename;
   // We'll make these size_t instead of string::size_type to help out
