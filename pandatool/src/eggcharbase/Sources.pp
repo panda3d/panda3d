@@ -4,21 +4,25 @@
     eggbase progbase
   #define OTHER_LIBS \
     egg:c panda:m
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
-  #define SOURCES \
-    config_eggcharbase.cxx config_eggcharbase.h \
-    eggBackPointer.cxx eggBackPointer.h \
-    eggCharacterCollection.cxx eggCharacterCollection.h \
-    eggCharacterCollection.I \
-    eggCharacterData.cxx eggCharacterData.h eggCharacterData.I \
-    eggCharacterFilter.cxx eggCharacterFilter.h \
-    eggComponentData.cxx eggComponentData.h eggComponentData.I \
-    eggJointData.cxx eggJointData.h eggJointData.I \
-    eggJointPointer.cxx eggJointPointer.h \
-    eggJointNodePointer.cxx eggJointNodePointer.h \
-    eggMatrixTablePointer.cxx eggMatrixTablePointer.h \
-    eggSliderData.cxx eggSliderData.h eggSliderData.I \
-    eggVertexPointer.cxx eggVertexPointer.h
+  #define SOURCES \ 
+     config_eggcharbase.h eggBackPointer.h \
+     eggCharacterCollection.h eggCharacterCollection.I \
+     eggCharacterData.h eggCharacterData.I eggCharacterFilter.h \
+     eggComponentData.h eggComponentData.I eggJointData.h \
+     eggJointData.I eggJointPointer.h eggJointNodePointer.h \
+     eggMatrixTablePointer.h eggSliderData.h eggSliderData.I \
+     eggVertexPointer.h
+    
+  #define INCLUDED_SOURCES \
+     config_eggcharbase.cxx eggBackPointer.cxx \
+     eggCharacterCollection.cxx eggCharacterData.cxx \
+     eggCharacterFilter.cxx eggComponentData.cxx eggJointData.cxx \
+     eggJointPointer.cxx eggJointNodePointer.cxx \
+     eggMatrixTablePointer.cxx eggSliderData.cxx \
+     eggVertexPointer.cxx 
 
   #define INSTALL_HEADERS \
     eggBackPointer.h \
