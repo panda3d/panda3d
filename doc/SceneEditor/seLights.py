@@ -80,11 +80,11 @@ class seLight(NodePath):
         
         self.assign(self.LightNode)
         if(self.type=='spot'):
-            self.helpModel = loader.loadModelCopy( "Spotlight" )
+            self.helpModel = loader.loadModelCopy( "models/misc/Spotlight" )
         elif(self.type=='point'):
-            self.helpModel = loader.loadModelCopy( "Pointlight" )
+            self.helpModel = loader.loadModelCopy( "models/misc/Pointlight" )
         elif(self.type=='directional'):
-            self.helpModel = loader.loadModelCopy( "Dirlight" )
+            self.helpModel = loader.loadModelCopy( "models/misc/Dirlight" )
         else:
             self.helpModel = loader.loadModelCopy( "models/misc/sphere" )
         self.helpModel.setColor(self.lightcolor)
