@@ -307,44 +307,43 @@ LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 ////////////////////////////////////////////////////////////////////
 LONG wdxGraphicsWindow::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-    int button = -1;
-    int x, y, width, height;
+  int button = -1;
+  int x, y, width, height;
 
-    switch(msg) {
-
-         case WM_PAINT: {
-            PAINTSTRUCT ps;
-            BeginPaint(hwnd, &ps);
-
-            if(DXREADY)
-                show_frame();
-            EndPaint(hwnd, &ps);
-            return 0;
+  switch(msg) {
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        BeginPaint(hwnd, &ps);
+    
+        if(DXREADY)
+            show_frame();
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+    
+    case WM_MOUSEMOVE:
+        if(!DXREADY)
+            break;
+    
+        // Win32 doesn't return the same numbers as X does when the mouse
+        // goes beyond the upper or left side of the window
+        #define SET_MOUSE_COORD(iVal,VAL) { \
+                iVal = VAL;                   \
+                if(iVal & 0x8000)             \
+                  iVal -= 0x10000;            \
         }
-
-        case WM_MOUSEMOVE:
-            if(!DXREADY)
-                break;
-        
-            // Win32 doesn't return the same numbers as X does when the mouse
-            // goes beyond the upper or left side of the window
-            #define SET_MOUSE_COORD(iVal,VAL) { \
-                    iVal = VAL;                   \
-                    if(iVal & 0x8000)             \
-                      iVal -= 0x10000;            \
-            }
-        
-            SET_MOUSE_COORD(x,LOWORD(lparam));
-            SET_MOUSE_COORD(y,HIWORD(lparam));
-
-            if(mouse_motion_enabled()
-               && wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) {
-                handle_mouse_motion(x, y);
-            } else if(mouse_passive_motion_enabled() &&
-                      ((wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) == 0)) {
-                handle_mouse_motion(x, y);
-            }
-            return 0;
+    
+        SET_MOUSE_COORD(x,LOWORD(lparam));
+        SET_MOUSE_COORD(y,HIWORD(lparam));
+    
+        if(mouse_motion_enabled()
+           && wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) {
+            handle_mouse_motion(x, y);
+        } else if(mouse_passive_motion_enabled() &&
+                  ((wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) == 0)) {
+            handle_mouse_motion(x, y);
+        }
+        return 0;
 
     case WM_IME_NOTIFY:
       if (wparam == IMN_SETOPENSTATUS) {
@@ -561,7 +560,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 _WindowAdjustingType = MovingOrResizing;
             }
             break;
-
+/*
+        case WM_SETCURSOR: {
+            if(!_props._bCursorIsVisible)
+               return true;  // avoid defaultwindproc showing the cursor
+            break;
+//          return false;
+        }
+*/
         case WM_DISPLAYCHANGE: {
 #ifdef _DEBUG
             width = LOWORD(lparam);  height = HIWORD(lparam);
@@ -625,12 +631,12 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
               break;
             }
 
-            if(_mouse_entry_enabled)
-                handle_mouse_entry(MOUSE_ENTERED,_pParentWindowGroup->_hMouseCursor);
-
             POINT point;
             GetCursorPos(&point);
             ScreenToClient(hwnd, &point);
+
+            if(_mouse_entry_enabled)
+                handle_mouse_entry(MOUSE_ENTERED,point.x,point.y);
 
             // this is a hack to make sure common modifier keys have proper state
             // since at focus loss, app may never receive key-up event corresponding to
@@ -652,7 +658,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             }
 
             if(_mouse_entry_enabled)
-                  handle_mouse_entry(MOUSE_EXITED,_pParentWindowGroup->_hMouseCursor);
+                  handle_mouse_entry(MOUSE_EXITED,0,0);
 
             int i;
             for(i=0;i<NUM_MODIFIER_KEYS;i++) {
@@ -730,8 +736,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           }
           return 0;
 
-        //case WM_CREATE:
-        //        break;
+        case WM_CREATE: {
+            if(!_props._bCursorIsVisible)
+                ShowCursor(false);
+            break;
+        }
 
         case WM_ACTIVATEAPP: {
             #ifdef _DEBUG
@@ -1033,6 +1042,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
     }
 
     _bLoadedCustomCursor=false;
+    _hMouseCursor=NULL;
 
     if(!windows_color_cursor_filename.empty()) {
         // card support for full color non-black/white GDI cursors varies greatly.  if the cursor is not supported,
@@ -2448,8 +2458,6 @@ void wdxGraphicsWindow::end_frame(void) {
     GraphicsWindow::end_frame();
 }
 
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: handle_window_move
 //       Access:
@@ -2475,10 +2483,15 @@ void wdxGraphicsWindow::handle_mouse_motion(int x, int y) {
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow::handle_mouse_entry(int state,HCURSOR hCursor) {
+
+// BUGBUG: this needs to be called when mouse enters.  right now it's just called when keybd focus changes
+void wdxGraphicsWindow::handle_mouse_entry(int state, int x, int y) {
+//  ShowCursor(_props._bCursorIsVisible);
+
     if(state == MOUSE_EXITED) {
         _input_devices[0].set_pointer_out_of_window();
     } else {
+        _input_devices[0].set_pointer_in_window(x, y);
 //        SetCursor(hCursor);  believe this is not necessary, handled by windows
     }
 }

@@ -85,7 +85,7 @@ public:
   INLINE bool mouse_passive_motion_enabled(void) { return _mouse_passive_motion_enabled; }
   void handle_window_move( int x, int y );
   void handle_mouse_motion( int x, int y );
-  void handle_mouse_entry( int state, HCURSOR hMouseCursor );
+  void handle_mouse_entry( int state, int x, int y);
   void handle_keypress( ButtonHandle key, int x, int y );
   void handle_keyrelease( ButtonHandle key);
   void dx_setup();
