@@ -70,7 +70,7 @@ void GuiRollover::adjust_region(void) {
   GetExtents(_off, _on, _left, _right, _bottom, _top);
   gui_cat->debug() << "in adjust_region, base values (" << _left << ", "
 		   << _right << ", " << _bottom << ", " << _top << ")" << endl;
-  if (_alt_root.is_null()) {
+  if (!(_alt_root.is_null())) {
     // adjust for graph transform
     LMatrix4f m;
     this->get_graph_mat(m);
