@@ -505,9 +505,6 @@
   #define OBJ .o
 #endif
 
-// Temporary, while we migrate egg-optchar.
-#define USE_EGG_OPTCHAR_NEW 1
-
 
 ///////////////////////////////////////////////////////////////////////
 // The following variables are only meaningful when BUILD_TYPE is
