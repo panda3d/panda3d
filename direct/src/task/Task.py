@@ -71,14 +71,8 @@ class Task:
         self.runningTotal = 0.0
         self.pstats = None
         self.__removed = 0
-        self.__onDoLaterList = 0
+        self.onDoLaterList = 0
         self.extraArgs = None
-
-    def setOnDoLaterList(self, status):
-        self.__onDoLaterList = status
-
-    def isOnDoLaterList(self):
-        return self.__onDoLaterList
 
     def remove(self):
         if not self.__removed:
@@ -290,14 +284,14 @@ class DoLaterList(list):
         """
         lo = 0
         hi = len(self)
+        wakeTime = task.wakeTime
         while lo < hi:
             mid = (lo+hi)//2
-            if task.wakeTime > self[mid].wakeTime:
+            if wakeTime > self[mid].wakeTime:
                 hi = mid
             else:
                 lo = mid+1
         list.insert(self, lo, task)
-        return lo
 
     def remove(self, task):
         """
@@ -306,12 +300,13 @@ class DoLaterList(list):
         """
         lo = 0
         hi = len(self)
+        wakeTime = task.wakeTime
         while lo < hi:
             mid = (lo+hi)//2
             if task is self[mid]:
                 del self[mid]
                 return 1
-            elif task.wakeTime > self[mid].wakeTime:
+            elif wakeTime > self[mid].wakeTime:
                 hi = mid
             else:
                 lo = mid+1
@@ -390,7 +385,7 @@ class TaskManager:
             if dl.isRemoved():
                 # Get rid of this task forever
                 self.doLaterList.pop()
-                dl.setOnDoLaterList(0)
+                dl.onDoLaterList = 0
                 continue
             # If the time now is less than the start of the doLater + delay
             # then we are not ready yet, continue to next one
@@ -404,7 +399,7 @@ class TaskManager:
                 self.doLaterList.pop()
                 dl.setStartTimeFrame(self.currentTime, self.currentFrame)
                 # No longer on the doLaterList
-                dl.setOnDoLaterList(0)
+                dl.onDoLaterList = 0
                 self.__addPendingTask(dl)
                 continue
         return cont
@@ -420,18 +415,22 @@ class TaskManager:
         if TaskManager.notify.getDebug():
             TaskManager.notify.debug('spawning doLater: %s' % (task))
         # Add this task to the nameDict
-        nameList = self.nameDict.setdefault(task.name, [])
-        nameList.append(task)
+        # nameList = self.nameDict.setdefault(task.name, [])
+        nameList = self.nameDict.get(taskName)
+        if nameList:
+            nameList.append(task)
+        else:
+            self.nameDict[taskName] = [task]
         # be sure to ask the globalClock for the current frame time
         # rather than use a cached value; globalClock's frame time may
         # have been synced since the start of this frame
         currentTime = globalClock.getFrameTime()
         task.setStartTimeFrame(currentTime, self.currentFrame)
         # Cache the time we should wake up for easier sorting
-        task.wakeTime = task.starttime + task.delayTime
+        task.wakeTime = currentTime + delayTime
         # For more efficient removal, note that it is on the doLaterList
-        task.setOnDoLaterList(1)
-        index = self.doLaterList.add(task)
+        task.onDoLaterList = 1
+        self.doLaterList.add(task)
         if self.fVerbose:
             # Alert the world, a new task is born!
             messenger.send('TaskManager-spawnDoLater',
@@ -462,8 +461,12 @@ class TaskManager:
         # have been synced since the start of this frame
         currentTime = globalClock.getFrameTime()
         task.setStartTimeFrame(currentTime, self.currentFrame)
-        nameList = self.nameDict.setdefault(name, [])
-        nameList.append(task)
+        # nameList = self.nameDict.setdefault(name, [])
+        nameList = self.nameDict.get(name)
+        if nameList:
+            nameList.append(task)
+        else:
+            self.nameDict[name] = [task]
         # Put it on the list for the end of this frame
         self.__addPendingTask(task)
         return task
@@ -472,7 +475,13 @@ class TaskManager:
         if TaskManager.notify.getDebug():
             TaskManager.notify.debug('__addPendingTask: %s' % (task.name))
         pri = task.getPriority()
-        taskPriList = self.pendingTaskDict.setdefault(pri, TaskPriorityList(pri))
+        # setdefault here is bad because we create and then throw away the
+        # TaskPriorityList object
+        # taskPriList = self.pendingTaskDict.setdefault(pri, TaskPriorityList(pri))
+        taskPriList = self.pendingTaskDict.get(pri)
+        if not taskPriList:
+            taskPriList = TaskPriorityList(pri)
+            self.pendingTaskDict[pri] = taskPriList
         taskPriList.add(task)
 
     def __addNewTask(self, task):
@@ -553,7 +562,7 @@ class TaskManager:
                 TaskManager.notify.debug('__removeTasksEqual: removing task: %s' % (task))
             # Flag the task for removal from the real list
             task.remove()
-            if task.isOnDoLaterList():
+            if task.onDoLaterList:
                 self.doLaterList.remove(task)
             # Cleanup stuff
             task.finishTask(self.fVerbose)
@@ -569,7 +578,7 @@ class TaskManager:
         for task in self.nameDict[taskName]:
             # Flag for removal
             task.remove()
-            if task.isOnDoLaterList():
+            if task.onDoLaterList:
                 self.doLaterList.remove(task)
             # Cleanup stuff
             task.finishTask(self.fVerbose)
