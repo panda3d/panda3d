@@ -48,8 +48,7 @@ class VisibilityExtender(Entity.Entity):
 
     if __debug__:
         def setNewZones(self, newZones):
-            # we need to call destroyVisExt before accepting the new
-            # zone set
+            # we need to call destroyVisExt before accepting the new zone set
             self.destroyVisExt()
             self.newZones = newZones
             self.initVisExt()
