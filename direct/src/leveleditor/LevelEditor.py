@@ -1,4 +1,4 @@
-from ShowBaseGlobal import *
+from DirectStart import *
 from PandaObject import *
 from PieMenu import *
 from DirectGuiGlobals import *
