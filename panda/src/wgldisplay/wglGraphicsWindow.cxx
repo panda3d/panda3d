@@ -638,6 +638,8 @@ void wglGraphicsWindow::config() {
       }
   }
 
+  gl_supports_bgr = (_extensions_str.find("GL_EXT_bgra")!=_extensions_str.npos);
+
   if (gl_show_fps_meter) {
 
       _start_time = timeGetTime();
