@@ -936,6 +936,36 @@ void event_x(CPT_Event) {
 
 #define RANDFRAC (rand()/(float)(RAND_MAX))
 
+typedef struct {
+  float xcenter,ycenter;
+  float xoffset,yoffset;
+  float ang1,ang1_inc;
+  float ang2,ang2_inc;
+  float radius;
+} gridded_file_info;
+
+void
+move_gridded_stuff(gridded_file_info *InfoArr, RenderRelation **pRRptrArr,
+                   int size) {
+  for(int i = 0; i < size; i++) {
+    InfoArr[i].ang1+=InfoArr[i].ang1_inc;
+    InfoArr[i].ang2+=InfoArr[i].ang2_inc;
+    
+    // xforms happen left to right
+    LVector2f new_center = LVector2f(InfoArr[i].radius,0.0) * 
+      LMatrix3f::rotate_mat(InfoArr[i].ang2);
+    
+    LMatrix4f xfm_mat=
+      LMatrix4f::rotate_mat_normaxis(InfoArr[i].ang1,
+                                     LVector3f(0.0, 0.0, 1.0)) *
+      LMatrix4f::translate_mat(LVector3f(InfoArr[i].xcenter+new_center._v.v._0,
+                                         InfoArr[i].ycenter+new_center._v.v._1,
+                                         0.0));
+    pRRptrArr[i]->set_transition(new TransformTransition(xfm_mat));
+  }
+}
+
+
 int framework_main(int argc, char *argv[]) {
   pystub();
 
@@ -1149,14 +1179,6 @@ int framework_main(int argc, char *argv[]) {
   first_arc = new RenderRelation(render, root, 100);
 
   ////// for gridded stuff
-  typedef struct {
-	  float xcenter,ycenter;
-	  float xoffset,yoffset;
-	  float ang1,ang1_inc;
-	  float ang2,ang2_inc;
-	  float radius;
-  } gridded_file_info;
-
   PT_Node *pNodeArr=NULL;
   RenderRelation **pRRptrArr=NULL;
   gridded_file_info *InfoArr=NULL;
@@ -1411,38 +1433,22 @@ int framework_main(int argc, char *argv[]) {
     } else 
 #endif
      {
-      main_win->set_idle_callback(&icb);
-      while(1) {
-		  main_win->update();
-		  handle_framerate();
+       main_win->set_idle_callback(&icb);
+       while(1) {
+         main_win->update();
+         handle_framerate();
 
-		  if((!gridded_files.empty()) && bMoveGriddedObjs) {
-		    for(int i = 0; i < gridded_files_size*gridrepeats; i++) {
-
-			  InfoArr[i].ang1+=InfoArr[i].ang1_inc;
-			  InfoArr[i].ang2+=InfoArr[i].ang2_inc;
-
-			  // xforms happen left to right
-			  LVector2f new_center = LVector2f(InfoArr[i].radius,0.0) * 
-				           LMatrix3f::rotate_mat(InfoArr[i].ang2);
-
-			  LMatrix4f xfm_mat=
-				        LMatrix4f::rotate_mat_normaxis(InfoArr[i].ang1,
-												   LVector3f(0.0, 0.0, 1.0)) *
-						LMatrix4f::translate_mat(LVector3f(InfoArr[i].xcenter+new_center._v.v._0,
-														   InfoArr[i].ycenter+new_center._v.v._1,
-														   0.0));
-			  pRRptrArr[i]->set_transition(new TransformTransition(xfm_mat));
-			}
-		  }
-	  }
-	}
+         if((!gridded_files.empty()) && bMoveGriddedObjs) {
+           move_gridded_stuff(InfoArr, pRRptrArr, gridded_files_size*gridrepeats);
+         }
+       }
+     }
   }
 
   if(!gridded_files.empty()) {
-	  delete [] pNodeArr;
-	  delete [] pRRptrArr;
-	  delete [] InfoArr;
+    delete [] pNodeArr;
+    delete [] pRRptrArr;
+    delete [] InfoArr;
   }
   return 1;
 }
