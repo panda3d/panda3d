@@ -54,7 +54,7 @@ PUBLISHED:
 
   INLINE void set_byte_rate(float bytes);
   INLINE float get_byte_rate(void) const;
-  INLINE bool set_disk_write_frequency(int frequency);
+  INLINE void set_disk_write_frequency(int frequency);
   INLINE int get_disk_write_frequency(void) const;
   INLINE void enable_download(bool val);
   INLINE bool is_download_enabled(void) const;
@@ -109,18 +109,19 @@ private:
   bool _connected;
 
 #ifdef HAVE_IPC
-  mutex _bandwidth_frequency_lock;
   mutex _buffer_lock;
 #endif
 
   int _socket;
   PT(Buffer) _buffer;
   int _disk_write_frequency;
+  int _new_disk_write_frequency;
   float _byte_rate; 
+  float _new_byte_rate;
+  int _read_size;
   bool _download_enabled;
   ofstream _dest_stream;
-  int _new_buffer_size;
-  int _buffer_size;
+  int _disk_buffer_size;
   bool _last_attempt_stalled;
 
   string _server_name;

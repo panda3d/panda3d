@@ -13,10 +13,18 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void Downloader::
 set_byte_rate(float bytes) {
+  nassertv(bytes > 0.0);
+  if (bytes == _byte_rate)
+    return;
 #ifdef HAVE_IPC
-  mutex_lock lock(_bandwidth_frequency_lock);
+  _buffer_lock.lock();
 #endif
-  _byte_rate = bytes;
+
+  _new_byte_rate = bytes;
+
+#ifdef HAVE_IPC
+  _buffer_lock.unlock();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,22 +62,18 @@ is_download_enabled(void) const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool Downloader::
+INLINE void Downloader::
 set_disk_write_frequency(int frequency) {
-  nassertr(frequency > 0, false);
-  _disk_write_frequency = frequency;
-  int size = _disk_write_frequency * (_byte_rate * _frequency);
-  if (size == _buffer_size)
-    return false;
-  nassertr(size > 0, false);
+  nassertv(frequency > 0);
 #ifdef HAVE_IPC
     _buffer_lock.lock();
 #endif
-  _new_buffer_size = size;
+
+  _new_disk_write_frequency = frequency;
+
 #ifdef HAVE_IPC
     _buffer_lock.unlock();
 #endif
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

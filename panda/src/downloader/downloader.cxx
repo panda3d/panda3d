@@ -106,15 +106,14 @@ Downloader(PT(Buffer) buffer) : AsyncUtility() {
 void Downloader::
 init(void) {
   _disk_write_frequency = downloader_disk_write_frequency;
+  _new_disk_write_frequency = 0;
   _byte_rate = downloader_byte_rate;
+  _new_byte_rate = 0;
   _frequency = downloader_frequency;
-  nassertv(_frequency > 0);
-  if (_frequency == 0)
-    _buffer_size = _disk_write_frequency * _byte_rate;
-  else
-    _buffer_size = _disk_write_frequency * (_byte_rate * _frequency);
-  _buffer = new Buffer(_buffer_size);
-  _new_buffer_size = 0;
+  nassertv(_frequency > 0 && _byte_rate > 0);
+  _read_size = _byte_rate * _frequency;
+  _disk_buffer_size = _disk_write_frequency * _read_size;
+  _buffer = new Buffer(_disk_buffer_size);
   _connected = false;
   _token_board = new DownloaderTokenBoard;
   _download_enabled = true;
@@ -518,7 +517,7 @@ attempt_read(int length, DownloadStatus &status, int &bytes_read,
 
     // Ensure we have enough room in the buffer to download length bytes
     // If we don't have enough room, write the buffer to disk
-    if (status._bytes_in_buffer + length > _buffer_size) {
+    if (status._bytes_in_buffer + length > _disk_buffer_size) {
       if (downloader_cat.is_debug())
         downloader_cat.debug()
           << "Downloader::attempt_read() - Flushing buffer" << endl;
@@ -642,25 +641,59 @@ download(const string &file_name, Filename file_dest,
   
   // Loop at the requested frequency until the download completes
   for (;;) {
+    bool resize_buffer = false;
     // Ensure that these don't change while we're computing read_size
 #ifdef HAVE_IPC
-    _bandwidth_frequency_lock.lock();
+    _buffer_lock.lock();
 #endif
-    // read_size is the length of the buffer requested via safe_receive()
-    int read_size;
+
     nassertr(_frequency > 0, D_error);
-    if (sync == true || _frequency == 0)
-      read_size = (int)_byte_rate;
-    else
-      read_size = (int)(_byte_rate * _frequency);	
+    // If byte rate has changed, recompute read size and write buffer size 
+    if (_new_byte_rate > 0) {
+      _read_size = (int)(_new_byte_rate * _frequency);
+      _byte_rate = _new_byte_rate;
+      _new_byte_rate = 0;
+      resize_buffer = true;
+    }
+
+    // If the disk write frequency has changed, compute a new buffer size
+    if (_new_disk_write_frequency > 0) {
+      _disk_write_frequency = _new_disk_write_frequency;
+      _new_disk_write_frequency = 0;
+      resize_buffer = true;
+    }
+
+    if (resize_buffer == true) {
+
+      // Flush the write buffer before resizing it
+      if (status._bytes_in_buffer > 0) {
+	if (write_to_disk(status) == false) {
+	  downloader_cat.error()
+	    << "Downloader::download() - failed to flush buffer during "
+	    << "resize" << endl;
+	  return D_error;
+	}
+      }
+
+      // Resize the buffer
+      _disk_buffer_size = (int)(_disk_write_frequency * _read_size);
+      
+      if (downloader_cat.is_debug())
+        downloader_cat.debug()
+	  << "Downloader::download() - resizing disk buffer to: "
+	  << _disk_buffer_size << endl;
+      _buffer.clear();
+      _buffer = new Buffer(_disk_buffer_size);
+    }
+
 #ifdef HAVE_IPC
-    _bandwidth_frequency_lock.unlock();
+    _buffer_lock.unlock();
 #endif
 
     // Attempt to read
     int bytes_read;
     bool stalled;
-    int ret = attempt_read(read_size, status, bytes_read, stalled);
+    int ret = attempt_read(_read_size, status, bytes_read, stalled);
     _last_attempt_stalled = stalled;
     if (bytes_read > 0)
       got_any_data = true;
@@ -941,26 +974,6 @@ write_to_disk(DownloadStatus &status) {
   }
 
   status.reset();
-
-  // Now see if we need to adjust the buffer size
-  if (_new_buffer_size > 0) {
-#ifdef HAVE_IPC
-    _buffer_lock.lock();
-#endif
-
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
-	<< "Downloader::write_to_buffer() - resizing buffer to: "
-	<< _new_buffer_size << endl;
-    _buffer.clear();
-    _buffer = new Buffer(_new_buffer_size);
-    _buffer_size = _new_buffer_size;
-    _new_buffer_size = 0;
-
-#ifdef HAVE_IPC
-    _buffer_lock.unlock();
-#endif
-  }
 
   return true;
 }
