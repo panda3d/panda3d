@@ -11,7 +11,7 @@ import Pmw
 import EntryScale
 import VectorWidgets
 import string
-
+import os
 
 class LevelEditor(NodePath, PandaObject):
     """Class used to create a Toontown LevelEditor object"""
@@ -1087,8 +1087,7 @@ class LevelEditor(NodePath, PandaObject):
 
     def createColorDictionaryFromFile(self, filename):
         print 'Loading Color Palettes from: ' + filename
-        f = Filename(filename)
-        f.resolveFilename(getModelPath())
+        fname = Filename(os.path.join(os.expandVars('$TTMODELS/src'), filename))
         f = open(f.toOsSpecific(), 'r')
         rawData = f.readlines()
         f.close()
@@ -1139,8 +1138,7 @@ class LevelEditor(NodePath, PandaObject):
                 return
             # Valid type, add color to file
             filename = 'level_editor/' + self.editMode + 'Colors.txt'
-            f = Filename(filename)
-            f.resolveFilename(getModelPath())
+            fname = Filename(os.path.join(os.expandVars('$TTMODELS/src'), filename))
             f = open(f.toOsSpecific(), 'a')
             f.write('%s Vec4(%.2f, %.2f, %.2f, 1.0)\n' %
                     (tag,
@@ -1546,9 +1544,8 @@ class LevelEditor(NodePath, PandaObject):
         return styleDictionary
 
     def getStyleData(self, filename):
-        f = Filename(filename)
-        f.resolveFilename(getModelPath())
-        f = open(f.toOsSpecific(), 'r')
+        fname = Filename(os.path.join(os.expandVars('$TTMODELS/src'), filename))
+        f = open(fname.toOsSpecific(), 'r')
         rawData = f.readlines()
         f.close()
         styleData = []

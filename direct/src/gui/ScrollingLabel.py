@@ -6,7 +6,7 @@ import Button
 import GuiLabel
 import Sign
 
-font = (loader.loadModelOnce("fonts/ttf-comic")).node()
+font = (loader.loadModelOnce("phase_3/models/fonts/ttf-comic")).node()
 
 class ScrollingLabel(PandaObject.PandaObject):
 

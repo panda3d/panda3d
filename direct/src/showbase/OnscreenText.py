@@ -4,7 +4,7 @@ from PandaObject import *
 
 class OnscreenText(PandaObject, NodePath):
 
-    Font = loader.loadModelOnce("fonts/ttf-comic").node()
+    Font = loader.loadModelOnce("phase_3/models/fonts/ttf-comic").node()
 
     def __init__(self, string, x=0.0, y=0.0):
         """__init__(self, string, float=0.0, float=0.0)

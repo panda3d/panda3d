@@ -503,7 +503,7 @@ class ObjectHandles(NodePath,PandaObject):
         NodePath.__init__(self)
 
         # Load up object handles model and assign it to self
-        self.assign(loader.loadModel('misc/objectHandles'))
+        self.assign(loader.loadModel('models/misc/objectHandles'))
         self.node().setName('objectHandles')
         self.scalingNode = self.getChild(0)
         self.scalingNode.node().setName('ohScalingNode')

@@ -12,7 +12,7 @@ class DirectCameraControl(PandaObject):
 	self.orthoViewRoll = 0.0
 	self.lastView = 0
         self.coa = Point3(0)
-        self.coaMarker = loader.loadModel('misc/sphere')
+        self.coaMarker = loader.loadModel('models/misc/sphere')
         self.coaMarker.setColor(1,0,0)
         self.coaMarkerPos = Point3(0)
 	self.relNodePath = render.attachNewNode(NamedNode('targetNode'))

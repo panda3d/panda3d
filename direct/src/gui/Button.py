@@ -5,7 +5,7 @@ import GuiButton
 import Vec3
 
 guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node())
-font = (loader.loadModelOnce("fonts/ttf-comic")).node()
+font = (loader.loadModelOnce("phase_3/models/fonts/ttf-comic")).node()
 
 class Button:
 
