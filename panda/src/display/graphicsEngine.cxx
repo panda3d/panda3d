@@ -41,6 +41,8 @@
 #ifndef CPPPARSER
 PStatCollector GraphicsEngine::_cull_pcollector("Cull");
 PStatCollector GraphicsEngine::_draw_pcollector("Draw");
+PStatCollector GraphicsEngine::_sync_pcollector("Draw:Sync");
+PStatCollector GraphicsEngine::_flip_pcollector("Draw:Flip");
 PStatCollector GraphicsEngine::_transform_states_pcollector("TransformStates");
 PStatCollector GraphicsEngine::_transform_states_unused_pcollector("TransformStates:Unused");
 PStatCollector GraphicsEngine::_render_states_pcollector("RenderStates");
@@ -627,6 +629,9 @@ flip_windows(const GraphicsEngine::Windows &wlist) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 do_sync_frame() {
+  // Statistics
+  PStatTimer timer(_sync_pcollector);
+
   nassertv(_flip_state == FS_draw);
 
   // Wait for all the threads to finish their current frame.  Grabbing
@@ -649,6 +654,9 @@ do_sync_frame() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 do_flip_frame() {
+  // Statistics
+  PStatTimer timer(_flip_pcollector);
+
   nassertv(_flip_state == FS_draw || _flip_state == FS_sync);
 
   // First, wait for all the threads to finish their current frame, if

@@ -182,6 +182,8 @@ private:
 
   static PStatCollector _cull_pcollector;
   static PStatCollector _draw_pcollector;
+  static PStatCollector _sync_pcollector;
+  static PStatCollector _flip_pcollector;
   static PStatCollector _transform_states_pcollector;
   static PStatCollector _transform_states_unused_pcollector;
   static PStatCollector _render_states_pcollector;

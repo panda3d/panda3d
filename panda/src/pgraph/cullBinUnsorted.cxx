@@ -19,6 +19,7 @@
 #include "cullBinUnsorted.h"
 #include "cullHandler.h"
 #include "graphicsStateGuardianBase.h"
+#include "pStatTimer.h"
 
 
 TypeHandle CullBinUnsorted::_type_handle;
@@ -56,6 +57,7 @@ add_object(CullableObject *object) {
 ////////////////////////////////////////////////////////////////////
 void CullBinUnsorted::
 draw() {
+  PStatTimer timer(_draw_this_pcollector);
   Objects::iterator oi;
   for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
     CullableObject *object = (*oi);

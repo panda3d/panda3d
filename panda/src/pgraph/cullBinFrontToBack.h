@@ -38,7 +38,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullBinFrontToBack : public CullBin {
 public:
-  INLINE CullBinFrontToBack(GraphicsStateGuardianBase *gsg);
+  INLINE CullBinFrontToBack(const string &name, GraphicsStateGuardianBase *gsg);
   virtual ~CullBinFrontToBack();
 
   virtual void add_object(CullableObject *object);

@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "typedReferenceCount.h"
+#include "pStatCollector.h"
 #include "pointerTo.h"
 
 class CullableObject;
@@ -40,7 +41,7 @@ class GraphicsStateGuardianBase;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullBin : public TypedReferenceCount {
 public:
-  INLINE CullBin(GraphicsStateGuardianBase *gsg);
+  INLINE CullBin(const string &name, GraphicsStateGuardianBase *gsg);
   virtual ~CullBin();
 
   virtual PT(CullBin) make_next() const;
@@ -52,6 +53,11 @@ public:
 
 protected:
   GraphicsStateGuardianBase *_gsg;
+
+  static PStatCollector _cull_bin_pcollector;
+  static PStatCollector _draw_bin_pcollector;
+  PStatCollector _cull_this_pcollector;
+  PStatCollector _draw_this_pcollector;
 
 public:
   static TypeHandle get_class_type() {

@@ -25,6 +25,11 @@
 #include "config_grutil.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
+#include "pStatTimer.h"
+
+#ifndef CPPPARSER
+PStatCollector FrameRateMeter::_show_fps_pcollector("Cull:Show fps");
+#endif  // CPPPARSER
 
 TypeHandle FrameRateMeter::_type_handle;
 
@@ -143,6 +148,9 @@ clear_layer() {
 ////////////////////////////////////////////////////////////////////
 bool FrameRateMeter::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  // Statistics
+  PStatTimer timer(_show_fps_pcollector);
+  
   // Check to see if it's time to update.
   double now = _clock_object->get_frame_time();
   double elapsed = now - _last_update;

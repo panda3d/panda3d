@@ -200,19 +200,20 @@ PT(CullBin) CullBinManager::
 make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg) {
   nassertr(bin_index >= 0 && bin_index < (int)_bin_definitions.size(), NULL);
   nassertr(_bin_definitions[bin_index]._in_use, NULL);
+  string name = get_bin_name(bin_index);
 
   switch (_bin_definitions[bin_index]._type) {
   case BT_back_to_front:
-    return new CullBinBackToFront(gsg);
+    return new CullBinBackToFront(name, gsg);
 
   case BT_front_to_back:
-    return new CullBinFrontToBack(gsg);
+    return new CullBinFrontToBack(name, gsg);
 
   case BT_fixed:
-    return new CullBinFixed(gsg);
+    return new CullBinFixed(name, gsg);
 
   default:
-    return new CullBinUnsorted(gsg);
+    return new CullBinUnsorted(name, gsg);
   }
 }
 

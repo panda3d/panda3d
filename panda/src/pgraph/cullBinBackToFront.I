@@ -47,7 +47,7 @@ operator < (const ObjectData &other) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE CullBinBackToFront::
-CullBinBackToFront(GraphicsStateGuardianBase *gsg) :
-  CullBin(gsg)
+CullBinBackToFront(const string &name, GraphicsStateGuardianBase *gsg) :
+  CullBin(name, gsg)
 {
 }

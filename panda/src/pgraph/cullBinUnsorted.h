@@ -33,7 +33,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullBinUnsorted : public CullBin {
 public:
-  INLINE CullBinUnsorted(GraphicsStateGuardianBase *gsg);
+  INLINE CullBinUnsorted(const string &name, GraphicsStateGuardianBase *gsg);
   ~CullBinUnsorted();
 
   virtual void add_object(CullableObject *object);

@@ -21,6 +21,7 @@
 #include "geometricBoundingVolume.h"
 #include "cullableObject.h"
 #include "cullHandler.h"
+#include "pStatTimer.h"
 
 #include <algorithm>
 
@@ -64,6 +65,7 @@ add_object(CullableObject *object) {
 ////////////////////////////////////////////////////////////////////
 void CullBinFixed::
 finish_cull() {
+  PStatTimer timer(_cull_this_pcollector);
   stable_sort(_objects.begin(), _objects.end());
 }
 
@@ -75,6 +77,7 @@ finish_cull() {
 ////////////////////////////////////////////////////////////////////
 void CullBinFixed::
 draw() {
+  PStatTimer timer(_draw_this_pcollector);
   Objects::const_iterator oi;
   for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
     CullableObject *object = (*oi)._object;

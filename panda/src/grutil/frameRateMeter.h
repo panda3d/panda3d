@@ -25,6 +25,7 @@
 #include "graphicsWindow.h"
 #include "graphicsLayer.h"
 #include "pointerTo.h"
+#include "pStatCollector.h"
 
 class GraphicsChannel;
 class ClockObject;
@@ -75,6 +76,8 @@ private:
   double _last_update;
   string _text_pattern;
   ClockObject *_clock_object;
+
+  static PStatCollector _show_fps_pcollector;
 
 public:
   static TypeHandle get_class_type() {

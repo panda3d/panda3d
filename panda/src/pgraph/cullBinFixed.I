@@ -47,7 +47,7 @@ operator < (const ObjectData &other) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE CullBinFixed::
-CullBinFixed(GraphicsStateGuardianBase *gsg) :
-  CullBin(gsg)
+CullBinFixed(const string &name, GraphicsStateGuardianBase *gsg) :
+  CullBin(name, gsg)
 {
 }

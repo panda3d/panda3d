@@ -40,7 +40,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullBinFixed : public CullBin {
 public:
-  INLINE CullBinFixed(GraphicsStateGuardianBase *gsg);
+  INLINE CullBinFixed(const string &name, GraphicsStateGuardianBase *gsg);
   virtual ~CullBinFixed();
 
   virtual void add_object(CullableObject *object);
