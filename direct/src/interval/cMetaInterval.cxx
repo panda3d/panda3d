@@ -453,7 +453,7 @@ finalize() {
   while (_next_event_index < _events.size()) {
     PlaybackEvent *event = _events[_next_event_index];
     // Do the indicated event.
-    do_event_forward(event, new_active, false);
+    do_event_forward(event, new_active, true);
     _next_event_index++;
   }
 
@@ -549,7 +549,7 @@ reverse_finalize() {
   while (_next_event_index > 0) {
     _next_event_index--;
     PlaybackEvent *event = _events[_next_event_index];
-    do_event_reverse(event, new_active, false);
+    do_event_reverse(event, new_active, true);
   }
 
   finish_events_reverse(0, new_active);
@@ -697,8 +697,8 @@ clear_events() {
 //               end, finalizes it.
 //
 //               If is_initial is true, it is as if we are in
-//               initialize: instant events will be invoked only if
-//               they are marked open_ended.
+//               initialize or finalize: instant events will be
+//               invoked only if they are marked open_ended.
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 do_event_forward(CMetaInterval::PlaybackEvent *event, 
@@ -775,8 +775,9 @@ finish_events_forward(int now, CMetaInterval::ActiveEvents &new_active) {
 //               new_active list; if it is an end, finalizes it.
 //
 //               If is_initial is true, it is as if we are in
-//               reverse_initialize: instant events will be invoked
-//               only if they are marked open_ended.
+//               reverse_initialize or reverse_finalize: instant
+//               events will be invoked only if they are marked
+//               open_ended.
 ////////////////////////////////////////////////////////////////////
 void CMetaInterval::
 do_event_reverse(CMetaInterval::PlaybackEvent *event, 
