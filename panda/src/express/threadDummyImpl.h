@@ -28,8 +28,6 @@
 #include "threadPriority.h"
 #include "pmutex.h"
 
-#include <prthread.h>
-
 class Thread;
 
 // The Irix system headers may define this as a macro.  Get it out of

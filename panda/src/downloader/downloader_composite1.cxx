@@ -6,6 +6,7 @@
 #include "bioStreamBuf.cxx"
 #include "chunkedStream.cxx"
 #include "chunkedStreamBuf.cxx"
+#include "downloadDb.cxx"
 #include "extractor.cxx"
 #include "httpDate.cxx"
 #include "httpEntityTag.cxx"
