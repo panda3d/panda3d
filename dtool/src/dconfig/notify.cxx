@@ -25,6 +25,10 @@
 #include <ctype.h>
 #include <time.h>  // for strftime().
 
+#ifdef WIN32
+#include <windows.h>   //for DebugBreak()
+#endif
+
 Notify *Notify::_global_ptr = (Notify *)NULL;
 
 
@@ -433,8 +437,9 @@ assert_failure(const char *expression, int line,
     // an uncaught exception just exits, without offering to open the
     // debugger.  Guess we'll have to force a segfault.
 
-    int *ptr = (int *)NULL;
-    *ptr = 1;
+//    int *ptr = (int *)NULL;
+//    *ptr = 1;
+      DebugBreak();
 #else
     abort();
 #endif
