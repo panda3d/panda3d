@@ -10,6 +10,12 @@
 
 #include "mpg123.h"
 
+#ifdef WIN32
+#define SIGUSR1 0
+#define SIGCONT 0
+#define SIGSTOP 0
+#endif /* WIN32 */
+
 int outburst = MAXOUTBURST;
 int preload;
 

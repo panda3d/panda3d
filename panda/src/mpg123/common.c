@@ -6,7 +6,9 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef WIN32
 #include <sys/time.h>
+#endif /* WIN32 */
 
 #include <fcntl.h>
 

@@ -26,6 +26,7 @@
 #endif
 
 #include "mpg123.h"
+#define HAVE_INCLUDED_MPG123_H
 
 #ifndef USE_MMAP
 #include <sys/ipc.h>
@@ -233,7 +234,11 @@ int xfermem_block (int readwrite, txfermem *xf)
 #include <sys/types.h>
 #include <fcntl.h>
 
+#ifndef HAVE_INCLUDED_MPG123_H
+#include "mpg123.h"
+#else /* HAVE_INCLUDED_MPG123_H */
 #include "xfermem.h"
+#endif /* HAVE_INCLUDED_MPG123_H */
 
 extern int errno;
 
