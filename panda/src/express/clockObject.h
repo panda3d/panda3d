@@ -22,7 +22,6 @@
 #include "pandabase.h"
 
 #include "trueClock.h"
-#include "config_express.h"
 #include "pdeque.h"
 
 class EXPCL_PANDAEXPRESS TimeVal {
@@ -69,6 +68,8 @@ PUBLISHED:
   enum Mode {
     M_normal,
     M_non_real_time,
+    M_forced,
+    M_degrade,
   };
 
   ClockObject();
@@ -95,6 +96,9 @@ PUBLISHED:
   INLINE double get_max_dt() const;
   INLINE void set_max_dt(double max_dt);
 
+  INLINE double get_degrade_factor() const;
+  INLINE void set_degrade_factor(double degrade_factor);
+
   INLINE void set_average_frame_rate_interval(double time);
   INLINE double get_average_frame_rate_interval() const;
   INLINE double get_average_frame_rate() const;
@@ -105,6 +109,9 @@ PUBLISHED:
   INLINE static ClockObject *get_global_clock();
 
 private:
+  void wait_until(double want_time);
+  static void make_global_clock();
+
   TrueClock *_true_clock;
   Mode _mode;
   double _start_short_time;
@@ -114,6 +121,7 @@ private:
   double _reported_frame_time;
   double _dt;
   double _max_dt;
+  double _degrade_factor;
 
   // For tracking the average frame rate over a certain interval of
   // time.

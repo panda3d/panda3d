@@ -43,6 +43,55 @@ ConfigureFn(config_express) {
   init_libexpress();
 }
 
+const int patchfile_window_size =
+        config_express.GetInt("patchfile-window-size", 16);
+
+const int patchfile_increment_size =
+        config_express.GetInt("patchfile-increment-size", 8);
+
+const int patchfile_buffer_size =
+        config_express.GetInt("patchfile-buffer-size", 4096);
+
+const int patchfile_zone_size =
+        config_express.GetInt("patchfile-zone-size", 10000);
+
+// Set this true to keep around the temporary files from downloading,
+// decompressing, and patching, or false (the default) to delete
+// these.  Mainly useful for debugging when the process goes wrong.
+const bool keep_temporary_files =
+config_express.GetBool("keep-temporary-files", false);
+
+const double average_frame_rate_interval = 
+config_express.GetDouble("average-frame-rate-interval", 1.0);
+
+ClockObject::Mode clock_mode = ClockObject::M_normal;
+const double clock_frame_rate = 
+config_express.GetDouble("clock-frame-rate", 1.0);
+const double clock_degrade_factor = 
+config_express.GetDouble("clock-degrade-factor", 1.0);
+const double max_dt = 
+config_express.GetDouble("max-dt", -1.0);
+
+// This is the accuracy within which we can expect select() to return
+// precisely.  That is, if we use select() to request a timeout of 1.0
+// seconds, we can expect to actually sleep for somewhere between 1.0
+// and 1.0 + sleep-precision seconds.
+const double sleep_precision =
+config_express.GetDouble("sleep-precision", 0.01);
+
+// Set this true to use the VirtualFileSystem mechanism for loading
+// models, etc.  Since the VirtualFileSystem maps to the same as the
+// actual file system by default, there is probably no reason to set
+// this false, except for testing or if you mistrust the new code.
+const bool use_vfs = config_express.GetBool("use-vfs", true);
+
+// Set this true to enable accumulation of several small consecutive
+// TCP datagrams into one large datagram before sending it, to reduce
+// overhead from the TCP/IP protocol.  See
+// Connection::set_collect_tcp() or SocketStream::set_collect_tcp().
+const bool collect_tcp = config_express.GetBool("collect-tcp", false);
+const double collect_tcp_interval = config_express.GetDouble("collect-tcp-interval", 0.2);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libexpress
 //  Description: Initializes the library.  This must be called at
@@ -84,6 +133,20 @@ init_libexpress() {
   } else {
     express_cat.error()
       << "Invalid text-encoding: " << text_encoding << "\n";
+  }
+
+  string clock_mode_str = config_express.GetString("clock-mode", "normal");
+  if (clock_mode_str == "normal") {
+    clock_mode = ClockObject::M_normal;
+  } else if (clock_mode_str == "non-real-time") {
+    clock_mode = ClockObject::M_non_real_time;
+  } else if (clock_mode_str == "forced") {
+    clock_mode = ClockObject::M_forced;
+  } else if (clock_mode_str == "degrade") {
+    clock_mode = ClockObject::M_degrade;
+  } else {
+    express_cat.error()
+      << "Invalid clock-mode: " << clock_mode_str << "\n";
   }
 }
 
@@ -169,40 +232,6 @@ get_verify_dcast() {
 
   return verify_dcast;
 }
-
-const int patchfile_window_size =
-        config_express.GetInt("patchfile-window-size", 16);
-
-const int patchfile_increment_size =
-        config_express.GetInt("patchfile-increment-size", 8);
-
-const int patchfile_buffer_size =
-        config_express.GetInt("patchfile-buffer-size", 4096);
-
-const int patchfile_zone_size =
-        config_express.GetInt("patchfile-zone-size", 10000);
-
-// Set this true to keep around the temporary files from downloading,
-// decompressing, and patching, or false (the default) to delete
-// these.  Mainly useful for debugging when the process goes wrong.
-const bool keep_temporary_files =
-config_express.GetBool("keep-temporary-files", false);
-
-extern const double average_frame_rate_interval = 
-config_express.GetDouble("average-frame-rate-interval", 1.0);
-
-// Set this true to use the VirtualFileSystem mechanism for loading
-// models, etc.  Since the VirtualFileSystem maps to the same as the
-// actual file system by default, there is probably no reason to set
-// this false, except for testing or if you mistrust the new code.
-const bool use_vfs = config_express.GetBool("use-vfs", true);
-
-// Set this true to enable accumulation of several small consecutive
-// TCP datagrams into one large datagram before sending it, to reduce
-// overhead from the TCP/IP protocol.  See
-// Connection::set_collect_tcp() or SocketStream::set_collect_tcp().
-const bool collect_tcp = config_express.GetBool("collect-tcp", false);
-const double collect_tcp_interval = config_express.GetDouble("collect-tcp-interval", 0.2);
 
 // Returns the configure object for accessing config variables from a
 // scripting language.

@@ -28,7 +28,7 @@ ConfigureFn(config_grutil) {
   init_libgrutil();
 }
 
-const double frame_rate_meter_update_interval = config_grutil.GetDouble("frame-rate-meter-update-interval", 1.0);
+const double frame_rate_meter_update_interval = config_grutil.GetDouble("frame-rate-meter-update-interval", 1.5);
 const string frame_rate_meter_text_pattern = config_grutil.GetString("frame-rate-meter-text-pattern", "%0.1f fps");
 const int frame_rate_meter_layer_sort = config_grutil.GetInt("frame-rate-meter-layer-sort", 1000);
 const float frame_rate_meter_scale = config_grutil.GetFloat("frame-rate-meter-scale", 0.05f);

@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "clockObject.h"
 #include "dconfig.h"
 
 ConfigureDecl(config_express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
@@ -48,6 +49,12 @@ extern const int patchfile_zone_size;
 
 extern const bool keep_temporary_files;
 extern const double average_frame_rate_interval;
+
+extern ClockObject::Mode clock_mode;
+extern const double clock_frame_rate;
+extern const double clock_degrade_factor;
+extern const double max_dt;
+extern const double sleep_precision;
 
 extern EXPCL_PANDAEXPRESS const bool use_vfs;
 

@@ -20,8 +20,15 @@
 #include "clockObject.h"
 #include "config_express.h"
 
-ClockObject *ClockObject::_global_clock = (ClockObject *)NULL;
+#if defined(WIN32)
+  #define WINDOWS_LEAN_AND_MEAN
+  #include <wtypes.h>  // For select()
+  #undef WINDOWS_LEAN_AND_MEAN  
+#else
+  #include <sys/time.h>  // For select()
+#endif
 
+ClockObject *ClockObject::_global_clock = (ClockObject *)NULL;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::Constructor
@@ -31,14 +38,20 @@ ClockObject *ClockObject::_global_clock = (ClockObject *)NULL;
 ClockObject::
 ClockObject() {
   _true_clock = TrueClock::get_ptr();
+
+  // Each clock except for the application global clock is created in
+  // M_normal mode.  The application global clock is later reset to
+  // respect clock_mode, which comes from the Configrc file.
   _mode = M_normal;
+
   _start_short_time = _true_clock->get_short_time();
   _start_long_time = _true_clock->get_long_time();
   _frame_count = 0;
   _actual_frame_time = 0.0;
   _reported_frame_time = 0.0;
-  _dt = 0.0;
-  _max_dt = -1.0;
+  _dt = 1.0 / clock_frame_rate;
+  _max_dt = max_dt;
+  _degrade_factor = clock_degrade_factor;
   _average_frame_rate_interval = average_frame_rate_interval;
 }
 
@@ -124,6 +137,7 @@ tick() {
 
   switch (_mode) {
   case M_normal:
+    // Time runs as it will; we simply report time elapsing.
     _dt = _actual_frame_time - old_time;
     if (_max_dt > 0.0) {
       _dt = min(_max_dt, _dt);
@@ -132,8 +146,41 @@ tick() {
     break;
 
   case M_non_real_time:
+    // Ignore real time.  We always report the same interval having
+    // elapsed each frame.
     _reported_frame_time += _dt;
     break;
+
+  case M_forced:
+    // If we are running faster than the desired interval, slow down.
+    // If we are running slower than the desired interval, ignore that
+    // and pretend we're running at the specified rate.
+    wait_until(old_time + _dt);
+    _reported_frame_time += _dt;
+    break;
+
+  case M_degrade:
+    // Each frame, wait a certain fraction of the previous frame's
+    // time to degrade performance uniformly.
+    _dt = (_actual_frame_time - old_time) * _degrade_factor;
+
+    if (_degrade_factor < 1.0) {
+      // If the degrade_factor is less than one, we want to simulate a
+      // higher frame rate by incrementing the clock more slowly.
+      _reported_frame_time += _dt;
+
+    } else {
+      // Otherwise, we simulate a lower frame rate by waiting until
+      // the appropriate time has elapsed.
+      wait_until(old_time + _dt);
+      _reported_frame_time = _actual_frame_time;
+    }
+
+    if (_max_dt > 0.0) {
+      _dt = min(_max_dt, _dt);
+    }
+    break;
+
   }
 
   _frame_count++;
@@ -168,6 +215,49 @@ sync_frame_time() {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::wait_until
+//       Access: Private
+//  Description: Waits at the end of a frame until the indicated time
+//               has arrived.  This is used to implement M_forced and
+//               M_degrade.
+////////////////////////////////////////////////////////////////////
+void ClockObject::
+wait_until(double want_time) {
+  double wait_interval = (want_time - _actual_frame_time) - sleep_precision;
+    
+  if (wait_interval > 0.0) {
+    struct timeval tv;
+    tv.tv_sec = (int)(wait_interval);
+    tv.tv_usec = (int)((wait_interval - tv.tv_sec) * 1000000.0);
+    select(0, NULL, NULL, NULL, &tv);
+  }
+  
+  // Now busy-wait until the actual time elapses.
+  while (_actual_frame_time < want_time) {
+    _actual_frame_time = get_real_time();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::make_global_clock
+//       Access: Private, Static
+//  Description: Called once per application to create the global
+//               clock object.
+////////////////////////////////////////////////////////////////////
+void ClockObject::
+make_global_clock() {
+  nassertv(_global_clock == (ClockObject *)NULL);
+
+  // Make sure we have run init_libexpress() by this time.  This
+  // function is responsible for initializing the clock_mode Configrc
+  // variable.
+  init_libexpress();
+
+  _global_clock = new ClockObject;
+  _global_clock->set_mode(clock_mode);
+}
+  
 ////////////////////////////////////////////////////////////////////
 //     Function: get_time_of_day
 //  Description:

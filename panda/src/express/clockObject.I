@@ -163,16 +163,12 @@ get_dt() const {
 //     Function: ClockObject::set_dt
 //       Access: Published
 //  Description: In non-real-time mode, sets the number of seconds
-//               that should appear to elapse between frames.
+//               that should appear to elapse between frames.  In
+//               forced mode, sets our target dt.  In normal mode,
+//               this has no effect.
 ////////////////////////////////////////////////////////////////////
 INLINE void ClockObject::
 set_dt(double dt) {
-  if (_mode != M_non_real_time) {
-    express_cat.error()
-      << "ClockObject cannot set dt in real-time mode." << endl;
-    return;
-  }
-
   _dt = dt;
 }
 
@@ -207,6 +203,36 @@ get_max_dt() const {
 INLINE void ClockObject::
 set_max_dt(double max_dt) {
   _max_dt = max_dt;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::get_degrade_factor
+//       Access: Published
+//  Description: In degrade mode, returns the ratio by which the
+//               performance is degraded.  A value of 2.0 causes the
+//               clock to be slowed down by a factor of two (reducing
+//               performance to 1/2 what would be otherwise).
+//
+//               This has no effect if mode is not M_degrade.
+////////////////////////////////////////////////////////////////////
+INLINE double ClockObject::
+get_degrade_factor() const {
+  return _degrade_factor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::set_degrade_factor
+//       Access: Published
+//  Description: In degrade mode, sets the ratio by which the
+//               performance is degraded.  A value of 2.0 causes the
+//               clock to be slowed down by a factor of two (reducing
+//               performance to 1/2 what would be otherwise).
+//
+//               This has no effect if mode is not M_degrade.
+////////////////////////////////////////////////////////////////////
+INLINE void ClockObject::
+set_degrade_factor(double degrade_factor) {
+  _degrade_factor = degrade_factor;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -270,7 +296,7 @@ get_average_frame_rate() const {
 INLINE ClockObject *ClockObject::
 get_global_clock() {
   if (_global_clock == (ClockObject *)NULL) {
-    _global_clock = new ClockObject;
+    make_global_clock();
   }
   return _global_clock;
 }

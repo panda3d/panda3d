@@ -72,6 +72,9 @@ PStatClient() :
   _collectors_reported = 0;
   _threads_reported = 0;
 
+  // Make sure our clock is in "normal" mode.
+  _clock.set_mode(ClockObject::M_normal);
+
   // We always have a collector at index 0 named "Frame".  This tracks
   // the total frame time and is the root of all other collectors.  We
   // have to make this one by hand since it's the root.
