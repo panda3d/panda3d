@@ -28,6 +28,24 @@ extern "C" {
   EXPCL_DTOOLCONFIG int Py_InitModule4(...);
   EXPCL_DTOOLCONFIG int PyObject_IsTrue(...);
   EXPCL_DTOOLCONFIG int PyErr_SetString(...);
+  EXPCL_DTOOLCONFIG int PySequence_GetItem(...);
+  EXPCL_DTOOLCONFIG int PyLong_AsUnsignedLongLong(...);
+  EXPCL_DTOOLCONFIG int PyErr_Occurred(...);
+  EXPCL_DTOOLCONFIG int PyObject_GetAttrString(...);
+  EXPCL_DTOOLCONFIG int PyLong_FromUnsignedLongLong(...);
+  EXPCL_DTOOLCONFIG int PyTuple_GetItem(...);
+  EXPCL_DTOOLCONFIG int PyString_AsString(...);
+  EXPCL_DTOOLCONFIG int PySequence_Size(...);
+  EXPCL_DTOOLCONFIG int PyList_New(...);
+  EXPCL_DTOOLCONFIG int PyFloat_AsDouble(...);
+  EXPCL_DTOOLCONFIG int PyString_AsStringAndSize(...);
+  EXPCL_DTOOLCONFIG int PyObject_CallObject(...);
+  EXPCL_DTOOLCONFIG int PyLong_AsLongLong(...);
+  EXPCL_DTOOLCONFIG int PyLong_FromLongLong(...);
+  EXPCL_DTOOLCONFIG int PyInt_AsLong(...);
+  EXPCL_DTOOLCONFIG int PyObject_HasAttrString(...);
+  EXPCL_DTOOLCONFIG int PySequence_Check(...);
+  EXPCL_DTOOLCONFIG int PyTuple_New(...);
   EXPCL_DTOOLCONFIG extern void *PyExc_AssertionError;
 };
 
@@ -73,6 +91,96 @@ PyObject_IsTrue(...) {
 
 int
 PyErr_SetString(...) {
+  return 0;
+}
+
+int
+PySequence_GetItem(...) {
+  return 0;
+}
+
+int
+PyLong_AsUnsignedLongLong(...) {
+  return 0;
+}
+
+int
+PyErr_Occurred(...) {
+  return 0;
+}
+
+int
+PyObject_GetAttrString(...) {
+  return 0;
+}
+
+int
+PyLong_FromUnsignedLongLong(...) {
+  return 0;
+}
+
+int
+PyTuple_GetItem(...) {
+  return 0;
+}
+
+int
+PyString_AsString(...) {
+  return 0;
+}
+
+int
+PySequence_Size(...) {
+  return 0;
+}
+
+int
+PyList_New(...) {
+  return 0;
+}
+
+int
+PyFloat_AsDouble(...) {
+  return 0;
+}
+
+int
+PyString_AsStringAndSize(...) {
+  return 0;
+}
+
+int
+PyObject_CallObject(...) {
+  return 0;
+}
+
+int
+PyLong_AsLongLong(...) {
+  return 0;
+}
+
+int
+PyLong_FromLongLong(...) {
+  return 0;
+}
+
+int
+PyInt_AsLong(...) {
+  return 0;
+}
+
+int
+PyObject_HasAttrString(...) {
+  return 0;
+}
+
+int
+PySequence_Check(...) {
+  return 0;
+}
+
+int
+PyTuple_New(...) {
   return 0;
 }
 
