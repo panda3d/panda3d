@@ -55,6 +55,11 @@ reload_search_path() {
   }
   _value.append_path(_postfix);
 
+  if (_value.is_empty()) {
+    // An empty search path implicitly has "." on it.
+    _value.append_directory(".");
+  }
+
   _value_seq = _core->get_value_seq();
   _value_stale = false;
 }
