@@ -177,10 +177,9 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
     // It is tempting to try to compare the absolute values of the
     // diagonal values in the code below, instead of their normal,
     // signed values.  Don't do it.  We are actually maximizing the
-    // value of S (computed within the switch statement below), which
-    // must always be positive, and is therefore based on the diagonal
-    // whose actual value--not absolute value--is greater than those
-    // of the other two.
+    // value of S, which must always be positive, and is therefore
+    // based on the diagonal whose actual value--not absolute
+    // value--is greater than those of the other two.
 
     // We already know that m00 + m11 + m22 <= 0 (because we are here
     // in the harder case).
