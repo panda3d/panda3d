@@ -1,5 +1,8 @@
 from DirectGuiGlobals import *
 from DirectGeometry import ROUND_TO
+import PandaObject
+import Task
+import string
 
 """
 Base class for all Direct Gui items.  Handles composite widgets and
@@ -86,7 +89,7 @@ Code Overview:
     are left unused.  If so, an error is raised.
 """
 
-class DirectGuiBase(PandaObject):
+class DirectGuiBase(PandaObject.PandaObject):
     def __init__(self):
         # Default id of all gui object, subclasses should override this
         self.guiId = 'guiObject'
