@@ -30,13 +30,26 @@ class EXPCL_PANDA Texture : public ImageBuffer {
 public:
   enum FilterType {
     // Mag Filter and Min Filter
+
+    // Point sample the pixel
     FT_nearest,
+
+    // Bilinear filtering of four neighboring pixels
     FT_linear,
  
     // Min Filter Only
+
+    // Point sample the pixel from the nearest mipmap level
     FT_nearest_mipmap_nearest,
+
+    // Bilinear filter the pixel from the nearest mipmap level
     FT_linear_mipmap_nearest,
+
+    // Point sample the pixel from two mipmap levels, and linearly blend
     FT_nearest_mipmap_linear,
+
+    // A.k.a. trilinear filtering: Bilinear filter the pixel from 
+    // two mipmap levels, and linearly blend the results.
     FT_linear_mipmap_linear,
   };
  
@@ -78,12 +91,14 @@ public:
   void set_wrapv( WrapMode wrap );
   void set_minfilter( FilterType filter );
   void set_magfilter( FilterType filter );
+  void set_anisotropic_degree(int anisotropic_degree);
 
   INLINE int get_level() const;
   INLINE WrapMode get_wrapu() const;
   INLINE WrapMode get_wrapv() const;
   INLINE FilterType get_minfilter() const;
   INLINE FilterType get_magfilter() const;
+  INLINE int get_anisotropic_degree() const;
 
 public:
   static void register_with_read_factory(void);
@@ -124,6 +139,7 @@ protected:
   FilterType _magfilter;
   FilterType _magfiltercolor;
   FilterType _magfilteralpha;
+  int _anisotropic_degree;
 
   // A Texture keeps a list (actually, a map) of all the GSG's that it
   // has been prepared into.  Each GSG conversely keeps a list (a set)

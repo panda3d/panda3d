@@ -596,13 +596,11 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   }
 
   switch (egg_tex->get_minfilter()) {
-  case EggTexture::FT_point:
+  case EggTexture::FT_nearest:
     tex->set_minfilter(Texture::FT_nearest);
     break;
     
   case EggTexture::FT_linear:
-  case EggTexture::FT_bilinear:
-  case EggTexture::FT_trilinear:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
 	<< "Ignoring minfilter request\n";
@@ -612,7 +610,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     }
     break;
     
-  case EggTexture::FT_mipmap_point:
+  case EggTexture::FT_nearest_mipmap_nearest:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
 	<< "Ignoring minfilter request\n";
@@ -626,9 +624,35 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     }
     break;
     
-  case EggTexture::FT_mipmap_linear:
-  case EggTexture::FT_mipmap_bilinear:
-  case EggTexture::FT_mipmap_trilinear:
+  case EggTexture::FT_linear_mipmap_nearest:
+    if (egg_ignore_filters) {
+      egg2sg_cat.warning()
+	<< "Ignoring minfilter request\n";
+      tex->set_minfilter(Texture::FT_nearest);
+    } else if (egg_ignore_mipmaps) {
+      egg2sg_cat.warning()
+	<< "Ignoring mipmap request\n";
+      tex->set_minfilter(Texture::FT_linear);
+    } else {
+      tex->set_minfilter(Texture::FT_linear_mipmap_nearest);
+    }
+    break;
+    
+  case EggTexture::FT_nearest_mipmap_linear:
+    if (egg_ignore_filters) {
+      egg2sg_cat.warning()
+	<< "Ignoring minfilter request\n";
+      tex->set_minfilter(Texture::FT_nearest);
+    } else if (egg_ignore_mipmaps) {
+      egg2sg_cat.warning()
+	<< "Ignoring mipmap request\n";
+      tex->set_minfilter(Texture::FT_nearest);
+    } else {
+      tex->set_minfilter(Texture::FT_nearest_mipmap_linear);
+    }
+    break;
+    
+  case EggTexture::FT_linear_mipmap_linear:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
 	<< "Ignoring minfilter request\n";
@@ -652,17 +676,15 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   }
 
   switch (egg_tex->get_magfilter()) {
-  case EggTexture::FT_point:
-  case EggTexture::FT_mipmap_point:
+  case EggTexture::FT_nearest:
+  case EggTexture::FT_nearest_mipmap_nearest:
+  case EggTexture::FT_nearest_mipmap_linear:
     tex->set_magfilter(Texture::FT_nearest);
     break;
     
   case EggTexture::FT_linear:
-  case EggTexture::FT_bilinear:
-  case EggTexture::FT_trilinear:
-  case EggTexture::FT_mipmap_linear:
-  case EggTexture::FT_mipmap_bilinear:
-  case EggTexture::FT_mipmap_trilinear:
+  case EggTexture::FT_linear_mipmap_nearest:
+  case EggTexture::FT_linear_mipmap_linear:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
 	<< "Ignoring magfilter request\n";
@@ -679,6 +701,10 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     } else {
       tex->set_magfilter(Texture::FT_linear);
     }
+  }
+
+  if (egg_tex->has_anisotropic_degree()) {
+    tex->set_anisotropic_degree(egg_tex->get_anisotropic_degree());
   }
 
   if (tex->_pbuffer->get_num_components() == 1) {

@@ -364,6 +364,9 @@ texture_body:
       texture->set_magfiltercolor(f);
     }
 
+  } else if (cmp_nocase_uh(name, "anisotropic_degree") == 0) {
+    texture->set_anisotropic_degree(value);
+
   } else if (cmp_nocase_uh(name, "envtype") == 0) {
     EggTexture::EnvType e = EggTexture::string_env_type(strval);
     if (e == EggTexture::ET_unspecified) {

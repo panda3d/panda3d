@@ -29,6 +29,7 @@ EggTexture(const string &tref_name, const string &filename)
   _magfilter = FT_unspecified;
   _magfilteralpha = FT_unspecified;
   _magfiltercolor = FT_unspecified;
+  _anisotropic_degree = 0;
   _env_type = ET_unspecified;
   _flags = 0;
   _transform = LMatrix3d::ident_mat();
@@ -62,6 +63,7 @@ operator = (const EggTexture &copy) {
   _magfilter = copy._magfilter;
   _magfilteralpha = copy._magfilteralpha;
   _magfiltercolor = copy._magfiltercolor;
+  _anisotropic_degree = copy._anisotropic_degree;
   _env_type = copy._env_type;
   _flags = copy._flags;
   _transform = copy._transform;
@@ -118,6 +120,11 @@ write(ostream &out, int indent_level) const {
   if (get_magfiltercolor() != FT_unspecified) {
     indent(out, indent_level + 2)
       << "<Scalar> magfiltercolor { " << get_magfiltercolor() << " }\n";
+  }
+
+  if (has_anisotropic_degree()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> anisotropic-degree { " << get_anisotropic_degree() << " }\n";
   }
 
   if (get_env_type() != ET_unspecified) {
@@ -426,22 +433,38 @@ string_wrap_mode(const string &string) {
 ////////////////////////////////////////////////////////////////////
 EggTexture::FilterType EggTexture::
 string_filter_type(const string &string) {
+  // Old egg filter types.
   if (cmp_nocase_uh(string, "point") == 0) {
-    return FT_point;
+    return FT_nearest;
   } else if (cmp_nocase_uh(string, "linear") == 0) {
     return FT_linear;
   } else if (cmp_nocase_uh(string, "bilinear") == 0) {
-    return FT_bilinear;
+    return FT_linear;
   } else if (cmp_nocase_uh(string, "trilinear") == 0) {
-    return FT_trilinear;
+    return FT_linear;
   } else if (cmp_nocase_uh(string, "mipmap_point") == 0) {
-    return FT_mipmap_point;
+    return FT_nearest_mipmap_nearest;
   } else if (cmp_nocase_uh(string, "mipmap_linear") == 0) {
-    return FT_mipmap_linear;
+    return FT_nearest_mipmap_linear;
   } else if (cmp_nocase_uh(string, "mipmap_bilinear") == 0) {
-    return FT_mipmap_bilinear;
+    return FT_linear_mipmap_nearest;
   } else if (cmp_nocase_uh(string, "mipmap_trilinear") == 0) {
-    return FT_mipmap_trilinear;
+    return FT_linear_mipmap_linear;
+
+    // Current egg filter types, that match those in Texture.
+  } else if (cmp_nocase_uh(string, "nearest") == 0) {
+    return FT_nearest;
+  } else if (cmp_nocase_uh(string, "linear") == 0) {
+    return FT_linear;
+  } else if (cmp_nocase_uh(string, "nearest_mipmap_nearest") == 0) {
+    return FT_nearest_mipmap_nearest;
+  } else if (cmp_nocase_uh(string, "linear_mipmap_nearest") == 0) {
+    return FT_linear_mipmap_nearest;
+  } else if (cmp_nocase_uh(string, "nearest_mipmap_linear") == 0) {
+    return FT_nearest_mipmap_linear;
+  } else if (cmp_nocase_uh(string, "linear_mipmap_linear") == 0) {
+    return FT_linear_mipmap_linear;
+
   } else {
     return FT_unspecified;
   }
@@ -541,22 +564,20 @@ ostream &operator << (ostream &out, EggTexture::FilterType type) {
   switch (type) {
   case EggTexture::FT_unspecified:
     return out << "unspecified";
-  case EggTexture::FT_point:
-    return out << "point";
+
+  case EggTexture::FT_nearest:
+    return out << "nearest";
   case EggTexture::FT_linear:
     return out << "linear";
-  case EggTexture::FT_bilinear:
-    return out << "bilinear";
-  case EggTexture::FT_trilinear:
-    return out << "trilinear";
-  case EggTexture::FT_mipmap_point:
-    return out << "mipmap_point";
-  case EggTexture::FT_mipmap_linear:
-    return out << "mipmap_linear";
-  case EggTexture::FT_mipmap_bilinear:
-    return out << "mipmap_bilinear";
-  case EggTexture::FT_mipmap_trilinear:
-    return out << "mipmap_trilinear";
+
+  case EggTexture::FT_nearest_mipmap_nearest:
+    return out << "nearest_mipmap_nearest";
+  case EggTexture::FT_linear_mipmap_nearest:
+    return out << "linear_mipmap_nearest";
+  case EggTexture::FT_nearest_mipmap_linear:
+    return out << "nearest_mipmap_linear";
+  case EggTexture::FT_linear_mipmap_linear:
+    return out << "linear_mipmap_linear";
   }
 
   nassertr(false, out);

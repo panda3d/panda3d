@@ -53,9 +53,21 @@ public:
     WM_unspecified, WM_repeat, WM_clamp
   };
   enum FilterType {
-    FT_unspecified, FT_point, FT_linear, FT_bilinear, FT_trilinear,
-    FT_mipmap_point, FT_mipmap_linear, FT_mipmap_bilinear,
-    FT_mipmap_trilinear
+    // Note that these type values match up, name-for-name, with a
+    // similar enumerated type in Panda's Texture object.  However,
+    // they do *not* match up numerically.  You must convert between
+    // them using a switch statement.
+    FT_unspecified,
+
+    // Mag Filter and Min Filter
+    FT_nearest,
+    FT_linear,
+ 
+    // Min Filter Only
+    FT_nearest_mipmap_nearest,
+    FT_linear_mipmap_nearest,
+    FT_nearest_mipmap_linear,
+    FT_linear_mipmap_linear,
   };
   enum EnvType {
     ET_unspecified, ET_modulate, ET_decal
@@ -87,6 +99,11 @@ public:
   INLINE void set_magfiltercolor(FilterType type);
   INLINE FilterType get_magfiltercolor() const;
 
+  INLINE void set_anisotropic_degree(int anisotropic_degree);
+  INLINE void clear_anisotropic_degree();
+  INLINE bool has_anisotropic_degree() const;
+  INLINE int get_anisotropic_degree() const;
+
   INLINE void set_env_type(EnvType type);
   INLINE EnvType get_env_type() const;
 
@@ -109,13 +126,15 @@ public:
 
 private:
   enum Flags {
-    F_has_transform   = 0x0001,
-    F_has_alpha_file  = 0x0002
+    F_has_transform          = 0x0001,
+    F_has_alpha_file         = 0x0002,
+    F_has_anisotropic_degree = 0x0004,
   };
 
   Format _format;
   WrapMode _wrap_mode, _wrap_u, _wrap_v;
   FilterType _minfilter, _magfilter, _magfilteralpha, _magfiltercolor;
+  int _anisotropic_degree;
   EnvType _env_type;
   int _flags;
   LMatrix3d _transform;

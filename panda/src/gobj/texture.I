@@ -64,3 +64,18 @@ INLINE Texture::FilterType Texture::
 get_magfilter() const {
   return _magfilter;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_anisotropic_degree
+//       Access: Public
+//  Description: Returns the degree of anisotropic filtering that
+//               should be applied to the texture.  Normally, this is
+//               1, to indicate that anisotropic filtering should be
+//               disabled.  If this is a number higher than 1,
+//               anisotropic filtering should be enabled (if the
+//               rendering backend supports it).
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+get_anisotropic_degree() const {
+  return _anisotropic_degree;
+}

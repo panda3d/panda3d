@@ -36,6 +36,7 @@ Texture() : ImageBuffer() {
   _minfilter = FT_nearest;
   _wrapu = WM_repeat;
   _wrapv = WM_repeat;
+  _anisotropic_degree = 1;
   _pbuffer = new PixelBuffer;
   _has_requested_size = false;
 }
@@ -361,6 +362,23 @@ void Texture::set_magfilter(FilterType filter)
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: set_anisotropic_degree
+//       Access: Public
+//  Description: Specifies the level of anisotropic filtering to apply
+//               to the texture.  Normally, this is 1, to indicate
+//               anisotropic filtering is disabled.  This may be set
+//               to a number higher than one to enable anisotropic
+//               filtering, if the rendering backend supports this.
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_anisotropic_degree(int anisotropic_degree) {
+  if (_anisotropic_degree != anisotropic_degree) {
+    unprepare();
+    _anisotropic_degree = anisotropic_degree;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::write_datagram
 //       Access: Public
 //  Description: Function to write the important information in
@@ -377,6 +395,7 @@ write_datagram(BamWriter *manager, Datagram &me)
   me.add_uint8(_magfilter);
   me.add_uint8(_magfiltercolor);
   me.add_uint8(_magfilteralpha);
+  me.add_int16(_anisotropic_degree);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -388,8 +407,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 //               place
 ////////////////////////////////////////////////////////////////////
 void Texture::
-fillin(DatagramIterator& scan, BamReader*)
-{
+fillin(DatagramIterator &scan, BamReader *manager) {
   //We don't want to call ImageBuffer::fillin, like we 
   //would normally, since due to needing to know the name
   //of the Texture before creating it, we have already read
@@ -404,6 +422,12 @@ fillin(DatagramIterator& scan, BamReader*)
   _magfilter = (enum FilterType) scan.get_uint8();
   _magfiltercolor = (enum FilterType) scan.get_uint8();
   _magfilteralpha = (enum FilterType) scan.get_uint8();
+
+  if (manager->get_file_minor_ver() >= 4) {
+    _anisotropic_degree = scan.get_int16();
+  } else {
+    _anisotropic_degree = 1;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

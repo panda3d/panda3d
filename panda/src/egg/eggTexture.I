@@ -193,6 +193,57 @@ get_magfiltercolor() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_anisotropic_degree
+//       Access: Public
+//  Description: Sets the degree of anisotropic filtering for this
+//               texture.  1 is off; higher levels indicate filtering
+//               in effect.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_anisotropic_degree(int anisotropic_degree) {
+  _anisotropic_degree = anisotropic_degree;
+  _flags |= F_has_anisotropic_degree;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::clear_anisotropic_degree
+//       Access: Public
+//  Description: Removes the specification of anisotropic filtering
+//               from the texture.
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+clear_anisotropic_degree() {
+  _anisotropic_degree = 0;
+  _flags &= ~F_has_anisotropic_degree;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::has_anisotropic_degree
+//       Access: Public
+//  Description: Returns true if a value for the anisotropic filtering
+//               degree has been specified for this texture, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggTexture::
+has_anisotropic_degree() const {
+  return (_flags & F_has_anisotropic_degree) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_anisotropic_degree
+//       Access: Public
+//  Description: Returns the anisotropic filtering degree that has
+//               been specified for this texture.  It is an error to
+//               call this unless has_anisotropic_degree() returns
+//               true.
+////////////////////////////////////////////////////////////////////
+INLINE int EggTexture::
+get_anisotropic_degree() const {
+  nassertr(has_anisotropic_degree(), 1);
+  return _anisotropic_degree;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_env_type
 //       Access: Public
 //  Description: 
