@@ -48,7 +48,6 @@ public:
   virtual bool has_changed(int last_frame, int this_frame);
 
   virtual TypeHandle get_value_type() const=0;
-  virtual void output(ostream &out) const;
 
 protected:
 
@@ -60,11 +59,12 @@ public:
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
 
-public:
-
+PUBLISHED:
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
+
+public:
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
   static TypeHandle get_class_type() {
     return _type_handle;

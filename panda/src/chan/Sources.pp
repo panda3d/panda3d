@@ -12,9 +12,12 @@
     animBundle.I animBundle.h \
     animBundleNode.I animBundleNode.h \
     animChannel.I animChannel.h animChannelBase.I  \
-    animChannelBase.h animChannelMatrixXfmTable.I  \
-    animChannelMatrixXfmTable.h animChannelScalarTable.I  \
-    animChannelScalarTable.h animControl.I animControl.N  \
+    animChannelBase.h \
+    animChannelMatrixDynamic.I animChannelMatrixDynamic.h \
+    animChannelMatrixXfmTable.I animChannelMatrixXfmTable.h \
+    animChannelScalarDynamic.I animChannelScalarDynamic.h \
+    animChannelScalarTable.I animChannelScalarTable.h \
+    animControl.I animControl.N  \
     animControl.h animControlCollection.I  \
     animControlCollection.h animGroup.I animGroup.h auto_bind.h  \
     config_chan.h movingPartBase.I movingPartBase.h  \
@@ -28,8 +31,12 @@
     animBundle.cxx \
     animBundleNode.cxx \
     animChannel.cxx  \
-    animChannelBase.cxx animChannelMatrixXfmTable.cxx  \
-    animChannelScalarTable.cxx animControl.cxx  \
+    animChannelBase.cxx \
+    animChannelMatrixDynamic.cxx  \
+    animChannelMatrixXfmTable.cxx  \
+    animChannelScalarDynamic.cxx \
+    animChannelScalarTable.cxx \
+    animControl.cxx  \
     animControlCollection.cxx animGroup.cxx auto_bind.cxx  \
     config_chan.cxx movingPartBase.cxx movingPartMatrix.cxx  \
     movingPartScalar.cxx partBundle.cxx \
@@ -40,9 +47,12 @@
     animBundle.I animBundle.h \
     animBundleNode.I animBundleNode.h \
     animChannel.I animChannel.h animChannelBase.I animChannelBase.h \
-    animChannelFixed.I animChannelFixed.h animChannelMatrixXfmTable.I \
-    animChannelMatrixXfmTable.h animChannelScalarTable.I \
-    animChannelScalarTable.h animControl.I animControl.h \
+    animChannelFixed.I animChannelFixed.h \
+    animChannelMatrixDynamic.I animChannelMatrixDynamic.h \
+    animChannelMatrixXfmTable.I animChannelMatrixXfmTable.h \
+    animChannelScalarDynamic.I animChannelScalarDynamic.h \
+    animChannelScalarTable.I animChannelScalarTable.h \
+    animControl.I animControl.h \
     animControlCollection.I animControlCollection.h animGroup.I \
     animGroup.h auto_bind.h config_chan.h \
     movingPart.I movingPart.h movingPartBase.I \

@@ -38,6 +38,12 @@
 class EXPCL_PANDA AnimChannelMatrixXfmTable : public AnimChannelMatrix {
 public:
   AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name);
+protected:
+  AnimChannelMatrixXfmTable();
+
+public:
+  ~AnimChannelMatrixXfmTable();
+  
 
   virtual bool has_changed(int last_frame, int this_frame);
   virtual void get_value(int frame, LMatrix4f &mat);
@@ -46,16 +52,17 @@ public:
 
   static INLINE bool is_valid_id(char table_id);
 
+PUBLISHED:
   void clear_all_tables();
   void set_table(char table_id, const CPTA_float &table);
   INLINE bool has_table(char table_id) const;
   INLINE CPTA_float get_table(char table_id) const;
   INLINE void clear_table(char table_id);
 
+public:
   virtual void write(ostream &out, int indent_level) const;
 
 protected:
-  AnimChannelMatrixXfmTable(void);
   INLINE static char get_table_id(int table_index);
   static int get_table_index(char table_id);
   INLINE static float get_default_value(int table_index);

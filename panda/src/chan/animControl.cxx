@@ -442,11 +442,6 @@ channel_has_changed(AnimChannelBase *channel) const {
   }
 
   int this_frame = get_frame();
-
-  if (this_frame == _marked_frame) {
-    return false;
-  }
-
   return channel->has_changed(_marked_frame, this_frame);
 }
 

@@ -44,6 +44,7 @@ public:
 
   INLINE AnimChannel(AnimGroup *parent, const string &name);
 
+PUBLISHED:
   virtual void get_value(int frame, ValueType &value)=0;
 
   // These two functions only have meaning for matrix types.

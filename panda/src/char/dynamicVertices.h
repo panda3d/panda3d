@@ -19,22 +19,25 @@
 #ifndef DYNAMICVERTICES_H
 #define DYNAMICVERTICES_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <pointerToArray.h>
-#include <typedObject.h>
-#include <luse.h>
-#include <pta_Vertexf.h>
-#include <pta_Normalf.h>
-#include <pta_Colorf.h>
-#include <pta_TexCoordf.h>
-#include <typedWritable.h>
+#include "pointerToArray.h"
+#include "typedObject.h"
+#include "luse.h"
+#include "pta_Vertexf.h"
+#include "pta_Normalf.h"
+#include "pta_Colorf.h"
+#include "pta_TexCoordf.h"
+#include "typedWritable.h"
 
 class BamReader;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DynamicVertices
-// Description :
+// Description : A table of vertices associated with a Character that
+//               must be computed dynamically each frame.  This is the
+//               actual table of vertices; see ComputedVertices for
+//               the code to compute their values.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DynamicVertices : public TypedWritable {
 public:

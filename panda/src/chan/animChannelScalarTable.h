@@ -19,12 +19,12 @@
 #ifndef ANIMCHANNELSCALARTABLE_H
 #define ANIMCHANNELSCALARTABLE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "animChannel.h"
 
-#include <pointerToArray.h>
-#include <pta_float.h>
+#include "pointerToArray.h"
+#include "pta_float.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AnimChannelScalarTable
@@ -39,10 +39,12 @@ public:
   virtual bool has_changed(int last_frame, int this_frame);
   virtual void get_value(int frame, float &value);
 
+PUBLISHED:
   void set_table(const CPTA_float &table);
   INLINE bool has_table() const;
   INLINE void clear_table();
 
+public:
   virtual void write(ostream &out, int indent_level) const;
 
 protected:

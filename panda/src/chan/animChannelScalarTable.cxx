@@ -59,7 +59,7 @@ AnimChannelScalarTable(void){
 ////////////////////////////////////////////////////////////////////
 bool AnimChannelScalarTable::
 has_changed(int last_frame, int this_frame) {
-  if (_table.size() > 1) {
+  if (last_frame != this_frame && _table.size() > 1) {
     if (_table[last_frame % _table.size()] !=
         _table[this_frame % _table.size()]) {
       return true;

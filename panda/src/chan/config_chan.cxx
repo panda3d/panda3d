@@ -22,7 +22,9 @@
 #include "animBundleNode.h"
 #include "animChannelBase.h"
 #include "animChannelMatrixXfmTable.h"
+#include "animChannelMatrixDynamic.h"
 #include "animChannelScalarTable.h"
+#include "animChannelScalarDynamic.h"
 #include "animControl.h"
 #include "animGroup.h"
 #include "movingPartBase.h"
@@ -81,7 +83,9 @@ ConfigureFn(config_chan) {
   AnimBundleNode::init_type();
   AnimChannelBase::init_type();
   AnimChannelMatrixXfmTable::init_type();
+  AnimChannelMatrixDynamic::init_type();
   AnimChannelScalarTable::init_type();
+  AnimChannelScalarDynamic::init_type();
   AnimControl::init_type();
   AnimGroup::init_type();
   MovingPartBase::init_type();
@@ -108,7 +112,9 @@ ConfigureFn(config_chan) {
   AnimBundle::register_with_read_factory();
   AnimBundleNode::register_with_read_factory();
   AnimChannelMatrixXfmTable::register_with_read_factory();
+  AnimChannelMatrixDynamic::register_with_read_factory();
   AnimChannelScalarTable::register_with_read_factory();
+  AnimChannelScalarDynamic::register_with_read_factory();
 }
 
 

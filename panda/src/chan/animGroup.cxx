@@ -19,13 +19,15 @@
 
 #include "animGroup.h"
 #include "animBundle.h"
+#include "animChannelMatrixDynamic.h"
+#include "animChannelScalarDynamic.h"
 #include "config_chan.h"
 
-#include <indent.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "indent.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 
 #include <algorithm>
@@ -46,6 +48,15 @@ AnimGroup(AnimGroup *parent, const string &name) : Namable(name) {
 
   parent->_children.push_back(this);
   _root = parent->_root;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimGroup::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+AnimGroup::
+~AnimGroup() {
 }
 
 
@@ -86,6 +97,89 @@ find_child(const string &name) const {
       return child;
     }
     AnimGroup *result = child->find_child(name);
+    if (result != (AnimGroup *)NULL) {
+      return result;
+    }
+  }
+
+  return (AnimGroup *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimGroup::make_child_dynamic
+//       Access: Public
+//  Description: Finds the indicated child and replaces it with an
+//               AnimChannelMatrixDynamic or AnimChannelScalarDynamic,
+//               as appropriate, and returns the new channel.
+//
+//               This may be called before binding the animation to a
+//               character to replace certain joints with
+//               dynamically-controlled ones.
+//
+//               Returns NULL if the named child cannot be found.
+////////////////////////////////////////////////////////////////////
+AnimGroup *AnimGroup::
+make_child_dynamic(const string &name) {
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    AnimGroup *child = (*ci);
+    if (child->get_name() == name) {
+      AnimGroup *new_child = NULL;
+
+      if (child->is_of_type(AnimChannelMatrix::get_class_type())) {
+        AnimChannelMatrix *mchild = DCAST(AnimChannelMatrix, child);
+        AnimChannelMatrixDynamic *new_mchild = 
+          new AnimChannelMatrixDynamic(this, name);
+        new_child = new_mchild;
+
+        // Copy in the original value from frame 0.
+        LMatrix4f orig_value;
+        mchild->get_value(0, orig_value);
+        new_mchild->set_value(orig_value);
+
+      } else if (child->is_of_type(AnimChannelScalar::get_class_type())) {
+        AnimChannelScalar *schild = DCAST(AnimChannelScalar, child);
+        AnimChannelScalarDynamic *new_schild = 
+          new AnimChannelScalarDynamic(this, name);
+        new_child = new_schild;
+
+        // Copy in the original value from frame 0.
+        float orig_value;
+        schild->get_value(0, orig_value);
+        new_schild->set_value(orig_value);
+      }
+
+      if (new_child != (AnimGroup *)NULL) {
+        new_child->_children.swap(child->_children);
+        nassertr(_children.back() == new_child, NULL);
+
+        // The new child was appended to the end of our children list
+        // by its constructor.  Reposition it to replace the original
+        // child.
+#ifndef __GNUC__
+        // There appears to be a compiler bug in gcc 3.2 that causes
+        // the following not to compile correctly:
+        (*ci) = new_child;
+        _children.pop_back();
+#else
+        // But this longer way of achieving the same result works
+        // instead:
+        Children::iterator nci;
+        Children new_children;
+        for (nci = _children.begin(); nci != _children.end(); ++nci) {
+          if ((*nci) == child) {
+            new_children.push_back(new_child);
+          } else if ((*nci) != new_child) {
+            new_children.push_back(*nci);
+          }
+        }
+        new_children.swap(_children);
+        new_children.clear();
+#endif
+        return new_child;
+      }
+    }
+    AnimGroup *result = child->make_child_dynamic(name);
     if (result != (AnimGroup *)NULL) {
       return result;
     }
@@ -154,9 +248,13 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void AnimGroup::
 write(ostream &out, int indent_level) const {
-  indent(out, indent_level) << *this << " {\n";
-  write_descendants(out, indent_level + 2);
-  indent(out, indent_level) << "}\n";
+  indent(out, indent_level) << *this;
+  if (!_children.empty()) {
+    out << " {\n";
+    write_descendants(out, indent_level + 2);
+    indent(out, indent_level) << "}";
+  }
+  out << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

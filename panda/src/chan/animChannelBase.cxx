@@ -40,16 +40,6 @@ has_changed(int, int) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelBase::output
-//       Access: Public, Virtual
-//  Description: Writes a one-line description of the channel.
-////////////////////////////////////////////////////////////////////
-void AnimChannelBase::
-output(ostream &out) const {
-  out << get_type() << "(" << get_value_type() << ") " << get_name();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelBase::write_datagram
 //       Access: Public
 //  Description: Function to write the important information in

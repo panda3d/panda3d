@@ -41,10 +41,22 @@ AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name)
   : AnimChannelMatrix(parent, name) {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixXfmTable::Constructor
+//       Access: Protected
+//  Description: Used only for bam loader.
 /////////////////////////////////////////////////////////////
 AnimChannelMatrixXfmTable::
-AnimChannelMatrixXfmTable(void)
-{
+AnimChannelMatrixXfmTable() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixXfmTable::Destructor
+//       Access: Public, Virtual
+//  Description: 
+/////////////////////////////////////////////////////////////
+AnimChannelMatrixXfmTable::
+~AnimChannelMatrixXfmTable() {
 }
 
 
@@ -58,11 +70,13 @@ AnimChannelMatrixXfmTable(void)
 ////////////////////////////////////////////////////////////////////
 bool AnimChannelMatrixXfmTable::
 has_changed(int last_frame, int this_frame) {
-  for (int i = 0; i < num_matrix_components; i++) {
-    if (_tables[i].size() > 1) {
-      if (_tables[i][last_frame % _tables[i].size()] !=
-          _tables[i][this_frame % _tables[i].size()]) {
-        return true;
+  if (last_frame != this_frame) {
+    for (int i = 0; i < num_matrix_components; i++) {
+      if (_tables[i].size() > 1) {
+        if (_tables[i][last_frame % _tables[i].size()] !=
+            _tables[i][this_frame % _tables[i].size()]) {
+          return true;
+        }
       }
     }
   }
