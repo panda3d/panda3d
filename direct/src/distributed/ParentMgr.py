@@ -40,12 +40,12 @@ class ParentMgr:
         if parentToken in self.token2nodepath.keys():
             # this parent has registered
             self.notify.debug("performing wrtReparent of %s to '%s'" %
-                              (child, parentToken))
+                              (repr(child), parentToken))
             child.wrtReparentTo(self.token2nodepath[parentToken])
         else:
             self.notify.warning(
                 "child %s requested reparent to '%s', not in list" %
-                (child, parentToken))
+                (repr(child), parentToken))
             if not self.pendingChildren.has_key(parentToken):
                 self.pendingChildren[parentToken] = []
             self.pendingChildren[parentToken].append(child)
@@ -54,9 +54,9 @@ class ParentMgr:
         if token in self.token2nodepath.keys():
             self.notify.error(
                 "token '%s' already in the table, referencing %s" %
-                (token, self.token2nodepath[token]))
+                (token, repr(self.token2nodepath[token])))
 
-        self.notify.debug("registering %s as '%s'" % (parent, token))
+        self.notify.debug("registering %s as '%s'" % (repr(parent), token))
         self.token2nodepath[token] = parent
 
         # if we have any pending children, add them
@@ -88,7 +88,7 @@ class ParentMgr:
                 # be that the toon will be in the right place when
                 # rendering starts.
                 self.notify.debug("performing reparent of %s to '%s'" %
-                                  (child, token))
+                                  (repr(child), token))
                 child.reparentTo(self.token2nodepath[token])
             del self.pendingChildren[token]
 
