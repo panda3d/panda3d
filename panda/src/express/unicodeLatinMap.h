@@ -34,7 +34,7 @@
 //               case from upper to lower while retaining the Unicode
 //               accent marks.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA UnicodeLatinMap {
+class EXPCL_PANDAEXPRESS UnicodeLatinMap {
 public:
   enum AccentType {
     AT_none,
