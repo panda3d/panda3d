@@ -14,6 +14,16 @@
   #define OTHER_LIBS $[OTHER_LIBS] pystub
 
   #define SOURCES \
-    directdServer.cxx
+    directdServer.cxx directdServer.h
 
 #end bin_target
+
+#begin test_bin_target
+  #define TARGET directdClient
+  #define LOCAL_LIBS directd
+  #define OTHER_LIBS $[OTHER_LIBS] pystub
+
+  #define SOURCES \
+    directdClient.cxx directdClient.h
+
+#end test_bin_target

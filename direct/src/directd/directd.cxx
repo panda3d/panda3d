@@ -147,31 +147,8 @@ DirectD::~DirectD() {
   cerr<<"DirectD dtor"<<endl;
 }
 
-
-
-DirectDServer::DirectDServer() {
-}
-
-DirectDServer::~DirectDServer() {
-}
-
-
-
-DirectDClient::DirectDClient() {
-}
-
-DirectDClient::~DirectDClient() {
-}
-
-void
-DirectDClient::handle_command(const string& cmd) {
-  if (_verbose) {
-    cerr<<"command: "<<cmd<<endl;
-  }
-}
-
 int 
-DirectD::client_is_ready(const string& client_host, int port) {
+DirectD::client_ready(const string& client_host, int port) {
   connect_to(client_host, port);
   send_command("s");
   disconnect_from(client_host, port);
@@ -206,7 +183,8 @@ DirectD::wait_for_servers(int count, int timeout_ms) {
         //handle_datagram(datagram);
         DatagramIterator di(datagram);
         string s=di.get_string();
-        if (s=="r" && --count) {
+        cerr<<"wait_for_servers() count="<<count<<", s="<<s<<endl;
+        if (s=="r" && !--count) {
           return true;
         }
       }
@@ -221,36 +199,15 @@ DirectD::wait_for_servers(int count, int timeout_ms) {
 }
 
 int 
-DirectD::server_is_ready(const string& client_host, int port) {
-  connect_to(client_host, port);
-  send_command("r");
-  disconnect_from(client_host, port);
+DirectD::server_ready(const string& client_host, int port) {
+  send_one_message(client_host, port, "r");
   return 0;
 }
 
-void
-DirectD::set_host_name(const string& host_name) {
-  _host_name=host_name;
-}
-
-void
-DirectD::set_port(int port) {
-  _port=port;
-}
-
-void
-DirectD::send_start_app(const string& cmd) {
-  
-}
 
 void
 DirectD::start_app(const string& cmd) {
   _app_pid=StartApp(cmd);
-}
-
-void
-DirectD::send_kill_app(const string& cmd) {
-  
 }
 
 void
@@ -273,29 +230,6 @@ DirectD::send_command(const string& cmd) {
 }
 
 void
-DirectD::cli_command(const string& cmd) {
-  cerr<<"command "<<cmd<<endl;
-  if (cmd[0]=='!') {
-    // ...connect to host.
-    cerr<<"Local command "<<flush;
-    string code;
-    cin >> code;
-    string host;
-    cin >> host;
-    int port;
-    cin >> port;
-    cerr<<"connect ("<<code<<") to "<<host<<" port "<<port<<endl;
-    connect_to(host, port);
-  } else {
-    send_command(cmd);
-    if (cmd[0] == 'q' && cmd.size()==1) {
-      // ...user entered quit command.
-      exit(0);
-    }
-  }
-}
-
-void
 DirectD::handle_datagram(NetDatagram& datagram){
   DatagramIterator di(datagram);
   string cmd=di.get_string();
@@ -307,47 +241,38 @@ DirectD::handle_command(const string& cmd) {
   if (_verbose) {
     cerr<<"command: "<<cmd<<endl;
   }
-  if (cmd.size()==1) {
-    switch (cmd[0]) {
-    case 's': {
-      string c;
-      read_command(c);
-      start_app(c);
-      }
-      break;
-    case 'k':
-      kill_app();
-      break;
-    case 'q':
-      _shutdown=true;
-      break;
-    default:
-      cerr<<"unknown command: "<<cmd<<endl;
-    }
-  } else {
-    start_app(cmd);
-  }
 }
 
 void
-DirectD::read_command(string& cmd) {
-  try {
-    ifstream f;
-    f.open("directdCommand", ios::in | ios::binary);
-    stringstream ss;
-    const buf_size=512;
-    char buf[buf_size];
-    f.getline(buf, buf_size);
-    if (f.gcount() > 0) {
-      cmd = buf;
-      cerr<<"read_command "<<cmd<<endl;
-    }
-    f.close();
-  } catch (...) {
-    // This could be bad, I suppose.  But we're going to throw out
-    // any exceptions that happen during the above read.
-    cerr<<"DirectD::read_command() exception."<<endl;
+DirectD::send_one_message(const string& host_name, 
+    int port,
+    const string& message) {
+  NetAddress host;
+  if (!host.set_host(host_name, port)) {
+    nout << "Unknown host: " << host_name << "\n";
   }
+
+  const int timeout_ms=5000;
+  PT(Connection) c = _cm.open_TCP_client_connection(host, timeout_ms);
+  if (c.is_null()) {
+    nout << "No connection.\n";
+    return;
+  }
+
+  nout << "Successfully opened TCP connection to " << host_name
+       << " on port "
+       << c->get_address().get_port() << " and IP "
+       << c->get_address() << "\n";
+
+  //_reader.add_connection(c);
+  
+  NetDatagram datagram;
+  datagram.add_string(message);
+  _writer.send(datagram, c);
+  
+  //PR_Sleep(PR_MillisecondsToInterval(200));
+  //_reader.remove_connection(c);
+  _cm.close_connection(c);
 }
 
 void
@@ -361,7 +286,7 @@ DirectD::connect_to(const string& host_name, int port) {
   PT(Connection) c = _cm.open_TCP_client_connection(host, timeout_ms);
   if (c.is_null()) {
     nout << "No connection.\n";
-    exit(1);
+    return;
   }
 
   nout << "Successfully opened TCP connection to " << host_name
@@ -375,11 +300,13 @@ DirectD::connect_to(const string& host_name, int port) {
 
 void
 DirectD::disconnect_from(const string& host_name, int port) {
+  nout<<"disconnect_from(\""<<host_name<<", port="<<port<<")"<<endl;
   for (ConnectionSet::iterator i=_connections.begin(); i != _connections.end(); ++i) {
-    if ((*i)->get_address().get_ip_string()==host_name 
-        && (*i)->get_address().get_port()==port) {
-      _cm.close_connection((*i));
+    nout<<"    found "<<(*i)->get_address().get_ip_string()<<", port "<<(*i)->get_address().get_port()<<endl;
+    if ((*i)->get_address().get_ip_string()==host_name) {
+      nout<<"    disconnecting."<<endl;
       _reader.remove_connection((*i));
+      _cm.close_connection((*i));
       _connections.erase(i);
       break;
     }
@@ -444,40 +371,4 @@ DirectD::check_for_new_clients() {
       _connections.insert(new_connection);
     }
   }
-}
-
-void
-DirectD::run_server() {
-  if (_verbose) cerr<<"server"<<endl;
-  
-  listen_to(_port);
-
-  while (1) {
-    check_for_new_clients();
-    check_for_lost_connection();
-    check_for_datagrams();
-
-    // Yield the timeslice before we poll again.
-    PR_Sleep(PR_MillisecondsToInterval(200));
-  }
-}
-
-void
-DirectD::run_client() {
-  if (_verbose) {
-    cerr<<"client"<<endl;
-  }
-  
-  connect_to(_host_name, _port);
-
-  while (!cin.fail() && _connections.size()!=0) {
-    cout << "directd send: " << flush;
-    string d;
-    cin >> d;
-    cli_command(d);
-
-    check_for_lost_connection();
-    check_for_datagrams();
-  }
-  nout << "Exiting\n";
 }

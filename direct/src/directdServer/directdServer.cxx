@@ -1,6 +1,5 @@
-// Filename: directd.cxx
+// Filename: directdServer.cxx
 // Created by:  skyler 2002.04.08
-// Based on test_tcp_*.* by drose.
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -17,40 +16,93 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "directd.h"
+#include "directdServer.h"
+
+DirectDServer::DirectDServer() {
+}
+
+DirectDServer::~DirectDServer() {
+}
+
+void
+DirectDServer::handle_command(const string& cmd) {
+  if (_verbose) {
+    cerr<<"command: "<<cmd<<endl;
+  }
+  if (cmd.size()==1) {
+    switch (cmd[0]) {
+    case 's': {
+      string c;
+      read_command(c);
+      start_app(c);
+      }
+      break;
+    case 'k':
+      kill_app();
+      break;
+    case 'q':
+      _shutdown=true;
+      break;
+    default:
+      cerr<<"unknown command: "<<cmd<<endl;
+    }
+  } else {
+    start_app(cmd);
+  }
+}
+
+void
+DirectDServer::read_command(string& cmd) {
+  try {
+    ifstream f;
+    f.open("directdCommand", ios::in | ios::binary);
+    stringstream ss;
+    const buf_size=512;
+    char buf[buf_size];
+    f.getline(buf, buf_size);
+    if (f.gcount() > 0) {
+      cmd = buf;
+      cerr<<"read_command "<<cmd<<endl;
+    }
+    f.close();
+  } catch (...) {
+    // This could be bad, I suppose.  But we're going to throw out
+    // any exceptions that happen during the above read.
+    cerr<<"DirectD::read_command() exception."<<endl;
+  }
+}
+
+void
+DirectDServer::run_server(int port) {
+  if (_verbose) cerr<<"server"<<endl;
+  
+  listen_to(port);
+
+  while (!_shutdown) {
+    check_for_new_clients();
+    check_for_lost_connection();
+    check_for_datagrams();
+
+    // Yield the timeslice before we poll again.
+    PR_Sleep(PR_MillisecondsToInterval(200));
+  }
+}
 
 int
 main(int argc, char *argv[]) {
   if (argc > 1 && strcmp(argv[1], "--help")==0) {
-    cerr<<"directd [-c <host>] <port>\n"
-    "    -c        run as client (else run as server).\n"
-    "    host      e.g. localhost\n"
+    cerr<<"directd [<port>]\n"
     "    port      default 8001\n";
     return 1;
   }
 
-  cerr<<"directd"<<endl;
-  DirectD directd;
-  if (argc >= 3) {
-    string host=argv[argc-2];
-    directd.set_host_name(host);
-  }
-  char run_as=' ';
+  cerr<<"directdServer"<<endl;
+  int port=8001;
   if (argc > 1) {
-    directd.set_port(atoi(argv[argc-1]));
-    if (strlen(argv[1]) > 1 && argv[1][0] == '-') {
-      run_as=argv[1][1];
-    }
+    port=(atoi(argv[argc-1]));
   }
-  switch (run_as) {
-  case 's':
-    directd.run_server();
-    break;
-  case 'c':
-  default:
-    directd.run_client();
-    break;
-  }
+  DirectDServer directd;
+  directd.run_server(port);
   
   return 0;
 }
