@@ -22,8 +22,12 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.setClientDatagram(1)
 
         self.recorder = base.recorder
-        
-        self.doId2do={}
+
+        # Dict of {DistributedObject ids : DistributedObjects}
+        self.doId2do = {}
+        if wantOtpServer:
+            # Dict of {parent DistributedObject id : {zoneIds : [child DistributedObject ids]}}
+            self.__doHierarchy = {}
         self.readDCFile()
         self.cache=CRCache.CRCache()
         self.serverDelta = 0
@@ -138,52 +142,132 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         it should be accurate plus or minus a couple of seconds.
         """
         return time.time() + self.serverDelta
-       
-    def handleObjectLocation(self, di):
-        # CLEINT_OBJECT_LOCATION        
-        ThedoId = di.getUint32()
-        TheParent = di.getUint32()
-        TheZone = di.getUint32()    
-        print "Object Location->Id=%s Parent=%s Zone=%s"%(ThedoId,TheParent, TheZone)
-        
+
+    if wantOtpServer:
+        def handleObjectLocation(self, di):
+            # CLIENT_OBJECT_LOCATION        
+            doId = di.getUint32()
+            parentId = di.getUint32()
+            zoneId = di.getUint32()
+            obj = self.doId2do.get(doId)
+            if (obj != None):
+                self.notify.info("handleObjectLocation: doId: %s parentId: %s zoneId: %s" %
+                                 (doId, parentId, zoneId))
+                # Let the object finish the job
+                obj.setLocation(parentId, zoneId)
+            else:
+                ClientRepository.notify.warning(
+                    "handleObjectLocation: Asked to update non-existent obj: %s" % (doId))
+
+        def storeObjectLocation(self, objId, parentId, zoneId):
+            # Do not store null values
+            if ((parentId is None) or (zoneId is None)):
+                return
+
+            # TODO: check current location
+            obj = self.doId2do.get(objId)
+            oldParentId, oldZoneId = obj.getLocation()
+
+            # Case 1: Same parent, new zone
+            if (oldParentId == parentId):
+                parentZoneDict = self.__doHierarchy.get(parentId)
+                # Remove this objId from the old zone list
+                oldObjList = parentZoneDict.get(oldZoneId)
+                oldObjList.remove(objId)
+                # Add it to the new zone list
+                objList = parentZoneDict.get(zoneId)
+                if objList is None:
+                    # No existing objList for this zone, let's make a new one
+                    parentZoneDict[zoneId] = [objId]
+                    return
+                else:
+                    # Just add this objId to the existing list
+                    assert(objId not in objList)
+                    objList.append(objId)
+                    return 
+
+            # Case 2: New parent, valid old parent
+            # First delete the old location
+            if ((oldParentId is not None) and (oldZoneId is not None)):
+                self.deleteObjectLocation(objId, oldParentId, oldZoneId)
+                # Do not return because we still need to add to the new location
+
+            # Case 2: continued, already deleted from old location
+            # Case 3: New parent - no old parent
+            parentZoneDict = self.__doHierarchy.get(parentId)
+            if parentZoneDict is None:
+                # This parent is not here, just fill the whole entry in
+                self.__doHierarchy[parentId] = {zoneId : [objId]}
+            else:
+                objList = parentZoneDict.get(zoneId)
+                if objList is None:
+                    # This parent has no objects in this zone before
+                    # create a new entry for this zone and list this objId
+                    parentZoneDict[zoneId] = [objId]
+                else:
+                    # Just add this objId to the existing list
+                    objList.append(objId)
+
+        def deleteObjectLocation(self, objId, parentId, zoneId):
+            # Do not worry about null values
+            if ((parentId is None) or (zoneId is None)):
+                return
+            parentZoneDict = self.__doHierarchy.get(parentId)
+            assert(parentZoneDict is not None, "deleteObjectLocation: parentId: %s not found" % (parentId))
+            objList = parentZoneDict.get(zoneId)
+            assert(objList is not None, "deleteObjectLocation: zoneId: %s not found" % (zoneId))
+            assert(objId in objList, "deleteObjectLocation: objId: %s not found" % (objId))
+            if len(objList) == 1:
+                # If this is the last obj in this zone, delete the entire entry
+                del parentZoneDict[zoneId]
+            else:
+                # Just remove the object
+                objList.remove(objId)
+            
 
     def handleGenerateWithRequired(self, di):
-        if  wantOtpServer:        
-            TheParent = di.getUint32()
-            TheZone = di.getUint32()    
+        if wantOtpServer:        
+            parentId = di.getUint32()
+            zoneId = di.getUint32()
         # Get the class Id
-        classId = di.getUint16();
+        classId = di.getUint16()
         # Get the DO Id
         doId = di.getUint32()
         # Look up the dclass                       
         dclass = self.dclassesByNumber[classId]
         dclass.startGenerate()
         # Create a new distributed object, and put it in the dictionary
-        distObj = self.generateWithRequiredFields(dclass, doId, di)
+        if wantOtpServer:
+            distObj = self.generateWithRequiredFields(dclass, doId, di, parentId, zoneId)
+        else:
+            distObj = self.generateWithRequiredFields(dclass, doId, di)
         dclass.stopGenerate()
 
     def handleGenerateWithRequiredOther(self, di):
         if wantOtpServer:        
-            TheParent = di.getUint32()
-            TheZone = di.getUint32()            
+            parentId = di.getUint32()
+            zoneId = di.getUint32()            
         # Get the class Id
-        classId = di.getUint16();
+        classId = di.getUint16()
         # Get the DO Id
         doId = di.getUint32()
         # Look up the dclass
         dclass = self.dclassesByNumber[classId]
         dclass.startGenerate()
         # Create a new distributed object, and put it in the dictionary
-        distObj = self.generateWithRequiredOtherFields(dclass, doId, di)
+        if wantOtpServer:
+            distObj = self.generateWithRequiredOtherFields(dclass, doId, di, parentId, zoneId)
+        else:
+            distObj = self.generateWithRequiredOtherFields(dclass, doId, di)
         dclass.stopGenerate()
 
     def handleQuietZoneGenerateWithRequired(self, di):
         # Special handler for quiet zone generates -- we need to filter
         if wantOtpServer:        
-            TheParent = di.getUint32()
-            TheZone = di.getUint32()                    
+            parentId = di.getUint32()
+            zoneId = di.getUint32()                    
         # Get the class Id
-        classId = di.getUint16();
+        classId = di.getUint16()
         # Get the DO Id
         doId = di.getUint32()
         # Look up the dclass
@@ -196,16 +280,16 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                 # Create a new distributed object, and put it in the dictionary
                 distObj = self.generateWithRequiredFields(dclass, doId, di)
         else:
-            distObj = self.generateWithRequiredFields(dclass, doId, di)
+            distObj = self.generateWithRequiredFields(dclass, doId, di, parentId, zoneId)
         dclass.stopGenerate()
 
     def handleQuietZoneGenerateWithRequiredOther(self, di):
         # Special handler for quiet zone generates -- we need to filter
         if wantOtpServer:        
-            TheParent = di.getUint32()
-            TheZone = di.getUint32()                    
+            parentId = di.getUint32()
+            zoneId = di.getUint32()                    
         # Get the class Id
-        classId = di.getUint16();
+        classId = di.getUint16()
         # Get the DO Id
         doId = di.getUint32()
         # Look up the dclass
@@ -218,15 +302,18 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                 # Create a new distributed object, and put it in the dictionary
                 distObj = self.generateWithRequiredOtherFields(dclass, doId, di)
         else:
-            distObj = self.generateWithRequiredOtherFields(dclass, doId, di)
+            distObj = self.generateWithRequiredOtherFields(dclass, doId, di, parentId, zoneId)
         dclass.stopGenerate()
 
-    def generateWithRequiredFields(self, dclass, doId, di):
+    # wantOtpServer: remove the None defaults when we remove this config variable
+    def generateWithRequiredFields(self, dclass, doId, di, parentId = None, zoneId = None):
         if self.doId2do.has_key(doId):
             # ...it is in our dictionary.
             # Just update it.
             distObj = self.doId2do[doId]
             assert(distObj.dclass == dclass)
+            if wantOtpServer:
+                distObj.setLocation(parentId, zoneId)
             distObj.generate()
             distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
@@ -238,6 +325,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # put it in the dictionary:
             self.doId2do[doId] = distObj
             # and update it.
+            if wantOtpServer:
+                distObj.setLocation(parentId, zoneId)
             distObj.generate()
             distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
@@ -254,6 +343,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # Put the new do in the dictionary
             self.doId2do[doId] = distObj
             # Update the required fields
+            if wantOtpServer:
+                distObj.setLocation(parentId, zoneId)
             distObj.generateInit()  # Only called when constructed
             distObj.generate()
             distObj.updateRequiredFields(dclass, di)
@@ -279,17 +370,24 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # Put the new do in the dictionary
         self.doId2do[doId] = distObj
         # Update the required fields
+        if wantOtpServer:
+            # TODO: ROGER: where should we get parentId and zoneId?
+            parentId = None
+            zoneId = None
+            distObj.setLocation(parentId, zoneId)
         distObj.generateInit()  # Only called when constructed
         distObj.generate()
         # updateRequiredFields calls announceGenerate
         return  distObj
 
-    def generateWithRequiredOtherFields(self, dclass, doId, di):
+    def generateWithRequiredOtherFields(self, dclass, doId, di, parentId = None, zoneId = None):
         if self.doId2do.has_key(doId):
             # ...it is in our dictionary.
             # Just update it.
             distObj = self.doId2do[doId]
             assert(distObj.dclass == dclass)
+            if wantOtpServer:
+                distObj.setLocation(parentId, zoneId)
             distObj.generate()
             distObj.updateRequiredOtherFields(dclass, di)
             # updateRequiredOtherFields calls announceGenerate
@@ -301,6 +399,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # put it in the dictionary:
             self.doId2do[doId] = distObj
             # and update it.
+            if wantOtpServer:
+                distObj.setLocation(parentId, zoneId)
             distObj.generate()
             distObj.updateRequiredOtherFields(dclass, di)
             # updateRequiredOtherFields calls announceGenerate
@@ -317,6 +417,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             # Put the new do in the dictionary
             self.doId2do[doId] = distObj
             # Update the required fields
+            if wantOtpServer:
+                distObj.setLocation(parentId, zoneId)
             distObj.generateInit()  # Only called when constructed
             distObj.generate()
             distObj.updateRequiredOtherFields(dclass, di)
@@ -467,7 +569,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             self.handleGenerateWithRequiredOther(di)
         elif wantOtpServer and msgType == CLIENT_DONE_SET_ZONE_RESP:
             self.handleSetZoneDone()                    
-        elif  wantOtpServer and msgType ==  CLEINT_OBJECT_LOCATION:        
+        elif  wantOtpServer and msgType == CLIENT_OBJECT_LOCATION:        
             self.handleObjectLocation(di)
         else:
             currentLoginState = self.loginFSM.getCurrentState()
@@ -541,22 +643,22 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         ## interest managment 
         ##
         ##
-        def InterestAdd(self,  parentId, zoneId, Description):        
+        def InterestAdd(self, parentId, zoneId, Description):        
             """
             Part of the new otp-server code.
             """
             self.__interest_id_assign += 1
             self.__interesthash[self.__interest_id_assign] = Description
-            contextId = self.__interest_id_assign;
+            contextId = self.__interest_id_assign
             self.__sendAddInterest(contextId, parentId, zoneId)
             self.DumpInterests()
-            return contextId;
+            return contextId
             
         def InterestRemove(self,  contextId):        
             """
             Part of the new otp-server code.
             """
-            answer = 0;
+            answer = 0
             if  self.__interesthash.has_key(contextId):
                 self.__sendRemoveInterest(contextId)
                 del self.__interesthash[contextId]
