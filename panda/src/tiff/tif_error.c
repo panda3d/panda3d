@@ -35,10 +35,10 @@ static char rcsid[] = "$Header$";
 static void
 defaultHandler(const char* module, const char* fmt, va_list ap)
 {
-	if (module != NULL)
-		fprintf(stderr, "%s: ", module);
-	vfprintf(stderr, fmt, ap);
-	fprintf(stderr, ".\n");
+        if (module != NULL)
+                fprintf(stderr, "%s: ", module);
+        vfprintf(stderr, fmt, ap);
+        fprintf(stderr, ".\n");
 }
 
 static TIFFErrorHandler _errorHandler = defaultHandler;
@@ -46,18 +46,18 @@ static TIFFErrorHandler _errorHandler = defaultHandler;
 TIFFErrorHandler
 TIFFSetErrorHandler(TIFFErrorHandler handler)
 {
-	TIFFErrorHandler prev = _errorHandler;
-	_errorHandler = handler;
-	return (prev);
+        TIFFErrorHandler prev = _errorHandler;
+        _errorHandler = handler;
+        return (prev);
 }
 
 void
 TIFFError(const char* module, const char* fmt, ...)
 {
-	if (_errorHandler) {
-		va_list ap;
-		va_start(ap, fmt);
-		(*_errorHandler)(module, fmt, ap);
-		va_end(ap);
-	}
+        if (_errorHandler) {
+                va_list ap;
+                va_start(ap, fmt);
+                (*_errorHandler)(module, fmt, ap);
+                va_end(ap);
+        }
 }

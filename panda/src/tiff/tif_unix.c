@@ -35,25 +35,25 @@ static char rcsid[] = "$Header$";
 static tsize_t
 _tiffReadProc(thandle_t fd, tdata_t buf, tsize_t size)
 {
-	return (read((int) fd, buf, (size_t) size));
+        return (read((int) fd, buf, (size_t) size));
 }
 
 static tsize_t
 _tiffWriteProc(thandle_t fd, tdata_t buf, tsize_t size)
 {
-	return (write((int) fd, buf, (size_t) size));
+        return (write((int) fd, buf, (size_t) size));
 }
 
 static toff_t
 _tiffSeekProc(thandle_t fd, off_t off, int whence)
 {
-	return ((toff_t) lseek((int) fd, (off_t) off, whence));
+        return ((toff_t) lseek((int) fd, (off_t) off, whence));
 }
 
 static int
 _tiffCloseProc(thandle_t fd)
 {
-	return (close((int) fd));
+        return (close((int) fd));
 }
 
 #include <sys/stat.h>
@@ -62,11 +62,11 @@ static toff_t
 _tiffSizeProc(thandle_t fd)
 {
 #ifdef _AM29K
-	long fsize;
-	return ((fsize = lseek((int) fd, 0, SEEK_END)) < 0 ? 0 : fsize);
+        long fsize;
+        return ((fsize = lseek((int) fd, 0, SEEK_END)) < 0 ? 0 : fsize);
 #else
-	struct stat sb;
-	return (toff_t) (fstat((int) fd, &sb) < 0 ? 0 : sb.st_size);
+        struct stat sb;
+        return (toff_t) (fstat((int) fd, &sb) < 0 ? 0 : sb.st_size);
 #endif
 }
 
@@ -76,28 +76,28 @@ _tiffSizeProc(thandle_t fd)
 static int
 _tiffMapProc(thandle_t fd, tdata_t* pbase, toff_t* psize)
 {
-	toff_t size = _tiffSizeProc(fd);
-	if (size != (toff_t) -1) {
-		*pbase = (tdata_t)
-		    mmap(0, size, PROT_READ, MAP_SHARED, (int) fd, 0);
-		if (*pbase != (tdata_t) -1) {
-			*psize = size;
-			return (1);
-		}
-	}
-	return (0);
+        toff_t size = _tiffSizeProc(fd);
+        if (size != (toff_t) -1) {
+                *pbase = (tdata_t)
+                    mmap(0, size, PROT_READ, MAP_SHARED, (int) fd, 0);
+                if (*pbase != (tdata_t) -1) {
+                        *psize = size;
+                        return (1);
+                }
+        }
+        return (0);
 }
 
 static void
 _tiffUnmapProc(thandle_t fd, tdata_t base, toff_t size)
 {
-	(void) munmap(base, (off_t) size);
+        (void) munmap(base, (off_t) size);
 }
 #else /* !MMAP_SUPPORT */
 static int
 _tiffMapProc(thandle_t fd, tdata_t* pbase, toff_t* psize)
 {
-	return (0);
+        return (0);
 }
 
 static void
@@ -112,16 +112,16 @@ _tiffUnmapProc(thandle_t fd, tdata_t base, toff_t size)
 TIFF*
 TIFFFdOpen(int fd, const char* name, const char* mode)
 {
-	TIFF* tif;
+        TIFF* tif;
 
-	tif = TIFFClientOpen(name, mode,
-	    (thandle_t) fd,
-	    _tiffReadProc, _tiffWriteProc,
-	    _tiffSeekProc, _tiffCloseProc, _tiffSizeProc,
-	    _tiffMapProc, _tiffUnmapProc);
-	if (tif)
-		tif->tif_fd = fd;
-	return (tif);
+        tif = TIFFClientOpen(name, mode,
+            (thandle_t) fd,
+            _tiffReadProc, _tiffWriteProc,
+            _tiffSeekProc, _tiffCloseProc, _tiffSizeProc,
+            _tiffMapProc, _tiffUnmapProc);
+        if (tif)
+                tif->tif_fd = fd;
+        return (tif);
 }
 
 /*
@@ -130,38 +130,38 @@ TIFFFdOpen(int fd, const char* name, const char* mode)
 TIFF*
 TIFFOpen(const char* name, const char* mode)
 {
-	static const char module[] = "TIFFOpen";
-	int m, fd;
+        static const char module[] = "TIFFOpen";
+        int m, fd;
 
-	m = _TIFFgetMode(mode, module);
-	if (m == -1)
-		return ((TIFF*)0);
+        m = _TIFFgetMode(mode, module);
+        if (m == -1)
+                return ((TIFF*)0);
 #ifdef _AM29K
-	fd = open(name, m);
+        fd = open(name, m);
 #else
-	fd = open(name, m, 0666);
+        fd = open(name, m, 0666);
 #endif
-	if (fd < 0) {
-		TIFFError(module, "%s: Cannot open", name);
-		return ((TIFF *)0);
-	}
-	return (TIFFFdOpen(fd, name, mode));
+        if (fd < 0) {
+                TIFFError(module, "%s: Cannot open", name);
+                return ((TIFF *)0);
+        }
+        return (TIFFFdOpen(fd, name, mode));
 }
 
 void*
 _TIFFmalloc(size_t s)
 {
-	return (malloc(s));
+        return (malloc(s));
 }
 
 void
 _TIFFfree(void* p)
 {
-	free(p);
+        free(p);
 }
 
 void*
 _TIFFrealloc(void* p, size_t s)
 {
-	return (realloc(p, s));
+        return (realloc(p, s));
 }

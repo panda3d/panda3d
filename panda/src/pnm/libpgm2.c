@@ -32,21 +32,21 @@ pgm_writepgminit( file, cols, rows, maxval, forceplain )
     {
 #ifdef PBMPLUS_RAWBITS
     if ( maxval <= 255 && ! forceplain ) {
-	fprintf(
-	    file, "%c%c\n%d %d\n%d\n", PGM_MAGIC1, RPGM_MAGIC2,
-	    cols, rows, maxval );
+        fprintf(
+            file, "%c%c\n%d %d\n%d\n", PGM_MAGIC1, RPGM_MAGIC2,
+            cols, rows, maxval );
 #ifdef VMS
         set_outfile_binary();
 #endif
         }
     else
-	fprintf(
-	    file, "%c%c\n%d %d\n%d\n", PGM_MAGIC1, PGM_MAGIC2,
-	    cols, rows, maxval );
+        fprintf(
+            file, "%c%c\n%d %d\n%d\n", PGM_MAGIC1, PGM_MAGIC2,
+            cols, rows, maxval );
 #else /*PBMPLUS_RAWBITS*/
     fprintf(
-	file, "%c%c\n%d %d\n%d\n", PGM_MAGIC1, PGM_MAGIC2,
-	cols, rows, maxval );
+        file, "%c%c\n%d %d\n%d\n", PGM_MAGIC1, PGM_MAGIC2,
+        cols, rows, maxval );
 #endif /*PBMPLUS_RAWBITS*/
     }
 
@@ -56,7 +56,7 @@ putus( n, file )
     FILE* file;
     {
     if ( n >= 10 )
-	putus( n / 10, file );
+        putus( n / 10, file );
     (void) putc( n % 10 + '0', file );
     }
 
@@ -68,13 +68,13 @@ pgm_writepgmrowraw(FILE* file,gray* grayrow,int cols,gray maxval)
     register gray* gP;
 
     for ( col = 0, gP = grayrow; col < cols; ++col, ++gP )
-	{
+        {
 #ifdef DEBUG
-	if ( *gP > maxval )
-	    pm_error( "value out of bounds (%u > %u)", *gP, maxval );
+        if ( *gP > maxval )
+            pm_error( "value out of bounds (%u > %u)", *gP, maxval );
 #endif /*DEBUG*/
-	(void) putc( *gP, file );
-	}
+        (void) putc( *gP, file );
+        }
     }
 #endif /*PBMPLUS_RAWBITS*/
 
@@ -86,26 +86,26 @@ pgm_writepgmrowplain(FILE* file,gray* grayrow,int cols,gray maxval)
 
     charcount = 0;
     for ( col = 0, gP = grayrow; col < cols; ++col, ++gP )
-	{
-	if ( charcount >= 65 )
-	    {
-	    (void) putc( '\n', file );
-	    charcount = 0;
-	    }
-	else if ( charcount > 0 )
-	    {
-	    (void) putc( ' ', file );
-	    ++charcount;
-	    }
+        {
+        if ( charcount >= 65 )
+            {
+            (void) putc( '\n', file );
+            charcount = 0;
+            }
+        else if ( charcount > 0 )
+            {
+            (void) putc( ' ', file );
+            ++charcount;
+            }
 #ifdef DEBUG
-	if ( *gP > maxval )
-	    pm_error( "value out of bounds (%u > %u)", *gP, maxval );
+        if ( *gP > maxval )
+            pm_error( "value out of bounds (%u > %u)", *gP, maxval );
 #endif /*DEBUG*/
-	putus( (unsigned long) *gP, file );
-	charcount += 3;
-	}
+        putus( (unsigned long) *gP, file );
+        charcount += 3;
+        }
     if ( charcount > 0 )
-	(void) putc( '\n', file );
+        (void) putc( '\n', file );
     }
 
 #if __STDC__
@@ -123,9 +123,9 @@ pgm_writepgmrow( file, grayrow, cols, maxval, forceplain )
     {
 #ifdef PBMPLUS_RAWBITS
     if ( maxval <= 255 && ! forceplain )
-	pgm_writepgmrowraw( file, grayrow, cols, maxval );
+        pgm_writepgmrowraw( file, grayrow, cols, maxval );
     else
-	pgm_writepgmrowplain( file, grayrow, cols, maxval );
+        pgm_writepgmrowplain( file, grayrow, cols, maxval );
 #else /*PBMPLUS_RAWBITS*/
     pgm_writepgmrowplain( file, grayrow, cols, maxval );
 #endif /*PBMPLUS_RAWBITS*/
@@ -149,5 +149,5 @@ pgm_writepgm( file, grays, cols, rows, maxval, forceplain )
     pgm_writepgminit( file, cols, rows, maxval, forceplain );
 
     for ( row = 0; row < rows; ++row )
-	 pgm_writepgmrow( file, grays[row], cols, maxval, forceplain );
+         pgm_writepgmrow( file, grays[row], cols, maxval, forceplain );
     }

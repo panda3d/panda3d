@@ -25,13 +25,13 @@ pbm_writepbminit( file, cols, rows, forceplain )
     {
 #ifdef PBMPLUS_RAWBITS
     if ( ! forceplain ) {
-	fprintf( file, "%c%c\n%d %d\n", PBM_MAGIC1, RPBM_MAGIC2, cols, rows );
+        fprintf( file, "%c%c\n%d %d\n", PBM_MAGIC1, RPBM_MAGIC2, cols, rows );
 #ifdef VMS
         set_outfile_binary();
 #endif
         }
     else
-	fprintf( file, "%c%c\n%d %d\n", PBM_MAGIC1, PBM_MAGIC2, cols, rows );
+        fprintf( file, "%c%c\n%d %d\n", PBM_MAGIC1, PBM_MAGIC2, cols, rows );
 #else /*PBMPLUS_RAWBITS*/
     fprintf( file, "%c%c\n%d %d\n", PBM_MAGIC1, PBM_MAGIC2, cols, rows );
 #endif /*PBMPLUS_RAWBITS*/
@@ -51,19 +51,19 @@ pbm_writepbmrowraw( file, bitrow, cols )
     bitshift = 7;
     item = 0;
     for ( col = 0, bP = bitrow; col < cols; ++col, ++bP )
-	{
-	if ( *bP )
-	    item += 1 << bitshift;
-	--bitshift;
-	if ( bitshift == -1 )
-	    {
-	    (void) putc( item, file );
-	    bitshift = 7;
-	    item = 0;
-	    }
-	}
+        {
+        if ( *bP )
+            item += 1 << bitshift;
+        --bitshift;
+        if ( bitshift == -1 )
+            {
+            (void) putc( item, file );
+            bitshift = 7;
+            item = 0;
+            }
+        }
     if ( bitshift != 7 )
-	(void) putc( item, file );
+        (void) putc( item, file );
     }
 #endif /*PBMPLUS_RAWBITS*/
 
@@ -78,15 +78,15 @@ pbm_writepbmrowplain( file, bitrow, cols )
 
     charcount = 0;
     for ( col = 0, bP = bitrow; col < cols; ++col, ++bP )
-	{
-	if ( charcount >= 70 )
-	    {
-	    (void) putc( '\n', file );
-	    charcount = 0;
-	    }
-	(void) putc( *bP ? '1' : '0', file );
-	++charcount;
-	}
+        {
+        if ( charcount >= 70 )
+            {
+            (void) putc( '\n', file );
+            charcount = 0;
+            }
+        (void) putc( *bP ? '1' : '0', file );
+        ++charcount;
+        }
     (void) putc( '\n', file );
     }
 
@@ -99,9 +99,9 @@ pbm_writepbmrow( file, bitrow, cols, forceplain )
     {
 #ifdef PBMPLUS_RAWBITS
     if ( ! forceplain )
-	pbm_writepbmrowraw( file, bitrow, cols );
+        pbm_writepbmrowraw( file, bitrow, cols );
     else
-	pbm_writepbmrowplain( file, bitrow, cols );
+        pbm_writepbmrowplain( file, bitrow, cols );
 #else /*PBMPLUS_RAWBITS*/
     pbm_writepbmrowplain( file, bitrow, cols );
 #endif /*PBMPLUS_RAWBITS*/
@@ -119,5 +119,5 @@ pbm_writepbm( file, bits, cols, rows, forceplain )
     pbm_writepbminit( file, cols, rows, forceplain );
 
     for ( row = 0; row < rows; ++row )
-	pbm_writepbmrow( file, bits[row], cols, forceplain );
+        pbm_writepbmrow( file, bits[row], cols, forceplain );
     }

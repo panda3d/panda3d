@@ -37,10 +37,10 @@ static char rcsid[] = "$Header$";
 void
 TIFFSwabShort(uint16* wp)
 {
-	register u_char *cp = (u_char *)wp;
-	int t;
+        register u_char *cp = (u_char *)wp;
+        int t;
 
-	t = cp[1]; cp[1] = cp[0]; cp[0] = t;
+        t = cp[1]; cp[1] = cp[0]; cp[0] = t;
 }
 #endif
 
@@ -48,11 +48,11 @@ TIFFSwabShort(uint16* wp)
 void
 TIFFSwabLong(uint32* lp)
 {
-	register u_char *cp = (u_char *)lp;
-	int t;
+        register u_char *cp = (u_char *)lp;
+        int t;
 
-	t = cp[3]; cp[3] = cp[0]; cp[0] = t;
-	t = cp[2]; cp[2] = cp[1]; cp[1] = t;
+        t = cp[3]; cp[3] = cp[0]; cp[0] = t;
+        t = cp[2]; cp[2] = cp[1]; cp[1] = t;
 }
 #endif
 
@@ -60,15 +60,15 @@ TIFFSwabLong(uint32* lp)
 void
 TIFFSwabArrayOfShort(uint16* wp, register u_long n)
 {
-	register u_char *cp;
-	register int t;
+        register u_char *cp;
+        register int t;
 
-	/* XXX unroll loop some */
-	while (n-- > 0) {
-		cp = (unsigned char *)wp;
-		t = cp[1]; cp[1] = cp[0]; cp[0] = t;
-		wp++;
-	}
+        /* XXX unroll loop some */
+        while (n-- > 0) {
+                cp = (unsigned char *)wp;
+                t = cp[1]; cp[1] = cp[0]; cp[0] = t;
+                wp++;
+        }
 }
 #endif
 
@@ -76,16 +76,16 @@ TIFFSwabArrayOfShort(uint16* wp, register u_long n)
 void
 TIFFSwabArrayOfLong(register uint32* lp, register u_long n)
 {
-	register unsigned char *cp;
-	register int t;
+        register unsigned char *cp;
+        register int t;
 
-	/* XXX unroll loop some */
-	while (n-- > 0) {
-		cp = (unsigned char *)lp;
-		t = cp[3]; cp[3] = cp[0]; cp[0] = t;
-		t = cp[2]; cp[2] = cp[1]; cp[1] = t;
-		lp++;
-	}
+        /* XXX unroll loop some */
+        while (n-- > 0) {
+                cp = (unsigned char *)lp;
+                t = cp[3]; cp[3] = cp[0]; cp[0] = t;
+                t = cp[2]; cp[2] = cp[1]; cp[1] = t;
+                lp++;
+        }
 }
 #endif
 
@@ -170,23 +170,23 @@ static const unsigned char TIFFNoBitRevTable[256] = {
 const unsigned char*
 TIFFGetBitRevTable(int reversed)
 {
-	return (reversed ? TIFFBitRevTable : TIFFNoBitRevTable);
+        return (reversed ? TIFFBitRevTable : TIFFNoBitRevTable);
 }
 
 void
 TIFFReverseBits(register u_char* cp, register u_long n)
 {
-	for (; n > 8; n -= 8) {
-		cp[0] = TIFFBitRevTable[cp[0]];
-		cp[1] = TIFFBitRevTable[cp[1]];
-		cp[2] = TIFFBitRevTable[cp[2]];
-		cp[3] = TIFFBitRevTable[cp[3]];
-		cp[4] = TIFFBitRevTable[cp[4]];
-		cp[5] = TIFFBitRevTable[cp[5]];
-		cp[6] = TIFFBitRevTable[cp[6]];
-		cp[7] = TIFFBitRevTable[cp[7]];
-		cp += 8;
-	}
-	while (n-- > 0)
-		*cp = TIFFBitRevTable[*cp], cp++;
+        for (; n > 8; n -= 8) {
+                cp[0] = TIFFBitRevTable[cp[0]];
+                cp[1] = TIFFBitRevTable[cp[1]];
+                cp[2] = TIFFBitRevTable[cp[2]];
+                cp[3] = TIFFBitRevTable[cp[3]];
+                cp[4] = TIFFBitRevTable[cp[4]];
+                cp[5] = TIFFBitRevTable[cp[5]];
+                cp[6] = TIFFBitRevTable[cp[6]];
+                cp[7] = TIFFBitRevTable[cp[7]];
+                cp += 8;
+        }
+        while (n-- > 0)
+                *cp = TIFFBitRevTable[*cp], cp++;
 }

@@ -642,37 +642,37 @@ static struct font default_bdffont = { 14, 15, -1, -3, {
 
 struct font*
 pbm_defaultfont( name )
-	char* name;
+        char* name;
     {
     bit** defaultfont;
     int row, col, scol;
     unsigned long l;
 
     if (!strcmp(name, "bdf"))
-	return &default_bdffont;
+        return &default_bdffont;
 
     if (strcmp(name, "fixed"))
-	pm_error( "built-in font name unknown, try 'bdf' or 'fixed'" );
+        pm_error( "built-in font name unknown, try 'bdf' or 'fixed'" );
 
     defaultfont = pbm_allocarray( DEFAULTFONT_COLS, DEFAULTFONT_ROWS );
     for ( row = 0; row < DEFAULTFONT_ROWS; ++row )
-	{
-	for ( col = 0; col < DEFAULTFONT_COLS; col += 32 )
-	    {
-	    l = defaultfont_bits[row][col / 32];
-	    for ( scol = min( col + 32, DEFAULTFONT_COLS ) - 1;
-		  scol >= col; --scol )
-		{
-		if ( l & 1 )
-		    defaultfont[row][scol] = 1;
-		else
-		    defaultfont[row][scol] = 0;
-		l >>= 1;
-		}
-	    }
-	}
+        {
+        for ( col = 0; col < DEFAULTFONT_COLS; col += 32 )
+            {
+            l = defaultfont_bits[row][col / 32];
+            for ( scol = min( col + 32, DEFAULTFONT_COLS ) - 1;
+                  scol >= col; --scol )
+                {
+                if ( l & 1 )
+                    defaultfont[row][scol] = 1;
+                else
+                    defaultfont[row][scol] = 0;
+                l >>= 1;
+                }
+            }
+        }
 
-	return pbm_dissectfont( defaultfont, DEFAULTFONT_ROWS, DEFAULTFONT_COLS );
+        return pbm_dissectfont( defaultfont, DEFAULTFONT_ROWS, DEFAULTFONT_COLS );
     }
 
 struct font*
@@ -719,27 +719,27 @@ pbm_dissectfont( font, frows, fcols )
 
     /* Find first blank row. */
     for ( brow = 0; brow < frows / 6; ++brow )
-	{
-	b = font[brow][0];
-	for ( col = 1; col < fcols; ++col )
-	    if ( font[brow][col] != b )
-		goto nextrow;
-	goto gotblankrow;
+        {
+        b = font[brow][0];
+        for ( col = 1; col < fcols; ++col )
+            if ( font[brow][col] != b )
+                goto nextrow;
+        goto gotblankrow;
     nextrow: ;
-	}
+        }
     pm_error( "couldn't find blank row in font" );
 
 gotblankrow:
     /* Find first blank col. */
     for ( bcol = 0; bcol < fcols / 8; ++bcol )
-	{
-	b = font[0][bcol];
-	for ( row = 1; row < frows; ++row )
-	    if ( font[row][bcol] != b )
-		goto nextcol;
-	goto gotblankcol;
+        {
+        b = font[0][bcol];
+        for ( row = 1; row < frows; ++row )
+            if ( font[row][bcol] != b )
+                goto nextcol;
+        goto gotblankcol;
     nextcol: ;
-	}
+        }
     pm_error( "couldn't find blank col in font" );
 
 gotblankcol:
@@ -747,11 +747,11 @@ gotblankcol:
     d = frows - brow;
     char_height = d / 11;
     if ( char_height * 11 != d )
-	pm_error( "problem computing character cell height" );
+        pm_error( "problem computing character cell height" );
     d = fcols - bcol;
     char_width = d / 15;
     if ( char_width * 15 != d )
-	pm_error( "problem computing character cell width" );
+        pm_error( "problem computing character cell width" );
     char_aheight = brow;
     char_awidth = bcol;
 
@@ -759,51 +759,51 @@ gotblankcol:
 
     fn = (struct font*) malloc( sizeof(struct font) );
     if ( fn == (struct font*) 0 )
-	pm_error( "out of memory allocating font structure" );
+        pm_error( "out of memory allocating font structure" );
 
     fn->maxwidth = char_awidth;
     fn->maxheight = char_height;
     fn->x = fn->y = 0;
     for (i = 0; i < 256; i++)
-	fn->glyph[i] = 0;
+        fn->glyph[i] = 0;
     fn->oldfont = font;
     fn->frows = frows;
     fn->fcols = fcols;
     
     glyph = (struct glyph*) malloc( sizeof(struct glyph) * 95 );
     if ( glyph == (struct glyph*) 0 )
-	pm_error( "out of memory allocating glyphs" );
+        pm_error( "out of memory allocating glyphs" );
     
     bmap = (char*) malloc( fn->maxwidth * fn->maxheight * 95 );
     if ( bmap == (char*) 0)
-	pm_error( "out of memory allocating glyph data" );
+        pm_error( "out of memory allocating glyph data" );
 
     /* Now fill in the 0,0 coords. */
     row = char_height * 2;
     col = char_width * 2;
     for ( ch = 0; ch < 95; ++ch )
-	{
-	glyph[ch].width = fn->maxwidth;
-	glyph[ch].height = fn->maxheight;
-	glyph[ch].x = glyph[ch].y = 0;
-	glyph[ch].xadd = char_width;
+        {
+        glyph[ch].width = fn->maxwidth;
+        glyph[ch].height = fn->maxheight;
+        glyph[ch].x = glyph[ch].y = 0;
+        glyph[ch].xadd = char_width;
 
-	for ( r = 0; r < glyph[ch].height; ++r )
-	    for ( c = 0; c < glyph[ch].width; ++c )
-		bmap[r * glyph[ch].width + c] = font[row + r][col + c];
-	
-	glyph[ch].bmap = bmap;
-	bmap += glyph[ch].width * glyph[ch].height;
+        for ( r = 0; r < glyph[ch].height; ++r )
+            for ( c = 0; c < glyph[ch].width; ++c )
+                bmap[r * glyph[ch].width + c] = font[row + r][col + c];
 
-	fn->glyph[ch + 32] = glyph + ch;
+        glyph[ch].bmap = bmap;
+        bmap += glyph[ch].width * glyph[ch].height;
 
-	col += char_width;
-	if ( col >= char_width * 14 )
-	    {
-	    col = char_width * 2;
-	    row += char_height;
-	    }
-	}
+        fn->glyph[ch + 32] = glyph + ch;
+
+        col += char_width;
+        if ( col >= char_width * 14 )
+            {
+            col = char_width * 2;
+            row += char_height;
+            }
+        }
     
     return fn;
     }
@@ -821,17 +821,17 @@ char* filename;
     pm_close( fp );
 
     if (line[0] == PBM_MAGIC1 && 
-	(line[1] == PBM_MAGIC2 || line[1] == RPBM_MAGIC2))
+        (line[1] == PBM_MAGIC2 || line[1] == RPBM_MAGIC2))
     {
-	return pbm_loadpbmfont( filename );
+        return pbm_loadpbmfont( filename );
     }
     else if (!strncmp(line, "STARTFONT", 9)) {
-	if (!(fn = pbm_loadbdffont( filename )))
-	    pm_error( "could not load BDF font file" );
-	return fn;
+        if (!(fn = pbm_loadbdffont( filename )))
+            pm_error( "could not load BDF font file" );
+        return fn;
     }
     else
-	pm_error( "font file not in a recognized format ");
+        pm_error( "font file not in a recognized format ");
     return NULL; /* to make compiler happy; can't get here. */
 }
 
@@ -857,80 +857,80 @@ pbm_dumpfont( fn )
     unsigned long l;
 
     if (fn->oldfont) {
-	printf( "#define DEFAULTFONT_ROWS %d\n", fn->frows );
-	printf( "#define DEFAULTFONT_COLS %d\n", fn->fcols );
-	printf( "static unsigned long defaultfont_bits[DEFAULTFONT_ROWS][(DEFAULTFONT_COLS+31)/32] = {\n" );
-	for ( row = 0; row < fn->frows; ++row )
-	    {
-	    lperrow = 0;
-	    for ( col = 0; col < fn->fcols; col += 32 )
-		{
-		if ( lperrow == 0 )
-		    printf( "    {" );
-		else if ( lperrow % 6 == 0 )
-		    {
-		    printf( ",\n     " );
-		    lperrow = 0;
-		    }
-		else
-		    printf( "," );
-		l = 0;
-		for ( scol = col; scol < min( col + 32, fn->fcols ); ++scol )
-		    {
-		    l <<= 1;
-		    if ( fn->oldfont[row][scol] )
-			l |= 1;
-		    }
-		printf( "0x%08lxL", l );
-		++lperrow;
-		}
-	    printf( "}%s\n", row == fn->frows - 1 ? "" : "," );
-	    }
-	printf( "    };\n" );
+        printf( "#define DEFAULTFONT_ROWS %d\n", fn->frows );
+        printf( "#define DEFAULTFONT_COLS %d\n", fn->fcols );
+        printf( "static unsigned long defaultfont_bits[DEFAULTFONT_ROWS][(DEFAULTFONT_COLS+31)/32] = {\n" );
+        for ( row = 0; row < fn->frows; ++row )
+            {
+            lperrow = 0;
+            for ( col = 0; col < fn->fcols; col += 32 )
+                {
+                if ( lperrow == 0 )
+                    printf( "    {" );
+                else if ( lperrow % 6 == 0 )
+                    {
+                    printf( ",\n     " );
+                    lperrow = 0;
+                    }
+                else
+                    printf( "," );
+                l = 0;
+                for ( scol = col; scol < min( col + 32, fn->fcols ); ++scol )
+                    {
+                    l <<= 1;
+                    if ( fn->oldfont[row][scol] )
+                        l |= 1;
+                    }
+                printf( "0x%08lxL", l );
+                ++lperrow;
+                }
+            printf( "}%s\n", row == fn->frows - 1 ? "" : "," );
+            }
+        printf( "    };\n" );
     }
     else {
-	struct glyph* glyph;
-	int i, j, ng;
+        struct glyph* glyph;
+        int i, j, ng;
 
-	ng = 0;
-	for (i = 0; i < 256; i++)
-		if (fn->glyph[i])
-			ng++;
+        ng = 0;
+        for (i = 0; i < 256; i++)
+                if (fn->glyph[i])
+                        ng++;
 
-	printf("static struct glyph _g[%d] = {\n", ng);
-	for (i = 0; i < 256; i++) {
-		if (!(glyph = fn->glyph[i]))
-			continue;
+        printf("static struct glyph _g[%d] = {\n", ng);
+        for (i = 0; i < 256; i++) {
+                if (!(glyph = fn->glyph[i]))
+                        continue;
 
-		printf(" { %d, %d, %d, %d, %d, \"", glyph->width, glyph->height,
-			glyph->x, glyph->y, glyph->xadd);
+                printf(" { %d, %d, %d, %d, %d, \"", glyph->width, glyph->height,
+                        glyph->x, glyph->y, glyph->xadd);
 
-		for (j = 0; j < glyph->width * glyph->height; j++)
-			if (glyph->bmap[j])
-				printf("\\1");
-			else
-				printf("\\0");
-		
-		ng--;
-		printf("\" }%s\n", ng ? "," : "");
-	}
-	printf("};\n");
+                for (j = 0; j < glyph->width * glyph->height; j++)
+                        if (glyph->bmap[j])
+                                printf("\\1");
+                        else
+                                printf("\\0");
 
-	printf("static struct font default_bdffont = { %d, %d, %d, %d, {\n",
-		fn->maxwidth, fn->maxheight, fn->x, fn->y);
+                ng--;
+                printf("\" }%s\n", ng ? "," : "");
+        }
+        printf("};\n");
 
-	for (i = 0; i < 256; i++) {
-		if (fn->glyph[i])
-			printf(" _g + %d", ng++);
-		else
-			printf(" 0");
-		
-		if (i != 255) printf(",");
-		printf("\n");
-	}
+        printf("static struct font default_bdffont = { %d, %d, %d, %d, {\n",
+                fn->maxwidth, fn->maxheight, fn->x, fn->y);
 
-	printf(" }\n};\n");
-	exit(0);
+        for (i = 0; i < 256; i++) {
+                if (fn->glyph[i])
+                        printf(" _g + %d", ng++);
+                else
+                        printf(" 0");
+
+                if (i != 255) printf(",");
+                printf("\n");
+        }
+
+        printf(" }\n};\n");
+        exit(0);
 
     }
 
@@ -942,117 +942,117 @@ pbm_dumpfont( fn )
 static int readline ARGS((FILE* fp, char* buf, char* arg[]));
 
 #define expect(str) if (readline(fp, line, arg) < 0 || strcmp(arg[0], (str))) \
-	{ fclose(fp); return 0; }
+        { fclose(fp); return 0; }
 
 struct font* pbm_loadbdffont(name)
 char* name;
 {
-	FILE* fp;
-	char line[1024], *arg[32], *b, *hex;
-	int i, n, numchar, hdig, encoding;
-	struct font* font;
-	struct glyph* glyph;
+        FILE* fp;
+        char line[1024], *arg[32], *b, *hex;
+        int i, n, numchar, hdig, encoding;
+        struct font* font;
+        struct glyph* glyph;
 
-	if (!(fp = fopen(name, "r")))
-		return 0;
+        if (!(fp = fopen(name, "r")))
+                return 0;
 
-	expect("STARTFONT");
+        expect("STARTFONT");
 
-	if (!(font = (struct font*)malloc(sizeof(struct font))))
-		pm_error("no memory for font");
-	font->oldfont = 0;
-	for (i = 0; i < 256; i++)
-		font->glyph[i] = 0;
+        if (!(font = (struct font*)malloc(sizeof(struct font))))
+                pm_error("no memory for font");
+        font->oldfont = 0;
+        for (i = 0; i < 256; i++)
+                font->glyph[i] = 0;
 
-	while (readline(fp, line, arg) >= 0) {
-		if (!strcmp(arg[0], "COMMENT"))
-			continue;
-		if (!strcmp(arg[0], "SIZE"))
-			continue;
-		
-		if (!strcmp(arg[0], "STARTPROPERTIES")) {
-			n = atoi(arg[1]);
-			for (; n > 0 && readline(fp, line, arg) >= 0; n--)
-				;
-		}
-		else if (!strcmp(arg[0], "FONTBOUNDINGBOX")) {
-			font->maxwidth = atoi(arg[1]);
-			font->maxheight = atoi(arg[2]);
-			font->x = atoi(arg[3]);
-			font->y = atoi(arg[4]);
-		}
-		else if (!strcmp(arg[0], "ENDFONT")) {
-			fclose(fp);
-			return font;
-		}
-		else if (!strcmp(arg[0], "CHARS")) {
-			numchar = atoi(arg[1]);
-			while (numchar > 0) {
-				if (readline(fp, line, arg) < 0) { fclose(fp); return 0; }
-				if (!strcmp(arg[0], "COMMENT"))
-					continue;
-				if (strcmp(arg[0], "STARTCHAR")) { fclose(fp); return 0; }
-				if (!(glyph = (struct glyph*)malloc(sizeof(struct glyph))))
-					pm_error("no memory for font glyph");
+        while (readline(fp, line, arg) >= 0) {
+                if (!strcmp(arg[0], "COMMENT"))
+                        continue;
+                if (!strcmp(arg[0], "SIZE"))
+                        continue;
 
-				expect("ENCODING");
-				if ((encoding = atoi(arg[1])) < 0) {
-					if (arg[2])
-						encoding = atoi(arg[2]);
-					else {
-						while (readline(fp, line, arg) >= 0)
-							if (!strcmp(arg[0], "ENDCHAR"))
-								break;
-						
-						numchar--;
-						continue;
-					}
-				}
-				expect("SWIDTH");
-				expect("DWIDTH");
-				glyph->xadd = atoi(arg[1]);
-				expect("BBX");
-				glyph->width = atoi(arg[1]);
-				glyph->height = atoi(arg[2]);
-				glyph->x = atoi(arg[3]);
-				glyph->y = atoi(arg[4]);
+                if (!strcmp(arg[0], "STARTPROPERTIES")) {
+                        n = atoi(arg[1]);
+                        for (; n > 0 && readline(fp, line, arg) >= 0; n--)
+                                ;
+                }
+                else if (!strcmp(arg[0], "FONTBOUNDINGBOX")) {
+                        font->maxwidth = atoi(arg[1]);
+                        font->maxheight = atoi(arg[2]);
+                        font->x = atoi(arg[3]);
+                        font->y = atoi(arg[4]);
+                }
+                else if (!strcmp(arg[0], "ENDFONT")) {
+                        fclose(fp);
+                        return font;
+                }
+                else if (!strcmp(arg[0], "CHARS")) {
+                        numchar = atoi(arg[1]);
+                        while (numchar > 0) {
+                                if (readline(fp, line, arg) < 0) { fclose(fp); return 0; }
+                                if (!strcmp(arg[0], "COMMENT"))
+                                        continue;
+                                if (strcmp(arg[0], "STARTCHAR")) { fclose(fp); return 0; }
+                                if (!(glyph = (struct glyph*)malloc(sizeof(struct glyph))))
+                                        pm_error("no memory for font glyph");
 
-				if (!(glyph->bmap = (char*)malloc(glyph->width * glyph->height)))
-					pm_error("no memory for font glyph byte map");
+                                expect("ENCODING");
+                                if ((encoding = atoi(arg[1])) < 0) {
+                                        if (arg[2])
+                                                encoding = atoi(arg[2]);
+                                        else {
+                                                while (readline(fp, line, arg) >= 0)
+                                                        if (!strcmp(arg[0], "ENDCHAR"))
+                                                                break;
 
-				if (readline(fp, line, arg) < 0) { fclose(fp); return 0; }
-				if (!strcmp(arg[0], "ATTRIBUTES"))
-					if (readline(fp, line, arg) < 0) { fclose(fp); return 0; }
-				
-				b = glyph->bmap;
-				for (n = glyph->height; n > 0; n--) {
-					if (readline(fp, line, arg) < 0) { fclose(fp); return 0; }
-					hex = line;
-					for (i = glyph->width; i > 0; i -= 4) {
-						hdig = *hex++;
-						if (hdig >= '0' && hdig <= '9')
-							hdig -= '0';
-						else if (hdig >= 'a' && hdig <= 'f')
-							hdig -= 'a' - 10;
-						else if (hdig >= 'A' && hdig <= 'F')
-							hdig -= 'A' - 10;
-						
-						*b++ = hdig & 8 ? 1 : 0;
-						if (i > 1) *b++ = hdig & 4 ? 1 : 0;
-						if (i > 2) *b++ = hdig & 2 ? 1 : 0;
-						if (i > 3) *b++ = hdig & 1;
-					}
-				}
+                                                numchar--;
+                                                continue;
+                                        }
+                                }
+                                expect("SWIDTH");
+                                expect("DWIDTH");
+                                glyph->xadd = atoi(arg[1]);
+                                expect("BBX");
+                                glyph->width = atoi(arg[1]);
+                                glyph->height = atoi(arg[2]);
+                                glyph->x = atoi(arg[3]);
+                                glyph->y = atoi(arg[4]);
 
-				expect("ENDCHAR");
+                                if (!(glyph->bmap = (char*)malloc(glyph->width * glyph->height)))
+                                        pm_error("no memory for font glyph byte map");
 
-				font->glyph[encoding] = glyph;
+                                if (readline(fp, line, arg) < 0) { fclose(fp); return 0; }
+                                if (!strcmp(arg[0], "ATTRIBUTES"))
+                                        if (readline(fp, line, arg) < 0) { fclose(fp); return 0; }
 
-				numchar--;
-			}
-		}
-	}
-	return font;
+                                b = glyph->bmap;
+                                for (n = glyph->height; n > 0; n--) {
+                                        if (readline(fp, line, arg) < 0) { fclose(fp); return 0; }
+                                        hex = line;
+                                        for (i = glyph->width; i > 0; i -= 4) {
+                                                hdig = *hex++;
+                                                if (hdig >= '0' && hdig <= '9')
+                                                        hdig -= '0';
+                                                else if (hdig >= 'a' && hdig <= 'f')
+                                                        hdig -= 'a' - 10;
+                                                else if (hdig >= 'A' && hdig <= 'F')
+                                                        hdig -= 'A' - 10;
+
+                                                *b++ = hdig & 8 ? 1 : 0;
+                                                if (i > 1) *b++ = hdig & 4 ? 1 : 0;
+                                                if (i > 2) *b++ = hdig & 2 ? 1 : 0;
+                                                if (i > 3) *b++ = hdig & 1;
+                                        }
+                                }
+
+                                expect("ENDCHAR");
+
+                                font->glyph[encoding] = glyph;
+
+                                numchar--;
+                        }
+                }
+        }
+        return font;
 }
 
 static int readline(fp, buf, arg)
@@ -1060,10 +1060,10 @@ FILE* fp;
 char* buf;
 char* arg[];
 {
-	if (!fgets(buf, 1024, fp))
-		return -1;
-	
-	return mk_argvn(buf, arg, 32);
+        if (!fgets(buf, 1024, fp))
+                return -1;
+
+        return mk_argvn(buf, arg, 32);
 }
 
 int mk_argvn(s, vec, mk_max)
@@ -1071,20 +1071,20 @@ char* s;
 char* vec[];
 int mk_max;
 {
-	int	n;
+        int     n;
 
-	n = 0;
-	while (*s) {
-		if (isspace(*s)) {
-			*s++ = '\0';
-			continue;
-		}
-		vec[n++] = s;
-		if (n >= mk_max)
-			break;
-		while (*s && !isspace(*s))
-			s++;
-	}
-	vec[n] = 0;
-	return n;
+        n = 0;
+        while (*s) {
+                if (isspace(*s)) {
+                        *s++ = '\0';
+                        continue;
+                }
+                vec[n++] = s;
+                if (n >= mk_max)
+                        break;
+                while (*s && !isspace(*s))
+                        s++;
+        }
+        vec[n] = 0;
+        return n;
 }

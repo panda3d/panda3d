@@ -15,8 +15,11 @@
  * without express or implied warranty.
  *
  * $Log$
- * Revision 1.1  2000/10/04 01:14:42  drose
- * Initial revision
+ * Revision 1.2  2001/05/25 16:13:01  drose
+ * *** empty log message ***
+ *
+ * Revision 1.1.1.1  2000/10/04 01:14:42  drose
+ *
  *
  * Revision 1.5  1992/11/24  19:36:46  dws
  * Added copyright.
@@ -39,23 +42,23 @@
 
 struct bitstream
 {
-	FILE *
-		f;		/* bytestream */
-	unsigned long
-		bitbuf;		/* bit buffer */
-	int
-		nbitbuf;	/* number of bits in 'bitbuf' */
-	char
-		mode;
+        FILE *
+                f;              /* bytestream */
+        unsigned long
+                bitbuf;         /* bit buffer */
+        int
+                nbitbuf;        /* number of bits in 'bitbuf' */
+        char
+                mode;
 };
 
-#define Mask(n)		((1<<(n))-1)
+#define Mask(n)         ((1<<(n))-1)
 
-#define BitPut(b,ul,n)	((b)->bitbuf = (((b)->bitbuf<<(n))	\
-					|((ul)&Mask(n))),	\
-			(b)->nbitbuf += (n))
+#define BitPut(b,ul,n)  ((b)->bitbuf = (((b)->bitbuf<<(n))      \
+                                        |((ul)&Mask(n))),       \
+                        (b)->nbitbuf += (n))
 
-#define BitGet(b,n)	(((b)->bitbuf>>((b)->nbitbuf-=(n))) & Mask(n))
+#define BitGet(b,n)     (((b)->bitbuf>>((b)->nbitbuf-=(n))) & Mask(n))
 
 /*
  * pm_bitinit() - allocate and return a struct bitstream * for the
@@ -70,21 +73,21 @@ struct bitstream
 EXPCL_PANDA struct bitstream *
 pm_bitinit(FILE *f, char *mode)
 {
-	struct bitstream *ans = (struct bitstream *)0;
+        struct bitstream *ans = (struct bitstream *)0;
 
-	if(!f || !mode || !*mode)
-		return ans;
-	if(strcmp(mode, "r") && strcmp(mode, "w"))
-		return ans;
+        if(!f || !mode || !*mode)
+                return ans;
+        if(strcmp(mode, "r") && strcmp(mode, "w"))
+                return ans;
 
-	ans = (struct bitstream *)calloc(1, sizeof(struct bitstream));
-	if(ans)
-	{
-		ans->f = f;
-		ans->mode = *mode;
-	}
+        ans = (struct bitstream *)calloc(1, sizeof(struct bitstream));
+        if(ans)
+        {
+                ans->f = f;
+                ans->mode = *mode;
+        }
 
-	return ans;
+        return ans;
 }
 
 /*
@@ -100,40 +103,40 @@ pm_bitinit(FILE *f, char *mode)
 EXPCL_PANDA int
 pm_bitfini(struct bitstream *b)
 {
-	int		nbyte = 0;
+        int             nbyte = 0;
 
-	if(!b)
-		return -1;
+        if(!b)
+                return -1;
 
-	/* flush the output */
-	if(b->mode == 'w')
-	{
-		/* flush the bits */
-		if (b->nbitbuf < 0 || b->nbitbuf >= 8)
-		{
-			/* pm_bitwrite() didn't work */
-			return -1;
-		}
+        /* flush the output */
+        if(b->mode == 'w')
+        {
+                /* flush the bits */
+                if (b->nbitbuf < 0 || b->nbitbuf >= 8)
+                {
+                        /* pm_bitwrite() didn't work */
+                        return -1;
+                }
 
-		/*
-		 * If we get to here, nbitbuf is 0..7
-		 */
-		if(b->nbitbuf)
-		{
-			char	c;
+                /*
+                 * If we get to here, nbitbuf is 0..7
+                 */
+                if(b->nbitbuf)
+                {
+                        char    c;
 
-			BitPut(b, 0, (long)8-(b->nbitbuf));
-			c = (char) BitGet(b, (long)8);
-			if(putc(c, b->f) == EOF)
-			{
-				return -1;
-			}
-			nbyte++;
-		}
-	}
+                        BitPut(b, 0, (long)8-(b->nbitbuf));
+                        c = (char) BitGet(b, (long)8);
+                        if(putc(c, b->f) == EOF)
+                        {
+                                return -1;
+                        }
+                        nbyte++;
+                }
+        }
 
-	free(b);
-	return nbyte;
+        free(b);
+        return nbyte;
 }
 
 /*
@@ -147,25 +150,25 @@ pm_bitfini(struct bitstream *b)
 EXPCL_PANDA int
 pm_bitread(struct bitstream *b, unsigned long nbits, unsigned long *val)
 {
-	int		nbyte = 0;
-	int		c;
+        int             nbyte = 0;
+        int             c;
 
-	if(!b)
-		return -1;
+        if(!b)
+                return -1;
 
-	while (b->nbitbuf < nbits)
-	{
-		if((c = getc(b->f)) == EOF)
-		{
-			return -1;
-		}
-		nbyte++;
+        while (b->nbitbuf < nbits)
+        {
+                if((c = getc(b->f)) == EOF)
+                {
+                        return -1;
+                }
+                nbyte++;
 
-		BitPut(b, c, (long) 8);
-	}
+                BitPut(b, c, (long) 8);
+        }
 
-	*val = BitGet(b, nbits);
-	return nbyte;
+        *val = BitGet(b, nbits);
+        return nbyte;
 }
 
 /*
@@ -179,24 +182,24 @@ pm_bitread(struct bitstream *b, unsigned long nbits, unsigned long *val)
 EXPCL_PANDA int
 pm_bitwrite(struct bitstream *b, unsigned long nbits, unsigned long val)
 {
-	int		nbyte = 0;
-	char		c;
+        int             nbyte = 0;
+        char            c;
 
-	if(!b)
-		return -1;
+        if(!b)
+                return -1;
 
-	BitPut(b, val, nbits);
+        BitPut(b, val, nbits);
 
-	while (b->nbitbuf >= 8)
-	{
-		c = (char) BitGet(b, (long)8);
+        while (b->nbitbuf >= 8)
+        {
+                c = (char) BitGet(b, (long)8);
 
-		if(putc(c, b->f) == EOF)
-		{
-			return -1;
-		}
-		nbyte++;
-	}
+                if(putc(c, b->f) == EOF)
+                {
+                        return -1;
+                }
+                nbyte++;
+        }
 
-	return nbyte;
+        return nbyte;
 }

@@ -39,20 +39,20 @@ static char rcsid[] = "$Header$";
 tstrip_t
 TIFFComputeStrip(TIFF* tif, uint32 row, tsample_t sample)
 {
-	TIFFDirectory *td = &tif->tif_dir;
-	tstrip_t strip;
+        TIFFDirectory *td = &tif->tif_dir;
+        tstrip_t strip;
 
-	strip = row / td->td_rowsperstrip;
-	if (td->td_planarconfig == PLANARCONFIG_SEPARATE) {
-		if (sample >= td->td_samplesperpixel) {
-			TIFFError(tif->tif_name,
-			    "%u: Sample out of range, max %u",
-			    sample, td->td_samplesperpixel);
-			return ((tstrip_t) 0);
-		}
-		strip += sample*td->td_stripsperimage;
-	}
-	return (strip);
+        strip = row / td->td_rowsperstrip;
+        if (td->td_planarconfig == PLANARCONFIG_SEPARATE) {
+                if (sample >= td->td_samplesperpixel) {
+                        TIFFError(tif->tif_name,
+                            "%u: Sample out of range, max %u",
+                            sample, td->td_samplesperpixel);
+                        return ((tstrip_t) 0);
+                }
+                strip += sample*td->td_stripsperimage;
+        }
+        return (strip);
 }
 
 /*
@@ -61,15 +61,15 @@ TIFFComputeStrip(TIFF* tif, uint32 row, tsample_t sample)
 tstrip_t
 TIFFNumberOfStrips(TIFF* tif)
 {
-	TIFFDirectory *td = &tif->tif_dir;
-	tstrip_t nstrips;
+        TIFFDirectory *td = &tif->tif_dir;
+        tstrip_t nstrips;
 
-	nstrips = (td->td_rowsperstrip == 0xffffffff ?
-	     (td->td_imagelength != 0 ? 1 : 0) :
-	     howmany(td->td_imagelength, td->td_rowsperstrip));
-	if (td->td_planarconfig == PLANARCONFIG_SEPARATE)
-		nstrips *= td->td_samplesperpixel;
-	return (nstrips);
+        nstrips = (td->td_rowsperstrip == 0xffffffff ?
+             (td->td_imagelength != 0 ? 1 : 0) :
+             howmany(td->td_imagelength, td->td_rowsperstrip));
+        if (td->td_planarconfig == PLANARCONFIG_SEPARATE)
+                nstrips *= td->td_samplesperpixel;
+        return (nstrips);
 }
 
 /*
@@ -78,32 +78,32 @@ TIFFNumberOfStrips(TIFF* tif)
 tsize_t
 TIFFVStripSize(TIFF* tif, uint32 nrows)
 {
-	TIFFDirectory *td = &tif->tif_dir;
+        TIFFDirectory *td = &tif->tif_dir;
 
-	if (nrows == (uint32) -1)
-		nrows = td->td_imagelength;
+        if (nrows == (uint32) -1)
+                nrows = td->td_imagelength;
 #ifdef YCBCR_SUPPORT
-	if (td->td_planarconfig == PLANARCONFIG_CONTIG &&
-	    td->td_photometric == PHOTOMETRIC_YCBCR) {
-		/*
-		 * Packed YCbCr data contain one Cb+Cr for every
-		 * HorizontalSampling*VerticalSampling Y values.
-		 * Must also roundup width and height when calculating
-		 * since images that are not a multiple of the
-		 * horizontal/vertical subsampling area include
-		 * YCbCr data for the extended image.
-		 */
-		tsize_t w =
-		    roundup(td->td_imagewidth, td->td_ycbcrsubsampling[0]);
-		tsize_t scanline = howmany(w*td->td_bitspersample, 8);
-		tsize_t samplingarea =
-		    td->td_ycbcrsubsampling[0]*td->td_ycbcrsubsampling[1];
-		nrows = roundup(nrows, td->td_ycbcrsubsampling[1]);
-		/* NB: don't need howmany here 'cuz everything is rounded */
-		return (nrows*scanline + 2*(nrows*scanline / samplingarea));
-	} else
+        if (td->td_planarconfig == PLANARCONFIG_CONTIG &&
+            td->td_photometric == PHOTOMETRIC_YCBCR) {
+                /*
+                 * Packed YCbCr data contain one Cb+Cr for every
+                 * HorizontalSampling*VerticalSampling Y values.
+                 * Must also roundup width and height when calculating
+                 * since images that are not a multiple of the
+                 * horizontal/vertical subsampling area include
+                 * YCbCr data for the extended image.
+                 */
+                tsize_t w =
+                    roundup(td->td_imagewidth, td->td_ycbcrsubsampling[0]);
+                tsize_t scanline = howmany(w*td->td_bitspersample, 8);
+                tsize_t samplingarea =
+                    td->td_ycbcrsubsampling[0]*td->td_ycbcrsubsampling[1];
+                nrows = roundup(nrows, td->td_ycbcrsubsampling[1]);
+                /* NB: don't need howmany here 'cuz everything is rounded */
+                return (nrows*scanline + 2*(nrows*scanline / samplingarea));
+        } else
 #endif
-		return (nrows * TIFFScanlineSize(tif));
+                return (nrows * TIFFScanlineSize(tif));
 }
 
 /*
@@ -112,5 +112,5 @@ TIFFVStripSize(TIFF* tif, uint32 nrows)
 tsize_t
 TIFFStripSize(TIFF* tif)
 {
-	return (TIFFVStripSize(tif, tif->tif_dir.td_rowsperstrip));
+        return (TIFFVStripSize(tif, tif->tif_dir.td_rowsperstrip));
 }

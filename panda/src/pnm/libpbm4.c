@@ -22,20 +22,20 @@ pbm_getc( file )
 
     ich = getc( file );
     if ( ich == EOF )
-	pm_error( "EOF / read error" );
+        pm_error( "EOF / read error" );
     ch = (char) ich;
     
     if ( ch == '#' )
-	{
-	do
-	    {
-	    ich = getc( file );
-	    if ( ich == EOF )
-		pm_error( "EOF / read error" );
-	    ch = (char) ich;
-	    }
-	while ( ch != '\n' && ch != '\r' );
-	}
+        {
+        do
+            {
+            ich = getc( file );
+            if ( ich == EOF )
+                pm_error( "EOF / read error" );
+            ch = (char) ich;
+            }
+        while ( ch != '\n' && ch != '\r' );
+        }
 
     return ch;
     }
@@ -48,7 +48,7 @@ pbm_getrawbyte( file )
 
     iby = getc( file );
     if ( iby == EOF )
-	pm_error( "EOF / read error" );
+        pm_error( "EOF / read error" );
     return (unsigned char) iby;
     }
 
@@ -60,19 +60,19 @@ pbm_getint( file )
     register int i;
 
     do
-	{
-	ch = pbm_getc( file );
-	}
+        {
+        ch = pbm_getc( file );
+        }
     while ( ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' );
 
     if ( ch < '0' || ch > '9' )
-	pm_error( "junk in file where an integer should be" );
+        pm_error( "junk in file where an integer should be" );
 
     i = 0;
     do
-	{
-	i = i * 10 + ch - '0';
-	ch = pbm_getc( file );
+        {
+        i = i * 10 + ch - '0';
+        ch = pbm_getc( file );
         }
     while ( ch >= '0' && ch <= '9' );
 

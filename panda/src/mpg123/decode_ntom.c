@@ -25,23 +25,23 @@ static unsigned long ntom_step = NTOM_MUL;
 
 void synth_ntom_set_step(long m,long n)
 {
-	if(param.verbose > 1)
-		fprintf(stderr,"Init rate converter: %ld->%ld\n",m,n);
+        if(param.verbose > 1)
+                fprintf(stderr,"Init rate converter: %ld->%ld\n",m,n);
 
-	if(n >= 96000 || m >= 96000 || m == 0 || n == 0) {
-		fprintf(stderr,"NtoM converter: illegal rates\n");
-		exit(1);
-	}
+        if(n >= 96000 || m >= 96000 || m == 0 || n == 0) {
+                fprintf(stderr,"NtoM converter: illegal rates\n");
+                exit(1);
+        }
 
-	n *= NTOM_MUL;
-	ntom_step = n / m;
+        n *= NTOM_MUL;
+        ntom_step = n / m;
 
-	if(ntom_step > 8*NTOM_MUL) {
-		fprintf(stderr,"max. 1:8 conversion allowed!\n");
-		exit(1);
-	}
+        if(ntom_step > 8*NTOM_MUL) {
+                fprintf(stderr,"max. 1:8 conversion allowed!\n");
+                exit(1);
+        }
 
-	ntom_val[0] = ntom_val[1] = NTOM_MUL>>1;
+        ntom_val[0] = ntom_val[1] = NTOM_MUL>>1;
 }
 
 int synth_ntom_8bit(real *bandPtr,int channel,unsigned char *samples,int *pnt)
@@ -154,7 +154,7 @@ int synth_ntom(real *bandPtr,int channel,unsigned char *out,int *pnt)
   int ntom;
 
   if(param.enable_equalizer)
-	do_equalizer(bandPtr,channel);
+        do_equalizer(bandPtr,channel);
 
   if(!channel) {
     bo--;

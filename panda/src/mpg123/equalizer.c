@@ -9,18 +9,18 @@ real equalizerband[2][SBLIMIT*SSLIMIT];
 
 void do_equalizer(real *bandPtr,int channel) 
 {
-	int i;
+        int i;
 
-	if(param.enable_equalizer) {
-		for(i=0;i<32;i++)
-			bandPtr[i] *= equalizer[channel][i];
-	}
+        if(param.enable_equalizer) {
+                for(i=0;i<32;i++)
+                        bandPtr[i] *= equalizer[channel][i];
+        }
 
-/*	if(param.equalizer & 0x2) {
-		
-		for(i=0;i<32;i++)
-			equalizer_sum[channel][i] += bandPtr[i];
-	}
+/*      if(param.equalizer & 0x2) {
+
+                for(i=0;i<32;i++)
+                        equalizer_sum[channel][i] += bandPtr[i];
+        }
 */
 }
 

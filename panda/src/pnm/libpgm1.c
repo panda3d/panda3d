@@ -39,7 +39,7 @@ pgm_readpgminitrest( file, colsP, rowsP, maxvalP )
     /* Read maxval. */
     maxval = pbm_getint( file );
     if ( maxval > PGM_MAXMAXVAL )
-	pm_error( "maxval is too large - try reconfiguring with PGM_BIGGRAYS" );
+        pm_error( "maxval is too large - try reconfiguring with PGM_BIGGRAYS" );
     *maxvalP = maxval;
     }
 
@@ -56,19 +56,19 @@ pgm_readpgminit( file, colsP, rowsP, maxvalP, formatP )
     /* Check magic number. */
     *formatP = pbm_readmagicnumber( file );
     switch ( PGM_FORMAT_TYPE(*formatP) )
-	{
+        {
         case PGM_TYPE:
-	pgm_readpgminitrest( file, colsP, rowsP, maxvalP );
-	break;
+        pgm_readpgminitrest( file, colsP, rowsP, maxvalP );
+        break;
 
         case PBM_TYPE:
-	pbm_readpbminitrest( file, colsP, rowsP );
-	*maxvalP = pgm_pbmmaxval;
-	break;
+        pbm_readpbminitrest( file, colsP, rowsP );
+        *maxvalP = pgm_pbmmaxval;
+        break;
 
-	default:
-	pm_error( "bad magic number - not a pgm or pbm file" );
-	}
+        default:
+        pm_error( "bad magic number - not a pgm or pbm file" );
+        }
     }
 
 #if __STDC__
@@ -90,41 +90,41 @@ pgm_readpgmrow( file, grayrow, cols, maxval, format )
     register bit* bP;
 
     switch ( format )
-	{
-	case PGM_FORMAT:
-	for ( col = 0, gP = grayrow; col < cols; ++col, ++gP )
-	    {
-	    *gP = pbm_getint( file );
+        {
+        case PGM_FORMAT:
+        for ( col = 0, gP = grayrow; col < cols; ++col, ++gP )
+            {
+            *gP = pbm_getint( file );
 #ifdef DEBUG
-	    if ( *gP > maxval )
-		pm_error( "value out of bounds (%u > %u)", *gP, maxval );
+            if ( *gP > maxval )
+                pm_error( "value out of bounds (%u > %u)", *gP, maxval );
 #endif /*DEBUG*/
-	    }
-	break;
-	
-	case RPGM_FORMAT:
-	for ( col = 0, gP = grayrow; col < cols; ++col, ++gP )
-	    {
-	    *gP = pbm_getrawbyte( file );
-#ifdef DEBUG
-	    if ( *gP > maxval )
-		pm_error( "value out of bounds (%u > %u)", *gP, maxval );
-#endif /*DEBUG*/
-	    }
-	break;
-	
-	case PBM_FORMAT:
-	case RPBM_FORMAT:
-	bitrow = pbm_allocrow( cols );
-	pbm_readpbmrow( file, bitrow, cols, format );
-	for ( col = 0, gP = grayrow, bP = bitrow; col < cols; ++col, ++gP, ++bP )
-	    *gP = ( *bP == PBM_WHITE ) ? maxval : 0;
-	pbm_freerow( bitrow );
-	break;
+            }
+        break;
 
-	default:
-	pm_error( "can't happen" );
-	}
+        case RPGM_FORMAT:
+        for ( col = 0, gP = grayrow; col < cols; ++col, ++gP )
+            {
+            *gP = pbm_getrawbyte( file );
+#ifdef DEBUG
+            if ( *gP > maxval )
+                pm_error( "value out of bounds (%u > %u)", *gP, maxval );
+#endif /*DEBUG*/
+            }
+        break;
+
+        case PBM_FORMAT:
+        case RPBM_FORMAT:
+        bitrow = pbm_allocrow( cols );
+        pbm_readpbmrow( file, bitrow, cols, format );
+        for ( col = 0, gP = grayrow, bP = bitrow; col < cols; ++col, ++gP, ++bP )
+            *gP = ( *bP == PBM_WHITE ) ? maxval : 0;
+        pbm_freerow( bitrow );
+        break;
+
+        default:
+        pm_error( "can't happen" );
+        }
     }
 
 gray**
@@ -143,7 +143,7 @@ pgm_readpgm( file, colsP, rowsP, maxvalP )
     grays = pgm_allocarray( *colsP, *rowsP );
 
     for ( row = 0; row < *rowsP; ++row )
-	pgm_readpgmrow( file, grays[row], *colsP, *maxvalP, format );
+        pgm_readpgmrow( file, grays[row], *colsP, *maxvalP, format );
 
     return grays;
     }

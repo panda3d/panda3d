@@ -44,24 +44,24 @@ pnm_readpnminit( file, colsP, rowsP, maxvalP, formatP )
     /* Check magic number. */
     *formatP = pbm_readmagicnumber( file );
     switch ( PNM_FORMAT_TYPE(*formatP) )
-	{
-	case PPM_TYPE:
-	ppm_readppminitrest( file, colsP, rowsP, (pixval*) maxvalP );
-	break;
+        {
+        case PPM_TYPE:
+        ppm_readppminitrest( file, colsP, rowsP, (pixval*) maxvalP );
+        break;
 
-	case PGM_TYPE:
-	pgm_readpgminitrest( file, colsP, rowsP, &gmaxval );
-	*maxvalP = (xelval) gmaxval;
-	break;
+        case PGM_TYPE:
+        pgm_readpgminitrest( file, colsP, rowsP, &gmaxval );
+        *maxvalP = (xelval) gmaxval;
+        break;
 
-	case PBM_TYPE:
-	pbm_readpbminitrest( file, colsP, rowsP );
-	*maxvalP = pnm_pbmmaxval;
-	break;
+        case PBM_TYPE:
+        pbm_readpbminitrest( file, colsP, rowsP );
+        *maxvalP = pnm_pbmmaxval;
+        break;
 
-	default:
-	pm_error( "bad magic number - not a ppm, pgm, or pbm file" );
-	}
+        default:
+        pm_error( "bad magic number - not a ppm, pgm, or pbm file" );
+        }
     }
 
 #if defined(__STDC__) || defined(WIN32_VC)
@@ -83,30 +83,30 @@ void pnm_readpnmrow( file, xelrow, cols, maxval, format )
     register bit* bP;
 
     switch ( PNM_FORMAT_TYPE(format) )
-	{
-	case PPM_TYPE:
-	ppm_readppmrow( file, (pixel*) xelrow, cols, (pixval) maxval, format );
-	break;
+        {
+        case PPM_TYPE:
+        ppm_readppmrow( file, (pixel*) xelrow, cols, (pixval) maxval, format );
+        break;
 
-	case PGM_TYPE:
-	grayrow = pgm_allocrow( cols );
-	pgm_readpgmrow( file, grayrow, cols, (gray) maxval, format );
-	for ( col = 0, xP = xelrow, gP = grayrow; col < cols; ++col, ++xP, ++gP )
-	    PNM_ASSIGN1( *xP, *gP );
-	pgm_freerow( grayrow );
-	break;
+        case PGM_TYPE:
+        grayrow = pgm_allocrow( cols );
+        pgm_readpgmrow( file, grayrow, cols, (gray) maxval, format );
+        for ( col = 0, xP = xelrow, gP = grayrow; col < cols; ++col, ++xP, ++gP )
+            PNM_ASSIGN1( *xP, *gP );
+        pgm_freerow( grayrow );
+        break;
 
-	case PBM_TYPE:
-	bitrow = pbm_allocrow( cols );
-	pbm_readpbmrow( file, bitrow, cols, format );
-	for ( col = 0, xP = xelrow, bP = bitrow; col < cols; ++col, ++xP, ++bP )
-	    PNM_ASSIGN1( *xP, *bP == PBM_BLACK ? 0: pnm_pbmmaxval );
-	pbm_freerow( bitrow );
-	break;
+        case PBM_TYPE:
+        bitrow = pbm_allocrow( cols );
+        pbm_readpbmrow( file, bitrow, cols, format );
+        for ( col = 0, xP = xelrow, bP = bitrow; col < cols; ++col, ++xP, ++bP )
+            PNM_ASSIGN1( *xP, *bP == PBM_BLACK ? 0: pnm_pbmmaxval );
+        pbm_freerow( bitrow );
+        break;
 
-	default:
-	pm_error( "can't happen" );
-	}
+        default:
+        pm_error( "can't happen" );
+        }
     }
 
 xel**
@@ -125,7 +125,7 @@ pnm_readpnm( file, colsP, rowsP, maxvalP, formatP )
     xels = pnm_allocarray( *colsP, *rowsP );
 
     for ( row = 0; row < *rowsP; ++row )
-	pnm_readpnmrow( file, xels[row], *colsP, *maxvalP, *formatP );
+        pnm_readpnmrow( file, xels[row], *colsP, *maxvalP, *formatP );
 
     return xels;
     }

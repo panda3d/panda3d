@@ -49,60 +49,60 @@ static char rcsid[] = "$Header$";
 #include <Memory.h>
 
 #ifdef applec
-#define	CtoPstr	c2pstr
+#define CtoPstr c2pstr
 #endif
 
 static tsize_t
 _tiffReadProc(thandle_t fd, tdata_t buf, tsize_t size)
 {
-	return (FSRead((short) fd, (long*) &size, (char*) buf) == noErr ?
-	    size : (tsize_t) -1);
+        return (FSRead((short) fd, (long*) &size, (char*) buf) == noErr ?
+            size : (tsize_t) -1);
 }
 
 static tsize_t
 _tiffWriteProc(thandle_t fd, tdata_t buf, tsize_t size)
 {
-	return (FSWrite((short) fd, (long*) &size, (char*) buf) == noErr ?
-	    size : (tsize_t) -1);
+        return (FSWrite((short) fd, (long*) &size, (char*) buf) == noErr ?
+            size : (tsize_t) -1);
 }
 
 static toff_t
 _tiffSeekProc(thandle_t fd, toff_t off, int whence)
 {
-	long fpos, size;
+        long fpos, size;
 
-	if (GetEOF((short) fd, &size) != noErr)
-		return EOF;
-	(void) GetFPos((short) fd, &fpos);
+        if (GetEOF((short) fd, &size) != noErr)
+                return EOF;
+        (void) GetFPos((short) fd, &fpos);
 
-	switch (whence) {
-	case SEEK_CUR:
-		if (off + fpos > size)
-			SetEOF((short) fd, off + fpos);
-		if (SetFPos((short) fd, fsFromMark, off) != noErr)
-			return EOF;
-		break;
-	case SEEK_END:
-		if (off > 0)
-			SetEOF((short) fd, off + size);
-		if (SetFPos((short) fd, fsFromStart, off + size) != noErr)
-			return EOF;
-		break;
-	case SEEK_SET:
-		if (off > size)
-			SetEOF((short) fd, off);
-		if (SetFPos((short) fd, fsFromStart, off) != noErr)
-			return EOF;
-		break;
-	}
+        switch (whence) {
+        case SEEK_CUR:
+                if (off + fpos > size)
+                        SetEOF((short) fd, off + fpos);
+                if (SetFPos((short) fd, fsFromMark, off) != noErr)
+                        return EOF;
+                break;
+        case SEEK_END:
+                if (off > 0)
+                        SetEOF((short) fd, off + size);
+                if (SetFPos((short) fd, fsFromStart, off + size) != noErr)
+                        return EOF;
+                break;
+        case SEEK_SET:
+                if (off > size)
+                        SetEOF((short) fd, off);
+                if (SetFPos((short) fd, fsFromStart, off) != noErr)
+                        return EOF;
+                break;
+        }
 
-	return (toff_t)(GetFPos((short) fd, &fpos) == noErr ? fpos : EOF);
+        return (toff_t)(GetFPos((short) fd, &fpos) == noErr ? fpos : EOF);
 }
 
 static int
 _tiffMapProc(thandle_t fd, tdata_t* pbase, toff_t* psize)
 {
-	return (0);
+        return (0);
 }
 
 static void
@@ -113,44 +113,44 @@ _tiffUnmapProc(thandle_t fd, tdata_t base, toff_t size)
 static int
 _tiffCloseProc(thandle_t fd)
 {
-	return (FSClose((short) fd));
+        return (FSClose((short) fd));
 }
 
 static toff_t
 _tiffSizeProc(thandle_t fd)
 {
-	long size;
+        long size;
 
-	if (GetEOF((short) fd, &size) != noErr) {
-		TIFFError("_tiffSizeProc", "%s: Cannot get file size");
-		return (-1L);
-	}
-	return ((toff_t) size);
+        if (GetEOF((short) fd, &size) != noErr) {
+                TIFFError("_tiffSizeProc", "%s: Cannot get file size");
+                return (-1L);
+        }
+        return ((toff_t) size);
 }
 
 void *
 _TIFFmalloc(size_t s)
 {
-	return (NewPtr(s));
+        return (NewPtr(s));
 }
 
 void
 _TIFFfree(void* p)
 {
-	DisposePtr(p);
+        DisposePtr(p);
 }
 
 void *
 _TIFFrealloc(void* p, size_t s)
 {
-	Ptr n = p;
+        Ptr n = p;
 
-	SetPtrSize(p, s);
-	if (MemError() && (n = NewPtr(s)) != NULL) {
-		BlockMove(p, n, GetPtrSize(p));
-		DisposePtr(p);
-	}
-	return (n);
+        SetPtrSize(p, s);
+        if (MemError() && (n = NewPtr(s)) != NULL) {
+                BlockMove(p, n, GetPtrSize(p));
+                DisposePtr(p);
+        }
+        return (n);
 }
 
 /*
@@ -159,14 +159,14 @@ _TIFFrealloc(void* p, size_t s)
 TIFF*
 TIFFFdOpen(int fd, const char* name, const char* mode)
 {
-	TIFF* tif;
+        TIFF* tif;
 
-	tif = TIFFClientOpen(name, mode, (thandle_t) fd,
-	    _tiffReadProc, _tiffWriteProc, _tiffSeekProc, _tiffCloseProc,
-	    _tiffSizeProc, _tiffMapProc, _tiffUnmapProc);
-	if (tif)
-		tif->tif_fd = fd;
-	return (tif);
+        tif = TIFFClientOpen(name, mode, (thandle_t) fd,
+            _tiffReadProc, _tiffWriteProc, _tiffSeekProc, _tiffCloseProc,
+            _tiffSizeProc, _tiffMapProc, _tiffUnmapProc);
+        if (tif)
+                tif->tif_fd = fd;
+        return (tif);
 }
 
 /*
@@ -175,45 +175,45 @@ TIFFFdOpen(int fd, const char* name, const char* mode)
 TIFF*
 TIFFOpen(const char* name, const char* mode)
 {
-	static const char module[] = "TIFFOpen";
-	Str255 pname;
-	FInfo finfo;
-	short fref;
-	OSErr err;
+        static const char module[] = "TIFFOpen";
+        Str255 pname;
+        FInfo finfo;
+        short fref;
+        OSErr err;
 
-	strcpy((char*) pname, name);
-	CtoPstr((char*) pname);
+        strcpy((char*) pname, name);
+        CtoPstr((char*) pname);
 
-	switch (_TIFFgetMode(mode, module)) {
-	default:
-		return ((TIFF*) 0);
-	case O_RDWR | O_CREAT | O_TRUNC:
-		if (GetFInfo(pname, 0, &finfo) == noErr)
-			FSDelete(pname, 0);
-		/* fall through */
-	case O_RDWR | O_CREAT:
-		if ((err = GetFInfo(pname, 0, &finfo)) == fnfErr) {
-			if (Create(pname, 0, '    ', 'TIFF') != noErr)
-				goto badCreate;
-			if (FSOpen(pname, 0, &fref) != noErr)
-				goto badOpen;
-		} else if (err == noErr) {
-			if (FSOpen(pname, 0, &fref) != noErr)
-				goto badOpen;
-		} else
-			goto badOpen;
-		break;
-	case O_RDONLY:
-	case O_RDWR:
-		if (FSOpen(pname, 0, &fref) != noErr)
-			goto badOpen;
-		break;
-	}
-	return (TIFFFdOpen((int) fref, name, mode));
+        switch (_TIFFgetMode(mode, module)) {
+        default:
+                return ((TIFF*) 0);
+        case O_RDWR | O_CREAT | O_TRUNC:
+                if (GetFInfo(pname, 0, &finfo) == noErr)
+                        FSDelete(pname, 0);
+                /* fall through */
+        case O_RDWR | O_CREAT:
+                if ((err = GetFInfo(pname, 0, &finfo)) == fnfErr) {
+                        if (Create(pname, 0, '    ', 'TIFF') != noErr)
+                                goto badCreate;
+                        if (FSOpen(pname, 0, &fref) != noErr)
+                                goto badOpen;
+                } else if (err == noErr) {
+                        if (FSOpen(pname, 0, &fref) != noErr)
+                                goto badOpen;
+                } else
+                        goto badOpen;
+                break;
+        case O_RDONLY:
+        case O_RDWR:
+                if (FSOpen(pname, 0, &fref) != noErr)
+                        goto badOpen;
+                break;
+        }
+        return (TIFFFdOpen((int) fref, name, mode));
 badCreate:
-	TIFFError(module, "%s: Cannot create", name);
-	return ((TIFF*) 0);
+        TIFFError(module, "%s: Cannot create", name);
+        return ((TIFF*) 0);
 badOpen:
-	TIFFError(module, "%s: Cannot open", name);
-	return ((TIFF*) 0);
+        TIFFError(module, "%s: Cannot open", name);
+        return ((TIFF*) 0);
 }

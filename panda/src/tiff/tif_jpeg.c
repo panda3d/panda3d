@@ -35,5 +35,5 @@ static char rcsid[] = "$Header$";
 
 TIFFInitJPEG(TIFF* tif)
 {
-	return (1);
+        return (1);
 }

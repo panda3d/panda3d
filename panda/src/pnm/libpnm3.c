@@ -42,53 +42,53 @@ pnm_backgroundxel( xels, cols, rows, maxval, format )
 
     /* First check for three corners equal. */
     if ( PNM_EQUAL( ul, ur ) && PNM_EQUAL( ur, ll ) )
-	bgxel = ul;
+        bgxel = ul;
     else if ( PNM_EQUAL( ul, ur ) && PNM_EQUAL( ur, lr ) )
-	bgxel = ul;
+        bgxel = ul;
     else if ( PNM_EQUAL( ul, ll ) && PNM_EQUAL( ll, lr ) )
-	bgxel = ul;
+        bgxel = ul;
     else if ( PNM_EQUAL( ur, ll ) && PNM_EQUAL( ll, lr ) )
-	bgxel = ur;
+        bgxel = ur;
     /* Nope, check for two corners equal. */
     else if ( PNM_EQUAL( ul, ur ) || PNM_EQUAL( ul, ll ) ||
-	      PNM_EQUAL( ul, lr ) )
-	bgxel = ul;
+              PNM_EQUAL( ul, lr ) )
+        bgxel = ul;
     else if ( PNM_EQUAL( ur, ll ) || PNM_EQUAL( ur, lr ) )
-	bgxel = ur;
+        bgxel = ur;
     else if ( PNM_EQUAL( ll, lr ) )
-	bgxel = ll;
+        bgxel = ll;
     else
-	{
-	/* Nope, we have to average the four corners.  This breaks the
-	** rules of pnm, but oh well.  Let's try to do it portably. */
-	switch ( PNM_FORMAT_TYPE(format) )
-	    {
-	    case PPM_TYPE:
-	    PPM_ASSIGN( bgxel,
-		PPM_GETR(ul) + PPM_GETR(ur) + PPM_GETR(ll) + PPM_GETR(lr) / 4,
-		PPM_GETG(ul) + PPM_GETG(ur) + PPM_GETG(ll) + PPM_GETG(lr) / 4,
-		PPM_GETB(ul) + PPM_GETB(ur) + PPM_GETB(ll) + PPM_GETB(lr) / 4 );
-	    break;
+        {
+        /* Nope, we have to average the four corners.  This breaks the
+        ** rules of pnm, but oh well.  Let's try to do it portably. */
+        switch ( PNM_FORMAT_TYPE(format) )
+            {
+            case PPM_TYPE:
+            PPM_ASSIGN( bgxel,
+                PPM_GETR(ul) + PPM_GETR(ur) + PPM_GETR(ll) + PPM_GETR(lr) / 4,
+                PPM_GETG(ul) + PPM_GETG(ur) + PPM_GETG(ll) + PPM_GETG(lr) / 4,
+                PPM_GETB(ul) + PPM_GETB(ur) + PPM_GETB(ll) + PPM_GETB(lr) / 4 );
+            break;
 
-	    case PGM_TYPE:
-	    {
-	    gray gul, gur, gll, glr;
-	    gul = (gray) PNM_GET1( ul );
-	    gur = (gray) PNM_GET1( ur );
-	    gll = (gray) PNM_GET1( ll );
-	    glr = (gray) PNM_GET1( lr );
-	    PNM_ASSIGN1( bgxel, ( ( gul + gur + gll + glr ) / 4 ) );
-	    break;
-	    }
+            case PGM_TYPE:
+            {
+            gray gul, gur, gll, glr;
+            gul = (gray) PNM_GET1( ul );
+            gur = (gray) PNM_GET1( ur );
+            gll = (gray) PNM_GET1( ll );
+            glr = (gray) PNM_GET1( lr );
+            PNM_ASSIGN1( bgxel, ( ( gul + gur + gll + glr ) / 4 ) );
+            break;
+            }
 
-	    case PBM_TYPE:
-	    pm_error(
-	    "pnm_backgroundxel: four bits no two of which equal each other??" );
+            case PBM_TYPE:
+            pm_error(
+            "pnm_backgroundxel: four bits no two of which equal each other??" );
 
-	    default:
-	    pm_error( "can't happen" );
-	    }
-	}
+            default:
+            pm_error( "can't happen" );
+            }
+        }
 
     return bgxel;
     }
@@ -112,48 +112,48 @@ pnm_backgroundxelrow( xelrow, cols, maxval, format )
 
     /* First check for both corners equal. */
     if ( PNM_EQUAL( l, r ) )
-	bgxel = l;
+        bgxel = l;
     else
-	{
-	/* Nope, we have to average the two corners.  This breaks the
-	** rules of pnm, but oh well.  Let's try to do it portably. */
-	switch ( PNM_FORMAT_TYPE(format) )
-	    {
-	    case PPM_TYPE:
-	    PPM_ASSIGN( bgxel, PPM_GETR(l) + PPM_GETR(r) / 2,
-		PPM_GETG(l) + PPM_GETG(r) / 2, PPM_GETB(l) + PPM_GETB(r) / 2 );
-	    break;
+        {
+        /* Nope, we have to average the two corners.  This breaks the
+        ** rules of pnm, but oh well.  Let's try to do it portably. */
+        switch ( PNM_FORMAT_TYPE(format) )
+            {
+            case PPM_TYPE:
+            PPM_ASSIGN( bgxel, PPM_GETR(l) + PPM_GETR(r) / 2,
+                PPM_GETG(l) + PPM_GETG(r) / 2, PPM_GETB(l) + PPM_GETB(r) / 2 );
+            break;
 
-	    case PGM_TYPE:
-	    {
-	    gray gl, gr;
-	    gl = (gray) PNM_GET1( l );
-	    gr = (gray) PNM_GET1( r );
-	    PNM_ASSIGN1( bgxel, ( ( gl + gr ) / 2 ) );
-	    break;
-	    }
+            case PGM_TYPE:
+            {
+            gray gl, gr;
+            gl = (gray) PNM_GET1( l );
+            gr = (gray) PNM_GET1( r );
+            PNM_ASSIGN1( bgxel, ( ( gl + gr ) / 2 ) );
+            break;
+            }
 
-	    case PBM_TYPE:
-	    {
-	    int col, blacks;
+            case PBM_TYPE:
+            {
+            int col, blacks;
 
-	    /* One black, one white.  Gotta count. */
-	    for ( col = 0, blacks = 0; col < cols; ++col )
-		{
-		if ( PNM_GET1( xelrow[col] ) == 0 )
-		    ++blacks;
-		}
-	    if ( blacks >= cols / 2 )
-		PNM_ASSIGN1( bgxel, 0 );
-	    else
-		PNM_ASSIGN1( bgxel, pnm_pbmmaxval );
-	    break;
-	    }
+            /* One black, one white.  Gotta count. */
+            for ( col = 0, blacks = 0; col < cols; ++col )
+                {
+                if ( PNM_GET1( xelrow[col] ) == 0 )
+                    ++blacks;
+                }
+            if ( blacks >= cols / 2 )
+                PNM_ASSIGN1( bgxel, 0 );
+            else
+                PNM_ASSIGN1( bgxel, pnm_pbmmaxval );
+            break;
+            }
 
-	    default:
-	    pm_error( "can't happen" );
-	    }
-	}
+            default:
+            pm_error( "can't happen" );
+            }
+        }
 
     return bgxel;
     }
@@ -171,22 +171,22 @@ pnm_whitexel( maxval, format )
     xel x;
 
     switch ( PNM_FORMAT_TYPE(format) )
-	{
-	case PPM_TYPE:
-	PPM_ASSIGN( x, maxval, maxval, maxval );
-	break;
+        {
+        case PPM_TYPE:
+        PPM_ASSIGN( x, maxval, maxval, maxval );
+        break;
 
-	case PGM_TYPE:
-	PNM_ASSIGN1( x, maxval );
-	break;
+        case PGM_TYPE:
+        PNM_ASSIGN1( x, maxval );
+        break;
 
-	case PBM_TYPE:
-	PNM_ASSIGN1( x, pnm_pbmmaxval );
-	break;
+        case PBM_TYPE:
+        PNM_ASSIGN1( x, pnm_pbmmaxval );
+        break;
 
-	default:
-	pm_error( "can't happen" );
-	}
+        default:
+        pm_error( "can't happen" );
+        }
 
     return x;
     }
@@ -204,22 +204,22 @@ pnm_blackxel( maxval, format )
     xel x;
 
     switch ( PNM_FORMAT_TYPE(format) )
-	{
-	case PPM_TYPE:
-	PPM_ASSIGN( x, 0, 0, 0 );
-	break;
+        {
+        case PPM_TYPE:
+        PPM_ASSIGN( x, 0, 0, 0 );
+        break;
 
-	case PGM_TYPE:
-	PNM_ASSIGN1( x, (xelval) 0 );
-	break;
+        case PGM_TYPE:
+        PNM_ASSIGN1( x, (xelval) 0 );
+        break;
 
-	case PBM_TYPE:
-	PNM_ASSIGN1( x, (xelval) 0 );
-	break;
+        case PBM_TYPE:
+        PNM_ASSIGN1( x, (xelval) 0 );
+        break;
 
-	default:
-	pm_error( "can't happen" );
-	}
+        default:
+        pm_error( "can't happen" );
+        }
 
     return x;
     }
@@ -236,24 +236,24 @@ pnm_invertxel( xP, maxval, format )
 #endif /*__STDC__*/
     {
     switch ( PNM_FORMAT_TYPE(format) )
-	{
-	case PPM_TYPE:
-	PPM_ASSIGN(
-	    *xP, maxval - PPM_GETR( *xP ),
-	    maxval - PPM_GETG( *xP ), maxval - PPM_GETB( *xP ) );
-	break;
+        {
+        case PPM_TYPE:
+        PPM_ASSIGN(
+            *xP, maxval - PPM_GETR( *xP ),
+            maxval - PPM_GETG( *xP ), maxval - PPM_GETB( *xP ) );
+        break;
 
-	case PGM_TYPE:
-	PNM_ASSIGN1( *xP, (gray) maxval - (gray) PNM_GET1( *xP ) );
-	break;
+        case PGM_TYPE:
+        PNM_ASSIGN1( *xP, (gray) maxval - (gray) PNM_GET1( *xP ) );
+        break;
 
-	case PBM_TYPE:
-	PNM_ASSIGN1( *xP, ( PNM_GET1( *xP ) == 0 ) ? pnm_pbmmaxval : 0 );
-	break;
+        case PBM_TYPE:
+        PNM_ASSIGN1( *xP, ( PNM_GET1( *xP ) == 0 ) ? pnm_pbmmaxval : 0 );
+        break;
 
-	default:
-	pm_error( "can't happen" );
-	}
+        default:
+        pm_error( "can't happen" );
+        }
     }
 
 #if __STDC__
@@ -270,8 +270,8 @@ pnm_promoteformat( xels, cols, rows, maxval, format, newmaxval, newformat )
     int row;
 
     for ( row = 0; row < rows; ++row )
-	pnm_promoteformatrow(
-	    xels[row], cols, maxval, format, newmaxval, newformat );
+        pnm_promoteformatrow(
+            xels[row], cols, maxval, format, newmaxval, newformat );
     }
 
 #if __STDC__
@@ -289,98 +289,98 @@ pnm_promoteformatrow( xelrow, cols, maxval, format, newmaxval, newformat )
     register xel* xP;
 
     if ( ( PNM_FORMAT_TYPE(format) == PPM_TYPE &&
-	   ( PNM_FORMAT_TYPE(newformat) == PGM_TYPE ||
-	     PNM_FORMAT_TYPE(newformat) == PBM_TYPE ) ) ||
-	 ( PNM_FORMAT_TYPE(format) == PGM_TYPE &&
-	   PNM_FORMAT_TYPE(newformat) == PBM_TYPE ) )
-	pm_error( "pnm_promoteformatrow: can't promote downwards!" );
+           ( PNM_FORMAT_TYPE(newformat) == PGM_TYPE ||
+             PNM_FORMAT_TYPE(newformat) == PBM_TYPE ) ) ||
+         ( PNM_FORMAT_TYPE(format) == PGM_TYPE &&
+           PNM_FORMAT_TYPE(newformat) == PBM_TYPE ) )
+        pm_error( "pnm_promoteformatrow: can't promote downwards!" );
 
     /* Are we promoting to the same type? */
     if ( PNM_FORMAT_TYPE(format) == PNM_FORMAT_TYPE(newformat) )
-	{
-	if ( PNM_FORMAT_TYPE(format) == PBM_TYPE )
-	    return;
-	if ( newmaxval < maxval )
-	    pm_error(
-	   "pnm_promoteformatrow: can't decrease maxval - try using pnmdepth" );
-	if ( newmaxval == maxval )
-	    return;
-	/* Increase maxval. */
-	switch ( PNM_FORMAT_TYPE(format) )
-	    {
-	    case PGM_TYPE:
-	    for ( col = 0, xP = xelrow; col < cols; ++col, ++xP )
-		PNM_ASSIGN1(
-		    *xP, (int) PNM_GET1(*xP) * newmaxval / maxval );
-	    break;
+        {
+        if ( PNM_FORMAT_TYPE(format) == PBM_TYPE )
+            return;
+        if ( newmaxval < maxval )
+            pm_error(
+           "pnm_promoteformatrow: can't decrease maxval - try using pnmdepth" );
+        if ( newmaxval == maxval )
+            return;
+        /* Increase maxval. */
+        switch ( PNM_FORMAT_TYPE(format) )
+            {
+            case PGM_TYPE:
+            for ( col = 0, xP = xelrow; col < cols; ++col, ++xP )
+                PNM_ASSIGN1(
+                    *xP, (int) PNM_GET1(*xP) * newmaxval / maxval );
+            break;
 
-	    case PPM_TYPE:
-	    for ( col = 0, xP = xelrow; col < cols; ++col, ++xP )
-		PPM_DEPTH( *xP, *xP, maxval, newmaxval );
-	    break;
+            case PPM_TYPE:
+            for ( col = 0, xP = xelrow; col < cols; ++col, ++xP )
+                PPM_DEPTH( *xP, *xP, maxval, newmaxval );
+            break;
 
-	    default:
-	    pm_error( "shouldn't happen" );
-	    }
-	return;
-	}
+            default:
+            pm_error( "shouldn't happen" );
+            }
+        return;
+        }
 
     /* We must be promoting to a higher type. */
     switch ( PNM_FORMAT_TYPE(format) )
-	{
-	case PBM_TYPE:
-	switch ( PNM_FORMAT_TYPE(newformat) )
-	    {
-	    case PGM_TYPE:
-	    for ( col = 0, xP = xelrow; col < cols; ++col, ++xP )
-		if ( PNM_GET1(*xP) == 0 )
-		    PNM_ASSIGN1( *xP, 0 );
-		else
-		    PNM_ASSIGN1( *xP, newmaxval );
-	    break;
+        {
+        case PBM_TYPE:
+        switch ( PNM_FORMAT_TYPE(newformat) )
+            {
+            case PGM_TYPE:
+            for ( col = 0, xP = xelrow; col < cols; ++col, ++xP )
+                if ( PNM_GET1(*xP) == 0 )
+                    PNM_ASSIGN1( *xP, 0 );
+                else
+                    PNM_ASSIGN1( *xP, newmaxval );
+            break;
 
-	    case PPM_TYPE:
-	    for ( col = 0, xP = xelrow; col < cols; ++col, ++xP )
-		if ( PNM_GET1(*xP) == 0 )
-		    PPM_ASSIGN( *xP, 0, 0, 0 );
-		else
-		    PPM_ASSIGN( *xP, newmaxval, newmaxval, newmaxval );
-	    break;
+            case PPM_TYPE:
+            for ( col = 0, xP = xelrow; col < cols; ++col, ++xP )
+                if ( PNM_GET1(*xP) == 0 )
+                    PPM_ASSIGN( *xP, 0, 0, 0 );
+                else
+                    PPM_ASSIGN( *xP, newmaxval, newmaxval, newmaxval );
+            break;
 
-	    default:
-	    pm_error( "can't happen" );
-	    }
-	break;
+            default:
+            pm_error( "can't happen" );
+            }
+        break;
 
-	case PGM_TYPE:
-	switch ( PNM_FORMAT_TYPE(newformat) )
-	    {
-	    case PPM_TYPE:
-	    if ( newmaxval < maxval )
-		pm_error(
-	   "pnm_promoteformatrow: can't decrease maxval - try using pnmdepth" );
-	    if ( newmaxval == maxval )
-		{
-		for ( col = 0, xP = xelrow; col < cols; ++col, ++xP )
-		    PPM_ASSIGN(
-			*xP, PNM_GET1(*xP), PNM_GET1(*xP), PNM_GET1(*xP) );
-		}
-	    else
-		{ /* Increase maxval. */
-		for ( col = 0, xP = xelrow; col < cols; ++col, ++xP )
-		    PPM_ASSIGN(
-			*xP, (int) PNM_GET1(*xP) * newmaxval / maxval,
-			(int) PNM_GET1(*xP) * newmaxval / maxval,
-			(int) PNM_GET1(*xP) * newmaxval / maxval );
-		}
-	    break;
+        case PGM_TYPE:
+        switch ( PNM_FORMAT_TYPE(newformat) )
+            {
+            case PPM_TYPE:
+            if ( newmaxval < maxval )
+                pm_error(
+           "pnm_promoteformatrow: can't decrease maxval - try using pnmdepth" );
+            if ( newmaxval == maxval )
+                {
+                for ( col = 0, xP = xelrow; col < cols; ++col, ++xP )
+                    PPM_ASSIGN(
+                        *xP, PNM_GET1(*xP), PNM_GET1(*xP), PNM_GET1(*xP) );
+                }
+            else
+                { /* Increase maxval. */
+                for ( col = 0, xP = xelrow; col < cols; ++col, ++xP )
+                    PPM_ASSIGN(
+                        *xP, (int) PNM_GET1(*xP) * newmaxval / maxval,
+                        (int) PNM_GET1(*xP) * newmaxval / maxval,
+                        (int) PNM_GET1(*xP) * newmaxval / maxval );
+                }
+            break;
 
-	    default:
-	    pm_error( "can't happen" );
-	    }
-	break;
+            default:
+            pm_error( "can't happen" );
+            }
+        break;
 
-	default:
-	pm_error( "can't happen" );
-	}
+        default:
+        pm_error( "can't happen" );
+        }
     }

@@ -34,22 +34,22 @@ pnm_writepnminit( file, cols, rows, maxval, format, forceplain )
 #endif /*__STDC__*/
     {
     switch ( PNM_FORMAT_TYPE(format) )
-	{
-	case PPM_TYPE:
-	ppm_writeppminit( file, cols, rows, (pixval) maxval, forceplain );
-	break;
+        {
+        case PPM_TYPE:
+        ppm_writeppminit( file, cols, rows, (pixval) maxval, forceplain );
+        break;
 
-	case PGM_TYPE:
-	pgm_writepgminit( file, cols, rows, (gray) maxval, forceplain );
-	break;
+        case PGM_TYPE:
+        pgm_writepgminit( file, cols, rows, (gray) maxval, forceplain );
+        break;
 
-	case PBM_TYPE:
-	pbm_writepbminit( file, cols, rows, forceplain );
-	break;
+        case PBM_TYPE:
+        pbm_writepbminit( file, cols, rows, forceplain );
+        break;
 
-	default:
-	pm_error( "can't happen" );
-	}
+        default:
+        pm_error( "can't happen" );
+        }
     }
 
 #if defined(__STDC__) || defined(WIN32_VC)
@@ -72,30 +72,30 @@ pnm_writepnmrow( file, xelrow, cols, maxval, format, forceplain )
     register bit* bP;
 
     switch ( PNM_FORMAT_TYPE(format) )
-	{
-	case PPM_TYPE:
-	ppm_writeppmrow( file, (pixel*) xelrow, cols, (pixval) maxval, forceplain );
-	break;
+        {
+        case PPM_TYPE:
+        ppm_writeppmrow( file, (pixel*) xelrow, cols, (pixval) maxval, forceplain );
+        break;
 
-	case PGM_TYPE:
-	grayrow = pgm_allocrow( cols );
-	for ( col = 0, gP = grayrow, xP = xelrow; col < cols; ++col, ++gP, ++xP )
-	    *gP = PNM_GET1( *xP );
-	pgm_writepgmrow( file, grayrow, cols, (gray) maxval, forceplain );
-	pgm_freerow( grayrow );
-	break;
+        case PGM_TYPE:
+        grayrow = pgm_allocrow( cols );
+        for ( col = 0, gP = grayrow, xP = xelrow; col < cols; ++col, ++gP, ++xP )
+            *gP = PNM_GET1( *xP );
+        pgm_writepgmrow( file, grayrow, cols, (gray) maxval, forceplain );
+        pgm_freerow( grayrow );
+        break;
 
-	case PBM_TYPE:
-	bitrow = pbm_allocrow( cols );
-	for ( col = 0, bP = bitrow, xP = xelrow; col < cols; ++col, ++bP, ++xP )
-	    *bP = PNM_GET1( *xP ) == 0 ? PBM_BLACK : PBM_WHITE;
-	pbm_writepbmrow( file, bitrow, cols, forceplain );
-	pbm_freerow( bitrow );
-	break;
+        case PBM_TYPE:
+        bitrow = pbm_allocrow( cols );
+        for ( col = 0, bP = bitrow, xP = xelrow; col < cols; ++col, ++bP, ++xP )
+            *bP = PNM_GET1( *xP ) == 0 ? PBM_BLACK : PBM_WHITE;
+        pbm_writepbmrow( file, bitrow, cols, forceplain );
+        pbm_freerow( bitrow );
+        break;
 
-	default:
-	pm_error( "can't happen" );
-	}
+        default:
+        pm_error( "can't happen" );
+        }
     }
 
 #if __STDC__
@@ -116,5 +116,5 @@ pnm_writepnm( file, xels, cols, rows, maxval, format, forceplain )
     pnm_writepnminit( file, cols, rows, maxval, format, forceplain );
 
     for ( row = 0; row < rows; ++row )
-	pnm_writepnmrow( file, xels[row], cols, maxval, format, forceplain );
+        pnm_writepnmrow( file, xels[row], cols, maxval, format, forceplain );
     }

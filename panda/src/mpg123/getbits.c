@@ -4,11 +4,11 @@
 #if 0
 static void check_buffer_range(int size)
 {
-	int pos = (bsi->wordpointer-bsbuf) + (size>>3);
+        int pos = (bsi->wordpointer-bsbuf) + (size>>3);
 
-	if( pos >= fsizeold) {
-		fprintf(stderr,"Pointer out of range (%d,%d)!\n",pos,fsizeold);
-	}
+        if( pos >= fsizeold) {
+                fprintf(stderr,"Pointer out of range (%d,%d)!\n",pos,fsizeold);
+        }
 }
 #endif
 

@@ -125,7 +125,7 @@ int synth_1to1(real *bandPtr,int channel,unsigned char *out,int *pnt)
   int bo1;
 
   if(param.enable_equalizer)
-	do_equalizer(bandPtr,channel);
+        do_equalizer(bandPtr,channel);
 
   if(!channel) {
     bo--;

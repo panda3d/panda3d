@@ -113,7 +113,7 @@ void make_conv16to8_table(int mode)
       else
         c1 = 255 - (int) (log( 1.0 + 255.0 * (double) i*mul / 32768.0 ) * m);
       if(c1 < 0 || c1 > 255) 
-	fprintf(stderr,"Converror %d %d\n",i,c1);
+        fprintf(stderr,"Converror %d %d\n",i,c1);
       if(c1 == 0)
         c1 = 2;
       conv16to8[i] = (unsigned char) c1;
