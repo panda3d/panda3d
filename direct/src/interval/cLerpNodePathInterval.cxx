@@ -1,0 +1,351 @@
+// Filename: cLerpNodePathInterval.cxx
+// Created by:  drose (27Aug02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+#include "cLerpNodePathInterval.h"
+#include "lerp_helpers.h"
+#include "transformState.h"
+#include "renderState.h"
+#include "colorAttrib.h"
+#include "colorScaleAttrib.h"
+#include "dcast.h"
+
+TypeHandle CLerpNodePathInterval::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::Constructor
+//       Access: Published
+//  Description: Constructs a lerp interval that will lerp some
+//               properties on the indicated node, possibly relative
+//               to the indicated other node (if other is nonempty).
+//
+//               You must call set_end_pos(), etc. for the various
+//               properties you wish to lerp before the first call to
+//               initialize().  If you want to set a starting value
+//               for any of the properties, you may call
+//               set_start_pos(), etc.; otherwise, the starting value
+//               is taken from the actual node's value at the time the
+//               lerp is performed.
+////////////////////////////////////////////////////////////////////
+CLerpNodePathInterval::
+CLerpNodePathInterval(const string &name, double duration, 
+                      CLerpInterval::BlendType blend_type,
+                      const NodePath &node, const NodePath &other) :
+  CLerpInterval(name, duration, blend_type),
+  _node(node),
+  _other(other),
+  _flags(0)
+{
+  _prev_d = 0.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::initialize
+//       Access: Published, Virtual
+//  Description: This replaces the first call to step(), and indicates
+//               that the interval has just begun.  This may be
+//               overridden by derived classes that need to do some
+//               explicit initialization on the first call.
+////////////////////////////////////////////////////////////////////
+void CLerpNodePathInterval::
+initialize(double t) {
+  recompute();
+  _prev_d = 0.0;
+  step(t);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::instant
+//       Access: Published, Virtual
+//  Description: This is called in lieu of initialize() .. step()
+//               .. finalize(), when everything is to happen within
+//               one frame.  The interval should initialize itself,
+//               then leave itself in the final state.
+////////////////////////////////////////////////////////////////////
+void CLerpNodePathInterval::
+instant() {
+  recompute();
+  _prev_d = 0.0;
+  step(get_duration());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::step
+//       Access: Published, Virtual
+//  Description: Advances the time on the interval.  The time may
+//               either increase (the normal case) or decrease
+//               (e.g. if the interval is being played by a slider).
+////////////////////////////////////////////////////////////////////
+void CLerpNodePathInterval::
+step(double t) {
+  double d = compute_delta(t);
+
+  if ((_flags & (F_end_pos | F_end_hpr | F_end_scale)) != 0) {
+    // We have some transform lerp.
+    CPT(TransformState) transform;
+
+    if (_other.is_empty()) {
+      // If there is no other node, it's a local transform lerp.
+      transform = _node.get_transform();
+    } else {
+      // If there *is* another node, we get the transform relative to
+      // that node.
+      transform = _node.get_transform(_other);
+    }
+    
+    LPoint3f pos;
+    LVecBase3f hpr;
+    LVecBase3f scale;
+
+    if ((_flags & F_end_pos) != 0) {
+      if ((_flags & F_start_pos) != 0) {
+        lerp_value(pos, d, _start_pos, _end_pos);
+
+      } else {
+        pos = transform->get_pos();
+        lerp_value_from_prev(pos, d, _prev_d, pos, _end_pos);
+      }
+    }
+    if ((_flags & F_end_hpr) != 0) {
+      if ((_flags & F_start_hpr) != 0) {
+        lerp_value(hpr, d, _start_hpr, _end_hpr);
+
+      } else {
+        hpr = transform->get_hpr();
+        lerp_value_from_prev(hpr, d, _prev_d, hpr, _end_hpr);
+      }
+    }
+    if ((_flags & F_end_scale) != 0) {
+      if ((_flags & F_start_scale) != 0) {
+        lerp_value(scale, d, _start_scale, _end_scale);
+
+      } else {
+        scale = transform->get_scale();
+        lerp_value_from_prev(scale, d, _prev_d, scale, _end_scale);
+      }
+    }
+
+    // Now apply the modifications back to the transform.  We want to
+    // be a little careful here, because we don't want to assume the
+    // transform has hpr/scale components if they're not needed.  And
+    // in any case, we only want to apply the components that we
+    // computed, above.
+    switch (_flags & (F_end_pos | F_end_hpr | F_end_scale)) {
+    case F_end_pos:
+      transform = transform->set_pos(pos);
+      break;
+
+    case F_end_hpr:
+      transform = transform->set_hpr(hpr);
+      break;
+
+    case F_end_scale:
+      transform = transform->set_scale(scale);
+      break;
+
+    case F_end_hpr | F_end_scale:
+      transform = TransformState::make_pos_hpr_scale(transform->get_pos(), hpr, scale);
+      break;
+
+    case F_end_pos | F_end_hpr:
+      transform = TransformState::make_pos_hpr_scale(pos, hpr, transform->get_scale());
+      break;
+
+    case F_end_pos | F_end_scale:
+      if (transform->quat_given()) {
+        transform = TransformState::make_pos_quat_scale(pos, transform->get_quat(), scale);
+      } else {
+        transform = TransformState::make_pos_hpr_scale(pos, transform->get_hpr(), scale);
+      }
+      break;
+
+    case F_end_pos | F_end_hpr | F_end_scale:
+      transform = TransformState::make_pos_hpr_scale(pos, hpr, scale);
+      break;
+
+    default:
+      interval_cat.error()
+        << "Internal error in CLerpNodePathInterval::step().\n";
+    }
+
+    // Now apply the new transform back to the node.
+    if (_other.is_empty()) {
+      _node.set_transform(transform);
+    } else {
+      _node.set_transform(_other, transform);
+    }
+  }
+
+  if ((_flags & (F_end_color | F_end_color_scale)) != 0) {
+    // We have some render state lerp.
+    CPT(RenderState) state;
+
+    if (_other.is_empty()) {
+      // If there is no other node, it's a local state lerp.  This is
+      // most common.
+      state = _node.get_state();
+    } else {
+      // If there *is* another node, we get the state relative to that
+      // node.  This is weird, but you could lerp color (for instance)
+      // relative to some other node's color.
+      state = _node.get_state(_other);
+    }
+    
+    // Unlike in the transform case above, we can go ahead and modify
+    // the state immediately with each attribute change, since these
+    // attributes don't interrelate.
+
+    if ((_flags & F_end_color) != 0) {
+      Colorf color;
+
+      if ((_flags & F_start_color) != 0) {
+        lerp_value(color, d, _start_color, _end_color);
+
+      } else {
+        // Get the previous color.
+        color.set(1.0f, 1.0f, 1.0f, 1.0f);
+        const RenderAttrib *attrib =
+          state->get_attrib(ColorAttrib::get_class_type());
+        if (attrib != (const RenderAttrib *)NULL) {
+          const ColorAttrib *ca = DCAST(ColorAttrib, attrib);
+          if (ca->get_color_type() == ColorAttrib::T_flat) {
+            color = ca->get_color();
+          }
+        }
+
+        lerp_value_from_prev(color, d, _prev_d, color, _end_color);
+      }
+
+      state = state->add_attrib(ColorAttrib::make_flat(color));
+    }
+
+    if ((_flags & F_end_color_scale) != 0) {
+      LVecBase4f color_scale;
+
+      if ((_flags & F_start_color_scale) != 0) {
+        lerp_value(color_scale, d, _start_color_scale, _end_color_scale);
+
+      } else {
+        // Get the previous color scale.
+        color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
+        const RenderAttrib *attrib =
+          state->get_attrib(ColorScaleAttrib::get_class_type());
+        if (attrib != (const RenderAttrib *)NULL) {
+          const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
+          color_scale = csa->get_scale();
+        }
+
+        lerp_value_from_prev(color_scale, d, _prev_d, color_scale, _end_color_scale);
+      }
+
+      state = state->add_attrib(ColorScaleAttrib::make(color_scale));
+    }    
+
+    // Now apply the new state back to the node.
+    if (_other.is_empty()) {
+      _node.set_state(state);
+    } else {
+      _node.set_state(_other, state);
+    }
+  }
+
+  _prev_d = d;
+  _curr_t = t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::reverse_initialize
+//       Access: Published, Virtual
+//  Description: Similar to initialize(), but this is called when the
+//               interval is being played backwards; it indicates that
+//               the interval should start at the finishing state and
+//               undo any intervening intervals.
+////////////////////////////////////////////////////////////////////
+void CLerpNodePathInterval::
+reverse_initialize(double t) {
+  recompute();
+  _prev_d = 1.0;
+  step(t);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::reverse_instant
+//       Access: Published, Virtual
+//  Description: This is called in lieu of reverse_initialize()
+//               .. step() .. reverse_finalize(), when everything is
+//               to happen within one frame.  The interval should
+//               initialize itself, then leave itself in the initial
+//               state.
+////////////////////////////////////////////////////////////////////
+void CLerpNodePathInterval::
+reverse_instant() {
+  recompute();
+  _prev_d = 1.0;
+  step(0.0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::output
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CLerpNodePathInterval::
+output(ostream &out) const {
+  out << get_name() << ":";
+
+  if ((_flags & F_end_pos) != 0) {
+    out << " pos";
+    if ((_flags & F_start_pos) != 0) {
+      out << " from " << _start_pos;
+    }
+    out << " to " << _end_pos;
+  }
+
+  if ((_flags & F_end_hpr) != 0) {
+    out << " hpr";
+    if ((_flags & F_start_hpr) != 0) {
+      out << " from " << _start_hpr;
+    }
+    out << " to " << _end_hpr;
+  }
+
+  if ((_flags & F_end_scale) != 0) {
+    out << " scale";
+    if ((_flags & F_start_scale) != 0) {
+      out << " from " << _start_scale;
+    }
+    out << " to " << _end_scale;
+  }
+
+  if ((_flags & F_end_color) != 0) {
+    out << " color";
+    if ((_flags & F_start_color) != 0) {
+      out << " from " << _start_color;
+    }
+    out << " to " << _end_color;
+  }
+
+  if ((_flags & F_end_color_scale) != 0) {
+    out << " color_scale";
+    if ((_flags & F_start_color_scale) != 0) {
+      out << " from " << _start_color_scale;
+    }
+    out << " to " << _end_color_scale;
+  }
+
+  out << " dur " << get_duration();
+}

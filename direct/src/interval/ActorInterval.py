@@ -122,7 +122,7 @@ class ActorInterval(Interval.Interval):
             self.goToT(t)
 
 
-class LerpAnimInterval(Interval.Interval):
+class LerpAnimInterval(CLerpAnimEffectInterval):
     # Blends between two anims.  Start both anims first (or use
     # parallel ActorIntervals), then invoke LerpAnimInterval to
     # smoothly blend the control effect from the first to the second.
@@ -131,58 +131,25 @@ class LerpAnimInterval(Interval.Interval):
     def __init__(self, actor, duration, startAnim, endAnim,
                  startWeight = 0.0, endWeight = 1.0,
                  blendType = 'noBlend', name = None):
-        """ __init__(actor, duration, pos, startPos, other, blendType, name)
-        """
         # Generate unique name if necessary
         if (name == None):
             name = 'LerpAnimInterval-%d' % LerpAnimInterval.lerpAnimNum
             LerpAnimInterval.lerpAnimNum += 1
 
-        # Record class specific variables
-        self.actor = actor
-        self.startAnim = startAnim
-        self.endAnim = endAnim
-        self.startWeight = startWeight
-        self.deltaWeight = endWeight - startWeight
-        self.blendType = self.getBlend(blendType)
+        blendType = self.stringBlendType(blendType)
+        assert(blendType != self.BTInvalid)
 
         # Initialize superclass
-        Interval.Interval.__init__(self, name, duration)
+        CLerpAnimEffectInterval.__init__(self, name, duration, blendType)
 
-
-    def updateFunc(self, t, event=Interval.IVAL_NONE):
-        """ updateFunc(t, event)
-            Go to time t
-        """
-        if (self.actor.isEmpty()):
-            self.notify.warning('updateFunc() - %s empty actor!' % self.name)
-            return
-
-        # First, normalize t into the range 0 .. 1, and apply the blendType.
-        t = self.blendType(float(t) / self.duration)
-
-        # Then compute the current weight based on the time elapsed so far.
-        w = self.startWeight + t * self.deltaWeight
-
-        # Apply that weight to the two anims.
-        if self.startAnim != None:
-            self.actor.setControlEffect(self.startAnim, 1.0 - w)
-        if self.endAnim != None:
-            self.actor.setControlEffect(self.endAnim, w)
-
-
-    def getBlend(self, blendType):
-        """__getBlend(self, string)
-        Return the C++ blend class corresponding to blendType string
-        """
-        if (blendType == "easeIn"):
-            return LerpBlendHelpers.easeIn
-        elif (blendType == "easeOut"):
-            return LerpBlendHelpers.easeOut
-        elif (blendType == "easeInOut"):
-            return LerpBlendHelpers.easeInOut
-        elif (blendType == "noBlend"):
-            return LerpBlendHelpers.noBlend
-        else:
-            raise Exception(
-                'Error: LerpAnimInterval.getBlend: Unknown blend type')
+        if startAnim != None:
+            controls = actor.getAnimControls(startAnim)
+            for control in controls:
+                self.addControl(control, startAnim,
+                                1.0 - startWeight, 1.0 - endWeight)
+                
+        if endAnim != None:
+            controls = actor.getAnimControls(endAnim)
+            for control in controls:
+                self.addControl(control, endAnim,
+                                startWeight, endWeight)

@@ -27,7 +27,7 @@ class FunctionInterval(Interval.Interval):
         self.function = function
         # Create a unique name for the interval if necessary
         if (name == None):
-            name = 'FunctionInterval-%d' % FunctionInterval.functionIntervalNum
+            name = 'FunctionInterval-%s-%d' % (function.__name__, FunctionInterval.functionIntervalNum)
             FunctionInterval.functionIntervalNum += 1
         assert(isinstance(name, types.StringType))
         # Record any arguments

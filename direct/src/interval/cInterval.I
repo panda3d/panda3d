@@ -1,0 +1,127 @@
+// Filename: cInterval.I
+// Created by:  drose (27Aug02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::get_name
+//       Access: Published
+//  Description: Returns the interval's name.
+////////////////////////////////////////////////////////////////////
+INLINE const string &CInterval::
+get_name() const {
+  return _name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::get_duration
+//       Access: Published
+//  Description: Returns the duration of the interval in seconds.
+////////////////////////////////////////////////////////////////////
+INLINE double CInterval::
+get_duration() const {
+  recompute();
+  return _duration;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::get_open_ended
+//       Access: Published
+//  Description: Returns the state of the "open_ended" flag.  This is
+//               primarily intended for instantaneous intervals like
+//               FunctionIntervals; it indicates true if the interval
+//               has some lasting effect that should be applied even
+//               if the interval doesn't get started until after its
+//               finish time, or false if the interval is a transitive
+//               thing that doesn't need to be called late.
+////////////////////////////////////////////////////////////////////
+INLINE bool CInterval::
+get_open_ended() const {
+  return _open_ended;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::set_t
+//       Access: Published
+//  Description: Advances the interval.  This function is provided
+//               mainly to provide compatibility with the Python
+//               Interval class; you should use initialize(), step(),
+//               and finalize() instead.
+////////////////////////////////////////////////////////////////////
+INLINE void CInterval::
+set_t(double t, CInterval::EventType event) {
+  switch (event) {
+  case ET_initialize:
+    initialize(t);
+    break;
+
+  case ET_instant:
+    instant();
+    break;
+
+  case ET_step:
+    step(t);
+    break;
+
+  case ET_finalize:
+    finalize();
+    break;
+
+  case ET_reverse_initialize:
+    reverse_initialize(t);
+    break;
+
+  case ET_reverse_instant:
+    reverse_instant();
+    break;
+
+  case ET_reverse_finalize:
+    reverse_finalize();
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::get_t
+//       Access: Published
+//  Description: Returns the current time of the interval: the last
+//               value of t passed to initialize(), step(), or
+//               finalize() (or set_t()).
+////////////////////////////////////////////////////////////////////
+INLINE double CInterval::
+get_t() const {
+  return _curr_t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::recompute
+//       Access: Protected
+//  Description: Calls do_recompute() if the dirty flag has been set.
+////////////////////////////////////////////////////////////////////
+INLINE void CInterval::
+recompute() const {
+  if (_dirty) {
+    ((CInterval *)this)->do_recompute();
+  }
+}
+
+INLINE ostream &
+operator << (ostream &out, const CInterval &ival) {
+  ival.output(out);
+  return out;
+}
+

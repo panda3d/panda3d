@@ -5,9 +5,9 @@ from PandaModules import *
 import Task
 
 # Interval events
-IVAL_NONE = 0
-IVAL_INIT = 1
-IVAL_DONE = 2
+IVAL_NONE = CInterval.ETStep
+IVAL_INIT = CInterval.ETInitialize
+IVAL_DONE = CInterval.ETFinalize
 
 class Interval(DirectObject):
     """Interval class: Base class for timeline functionality"""
@@ -75,7 +75,7 @@ class Interval(DirectObject):
     def setFinalT(self):
         """ setFinalT()
         """
-        self.setT(self.getDuration(), event=IVAL_DONE)
+        self.setT(self.getDuration(), IVAL_DONE)
 
     def play(self, t0=0.0, duration=0.0, scale=1.0):
         """ play(t0, duration)
@@ -133,7 +133,7 @@ class Interval(DirectObject):
         if (te < self.endTime):
             if (self.firstTime):
                 # If first call, init intervals
-                self.setT(te, event = IVAL_INIT)
+                self.setT(te, IVAL_INIT)
                 self.firstTime = 0
             else:
                 self.setT(te)
@@ -142,7 +142,7 @@ class Interval(DirectObject):
             te = self.endTime
             if (self.firstTime):
                 # If first call, init intervals
-                self.setT(te, event = IVAL_INIT)
+                self.setT(te, IVAL_INIT)
                 self.firstTime = 0
             else:
                 self.setT(te, IVAL_DONE)
@@ -181,23 +181,23 @@ class Interval(DirectObject):
             # Kill playback task
             taskMgr.remove(s.name + '-play')
             # INIT interval
-            s.setT(es.get(), event = IVAL_INIT)
+            s.setT(es.get(), IVAL_INIT)
         es.onPress = onPress
         # To make sure you stop free running intervals
         es.onRelease = lambda s=self: s.stop()
         # To update scale and execute intervals with IVAL_INIT
         def onReturn(s = self, es = es):
-            s.setT(es.get(), event = IVAL_INIT)
+            s.setT(es.get(), IVAL_INIT)
             s.stop()
         es.onReturnRelease = onReturn
         es.pack(expand = 1, fill = X)
         bf = Frame(outerFrame)
         # Jump to start and end
         def toStart(s=self, es=es):
-            s.setT(0.0, event = IVAL_INIT)
+            s.setT(0.0, IVAL_INIT)
             s.stop()
         def toEnd(s=self):
-            s.setT(s.getDuration(), event = IVAL_INIT)
+            s.setT(s.getDuration(), IVAL_INIT)
             s.stop()
         jumpToStart = Button(bf, text = '<<', command = toStart)
         # Stop/play buttons

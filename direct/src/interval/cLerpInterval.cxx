@@ -1,0 +1,85 @@
+// Filename: cLerpInterval.cxx
+// Created by:  drose (27Aug02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+#include "cLerpInterval.h"
+#include "string_utils.h"
+
+TypeHandle CLerpInterval::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpInterval::string_blend_type
+//       Access: Published, Static
+//  Description: Returns the BlendType enumerated value corresponding
+//               to the indicated string, or BT_invalid if the string
+//               doesn't match anything.
+////////////////////////////////////////////////////////////////////
+CLerpInterval::BlendType CLerpInterval::
+string_blend_type(const string &blend_type) {
+  if (blend_type == "easeIn") {
+    return BT_ease_in;
+  } else if (blend_type == "easeOut") {
+    return BT_ease_out;
+  } else if (blend_type == "easeInOut") {
+    return BT_ease_in_out;
+  } else if (blend_type == "noBlend") {
+    return BT_no_blend;
+  } else {
+    return BT_invalid;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpInterval::compute_delta
+//       Access: Protected
+//  Description: Given a t value in the range [0, get_duration()],
+//               returns the corresponding delta value clamped to the
+//               range [0, 1], after scaling by duration and applying
+//               the blend type.
+////////////////////////////////////////////////////////////////////
+double CLerpInterval::
+compute_delta(double t) const {
+  double duration = get_duration();
+  if (duration == 0.0) {
+    return 0.0;
+  }
+  t /= duration;
+  t = min(max(t, 0.0), 1.0);
+
+  switch (_blend_type) {
+  case BT_ease_in:
+    {
+      double t2 = t * t;
+      return ((3.0 * t2) - (t2 * t)) * 0.5;
+    }
+
+  case BT_ease_out:
+    {
+      double t2 = t * t;
+      return ((3.0 * t2) - (t2 * t)) * 0.5;
+    }
+
+  case BT_ease_in_out:
+    {
+      double t2 = t * t;
+      return (3.0 * t2) - (2.0 * t * t2);
+    }
+
+  default:
+    return t;
+  }
+}
