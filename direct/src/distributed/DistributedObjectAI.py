@@ -160,9 +160,10 @@ class DistributedObjectAI(DirectObject.DirectObject):
         return 'DOLogicalChangeZone-%s' % self.doId
     
     def handleZoneChange(self, newParentId, newZoneId, oldParentId, oldZoneId):
-        assert oldParentId == self.parentId
-        ##assert oldZoneId == self.zoneId
-        self.parentId = newParentId
+        if wantOtpServer:
+            assert oldParentId == self.parentId
+            ##assert oldZoneId == self.zoneId
+            self.parentId = newParentId
         self.zoneId = newZoneId
         self.air.changeDOZoneInTables(self, newZoneId, oldZoneId)
         messenger.send(self.getZoneChangeEvent(), [newZoneId, oldZoneId])
