@@ -140,8 +140,12 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         For example, this is useful when switching away from the 
         current walker.
         """
-        self.oneTimeCollide()
-        self.avatarNodePath.setZ(self.avatarNodePath.getZ()-self.getAirborneHeight())
+        # With these on, getAirborneHeight is not returning the correct value so
+        # when we open our book while swimming we pop down underneath the ground
+        # self.oneTimeCollide()
+        # self.avatarNodePath.setZ(self.avatarNodePath.getZ()-self.getAirborneHeight())
+        # Since this is the non physics walker - wont they already be on the ground?
+        return
 
     def oneTimeCollide(self):
         """
