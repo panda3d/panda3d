@@ -36,6 +36,7 @@
     qpgeomVertexDataType.h qpgeomVertexDataType.I \
     qpgeomVertexFormat.h qpgeomVertexFormat.I \
     qpgeomVertexReader.h qpgeomVertexReader.I \
+    qpgeomVertexRewriter.h qpgeomVertexRewriter.I \
     qpgeomVertexWriter.h qpgeomVertexWriter.I \
     indexBufferContext.I indexBufferContext.h \
     internalName.I internalName.h \
@@ -82,6 +83,7 @@
     qpgeomVertexDataType.cxx \
     qpgeomVertexFormat.cxx \
     qpgeomVertexReader.cxx \
+    qpgeomVertexRewriter.cxx \
     qpgeomVertexWriter.cxx \
     indexBufferContext.cxx \
     material.cxx  \
@@ -126,6 +128,7 @@
     qpgeomVertexDataType.h qpgeomVertexDataType.I \
     qpgeomVertexFormat.h qpgeomVertexFormat.I \
     qpgeomVertexReader.h qpgeomVertexReader.I \
+    qpgeomVertexRewriter.h qpgeomVertexRewriter.I \
     qpgeomVertexWriter.h qpgeomVertexWriter.I \
     indexBufferContext.I indexBufferContext.h \
     internalName.I internalName.h \

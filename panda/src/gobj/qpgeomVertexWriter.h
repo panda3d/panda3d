@@ -53,6 +53,21 @@
 //               vertex, it is faster to use a different
 //               GeomVertexWriter for each data type.
 //
+//               Note that, like a GeomVertexReader, a
+//               GeomVertexWriter does not keep a reference count to
+//               the actual vertex data buffer.  This means that it is
+//               important not to keep a GeomVertexWriter object
+//               around over a long period of time in which the data
+//               buffer is likely to be deallocated; it is intended
+//               for making a quick pass over the data in one session.
+//
+//               It also means that you should create any
+//               GeomVertexWriters *before* creating GeomVertexReaders
+//               on the same data, since the writer itself might cause
+//               the vertex buffer to be deallocated.  Better yet, use
+//               a GeomVertexRewriter if you are going to create both
+//               of them anyway.
+//
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA qpGeomVertexWriter {
@@ -115,7 +130,6 @@ private:
   const qpGeomVertexDataType *_data_type;
   int _stride;
 
-  PTA_uchar _data;
   unsigned char *_pointer;
 
   int _start_vertex;

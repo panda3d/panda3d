@@ -331,8 +331,7 @@ set_pointer(int vertex) {
   nassertv(_data_type != (qpGeomVertexDataType *)NULL);
   _read_vertex = vertex;
   CPT(qpGeomVertexArrayData) array_data = _vertex_data->get_array(_array);
-  _data = array_data->get_data();
-  _pointer = _data.p() + _data_type->get_start() + _stride * _read_vertex;
+  _pointer = array_data->get_data() + _data_type->get_start() + _stride * _read_vertex;
   _num_vertices = array_data->get_num_vertices();
 }
 
@@ -345,7 +344,7 @@ set_pointer(int vertex) {
 INLINE const unsigned char *qpGeomVertexReader::
 inc_pointer() {
   nassertr(_read_vertex < _num_vertices, NULL);
-  nassertr(_pointer == _vertex_data->get_array(_array)->get_data().p() + _data_type->get_start() + _stride * _read_vertex, NULL);
+  nassertr(_pointer == _vertex_data->get_array(_array)->get_data() + _data_type->get_start() + _stride * _read_vertex, NULL);
 
   const unsigned char *orig_pointer = _pointer;
   _pointer += _stride;

@@ -33,7 +33,8 @@
 
 TypeHandle Character::_type_handle;
 
-PStatCollector Character::_anim_pcollector("App:Animation");
+PStatCollector Character::_app_animation_pcollector("App:Animation");
+PStatCollector Character::_cull_animation_pcollector("Cull:Animation");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::Copy Constructor
@@ -46,7 +47,8 @@ Character(const Character &copy) :
   _cv(DynamicVertices::deep_copy(copy._cv)),
   _computed_vertices(copy._computed_vertices),
   _parts(copy._parts),
-  _char_pcollector(copy._char_pcollector)
+  _app_char_pcollector(copy._app_char_pcollector),
+  _cull_char_pcollector(copy._cull_char_pcollector)
 {
   // Now make a copy of the joint/slider hierarchy.  We could just use
   // the copy_subgraph feature of the PartBundleNode's copy
@@ -64,7 +66,8 @@ Character(const Character &copy) :
 Character::
 Character(const string &name) :
   PartBundleNode(name, new CharacterJointBundle(name)),
-  _char_pcollector(_anim_pcollector, name)
+  _app_char_pcollector(PStatCollector(_app_animation_pcollector, name), "Joints"),
+  _cull_char_pcollector(PStatCollector(_cull_animation_pcollector, name), "Joints")
 {
 }
 
@@ -158,7 +161,18 @@ cull_callback(CullTraverser *, CullTraverserData &) {
   // the view frustum.  We may need a better way to do this
   // optimization later, to handle characters that might animate
   // themselves in front of the view frustum.
-  update_to_now();
+
+  PStatTimer timer(_cull_char_pcollector);
+
+  double now = ClockObject::get_global_clock()->get_frame_time();
+  get_bundle()->advance_time(now);
+
+  if (char_cat.is_spam()) {
+    char_cat.spam() << "Animating " << *this << " at time " << now << "\n";
+  }
+
+  do_update();
+
   return true;
 }
 
@@ -193,9 +207,38 @@ update_to_now() {
 ////////////////////////////////////////////////////////////////////
 void Character::
 update() {
-  // Statistics
-  PStatTimer timer(_char_pcollector);
+  PStatTimer timer(_app_char_pcollector);
+  do_update();
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: Character::force_update
+//       Access: Published
+//  Description: Recalculates the character even if we think it
+//               doesn't need it.
+////////////////////////////////////////////////////////////////////
+void Character::
+force_update() {
+  // Statistics
+  PStatTimer timer(_app_char_pcollector);
+
+  // First, update all the joints and sliders.
+  get_bundle()->force_update();
+
+  // Now update the vertices.
+  if (_computed_vertices != (ComputedVertices *)NULL) {
+    _computed_vertices->update(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::do_update
+//       Access: Private
+//  Description: The actual implementation of update().  Assumes the
+//               appropriate PStatCollector has already been started.
+////////////////////////////////////////////////////////////////////
+void Character::
+do_update() {
   // First, update all the joints and sliders.
   bool any_changed;
   if (even_animation) {
@@ -210,26 +253,6 @@ update() {
     if (_computed_vertices != (ComputedVertices *)NULL) {
       _computed_vertices->update(this);
     }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Character::force_update
-//       Access: Published
-//  Description: Recalculates the character even if we think it
-//               doesn't need it.
-////////////////////////////////////////////////////////////////////
-void Character::
-force_update() {
-  // Statistics
-  PStatTimer timer(_char_pcollector);
-
-  // First, update all the joints and sliders.
-  get_bundle()->force_update();
-
-  // Now update the vertices.
-  if (_computed_vertices != (ComputedVertices *)NULL) {
-    _computed_vertices->update(this);
   }
 }
 
@@ -551,10 +574,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 
 #ifdef DO_PSTATS
-  // Reinitialize our collector with our name, now that we know it.
+  // Reinitialize our collectors with our name, now that we know it.
   if (has_name()) {
-    _char_pcollector =
-      PStatCollector(_anim_pcollector, get_name());
+    _app_char_pcollector = 
+      PStatCollector(PStatCollector(_app_animation_pcollector, get_name()), "Joints");
+    _cull_char_pcollector = 
+      PStatCollector(PStatCollector(_cull_animation_pcollector, get_name()), "Joints");
   }
 #endif
 }

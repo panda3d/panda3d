@@ -500,8 +500,7 @@ set_pointer(int vertex) {
   nassertv(_data_type != (qpGeomVertexDataType *)NULL);
   _write_vertex = vertex;
   PT(qpGeomVertexArrayData) array_data = _vertex_data->modify_array(_array);
-  _data = array_data->modify_data();
-  _pointer = _data.p() + _data_type->get_start() + _stride * _write_vertex;
+  _pointer = array_data->modify_data() + _data_type->get_start() + _stride * _write_vertex;
   _num_vertices = array_data->get_num_vertices();
 }
 
@@ -514,7 +513,7 @@ set_pointer(int vertex) {
 INLINE unsigned char *qpGeomVertexWriter::
 inc_pointer() {
   nassertr(_write_vertex < _num_vertices, NULL);
-  nassertr(_pointer == _vertex_data->get_array(_array)->get_data().p() + _data_type->get_start() + _stride * _write_vertex, NULL);
+  nassertr(_pointer == _vertex_data->get_array(_array)->get_data() + _data_type->get_start() + _stride * _write_vertex, NULL);
 
   unsigned char *orig_pointer = _pointer;
   _pointer += _stride;

@@ -67,6 +67,7 @@ PUBLISHED:
   void force_update();
 
 private:
+  void do_update();
   void copy_joints(PartGroup *copy, PartGroup *orig);
 
   typedef pmap<const PandaNode *, PandaNode *> NodeMap;
@@ -94,8 +95,10 @@ private:
   Parts _parts;
 
   // Statistics
-  PStatCollector _char_pcollector;
-  static PStatCollector _anim_pcollector;
+  PStatCollector _app_char_pcollector;
+  PStatCollector _cull_char_pcollector;
+  static PStatCollector _app_animation_pcollector;
+  static PStatCollector _cull_animation_pcollector;
 
 public:
   static void register_with_read_factory();

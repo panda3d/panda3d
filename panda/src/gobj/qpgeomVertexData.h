@@ -104,7 +104,7 @@ PUBLISHED:
               qpGeomVertexDataType::NumericType numeric_type,
               qpGeomVertexDataType::Contents contents) const;
 
-  CPT(qpGeomVertexData) animate_vertices() const;
+  INLINE CPT(qpGeomVertexData) animate_vertices() const;
 
   PT(qpGeomVertexData) 
     replace_data_type(const InternalName *name, int num_components,
@@ -117,6 +117,8 @@ PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
 
 public:
+  INLINE CPT(qpGeomVertexData) animate_vertices_cull() const;
+
   bool get_array_info(const InternalName *name, 
                       const qpGeomVertexArrayData *&array_data,
                       int &num_components,
@@ -131,6 +133,8 @@ public:
   static INLINE unsigned int unpack_8888_d(PN_uint32 data);
 
 private:
+  CPT(qpGeomVertexData) do_animate_vertices(bool from_app) const;
+
   static void bytewise_copy(unsigned char *to, int to_stride,
                             const unsigned char *from, int from_stride,
                             const qpGeomVertexDataType *from_type,
@@ -175,14 +179,16 @@ private:
 private:
   bool do_set_num_vertices(int n, CDWriter &cdata);
   void make_animated_vertices(CDWriter &cdata);
-  void update_animated_vertices(CDWriter &cdata);
+  void update_animated_vertices(CDWriter &cdata, bool from_app);
 
   static PStatCollector _convert_pcollector;
   static PStatCollector _scale_color_pcollector;
   static PStatCollector _set_color_pcollector;
-  static PStatCollector _animate_vertices_pcollector;
+  static PStatCollector _app_animation_pcollector;
+  static PStatCollector _cull_animation_pcollector;
 
-  PStatCollector _this_animate_vertices_pcollector;
+  PStatCollector _app_char_pcollector;
+  PStatCollector _cull_char_pcollector;
 
 public:
   static void register_with_read_factory();
