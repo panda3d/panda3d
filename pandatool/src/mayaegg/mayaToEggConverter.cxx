@@ -1671,6 +1671,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     int index = pi.index();
     nassertv(index >= 0 && index < (int)poly_shader_indices.length());
     int shader_index = poly_shader_indices[index];
+
     if (shader_index != -1) {
       nassertv(shader_index >= 0 && shader_index < (int)shaders.length());
       MObject engine = shaders[shader_index];
@@ -1681,12 +1682,13 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       shader = default_shader;
     }
 
+    const MayaShaderColorDef *color_def = NULL;
+
     // And apply the shader properties to the polygon.
     if (shader != (MayaShader *)NULL) {
       set_shader_attributes(*egg_poly, *shader, &pi);
+      color_def = shader->get_color_def();
     }
-
-    const MayaShaderColorDef *color_def = shader->get_color_def();
 
     // Should we extract the color from the vertices?  Normally, in
     // Maya a texture completely replaces the vertex color, so we
