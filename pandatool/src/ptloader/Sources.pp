@@ -5,9 +5,15 @@
     fltegg flt lwoegg lwo converter pandatoolbase
   #define OTHER_LIBS \
     egg2pg:c builder:c egg:c pandaegg:m \
-    mathutil:c linmath:c putil:c panda:m \
+    mathutil:c linmath:c putil:c \
+    gobj:c chan:c parametrics:c pgraph:c \
+    pnmimage:c grutil:c collide:c tform:c text:c \
+    char:c dgraph:c display:c \
+    downloader:c \
+    event:c gsgbase:c lerp:c panda:m \
     express:c pandaexpress:m \
-    dtoolconfig dtool
+    interrogatedb:c dconfig:c dtoolconfig:m \
+    dtoolutil:c dtoolbase:c dtool:m
   #define UNIX_SYS_LIBS \
     m
 

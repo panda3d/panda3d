@@ -4,6 +4,7 @@
     progbase pandatoolbase
 
   #define OTHER_LIBS \
+    express:c dtoolutil:c dtoolbase:c pnmimagetypes:c pnmimage:c putil:c \
     linmath:c panda:m dconfig:c dtool:m pystub
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 

@@ -2,6 +2,7 @@
   imagebase progbase
 #define OTHER_LIBS \
   egg:c pandaegg:m \
+  linmath:c \
   pnmimagetypes:c pnmimage:c putil:c express:c panda:m \
   pandaexpress:m \
   dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub

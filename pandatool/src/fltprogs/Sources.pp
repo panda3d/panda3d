@@ -6,7 +6,8 @@
 
   #define OTHER_LIBS \
     egg:c pandaegg:m \
-    linmath:c panda:m \
+    linmath:c pnmimagetypes:c pnmimage:c event:c \
+    putil:c mathutil:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
@@ -21,7 +22,7 @@
     progbase flt
   #define OTHER_LIBS \
     egg:c pandaegg:m \
-    linmath:c panda:m \
+    linmath:c pnmimagetypes:c pnmimage:c putil:c event:c mathutil:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
@@ -36,7 +37,8 @@
     progbase flt
   #define OTHER_LIBS \
     egg:c pandaegg:m \
-    linmath:c panda:m \
+    event:c linmath:c mathutil:c \
+    pnmimagetypes:c pnmimage:c putil:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
@@ -51,7 +53,7 @@
 
   #define OTHER_LIBS \
     egg:c pandaegg:m \
-    linmath:c panda:m \
+    linmath:c pnmimagetypes:c pnmimage:c putil:c mathutil:c event:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
@@ -66,7 +68,7 @@
 
   #define OTHER_LIBS \
     egg:c pandaegg:m \
-    putil:c linmath:c panda:m \
+    putil:c event:c linmath:c pnmimagetypes:c pnmimage:c mathutil:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 

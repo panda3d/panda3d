@@ -4,6 +4,7 @@
 
   #define OTHER_LIBS \
     egg:c pandaegg:m \
+    pnmimage:c putil:c \
     linmath:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub

@@ -2,8 +2,10 @@
   #define TARGET fltegg
   #define LOCAL_LIBS converter flt pandatoolbase
   #define OTHER_LIBS \
-    egg:c pandaegg:m \
-    mathutil:c linmath:c putil:c express:c panda:m dtoolconfig dtool
+    egg:c event:c pandaegg:m \
+    mathutil:c linmath:c putil:c express:c panda:m \
+    interrogatedb:c dconfig:c dtoolconfig:m \
+    dtoolutil:c dtoolbase:c dtool:m
   #define UNIX_SYS_LIBS \
     m
 

@@ -40,9 +40,9 @@
 // If our system getopt() doesn't come with getopt_long_only(), then use
 // the GNU flavor that we've got in tool for this purpose.
 #ifndef HAVE_GETOPT_LONG_ONLY
-#include "gnu_getopt.h"
+  #include "gnu_getopt.h"
 #else
-#include <getopt.h>
+  #include <getopt.h>
 #endif
 
 // This manifest is defined if we are running on a system (e.g. most
@@ -50,10 +50,12 @@
 // screen via an ioctl() call.  It's just handy to know for formatting
 // output nicely for the user.
 #ifdef IOCTL_TERMINAL_WIDTH
-#include <termios.h>
-#ifndef TIOCGWINSZ
-#include <sys/ioctl.h>
-#endif  // TIOCGWINSZ
+  #include <termios.h>
+  #ifndef TIOCGWINSZ
+    #include <sys/ioctl.h>
+  #elif __APPLE__
+    #include <sys/ioctl.h>
+  #endif  // TIOCGWINSZ
 #endif  // IOCTL_TERMINAL_WIDTH
 
 bool ProgramBase::SortOptionsByIndex::

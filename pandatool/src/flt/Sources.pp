@@ -2,7 +2,9 @@
   #define TARGET flt
   #define LOCAL_LIBS converter pandatoolbase
   #define OTHER_LIBS \
-    mathutil:c linmath:c putil:c express:c panda:m dtoolconfig dtool
+    mathutil:c linmath:c putil:c event:c express:c panda:m \
+    interrogatedb:c dconfig:c dtoolconfig:m \
+    dtoolutil:c dtoolbase:c dtool:m
   #define UNIX_SYS_LIBS m
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx   

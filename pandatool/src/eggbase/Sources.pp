@@ -3,7 +3,9 @@
   #define LOCAL_LIBS \
     progbase converter
   #define OTHER_LIBS \
-    egg:c linmath:c panda:m
+    egg:c linmath:c express:c putil:c pnmimage:c panda:m \
+    interrogatedb:c dconfig:c dtoolconfig:m \
+    dtoolutil:c dtoolbase:c dtool:m pystub
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
 

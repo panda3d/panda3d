@@ -3,7 +3,9 @@
   #define LOCAL_LIBS \
     eggbase progbase
   #define OTHER_LIBS \
-    egg2pg:c event:c parametrics:c pgraph:c egg:c pandaegg:m \
+    chan:c char:c downloader:c egg2pg:c event:c lerp:c builder:c \
+    tform:c grutil:c text:c dgraph:c display:c gsgbase:c collide:c gobj:c \
+    parametrics:c pgraph:c egg:c pandaegg:m \
     pnmimagetypes:c pnmimage:c mathutil:c linmath:c putil:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub

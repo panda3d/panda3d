@@ -4,7 +4,9 @@
 
   #define OTHER_LIBS \
     egg:c pandaegg:m \
-    linmath:c panda:m \
+    linmath:c \
+    pnmimagetypes:c pnmimage:c \
+    putil:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
@@ -19,7 +21,7 @@
 
   #define OTHER_LIBS \
     egg:c pandaegg:m \
-    linmath:c panda:m \
+    linmath:c pnmimagetypes:c pnmimage:c putil:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 

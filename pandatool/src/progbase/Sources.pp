@@ -3,7 +3,9 @@
   #define LOCAL_LIBS \
     pandatoolbase
   #define OTHER_LIBS \
-    pnmimage:c linmath:c putil:c express:c panda:m pystub dtool
+    pnmimage:c linmath:c putil:c express:c panda:m pystub \
+    interrogatedb:c dconfig:c dtoolconfig:m \
+    dtoolutil:c dtoolbase:c dtool:m
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 

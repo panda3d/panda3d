@@ -3,7 +3,9 @@
   #define LOCAL_LIBS \
     eggbase progbase
   #define OTHER_LIBS \
-    egg:c panda:m
+    egg:c event:c express:c linmath:c mathutil:c pnmimage:c putil:c panda:m pystub \
+    interrogatedb:c dconfig:c dtooolconfig:m \
+    dtoolutil:c dtoolbase:c dtool:m
   #define USE_PACKAGES zlib
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
