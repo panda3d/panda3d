@@ -310,7 +310,7 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
 
     szErrorMsg = "CreateTexture failed: couldn't find compatible Tex DDPIXELFORMAT!  \n";
 
-    dxgsg_cat.debug() << "CreateTexture handling bitdepth: " << bpp << " alphabits: " << cNumAlphaBits << "\n";
+    dxgsg_cat.spam() << "CreateTexture handling bitdepth: " << bpp << " alphabits: " << cNumAlphaBits << "\n";
 
     // Mark formats I dont want to deal with
     for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
@@ -535,7 +535,7 @@ CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPI
         DWORD x,y,dwPixel;
 
 #ifdef _DEBUG
-        dxgsg_cat.debug() << "CreateTexture executing conversion " << ConvNameStrs[ConvNeeded] << "\n";    
+        dxgsg_cat.spam() << "CreateTexture executing conversion " << ConvNameStrs[ConvNeeded] << "\n";    
 #endif
 
         switch(ConvNeeded) {
@@ -848,17 +848,18 @@ DXTextureContext(Texture *tex) :
   TextureContext(tex)
 {
 #ifdef _DEBUG
-  dxgsg_cat.debug() << "Making DX texture for " << tex->get_name() << "\n";
+  dxgsg_cat.spam() << "Making DX texture for " << tex->get_name() << "\n";
 #endif
   _surface = NULL;
   _tex = tex;
+ _SavedStage0_ColorOp=D3DTOP_MODULATE;  // this is default when texturing is enabled
 }
 
 DXTextureContext::
 ~DXTextureContext()
 {
 #ifdef _DEBUG
-    dxgsg_cat.debug() << "Deleting DX texture for " << _tex->get_name() << "\n";    
+    dxgsg_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";    
 #endif
 	DeleteTexture();
 	TextureContext::~TextureContext();

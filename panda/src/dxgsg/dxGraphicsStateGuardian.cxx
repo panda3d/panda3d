@@ -125,7 +125,7 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
 DXGraphicsStateGuardian::
 ~DXGraphicsStateGuardian() {
   if (_d3dDevice != NULL)
-     _d3dDevice->SetTexture(0, NULL);
+     _d3dDevice->SetTexture(0, NULL);  // this frees reference to the old texture
   _pCurTexContext = NULL;
 
   free_pointers();
@@ -395,6 +395,29 @@ init_dx(  LPDIRECTDRAW7		context,
   if(((dx_decal_type==GDT_blend)||(dx_decal_type==GDT_mask)) && !(D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKZ))
          dxgsg_cat.error() << "dx-decal-type mask impossible to implement, no hardware support for Z-masking, decals will not appear correctly\n";
 
+#define REQUIRED_BLENDCAPS (D3DPBLENDCAPS_ZERO|D3DPBLENDCAPS_ONE|D3DPBLENDCAPS_SRCCOLOR|D3DPBLENDCAPS_INVSRCCOLOR| \
+                            D3DPBLENDCAPS_SRCALPHA|D3DPBLENDCAPS_INVSRCALPHA | D3DPBLENDCAPS_DESTALPHA|D3DPBLENDCAPS_INVDESTALPHA|D3DPBLENDCAPS_DESTCOLOR|D3DPBLENDCAPS_INVDESTCOLOR)
+
+  if(((D3DDevDesc.dpcTriCaps.dwSrcBlendCaps & REQUIRED_BLENDCAPS)!=REQUIRED_BLENDCAPS) ||
+     ((D3DDevDesc.dpcTriCaps.dwDestBlendCaps & REQUIRED_BLENDCAPS)!=REQUIRED_BLENDCAPS)) {
+         dxgsg_cat.error() << "device is missing texture blending capabilities, blending may not work correctly\n";
+  }
+
+  if(!(D3DDevDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_TRANSPARENCY)) {
+         dxgsg_cat.error() << "device is missing texture transparency capability, transparency will work correctly!!!\n";
+  }
+
+  // just require trilinear.  if it can do that, it can probably do all the lesser point-sampling variations too
+#define REQUIRED_TEXFILTERCAPS (D3DPTFILTERCAPS_MAGFLINEAR |  D3DPTFILTERCAPS_MINFLINEAR | D3DPTFILTERCAPS_LINEAR)
+  if((D3DDevDesc.dpcTriCaps.dwTextureFilterCaps & REQUIRED_TEXFILTERCAPS)!=REQUIRED_TEXFILTERCAPS) {
+         dxgsg_cat.error() << "device is missing texture bilinear filtering capability, textures may appear blocky!!!\n";
+  }
+
+#define REQUIRED_MIPMAP_TEXFILTERCAPS (D3DPTFILTERCAPS_MIPFLINEAR | D3DPTFILTERCAPS_LINEARMIPLINEAR)
+  if((D3DDevDesc.dpcTriCaps.dwTextureFilterCaps & REQUIRED_MIPMAP_TEXFILTERCAPS)!=REQUIRED_MIPMAP_TEXFILTERCAPS) {
+         dxgsg_cat.error() << "device is missing tri-linear mipmap filtering capability, texture mipmaps may not supported!!!\n";
+  }
+
   SetRect(&clip_rect, 0,0,0,0);		// no clip rect set
 
   _d3dDevice->SetRenderState(D3DRENDERSTATE_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
@@ -451,7 +474,9 @@ init_dx(  LPDIRECTDRAW7		context,
   dwa->issue(this);
   cfa->issue(this);
   la->issue(this);
-  ta->issue(this);
+
+  _d3dDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);  // disables texturing
+  ta->issue(this); // no curtextcontext, this does nothing.  dx should already be properly inited above anyway
 
 }
 
@@ -3219,8 +3244,8 @@ issue_color_blend(const ColorBlendAttribute *attrib) {
 	call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
     break;
   default:
-    dxgsg_cat.error()
-      << "Unknown color blend mode " << (int)mode << endl;
+  dxgsg_cat.error()
+    << "Unknown color blend mode " << (int)mode << endl;
     break;
   }
 }
@@ -3232,14 +3257,80 @@ issue_color_blend(const ColorBlendAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_texture_apply(const TextureApplyAttribute *attrib) {
-  //dxgsg_cat.spam() << "DXGSG issue_texture_apply null-up!!";   //bugbug: useless
-  return;
 
-  activate();
-#ifdef WBD_GL_MODE
-  GLint glmode = get_texture_apply_mode_type(attrib->get_mode());
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);
-#endif				// WBD_GL_MODE
+   switch(attrib->get_mode()) {
+       case TextureApplyProperty::M_modulate: 
+           // emulates GL_MODULATE glTexEnv mode
+           // want to multiply tex-color*pixel color to emulate GL modulate blend (see glTexEnv)
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
+
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_MODULATE );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
+
+           break;
+       case TextureApplyProperty::M_decal:
+           // emulates GL_DECAL glTexEnv mode
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_BLENDTEXTUREALPHA );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
+
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG2 );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
+
+           break;           
+       case TextureApplyProperty::M_replace: 
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_SELECTARG1 );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
+
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+           break;           
+       case TextureApplyProperty::M_add: 
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_ADD );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
+
+           // since I'm making up 'add' mode, use modulate.  "adding" alpha never makes sense right?
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_MODULATE );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
+
+           break;           
+       case TextureApplyProperty::M_blend: 
+           dxgsg_cat.error()
+             << "Impossible to emulate GL_BLEND in DX exactly " << (int) attrib->get_mode() << endl;
+/*
+           // emulate GL_BLEND glTexEnv
+           
+           GL requires 2 independent operations on 3 input vars for this mode
+           DX texture pipeline requires re-using input of last stage on each new op, so I dont think 
+           exact emulation is possible
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE | D3DTA_COMPLEMENT );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
+
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_MODULATE );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+           _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
+
+           need to SetTexture(1,tex) also
+           _d3dDevice->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_MODULATE ); wrong
+           _d3dDevice->SetTextureStageState( 1, D3DTSS_COLORARG1, D3DTA_TEXTURE );
+           _d3dDevice->SetTextureStageState( 1, D3DTSS_COLORARG2, D3DTA_TFACTOR );
+
+           _d3dDevice->SetTextureStageState( 1, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
+           _d3dDevice->SetTextureStageState( 1, D3DTSS_ALPHAARG1, D3DTA_CURRENT );
+*/
+
+
+           break;
+        default:
+            dxgsg_cat.error() << "Unknown texture blend mode " << (int) attrib->get_mode() << endl;
+            break;
+   }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3797,10 +3888,49 @@ specify_texture(Texture *tex) {
 				  get_texture_wrap_mode(tex->get_wrapu()));
   _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSV,
 				  get_texture_wrap_mode(tex->get_wrapv()));
-  _d3dDevice->SetTextureStageState(0,D3DTSS_MINFILTER,  
-				  get_texture_filter_type(tex->get_minfilter()));
-  _d3dDevice->SetTextureStageState(0,D3DTSS_MAGFILTER,  
-				  get_texture_filter_type(tex->get_magfilter()));
+
+  Texture::FilterType ft=tex->get_magfilter();
+
+  switch(ft) {
+      case Texture::FT_nearest:
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_POINT);
+          break;
+      case Texture::FT_linear:
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_LINEAR);
+          break;
+      default:
+          dxgsg_cat.error() << "MipMap filter type setting for texture magfilter makes no sense,  texture: " << tex->get_name() << "\n";       
+          break;
+  }
+  
+  ft=tex->get_minfilter();
+
+  switch(ft) {
+      case Texture::FT_nearest:
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_POINT);
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_NONE);
+          break;
+      case Texture::FT_linear:
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_NONE);
+          break;
+      case Texture::FT_nearest_mipmap_nearest:
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_POINT);
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_POINT);
+          break;
+      case Texture::FT_linear_mipmap_nearest:
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_POINT);
+          break;
+      case Texture::FT_nearest_mipmap_linear:
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_POINT);
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
+          break;
+      case Texture::FT_linear_mipmap_linear:
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
+          _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
+          break;
+  }
 }
 
 
@@ -3876,34 +4006,6 @@ get_texture_wrap_mode(Texture::WrapMode wm) {
   dxgsg_cat.error() << "Invalid Texture::WrapMode value!\n";
   return D3DTADDRESS_WRAP;
 }
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::get_texture_filter_type
-//       Access: Protected
-//  Description: Maps from the Texture's internal filter type symbols
-//               to GL's.
-////////////////////////////////////////////////////////////////////
-D3DTEXTUREMAGFILTER DXGraphicsStateGuardian::
-get_texture_filter_type(Texture::FilterType ft) {
-  switch (ft) {
-  case Texture::FT_nearest:
-    return D3DTFG_POINT;
-  case Texture::FT_linear:
-    return D3DTFG_LINEAR;
-  case Texture::FT_nearest_mipmap_nearest:
-    return D3DTFG_POINT;
-  case Texture::FT_linear_mipmap_nearest:
-    return D3DTFG_LINEAR;
-  case Texture::FT_nearest_mipmap_linear:
-    return D3DTFG_POINT;
-  case Texture::FT_linear_mipmap_linear:
-    return D3DTFG_LINEAR;
-  }
-  dxgsg_cat.error() << "Invalid Texture::FilterType value!\n";
-  return D3DTFG_POINT;
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::get_depth_func_type

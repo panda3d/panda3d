@@ -293,7 +293,6 @@ protected:
   bool enable_light(int light, bool val);
 
   D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm);
-  D3DTEXTUREMAGFILTER get_texture_filter_type(Texture::FilterType ft);
   D3DCMPFUNC get_depth_func_type(DepthTestProperty::Mode m) const;
   D3DCMPFUNC get_stencil_func_type(StencilProperty::Mode m) const;
   D3DSTENCILOP get_stencil_action_type(StencilProperty::Action a) const;

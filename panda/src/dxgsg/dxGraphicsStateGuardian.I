@@ -631,12 +631,42 @@ enable_texturing(bool val) {
     _texturing_enabled = val;
   } 
 
+//  assert(_pCurTexContext!=NULL);  we're definitely called with it NULL for both true and false
+
+/*
+old way to disable texturing
   if(val == FALSE) {
       _d3dDevice->SetTexture(0,NULL);
   } else {
       if(_pCurTexContext!=NULL) {
         _d3dDevice->SetTexture(0,_pCurTexContext->_surface);
       }
+  }
+*/  
+
+  if(val == FALSE) {
+      if(_pCurTexContext!=NULL) {
+          _d3dDevice->GetTextureStageState(0,D3DTSS_COLOROP,(DWORD*)&(_pCurTexContext->_SavedStage0_ColorOp));
+      }
+      _d3dDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);
+  } else {
+        // note: if we set D3DTSS_COLOROP to something other than disable and then
+        // call "enable_texturing(), conflict will occur
+     #if 0
+     // we need to set D3DTSS_COLOROP,D3DTOP_MODULATE if pCurTextContext is null and tex enabled true,
+     // so this test is impossible now
+        DWORD dwColOpVal=0;
+        _d3dDevice->GetTextureStageState(0,D3DTSS_COLOROP,&dwColOpVal);        
+        if(dwColOpVal!=D3DTOP_DISABLE) {
+              dxgsg_cat.error() << "Error in enable_texturing(true), someone set D3DTSS_COLOROP to non-disabled value\n";
+        }
+     #endif
+        if(_pCurTexContext!=NULL) {     
+            _d3dDevice->SetTextureStageState(0,D3DTSS_COLOROP,_pCurTexContext->_SavedStage0_ColorOp);
+        } else {
+            // not sure this is the right thing to do
+            _d3dDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_MODULATE);
+        }
   }
 }
 
