@@ -293,15 +293,24 @@ check_material() {
   _egg_material = new EggMaterial(get_name());
 
   if ((_flags & F_diffuse) != 0) {
-    Colorf diffuse = _color * _diffuse;
+    Colorf diffuse(_color[0] * _diffuse,
+		   _color[1] * _diffuse,
+		   _color[2] * _diffuse,
+		   _color[3]);
     _egg_material->set_diff(diffuse);
   }
   if ((_flags & F_luminosity) != 0) {
-    Colorf luminosity = _color * _luminosity;
+    Colorf luminosity(_color[0] * _luminosity,
+		      _color[1] * _luminosity,
+		      _color[2] * _luminosity,
+		      1.0);
     _egg_material->set_emit(luminosity);
   }
   if ((_flags & F_specular) != 0) {
-    Colorf specular = _color * _specular;
+    Colorf specular(_color[0] * _specular,
+		    _color[1] * _specular,
+		    _color[2] * _specular,
+		    1.0);
     _egg_material->set_spec(specular);
   }
 
