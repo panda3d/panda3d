@@ -27,9 +27,10 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Photo::
-Photo(RollDirectory *dir, const Filename &basename) :
+Photo(RollDirectory *dir, const Filename &basename, const Filename &movie) :
   _dir(dir),
-  _basename(basename)
+  _basename(basename),
+  _movie(movie)
 {
   _name = _basename.get_basename_wo_extension();
   _frame_number = _name;
@@ -51,6 +52,7 @@ Photo(RollDirectory *dir, const Filename &basename) :
   _reduced_x_size = 0;
   _reduced_y_size = 0;
   _has_reduced = false;
+  _has_movie = !_movie.empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,6 +64,17 @@ Photo(RollDirectory *dir, const Filename &basename) :
 const Filename &Photo::
 get_basename() const {
   return _basename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Photo::get_movie
+//       Access: Public
+//  Description: Returns the filename of the movie associated with the
+//               photo, if any.
+////////////////////////////////////////////////////////////////////
+const Filename &Photo::
+get_movie() const {
+  return _movie;
 }
 
 ////////////////////////////////////////////////////////////////////

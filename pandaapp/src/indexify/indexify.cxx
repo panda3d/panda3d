@@ -86,7 +86,7 @@ Indexify() {
     ("a", "archive-dir", 0,
      "Write the generated files to the indicated directory, instead of "
      "the directory above roll1-dir.",
-     &Indexify::dispatch_filename, NULL, &_archive_dir);
+     &Indexify::dispatch_filename, NULL, &archive_dir);
 
   add_option
     ("r", "relative-dir", 0,
@@ -136,11 +136,20 @@ Indexify() {
      &Indexify::dispatch_string, NULL, &_photo_extension);
 
   add_option
+    ("m", "extension", 0,
+     "Specifies the filename extension (without a leading dot) to identify "
+     "movie files within the roll directories.  This is normally mov.  If "
+     "a file exists with the same name as a given photo but with this "
+     "extension, it is taken to be a movie associated with the photo, and "
+     "a link will be generated to play the movie.",
+     &Indexify::dispatch_string, NULL, &_movie_extension);
+
+  add_option
     ("i", "", 0,
      "Indicates that default navigation icon images should be generated "
      "into a directory called \"icons\" which will be created within the "
-     "directory named by -a.  This is meaningful only if -prev, -next, and "
-     "-up are not explicitly specified.",
+     "directory named by -a.  This is meaningful only if -iprev, -inext, "
+     "-iup, and -imovie are not explicitly specified.",
      &Indexify::dispatch_none, &_generate_icons);
 
   add_option
@@ -214,24 +223,32 @@ Indexify() {
      &Indexify::dispatch_int_pair, NULL, &max_index_width);
 
   add_option
-    ("prev", "filename", 0,
+    ("iprev", "filename", 0,
      "Specifies the relative pathname from the archive directory (or "
-     "absolute pathname) to the \"previous\" photo icon.",
+     "absolute pathname) to the \"previous\" icon.",
      &Indexify::dispatch_filename, NULL, &prev_icon);
 
   add_option
-    ("next", "filename", 0,
+    ("inext", "filename", 0,
      "Specifies the relative pathname from the archive directory (or "
-     "absolute pathname) to the \"next\" photo icon.",
+     "absolute pathname) to the \"next\" icon.",
      &Indexify::dispatch_filename, NULL, &next_icon);
 
   add_option
-    ("up", "filename", 0,
+    ("iup", "filename", 0,
      "Specifies the relative pathname from the archive directory (or "
-     "absolute pathname) to the \"up\" photo icon.",
+     "absolute pathname) to the \"up\" icon.",
      &Indexify::dispatch_filename, NULL, &up_icon);
 
+  add_option
+    ("imovie", "filename", 0,
+     "Specifies the relative pathname from the archive directory (or "
+     "absolute pathname) to the \"movie\" icon.  This is used only if "
+     "there are one or more movie files found in the directory.",
+     &Indexify::dispatch_filename, NULL, &movie_icon);
+
   _photo_extension = "jpg";
+  _movie_extension = "mov";
   _text_maker = (PNMTextMaker *)NULL;
   _font_aa_factor = 4.0;
 }
@@ -320,20 +337,20 @@ post_command_line() {
     return false;
   }
 
-  if (_archive_dir.empty()) {
+  if (archive_dir.empty()) {
     // Choose a default archive directory, above the first roll directory.
-    _archive_dir = _roll_dirs.front()->get_dir().get_dirname();
-    string parent_dirname = _archive_dir.get_basename();
+    archive_dir = _roll_dirs.front()->get_dir().get_dirname();
+    string parent_dirname = archive_dir.get_basename();
     if (parent_dirname == "full" || parent_dirname == "reduced") {
       // As a special case, if the subdirectory name is "full" or
       // "reduced", use the directory above that.
-      _archive_dir = _archive_dir.get_dirname();
+      archive_dir = archive_dir.get_dirname();
     }
-    if (_archive_dir.empty()) {
-      _archive_dir = ".";
+    if (archive_dir.empty()) {
+      archive_dir = ".";
     }
   }
-  _archive_dir.standardize();
+  archive_dir.standardize();
 
   if (!_roll_dir_root.empty()) {
     _roll_dir_root.standardize();
@@ -395,7 +412,7 @@ post_command_line() {
   if (_generate_icons) {
     if (prev_icon.empty()) {
       prev_icon = Filename("icons", default_left_icon_filename);
-      Filename icon_filename(_archive_dir, prev_icon);
+      Filename icon_filename(archive_dir, prev_icon);
 
       if (force_regenerate || !icon_filename.exists()) {
 	nout << "Generating " << icon_filename << "\n";
@@ -407,12 +424,12 @@ post_command_line() {
 	  nout << "Unable to write to " << icon_filename << "\n";
 	  exit(1);
 	}
-	output.write((const char *)default_left_icon, default_left_icon_size);
+	output.write((const char *)default_left_icon, default_left_icon_len);
       }
     }
     if (next_icon.empty()) {
       next_icon = Filename("icons", default_right_icon_filename);
-      Filename icon_filename(_archive_dir, next_icon);
+      Filename icon_filename(archive_dir, next_icon);
       if (force_regenerate || !icon_filename.exists()) {
 	nout << "Generating " << icon_filename << "\n";
 	icon_filename.make_dir();
@@ -423,12 +440,12 @@ post_command_line() {
 	  nout << "Unable to write to " << icon_filename << "\n";
 	  exit(1);
 	}
-	output.write((const char *)default_right_icon, default_right_icon_size);
+	output.write((const char *)default_right_icon, default_right_icon_len);
       }
     }
     if (up_icon.empty()) {
       up_icon = Filename("icons", default_up_icon_filename);
-      Filename icon_filename(_archive_dir, up_icon);
+      Filename icon_filename(archive_dir, up_icon);
       if (force_regenerate || !icon_filename.exists()) {
 	nout << "Generating " << icon_filename << "\n";
 	icon_filename.make_dir();
@@ -439,7 +456,23 @@ post_command_line() {
 	  nout << "Unable to write to " << icon_filename << "\n";
 	  exit(1);
 	}
-	output.write((const char *)default_up_icon, default_up_icon_size);
+	output.write((const char *)default_up_icon, default_up_icon_len);
+      }
+    }
+    if (movie_icon.empty()) {
+      movie_icon = Filename("icons", default_movie_icon_filename);
+      Filename icon_filename(archive_dir, movie_icon);
+      if (force_regenerate || !icon_filename.exists()) {
+	nout << "Generating " << icon_filename << "\n";
+	icon_filename.make_dir();
+	icon_filename.set_binary();
+      
+	ofstream output;
+	if (!icon_filename.open_write(output)) {
+	  nout << "Unable to write to " << icon_filename << "\n";
+	  exit(1);
+	}
+	output.write((const char *)default_movie_icon, default_movie_icon_len);
       }
     }
   }
@@ -500,7 +533,7 @@ run() {
   RollDirs::iterator di;
   for (di = _roll_dirs.begin(); di != _roll_dirs.end(); ++di) {
     RollDirectory *roll_dir = (*di);
-    if (!roll_dir->scan(_photo_extension)) {
+    if (!roll_dir->scan(_photo_extension, _movie_extension)) {
       nout << "Unable to read " << *roll_dir << "\n";
       all_ok = false;
     }
@@ -514,7 +547,7 @@ run() {
   // First, generate all the images.
   for (di = _roll_dirs.begin(); di != _roll_dirs.end(); ++di) {
     RollDirectory *roll_dir = (*di);
-    if (!roll_dir->generate_images(_archive_dir, _text_maker)) {
+    if (!roll_dir->generate_images(archive_dir, _text_maker)) {
       nout << "Failure.\n";
       exit(1);
     }
@@ -523,7 +556,7 @@ run() {
   // Then go back and generate the HTML.
   for (di = _roll_dirs.begin(); di != _roll_dirs.end(); ++di) {
     RollDirectory *roll_dir = (*di);
-    if (!roll_dir->generate_html(_archive_dir, _roll_dir_root)) {
+    if (!roll_dir->generate_html(archive_dir, _roll_dir_root)) {
       nout << "Failure.\n";
       exit(1);
     }
@@ -531,7 +564,7 @@ run() {
 
   // Generate the complete index that browses all the roll directories
   // at once.
-  Filename complete_filename(_archive_dir, "html/complete.htm");
+  Filename complete_filename(archive_dir, "html/complete.htm");
   nout << "Generating " << complete_filename << "\n";
   complete_filename.set_text();
   ofstream complete_html;
@@ -575,7 +608,7 @@ run() {
 
   // And finally, generate the index HTML file that sits on the top of
   // all of this.
-  Filename index_filename(_archive_dir, "index.htm");
+  Filename index_filename(archive_dir, "index.htm");
   nout << "Generating " << index_filename << "\n";
   index_filename.set_text();
   ofstream index_html;

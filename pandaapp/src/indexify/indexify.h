@@ -50,9 +50,9 @@ public:
   void run();
 
   string _front_title;
-  Filename _archive_dir;
   Filename _roll_dir_root;
   string _photo_extension;
+  string _movie_extension;
   Filename _font_filename;
   bool _generate_icons;
   double _font_aa_factor;

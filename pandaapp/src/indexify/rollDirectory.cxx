@@ -117,7 +117,7 @@ get_desc() const {
 //  Description: Scans the directory for all the listed photos.
 ////////////////////////////////////////////////////////////////////
 bool RollDirectory::
-scan(const string &extension) {
+scan(const string &photo_extension, const string &movie_extension) {
   bool reverse_order = false;
   bool explicit_list = false;
 
@@ -176,16 +176,16 @@ scan(const string &extension) {
 	any_words = true;
 	Filename try_filename(_dir, word);
 	if (!try_filename.exists()) {
-	  try_filename = Filename(_dir, word + "." + extension);
+	  try_filename = Filename(_dir, word + "." + photo_extension);
 	}
 	if (!try_filename.exists()) {
-	  try_filename = Filename(_dir, _basename + word + "." + extension);
+	  try_filename = Filename(_dir, _basename + word + "." + photo_extension);
 	}
 	if (!try_filename.exists()) {
-	  try_filename = Filename(_dir, _basename + "0" + word + "." + extension);
+	  try_filename = Filename(_dir, _basename + "0" + word + "." + photo_extension);
 	}
 	if (try_filename.exists()) {
-	  _photos.push_back(new Photo(this, try_filename.get_basename()));
+          add_photo(try_filename.get_basename(), movie_extension);
 	} else {
 	  nout << "Frame " << word << " not found in " << _name << "\n";
 	}
@@ -224,8 +224,8 @@ scan(const string &extension) {
     vector_string::iterator ci;
     for (ci = contents.begin(); ci != contents.end(); ++ci) {
       Filename basename = (*ci);
-      if (basename.get_extension() == extension) {
-	_photos.push_back(new Photo(this, basename));
+      if (basename.get_extension() == photo_extension) {
+        add_photo(basename, movie_extension);
       }
     }
   }
@@ -632,6 +632,25 @@ insert_html_comment(ostream &html, Filename cm_filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RollDirectory::add_photo
+//       Access: Private
+//  Description: Adds the photo with the indicated basename to the
+//               list.
+////////////////////////////////////////////////////////////////////
+void RollDirectory::
+add_photo(const Filename &basename, const string &movie_extension) {
+  Photo *photo = NULL;
+  Filename movie_filename(_dir, basename);
+  movie_filename.set_extension(movie_extension);
+  if (movie_filename.exists()) {
+    photo = new Photo(this, basename, movie_filename.get_basename());
+  } else {
+    photo = new Photo(this, basename);
+  }
+  _photos.push_back(photo);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RollDirectory::add_contributing_filename
 //       Access: Private
 //  Description: Specifies an additional filename that contributes to
@@ -810,3 +829,4 @@ compare_filenames(const string &a, const string &b) {
 
   return a.length() < b.length();
 }
+

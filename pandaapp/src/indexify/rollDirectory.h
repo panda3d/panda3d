@@ -42,7 +42,7 @@ public:
   const string &get_basename() const;
   const string &get_name() const;
   const string &get_desc() const;
-  bool scan(const string &extension);
+  bool scan(const string &photo_extension, const string &movie_extension);
   void collect_index_images();
 
   bool sort_date_before(const RollDirectory &other) const;
@@ -68,6 +68,7 @@ public:
   static bool insert_html_comment(ostream &html, Filename cm_filename);
 
 private:
+  void add_photo(const Filename &basename, const string &movie_extension);
   void add_contributing_filename(const Filename &filename);
   static bool insert_html_comment_body(ostream &html, istream &cm);
   static string format_basename(const string &basename);

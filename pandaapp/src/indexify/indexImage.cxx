@@ -305,11 +305,21 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
       index_image.copy_sub_image(thumbnail_image, 
                                  pinfo._x_place + x_center, 
                                  pinfo._y_place + y_center);
-      
+
       if (text_maker != (PNMTextMaker *)NULL) {
-        text_maker->generate_into(photo->get_frame_number(), index_image, 
-                                  pinfo._x_place + thumb_width / 2, 
-                                  pinfo._y_place + thumb_height + thumb_caption_height);
+        int label_x = pinfo._x_place + thumb_width / 2;
+        int label_y = pinfo._y_place + thumb_height + thumb_caption_height;
+
+        int width = 
+          text_maker->generate_into(photo->get_frame_number(), index_image, 
+                                    label_x, label_y);
+        if (photo->_has_movie && get_movie_icon().is_valid()) {
+          const PNMImage &movie_icon_image = get_movie_icon();
+          int icon_x = label_x - width / 2 - movie_icon_image.get_x_size();
+          int icon_y = label_y - movie_icon_image.get_y_size();
+          
+          index_image.blend_sub_image(movie_icon_image, icon_x, icon_y);
+        }
       }
     }
   }
@@ -430,6 +440,7 @@ generate_reduced_html(ostream &html, Photo *photo, int photo_index, int pi,
     compose_href("../..", roll_dir_root, _dir->get_basename());
   }
   Filename full(full_dir, photo->get_basename());
+  Filename movie(full_dir, photo->get_movie());
 
   Filename reduced_dir("../../reduced", _dir->get_basename());
   Filename reduced(reduced_dir, photo->get_basename());
@@ -536,7 +547,18 @@ generate_reduced_html(ostream &html, Photo *photo, int photo_index, int pi,
   if (!omit_full_links && photo->_has_reduced) {
     html
       << "<p><a href=\"" << full << "\">View full size image ("
-      << photo->_full_x_size << " x " << photo->_full_y_size << ")</a></p>";
+      << photo->_full_x_size << " x " << photo->_full_y_size << ")</a></p>\n";
+  }
+
+  if (photo->_has_movie) {
+    html << "<p>";
+    if (!movie_icon.empty()) {
+      // Show the movie icon if we got one.
+      Filename movie_icon_href = compose_href("../..", movie_icon);
+      html << "<img src=\"" << movie_icon_href << "\" alt=\"\">";
+    }
+    html
+      << "<a href=\"" << movie << "\">Play movie</a></p>\n";
   }
 
   generate_nav_buttons(html, prev_photo_filename, next_photo_filename,

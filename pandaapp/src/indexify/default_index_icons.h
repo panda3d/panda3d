@@ -20,16 +20,18 @@
 #define DEFAULT_INDEX_ICONS_H
 
 extern const char *default_left_icon_filename;
-extern const unsigned char default_left_icon[];
-extern const int default_left_icon_size;
-
 extern const char *default_right_icon_filename;
-extern const unsigned char default_right_icon[];
-extern const int default_right_icon_size;
-
 extern const char *default_up_icon_filename;
+extern const char *default_movie_icon_filename;
+
+extern const unsigned char default_left_icon[];
+extern const int default_left_icon_len;
+extern const unsigned char default_right_icon[];
+extern const int default_right_icon_len;
 extern const unsigned char default_up_icon[];
-extern const int default_up_icon_size;
+extern const int default_up_icon_len;
+extern const unsigned char default_movie_icon[];
+extern const int default_movie_icon_len;
 
 #endif
 

@@ -38,9 +38,35 @@ int frame_inner_bevel = 1;
 int reduced_width = 800;
 int reduced_height = 700;
 
+Filename archive_dir;
+
 Filename prev_icon;
 Filename next_icon;
 Filename up_icon;
+Filename movie_icon;
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_movie_icon
+//  Description: Reads the movie icon filename and returns it as an
+//               image, if possible.  Returns a valid image if
+//               successful, an invalid one otherwise.
+////////////////////////////////////////////////////////////////////
+const PNMImage &
+get_movie_icon() {
+  static PNMImage movie_icon_image;
+  static bool got_image = false;
+
+  if (!got_image) {
+    if (!movie_icon.empty()) {
+      Filename icon_filename(archive_dir, movie_icon);
+      nout << "Reading " << icon_filename << "\n";
+      movie_icon_image.read(icon_filename);
+    }
+    got_image = true;
+  }
+
+  return movie_icon_image;
+}
 
 bool force_regenerate = false;
 bool format_rose = false;

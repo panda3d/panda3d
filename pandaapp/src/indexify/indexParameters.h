@@ -70,11 +70,18 @@ extern int frame_inner_bevel;
 extern int reduced_width;
 extern int reduced_height;
 
+// The directory at the root of the output hierarchy (or as specified
+// by -a on the command line).
+extern Filename archive_dir;
+
 // The filenames (or URLS) to the icon images for navigating the
 // individual image pages.
 extern Filename prev_icon;
 extern Filename next_icon;
 extern Filename up_icon;
+extern Filename movie_icon;
+
+const PNMImage &get_movie_icon();
 
 // True to regenerate every image, whether it appears to need it or
 // not.
