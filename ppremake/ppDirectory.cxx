@@ -346,30 +346,12 @@ report_depends() const {
     // Get the complete set of directories we depend on.
     Depends dep;
     get_complete_i_depend_on(dep);
+    
+    cerr << _dirname << " depends directly on the following directories:";
+    show_directories(_i_depend_on);
 
-    // Copy the set into a vector, so we can sort it into a nice order
-    // for the user's pleasure.
-    vector<PPDirectory *> dirs;
-    copy(dep.begin(), dep.end(),
-	 back_insert_iterator<vector<PPDirectory *> >(dirs));
-    
-    sort(dirs.begin(), dirs.end(), SortDirectoriesByDependencyAndName());
-    
-    cerr << _dirname << " depends on the following directories:";
-    static const int max_col = 72;
-    int col = max_col;
-    vector<PPDirectory *>::const_iterator di;
-    for (di = dirs.begin(); di != dirs.end(); ++di) {
-      const string &dirname = (*di)->_dirname;
-      col += dirname.length() + 1;
-      if (col >= max_col) {
-	col = dirname.length() + 2;
-	cerr << "\n  " << dirname;
-      } else {
-	cerr << " " << dirname;
-      }
-    }
-    cerr << "\n";
+    cerr << "and directly or indirectly on the following directories:";
+    show_directories(dep);
   }
 }
 
@@ -389,29 +371,11 @@ report_needs() const {
     Depends dep;
     get_complete_depends_on_me(dep);
 
-    // Copy the set into a vector, so we can sort it into a nice order
-    // for the user's pleasure.
-    vector<PPDirectory *> dirs;
-    copy(dep.begin(), dep.end(),
-	 back_insert_iterator<vector<PPDirectory *> >(dirs));
-    
-    sort(dirs.begin(), dirs.end(), SortDirectoriesByDependencyAndName());
-    
-    cerr << _dirname << " is needed by the following directories:";
-    static const int max_col = 72;
-    int col = max_col;
-    vector<PPDirectory *>::const_iterator di;
-    for (di = dirs.begin(); di != dirs.end(); ++di) {
-      const string &dirname = (*di)->_dirname;
-      col += dirname.length() + 1;
-      if (col >= max_col) {
-	col = dirname.length() + 2;
-	cerr << "\n  " << dirname;
-      } else {
-	cerr << " " << dirname;
-      }
-    }
-    cerr << "\n";
+    cerr << _dirname << " is needed directly by the following directories:";
+    show_directories(_depends_on_me);
+
+    cerr << "and directly or indirectly by the following directories:";
+    show_directories(dep);
   }
 }
 
@@ -776,4 +740,36 @@ get_complete_depends_on_me(Depends &dep) const {
       dir->get_complete_depends_on_me(dep);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPDirectory::show_directories
+//       Access: Private
+//  Description: Writes a set of dependency directory names to
+//               standard error.  The output begins with a newline.
+////////////////////////////////////////////////////////////////////
+void PPDirectory::
+show_directories(const PPDirectory::Depends &dep) const {
+  // Copy the set into a vector, so we can sort it into a nice order
+  // for the user's pleasure.
+  vector<PPDirectory *> dirs;
+  copy(dep.begin(), dep.end(),
+       back_insert_iterator<vector<PPDirectory *> >(dirs));
+  
+  sort(dirs.begin(), dirs.end(), SortDirectoriesByDependencyAndName());
+  
+  static const int max_col = 72;
+  int col = max_col;
+  vector<PPDirectory *>::const_iterator di;
+  for (di = dirs.begin(); di != dirs.end(); ++di) {
+    const string &dirname = (*di)->_dirname;
+    col += dirname.length() + 1;
+    if (col >= max_col) {
+      col = dirname.length() + 2;
+      cerr << "\n  " << dirname;
+    } else {
+      cerr << " " << dirname;
+    }
+  }
+  cerr << "\n";
 }

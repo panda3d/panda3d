@@ -42,7 +42,8 @@
   #else
     // This library is on a metalib, so we can't build it, but we
     // should build all the obj's that go into it.
-    #set deferred_objs $[deferred_objs] $[patsubst %.c %.cxx %.yxx %.lxx,$[so_dir]/%.obj,%,,$[SOURCES]]
+    #set deferred_objs $[deferred_objs] \
+      $[patsubst %.c %.cxx %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput]]
   #endif
 #end lib_target
 
@@ -145,7 +146,7 @@
 #defer lpath $[other_trees:%=%/lib] $[sort $[complete_lpath]] $[get_lpath]
 
 // And $[libs] is the set of libraries we will link with.
-#defer libs $[unique $[actual_local_libs] $[patsubst %:m,,%:c %,%,$[OTHER_LIBS]] $[get_libs]]
+#defer libs $[unique $[actual_local_libs] $[patsubst %:c,,%:m %,%,$[OTHER_LIBS]] $[get_libs]]
 
 // Okay, we're ready.  Start outputting the Makefile now.
 #output Makefile
@@ -210,8 +211,7 @@ cleanall : clean
        $[if $[install_config],$[install_config_dir]] \
        $[if $[install_igatedb],$[install_igatedb_dir]] \
      ] \
-     $[TARGET(metalib_target static_lib_target):%=install-lib%] \
-     $[real_lib_targets:%=install-lib%] \
+     $[TARGET(metalib_target lib_target static_lib_target):%=install-lib%] \
      $[TARGET(bin_target):%=install-%] \
      $[installed_files]
 install : all $[install_targets]
@@ -253,6 +253,11 @@ $[directory] :
 
 #forscopes metalib_target lib_target
 
+// In Windows, we don't actually build all the libraries.  In
+// particular, we don't build any libraries that are listed on a
+// metalib.  Is this one such library?
+#define build_it $[eq $[module $[TARGET],$[TARGET]],]
+
 // We might need to define a BUILDING_ symbol for win32.  We use the
 // BUILDING_DLL variable name, defined typically in the metalib, for
 // this; but in some cases, where the library isn't part of a metalib,
@@ -266,7 +271,7 @@ $[directory] :
 // generated .in file that interrogate will produce (and which should
 // be installed into the /etc directory).
 #define igatescan $[get_igatescan]
-#define igateoutput $[if $[igatescan],lib$[TARGET]_igate.cxx]
+#define igateoutput $[get_igateoutput]
 #define igatedb $[get_igatedb]
 
 // If this is a metalib, it may have a number of components that
@@ -283,26 +288,30 @@ $[directory] :
 #define igatemscan $[components $[get_igatedb:%=$[RELDIR]/$[so_dir]/%],$[active_component_libs]]
 #define igatemout $[if $[igatemscan],lib$[TARGET]_module.cxx]
 
-// Now output the rule to actually link the library from all of its
-// various .obj files.
-#define sources \
- $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]] \
- $[components $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[RELDIR]/$[so_dir]/%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]],$[COMPONENT_LIBS]]
+#if $[build_it]
+  // Now output the rule to actually link the library from all of its
+  // various .obj files.
+  #define sources \
+   $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]] \
+   $[components $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[RELDIR]/$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput]]],$[active_component_libs]]
 lib_$[TARGET]_so = $[sources]
-#define target $[so_dir]/lib$[TARGET].dll
-#define sources $(lib_$[TARGET]_so)
+  #define target $[so_dir]/lib$[TARGET].dll
+  #define sources $(lib_$[TARGET]_so)
 $[target] : $[sources]
-#if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
+  #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[SHARED_LIB_C++]
-#else
+  #else
 	$[SHARED_LIB_C]
+  #endif
 #endif
 
 // Here are the rules to install and uninstall the library and
 // everything that goes along with it.
 #define installed_files \
-    $[install_lib_dir]/lib$[TARGET].dll \
-    $[install_lib_dir]/lib$[TARGET].lib \
+    $[if $[build_it], \
+      $[install_lib_dir]/lib$[TARGET].dll \
+      $[install_lib_dir]/lib$[TARGET].lib \
+    ] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -351,7 +360,7 @@ $[so_dir]/$[igatedb] $[so_dir]/$[igateoutput] : $[filter-out .c .cxx,$[igatescan
 #define target $[igateoutput:%.cxx=$[so_dir]/%.obj]
 #define source $[so_dir]/$[igateoutput]
 #define ipath . $[target_ipath]
-#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[all_sources $[building_var:%=-D%],$[file]]
+#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=-D%]
 $[target] : $[source]
 	$[COMPILE_C++]
 #endif  // $[igatescan]
@@ -373,7 +382,7 @@ $[target] : $[sources]
 #define target $[igatemout:%.cxx=$[so_dir]/%.obj]
 #define source $[so_dir]/$[igatemout]
 #define ipath . $[target_ipath]
-#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[all_sources $[building_var:%=-D%],$[file]]
+#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=-D%]
 $[target] : $[source]
 	$[COMPILE_C++]
 #endif  // $[igatescan]

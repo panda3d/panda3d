@@ -221,6 +221,13 @@
   $[if $[and $[run_interrogate],$[IGATESCAN]], \
     lib$[TARGET].in]
 
+// This variable returns the name of the interrogate code file
+// that will be generated for a particular target, or empty string if
+// the target is not to be interrogated.
+#defer get_igateoutput \
+  $[if $[and $[run_interrogate],$[IGATESCAN]], \
+    lib$[TARGET]_igate.cxx]
+
 // This variable returns the name of the interrogate module, if the
 // current metalib target should include one, or empty string if it
 // should not.
@@ -493,9 +500,11 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
 
 
 // Set up the correct interrogate options.
+#defer interrogate_ipath $[target_ipath:%=-I%]
+#defer interrogate_spath $[install_parser_inc_dir:%=-S%]
 #defer interrogate_options \
     -DCPPPARSER -D__cplusplus $[SYSTEM_IGATE_FLAGS] \
-    -S$[install_parser_inc_dir] $[target_ipath:%=-I%] \
+    $[interrogate_spath] $[interrogate_ipath] \
     $[filter -D%,$[get_cflags] $[C++FLAGS]] \
     $[INTERROGATE_OPTIONS] \
     $[if $[INTERROGATE_PYTHON_INTERFACE],-python] \

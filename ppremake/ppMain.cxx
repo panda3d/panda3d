@@ -7,6 +7,7 @@
 #include "ppScope.h"
 #include "ppCommandFile.h"
 #include "ppDirectory.h"
+#include "tokenize.h"
 
 #include <unistd.h>
 #include <assert.h>
@@ -90,6 +91,15 @@ read_source(const string &root) {
 
   if (!_defs->read_file(PACKAGE_FILENAME)) {
     return false;
+  }
+
+  // Now check the *_PLATFORM variables that System.pp was supposed to
+  // set.
+  if (!trim_blanks(_def_scope->expand_string("$[UNIX_PLATFORM]")).empty()) {
+    unix_platform = true;
+  }
+  if (!trim_blanks(_def_scope->expand_string("$[WINDOWS_PLATFORM]")).empty()) {
+    windows_platform = true;
   }
 
   PPScope::push_scope(_def_scope);

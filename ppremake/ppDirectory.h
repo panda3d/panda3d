@@ -67,6 +67,7 @@ private:
 
   void get_complete_i_depend_on(Depends &dep) const;
   void get_complete_depends_on_me(Depends &dep) const;
+  void show_directories(const Depends &dep) const;
 
   string _dirname;
   PPScope *_scope;

@@ -12,6 +12,7 @@
 #include "ppDependableFile.h"
 #include "tokenize.h"
 #include "find_searchpath.h"
+#include "filename.h"
 
 #include <stdlib.h>
 #include <algorithm>
@@ -31,6 +32,11 @@ static const string variable_patsubst(VARIABLE_PATSUBST);
 PPScope::MapVariableDefinition PPScope::_null_map_def;
 
 PPScope::ScopeStack PPScope::_scope_stack;
+
+#ifdef __CYGWIN__
+extern "C" void cygwin_conv_to_win32_path(const char *path, char *win32);
+extern "C" void cygwin_conv_to_posix_path(const char *path, char *posix);
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPScope::Constructor
@@ -803,7 +809,17 @@ r_expand_variable(const string &str, size_t &vp,
     }      
 
     // Is it a built-in function?
-    if (funcname == "wildcard") {
+    if (funcname == "isfullpath") {
+      return expand_isfullpath(params);
+    } else if (funcname == "osfilename") {
+      return expand_osfilename(params);
+    } else if (funcname == "unixfilename") {
+      return expand_unixfilename(params);
+    } else if (funcname == "cygpath_w") {
+      return expand_cygpath_w(params);
+    } else if (funcname == "cygpath_p") {
+      return expand_cygpath_p(params);
+    } else if (funcname == "wildcard") {
       return expand_wildcard(params);
     } else if (funcname == "isdir") {
       return expand_isdir(params);
@@ -1018,6 +1034,133 @@ expand_variable_nested(const string &varname,
 
   string result = repaste(results, " ");
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_isfullpath
+//       Access: Private
+//  Description: Expands the "isfullpath" function variable.  This
+//               returns true (actually, the same as its input) if the
+//               input parameter is a fully-specified path name,
+//               meaning it begins with a slash for unix_platform, and
+//               it begins with a slash or backslash, with an optional
+//               drive leterr, for windows_platform.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_isfullpath(const string &params) const {
+  string filename = trim_blanks(expand_string(params));
+
+  string result;
+  if (is_fullpath(filename)) {
+    result = filename;
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_osfilename
+//       Access: Private
+//  Description: Expands the "osfilename" function variable.  This
+//               converts the filename from a Unix-style filename
+//               (e.g. with slash separators) to a platform-specific
+//               filename.  Currently, this only has an effect when
+//               generating code for a Windows platform: it simply
+//               converts forward slashes to backslashes.  On other
+//               platforms it has no effect.
+//
+//               This is different from cygpath_w in that (a) it works
+//               regardless of whether we are actually running under
+//               Cygwin, and (b) it does nothing more intelligent than
+//               reverse slashes.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_osfilename(const string &params) const {
+  // Split the parameter into tokens based on the spaces.
+  vector<string> words;
+  tokenize_whitespace(expand_string(params), words);
+
+  vector<string>::iterator wi;
+  for (wi = words.begin(); wi != words.end(); ++wi) {
+    (*wi) = to_os_filename(*wi);
+  }
+
+  string result = repaste(words, " ");
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_unixfilename
+//       Access: Private
+//  Description: Expands the "unixfilename" function variable.  This
+//               converts the filename from a platform-specific
+//               filename to a Unix-style filename (e.g. with slash
+//               separators).  Currently, this only has an effect when
+//               generating code for a Windows platform: it simply
+//               converts backslashes to forward slashes.  On other
+//               platforms it has no effect.
+//
+//               This is different from cygpath_p in that (a) it works
+//               regardless of whether we are actually running under
+//               Cygwin, and (b) it does nothing more intelligent than
+//               reverse slashes.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_unixfilename(const string &params) const {
+  // Split the parameter into tokens based on the spaces.
+  vector<string> words;
+  tokenize_whitespace(expand_string(params), words);
+
+  vector<string>::iterator wi;
+  for (wi = words.begin(); wi != words.end(); ++wi) {
+    (*wi) = to_unix_filename(*wi);
+  }
+
+  string result = repaste(words, " ");
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_cygpath_w
+//       Access: Private
+//  Description: Expands the "cygpath_w" function variable.  This is
+//               equivalent to $[shell cygpath -w ...] when running
+//               under Cygwin, and returns the parameter itself when
+//               not running under Cygwin.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_cygpath_w(const string &params) const {
+  string filename = trim_blanks(expand_string(params));
+
+#ifdef __CYGWIN__
+  char result[4096];
+
+  cygwin_conv_to_win32_path(filename.c_str(), result);
+  filename = result;
+#endif
+
+  return filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_cygpath_p
+//       Access: Private
+//  Description: Expands the "cygpath_p" function variable.  This is
+//               equivalent to $[shell cygpath -p ...] when running
+//               under Cygwin, and returns the parameter itself when
+//               not running under Cygwin.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_cygpath_p(const string &params) const {
+  string filename = trim_blanks(expand_string(params));
+
+#ifdef __CYGWIN__
+  char result[4096];
+
+  cygwin_conv_to_posix_path(filename.c_str(), result);
+  filename = result;
+#endif
+
+  return filename;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1291,6 +1434,7 @@ expand_shell(const string &params) const {
     
   if (pid == 0) {
     // Child.
+    close(pd[0]);
     dup2(pd[1], STDOUT_FILENO);
     char *argv[4];
     argv[0] = "sh";
@@ -1355,7 +1499,7 @@ expand_shell(const string &params) const {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_standardize(const string &params) const {
-  string filename = expand_string(params);
+  string filename = trim_blanks(expand_string(params));
   if (filename.empty()) {
     return string();
   }
@@ -1411,8 +1555,10 @@ expand_standardize(const string &params) const {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_length(const string &params) const {
+  string word = trim_blanks(expand_string(params));
+
   char buffer[32];
-  sprintf(buffer, "%d", params.length());
+  sprintf(buffer, "%d", word.length());
   string result = buffer;
   return result;
 }  
@@ -1432,7 +1578,7 @@ expand_substr(const string &params) const {
   tokenize_params(params, tokens, true);
 
   if (tokens.size() != 3) {
-    cerr << "wordlist requires three parameters.\n";
+    cerr << "substr requires three parameters.\n";
     return string();
   }
 

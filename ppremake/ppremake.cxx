@@ -21,6 +21,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+bool unix_platform = false;
+bool windows_platform = false;
+
 static void
 usage() {
   cerr <<
@@ -268,13 +271,14 @@ main(int argc, char *argv[]) {
     }
 
     for (int i = 1; i < argc; i++) {
+      cerr << "\n";
       if (report_depends) {
 	ppmain.report_depends(argv[i]);
       }
+      cerr << "\n";
       if (report_needs) {
 	ppmain.report_needs(argv[i]);
       }
-      cerr << "\n";
     }
 
   } else {

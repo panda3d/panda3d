@@ -1,8 +1,8 @@
 bin_PROGRAMS = ppremake
 
 ppremake_SOURCES =						\
-    check_include.cxx check_include.h find_searchpath.cxx	\
-    find_searchpath.h						\
+    check_include.cxx check_include.h filename.cxx filename.h	\
+    find_searchpath.cxx find_searchpath.h			\
     gnu_getopt.c gnu_getopt.h					\
     ppCommandFile.cxx ppCommandFile.h ppDependableFile.cxx	\
     ppDependableFile.h ppDirectory.cxx				\

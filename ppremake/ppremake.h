@@ -49,4 +49,11 @@ using namespace std;
 #define SCOPE_DIRNAME_WILDCARD "*"
 #define SCOPE_DIRNAME_CURRENT "."
 
+/* These are set from the similarly-named variables defined in
+   System.pp. */
+#ifdef __cplusplus
+extern bool unix_platform;
+extern bool windows_platform;
+#endif
+
 #endif

@@ -153,9 +153,21 @@ void PPNamedScopes::
 p_get_scopes(const PPNamedScopes::Named &named, const string &name,
 	     Scopes &scopes) const {
   Named::const_iterator ni;
-  ni = named.find(name);
-  if (ni != named.end()) {
-    const Scopes &s = (*ni).second;
-    scopes.insert(scopes.end(), s.begin(), s.end());
+  if (name == "*") {
+    // Scope name "*" means all nested scopes in this directory,
+    // except for the empty-name scope (which is the outer scope).
+    for (ni = named.begin(); ni != named.end(); ++ni) {
+      if (!(*ni).first.empty()) {
+	const Scopes &s = (*ni).second;
+	scopes.insert(scopes.end(), s.begin(), s.end());
+      }
+    }
+
+  } else {
+    ni = named.find(name);
+    if (ni != named.end()) {
+      const Scopes &s = (*ni).second;
+      scopes.insert(scopes.end(), s.begin(), s.end());
+    }
   }
 }

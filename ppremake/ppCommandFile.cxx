@@ -289,6 +289,14 @@ read_line(string line) {
   // If the comment was at the beginning of the line, ignore the whole
   // line, including its whitespace.
   if (comment != 0) {
+    // We also strip off whitespace at the end of the line, since this
+    // is generally invisible and almost always just leads to trouble.
+    size_t eol = line.length();
+    while (eol > 0 && (isspace(line[eol - 1]) || line[eol - 1] == '\r')) {
+      eol--;
+    }
+    line = line.substr(0, eol);
+
     if (_in_for) {
       // Save up the lines for later execution if we're within a #forscopes.
       _saved_lines.push_back(line);

@@ -80,6 +80,11 @@ private:
   string expand_variable_nested(const string &varname, 
 				const string &scope_names) const;
 
+  string expand_isfullpath(const string &params) const;
+  string expand_osfilename(const string &params) const;
+  string expand_unixfilename(const string &params) const;
+  string expand_cygpath_w(const string &params) const;
+  string expand_cygpath_p(const string &params) const;
   string expand_wildcard(const string &params) const;
   string expand_isdir(const string &params) const;
   string expand_isfile(const string &params) const;

@@ -243,7 +243,7 @@ $[directory] :
 // generated .in file that interrogate will produce (and which should
 // be installed into the /etc directory).
 #define igatescan $[get_igatescan]
-#define igateoutput $[if $[igatescan],lib$[TARGET]_igate.cxx]
+#define igateoutput $[get_igateoutput]
 #define igatedb $[get_igatedb]
 
 // If this is a metalib, it may have a number of components that
