@@ -82,7 +82,7 @@ Downloader::
 ~Downloader() {
   if (_connected)
     disconnect_from_server();
-  delete _buffer;
+  _buffer.clear();
   if (_current_status != NULL)
     delete _current_status;
 }
@@ -260,7 +260,7 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
   status->_next_in += ret;
   status->_bytes_in_buffer += ret;
   status->_total_bytes += ret;
-  return ret;
+  return FR_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -401,16 +401,15 @@ run(void) {
   }
 
   // Attempt to receive the bytes from the socket
-  int bytes_read = fast_receive(_socket, _current_status, _receive_size);
+  int fret = fast_receive(_socket, _current_status, _receive_size);
   _tlast = _clock.get_real_time();
 
   // Check for end of file
-  if (bytes_read == 0) {
+  if (fret == FR_eof) {
     if (_got_any_data == true) {
       if (_current_status->_bytes_in_buffer > 0) {
         if (write_to_disk(_current_status) == false)
           return DS_error_write;
-	ret = DS_write;
       }
       return DS_success;
     } else {
@@ -419,7 +418,12 @@ run(void) {
 	  << "Downloader::run() - Got 0 bytes" << endl;
       return DS_ok;
     }
-  } else if (bytes_read < 0) {
+  } else if (fret == FR_no_data) {
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+	<< "Downloader::run() - No data" << endl;
+      return DS_ok;
+  } else if (fret < 0) {
     return DS_error;
   }
 

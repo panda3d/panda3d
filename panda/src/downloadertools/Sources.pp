@@ -79,3 +79,10 @@
 
 #end bin_target
 
+#begin bin_target
+  #define TARGET test_downloader
+
+  #define SOURCES \
+    test_downloader.cxx
+
+#end bin_target
