@@ -734,9 +734,16 @@ void glxGraphicsWindow::
 handle_keypress(ButtonHandle key, int x, int y) {
   _input_devices[0].set_pointer_in_window(x, y);
   if (key != ButtonHandle::none()) {
-    _input_devices[0].button_down(key);
     if (key.has_ascii_equivalent()) {
-      _input_devices[0].keystroke(key.get_ascii_equivalent());
+      int ch = key.get_ascii_equivalent();
+      _input_devices[0].keystroke(ch);
+
+      // For buttons (as opposed to keystrokes), we need to make
+      // uppercase keynames into lowercase keynames, by Panda
+      // convention.
+      _input_devices[0].button_down(KeyboardButton::ascii_key(tolower(ch)));
+    } else {
+      _input_devices[0].button_down(key);
     }
   }
 }
@@ -749,7 +756,16 @@ handle_keypress(ButtonHandle key, int x, int y) {
 void glxGraphicsWindow::
 handle_keyrelease(ButtonHandle key, int, int) {
   if (key != ButtonHandle::none()) {
-    _input_devices[0].button_up(key);
+    if (key.has_ascii_equivalent()) {
+      int ch = key.get_ascii_equivalent();
+
+      // For buttons (as opposed to keystrokes), we need to make
+      // uppercase keynames into lowercase keynames, by Panda
+      // convention.
+      _input_devices[0].button_up(KeyboardButton::ascii_key(tolower(ch)));
+    } else {
+      _input_devices[0].button_up(key);
+    }
   }
 }
 
