@@ -271,8 +271,14 @@
         # upon death remove the functorFunc
         def lerpUponDeath(task):
             # Try to break circular references
-            del task.functorFunc
-            del task.lerp
+            try:
+                del task.functorFunc
+            except:
+                pass
+            try:
+                del task.lerp
+            except:
+                pass
         
         # make the task function
         def lerpTaskFunc(task):
