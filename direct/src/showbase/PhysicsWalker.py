@@ -523,8 +523,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         if airborneHeight > self.highMark:
             self.highMark = airborneHeight
             if __debug__:
-                onScreenDebug.add("highMark", "% 10.4f"%(
-                    self.highMark,))
+                onScreenDebug.add("highMark", "% 10.4f"%(self.highMark,))
         #if airborneHeight < 0.1: #contact!=Vec3.zero():
         if 1:
             if (airborneHeight > self.avatarRadius*0.5
@@ -665,7 +664,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             onScreenDebug.add("self.__oldPosDelta",
                               self.__oldPosDelta.pPrintValues())
         
-        velocity = self.__oldPosDelta*(1/self.__oldDt)
+        velocity = self.__oldPosDelta*(1/self.__oldDt)*4.0 # *4.0 is a hack
         assert(self.debugPrint("  __oldPosDelta=%s"%(self.__oldPosDelta,)))
         assert(self.debugPrint("  velocity=%s"%(velocity,)))
         self.priorParent.setVector(Vec3(velocity))
@@ -679,6 +678,11 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.priorParent.setVector(Vec3.zero())
         self.highMark = 0
         self.actorNode.setContactVector(Vec3.zero())
+        if __debug__:
+            onScreenDebug.add("priorParent po",
+                self.priorParent.getVector(self.actorNode.getPhysicsObject()).pPrintValues())
+            onScreenDebug.add("highMark", "% 10.4f"%(self.highMark,))
+            onScreenDebug.add("contact", contact.pPrintValues())
 
     def enableAvatarControls(self):
         """
