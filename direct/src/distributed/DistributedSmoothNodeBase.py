@@ -29,6 +29,10 @@ class DistributedSmoothNodeBase:
         # presumably, we have a doId at this point
         return "sendPosHpr-%s" % self.doId
 
+    def setPosHprBroadcastPeriod(self, period):
+        # call this at any time to change the delay between broadcasts
+        self.__broadcastPeriod = period
+
     def stopPosHprBroadcast(self):
         taskMgr.remove(self.getPosHprBroadcastTaskName())
         # Delete this callback because it maintains a reference to self
@@ -58,7 +62,7 @@ class DistributedSmoothNodeBase:
         # Set up telemetry optimization variables
         self.cnode.initialize(self, self.dclass, self.doId)
 
-        self.__broadcastPeriod = period
+        self.setPosHprBroadcastPeriod(period)
         # Broadcast our initial position
         self.b_clearSmoothing()
         self.cnode.sendEverything()
