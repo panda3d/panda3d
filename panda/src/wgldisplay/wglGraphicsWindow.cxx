@@ -63,6 +63,13 @@ static char *OGLDrvStrings[3] = {"Software","MCD","ICD"};
 LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,LPARAM lparam);
 extern char *ConvDDErrorToString(const HRESULT &error);
 
+// because we dont have access to ModifierButtons, as a hack just synchronize state of these
+// keys on get/lose keybd focus
+#define NUM_MODIFIER_KEYS 16
+unsigned int hardcoded_modifier_buttons[NUM_MODIFIER_KEYS]={VK_SHIFT,VK_MENU,VK_CONTROL,VK_SPACE,VK_TAB,
+                                         VK_UP,VK_DOWN,VK_LEFT,VK_RIGHT,VK_PRIOR,VK_NEXT,VK_HOME,VK_END,
+                                         VK_INSERT,VK_DELETE,VK_ESCAPE};
+
 void PrintErrorMessage(DWORD msgID) {
    LPTSTR pMessageBuffer;
 
@@ -1393,52 +1400,62 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           return 0;       
     }
 
-    case WM_SYSKEYUP:
-    case WM_SYSKEYDOWN:
     case WM_SYSCHAR:
-    case WM_CHAR:
+    case WM_CHAR:  // shouldnt receive WM_CHAR unless WM_KEYDOWN stops returning 0 and passes on to DefWindProc
         break;
 
+    case WM_SYSKEYDOWN:
     case WM_KEYDOWN: {
-        POINT point;
 
-        GetCursorPos(&point);
-        ScreenToClient(hwnd, &point);
+            POINT point;
 
-        // handle Cntrl-V paste from clipboard
-        if(!((wparam=='V') && (GetKeyState(VK_CONTROL) < 0))) {
-           handle_keypress(lookup_key(wparam), point.x, point.y);
-        } else {
-            HGLOBAL   hglb; 
-            char    *lptstr; 
-        
-            if (!IsClipboardFormatAvailable(CF_TEXT)) 
-               return 0; 
-        
-            if (!OpenClipboard(NULL)) 
-               return 0; 
-         
-            hglb = GetClipboardData(CF_TEXT); 
-            if (hglb!=NULL) {
-                lptstr = (char *) GlobalLock(hglb); 
-                if(lptstr != NULL)  {
-                    char *pChar;
-                    for(pChar=lptstr;*pChar!=NULL;pChar++) {
-                       handle_keypress(KeyboardButton::ascii_key((uchar)*pChar), point.x, point.y);
-                    }
-                    GlobalUnlock(hglb); 
-                } 
+            GetCursorPos(&point);
+            ScreenToClient(hwnd, &point);
+
+          #ifdef NDEBUG
+               handle_keypress(lookup_key(wparam), point.x, point.y);
+          #else
+            // handle Cntrl-V paste from clipboard
+            if(!((wparam=='V') && (GetKeyState(VK_CONTROL) < 0))) {
+               handle_keypress(lookup_key(wparam), point.x, point.y);
+            } else {
+                HGLOBAL   hglb; 
+                char    *lptstr; 
+            
+                if (!IsClipboardFormatAvailable(CF_TEXT)) 
+                   return 0; 
+            
+                if (!OpenClipboard(NULL)) 
+                   return 0; 
+             
+                hglb = GetClipboardData(CF_TEXT); 
+                if (hglb!=NULL) {
+                    lptstr = (char *) GlobalLock(hglb); 
+                    if(lptstr != NULL)  {
+                        char *pChar;
+                        for(pChar=lptstr;*pChar!=NULL;pChar++) {
+                           handle_keypress(KeyboardButton::ascii_key((uchar)*pChar), point.x, point.y);
+                        }
+                        GlobalUnlock(hglb); 
+                    } 
+                }
+                CloseClipboard(); 
             }
-            CloseClipboard(); 
-        }
-        return 0;
+          #endif
+            // want to use defwindproc on Alt syskey so Alt-F4 works, etc
+            // but do want to bypass defwindproc F10 behavior (it activates the
+            // main menu, but we have none)
+            if((msg==WM_SYSKEYDOWN)&&(wparam!=VK_F10))
+              break;
+             else return 0;
     }
 
+    case WM_SYSKEYUP:
     case WM_KEYUP: {
-        // dont need x,y for this
-        handle_keyrelease(lookup_key(wparam));
-        break;
+            handle_keyrelease(lookup_key(wparam));
+            return 0;
     }
+
     case WM_LBUTTONDOWN:
       button = 0;
     case WM_MBUTTONDOWN:
@@ -1498,20 +1515,44 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         }
         break;
 
-    case WM_SETFOCUS:
-          SetCursor(_hMouseCursor);
-          if (mouse_entry_enabled()) {
-               make_current();
-               handle_mouse_entry(MOUSE_ENTERED);
-          }
-          break;
+    case WM_SETFOCUS: {
+            // wgldisplay_cat.info() << "got WM_SETFOCUS\n";
 
-    case WM_KILLFOCUS:
-          if (mouse_entry_enabled()) {
-               //make_current();  this doesnt make any sense, we're leaving our window
-               handle_mouse_entry(MOUSE_EXITED);
-          }
-          break;
+            if(_mouse_entry_enabled) {
+                make_current();
+                handle_mouse_entry(MOUSE_ENTERED);
+            }
+
+            POINT point;
+            GetCursorPos(&point);
+            ScreenToClient(hwnd, &point);
+
+            // this is a hack to make sure common modifier keys have proper state
+            // since at focus loss, app may never receive key-up event corresponding to
+            // a key-down. it would be better to know the exact set of ModifierButtons the
+            // user is using, since we may miss some here
+
+            int i;
+            for(i=0;i<NUM_MODIFIER_KEYS;i++) {
+              if(GetKeyState(hardcoded_modifier_buttons[i]) < 0) 
+                handle_keypress(lookup_key(hardcoded_modifier_buttons[i]),point.x,point.y);
+            }
+            return 0;
+        }
+
+    case WM_KILLFOCUS: {
+            if(_mouse_entry_enabled)
+              handle_mouse_entry(MOUSE_EXITED);
+
+            int i;
+            for(i=0;i<NUM_MODIFIER_KEYS;i++) {
+              if(GetKeyState(hardcoded_modifier_buttons[i]) < 0)
+                handle_keyrelease(lookup_key(hardcoded_modifier_buttons[i]));
+            }
+
+            return 0;
+    }
+    break;
 
     case WM_TIMER:
       if((wparam==_PandaPausedTimer) && _window_inactive) {
@@ -1533,87 +1574,99 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-ButtonHandle
-wglGraphicsWindow::lookup_key(WPARAM wparam) const {
-  // probably would be faster with a map var
-  switch (wparam) {
-  case VK_BACK: return KeyboardButton::backspace();
-  case VK_TAB: return KeyboardButton::tab();
-  case VK_ESCAPE: return KeyboardButton::escape();
-  case VK_SPACE: return KeyboardButton::space();
-  case VK_UP: return KeyboardButton::up();
-  case VK_DOWN: return KeyboardButton::down();
-  case VK_LEFT: return KeyboardButton::left();
-  case VK_RIGHT: return KeyboardButton::right();
-  case VK_PRIOR: return KeyboardButton::page_up();
-  case VK_NEXT: return KeyboardButton::page_down();
-  case VK_HOME: return KeyboardButton::home();
-  case VK_END: return KeyboardButton::end();
-  case VK_F1: return KeyboardButton::f1();
-  case VK_F2: return KeyboardButton::f2();
-  case VK_F3: return KeyboardButton::f3();
-  case VK_F4: return KeyboardButton::f4();
-  case VK_F5: return KeyboardButton::f5();
-  case VK_F6: return KeyboardButton::f6();
-  case VK_F7: return KeyboardButton::f7();
-  case VK_F8: return KeyboardButton::f8();
-  case VK_F9: return KeyboardButton::f9();
-  case VK_F10: return KeyboardButton::f10();
-  case VK_F11: return KeyboardButton::f11();
-  case VK_F12: return KeyboardButton::f12();
-  case VK_INSERT: return KeyboardButton::insert();
-  case VK_DELETE: return KeyboardButton::del();
+ButtonHandle wglGraphicsWindow::
+lookup_key(WPARAM wparam) const {
+    switch(wparam) {
+        case VK_BACK: return KeyboardButton::backspace();
+        case VK_TAB: return KeyboardButton::tab();
+        case VK_ESCAPE: return KeyboardButton::escape();
+        case VK_SPACE: return KeyboardButton::space();
+        case VK_UP: return KeyboardButton::up();
+        case VK_DOWN: return KeyboardButton::down();
+        case VK_LEFT: return KeyboardButton::left();
+        case VK_RIGHT: return KeyboardButton::right();
+        case VK_PRIOR: return KeyboardButton::page_up();
+        case VK_NEXT: return KeyboardButton::page_down();
+        case VK_HOME: return KeyboardButton::home();
+        case VK_END: return KeyboardButton::end();
+        case VK_F1: return KeyboardButton::f1();
+        case VK_F2: return KeyboardButton::f2();
+        case VK_F3: return KeyboardButton::f3();
+        case VK_F4: return KeyboardButton::f4();
+        case VK_F5: return KeyboardButton::f5();
+        case VK_F6: return KeyboardButton::f6();
+        case VK_F7: return KeyboardButton::f7();
+        case VK_F8: return KeyboardButton::f8();
+        case VK_F9: return KeyboardButton::f9();
+        case VK_F10: return KeyboardButton::f10();
+        case VK_F11: return KeyboardButton::f11();
+        case VK_F12: return KeyboardButton::f12();
+        case VK_INSERT: return KeyboardButton::insert();
+        case VK_DELETE: return KeyboardButton::del();
+        case VK_CAPITAL: return KeyboardButton::caps_lock();
+        case VK_NUMLOCK: return KeyboardButton::num_lock();
+        case VK_SCROLL: return KeyboardButton::scroll_lock();
+        case VK_SNAPSHOT: return KeyboardButton::print_screen();
 
-  case VK_SHIFT:
-  case VK_LSHIFT:
-  case VK_RSHIFT:
-    return KeyboardButton::shift();
+        case VK_SHIFT:
+        case VK_LSHIFT:
+        case VK_RSHIFT:
+            return KeyboardButton::shift();
 
-  case VK_CONTROL:
-  case VK_LCONTROL:
-  case VK_RCONTROL:
-    return KeyboardButton::control();
+        case VK_CONTROL:
+        case VK_LCONTROL:
+        case VK_RCONTROL:
+            return KeyboardButton::control();
 
-  case VK_MENU:
-  case VK_LMENU:
-  case VK_RMENU:
-    return KeyboardButton::alt();
+        case VK_MENU:
+        case VK_LMENU:
+        case VK_RMENU:
+            return KeyboardButton::alt();
 
-  default:
-    int key = MapVirtualKey(wparam, 2);
-    if (isascii(key) && key != 0) {
-      if (GetKeyState(VK_SHIFT) >= 0)
-          key = tolower(key);
-      else {
-        switch (key) {
-            case '1': key = '!'; break;
-            case '2': key = '@'; break;
-            case '3': key = '#'; break;
-            case '4': key = '$'; break;
-            case '5': key = '%'; break;
-            case '6': key = '^'; break;
-            case '7': key = '&'; break;
-            case '8': key = '*'; break;
-            case '9': key = '('; break;
-            case '0': key = ')'; break;
-            case '-': key = '_'; break;
-            case '=': key = '+'; break;
-            case ',': key = '<'; break;
-            case '.': key = '>'; break;
-            case '/': key = '?'; break;
-            case ';': key = ':'; break;
-            case '\'': key = '"'; break;
-            case '[': key = '{'; break;
-            case ']': key = '}'; break;
-            case '\\': key = '|'; break;
-            case '`': key = '~'; break;
-        }
-      }
-      return KeyboardButton::ascii_key((uchar)key);
+        default:
+            int key = MapVirtualKey(wparam, 2);
+            if(isascii(key) && key != 0) {
+                bool bCapsLockDown=((GetKeyState(VK_CAPITAL) & 0x1)!=0);
+                bool bShiftUp = (GetKeyState(VK_SHIFT) >= 0);
+                if(bShiftUp) {
+                    if(bCapsLockDown) 
+                        key = toupper(key);
+                    else key = tolower(key);
+                } else {
+                    switch(key) {
+                        // these keys are unaffected by capslock
+                        case '1': key = '!'; break;
+                        case '2': key = '@'; break;
+                        case '3': key = '#'; break;
+                        case '4': key = '$'; break;
+                        case '5': key = '%'; break;
+                        case '6': key = '^'; break;
+                        case '7': key = '&'; break;
+                        case '8': key = '*'; break;
+                        case '9': key = '('; break;
+                        case '0': key = ')'; break;
+                        case '-': key = '_'; break;
+                        case '=': key = '+'; break;
+                        case ',': key = '<'; break;
+                        case '.': key = '>'; break;
+                        case '/': key = '?'; break;
+                        case ';': key = ':'; break;
+                        case '\'': key = '"'; break;
+                        case '[': key = '{'; break;
+                        case ']': key = '}'; break;
+                        case '\\': key = '|'; break;
+                        case '`': key = '~'; break;
+                        default:
+                            if(bCapsLockDown) 
+                                key = tolower(key);
+                            else key = toupper(key);
+                    }
+                }
+                return KeyboardButton::ascii_key((uchar)key);
+            }
+            break;
     }
-    break;
-  }
-  return ButtonHandle::none();
+    return ButtonHandle::none();
 }
 
 #if 0
