@@ -343,7 +343,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
     def handleSystemMessage(self, di):
         # Got a system message from the server.
         message = di.getString()
-        ClientRepository.notify.info('Message from server: %s' % (message))
+        self.notify.info('Message from server: %s' % (message))
+
+        return message
 
     def handleUnexpectedMsgType(self, msgType, di):
         if msgType == CLIENT_GO_GET_LOST:
