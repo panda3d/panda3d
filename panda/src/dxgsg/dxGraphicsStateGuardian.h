@@ -324,11 +324,10 @@ protected:
   D3DBLEND _blend_source_func;
   D3DBLEND _blend_dest_func;
 
-//  int _pack_alignment;
-//  int _unpack_alignment;
-
   bool  _issued_color_enabled;      // WBD ADDED
-  D3DCOLOR _issued_color;           // WBD ADDED
+  bool  _enable_all_color;
+  Colorf _issued_color;           // WBD ADDED
+  D3DCOLOR _issued_color_D3DCOLOR;           // WBD ADDED
 
   D3DSHADEMODE _CurShadeMode;
 

@@ -30,6 +30,11 @@
 
 //#define PRINT_TEXSTATS
 
+// test non-optimized general geom pipe for all models
+// apparently DPStrided faults for some color G_OVERALL cases, so comment out for now
+// not clear that it is actually faster in practice, it may even be slightly slower
+#define DONT_USE_DRAWPRIMSTRIDED
+
 //const int VERT_BUFFER_SIZE = (8*1024L);
 // For sparkle particles, we can have 4 vertices per sparkle, and a
 // particle pool size of 1024 particles
@@ -50,11 +55,6 @@ TypeHandle DXGraphicsStateGuardian::_type_handle;
 // this implementation to set a small GL-like limit to make the light array traversals short
 // and so I dont have to write code that reallocs light arrays
 #define DXGSG_MAX_LIGHTS 8
-
-// test non-optimized general geom pipe for all models
-// apparently DPStrided faults for some color G_OVERALL cases, so comment out for now
-// not clear that it is actually faster in practice, it may even be slightly slower
-#define DONT_USE_DRAWPRIMSTRIDED
 
 static D3DMATRIX matIdentity;
 
@@ -162,6 +162,7 @@ reset() {
     _projection_mat_stack_count = 0;
 
     _issued_color_enabled = false;
+    _enable_all_color = true;
 
     _buffer_mask &= ~RenderBuffer::T_right;  // test for these later
 
@@ -1118,49 +1119,76 @@ draw_prim_setup(const Geom *geom) {
 
 ////////
 
-    vi = geom->make_vertex_iterator();
-    p_flags = D3DFVF_XYZ;
-    size_t vertex_size = sizeof(D3DVALUE) * 3;
+   vi = geom->make_vertex_iterator();
+   p_flags = D3DFVF_XYZ;
+   size_t vertex_size = sizeof(D3DVALUE) * 3;
 
-    if ((geom->get_binding(G_COLOR) != G_OFF) || _issued_color_enabled) {
+   GeomBindType ColorBinding=geom->get_binding(G_COLOR);
+   bool bDoColor=(ColorBinding != G_OFF);
+
+   if (_enable_all_color && (bDoColor || _issued_color_enabled)) {
         ci = geom->make_color_iterator();
         p_flags |= D3DFVF_DIFFUSE;
         vertex_size += sizeof(D3DCOLOR);
 
-        if (geom->get_binding(G_COLOR) == G_OVERALL) {
-            GET_NEXT_COLOR();
-        }
-
         if (_issued_color_enabled) {
-            p_colr = _issued_color;       // set primitive color if there is one.
-            perVertex &= ~PER_COLOR;
-            perPrim &= ~PER_COLOR;
-            perComp &= ~PER_COLOR;
-        }
-    }
+            p_colr = _issued_color_D3DCOLOR;  // set primitive color if there is one.
+        } else if(ColorBinding == G_OVERALL){
+            GET_NEXT_COLOR();
+        } 
 
-    if (geom->get_binding(G_NORMAL) != G_OFF) {
+        perVertex &= ~PER_COLOR;
+        perPrim &= ~PER_COLOR;
+        perComp &= ~PER_COLOR;
+   }
+
+   if (geom->get_binding(G_NORMAL) != G_OFF) {
         ni = geom->make_normal_iterator();
         p_flags |= D3DFVF_NORMAL;
         vertex_size += sizeof(D3DVALUE) * 3;
 
         if (geom->get_binding(G_NORMAL) == G_OVERALL)
             p_normal = geom->get_next_normal(ni);    // set overall normal if there is one
-    }
+   }
 
-    if (geom->get_binding(G_TEXCOORD) != G_OFF) {
+   if (geom->get_binding(G_TEXCOORD) != G_OFF) {
         ti = geom->make_texcoord_iterator();
         p_flags |= (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
         vertex_size += sizeof(float) * 2;
-    }
+   }
 
     // If we have per-vertex colors or normals, we need smooth shading.
     // Otherwise we want flat shading for performance reasons.
-    if (perVertex & ((wants_colors() ? PER_COLOR : 0) | (wants_normals() ? PER_NORMAL : 0)))
-        set_shademode(D3DSHADE_GOURAUD);
-    else set_shademode(D3DSHADE_FLAT);
 
-    return vertex_size;
+   if (perVertex & (PER_COLOR | (wants_normals() ? PER_NORMAL : 0)))
+        set_shademode(D3DSHADE_GOURAUD);
+   else set_shademode(D3DSHADE_FLAT);
+
+   return vertex_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::wants_colors
+//       Access: Public, Virtual
+//  Description: Returns true if the GSG should issue geometry color
+//               commands, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool DXGraphicsStateGuardian::
+wants_colors() const {
+    // If we have scene graph color enabled, return false to indicate we
+    // shouldn't bother issuing geometry color commands.
+
+    const ColorAttribute *catt;
+    if (!get_attribute_into(catt, _state, ColorTransition::get_class_type())) {
+        // No scene graph color at all.
+        return true;
+    }
+
+    // We should issue geometry colors only if the scene graph color is off.
+    if (catt->is_off() || (!catt->is_real()))
+        return true;
+
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1390,43 +1418,6 @@ draw_line(GeomLine* geom, GeomContext *gc) {
     }
 #endif
 
-#ifdef WBD_GL_MODE
-    call_glLineWidth(geom->get_width());
-
-    int nprims = geom->get_num_prims();
-    Geom::VertexIterator vi = geom->make_vertex_iterator();
-    Geom::ColorIterator ci = geom->make_color_iterator();
-
-    GeomIssuer issuer(geom, this,
-                      issue_vertex_gl,
-                      issue_normal_gl,
-                      issue_texcoord_gl,
-                      issue_color_gl);
-
-    if (geom->get_binding(G_COLOR) == G_PER_VERTEX) {
-        call_glShadeModel(GL_SMOOTH);
-    } else {
-        call_glShadeModel(GL_FLAT);
-    }
-
-    // Draw overall
-    issuer.issue_color(G_OVERALL, ci);
-
-    glBegin(GL_LINES);
-
-    for (int i = 0; i < nprims; i++) {
-        // Draw per primitive
-        issuer.issue_color(G_PER_PRIM, ci);
-
-        for (int j = 0; j < 2; j++) {
-            // Draw per vertex
-            issuer.issue_color(G_PER_VERTEX, ci);
-            issuer.issue_vertex(G_PER_VERTEX, vi);
-        }
-    }
-
-    glEnd();
-#else        // the DX way
 
     int nPrims = geom->get_num_prims();
 
@@ -1492,8 +1483,6 @@ draw_line(GeomLine* geom, GeomContext *gc) {
     TestDrawPrimFailure(DrawPrim,hr,_pDD,nPrims*2,0);
 
     _pCurFvfBufPtr = NULL;
-
-#endif              // WBD_GL_MODE
 }
 
 void DXGraphicsStateGuardian::
@@ -1622,14 +1611,6 @@ struct draw_sprite_vertex_less {
         return v0.z > v1.z; // reversed from gl due to left-handed coordsys of d3d
     }
 };
-/*
-struct draw_sprite_vertex_less {
-  INLINE bool operator ()(const WrappedSprite& v0,
-              const WrappedSprite& v1) const {
-    return v0._v[2] > v1._v[2]; // reversed from gl
-  }
-};
-*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_sprite
@@ -1690,7 +1671,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     float aspect_ratio;
     aspect_ratio = _actual_display_region->get_camera()->get_aspect();
 
-    // null the world xform, so sprites are orthog to scrn  (but not necessarily camera pntm unless they lie along z-axis)
+    // null the world xform, so sprites are orthog to scrn  (but not necessarily camera pnt unless they lie along z-axis)
     _d3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, &matIdentity);
     // only need to change _WORLD xform, _VIEW xform is Identity
 
@@ -2720,7 +2701,7 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             dps_data.textureCoords[0].lpvData = (VOID*)(((char*) dps_data.textureCoords[0].lpvData) + cCurNumStripVerts*dps_data.textureCoords[0].dwStride);
         }
 
-        _pCurFvfBufPtr = NULL;
+        nassertv(_pCurFvfBufPtr == NULL);
     }
 }
 
@@ -3024,38 +3005,7 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
     _pCurFvfBufPtr = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_color_transform
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_color_transform(const ColorMatrixAttribute *attrib) {
-    _current_color_mat = attrib->get_matrix();
 
-    if (_current_color_mat == LMatrix4f::ident_mat()) {  // couldnt we a single ptr instead of doing full comparison
-        _color_transform_enabled = false;
-    } else {
-        _color_transform_enabled = true;
-    }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_alpha_transform
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-issue_alpha_transform(const AlphaTransformAttribute *attrib) {
-    _current_alpha_offset= attrib->get_offset();
-    _current_alpha_scale = attrib->get_scale();
-
-    if ((_current_alpha_offset == 0.0f) && (_current_alpha_scale == 1.0f)) {
-        _alpha_transform_enabled = false;
-    } else {
-        _alpha_transform_enabled = true;
-    }
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::prepare_texture
@@ -4091,8 +4041,6 @@ issue_tex_matrix(const TexMatrixAttribute *attrib) {
 #endif              // WBD_GL_MODE
 }
 
-#if 1
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::issue_color
 //       Access: Public, Virtual
@@ -4100,14 +4048,66 @@ issue_tex_matrix(const TexMatrixAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_color(const ColorAttribute *attrib) {
-    if (attrib->is_on()&& attrib->is_real()) {
-        _issued_color_enabled = true;
-        Colorf c = attrib->get_color();
-        _issued_color = Colorf_to_D3DCOLOR(c);
-    } else _issued_color_enabled = false;
+    
+    bool bAttribOn=attrib->is_on();
+    bool bIsReal = attrib->is_real();
+
+    _issued_color_enabled = bAttribOn;
+
+    // if an active unreal color is set, disable all color
+    _enable_all_color = !(bAttribOn && (!bIsReal));  
+
+    if(bAttribOn && bIsReal) {
+        _issued_color = attrib->get_color();
+        if(_color_transform_enabled || _alpha_transform_enabled) {
+            transform_color(_issued_color, _issued_color_D3DCOLOR);
+        } else {
+            _issued_color_D3DCOLOR = Colorf_to_D3DCOLOR(_issued_color);
+        }
+    }
 }
 
-#endif
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_color_transform
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_color_transform(const ColorMatrixAttribute *attrib) {
+    _current_color_mat = attrib->get_matrix();
+
+    // couldnt we compare a single ptr instead of doing full comparison?
+    // bugbug: the ColorMatrixAttribute needs to be an On/Off attribute 
+    // so we dont have to do this comparison
+    if (_current_color_mat == LMatrix4f::ident_mat()) { 
+        _color_transform_enabled = false;
+    } else {
+        _color_transform_enabled = true;
+        if(_issued_color_enabled) {
+             transform_color(_issued_color, _issued_color_D3DCOLOR);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::issue_alpha_transform
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+issue_alpha_transform(const AlphaTransformAttribute *attrib) {
+    _current_alpha_offset = attrib->get_offset();
+    _current_alpha_scale = attrib->get_scale();
+
+    if ((_current_alpha_offset == 0.0f) && (_current_alpha_scale == 1.0f)) {
+        _alpha_transform_enabled = false;
+    } else {
+        _alpha_transform_enabled = true;
+        if(_issued_color_enabled) {
+             transform_color(_issued_color, _issued_color_D3DCOLOR);
+        }
+    }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::issue_texture
@@ -4116,7 +4116,6 @@ issue_color(const ColorAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_texture(const TextureAttribute *attrib) {
-
     if (attrib->is_on()) {
         enable_texturing(true);
         Texture *tex = attrib->get_texture();
@@ -4784,7 +4783,7 @@ issue_linesmooth(const LinesmoothAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool DXGraphicsStateGuardian::
 wants_normals() const {
-    return(_lighting_enabled || _normals_enabled);
+    return (_lighting_enabled || _normals_enabled);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4795,30 +4794,6 @@ wants_normals() const {
 INLINE bool DXGraphicsStateGuardian::
 wants_texcoords() const {
     return _texturing_enabled;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::wants_colors
-//       Access: Public, Virtual
-//  Description: Returns true if the GSG should issue geometry color
-//               commands, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool DXGraphicsStateGuardian::
-wants_colors() const {
-    // If we have scene graph color enabled, return false to indicate we
-    // shouldn't bother issuing geometry color commands.
-
-    const ColorAttribute *catt;
-    if (!get_attribute_into(catt, _state, ColorTransition::get_class_type())) {
-        // No scene graph color at all.
-        return true;
-    }
-
-    // We should issue geometry colors only if the scene graph color is off.
-    if (catt->is_off() || (!catt->is_real()))
-        return true;
-
-    return false;
 }
 
 ////////////////////////////////////////////////////////////////////

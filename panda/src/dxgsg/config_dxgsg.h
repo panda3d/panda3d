@@ -24,24 +24,27 @@
 
 NotifyCategoryDecl(dxgsg, EXPCL_PANDADX, EXPTP_PANDADX);
 
-extern bool dx_show_transforms;
 extern bool dx_full_screen;
 extern bool dx_sync_video;
 extern bool dx_cull_traversal;
-extern bool dx_ignore_mipmaps;
-extern bool dx_force_16bpp_screenbuffers;
 extern bool dx_show_fps_meter;
 extern bool dx_no_vertex_fog;
 extern bool dx_full_screen_antialiasing;
 extern float dx_fps_meter_update_interval;
 
-// this is really a debug flag, but I need at Opt4 for perf-measurement
+// debug flags
+extern bool dx_ignore_mipmaps;
+extern bool dx_mipmap_everything;
+extern bool dx_force_16bpp_screenbuffers;
+extern bool dx_show_transforms;
+
+#ifndef NDEBUG
 extern int dx_force_backface_culling;
+#endif
 
 #ifdef _DEBUG
 extern float dx_global_miplevel_bias;
 extern bool dx_debug_view_mipmaps;
-extern bool dx_mipmap_everything;
 extern bool dx_force_16bpptextures;
 extern bool dx_force_anisotropic_filtering;
 #endif
