@@ -22,8 +22,8 @@
 #include "dtoolbase.h"
 
 #include "notifySeverity.h"
-
-#include <vector>
+#include "configVariableEnum.h"
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NotifyCategory
@@ -42,7 +42,7 @@ private:
 PUBLISHED:
   INLINE string get_fullname() const;
   INLINE string get_basename() const;
-  INLINE NotifySeverity get_severity() const;
+  NotifySeverity get_severity() const;
   INLINE void set_severity(NotifySeverity severity);
 
   INLINE bool is_on(NotifySeverity severity) const;
@@ -79,11 +79,13 @@ PUBLISHED:
   static void set_server_delta(time_t delta);
 
 private:
+  string get_config_name() const;
+
   string _fullname;
   string _basename;
   NotifyCategory *_parent;
-  NotifySeverity _severity;
-  typedef vector<NotifyCategory *> Children;
+  ConfigVariableEnum<NotifySeverity> _severity;
+  typedef pvector<NotifyCategory *> Children;
   Children _children;
 
   static time_t _server_delta;

@@ -50,11 +50,13 @@ PUBLISHED:
 
   void list_unused_variables() const;
   void list_variables() const;
-  void describe_variables() const;
+  void list_dynamic_variables() const;
 
   static ConfigVariableManager *get_global_ptr();
 
 private:
+  void list_variable(const ConfigVariableCore *variable) const;
+
   typedef pvector<ConfigVariableCore *> Variables;
   Variables _variables;
 

@@ -21,6 +21,7 @@
 #include "keyboardButton.cxx"
 #include "lineStream.cxx"
 #include "lineStreamBuf.cxx"
+#include "load_prc_file.cxx"
 #include "modifierButtons.cxx"
 #include "mouseButton.cxx"
 #include "mouseData.cxx"

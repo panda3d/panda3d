@@ -18,7 +18,7 @@
 
 #include "config_interrogatedb.h"
 #include "interrogate_request.h"
-
+#include "configVariableString.h"
 #include "dconfig.h"
 
 #if defined(WIN32_VC) && defined(_DEBUG)
@@ -69,14 +69,7 @@ ConfigureFn(config_interrogatedb) {
 #endif
 }
 
-DSearchPath &
-get_interrogatedb_path() {
-  static DSearchPath *interrogatedb_path = NULL;
-  if (interrogatedb_path == (DSearchPath *)NULL) {
-    interrogatedb_path = new DSearchPath(".");
-    interrogatedb_path->append_path
-      (config_interrogatedb.GetString("ETC_PATH", "."));
-  }
-  return *interrogatedb_path;
-}
+ConfigVariableSearchPath interrogatedb_path
+("interrogatedb-path", 0,
+ "The search path for interrogate's *.in files.");
 

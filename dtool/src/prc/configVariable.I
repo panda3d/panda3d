@@ -24,20 +24,35 @@
 //               specialized ConfigVariableFoo derived class.
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariable::
-ConfigVariable(const string &name, ConfigVariableCore::ValueType value_type) :
-  _core(ConfigVariableManager::get_global_ptr()->make_variable(name))
+ConfigVariable(const string &name, ConfigVariable::ValueType value_type) :
+  ConfigVariableBase(name, value_type)
 {
-  _core->set_value_type(value_type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariable::Constructor
+//       Access: Protected
+//  Description: This constructor is only intended to be called from a
+//               specialized ConfigVariableFoo derived class.
+////////////////////////////////////////////////////////////////////
+INLINE ConfigVariable::
+ConfigVariable(const string &name, ConfigVariable::ValueType value_type,
+               int flags, const string &description) :
+  ConfigVariableBase(name, value_type, flags, description)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariable::Constructor
 //       Access: Published
-//  Description: 
+//  Description: Use this constructor to make a ConfigVariable of an
+//               unspecified type.  Usually you'd want to do this just
+//               to reference a previously-defined ConfigVariable of a
+//               specific type, without having to know what type it is.
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariable::
 ConfigVariable(const string &name) :
-  _core(ConfigVariableManager::get_global_ptr()->make_variable(name))
+  ConfigVariableBase(name, VT_undefined)
 {
   _core->set_used();
 }
@@ -49,70 +64,6 @@ ConfigVariable(const string &name) :
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariable::
 ~ConfigVariable() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariable::get_name
-//       Access: Published
-//  Description: Returns the name of the variable.
-////////////////////////////////////////////////////////////////////
-INLINE const string &ConfigVariable::
-get_name() const {
-  return _core->get_name();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariable::get_value_type
-//       Access: Published
-//  Description: Returns the stated type of this variable.  If the
-//               variable has not yet been defined, this will be
-//               VT_undefined.
-////////////////////////////////////////////////////////////////////
-INLINE ConfigVariableCore::ValueType ConfigVariable::
-get_value_type() const {
-  return _core->get_value_type();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariable::get_trust_level
-//       Access: Published
-//  Description: Returns the minimum trust_level a prc file must
-//               demonstrate in order to redefine the value for this
-//               variable.  -1 indicates infinite trust: no prc file
-//               can redefine it.  Arguably, this should be called the
-//               "mistrust level", since the larger the value, the
-//               more suspicious we are of prc files.
-//
-//               This value only has effect in a release build.
-////////////////////////////////////////////////////////////////////
-INLINE int ConfigVariable::
-get_trust_level() const {
-  return _core->get_trust_level();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariable::get_description
-//       Access: Published
-//  Description: Returns the one-line description of this variable.
-//               If the variable has not yet been defined, this will
-//               be empty.
-////////////////////////////////////////////////////////////////////
-INLINE const string &ConfigVariable::
-get_description() const {
-  return _core->get_description();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariable::get_text
-//       Access: Published
-//  Description: Returns the paragraph help text describing the
-//               purpose of this variable in greater detail than
-//               get_description().  If the variable has not yet been
-//               defined, this will be empty.
-////////////////////////////////////////////////////////////////////
-INLINE const string &ConfigVariable::
-get_text() const {
-  return _core->get_text();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -150,33 +101,6 @@ get_string_value() const {
 INLINE void ConfigVariable::
 set_string_value(const string &string_value) {
   _core->make_local_value()->set_string_value(string_value);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariable::clear_local_value
-//       Access: Published
-//  Description: Removes the local value defined for this variable,
-//               and allows its value to be once again retrieved from
-//               the .prc files.
-//
-//               Returns true if the value was successfully removed,
-//               false if it did not exist in the first place.
-////////////////////////////////////////////////////////////////////
-INLINE bool ConfigVariable::
-clear_local_value() {
-  return _core->clear_local_value();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariable::has_local_value
-//       Access: Published
-//  Description: Returns true if this variable's value has been
-//               shadowed by a local assignment (as created via
-//               make_local_value()), or false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool ConfigVariable::
-has_local_value() const {
-  return _core->has_local_value();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -336,30 +260,4 @@ set_int_word(int n, int value) {
 INLINE void ConfigVariable::
 set_double_word(int n, double value) {
   _core->make_local_value()->set_double_word(n, value);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariable::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void ConfigVariable::
-output(ostream &out) const {
-  _core->output(out);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariable::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void ConfigVariable::
-write(ostream &out) const {
-  _core->write(out);
-}
-
-INLINE ostream &
-operator << (ostream &out, const ConfigVariable &variable) {
-  variable.output(out);
-  return out;
 }

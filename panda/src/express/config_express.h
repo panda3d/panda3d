@@ -27,9 +27,11 @@
 // We include these files to force them to be instrumented by
 // interrogate.
 #include "globPattern.h"
+#include "configFlags.h"
 #include "configPage.h"
 #include "configPageManager.h"
 #include "configVariable.h"
+#include "configVariableBase.h"
 #include "configVariableBool.h"
 #include "configVariableDouble.h"
 #include "configVariableInt.h"

@@ -23,6 +23,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyErr_Occurred(...);
   EXPCL_DTOOLCONFIG int PyErr_SetString(...);
   EXPCL_DTOOLCONFIG int PyExc_TypeError(...);
+  EXPCL_DTOOLCONFIG int PyDict_GetItem(...);
   EXPCL_DTOOLCONFIG int PyFloat_AsDouble(...);
   EXPCL_DTOOLCONFIG int PyFloat_FromDouble(...);
   EXPCL_DTOOLCONFIG int PyFloat_Type(...);
@@ -70,6 +71,7 @@ int PyArg_ParseTuple(...) { return 0; }
 int PyErr_Occurred(...) { return 0; }
 int PyErr_SetString(...) { return 0; }
 int PyExc_TypeError(...) { return 0; }
+int PyDict_GetItem(...) { return 0; }
 int PyFloat_AsDouble(...) { return 0; }
 int PyFloat_FromDouble(...) { return 0; }
 int PyFloat_Type(...) { return 0; }

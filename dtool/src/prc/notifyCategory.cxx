@@ -41,54 +41,41 @@ NotifyCategory(const string &fullname, const string &basename,
                NotifyCategory *parent) :
   _fullname(fullname),
   _basename(basename),
-  _parent(parent)
+  _parent(parent),
+  _severity(get_config_name(), Notify::string_severity, NS_unspecified,
+            ConfigVariable::F_dynamic)
 {
   if (_parent != (NotifyCategory *)NULL) {
     _parent->_children.push_back(this);
   }
 
-  _severity = NS_unspecified;
-
-  // See if there's a config option to set the severity level for this
-  // Category.
-
-  string config_name;
-
-  if (_fullname.empty()) {
-    config_name = "notify-level";
-  } else if (!_basename.empty()) {
-    config_name = "notify-level-" + _basename;
-  }
-
-  if (!config_name.empty()) {
-    ConfigVariableString severity_name
-      (config_name, "", 0,
-       "Indicates the verbosity level of notify messages for the given category.");
-    if (!severity_name.empty()) {
-      // The user specified a particular severity for this category at
-      // config time.  Use it.
-      _severity = Notify::string_severity(severity_name);
-      
-      if (_severity == NS_unspecified) {
-        nout << "Invalid severity name for " << config_name << ": "
-             << severity_name << "\n";
-      }
-    }
-  }
-
-  if (_severity == NS_unspecified) {
-    // If we didn't get an explicit severity level, inherit our
-    // parent's.
-    if (_parent != (NotifyCategory *)NULL) {
-      _severity = _parent->_severity;
-    } else {
-      // Unless, of course, we're the root.
-      _severity = NS_info;
-    }
-  }
-
   // Only the unnamed top category is allowed not to have a parent.
   nassertv(_parent != (NotifyCategory *)NULL || _fullname.empty());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NotifyCategory::get_severity
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+NotifySeverity NotifyCategory::
+get_severity() const {
+  if (_severity == NS_unspecified) {
+    // If we don't have an explicit severity level, inherit our
+    // parent's.
+    if (_severity.has_value()) {
+      nout << "Invalid severity name for " << _severity.get_name() << ": "
+           << _severity.get_string_value() << "\n";
+    }
+    if (_parent != (NotifyCategory *)NULL) {
+      return _parent->get_severity();
+
+    } else {
+      // Unless, of course, we're the root.
+      return NS_info;
+    }
+  }
+  return _severity;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,4 +149,23 @@ get_child(int i) const {
 void NotifyCategory::
 set_server_delta(time_t delta) {
   _server_delta = delta;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NotifyCategory::get_config_name
+//       Access: Private
+//  Description: Returns the name of the config variable that controls
+//               this category.  This is called at construction time.
+////////////////////////////////////////////////////////////////////
+string NotifyCategory::
+get_config_name() const {
+  string config_name;
+
+  if (_fullname.empty()) {
+    config_name = "notify-level";
+  } else if (!_basename.empty()) {
+    config_name = "notify-level-" + _basename;
+  }
+
+  return config_name;
 }

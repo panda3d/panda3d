@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "notify.h"
+#include "notifyCategory.h"
 #include "configPageManager.h"
 #include "configVariableString.h"
 #include "configVariableBool.h"
@@ -539,7 +540,7 @@ config_initialized() {
         set_ostream_ptr(&cerr, false);
 
       } else {
-        Filename filename = notify_output.get_value();
+        Filename filename = notify_output;
         filename.set_text();
         ofstream *out = new ofstream;
         if (!filename.open_write(*out)) {

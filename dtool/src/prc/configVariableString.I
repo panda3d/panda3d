@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableString::
 ConfigVariableString(const string &name) :
-  ConfigVariable(name, ConfigVariableCore::VT_string)
+  ConfigVariable(name, VT_string)
 {
   _core->set_used();
 }
@@ -35,10 +35,9 @@ ConfigVariableString(const string &name) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableString::
-ConfigVariableString(const string &name, string default_value, int trust_level,
-                     const string &description, const string &text) :
-  ConfigVariable(name, ConfigVariableCore::VT_string, trust_level, 
-                 description, text)
+ConfigVariableString(const string &name, string default_value, int flags,
+                     const string &description) :
+  ConfigVariable(name, VT_string, flags, description)
 {
   _core->set_default_value(default_value);
   _core->set_used();
@@ -55,12 +54,25 @@ operator = (const string &value) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableString::typecast operator
+//     Function: ConfigVariableString::string typecast operator
 //       Access: Published
 //  Description: Returns the variable's value.
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableString::
 operator string () const {
+  return get_value();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableString::Filename typecast operator
+//       Access: Published
+//  Description: Returns the variable's value.  This typecast operator
+//               is a convenience in case you happen to want to assign
+//               a ConfigVariableString into a Filename; C++ won't
+//               make the implicit typecast for you.
+////////////////////////////////////////////////////////////////////
+INLINE ConfigVariableString::
+operator Filename () const {
   return get_value();
 }
 

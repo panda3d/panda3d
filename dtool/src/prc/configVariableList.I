@@ -27,70 +27,6 @@ INLINE ConfigVariableList::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableList::get_name
-//       Access: Published
-//  Description: Returns the name of the variable.
-////////////////////////////////////////////////////////////////////
-INLINE const string &ConfigVariableList::
-get_name() const {
-  return _core->get_name();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableList::get_value_type
-//       Access: Published
-//  Description: Returns the stated type of this variable.  This
-//               should be VT_list, unless a later variable
-//               declaration has changed it.
-////////////////////////////////////////////////////////////////////
-INLINE ConfigVariableCore::ValueType ConfigVariableList::
-get_value_type() const {
-  return _core->get_value_type();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableList::get_trust_level
-//       Access: Published
-//  Description: Returns the minimum trust_level a prc file must
-//               demonstrate in order to redefine the value for this
-//               variable.  -1 indicates infinite trust: no prc file
-//               can redefine it.  Arguably, this should be called the
-//               "mistrust level", since the larger the value, the
-//               more suspicious we are of prc files.
-//
-//               This value only has effect in a release build.
-////////////////////////////////////////////////////////////////////
-INLINE int ConfigVariableList::
-get_trust_level() const {
-  return _core->get_trust_level();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableList::get_description
-//       Access: Published
-//  Description: Returns the one-line description of this variable.
-//               If the variable has not yet been defined, this will
-//               be empty.
-////////////////////////////////////////////////////////////////////
-INLINE const string &ConfigVariableList::
-get_description() const {
-  return _core->get_description();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableList::get_text
-//       Access: Published
-//  Description: Returns the paragraph help text describing the
-//               purpose of this variable in greater detail than
-//               get_description().  If the variable has not yet been
-//               defined, this will be empty.
-////////////////////////////////////////////////////////////////////
-INLINE const string &ConfigVariableList::
-get_text() const {
-  return _core->get_text();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableList::get_num_values
 //       Access: Published
 //  Description: Returns the number of values in the variable.
@@ -159,30 +95,4 @@ size() const {
 INLINE string ConfigVariableList::
 operator [] (int n) const {
   return get_unique_value(n);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableList::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void ConfigVariableList::
-output(ostream &out) const {
-  _core->output(out);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableList::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void ConfigVariableList::
-write(ostream &out) const {
-  _core->write(out);
-}
-
-INLINE ostream &
-operator << (ostream &out, const ConfigVariableList &variable) {
-  variable.output(out);
-  return out;
 }

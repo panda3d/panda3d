@@ -24,10 +24,9 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 ConfigVariableDouble::
-ConfigVariableDouble(const string &name, double default_value, int trust_level,
-                     const string &description, const string &text) :
-  ConfigVariable(name, ConfigVariableCore::VT_double, trust_level, 
-                 description, text)
+ConfigVariableDouble(const string &name, double default_value, int flags,
+                     const string &description) :
+  ConfigVariable(name, ConfigVariableCore::VT_double, flags, description)
 {
   ostringstream strm;
   strm << default_value;

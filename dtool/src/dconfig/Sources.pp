@@ -9,7 +9,7 @@
     configTable.I configTable.h \
     config_dconfig.h config_setup.h \
     dconfig.I dconfig.h \
-    serialization.I serialization.h  \
+    serialization.I serialization.h \
     symbolEnt.I  symbolEnt.h
     
  #define INCLUDED_SOURCES \
@@ -19,8 +19,8 @@
   #define INSTALL_HEADERS                                               \
     configTable.I configTable.h config_dconfig.h config_setup.h         \
     dconfig.I dconfig.h \
-    serialization.I serialization.h symbolEnt.I        \
-    symbolEnt.h
+    serialization.I serialization.h \
+    symbolEnt.I symbolEnt.h
 
 #end lib_target
 
@@ -45,11 +45,5 @@
 #begin test_bin_target
   #define TARGET test_searchpath
   #define SOURCES test_searchpath.cxx
-  #define LOCAL_LIBS dconfig $[LOCAL_LIBS]
-#end test_bin_target
-
-#begin test_bin_target
-  #define TARGET test_serialization
-  #define SOURCES test_serialization.cxx
   #define LOCAL_LIBS dconfig $[LOCAL_LIBS]
 #end test_bin_target

@@ -21,12 +21,13 @@
 
 #include "dtoolbase.h"
 
-#include "notifyCategory.h"
 #include "notifySeverity.h"
 
 #include <string>
 #include <vector>
 #include <map>
+
+class NotifyCategory;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Notify

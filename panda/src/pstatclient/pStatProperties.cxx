@@ -20,6 +20,10 @@
 #include "pStatCollectorDef.h"
 #include "pStatClient.h"
 #include "config_pstats.h"
+#include "configVariableBool.h"
+#include "configVariableDouble.h"
+#include "configVariableInt.h"
+#include "configVariableString.h"
 
 #include <ctype.h>
 
@@ -268,44 +272,35 @@ initialize_collector_def(PStatClient *client, PStatCollectorDef *def) {
     }
   }
 
-  if (!config_pstats.GetString("pstats-active-" + config_name, "").empty()) {
-    def->_is_active =
-      config_pstats.GetBool("pstats-active-" + config_name, true);
+  ConfigVariableBool pstats_active
+    ("pstats-active-" + config_name, true, ConfigVariable::F_dynamic);
+  ConfigVariableInt pstats_sort
+    ("pstats-sort-" + config_name, def->_sort, ConfigVariable::F_dynamic);
+  ConfigVariableDouble pstats_scale
+    ("pstats-scale-" + config_name, def->_suggested_scale, ConfigVariable::F_dynamic);
+  ConfigVariableString pstats_units
+    ("pstats-units-" + config_name, def->_level_units, ConfigVariable::F_dynamic);
+  ConfigVariableDouble pstats_factor
+    ("pstats-factor-" + config_name, 1.0, ConfigVariable::F_dynamic);
+  ConfigVariableDouble pstats_color
+    ("pstats-color-" + config_name, 0.0, ConfigVariable::F_dynamic);
+  
+  if (pstats_active.has_value()) {
+    def->_is_active = pstats_active;
     def->_active_explicitly_set = true;
   }
 
-  def->_sort =
-    config_pstats.GetInt("pstats-sort-" + config_name, def->_sort);
-  def->_suggested_scale =
-    config_pstats.GetFloat("pstats-scale-" + config_name, def->_suggested_scale);
-  def->_level_units =
-    config_pstats.GetString("pstats-units-" + config_name, def->_level_units);
-  def->_level_units =
-    config_pstats.GetString("pstats-units-" + config_name, def->_level_units);
-  if (!config_pstats.GetString("pstats-factor-" + config_name, "").empty()) {
-    def->_factor =
-      1.0/config_pstats.GetFloat("pstats-factor-" + config_name, 1.0);
+  def->_sort = pstats_sort;
+  def->_suggested_scale = pstats_scale;
+  def->_level_units = pstats_units;
+  if (pstats_factor.has_value()) {
+    def->_factor = pstats_factor;
   }
 
-  // Get and decode the color string.  We allow any three
-  // floating-point numbers, with any kind of non-digit characters
-  // between them.
-  string color_str =
-    config_pstats.GetString("pstats-color-" + config_name, "");
-  if (!color_str.empty()) {
-    const char *cstr = color_str.c_str();
-    const char *p = cstr;
-
-    int i = 0;
-    while (i < 3 && *p != '\0') {
-      while (*p != '\0' && !(isdigit(*p) || *p == '.')) {
-        p++;
-      }
-      char *q;
-      def->_suggested_color[i] = strtod(p, &q);
-      p = q;
-      i++;
-    }
+  if (pstats_color.has_value()) {
+    def->_suggested_color[0] = pstats_color[0];
+    def->_suggested_color[1] = pstats_color[1];
+    def->_suggested_color[2] = pstats_color[2];
   }
 }
 

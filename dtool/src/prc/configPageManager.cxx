@@ -245,8 +245,16 @@ reload_implicit_pages() {
     if ((file._file_flags & FF_execute) != 0 &&
         filename.is_executable()) {
       // Attempt to execute the file as a command.
-      string args = ExecutionEnvironment::get_environment_variable(PRC_EXECUTABLE_ARGS_ENVVAR);
-      string command = filename.to_os_specific() + " " + args;
+      string command = filename.to_os_specific();
+
+      string envvar = PRC_EXECUTABLE_ARGS_ENVVAR;
+      if (!envvar.empty()) {
+        string args = ExecutionEnvironment::get_environment_variable(envvar);
+        if (!args.empty()) {
+          command += " ";
+          command += args;
+        }
+      }
       IPipeStream ifs(command);
 
       ConfigPage *page = new ConfigPage(filename, true, i);

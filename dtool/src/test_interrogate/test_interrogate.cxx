@@ -26,7 +26,7 @@
 
 #include <stdlib.h>
 
-#ifndef HAVE_GETOPT_LONG_ONLY
+#ifndef HAVE_GETOPT
   #include "gnu_getopt.h"
 #else
   #ifdef HAVE_GETOPT_H
@@ -463,6 +463,8 @@ usage() {
     "files), and will not have any function pointers available.\n\n"
 
     "Options:\n\n"
+    "  -p [path]\n"
+    "      Specify the search path for *.in files.  This option may be repeated.\n"
     "  -f  Give a detailed report of each function in the database, including\n"
     "      synthesized functions like upcasts and downcasts.\n"
     "  -t  Give a detailed report of every type in the database, including types\n"
@@ -473,9 +475,9 @@ usage() {
 
 int
 main(int argc, char *argv[]) {
-  //  extern char *optarg;
+  extern char *optarg;
   extern int optind;
-  const char *optstr = "ftqh";
+  const char *optstr = "p:ftqh";
 
   bool all_functions = false;
   bool all_types = false;
@@ -484,6 +486,10 @@ main(int argc, char *argv[]) {
 
   while (flag != EOF) {
     switch (flag) {
+    case 'p':
+      interrogate_add_search_path(optarg);
+      break;
+
     case 'f':
       all_functions = true;
       break;

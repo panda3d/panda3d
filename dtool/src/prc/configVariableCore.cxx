@@ -37,11 +37,12 @@ ConfigVariableCore(const string &name) :
   _name(name),
   _is_used(false),
   _value_type(VT_undefined),
-  _trust_level(0),
+  _flags(0),
   _default_value(NULL),
   _local_value(NULL),
   _declarations_sorted(true),
-  _value_queried(false)
+  _value_queried(false),
+  _value_seq(0)
 {
 }
 
@@ -87,23 +88,23 @@ set_value_type(ConfigVariableCore::ValueType value_type) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::set_trust_level
+//     Function: ConfigVariableCore::set_flags
 //       Access: Public
 //  Description: Specifies the trust level of this variable.  See
-//               get_trust_level().  It is not an error to call this
+//               get_flags().  It is not an error to call this
 //               multiple times, but if the value changes once
 //               get_declaration() has been called, a warning is printed.
 ////////////////////////////////////////////////////////////////////
 void ConfigVariableCore::
-set_trust_level(int trust_level) {
-  if (_value_queried && _trust_level != trust_level) {
+set_flags(int flags) {
+  if (_value_queried && _flags != flags) {
     prc_cat->warning()
       << "changing trust level for ConfigVariable " 
-      << get_name() << " from " << _trust_level << " to " 
-      << trust_level << ".\n";
+      << get_name() << " from " << _flags << " to " 
+      << flags << ".\n";
   }
 
-  _trust_level = trust_level;
+  _flags = flags;
 
   // Changing the trust level will require re-sorting the
   // declarations.
@@ -134,25 +135,6 @@ set_description(const string &description) {
   }
 
   _description = description;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::set_text
-//       Access: Public
-//  Description: Specifies the long text description of this variable.
-//               See get_text().  It is not an error to call
-//               this multiple times, but if the value changes once
-//               get_declaration() has been called, a warning is printed.
-////////////////////////////////////////////////////////////////////
-void ConfigVariableCore::
-set_text(const string &text) {
-  if (_value_queried && _text != text) {
-    prc_cat->warning()
-      << "changing text for ConfigVariable " 
-      << get_name() << ".\n";
-  }
-
-  _text = text;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -208,7 +190,19 @@ make_local_value() {
     ConfigPage *local_page = ConfigPage::get_local_page();
     string string_value = get_declaration(0)->get_string_value();
     _local_value = local_page->make_declaration(this, string_value);
+
+    if (is_closed()) {
+      prc_cat.warning()
+        << "Assigning a local value to a \"closed\" ConfigVariable.  "
+        "This is legal in a development build, but illegal in a release "
+        "build and may result in a compilation error or exception.\n";
+    }
   }
+
+  // Assume that everytime someone asks for the local value, they're
+  // about to change it; further assume that no one changes the local
+  // value without calling this method immediately before.
+  _value_seq++;
 
   return _local_value;
 }
@@ -228,10 +222,27 @@ clear_local_value() {
   if (_local_value != (ConfigDeclaration *)NULL) {
     ConfigPage::get_local_page()->delete_declaration(_local_value);
     _local_value = NULL;
+    _value_seq++;
     return true;
   }
 
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableCore::has_value
+//       Access: Public
+//  Description: Returns true if this variable has an explicit value,
+//               either from a prc file or locally set, or false if
+//               variable has its default value.
+////////////////////////////////////////////////////////////////////
+bool ConfigVariableCore::
+has_value() const {
+  if (has_local_value()) {
+    return true;
+  }
+  check_sort_declarations();
+  return (!_trusted_declarations.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -343,6 +354,10 @@ add_declaration(ConfigDeclaration *decl) {
   _declarations.push_back(decl);
 
   _declarations_sorted = false;
+
+  if (!has_local_value()) {
+    _value_seq++;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -365,6 +380,9 @@ remove_declaration(ConfigDeclaration *decl) {
       (*di) = (*di2);
       _declarations.erase(di2);
       _declarations_sorted = false;
+      if (!has_local_value()) {
+        _value_seq++;
+      }
       return;
     }
   }
@@ -402,7 +420,7 @@ sort_declarations() {
   _untrusted_declarations.clear();
   for (di = _declarations.begin(); di != _declarations.end(); ++di) {
     const ConfigDeclaration *decl = (*di);
-    if (get_trust_level() >= 0 && 
+    if (!is_closed() &&
         get_trust_level() <= decl->get_page()->get_trust_level()) {
       _trusted_declarations.push_back(decl);
     } else {
@@ -435,33 +453,4 @@ sort_declarations() {
   }
 
   _declarations_sorted = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::Type output operator
-//  Description: 
-////////////////////////////////////////////////////////////////////
-ostream &
-operator << (ostream &out, ConfigVariableCore::ValueType type) {
-  switch (type) {
-  case ConfigVariableCore::VT_undefined:
-    return out << "undefined";
-
-  case ConfigVariableCore::VT_list:
-    return out << "list";
-
-  case ConfigVariableCore::VT_string:
-    return out << "string";
-
-  case ConfigVariableCore::VT_bool:
-    return out << "bool";
-
-  case ConfigVariableCore::VT_int:
-    return out << "int";
-
-  case ConfigVariableCore::VT_double:
-    return out << "double";
-  }
-
-  return out << "**invalid(" << (int)type << ")**";
 }

@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableDouble::
 ConfigVariableDouble(const string &name) :
-  ConfigVariable(name, ConfigVariableCore::VT_double)
+  ConfigVariable(name, VT_double)
 {
   _core->set_used();
 }

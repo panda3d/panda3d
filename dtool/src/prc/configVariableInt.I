@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableInt::
 ConfigVariableInt(const string &name) :
-  ConfigVariable(name, ConfigVariableCore::VT_int)
+  ConfigVariable(name, VT_int)
 {
   _core->set_used();
 }

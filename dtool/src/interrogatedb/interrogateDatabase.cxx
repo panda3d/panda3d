@@ -892,7 +892,7 @@ read(istream &in, InterrogateModuleDef *def) {
 ////////////////////////////////////////////////////////////////////
 void InterrogateDatabase::
 load_latest() {
-  const DSearchPath &searchpath = get_interrogatedb_path();
+  const DSearchPath &searchpath = interrogatedb_path;
 
   Requests copy_requests;
   copy_requests.swap(_requests);

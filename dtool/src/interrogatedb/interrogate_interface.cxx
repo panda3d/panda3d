@@ -27,7 +27,15 @@
 // passed in by the code generator.
 void 
 interrogate_add_search_directory(const char *dirname) {
-  get_interrogatedb_path().append_directory(Filename::from_os_specific(dirname));
+  interrogatedb_path.append_directory(Filename::from_os_specific(dirname));
+}
+
+// This function works similar to the above, but adds a complete path
+// string--a list of multiple directories, separated by the standard
+// delimiter--to the search path.
+void 
+interrogate_add_search_path(const char *pathstring) {
+  interrogatedb_path.append_path(pathstring);
 }
 
 bool interrogate_error_flag() {

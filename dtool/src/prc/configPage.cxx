@@ -116,6 +116,11 @@ clear() {
 //               returned by the indicated istream, into the current
 //               page file.  Returns true on success, or false on some
 //               I/O error.
+//
+//               This is a low-level interface.  Normally you do not
+//               need to call it directly.  See the global functions
+//               load_prc_file() and unload_prc_file(), defined in
+//               panda/src/putil, for a higher-level interface.
 ////////////////////////////////////////////////////////////////////
 bool ConfigPage::
 read_prc(istream &in) {

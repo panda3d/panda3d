@@ -17,27 +17,3 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "configVariable.h"
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariable::Constructor
-//       Access: Protected
-//  Description: This constructor is only intended to be called from a
-//               specialized ConfigVariableFoo derived class.
-////////////////////////////////////////////////////////////////////
-ConfigVariable::
-ConfigVariable(const string &name, ConfigVariableCore::ValueType value_type,
-               int trust_level, const string &description, 
-               const string &text) :
-  _core(ConfigVariableManager::get_global_ptr()->make_variable(name))
-{
-  _core->set_value_type(value_type);
-  if (trust_level > -2) {
-    _core->set_trust_level(trust_level);
-  }
-  if (!description.empty()) {
-    _core->set_description(description);
-  }
-  if (!text.empty()) {
-    _core->set_text(text);
-  }
-}

@@ -8,9 +8,11 @@ forcetype NotifySeverity
 forcetype ConfigExpress
 renametype ConfigExpress ConfigExpress
 
+forcetype ConfigFlags
 forcetype ConfigPage
 forcetype ConfigPageManager
 forcetype ConfigVariable
+forcetype ConfigVariableBase
 forcetype ConfigVariableBool
 forcetype ConfigVariableDouble
 forcetype ConfigVariableInt

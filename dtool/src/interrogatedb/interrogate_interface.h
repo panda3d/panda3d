@@ -91,6 +91,7 @@ enum AtomicToken {
 };
 
 EXPCL_DTOOLCONFIG void interrogate_add_search_directory(const char *dirname);
+EXPCL_DTOOLCONFIG void interrogate_add_search_path(const char *pathstring);
 EXPCL_DTOOLCONFIG bool interrogate_error_flag();
 
 //////////////////////////////////////////////////////////////////////////

@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableBool::
 ConfigVariableBool(const string &name) :
-  ConfigVariable(name, ConfigVariableCore::VT_bool)
+  ConfigVariable(name, VT_bool)
 {
   _core->set_used();
 }
@@ -35,10 +35,9 @@ ConfigVariableBool(const string &name) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableBool::
-ConfigVariableBool(const string &name, bool default_value, int trust_level,
-                   const string &description, const string &text) :
-  ConfigVariable(name, ConfigVariableCore::VT_bool, trust_level, 
-                 description, text)
+ConfigVariableBool(const string &name, bool default_value, int flags,
+                   const string &description) :
+  ConfigVariable(name, VT_bool, flags, description)
 {
   _core->set_default_value(default_value ? "1" : "0");
   _core->set_used();

@@ -1,5 +1,5 @@
-// Filename: configVariableList.cxx
-// Created by:  drose (20Oct04)
+// Filename: configVariableBase.cxx
+// Created by:  drose (21Oct04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,23 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "configVariableList.h"
+#include "configVariableBase.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableList::Constructor
-//       Access: Published
-//  Description: 
+//     Function: ConfigVariableBase::Constructor
+//       Access: Protected
+//  Description: This constructor is only intended to be called from a
+//               specialized ConfigVariableFoo derived class.
 ////////////////////////////////////////////////////////////////////
-ConfigVariableList::
-ConfigVariableList(const string &name, 
+ConfigVariableBase::
+ConfigVariableBase(const string &name, 
+                   ConfigVariableBase::ValueType value_type,
                    int flags, const string &description) :
-  ConfigVariableBase(name, VT_list, flags, description)
+  _core(ConfigVariableManager::get_global_ptr()->make_variable(name))
 {
-  // A list variable implicitly defines a default value of the empty
-  // string.  This is just to prevent the core variable from
-  // complaining should anyone ask for its solitary value.
-  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
-    _core->set_default_value("");
+  _core->set_value_type(value_type);
+  if (flags != 0) {
+    _core->set_flags(flags);
   }
-  _core->set_used();
+  if (!description.empty()) {
+    _core->set_description(description);
+  }
 }

@@ -1,5 +1,5 @@
-// Filename: configVariableList.cxx
-// Created by:  drose (20Oct04)
+// Filename: configFlags.cxx
+// Created by:  drose (21Oct04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,23 +16,39 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "configVariableList.h"
+#include "configFlags.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableList::Constructor
-//       Access: Published
+//     Function: ConfigFlags::Type output operator
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-ConfigVariableList::
-ConfigVariableList(const string &name, 
-                   int flags, const string &description) :
-  ConfigVariableBase(name, VT_list, flags, description)
-{
-  // A list variable implicitly defines a default value of the empty
-  // string.  This is just to prevent the core variable from
-  // complaining should anyone ask for its solitary value.
-  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
-    _core->set_default_value("");
+ostream &
+operator << (ostream &out, ConfigFlags::ValueType type) {
+  switch (type) {
+  case ConfigFlags::VT_undefined:
+    return out << "undefined";
+
+  case ConfigFlags::VT_list:
+    return out << "list";
+
+  case ConfigFlags::VT_string:
+    return out << "string";
+
+  case ConfigFlags::VT_bool:
+    return out << "bool";
+
+  case ConfigFlags::VT_int:
+    return out << "int";
+
+  case ConfigFlags::VT_double:
+    return out << "double";
+
+  case ConfigFlags::VT_enum:
+    return out << "enum";
+
+  case ConfigFlags::VT_search_path:
+    return out << "search-path";
   }
-  _core->set_used();
+
+  return out << "**invalid(" << (int)type << ")**";
 }

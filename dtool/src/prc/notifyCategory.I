@@ -38,16 +38,6 @@ get_basename() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NotifyCategory::get_severity
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE NotifySeverity NotifyCategory::
-get_severity() const {
-  return _severity;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::set_severity
 //       Access: Public
 //  Description: Sets the severity level of messages that will be
@@ -67,7 +57,7 @@ set_severity(NotifySeverity severity) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool NotifyCategory::
 is_on(NotifySeverity severity) const {
-  return (int)severity >= (int)_severity;
+  return (int)severity >= (int)get_severity();
 }
 
 #if defined(NOTIFY_DEBUG) || defined(CPPPARSER)

@@ -100,10 +100,7 @@ void Config<GetConfig>::ConfigFunc() {
 
 template<class GetConfig>
 bool Config<GetConfig>::AmInitializing() {
-   ConfigTable* tab = ConfigTable::Instance();
-   if (tab == (ConfigTable *)0L)
-      return Flag();
-   return tab->AmInitializing();
+  return false;
 }
 
 template<class GetConfig>
@@ -125,38 +122,10 @@ template<class GetConfig>
 void Config<GetConfig>::Init() {
    if (Flag())
       return;
-   total_time_config_init -= clock();
+
    Flag(true);
-   ConfigTable* tab = ConfigTable::Instance();
 
-   if (Defined("notify-level-config")) {
-      ConfigString s = Get("notify-level-config");
-      NotifySeverity sev = Notify::string_severity(s);
-      if (sev != NS_unspecified) {
-         microconfig_cat->set_severity(sev);
-         dconfig_cat->set_severity(sev);
-      } else {
-         microconfig_cat->set_severity(NS_info);
-         dconfig_cat->set_severity(NS_info);
-      }
-   } else {
-      if(!tab->IsConfigDbg()) {
-          microconfig_cat->set_severity(NS_info);
-          dconfig_cat->set_severity(NS_info);
-      }
-   }
-
-   total_time_config_init += clock();
-   total_time_external_init -= clock();
-
-   if (dconfig_cat->is_spam())
-      dconfig_cat->spam() << "calling ConfigFunc for '" << Name() << "'"
-                         << endl;
    ConfigFunc();
-   if (dconfig_cat->is_spam())
-      dconfig_cat->spam() << "back from ConfigFunc for '" << Name() << "'"
-                         << endl;
-   total_time_external_init += clock();
 }
 
 template<class GetConfig>
@@ -172,14 +141,7 @@ template<class GetConfig>
 bool Config<GetConfig>::Defined(const ConfigString& sym)
 {
    Init();
-   ConfigTable* tab = ConfigTable::Instance();
-   if (tab->Defined(sym, Name()))
-      return true;
-   else if (tab->Defined(sym, ExecutionEnvironment::get_binary_name()))
-      return true;
-   else if (tab->Defined(sym))
-      return true;
-   return false;
+   return true;
 }
 
 template<class GetConfig>

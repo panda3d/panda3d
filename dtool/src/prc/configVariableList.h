@@ -20,10 +20,7 @@
 #define CONFIGVARIABLELIST_H
 
 #include "dtoolbase.h"
-#include "configVariableCore.h"
-#include "configDeclaration.h"
-#include "configVariableManager.h"
-#include "vector_string.h"
+#include "configVariableBase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ConfigVariableList
@@ -39,19 +36,11 @@
 //
 //               A ConfigVariableList cannot be modified locally.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG ConfigVariableList {
+class EXPCL_DTOOLCONFIG ConfigVariableList : public ConfigVariableBase {
 PUBLISHED:
-  ConfigVariableList(const string &name, int trust_level = -2,
-                     const string &description = string(),
-                     const string &text = string());
+  ConfigVariableList(const string &name, int flags = 0,
+                     const string &description = string());
   INLINE ~ConfigVariableList();
-
-  INLINE const string &get_name() const;
-
-  INLINE ConfigVariableCore::ValueType get_value_type() const;
-  INLINE int get_trust_level() const;
-  INLINE const string &get_description() const;
-  INLINE const string &get_text() const;
 
   INLINE int get_num_values() const;
   INLINE string get_string_value(int n) const;
@@ -61,16 +50,7 @@ PUBLISHED:
 
   INLINE int size() const;
   INLINE string operator [] (int n) const;
-  
-  INLINE void output(ostream &out) const;
-  INLINE void write(ostream &out) const;
-
-protected:
-  ConfigVariableCore *_core;
-  vector_string _unique_values;
 };
-
-INLINE ostream &operator << (ostream &out, const ConfigVariableList &variable);
 
 #include "configVariableList.I"
 

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "prcKeyRegistry.h"
+#include "config_prc.h"
 
 // This file requires OpenSSL to compile, because we use routines in
 // the OpenSSL library to manage keys and to sign and validate
@@ -45,7 +46,8 @@ PrcKeyRegistry() {
 ////////////////////////////////////////////////////////////////////
 PrcKeyRegistry::
 ~PrcKeyRegistry() {
-  cerr << "Internal error--PrcKeyRegistry destructor called!\n";
+  prc_cat.error()
+    << "Internal error--PrcKeyRegistry destructor called!\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,9 +136,7 @@ get_num_keys() const {
 ////////////////////////////////////////////////////////////////////
 EVP_PKEY *PrcKeyRegistry::
 get_key(int n) const {
-  if (n < 0 || n >= (int)_keys.size()) {
-    return NULL;
-  }
+  nassertr(n >= 0 && n < (int)_keys.size(), NULL);
 
   if (_keys[n]._def != (KeyDef *)NULL) {
     if (_keys[n]._pkey == (EVP_PKEY *)NULL) {
@@ -165,9 +165,7 @@ get_key(int n) const {
 ////////////////////////////////////////////////////////////////////
 time_t PrcKeyRegistry::
 get_generated_time(int n) const {
-  if (n < 0 || n >= (int)_keys.size()) {
-    return 0;
-  }
+  nassertr(n >= 0 && n < (int)_keys.size(), 0);
 
   return _keys[n]._generated_time;
 }

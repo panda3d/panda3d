@@ -21,85 +21,14 @@
 
 #include "dtoolbase.h"
 
-#include "config_setup.h"
-#include "config_dconfig.h"
 #include "symbolEnt.h"
-#include "globPattern.h"
-
-#include "pvector.h"
-#include "pmap.h"
 
 namespace Config {
 
 class EXPCL_DTOOLCONFIG ConfigTable {
-private:
-  static ConfigTable* _instance;
-
 public:
   typedef SymbolEnt           SymEnt;
   typedef vector_SymbolEnt    Symbol;
-
-private:
-  typedef phash_map<ConfigString, Symbol, sequence_hash<ConfigString> >      SymbolTable;
-  typedef phash_map<ConfigString, SymbolTable, sequence_hash<ConfigString> > TableMap;
-  typedef pvector<GlobPattern> Globs;
-
-  SymbolTable unqualified;
-  TableMap qualified;
-  bool _initializing;
-  bool configexe;
-  bool configdbg;
-  bool readargs;
-  bool readenvs;
-  ConfigString pathsep;
-  ConfigString filesep;
-  Globs configname;
-  ConfigString configargs;
-  ConfigString configpath;
-  ConfigString configdir;
-  ConfigString configcmt;
-  ConfigString argsuffix;
-  ConfigString commandstub;
-
-  static void CropString(ConfigString& S);
-  void DeComment(ConfigString& S);
-  bool IsComment(const ConfigString&);
-  static void UpCase(ConfigString&);
-  ConfigString NextWord(const ConfigString& S);
-  ConfigString PopNextWord(ConfigString& S);
-  void ParseConfigFile(istream&, const ConfigString&);
-  void ReadConfigFile();
-  void ParseCommandEnv(ConfigString&, const ConfigString&);
-  void ParseArgs();
-  INLINE void ConfigDbgDefault();
-  INLINE void ConfigExeDefault();
-  INLINE void ReadArgsDefault();
-  INLINE void ReadEnvsDefault();
-  INLINE void PathSepDefault();
-  INLINE void FileSepDefault();
-  INLINE void ConfigNameDefault();
-  INLINE void ConfigArgsDefault();
-  INLINE void ConfigPathDefault();
-  void ConfigDirDefault();
-  INLINE void ConfigCmtDefault();
-  INLINE void ArgSuffixDefault();
-  INLINE void CommandStubDefault();
-  void MicroConfig();
-  void GetData();
-
-protected:
-  ConfigTable() : _initializing(true) {}
-
-public:
-  static ConfigTable* Instance();
-  bool AmInitializing();
-  static bool TrueOrFalse(const ConfigString& in, bool def = false);
-  bool Defined(const ConfigString& sym, const ConfigString qual="");
-  SymEnt Get(const ConfigString& sym, const ConfigString qual = "");
-  const Symbol& GetSym(const ConfigString& sym,
-                       const ConfigString qual = "");
-  INLINE ConfigString GetConfigPath() const;
-  INLINE bool IsConfigDbg() { return configdbg; };
 };
 
 #include "configTable.I"

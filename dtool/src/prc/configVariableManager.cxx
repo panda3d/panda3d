@@ -123,16 +123,18 @@ write(ostream &out) const {
        ni != _variables_by_name.end();
        ++ni) {
     ConfigVariableCore *variable = (*ni).second;
-    out << "  " << variable->get_name();
-    if (!variable->is_used()) {
-      out << "  (not used)";
-    } else {
-      out << " " << variable->get_declaration(0)->get_string_value();
+    if (!variable->is_dynamic()) {
+      out << "  " << variable->get_name();
+      if (!variable->is_used()) {
+        out << "  (not used)";
+      } else {
+        out << " " << variable->get_declaration(0)->get_string_value();
+      }
+      out << "\n";
     }
-    out << "\n";
   }
 }
-
+  
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableManager::list_unused_variables
 //       Access: Published
@@ -148,10 +150,10 @@ list_unused_variables() const {
        ++ni) {
     ConfigVariableCore *variable = (*ni).second;
     if (!variable->is_used()) {
-      cout << variable->get_name() << "\n";
+      nout << variable->get_name() << "\n";
       int num_references = variable->get_num_references();
       for (int i = 0; i < num_references; i++) {
-        cout << "  " << variable->get_reference(i)->get_page()->get_name()
+        nout << "  " << variable->get_reference(i)->get_page()->get_name()
              << "\n";
       }
     }
@@ -171,79 +173,31 @@ list_variables() const {
   for (ni = _variables_by_name.begin();
        ni != _variables_by_name.end();
        ++ni) {
-    ConfigVariableCore *variable = (*ni).second;
-    if (variable->is_used()) {
-      
-      cout << variable->get_name() << " " 
-           << variable->get_value_type() << "\n";
-
-      const ConfigDeclaration *decl;
-
-      if (variable->get_value_type() == ConfigVariableCore::VT_list) {
-        // We treat a "list" variable as a special case: list all of
-        // its values.
-        cout << "  current value =\n";
-        int num_references = variable->get_num_trusted_references();
-        for (int i = 0; i < num_references; i++) {
-          decl = variable->get_trusted_reference(i);
-          cout << "    " << decl->get_string_value()
-               << "  (from " << decl->get_page()->get_name() << ")\n";
-        }
-        
-      } else {
-        // An ordinary, non-list variable gets one line for its
-        // current value (if it has one) and another line for its
-        // default value.
-        decl = variable->get_declaration(0);
-        if (decl != variable->get_default_value()) {
-          cout << "  current value = " << decl->get_string_value();
-          if (!decl->get_page()->is_special()) {
-            cout << "  (from " << decl->get_page()->get_name() << ")\n";
-          } else {
-            cout << "  (defined locally)\n";
-          }
-        }
-
-        decl = variable->get_default_value();
-        if (decl != (ConfigDeclaration *)NULL) {
-          cout << "  default value = " << decl->get_string_value() << "\n";
-        }
-      }
-
-      if (!variable->get_description().empty()) {
-        cout << "  " << variable->get_description() << "\n";
-      }
+    const ConfigVariableCore *variable = (*ni).second;
+    if (variable->is_used() && !variable->is_dynamic()) {
+      list_variable(variable);
     }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableManager::describe_variables
+//     Function: ConfigVariableManager::list_dynamic_variables
 //       Access: Published
-//  Description: Writes a list of all the variables along with each
-//               variable's long description.
+//  Description: Writes a list of all the "dynamic" variables that
+//               have been declared somewhere in code, along with a
+//               brief description.  This is a (usually large) list of
+//               config variables that are declared with a generated
+//               variable name.
 ////////////////////////////////////////////////////////////////////
 void ConfigVariableManager::
-describe_variables() const {
+list_dynamic_variables() const {
   VariablesByName::const_iterator ni;
   for (ni = _variables_by_name.begin();
        ni != _variables_by_name.end();
        ++ni) {
-    ConfigVariableCore *variable = (*ni).second;
-    if (variable->is_used()) {
-      cout << variable->get_name() << " "
-           << variable->get_value_type() << "\n";
-
-      const ConfigDeclaration *decl = variable->get_default_value();
-      if (decl != (ConfigDeclaration *)NULL) {
-        cout << "  default value = " << decl->get_string_value() << "\n";
-      }
-
-      if (!variable->get_text().empty()) {
-        cout << "  " << variable->get_text() << "\n";
-      } else if (!variable->get_description().empty()) {
-        cout << "  " << variable->get_description() << "\n";
-      }
+    const ConfigVariableCore *variable = (*ni).second;
+    if (variable->is_used() && variable->is_dynamic()) {
+      list_variable(variable);
     }
   }
 }
@@ -259,4 +213,52 @@ get_global_ptr() {
     _global_ptr = new ConfigVariableManager;
   }
   return _global_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableManager::list_variable
+//       Access: Private
+//  Description: Lists a single variable and its value.
+////////////////////////////////////////////////////////////////////
+void ConfigVariableManager::
+list_variable(const ConfigVariableCore *variable) const {
+  nout << variable->get_name() << " " 
+       << variable->get_value_type() << "\n";
+
+  const ConfigDeclaration *decl;
+  
+  if (variable->get_value_type() == ConfigVariableCore::VT_list) {
+    // We treat a "list" variable as a special case: list all of
+    // its values.
+    nout << "  current value =\n";
+    int num_references = variable->get_num_trusted_references();
+    for (int i = 0; i < num_references; i++) {
+      decl = variable->get_trusted_reference(i);
+      nout << "    " << decl->get_string_value()
+           << "  (from " << decl->get_page()->get_name() << ")\n";
+    }
+    
+  } else {
+    // An ordinary, non-list variable gets one line for its
+    // current value (if it has one) and another line for its
+    // default value.
+    decl = variable->get_declaration(0);
+    if (decl != variable->get_default_value()) {
+      nout << "  current value = " << decl->get_string_value();
+      if (!decl->get_page()->is_special()) {
+        nout << "  (from " << decl->get_page()->get_name() << ")\n";
+      } else {
+        nout << "  (defined locally)\n";
+      }
+    }
+    
+    decl = variable->get_default_value();
+    if (decl != (ConfigDeclaration *)NULL) {
+      nout << "  default value = " << decl->get_string_value() << "\n";
+    }
+  }
+  
+  if (!variable->get_description().empty()) {
+    nout << "  " << variable->get_description() << "\n";
+  }
 }

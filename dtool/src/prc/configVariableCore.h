@@ -20,7 +20,9 @@
 #define CONFIGVARIABLECORE_H
 
 #include "dtoolbase.h"
+#include "configFlags.h"
 #include "configPageManager.h"
+#include "notify.h"
 #include "pvector.h"
 #include "pmap.h"
 
@@ -37,34 +39,26 @@ class ConfigDeclaration;
 //               return a shared instance.  Once created, these
 //               objects are never destructed.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG ConfigVariableCore {
+class EXPCL_DTOOLCONFIG ConfigVariableCore : public ConfigFlags {
 private:
   ConfigVariableCore(const string &name);
   ~ConfigVariableCore();
 
 public:
-  enum ValueType {
-    VT_undefined,
-    VT_list,
-    VT_string,
-    VT_bool,
-    VT_int,
-    VT_double,
-  };
-
   INLINE const string &get_name() const;
   INLINE bool is_used() const;
 
   INLINE ValueType get_value_type() const;
+  INLINE int get_flags() const;
+  INLINE bool is_closed() const;
   INLINE int get_trust_level() const;
+  INLINE bool is_dynamic() const;
   INLINE const string &get_description() const;
-  INLINE const string &get_text() const;
   INLINE const ConfigDeclaration *get_default_value() const;
 
   void set_value_type(ValueType value_type);
-  void set_trust_level(int trust_level);
+  void set_flags(int flags);
   void set_description(const string &description);
-  void set_text(const string &text);
   void set_default_value(const string &default_value);
   INLINE void set_used();
 
@@ -72,8 +66,11 @@ public:
   bool clear_local_value();
   INLINE bool has_local_value() const;
 
+  bool has_value() const;
   int get_num_declarations() const;
   const ConfigDeclaration *get_declaration(int n) const;
+
+  INLINE int get_value_seq() const;
 
   INLINE int get_num_references() const;
   INLINE const ConfigDeclaration *get_reference(int n) const;
@@ -98,9 +95,8 @@ private:
   string _name;
   bool _is_used;
   ValueType _value_type;
-  int _trust_level;
+  int _flags;
   string _description;
-  string _text;
   ConfigDeclaration *_default_value;
   ConfigDeclaration *_local_value;
 
@@ -111,14 +107,13 @@ private:
   Declarations _unique_declarations;
   bool _declarations_sorted;
   bool _value_queried;
+  int _value_seq;
 
   friend class ConfigDeclaration;
   friend class ConfigVariableManager;
 };
 
 INLINE ostream &operator << (ostream &out, const ConfigVariableCore &variable);
-
-ostream &operator << (ostream &out, ConfigVariableCore::ValueType type);
 
 #include "configVariableCore.I"
 

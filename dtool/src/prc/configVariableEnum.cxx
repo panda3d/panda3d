@@ -1,5 +1,5 @@
-// Filename: config_interrogatedb.h
-// Created by:  drose (01Aug00)
+// Filename: configVariableEnum.cxx
+// Created by:  drose (21Oct04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,15 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_INTERROGATEDB_H
-#define CONFIG_INTERROGATEDB_H
-
-#include "dtoolbase.h"
-#include "notifyCategoryProxy.h"
-#include "configVariableSearchPath.h"
-
-NotifyCategoryDecl(interrogatedb, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);
-
-extern ConfigVariableSearchPath interrogatedb_path;
-
-#endif
+#include "configVariableEnum.h"

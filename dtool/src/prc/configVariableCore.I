@@ -51,20 +51,70 @@ get_value_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableCore::get_flags
+//       Access: Public
+//  Description: Returns the flags value as set by set_flags().  This
+//               includes the trust level and some other settings.
+//               See the individual methods is_closed(),
+//               get_trust_level(), etc. to pull out the semantic
+//               meaning of these flags individually.
+////////////////////////////////////////////////////////////////////
+INLINE int ConfigVariableCore::
+get_flags() const {
+  return _flags;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableCore::is_closed
+//       Access: Public
+//  Description: Returns true if the variable is not trusted by any
+//               prc file (and hence cannot be modified from its
+//               compiled-in default value), or false for the normal
+//               case, in which the variable can be modified by any
+//               prc file at or above its trust level (see
+//               get_trust_level()).
+//
+//               This value only has effect in a release build
+//               (specifically, when PRC_RESPECT_TRUST_LEVEL is
+//               defined true in Config.pp).
+////////////////////////////////////////////////////////////////////
+INLINE bool ConfigVariableCore::
+is_closed() const {
+  return (_flags & F_closed) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableCore::get_trust_level
 //       Access: Public
 //  Description: Returns the minimum trust_level a prc file must
 //               demonstrate in order to redefine the value for this
-//               variable.  -1 indicates infinite trust: no prc file
-//               can redefine it.  Arguably, this should be called the
+//               variable.  Arguably, this should be called the
 //               "mistrust level", since the larger the value, the
-//               more suspicious we are of prc files.
+//               more suspicious we are of prc files.  This value is
+//               not used if is_closed() returns true, which indicates
+//               no file may be trusted.
 //
-//               This value only has effect in a release build.
+//               This value only has effect in a release build
+//               (specifically, when PRC_RESPECT_TRUST_LEVEL is
+//               defined true in Config.pp).
 ////////////////////////////////////////////////////////////////////
 INLINE int ConfigVariableCore::
 get_trust_level() const {
-  return _trust_level;
+  return (_flags & F_trust_level_mask);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableCore::is_dynamic
+//       Access: Public
+//  Description: Returns true if the variable was indicated as
+//               "dynamic" by its constructor, indicating that its
+//               name was dynamically generated, possibly from a large
+//               pool, and it should not be listed along with the
+//               other variables.
+////////////////////////////////////////////////////////////////////
+INLINE bool ConfigVariableCore::
+is_dynamic() const {
+  return (_flags & F_dynamic) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,19 +127,6 @@ get_trust_level() const {
 INLINE const string &ConfigVariableCore::
 get_description() const {
   return _description;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::get_text
-//       Access: Public
-//  Description: Returns the paragraph help text describing the
-//               purpose of this variable in greater detail than
-//               get_description().  If the variable has not yet been
-//               defined, this will be empty.
-////////////////////////////////////////////////////////////////////
-INLINE const string &ConfigVariableCore::
-get_text() const {
-  return _text;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,6 +165,20 @@ has_local_value() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableCore::get_value_seq
+//       Access: Public
+//  Description: Returns a sequence number that changes every time the
+//               value of the variable might have changed.  This is
+//               useful for caching values from the variable, and
+//               detecting when the cache has expired.  It is
+//               initially zero and will increment from there.
+////////////////////////////////////////////////////////////////////
+INLINE int ConfigVariableCore::
+get_value_seq() const {
+  return _value_seq;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableCore::get_num_references
 //       Access: Public
 //  Description: Returns the number of prc files that reference this
@@ -154,10 +205,8 @@ get_num_references() const {
 INLINE const ConfigDeclaration *ConfigVariableCore::
 get_reference(int n) const {
   check_sort_declarations();
-  if (n >= 0 && n < (int)_declarations.size()) {
-    return _declarations[n];
-  }
-  return NULL;
+  nassertr(n >= 0 && n < (int)_declarations.size(), NULL);
+  return _declarations[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -190,10 +239,8 @@ get_num_trusted_references() const {
 INLINE const ConfigDeclaration *ConfigVariableCore::
 get_trusted_reference(int n) const {
   check_sort_declarations();
-  if (n >= 0 && n < (int)_trusted_declarations.size()) {
-    return _trusted_declarations[n];
-  }
-  return NULL;
+  nassertr(n >= 0 && n < (int)_trusted_declarations.size(), NULL);
+  return _trusted_declarations[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -219,10 +266,8 @@ get_num_unique_references() const {
 INLINE const ConfigDeclaration *ConfigVariableCore::
 get_unique_reference(int n) const {
   check_sort_declarations();
-  if (n >= 0 && n < (int)_unique_declarations.size()) {
-    return _unique_declarations[n];
-  }
-  return NULL;
+  nassertr(n >= 0 && n < (int)_unique_declarations.size(), NULL);
+  return _unique_declarations[n];
 }
 
 ////////////////////////////////////////////////////////////////////

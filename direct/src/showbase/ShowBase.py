@@ -262,6 +262,8 @@ class ShowBase(DirectObject.DirectObject):
         __builtins__["directNotify"] = directNotify
         __builtins__["globalClock"] = ClockObject.getGlobalClock()
         __builtins__["vfs"] = vfs
+        __builtins__["cpMgr"] = ConfigPageManager.getGlobalPtr()
+        __builtins__["cvMgr"] = ConfigVariableManager.getGlobalPtr()
         __builtins__["__dev__"] = base.config.GetBool('want-dev', 0)
         if __debug__:
             __builtins__["deltaProfiler"] = DeltaProfiler.DeltaProfiler("ShowBase")
