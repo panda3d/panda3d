@@ -1210,12 +1210,23 @@ scan_directory(vector_string &contents) const {
   glob_t globbuf;
 
   int r = glob(dirname.c_str(), GLOB_ERR, NULL, &globbuf);
+
+  if (r != 0) {
+    // Some error processing the match string.  If our version of
+    // glob.h defines GLOB_NOMATCH, then we can differentiate an empty
+    // return result from some other kind of error.
 #ifdef GLOB_NOMATCH
-  if (r != 0 && r != GLOB_NOMATCH) {
-    perror(dirname.c_str());
-    return false;
-  }
+    if (r != GLOB_NOMATCH) {
+      perror(dirname.c_str());
+      return false;
+    }
 #endif
+
+    // Otherwise, all errors mean the same thing: no matches, but
+    // otherwise no problem.
+    return true;
+  }
+
   size_t offset = dirname.size() - 1;
 
   for (int i = 0; globbuf.gl_pathv[i] != NULL; i++) {
