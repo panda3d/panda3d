@@ -105,7 +105,7 @@ my $User_Map_File = "";
 my $Max_Fileline_Count = 15;
 
 # Only list changes with the last $Prev_Day_Count days
-my $Prev_Day_Count = 7;
+my $Prev_Day_Count = 30;
 
 # Output to a file or to stdout?
 my $Output_To_Stdout = 1;
@@ -138,7 +138,7 @@ my $Show_Day_Of_Week = 1;
 my $Show_Revisions = 1;
 
 # Show tags (symbolic names) in output?
-my $Show_Tags = 1;
+my $Show_Tags = 0;
 
 # Show branches by symbolic name in output?
 my $Show_Branches = 0;
@@ -173,7 +173,7 @@ my $Hide_Filenames = 0;
 # longer than $Max_Checkin_Duration seconds, and that similarly, no
 # checkins will happen from the same users with the same message less
 # than $Max_Checkin_Duration seconds apart.
-my $Max_Checkin_Duration = 180;
+my $Max_Checkin_Duration = 300;
 
 # What to put at the front of [each] ChangeLog.  
 my $ChangeLog_Header = "";
@@ -653,12 +653,12 @@ sub derive_change_log ()
         my $msghash = $timehash->{$time};
         while (my ($msg,$qunklist) = each %$msghash)
         {
- 	  my $stamptime = $stamptime{$msg};
+      my $stamptime = $stamptime{$msg};
           if ((defined $stamptime)
               and (($time - $stamptime) < $Max_Checkin_Duration)
               and (defined $changelog{$stamptime}{$author}{$msg}))
           {
- 	    push(@{$changelog{$stamptime}{$author}{$msg}}, @$qunklist);
+        push(@{$changelog{$stamptime}{$author}{$msg}}, @$qunklist);
           }
           else {
             $changelog{$time}{$author}{$msg} = $qunklist;
@@ -757,7 +757,7 @@ sub derive_change_log ()
           elsif ($No_Wrap) 
           {
             $msg = &preprocess_msg_text ($msg);
-###            $files = wrap ("\t", "	", "$files");
+###            $files = wrap ("\t", "   ", "$files");
 
             my $dirprepended = ($files =~ /:,/);
 
@@ -1009,6 +1009,7 @@ sub pretty_file_list ()
         $beauty .= "<utag>${utag}</utag>\n";
       }
     }
+
     if ($common_dir) {
       $common_dir = &xml_escape ($common_dir);
       $beauty .= "<commondir>${common_dir}</commondir>\n";

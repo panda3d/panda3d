@@ -5,6 +5,8 @@
 
 my $WIN_INSTALLDIR="\\\\dimbo\\panda\\win";
 
+# $ENV{'USE_COMPILER'} = "INTEL";   #  experiment
+
 # my $WIN_INSTALLDIR="\\\\cxgeorge-d01\\c\\win";
 
 ### DEBUG SETTINGS
@@ -21,11 +23,12 @@ my $BLD_DTOOL_ONLY=0;
 
 my $DIRPATH_SEPARATOR=':';   # set to ';' for non-cygwin NT perl
 
-my @inst_dirnames=("archive","debug","install","release");
+my @inst_dirnames=("archive","debug","install","release","publish");
 my $ARCHIVENUM=0;
 my $DEBUGNUM=1;
 my $INSTALLNUM=2;
 my $RELEASENUM=3;
+my $PUBLISHNUM=4;
 my @inst_dirs;
 for(my $i=0;$i<=$#inst_dirnames;$i++) {
     $inst_dirs[$i]=$WIN_INSTALLDIR."\\".$inst_dirnames[$i];
@@ -245,17 +248,18 @@ sub addpathsfromfile() {
 sub gen_python_code() {
 
     # ETC_PATH required by generatePythonCode
-    $ENV{'ETC_PATH'}='/home/builder/player/panda/etc /home/builder/player/direct/etc /home/builder/player/dtool/etc /home/builder/player/toontown/etc';
+    $ENV{'ETC_PATH'}='/home/builder/player/panda/etc /home/builder/player/direct/etc /home/builder/player/dtool/etc /home/builder/player/toontown/etc /home/builder/player/pandatool/etc';
     my $origpath=$ENV{'PATH'};
 
-    $ENV{'PATH'}=$ENV{'WINTOOLS'}."/bin:".$ENV{'WINTOOLS'}."/lib:/bin:/contrib/bin:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/player/dtool/bin:/home/builder/player/dtool/lib:/home/builder/player/direct/bin:/home/builder/player/direct/lib::/home/builder/player/toontown/bin:/home/builder/player/toontown/lib:/home/builder/player/panda/lib:/home/builder/player/panda/bin:/usr/local/bin:.:/c/WINNT/system32:/c/WINNT:/c/WINNT/System32/Wbem:/c/bin:/mspsdk/Bin/:/mspsdk/Bin/WinNT:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/scripts:";
+    $ENV{'PATH'}=$ENV{'WINTOOLS'}."/bin:".$ENV{'WINTOOLS'}."/lib:/bin:/contrib/bin:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/player/dtool/bin:/home/builder/player/dtool/lib:/home/builder/player/direct/bin:/home/builder/player/direct/lib::/home/builder/player/toontown/bin:/home/builder/player/toontown/lib:/home/builder/player/panda/lib:/home/builder/player/panda/bin:/usr/local/bin:.:/c/WINNT/system32:/c/WINNT:/c/WINNT/System32/Wbem:/c/bin:/mspsdk/Bin/:/mspsdk/Bin/WinNT:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/scripts:/home/builder/player/pandatool/bin:/home/builder/player/pandatool/lib";
     $ENV{'PATH'}.=$ENV{'WINTOOLS'}."/sdk/python/Tcl/bin:".$ENV{'WINTOOLS'}."/sdk/python/Tcl/lib"."/c/WINNT/system32:/c/WINNT";
     
-	$ENV{'PYTHONPATH'}= $WINBLDROOT."\\panda\\lib;".$WINBLDROOT."\\dtool\\lib;".$WINBLDROOT."\\wintools\\bin;".$WINBLDROOT."\\wintools\\lib;";
+    $ENV{'PYTHONPATH'}= $WINBLDROOT."\\panda\\lib;".$WINBLDROOT."\\dtool\\lib;".$WINBLDROOT."\\wintools\\bin;".$WINBLDROOT."\\wintools\\lib;";
     $ENV{'PYTHONPATH'}.= $WINBLDROOT."\\wintools\\sdk\\python\\Python-2.0\\Lib;".$WINBLDROOT."\\wintools\\sdk\\python\\Python-2.0\\DLLs;";
     
-	my $directsrcroot=$WINBLDROOT."\\direct\\src";
+    my $directsrcroot=$WINBLDROOT."\\direct\\src";
     
+    # add stuff from etc/[dir].pth
     &addpathsfromfile("direct","PYTHONPATH");
     &addpathsfromfile("toontown","PYTHONPATH");
 
@@ -276,7 +280,8 @@ sub gen_python_code() {
     my $genargstr="-v -d";
 
     if(($ENV{'PANDA_OPTIMIZE'} eq '1') || ($ENV{'PANDA_OPTIMIZE'} eq '2')) {
-       $genpyth_str="python_d ";
+       $genpyth_str="python_d -OO ";
+       $genargstr="-O ".$genargstr;
     } else {
        $genpyth_str="python -O ";
        $genargstr="-O ".$genargstr;
@@ -402,10 +407,10 @@ sub buildall() {
     $treenum=shift;
 
     # DTOOL ppremake may have already run by DTOOL 'initialize make'
-	
-	if($DO_ARCHIVE_AND_COPY_ONLY) {
-		goto 'ARCHIVE_AND_COPY';
-	}
+        
+        if($DO_ARCHIVE_AND_COPY_ONLY) {
+                goto 'ARCHIVE_AND_COPY';
+        }
     
     &logmsg("*** Starting ".uc($inst_dirnames[$treenum])." Build (Opt=".$ENV{'PANDA_OPTIMIZE'}.") at ".&gettimestr()." ***");
 
@@ -422,6 +427,7 @@ sub buildall() {
         &mymkdir($CYGBLDROOT."/".$dir1."/include");
     }
     &mymkdir($CYGBLDROOT."/dtool/include/parser-inc");  # hack to fix makefile multiproc issue
+    &mymkdir($CYGBLDROOT."/pandatool/shared");  # hack to fix makefile multiproc issue
 
     foreach my $dir1 (@dirstodolist) {    
         my $dir1_upcase = uc($dir1);
@@ -445,7 +451,7 @@ sub buildall() {
 
     foreach my $dir1 (@dirstodolist) {    
         my $dir1_upcase = uc($dir1);
-        &logmsg("*** BUILDING ".$dir1_upcase." ***");
+        &logmsg("*** BUILDING ".$dir1_upcase." at ".&gettimestr()." ***");
         &mychdir($CYGBLDROOT."/".$dir1);
         &myexecstr($makecmd." install",$dir1_upcase." ".$makecmd." install failed!","DO_LOG",$shellarg);
     }
@@ -477,22 +483,30 @@ sub buildall() {
     &logmsg("*** Copying ".$inst_dirnames[$treenum]." build to install server at ".&gettimestr()." ***");
     &mymkdir($inst_dirs[$treenum]);
 
-    my $xcopy_opt_str="/E /K /C /R /Y /H ";
+    my $xcopy_opt_str="/E /K /C /R /Y /H /I ";
 
     if($DEBUG_TREECOPY) {
-        $xcopy_opt_str.="/T";  #debug only
+        $xcopy_opt_str.="/T ";  #debug only
+    }
+
+    if($treenum == $DEBUGNUM) {
+       # get rid of .sbr files before copying
+       &myexecstr("echo .sbr > junk","echo .sbr failed!!", "DO_LOG","NT cmd");
+       $xcopy_opt_str.=" /EXCLUDE:junk";
     }
 
     # hopefully there are no extra dirs underneath
-	
-	unshift(dirstodolist,"wintools");   # dont want to add wintools to global dirstodo, treat it separately
+        
+    # add wintools to dir copy list 
+    # dont want to add wintools to global dirstodo, treat it separately    
+    unshift(dirstodolist,"wintools");   
     
     foreach my $dir1 (@dirstodolist) {        
         &mymkdir($inst_dirs[$treenum]."\\".$dir1);
         &myexecstr("\\WINNT\\system32\\xcopy ".$xcopy_opt_str." ".$WINBLDROOT."\\".$dir1."\\* ".$inst_dirs[$treenum]."\\".$dir1, 
                    "xcopy of ".$inst_dirnames[$treenum]." tree failed!!", "DO_LOG","NT cmd");
     }
-	shift(dirstodolist);
+    shift(dirstodolist);
 }
 
 # assumes environment already attached to TOOL/PANDA/DIRECT/TOONTOWN
@@ -532,14 +546,19 @@ close(LOGFILE);
 
 &logmsg("*** Panda Build Log Started at ".&gettimestr()." ***");
 
-my @do_install_dir=(0,0,0,0);
-my @dir_build_type=(0,0,0,0);
+my @do_install_dir;
+my @dir_build_type;
+
+for($ii=0;$ii<=$#PUBLISHNUM;$ii++) {
+  if($#ARGV<0) {
+   $do_install_dir=1;
+  } else {
+   $do_install_dir=0;
+  }
+   $dir_build_type=0;
+}
 
 my $g_last_dirnum=0;
-
-if($#ARGV<0) {
-   @dir_build_type=(1,1,1,1);  
-}
 
 for($ii=0;$ii<=$#ARGV;$ii++) {
     if(uc($ARGV[$ii]) eq uc($inst_dirnames[$INSTALLNUM])) {
@@ -548,11 +567,13 @@ for($ii=0;$ii<=$#ARGV;$ii++) {
         $g_last_dirnum=$DEBUGNUM;
     } elsif(uc($ARGV[$ii]) eq uc($inst_dirnames[$RELEASENUM])) {
         $g_last_dirnum=$RELEASENUM;
+    } elsif(uc($ARGV[$ii]) eq uc($inst_dirnames[$PUBLISHNUM])) {
+        $g_last_dirnum=$PUBLISHNUM;
     } elsif(uc($ARGV[$ii]) eq "NMAKE") {
        $dir_build_type[$g_last_dirnum]=1;
        next;
     } else {
-        &logmsg("invalid argument '".$ARGV[0]."' to builder.pl.  arg must be 'install','debug', or 'release'\n");
+        &logmsg("invalid argument '".$ARGV[0]."' to builder.pl.  arg must be 'install','debug', or 'release', or 'publish'\n");
         exit(1);
     }
     $do_install_dir[$g_last_dirnum]=1;
@@ -568,7 +589,7 @@ if(!(-e $WIN_INSTALLDIR)) {
 if($BLD_DTOOL_ONLY) {
   @dirstodolist=("dtool");
 } else {
-  @dirstodolist=("dtool","panda","direct","toontown");
+  @dirstodolist=("dtool","panda","pandatool","direct","toontown");
 }
 $dirstodostr="";
 foreach my $dir1 (@dirstodolist) {
@@ -642,22 +663,33 @@ if($do_install_dir[$DEBUGNUM]) {
      } else {
        $ENV{'PANDA_BUILD_TYPE'} = 'gmsvc';
      }
-    $ENV{'USE_BROWSEINFO'}='1';   # make .sbr files, this is probably obsolete
+    $ENV{'USE_BROWSEINFO'}='1';   # make .sbr files
     if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
        $ENV{'PANDA_OPTIMIZE'}='1';
     }
 
     &buildall($DEBUGNUM);
     &make_bsc_file();
-    delete $ENV{'USE_BROWSEINFO'};  # this is probably obsolete
+    delete $ENV{'USE_BROWSEINFO'};  
 }
 
 AFTER_DBGBUILD:
 
+if($do_install_dir[$PUBLISHNUM]) {
+  if($dir_build_type[$PUBLISHNUM]) {
+    $ENV{'PANDA_BUILD_TYPE'} = 'msvc';
+  } else {
+    $ENV{'PANDA_BUILD_TYPE'} = 'gmsvc';
+  }
+  $ENV{'PANDA_OPTIMIZE'}='4';
+  &buildall($PUBLISHNUM);
+}
+
+
 &logmsg("*** Panda Build Log Finished at ".&gettimestr()." ***");
 
 # store log in 'debug' dir
-&myexecstr("copy ".$fulllogfilename_win." ".$inst_dirs[$DEBUGNUM], "copy of ".$fulllogfilename_win." failed!!", "","NT cmd");  
+&myexecstr("copy ".$fulllogfilename_win." ".$inst_dirs[$g_last_dirnum], "copy of ".$fulllogfilename_win." failed!!", "","NT cmd");  
 
 exit(0);
 
