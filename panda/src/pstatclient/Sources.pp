@@ -38,9 +38,9 @@
 
 #begin test_bin_target
   #define LOCAL_LIBS \
-    pstatclient
+    pstatclient 
   #define OTHER_LIBS \
-    pystub
+    $[OTHER_LIBS] pystub
 
   #define TARGET test_client
 
