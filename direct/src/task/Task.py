@@ -1,6 +1,12 @@
 
-from pandac.PandaModules import *
+# This module may not import pandac.PandaModules, since it is imported
+# by the Toontown Launcher before the complete PandaModules have been
+# downloaded.  Instead, it imports only libpandaexpressModules, the
+# subset of PandaModules that we know is available immediately.
+# Methods that require more advanced C++ methods may import the
+# appropriate files within their own scope.
 from pandac.libpandaexpressModules import *
+
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.PythonUtil import *
 from direct.showbase.MessengerGlobal import *
