@@ -15,8 +15,8 @@ if sys.argv[1:]:
 # If you do not run from the command line, we just load all of them
 # or you can hack this up for your own purposes.
 else:
-    hoods = ['TT', 'DD', 'BR', 'DG', 'DL', 'MM']
-    # hoods = ['TT' ]
+    # hoods = ['TT', 'DD', 'BR', 'DG', 'DL', 'MM']
+    hoods = ['TT' ]
 
 print "Loading LevelEditor for hoods: ", hoods
 
@@ -2309,6 +2309,7 @@ class LevelEditor(NodePath, PandaObject):
         marker = self.battleCellMarker.copyTo(parent)
         # Greenish
         marker.setColor(0.25,0.75,0.25,0.5)
+        marker.setTransparency(1)
         marker.setPos(cell.getPos())
         # scale to radius which is width/2
         marker.setScale(cell.getWidth()/2.0,
@@ -2346,7 +2347,7 @@ class LevelEditor(NodePath, PandaObject):
         # Points
         numPoints = DNASTORE.getNumSuitPoints()
         for i in range(numPoints):
-            point = DNASTORE.getSuitPoint(i)
+            point = DNASTORE.getSuitPointAtIndex(i)
             marker = self.drawSuitPoint(
                 point.getPos(), point.getPointType(), self.NPToplevel)
             self.pointDict[point] = marker

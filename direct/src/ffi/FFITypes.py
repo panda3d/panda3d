@@ -612,10 +612,8 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         parentTypeName = parent.foreignTypeName
         fullNestedName = parent.getFullNestedName()
         if (fullNestedName != parentTypeName):
-            print "full nested name: ", fullNestedName
             nestedChain = fullNestedName.split(".") 
             moduleName = nestedChain[0]
-            print "module name: ", moduleName
             indent(file, nesting, 'import ' + moduleName + '\n')
         else:
             indent(file, nesting, 'import ' + parent.foreignTypeName + '\n')
@@ -698,12 +696,9 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             #     parentClassModule.parentClass.nestedClass
             fullNestedName = self.parentTypes[i].getFullNestedName()
             if (fullNestedName != parentTypeName):
-                print "full nested name: ", fullNestedName
                 nestedChain = fullNestedName.split(".") 
                 moduleName = nestedChain[0]
-                print "module name: ", moduleName
                 parentTypeName = fullNestedName
-                print "resolved parent name: ", parentTypeName
             file.write(moduleName + '.' + parentTypeName)
             file.write(', ')
         file.write('FFIExternalObject.FFIExternalObject):\n')
