@@ -16,9 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "reversedNumericData.h"
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "express_headers.h"
+#endif
 
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include <notify.h>
+#endif
+
+#include "reversedNumericData.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReversedNumericData::reverse_assign

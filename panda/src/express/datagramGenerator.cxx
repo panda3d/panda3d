@@ -16,7 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "express_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include <pandabase.h>
+#endif
 
 #include "datagramGenerator.h"
 

@@ -16,17 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "memoryUsage.h"
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "express_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "memoryUsagePointers.h"
 #include "trueClock.h"
 #include "typedReferenceCount.h"
+#endif
+
+#include "memoryUsage.h"
 
 #ifndef NDEBUG
 // Nothing in this module gets compiled in NDEBUG mode.
 
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "config_express.h"
-
 #include <algorithm>
+#endif
 
 MemoryUsage *MemoryUsage::_global_ptr = (MemoryUsage *)NULL;
 

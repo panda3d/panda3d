@@ -16,7 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "express_headers.h"
+#endif
+
+#pragma hdrstop
 
 #include "datagramSink.h"
 

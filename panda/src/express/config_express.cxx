@@ -16,12 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "express_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "config_express.h"
 #include "clockObject.h"
 #include "typedObject.h"
 #include "referenceCount.h"
 #include "typedReferenceCount.h"
 #include "datagram.h"
+#endif
 
 #include <dconfig.h>
 

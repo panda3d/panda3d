@@ -16,11 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "express_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "error_utils.h"
 #include "config_express.h"
 
 #include <errno.h>
 #include <stdio.h>
+#endif
+
 #if defined(WIN32_VC)
   #include <winsock.h>
 #endif

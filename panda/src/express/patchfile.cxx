@@ -15,12 +15,20 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#include "patchfile.h"
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "express_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "config_express.h"
 #include "error_utils.h"
-#include "crypto_utils.h" // MD5 stuff
-
 #include <stdio.h> // for tempnam
+#endif
+
+#include "patchfile.h"
+#include "crypto_utils.h" // MD5 stuff
 
 // this actually slows things down...
 //#define USE_MD5_FOR_HASHTABLE_INDEX_VALUES

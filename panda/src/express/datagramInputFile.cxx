@@ -16,10 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "datagramInputFile.h"
+#if defined(WIN32_VC) && !defined(NO_PCH)
+#include "express_headers.h"
+#endif
+
+#pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "numeric_types.h"
 #include "datagramIterator.h"
 #include "profileTimer.h"
+#endif
+
+#include "datagramInputFile.h"
+
 //#define SKYLER_TIMER 1
 #ifdef SKYLER_TIMER //[
   EXPCL_PANDAEXPRESS ProfileTimer Skyler_timer_file;

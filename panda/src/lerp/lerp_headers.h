@@ -16,12 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_lerp.h"
 #include "lerp.h"
-#include "lerpblend.h"
 #include "lerpfunctor.h"
-#include <clockObject.h>
-#include <throw_event.h>
 
 #pragma hdrstop
 

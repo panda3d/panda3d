@@ -1,5 +1,5 @@
-// Filename: referenceCount.cxx
-// Created by:  drose (23Oct98)
+// Filename: xxx_headers.h
+// Created by:  georges (30May01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,14 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "express_headers.h"
-#endif
+#include <pandabase.h>
+#include <errno.h>
+#include <stdio.h>
+#include <notify.h>
+
+#include "clockObject.h"
+#include "config_express.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "error_utils.h"
+#include "hashVal.h"
+#include "indent.h"
+#include "memoryUsagePointers.h"
+#include "numeric_types.h"
+#include "profileTimer.h"
+#include "referenceCount.h"
+#include "trueClock.h"
+#include "typedef.h"
+#include "typedObject.h"
+#include "typedReferenceCount.h"
+
+#include <algorithm>
 
 #pragma hdrstop
 
-#if !defined(WIN32_VC) || defined(NO_PCH)
-#include "referenceCount.h"
-#endif
-
-TypeHandle ReferenceCount::_type_handle;
