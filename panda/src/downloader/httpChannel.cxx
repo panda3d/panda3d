@@ -1456,7 +1456,7 @@ begin_request(HTTPEnum::Method method, const URLSpec &url,
     // requested a direct connection somewhere.
     ostringstream request;
     request 
-      << "CONNECT " << _url.get_server() << ":" << _url.get_port()
+      << "CONNECT " << _url.get_server_and_port()
       << " " << _client->get_http_version_string() << "\r\n";
     if (_client->get_http_version() >= HTTPEnum::HV_11) {
       request 
@@ -2177,12 +2177,9 @@ make_proxy_request_text() {
   _proxy_request_text = _proxy_header;
 
   if (_proxy_auth != (HTTPAuthorization *)NULL && !_proxy_username.empty()) {
-    ostringstream strm;
-    strm << _url.get_server() << ":" << _url.get_port();
-
     _proxy_request_text += "Proxy-Authorization: ";
     _proxy_request_text += 
-      _proxy_auth->generate(HTTPEnum::M_connect, strm.str(), 
+      _proxy_auth->generate(HTTPEnum::M_connect, _url.get_server_and_port(),
                             _proxy_username, _body);
     _proxy_request_text += "\r\n";
   }

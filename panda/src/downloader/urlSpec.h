@@ -56,6 +56,7 @@ PUBLISHED:
   INLINE string get_server() const;
   INLINE string get_port_str() const;
   int get_port() const;
+  string get_server_and_port() const;
   string get_path() const;
   INLINE string get_query() const;
 
@@ -67,6 +68,7 @@ PUBLISHED:
   void set_server(const string &server);
   void set_port(const string &port);
   void set_port(int port);
+  void set_server_and_port(const string &server_and_port);
   void set_path(const string &path);
   void set_query(const string &query);
 
