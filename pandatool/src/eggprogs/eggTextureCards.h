@@ -9,6 +9,7 @@
 #include <pandatoolbase.h>
 
 #include <eggWriter.h>
+#include <eggTexture.h>
 #include <luse.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -24,12 +25,15 @@ public:
 protected:
   virtual bool handle_args(Args &args);
 
+  static bool dispatch_wrap_mode(const string &opt, const string &arg, void *var);
+
 public:
   void run();
 
   LVecBase4d _polygon_geometry;
   Colorf _polygon_color;
   vector_string _texture_names;
+  EggTexture::WrapMode _wrap_mode;
 };
 
 #endif

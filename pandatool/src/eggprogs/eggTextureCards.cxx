@@ -47,8 +47,15 @@ EggTextureCards() : EggWriter(true, true) {
      "Specifies the color of each polygon.  The default is white: 1,1,1,1.",
      &EggTextureCards::dispatch_color, NULL, &_polygon_color[0]);
 
+  add_option
+    ("wm", "[repeat | clamp]", 0,
+     "Indicates the wrap mode of the texture: either \"repeat\" or \"clamp\" "
+     "(or \"r\" or \"c\").  The default is to leave this unspecified.",
+     &EggTextureCards::dispatch_wrap_mode, NULL, &_wrap_mode);
+
   _polygon_geometry.set(-0.5, 0.5, -0.5, 0.5);
   _polygon_color.set(1.0, 1.0, 1.0, 1.0);
+  _wrap_mode = EggTexture::WM_unspecified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,6 +84,35 @@ handle_args(ProgramBase::Args &args) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTextureCards::dispatch_wrap_mode
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               one parameter, which is to be interpreted as a
+//               WrapMode string.  The data pointer is to a WrapMode
+//               enum variable.
+////////////////////////////////////////////////////////////////////
+bool EggTextureCards::
+dispatch_wrap_mode(const string &opt, const string &arg, void *var) {
+  EggTexture::WrapMode *wmp = (EggTexture::WrapMode *)var;
+
+  *wmp = EggTexture::string_wrap_mode(arg);
+  if (*wmp == EggTexture::WM_unspecified) {
+    // An unknown string.  Let's check for our special cases.
+    if (arg == "r") {
+      *wmp = EggTexture::WM_repeat;
+    } else if (arg == "c") {
+      *wmp = EggTexture::WM_clamp;
+    } else {
+      nout << "Invalid wrap mode parameter for -" << opt << ": " 
+           << arg << "\n";
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTextureCards::run
 //       Access: Public
 //  Description: 
@@ -88,6 +124,12 @@ run() {
 
   EggGroup *group = new EggGroup();
   _data.add_child(group);
+
+  // Make the group a sequence, as a convenience.  If we view the
+  // egg file directly we can see all the tiles one at a time.
+  group->set_switch_flag(true);
+  group->set_switch_fps(2.0);
+
   EggVertexPool *vpool = new EggVertexPool("vpool");
   group->add_child(vpool);
 
@@ -122,6 +164,7 @@ run() {
     string name = filename.get_basename_wo_extension();
 
     EggTexture *tref = new EggTexture(name, filename);
+    tref->set_wrap_mode(_wrap_mode);
     group->add_child(tref);
 
     // Each polygon gets placed in its own sub-group.  This will make
