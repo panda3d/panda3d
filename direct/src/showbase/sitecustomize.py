@@ -52,7 +52,7 @@ def getPackages():
         # we're running from the directory above all of the source
         # trees; look within these directories for the *.pth files.
 
-        searchstr = os.path.join('*', 'etc', '*.pth')
+        searchstr = os.path.join('*', 'src', 'configfiles', '*.pth')
         filenames = glob.glob(searchstr)
         if len(filenames) == 0:
             print ''
@@ -61,7 +61,7 @@ def getPackages():
             print ''
             
         for filename in filenames:
-            tree = os.path.dirname(os.path.dirname(filename))
+            tree = os.path.dirname(os.path.dirname(os.path.dirname(filename)))
             readpth(tree, filename)
 
     else:
