@@ -53,7 +53,6 @@ HTTPDate(const string &format) {
   bool got_hour = false;
   bool got_minute = false;
   bool got_second = false;
-  bool got_timezone = false;
 
   enum ExpectNext { 
     EN_none,
@@ -171,7 +170,6 @@ HTTPDate(const string &format) {
 
       if (!matched && token == "Gmt") {
         matched = true;
-        got_timezone = true;
       }
 
       if (!matched) {

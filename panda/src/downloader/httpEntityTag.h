@@ -55,7 +55,7 @@ private:
   string _tag;
 };
 
-INLINE ostream &operator << (ostream &out, const URLSpec &url);
+INLINE ostream &operator << (ostream &out, const HTTPEntityTag &url);
 
 #include "httpEntityTag.I"
 
