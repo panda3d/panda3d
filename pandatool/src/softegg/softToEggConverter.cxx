@@ -1960,10 +1960,10 @@ cleanup_soft_skin()
       joint = parentJ->_parentJoint->get_egg_group();
     }
     
-    int i;
+    EggVertexPool::iterator vi;
     double membership = 1.0f;
-    for ( i = 1; i <= numVerts; i++ ) {
-      EggVertex *vert = vpool->get_vertex(i);
+    for ( vi = vpool->begin(); vi != vpool->end(); ++vi) {
+      EggVertex *vert = (*vi);
       
       // if this vertex has not been soft assigned, then hard assign it to the parentJoint
       if ( vert->gref_size() == 0 ) {
