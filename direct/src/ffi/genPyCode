@@ -6,21 +6,22 @@
 # -t adds libtoontown
 
 firstarg="$1"
+extra_genPyCode_libs=""
 
 if [ "$firstarg" = "-t" ]; then
-extra_genPyCode_libs="libtoontown"
+extra_genPyCode_libs="$extra_genPyCode_libs libtoontown"
 shift
 firstarg="$1"
 fi
 
 if [ "$firstarg" = "-b" ]; then
-extra_genPyCode_libs="libbartop"
+extra_genPyCode_libs="$extra_genPyCode_libs libbartop"
 shift
 firstarg="$1"
 fi
 
 if [ "$firstarg" = "-v" ]; then
-extra_genPyCode_libs="libvrpn"
+extra_genPyCode_libs="$extra_genPyCode_libs libvrpn"
 shift
 firstarg="$1"
 fi
