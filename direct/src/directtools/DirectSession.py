@@ -8,6 +8,8 @@ from DirectGeometry import *
 from DirectLights import *
 from DirectSessionPanel import *
 from DirectCamConfig import *
+from ClusterServer import *
+from ClusterConfig import *
 from tkSimpleDialog import askstring
 import Placer
 import EntryScale
@@ -31,6 +33,9 @@ class DirectSession(PandaObject):
         self.font = Loader.Loader.loadFont(loader,
                                            "models/fonts/Comic",
                                            priority = 100)
+        self.iAmAClient = base.config.GetBool("display-client",0)
+        self.clusterManager = createCluster()
+        self.iAmAServer = base.config.GetBool("display-server",0)
         self.fEnabled = 0
         self.drList = DisplayRegionList()
         self.iRayList = map(lambda x: x.iRay, self.drList)
@@ -150,6 +155,15 @@ class DirectSession(PandaObject):
             from TkGlobal import *
             self.panel = DirectSessionPanel(parent = tkroot)
 
+        if self.iAmAServer:
+            if base.config.GetBool('sync-display',0):
+                self.serverManager = ClusterServerSync(base.cameraList[0],
+                                               self.drList[0].cam)
+                base.win.setSync(1)
+            else:
+                self.serverManager = ClusterServer(base.cameraList[0],
+                                               self.drList[0].cam)
+            
     def enable(self):
         # Make sure old tasks are shut down
         self.disable()
@@ -642,20 +656,26 @@ class DisplayRegionList(PandaObject):
         i = 0
 
         for cameraGroup in base.cameraList:
+            # This is following the old way of setting up
+            # display regions.  A display region is set up for
+            # each camera node in the scene graph.  This was done
+            # so that only display regions in the scene graph are
+            # considered.  The right way to do this is to set up
+            # a display region for each real display region, and then
+            # keep track of which are currently active (e.g. use a flag)
+            # processing only them.
             camList=cameraGroup.findAllMatches('**/+Camera')
             for cameraIndex in range(camList.getNumPaths()):
                 camera = camList[cameraIndex]
                 if camera.getName()=='<noname>':
                     camera.setName('Camera%d' % cameraIndex)
+                group = base.groupList[cameraIndex]
                 self.displayRegionList.append(
                     DisplayRegionContext(base.win,
-                                         camera))
+                                         camera,group))
                 if camera.getName()!='<noname>' or len(camera.getName())==0:
                     self.displayRegionLookup[camera.getName()]=i
                     i = i + 1
-        for cameraIndex in range(len(base.groupList)):
-            self.displayRegionList[cameraIndex].setGroup(
-                base.groupList[cameraIndex])
         self.accept("CamChange",self.camUpdate)
         self.accept("DIRECT_mouse1",self.mouseUpdate)
         self.accept("DIRECT_mouse2",self.mouseUpdate)
@@ -668,7 +688,7 @@ class DisplayRegionList(PandaObject):
         cameraList = []
         for dr in self.displayRegionList:
             cameraList.append(dr.cam)
-        setCameraOffsets(cameraList)
+        setCameraOffsets(cameraList,base.cameraList)
 
     def __getitem__(self, index):
         return self.displayRegionList[index]
@@ -693,11 +713,17 @@ class DisplayRegionList(PandaObject):
 
     def setFov(self, hfov, vfov):
         for dr in self.displayRegionList:
-            dr.camNode.setFov(hfov, vfov)
+            if dr.isSideways:
+                dr.camNode.setFov(vfov, hfov)
+            else:
+                dr.camNode.setFov(hfov, vfov)
 
     def setHfov(self, fov):
         for dr in self.displayRegionList:
-            dr.camNode.setHfov(fov)
+            if dr.isSideways:
+                dr.camNode.setVfov(fov)
+            else:
+                dr.camNode.setHfov(fov)
 
     def setVfov(self, fov):
         for dr in self.displayRegionList:
@@ -742,18 +768,24 @@ class DisplayRegionList(PandaObject):
     def contextTask(self, state):
         # Window Data
         self.mouseUpdate()
+        # hack to test movement
         return Task.cont
 
-
 class DisplayRegionContext:
-    def __init__(self, win, cam):
+    def __init__(self, win, cam, group):
         self.win = win
         self.cam = cam
         self.camNode = self.cam.getNode(0)
+        self.group = group
         self.iRay = SelectionRay(self.cam)
         self.nearVec = Vec3(0)
         self.mouseX = 0.0
         self.mouseY = 0.0
+        # A Camera node can have more than one display region
+        # associated with it.  Here I assume that there is only
+        # one display region per camera, since we are defining a
+        # display region on a per-camera basis.  See note in
+        # DisplayRegionList.__init__()
         numDrs = self.camNode.getNumDrs()
         self.dr = self.camNode.getDr(0)
         left = self.dr.getLeft()
@@ -764,14 +796,33 @@ class DisplayRegionContext:
         self.originY = top+bottom-1
         self.scaleX = 1.0/(right-left)
         self.scaleY = 1.0/(top-bottom)
+        self.setOrientation()
         self.camUpdate()
 
     def __getitem__(self,key):
         return self.__dict__[key]
 
-    def setGroup(self, groupIndex):
-        self.groupIndex = groupIndex
+    def setOrientation(self):
+        hpr = self.cam.getHpr(base.camList[self.group])
+        if hpr[2] < 135 and hpr[2]>45 or hpr[2]>225 and hpr[2]<315:
+            self.isSideways = 1
+        elif hpr[2] > -135 and hpr[2] < -45 and hpr[2] < -225 and hpr[2] > -315:
+            self.isSideways = 1
+        else:
+            self.isSideways = 0
 
+    # The following take into consideration sideways displays
+    def getHfov(self):
+        if self.isSideways:
+            return self.camNode.getVfov()
+        else:
+            return self.camNode.getHfov()
+
+    def getVfov(self):
+        if self.isSideways:
+            return self.camNode.getHfov()
+        else:
+            return self.camNode.getVfov()
 
     def camUpdate(self):
         # Window Data

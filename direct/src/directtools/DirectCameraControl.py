@@ -294,7 +294,9 @@ class DirectCameraControl(PandaObject):
             nodePath = render.findPathDownTo(node)
             if camera not in nodePath.getAncestry():
                 # Compute hit point
-                hitPt = direct.iRay.parentToHitPt(entry)
+                # KEH: use current display region ray
+                # hitPt = direct.iRay.parentToHitPt(entry)
+                hitPt = direct.drList.getCurrentDr().iRay.parentToHitPt(entry)
                 # Move coa marker to new point
                 self.updateCoa(hitPt, ref = self.coaMarkerRef)
             else:
@@ -304,6 +306,7 @@ class DirectCameraControl(PandaObject):
 
     def computeCOA(self, node, hitPt, hitPtDist):
         coa = Point3(0)
+        dr = direct.drList.getCurrentDr()
         if self.fLockCOA:
             # COA is locked, use existing point
             # Use existing point
@@ -315,8 +318,8 @@ class DirectCameraControl(PandaObject):
             # Set center of action
             coa.assign(hitPt)
             # Handle case of bad coa point (too close or too far)
-            if ((hitPtDist < (1.1 * direct.dr.near)) or
-                (hitPtDist > direct.dr.far)):
+            if ((hitPtDist < (1.1 * dr.near)) or
+                (hitPtDist > dr.far)):
                 # Just use existing point
                 coa.assign(self.coaMarker.getPos(direct.camera))
             # Reset hit point count
@@ -334,7 +337,7 @@ class DirectCameraControl(PandaObject):
             coa.set(0,dist,0)
         # Compute COA Dist
         coaDist = Vec3(coa - ZERO_POINT).length()
-        if coaDist < (1.1 * direct.dr.near):
+        if coaDist < (1.1 * dr.near):
             coa.set(0,100,0)
             coaDist = 100
         # Update coa and marker
@@ -346,7 +349,9 @@ class DirectCameraControl(PandaObject):
             coaDist = Vec3(self.coa - ZERO_POINT).length()
         # Place the marker in render space
         if ref == None:
-            ref = base.cam
+            # KEH: use the current display region
+            # ref = base.cam
+            ref = direct.drList.getCurrentDr().cam
         self.coaMarker.setPos(ref, self.coa)
         # Resize it
         self.updateCoaMarkerSize(coaDist)
@@ -360,7 +365,9 @@ class DirectCameraControl(PandaObject):
     def updateCoaMarkerSize(self, coaDist = None):
         if not coaDist:
             coaDist = Vec3(self.coaMarker.getPos( direct.camera )).length()
-        sf = COA_MARKER_SF * coaDist * math.tan(deg2Rad(direct.dr.fovV))
+        # KEH: use current display region for fov
+        # sf = COA_MARKER_SF * coaDist * math.tan(deg2Rad(direct.dr.fovV))
+        sf = COA_MARKER_SF * coaDist * math.tan(deg2Rad(direct.drList.getCurrentDr().fovV))
         if sf == 0.0:
             sf = 0.1
         self.coaMarker.setScale(sf)

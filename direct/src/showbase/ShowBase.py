@@ -67,9 +67,6 @@ class ShowBase:
         self.render.setColorOff()
 
         self.hidden = NodePath(NamedNode('hidden'))
-        # This will be the list of cameras, one per display region
-        # For now, we only have one display region, so just create the
-        # default camera
         
         self.dataRoot = NodePath(NamedNode('dataRoot'), DataRelation.getClassType())
         # Cache the node so we do not ask for it every frame
@@ -83,10 +80,15 @@ class ShowBase:
         self.oldexitfunc = getattr(sys, 'exitfunc', None)
         sys.exitfunc = self.exitfunc
 
+        # cameraList is a list of camera group nodes.  There may
+        # be more than one display region/camera node beneath each
+        # one.
         self.cameraList = []
         for i in range(chanConfig.getNumGroups()):
             self.cameraList.append(self.render.attachNewNode(
                 chanConfig.getGroupNode(i)))
+        # this is how we know which display region cameras belong to which
+        # camera group.  display region i belongs to group self.groupList[i]
         self.groupList = []
         for i in range(chanConfig.getNumDrs()):
             self.groupList.append(chanConfig.getGroupMembership(i))
