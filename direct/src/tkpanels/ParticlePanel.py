@@ -156,8 +156,8 @@ class ParticlePanel(AppShell):
         ## EMITTER PAGE ##
         self.createOptionMenu(emitterPage, 'Emitter type:',
                               'Select type of particle emitter',
-                              ('Box', 'Disc', 'Line', 'Point', 'Rectangle',
-                               'Ring', 'Sphere Surface', 'Sphere Volume',
+			      ('Box', 'Disc', 'Line', 'Point', 'Rectangle',
+                               'Ring', 'Sphere Volume', 'Sphere Surface',
                                'Tangent Ring'),
                               self.selectEmitterType)
         
@@ -237,16 +237,16 @@ class ParticlePanel(AppShell):
         self.createFloater(ringPage, 'Magnitude',
                            'Launch velocity multiplier at outer edge of ring',
                            command = self.setEmitterRingVelocityMultiplier)
-        # Sphere surface #
-        sphereSurfacePage = self.emitterNotebook.add('Sphere Surface')
-        self.createFloater(sphereSurfacePage, 'Radius',
-                           'Radius of sphere',
-                           command = self.setEmitterSphereSurfaceRadius)
         # Sphere volume #
         sphereVolumePage = self.emitterNotebook.add('Sphere Volume')
         self.createFloater(sphereVolumePage, 'Radius',
                            'Radius of sphere',
                            command = self.setEmitterSphereVolumeRadius)
+        # Sphere surface #
+        sphereSurfacePage = self.emitterNotebook.add('Sphere Surface')
+        self.createFloater(sphereSurfacePage, 'Radius',
+                           'Radius of sphere',
+                           command = self.setEmitterSphereSurfaceRadius)
         # Tangent ring # 
         tangentRingPage = self.emitterNotebook.add('Tangent Ring')
         self.createFloater(tangentRingPage, 'Radius',
@@ -476,11 +476,11 @@ class ParticlePanel(AppShell):
     # Point Page #
     # Z Spin Page #
     def setFactoryZSpinInitialAngle(self, angle):
-        print 'Factor Z Spin initial angle:', angle
+	self.particles.factory.setInitialAngle(angle)
     def setFactoryZSpinFinalAngle(self, angle):
-        print 'Factory Z Spin final angle:', angle
+	self.particles.factory.setFinaleAngle(angle)
     def setFactoryZSpinAngleSpread(self, spread):
-        print 'Factory Z Spin angle spread:', spread
+	self.particles.factory.setInitialAngleSpread(spread)
 
     ## Emitter page ##
     def selectEmitterType(self, type):
@@ -488,63 +488,59 @@ class ParticlePanel(AppShell):
 	self.particles.setEmitter(type)
     # Box #
     def setEmitterBoxPoint1(self, point):
-        print 'Emitter box point 1:', point
+	self.particles.emitter.setMinBound(Vec3(point[0], point[1], point[2]))
     def setEmitterBoxPoint2(self, point):
-        print 'Emitter box point 2:', point
+	self.particles.emitter.setMaxBound(Vec3(point[0], point[1], point[2]))
     def setEmitterBoxVelocityVector(self, vec):
         print 'Emitter box velocity vector:', vec
     # Disc #
     def setEmitterDiscRadius(self, radius):
-        print 'Emitter disc radius:', radius
+	self.particles.emitter.setRadius(radius)
     def setEmitterDiscInnerAngle(self, angle):
-        print 'Emitter disc inner angle:', angle
+	self.particles.emitter.setInnerAngle(angle)
     def setEmitterDiscInnerVelocity(self, velocity):
         print 'Emitter disc inner velocity:', velocity
     def setEmitterDiscOuterAngle(self, angle):
-        print 'Emitter disc outer angle:', angle
+	self.particles.emitter.setOuterAngle(angle)
     def setEmitterDiscOuterVelocity(self, velocity):
         print 'Emitter disc outer velocity:', velocity
     def toggleEmitterDiscCubicLerping(self):
-        print 'Emitter disc cubic lerping is ', 
-        if self.emitterDiscCubicLerping.get():
-            print 'on'
-        else:
-            print 'off'
+	self.particles.emitter.setCubicLerping(self.emitterDiscCubicLerping.get())
     # Line #
     def setEmitterLinePoint1(self, point):
-        print 'Emitter line point 1:', point
+	self.particles.emitter.setEndpoint1(Vec3(point[0], point[1], point[2]))
     def setEmitterLinePoint2(self, point):
-        print 'Emitter line point 2:', point
+	self.particles.emitter.setEndpoint2(Vec3(point[0], point[1], point[2]))
     def setEmitterLineVelocityVector(self, vec):
         print 'Emitter line velocity vector:', vec
     # Point #
     def setEmitterPointPosition(self, pos):
-        print 'Emitter point position:', pos
+	self.particles.emitter.setLocation(Vec3(pos[0], pos[1], pos[2]))
     def setEmitterPointVelocityVector(self, velocity):
         print 'Emitter point velocity:', velocity
     # Rectangle #
     def setEmitterRectanglePoint1(self, point):
-        print 'Emitter rectangle point 1:', point
+	self.particles.emitter.setMinBound(Vec3(point[0], point[1], point[2]))
     def setEmitterRectanglePoint2(self, point):
-        print 'Emitter rectangle point 2:', point
+	self.particles.emitter.setMaxBound(Vec3(point[0], point[1], point[2]))
     def setEmitterRectangleVelocityVector(self, vec):
         print 'Emitter rectangle velocity vector:', vec
     # Ring #
     def setEmitterRingRadius(self, radius):
-        print 'Emitter ring radius:', radius
+	self.particles.emitter.setRadius(radius)
     def setEmitterRingLaunchAngle(self, angle):
-        print 'Emitter ring launch angle:', angle
+	self.particles.emitter.setAngle(angle)
     def setEmitterRingVelocityMultiplier(self, multiplier):
         print 'Emitter ring velocity multiplier:', multiplier
     # Sphere surface #
     def setEmitterSphereSurfaceRadius(self, radius):
-        print 'Emitter sphere surface radius:', radius
+	self.particles.emitter.setRadius(radius)
     # Sphere volume #
     def setEmitterSphereVolumeRadius(self, radius):
-        print 'Emitter sphere volume radius:', radius
+	self.particles.emitter.setRadius(radius)
     # Tangent ring #
     def setEmitterTangentRingRadius(self, radius):
-        print 'Emitter tangent ring radius:', radius
+	self.particles.emitter.setRadius(radius)
 
     ## RENDERER PAGE ##
     def selectRendererType(self, type):
@@ -552,73 +548,57 @@ class ParticlePanel(AppShell):
 	self.particles.setRenderer(type)
     # Line #
     def setRendererLineHeadColor(self, color):
-        print 'Renderer Line head color:', color
+	self.particles.renderer.setHeadColor(Vec4(color[0], color[1], color[2], color[3]))
     def setRendererLineTailColor(self, color):
-        print 'Renderer Line tail color:', color
+	self.particles.renderer.setTailColor(Vec4(color[0], color[1], color[2], color[3]))
     # Geom #
     def setRendererGeomNode(self, event):
-        print 'Renderer Geom node:', self.rendererGeomNode.get()
+	self.particles.renderer.setGeomNode(self.rendererGeomNode.get())
     # Point #
     def setRendererPointSize(self, size):
-        print 'Renderer Point size:', size
+	self.particles.renderer.setPointSize(size)
     def setRendererPointStartColor(self, color):
-        print 'Renderer Point start color:', color
+	self.particles.renderer.setStartColor(Vec4(color[0], color[1], color[2], color[3]))
     def setRendererPointEndColor(self, color):
-        print 'Renderer Point end color:', color
+	self.particles.renderer.setEndColor(Vec4(color[0], color[1], color[2], color[3]))
     def rendererPointSelectBlendType(self, type):
-        print 'Renderer Point blend type:', type
+	self.particles.renderer.setBlendType(type)
     def rendererPointSelectBlendMethod(self, method):
-        print 'Renderer Point blend method:', method
+	self.particles.renderer.setBlendMethod(method)
     # Sparkle #
     def setRendererSparkleCenterColor(self, color):
-        print 'Renderer Sparkle center color:', color
+	self.particles.renderer.setCenterColor(Vec4(color[0], color[1], color[2], color[3]))
     def setRendererSparkleEdgeColor(self, color):
-        print 'Renderer Sparkle edge color:', color
+	self.particles.renderer.setEdgeColor(Vec4(color[0], color[1], color[2], color[3]))
     def setRendererSparkleBirthRadius(self, radius):
-        print 'Renderer Sparkle birth radius:', radius
+	self.particles.renderer.setBirthRadius(radius)
     def setRendererSparkleDeathRadius(self, radius):
-        print 'Renderer Sparkle death radius:', radius
+	self.particles.renderer.setDeathRadius(radius)
     def setRendererSparkleLifeScale(self, method):
-        print 'Renderer Sparkle life scale:', method
+	self.particles.renderer.setLifeScale(method)
     # Sprite #
     def setRendererSpriteTexture(self, event):
-        print 'Sprite texture:', self.rendererSpriteTexture.get()
+	self.particles.renderer.setTexture(self.rendererSpriteTexture.get())
     def toggleRendererSpriteXScale(self):
-        print 'Renderer Sprite x scale is ', 
-        if self.rendererSpriteXScale.get():
-            print 'on'
-        else:
-            print 'off'
+	self.particles.renderer.setXScaleFlag(self.rendererSpriteXScale.get())
     def toggleRendererSpriteYScale(self):
-        print 'Renderer Sprite y scale is ', 
-        if self.rendererSpriteYScale.get():
-            print 'on'
-        else:
-            print 'off'
+	self.particles.renderer.setYScaleFlag(self.rendererSpriteYScale.get())
     def toggleRendererSpriteAnimAngle(self):
-        print 'Renderer Sprite anim angle is ', 
-        if self.rendererSpriteAnimAngle.get():
-            print 'on'
-        else:
-            print 'off'
+	self.particles.renderer.setAnimAngleFlag(self.rendererSpriteAnimAngle.get())
     def setRendererSpriteInitialXScale(self, xScale):
-        print 'Renderer Sprite initial x scale:', xScale
+	self.particles.renderer.setInitialXScale(xScale)
     def setRendererSpriteFinalXScale(self, xScale):
-        print 'Renderer Sprite final x scale:', xScale
+	self.particles.renderer.setFinalXScale(xScale)
     def setRendererSpriteInitialYScale(self, yScale):
-        print 'Renderer Sprite initial y scale:', yScale
+	self.particles.renderer.setInitialYScale(yScale)
     def setRendererSpriteFinalYScale(self, yScale):
-        print 'Renderer Sprite final y scale:', yScale
+	self.particles.renderer.setFinalYScale(yScale)
     def setRendererSpriteNonAnimatedTheta(self, theta):
-        print 'Renderer Sprite non animated theta:', theta
+	self.particles.renderer.setNonanimatedTheta(theta)
     def setRendererSpriteBlendMethod(self, method):
-        print 'Renderer Sprite blend method:', method
+	self.particles.renderer.setAlphaBlendMethod(method)
     def toggleRendererSpriteAlphaDisable(self):
-        print 'Renderer Sprite alpha disable is ', 
-        if self.rendererSpriteAlphaDisable.get():
-            print 'on'
-        else:
-            print 'off'
+	self.particles.renderer.setAlphaDisable(self.rendererSpriteAlphaDisable.get())
         
     def selectSystemNamed(self, name):
         print name
