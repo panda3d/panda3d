@@ -181,7 +181,7 @@ class ClusterServer(DirectObject.DirectObject):
         (x,y,z,h,p,r) = self.msgHandler.parseCamOffsetDatagram(dgi)
         self.lens.setIodOffset(x)
         self.lens.setViewHpr(h,p,r)
-        
+
     def handleCamFrustum(self,dgi):
         """ Adjust camera frustum based on parameters sent by client """
         (fl,fs,fo) = self.msgHandler.parseCamFrustumDatagram(dgi)
@@ -217,5 +217,5 @@ class ClusterServer(DirectObject.DirectObject):
             exec( command, __builtins__ )
         except:
             pass
-        
+
 
