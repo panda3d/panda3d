@@ -35,7 +35,7 @@ public:
   EggTransform3d();
   EggTransform3d(const EggTransform3d &copy);
   EggTransform3d &operator = (const EggTransform3d &copy);
-  ~EggTransform3d();
+  virtual ~EggTransform3d();
 
   INLINE void clear_transform();
 
