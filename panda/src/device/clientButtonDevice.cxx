@@ -19,7 +19,7 @@
 
 #include "clientButtonDevice.h"
 
-#include <indent.h>
+#include "indent.h"
 
 TypeHandle ClientButtonDevice::_type_handle;
 
@@ -32,7 +32,7 @@ ClientButtonDevice::
 ClientButtonDevice(ClientBase *client, const string &device_name):
   ClientDevice(client, get_class_type(), device_name)
 {
-  _button_events = new ButtonEventDataTransition();
+  _button_events = new ButtonEventList();
 }
 
 
@@ -53,7 +53,7 @@ set_button_state(int index, bool down) {
 
   ButtonHandle handle = _buttons[index]._handle;
   if (handle != ButtonHandle::none()) {
-    _button_events->push_back(ButtonEvent(handle, down ? ButtonEvent::T_down : ButtonEvent::T_up));
+    _button_events->add_event(ButtonEvent(handle, down ? ButtonEvent::T_down : ButtonEvent::T_up));
   }
 }
 

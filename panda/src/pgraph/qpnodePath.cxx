@@ -141,7 +141,7 @@ get_children() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qoNodePath::find
+//     Function: qpNodePath::find
 //       Access: Published
 //  Description: Searches for a node below the referenced node that
 //               matches the indicated string.  Returns the shortest
@@ -154,6 +154,30 @@ find(const string &path) const {
 
   qpNodePathCollection col;
   find_matches(col, path, 1);
+
+  if (col.is_empty()) {
+    return qpNodePath::not_found();
+  }
+
+  return col.get_path(0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::find_path_to
+//       Access: Published
+//  Description: Searches for the indicated node below this node and
+//               returns the shortest NodePath that connects them.
+////////////////////////////////////////////////////////////////////
+qpNodePath qpNodePath::
+find_path_to(PandaNode *node) const {
+  nassertr_always(!is_empty(), fail());
+  nassertr(node != (PandaNode *)NULL, fail());
+
+  qpNodePathCollection col;
+  qpFindApproxPath approx_path;
+  approx_path.add_match_many(0);
+  approx_path.add_match_pointer(node, 0);
+  find_matches(col, approx_path, 1);
 
   if (col.is_empty()) {
     return qpNodePath::not_found();
@@ -863,7 +887,25 @@ heads_up(const LPoint3f &point, const LVector3f &up) {
 void qpNodePath::
 set_pos(const qpNodePath &other, const LVecBase3f &pos) {
   nassertv_always(!is_empty());
-  set_transform(other, get_transform(other)->set_pos(pos));
+  CPT(TransformState) rel_transform = get_transform(other);
+
+  CPT(TransformState) orig_transform = get_transform();
+  if (orig_transform->has_components()) {
+    // If we had a componentwise transform before we started, we
+    // should be careful to preserve the other two components.  We
+    // wouldn't need to do this, except for the possibility of
+    // numerical error or decompose ambiguity.
+    const LVecBase3f &orig_hpr = orig_transform->get_hpr();
+    const LVecBase3f &orig_scale = orig_transform->get_scale();
+
+    set_transform(other, rel_transform->set_pos(pos));
+    set_pos_hpr_scale(get_transform()->get_pos(), orig_hpr, orig_scale);
+
+  } else {
+    // If we didn't have a componentwise transform already, never
+    // mind.
+    set_transform(other, rel_transform->set_pos(pos));
+  }
 }
 
 void qpNodePath::
@@ -911,39 +953,53 @@ get_pos(const qpNodePath &other) const {
 void qpNodePath::
 set_hpr(const qpNodePath &other, const LVecBase3f &hpr) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform(other);
-  nassertv(transform->has_components());
-  set_transform(other, transform->set_hpr(hpr));
+  CPT(TransformState) rel_transform = get_transform(other);
+  nassertv(rel_transform->has_components());
+
+  CPT(TransformState) orig_transform = get_transform();
+  if (orig_transform->has_components()) {
+    // If we had a componentwise transform before we started, we
+    // should be careful to preserve the other two components.  We
+    // wouldn't need to do this, except for the possibility of
+    // numerical error or decompose ambiguity.
+    const LVecBase3f &orig_pos = orig_transform->get_pos();
+    const LVecBase3f &orig_scale = orig_transform->get_scale();
+
+    set_transform(other, rel_transform->set_hpr(hpr));
+    const TransformState *new_transform = get_transform();
+    if (new_transform->has_components()) {
+      set_pos_hpr_scale(orig_pos, new_transform->get_hpr(), orig_scale);
+    }
+
+  } else {
+    // If we didn't have a componentwise transform already, never
+    // mind.
+    set_transform(other, rel_transform->set_hpr(hpr));
+  }
 }
 
 void qpNodePath::
 set_h(const qpNodePath &other, float h) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform(other);
-  nassertv(transform->has_components());
-  LVecBase3f hpr = transform->get_hpr();
+  LVecBase3f hpr = get_hpr(other);
   hpr[0] = h;
-  set_transform(other, transform->set_hpr(hpr));
+  set_hpr(other, hpr);
 }
 
 void qpNodePath::
 set_p(const qpNodePath &other, float p) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform(other);
-  nassertv(transform->has_components());
-  LVecBase3f hpr = transform->get_hpr();
+  LVecBase3f hpr = get_hpr(other);
   hpr[1] = p;
-  set_transform(other, transform->set_hpr(hpr));
+  set_hpr(other, hpr);
 }
 
 void qpNodePath::
 set_r(const qpNodePath &other, float r) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform(other);
-  nassertv(transform->has_components());
-  LVecBase3f hpr = transform->get_hpr();
+  LVecBase3f hpr = get_hpr(other);
   hpr[2] = r;
-  set_transform(other, transform->set_hpr(hpr));
+  set_hpr(other, hpr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -985,39 +1041,53 @@ get_hpr(const qpNodePath &other, float roll) const {
 void qpNodePath::
 set_scale(const qpNodePath &other, const LVecBase3f &scale) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform(other);
-  nassertv(transform->has_components());
-  set_transform(other, transform->set_scale(scale));
+  CPT(TransformState) rel_transform = get_transform(other);
+  nassertv(rel_transform->has_components());
+
+  CPT(TransformState) orig_transform = get_transform();
+  if (orig_transform->has_components()) {
+    // If we had a componentwise transform before we started, we
+    // should be careful to preserve the other two components.  We
+    // wouldn't need to do this, except for the possibility of
+    // numerical error or decompose ambiguity.
+    const LVecBase3f &orig_pos = orig_transform->get_pos();
+    const LVecBase3f &orig_hpr = orig_transform->get_hpr();
+
+    set_transform(other, rel_transform->set_scale(scale));
+    const TransformState *new_transform = get_transform();
+    if (new_transform->has_components()) {
+      set_pos_hpr_scale(orig_pos, orig_hpr, new_transform->get_scale());
+    }
+
+  } else {
+    // If we didn't have a componentwise transform already, never
+    // mind.
+    set_transform(other, rel_transform->set_scale(scale));
+  }
 }
 
 void qpNodePath::
 set_sx(const qpNodePath &other, float sx) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform(other);
-  nassertv(transform->has_components());
-  LVecBase3f scale = transform->get_scale();
+  LVecBase3f scale = get_scale(other);
   scale[0] = sx;
-  set_transform(other, transform->set_scale(scale));
+  set_scale(other, scale);
 }
 
 void qpNodePath::
 set_sy(const qpNodePath &other, float sy) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform(other);
-  nassertv(transform->has_components());
-  LVecBase3f scale = transform->get_scale();
+  LVecBase3f scale = get_scale(other);
   scale[1] = sy;
-  set_transform(other, transform->set_scale(scale));
+  set_scale(other, scale);
 }
 
 void qpNodePath::
 set_sz(const qpNodePath &other, float sz) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform(other);
-  nassertv(transform->has_components());
-  LVecBase3f scale = transform->get_scale();
+  LVecBase3f scale = get_scale(other);
   scale[2] = sz;
-  set_transform(other, transform->set_scale(scale));
+  set_scale(other, scale);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1044,11 +1114,31 @@ void qpNodePath::
 set_pos_hpr(const qpNodePath &other, const LVecBase3f &pos,
             const LVecBase3f &hpr) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform(other);
-  nassertv(transform->has_components());
-  transform = TransformState::make_pos_hpr_scale
-    (pos, hpr, transform->get_scale());
-  set_transform(other, transform);
+  CPT(TransformState) rel_transform = get_transform(other);
+  nassertv(rel_transform->has_components());
+
+  CPT(TransformState) orig_transform = get_transform();
+  if (orig_transform->has_components()) {
+    // If we had a componentwise transform before we started, we
+    // should be careful to preserve the other two components.  We
+    // wouldn't need to do this, except for the possibility of
+    // numerical error or decompose ambiguity.
+    const LVecBase3f &orig_scale = orig_transform->get_scale();
+
+    set_transform(other, TransformState::make_pos_hpr_scale
+                  (pos, hpr, rel_transform->get_scale()));
+    const TransformState *new_transform = get_transform();
+    if (new_transform->has_components()) {
+      set_pos_hpr_scale(new_transform->get_pos(), new_transform->get_hpr(),
+                        orig_scale);
+    }
+
+  } else {
+    // If we didn't have a componentwise transform already, never
+    // mind.
+    set_transform(other, TransformState::make_pos_hpr_scale
+                  (pos, hpr, rel_transform->get_scale()));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1061,6 +1151,10 @@ set_pos_hpr(const qpNodePath &other, const LVecBase3f &pos,
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 set_hpr_scale(const qpNodePath &other, const LVecBase3f &hpr, const LVecBase3f &scale) {
+  // We don't bother trying very hard to preserve pos across this
+  // operation, unlike the work we do above to preserve hpr or scale,
+  // since it generally doesn't matter that much if pos is off by a
+  // few thousandths.
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform(other);
   transform = TransformState::make_pos_hpr_scale

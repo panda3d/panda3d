@@ -19,14 +19,14 @@
 #ifndef CLIENTBUTTONDEVICE_H
 #define CLIENTBUTTONDEVICE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "clientDevice.h"
 
-#include <buttonHandle.h>
-#include <buttonEvent.h>
-#include <buttonEventDataTransition.h>
-#include <pointerTo.h>
+#include "buttonHandle.h"
+#include "buttonEvent.h"
+#include "buttonEventList.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ClientButtonDevice
@@ -52,7 +52,7 @@ public:
   INLINE bool get_button_state(int index) const;
   INLINE bool is_button_known(int index) const;
 
-  INLINE ButtonEventDataTransition *get_button_events() const;
+  INLINE ButtonEventList *get_button_events() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -81,7 +81,7 @@ protected:
   typedef pvector<ButtonState> Buttons;
   Buttons _buttons;
 
-  PT(ButtonEventDataTransition) _button_events;
+  PT(ButtonEventList) _button_events;
 
 public:
   static TypeHandle get_class_type() {

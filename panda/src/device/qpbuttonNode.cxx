@@ -120,8 +120,7 @@ do_transmit_data(const DataNodeTransmit &, DataNodeTransmit &output) {
     _button->poll();
     _button->lock();
 
-    // *** here we should copy the button events from the ClientButtonDevice.
-    //    (*_button_events) = (*_button->get_button_events());
+    (*_button_events) = (*_button->get_button_events());
 
     _button->get_button_events()->clear();
     _button->unlock();

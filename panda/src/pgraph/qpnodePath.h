@@ -187,6 +187,7 @@ PUBLISHED:
   INLINE qpNodePath get_parent() const;
 
   qpNodePath find(const string &path) const;
+  qpNodePath find_path_to(PandaNode *node) const;
   qpNodePathCollection find_all_matches(const string &path) const;
   qpNodePathCollection find_all_paths_to(PandaNode *node) const;
 
@@ -216,13 +217,13 @@ PUBLISHED:
 
 
   // Aggregate transform and state information.
-  INLINE CPT(RenderState) get_state() const;
+  INLINE const RenderState *get_state() const;
   INLINE void set_state(const RenderState *state) const;
   CPT(RenderState) get_state(const qpNodePath &other) const;
   void set_state(const qpNodePath &other, const RenderState *state) const;
   INLINE CPT(RenderState) get_net_state() const;
 
-  INLINE CPT(TransformState) get_transform() const;
+  INLINE const TransformState *get_transform() const;
   INLINE void set_transform(const TransformState *transform) const;
   CPT(TransformState) get_transform(const qpNodePath &other) const;
   void set_transform(const qpNodePath &other, const TransformState *transform) const;

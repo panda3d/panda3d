@@ -376,7 +376,7 @@ ls(ostream &out, int indent_level) const {
 //       Access: Published
 //  Description: Returns the complete state object set on this node.
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(RenderState) qpNodePath::
+INLINE const RenderState *qpNodePath::
 get_state() const {
   nassertr_always(!is_empty(), RenderState::make_empty());
   return node()->get_state();
@@ -409,7 +409,7 @@ get_net_state() const {
 //       Access: Published
 //  Description: Returns the complete transform object set on this node.
 ////////////////////////////////////////////////////////////////////
-INLINE CPT(TransformState) qpNodePath::
+INLINE const TransformState *qpNodePath::
 get_transform() const {
   nassertr_always(!is_empty(), TransformState::make_identity());
   return node()->get_transform();

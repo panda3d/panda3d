@@ -119,7 +119,10 @@ transmit_data(AllTransitionsWrapper &data) {
   if (is_valid()) {
     _button->poll();
     _button->lock();
-    (*_button_events) = (*_button->get_button_events());
+
+    // We can no longer copy these in the old scene graph.
+    //    (*_button_events) = (*_button->get_button_events());
+
     _button->get_button_events()->clear();
     _button->unlock();
 
