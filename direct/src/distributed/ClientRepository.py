@@ -37,8 +37,8 @@ class ClientRepository(DirectObject.DirectObject):
         # (e.g. QueuedConnectionManager, etc.) to establish the
         # connection, which ultimately uses the NSPR socket library.
         # This is a much better socket library, but it may be more
-        # than you need for most applications; and the Panda net
-        # interface doesn't support proxies at all.
+        # than you need for most applications; and the proxy support
+        # is weak.
         self.connectHttp = base.config.GetBool('connect-http', 1)
 
         self.tcpConn = None
@@ -85,11 +85,15 @@ class ClientRepository(DirectObject.DirectObject):
                                       failureCallback, failureArgs])
         else:
             self.qcm = QueuedConnectionManager()
+            # A big old 20 second timeout.
             gameServerTimeoutMs = base.config.GetInt("game-server-timeout-ms",
                                                      20000)
-            # A big old 20 second timeout.
+            if self.hasProxy:
+                url = self.proxy
+            else:
+                url = serverURL
             self.tcpConn = self.qcm.openTCPClientConnection(
-                serverURL.getServer(), serverURL.getPort(),
+                url.getServer(), url.getPort(),
                 gameServerTimeoutMs)
 
             if self.tcpConn:
@@ -97,9 +101,37 @@ class ClientRepository(DirectObject.DirectObject):
                 self.qcr=QueuedConnectionReader(self.qcm, 0)
                 self.qcr.addConnection(self.tcpConn)
                 self.cw=ConnectionWriter(self.qcm, 0)
-                self.startReaderPollTask()
-                if successCallback:
-                    successCallback(*successArgs)
+                if self.hasProxy:
+                    # Now we send an http CONNECT message on that
+                    # connection to initiate a connection to the real
+                    # game server
+                    realGameServer = (serverURL.getServer() + ":" + str(serverURL.getPort()))
+                    connectString = "CONNECT " + realGameServer + " HTTP/1.0\012\012"
+                    datagram = Datagram()
+                    # Use appendData and sendRaw so we do not send the length of the string
+                    datagram.appendData(connectString)
+                    self.notify.info("Sending CONNECT string: " + connectString)
+                    self.cw.setRawMode(1)
+                    self.qcr.setRawMode(1)
+                    self.notify.info("done set raw mode")
+                    self.send(datagram)
+                    self.notify.info("done send datagram")
+                    # Find the end of the http response, then call callback
+                    self.findRawString(["\015\012", "\015\015"],
+                                       self.proxyConnectCallback, [successCallback, successArgs])
+                    self.notify.info("done find raw string")
+                    # Now start the raw reader poll task and look for
+                    # the HTTP response When this is finished, it will
+                    # call the connect callback just like the non
+                    # proxy case
+                    self.startRawReaderPollTask()
+                    self.notify.info("done start raw reader poll task")
+
+                else:
+                    # no proxy.  We're done connecting.
+                    self.startReaderPollTask()
+                    if successCallback:
+                        successCallback(*successArgs)
             else:
                 # Failed to connect.
                 if failureCallback:
@@ -118,6 +150,64 @@ class ClientRepository(DirectObject.DirectObject):
             # Failed to connect.
             if failureCallback:
                 failureCallback(ch.getStatusCode(), *failureArgs)
+    
+    def proxyConnectCallback(self, successCallback, successArgs):
+        # Make sure we are not in raw mode anymore
+        self.cw.setRawMode(0)
+        self.qcr.setRawMode(0)
+        self.stopRawReaderPollTask()
+        if successCallback:
+            successCallback(*successArgs)
+
+    def startRawReaderPollTask(self):
+        # Stop any tasks we are running now
+        self.stopRawReaderPollTask()
+        self.stopReaderPollTask()
+        task = Task.Task(self.rawReaderPollUntilEmpty)
+        # Start with empty string
+        task.currentRawString = ""
+        taskMgr.add(task, "rawReaderPollTask", priority=self.TASK_PRIORITY)
+        return None
+
+    def stopRawReaderPollTask(self):
+        taskMgr.remove("rawReaderPollTask")
+        return None
+
+    def rawReaderPollUntilEmpty(self, task):
+        while self.rawReaderPollOnce():
+            pass
+        return Task.cont
+
+    def rawReaderPollOnce(self):
+        self.notify.debug("rawReaderPollOnce")
+        self.ensureValidConnection()
+        availGetVal = self.qcr.dataAvailable()
+        if availGetVal:
+            datagram = NetDatagram()
+            readRetVal = self.qcr.getData(datagram)
+            if readRetVal:
+                str = datagram.getMessage()
+                self.notify.debug("rawReaderPollOnce: found str: " + str)
+                self.handleRawString(str)
+            else:
+                ClientRepository.notify.warning("getData returned false")
+        return availGetVal
+
+    def handleRawString(self, str):
+        self.notify.info("handleRawString: str = <%s>" % (str))
+        self.currentRawString += str
+        self.notify.info("currentRawString = <%s>" % (self.currentRawString))
+        # Look in all the match strings to see if we got it yet
+        for matchString in self.rawStringMatchList:
+            if (self.currentRawString.find(matchString) >= 0):
+                self.rawStringCallback(*self.rawStringExtraArgs)
+                return
+
+    def findRawString(self, matchList, callback, extraArgs = []):
+        self.currentRawString = ""
+        self.rawStringMatchList = matchList
+        self.rawStringCallback = callback
+        self.rawStringExtraArgs = extraArgs
             
     def startReaderPollTask(self):
         # Stop any tasks we are running now
