@@ -241,48 +241,42 @@ class Placer(AppShell):
         
         # Create the dials
         self.hprH = self.createcomponent('hprH', (), None,
-                                         Dial.Dial, (hprInterior,),
-                                         text = 'H', fRollover = 0,
-                                         max = 360.0, numTicks = 12,
-                                         initialValue = 0.0,
+                                         Dial.AngleDial, (hprInterior,),
+                                         text = 'H', value = 0.0,
                                          label_foreground = 'blue')
         self.hprH['command'] = self.xform
         self.hprH['commandData'] = ['h']
         self.hprH['callbackData'] = ['h']
-        self.hprH.onReturn = self.xformStart
-        self.hprH.onReturnRelease = self.xformStop
-        self.hprH.onPress = self.xformStart
-        self.hprH.onRelease = self.xformStop
+        self.hprH['onReturnPress'] = self.xformStart
+        self.hprH['onReturnRelease'] = self.xformStop
+        self.hprH['onButtonPress'] = self.xformStart
+        self.hprH['onButtonRelease'] = self.xformStop
         self.hprH.pack(expand=1,fill='both')
         
         self.hprP = self.createcomponent('hprP', (), None,
-                                         Dial.Dial, (hprInterior,),
-                                         text = 'P', fRollover = 0,
-                                         max = 360.0, numTicks = 12,
-                                         initialValue = 0.0,
+                                         Dial.AngleDial, (hprInterior,),
+                                         text = 'P', value = 0.0,
                                          label_foreground = 'red')
         self.hprP['command'] = self.xform
         self.hprP['commandData'] = ['p']
         self.hprP['callbackData'] = ['p']
-        self.hprP.onReturn = self.xformStart
-        self.hprP.onReturnRelease = self.xformStop
-        self.hprP.onPress = self.xformStart
-        self.hprP.onRelease = self.xformStop
+        self.hprP['onReturnPress'] = self.xformStart
+        self.hprP['onReturnRelease'] = self.xformStop
+        self.hprP['onButtonPress'] = self.xformStart
+        self.hprP['onButtonRelease'] = self.xformStop
         self.hprP.pack(expand=1,fill='both')
         
         self.hprR = self.createcomponent('hprR', (), None,
-                                         Dial.Dial, (hprInterior,),
-                                         text = 'R', fRollover = 0,
-                                         max = 360.0, numTicks = 12,
-                                         initialValue = 0.0,
+                                         Dial.AngleDial, (hprInterior,),
+                                         text = 'R', value = 0.0,
                                          label_foreground = '#00A000')
         self.hprR['command'] = self.xform
         self.hprR['commandData'] = ['r']
         self.hprR['callbackData'] = ['r']
-        self.hprR.onReturn = self.xformStart
-        self.hprR.onReturnRelease = self.xformStop
-        self.hprR.onPress = self.xformStart
-        self.hprR.onRelease = self.xformStop
+        self.hprR['onReturnPress'] = self.xformStart
+        self.hprR['onReturnRelease'] = self.xformStop
+        self.hprR['onButtonPress'] = self.xformStart
+        self.hprR['onButtonRelease'] = self.xformStop
         self.hprR.pack(expand=1,fill='both')
 
         # Create and pack the Scale Controls
@@ -321,43 +315,46 @@ class Placer(AppShell):
         self.scaleX = self.createcomponent('scaleX', (), None,
                                            Dial.Dial, (scaleInterior,),
                                            text = 'X Scale',
-                                           initialValue = 1.0,
+                                           min = 0.0001, value = 1.0,
+                                           resetValue = 1.0,
                                            label_foreground = 'Red')
         self.scaleX['command'] = self.xform
         self.scaleX['commandData'] = ['sx']
         self.scaleX['callbackData'] = ['sx']
-        self.scaleX.onReturn = self.xformStart
-        self.scaleX.onReturnRelease = self.xformStop
-        self.scaleX.onPress = self.xformStart
-        self.scaleX.onRelease = self.xformStop
+        self.scaleX['onReturnPress'] = self.xformStart
+        self.scaleX['onReturnRelease'] = self.xformStop
+        self.scaleX['onButtonPress'] = self.xformStart
+        self.scaleX['onButtonRelease'] = self.xformStop
         self.scaleX.pack(expand=1,fill='both')
         
         self.scaleY = self.createcomponent('scaleY', (), None,
                                            Dial.Dial, (scaleInterior,),
                                            text = 'Y Scale',
-                                           initialValue = 1.0,
+                                           min = 0.0001, value = 1.0,
+                                           resetValue = 1.0,
                                            label_foreground = '#00A000')
         self.scaleY['command'] = self.xform
         self.scaleY['commandData'] = ['sy']
         self.scaleY['callbackData'] = ['sy']
-        self.scaleY.onReturn = self.xformStart
-        self.scaleY.onReturnRelease = self.xformStop
-        self.scaleY.onPress = self.xformStart
-        self.scaleY.onRelease = self.xformStop
+        self.scaleY['onReturnPress'] = self.xformStart
+        self.scaleY['onReturnRelease'] = self.xformStop
+        self.scaleY['onButtonPress'] = self.xformStart
+        self.scaleY['onButtonRelease'] = self.xformStop
         self.scaleY.pack(expand=1,fill='both')
         
         self.scaleZ = self.createcomponent('scaleZ', (), None,
                                            Dial.Dial, (scaleInterior,),
                                            text = 'Z Scale',
-                                           initialValue = 1.0,
+                                           min = 0.0001, value = 1.0,
+                                           resetValue = 1.0,
                                            label_foreground = 'Blue')
         self.scaleZ['command'] = self.xform
         self.scaleZ['commandData'] = ['sz']
         self.scaleZ['callbackData'] = ['sz']
-        self.scaleZ.onReturn = self.xformStart
-        self.scaleZ.onReturnRelease = self.xformStop
-        self.scaleZ.onPress = self.xformStart
-        self.scaleZ.onRelease = self.xformStop
+        self.scaleZ['onReturnPress'] = self.xformStart
+        self.scaleZ['onReturnRelease'] = self.xformStop
+        self.scaleZ['onButtonPress'] = self.xformStart
+        self.scaleZ['onButtonRelease'] = self.xformStop
         self.scaleZ.pack(expand=1,fill='both')
 
         # Make sure appropriate labels are showing

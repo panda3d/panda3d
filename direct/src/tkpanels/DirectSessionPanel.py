@@ -490,13 +490,10 @@ class DirectSessionPanel(AppShell):
         self.gridSize['command'] = direct.grid.setGridSize
         self.gridSize.pack(fill = X, expand = 0)
 
-        self.gridSnapAngle = Dial.Dial(
+        self.gridSnapAngle = Dial.AngleDial(
             gridPage,
             text = 'Snap Angle',
-            min = 0.0, max = 360.0,
-            numTicks = 12,
-            fRollover = 0,
-            initialValue = direct.grid.getSnapAngle())
+            value = direct.grid.getSnapAngle())
         self.gridSnapAngle['command'] = direct.grid.setSnapAngle
         self.gridSnapAngle.pack(fill = X, expand = 0)
 
