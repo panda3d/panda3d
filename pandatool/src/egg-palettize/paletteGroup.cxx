@@ -23,11 +23,13 @@
 #include "palettizer.h"
 #include "paletteImage.h"
 
-#include <indent.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "indent.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "indirectCompareNames.h"
+#include "pvector.h"
 
 TypeHandle PaletteGroup::_type_handle;
 
@@ -491,28 +493,42 @@ write_image_info(ostream &out, int indent_level) const {
     page->write_image_info(out, indent_level);
   }
 
+  // Write out all the unplaced textures, in alphabetical order by name.
+  pvector<TexturePlacement *> placement_vector;
+  placement_vector.reserve(_placements.size());
   Placements::const_iterator pli;
   for (pli = _placements.begin(); pli != _placements.end(); ++pli) {
     TexturePlacement *placement = (*pli);
     if (placement->get_omit_reason() != OR_none) {
-      indent(out, indent_level)
-        << placement->get_texture()->get_name()
-        << " unplaced because ";
-      switch (placement->get_omit_reason()) {
-      case OR_coverage:
-        out << "coverage (" << placement->get_uv_area() << ")";
-        break;
-
-      case OR_size:
-        out << "size (" << placement->get_x_size() << " "
-            << placement->get_y_size() << ")";
-        break;
-
-      default:
-        out << placement->get_omit_reason();
-      }
-      out << "\n";
+      placement_vector.push_back(placement);
     }
+  }
+  sort(placement_vector.begin(), placement_vector.end(),
+       IndirectCompareNames<TexturePlacement>());
+
+  pvector<TexturePlacement *>::const_iterator pvi;
+  for (pvi = placement_vector.begin(); 
+       pvi != placement_vector.end();
+       ++pvi) {
+    TexturePlacement *placement = (*pvi);
+
+    indent(out, indent_level)
+      << placement->get_texture()->get_name()
+      << " unplaced because ";
+    switch (placement->get_omit_reason()) {
+    case OR_coverage:
+      out << "coverage (" << placement->get_uv_area() << ")";
+      break;
+      
+    case OR_size:
+      out << "size (" << placement->get_x_size() << " "
+          << placement->get_y_size() << ")";
+      break;
+      
+    default:
+      out << placement->get_omit_reason();
+    }
+    out << "\n";
   }
 }
 
@@ -716,13 +732,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _dirname = scan.get_string();
   _dependent.fillin(scan, manager);
 
-  if (Palettizer::_read_pi_version >= 3) {
-    _dependency_level = scan.get_int32();
-    _dependency_order = scan.get_int32();
-    if (Palettizer::_read_pi_version >= 4) {
-      _dirname_order = scan.get_int32();
-    }
-  }
+  _dependency_level = scan.get_int32();
+  _dependency_order = scan.get_int32();
+  _dirname_order = scan.get_int32();
 
   _num_placements = scan.get_uint32();
   manager->read_pointers(scan, _num_placements);

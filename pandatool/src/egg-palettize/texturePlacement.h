@@ -19,13 +19,13 @@
 #ifndef TEXTUREPLACEMENT_H
 #define TEXTUREPLACEMENT_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "omitReason.h"
 #include "texturePosition.h"
 
-#include <typedWritable.h>
-#include <luse.h>
+#include "typedWritable.h"
+#include "luse.h"
 
 #include "pset.h"
 
@@ -54,6 +54,7 @@ public:
   TexturePlacement(TextureImage *texture, PaletteGroup *group);
   ~TexturePlacement();
 
+  const string &get_name() const;
   TextureImage *get_texture() const;
   const TextureProperties &get_properties() const;
   PaletteGroup *get_group() const;

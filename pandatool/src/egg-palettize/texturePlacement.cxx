@@ -25,12 +25,12 @@
 #include "eggFile.h"
 #include "destTextureImage.h"
 
-#include <indent.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <pnmImage.h>
+#include "indent.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "pnmImage.h"
 
 TypeHandle TexturePlacement::_type_handle;
 
@@ -96,6 +96,17 @@ TexturePlacement::
 
   // And also our group, etc.
   _group->unplace(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePlacement::get_name
+//       Access: Public
+//  Description: Returns the name of the texture that this placement
+//               represents.
+////////////////////////////////////////////////////////////////////
+const string &TexturePlacement::
+get_name() const {
+  return _texture->get_name();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -213,7 +224,7 @@ get_dest() const {
 //               file is unknown).
 //
 //               After this returns true, get_x_size() and
-//               get_y_size() can be safely called.
+//               get_y_size() may safely be called.
 ////////////////////////////////////////////////////////////////////
 bool TexturePlacement::
 determine_size() {
@@ -328,6 +339,7 @@ determine_size() {
     // explicitly, or because of its size or coverage, now it seems to
     // fit.
     force_replace();
+    mark_eggs_stale();
     _omit_reason = OR_working;
 
   } else if (is_placed()) {
@@ -981,12 +993,10 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   }
   index++;
 
-  if (Palettizer::_read_pi_version >= 2) {
-    if (p_list[index] != (TypedWritable *)NULL) {
-      DCAST_INTO_R(_dest, p_list[index], index);
-    }
-    index++;
+  if (p_list[index] != (TypedWritable *)NULL) {
+    DCAST_INTO_R(_dest, p_list[index], index);
   }
+  index++;
 
   int i;
   for (i = 0; i < _num_references; i++) {
@@ -1032,10 +1042,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan);  // _texture
   manager->read_pointer(scan);  // _group
   manager->read_pointer(scan);  // _image
-
-  if (Palettizer::_read_pi_version >= 2) {
-    manager->read_pointer(scan);  // _dest
-  }
+  manager->read_pointer(scan);  // _dest
 
   _has_uvs = scan.get_bool();
   _size_known = scan.get_bool();

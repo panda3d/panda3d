@@ -19,13 +19,13 @@
 #ifndef PALETTEGROUP_H
 #define PALETTEGROUP_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "paletteGroups.h"
 #include "textureProperties.h"
 
-#include <namable.h>
-#include <typedWritable.h>
+#include "namable.h"
+#include "typedWritable.h"
 
 #include "pset.h"
 #include "pvector.h"

@@ -302,9 +302,20 @@ update_egg() {
   // image wants.
   TextureImage *texture = get_texture();
   if (texture != (TextureImage *)NULL) {
-    EggRenderMode::AlphaMode am = texture->get_alpha_mode();
-    if (am != EggRenderMode::AM_unspecified) {
-      _egg_tex->set_alpha_mode(am);
+    if (texture->has_num_channels() && 
+        !_egg_tex->has_alpha_channel(texture->get_num_channels())) {
+      // The egg file doesn't want to use the alpha on the texture;
+      // leave it unspecified so the egg loader can figure out whether
+      // to enable alpha or not based on the object color.
+      _egg_tex->set_alpha_mode(EggRenderMode::AM_unspecified);
+
+    } else {
+      // The egg file does want alpha, so get the alpha mode from the
+      // texture.
+      EggRenderMode::AlphaMode am = texture->get_alpha_mode();
+      if (am != EggRenderMode::AM_unspecified) {
+        _egg_tex->set_alpha_mode(am);
+      }
     }
   }
 
@@ -357,6 +368,20 @@ update_egg() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureReference::apply_properties_to_source
+//       Access: Public
+//  Description: Applies the texture properties as read from the egg
+//               file to the source image's properties.  This updates
+//               the source image with the now-known properties
+//               indicated with in the tref block of the egg file.
+////////////////////////////////////////////////////////////////////
+void TextureReference::
+apply_properties_to_source() {
+  nassertv(_source_texture != (SourceTextureImage *)NULL);
+  _source_texture->update_properties(_properties);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureReference::output
 //       Access: Public
 //  Description:
@@ -377,7 +402,7 @@ write(ostream &out, int indent_level) const {
     << get_texture()->get_name();
 
   if (_uses_alpha) {
-    out << " alpha";
+    out << " (uses alpha)";
   }
 
   if (_any_uvs) {

@@ -68,6 +68,7 @@ public:
 
   void mark_egg_stale();
   void update_egg();
+  void apply_properties_to_source();
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

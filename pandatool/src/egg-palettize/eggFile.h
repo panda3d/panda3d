@@ -30,7 +30,6 @@
 
 #include "pset.h"
 
-class SourceTextureImage;
 class EggData;
 class TextureImage;
 
@@ -48,7 +47,8 @@ public:
 
   void from_command_line(EggData *data,
                          const Filename &source_filename,
-                         const Filename &dest_filename);
+                         const Filename &dest_filename,
+                         const string &egg_comment);
 
   void scan_textures();
   void get_textures(pset<TextureImage *> &result) const;
@@ -67,6 +67,7 @@ public:
   bool is_stale() const;
 
   void build_cross_links();
+  void apply_properties_to_source();
   void choose_placements();
 
   bool has_data() const;
@@ -87,6 +88,7 @@ private:
   Filename _current_directory;
   Filename _source_filename;
   Filename _dest_filename;
+  string _egg_comment;
 
   typedef pvector<TextureReference *> Textures;
   Textures _textures;

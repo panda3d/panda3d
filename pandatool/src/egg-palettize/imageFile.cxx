@@ -131,6 +131,19 @@ get_properties() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::clear_basic_properties
+//       Access: Public
+//  Description: Resets the properties to a neutral state, for
+//               instance in preparation for calling
+//               update_properties() with all the known contributing
+//               properties.
+////////////////////////////////////////////////////////////////////
+void ImageFile::
+clear_basic_properties() {
+  _properties.clear_basic();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ImageFile::update_properties
 //       Access: Public
 //  Description: If the indicate TextureProperties structure is more
@@ -392,8 +405,7 @@ update_egg_tex(EggTexture *egg_tex) const {
 
   egg_tex->set_filename(FilenameUnifier::make_egg_filename(_filename));
 
-  if (_properties._alpha_type != (PNMFileType *)NULL &&
-      _properties.uses_alpha() &&
+  if (_properties.uses_alpha() &&
       !_alpha_filename.empty()) {
     egg_tex->set_alpha_filename(FilenameUnifier::make_egg_filename(_alpha_filename));
   } else {
@@ -411,10 +423,8 @@ update_egg_tex(EggTexture *egg_tex) const {
 ////////////////////////////////////////////////////////////////////
 void ImageFile::
 output_filename(ostream &out) const {
-  out << FilenameUnifier::make_user_filename(_filename);
-  if (_properties._alpha_type != (PNMFileType *)NULL &&
-      _properties.uses_alpha() &&
-      !_alpha_filename.empty()) {
+  out << FilenameUnifier::make_user_filename(_filename); 
+  if (_properties.uses_alpha() && !_alpha_filename.empty()) {
     out << " " << FilenameUnifier::make_user_filename(_alpha_filename);
   }
 }

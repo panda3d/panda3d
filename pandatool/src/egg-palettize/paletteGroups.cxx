@@ -24,6 +24,8 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "indirectCompareNames.h"
+#include "pvector.h"
 
 TypeHandle PaletteGroups::_type_handle;
 
@@ -214,12 +216,22 @@ end() const {
 void PaletteGroups::
 output(ostream &out) const {
   if (!_groups.empty()) {
-    Groups::const_iterator gi = _groups.begin();
-    out << (*gi)->get_name();
-    ++gi;
-    while (gi != _groups.end()) {
-      out << " " << (*gi)->get_name();
-      ++gi;
+    // Sort the group names into order by name for output.
+    pvector<PaletteGroup *> group_vector;
+    group_vector.reserve(_groups.size());
+    Groups::const_iterator gi;
+    for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+      group_vector.push_back(*gi);
+    }
+    sort(group_vector.begin(), group_vector.end(),
+         IndirectCompareNames<PaletteGroup>());
+
+    pvector<PaletteGroup *>::const_iterator gvi = group_vector.begin();
+    out << (*gvi)->get_name();
+    ++gvi;
+    while (gvi != group_vector.end()) {
+      out << " " << (*gvi)->get_name();
+      ++gvi;
     }
   }
 }
@@ -231,9 +243,19 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void PaletteGroups::
 write(ostream &out, int indent_level) const {
+  // Sort the group names into order by name for output.
+  pvector<PaletteGroup *> group_vector;
+  group_vector.reserve(_groups.size());
   Groups::const_iterator gi;
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-    indent(out, indent_level) << (*gi)->get_name() << "\n";
+    group_vector.push_back(*gi);
+  }
+  sort(group_vector.begin(), group_vector.end(),
+       IndirectCompareNames<PaletteGroup>());
+  
+  pvector<PaletteGroup *>::const_iterator gvi;
+  for (gvi = group_vector.begin(); gvi != group_vector.end(); ++gvi) {
+    indent(out, indent_level) << (*gvi)->get_name() << "\n";
   }
 }
 

@@ -74,6 +74,7 @@ private:
 
 public:
   static int _pi_version;
+  static int _min_pi_version;
   static int _read_pi_version;
 
   enum RemapUV {

@@ -25,12 +25,14 @@
 #include "texturePlacement.h"
 #include "filenameUnifier.h"
 
-#include <indent.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <pnmFileType.h>
+#include "indent.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "pnmFileType.h"
+#include "indirectCompareNames.h"
+#include "pvector.h"
 
 TypeHandle TextureImage::_type_handle;
 
@@ -235,7 +237,7 @@ force_replace() {
 //  Description: Marks all the egg files that reference this texture
 //               stale.  Should be called only when the texture
 //               properties change in some catastrophic way that will
-//               required every egg file referencing it to be
+//               require every egg file referencing it to be
 //               regenerated, even if it is not palettized.
 ////////////////////////////////////////////////////////////////////
 void TextureImage::
@@ -291,8 +293,7 @@ post_txa_file() {
       _size_known = true;
       _x_size = source->get_x_size();
       _y_size = source->get_y_size();
-      _properties._got_num_channels = true;
-      _properties._num_channels = source->get_num_channels();
+      _properties.set_num_channels(source->get_num_channels());
     }
   }
 
@@ -303,25 +304,27 @@ post_txa_file() {
     _y_size = _request._y_size;
   }
 
-  // Examine the image to determine if we can downgrade the number
-  // of channels, for instance from color to grayscale.
-  if (_properties._got_num_channels &&
-      (_properties._num_channels == 3 || _properties._num_channels == 4)) {
-    consider_grayscale();
-  }
-
-  // Also consider the alpha properties, and whether we should
-  // downgrade from alpha to non-alpha.
-  if (_properties._got_num_channels &&
-      (_properties._num_channels == 2 || _properties._num_channels == 4)) {
-    consider_alpha();
+  if (_properties.has_num_channels()) {
+    int num_channels = _properties.get_num_channels();
+    // Examine the image to determine if we can downgrade the number
+    // of channels, for instance from color to grayscale.
+    if (num_channels == 3 || num_channels == 4) {
+      consider_grayscale();
+    }
+    
+    // Also consider the alpha properties, and whether we should
+    // downgrade from alpha to non-alpha.
+    if (num_channels == 2 || num_channels == 4) {
+      consider_alpha();
+    }
   }
 
   // However, if we got an explicit request for channels, honor that.
   if (_request._got_num_channels) {
-    _properties._got_num_channels = true;
-    _properties._num_channels = _request._num_channels;
+    _properties.set_num_channels(_request._num_channels);
   }
+
+  _properties._generic_format = _request._generic_format;
 
   if (_request._format != EggTexture::F_unspecified) {
     _properties._format = _request._format;
@@ -365,11 +368,13 @@ post_txa_file() {
     _alpha_mode = _request._alpha_mode;
   }
 
-  // On the other hand, if we don't use alpha, we shouldn't have an
-  // alpha mode.
-  if (_properties._got_num_channels &&
-      (_properties._num_channels == 1 || _properties._num_channels == 3)) {
-    _alpha_mode = EggRenderMode::AM_unspecified;
+  // On the other hand, if we don't have an alpha channel, we
+  // shouldn't have an alpha mode.
+  if (_properties.has_num_channels()) {
+    int num_channels = _properties.get_num_channels();
+    if (num_channels == 1 || num_channels == 3) {
+      _alpha_mode = EggRenderMode::AM_unspecified;
+    }
   }
 
   // If we've changed the alpha mode, we should also mark the eggs
@@ -611,6 +616,23 @@ get_preferred_source() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::clear_source_basic_properties
+//       Access: Public
+//  Description: Calls clear_basic_properties() on each source texture
+//               image used by this texture, to reset the properties
+//               in preparation for re-applying them from the set of
+//               all known egg files.
+////////////////////////////////////////////////////////////////////
+void TextureImage::
+clear_source_basic_properties() {
+  Sources::iterator si;
+  for (si = _sources.begin(); si != _sources.end(); ++si) {
+    SourceTextureImage *source = (*si).second;
+    source->clear_basic_properties();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::copy_unplaced
 //       Access: Public
 //  Description: Copies the texture to whichever destination
@@ -770,11 +792,21 @@ write_source_pathnames(ostream &out, int indent_level) const {
 
   // Now write out the group assignments.
   if (!_egg_files.empty()) {
-    indent(out, indent_level)
-      << "Used by:\n";
+    // Sort the egg files into order by name for output.
+    pvector<EggFile *> egg_vector;
+    egg_vector.reserve(_egg_files.size());
     EggFiles::const_iterator ei;
     for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
-      EggFile *egg = (*ei);
+      egg_vector.push_back(*ei);
+    }
+    sort(egg_vector.begin(), egg_vector.end(),
+         IndirectCompareNames<EggFile>());
+
+    indent(out, indent_level)
+      << "Used by:\n";
+    pvector<EggFile *>::const_iterator evi;
+    for (evi = egg_vector.begin(); evi != egg_vector.end(); ++evi) {
+      EggFile *egg = (*evi);
       indent(out, indent_level + 2)
         << egg->get_name() << " (";
       if (egg->get_explicit_groups().empty()) {
@@ -994,12 +1026,12 @@ consider_grayscale() {
   // Since this isn't likely to change for a particular texture after
   // its creation, we save a bit of time by not performing this check
   // unless this is the first time we've ever seen this texture.  This
-  // will save us from having to load the texture images time we look
-  // at them.  On the other hand, if we've already loaded up the
+  // will save us from having to load the texture images each time we
+  // look at them.  On the other hand, if we've already loaded up the
   // image, then go ahead.
   if (!_read_source_image && _ever_read_image) {
     if (_forced_grayscale) {
-      _properties._num_channels -= 2;
+      _properties.force_grayscale();
     }
     return;
   }
@@ -1021,7 +1053,7 @@ consider_grayscale() {
   }
 
   // All pixels in the image were grayscale!
-  _properties._num_channels -= 2;
+  _properties.force_grayscale();
   _forced_grayscale = true;
 }
 
@@ -1067,14 +1099,12 @@ consider_alpha() {
   if (_alpha_bits != 0) {
     if (_alpha_bits == AB_one) {
       // All alpha pixels are white; drop the alpha channel.
-      nassertv(_properties._num_channels == 2 || _properties._num_channels == 4);
-      _properties._num_channels--;
+      _properties.force_nonalpha();
 
     } else if (_alpha_bits == AB_zero) {
       // All alpha pixels are invisible; this is probably a mistake.
       // Drop the alpha channel and complain.
-      nassertv(_properties._num_channels == 2 || _properties._num_channels == 4);
-      _properties._num_channels--;
+      _properties.force_nonalpha();
       if (_read_source_image) {
         nout << *this << " has an all-zero alpha channel; dropping alpha.\n";
       }
@@ -1343,14 +1373,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _is_surprise = scan.get_bool();
   _ever_read_image = scan.get_bool();
   _forced_grayscale = scan.get_bool();
-  if (pal->_read_pi_version >= 6) {
-    _alpha_bits = scan.get_uint8();
-    _alpha_mode = (EggRenderMode::AlphaMode)scan.get_int16();
-  } else {
-    scan.get_uint8();
-    _alpha_bits = -1;
-    _alpha_mode = EggRenderMode::AM_unspecified;
-  }
+  _alpha_bits = scan.get_uint8();
+  _alpha_mode = (EggRenderMode::AlphaMode)scan.get_int16();
 
   _actual_assigned_groups.fillin(scan, manager);
 

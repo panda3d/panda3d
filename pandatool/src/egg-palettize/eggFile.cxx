@@ -28,6 +28,7 @@
 #include "eggData.h"
 #include "eggGroup.h"
 #include "eggTextureCollection.h"
+#include "eggComment.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
@@ -60,8 +61,10 @@ EggFile() {
 void EggFile::
 from_command_line(EggData *data,
                   const Filename &source_filename,
-                  const Filename &dest_filename) {
+                  const Filename &dest_filename,
+                  const string &egg_comment) {
   _data = data;
+  remove_backstage(_data);
 
   // We save the current directory at the time the egg file appeared
   // on the command line, so that we'll later be able to properly
@@ -72,6 +75,11 @@ from_command_line(EggData *data,
   _source_filename.make_absolute();
   _dest_filename = dest_filename;
   _dest_filename.make_absolute();
+
+  // We also save the command line that loaded this egg file, so we
+  // can continue to write it as a comment to the beginning of the egg
+  // file, should we need to rewrite it later.
+  _egg_comment = egg_comment;
 
   // We save the default PaletteGroup at this point, because the egg
   // file inherits the default group that was in effect when it was
@@ -312,6 +320,23 @@ build_cross_links() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggFile::apply_properties_to_source
+//       Access: Public
+//  Description: Calls apply_properties_to_source() for each texture
+//               reference, updating all the referenced source
+//               textures with the complete set of property
+//               information from this egg file.
+////////////////////////////////////////////////////////////////////
+void EggFile::
+apply_properties_to_source() {
+  Textures::const_iterator ti;
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    TextureReference *reference = (*ti);
+    reference->apply_properties_to_source();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggFile::choose_placements
 //       Access: Public
 //  Description: Once all the textures have been assigned to groups
@@ -452,6 +477,10 @@ read_egg() {
   _data = data;
   remove_backstage(_data);
 
+  // Replace the comment that shows how we first generated the egg
+  // file.
+  _data->insert(_data->begin(), new EggComment("", _egg_comment));
+
   return true;
 }
 
@@ -582,6 +611,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_string(FilenameUnifier::make_bam_filename(_current_directory));
   datagram.add_string(FilenameUnifier::make_bam_filename(_source_filename));
   datagram.add_string(FilenameUnifier::make_bam_filename(_dest_filename));
+  datagram.add_string(_egg_comment);
 
   datagram.add_uint32(_textures.size());
   Textures::iterator ti;
@@ -664,6 +694,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _current_directory = FilenameUnifier::get_bam_filename(scan.get_string());
   _source_filename = FilenameUnifier::get_bam_filename(scan.get_string());
   _dest_filename = FilenameUnifier::get_bam_filename(scan.get_string());
+  if (Palettizer::_read_pi_version >= 9) {
+    _egg_comment = scan.get_string();
+  }
 
   _num_textures = scan.get_uint32();
   manager->read_pointers(scan, _num_textures);

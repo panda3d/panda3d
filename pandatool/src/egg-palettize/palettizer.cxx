@@ -41,15 +41,12 @@ Palettizer *pal = (Palettizer *)NULL;
 // allows us to easily update egg-palettize to write out additional
 // information to its pi file, without having it increment the bam
 // version number for all bam and boo files anywhere in the world.
-int Palettizer::_pi_version = 8;
-// Updated to version 1 on 12/11/00 to add _remap_char_uv.
-// Updated to version 2 on 12/19/00 to add TexturePlacement::_dest.
-// Updated to version 3 on 12/19/00 to add PaletteGroup::_dependency_order.
-// Updated to version 4 on 5/3/01 to add PaletteGroup::_dirname_order.
-// Updated to version 5 on 10/31/01 to add TextureProperties::_force_format.
-// Updated to version 6 on 3/14/02 to add TextureImage::_alpha_mode.
-// Updated to version 7 on 8/23/02 to add TextureProperties::_anisotropic_degree.
+int Palettizer::_pi_version = 9;
 // Updated to version 8 on 3/20/03 to remove extensions from texture key names.
+// Updated to version 9 on 4/13/03 to add a few properties in various places.
+
+int Palettizer::_min_pi_version = 8;
+// Dropped support for versions 7 and below on 7/14/03.
 
 int Palettizer::_read_pi_version = 0;
 
@@ -475,6 +472,15 @@ process_command_line_eggs(bool force_texture_read, const Filename &state_filenam
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
 process_all(bool force_texture_read, const Filename &state_filename) {
+  // First, clear all the basic properties on the source texture
+  // images, so we can reapply them from the complete set of egg files
+  // and thereby ensure they are up-to-date.
+  Textures::iterator ti;
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    TextureImage *texture = (*ti).second;
+    texture->clear_source_basic_properties();
+  }
+
   // If there *were* any egg files on the command line, deal with
   // them.
   CommandLineEggs::const_iterator ei;
@@ -501,11 +507,15 @@ process_all(bool force_texture_read, const Filename &state_filename) {
   // links and back pointers and stuff.
   for (efi = _egg_files.begin(); efi != _egg_files.end(); ++efi) {
     (*efi).second->build_cross_links();
+
+    // Also make sure each egg file's properties are applied to the
+    // source image (since we reset all the source image properties,
+    // above).
+    (*efi).second->apply_properties_to_source();
   }
 
   // Now match each of the textures in the world against a line in the
   // .txa file.
-  Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     TextureImage *texture = (*ti).second;
 
@@ -1017,11 +1027,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _round_unit = scan.get_float64();
   _round_fuzz = scan.get_float64();
   _remap_uv = (RemapUV)scan.get_int32();
-  if (_read_pi_version < 1) {
-    _remap_char_uv = _remap_uv;
-  } else {
-    _remap_char_uv = (RemapUV)scan.get_int32();
-  }
+  _remap_char_uv = (RemapUV)scan.get_int32();
 
   manager->read_pointer(scan);  // _color_type
   manager->read_pointer(scan);  // _alpha_type

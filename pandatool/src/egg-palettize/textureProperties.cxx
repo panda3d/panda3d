@@ -18,7 +18,6 @@
 
 #include "textureProperties.h"
 #include "palettizer.h"
-#include <stdio.h>
 #include "pnmFileType.h"
 #include "datagram.h"
 #include "datagramIterator.h"
@@ -36,8 +35,10 @@ TextureProperties::
 TextureProperties() {
   _got_num_channels = false;
   _num_channels = 0;
+  _effective_num_channels = 0;
   _format = EggTexture::F_unspecified;
   _force_format = false;
+  _generic_format = false;
   _minfilter = EggTexture::FT_unspecified;
   _magfilter = EggTexture::FT_unspecified;
   _anisotropic_degree = 0;
@@ -52,15 +53,17 @@ TextureProperties() {
 ////////////////////////////////////////////////////////////////////
 TextureProperties::
 TextureProperties(const TextureProperties &copy) :
-  _got_num_channels(copy._got_num_channels),
-  _num_channels(copy._num_channels),
   _format(copy._format),
   _force_format(copy._force_format),
+  _generic_format(copy._generic_format),
   _minfilter(copy._minfilter),
   _magfilter(copy._magfilter),
   _anisotropic_degree(copy._anisotropic_degree),
   _color_type(copy._color_type),
-  _alpha_type(copy._alpha_type)
+  _alpha_type(copy._alpha_type),
+  _got_num_channels(copy._got_num_channels),
+  _num_channels(copy._num_channels),
+  _effective_num_channels(copy._effective_num_channels)
 {
 }
 
@@ -71,15 +74,34 @@ TextureProperties(const TextureProperties &copy) :
 ////////////////////////////////////////////////////////////////////
 void TextureProperties::
 operator = (const TextureProperties &copy) {
-  _got_num_channels = copy._got_num_channels;
-  _num_channels = copy._num_channels;
-  _format = copy._format;
   _force_format = copy._force_format;
+  _generic_format = copy._generic_format;
   _minfilter = copy._minfilter;
   _magfilter = copy._magfilter;
   _anisotropic_degree = copy._anisotropic_degree;
   _color_type = copy._color_type;
   _alpha_type = copy._alpha_type;
+  _got_num_channels = copy._got_num_channels;
+  _num_channels = copy._num_channels;
+  _effective_num_channels = copy._effective_num_channels;
+  _format = copy._format;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureProperties::clear_basic
+//       Access: Public
+//  Description: Resets only the properties that might be changed by
+//               update_properties() to a neutral state.
+////////////////////////////////////////////////////////////////////
+void TextureProperties::
+clear_basic() {
+  if (!_force_format) {
+    _format = EggTexture::F_unspecified;
+  }
+
+  _minfilter = EggTexture::FT_unspecified;
+  _magfilter = EggTexture::FT_unspecified;
+  _anisotropic_degree = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -102,7 +124,50 @@ has_num_channels() const {
 int TextureProperties::
 get_num_channels() const {
   nassertr(_got_num_channels, 0);
-  return _num_channels;
+  return _effective_num_channels;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureProperties::set_num_channels
+//       Access: Public
+//  Description: Sets the number of channels (1 through 4)
+//               associated with the image, presumably after reading
+//               this information from the image header.
+////////////////////////////////////////////////////////////////////
+void TextureProperties::
+set_num_channels(int num_channels) {
+  _num_channels = num_channels;
+  _effective_num_channels = num_channels;
+  _got_num_channels = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureProperties::force_grayscale
+//       Access: Public
+//  Description: Sets the actual number of channels to indicate a
+//               grayscale image, presumably after discovering that
+//               the image contains no colored pixels.
+////////////////////////////////////////////////////////////////////
+void TextureProperties::
+force_grayscale() {
+  nassertv(_got_num_channels && _num_channels >= 3);
+  _num_channels -= 2;
+  _effective_num_channels = _num_channels;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureProperties::force_nonalpha
+//       Access: Public
+//  Description: Sets the actual number of channels to indicate an
+//               image with no alpha channel, presumably after
+//               discovering that the alpha channel contains no
+//               meaningful pixels.
+////////////////////////////////////////////////////////////////////
+void TextureProperties::
+force_nonalpha() {
+  nassertv(_got_num_channels && (_num_channels == 2 || _num_channels == 4));
+  _num_channels--;
+  _effective_num_channels = _num_channels;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,14 +193,6 @@ uses_alpha() const {
   default:
     return false;
   }
-
-  /*
-  if (!_force_format) {
-    return (_num_channels == 2 || _num_channels == 4);
-  }
-
-  return false;
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,7 +210,7 @@ get_string() const {
 
   if (_got_num_channels) {
     ostringstream num;
-    num << _num_channels;
+    num << _effective_num_channels;
     result += num.str();
   }
 
@@ -176,6 +233,7 @@ update_properties(const TextureProperties &other) {
   if (!_got_num_channels) {
     _got_num_channels = other._got_num_channels;
     _num_channels = other._num_channels;
+    _effective_num_channels = _num_channels;
   }
   if (_force_format) {
     // If we've forced our own format, it doesn't change.
@@ -189,7 +247,6 @@ update_properties(const TextureProperties &other) {
   _magfilter = union_filter(_magfilter, other._magfilter);
 
   _anisotropic_degree = other._anisotropic_degree;
-  // printf("set aniso degree to %d\n",_anisotropic_degree);
 
   if (_color_type == (PNMFileType *)NULL) {
     _color_type = other._color_type;
@@ -241,7 +298,44 @@ fully_define() {
     _got_num_channels = true;
   }
 
-  // Make sure the format reflects the number of channels.
+  _effective_num_channels = _num_channels;
+
+  // Respect the _generic_format flag.  If this is set, it means the
+  // user has indicated that we should strip off any bitcount-specific
+  // formats and replace them with the more generic equivalents.
+  if (_generic_format) {
+    switch (_format) {
+    case EggTexture::F_unspecified:
+    case EggTexture::F_rgba:
+    case EggTexture::F_rgbm:
+    case EggTexture::F_rgb:
+    case EggTexture::F_red:
+    case EggTexture::F_green:
+    case EggTexture::F_blue:
+    case EggTexture::F_alpha:
+    case EggTexture::F_luminance:
+    case EggTexture::F_luminance_alpha:
+    case EggTexture::F_luminance_alphamask:
+      break;
+
+    case EggTexture::F_rgba12:
+    case EggTexture::F_rgba8:
+    case EggTexture::F_rgba4:
+    case EggTexture::F_rgba5:
+      _format = EggTexture::F_rgba;
+      break;
+
+    case EggTexture::F_rgb12:
+    case EggTexture::F_rgb8:
+    case EggTexture::F_rgb5:
+    case EggTexture::F_rgb332:
+      _format = EggTexture::F_rgb;
+      break;
+    }
+  }
+
+  // Make sure the format reflects the number of channels, although we
+  // accept a format that ignores an alpha channel.
   if (!_force_format) {
     switch (_num_channels) {
     case 1:
@@ -253,6 +347,13 @@ fully_define() {
       case EggTexture::F_luminance:
         break;
 
+        // These formats suggest an alpha channel; they are quietly
+        // replaced with non-alpha equivalents.
+      case EggTexture::F_luminance_alpha:
+      case EggTexture::F_luminance_alphamask:
+        _format = EggTexture::F_luminance;
+        break;
+
       default:
         _format = EggTexture::F_luminance;
       }
@@ -262,6 +363,14 @@ fully_define() {
       switch (_format) {
       case EggTexture::F_luminance_alpha:
       case EggTexture::F_luminance_alphamask:
+        break;
+        
+        // These formats implicitly reduce the number of channels to 1.
+      case EggTexture::F_red:
+      case EggTexture::F_green:
+      case EggTexture::F_blue:
+      case EggTexture::F_alpha:
+      case EggTexture::F_luminance:
         break;
 
       default:
@@ -278,6 +387,8 @@ fully_define() {
       case EggTexture::F_rgb332:
         break;
 
+        // These formats suggest an alpha channel; they are quietly
+        // replaced with non-alpha equivalents.
       case EggTexture::F_rgba8:
         _format = EggTexture::F_rgb8;
         break;
@@ -285,6 +396,14 @@ fully_define() {
       case EggTexture::F_rgba5:
       case EggTexture::F_rgba4:
         _format = EggTexture::F_rgb5;
+        break;
+
+        // These formats implicitly reduce the number of channels to 1.
+      case EggTexture::F_red:
+      case EggTexture::F_green:
+      case EggTexture::F_blue:
+      case EggTexture::F_alpha:
+      case EggTexture::F_luminance:
         break;
 
       default:
@@ -300,6 +419,30 @@ fully_define() {
       case EggTexture::F_rgba8:
       case EggTexture::F_rgba4:
       case EggTexture::F_rgba5:
+        break;
+
+        // These formats implicitly reduce the number of channels to 3.
+      case EggTexture::F_rgb:
+      case EggTexture::F_rgb12:
+      case EggTexture::F_rgb8:
+      case EggTexture::F_rgb5:
+      case EggTexture::F_rgb332:
+        _effective_num_channels = 3;
+        break;
+
+        // These formats implicitly reduce the number of channels to 2.
+      case EggTexture::F_luminance_alpha:
+      case EggTexture::F_luminance_alphamask:
+        _effective_num_channels = 2;
+        break;
+
+        // These formats implicitly reduce the number of channels to 1.
+      case EggTexture::F_red:
+      case EggTexture::F_green:
+      case EggTexture::F_blue:
+      case EggTexture::F_alpha:
+      case EggTexture::F_luminance:
+        _effective_num_channels = 1;
         break;
 
       default:
@@ -526,19 +669,18 @@ get_filter_string(EggTexture::FilterType filter_type) {
   return "x";
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: TextureProperties::get_anisotropic_degree_string
+//       Access: Private, Static
+//  Description: Returns a short string describing the anisotropic degree.
+////////////////////////////////////////////////////////////////////
 string TextureProperties::
 get_anisotropic_degree_string(int aniso_degree) {
-    if(aniso_degree<=1)
-        return "";
-     else {
-         char deg_str[20];
-
-           deg_str[0]='a';
-           deg_str[1]='n';
-           sprintf(deg_str+2,"%d",aniso_degree);
-           string result(deg_str);
-           return result;
-     }
+  if (aniso_degree <= 1) {
+    return "";
+  } else {
+    return string("an") + format_string(aniso_degree);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -637,8 +779,10 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   TypedWritable::write_datagram(writer, datagram);
   datagram.add_bool(_got_num_channels);
   datagram.add_int32(_num_channels);
+  datagram.add_int32(_effective_num_channels);
   datagram.add_int32((int)_format);
   datagram.add_bool(_force_format);
+  datagram.add_bool(_generic_format);
   datagram.add_int32((int)_minfilter);
   datagram.add_int32((int)_magfilter);
   datagram.add_int32(_anisotropic_degree);
@@ -703,19 +847,20 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
   _got_num_channels = scan.get_bool();
   _num_channels = scan.get_int32();
+  _effective_num_channels = _num_channels;
+  if (Palettizer::_read_pi_version >= 9) {
+    _effective_num_channels = scan.get_int32();
+  }
   _format = (EggTexture::Format)scan.get_int32();
-  if (Palettizer::_read_pi_version >= 5) {
-    _force_format = scan.get_bool();
-  } else {
-    _force_format = false;
+  _force_format = scan.get_bool();
+  _generic_format = false;
+  if (Palettizer::_read_pi_version >= 9) {
+    _generic_format = scan.get_bool();
   }
   _minfilter = (EggTexture::FilterType)scan.get_int32();
   _magfilter = (EggTexture::FilterType)scan.get_int32();
-  if (Palettizer::_read_pi_version >= 7) {
-    _anisotropic_degree = scan.get_int32();
-  } else {
-    _anisotropic_degree = 0;
-  }
+  _anisotropic_degree = scan.get_int32();
+
   manager->read_pointer(scan);  // _color_type
   manager->read_pointer(scan);  // _alpha_type
 }

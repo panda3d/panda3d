@@ -22,11 +22,11 @@
 #include "paletteImage.h"
 #include "paletteGroup.h"
 
-#include <indent.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "indent.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 #include <algorithm>
 

@@ -46,6 +46,7 @@ public:
   int _num_channels;
   EggTexture::Format _format;
   bool _force_format;
+  bool _generic_format;
   EggTexture::FilterType _minfilter;
   EggTexture::FilterType _magfilter;
   int _anisotropic_degree;

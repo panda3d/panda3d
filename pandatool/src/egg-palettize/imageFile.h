@@ -50,6 +50,7 @@ public:
   int get_num_channels() const;
 
   const TextureProperties &get_properties() const;
+  void clear_basic_properties();
   void update_properties(const TextureProperties &properties);
 
   void set_filename(PaletteGroup *group, const string &basename);

@@ -41,8 +41,13 @@ public:
   TextureProperties(const TextureProperties &copy);
   void operator = (const TextureProperties &copy);
 
+  void clear_basic();
+
   bool has_num_channels() const;
   int get_num_channels() const;
+  void set_num_channels(int num_channels);
+  void force_grayscale();
+  void force_nonalpha();
   bool uses_alpha() const;
 
   string get_string() const;
@@ -56,10 +61,9 @@ public:
   bool operator == (const TextureProperties &other) const;
   bool operator != (const TextureProperties &other) const;
 
-  bool _got_num_channels;
-  int _num_channels;
   EggTexture::Format _format;
-  bool _force_format;
+  bool _force_format;  // true when format has been explicitly specified
+  bool _generic_format; // true if 'generic' keyword, meaning rgba8 -> rgba.
   EggTexture::FilterType _minfilter, _magfilter;
   int _anisotropic_degree;
   PNMFileType *_color_type;
@@ -77,6 +81,11 @@ private:
 
   static EggTexture::FilterType union_filter(EggTexture::FilterType a,
                                              EggTexture::FilterType b);
+
+  bool _got_num_channels;
+  int _num_channels;
+  int _effective_num_channels;
+
   // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();

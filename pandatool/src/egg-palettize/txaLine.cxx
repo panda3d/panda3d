@@ -42,6 +42,7 @@ TxaLine() {
   _num_channels = 0;
   _format = EggTexture::F_unspecified;
   _force_format = false;
+  _generic_format = false;
   _alpha_mode = EggRenderMode::AM_unspecified;
   _got_margin = false;
   _margin = 0;
@@ -248,6 +249,12 @@ parse(const string &line) {
           return false;
         }
 
+      } else if (word == "generic") {
+        // Genericize the image format by replacing bitcount-specific
+        // formats with their generic equivalents, e.g. rgba8 becomes
+        // rgba.
+        _generic_format = true;
+
       } else {
         // Maybe it's a group name.
         PaletteGroup *group = pal->test_palette_group(word);
@@ -421,6 +428,11 @@ match_texture(TextureImage *texture) const {
   if (_format != EggTexture::F_unspecified) {
     request._format = _format;
     request._force_format = _force_format;
+    request._generic_format = false;
+  }
+
+  if (_generic_format) {
+    request._generic_format = true;
   }
 
   if (_alpha_mode != EggRenderMode::AM_unspecified) {

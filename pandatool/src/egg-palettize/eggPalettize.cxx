@@ -290,6 +290,11 @@ describe_input_file() {
             "match the number of channels.  As above, any valid egg texture "
             "format may be used, e.g. force-rgba12, force-rgb5, etc.\n\n");
 
+  show_text("  generic", 10,
+            "Specifies that any image format requested by an egg file "
+            "that requests a particular bitdepth should be replaced by "
+            "its generic equivalent, e.g. rgba8 should become rgba.\n\n");
+
   show_text("  (alpha mode)", 10,
             "A particular alpha mode may be applied to a texture by naming "
             "the alpha mode.  This may be any valid egg alpha mode, e.g. "
@@ -571,6 +576,15 @@ run() {
            << "than this one.  You will need to update your egg-palettize.\n";
       exit(1);
     }
+
+    if (pal->_read_pi_version < pal->_min_pi_version) {
+      nout << FilenameUnifier::make_user_filename(state_filename)
+           << " was written by an old version of egg-palettize.\n\n"
+           << "You will need to make undo-pal (or simply remove the file "
+           << FilenameUnifier::make_user_filename(state_filename)
+           << " and try again).\n\n";
+      exit(1);
+    }
   }
 
   if (_report_pi) {
@@ -624,6 +638,7 @@ run() {
   }
 
   // And process the egg files named for addition.
+  string egg_comment = get_exec_command();
   Eggs::const_iterator ei;
   for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
     EggData *egg_data = (*ei);
@@ -632,7 +647,8 @@ run() {
     string name = source_filename.get_basename();
 
     EggFile *egg_file = pal->get_egg_file(name);
-    egg_file->from_command_line(egg_data, source_filename, dest_filename);
+    egg_file->from_command_line(egg_data, source_filename, dest_filename,
+                                egg_comment);
 
     pal->_command_line_eggs.push_back(egg_file);
   }

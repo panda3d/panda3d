@@ -80,6 +80,7 @@ public:
                                  const Filename &alpha_filename);
 
   SourceTextureImage *get_preferred_source();
+  void clear_source_basic_properties();
 
   void copy_unplaced(bool redo_all);
 

@@ -140,16 +140,16 @@ read_header() {
 
   _x_size = header.get_x_size();
   _y_size = header.get_y_size();
-  _properties._got_num_channels = true;
-  _properties._num_channels = header.get_num_channels();
+  int num_channels = header.get_num_channels();
 
   if (!_alpha_filename.empty() && _alpha_filename.exists()) {
     // Assume if we have an alpha filename, that we have an additional
     // alpha channel.
-    if (_properties._num_channels == 1 || _properties._num_channels == 3) {
-      _properties._num_channels++;
+    if (num_channels == 1 || num_channels == 3) {
+      num_channels++;
     }
   }
+  _properties.set_num_channels(num_channels);
 
   _size_known = true;
   _successfully_read_header = true;

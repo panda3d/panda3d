@@ -19,12 +19,12 @@
 #ifndef PALETTEPAGE_H
 #define PALETTEPAGE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "textureProperties.h"
 
-#include <namable.h>
-#include <typedWritable.h>
+#include "namable.h"
+#include "typedWritable.h"
 
 class PaletteGroup;
 class PaletteImage;
