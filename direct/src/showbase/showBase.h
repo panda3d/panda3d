@@ -53,4 +53,42 @@ EXPCL_DIRECT bool query_fullscreen_testresult(int xsize, int ysize);
 
 END_PUBLISH
 
+
+#if 0
+class TempGridZoneManager {
+PUBLISHED:
+  TempGridZoneManager() {}
+  ~TempGridZoneManager() {}
+  
+  unsigned int add_grid_zone(
+      unsigned int x, 
+      unsigned int y, 
+      unsigned int width, 
+      unsigned int height, 
+      unsigned int zoneBase, 
+      unsigned int xZoneResolution,
+      unsigned int yZoneResolution);
+  int get_zone_list(int x, int y);
+
+protected:
+  class GridZone {
+  public:
+    unsigned int base;
+    unsigned int resolution;
+    GridZone(
+        unsigned int x, 
+        unsigned int y, 
+        unsigned int width, 
+        unsigned int height, 
+        unsigned int zoneBase, 
+        unsigned int xZoneResolution,
+        unsigned int yZoneResolution) {
+      base=zoneBase;
+      resolution=zoneResolution;
+    }
+  };
+  Set<GridZone> _grids;
+};
+#endif
+
 #endif

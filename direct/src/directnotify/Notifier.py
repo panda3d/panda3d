@@ -4,6 +4,7 @@
 from LoggerGlobal import *
 from direct.showbase import PythonUtil
 import time
+import types
 
 class Notifier:
     serverDelta = 0
@@ -194,7 +195,7 @@ class Notifier:
         could put it here.
         """
         print string
-
+        
     def debugStateCall(self, obj=None, fsmMemberName='fsm'):
         """
         If this notify is in debug mode, print the time of the 
@@ -207,11 +208,15 @@ class Notifier:
                 if hasattr(obj, fsmMemberName) and obj.fsm.getCurrentState() is not None:
                     #state = "%s=%s"%(obj.fsm.getName(), obj.fsm.getCurrentState().getName())
                     state = obj.fsm.getCurrentState().getName()
-            string = ":%s [%-7s] %s %s.%s"%(
+            if 1 or type(obj) == types.ClassType:
+                name = "%s."%(obj.__class__.__name__,)
+            else:
+                name = "%s "%(self.__name,)
+            string = ":%s [%-7s] %s %s%s"%(
                 self.getOnlyTime(),
                 state,
                 id(obj),
-                self.__name,
+                name,
                 PythonUtil.traceParentCall())
             self.__log(string)
             self.__print(string)

@@ -31,6 +31,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.bootedIndex = None
         self.bootedText = None
 
+        self.worldScale = render.attachNewNode("worldScale") # for grid zones.
+        self.worldScale.setScale(base.config.GetFloat('world-scale', 100))
+        self.priorWorldPos = None
+        
         # create a parentMgr to handle distributed reparents
         # this used to be 'token2nodePath'
         self.parentMgr = ParentMgr.ParentMgr()
@@ -64,6 +68,40 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             self.notify.info("Sent disconnect message to server")
             self.disconnect()
         self.stopHeartbeat()
+
+    def setWorldOffset(self, xOffset=0, yOffset=0):
+        self.worldXOffset=xOffset
+        self.worldYOffset=yOffset
+
+    def getWorldPos(self, nodePath):
+        pos = nodePath.getPos(self.worldScale)
+        return (int(round(pos.getX())), int(round(pos.getY())))
+
+    def sendWorldPos(self, x, y):
+        # The server will need to know the world
+        # offset of our current render node path
+        # and adjust the x, y accordingly.  At one
+        # point I considered adding the world offset
+        # here, but that would just use extra bits.
+
+        onScreenDebug.add("worldPos", "%-4d, %-4d"%(x, y))
+        return #*#
+
+        datagram = PyDatagram()
+        # Add message type
+        datagram.addUint16(CLIENT_SET_WORLD_POS)
+        # Add x
+        datagram.addInt16(x)
+        # Add y
+        datagram.addSint16(y)
+        # send the message
+        self.send(datagram)
+
+    def checkWorldPos(self, nodePath):
+        worldPos = self.getWorldPos(nodePath)
+        if self.priorWorldPos != worldPos:
+            self.priorWorldPos = worldPos
+            self.sendWorldPos(worldPos[0], worldPos[1])
 
     def setServerDelta(self, delta):
         """
@@ -407,6 +445,175 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
         # send the message
         self.send(datagram)
+
+    def gridZoneCenter(self, x, y, zoneBase=0, resolution=500):
+        """
+        x is a float in the range 0.0 to 1.0
+        y is a float in the range 0.0 to 1.0
+        resolution is the number of cells on each axsis.
+        """
+        if x < 0.0 or x > 1.0 or y < 0.0 or y > 1.0:
+            return None
+        resolution=int(resolution)
+        print "resolution", resolution,
+        xCell=min(int(x*resolution), resolution-1)
+        yCell=min(int(y*resolution), resolution-1)
+        cell=yCell*resolution+xCell
+        print "cell", cell,
+        zone=zoneBase+cell
+        print "zone", zone
+        assert zone >= zoneBase and zone < zoneBase+resolution*resolution
+        return zone
+
+    def gridZoneList(self, x, y, zoneBase=0, zoneList=[], resolution=500):
+        """
+        x is a float in the range 0.0 to 1.0
+        y is a float in the range 0.0 to 1.0
+        resolution is the number of cells on each axsis.
+        returns a list of zone ids.
+        
+        Create a box of cell numbers, while clipping
+        to the edges of the set of cells.
+        """
+        if x < 0.0 or x > 1.0 or y < 0.0 or y > 1.0:
+            return None
+        resolution=int(resolution)
+        print "resolution", resolution,
+        xCell=min(int(x*resolution), resolution-1)
+        yCell=min(int(y*resolution), resolution-1)
+        cell=yCell*resolution+xCell
+        print "cell", cell,
+        zone=zoneBase+cell
+        print "zone", zone
+
+        zone=zone-2*resolution
+        endZone=zone+5*resolution
+        yCell=yCell-2
+        while zone < endZone:
+            if yCell >= 0 and yCell < resolution:
+                if xCell > 1:
+                    zoneList.append(zone-2)
+                    zoneList.append(zone-1)
+                elif xCell > 0:
+                    zoneList.append(zone-1)
+                r.append(zone)
+                if xCell < resolution-2:
+                    zoneList.append(zone+1)
+                    zoneList.append(zone+2)
+                elif xCell < resolution-1:
+                    zoneList.append(zone+1)
+            yCell+=1
+            zone+=resolution
+        return zoneList
+
+    def gridZone(self, zoneId, pos):
+        """
+        zoneId is an integer.
+        pos is a Vec3 with x,y,z float values.
+        
+        Figure out which zones in the multi-zone heirarchy
+        the avatar is currently.  Use sendSetZoneMsg() to
+        send the info to the server.
+        
+        So, one possibility is to use a 3x3 grid and have
+        each cell be the movement distance in the load time
+        plus the vision distance.
+        
+        Another possibility is to use a 5x5 grid and have
+        each cell be the greater of the movement distance
+        or the vision distance.
+        
+        Yet another possibility is to use a nxn grid inside
+        of a mxm grid.  The nxn grid is used to add cells
+        to the visible set, while the mxm grid is used to
+        retain old cells a little longer.  This avoids 
+        jitter (i.e. rapid generation and deletion of zones
+        as the avatar runs down the line separating two cells).
+        Also, the mxm grid is not neccessarily
+        full (and is likely not to be full).  So, cell in
+        the nxn grid are added and cells outside of the
+        mxm grid are removed.
+        
+        When choosing a method, the generation (inlcluding
+        loading and setup) time should be compared to the
+        cost of having extra distributed objects.
+        
+        The third option optimizes for expensive generation,
+        while the second option optimizes for epensive
+        maintenance.
+        
+        o o o o o o o 
+        o o o o o o o 
+        o o[k k o]o o 
+        o o|k a a|o o 
+        o o[o a a]o o 
+        o o o o o o o 
+        o o o o o o o 
+        """
+        # The teirs are offset from each other to spread the
+        # generates.
+        width=2000.0
+        height=2000.0
+        teirBase=1000
+        # The teirBase is a teir unto itself, all avatars in
+        # in the given teir system are also in the main teir:
+        r=[teirBase]
+        teirBase+=1
+        
+        x=pos.getX()/width
+        y=pos.getY()/height
+        getGridZones(x, y, teirBase, r, 500)
+        
+        return r
+
+        #*#
+        # The teirs are offset from each other to spread the
+        # generates.
+        width=2000.0
+        height=2000.0
+        teirs=[20, 100, 500]
+        teirOffsets=[0.33, 0.5, 0.0]
+        teirBase=1000
+        # The teirBase is a teir unto itself, all avatars in
+        # in the given teir system are also in the main teir:
+        r=[teirBase]
+        teirBase+=1
+        
+        x=pos.getX()
+        y=pos.getY()
+        for i, offset in zip(teirs, teirOffsets):
+            print "teirBase", teirBase,
+            xCell=min(int((x-width/i*offset)/i), i-1)
+            yCell=min(int((y-height/i*offset)/i), i-1)
+            print "xCell", xCell, "yCell", yCell,
+            cell=yCell*i+xCell
+            print "cell", cell,
+            zone=teirBase+cell
+            print "zone", zone
+            #for zone in range(teirBase+cell, teirBase+cell+5*i, i):
+            zone=zone-2*i
+            endZone=teirBase+cell+5*i
+            yCell=yCell-2
+            while zone < endZone:
+                if yCell >= 0 and yCell < i:
+                    if xCell > 1:
+                        r.append(zone-2)
+                        r.append(zone-1)
+                    elif xCell > 0:
+                        r.append(zone-1)
+                    r.append(zone)
+                    if xCell < i-2:
+                        r.append(zone+1)
+                        r.append(zone+2)
+                    elif xCell < i-1:
+                        r.append(zone+1)
+                yCell+=1
+                zone+=i
+            print ""
+            teirBase+=i*i
+        print "teirBase", teirBase
+        
+        return r
 
     def handleDatagram(self, di):
         if self.notify.getDebug():

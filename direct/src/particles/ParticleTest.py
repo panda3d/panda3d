@@ -1,4 +1,4 @@
-from direct.directbase.DirectStart import *
+from direct.directbase.TestStart import *
 
 from pandac.LinearVectorForce import LinearVectorForce
 from pandac.Vec3 import Vec3
@@ -10,15 +10,17 @@ import ForceGroup
 base.enableParticles()
 
 # ForceGroup
-gravity = LinearVectorForce(Vec3(0.0, 0.0, -10.0))
 fg = ForceGroup.ForceGroup()
-fg.addForce(gravity)
+if 0:
+    gravity = LinearVectorForce(Vec3(0.0, 0.0, -10.0))
+    fg.addForce(gravity)
 
 # Particle effect
 pe = ParticleEffect.ParticleEffect('particle-fx')
 pe.reparentTo(render)
-pe.setPos(0.0, 5.0, 4.0)
+#pe.setPos(0.0, 5.0, 4.0)
 pe.addForceGroup(fg)
 
 # Particle Panel
-pp = ParticlePanel.ParticlePanel(pe)
+#*#pp = ParticlePanel.ParticlePanel(pe)
+pp = ParticlePanel.ParticlePanel()

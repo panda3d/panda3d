@@ -124,7 +124,6 @@ class ParticleEffect(NodePath):
                 particles.addForce(fg[i])
 
     def removeParticles(self, particles):
-        """removeParticles(particles)"""
         if (particles == None):
             self.notify.warning('removeParticles() - particles == None!')
             return
@@ -141,23 +140,18 @@ class ParticleEffect(NodePath):
             self.removeParticles(p)
 
     def getParticlesList(self):
-        """getParticles()"""
         return self.particlesDict.values()
     
     def getParticlesNamed(self, name):
-        """getParticlesNamed(name)"""
         return self.particlesDict.get(name, None)
 
     def getParticlesDict(self):
-        """getParticlesDict()"""
         return self.particlesDict
 
     def getForceGroupList(self):
-        """getForceGroup()"""
         return self.forceGroupDict.values()
 
     def getForceGroupNamed(self, name):
-        """getForceGroupNamed(name)"""
         return self.forceGroupDict.get(name, None)
 
     def getForceGroupDict(self):

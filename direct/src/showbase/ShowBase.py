@@ -979,8 +979,9 @@ class ShowBase(DirectObject.DirectObject):
 
         aspectRatio = self.getAspectRatio()
         # Scale the smiley face to 32x32 pixels.
-        lilsmiley.setScale(32.0 / self.win.getHeight() / aspectRatio,
-                           1.0, 32.0 / self.win.getHeight())
+        lilsmiley.setScale(
+            32.0 / self.win.getHeight() / aspectRatio,
+            1.0, 32.0 / self.win.getHeight())
         #self.mouseWatcherNode.setGeometry(mouseViz)
         
     def getAlt(self):
@@ -1272,7 +1273,6 @@ class ShowBase(DirectObject.DirectObject):
         The color may be either a VBase3 or a VBase4, or a 3-component
         tuple, or the individual r, g, b parameters.
         """
-
         if g != None:
             color = VBase4(r, g, b, 1.0)
         else:
@@ -1410,10 +1410,8 @@ class ShowBase(DirectObject.DirectObject):
         This is a toggle; the second time this function is called, it
         disables the mode.
         """
-
         # If oobeMode was never set, set it to false and create the
         # structures we need to implement OOBE.
-
         try:
             self.oobeMode
         except:
@@ -1438,7 +1436,6 @@ class ShowBase(DirectObject.DirectObject):
 
         if self.oobeMode:
             # Disable OOBE mode.
-
             if self.oobeCullFrustum != None:
                 # First, disable OOBE cull mode.
                 self.oobeCull()
@@ -1485,7 +1482,6 @@ class ShowBase(DirectObject.DirectObject):
         it were still attached to our original camera.  This allows us
         to visualize the effectiveness of our bounding volumes.
         """
-
         # First, make sure OOBE mode is enabled.
         try:
             if not self.oobeMode:
@@ -1509,7 +1505,6 @@ class ShowBase(DirectObject.DirectObject):
             # Tell the camera to cull from here instead of its own
             # origin.
             self.camNode.setCullCenter(self.oobeCullFrustum)
-
         else:
             # Disable OOBE culling.
 
@@ -1591,7 +1586,6 @@ class ShowBase(DirectObject.DirectObject):
                 # stop the music.
                 self.mainWinMinimized = 1
                 messenger.send('PandaPaused')
-
             elif not properties.getMinimized() and self.mainWinMinimized:
                 # If the main window is restored, throw an event to
                 # restart the music.

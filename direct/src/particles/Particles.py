@@ -34,8 +34,6 @@ class Particles(ParticleSystem.ParticleSystem):
     id = 1
 
     def __init__(self, name=None, poolSize=1024):
-        """__init__(name, poolSize)"""
-
         if (name == None):
             self.name = 'particles-%d' % Particles.id
             Particles.id += 1
@@ -80,14 +78,12 @@ class Particles(ParticleSystem.ParticleSystem):
         del self.emitter
 
     def enable(self):
-        """enable()"""
         if (self.fEnabled == 0):
             physicsMgr.attachPhysical(self)
             particleMgr.attachParticlesystem(self)
             self.fEnabled = 1
 
     def disable(self):
-        """disable()"""
         if (self.fEnabled == 1):
             physicsMgr.removePhysical(self)
             particleMgr.removeParticlesystem(self)
@@ -100,7 +96,6 @@ class Particles(ParticleSystem.ParticleSystem):
         return self.node
 
     def setFactory(self, type):
-        """setFactory(type)"""
         if (self.factoryType == type):
             return None
         if (self.factory):
@@ -119,7 +114,6 @@ class Particles(ParticleSystem.ParticleSystem):
         ParticleSystem.ParticleSystem.setFactory(self, self.factory)
 
     def setRenderer(self, type):
-        """setRenderer(type)"""
         if (self.rendererType == type):
             return None
         if (self.renderer):
@@ -188,14 +182,12 @@ class Particles(ParticleSystem.ParticleSystem):
         ParticleSystem.ParticleSystem.setEmitter(self, self.emitter)
 
     def addForce(self, force):
-        """addForce(force)"""
         if (force.isLinear()):
             self.addLinearForce(force)
         else:
             self.addAngularForce(force)
 
     def removeForce(self, force):
-        """removeForce(force)"""
         if (force == None):
             self.notify.warning('removeForce() - force == None!')
             return
@@ -209,20 +201,18 @@ class Particles(ParticleSystem.ParticleSystem):
 
     ## Getters ##
     def getName(self):
-        """getName()"""
         return self.name
+
     def getFactory(self):
-        """getFactory()"""
         return self.factory
+
     def getEmitter(self):
-        """getEmitter()"""
         return self.emitter
+
     def getRenderer(self):
-        """getRenderer()"""
         return self.renderer
 
     def printParams(self, file = sys.stdout, targ = 'self'):
-        """printParams(file, targ)"""
         file.write('# Particles parameters\n')
         file.write(targ + '.setFactory(\"' + self.factoryType + '\")\n')
         file.write(targ + '.setRenderer(\"' + self.rendererType + '\")\n')
