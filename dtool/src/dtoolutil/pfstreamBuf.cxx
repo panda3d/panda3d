@@ -363,41 +363,31 @@ open_pipe(const string &cmd) {
  
   // Now spawn the child process.
   
-  PROCESS_INFORMATION piProcInfo; 
-  STARTUPINFO siStartInfo; 
-  
-  // Set up members of the PROCESS_INFORMATION structure. 
-  ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
+  // Both WinExec() and CreateProcess() want a non-const char pointer.
+  // Maybe they change it, and maybe they don't.  I'm not taking
+  // chances.
+  char *cmdline = new char[cmd.length() + 1];
+  strcpy(cmdline, cmd.c_str());
 
-  // Set up members of the STARTUPINFO structure. 
-  ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
-  siStartInfo.cb = sizeof(STARTUPINFO); 
-  siStartInfo.dwFlags = STARTF_USESTDHANDLES;
-  siStartInfo.hStdError = hChildStdoutWr;
-  siStartInfo.hStdInput = (HANDLE)STD_INPUT_HANDLE;
-  siStartInfo.hStdOutput = hChildStdoutWr; 
-
-  if (!CreateProcess(NULL, 
-                     (LPSTR)cmd.c_str(),       // command line 
-                     NULL,          // process security attributes 
-                     NULL,          // primary thread security attributes 
-                     TRUE,          // handles are inherited 
-                     0,             // creation flags 
-                     NULL,          // use parent's environment 
-                     NULL,          // use parent's current directory 
-                     &siStartInfo,  // STARTUPINFO pointer 
-                     &piProcInfo)) {// receives PROCESS_INFORMATION 
+  // We should be using CreateProcess() instead of WinExec(), but that
+  // seems to be likely to crash Win98.  WinExec() seems better
+  // behaved, and it's all we need anyway.
+  if (!WinExec(cmdline, 0)) {
 #ifndef NDEBUG
     cerr << "Unable to spawn process.\n";
 #endif
+    close_pipe();
     return false;
   }
+
+  delete[] cmdline;
  
   // Now restore our own stdout, up here in the parent process.
   if (!SetStdHandle(STD_OUTPUT_HANDLE, hSaveStdout)) {
 #ifndef NDEBUG
     cerr << "Unable to restore stdout\n";
 #endif
+    close_pipe();
     return false;
   }
 
@@ -407,6 +397,7 @@ open_pipe(const string &cmd) {
 #ifndef NDEBUG
     cerr << "Unable to close write end of pipe\n";
 #endif
+    close_pipe();
     return false;
   }
 
@@ -446,6 +437,9 @@ write_pipe(const char *data, size_t len) {
 ////////////////////////////////////////////////////////////////////
 size_t PipeStreamBuf::
 read_pipe(char *data, size_t len) {
+  if (_child_out == 0) {
+    return 0;
+  }
   DWORD dwRead; 
   if (!ReadFile(_child_out, data, len, &dwRead, NULL)) {
     close_pipe();
