@@ -9,6 +9,7 @@ class OnScreenDebug:
     def __init__(self):
         fontPath = config.GetString("on-screen-debug-font", "cmtt12")
         fontScale = config.GetFloat("on-screen-debug-font-scale", 0.05)
+        self.enabled = config.GetBool("on-screen-debug-enabled", 0)
         font = loader.loadFont(fontPath)
         if not font.isValid():
             print "failed to load OnScreenDebug font", fontPath
@@ -24,6 +25,8 @@ class OnScreenDebug:
         self.data = {}
 
     def render(self):
+        if not self.enabled:
+            return
         self.onScreenText.clearText()
         for k, v in self.data.items():
             if v[0] == self.frame:
