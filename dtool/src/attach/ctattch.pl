@@ -363,29 +363,40 @@ sub CTAttachCompute {
       # helps when attaching to unitialized trees that do not have
       # these directories yet (but will shortly).
 
-      $item = $root . "/bin" ;
-      #if ( -e $item ) {
+      # However, we *will* filter out any trees whose name ends in
+      # "MODELS".  These don't have subdirectories that we care about
+      # in the normal sense.
+      if ( ! ( $proj =~ /MODELS$/ ) ) {
+
+          $item = $root . "/bin" ;
+          #if ( -e $item ) {
 	  &CTAttachMod( "PATH", $item, $root, $proj ) ;
-      #}
-      $item = $root . "/lib" ;
-      #if ( -e $item ) {
+          #}
+
+          $item = $root . "/lib" ;
+          #if ( -e $item ) {
 	  if ( $ENV{"PENV"} eq "WIN32" ) {
 	      &CTAttachMod( "PATH", $item, $root, $proj ) ;
 	  }
 	  &CTAttachMod( "LD_LIBRARY_PATH", $item, $root, $proj ) ;
-      #}
-      $item = $root . "/src" ;
-      #if ( -e $item ) {
+          #}
+
+          $item = $root . "/src" ;
+          #if ( -e $item ) {
 	  &CTAttachMod( "CDPATH", $item, $root, $proj ) ;
-      #}
-      $item = $root . "/include" ;
-      #if ( -e $item ) {
+          #}
+
+          $item = $root . "/include" ;
+          #if ( -e $item ) {
 	  &CTAttachMod( "CT_INCLUDE_PATH", $item, $root, $proj ) ;
-      #}
-      $item = $root . "/etc" ;
-      #if ( -e $item ) {
+          #}
+
+          $item = $root . "/etc" ;
+          #if ( -e $item ) {
 	  &CTAttachMod( "ETC_PATH", $item, $root, $proj ) ;
-      #}
+          #}
+      }
+
       &CTAttachMod( "CTPROJS", $proj . ":" . $flav, $root, $proj ) ;
       &CTAttachSet( $proj, $root ) ;
 
