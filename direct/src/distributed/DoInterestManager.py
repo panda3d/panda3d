@@ -128,8 +128,10 @@ class DoInterestManager(DirectObject.DirectObject):
                 if DoInterestManager._interests[handle][3] == "PendingDel":
                     del DoInterestManager._interests[handle]
 
-    if __debug__ and WantInterestPrintout:
+    if __debug__:
         def printInterests(self):
+            if not WantInterestPrintout:
+                return
             """
             Part of the new otp-server code.
             """
