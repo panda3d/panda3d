@@ -104,7 +104,7 @@ end_pack() {
 
   clear();
 
-  return !_pack_error && !_range_error;
+  return !had_error();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -205,7 +205,7 @@ end_unpack() {
 
   clear();
 
-  return !_pack_error && !_range_error;
+  return !had_error();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -273,7 +273,7 @@ end_repack() {
   _mode = M_idle;
   clear();
 
-  return !_pack_error && !_range_error;
+  return !had_error();
 }
 
 ////////////////////////////////////////////////////////////////////

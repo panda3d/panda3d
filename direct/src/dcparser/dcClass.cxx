@@ -287,7 +287,9 @@ receive_update(PyObject *distobj, DatagramIterator &di) const {
   int field_id = packer.raw_unpack_uint16();
   DCField *field = get_inherited_field(field_id);
   nassertv_always(field != NULL);
+  packer.begin_unpack(field);
   field->receive_update(packer, distobj);
+  packer.end_unpack();
 
   di.skip_bytes(packer.get_num_unpacked_bytes());
 }
@@ -313,7 +315,11 @@ receive_update_broadcast_required(PyObject *distobj, DatagramIterator &di) const
     DCAtomicField *atom = field->as_atomic_field();
     if (atom != (DCAtomicField *)NULL &&
         atom->is_required() && atom->is_broadcast()) {
+      packer.begin_unpack(atom);
       atom->receive_update(packer, distobj);
+      if (!packer.end_unpack()) {
+        break;
+      }
     }
   }
 
@@ -340,7 +346,11 @@ receive_update_all_required(PyObject *distobj, DatagramIterator &di) const {
     DCField *field = get_inherited_field(i);
     DCAtomicField *atom = field->as_atomic_field();
     if (atom != (DCAtomicField *)NULL && atom->is_required()) {
+      packer.begin_unpack(atom);
       atom->receive_update(packer, distobj);
+      if (!packer.end_unpack()) {
+        break;
+      }
     }
   }
 
@@ -379,7 +389,9 @@ direct_update(PyObject *distobj, const string &field_name,
 
   DCPacker packer;
   packer.set_unpack_data(value_blob);
+  packer.begin_unpack(field);
   field->receive_update(packer, distobj);
+  packer.end_unpack();
 }
 #endif  // HAVE_PYTHON
 
@@ -504,9 +516,7 @@ client_format_update(const string &field_name, int do_id,
     return Datagram();
   }
 
-  DCPacker packer;
-  field->client_format_update(packer, do_id, args);
-  return Datagram(packer.get_data(), packer.get_length());
+  return field->client_format_update(do_id, args);
 }
 #endif  // HAVE_PYTHON
 
@@ -530,9 +540,7 @@ ai_format_update(const string &field_name, int do_id,
     return Datagram();
   }
 
-  DCPacker packer;
-  field->ai_format_update(packer, do_id, to_id, from_id, args);
-  return Datagram(packer.get_data(), packer.get_length());
+  return field->ai_format_update(do_id, to_id, from_id, args);
 }
 #endif  // HAVE_PYTHON
 
@@ -576,9 +584,11 @@ ai_format_generate(PyObject *distobj, int do_id,
     DCField *field = get_inherited_field(i);
     DCAtomicField *atom = field->as_atomic_field();
     if (atom != (DCAtomicField *)NULL && atom->is_required()) {
+      packer.begin_pack(atom);
       if (!pack_required_field(packer, distobj, atom)) {
         return Datagram();
       }
+      packer.end_pack();
     }
   }
 
@@ -601,9 +611,11 @@ ai_format_generate(PyObject *distobj, int do_id,
         return Datagram();
       }
 
+      packer.begin_pack(field);
       if (!pack_required_field(packer, distobj, field)) {
         return Datagram();
       }
+      packer.end_pack();
     }
   }
 

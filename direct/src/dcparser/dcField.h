@@ -60,8 +60,9 @@ PUBLISHED:
 
   void receive_update(DCPacker &packer, PyObject *distobj) const;
 
-  void client_format_update(DCPacker &packer, int do_id, PyObject *args) const;
-  void ai_format_update(DCPacker &packer, int do_id, int to_id, int from_id, PyObject *args) const;
+  Datagram client_format_update(int do_id, PyObject *args) const;
+  Datagram ai_format_update(int do_id, int to_id, int from_id,
+                            PyObject *args) const;
 #endif 
 
 public:

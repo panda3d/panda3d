@@ -186,13 +186,19 @@ validate_ranges(const string &packed_data) const {
 //  Description: Packs the Python arguments from the indicated tuple
 //               into the packer.  Returns true on success, false on
 //               failure.
+//
+//               It is assumed that the packer is currently positioned
+//               on this field.
 ////////////////////////////////////////////////////////////////////
 bool DCField::
 pack_args(DCPacker &packer, PyObject *sequence) const {
+  nassertr(!packer.had_error(), false);
+  nassertr(packer.get_current_field() == this, false);
+
   nassertr(PySequence_Check(sequence), false);
-  packer.begin_pack(this);
+
   packer.pack_object(sequence);
-  if (packer.end_pack()) {
+  if (!packer.had_error()) {
     /*
     PyObject *str = PyObject_Str(sequence);
     cerr << "pack " << get_name() << PyString_AsString(str) << "\n";
@@ -228,17 +234,19 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
 //       Access: Published
 //  Description: Unpacks the values from the packer, beginning at
 //               the current point in the unpack_buffer, into a Python
-//               tuple and returns the tuple.  If there are remaining
-//               bytes in the unpack buffer, they are ignored (but the
-//               packer is left at the first unread byte).
+//               tuple and returns the tuple.
+//
+//               It is assumed that the packer is currently positioned
+//               on this field.
 ////////////////////////////////////////////////////////////////////
 PyObject *DCField::
 unpack_args(DCPacker &packer) const {
-  packer.begin_unpack(this);
+  nassertr(!packer.had_error(), NULL);
+  nassertr(packer.get_current_field() == this, NULL);
 
   PyObject *object = packer.unpack_object();
 
-  if (packer.end_unpack()) {
+  if (!packer.had_error()) {
     // Successfully unpacked.
     /*
     PyObject *str = PyObject_Str(object);
@@ -265,7 +273,8 @@ unpack_args(DCPacker &packer) const {
   */
     
   nassert_raise(strm.str());
-  return object;
+  Py_XDECREF(object);
+  return NULL;
 }
 #endif  // HAVE_PYTHON
 
@@ -281,16 +290,18 @@ void DCField::
 receive_update(DCPacker &packer, PyObject *distobj) const {
   PyObject *args = unpack_args(packer);
 
-  if (PyObject_HasAttrString(distobj, (char *)_name.c_str())) {
-    PyObject *func = PyObject_GetAttrString(distobj, (char *)_name.c_str());
-    nassertv(func != (PyObject *)NULL);
-
-    PyObject *result = PyObject_CallObject(func, args);
-    Py_XDECREF(result);
-    Py_DECREF(func);
+  if (args != (PyObject *)NULL) {
+    if (PyObject_HasAttrString(distobj, (char *)_name.c_str())) {
+      PyObject *func = PyObject_GetAttrString(distobj, (char *)_name.c_str());
+      nassertv(func != (PyObject *)NULL);
+      
+      PyObject *result = PyObject_CallObject(func, args);
+      Py_XDECREF(result);
+      Py_DECREF(func);
+    }
+    
+    Py_DECREF(args);
   }
-
-  Py_DECREF(args);
 }
 #endif  // HAVE_PYTHON
 
@@ -302,12 +313,21 @@ receive_update(DCPacker &packer, PyObject *distobj) const {
 //               to send an update for the indicated distributed
 //               object from the client.
 ////////////////////////////////////////////////////////////////////
-void DCField::
-client_format_update(DCPacker &packer, int do_id, PyObject *args) const {
+Datagram DCField::
+client_format_update(int do_id, PyObject *args) const {
+  DCPacker packer;
+
   packer.raw_pack_uint16(CLIENT_OBJECT_UPDATE_FIELD);
   packer.raw_pack_uint32(do_id);
   packer.raw_pack_uint16(_number);
+
+  packer.begin_pack(this);
   pack_args(packer, args);
+  if (!packer.end_pack()) {
+    return Datagram();
+  }
+
+  return Datagram(packer.get_data(), packer.get_length());
 }
 #endif  // HAVE_PYTHON
 
@@ -319,15 +339,24 @@ client_format_update(DCPacker &packer, int do_id, PyObject *args) const {
 //               to send an update for the indicated distributed
 //               object from the AI.
 ////////////////////////////////////////////////////////////////////
-void DCField::
-ai_format_update(DCPacker &packer, int do_id, int to_id, int from_id, PyObject *args) const {
+Datagram DCField::
+ai_format_update(int do_id, int to_id, int from_id, PyObject *args) const {
+  DCPacker packer;
+
   packer.raw_pack_uint32(to_id);
   packer.raw_pack_uint32(from_id);
   packer.raw_pack_uint8('A');
   packer.raw_pack_uint16(STATESERVER_OBJECT_UPDATE_FIELD);
   packer.raw_pack_uint32(do_id);
   packer.raw_pack_uint16(_number);
+
+  packer.begin_pack(this);
   pack_args(packer, args);
+  if (!packer.end_pack()) {
+    return Datagram();
+  }
+
+  return Datagram(packer.get_data(), packer.get_length());
 }
 #endif  // HAVE_PYTHON
 

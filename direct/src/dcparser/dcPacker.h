@@ -118,6 +118,7 @@ PUBLISHED:
 
   INLINE bool had_pack_error() const;
   INLINE bool had_range_error() const;
+  INLINE bool had_error() const;
   INLINE size_t get_num_unpacked_bytes() const;
 
   INLINE string get_string() const;

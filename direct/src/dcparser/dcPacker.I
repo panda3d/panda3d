@@ -589,6 +589,20 @@ had_range_error() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::had_error
+//       Access: Published
+//  Description: Returns true if there has been any error (either a
+//               pack error or a range error) since the most recent
+//               call to begin().  If this returns true, then the
+//               matching call to end() will indicate an error
+//               (false).
+////////////////////////////////////////////////////////////////////
+INLINE bool DCPacker::
+had_error() const {
+  return _range_error || _pack_error;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::get_num_unpacked_bytes
 //       Access: Published
 //  Description: Returns the number of bytes that have been unpacked
