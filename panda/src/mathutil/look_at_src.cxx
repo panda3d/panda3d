@@ -6,32 +6,32 @@
 INLINE_MATHUTIL FLOATNAME(LMatrix3)
 make_xi_mat(const FLOATNAME(LVector2) &x) {
   return FLOATNAME(LMatrix3)(1.0f,     0,     0,
-			   0,  x[0],  x[1],
-			   0, -x[1],  x[0]);
+                             0,  x[0],  x[1],
+                             0, -x[1],  x[0]);
 }
 
 
 INLINE_MATHUTIL FLOATNAME(LMatrix3)
 make_x_mat(const FLOATNAME(LVector2) &x) {
   return FLOATNAME(LMatrix3)(1.0f,     0,     0,
-			   0,  x[1],  x[0],
-			   0, -x[0],  x[1]);
+                             0,  x[1],  x[0],
+                             0, -x[0],  x[1]);
 }
 
 
 INLINE_MATHUTIL FLOATNAME(LMatrix3)
 make_y_mat(const FLOATNAME(LVector2) &y) {
   return FLOATNAME(LMatrix3)(y[1],     0, -y[0],
-  			      0,     1.0f,     0,
-			   y[0],     0,  y[1]);
+                                0,     1.0f,     0,
+                             y[0],     0,  y[1]);
 }
 
 
 INLINE_MATHUTIL FLOATNAME(LMatrix3)
 make_z_mat(const FLOATNAME(LVector2) &z) {
   return FLOATNAME(LMatrix3)(z[1], -z[0],     0,
-			   z[0],  z[1],     0,
-			      0,     0,     1.0f);
+                             z[0],  z[1],     0,
+                                0,     0,     1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ make_z_mat(const FLOATNAME(LVector2) &z) {
 ////////////////////////////////////////////////////////////////////
 void
 heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd, 
-	 const FLOATNAME(LVector3) &up, CoordinateSystem cs) {
+         const FLOATNAME(LVector3) &up, CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = default_coordinate_system;
   }
@@ -89,7 +89,7 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     // plane.  Its angle to the Y axis is the amount to rotate about the
     // Z axis in order to bring the fwd vector to the Y axis.
     FLOATNAME(LVector2) z(fwd[0]*y[1] - fwd[2]*y[0],
-			-fwd[0]*y[0]*x[0] + fwd[1]*x[1] - fwd[2]*y[1]*x[0]);
+                          -fwd[0]*y[0]*x[0] + fwd[1]*x[1] - fwd[2]*y[1]*x[0]);
     d = dot(z, z);
     if (d==0.0f) {
       z = FLOATNAME(LVector2)(0.0f, 1.0f);
@@ -100,14 +100,14 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     // Now build the net rotation matrix.
     if (cs == CS_zup_right) {
       mat = 
-	make_z_mat(z) *
-	make_x_mat(x) *
-	make_y_mat(y);
+        make_z_mat(z) *
+        make_x_mat(x) *
+        make_y_mat(y);
     } else { // cs == CS_zup_left
       mat = 
-	make_z_mat(z) *
-	make_x_mat(-x) *
-	make_y_mat(-y);
+        make_z_mat(z) *
+        make_x_mat(-x) *
+        make_y_mat(-y);
     }
   } else {
     // Y-up.
@@ -146,7 +146,7 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     // plane.  Its angle to the Z axis is the amount to rotate about the
     // Y axis in order to bring the up vector to the Z axis.
     FLOATNAME(LVector2) y(fwd[0]*z[1] - fwd[1]*z[0],
-			-fwd[0]*x[1]*z[0] - fwd[1]*x[1]*z[1] + fwd[2]*x[0]);
+                          -fwd[0]*x[1]*z[0] - fwd[1]*x[1]*z[1] + fwd[2]*x[0]);
     d = dot(y, y);
     if (d==0.0f) {
       y = FLOATNAME(LVector2)(0.0f, 1.0f);
@@ -157,14 +157,14 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     // Now build the net rotation matrix.
     if (cs == CS_yup_right) {
       mat = 
-	make_y_mat(y) *
-	make_xi_mat(-x) *
-	make_z_mat(-z);
+        make_y_mat(y) *
+        make_xi_mat(-x) *
+        make_z_mat(-z);
     } else { // cs == CS_yup_left
       mat = 
-	make_y_mat(y) *
-	make_xi_mat(x) *
-	make_z_mat(z);
+        make_y_mat(y) *
+        make_xi_mat(x) *
+        make_z_mat(z);
     }
   }
 }
@@ -183,7 +183,7 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
 ////////////////////////////////////////////////////////////////////
 void
 look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd, 
-	const FLOATNAME(LVector3) &up, CoordinateSystem cs) {
+        const FLOATNAME(LVector3) &up, CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = default_coordinate_system;
   }
@@ -225,7 +225,7 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     // plane.  Its angle to the Z axis is the amount to rotate about the
     // Y axis in order to bring the up vector to the Z axis.
     FLOATNAME(LVector2) y(up[0]*z[1] - up[1]*z[0],
-			-up[0]*x[1]*z[0] - up[1]*x[1]*z[1] + up[2]*x[0]);
+                          -up[0]*x[1]*z[0] - up[1]*x[1]*z[1] + up[2]*x[0]);
     d = dot(y, y);
     if (d==0.0f) {
       y = FLOATNAME(LVector2)(0.0f, 1.0f);
@@ -236,14 +236,14 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     // Now build the net rotation matrix.
     if (cs == CS_zup_right) {
       mat =
-	make_y_mat(y) *
-	make_xi_mat(x) *
-	make_z_mat(z);
+        make_y_mat(y) *
+        make_xi_mat(x) *
+        make_z_mat(z);
     } else { // cs == CS_zup_left
       mat =
-	make_y_mat(-y) *
-	make_xi_mat(-x) *
-	make_z_mat(z);
+        make_y_mat(-y) *
+        make_xi_mat(-x) *
+        make_z_mat(z);
     }
   } else {
     // Y-up.
@@ -282,7 +282,7 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     // plane.  Its angle to the Y axis is the amount to rotate about the
     // Z axis in order to bring the fwd vector to the Y axis.
     FLOATNAME(LVector2) z(up[0]*y[1] - up[2]*y[0],
-			-up[0]*y[0]*x[0] + up[1]*x[1] - up[2]*y[1]*x[0]);
+                          -up[0]*y[0]*x[0] + up[1]*x[1] - up[2]*y[1]*x[0]);
     d = dot(z, z);
     if (d==0.0f) {
       z = FLOATNAME(LVector2)(0.0f, 1.0f);
@@ -293,14 +293,14 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     // Now build the net rotation matrix.
     if (cs == CS_yup_right) {
       mat =
-	make_z_mat(z) *
-	make_x_mat(x) *
-	make_y_mat(-y);
+        make_z_mat(z) *
+        make_x_mat(x) *
+        make_y_mat(-y);
     } else { // cs == CS_yup_left
       mat =
-	make_z_mat(-z) *
-	make_x_mat(-x) *
-	make_y_mat(-y);
+        make_z_mat(-z) *
+        make_x_mat(-x) *
+        make_y_mat(-y);
     }
   }
 }

@@ -20,30 +20,36 @@ BEGIN_PUBLISH
 
 EXPCL_PANDA void
 heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
-	 const FLOATNAME(LVector3) &up = FLOATNAME(LVector3)::up(),
-	 CoordinateSystem cs = CS_default);
+         const FLOATNAME(LVector3) &up = FLOATNAME(LVector3)::up(),
+         CoordinateSystem cs = CS_default);
 EXPCL_PANDA void
 look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
-	const FLOATNAME(LVector3) &up = FLOATNAME(LVector3)::up(),
-	CoordinateSystem cs = CS_default);
+        const FLOATNAME(LVector3) &up = FLOATNAME(LVector3)::up(),
+        CoordinateSystem cs = CS_default);
 
-INLINE_MATHUTIL void heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
-		     CoordinateSystem cs);
-INLINE_MATHUTIL void look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
-		    CoordinateSystem cs);
+INLINE_MATHUTIL void
+heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
+         CoordinateSystem cs);
+INLINE_MATHUTIL void
+look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
+        CoordinateSystem cs);
 
 
-INLINE_MATHUTIL void heads_up(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd,
-		     const FLOATNAME(LVector3) &up = FLOATNAME(LVector3)::up(),
-		     CoordinateSystem cs = CS_default);
-INLINE_MATHUTIL void look_at(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd,
-		    const FLOATNAME(LVector3) &up = FLOATNAME(LVector3)::up(),
-		    CoordinateSystem cs = CS_default);
+INLINE_MATHUTIL void
+heads_up(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd,
+         const FLOATNAME(LVector3) &up = FLOATNAME(LVector3)::up(),
+         CoordinateSystem cs = CS_default);
+INLINE_MATHUTIL void
+look_at(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd,
+        const FLOATNAME(LVector3) &up = FLOATNAME(LVector3)::up(),
+        CoordinateSystem cs = CS_default);
 
-INLINE_MATHUTIL void heads_up(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd,
-		     CoordinateSystem cs);
-INLINE_MATHUTIL void look_at(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd,
-		    CoordinateSystem cs);
+INLINE_MATHUTIL void
+heads_up(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd,
+         CoordinateSystem cs);
+INLINE_MATHUTIL void
+look_at(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd,
+        CoordinateSystem cs);
 
 END_PUBLISH
 
