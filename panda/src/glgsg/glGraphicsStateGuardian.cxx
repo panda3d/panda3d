@@ -463,18 +463,16 @@ render_frame(const AllAttributesWrapper &initial_state) {
   _win->begin_frame();
   _decal_level = 0;
 
-  // First, clear the entire window.
-  PT(DisplayRegion) win_dr = 
-    _win->make_scratch_display_region(_win->get_width(), _win->get_height());
-  if (win_dr == (DisplayRegion*)NULL)
-  {
-    cerr << "null scratch " << endl;
-    exit(0);
+  if (_clear_buffer_type != 0) {
+    // First, clear the entire window.
+    PT(DisplayRegion) win_dr = 
+      _win->make_scratch_display_region(_win->get_width(), _win->get_height());
+    nassertv(win_dr != (DisplayRegion*)NULL);
+    DisplayRegionStack old_dr = push_display_region(win_dr);
+    prepare_display_region();
+    clear(get_render_buffer(_clear_buffer_type));
+    pop_display_region(old_dr);
   }
-  DisplayRegionStack old_dr = push_display_region(win_dr);
-  prepare_display_region();
-  clear(get_render_buffer(RenderBuffer::T_back | RenderBuffer::T_depth));
-  pop_display_region(old_dr);
 
   // Now render each of our layers in order.
   int max_channel_index = _win->get_max_channel_index();

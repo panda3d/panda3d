@@ -639,11 +639,13 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
 	_decal_level = 0;
 
-	// First, clear the entire window.
-	PT(DisplayRegion) win_dr = 
-	_win->make_scratch_display_region(_win->get_width(), _win->get_height());
-	clear(get_render_buffer(RenderBuffer::T_back | RenderBuffer::T_depth), win_dr);
-
+	if (_clear_buffer_type != 0) {
+	  // First, clear the entire window.
+	  PT(DisplayRegion) win_dr = 
+	    _win->make_scratch_display_region(_win->get_width(), _win->get_height());
+	  clear(get_render_buffer(_clear_buffer_type), win_dr);
+	}
+	  
 	// Now render each of our layers in order.
 	int max_channel_index = _win->get_max_channel_index();
 	for (int c = 0; c < max_channel_index; c++) {

@@ -62,6 +62,8 @@ PUBLISHED:
     return _accum_clear_value;
   }
 
+  void enable_frame_clear(bool clear_color, bool clear_depth);
+
 public:
   void release_all_textures();
 
@@ -138,6 +140,7 @@ protected:
   float _depth_clear_value;
   bool _stencil_clear_value;
   Colorf _accum_clear_value;
+  int _clear_buffer_type;
 
   int _display_region_stack_level;
   int _frame_buffer_stack_level;

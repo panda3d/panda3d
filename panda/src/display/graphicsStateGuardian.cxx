@@ -94,6 +94,7 @@ reset() {
   _depth_clear_value = 1.0;
   _stencil_clear_value = 0.0;
   _accum_clear_value.set(0.0, 0.0, 0.0, 0.0);
+  _clear_buffer_type = RenderBuffer::T_back | RenderBuffer::T_depth;
   _normals_enabled = false;
 }
 
@@ -328,6 +329,28 @@ set_stencil_clear_value(const bool value) {
 void GraphicsStateGuardian::
 set_accum_clear_value(const Colorf& value) {
   _accum_clear_value = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::enable_frame_clear
+//       Access: Public
+//  Description: Activates or deactivates the automatic clearing of
+//               the frame buffer and/or depth buffer at the beginning
+//               of each frame.
+//
+//               If clear_color is true, the color buffer will be
+//               cleared; if clear_depth is true, the depth buffer
+//               will be cleared.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+enable_frame_clear(bool clear_color, bool clear_depth) {
+  _clear_buffer_type = 0;
+  if (clear_color) {
+    _clear_buffer_type |= RenderBuffer::T_back;
+  }
+  if (clear_depth) {
+    _clear_buffer_type |= RenderBuffer::T_depth;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
