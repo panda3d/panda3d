@@ -125,6 +125,70 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::get_num_attribs
+//       Access: Published, Static
+//  Description: Returns the total number of unique RenderAttrib
+//               objects allocated in the world.  This will go up and
+//               down during normal operations.
+////////////////////////////////////////////////////////////////////
+int RenderAttrib::
+get_num_attribs() {
+  if (_attribs == (Attribs *)NULL) {
+    return 0;
+  }
+  return _attribs->size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::list_attribs
+//       Access: Published, Static
+//  Description: Lists all of the RenderAttribs in the cache to the
+//               output stream, one per line.  This can be quite a lot
+//               of output if the cache is large, so be prepared.
+////////////////////////////////////////////////////////////////////
+void RenderAttrib::
+list_attribs(ostream &out) {
+  out << _attribs->size() << " attribs:\n";
+  Attribs::const_iterator si;
+  for (si = _attribs->begin(); si != _attribs->end(); ++si) {
+    const RenderAttrib *attrib = (*si);
+    attrib->write(out, 2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::validate_attribs
+//       Access: Published, Static
+//  Description: Ensures that the cache is still stored in sorted
+//               order.  Returns true if so, false if there is a
+//               problem (which implies someone has modified one of
+//               the supposedly-const RenderAttrib objects).
+////////////////////////////////////////////////////////////////////
+bool RenderAttrib::
+validate_attribs() {
+  if (_attribs->empty()) {
+    return true;
+  }
+
+  Attribs::const_iterator si = _attribs->begin();
+  Attribs::const_iterator snext = si;
+  ++snext;
+  while (snext != _attribs->end()) {
+    if ((*si)->compare_to(*(*snext)) >= 0) {
+      pgraph_cat.error()
+        << "RenderAttribs out of order!\n";
+      (*si)->write(pgraph_cat.error(false), 2);
+      (*snext)->write(pgraph_cat.error(false), 2);
+      return false;
+    }
+    si = snext;
+    ++snext;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::return_new
 //       Access: Protected, Static
 //  Description: This function is used by derived RenderAttrib types
@@ -145,6 +209,12 @@ return_new(RenderAttrib *attrib) {
   // This should be a newly allocated pointer, not one that was used
   // for anything else.
   nassertr(attrib->_saved_entry == _attribs->end(), attrib);
+
+#ifndef NDEBUG
+  if (paranoid_const) {
+    nassertr(validate_attribs(), attrib);
+  }
+#endif
 
   // Save the attrib in a local PointerTo so that it will be freed at
   // the end of this function if no one else uses it.

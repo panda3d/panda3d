@@ -67,8 +67,6 @@ private:
 public:
   virtual ~RenderEffect();
 
-  INLINE int compare_to(const RenderEffect &other) const;
-
   virtual bool safe_to_transform() const;
   virtual bool safe_to_combine() const;
   virtual CPT(RenderEffect) xform(const LMatrix4f &mat) const;
@@ -79,8 +77,14 @@ public:
                              CPT(RenderState) &node_state) const;
 
 PUBLISHED:
+  INLINE int compare_to(const RenderEffect &other) const;
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
+
+  static int get_num_effects();
+  static void list_effects(ostream &out);
+  static bool validate_effects();
 
 protected:
   static CPT(RenderEffect) return_new(RenderEffect *effect);
@@ -89,7 +93,7 @@ protected:
 
 private:
   typedef pset<const RenderEffect *, IndirectCompareTo<RenderEffect> > Effects;
-  static Effects _effects;
+  static Effects *_effects;
 
   Effects::iterator _saved_entry;
 

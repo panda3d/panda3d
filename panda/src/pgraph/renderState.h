@@ -56,9 +56,9 @@ private:
 public:
   virtual ~RenderState();
 
+PUBLISHED:
   bool operator < (const RenderState &other) const;
 
-PUBLISHED:
   INLINE bool is_empty() const;
   INLINE int get_num_attribs() const;
   INLINE const RenderAttrib *get_attrib(int n) const;
@@ -99,6 +99,9 @@ PUBLISHED:
   static int get_num_states();
   static int get_num_unused_states();
   static int clear_cache();
+  static void list_cycles(ostream &out);
+  static void list_states(ostream &out);
+  static bool validate_states();
 
 PUBLISHED:
   // These methods are intended for use by low-level code, but they're
@@ -118,9 +121,38 @@ public:
   static void bin_removed(int bin_index);
 
 private:
+  class CompositionCycleDescEntry {
+  public:
+    INLINE CompositionCycleDescEntry(const RenderState *obj,
+                                     const RenderState *result,
+                                     bool inverted);
+
+    const RenderState *_obj;
+    const RenderState *_result;
+    bool _inverted;
+  };
+  typedef pvector<CompositionCycleDescEntry> CompositionCycleDesc;
+  typedef pset<const RenderState *> VisitedStates;
+  class CycleChain {
+  public:
+    INLINE CycleChain(const RenderState *state);
+    INLINE CycleChain(CycleChain *prev, const RenderState *state);
+
+    bool has_result(const RenderState *state) const;
+
+    const RenderState *_state;
+    CycleChain *_prev;
+    int _length;
+  };
+
   static CPT(RenderState) return_new(RenderState *state);
   CPT(RenderState) do_compose(const RenderState *other) const;
   CPT(RenderState) do_invert_compose(const RenderState *other) const;
+  static bool r_detect_cycles(const RenderState *state,
+                              VisitedStates &visited_this_cycle,
+                              CycleChain *chain,
+                              CompositionCycleDesc &cycle_desc);
+
   void determine_bin_index();
   void determine_fog();
   void determine_bin();
@@ -149,20 +181,18 @@ private:
     INLINE Composition();
     INLINE Composition(const Composition &copy);
 
-    CPT(RenderState) _result;
+    // _result is reference counted if and only if it is not the same
+    // pointer as this.
+    const RenderState *_result;
   };
-    
+
+  // The first element of the map is the object we compose with.  This
+  // is not reference counted within this map; instead we store a
+  // companion pointer in the other object, and remove the references
+  // explicitly when either object destructs.
   typedef pmap<const RenderState *, Composition> CompositionCache;
   CompositionCache _composition_cache;
   CompositionCache _invert_composition_cache;
-
-  // Thise pointer is used to cache the result of compose(this).  This
-  // has to be a special case, because we have to handle the reference
-  // counts carefully so that we don't leak.  Most of the time, the
-  // result of compose(this) is this, which should not be reference
-  // counted, but other times the result is something else (which
-  // should be).
-  const RenderState *_self_compose;
 
 private:
   // This is the actual data within the RenderState: a set of

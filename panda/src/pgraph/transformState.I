@@ -18,26 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformState::Composition::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE TransformState::Composition::
-Composition() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TransformState::Composition::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE TransformState::Composition::
-Composition(const TransformState::Composition &copy) :
-  _result(copy._result)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TransformState::make_pos
 //       Access: Published, Static
 //  Description: Makes a new TransformState with the specified
@@ -581,4 +561,65 @@ is_destructing() const {
 #else
   return false;
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::Composition::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE TransformState::Composition::
+Composition() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::Composition::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE TransformState::Composition::
+Composition(const TransformState::Composition &copy) :
+  _result(copy._result)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::CompositionCycleDescEntry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE TransformState::CompositionCycleDescEntry::
+CompositionCycleDescEntry(const TransformState *obj,
+                          const TransformState *result,
+                          bool inverted) :
+  _obj(obj),
+  _result(result),
+  _inverted(inverted)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::CycleChain::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE TransformState::CycleChain::
+CycleChain(const TransformState *state) :
+  _state(state),
+  _prev(NULL),
+  _length(1)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::CycleChain::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE TransformState::CycleChain::
+CycleChain(CycleChain *prev, const TransformState *state) :
+  _state(state),
+  _prev(prev),
+  _length(prev->_length + 1)
+{
 }

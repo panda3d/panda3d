@@ -118,7 +118,19 @@ compare_to_impl(const RenderAttrib *other) const {
   DCAST_INTO_R(ta, other, 0);
 
   if (is_off() != ta->is_off()) {
+    if (pgraph_cat.is_spam()) {
+      pgraph_cat.spam()
+        << "Comparing " << (int)is_off() << " to " << (int)ta->is_off() << " result = "
+        << (int)is_off() - (int)ta->is_off() << "\n";
+    }
+    
     return (int)is_off() - (int)ta->is_off();
+  }
+
+  if (pgraph_cat.is_spam()) {
+    pgraph_cat.spam()
+      << "Comparing " << _scale << " to " << ta->_scale << " result = "
+      << _scale.compare_to(ta->_scale) << "\n";
   }
 
   return _scale.compare_to(ta->_scale);

@@ -18,127 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::Composition::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE RenderState::Composition::
-Composition() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::Composition::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE RenderState::Composition::
-Composition(const RenderState::Composition &copy) :
-  _result(copy._result)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::Attribute::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE RenderState::Attribute::
-Attribute(const RenderAttrib *attrib, int override) :
-  _type(attrib->get_type()),
-  _attrib(attrib),
-  _override(override)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::Attribute::Constructor
-//       Access: Public
-//  Description: This constructor is only used when reading the
-//               RenderState from a bam file.  At this point, the
-//               attribute pointer is unknown.
-////////////////////////////////////////////////////////////////////
-INLINE RenderState::Attribute::
-Attribute(int override) :
-  _override(override)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::Attribute::Constructor
-//       Access: Public
-//  Description: This constructor makes an invalid Attribute with no
-//               RenderAttrib pointer; its purpose is just to make an
-//               object we can use to look up a particular type in the
-//               Attribute set.
-////////////////////////////////////////////////////////////////////
-INLINE RenderState::Attribute::
-Attribute(TypeHandle type) :
-  _type(type),
-  _attrib(NULL),
-  _override(0)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::Attribute::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE RenderState::Attribute::
-Attribute(const Attribute &copy) :
-  _type(copy._type),
-  _attrib(copy._attrib),
-  _override(copy._override)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::Attribute::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void RenderState::Attribute::
-operator = (const Attribute &copy) {
-  _type = copy._type;
-  _attrib = copy._attrib;
-  _override = copy._override;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::Attribute::operator <
-//       Access: Public
-//  Description: This is used by the Attributes set to uniquify
-//               RenderAttributes by type.  Only one RenderAttrib of a
-//               given type is allowed in the set.  This ordering must
-//               also match the ordering reported by compare_to().
-////////////////////////////////////////////////////////////////////
-INLINE bool RenderState::Attribute::
-operator < (const Attribute &other) const {
-  return _type < other._type;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::Attribute::compare_to
-//       Access: Public
-//  Description: Provides an indication of whether a particular
-//               attribute is equivalent to another one, for purposes
-//               of generating unique RenderStates.  This should
-//               compare all properties of the Attribute, but it is
-//               important that the type is compared first, to be
-//               consistent with the ordering defined by operator <.
-////////////////////////////////////////////////////////////////////
-INLINE int RenderState::Attribute::
-compare_to(const Attribute &other) const {
-  if (_type != other._type) {
-    return _type.get_index() - other._type.get_index();
-  }
-  if (_attrib != other._attrib) {
-    return _attrib < other._attrib ? -1 : 1;
-  }
-  return _override - other._override;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderState::is_empty
 //       Access: Published
 //  Description: Returns true if the state is empty, false otherwise.
@@ -307,4 +186,166 @@ is_destructing() const {
 #else
   return false;
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::Composition::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE RenderState::Composition::
+Composition() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::Composition::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE RenderState::Composition::
+Composition(const RenderState::Composition &copy) :
+  _result(copy._result)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::Attribute::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE RenderState::Attribute::
+Attribute(const RenderAttrib *attrib, int override) :
+  _type(attrib->get_type()),
+  _attrib(attrib),
+  _override(override)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::Attribute::Constructor
+//       Access: Public
+//  Description: This constructor is only used when reading the
+//               RenderState from a bam file.  At this point, the
+//               attribute pointer is unknown.
+////////////////////////////////////////////////////////////////////
+INLINE RenderState::Attribute::
+Attribute(int override) :
+  _override(override)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::Attribute::Constructor
+//       Access: Public
+//  Description: This constructor makes an invalid Attribute with no
+//               RenderAttrib pointer; its purpose is just to make an
+//               object we can use to look up a particular type in the
+//               Attribute set.
+////////////////////////////////////////////////////////////////////
+INLINE RenderState::Attribute::
+Attribute(TypeHandle type) :
+  _type(type),
+  _attrib(NULL),
+  _override(0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::Attribute::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE RenderState::Attribute::
+Attribute(const Attribute &copy) :
+  _type(copy._type),
+  _attrib(copy._attrib),
+  _override(copy._override)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::Attribute::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void RenderState::Attribute::
+operator = (const Attribute &copy) {
+  _type = copy._type;
+  _attrib = copy._attrib;
+  _override = copy._override;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::Attribute::operator <
+//       Access: Public
+//  Description: This is used by the Attributes set to uniquify
+//               RenderAttributes by type.  Only one RenderAttrib of a
+//               given type is allowed in the set.  This ordering must
+//               also match the ordering reported by compare_to().
+////////////////////////////////////////////////////////////////////
+INLINE bool RenderState::Attribute::
+operator < (const Attribute &other) const {
+  return _type < other._type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::Attribute::compare_to
+//       Access: Public
+//  Description: Provides an indication of whether a particular
+//               attribute is equivalent to another one, for purposes
+//               of generating unique RenderStates.  This should
+//               compare all properties of the Attribute, but it is
+//               important that the type is compared first, to be
+//               consistent with the ordering defined by operator <.
+////////////////////////////////////////////////////////////////////
+INLINE int RenderState::Attribute::
+compare_to(const Attribute &other) const {
+  if (_type != other._type) {
+    return _type.get_index() - other._type.get_index();
+  }
+  if (_attrib != other._attrib) {
+    return _attrib < other._attrib ? -1 : 1;
+  }
+  return _override - other._override;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::CompositionCycleDescEntry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE RenderState::CompositionCycleDescEntry::
+CompositionCycleDescEntry(const RenderState *obj,
+                          const RenderState *result,
+                          bool inverted) :
+  _obj(obj),
+  _result(result),
+  _inverted(inverted)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::CycleChain::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE RenderState::CycleChain::
+CycleChain(const RenderState *state) :
+  _state(state),
+  _prev(NULL),
+  _length(1)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::CycleChain::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE RenderState::CycleChain::
+CycleChain(CycleChain *prev, const RenderState *state) :
+  _state(state),
+  _prev(prev),
+  _length(prev->_length + 1)
+{
 }

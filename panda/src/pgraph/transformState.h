@@ -64,9 +64,9 @@ private:
 public:
   virtual ~TransformState();
 
+PUBLISHED:
   bool operator < (const TransformState &other) const;
 
-PUBLISHED:
   static CPT(TransformState) make_identity();
   static CPT(TransformState) make_invalid();
   INLINE static CPT(TransformState) make_pos(const LVecBase3f &pos);
@@ -131,11 +131,42 @@ PUBLISHED:
   static int get_num_states();
   static int get_num_unused_states();
   static int clear_cache();
+  static void list_cycles(ostream &out);
+  static void list_states(ostream &out);
+  static bool validate_states();
 
 private:
+  class CompositionCycleDescEntry {
+  public:
+    INLINE CompositionCycleDescEntry(const TransformState *obj,
+                                     const TransformState *result,
+                                     bool inverted);
+
+    const TransformState *_obj;
+    const TransformState *_result;
+    bool _inverted;
+  };
+  typedef pvector<CompositionCycleDescEntry> CompositionCycleDesc;
+  typedef pset<const TransformState *> VisitedStates;
+  class CycleChain {
+  public:
+    INLINE CycleChain(const TransformState *state);
+    INLINE CycleChain(CycleChain *prev, const TransformState *state);
+
+    bool has_result(const TransformState *state) const;
+
+    const TransformState *_state;
+    CycleChain *_prev;
+    int _length;
+  };
+
   static CPT(TransformState) return_new(TransformState *state);
   CPT(TransformState) do_compose(const TransformState *other) const;
   CPT(TransformState) do_invert_compose(const TransformState *other) const;
+  static bool r_detect_cycles(const TransformState *state,
+                              VisitedStates &visited_this_cycle,
+                              CycleChain *chain,
+                              CompositionCycleDesc &cycle_desc);
 
 private:
   typedef pset<const TransformState *, IndirectLess<TransformState> > States;
@@ -157,17 +188,18 @@ private:
     INLINE Composition();
     INLINE Composition(const Composition &copy);
 
-    CPT(TransformState) _result;
+    // _result is reference counted if and only if it is not the same
+    // pointer as this.
+    const TransformState *_result;
   };
     
+  // The first element of the map is the object we compose with.  This
+  // is not reference counted within this map; instead we store a
+  // companion pointer in the other object, and remove the references
+  // explicitly when either object destructs.
   typedef pmap<const TransformState *, Composition> CompositionCache;
   CompositionCache _composition_cache;
   CompositionCache _invert_composition_cache;
-
-  // Thise pointer is used to cache the result of compose(this).  This
-  // has to be a special case, because we have to handle the reference
-  // counts carefully so that we don't leak.
-  const TransformState *_self_compose;
 
 private:
   // This is the actual data within the TransformState.

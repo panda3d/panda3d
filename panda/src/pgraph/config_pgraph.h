@@ -35,6 +35,7 @@ extern const bool unambiguous_graph;
 extern const bool allow_unrelated_wrt;
 extern const bool paranoid_compose;
 extern const bool compose_componentwise;
+extern const bool paranoid_const;
 
 extern const bool polylight_info;
 

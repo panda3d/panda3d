@@ -127,6 +127,12 @@ const bool paranoid_compose = config_pgraph.GetBool("paranoid-compose", false);
 // by matrix.
 const bool compose_componentwise = config_pgraph.GetBool("compose-componentwise", true);
 
+// Set this true to double-check that nothing is inappropriately
+// modifying the supposedly const structures like RenderState,
+// RenderAttrib, TransformState, and RenderEffect.  This has no effect
+// if NDEBUG is defined.
+const bool paranoid_const = config_pgraph.GetBool("paranoid-const", false);
+
 // Set this true to view some info statements regarding the polylight
 // It is helpful for debugging
 const bool polylight_info = config_pgraph.GetBool("polylight-info", false);

@@ -68,14 +68,18 @@ public:
   INLINE CPT(RenderAttrib) compose(const RenderAttrib *other) const;
   INLINE CPT(RenderAttrib) invert_compose(const RenderAttrib *other) const;
   INLINE CPT(RenderAttrib) make_default() const;
-  INLINE int compare_to(const RenderAttrib &other) const;
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
 
   INLINE bool always_reissue() const;
 
 PUBLISHED:
+  INLINE int compare_to(const RenderAttrib &other) const;
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
+
+  static int get_num_attribs();
+  static void list_attribs(ostream &out);
+  static bool validate_attribs();
 
   enum PandaCompareFunc {   // intentionally defined to match D3DCMPFUNC
     M_none=0,           // alpha-test disabled (always-draw)

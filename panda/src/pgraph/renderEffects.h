@@ -57,13 +57,13 @@ private:
 public:
   virtual ~RenderEffects();
 
-  bool operator < (const RenderEffects &other) const;
-
   bool safe_to_transform() const;
   bool safe_to_combine() const;
   CPT(RenderEffects) xform(const LMatrix4f &mat) const;
 
 PUBLISHED:
+  bool operator < (const RenderEffects &other) const;
+
   INLINE bool is_empty() const;
   INLINE int get_num_effects() const;
   INLINE const RenderEffect *get_effect(int n) const;
@@ -90,6 +90,10 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
 
+  static int get_num_states();
+  static void list_states(ostream &out);
+  static bool validate_states();
+
 public:
   INLINE bool has_decal() const;
   INLINE bool has_show_bounds() const;
@@ -107,7 +111,7 @@ private:
 
 private:
   typedef pset<const RenderEffects *, IndirectLess<RenderEffects> > States;
-  static States _states;
+  static States *_states;
   static CPT(RenderEffects) _empty_state;
 
   // This iterator records the entry corresponding to this RenderEffects

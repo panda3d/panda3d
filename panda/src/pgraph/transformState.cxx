@@ -47,7 +47,6 @@ TransformState() {
     _states = new States;
   }
   _saved_entry = _states->end();
-  _self_compose = (TransformState *)NULL;
   _flags = F_is_identity | F_singular_known;
   _inv_mat = (LMatrix4f *)NULL;
 }
@@ -83,14 +82,13 @@ TransformState::
   // We'd better not call the destructor twice on a particular object.
   nassertv(!is_destructing());
   set_destructing();
-
+ 
   // Free the inverse matrix computation, if it has been stored.
   if (_inv_mat != (LMatrix4f *)NULL) {
     delete _inv_mat;
     _inv_mat = (LMatrix4f *)NULL;
   }
 
-  // Remove the deleted TransformState object from the global pool.
   if (_saved_entry != _states->end()) {
     nassertv(_states->find(this) == _saved_entry);
     _states->erase(_saved_entry);
@@ -130,13 +128,8 @@ TransformState::
     // objects destruct, there will be no reason for that one to.
     TransformState *other = (TransformState *)(*ci).first;
 
-    // We should never have a reflexive entry in this map.  If we
-    // do, something got screwed up elsewhere.
-    nassertv(other != this);
-
-    // We hold a copy of the composition result to ensure that the
-    // result TransformState object (if there is one) doesn't
-    // destruct.
+    // We hold a copy of the composition result so we can dereference
+    // it later.
     Composition comp = (*ci).second;
 
     // Now we can remove the element from our cache.  We do this now,
@@ -145,25 +138,33 @@ TransformState::
     // is still valid.
     _composition_cache.erase(ci);
 
-    CompositionCache::iterator oci = other->_composition_cache.find(this);
+    if (other != this) {
+      CompositionCache::iterator oci = other->_composition_cache.find(this);
 
-    // We may or may not still be listed in the other's cache (it
-    // might be halfway through pulling entries out, from within its
-    // own destructor).
-    if (oci != other->_composition_cache.end()) {
-      // Hold a copy of the other composition result, too.
-      Composition ocomp = (*oci).second;
-      
-      // Now we're holding a reference count to both computed
-      // results, so no objects will be tempted to destruct while we
-      // erase the other cache entry.
-      other->_composition_cache.erase(oci);
+      // We may or may not still be listed in the other's cache (it
+      // might be halfway through pulling entries out, from within its
+      // own destructor).
+      if (oci != other->_composition_cache.end()) {
+        // Hold a copy of the other composition result, too.
+        Composition ocomp = (*oci).second;
+        
+        other->_composition_cache.erase(oci);
+        
+        // It's finally safe to let our held pointers go away.  This may
+        // have cascading effects as other TransformState objects are
+        // destructed, but there will be no harm done if they destruct
+        // now.
+        if (ocomp._result != (const TransformState *)NULL && ocomp._result != other) {
+          unref_delete(ocomp._result);
+        }
+      }
     }
 
-    // It's finally safe to let our held pointers go away.  This may
-    // have cascading effects as other TransformState objects are
-    // destructed, but there will be no harm done if they destruct
-    // now.
+    // It's finally safe to let our held pointers go away.  (See
+    // comment above.)
+    if (comp._result != (const TransformState *)NULL && comp._result != this) {
+      unref_delete(comp._result);
+    }
   }
 
   // A similar bit of code for the invert cache.
@@ -173,19 +174,20 @@ TransformState::
     nassertv(other != this);
     Composition comp = (*ci).second;
     _invert_composition_cache.erase(ci);
-    CompositionCache::iterator oci = 
-      other->_invert_composition_cache.find(this);
-    if (oci != other->_invert_composition_cache.end()) {
-      Composition ocomp = (*oci).second;
-      other->_invert_composition_cache.erase(oci);
+    if (other != this) {
+      CompositionCache::iterator oci = 
+        other->_invert_composition_cache.find(this);
+      if (oci != other->_invert_composition_cache.end()) {
+        Composition ocomp = (*oci).second;
+        other->_invert_composition_cache.erase(oci);
+        if (ocomp._result != (const TransformState *)NULL && ocomp._result != other) {
+          unref_delete(ocomp._result);
+        }
+      }
     }
-  }
-
-  // Also, if we called compose(this) at some point and the return
-  // value was something other than this, we need to decrement the
-  // associated reference count.
-  if (_self_compose != (TransformState *)NULL && _self_compose != this) {
-    unref_delete((TransformState *)_self_compose);
+    if (comp._result != (const TransformState *)NULL && comp._result != this) {
+      unref_delete(comp._result);
+    }
   }
 
   // If this was true at the beginning of the destructor, but is no
@@ -195,7 +197,7 @@ TransformState::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::operator <
-//       Access: Public
+//       Access: Published
 //  Description: Provides an arbitrary ordering among all unique
 //               TransformStates, so we can store the essentially
 //               different ones in a big set and throw away the rest.
@@ -483,35 +485,13 @@ compose(const TransformState *other) const {
   if (other->is_identity()) {
     return this;
   }
-
+ 
   // If either transform is invalid, the result is invalid.
   if (is_invalid()) {
     return this;
   }
   if (other->is_invalid()) {
     return other;
-  }
-
-  if (other == this) {
-    // compose(this) has to be handled as a special case, because the
-    // caching problem is so different.
-    if (_self_compose != (TransformState *)NULL) {
-      return _self_compose;
-    }
-    CPT(TransformState) result = do_compose(this);
-    ((TransformState *)this)->_self_compose = result;
-
-    if (result != (const TransformState *)this) {
-      // If the result of compose(this) is something other than this,
-      // explicitly increment the reference count.  We have to be sure
-      // to decrement it again later, in our destructor.
-      _self_compose->ref();
-
-      // (If the result was just this again, we still store the
-      // result, but we don't increment the reference count, since
-      // that would be a self-referential leak.  What a mess this is.)
-    }
-    return _self_compose;
   }
 
   // Is this composition already cached?
@@ -522,7 +502,14 @@ compose(const TransformState *other) const {
       // Well, it wasn't cached already, but we already had an entry
       // (probably created for the reverse direction), so use the same
       // entry to store the new result.
-      ((Composition &)comp)._result = do_compose(other);
+      CPT(TransformState) result = do_compose(other);
+      ((Composition &)comp)._result = result;
+
+      if (result != (const TransformState *)this) {
+        // See the comments below about the need to up the reference
+        // count only when the result is not the same as this.
+        result->ref();
+      }
     }
     // Here's the cache!
     return comp._result;
@@ -537,8 +524,21 @@ compose(const TransformState *other) const {
   // result; the other will be NULL for now.
   CPT(TransformState) result = do_compose(other);
 
+  // Order is important here, in case other == this.
   ((TransformState *)other)->_composition_cache[this]._result = NULL;
   ((TransformState *)this)->_composition_cache[other]._result = result;
+
+  if (result != (const TransformState *)this) {
+    // If the result of compose() is something other than this,
+    // explicitly increment the reference count.  We have to be sure
+    // to decrement it again later, when the composition entry is
+    // removed from the cache.
+    result->ref();
+    
+    // (If the result was just this again, we still store the
+    // result, but we don't increment the reference count, since
+    // that would be a self-referential leak.)
+  }
 
   return result;
 }
@@ -588,7 +588,14 @@ invert_compose(const TransformState *other) const {
       // Well, it wasn't cached already, but we already had an entry
       // (probably created for the reverse direction), so use the same
       // entry to store the new result.
-      ((Composition &)comp)._result = do_invert_compose(other);
+      CPT(TransformState) result = do_invert_compose(other);
+      ((Composition &)comp)._result = result;
+
+      if (result != (const TransformState *)this) {
+        // See the comments below about the need to up the reference
+        // count only when the result is not the same as this.
+        result->ref();
+      }
     }
     // Here's the cache!
     return comp._result;
@@ -605,6 +612,18 @@ invert_compose(const TransformState *other) const {
 
   ((TransformState *)other)->_invert_composition_cache[this]._result = NULL;
   ((TransformState *)this)->_invert_composition_cache[other]._result = result;
+
+  if (result != (const TransformState *)this) {
+    // If the result of compose() is something other than this,
+    // explicitly increment the reference count.  We have to be sure
+    // to decrement it again later, when the composition entry is
+    // removed from the cache.
+    result->ref();
+    
+    // (If the result was just this again, we still store the
+    // result, but we don't increment the reference count, since
+    // that would be a self-referential leak.)
+  }
 
   return result;
 }
@@ -702,17 +721,26 @@ get_num_states() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::get_num_unused_states
 //       Access: Published, Static
-//  Description: Returns the total number of TransformState objects
-//               that have been allocated but have no references
-//               outside of the internal TransformState map.
+//  Description: Returns the total number of TransformState objects that
+//               have been allocated but have no references outside of
+//               the internal TransformState cache.
+//
+//               A nonzero return value is not necessarily indicative
+//               of leaked references; it is normal for two
+//               TransformState objects, both of which have references
+//               held outside the cache, to have to result of their
+//               composition stored within the cache.  This result
+//               will be retained within the cache until one of the
+//               base TransformStates is released.
+//
+//               Use list_cycles() to get an idea of the number of
+//               actual "leaked" TransformState objects.
 ////////////////////////////////////////////////////////////////////
 int TransformState::
 get_num_unused_states() {
   if (_states == (States *)NULL) {
     return 0;
   }
-
-  int num_unused = 0;
 
   // First, we need to count the number of times each TransformState
   // object is recorded in the cache.
@@ -728,7 +756,7 @@ get_num_unused_states() {
          ci != state->_composition_cache.end();
          ++ci) {
       const TransformState *result = (*ci).second._result;
-      if (result != (const TransformState *)NULL) {
+      if (result != (const TransformState *)NULL && result != state) {
         // Here's a TransformState that's recorded in the cache.
         // Count it.
         pair<StateCount::iterator, bool> ir =
@@ -744,7 +772,7 @@ get_num_unused_states() {
          ci != state->_invert_composition_cache.end();
          ++ci) {
       const TransformState *result = (*ci).second._result;
-      if (result != (const TransformState *)NULL) {
+      if (result != (const TransformState *)NULL && result != state) {
         pair<StateCount::iterator, bool> ir =
           state_count.insert(StateCount::value_type(result, 1));
         if (!ir.second) {
@@ -752,26 +780,13 @@ get_num_unused_states() {
         }
       }
     }
-
-    // Finally, check the self_compose field, which might be reference
-    // counted too.
-    if (state->_self_compose != (const TransformState *)NULL &&
-        state->_self_compose != state) {
-      const TransformState *result = state->_self_compose;
-      if (result != (const TransformState *)NULL) {
-        pair<StateCount::iterator, bool> ir =
-          state_count.insert(StateCount::value_type(result, 1));
-        if (!ir.second) {
-          (*(ir.first)).second++;
-        }
-      }
-    }
-
   }
 
   // Now that we have the appearance count of each TransformState
   // object, we can tell which ones are unreferenced outside of the
   // TransformState cache, by comparing these to the reference counts.
+  int num_unused = 0;
+
   StateCount::iterator sci;
   for (sci = state_count.begin(); sci != state_count.end(); ++sci) {
     const TransformState *state = (*sci).first;
@@ -779,6 +794,13 @@ get_num_unused_states() {
     nassertr(count <= state->get_ref_count(), num_unused);
     if (count == state->get_ref_count()) {
       num_unused++;
+
+      if (pgraph_cat.is_debug()) {
+        pgraph_cat.debug()
+          << "Unused state: " << (void *)state << ":" 
+          << state->get_ref_count() << " =\n";
+        state->write(pgraph_cat.debug(false), 2);
+      }
     }
   }
 
@@ -818,10 +840,10 @@ clear_cache() {
 
   int orig_size = _states->size();
 
-  // First, we need to copy the entire set of transforms to a
-  // temporary vector, reference-counting each object.  That way we
-  // can walk through the copy, without fear of dereferencing (and
-  // deleting) the objects in the map as we go.
+  // First, we need to copy the entire set of states to a temporary
+  // vector, reference-counting each object.  That way we can walk
+  // through the copy, without fear of dereferencing (and deleting)
+  // the objects in the map as we go.
   {
     typedef pvector< CPT(TransformState) > TempStates;
     TempStates temp_states;
@@ -836,13 +858,29 @@ clear_cache() {
     TempStates::iterator ti;
     for (ti = temp_states.begin(); ti != temp_states.end(); ++ti) {
       TransformState *state = (TransformState *)(*ti).p();
-      state->_composition_cache.clear();
-      state->_invert_composition_cache.clear();
-      if (state->_self_compose != (TransformState *)NULL && 
-          state->_self_compose != state) {
-        unref_delete((TransformState *)state->_self_compose);
-        state->_self_compose = (TransformState *)NULL;
+
+      CompositionCache::const_iterator ci;
+      for (ci = state->_composition_cache.begin();
+           ci != state->_composition_cache.end();
+           ++ci) {
+        const TransformState *result = (*ci).second._result;
+        if (result != (const TransformState *)NULL && result != state) {
+          result->unref();
+          nassertr(result->get_ref_count() > 0, 0);
+        }
       }
+      state->_composition_cache.clear();
+
+      for (ci = state->_invert_composition_cache.begin();
+           ci != state->_invert_composition_cache.end();
+           ++ci) {
+        const TransformState *result = (*ci).second._result;
+        if (result != (const TransformState *)NULL && result != state) {
+          result->unref();
+          nassertr(result->get_ref_count() > 0, 0);
+        }
+      }
+      state->_invert_composition_cache.clear();
     }
 
     // Once this block closes and the temp_states object goes away,
@@ -852,6 +890,120 @@ clear_cache() {
 
   int new_size = _states->size();
   return orig_size - new_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::list_cycles
+//       Access: Published, Static
+//  Description: Detects all of the reference-count cycles in the
+//               cache and reports them to standard output.
+//
+//               These cycles may be inadvertently created when state
+//               compositions cycle back to a starting point.  In the
+//               current implementation, they are not automatically
+//               detected and broken, so they represent a kind of
+//               memory leak.  They will not be freed unless
+//               clear_cache() is called explicitly.
+//
+//               The cycles listed here are not leaks in the strictest
+//               sense of the word, since they can be reclaimed by a
+//               call to clear_cache(); but they will not be reclaimed
+//               automatically.
+////////////////////////////////////////////////////////////////////
+void TransformState::
+list_cycles(ostream &out) {
+  VisitedStates visited;
+  CompositionCycleDesc cycle_desc;
+
+  States::iterator si;
+  for (si = _states->begin(); si != _states->end(); ++si) {
+    const TransformState *state = (*si);
+
+    bool inserted = visited.insert(state).second;
+    if (inserted) {
+      VisitedStates visited_this_cycle;
+      CycleChain chain(state);
+      if (r_detect_cycles(state, visited_this_cycle, &chain, cycle_desc)) {
+        // This state begins a cycle.
+        CompositionCycleDesc::reverse_iterator csi;
+
+        out << "\nCycle detected of length " << cycle_desc.size() + 1 << ":\n"
+            << "state " << (void *)state << ":" << state->get_ref_count()
+            << " =\n";
+        state->write(out, 2);
+        for (csi = cycle_desc.rbegin(); csi != cycle_desc.rend(); ++csi) {
+          const CompositionCycleDescEntry &entry = (*csi);
+          if (entry._inverted) {
+            out << "invert composed with ";
+          } else {
+            out << "composed with ";
+          }
+          out << (const void *)entry._obj << ":" << entry._obj->get_ref_count()
+              << " " << *entry._obj << "\n"
+              << "produces " << (const void *)entry._result << ":"
+              << entry._result->get_ref_count() << " =\n";
+          entry._result->write(out, 2);
+          visited.insert(entry._result);
+        }
+
+        cycle_desc.clear();
+      }
+    }
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::list_states
+//       Access: Published, Static
+//  Description: Lists all of the TransformStates in the cache to the
+//               output stream, one per line.  This can be quite a lot
+//               of output if the cache is large, so be prepared.
+////////////////////////////////////////////////////////////////////
+void TransformState::
+list_states(ostream &out) {
+  out << _states->size() << " states:\n";
+  States::const_iterator si;
+  for (si = _states->begin(); si != _states->end(); ++si) {
+    const TransformState *state = (*si);
+    state->write(out, 2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::validate_states
+//       Access: Published, Static
+//  Description: Ensures that the cache is still stored in sorted
+//               order, and that none of the cache elements have been
+//               inadvertently deleted.  Returns true if so, false if
+//               there is a problem (which implies someone has
+//               modified one of the supposedly-const TransformState
+//               objects).
+////////////////////////////////////////////////////////////////////
+bool TransformState::
+validate_states() {
+  if (_states->empty()) {
+    return true;
+  }
+
+  States::const_iterator si = _states->begin();
+  States::const_iterator snext = si;
+  ++snext;
+  nassertr((*si)->get_ref_count() > 0, false);
+  while (snext != _states->end()) {
+    if (!(*(*si) < *(*snext))) {
+      pgraph_cat.error()
+        << "TransformStates out of order!\n";
+      (*si)->write(pgraph_cat.error(false), 2);
+      (*snext)->write(pgraph_cat.error(false), 2);
+      return false;
+    }
+    si = snext;
+    ++snext;
+    nassertr((*si)->get_ref_count() > 0, false);
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -873,6 +1025,12 @@ return_new(TransformState *state) {
   // This should be a newly allocated pointer, not one that was used
   // for anything else.
   nassertr(state->_saved_entry == _states->end(), state);
+
+#ifndef NDEBUG
+  if (paranoid_const) {
+    nassertr(validate_states(), state);
+  }
+#endif
 
   // Save the state in a local PointerTo so that it will be freed at
   // the end of this function if no one else uses it.
@@ -1028,6 +1186,66 @@ do_invert_compose(const TransformState *other) const {
   } else {
     return make_mat(other->get_mat() * (*_inv_mat));
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::r_detect_cycles
+//       Access: Private, Static
+//  Description: Detects whether there is a cycle in the cache that
+//               begins with the indicated state.  Returns true if at
+//               least one cycle is found, false if this state is not
+//               part of any cycles.  If a cycle is found, cycle_desc
+//               is filled in with the list of the steps of the cycle,
+//               in reverse order.
+////////////////////////////////////////////////////////////////////
+bool TransformState::
+r_detect_cycles(const TransformState *state,
+                TransformState::VisitedStates &visited_this_cycle,
+                TransformState::CycleChain *chain,
+                TransformState::CompositionCycleDesc &cycle_desc) {
+  bool inserted = visited_this_cycle.insert(state).second;
+  if (!inserted && chain->has_result(state)) {
+    // We've already seen this state; therefore, we've found a cycle.
+
+    // However, we only care about cycles that involve more than two
+    // steps.  If only one or two nodes are involved, it doesn't
+    // represent a memory leak, so no problem there.
+    return (chain->_length > 2);
+  }
+    
+  CompositionCache::const_iterator ci;
+  for (ci = state->_composition_cache.begin();
+       ci != state->_composition_cache.end();
+       ++ci) {
+    const TransformState *result = (*ci).second._result;
+    if (result != (const TransformState *)NULL) {
+      CycleChain next_chain(chain, result);
+      if (r_detect_cycles(result, visited_this_cycle, &next_chain, cycle_desc)) {
+        // Cycle detected.
+        CompositionCycleDescEntry entry((*ci).first, result, false);
+        cycle_desc.push_back(entry);
+        return true;
+      }
+    }
+  }
+
+  for (ci = state->_invert_composition_cache.begin();
+       ci != state->_invert_composition_cache.end();
+       ++ci) {
+    const TransformState *result = (*ci).second._result;
+    if (result != (const TransformState *)NULL) {
+      CycleChain next_chain(chain, result);
+      if (r_detect_cycles(result, visited_this_cycle, &next_chain, cycle_desc)) {
+        // Cycle detected.
+        CompositionCycleDescEntry entry((*ci).first, result, true);
+        cycle_desc.push_back(entry);
+        return true;
+      }
+    }
+  }
+
+  // No cycle detected.
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1325,4 +1543,21 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     // General matrix.
     _mat.read_datagram(scan);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::CycleChain::has_result
+//       Access: Public
+//  Description: Returns true if the indicated state has been reached
+//               in this chain previously, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool TransformState::CycleChain::
+has_result(const TransformState *state) const {
+  if (_state == state) {
+    return true;
+  }
+  if (_prev != NULL) {
+    return _prev->has_result(state);
+  }
+  return false;
 }

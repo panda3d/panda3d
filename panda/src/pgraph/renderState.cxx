@@ -52,7 +52,6 @@ RenderState() {
     _states = new States;
   }
   _saved_entry = _states->end();
-  _self_compose = (RenderState *)NULL;
   _flags = 0;
 }
 
@@ -127,13 +126,8 @@ RenderState::
     // objects destruct, there will be no reason for that one to.
     RenderState *other = (RenderState *)(*ci).first;
 
-    // We should never have a reflexive entry in this map.  If we
-    // do, something got screwed up elsewhere.
-    nassertv(other != this);
-
-    // We hold a copy of the composition result to ensure that the
-    // result RenderState object (if there is one) doesn't
-    // destruct.
+    // We hold a copy of the composition result so we can dereference
+    // it later.
     Composition comp = (*ci).second;
 
     // Now we can remove the element from our cache.  We do this now,
@@ -142,25 +136,33 @@ RenderState::
     // is still valid.
     _composition_cache.erase(ci);
 
-    CompositionCache::iterator oci = other->_composition_cache.find(this);
+    if (other != this) {
+      CompositionCache::iterator oci = other->_composition_cache.find(this);
 
-    // We may or may not still be listed in the other's cache (it
-    // might be halfway through pulling entries out, from within its
-    // own destructor).
-    if (oci != other->_composition_cache.end()) {
-      // Hold a copy of the other composition result, too.
-      Composition ocomp = (*oci).second;
-      
-      // Now we're holding a reference count to both computed
-      // results, so no objects will be tempted to destruct while we
-      // erase the other cache entry.
-      other->_composition_cache.erase(oci);
+      // We may or may not still be listed in the other's cache (it
+      // might be halfway through pulling entries out, from within its
+      // own destructor).
+      if (oci != other->_composition_cache.end()) {
+        // Hold a copy of the other composition result, too.
+        Composition ocomp = (*oci).second;
+        
+        other->_composition_cache.erase(oci);
+        
+        // It's finally safe to let our held pointers go away.  This may
+        // have cascading effects as other RenderState objects are
+        // destructed, but there will be no harm done if they destruct
+        // now.
+        if (ocomp._result != (const RenderState *)NULL && ocomp._result != other) {
+          unref_delete(ocomp._result);
+        }
+      }
     }
 
-    // It's finally safe to let our held pointers go away.  This may
-    // have cascading effects as other RenderState objects are
-    // destructed, but there will be no harm done if they destruct
-    // now.
+    // It's finally safe to let our held pointers go away.  (See
+    // comment above.)
+    if (comp._result != (const RenderState *)NULL && comp._result != this) {
+      unref_delete(comp._result);
+    }
   }
 
   // A similar bit of code for the invert cache.
@@ -170,25 +172,30 @@ RenderState::
     nassertv(other != this);
     Composition comp = (*ci).second;
     _invert_composition_cache.erase(ci);
-    CompositionCache::iterator oci = 
-      other->_invert_composition_cache.find(this);
-    if (oci != other->_invert_composition_cache.end()) {
-      Composition ocomp = (*oci).second;
-      other->_invert_composition_cache.erase(oci);
+    if (other != this) {
+      CompositionCache::iterator oci = 
+        other->_invert_composition_cache.find(this);
+      if (oci != other->_invert_composition_cache.end()) {
+        Composition ocomp = (*oci).second;
+        other->_invert_composition_cache.erase(oci);
+        if (ocomp._result != (const RenderState *)NULL && ocomp._result != other) {
+          unref_delete(ocomp._result);
+        }
+      }
+    }
+    if (comp._result != (const RenderState *)NULL && comp._result != this) {
+      unref_delete(comp._result);
     }
   }
 
-  // Also, if we called compose(this) at some point and the return
-  // value was something other than this, we need to decrement the
-  // associated reference count.
-  if (_self_compose != (RenderState *)NULL && _self_compose != this) {
-    unref_delete((RenderState *)_self_compose);
-  }
+  // If this was true at the beginning of the destructor, but is no
+  // longer true now, probably we've been double-deleted.
+  nassertv(get_ref_count() == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::operator <
-//       Access: Public
+//       Access: Published
 //  Description: Provides an arbitrary ordering among all unique
 //               RenderStates, so we can store the essentially
 //               different ones in a big set and throw away the rest.
@@ -350,28 +357,6 @@ compose(const RenderState *other) const {
     return this;
   }
 
-  if (other == this) {
-    // compose(this) has to be handled as a special case, because the
-    // caching problem is so different.
-    if (_self_compose != (RenderState *)NULL) {
-      return _self_compose;
-    }
-    CPT(RenderState) result = do_compose(this);
-    ((RenderState *)this)->_self_compose = result;
-
-    if (result != (const RenderState *)this) {
-      // If the result of compose(this) is something other than this,
-      // explicitly increment the reference count.  We have to be sure
-      // to decrement it again later, in our destructor.
-      _self_compose->ref();
-
-      // (If the result was just this again, we still store the
-      // result, but we don't increment the reference count, since
-      // that would be a self-referential leak.  What a mess this is.)
-    }
-    return _self_compose;
-  }
-
   // Is this composition already cached?
   CompositionCache::const_iterator ci = _composition_cache.find(other);
   if (ci != _composition_cache.end()) {
@@ -380,7 +365,14 @@ compose(const RenderState *other) const {
       // Well, it wasn't cached already, but we already had an entry
       // (probably created for the reverse direction), so use the same
       // entry to store the new result.
-      ((Composition &)comp)._result = do_compose(other);
+      CPT(RenderState) result = do_compose(other);
+      ((Composition &)comp)._result = result;
+
+      if (result != (const RenderState *)this) {
+        // See the comments below about the need to up the reference
+        // count only when the result is not the same as this.
+        result->ref();
+      }
     }
     // Here's the cache!
     return comp._result;
@@ -395,8 +387,21 @@ compose(const RenderState *other) const {
   // result; the other will be NULL for now.
   CPT(RenderState) result = do_compose(other);
 
+  // Order is important here, in case other == this.
   ((RenderState *)other)->_composition_cache[this]._result = NULL;
   ((RenderState *)this)->_composition_cache[other]._result = result;
+
+  if (result != (const RenderState *)this) {
+    // If the result of compose() is something other than this,
+    // explicitly increment the reference count.  We have to be sure
+    // to decrement it again later, when the composition entry is
+    // removed from the cache.
+    result->ref();
+    
+    // (If the result was just this again, we still store the
+    // result, but we don't increment the reference count, since
+    // that would be a self-referential leak.)
+  }
 
   return result;
 }
@@ -438,7 +443,14 @@ invert_compose(const RenderState *other) const {
       // Well, it wasn't cached already, but we already had an entry
       // (probably created for the reverse direction), so use the same
       // entry to store the new result.
-      ((Composition &)comp)._result = do_invert_compose(other);
+      CPT(RenderState) result = do_invert_compose(other);
+      ((Composition &)comp)._result = result;
+
+      if (result != (const RenderState *)this) {
+        // See the comments below about the need to up the reference
+        // count only when the result is not the same as this.
+        result->ref();
+      }
     }
     // Here's the cache!
     return comp._result;
@@ -455,6 +467,18 @@ invert_compose(const RenderState *other) const {
 
   ((RenderState *)other)->_invert_composition_cache[this]._result = NULL;
   ((RenderState *)this)->_invert_composition_cache[other]._result = result;
+
+  if (result != (const RenderState *)this) {
+    // If the result of compose() is something other than this,
+    // explicitly increment the reference count.  We have to be sure
+    // to decrement it again later, when the composition entry is
+    // removed from the cache.
+    result->ref();
+    
+    // (If the result was just this again, we still store the
+    // result, but we don't increment the reference count, since
+    // that would be a self-referential leak.)
+  }
 
   return result;
 }
@@ -658,15 +682,24 @@ get_num_states() {
 //       Access: Published, Static
 //  Description: Returns the total number of RenderState objects that
 //               have been allocated but have no references outside of
-//               the internal RenderState map.
+//               the internal RenderState cache.
+//
+//               A nonzero return value is not necessarily indicative
+//               of leaked references; it is normal for two
+//               RenderState objects, both of which have references
+//               held outside the cache, to have to result of their
+//               composition stored within the cache.  This result
+//               will be retained within the cache until one of the
+//               base RenderStates is released.
+//
+//               Use list_cycles() to get an idea of the number of
+//               actual "leaked" RenderState objects.
 ////////////////////////////////////////////////////////////////////
 int RenderState::
 get_num_unused_states() {
   if (_states == (States *)NULL) {
     return 0;
   }
-
-  int num_unused = 0;
 
   // First, we need to count the number of times each RenderState
   // object is recorded in the cache.
@@ -682,7 +715,7 @@ get_num_unused_states() {
          ci != state->_composition_cache.end();
          ++ci) {
       const RenderState *result = (*ci).second._result;
-      if (result != (const RenderState *)NULL) {
+      if (result != (const RenderState *)NULL && result != state) {
         // Here's a RenderState that's recorded in the cache.
         // Count it.
         pair<StateCount::iterator, bool> ir =
@@ -698,7 +731,7 @@ get_num_unused_states() {
          ci != state->_invert_composition_cache.end();
          ++ci) {
       const RenderState *result = (*ci).second._result;
-      if (result != (const RenderState *)NULL) {
+      if (result != (const RenderState *)NULL && result != state) {
         pair<StateCount::iterator, bool> ir =
           state_count.insert(StateCount::value_type(result, 1));
         if (!ir.second) {
@@ -706,26 +739,13 @@ get_num_unused_states() {
         }
       }
     }
-
-    // Finally, check the self_compose field, which might be reference
-    // counted too.
-    if (state->_self_compose != (const RenderState *)NULL &&
-        state->_self_compose != state) {
-      const RenderState *result = state->_self_compose;
-      if (result != (const RenderState *)NULL) {
-        pair<StateCount::iterator, bool> ir =
-          state_count.insert(StateCount::value_type(result, 1));
-        if (!ir.second) {
-          (*(ir.first)).second++;
-        }
-      }
-    }
-
   }
 
   // Now that we have the appearance count of each RenderState
   // object, we can tell which ones are unreferenced outside of the
   // RenderState cache, by comparing these to the reference counts.
+  int num_unused = 0;
+
   StateCount::iterator sci;
   for (sci = state_count.begin(); sci != state_count.end(); ++sci) {
     const RenderState *state = (*sci).first;
@@ -733,6 +753,13 @@ get_num_unused_states() {
     nassertr(count <= state->get_ref_count(), num_unused);
     if (count == state->get_ref_count()) {
       num_unused++;
+
+      if (pgraph_cat.is_debug()) {
+        pgraph_cat.debug()
+          << "Unused state: " << (void *)state << ":" 
+          << state->get_ref_count() << " =\n";
+        state->write(pgraph_cat.debug(false), 2);
+      }
     }
   }
 
@@ -790,13 +817,29 @@ clear_cache() {
     TempStates::iterator ti;
     for (ti = temp_states.begin(); ti != temp_states.end(); ++ti) {
       RenderState *state = (RenderState *)(*ti).p();
-      state->_composition_cache.clear();
-      state->_invert_composition_cache.clear();
-      if (state->_self_compose != (RenderState *)NULL && 
-          state->_self_compose != state) {
-        unref_delete((RenderState *)state->_self_compose);
-        state->_self_compose = (RenderState *)NULL;
+
+      CompositionCache::const_iterator ci;
+      for (ci = state->_composition_cache.begin();
+           ci != state->_composition_cache.end();
+           ++ci) {
+        const RenderState *result = (*ci).second._result;
+        if (result != (const RenderState *)NULL && result != state) {
+          result->unref();
+          nassertr(result->get_ref_count() > 0, 0);
+        }
       }
+      state->_composition_cache.clear();
+
+      for (ci = state->_invert_composition_cache.begin();
+           ci != state->_invert_composition_cache.end();
+           ++ci) {
+        const RenderState *result = (*ci).second._result;
+        if (result != (const RenderState *)NULL && result != state) {
+          result->unref();
+          nassertr(result->get_ref_count() > 0, 0);
+        }
+      }
+      state->_invert_composition_cache.clear();
     }
 
     // Once this block closes and the temp_states object goes away,
@@ -806,6 +849,120 @@ clear_cache() {
 
   int new_size = _states->size();
   return orig_size - new_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::list_cycles
+//       Access: Published, Static
+//  Description: Detects all of the reference-count cycles in the
+//               cache and reports them to standard output.
+//
+//               These cycles may be inadvertently created when state
+//               compositions cycle back to a starting point.  In the
+//               current implementation, they are not automatically
+//               detected and broken, so they represent a kind of
+//               memory leak.  They will not be freed unless
+//               clear_cache() is called explicitly.
+//
+//               The cycles listed here are not leaks in the strictest
+//               sense of the word, since they can be reclaimed by a
+//               call to clear_cache(); but they will not be reclaimed
+//               automatically.
+////////////////////////////////////////////////////////////////////
+void RenderState::
+list_cycles(ostream &out) {
+  VisitedStates visited;
+  CompositionCycleDesc cycle_desc;
+
+  States::iterator si;
+  for (si = _states->begin(); si != _states->end(); ++si) {
+    const RenderState *state = (*si);
+
+    bool inserted = visited.insert(state).second;
+    if (inserted) {
+      VisitedStates visited_this_cycle;
+      CycleChain chain(state);
+      if (r_detect_cycles(state, visited_this_cycle, &chain, cycle_desc)) {
+        // This state begins a cycle.
+        CompositionCycleDesc::reverse_iterator csi;
+
+        out << "\nCycle detected of length " << cycle_desc.size() + 1 << ":\n"
+            << "state " << (void *)state << ":" << state->get_ref_count()
+            << " =\n";
+        state->write(out, 2);
+        for (csi = cycle_desc.rbegin(); csi != cycle_desc.rend(); ++csi) {
+          const CompositionCycleDescEntry &entry = (*csi);
+          if (entry._inverted) {
+            out << "invert composed with ";
+          } else {
+            out << "composed with ";
+          }
+          out << (const void *)entry._obj << ":" << entry._obj->get_ref_count()
+              << " " << *entry._obj << "\n"
+              << "produces " << (const void *)entry._result << ":"
+              << entry._result->get_ref_count() << " =\n";
+          entry._result->write(out, 2);
+          visited.insert(entry._result);
+        }
+
+        cycle_desc.clear();
+      }
+    }
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::list_states
+//       Access: Published, Static
+//  Description: Lists all of the RenderStates in the cache to the
+//               output stream, one per line.  This can be quite a lot
+//               of output if the cache is large, so be prepared.
+////////////////////////////////////////////////////////////////////
+void RenderState::
+list_states(ostream &out) {
+  out << _states->size() << " states:\n";
+  States::const_iterator si;
+  for (si = _states->begin(); si != _states->end(); ++si) {
+    const RenderState *state = (*si);
+    state->write(out, 2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::validate_states
+//       Access: Published, Static
+//  Description: Ensures that the cache is still stored in sorted
+//               order, and that none of the cache elements have been
+//               inadvertently deleted.  Returns true if so, false if
+//               there is a problem (which implies someone has
+//               modified one of the supposedly-const RenderState
+//               objects).
+////////////////////////////////////////////////////////////////////
+bool RenderState::
+validate_states() {
+  if (_states->empty()) {
+    return true;
+  }
+
+  States::const_iterator si = _states->begin();
+  States::const_iterator snext = si;
+  ++snext;
+  nassertr((*si)->get_ref_count() > 0, false);
+  while (snext != _states->end()) {
+    if (!(*(*si) < *(*snext))) {
+      pgraph_cat.error()
+        << "RenderStates out of order!\n";
+      (*si)->write(pgraph_cat.error(false), 2);
+      (*snext)->write(pgraph_cat.error(false), 2);
+      return false;
+    }
+    si = snext;
+    ++snext;
+    nassertr((*si)->get_ref_count() > 0, false);
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -982,6 +1139,12 @@ return_new(RenderState *state) {
   // for anything else.
   nassertr(state->_saved_entry == _states->end(), state);
 
+#ifndef NDEBUG
+  if (paranoid_const) {
+    nassertr(validate_states(), state);
+  }
+#endif
+
   // Save the state in a local PointerTo so that it will be freed at
   // the end of this function if no one else uses it.
   CPT(RenderState) pt_state = state;
@@ -1119,6 +1282,67 @@ do_invert_compose(const RenderState *other) const {
 
   return return_new(new_state);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::r_detect_cycles
+//       Access: Private, Static
+//  Description: Detects whether there is a cycle in the cache that
+//               begins with the indicated state.  Returns true if at
+//               least one cycle is found, false if this state is not
+//               part of any cycles.  If a cycle is found, cycle_desc
+//               is filled in with the list of the steps of the cycle,
+//               in reverse order.
+////////////////////////////////////////////////////////////////////
+bool RenderState::
+r_detect_cycles(const RenderState *state,
+                RenderState::VisitedStates &visited_this_cycle,
+                RenderState::CycleChain *chain,
+                RenderState::CompositionCycleDesc &cycle_desc) {
+  bool inserted = visited_this_cycle.insert(state).second;
+  if (!inserted && chain->has_result(state)) {
+    // We've already seen this state; therefore, we've found a cycle.
+
+    // However, we only care about cycles that involve more than two
+    // steps.  If only one or two nodes are involved, it doesn't
+    // represent a memory leak, so no problem there.
+    return (chain->_length > 2);
+  }
+    
+  CompositionCache::const_iterator ci;
+  for (ci = state->_composition_cache.begin();
+       ci != state->_composition_cache.end();
+       ++ci) {
+    const RenderState *result = (*ci).second._result;
+    if (result != (const RenderState *)NULL) {
+      CycleChain next_chain(chain, result);
+      if (r_detect_cycles(result, visited_this_cycle, &next_chain, cycle_desc)) {
+        // Cycle detected.
+        CompositionCycleDescEntry entry((*ci).first, result, false);
+        cycle_desc.push_back(entry);
+        return true;
+      }
+    }
+  }
+
+  for (ci = state->_invert_composition_cache.begin();
+       ci != state->_invert_composition_cache.end();
+       ++ci) {
+    const RenderState *result = (*ci).second._result;
+    if (result != (const RenderState *)NULL) {
+      CycleChain next_chain(chain, result);
+      if (r_detect_cycles(result, visited_this_cycle, &next_chain, cycle_desc)) {
+        // Cycle detected.
+        CompositionCycleDescEntry entry((*ci).first, result, true);
+        cycle_desc.push_back(entry);
+        return true;
+      }
+    }
+  }
+
+  // No cycle detected.
+  return false;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::determine_bin_index
@@ -1374,4 +1598,21 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     int override = scan.get_int32();
     _attributes.push_back(Attribute(override));
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::CycleChain::has_result
+//       Access: Public
+//  Description: Returns true if the indicated state has been reached
+//               in this chain previously, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool RenderState::CycleChain::
+has_result(const RenderState *state) const {
+  if (_state == state) {
+    return true;
+  }
+  if (_prev != NULL) {
+    return _prev->has_result(state);
+  }
+  return false;
 }

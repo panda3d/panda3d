@@ -20,7 +20,7 @@
 #include "bamReader.h"
 #include "indent.h"
 
-RenderEffect::Effects RenderEffect::_effects;
+RenderEffect::Effects *RenderEffect::_effects = NULL;
 TypeHandle RenderEffect::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -30,7 +30,15 @@ TypeHandle RenderEffect::_type_handle;
 ////////////////////////////////////////////////////////////////////
 RenderEffect::
 RenderEffect() {
-  _saved_entry = _effects.end();
+  if (_effects == (Effects *)NULL) {
+    // Make sure the global _effects map is allocated.  This only has
+    // to be done once.  We could make this map static, but then we
+    // run into problems if anyone creates a RenderState object at
+    // static init time; it also seems to cause problems when the
+    // Panda shared library is unloaded at application exit time.
+    _effects = new Effects;
+  }
+  _saved_entry = _effects->end();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,13 +69,13 @@ operator = (const RenderEffect &) {
 ////////////////////////////////////////////////////////////////////
 RenderEffect::
 ~RenderEffect() {
-  if (_saved_entry != _effects.end()) {
+  if (_saved_entry != _effects->end()) {
     // We cannot make this assertion, because the RenderEffect has
     // already partially destructed--this means we cannot look up the
     // object in the map.  In fact, the map is temporarily invalid
     // until we finish destructing, since we screwed up the ordering
     // when we changed the return value of get_type().
-    //    nassertv(_effects.find(this) == _saved_entry);
+    //    nassertv(_effects->find(this) == _saved_entry);
 
     // Note: this isn't thread-safe, because once the derived class
     // destructor exits and before this destructor completes, the map
@@ -76,8 +84,8 @@ RenderEffect::
     // functionality to a separate method, that is to be called from
     // *each* derived class's destructor (and then we can put the
     // above assert back in).
-    _effects.erase(_saved_entry);
-    _saved_entry = _effects.end();
+    _effects->erase(_saved_entry);
+    _saved_entry = _effects->end();
   }
 }
 
@@ -173,6 +181,70 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderEffect::get_num_effects
+//       Access: Published, Static
+//  Description: Returns the total number of unique RenderEffect
+//               objects allocated in the world.  This will go up and
+//               down during normal operations.
+////////////////////////////////////////////////////////////////////
+int RenderEffect::
+get_num_effects() {
+  if (_effects == (Effects *)NULL) {
+    return 0;
+  }
+  return _effects->size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffect::list_effects
+//       Access: Published, Static
+//  Description: Lists all of the RenderEffects in the cache to the
+//               output stream, one per line.  This can be quite a lot
+//               of output if the cache is large, so be prepared.
+////////////////////////////////////////////////////////////////////
+void RenderEffect::
+list_effects(ostream &out) {
+  out << _effects->size() << " effects:\n";
+  Effects::const_iterator si;
+  for (si = _effects->begin(); si != _effects->end(); ++si) {
+    const RenderEffect *effect = (*si);
+    effect->write(out, 2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffect::validate_effects
+//       Access: Published, Static
+//  Description: Ensures that the cache is still stored in sorted
+//               order.  Returns true if so, false if there is a
+//               problem (which implies someone has modified one of
+//               the supposedly-const RenderEffect objects).
+////////////////////////////////////////////////////////////////////
+bool RenderEffect::
+validate_effects() {
+  if (_effects->empty()) {
+    return true;
+  }
+
+  Effects::const_iterator si = _effects->begin();
+  Effects::const_iterator snext = si;
+  ++snext;
+  while (snext != _effects->end()) {
+    if ((*si)->compare_to(*(*snext)) >= 0) {
+      pgraph_cat.error()
+        << "RenderEffects out of order!\n";
+      (*si)->write(pgraph_cat.error(false), 2);
+      (*snext)->write(pgraph_cat.error(false), 2);
+      return false;
+    }
+    si = snext;
+    ++snext;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderEffect::return_new
 //       Access: Protected, Static
 //  Description: This function is used by derived RenderEffect types
@@ -192,13 +264,19 @@ return_new(RenderEffect *effect) {
 
   // This should be a newly allocated pointer, not one that was used
   // for anything else.
-  nassertr(effect->_saved_entry == _effects.end(), effect);
+  nassertr(effect->_saved_entry == _effects->end(), effect);
+
+#ifndef NDEBUG
+  if (paranoid_const) {
+    nassertr(validate_effects(), effect);
+  }
+#endif
 
   // Save the effect in a local PointerTo so that it will be freed at
   // the end of this function if no one else uses it.
   CPT(RenderEffect) pt_effect = effect;
 
-  pair<Effects::iterator, bool> result = _effects.insert(effect);
+  pair<Effects::iterator, bool> result = _effects->insert(effect);
   if (result.second) {
     // The effect was inserted; save the iterator and return the
     // input effect.

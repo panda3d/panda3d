@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderEffect::compare_to
-//       Access: Public
+//       Access: Published
 //  Description: Provides an arbitrary ordering among all unique
 //               RenderEffects, so we can store the essentially
 //               different ones in a big set and throw away the rest.
