@@ -123,8 +123,13 @@ class FSM(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("FSM")
 
+    SerialNum = 0
+
     def __init__(self, name):
         self.name = name
+        self._serialNum = FSM.SerialNum
+        FSM.SerialNum += 1
+        self._broadcastStateChanges = False
         # Initially, we are in the Off state by convention.
         self.state = 'Off'
 
@@ -154,6 +159,15 @@ class FSM(DirectObject.DirectObject):
         assert(self.state)
         if self.state != 'Off':
             self.__setState('Off')
+
+    def setBroadcastStateChanges(self, doBroadcast):
+        self._broadcastStateChanges = doBroadcast
+    def getStateChangeEvent(self):
+        # if setBroadcastStateChanges(True), this event will be sent through
+        # the messenger on every state change. The new and old states are
+        # accessible as self.oldState and self.newState, and the transition
+        # functions will already have been called.
+        return 'FSM-%s-%s-stateChange' % (self._serialNum, self.name)
 
     def getCurrentOrNextState(self):
         # Returns the current state if we are in a state now, or the
@@ -355,6 +369,9 @@ class FSM(DirectObject.DirectObject):
             del self.oldState
             del self.newState
             raise
+
+        if self._broadcastStateChanges:
+            messenger.send(self.getStateChangeEvent())
         
         self.state = newState
         del self.oldState
