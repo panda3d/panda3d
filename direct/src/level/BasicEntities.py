@@ -101,7 +101,7 @@ class NodePathEntity(Entity.Entity, NodePath.NodePath, NodePathAttribs):
         node = hidden.attachNewNode('NodePathEntity')
         NodePath.NodePath.__init__(self, node)
         Entity.Entity.__init__(self, level, entId)
-        NodePathAttribs.initNodePathAttribs(self)
+        self.initNodePathAttribs(self)
 
     def destroy(self):
         NodePathAttribs.destroy(self)
@@ -120,12 +120,8 @@ class DistributedNodePathEntity(DistributedEntity.DistributedEntity,
 
     def announceGenerate(self):
         DistributedEntity.DistributedEntity.announceGenerate(self)
-        NodePathAttribs.initNodePathAttribs(self)
+        self.initNodePathAttribs(self)
         
-    def disable(self):
-        NodePathAttribs.destroy(self)
-        DistributedEntity.DistributedEntity.disable(self)
-
     def delete(self):
         self.removeNode()
         DistributedEntity.DistributedEntity.delete(self)
