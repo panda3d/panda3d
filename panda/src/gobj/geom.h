@@ -17,25 +17,22 @@
 ////////////////////////////////////////////////////////////////////
 #ifndef GEOM_H
 #define GEOM_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
+
+#include "pandabase.h"
 
 #include "drawable.h"
 
-#include <vector_typedWritable.h>
-#include <pointerTo.h>
-#include <pointerToArray.h>
-#include <typedef.h>
-#include <luse.h>
-#include <pta_Vertexf.h>
-#include <pta_Normalf.h>
-#include <pta_Colorf.h>
-#include <pta_TexCoordf.h>
-#include <pta_ushort.h>
-#include <pta_int.h>
+#include "vector_typedWritable.h"
+#include "pointerTo.h"
+#include "pointerToArray.h"
+#include "typedef.h"
+#include "luse.h"
+#include "pta_Vertexf.h"
+#include "pta_Normalf.h"
+#include "pta_Colorf.h"
+#include "pta_TexCoordf.h"
+#include "pta_ushort.h"
+#include "pta_int.h"
 #include "texture.h"
 
 class Datagram;
@@ -137,8 +134,10 @@ public:
   virtual void print_draw_immediate() const = 0;
 
 public:
-
-  void get_min_max(Vertexf &min, Vertexf &max) const;
+  
+  void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                         bool &found_any) const;
+  void transform_vertices(const LMatrix4f &mat);
 
   void set_coords(const PTA_Vertexf &coords,
                    const PTA_ushort &vindex =

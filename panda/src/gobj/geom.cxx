@@ -16,23 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
-
 #include "geom.h"
 #include "config_gobj.h"
 
-#include <graphicsStateGuardianBase.h>
-#include <geometricBoundingVolume.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <ioPtaDatagramShort.h>
-#include <ioPtaDatagramInt.h>
-#include <ioPtaDatagramLinMath.h>
-#include <indent.h>
+#include "graphicsStateGuardianBase.h"
+#include "geometricBoundingVolume.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "ioPtaDatagramShort.h"
+#include "ioPtaDatagramInt.h"
+#include "ioPtaDatagramLinMath.h"
+#include "indent.h"
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -200,6 +196,70 @@ operator = (const Geom &copy) {
 
   mark_bound_stale();
   make_dirty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::calc_tight_bounds
+//       Access: Public
+//  Description: Expands min_point and max_point to include all of the
+//               vertices in the Geom, if any.  found_any is set true
+//               if any points are found.  It is the caller's
+//               responsibility to initialize min_point, max_point,
+//               and found_any before calling this function.
+////////////////////////////////////////////////////////////////////
+void Geom::
+calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, 
+                  bool &found_any) const {
+  Geom::VertexIterator vi = make_vertex_iterator();
+  int num_prims = get_num_prims();
+    
+  for (int p = 0; p < num_prims; p++) {
+    int length = get_length(p);
+    for (int v = 0; v < length; v++) {
+      Vertexf vertex = get_next_vertex(vi);
+      
+      if (found_any) {
+        min_point.set(min(min_point[0], vertex[0]),
+                      min(min_point[1], vertex[1]),
+                      min(min_point[2], vertex[2]));
+        max_point.set(max(max_point[0], vertex[0]),
+                      max(max_point[1], vertex[1]),
+                      max(max_point[2], vertex[2]));
+      } else {
+        min_point = vertex;
+        max_point = vertex;
+        found_any = true;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::transform_vertices
+//       Access: Public
+//  Description: Applies the indicated transform to all of the
+//               vertices in the Geom.  If the Geom happens to share a
+//               vertex table with another Geom, this operation will
+//               duplicate the vertex table instead of breaking the
+//               other Geom; however, if multiple Geoms with shared
+//               tables are transformed by the same matrix, they will
+//               no longer share tables after the operation.  Consider
+//               using the GeomTransformer if you will be applying the
+//               same transform to multiple Geoms.
+////////////////////////////////////////////////////////////////////
+void Geom::
+transform_vertices(const LMatrix4f &mat) {
+  PTA_Vertexf coords;
+  PTA_ushort index;
+  get_coords(coords, index);
+  PTA_Vertexf new_coords;
+  new_coords.reserve(coords.size());
+  PTA_Vertexf::const_iterator vi;
+  for (vi = coords.begin(); vi != coords.end(); ++vi) {
+    new_coords.push_back((*vi) * mat);
+  }
+  nassertv(new_coords.size() == coords.size());
+  set_coords(new_coords, index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -897,34 +957,5 @@ write_verbose(ostream &out, int indent_level) const {
     indent(out, indent_level)
       << "Nonindexed normals:\n";
     describe_attr(out, this, bind_normals, g_normals, true, indent_level + 2);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_min_max
-//       Access: Public
-//  Description: Expands min and max, if necessary, to include the
-//               complete bounding rectangle that encloses all the
-//               vertices.
-////////////////////////////////////////////////////////////////////
-void Geom::
-get_min_max(Vertexf &min, Vertexf &max) const {
-  int numv = _coords.size();
-
-  for (int i = 0; i < numv; i++) {
-    if (_coords[i][0] < min[0])
-      min[0] = _coords[i][0];
-    else if (_coords[i][0] > max[0])
-      max[0] = _coords[i][0];
-
-    if (_coords[i][1] < min[1])
-      min[1] = _coords[i][1];
-    else if (_coords[i][1] > max[1])
-      max[1] = _coords[i][1];
-
-    if (_coords[i][2] < min[2])
-      min[2] = _coords[i][2];
-    else if (_coords[i][2] > max[2])
-      max[2] = _coords[i][2];
   }
 }
