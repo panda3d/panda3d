@@ -354,14 +354,13 @@ make_even(float max_t, float segments_per_unit) {
 
   float last_t = 0.0f;
   fitter.add_xyz(0.0f, LVecBase3f(last_t, 0.0f, 0.0f));
-  float val_inc= 1.0f/num_segments;
+  float val_inc= max_t/num_segments;
   float val=val_inc;
 
   for (int i = 0; i < num_segments; i++,val+=val_inc) {
     float next_t = xyz_curve->find_length(last_t, segment_length);
     fitter.add_xyz(/*(float)(i + 1)/num_segments * max_t,*/
-                   val * max_t,
-                   LVecBase3f(next_t, 0.0f, 0.0f));
+                   val, LVecBase3f(next_t, 0.0f, 0.0f));
 
     if (parametrics_cat.is_spam()) {
       parametrics_cat.spam()
