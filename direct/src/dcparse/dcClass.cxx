@@ -138,7 +138,12 @@ DCField *DCClass::
 get_inherited_field(int n) {
   if (!_parents.empty()) {
     // This won't work for multiple dclass inheritance.
-    n -= _parents.front()->get_num_inherited_fields();
+    int psize = _parents.front()->get_num_inherited_fields();
+    if (n < psize) {
+      return _parents.front()->get_inherited_field(n);
+    }
+
+    n -= psize;
   }
   return get_field(n);
 }
