@@ -78,6 +78,7 @@ public:
   virtual void press(const MouseWatcherParameter &param, bool background);
   virtual void release(const MouseWatcherParameter &param, bool background);
   virtual void keystroke(const MouseWatcherParameter &param, bool background);
+  virtual void candidate(const MouseWatcherParameter &param, bool background);
 
   static void background_press(const MouseWatcherParameter &param);
   static void background_release(const MouseWatcherParameter &param);

@@ -738,6 +738,48 @@ keystroke(int keycode) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::candidate
+//       Access: Protected
+//  Description: Records that the indicated candidate string has been
+//               highlighted in the IME.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+candidate(const wstring &candidate_string, size_t highlight_start, 
+          size_t highlight_end) {
+  MouseWatcherParameter param;
+  param.set_candidate(candidate_string, highlight_start, highlight_end);
+  param.set_modifier_buttons(_mods);
+  param.set_mouse(_mouse);
+
+  // Candidate strings go to all those regions that want keyboard
+  // events, exactly like keystrokes, above.
+
+  Regions::const_iterator ri;
+  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
+    MouseWatcherRegion *region = (*ri);
+
+    if (region->get_keyboard()) {
+      param.set_outside(region != _preferred_region);
+      region->candidate(param);
+    }
+  }
+
+  // Also check all of our sub-groups.
+  Groups::const_iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    MouseWatcherGroup *group = (*gi);
+    for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
+      MouseWatcherRegion *region = (*ri);
+
+      if (region->get_keyboard()) {
+        param.set_outside(region != _preferred_region);
+        region->candidate(param);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::global_keyboard_press
 //       Access: Protected
 //  Description: Calls press() on all regions that are interested in
@@ -971,6 +1013,10 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
 
       case ButtonEvent::T_keystroke:
         keystroke(be._keycode);
+        break;
+
+      case ButtonEvent::T_candidate:
+        candidate(be._candidate_string, be._highlight_start, be._highlight_end);
         break;
 
       case ButtonEvent::T_resume_down:

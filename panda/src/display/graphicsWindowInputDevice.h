@@ -66,6 +66,8 @@ public:
   void button_resume_down(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());
   void button_up(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());
   void keystroke(int keycode, double time = ClockObject::get_global_clock()->get_frame_time());
+  void candidate(const wstring &candidate_string, size_t highlight_start, 
+                 size_t higlight_end, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE void set_pointer_in_window(int x, int y);
   INLINE void set_pointer_out_of_window();
 

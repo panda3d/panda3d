@@ -20,6 +20,7 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "buttonRegistry.h"
+#include "textEncoder.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEvent::output
@@ -43,6 +44,12 @@ output(ostream &out) const {
 
   case T_keystroke:
     out << "keystroke " << _keycode;
+    break;
+
+  case T_candidate:
+    out << "candidate "
+        << TextEncoder::encode_wtext(_candidate_string,
+                                     TextEncoder::get_default_encoding());
     break;
   }
 }
@@ -69,6 +76,15 @@ write_datagram(Datagram &dg) const {
   case T_keystroke:
     dg.add_int16(_keycode);
     break;
+
+  case T_candidate:
+    // We should probably store the wtext directly in the datagram
+    // rather than encoding it, but I don't feel like adding
+    // add_wstring() to datagram right now.
+    dg.add_string(TextEncoder::encode_wtext(_candidate_string,
+                                            TextEncoder::get_default_encoding()));
+    dg.add_uint16(_highlight_start);
+    dg.add_uint16(_highlight_end);
   }
 }
 
@@ -90,5 +106,11 @@ read_datagram(DatagramIterator &scan) {
   case T_keystroke:
     _keycode = scan.get_int16();
     break;
+
+  case T_candidate:
+    _candidate_string = TextEncoder::decode_text(scan.get_string(),
+                                                 TextEncoder::get_default_encoding());
+    _highlight_start = scan.get_uint16();
+    _highlight_end = scan.get_uint16();
   }
 }

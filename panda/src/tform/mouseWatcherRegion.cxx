@@ -127,3 +127,13 @@ release(const MouseWatcherParameter &) {
 void MouseWatcherRegion::
 keystroke(const MouseWatcherParameter &) {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherRegion::candidate
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever an
+//               IME candidate is highlighted by the user.
+////////////////////////////////////////////////////////////////////
+void MouseWatcherRegion::
+candidate(const MouseWatcherParameter &) {
+}

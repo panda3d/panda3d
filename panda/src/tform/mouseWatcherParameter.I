@@ -89,6 +89,21 @@ set_keycode(int keycode) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherParameter::set_candidate
+//       Access: Public
+//  Description: Sets the candidate string associated with this event,
+//               if any.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcherParameter::
+set_candidate(const wstring &candidate_string,
+              size_t highlight_start, size_t highlight_end) {
+  _candidate_string = candidate_string;
+  _highlight_start = highlight_start;
+  _highlight_end = highlight_end;
+  _flags |= F_has_candidate;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherParameter::set_modifier_buttons
 //       Access: Public
 //  Description: Sets the modifier buttons that were being held while
@@ -171,6 +186,75 @@ has_keycode() const {
 INLINE int MouseWatcherParameter::
 get_keycode() const {
   return _keycode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherParameter::has_candidate
+//       Access: Published
+//  Description: Returns true if this parameter has an associated
+//               candidate string, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool MouseWatcherParameter::
+has_candidate() const {
+  return (_flags & F_has_candidate) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherParameter::get_candidate_string
+//       Access: Published
+//  Description: Returns the candidate string associated with this
+//               event.  If has_candidate(), above, returns false,
+//               this returns the empty string.
+////////////////////////////////////////////////////////////////////
+INLINE const wstring &MouseWatcherParameter::
+get_candidate_string() const {
+  return _candidate_string;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherParameter::get_candidate_string_encoded
+//       Access: Published
+//  Description: Returns the candidate string associated with this
+//               event.  If has_candidate(), above, returns false,
+//               this returns the empty string.
+////////////////////////////////////////////////////////////////////
+INLINE string MouseWatcherParameter::
+get_candidate_string_encoded() const {
+  return get_candidate_string_encoded(TextEncoder::get_default_encoding());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherParameter::get_candidate_string_encoded
+//       Access: Published
+//  Description: Returns the candidate string associated with this
+//               event.  If has_candidate(), above, returns false,
+//               this returns the empty string.
+////////////////////////////////////////////////////////////////////
+INLINE string MouseWatcherParameter::
+get_candidate_string_encoded(TextEncoder::Encoding encoding) const {
+  return TextEncoder::encode_wtext(_candidate_string, encoding);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherParameter::get_highlight_start
+//       Access: Published
+//  Description: Returns the first highlighted character in the
+//               candidate string.
+////////////////////////////////////////////////////////////////////
+INLINE size_t MouseWatcherParameter::
+get_highlight_start() const {
+  return _highlight_start;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherParameter::get_highlight_end
+//       Access: Published
+//  Description: Returns one more than the last highlighted character
+//               in the candidate string.
+////////////////////////////////////////////////////////////////////
+INLINE size_t MouseWatcherParameter::
+get_highlight_end() const {
+  return _highlight_end;
 }
 
 ////////////////////////////////////////////////////////////////////

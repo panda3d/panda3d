@@ -151,3 +151,16 @@ keystroke(const MouseWatcherParameter &param) {
     _item->keystroke(param, false);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGMouseWatcherRegion::candidate
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever 
+//               the user selects an option from the IME menu.
+////////////////////////////////////////////////////////////////////
+void PGMouseWatcherRegion::
+candidate(const MouseWatcherParameter &param) {
+  if (_item != (PGItem *)NULL) {
+    _item->candidate(param, false);
+  }
+}

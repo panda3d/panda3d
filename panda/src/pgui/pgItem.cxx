@@ -443,6 +443,17 @@ keystroke(const MouseWatcherParameter &param, bool background) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::keystroke
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever
+//               the user highlights an option in the IME window.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+candidate(const MouseWatcherParameter &param, bool background) {
+  // We don't throw sound events for candidate selections for now.
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::background_press
 //       Access: Public, Static
 //  Description: Calls press() on all the PGItems with background

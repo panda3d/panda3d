@@ -27,6 +27,7 @@
 #include "glgsg.h"
 #include "clockObject.h"
 #include "pStatTimer.h"
+#include "textEncoder.h"
 
 #include <errno.h>
 #include <sys/time.h>
@@ -309,6 +310,20 @@ process_events() {
     case KeyPress:
       handle_keystroke(event.xkey);
       handle_keypress(event.xkey);
+
+      /*
+      // Temp hack for testing.  We pretend that we have received a
+      // candidate string every type the user types the backslash key.
+      {
+        KeySym key = XLookupKeysym(&event.xkey, 0);
+
+        if (key == XK_backslash) {
+          cerr << "Pressed backslash, sending candidate\n";
+          wstring candidate_string = TextEncoder::decode_text("This is a candidate string", TextEncoder::get_default_encoding());
+          _input_devices[0].candidate(candidate_string, 5, 7);
+        }
+      }
+      */
       break;
 
     case KeyRelease:

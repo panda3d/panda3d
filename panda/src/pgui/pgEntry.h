@@ -57,6 +57,7 @@ public:
 
   virtual void press(const MouseWatcherParameter &param, bool background);
   virtual void keystroke(const MouseWatcherParameter &param, bool background);
+  virtual void candidate(const MouseWatcherParameter &param, bool background);
 
   virtual void accept(const MouseWatcherParameter &param);
   virtual void overflow(const MouseWatcherParameter &param);

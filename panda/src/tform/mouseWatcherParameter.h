@@ -23,6 +23,7 @@
 
 #include "buttonHandle.h"
 #include "modifierButtons.h"
+#include "textEncoder.h"
 #include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -40,6 +41,9 @@ public:
 
   INLINE void set_button(const ButtonHandle &button);
   INLINE void set_keycode(int keycode);
+  INLINE void set_candidate(const wstring &candidate_string,
+                            size_t highlight_start, 
+                            size_t higlight_end);
   INLINE void set_modifier_buttons(const ModifierButtons &mods);
   INLINE void set_mouse(const LPoint2f &mouse);
   INLINE void set_outside(bool flag);
@@ -50,6 +54,17 @@ PUBLISHED:
 
   INLINE bool has_keycode() const;
   INLINE int get_keycode() const;
+
+  INLINE bool has_candidate() const;
+
+public:
+  INLINE const wstring &get_candidate_string() const;
+
+PUBLISHED:
+  INLINE string get_candidate_string_encoded() const;
+  INLINE string get_candidate_string_encoded(TextEncoder::Encoding encoding) const;
+  INLINE size_t get_highlight_start() const;
+  INLINE size_t get_highlight_end() const;
 
   INLINE const ModifierButtons &get_modifier_buttons() const;
 
@@ -63,14 +78,18 @@ PUBLISHED:
 public:
   ButtonHandle _button;
   short _keycode;
+  wstring _candidate_string;
+  size_t _highlight_start;
+  size_t _highlight_end;
   ModifierButtons _mods;
   LPoint2f _mouse;
 
   enum Flags {
-    F_has_button  = 0x001,
-    F_has_mouse   = 0x002,
-    F_is_outside  = 0x004,
-    F_has_keycode = 0x008,
+    F_has_button    = 0x001,
+    F_has_mouse     = 0x002,
+    F_is_outside    = 0x004,
+    F_has_keycode   = 0x008,
+    F_has_candidate = 0x010,
   };
   int _flags;
 };

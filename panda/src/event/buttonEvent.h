@@ -72,12 +72,19 @@ public:
 
     // T_keystroke is a special keystroke event, and is sent along
     // with a Unicode keycode value, not a ButtonHandle.
-    T_keystroke
+    T_keystroke,
+
+    // T_candidate is used to indicate that the user is using the IME
+    // and has in the process of selecting some possible text to type
+    // from a menu.
+    T_candidate,
   };
 
   INLINE ButtonEvent();
   INLINE ButtonEvent(ButtonHandle button, Type type, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE ButtonEvent(short keycode, double time = ClockObject::get_global_clock()->get_frame_time());
+  INLINE ButtonEvent(const wstring &candidate_string, size_t highlight_start, 
+                     size_t higlight_end, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE ButtonEvent(const ButtonEvent &copy);
   INLINE void operator = (const ButtonEvent &copy);
 
@@ -100,6 +107,11 @@ public:
   // _keycode will be filled in if type is T_keystroke.  It will be
   // the Unicode character that was typed.
   short _keycode;
+
+  // _candidate_string will be filled in if type is T_candidate.
+  wstring _candidate_string;
+  size_t _highlight_start;
+  size_t _highlight_end;
 
   // This is the type of the button event (see above).
   Type _type;

@@ -27,6 +27,7 @@
 #include "keyboardButton.h"
 #include "mouseButton.h"
 #include "lineSegs.h"
+#include "textEncoder.h"
 
 #include <math.h>
 
@@ -454,6 +455,33 @@ keystroke(const MouseWatcherParameter &param, bool background) {
     }
   }
   PGItem::keystroke(param, background);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::candidate
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever
+//               the user selects an item from the IME menu.
+////////////////////////////////////////////////////////////////////
+void PGEntry::
+candidate(const MouseWatcherParameter &param, bool background) {
+  if (get_active()) {
+    if (param.has_candidate()) {
+      // Do something with the candidate string.
+      TextEncoder te;
+      const wstring &cs = param.get_candidate_string();
+      size_t hs = param.get_highlight_start();
+      size_t he = param.get_highlight_end();
+
+      pgui_cat.info()
+        << "Candidate: "
+        << te.encode_wtext(cs.substr(0, hs))
+        << " (" << te.encode_wtext(cs.substr(hs, he - hs)) << ") "
+        << te.encode_wtext(cs.substr(he))
+        << "\n";
+    }
+  }
+  PGItem::candidate(param, background);
 }
 
 ////////////////////////////////////////////////////////////////////
