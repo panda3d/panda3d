@@ -147,7 +147,7 @@ child_integrate(Physical *physical,
     float len = vel_vec.length();
 
     if (len > current_object->get_terminal_velocity()) {
-      cout << "Capping terminal velocity at: " << current_object->get_terminal_velocity() << endl;
+      //cout << "Capping terminal velocity at: " << current_object->get_terminal_velocity() << endl;
       vel_vec *= current_object->get_terminal_velocity() / len;
     }
 
