@@ -1144,13 +1144,43 @@ class Actor(PandaObject, NodePath):
                 model = loader.loadModelOnce(modelPath)
 
         if (model == None):
-            print "model = None!!!"
+            raise StandardError, "Could not load Actor model %s" % (modelPath)
+
         bundle = model.find("**/+PartBundleNode")
         if (bundle.isEmpty()):
             Actor.notify.warning("%s is not a character!" % (modelPath))
             model.reparentTo(self.__geomNode)
         else:
+
+            # Maybe the model file also included some animations.  If
+            # so, try to bind them immediately and put them into the
+            # animControlDict.
+            acc = AnimControlCollection()
+            autoBind(model.node(), acc, ~0)
+            numAnims = acc.getNumAnims()
+
+            # Now extract out the PartBundleNode and integrate it with
+            # the Actor.
             self.prepareBundle(bundle, partName, lodName)
+
+            if numAnims != 0:
+                # If the model had some animations, store them in the
+                # dict so they can be played.
+                Actor.notify.info("model contains %s animations." % (numAnims))
+
+                # make sure this lod is in anim control dict
+                self.__animControlDict.setdefault(lodName, {})
+                self.__animControlDict[lodName].setdefault(partName, {})
+
+                for i in range(numAnims):
+                    animControl = acc.getAnim(i)
+                    animName = acc.getAnimName(i)
+
+                    # Now we've already bound the animation, but we
+                    # have no associated filename.  So store the
+                    # animControl, but put None in for the filename.
+                    self.__animControlDict[lodName][partName][animName] = [None, animControl]
+
             model.removeNode()        
 
     def prepareBundle(self, bundle, partName="modelRoot", lodName="lodRoot"):
@@ -1198,7 +1228,7 @@ class Actor(PandaObject, NodePath):
                            (anims, partName, lodName))
 
         for animName in anims.keys():
-            # make sure this lod in in anim control dict
+            # make sure this lod is in anim control dict
             self.__animControlDict.setdefault(lodName, {})
             self.__animControlDict[lodName].setdefault(partName, {})
             # store the file path and None in place of the animControl.
