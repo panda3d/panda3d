@@ -45,6 +45,7 @@ private:
   streampos _start;
   streampos _end;
   streampos _cur;
+  size_t _unused;
 };
 
 #endif

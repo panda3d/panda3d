@@ -31,9 +31,29 @@ typedef int streamsize;
 SubStreamBuf::
 SubStreamBuf() {
   _source = (istream *)NULL;
+
+  // _start is the streampos of the first byte of the SubStream within
+  // its parent stream.
   _start = 0;
+
+  // _end is the streampos of the byte following the last byte of the
+  // SubStream within its parent stream.  If _end is 0, the SubStream
+  // continues to the end of the parent stream, wherever that is.
   _end = 0;
+
+  // _cur is the streampos of the end of the read buffer (that is,
+  // egptr()) within the parent stream.  By comparing _cur to gpos(),
+  // we can determine the actual current file position.
   _cur = 0;
+
+  // _unused counts the number of bytes at the beginning of the buffer
+  // that are unused.  Usually this is 0, but when we reach the end of
+  // the file we might not need the whole buffer to read the last bit,
+  // so the first part of the buffer is unused.  This is important to
+  // prevent us from inadvertently seeking into the unused part of the
+  // buffer.
+  _unused = 0;
+
 #ifndef WIN32_VC
   // These lines, which are essential on Irix and Linux, seem to be
   // unnecessary and not understood on Windows.
@@ -63,6 +83,7 @@ open(istream *source, streampos start, streampos end) {
   _start = start;
   _end = end;
   _cur = _start;
+  _unused = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,11 +93,11 @@ open(istream *source, streampos start, streampos end) {
 ////////////////////////////////////////////////////////////////////
 void SubStreamBuf::
 close() {
-  sync();
   _source = (istream *)NULL;
   _start = 0;
   _end = 0;
   _cur = 0;
+  _unused = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,22 +107,52 @@ close() {
 ////////////////////////////////////////////////////////////////////
 streampos SubStreamBuf::
 seekoff(streamoff off, ios::seek_dir dir, int mode) {
+  // Invariant: _cur points to the file location of the buffer at
+  // egptr().
+
+  // Use this to determine the actual file position right now.
+  streamsize n = egptr() - gptr();
+  streampos cur_pos = _cur - n;
+  streampos new_pos = cur_pos;
+
+  // Now adjust the data pointer appropriately.
   switch (dir) {
   case ios::beg:
-    _cur = _start + off;
+    new_pos = _start + off;
     break;
 
   case ios::cur:
-    _cur += off;
+    new_pos = cur_pos + off;
     break;
 
   case ios::end:
-    _cur = _end + off;
+    if (_end == 0) {
+      // If the end of the file is unspecified, we have to seek to
+      // find it.
+      _source->seekg(off, ios::end);
+      new_pos = _source->tellg();
+
+    } else {
+      new_pos = _end + off;
+    }
     break;
   }
 
-  _cur = max(_start, _cur);
-  return _cur - _start;
+  new_pos = max(_start, new_pos);
+  streamsize delta = new_pos - cur_pos;
+
+  if (gptr() + delta >= eback() + _unused && gptr() + delta <= egptr()) {
+    // If we can get away with just bumping the gptr within the
+    // buffer, do so.
+    gbump(delta);
+
+  } else {
+    // Otherwise, empty the buffer and force it to call underflow().
+    gbump(n);
+    _cur = new_pos;
+  }
+
+  return new_pos - _start;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -113,19 +164,6 @@ seekoff(streamoff off, ios::seek_dir dir, int mode) {
 int SubStreamBuf::
 overflow(int c) {
   // We don't support ostream.
-
-  /*
-  streamsize n = pptr() - pbase();
-  if (n != 0) {
-    write_chars(pbase(), n, false);
-    pbump(-n);  // reset pptr()
-  }
-  if (c != EOF) {
-    // write one more character
-    char ch = c;
-    write_chars(&ch, 1, false);
-  }
-  */
   return 0;
 }
 
@@ -137,19 +175,9 @@ overflow(int c) {
 ////////////////////////////////////////////////////////////////////
 int SubStreamBuf::
 sync() {
-  /*
-  streamsize n = pptr() - pbase();
-  if (n != 0) {
-    write_chars(pbase(), n, false);
-    pbump(-n);
-  }
-  */
-
   streamsize n = egptr() - gptr();
-  if (n != 0) {
-    gbump(n);
-    _cur += n;
-  }
+  gbump(n);
+
   return 0;
 }
 
@@ -172,14 +200,14 @@ underflow() {
 
   // Sometimes underflow() is called even if the buffer is not empty.
   if (gptr() >= egptr()) {
-    if (_cur >= _end) {
+    if (_end != 0 && _cur >= _end) {
       // We're done.
       return EOF;
     }
     
     size_t buffer_size = egptr() - eback();
     size_t num_bytes;
-    if (_end - _cur > (streampos)buffer_size) {
+    if (_end == 0 || _end - _cur > (streampos)buffer_size) {
       // We have enough bytes in the input stream to fill our buffer.
       num_bytes = buffer_size;
     } else {
@@ -192,13 +220,33 @@ underflow() {
     nassertr(gptr() + num_bytes <= egptr(), EOF);
 
     _source->read(gptr(), num_bytes);
-    if (_source->gcount() != num_bytes) {
-      // Oops, something screwed up.
-      _cur = _end;
-      return EOF;
+    size_t read_count = _source->gcount();
+
+    if (read_count != num_bytes) {
+      // Oops, we didn't read what we thought we would.
+      if (read_count == 0) {
+        _unused = buffer_size;
+        if (_end != 0) {
+          _end = _cur;
+        }
+        return EOF;
+      }
+
+      // Slide what we did read to the top of the buffer.
+      nassertr(read_count < num_bytes, EOF);
+      size_t delta = num_bytes - read_count;
+      memmove(gptr() + delta, gptr(), read_count);
+      gbump(delta);
     }
 
-    _cur += num_bytes;
+    // Now record whatever bytes at the beginning of the buffer are
+    // unused, so we won't try to seek into that area.
+    _unused = buffer_size - read_count;
+
+    // Invariant: _cur points to the file location of the buffer at
+    // egptr().
+
+    _cur += read_count;
   }
 
   return (unsigned char)*gptr();
