@@ -2,14 +2,25 @@
 
 This module and class exist only for backward compatibility with
 existing code.  New code should use the FSM module instead.
-
 """
 
 from direct.showbase.DirectObject import *
 import types
+import weakref
+
+if __debug__:
+    _debugFsms={}
+    def printDebugFsmList():
+        global _debugFsms
+        keys=_debugFsms.keys()
+        keys.sort()
+        for k in keys:
+            print k, _debugFsms[k]()
+    __builtins__['debugFsmList']=printDebugFsmList
 
 class ClassicFSM(DirectObject):
-    """ClassicFSM class: Finite State Machine class.
+    """
+    Finite State Machine class.
 
     This module and class exist only for backward compatibility with
     existing code.  New code should use the FSM class instead.
@@ -48,9 +59,7 @@ class ClassicFSM(DirectObject):
 
         'onUndefTransition' flag determines behavior when undefined
         transition is requested; see flag definitions above
-
         """
-
         self.setName(name)
         self.setStates(states)
         self.setInitialState(initialStateName)
@@ -69,6 +78,9 @@ class ClassicFSM(DirectObject):
         # should recursively attempt to modify the state while we are
         # doing this.
         self.__internalStateInFlux = 0
+        if __debug__:
+            global _debugFsms
+            _debugFsms[name]=weakref.ref(self)
 
     # I know this isn't how __repr__ is supposed to be used, but it
     # is nice and convenient.
@@ -156,8 +168,9 @@ class ClassicFSM(DirectObject):
     # basic ClassicFSM functionality
 
     def __exitCurrent(self, argList):
-        """__exitCurrent(self)
-        Exit the current state"""
+        """
+        Exit the current state
+        """
         assert(self.__internalStateInFlux)
         assert(ClassicFSM.notify.debug("[%s]: exiting %s" % (self.__name, self.__currentState.getName())))
         self.__currentState.exit(argList)
@@ -170,8 +183,9 @@ class ClassicFSM(DirectObject):
         self.__currentState = None
 
     def __enter(self, aState, argList=[]):
-        """__enter(self, State)
-        Enter a given state, if it exists"""
+        """
+        Enter a given state, if it exists
+        """
         assert(self.__internalStateInFlux)
         stateName = aState.getName()
         if (stateName in self.__states):
@@ -211,7 +225,6 @@ class ClassicFSM(DirectObject):
         Return true is transition exists to given state,
         false otherwise.
         """
-
         # If you trigger this assertion failure, you must have
         # recursively requested a state transition from within the
         # exitState() function for the previous state.  This is not
@@ -290,7 +303,9 @@ class ClassicFSM(DirectObject):
 
 
     def forceTransition(self, aStateName, enterArgList=[], exitArgList=[]):
-        """ force a transition -- for debugging ONLY """
+        """
+        force a transition -- for debugging ONLY
+        """
         self.request(aStateName, enterArgList, exitArgList, force=1)
 
     def conditional_request(self, aStateName, enterArgList=[], exitArgList=[]):
