@@ -7,4 +7,5 @@
 #define SAMPLE_SOURCE_FILE src/dtoolbase/dtoolbase.cxx
 
 #define EXTRA_DIST \
-    Config.Irix.pp Config.Linux.pp Config.Win32.pp LocalSetup.pp Package.pp
+    Config.Irix.pp Config.Linux.pp Config.Win32.pp Config.Cygwin.pp \
+    LocalSetup.pp Package.pp

@@ -49,7 +49,7 @@
 // it's easy to make them so (e.g. on Unix platforms), and static on
 // platforms where dynamic libraries aren't quite so robust (e.g. on
 // Windows).
-#if $[eq $[PLATFORM],Win32]
+#if $[WINDOWS_PLATFORM]
   #map static_libs TARGET(*/static_lib_target */ss_lib_target)
   #map dynamic_libs TARGET(*/lib_target */noinst_lib_target */metalib_target)
 #else
@@ -547,7 +547,7 @@
 #defun get_lpath
   #define alt_lpath $[stl_lpath] $[nspr_lpath] $[python_lpath]
   
-  #if $[eq $[PLATFORM],Win32]  
+  #if $[WINDOWS_PLATFORM]  
     #set alt_lpath $[WIN32_PLATFORMSDK_LIBPATH] $[alt_lpath] 
   #endif  
   #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs] $[transitive_link]],]

@@ -255,9 +255,15 @@
 
 // Is OpenGL installed, and where?  This should include libGL as well
 // as libGLU, if they are in different places.
-#defer GL_IPATH
-#defer GL_LPATH /usr/X11R6/lib
-#defer GL_LIBS GL GLU
+#if $[WINDOWS_PLATFORM]
+  #defer GL_IPATH
+  #defer GL_LPATH
+  #define GL_LIBS opengl32.lib glu32.lib 
+#else
+  #defer GL_IPATH
+  #defer GL_LPATH /usr/X11R6/lib
+  #defer GL_LIBS GL GLU
+#endif
 #defer HAVE_GL $[libtest $[GL_LPATH],$[GL_LIBS]]
 
 // Is Chromium OpenGL installed, and where?  This should include libcr_opengl32.
@@ -283,16 +289,18 @@
 #define HAVE_GLUT
 
 // Should we try to build the WGL interface?
-#define HAVE_WGL $[WINDOWS_PLATFORM]
+#defer HAVE_WGL $[and $[HAVE_GL],$[WINDOWS_PLATFORM]]
 
 // Should we try to build the SGI-specific glxdisplay?
 #define HAVE_SGIGL $[eq $[PLATFORM],Irix]
 
 // Is DirectX available, and should we try to build with it?
-#define DX_IPATH
-#define DX_LPATH
-#define DX_LIBS
-#defer HAVE_DX $[libtest $[DX_LPATH],$[DX_LIBS]]
+#if $[WINDOWS_PLATFORM]
+  #define DX_IPATH
+  #define DX_LPATH
+  #define DX_LIBS ddraw.lib dxguid.lib
+  #defer HAVE_DX $[libtest $[DX_LPATH],$[DX_LIBS]]
+#endif
 
 // Do you want to build the Renderman interface?
 #define HAVE_RIB
@@ -404,9 +412,9 @@
 //    INTEL  (Intel C/C++ compiler)
 
 #if $[WINDOWS_PLATFORM]
-#if $[eq $[USE_COMPILER],]
-  #define USE_COMPILER MSVC7
-#endif    
+  #if $[eq $[USE_COMPILER],]
+    #define USE_COMPILER MSVC7
+  #endif    
 #elif $[eq $[PLATFORM], Irix]
   #define USE_COMPILER MIPS
 #elif $[eq $[PLATFORM], Linux]
