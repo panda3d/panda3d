@@ -40,7 +40,7 @@ def getNewRolloverFunctor(sound = None):
         if sound:
             roll = sound
         else:
-            roll = loader.loadSound("phase_3/audio/sfr/GUI_rollover.mp3")
+            roll = loader.loadSound("phase_3/audio/sfx/GUI_rollover.mp3")
         val = AudioGuiFunctor(roll)
     else:
         val = AudioGuiFunctor()

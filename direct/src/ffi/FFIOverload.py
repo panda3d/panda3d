@@ -138,16 +138,21 @@ def inheritsFrom(type1, type2):
 def getInheritanceLevel(type, checkNested = 1):
     #    if (len(type.parentTypes) == 0):
     #        return 0
+    ##if type.isNested:
+    ##    level = 1+getInheritanceLevel(type.outerType, 0)
+    ##else:
+    ##    level = 0
+    level = 0
     if type.isNested:
-        level = 1+getInheritanceLevel(type.outerType, 0)
+        offset = getInheritanceLevel(type.outerType, 0)
     else:
-        level = 0
+        offset = 0
     for parentType in type.parentTypes:
         level = max(level, 1+getInheritanceLevel(parentType))
     if checkNested:
         for nestedType in type.nestedTypes:
             level = max(level, 1+getInheritanceLevel(nestedType))
-    return level
+    return level + offset
 
 def inheritanceLevelSort(type1, type2):
     level1 = getInheritanceLevel(type1)
