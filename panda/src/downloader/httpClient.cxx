@@ -926,6 +926,9 @@ get_ssl_ctx() {
   }
 #endif
 
+  // Make sure the error strings are loaded.
+  notify_ssl_errors();
+
   // Get the configured set of expected servers.
   {
     Config::ConfigTable::Symbol expected_servers;

@@ -164,6 +164,22 @@ underflow() {
             << _source->get_server_name() << ":" 
             << _source->get_port() << " (" << read_count << ").\n";
           notify_ssl_errors();
+
+          SSL *ssl;
+          BIO_get_ssl(*_source, &ssl);
+          if (ssl != (SSL *)NULL) {
+            downloader_cat.warning()
+              << "OpenSSL error code: " << SSL_get_error(ssl, read_count)
+              << "\n";
+          }
+
+#ifdef WIN32_VC
+          downloader_cat.warning()
+            << "Windows error code: " << WSAGetLastError() << "\n";
+#else
+          downloader_cat.warning()
+            << "Unix error code: " << errno << "\n";
+#endif  // WIN32_VC
         }
         gbump(num_bytes);
         return EOF;
