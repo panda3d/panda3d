@@ -81,6 +81,7 @@ MayaToEggConverter::
 MayaToEggConverter(const string &program_name) :
   _program_name(program_name)
 {
+  _from_selection = false;
   _polygon_output = false;
   _polygon_tolerance = 0.01;
   _ignore_transforms = false;
@@ -167,7 +168,7 @@ convert_file(const Filename &filename) {
     _character_name = filename.get_basename_wo_extension();
   }
 
-  return convert_maya();
+  return convert_maya(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,10 +176,13 @@ convert_file(const Filename &filename) {
 //       Access: Public
 //  Description: Fills up the egg_data structure according to the
 //               global maya model data.  Returns true if successful,
-//               false if there is an error.
+//               false if there is an error.  If from_selection is
+//               true, the converted geometry is based on that which
+//               is selected; otherwise, it is the entire Maya scene.
 ////////////////////////////////////////////////////////////////////
 bool MayaToEggConverter::
-convert_maya() {
+convert_maya(bool from_selection) {
+  _from_selection = from_selection;
   _textures.clear();
   _shaders.clear();
   _groups.clear();
@@ -485,16 +489,52 @@ bool MayaToEggConverter::
 convert_hierarchy(EggGroupNode *egg_root) {
   MStatus status;
 
+  if (_from_selection) {
+    // Get only the selected geometry.
+    MSelectionList selection;
+    status = MGlobal::getActiveSelectionList(selection);
+    if (!status) {
+      status.perror("MGlobal::getActiveSelectionList");
+      return false;
+    }
+
+    // Get the selected geometry only if the selection is nonempty;
+    // otherwise, get the whole scene anyway.
+    if (!selection.isEmpty()) {
+      bool all_ok = true;
+      unsigned int length = selection.length();
+      for (unsigned int i = 0; i < length; i++) {
+        MDagPath dag_path;
+        status = selection.getDagPath(i, dag_path);
+        if (!status) {
+          status.perror("MSelectionList::getDagPath");
+        } else {
+          if (!process_model_node(dag_path, egg_root)) {
+            all_ok = false;
+          }
+        }
+      }
+      return all_ok;
+
+    } else {
+      mayaegg_cat.info()
+        << "Selection list is empty.\n";
+      // Fall through.
+    }
+  }
+
+  // Get the entire Maya scene.
+  
   MItDag dag_iterator(MItDag::kDepthFirst, MFn::kTransform, &status);
   if (!status) {
     status.perror("MItDag constructor");
     return false;
   }
-
-  // This while loop walks through the entire Maya hierarchy, one node
-  // at a time.  Maya's MItDag object automatically performs a
+  
+  // This while loop walks through the entire Maya hierarchy, one
+  // node at a time.  Maya's MItDag object automatically performs a
   // depth-first traversal of its scene graph.
-
+  
   bool all_ok = true;
   while (!dag_iterator.isDone()) {
     MDagPath dag_path;
@@ -506,10 +546,10 @@ convert_hierarchy(EggGroupNode *egg_root) {
         all_ok = false;
       }
     }
-
+    
     dag_iterator.next();
   }
-
+  
   return all_ok;
 }
 
@@ -818,6 +858,17 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
       return;
     }
     make_polyset(polyset_path, polyset_fn, egg_group, egg_root, shader);
+
+    // Now remove the polyset we created.
+    MFnDagNode parent_node(polyset_parent, &status);
+    if (!status) {
+      status.perror("MFnDagNode constructor");
+      return;
+    }
+    status = parent_node.removeChild(polyset);
+    if (!status) {
+      status.perror("MFnDagNode::removeChild");
+    }
 
     return;
   }

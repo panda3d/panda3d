@@ -67,6 +67,8 @@ MayaToEgg() :
     ("v", "", 0,
      "Increase verbosity.  More v's means more verbose.",
      &MayaToEgg::dispatch_count, NULL, &_verbose);
+
+  _polygon_tolerance = 0.01;
   _verbose = 0;
 }
 

@@ -49,6 +49,12 @@ MayaPview() {
 ////////////////////////////////////////////////////////////////////
 MStatus MayaPview::
 doIt(const MArgList &) {
+  // Maya seems to run each invocation of the plugin in a separate
+  // thread.  To minimize conflict in our
+  // not-yet-completely-thread-safe Panda, we'll create a separate
+  // PandaFramework for each invocation, even though in principle we
+  // could be sharing one framework for all of them.
+
   int argc = 0;
   char **argv = NULL;
   PandaFramework framework;
@@ -64,13 +70,7 @@ doIt(const MArgList &) {
     return MS::kFailure;
   }
 
-  // We've successfully opened a window.  Let a couple of frames go by
-  // to ensure the window is fully open and ready before we try to
-  // render anything.  This is a kludge for now until we settle on
-  // what the appropriate startup behavior should be for these
-  // windows.
-  framework.do_frame();
-  framework.do_frame();
+  // We've successfully opened a window.
 
   // Put up a "loading" message for the user's benefit.
   NodePath aspect_2d = window->get_aspect_2d();
@@ -82,6 +82,10 @@ doIt(const MArgList &) {
   loading->set_shadow(0.04f, 0.04f);
   loading->set_align(TextNode::A_center);
   loading->set_text("Loading...");
+
+  // Allow a couple of frames to go by so the window will be fully
+  // created and the text will be visible.
+  framework.do_frame();
   framework.do_frame();
 
   window->enable_keyboard();
@@ -93,6 +97,7 @@ doIt(const MArgList &) {
   }
 
   loading_np.remove_node();
+  window->center_trackball(framework.get_models());
   window->loop_animations();
 
   framework.main_loop();
@@ -122,12 +127,7 @@ convert(const NodePath &parent) {
 
   // We always want polygon output since we want to be able to see the
   // results.
-
-  // Actually, for now we'll leave this false, because the nurbs
-  // tesselation code in MayaToEggConverter is destructive to the
-  // original nurbs.
-  //  converter._polygon_output = true;
-  converter._polygon_output = false;
+  converter._polygon_output = true;
 
   PathReplace *path_replace = converter.get_path_replace();
 
@@ -145,7 +145,7 @@ convert(const NodePath &parent) {
   EggData egg_data;
   converter.set_egg_data(&egg_data, false);
 
-  if (!converter.convert_maya()) {
+  if (!converter.convert_maya(true)) {
     nout << "Errors in conversion.\n";
     return false;
   }

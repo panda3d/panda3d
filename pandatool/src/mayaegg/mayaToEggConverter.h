@@ -69,7 +69,7 @@ public:
   virtual string get_extension() const;
 
   virtual bool convert_file(const Filename &filename);
-  bool convert_maya();
+  bool convert_maya(bool from_selection);
 
   bool open_api();
   void close_api();
@@ -127,6 +127,7 @@ private:
   Tables _tables;
 
   string _program_name;
+  bool _from_selection;
 
 public:
   MayaShaders _shaders;
