@@ -13,7 +13,7 @@ if [ -z "$PANDA_ROOT" ]; then
   PYTHONPATH=`echo $PYTHONPATH | sed 'y/;/:/'`
   export PYTHONPATH
   # Run unbuffered output, with any options passed in
-  exec $wgl python2.2 -u $*
+  exec $wgl python -u $*
   exit 1
 fi
 

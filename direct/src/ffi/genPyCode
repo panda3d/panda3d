@@ -30,9 +30,11 @@ shift
 extra_genPyCode_libs="$extra_genPyCode_libs $*"
 
 if [ "$INSTALL_DIR" != "" ]; then
-    install_dir=$(cygpath -am $INSTALL_DIR)
+    install_dir=$(cygpath -am "$INSTALL_DIR")
+elif [ "$PANDA_INSTALL" != "" ]; then
+    install_dir=$(cygpath -am "$PANDA_INSTALL")
 elif [ "$DIRECT" != "" ]; then
-    install_dir=$(cygpath -am $DIRECT)
+    install_dir=$(cygpath -am "$DIRECT")
 else
     install_dir=$(cygpath -am ./install)
 fi
@@ -42,6 +44,7 @@ if [ "$buildType" = "linux" ]; then
     cd $DIRECT/bin
     ppython -d generatePythonCode -v -d $pyDir -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
     pSqueezer=$DIRECT/src/showbase/pandaSqueezer.py
+
 elif [ "$buildType" = "win-debug" ]; then
     pyDir=$(cygpath -m $DIRECT/lib/py)
     cd $DIRECT/bin
@@ -51,6 +54,7 @@ elif [ "$buildType" = "win-release" ]; then
     cd $DIRECT/bin
     ppython generatePythonCode -v -d $pyDir -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
     pSqueezer=`cygpath -w $DIRECT/src/showbase/pandaSqueezer.py`
+
 elif [ "$buildType" = "win-publish" ]; then
     # no assertions, no comments, no docstrings
     pyDir=$(cygpath -m $DIRECT/lib/py)
@@ -59,12 +63,14 @@ elif [ "$buildType" = "win-publish" ]; then
     optimizeFlag="-O"
     ppythonOptimizeFlag="-OO"
     pSqueezer=`cygpath -w $DIRECT/src/showbase/pandaSqueezer.py`
+
 elif [ "$buildType" = "install" ]; then
     # Use relative paths; as installed on a machine without ctattach etc.
     pyDir=$install_dir/lib/py
     ppython=$install_dir/bin/ppython
     $ppython -d $install_dir/bin/generatePythonCode -O -v -d $pyDir -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
     pSqueezer=$(cygpath -m $base_dir/direct/src/showbase/pandaSqueezer.py) || exit
+
 elif [ "$buildType" = "release" ]; then
     # Use relative paths; as installed on a machine without ctattach etc.
     pyDir=$install_dir/lib/py
