@@ -65,6 +65,7 @@ PUBLISHED:
   bool compare_flags(const DCAtomicField &other) const;
   
 public:
+  virtual void output(ostream &out, bool brief) const;
   virtual void write(ostream &out, bool brief, int indent_level) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 

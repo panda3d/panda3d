@@ -122,7 +122,7 @@ set_typedef(const DCTypedef *dtypedef) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCParameter::output
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void DCParameter::
@@ -131,21 +131,34 @@ output(ostream &out, bool brief) const {
   if (!brief) {
     name = get_name();
   }
-  output_instance(out, "", name, "");
+  output_instance(out, brief, "", name, "");
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCParameter::write
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void DCParameter::
-write(ostream &out, bool, int indent_level) const {
+write(ostream &out, bool brief, int indent_level) const {
   // we must always output the name when the parameter occurs by
-  // itself within a class, so we ignore brief and pass false up to
-  // output().
+  // itself within a class, so we pass get_name() even if brief is
+  // true.
+  write_instance(out, brief, indent_level, "", get_name(), "");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCParameter::write_instance
+//       Access: Public, Virtual
+//  Description: Formats the parameter in the C++-like dc syntax as a
+//               typename and identifier.
+////////////////////////////////////////////////////////////////////
+void DCParameter::
+write_instance(ostream &out, bool brief, int indent_level,
+               const string &prename, const string &name, 
+               const string &postname) const {
   indent(out, indent_level);
-  output(out, false);
+  output_instance(out, brief, prename, name, postname);
   out << ";\n";
 }
 
@@ -156,12 +169,29 @@ write(ostream &out, bool, int indent_level) const {
 //               the typedef name instead.
 ////////////////////////////////////////////////////////////////////
 void DCParameter::
-output_typedef_name(ostream &out, const string &prename, const string &name, 
-                    const string &postname) const {
+output_typedef_name(ostream &out, bool, const string &prename,
+                    const string &name, const string &postname) const {
   out << get_typedef()->get_name();
   if (!prename.empty() || !name.empty() || !postname.empty()) {
     out << " " << prename << name << postname;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCParameter::write_typedef_name
+//       Access: Public
+//  Description: Formats the instance like write_instance, but uses
+//               the typedef name instead.
+////////////////////////////////////////////////////////////////////
+void DCParameter::
+write_typedef_name(ostream &out, bool, int indent_level, const string &prename,
+                   const string &name, const string &postname) const {
+  indent(out, indent_level)
+    << get_typedef()->get_name();
+  if (!prename.empty() || !name.empty() || !postname.empty()) {
+    out << " " << prename << name << postname;
+  }
+  out << ";\n";
 }
 
 ////////////////////////////////////////////////////////////////////

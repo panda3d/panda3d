@@ -38,6 +38,8 @@ public:
   ~DCClass();
 
 PUBLISHED:
+  virtual DCClass *as_class();
+
   const string &get_name() const;
   int get_number() const;
 
@@ -83,6 +85,8 @@ PUBLISHED:
 
 public:
   virtual void write(ostream &out, bool brief, int indent_level) const;
+  void output_instance(ostream &out, bool brief, const string &prename, 
+                       const string &name, const string &postname) const;
   void generate_hash(HashGenerator &hashgen) const;
 
   bool add_field(DCField *field);

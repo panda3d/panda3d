@@ -12,6 +12,7 @@
 #include "dcAtomicField.h"
 #include "dcMolecularField.h"
 #include "dcClassParameter.h"
+#include "dcSwitchParameter.h"
 #include "dcArrayParameter.h"
 #include "dcSimpleParameter.h"
 #include "dcTypedef.h"
@@ -116,12 +117,13 @@ dc_cleanup_parser() {
 
 %type <u.flag> kw_struct_or_kw_dclass
 %type <u.dclass> dclass_name
+%type <u.dclass> dclass
+%type <u.dswitch> switch
 %type <u.atomic> atomic_name
 %type <u.field> dclass_field
 %type <u.field> switch_field
 %type <u.field> atomic_field
 %type <u.field> molecular_field
-%type <u.field> switch
 %type <u.subatomic> type_token
 %type <u.parameter> type_name
 %type <u.parameter> type_definition
@@ -150,24 +152,37 @@ dc:
         empty
         | dc ';'
         | dc dclass
+{
+  if (!dc_file->add_class($2)) {
+    DCClass *old_class = dc_file->get_class_by_name($2->get_name());
+    if (old_class != (DCClass *)NULL && old_class->is_bogus_class()) {
+      yyerror("Base class defined after its first reference: " + $2->get_name());
+    } else {
+      yyerror("Duplicate class name: " + $2->get_name());
+    }
+  }
+}
+        | dc switch
+{
+  if (!dc_file->add_switch($2)) {
+    yyerror("Duplicate class name: " + $2->get_name());
+  }
+}
         | dc import
         | dc typedef_decl
         ;
 
 dclass:
-        kw_struct_or_kw_dclass IDENTIFIER 
+        kw_struct_or_kw_dclass optional_name 
 {
+  $$ = current_class;
   current_class = new DCClass($2, $1, false);
-  if (!dc_file->add_class(current_class)) {
-    DCClass *old_class = dc_file->get_class_by_name(current_class->get_name());
-    if (old_class->is_bogus_class()) {
-      yyerror("Base class defined after its first reference: " + current_class->get_name());
-    } else {
-      yyerror("Duplicate class name: " + current_class->get_name());
-    }
-  }
 }
         dclass_derivation '{' dclass_fields '}'
+{
+  $$ = current_class;
+  current_class = $<u.dclass>3;
+}
         ;
 
 kw_struct_or_kw_dclass:
@@ -291,7 +306,6 @@ dclass_fields:
 dclass_field:
 	atomic_field
 	| molecular_field
-	| switch
 	| unnamed_parameter ';'
 {
   $$ = $1;
@@ -332,6 +346,7 @@ atomic_element:
 	| parameter '=' 
 {
   current_packer = &default_packer;
+  current_packer->clear_data();
   current_packer->begin_pack($1);
 }
 	parameter_value
@@ -435,14 +450,29 @@ type_name:
       // Create an implicit typedef for this.
       dtypedef = new DCTypedef(new DCClassParameter(dclass), true);
     } else {
-      // It's an undefined typedef.  Create a bogus forward reference.
-      dtypedef = new DCTypedef($1);
+      // Maybe it's a switch name.
+      DCSwitch *dswitch = dc_file->get_switch_by_name($1);
+      if (dswitch != (DCSwitch *)NULL) {
+        // This also gets an implicit typedef.
+        dtypedef = new DCTypedef(new DCSwitchParameter(dswitch), true);
+      } else {
+        // It's an undefined typedef.  Create a bogus forward reference.
+        dtypedef = new DCTypedef($1);
+      }
     }
 
     dc_file->add_typedef(dtypedef);
   }
 
   $$ = dtypedef->make_new_parameter();
+}
+	| dclass
+{
+  $$ = new DCClassParameter($1);
+}
+	| switch
+{
+  $$ = new DCSwitchParameter($1);
 }
 	;
 
@@ -917,6 +947,7 @@ switch_case:
 	KW_CASE
 {
   current_packer = &default_packer;
+  current_packer->clear_data();
   current_packer->begin_pack(current_switch->get_key_parameter());
 }
 	parameter_value ':'
@@ -930,8 +961,7 @@ switch_case:
 	;
 
 switch_field:
-	switch
-	| unnamed_parameter ';'
+	unnamed_parameter ';'
 {
   $$ = $1;
 }

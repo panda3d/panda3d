@@ -84,9 +84,9 @@ as_field() {
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-DCSwitch *DCPackerInterface::
-as_switch() {
-  return (DCSwitch *)NULL;
+DCSwitchParameter *DCPackerInterface::
+as_switch_parameter() {
+  return (DCSwitchParameter *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -326,17 +326,5 @@ make_catalog() {
   nassertv(_catalog == (DCPackerCatalog *)NULL);
   _catalog = new DCPackerCatalog(this);
 
-  if (has_nested_fields()) {
-    int num_nested = get_num_nested_fields();
-    // num_nested might be -1, indicating there are a dynamic number
-    // of fields (e.g. an array).  But in that case, none of the
-    // fields will be named anyway, so we don't care about them, so
-    // it's ok that the following loop will not visit any fields.
-    for (int i = 0; i < num_nested; i++) {
-      DCPackerInterface *nested = get_nested_field(i);
-      if (nested != (DCPackerInterface *)NULL) {
-        _catalog->r_fill_catalog("", nested, this, i);
-      }
-    }
-  }
+  _catalog->r_fill_catalog("", this, NULL, 0);
 }

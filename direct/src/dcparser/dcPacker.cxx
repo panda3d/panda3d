@@ -21,6 +21,7 @@
 #include "dcParserDefs.h"
 #include "dcLexerDefs.h"
 #include "dcClassParameter.h"
+#include "dcSwitchParameter.h"
 #include "dcClass.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -351,7 +352,7 @@ seek(const string &field_name) {
 
     const DCPackerCatalog::Entry &entry = _live_catalog->get_entry(entry_index);
 
-    if (((DCPackerInterface *)entry._parent)->as_switch() != (DCSwitch *)NULL) {
+    if (((DCPackerInterface *)entry._parent)->as_switch_parameter() != (DCSwitchParameter *)NULL) {
       // If the parent is a DCSwitch, that can only mean that the
       // seeked field is a switch parameter.  We can't support seeking
       // to a switch parameter and modifying it directly--what would
@@ -653,13 +654,20 @@ pack_object(PyObject *object) {
     }
 
   } else {
+    int size = PySequence_Size(object);
+    bool is_instance = false;
+
     DCClass *dclass = NULL;
     const DCClassParameter *class_param = ((DCPackerInterface *)get_current_field())->as_class_parameter();
     if (class_param != (DCClassParameter *)NULL) {
       dclass = class_param->get_class();
-    }
 
-    int size = PySequence_Size(object);
+      if (dclass->has_class_def()) {
+        PyObject *class_def = dclass->get_class_def();
+        is_instance = (PyObject_IsInstance(object, dclass->get_class_def()) != 0);
+        Py_DECREF(class_def);
+      }
+    }
 
     // If dclass is not NULL, the packer is expecting a class object.
     // There are then two cases: (1) the user has supplied a matching
@@ -678,10 +686,7 @@ pack_object(PyObject *object) {
 
     // (3) Otherwise, it is considered to be a class object.
 
-    if (dclass != (DCClass *)NULL && 
-        ((dclass->get_class_def() != (PyObject *)NULL && 
-          PyObject_IsInstance(object, dclass->get_class_def())) ||
-         size < 0)) {
+    if (dclass != (DCClass *)NULL && (is_instance || size < 0)) {
       // The supplied object is either an instance of the expected
       // class object, or the size is less than 0--this is case (1) or
       // (3).
@@ -689,7 +694,7 @@ pack_object(PyObject *object) {
 
     } else if (size >= 0) {
       // The supplied object is not an instance of the expected class
-      // object, and it does return a valid size.  This is case (2).
+      // object, but it does have a size.  This is case (2).
       push();
       int size = PySequence_Size(object);
       for (int i = 0; i < size; i++) {
@@ -1021,20 +1026,19 @@ output_hex_string(ostream &out, const string &str) {
 //               appropriate case of the switch record.
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
-handle_switch(const DCSwitch *dswitch) {
+handle_switch(const DCSwitchParameter *switch_parameter) {
   // First, get the value from the key.  This is either found in the
   // unpack or the pack data, depending on what mode we're in.
   const DCPackerInterface *new_parent = NULL;
 
   if (_mode == M_pack || _mode == M_repack) {
     const char *data = _pack_data.get_data();
-    new_parent = dswitch->apply_switch(data + _push_marker,
-                                       _pack_data.get_length() - _push_marker);
+    new_parent = switch_parameter->apply_switch
+      (data + _push_marker, _pack_data.get_length() - _push_marker);
 
   } else if (_mode == M_unpack) {
-    new_parent = dswitch->apply_switch(_unpack_data + _push_marker,
-                                       _unpack_p - _push_marker);
-
+    new_parent = switch_parameter->apply_switch
+      (_unpack_data + _push_marker, _unpack_p - _push_marker);
   }
 
   if (new_parent == (DCPackerInterface *)NULL) {
@@ -1043,7 +1047,7 @@ handle_switch(const DCSwitch *dswitch) {
     return;
   }
 
-  _last_switch = dswitch;
+  _last_switch = switch_parameter;
 
   // Now substitute in the switch case for the previous parent (which
   // replaces the switch node itself).  This will suddenly make a slew

@@ -24,6 +24,7 @@
 
 class DCFile;
 class DCClass;
+class DCSwitch;
 class DCField;
 class DCAtomicField;
 class DCParameter;
@@ -52,6 +53,7 @@ public:
     double real;
     bool flag;
     DCClass *dclass;
+    DCSwitch *dswitch;
     DCField *field;
     DCAtomicField *atomic;
     DCSubatomicType subatomic;

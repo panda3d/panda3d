@@ -188,10 +188,10 @@ validate_num_nested_fields(int num_nested_fields) const {
 //               typename and identifier.
 ////////////////////////////////////////////////////////////////////
 void DCArrayParameter::
-output_instance(ostream &out, const string &prename, const string &name,
-                const string &postname) const {
+output_instance(ostream &out, bool brief, const string &prename,
+                const string &name, const string &postname) const {
   if (get_typedef() != (DCTypedef *)NULL) {
-    output_typedef_name(out, prename, name, postname);
+    output_typedef_name(out, brief, prename, name, postname);
 
   } else {
     ostringstream strm;
@@ -200,7 +200,8 @@ output_instance(ostream &out, const string &prename, const string &name,
     _array_size_range.output(strm);
     strm << "]";
     
-    _element_type->output_instance(out, prename, name, strm.str() + postname);
+    _element_type->output_instance(out, brief, prename, name, 
+                                   strm.str() + postname);
   }
 }
 

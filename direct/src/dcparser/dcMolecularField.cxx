@@ -102,14 +102,13 @@ add_atomic(DCAtomicField *atomic) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCMolecularField::write
+//     Function: DCMolecularField::output
 //       Access: Public, Virtual
-//  Description: Generates a parseable description of the object to
-//               the indicated output stream.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void DCMolecularField::
-write(ostream &out, bool brief, int indent_level) const {
-  indent(out, indent_level) << _name;
+output(ostream &out, bool brief) const {
+  out << _name;
 
   if (!_fields.empty()) {
     Fields::const_iterator fi = _fields.begin();
@@ -122,6 +121,18 @@ write(ostream &out, bool brief, int indent_level) const {
   }
   
   out << ";";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCMolecularField::write
+//       Access: Public, Virtual
+//  Description: Generates a parseable description of the object to
+//               the indicated output stream.
+////////////////////////////////////////////////////////////////////
+void DCMolecularField::
+write(ostream &out, bool brief, int indent_level) const {
+  indent(out, indent_level);
+  output(out, brief);
   if (!brief) {
     out << "  // field " << _number;
   }

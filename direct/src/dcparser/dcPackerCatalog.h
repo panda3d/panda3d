@@ -23,7 +23,7 @@
 
 class DCPackerInterface;
 class DCPacker;
-class DCSwitch;
+class DCSwitchParameter;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DCPackerCatalog
@@ -92,9 +92,9 @@ private:
   void r_fill_catalog(const string &name_prefix, const DCPackerInterface *field,
                       const DCPackerInterface *parent, int field_index);
   void r_fill_live_catalog(LiveCatalog *live_catalog, DCPacker &packer,
-                           const DCSwitch *&last_switch) const;
+                           const DCSwitchParameter *&last_switch) const;
 
-  const DCPackerCatalog *update_switch_fields(const DCSwitch *dswitch,
+  const DCPackerCatalog *update_switch_fields(const DCSwitchParameter *dswitch,
                                               const DCPackerInterface *switch_case) const;
     
 
@@ -113,7 +113,7 @@ private:
   typedef pmap<const DCPackerInterface *, DCPackerCatalog *> SwitchCatalogs;
   SwitchCatalogs _switch_catalogs;
 
-  typedef pmap<const DCSwitch *, string> SwitchPrefixes;
+  typedef pmap<const DCSwitchParameter *, string> SwitchPrefixes;
   SwitchPrefixes _switch_prefixes;
 
   friend class DCPackerInterface;

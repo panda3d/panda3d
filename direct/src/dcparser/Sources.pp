@@ -24,7 +24,8 @@
      dcPacker.h dcPacker.I \
      dcPackerCatalog.h dcPackerCatalog.I \
      dcPackerInterface.h dcPackerInterface.I \
-     dcParameter.h dcClassParameter.h dcArrayParameter.h dcSimpleParameter.h \
+     dcParameter.h dcClassParameter.h dcArrayParameter.h \
+     dcSimpleParameter.h dcSwitchParameter.h \
      dcNumericRange.h dcNumericRange.I \
      dcSwitch.h \
      dcTypedef.h \
@@ -41,8 +42,8 @@
      dcPacker.cxx \
      dcPackerCatalog.cxx \
      dcPackerInterface.cxx \
-     dcParameter.cxx dcClassParameter.cxx \
-     dcArrayParameter.cxx dcSimpleParameter.cxx \
+     dcParameter.cxx dcClassParameter.cxx dcArrayParameter.cxx \
+     dcSimpleParameter.cxx dcSwitchParameter.cxx \
      dcSwitch.cxx \
      dcTypedef.cxx \
      dcindent.cxx  \

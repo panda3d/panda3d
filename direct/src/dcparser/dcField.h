@@ -66,6 +66,7 @@ PUBLISHED:
 #endif 
 
 public:
+  virtual void output(ostream &out, bool brief) const=0;
   virtual void write(ostream &out, bool brief, int indent_level) const=0;
   virtual void generate_hash(HashGenerator &hashgen) const;
 

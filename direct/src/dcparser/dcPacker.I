@@ -127,7 +127,7 @@ get_current_field() const {
 //               get_current_parent() will contain the particular
 //               SwitchCase that was selected by the switch.
 ////////////////////////////////////////////////////////////////////
-INLINE const DCSwitch *DCPacker::
+INLINE const DCSwitchParameter *DCPacker::
 get_last_switch() const {
   return _last_switch;
 }
@@ -1122,9 +1122,9 @@ advance() {
     // But if the parent is a switch record, we make a special case so
     // we can get the alternate fields.
     if (_current_parent != (DCPackerInterface *)NULL) {
-      const DCSwitch *dswitch = ((DCPackerInterface *)_current_parent)->as_switch();
-      if (dswitch != (DCSwitch *)NULL) {
-        handle_switch(dswitch);
+      const DCSwitchParameter *switch_parameter = ((DCPackerInterface *)_current_parent)->as_switch_parameter();
+      if (switch_parameter != (DCSwitchParameter *)NULL) {
+        handle_switch(switch_parameter);
       }
     }
 

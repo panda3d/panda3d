@@ -3,6 +3,7 @@
 #include "dcClassParameter.cxx"
 #include "dcArrayParameter.cxx"
 #include "dcSimpleParameter.cxx"
+#include "dcSwitchParameter.cxx"
 #include "dcField.cxx"
 #include "dcFile.cxx"
 #include "dcMolecularField.cxx"

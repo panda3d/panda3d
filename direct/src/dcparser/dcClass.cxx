@@ -58,6 +58,16 @@ DCClass::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCClass::as_class
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DCClass *DCClass::
+as_class() {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCClass::get_name
 //       Access: Published
 //  Description: Returns the name of this class.
@@ -263,7 +273,7 @@ set_class_def(PyObject *class_def) {
 PyObject *DCClass::
 get_class_def() const {
   if (_class_def == NULL) {
-    return Py_BuildValue("");
+    return Py_None;
   }
 
   Py_INCREF(_class_def);
@@ -435,7 +445,7 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
       ostringstream strm;
       strm << "Data element " << field_name
            << ", required by dc file for dclass " << get_name()
-           << ", not defined on object.";
+           << ", not defined on object";
       nassert_raise(strm.str());
       return false;
     }
@@ -661,9 +671,12 @@ void DCClass::
 write(ostream &out, bool brief, int indent_level) const {
   indent(out, indent_level);
   if (_is_struct) {
-    out << "struct " << _name;
+    out << "struct";
   } else {
-    out << "dclass " << _name;
+    out << "dclass";
+  }
+  if (!_name.empty()) {
+    out << " " << _name;
   }
 
   if (!_parents.empty()) {
@@ -688,6 +701,48 @@ write(ostream &out, bool brief, int indent_level) const {
   }
 
   indent(out, indent_level) << "};\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::output_instance
+//       Access: Public
+//  Description: Generates a parseable description of the object to
+//               the indicated output stream.
+////////////////////////////////////////////////////////////////////
+void DCClass::
+output_instance(ostream &out, bool brief, const string &prename, 
+                const string &name, const string &postname) const {
+  if (_is_struct) {
+    out << "struct";
+  } else {
+    out << "dclass";
+  }
+  if (!_name.empty()) {
+    out << " " << _name;
+  }
+
+  if (!_parents.empty()) {
+    Parents::const_iterator pi = _parents.begin();
+    out << " : " << (*pi)->_name;
+    ++pi;
+    while (pi != _parents.end()) {
+      out << ", " << (*pi)->_name;
+      ++pi;
+    }
+  }
+
+  out << " {";
+
+  Fields::const_iterator fi;
+  for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
+    (*fi)->output(out, brief);
+    out << "; ";
+  }
+
+  out << "}";
+  if (!prename.empty() || !name.empty() || !postname.empty()) {
+    out << " " << prename << name << postname;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -29,21 +29,9 @@
 ////////////////////////////////////////////////////////////////////
 DCSwitch::
 DCSwitch(const string &name, DCParameter *key_parameter) :
-  DCField(name),
+  _name(name),
   _key_parameter(key_parameter)
 {
-  _has_fixed_byte_size = _key_parameter->has_fixed_byte_size();
-  _fixed_byte_size = _key_parameter->get_fixed_byte_size();
-  _has_fixed_structure = false;
-
-  // The DCSwitch presents just one nested field initially, which is
-  // the key parameter.  When we pack or unpack that, the DCPacker
-  // calls apply_switch(), which returns a new record that presents
-  // the remaining nested fields.
-  _has_nested_fields = true;
-  _num_nested_fields = 1;
-
-  _pack_type = PT_switch;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,6 +58,16 @@ DCSwitch::
 DCSwitch *DCSwitch::
 as_switch() {
   return this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSwitch::get_name
+//       Access: Published
+//  Description: Returns the name of this switch.
+////////////////////////////////////////////////////////////////////
+const string &DCSwitch::
+get_name() const {
+  return _name;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -113,6 +111,17 @@ get_case_by_value(const string &case_value) const {
   }
 
   return -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSwitch::get_case
+//       Access: Published
+//  Description: Returns the DCPackerInterface that packs the nth case.
+////////////////////////////////////////////////////////////////////
+DCPackerInterface *DCSwitch::
+get_case(int n) const {
+  nassertr(n >= 0 && n < (int)_cases.size(), NULL);
+  return _cases[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -171,23 +180,6 @@ get_field_by_name(int case_index, const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::get_nested_field
-//       Access: Public, Virtual
-//  Description: Returns the DCPackerInterface object that represents
-//               the nth nested field.  This may return NULL if there
-//               is no such field (but it shouldn't do this if n is in
-//               the range 0 <= n < get_num_nested_fields()).
-////////////////////////////////////////////////////////////////////
-DCPackerInterface *DCSwitch::
-get_nested_field(int) const {
-  // The DCSwitch presents just one nested field initially, which is
-  // the key parameter.  When we pack or unpack that, the DCPacker
-  // calls apply_switch(), which returns a new record that presents
-  // the remaining nested fields.
-  return _key_parameter;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::add_case
 //       Access: Public
 //  Description: Adds a new case to the switch with the indicated
@@ -225,26 +217,6 @@ add_field(DCField *field) {
   if (!_cases.back()->add_field(field)) {
     return false;
   }
-
-  // See if we now have a fixed byte size for the overall switch.
-  // This will be true only if all of the individual cases have the
-  // same fixed byte size.
-  _fixed_byte_size = _cases.back()->get_fixed_byte_size();
-
-  Cases::const_iterator ci;
-  for (ci = _cases.begin(); ci != _cases.end(); ++ci) {
-    const SwitchCase *dcase = (*ci);
-    if (!dcase->has_fixed_byte_size() || 
-        dcase->get_fixed_byte_size() != _fixed_byte_size) {
-
-      // Nope, we have a variable byte size.
-      _has_fixed_byte_size = false;
-      return true;
-    }
-  }
-
-  // Sonofagun, we do have a fixed byte size.
-  _has_fixed_byte_size = true;
   return true;
 }
 
@@ -276,6 +248,58 @@ apply_switch(const char *value_data, size_t length) const {
 ////////////////////////////////////////////////////////////////////
 void DCSwitch::
 write(ostream &out, bool brief, int indent_level) const {
+  write_instance(out, brief, indent_level, "", "", "");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::output_instance
+//       Access: Public
+//  Description: Generates a parseable description of the object to
+//               the indicated output stream.
+////////////////////////////////////////////////////////////////////
+void DCSwitch::
+output_instance(ostream &out, bool brief, const string &prename, 
+                const string &name, const string &postname) const {
+  out << "switch";
+  if (!_name.empty()) {
+    out << " " << _name;
+  }
+  out << " (";
+  _key_parameter->output(out, brief);
+  out << ") {";
+
+  Cases::const_iterator ci;
+  for (ci = _cases.begin(); ci != _cases.end(); ++ci) {
+    const SwitchCase *dcase = (*ci);
+    out << "case " << _key_parameter->format_data(dcase->_value) << ": ";
+    
+    Fields::const_iterator fi;
+    if (!dcase->_fields.empty()) {
+      fi = dcase->_fields.begin();
+      ++fi;
+      while (fi != dcase->_fields.end()) {
+        (*fi)->output(out, brief);
+        out << "; ";
+        ++fi;
+      }
+    }
+  }
+  out << "}";
+  if (!prename.empty() || !name.empty() || !postname.empty()) {
+    out << " " << prename << name << postname;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSwitch::write_instance
+//       Access: Public, Virtual
+//  Description: Generates a parseable description of the object to
+//               the indicated output stream.
+////////////////////////////////////////////////////////////////////
+void DCSwitch::
+write_instance(ostream &out, bool brief, int indent_level,
+               const string &prename, const string &name, 
+               const string &postname) const {
   indent(out, indent_level)
     << "switch";
   if (!_name.empty()) {
@@ -302,7 +326,11 @@ write(ostream &out, bool brief, int indent_level) const {
     }
   }
   indent(out, indent_level)
-    << "};\n";
+    << "}";
+  if (!prename.empty() || !name.empty() || !postname.empty()) {
+    out << " " << prename << name << postname;
+  }
+  out << ";\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -313,7 +341,7 @@ write(ostream &out, bool brief, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void DCSwitch::
 generate_hash(HashGenerator &hashgen) const {
-  DCField::generate_hash(hashgen);
+  hashgen.add_string(_name);
 
   _key_parameter->generate_hash(hashgen);
 

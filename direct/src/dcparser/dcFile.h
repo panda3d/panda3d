@@ -20,8 +20,9 @@
 #define DCFILE_H
 
 #include "dcbase.h"
-#include "dcClass.h"
 
+class DCClass;
+class DCSwitch;
 class HashGenerator;
 class DCTypedef;
 class DCDeclaration;
@@ -51,6 +52,7 @@ PUBLISHED:
   int get_num_classes() const;
   DCClass *get_class(int n) const;
   DCClass *get_class_by_name(const string &name) const;
+  DCSwitch *get_switch_by_name(const string &name) const;
 
   bool all_objects_valid() const;
 
@@ -68,6 +70,7 @@ PUBLISHED:
 public:
   void generate_hash(HashGenerator &hashgen) const;
   bool add_class(DCClass *dclass);
+  bool add_switch(DCSwitch *dswitch);
   void add_import_module(const string &import_module);
   void add_import_symbol(const string &import_symbol);
   bool add_typedef(DCTypedef *dtypedef);
@@ -76,8 +79,8 @@ private:
   typedef pvector<DCClass *> Classes;
   Classes _classes;
 
-  typedef pmap<string, DCClass *> ClassesByName;
-  ClassesByName _classes_by_name;
+  typedef pmap<string, DCDeclaration *> ThingsByName;
+  ThingsByName _things_by_name;
 
   typedef pvector<string> ImportSymbols;
   class Import {

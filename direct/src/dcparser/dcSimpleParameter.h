@@ -82,7 +82,7 @@ public:
                                bool &pack_error, bool &range_error) const;
   virtual bool unpack_skip(const char *data, size_t length, size_t &p) const;
 
-  virtual void output_instance(ostream &out, const string &prename, 
+  virtual void output_instance(ostream &out, bool brief, const string &prename, 
                                const string &name, const string &postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 

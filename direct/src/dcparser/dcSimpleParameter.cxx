@@ -1942,10 +1942,10 @@ unpack_skip(const char *data, size_t length, size_t &p) const {
 //               typename and identifier.
 ////////////////////////////////////////////////////////////////////
 void DCSimpleParameter::
-output_instance(ostream &out, const string &prename, const string &name, 
-                const string &postname) const {
+output_instance(ostream &out, bool brief, const string &prename,
+                const string &name, const string &postname) const {
   if (get_typedef() != (DCTypedef *)NULL) {
-    output_typedef_name(out, prename, name, postname);
+    output_typedef_name(out, brief, prename, name, postname);
 
   } else {
     out << _type;

@@ -20,7 +20,7 @@
 #define DCSWITCH_H
 
 #include "dcbase.h"
-#include "dcField.h"
+#include "dcDeclaration.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DCSwitch
@@ -29,7 +29,7 @@
 //               alternative unpacking schemes based on the first
 //               field read.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DIRECT DCSwitch : public DCField {
+class EXPCL_DIRECT DCSwitch : public DCDeclaration {
 public:
   DCSwitch(const string &name, DCParameter *key_parameter);
   virtual ~DCSwitch();
@@ -37,10 +37,12 @@ public:
 PUBLISHED:
   virtual DCSwitch *as_switch();
 
+  const string &get_name() const;
   DCParameter *get_key_parameter() const;
 
   int get_num_cases() const;
   int get_case_by_value(const string &case_value) const;
+  DCPackerInterface *get_case(int n) const;
 
   string get_value(int case_index) const;
   int get_num_fields(int case_index) const;
@@ -48,17 +50,21 @@ PUBLISHED:
   DCField *get_field_by_name(int case_index, const string &name) const;
 
 public:
-  virtual DCPackerInterface *get_nested_field(int n) const;
-
   int add_case(const string &value);
   bool add_field(DCField *field);
 
   const DCPackerInterface *apply_switch(const char *value_data, size_t length) const;
 
   virtual void write(ostream &out, bool brief, int indent_level) const;
+  void output_instance(ostream &out, bool brief, const string &prename, 
+                       const string &name, const string &postname) const;
+  void write_instance(ostream &out, bool brief, int indent_level,
+                      const string &prename, const string &name,
+                      const string &postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 
 private:
+  string _name;
   DCParameter *_key_parameter;
 
   typedef pvector<DCField *> Fields;

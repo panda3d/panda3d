@@ -266,15 +266,13 @@ compare_flags(const DCAtomicField &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::write
+//     Function: DCAtomicField::output
 //       Access: Public, Virtual
-//  Description: Generates a parseable description of the object to
-//               the indicated output stream.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void DCAtomicField::
-write(ostream &out, bool brief, int indent_level) const {
-  indent(out, indent_level)
-    << _name << "(";
+output(ostream &out, bool brief) const {
+  out << _name << "(";
 
   if (!_elements.empty()) {
     Elements::const_iterator ei = _elements.begin();
@@ -317,6 +315,18 @@ write(ostream &out, bool brief, int indent_level) const {
   }
 
   out << ";";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::write
+//       Access: Public, Virtual
+//  Description: Generates a parseable description of the object to
+//               the indicated output stream.
+////////////////////////////////////////////////////////////////////
+void DCAtomicField::
+write(ostream &out, bool brief, int indent_level) const {
+  indent(out, indent_level);
+  output(out, brief);
   if (!brief && _number >= 0) {
     out << "  // field " << _number;
   }

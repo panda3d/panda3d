@@ -23,7 +23,7 @@
 #include "dcSubatomicType.h"
 
 class DCField;
-class DCSwitch;
+class DCSwitchParameter;
 class DCClassParameter;
 class DCPackData;
 class DCPackerCatalog;
@@ -77,7 +77,7 @@ PUBLISHED:
   INLINE const string &get_name() const;
 
   virtual DCField *as_field();
-  virtual DCSwitch *as_switch();
+  virtual DCSwitchParameter *as_switch_parameter();
   virtual DCClassParameter *as_class_parameter();
 
 public:
@@ -159,6 +159,9 @@ public:
 
   const DCPackerCatalog *get_catalog() const;
 
+private:
+  void make_catalog();
+
 protected:
   string _name;
   bool _has_fixed_byte_size;
@@ -170,8 +173,6 @@ protected:
   DCPackType _pack_type;
 
 private:
-  void make_catalog();
-
   DCPackerCatalog *_catalog;
 };
 

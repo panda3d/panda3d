@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcFile.h"
+#include "dcClass.h"
+#include "dcSwitch.h"
 #include "dcParserDefs.h"
 #include "dcLexerDefs.h"
 #include "dcTypedef.h"
@@ -65,7 +67,7 @@ clear() {
   
   _classes.clear();
   _imports.clear();
-  _classes_by_name.clear();
+  _things_by_name.clear();
 }
 
 #ifdef WITHIN_PANDA
@@ -273,13 +275,30 @@ get_class(int n) const {
 ////////////////////////////////////////////////////////////////////
 DCClass *DCFile::
 get_class_by_name(const string &name) const {
-  ClassesByName::const_iterator ni;
-  ni = _classes_by_name.find(name);
-  if (ni != _classes_by_name.end()) {
-    return (*ni).second;
+  ThingsByName::const_iterator ni;
+  ni = _things_by_name.find(name);
+  if (ni != _things_by_name.end()) {
+    return (*ni).second->as_class();
   }
 
   return (DCClass *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::get_switch_by_name
+//       Access: Published
+//  Description: Returns the switch that has the indicated name, or
+//               NULL if there is no such switch.
+////////////////////////////////////////////////////////////////////
+DCSwitch *DCFile::
+get_switch_by_name(const string &name) const {
+  ThingsByName::const_iterator ni;
+  ni = _things_by_name.find(name);
+  if (ni != _things_by_name.end()) {
+    return (*ni).second->as_switch();
+  }
+
+  return (DCSwitch *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -426,11 +445,13 @@ generate_hash(HashGenerator &hashgen) const {
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
 add_class(DCClass *dclass) {
-  bool inserted = _classes_by_name.insert
-    (ClassesByName::value_type(dclass->get_name(), dclass)).second;
-
-  if (!inserted) {
-    return false;
+  if (!dclass->get_name().empty()) {
+    bool inserted = _things_by_name.insert
+      (ThingsByName::value_type(dclass->get_name(), dclass)).second;
+    
+    if (!inserted) {
+      return false;
+    }
   }
 
   dclass->set_number(get_num_classes());
@@ -443,6 +464,31 @@ add_class(DCClass *dclass) {
   if (!dclass->is_bogus_class()) {
     _declarations.push_back(dclass);
   }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::add_switch
+//       Access: Public
+//  Description: Adds the newly-allocated switch definition
+//               to the file.  The DCFile becomes the owner of the
+//               pointer and will delete it when it destructs.
+//               Returns true if the switch is successfully added, or
+//               false if there was a name conflict.
+////////////////////////////////////////////////////////////////////
+bool DCFile::
+add_switch(DCSwitch *dswitch) {
+  if (!dswitch->get_name().empty()) {
+    bool inserted = _things_by_name.insert
+      (ThingsByName::value_type(dswitch->get_name(), dswitch)).second;
+    
+    if (!inserted) {
+      return false;
+    }
+  }
+
+  _declarations.push_back(dswitch);
 
   return true;
 }

@@ -27,7 +27,7 @@
 #include "dcPython.h"
 
 class DCClass;
-class DCSwitch;
+class DCSwitchParametera;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DCPacker
@@ -69,7 +69,7 @@ PUBLISHED:
 
   INLINE const DCPackerInterface *get_current_parent() const;
   INLINE const DCPackerInterface *get_current_field() const;
-  INLINE const DCSwitch *get_last_switch() const;
+  INLINE const DCSwitchParameter *get_last_switch() const;
   INLINE DCPackType get_pack_type() const;
 
   void push();
@@ -174,7 +174,7 @@ public:
 
 private:
   INLINE void advance();
-  void handle_switch(const DCSwitch *dswitch);
+  void handle_switch(const DCSwitchParameter *switch_parameter);
   void clear();
 
 #ifdef HAVE_PYTHON
@@ -226,7 +226,7 @@ private:
   // use.
   size_t _pop_marker;
   int _num_nested_fields;
-  const DCSwitch *_last_switch;
+  const DCSwitchParameter *_last_switch;
 
   bool _pack_error;
   bool _range_error;

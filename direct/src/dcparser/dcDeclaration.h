@@ -21,6 +21,9 @@
 
 #include "dcbase.h"
 
+class DCClass;
+class DCSwitch;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : DCDeclaration
 // Description : This is a common interface for a declaration in a DC
@@ -34,6 +37,12 @@
 class EXPCL_DIRECT DCDeclaration {
 public:
   virtual ~DCDeclaration();
+
+PUBLISHED:
+  virtual DCClass *as_class();
+  virtual DCSwitch *as_switch();
+
+public:
   virtual void write(ostream &out, bool brief, int indent_level) const=0;
 };
 

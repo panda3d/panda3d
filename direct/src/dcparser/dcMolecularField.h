@@ -45,6 +45,7 @@ PUBLISHED:
 public:
   void add_atomic(DCAtomicField *atomic);
 
+  virtual void output(ostream &out, bool brief) const;
   virtual void write(ostream &out, bool brief, int indent_level) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 

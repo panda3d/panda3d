@@ -123,16 +123,13 @@ get_nested_field(int n) const {
 //               typename and identifier.
 ////////////////////////////////////////////////////////////////////
 void DCClassParameter::
-output_instance(ostream &out, const string &prename, const string &name,
-                const string &postname) const {
+output_instance(ostream &out, bool brief, const string &prename, 
+                const string &name, const string &postname) const {
   if (get_typedef() != (DCTypedef *)NULL) {
-    output_typedef_name(out, prename, name, postname);
+    output_typedef_name(out, brief, prename, name, postname);
 
   } else {
-    out << get_name();
-    if (!prename.empty() || !name.empty() || !postname.empty()) {
-      out << " " << prename << name << postname;
-    }
+    _dclass->output_instance(out, brief, prename, name, postname);
   }
 }
 

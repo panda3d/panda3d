@@ -1,5 +1,5 @@
 // Filename: dcClassParameter.h
-// Created by:  drose (18Jun04)
+// Created by:  drose (29Jun04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,41 +16,46 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef DCCLASSPARAMETER_H
-#define DCCLASSPARAMETER_H
+#ifndef DCSWITCHPARAMETER_H
+#define DCSWITCHPARAMETER_H
 
 #include "dcbase.h"
 #include "dcParameter.h"
 
-class DCClass;
+class DCSwitch;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : DCClassParameter
-// Description : This represents a class (or struct) object used as a
-//               parameter itself.  This means that all the fields of
-//               the class get packed into the message.
+//       Class : DCSwitchParameter
+// Description : This represents a switch object used as a
+//               parameter itself, which packs the appropriate fields
+//               of the switch into the message.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DIRECT DCClassParameter : public DCParameter {
+class EXPCL_DIRECT DCSwitchParameter : public DCParameter {
 public:
-  DCClassParameter(DCClass *dclass);
-  DCClassParameter(const DCClassParameter &copy);
+  DCSwitchParameter(DCSwitch *dswitch);
+  DCSwitchParameter(const DCSwitchParameter &copy);
 
 PUBLISHED:
-  virtual DCClassParameter *as_class_parameter();
+  virtual DCSwitchParameter *as_switch_parameter();
   virtual DCParameter *make_copy() const;
   virtual bool is_valid() const;
 
-  DCClass *get_class() const;
+  DCSwitch *get_switch() const;
 
 public:
   virtual DCPackerInterface *get_nested_field(int n) const;
 
+  const DCPackerInterface *apply_switch(const char *value_data, size_t length) const;
+
   virtual void output_instance(ostream &out, bool brief, const string &prename, 
                                const string &name, const string &postname) const;
+  virtual void write_instance(ostream &out, bool brief, int indent_level,
+                              const string &prename, const string &name,
+                              const string &postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 
 private:
-  DCClass *_dclass;
+  DCSwitch *_dswitch;
 };
 
 #endif
