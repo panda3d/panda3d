@@ -38,6 +38,9 @@ bool gl_show_fps_meter = config_wgldisplay.GetBool("show-fps-meter", false);
 float gl_fps_meter_update_interval = max(0.5,config_wgldisplay.GetFloat("fps-meter-update-interval", 1.7));
 int gl_forced_pixfmt=config_wgldisplay.GetInt("gl-force-pixfmt", 0);
 
+bool wgl_force_sw_renderer = config_wgldisplay.GetBool("gl-force-software-renderer", false);
+bool wgl_allow_sw_renderer = config_wgldisplay.GetBool("gl-allow-software-renderer", false);
+
 bool bResponsive_minimized_fullscreen_window = config_wgldisplay.GetBool("responsive-minimized-fullscreen-window",false);
 
 // Set this true to not attempt to use any of the function calls that

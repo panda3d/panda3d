@@ -640,6 +640,10 @@ void wglGraphicsWindow::config() {
 
   gl_supports_bgr = (_extensions_str.find("GL_EXT_bgra")!=_extensions_str.npos);
 
+  // hard to imagine a windows-based driver that doesnt support this ordering
+  if(!gl_supports_bgr)
+     wgldisplay_cat.info() << "Note GL_EXT_bgra not supported, textures must be swizzled!\n";
+
   if (gl_show_fps_meter) {
 
       _start_time = timeGetTime();
@@ -791,153 +795,171 @@ void PrintPFD(PIXELFORMATDESCRIPTOR *pfd,char *msg) {
 }
 #endif
 
+// this helper routine looks for either HW-only or SW-only format, but not both
+// returns number of pixelformat
+int wglGraphicsWindow::find_pixfmtnum(bool bLookforHW) {
+    int mask = _props._mask;
+    int want_depth_bits = _props._want_depth_bits;
+    int want_color_bits = _props._want_color_bits;
+    OGLDriverType drvtype;
+
+    if (mask & W_MULTISAMPLE) {
+      wgldisplay_cat.error() << "config() - multisample not supported"<< endl;
+      mask &= ~W_MULTISAMPLE;
+    }
+    
+    if(wgldisplay_cat.is_debug())
+       wgldisplay_cat.debug() << "mask =0x" << (void*) mask << endl;
+
+    PIXELFORMATDESCRIPTOR pfd;
+    ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR));
+    pfd.nSize=sizeof(PIXELFORMATDESCRIPTOR);
+    pfd.nVersion=1;
+
+  //  if (_props._fullscreen) {
+  //  do anything different for fullscrn?
+
+    // just use the pixfmt of the current desktop
+
+    int MaxPixFmtNum=DescribePixelFormat(_hdc, 1, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+    int cur_bpp=GetDeviceCaps(_hdc,BITSPIXEL);
+    int pfnum;
+
+    for(pfnum=1;pfnum<=MaxPixFmtNum;pfnum++) {
+        DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+
+      // official, nvidia sanctioned way.  should be equiv to my algorithm
+      if ((pfd.dwFlags & PFD_GENERIC_FORMAT) != 0) 
+          drvtype = Software;
+      else if (pfd.dwFlags & PFD_GENERIC_ACCELERATED)
+          drvtype = MCD;
+      else
+          drvtype = ICD;
+
+      // skip driver types we are not looking for
+      if((drvtype==Software) && bLookforHW)
+          continue;
+
+      if((drvtype!=Software) && !bLookforHW)
+          continue;
+
+  #if MY_OLD_ALGORITHM
+        if ((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
+            drvtype=MCD;
+         else if (!(pfd.dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd.dwFlags & PFD_GENERIC_FORMAT))
+            drvtype=ICD;
+         else {
+           drvtype=Software;
+           continue;  // skipping all SW fmts
+         }
+  #endif
+
+        if ((pfd.iPixelType == PFD_TYPE_COLORINDEX) && !(mask & W_INDEX))
+            continue;
+
+         DWORD dwReqFlags=(PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW);
+
+         if (wgldisplay_cat.is_debug()) {
+           wgldisplay_cat->debug() << "----------------" << endl;
+
+           if (mask & W_ALPHA)
+             wgldisplay_cat->debug() << "want alpha, pfd says '"
+                         << (int)(pfd.cAlphaBits) << "'" << endl;
+           if (mask & W_DEPTH)
+             wgldisplay_cat->debug() << "want depth, pfd says '"
+                         << (int)(pfd.cDepthBits) << "'" << endl;
+           if (mask & W_STENCIL)
+             wgldisplay_cat->debug() << "want stencil, pfd says '"
+                         << (int)(pfd.cStencilBits) << "'" << endl;
+           wgldisplay_cat->debug() << "final flag check "
+                       << (int)(pfd.dwFlags & dwReqFlags) << " =? "
+                       << (int)dwReqFlags << endl;
+           wgldisplay_cat->debug() << "pfd bits = " << (int)(pfd.cColorBits)
+                       << endl;
+           wgldisplay_cat->debug() << "cur_bpp = " << cur_bpp << endl;
+         }
+
+         if (mask & W_DOUBLE)
+             dwReqFlags|= PFD_DOUBLEBUFFER;
+         if ((mask & W_ALPHA) && (pfd.cAlphaBits==0))
+             continue;
+         if ((mask & W_DEPTH) && (pfd.cDepthBits==0))
+             continue;
+         if ((mask & W_STENCIL) && (pfd.cStencilBits==0))
+             continue;
+
+         if ((pfd.dwFlags & dwReqFlags)!=dwReqFlags)
+             continue;
+
+         // now we ignore the specified want_color_bits for windowed mode
+         // instead we use the current screen depth
+
+         if ((pfd.cColorBits!=cur_bpp) && (!((cur_bpp==16) && (pfd.cColorBits==15)))
+                                      && (!((cur_bpp==32) && (pfd.cColorBits==24))))
+             continue;
+         // we've passed all the tests, go ahead and pick this fmt
+         // note: could go continue looping looking for more alpha bits or more depth bits
+         // so this would pick 16bpp depth buffer, probably not 24bpp
+
+         break;
+    }
+
+    if(pfnum>MaxPixFmtNum)
+        pfnum=0;
+
+    return pfnum;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: choose visual
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int wglGraphicsWindow::choose_visual() {
-
-  int mask = _props._mask;
-  int want_depth_bits = _props._want_depth_bits;
-  int want_color_bits = _props._want_color_bits;
-  OGLDriverType drvtype;
-
-  if (mask & W_MULTISAMPLE) {
-    wgldisplay_cat.info()
-      << "config() - multisample not supported"<< endl;
-    mask &= ~W_MULTISAMPLE;
-  }
-    wgldisplay_cat.info()
-      << "mask =0x" << (void*) mask
-    << endl;
-
-  PIXELFORMATDESCRIPTOR pfd;
-  ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR));
-  pfd.nSize=sizeof(PIXELFORMATDESCRIPTOR);
-  pfd.nVersion=1;
-
-//  if (_props._fullscreen) {
-//  do anything different for fullscrn?
-
-  // just use the pixfmt of the current desktop
-
-  int MaxPixFmtNum=DescribePixelFormat(_hdc, 1, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
-  int cur_bpp=GetDeviceCaps(_hdc,BITSPIXEL);
+int wglGraphicsWindow::choose_visual(void) {
   int pfnum;
+  bool bUsingSoftware=false;
 
-#ifdef _DEBUG
-  if (wgldisplay_cat.is_debug()) {
-    for(pfnum=1;pfnum<=MaxPixFmtNum;pfnum++) {
-      DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+  if(wgl_force_sw_renderer) {
+      pfnum=find_pixfmtnum(false);
 
-      if ((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
-          drvtype=MCD;
-       else if (!(pfd.dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd.dwFlags & PFD_GENERIC_FORMAT))
-          drvtype=ICD;
-       else {
-         drvtype=Software;
-         continue;  // skipping all SW fmts
-       }
+      if(pfnum==0) {
+          wgldisplay_cat.error() << "ERROR: couldn't find compatible software-renderer OpenGL pixfmt, check your window properties!\n";
+          exit(1);
+      }
+      bUsingSoftware=true;
+  } else {
+      pfnum=find_pixfmtnum(true);
+      if(pfnum==0) {
+          if(wgl_allow_sw_renderer) {
+              pfnum=find_pixfmtnum(false);
+              if(pfnum==0) {
+                  wgldisplay_cat.error() << "ERROR: couldn't find HW or Software OpenGL pixfmt appropriate for this desktop!!\n";
+              }
+          } else {
+              wgldisplay_cat.error() << "ERROR: couldn't find HW-accelerated OpenGL pixfmt appropriate for this desktop!!\n";
+          }
 
-       // use wglinfo.exe instead
-       char msg[200];
-       sprintf(msg,"GL PixelFormat[%d]",pfnum);
-       PrintPFD(&pfd,msg);
-    }
-  }
-#endif
-
-  for(pfnum=1;pfnum<=MaxPixFmtNum;pfnum++) {
-      DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
-
-    // official, nvidia sanctioned way.  should be equiv to my algorithm
-    if ((pfd.dwFlags & PFD_GENERIC_FORMAT) != 0) {
-        drvtype = Software;
-        continue;
-    }
-    else if (pfd.dwFlags & PFD_GENERIC_ACCELERATED)
-        drvtype = MCD;
-    else
-        drvtype = ICD;
-
-#if MY_OLD_ALGORITHM
-      if ((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
-          drvtype=MCD;
-       else if (!(pfd.dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd.dwFlags & PFD_GENERIC_FORMAT))
-          drvtype=ICD;
-       else {
-         drvtype=Software;
-         continue;  // skipping all SW fmts
-       }
-#endif
-
-      if (wgldisplay_cat.is_debug())
-          wgldisplay_cat->debug() << "----------------" << endl;
-
-      if ((pfd.iPixelType == PFD_TYPE_COLORINDEX) && !(mask & W_INDEX))
-          continue;
-
-       DWORD dwReqFlags=(PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW);
-
-       if (wgldisplay_cat.is_debug()) {
-         if (mask & W_ALPHA)
-           wgldisplay_cat->debug() << "want alpha, pfd says '"
-                       << (int)(pfd.cAlphaBits) << "'" << endl;
-         if (mask & W_DEPTH)
-           wgldisplay_cat->debug() << "want depth, pfd says '"
-                       << (int)(pfd.cDepthBits) << "'" << endl;
-         if (mask & W_STENCIL)
-           wgldisplay_cat->debug() << "want stencil, pfd says '"
-                       << (int)(pfd.cStencilBits) << "'" << endl;
-         wgldisplay_cat->debug() << "final flag check "
-                     << (int)(pfd.dwFlags & dwReqFlags) << " =? "
-                     << (int)dwReqFlags << endl;
-         wgldisplay_cat->debug() << "pfd bits = " << (int)(pfd.cColorBits)
-                     << endl;
-         wgldisplay_cat->debug() << "cur_bpp = " << cur_bpp << endl;
-       }
-
-       if (mask & W_DOUBLE)
-           dwReqFlags|= PFD_DOUBLEBUFFER;
-       if ((mask & W_ALPHA) && (pfd.cAlphaBits==0))
-           continue;
-       if ((mask & W_DEPTH) && (pfd.cDepthBits==0))
-           continue;
-       if ((mask & W_STENCIL) && (pfd.cStencilBits==0))
-           continue;
-
-       if ((pfd.dwFlags & dwReqFlags)!=dwReqFlags)
-           continue;
-
-       // now we ignore the specified want_color_bits for windowed mode
-       // instead we use the current screen depth
-
-       if ((pfd.cColorBits!=cur_bpp) && (!((cur_bpp==16) && (pfd.cColorBits==15)))
-                                    && (!((cur_bpp==32) && (pfd.cColorBits==24))))
-           continue;
-       // we've passed all the tests, go ahead and pick this fmt
-       // note: could go continue looping looking for more alpha bits or more depth bits
-       // so this would pick 16bpp depth buffer, probably not 24bpp
-
-       break;
+          if(pfnum==0) {
+            wgldisplay_cat.error() 
+              << "make sure OpenGL driver is installed, and try reducing the screen size, reducing the\n"
+              << "desktop screen pixeldepth to 16bpp,and check your panda window properties\n";
+            exit(1);
+          }
+          bUsingSoftware=true;
+      }
   }
 
-  if (pfnum>MaxPixFmtNum) {
-      wgldisplay_cat.error() << "ERROR: couldn't find HW-accelerated OpenGL pixfmt appropriate for this desktop!!\n";
-      wgldisplay_cat.error() << "make sure OpenGL driver is installed, and try reducing the screen size\n";
-      if (cur_bpp>16)
-        wgldisplay_cat.error() << "or reducing the desktop screen pixeldepth\n";
-      exit(1);
+  if(wgl_allow_sw_renderer && bUsingSoftware) {
+      wgldisplay_cat.info() << "Couldn't find compatible OGL HW pixelformat, using software rendering...\n";
   }
+
+  DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &_pixelformat);
 
   #ifdef _DEBUG
     char msg[200];
     sprintf(msg,"Selected GL PixelFormat is #%d",pfnum);
-    PrintPFD(&pfd,msg);
+    PrintPFD(&_pixelformat,msg);
   #endif
-
-  memcpy(&_pixelformat,&pfd,sizeof(PIXELFORMATDESCRIPTOR));
 
   return pfnum;
 }

@@ -38,6 +38,8 @@ extern int gl_forced_pixfmt;
 extern bool bResponsive_minimized_fullscreen_window;
 extern bool support_wiregl;
 extern bool ime_composition_w;
+extern bool wgl_force_sw_renderer;
+extern bool wgl_allow_sw_renderer;
 
 extern EXPCL_PANDAGL void init_libwgldisplay();
 

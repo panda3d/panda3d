@@ -93,9 +93,10 @@ protected:
 //  PIXELFORMATDESCRIPTOR* try_for_visual(wglGraphicsPipe *pipe,
 //                              int mask, int want_depth_bits = 1, int want_color_bits = 1);
 //  static void get_config(PIXELFORMATDESCRIPTOR* visual, int attrib, int *value);
-  int choose_visual();
+  int choose_visual(void);
+  int find_pixfmtnum(bool bLookforHW);
   virtual void config();
-  void setup_colormap();
+  void setup_colormap(void);
 
   void enable_mouse_input(bool val);
   void enable_mouse_motion(bool val);
