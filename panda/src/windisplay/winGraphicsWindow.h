@@ -140,8 +140,8 @@ private:
   static bool _cursor_hidden;
   static bool _got_saved_params;
   static int _saved_mouse_trails;
-  static bool _saved_cursor_shadow;
-  static bool _saved_mouse_vanish;
+  static BOOL _saved_cursor_shadow;
+  static BOOL _saved_mouse_vanish;
 
 public:
   static TypeHandle get_class_type() {

@@ -45,8 +45,8 @@ bool WinGraphicsWindow::_cursor_hidden = false;
 // window's client area.
 bool WinGraphicsWindow::_got_saved_params = false;
 int WinGraphicsWindow::_saved_mouse_trails;
-bool WinGraphicsWindow::_saved_cursor_shadow;
-bool WinGraphicsWindow::_saved_mouse_vanish;
+BOOL WinGraphicsWindow::_saved_cursor_shadow;
+BOOL WinGraphicsWindow::_saved_mouse_vanish;
 
 static const char * const errorbox_title = "Panda3D Error";
 
