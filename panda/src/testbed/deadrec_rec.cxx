@@ -9,6 +9,7 @@
 #include <queuedConnectionListener.h>
 #include <modelPool.h>
 #include <ipc_thread.h>
+#include <transformTransition.h>
 
 #include <dconfig.h>
 
@@ -24,6 +25,7 @@ typedef set<PT(Connection)> Clients;
 
 static PT_Node smiley;
 static RenderRelation* my_arc;
+static LPoint3f my_pos;
 static int hostport = deadrec.GetInt("deadrec-rec-port", 0xdead);
 static thread* monitor;
 static bool stop_monitoring;
@@ -31,6 +33,29 @@ QueuedConnectionListener* listener;
 QueuedConnectionManager cm;
 Clients clients;
 QueuedConnectionReader* reader;
+
+enum TelemetryToken { T_End = 1, T_Pos, T_Vel, T_Num };
+
+static inline unsigned char* get_uint8(unsigned char* b, unsigned char& v) {
+  v = b[0];
+  return ++b;
+}
+
+static inline unsigned char* get_float64(unsigned char* b, float& f) {
+  unsigned char t[8]; // 64-bits
+  memcpy(t, b, 8);
+  if (sizeof(float)==8) {
+    memcpy(&f, t, 8);
+  } else if (sizeof(double)==8) {
+    double d;
+    memcpy(&d, t, 8);
+    f = d;
+  } else {
+    deadrec_cat->error() << "neither float or double are 64-bit" << endl;
+    f = 0.;
+  }
+  return b+8;
+}
 
 static void* internal_monitor(void*) {
   if (deadrec_cat->is_debug())
@@ -63,11 +88,32 @@ static void* internal_monitor(void*) {
     while (reader->data_available()) {
       NetDatagram datagram;
       if (reader->get_data(datagram)) {
-	if (deadrec_cat->is_debug()) {
-	  deadrec_cat->debug() << "Got datagram ";
-	  datagram.dump_hex(deadrec_cat->debug(false));
-	  deadrec_cat->debug(false) << " from " << datagram.get_address()
-				    << endl;
+	unsigned char* buff = (unsigned char*)(datagram.get_data());
+	unsigned char byte;
+	TelemetryToken t;
+	buff = get_uint8(buff, byte);
+	t = (TelemetryToken)byte;
+	while (t != T_End) {
+	  switch (t) {
+	  case T_Pos:
+	    float x, y, z;
+	    buff = get_float64(get_float64(get_float64(buff, x), y), z);
+	    my_pos = LPoint3f(x, y, z);
+	    break;
+	  case T_Vel:
+	    if (deadrec_cat->is_debug())
+	      deadrec_cat->debug() << "got T_Num" << endl;
+	    break;
+	  case T_Num:
+	    if (deadrec_cat->is_debug())
+	      deadrec_cat->debug() << "got T_Num" << endl;
+	    break;
+	  default:
+	    deadrec_cat->warning() << "got bad token in datagram (" << (int)t
+				   << ")" << endl;
+	  }
+	  buff = get_uint8(buff, byte);
+	  t = (TelemetryToken)byte;
 	}
 	// unpack and deal with the datagram now
 	// DO THIS
@@ -107,8 +153,19 @@ static void deadrec_setup(void) {
 			   thread::PRIORITY_NORMAL);
 }
 
+static void update_smiley(void) {
+  LMatrix4f mat = LMatrix4f::translate_mat(my_pos);
+  my_arc->set_transition(new TransformTransition(mat));
+}
+
+static void event_frame(CPT_Event) {
+  update_smiley();
+}
+
 static void deadrec_keys(EventHandler& eh) {
   deadrec_setup();
+
+  eh.add_hook("NewFrame", event_frame);
 }
 
 int main(int argc, char* argv[]) {

@@ -37,7 +37,7 @@ PUBLISHED:
   float get_t(void) const;
   bool is_done(void) const;
   LerpFunctor* get_functor(void) const;
-  void set_end_event(std::string&);
+  void set_end_event(const std::string&);
   std::string get_end_event(void) const;
 
 public:
@@ -88,7 +88,7 @@ PUBLISHED:
   LerpFunctor* get_functor(void) const;
   void set_t(float);
   float get_t(void) const;
-  void set_end_event(std::string&);
+  void set_end_event(const std::string&);
   std::string get_end_event(void) const;
 
 public:

@@ -85,7 +85,7 @@ LerpFunctor* Lerp::get_functor(void) const {
   return _func;
 }
 
-void Lerp::set_end_event(std::string& event) {
+void Lerp::set_end_event(const std::string& event) {
   _event = event;
 }
 
@@ -156,7 +156,7 @@ float AutonomousLerp::get_t(void) const {
   return _t;
 }
 
-void AutonomousLerp::set_end_event(std::string& event) {
+void AutonomousLerp::set_end_event(const std::string& event) {
   _event = event;
 }
 

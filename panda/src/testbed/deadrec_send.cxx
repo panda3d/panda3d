@@ -7,6 +7,8 @@
 #include <renderRelation.h>
 #include <queuedConnectionManager.h>
 #include <modelPool.h>
+#include <transformTransition.h>
+#include <lerp.h>
 
 #include <dconfig.h>
 
@@ -29,7 +31,7 @@ static QueuedConnectionManager cm;
 PT(Connection) conn;
 ConnectionWriter* writer;
 
-enum TelemetryToken { T_End, T_Pos, T_Vel, T_Num };
+enum TelemetryToken { T_End = 1, T_Pos, T_Vel, T_Num };
 
 static inline NetDatagram& add_pos(NetDatagram& d) {
   d.add_uint8(T_Pos);
@@ -95,36 +97,37 @@ enum MotionType { M_None, M_Line, M_Box, M_Circle, M_Random };
 PT(AutonomousLerp) curr_lerp;
 MotionType curr_type;
 
+class MyPosFunctor : public LPoint3fLerpFunctor {
+public:
+  MyPosFunctor(LPoint3f start, LPoint3f end) : LPoint3fLerpFunctor(start,
+								   end) {}
+  MyPosFunctor(const MyPosFunctor& p) : LPoint3fLerpFunctor(p) {}
+  virtual ~MyPosFunctor(void) {}
+  virtual void operator()(float t) {
+    LPoint3f p = interpolate(t);
+    my_vel = p - my_pos;
+    my_pos = p;
+    update_smiley();
+  }
+public:
+  // type stuff
+  static TypeHandle get_class_type(void) { return _type_handle; }
+  static void init_type(void) {
+    LPoint3fLerpFunctor::init_type();
+    register_type(_type_handle, "MyPosFunctor",
+		  LPoint3fLerpFunctor::get_class_type());
+  }
+  virtual TypeHandle get_type(void) const { return get_class_type(); }
+  virtual TypeHandle force_init_type(void) {
+    init_type();
+    return get_class_type();
+  }
+private:
+  static TypeHandle _type_handle;
+};
+TypeHandle MyPosFunctor::_type_handle;
+
 static void run_line(void) {
-  class MyPosFunctor : public LPoint3fLerpFunctor {
-  public:
-    MyPosFunctor(LPoint3f start, LPoint3f end) : LPoint3fLerpFunctor(start,
-								     end) {}
-    MyPosFunctor(const MyPosFunctor& p) : LPoint3fLerpFunctor(p) {}
-    virtual ~MyPosFunctor(void) {}
-    virtual void operator()(float t) {
-      LPoint3f p = interpolate(t);
-      my_vel = p - my_pos;
-      my_pos = p;
-      update_smiley();
-    }
-  public:
-    // type stuff
-    static TypeHandle get_class_type(void) { return _type_handle; }
-    static void init_type(void) {
-      LPoint3fLerpFunctor::init_type();
-      register_type(_type_handle, "MyPosFunctor",
-		    LPoint3fLerpFunctor::get_class_type());
-    }
-    virtual TypeHandle get_type(void) const { return get_class_type(); }
-    virtual TypeHandle force_init_type(void) {
-      init_type();
-      return get_class_type();
-    }
-  private:
-    static TypeHandle _type_handle;
-  };
-  static TypeHandle MyPosFunctor::_type_handle;
   static bool inited = false;
   static bool where = false;
 
@@ -133,13 +136,15 @@ static void run_line(void) {
     inited = true;
   }
   if (where) {
-    MyPosFunctor func(my_pos, LPoint3f:rfu(10., 0., 0.));
-    curr_lerp = new AutonomousLerp(func, 5., new NoBlendType(), event_handler);
+    curr_lerp =
+      new AutonomousLerp(new MyPosFunctor(my_pos, LPoint3f::rfu(10., 0., 0.)),
+			 5., new NoBlendType(), &event_handler);
     curr_lerp->set_end_event("lerp_done");
     curr_lerp->start();
   } else {
-    MyPosFunctor func(my_pos, LPoint3f:rfu(-10., 0., 0.));
-    curr_lerp = new AutonomousLerp(func, 5., new NoBlendType(), event_handler);
+    curr_lerp =
+      new AutonomousLerp(new MyPosFunctor(my_pos, LPoint3f::rfu(-10., 0., 0.)),
+			 5., new NoBlendType(), &event_handler);
     curr_lerp->set_end_event("lerp_done");
     curr_lerp->start();
   }
@@ -147,6 +152,8 @@ static void run_line(void) {
 }
 
 static void handle_lerp(void) {
+  if (curr_lerp != (AutonomousLerp*)0L)
+    curr_lerp->stop();
   curr_lerp = (AutonomousLerp*)0L;
   switch (curr_type) {
   case M_None:
@@ -161,7 +168,7 @@ static void handle_lerp(void) {
   case M_Random:
     break;
   default:
-    deadrec_cat->error() << "unknown motion type (" << curr_type << ")"
+    deadrec_cat->error() << "unknown motion type (" << (int)curr_type << ")"
 			 << endl;
   }
 }
@@ -171,7 +178,7 @@ static void event_lerp(CPT_Event) {
 }
 
 static void event_1(CPT_Event) {
-  curr_lerp = M_Line;
+  curr_type = M_Line;
   handle_lerp();
 }
 
