@@ -37,6 +37,7 @@
 class EXPCL_PANDAEXPRESS StreamWriter {
 public:
   INLINE StreamWriter(ostream &out);
+PUBLISHED:
   INLINE StreamWriter(ostream *out);
   INLINE StreamWriter(const StreamWriter &copy);
   INLINE void operator = (const StreamWriter &copy);
