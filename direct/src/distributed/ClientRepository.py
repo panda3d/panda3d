@@ -120,6 +120,7 @@ class ClientRepository(DirectObject.DirectObject):
     def handleUpdateField(self, di):
         # Get the DO Id
         doId = di.getArg(STUint32)
+        print("Updating " + str(doId))
         # Find the DO
         assert(self.doId2do.has_key(doId))
         do = self.doId2do[doId]
