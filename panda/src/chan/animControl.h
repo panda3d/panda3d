@@ -53,6 +53,7 @@ PUBLISHED:
   void play(int from, int to, const CPT_Event &stop_event = NULL);
   void loop(bool restart);
   void loop(bool restart, int from, int to);
+  void pingpong(bool restart, int from, int to);
   void stop();
   void pose(int frame);
 
@@ -92,6 +93,7 @@ private:
     AT_event,
     AT_stop,
     AT_jump,
+    AT_reverse,
   };
 
 #ifdef WIN32_VC
@@ -113,6 +115,7 @@ private:
   static void insert_event_action(Actions &actions, int frame, const CPT_Event &event);
   static void insert_stop_action(Actions &actions, int frame);
   static void insert_jump_action(Actions &actions, int frame, int jump_to);
+  static void insert_reverse_action(Actions &actions, int frame);
 
   void set_frame(double frame);
 

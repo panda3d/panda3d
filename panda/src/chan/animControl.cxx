@@ -191,6 +191,33 @@ loop(bool restart, int from, int to) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimControl::pingpong
+//       Access: Public
+//  Description: Loops the animation from the frame "from" to and
+//               including the frame "to", and then back in the
+//               opposite direction, indefinitely.
+////////////////////////////////////////////////////////////////////
+void AnimControl::
+pingpong(bool restart, int from, int to) {
+  nassertv(get_num_frames() > 0);
+
+  nassertv(from >= 0 && from < get_num_frames());
+  nassertv(to >= 0 && to < get_num_frames());
+  _as_of_time = ClockObject::get_global_clock()->get_frame_time();
+  _playing = true;
+
+  _actions = _user_actions;
+
+  insert_reverse_action(_actions, (to-1+get_num_frames())%get_num_frames());
+  insert_reverse_action(_actions, (to+1)%get_num_frames());
+
+  get_part()->control_activated(this);
+  if (restart) {
+    set_frame(from);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::stop
 //       Access: Public
 //  Description: Stops a currently playing or looping animation right
@@ -466,6 +493,20 @@ insert_jump_action(Actions &actions, int frame, int jump_to) {
   actions.insert(pair<int, Action>(frame, new_action));
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AnimControl::insert_reverse_action
+//       Access: Private, Static
+//  Description: Inserts a "reverse" action at the indicated frame
+//               number.  The animation will stop and go back the
+//               other direction when it reaches the indicated frame.
+////////////////////////////////////////////////////////////////////
+void AnimControl::
+insert_reverse_action(Actions &actions, int frame) {
+  Action new_action;
+  new_action._type = AT_reverse;
+  actions.insert(pair<int, Action>(frame, new_action));
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::set_frame
@@ -596,6 +637,7 @@ do_action(int frame, const Action &action,
   switch (action._type) {
   case AT_stop:
   case AT_jump:
+  case AT_reverse:
     sequence_frame = frame;
     sequence_action = &action;
     break;
@@ -630,6 +672,10 @@ do_sequence_action(int, const Action &action) {
     set_frame(action._jump_to);
     break;
 
+  case AT_reverse:
+    _play_rate = -_play_rate;
+    break;
+
   case AT_event:
   default:
     chan_cat.error() << "Invalid sequence action!\n";
@@ -655,6 +701,10 @@ output(ostream &out) const {
 
   case AT_jump:
     out << "jump to " << _jump_to;
+    break;
+
+  case AT_reverse:
+    out << "reverse";
     break;
 
   default:
