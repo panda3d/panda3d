@@ -14,7 +14,6 @@
 #define LOCAL_LIBS gsgbase display express gobj
 #define OTHER_LIBS dtoolconfig dtool
 
-#if $[BUILD_DX8]
 #begin metalib_target
   #define TARGET pandadx8
   #define SOURCES pandadx8.cxx
@@ -22,5 +21,4 @@
      ddraw.lib d3d8.lib dxguid.lib d3dx8.lib dxerr8.lib winmm.lib \
      kernel32.lib gdi32.lib user32.lib advapi32.lib $[WIN_SYS_LIBS]  
 #end metalib_target
-#endif
 
