@@ -30,6 +30,13 @@
 // includes gl.h).
 #include "glxext.h"
 
+// These typedefs are declared in glxext.h, but we must repeat them
+// here, mainly because they will not be included from glxext.h if the
+// system GLX version matches or exceeds the GLX version in which
+// these functions are defined, and the system glx.h sometimes doesn't
+// declare these typedefs.
+typedef __GLXextFuncPtr (* PFNGLXGETPROCADDRESSPROC) (const GLubyte *procName);
+
 ////////////////////////////////////////////////////////////////////
 //       Class : glxGraphicsStateGuardian
 // Description : A tiny specialization on GLGraphicsStateGuardian to

@@ -39,6 +39,16 @@
 class PlaneNode;
 class Light;
 
+// These typedefs are declared in glext.h, but we must repeat them
+// here, mainly because they will not be included from glext.h if the
+// system GL version matches or exceeds the GL version in which these
+// functions are defined, and the system gl.h sometimes doesn't
+// declare these typedefs.
+typedef void (APIENTRYP PFNGLACTIVETEXTUREPROC) (GLenum texture);
+typedef void (APIENTRYP PFNGLMULTITEXCOORD2FVPROC) (GLenum target, const GLfloat *v);
+typedef void (APIENTRYP PFNGLBLENDEQUATIONPROC) (GLenum mode);
+typedef void (APIENTRYP PFNGLBLENDCOLORPROC) (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
+
 ////////////////////////////////////////////////////////////////////
 //       Class : GLGraphicsStateGuardian
 // Description : A GraphicsStateGuardian specialized for rendering
@@ -279,8 +289,8 @@ public:
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
   PFNGLMULTITEXCOORD2FVPROC _glMultiTexCoord2fv;
 
-  PFNGLBLENDEQUATIONEXTPROC _glBlendEquation;
-  PFNGLBLENDCOLOREXTPROC _glBlendColor;
+  PFNGLBLENDEQUATIONPROC _glBlendEquation;
+  PFNGLBLENDCOLORPROC _glBlendColor;
 
   GLenum _edge_clamp;
   GLenum _border_clamp;

@@ -347,7 +347,7 @@ reset() {
 
   _glBlendEquation = NULL;
   if (has_extension("GL_EXT_blend_minmax") || is_at_least_version(1, 2)) {
-    _glBlendEquation = (PFNGLBLENDEQUATIONEXTPROC)
+    _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
       get_extension_func(GLPREFIX_QUOTED, "BlendEquationEXT");
     if (_glBlendEquation == NULL) {
       GLCAT.warning()
@@ -360,7 +360,7 @@ reset() {
 
   _glBlendColor = NULL;
   if (has_extension("GL_EXT_blend_color") || is_at_least_version(1, 2)) {
-    _glBlendColor = (PFNGLBLENDCOLOREXTPROC)
+    _glBlendColor = (PFNGLBLENDCOLORPROC)
       get_extension_func(GLPREFIX_QUOTED, "BlendColorEXT");
     if (_glBlendColor == NULL) {
       GLCAT.warning()
@@ -3993,6 +3993,7 @@ get_fog_mode_type(Fog::Mode m) {
 GLenum CLP(GraphicsStateGuardian)::
 get_blend_equation_type(ColorBlendAttrib::Mode mode) {
   switch (mode) {
+  case ColorBlendAttrib::M_none:
   case ColorBlendAttrib::M_add:
     return GL_FUNC_ADD;
     
