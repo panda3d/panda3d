@@ -3321,23 +3321,36 @@ extern char *ConvDDErrorToString(const HRESULT &error) {
 
 // Global system parameters we want to modify during our run
 static int iMouseTrails;
-static bool bCursorShadowOn;
+static bool bCursorShadowOn,bMouseVanish;
+
+#ifndef SPI_GETMOUSEVANISH
+// get of this when we upgrade to winxp winuser.h
+#define SPI_GETMOUSEVANISH                  0x1020
+#define SPI_SETMOUSEVANISH                  0x1021
+#endif
 
 void set_global_parameters(void) {
-  // turn off mousetrails and cursor shadow.
+  // turn off mousetrails and cursor shadow and mouse cursor vanish
   // cursor shadow causes cursor blink and reduced frame rate due to lack of driver support for 
   // cursor alpha blending
 
-  // this is a win2k/xp only param, could use GetVersionEx to do it just for win2k
+  // this is a win2k/xp only param, could use GetVersionEx to do it just for win2k,
+  // but since it is just a param it will just cause a silent error on other OS's
+  // that should be ok
   SystemParametersInfo(SPI_GETCURSORSHADOW,NULL,&bCursorShadowOn,NULL);
   SystemParametersInfo(SPI_SETCURSORSHADOW,NULL,(PVOID)false,NULL);
 
   SystemParametersInfo(SPI_GETMOUSETRAILS,NULL,&iMouseTrails,NULL);
   SystemParametersInfo(SPI_SETMOUSETRAILS,NULL,(PVOID)0,NULL);
+
+  // this is ME/XP only feature
+  SystemParametersInfo(SPI_GETMOUSEVANISH,NULL,&bMouseVanish,NULL);
+  SystemParametersInfo(SPI_SETMOUSEVANISH,NULL,(PVOID)false,NULL);
 }
 
 void restore_global_parameters(void) {
   SystemParametersInfo(SPI_SETCURSORSHADOW,NULL,(PVOID)bCursorShadowOn,NULL);
   SystemParametersInfo(SPI_SETMOUSETRAILS,NULL,(PVOID)iMouseTrails,NULL);
+  SystemParametersInfo(SPI_SETMOUSEVANISH,NULL,(PVOID)bMouseVanish,NULL);
 }
 
