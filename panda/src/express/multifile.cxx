@@ -418,6 +418,7 @@ repack() {
   Filename orig_name = _multifile_name;
   temp.close();
   close();
+  orig_name.unlink();
   if (!temp_filename.rename_to(orig_name)) {
     express_cat.info()
       << "Unable to rename temporary file " << temp_filename << " to "
@@ -666,7 +667,7 @@ extract_subfile_to(int index, ostream &out) {
     byte = in.get();
   }
 
-  bool failed = in.fail();
+  bool failed = (in.fail() && !in.eof());
   close_subfile();
   nassertr(!failed, false);
 
@@ -716,7 +717,7 @@ open_read_subfile(int index) {
   // that references into the open Multifile istream.
   nassertr(_open_subfile->_data_start != (streampos)0, empty_stream);
   _subfile_substream.open(_read, _open_subfile->_data_start,
-                          _open_subfile->_data_start + _open_subfile->_data_length); 
+                          _open_subfile->_data_start + (streampos)_open_subfile->_data_length); 
   return _subfile_substream;
 }
 

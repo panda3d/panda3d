@@ -110,7 +110,7 @@ seekoff(streamoff off, ios::seek_dir dir, int mode) {
 //               internal buffer is filled, plus one character.
 ////////////////////////////////////////////////////////////////////
 int SubStreamBuf::
-SubStreamBuf::overflow(int c) {
+overflow(int c) {
   // We don't support ostream.
 
   /*
@@ -178,7 +178,7 @@ underflow() {
     
     size_t buffer_size = egptr() - eback();
     size_t num_bytes;
-    if (_end - _cur > buffer_size) {
+    if (_end - _cur > (streampos)buffer_size) {
       // We have enough bytes in the input stream to fill our buffer.
       num_bytes = buffer_size;
     } else {
