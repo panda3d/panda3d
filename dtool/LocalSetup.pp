@@ -79,6 +79,13 @@ $[define] HAVE_ZLIB 1
 $[undef] HAVE_ZLIB
 #endif
 
+/* Define if we have sox libst installed.  */
+#if $[HAVE_SOXST]
+$[define] HAVE_SOXST 1
+#else
+$[undef] HAVE_SOXST
+#endif
+
 /* Define if we have OpenGL installed and want to build for GL.  */
 #if $[HAVE_GL]
 $[define] HAVE_GL 1

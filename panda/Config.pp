@@ -107,6 +107,11 @@
 #define ZLIB_INCLUDE
 #define ZLIB_LIB
 
+// Is the sox libst library installed, and where?
+#define HAVE_SOXST 1
+#define SOXST_INCLUDE
+#define SOXST_LIB
+
 // Is OpenGL installed, and where?
 #define HAVE_GL 1
 #define GL_INCLUDE
