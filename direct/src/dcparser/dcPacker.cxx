@@ -705,14 +705,17 @@ pack_object(PyObject *object) {
     bool is_instance = false;
 
     const DCClass *dclass = NULL;
-    const DCClassParameter *class_param = get_current_field()->as_class_parameter();
-    if (class_param != (DCClassParameter *)NULL) {
-      dclass = class_param->get_class();
-
-      if (dclass->has_class_def()) {
-        PyObject *class_def = dclass->get_class_def();
-        is_instance = (PyObject_IsInstance(object, dclass->get_class_def()) != 0);
-        Py_DECREF(class_def);
+    const DCPackerInterface *current_field = get_current_field();
+    if (current_field != (DCPackerInterface *)NULL) {
+      const DCClassParameter *class_param = get_current_field()->as_class_parameter();
+      if (class_param != (DCClassParameter *)NULL) {
+        dclass = class_param->get_class();
+        
+        if (dclass->has_class_def()) {
+          PyObject *class_def = dclass->get_class_def();
+          is_instance = (PyObject_IsInstance(object, dclass->get_class_def()) != 0);
+          Py_DECREF(class_def);
+        }
       }
     }
 
