@@ -606,8 +606,8 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
 
 #end file
 
-// Rules to compile C++ files that appear on a static library or in an
-// executable.
+// Rules to compile generated C++ files that appear on a static
+// library or in an executable.
 #foreach file $[sort $[yxx_st_sources] $[lxx_st_sources]]
 #define target $[patsubst %.lxx %.yxx,$[st_dir]/%.o,$[file]]
 #define source $[patsubst %.lxx %.yxx,%.cxx,$[file]]

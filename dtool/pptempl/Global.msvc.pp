@@ -55,8 +55,8 @@
 #defer CDEFINES_OPT3
 #defer CDEFINES_OPT4 NDEBUG
 
-#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] /MDd /GZ /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
-#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] /MDd /Gi- /GZ /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] /MDd /Gi- /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
 #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] /MD /Gi-
 #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] /MD /Gi-
 
@@ -64,6 +64,14 @@
 #defer LDFLAGS_OPT2 /debug /incremental:no
 #defer LDFLAGS_OPT3 /fixed:no
 #defer LDFLAGS_OPT4 /fixed:no
+
+// $[dllext] will be "_d" for debug builds, and empty for non-debug
+// builds.  This is the extra bit of stuff we tack on to the end of a
+// dll name.  We name the debug dll's file_d.dll, partly to be
+// consistent with Python's convention, and partly for our own benefit
+// to differentiate debug-built from non-debug-built dll's (since the
+// distinction is so important in Windows).
+#define dllext $[if $[<= $[OPTIMIZE],2],_d]
 
 #defer interrogate_ipath $[decygwin %,-I"%",$[target_ipath]]
 #defer interrogate_spath $[decygwin %,-S"%",$[install_parser_inc_dir]]
@@ -75,8 +83,11 @@
 #defer COMPILE_C cl /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[ipath]] $[flags] $[extra_cflags] $[source]
 #defer COMPILE_C++ $[COMPILE_C]
 
-#defer SHARED_LIB_C link $[LDFLAGS_OPT$[OPTIMIZE]] $[extra_so_ldflags] $[sources] $[decygwin %,-LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
+#defer STATIC_LIB_C lib /nologo $[sources] /OUT:"$[osfilename $[target]]" 
+#defer STATIC_LIB_C++ $[STATIC_LIB_C]
+
+#defer SHARED_LIB_C link $[LDFLAGS_OPT$[OPTIMIZE]] $[extra_so_ldflags] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
 
-#defer LINK_BIN_C link $[LDFLAGS_OPT$[OPTIMIZE]] $[extra_bin_ldflags] $[sources] $[decygwin %,-LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
+#defer LINK_BIN_C link $[LDFLAGS_OPT$[OPTIMIZE]] $[extra_bin_ldflags] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
 #defer LINK_BIN_C++ $[LINK_BIN_C]

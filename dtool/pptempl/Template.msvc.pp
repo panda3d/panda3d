@@ -53,8 +53,8 @@
 // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
 // list of binaries that are to be built only when specifically asked
 // for.
-#define lib_targets $[patsubst %,$[so_dir]/lib%.dll,$[TARGET(metalib_target noinst_lib_target)] $[real_lib_targets]]
-#define static_lib_targets $[TARGET(static_lib_target):%=$[st_dir]/lib%.lib]
+#define lib_targets $[patsubst %,$[so_dir]/lib%$[dllext].dll,$[TARGET(metalib_target noinst_lib_target)] $[real_lib_targets]]
+#define static_lib_targets $[TARGET(static_lib_target):%=$[st_dir]/lib%$[dllext].lib]
 #define bin_targets \
     $[TARGET(bin_target noinst_bin_target):%=$[st_dir]/%.exe] \
     $[TARGET(sed_bin_target):%=$[st_dir]/%]
@@ -134,8 +134,11 @@
 
 // These are the complete set of extra flags the compiler requires,
 // from the context of a particular file, given in $[file].
-#defer cflags $[all_sources $[get_cflags] $[CFLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
-#defer c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
+#defer cflags $[all_sources $[get_cflags] $[CFLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] $[if $[>= $[OPTIMIZE],2],$[OPTFLAGS]]
+#defer c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] $[if $[>= $[OPTIMIZE],2],$[OPTFLAGS]]
+
+// These are the same flags, sans the compiler optimizations.
+#defer noopt_c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
 
 // $[complete_lpath] is rather like $[complete_ipath]: the list of
 // directories (from within this tree) we should add to our -L list.
@@ -146,7 +149,7 @@
 #defer lpath $[other_trees:%=%/lib] $[sort $[complete_lpath]] $[get_lpath]
 
 // And $[libs] is the set of libraries we will link with.
-#defer libs $[unique $[actual_local_libs] $[patsubst %:c,,%:m %,%,$[OTHER_LIBS]] $[get_libs]]
+#defer libs $[unique $[actual_local_libs:%=%$[dllext]] $[patsubst %:c,,%:m %,%$[dllext],$[OTHER_LIBS]] $[get_libs]]
 
 // Okay, we're ready.  Start outputting the Makefile now.
 #output Makefile
@@ -295,7 +298,7 @@ $[directory] :
    $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources] $[igateoutput] $[igatemout]]] \
    $[components $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[RELDIR]/$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput]]],$[active_component_libs]]
 lib_$[TARGET]_so = $[sources]
-  #define target $[so_dir]/lib$[TARGET].dll
+  #define target $[so_dir]/lib$[TARGET]$[dllext].dll
   #define sources $(lib_$[TARGET]_so)
 $[target] : $[sources]
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
@@ -309,8 +312,8 @@ $[target] : $[sources]
 // everything that goes along with it.
 #define installed_files \
     $[if $[build_it], \
-      $[install_lib_dir]/lib$[TARGET].dll \
-      $[install_lib_dir]/lib$[TARGET].lib \
+      $[install_lib_dir]/lib$[TARGET]$[dllext].dll \
+      $[install_lib_dir]/lib$[TARGET]$[dllext].lib \
     ] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
@@ -325,13 +328,13 @@ uninstall-lib$[TARGET] :
 	rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET].dll : $[so_dir]/lib$[TARGET].dll
-#define local lib$[TARGET].dll
+$[install_lib_dir]/lib$[TARGET]$[dllext].dll : $[so_dir]/lib$[TARGET]$[dllext].dll
+#define local lib$[TARGET]$[dllext].dll
 #define dest $[install_lib_dir]
 	cd ./$[so_dir]; $[INSTALL]
 
-$[install_lib_dir]/lib$[TARGET].lib : $[so_dir]/lib$[TARGET].lib
-#define local lib$[TARGET].lib
+$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].lib
+#define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
 	cd ./$[so_dir]; $[INSTALL]
 
@@ -402,7 +405,7 @@ $[target] : $[source]
 
 #forscopes noinst_lib_target
 lib_$[TARGET]_so = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources]]]
-#define target $[so_dir]/lib$[TARGET].dll
+#define target $[so_dir]/lib$[TARGET]$[dllext].dll
 #define sources $(lib_$[TARGET]_so)
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
@@ -423,7 +426,7 @@ $[target] : $[sources]
 
 #forscopes static_lib_target
 lib_$[TARGET]_a = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
-#define target $[st_dir]/lib$[TARGET].lib
+#define target $[st_dir]/lib$[TARGET]$[dllext].lib
 #define sources $(lib_$[TARGET]_a)
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
@@ -431,12 +434,9 @@ $[target] : $[sources]
 #else
 	$[STATIC_LIB_C]
 #endif
-#if $[RANLIB]
-	$[RANLIB]
-#endif
 
 #define installed_files \
-    $[install_lib_dir]/lib$[TARGET].lib \
+    $[install_lib_dir]/lib$[TARGET]$[dllext].lib \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -449,8 +449,8 @@ uninstall-lib$[TARGET] :
 	rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET].lib : $[st_dir]/lib$[TARGET].lib
-#define local lib$[TARGET].lib
+$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].lib
+#define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
 	cd ./$[st_dir]; $[INSTALL]
 
@@ -607,11 +607,11 @@ $[target] : $[source] $[dependencies $[source]]
 #end file
 
 // Rules to compile C++ files that appear on a shared library.
-#foreach file $[sort $[cxx_so_sources] $[yxx_so_sources] $[lxx_so_sources]]
-#define source $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]]
-#define target $[patsubst %.cxx %.lxx %.yxx,$[so_dir]/%.obj,$[file]]
+#foreach file $[sort $[cxx_so_sources]]
+#define target $[patsubst %.cxx,$[so_dir]/%.o,$[file]]
+#define source $[file]
 #define ipath $[file_ipath]
-#define flags $[c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=-D%],$[file]]
+#define flags $[c++flags] $[CFLAGS_SHARED]
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
 $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
@@ -621,11 +621,36 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
 
 // Rules to compile C++ files that appear on a static library or in an
 // executable.
-#foreach file $[sort $[cxx_st_sources] $[yxx_st_sources] $[lxx_st_sources]]
-#define source $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]]
-#define target $[patsubst %.cxx %.lxx %.yxx,$[st_dir]/%.obj,$[file]]
+#foreach file $[sort $[cxx_st_sources]]
+#define target $[patsubst %.cxx,$[st_dir]/%.o,$[file]]
+#define source $[file]
 #define ipath $[file_ipath]
-#define flags $[c++flags] $[all_sources $[building_var:%=-D%],$[file]]
+#define flags $[c++flags]
+$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
+	$[COMPILE_C++]
+
+#end file
+
+// Rules to compile generated C++ files that appear on a shared library.
+#foreach file $[sort $[yxx_so_sources] $[lxx_so_sources]]
+#define target $[patsubst %.lxx %.yxx,$[so_dir]/%.o,$[file]]
+#define source $[patsubst %.lxx %.yxx,%.cxx,$[file]]
+#define ipath $[file_ipath]
+#define flags $[noopt_c++flags] $[CFLAGS_SHARED]
+// Yacc must run before some files can be compiled, so all files
+// depend on yacc having run.
+$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
+	$[COMPILE_C++]
+
+#end file
+
+// Rules to compile generated C++ files that appear on a static
+// library or in an executable.
+#foreach file $[sort $[yxx_st_sources] $[lxx_st_sources]]
+#define target $[patsubst %.lxx %.yxx,$[st_dir]/%.o,$[file]]
+#define source $[patsubst %.lxx %.yxx,%.cxx,$[file]]
+#define ipath $[file_ipath]
+#define flags $[noopt_c++flags]
 $[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
 	$[COMPILE_C++]
 
