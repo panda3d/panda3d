@@ -460,7 +460,7 @@ event_h(CPT_Event) {
   }
 }
 
-static void attach_sky() {
+static bool attach_sky() {
   // Load the sun and sky
   sky = DCAST(NamedNode, loader.load_sync("sky"));
   if (sky != (NamedNode *)NULL) {
@@ -468,6 +468,7 @@ static void attach_sky() {
       sky_arc = new RenderRelation(render, sky);
     }
   }
+  return (sky!=NULL) && (sky_arc!=NULL);
 }
 
 static void
@@ -507,7 +508,8 @@ static void
 event_v(CPT_Event) {
   static bool is_color_scale = false;
 
-  attach_sky();
+  if(!attach_sky())
+    return;
 
   NodePath search(sky);
   NodePath sky_search = search.find("**/sun");
@@ -527,7 +529,8 @@ static void
 event_L(CPT_Event) {
   static bool is_flare = false;
 
-  attach_sky();
+  if(!attach_sky())
+    return;
 
   if (!is_flare) {
     //Texture *shine = TexturePool::load_texture("MyShine.bw");
