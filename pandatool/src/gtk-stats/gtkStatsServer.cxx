@@ -27,5 +27,5 @@
 ////////////////////////////////////////////////////////////////////
 PStatMonitor *GtkStatsServer::
 make_monitor() {
-  return new GtkStatsMonitor;
+  return new GtkStatsMonitor(this);
 }

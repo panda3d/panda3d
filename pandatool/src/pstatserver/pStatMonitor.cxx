@@ -27,7 +27,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PStatMonitor::
-PStatMonitor() {
+PStatMonitor(PStatServer *server) : _server(server) {
   _client_known = false;
 }
 
@@ -333,4 +333,13 @@ has_idle() {
 bool PStatMonitor::
 is_thread_safe() {
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatMonitor::user_guide_bars_changed
+//       Access: Public, Virtual
+//  Description: Called when the user guide bars have been changed.
+////////////////////////////////////////////////////////////////////
+void PStatMonitor::
+user_guide_bars_changed() {
 }

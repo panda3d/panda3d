@@ -127,6 +127,16 @@ idle() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatReader::get_monitor
+//       Access: Public
+//  Description: Returns the monitor that this reader serves.
+////////////////////////////////////////////////////////////////////
+PStatMonitor *PStatReader::
+get_monitor() {
+  return _monitor;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatReader::get_hostname
 //       Access: Private
 //  Description: Returns the current machine's hostname.

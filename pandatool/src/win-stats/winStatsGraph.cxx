@@ -153,34 +153,14 @@ set_time_units(int unit_mask) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::move_user_guide_bar
-//       Access: Public, Virtual
-//  Description: Adjusts the height of the nth user-defined guide bar.
+//     Function: WinStatsGraph::user_guide_bars_changed
+//       Access: Public
+//  Description: Called when the user guide bars have been changed.
 ////////////////////////////////////////////////////////////////////
 void WinStatsGraph::
-move_user_guide_bar(int n, float height) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::add_user_guide_bar
-//       Access: Public, Virtual
-//  Description: Creates a new user guide bar and returns its index
-//               number.
-////////////////////////////////////////////////////////////////////
-int WinStatsGraph::
-add_user_guide_bar(float height) {
-  return -1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsGraph::remove_user_guide_bar
-//       Access: Public, Virtual
-//  Description: Removes the user guide bar with the indicated index
-//               number.  All subsequent index numbers are adjusted
-//               down one.
-////////////////////////////////////////////////////////////////////
-void WinStatsGraph::
-remove_user_guide_bar(int n) {
+user_guide_bars_changed() {
+  InvalidateRect(_window, NULL, TRUE);
+  InvalidateRect(_graph_window, NULL, TRUE);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -18,6 +18,16 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatMonitor::get_server
+//       Access: Public
+//  Description: Returns the server that owns this monitor.
+////////////////////////////////////////////////////////////////////
+INLINE PStatServer *PStatMonitor::
+get_server() {
+  return _server;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatMonitor::get_client_data
 //       Access: Public
 //  Description: Returns the client data associated with this monitor.

@@ -82,7 +82,7 @@ public:
   const GuideBar &get_guide_bar(int n) const;
 
   int get_num_user_guide_bars() const;
-  const GuideBar &get_user_guide_bar(int n) const;
+  GuideBar get_user_guide_bar(int n) const;
   void move_user_guide_bar(int n, float height);
   int add_user_guide_bar(float height);
   void remove_user_guide_bar(int n);
@@ -100,8 +100,7 @@ public:
 protected:
   virtual void normal_guide_bars()=0;
   void update_guide_bars(int num_bars, float scale);
-  void user_guide_bar_labels();
-  GuideBar make_guide_bar(float value) const;
+  GuideBar make_guide_bar(float value, GuideBarStyle style = GBS_normal) const;
 
   bool _labels_changed;
   bool _guide_bars_changed;
@@ -120,7 +119,6 @@ protected:
 
   typedef pvector<GuideBar> GuideBars;
   GuideBars _guide_bars;
-  GuideBars _user_guide_bars;
   int _guide_bar_units;
   string _unit_name;
 };

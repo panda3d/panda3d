@@ -20,11 +20,9 @@
 #define PSTATSERVER_H
 
 #include "pandatoolbase.h"
-
 #include "pStatListener.h"
-
 #include "connectionManager.h"
-
+#include "vector_float.h"
 #include "pmap.h"
 #include "pdeque.h"
 
@@ -61,6 +59,13 @@ public:
   int get_udp_port();
   void release_udp_port(int port);
 
+  int get_num_user_guide_bars() const;
+  float get_user_guide_bar_height(int n) const;
+  void move_user_guide_bar(int n, float height);
+  int add_user_guide_bar(float height);
+  void remove_user_guide_bar(int n);
+  int find_user_guide_bar(float from_height, float to_height) const;
+
   virtual bool is_thread_safe();
 
 protected:
@@ -68,6 +73,8 @@ protected:
                                 PRErrorCode errcode);
 
 private:
+  void user_guide_bars_changed();
+
   PStatListener *_listener;
 
   typedef pmap<PT(Connection), PStatReader *> Readers;
@@ -79,6 +86,9 @@ private:
   typedef pdeque<int> Ports;
   Ports _available_udp_ports;
   int _next_udp_port;
+
+  typedef vector_float GuideBars;
+  GuideBars _user_guide_bars;
 };
 
 #endif

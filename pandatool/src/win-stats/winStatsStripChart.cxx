@@ -155,56 +155,6 @@ set_vertical_scale(float value_height) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WinStatsStripChart::move_user_guide_bar
-//       Access: Public, Virtual
-//  Description: Adjusts the height of the nth user-defined guide bar.
-////////////////////////////////////////////////////////////////////
-void WinStatsStripChart::
-move_user_guide_bar(int n, float height) {
-  RECT rect;
-  GetClientRect(_window, &rect);
-  rect.left = _right_margin;
-  InvalidateRect(_window, &rect, TRUE);
-
-  InvalidateRect(_graph_window, NULL, TRUE);
-
-  PStatStripChart::move_user_guide_bar(n, height);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsStripChart::add_user_guide_bar
-//       Access: Public, Virtual
-//  Description: Creates a new user guide bar and returns its index
-//               number.
-////////////////////////////////////////////////////////////////////
-int WinStatsStripChart::
-add_user_guide_bar(float height) {
-  RECT rect;
-  GetClientRect(_window, &rect);
-  rect.left = _right_margin;
-  InvalidateRect(_window, &rect, TRUE);
-
-  return PStatStripChart::add_user_guide_bar(height);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsStripChart::remove_user_guide_bar
-//       Access: Public, Virtual
-//  Description: Removes the user guide bar with the indicated index
-//               number.  All subsequent index numbers are adjusted
-//               down one.
-////////////////////////////////////////////////////////////////////
-void WinStatsStripChart::
-remove_user_guide_bar(int n) {
-  RECT rect;
-  GetClientRect(_window, &rect);
-  rect.left = _right_margin;
-  InvalidateRect(_window, &rect, TRUE);
-
-  return PStatStripChart::remove_user_guide_bar(n);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: WinStatsStripChart::update_labels
 //       Access: Protected, Virtual
 //  Description: Resets the list of labels.
@@ -406,14 +356,13 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       PN_int16 y = HIWORD(lparam);
       if (y >= 0 && y < get_ysize()) {
         _drag_mode = DM_guide_bar;
-        _drag_guide_bar = 
-          WinStatsGraph::_monitor->add_user_guide_bar(_thread_index, pixel_to_height(y));
+        _drag_guide_bar = add_user_guide_bar(pixel_to_height(y));
         return 0;
       }
 
     } else if (_drag_mode == DM_guide_bar) {
       PN_int16 y = HIWORD(lparam);
-      WinStatsGraph::_monitor->move_user_guide_bar(_thread_index, _drag_guide_bar, pixel_to_height(y));
+      move_user_guide_bar(_drag_guide_bar, pixel_to_height(y));
       return 0;
     }
     break;
@@ -427,9 +376,9 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     } else if (_drag_mode == DM_guide_bar) {
       PN_int16 y = HIWORD(lparam);
       if (y < 0 || y >= get_ysize()) {
-        WinStatsGraph::_monitor->remove_user_guide_bar(_thread_index, _drag_guide_bar);
+        remove_user_guide_bar(_drag_guide_bar);
       } else {
-        WinStatsGraph::_monitor->move_user_guide_bar(_thread_index, _drag_guide_bar, pixel_to_height(y));
+        move_user_guide_bar(_drag_guide_bar, pixel_to_height(y));
       }
       _drag_mode = DM_none;
       ReleaseCapture();
@@ -589,8 +538,8 @@ draw_guide_label(HDC hdc, int x, const PStatGraph::GuideBar &bar, int last_y) {
   GetTextExtentPoint32(hdc, label.data(), label.length(), &size);
 
   if (bar._style != GBS_user) {
-    float from_height = pixel_to_height(y + size.cy / 2 + 1);
-    float to_height = pixel_to_height(y - size.cy / 2 - 1);
+    float from_height = pixel_to_height(y + size.cy);
+    float to_height = pixel_to_height(y - size.cy);
     if (find_user_guide_bar(from_height, to_height) >= 0) {
       // Omit the label: there's a user-defined guide bar in the same space.
       return last_y;

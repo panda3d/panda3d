@@ -21,12 +21,12 @@
 
 #include "pandatoolbase.h"
 
-#include <pStatMonitor.h>
+#include "pStatMonitor.h"
 #include "pointerTo.h"
 
 #include "pset.h"
 
-
+class GtkStatsServer;
 class GtkStatsWindow;
 class Gdk_Color;
 
@@ -36,7 +36,7 @@ class Gdk_Color;
 ////////////////////////////////////////////////////////////////////
 class GtkStatsMonitor : public PStatMonitor {
 public:
-  GtkStatsMonitor();
+  GtkStatsMonitor(GtkStatsServer *server);
   ~GtkStatsMonitor();
 
   PT(PStatMonitor) close_all_windows();

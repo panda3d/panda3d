@@ -211,6 +211,104 @@ release_udp_port(int port) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatServer::get_num_user_guide_bars
+//       Access: Public
+//  Description: Returns the current number of user-defined guide
+//               bars.
+////////////////////////////////////////////////////////////////////
+int PStatServer::
+get_num_user_guide_bars() const {
+  return _user_guide_bars.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatServer::get_user_guide_bar_height
+//       Access: Public
+//  Description: Returns the height of the nth user-defined guide bar.
+////////////////////////////////////////////////////////////////////
+float PStatServer::
+get_user_guide_bar_height(int n) const {
+  nassertr(n >= 0 && n < (int)_user_guide_bars.size(), 0.0f);
+  return _user_guide_bars[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatServer::move_user_guide_bar
+//       Access: Public
+//  Description: Adjusts the height of the nth user-defined guide bar.
+////////////////////////////////////////////////////////////////////
+void PStatServer::
+move_user_guide_bar(int n, float height) {
+  nassertv(n >= 0 && n < (int)_user_guide_bars.size());
+  _user_guide_bars[n] = height;
+  user_guide_bars_changed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatServer::add_user_guide_bar
+//       Access: Public
+//  Description: Creates a new user guide bar and returns its index
+//               number.
+////////////////////////////////////////////////////////////////////
+int PStatServer::
+add_user_guide_bar(float height) {
+  int n = (int)_user_guide_bars.size();
+  _user_guide_bars.push_back(height);
+  user_guide_bars_changed();
+
+  return n;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatServer::remove_user_guide_bar
+//       Access: Public
+//  Description: Removes the user guide bar with the indicated index
+//               number.  All subsequent index numbers are adjusted
+//               down one.
+////////////////////////////////////////////////////////////////////
+void PStatServer::
+remove_user_guide_bar(int n) {
+  nassertv(n >= 0 && n < (int)_user_guide_bars.size());
+  _user_guide_bars.erase(_user_guide_bars.begin() + n);
+  user_guide_bars_changed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatServer::find_user_guide_bar
+//       Access: Public
+//  Description: Returns the index number of the first user guide bar
+//               found whose height is within the indicated range, or
+//               -1 if no user guide bars fall within the range.
+////////////////////////////////////////////////////////////////////
+int PStatServer::
+find_user_guide_bar(float from_height, float to_height) const {
+  GuideBars::const_iterator gbi;
+  for (gbi = _user_guide_bars.begin();
+       gbi != _user_guide_bars.end();
+       ++gbi) {
+    float height = (*gbi);
+    if (height >= from_height && height <= to_height) {
+      return (int)(gbi - _user_guide_bars.begin());
+    }
+  }
+
+  return -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatServer::user_guide_bars_changed
+//       Access: Priate
+//  Description: Called when the user guide bars have been changed.
+////////////////////////////////////////////////////////////////////
+void PStatServer::
+user_guide_bars_changed() {
+  Readers::iterator ri;
+  for (ri = _readers.begin(); ri != _readers.end(); ++ri) {
+    (*ri).second->get_monitor()->user_guide_bars_changed();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatServer::is_thread_safe
 //       Access: Public
 //  Description: This should be redefined to return true in derived

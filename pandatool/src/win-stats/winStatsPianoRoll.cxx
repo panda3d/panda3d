@@ -134,56 +134,6 @@ set_horizontal_scale(float time_width) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WinStatsPianoRoll::move_user_guide_bar
-//       Access: Public, Virtual
-//  Description: Adjusts the height of the nth user-defined guide bar.
-////////////////////////////////////////////////////////////////////
-void WinStatsPianoRoll::
-move_user_guide_bar(int n, float height) {
-  RECT rect;
-  GetClientRect(_window, &rect);
-  rect.bottom = _top_margin;
-  InvalidateRect(_window, &rect, TRUE);
-
-  InvalidateRect(_graph_window, NULL, TRUE);
-
-  PStatPianoRoll::move_user_guide_bar(n, height);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsPianoRoll::add_user_guide_bar
-//       Access: Public, Virtual
-//  Description: Creates a new user guide bar and returns its index
-//               number.
-////////////////////////////////////////////////////////////////////
-int WinStatsPianoRoll::
-add_user_guide_bar(float height) {
-  RECT rect;
-  GetClientRect(_window, &rect);
-  rect.bottom = _top_margin;
-  InvalidateRect(_window, &rect, TRUE);
-
-  return PStatPianoRoll::add_user_guide_bar(height);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsPianoRoll::remove_user_guide_bar
-//       Access: Public, Virtual
-//  Description: Removes the user guide bar with the indicated index
-//               number.  All subsequent index numbers are adjusted
-//               down one.
-////////////////////////////////////////////////////////////////////
-void WinStatsPianoRoll::
-remove_user_guide_bar(int n) {
-  RECT rect;
-  GetClientRect(_window, &rect);
-  rect.bottom = _top_margin;
-  InvalidateRect(_window, &rect, TRUE);
-
-  return PStatPianoRoll::remove_user_guide_bar(n);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: WinStatsPianoRoll::clear_region
 //       Access: Protected
 //  Description: Erases the chart area.
@@ -318,14 +268,13 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       PN_int16 x = LOWORD(lparam);
       if (x >= 0 && x < get_xsize()) {
         _drag_mode = DM_guide_bar;
-        _drag_guide_bar = 
-          WinStatsGraph::_monitor->add_user_guide_bar(WinStatsGraph::_thread_index, pixel_to_height(x));
+        _drag_guide_bar = add_user_guide_bar(pixel_to_height(x));
         return 0;
       }
 
     } else if (_drag_mode == DM_guide_bar) {
       PN_int16 x = LOWORD(lparam);
-      WinStatsGraph::_monitor->move_user_guide_bar(WinStatsGraph::_thread_index, _drag_guide_bar, pixel_to_height(x));
+      move_user_guide_bar(_drag_guide_bar, pixel_to_height(x));
       return 0;
     }
     break;
@@ -339,9 +288,9 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     } else if (_drag_mode == DM_guide_bar) {
       PN_int16 x = LOWORD(lparam);
       if (x < 0 || x >= get_xsize()) {
-        WinStatsGraph::_monitor->remove_user_guide_bar(WinStatsGraph::_thread_index, _drag_guide_bar);
+        remove_user_guide_bar(_drag_guide_bar);
       } else {
-        WinStatsGraph::_monitor->move_user_guide_bar(WinStatsGraph::_thread_index, _drag_guide_bar, pixel_to_height(x));
+        move_user_guide_bar(_drag_guide_bar, pixel_to_height(x));
       }
       _drag_mode = DM_none;
       ReleaseCapture();
@@ -508,8 +457,8 @@ draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar) {
   GetTextExtentPoint32(hdc, label.data(), label.length(), &size);
 
   if (bar._style != GBS_user) {
-    float from_height = pixel_to_height(x - size.cx / 2 - 1);
-    float to_height = pixel_to_height(x + size.cx / 2 + 1);
+    float from_height = pixel_to_height(x - size.cx);
+    float to_height = pixel_to_height(x + size.cx);
     if (find_user_guide_bar(from_height, to_height) >= 0) {
       // Omit the label: there's a user-defined guide bar in the same space.
       return;

@@ -47,10 +47,6 @@ public:
   virtual void set_time_units(int unit_mask);
   void set_horizontal_scale(float time_width);
 
-  virtual void move_user_guide_bar(int n, float height);
-  virtual int add_user_guide_bar(float height);
-  virtual void remove_user_guide_bar(int n);
-
 protected:
   void clear_region();
   virtual void begin_draw();

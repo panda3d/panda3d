@@ -26,5 +26,5 @@
 ////////////////////////////////////////////////////////////////////
 PStatMonitor *WinStatsServer::
 make_monitor() {
-  return new WinStatsMonitor;
+  return new WinStatsMonitor(this);
 }

@@ -30,6 +30,7 @@
 
 #include <windows.h>
 
+class WinStatsServer;
 class WinStatsChartMenu;
 
 ////////////////////////////////////////////////////////////////////
@@ -48,7 +49,7 @@ public:
     int _collector_index;
   };
 
-  WinStatsMonitor();
+  WinStatsMonitor(WinStatsServer *server);
   virtual ~WinStatsMonitor();
 
   virtual string get_monitor_name();
@@ -64,6 +65,8 @@ public:
   virtual void idle();
   virtual bool has_idle();
 
+  virtual void user_guide_bars_changed();
+
   HWND get_window() const;
   void open_strip_chart(int thread_index, int collector_index);
   void open_piano_roll(int thread_index);
@@ -72,10 +75,6 @@ public:
   int get_menu_id(const MenuDef &menu_def);
 
   void set_time_units(int unit_mask);
-
-  void move_user_guide_bar(int thread_index, int n, float height);
-  int add_user_guide_bar(int thread_index, float height);
-  void remove_user_guide_bar(int thread_index, int n);
   
 private:
   void add_graph(WinStatsGraph *graph);

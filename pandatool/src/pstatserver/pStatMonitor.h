@@ -31,6 +31,7 @@
 #include "pmap.h"
 
 class PStatCollectorDef;
+class PStatServer;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PStatMonitor
@@ -47,7 +48,7 @@ class PStatMonitor : public ReferenceCount {
 public:
   // The following functions are primarily for use by internal classes
   // to set up the monitor.
-  PStatMonitor();
+  PStatMonitor(PStatServer *server);
   virtual ~PStatMonitor();
 
   void hello_from(const string &hostname, const string &progname);
@@ -62,6 +63,7 @@ public:
   bool is_alive() const;
   void close();
 
+  INLINE PStatServer *get_server();
   INLINE const PStatClientData *get_client_data() const;
   INLINE string get_collector_name(int collector_index);
   const RGBColorf &get_collector_color(int collector_index);
@@ -93,6 +95,10 @@ public:
 
   virtual bool is_thread_safe();
 
+  virtual void user_guide_bars_changed();
+
+protected:
+  PStatServer *_server;
 
 private:
   PT(PStatClientData) _client_data;

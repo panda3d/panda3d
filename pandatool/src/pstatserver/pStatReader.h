@@ -56,6 +56,8 @@ public:
   void lost_connection();
   void idle();
 
+  PStatMonitor *get_monitor();
+
 private:
   string get_hostname();
   void send_hello();

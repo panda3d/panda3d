@@ -21,7 +21,7 @@
 
 #include "pandatoolbase.h"
 
-#include <pStatServer.h>
+#include "pStatServer.h"
 
 
 ////////////////////////////////////////////////////////////////////

@@ -20,9 +20,10 @@
 #include "gtkStatsWindow.h"
 #include "gtkStatsStripWindow.h"
 #include "gtkStatsBadVersionWindow.h"
+#include "gtkStatsServer.h"
 
-#include <luse.h>
-#include <pStatCollectorDef.h>
+#include "luse.h"
+#include "pStatCollectorDef.h"
 
 #include <gdk--.h>
 
@@ -32,7 +33,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GtkStatsMonitor::
-GtkStatsMonitor() {
+GtkStatsMonitor(GtkStatsServer *server) : PStatMonitor(server) {
   _destructing = false;
   _new_collector = false;
 }

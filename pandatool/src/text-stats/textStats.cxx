@@ -61,7 +61,7 @@ TextStats() {
 ////////////////////////////////////////////////////////////////////
 PStatMonitor *TextStats::
 make_monitor() {
-  return new TextMonitor;
+  return new TextMonitor(this);
 }
 
 

@@ -47,10 +47,6 @@ public:
   virtual void set_time_units(int unit_mask);
   void set_vertical_scale(float value_height);
 
-  virtual void move_user_guide_bar(int n, float height);
-  virtual int add_user_guide_bar(float height);
-  virtual void remove_user_guide_bar(int n);
-
 protected:
   virtual void update_labels();
 

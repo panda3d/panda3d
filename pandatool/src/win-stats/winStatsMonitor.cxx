@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "winStatsMonitor.h"
+#include "winStatsServer.h"
 #include "winStatsStripChart.h"
 #include "winStatsPianoRoll.h"
 #include "winStatsChartMenu.h"
@@ -34,7 +35,7 @@ const char * const WinStatsMonitor::_window_class_name = "monitor";
 //  Description:
 ////////////////////////////////////////////////////////////////////
 WinStatsMonitor::
-WinStatsMonitor() {
+WinStatsMonitor(WinStatsServer *server) : PStatMonitor(server) {
   _window = 0;
   _menu_bar = 0;
   _options_menu = 0;
@@ -255,6 +256,20 @@ has_idle() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::user_guide_bars_changed
+//       Access: Public, Virtual
+//  Description: Called when the user guide bars have been changed.
+////////////////////////////////////////////////////////////////////
+void WinStatsMonitor::
+user_guide_bars_changed() {
+  Graphs::iterator gi;
+  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
+    WinStatsGraph *graph = (*gi);
+    graph->user_guide_bars_changed();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinStatsMonitor::get_window
 //       Access: Public
 //  Description: Returns the window handle to the monitor's window.
@@ -363,63 +378,6 @@ set_time_units(int unit_mask) {
   mii.fState = ((_time_units & PStatGraph::GBU_hz) != 0) ? 
     MFS_CHECKED : MFS_UNCHECKED;
   SetMenuItemInfo(_options_menu, MI_time_hz, FALSE, &mii);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::move_user_guide_bar
-//       Access: Public
-//  Description: Adjusts the height of the nth user-defined guide bar
-//               for all graphs that share the indicated thread.
-////////////////////////////////////////////////////////////////////
-void WinStatsMonitor::
-move_user_guide_bar(int thread_index, int n, float height) {
-  Graphs::iterator gi;
-  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
-    WinStatsGraph *graph = (*gi);
-    if (graph->get_thread_index() == thread_index) {
-      graph->move_user_guide_bar(n, height);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::add_user_guide_bar
-//       Access: Public
-//  Description: Creates a new user guide bar and returns its index
-//               number for all graphs that share the indicated
-//               thread.
-////////////////////////////////////////////////////////////////////
-int WinStatsMonitor::
-add_user_guide_bar(int thread_index, float height) {
-  int result = -1;
-
-  Graphs::iterator gi;
-  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
-    WinStatsGraph *graph = (*gi);
-    if (graph->get_thread_index() == thread_index) {
-      result = graph->add_user_guide_bar(height);
-    }
-  }
-
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::remove_user_guide_bar
-//       Access: Public
-//  Description: Removes the user guide bar with the indicated index
-//               number, for all graphs that share the indicated
-//               thread.
-////////////////////////////////////////////////////////////////////
-void WinStatsMonitor::
-remove_user_guide_bar(int thread_index, int n) {
-  Graphs::iterator gi;
-  for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
-    WinStatsGraph *graph = (*gi);
-    if (graph->get_thread_index() == thread_index) {
-      graph->remove_user_guide_bar(n);
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

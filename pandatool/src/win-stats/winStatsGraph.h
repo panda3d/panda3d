@@ -57,10 +57,7 @@ public:
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
   virtual void set_time_units(int unit_mask);
-
-  virtual void move_user_guide_bar(int n, float height);
-  virtual int add_user_guide_bar(float height);
-  virtual void remove_user_guide_bar(int n);
+  void user_guide_bars_changed();
 
 protected:
   void close();

@@ -20,8 +20,9 @@
 #define TEXTMONITOR_H
 
 #include "pandatoolbase.h"
+#include "pStatMonitor.h"
 
-#include <pStatMonitor.h>
+class TextStats;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextMonitor
@@ -30,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 class TextMonitor : public PStatMonitor {
 public:
-  TextMonitor();
+  TextMonitor(TextStats *server);
 
   virtual string get_monitor_name();
 
