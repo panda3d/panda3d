@@ -140,7 +140,7 @@ protected:
   void release(ButtonHandle button);
   void keystroke(int keycode);
   void candidate(const wstring &candidate, size_t highlight_start, 
-                 size_t highlight_end);
+                 size_t highlight_end, size_t cursor_pos);
                  
   void global_keyboard_press(const MouseWatcherParameter &param);
   void global_keyboard_release(const MouseWatcherParameter &param);

@@ -84,7 +84,7 @@ public:
   INLINE ButtonEvent(ButtonHandle button, Type type, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE ButtonEvent(short keycode, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE ButtonEvent(const wstring &candidate_string, size_t highlight_start, 
-                     size_t higlight_end, double time = ClockObject::get_global_clock()->get_frame_time());
+                     size_t highlight_end, size_t cursor_pos);
   INLINE ButtonEvent(const ButtonEvent &copy);
   INLINE void operator = (const ButtonEvent &copy);
 
@@ -112,6 +112,7 @@ public:
   wstring _candidate_string;
   size_t _highlight_start;
   size_t _highlight_end;
+  size_t _cursor_pos;
 
   // This is the type of the button event (see above).
   Type _type;

@@ -142,6 +142,7 @@ private:
   wstring _candidate_wtext;
   size_t _candidate_highlight_start;
   size_t _candidate_highlight_end;
+  size_t _candidate_cursor_pos;
 
   int _max_chars;
   float _max_width;

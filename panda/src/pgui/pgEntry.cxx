@@ -47,6 +47,7 @@ PGEntry(const string &name) :
   _cursor_stale = true;
   _candidate_highlight_start = 0;
   _candidate_highlight_end = 0;
+  _candidate_cursor_pos = 0;
   _max_chars = 0;
   _max_width = 0.0f;
   _num_lines = 1;
@@ -468,7 +469,9 @@ candidate(const MouseWatcherParameter &param, bool background) {
       _candidate_wtext = param.get_candidate_string();
       _candidate_highlight_start = param.get_highlight_start();
       _candidate_highlight_end = param.get_highlight_end();
+      _candidate_cursor_pos = param.get_cursor_pos();
       _text_geom_stale = true;
+      type(param);
     }
   }
   PGItem::candidate(param, background);
@@ -835,10 +838,11 @@ update_cursor() {
     update_text();
 
     _cursor_position = min(_cursor_position, (int)_wtext.length());
+    _candidate_cursor_pos = min(_candidate_cursor_pos, _candidate_wtext.length());
 
     // Determine the row and column of the cursor.
     int row = 0;
-    int column = _cursor_position;
+    int column = _cursor_position + _candidate_cursor_pos;
     while (row + 1 < (int)_ww_lines.size() &&
            column > (int)_ww_lines[row]._str.length()) {
       column -= _ww_lines[row]._str.length();

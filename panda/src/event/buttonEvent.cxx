@@ -85,6 +85,7 @@ write_datagram(Datagram &dg) const {
                                             TextEncoder::get_default_encoding()));
     dg.add_uint16(_highlight_start);
     dg.add_uint16(_highlight_end);
+    dg.add_uint16(_cursor_pos);
   }
 }
 
@@ -112,5 +113,6 @@ read_datagram(DatagramIterator &scan) {
                                                  TextEncoder::get_default_encoding());
     _highlight_start = scan.get_uint16();
     _highlight_end = scan.get_uint16();
+    _cursor_pos = scan.get_uint16();
   }
 }

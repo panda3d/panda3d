@@ -77,3 +77,14 @@ void PGMouseWatcherBackground::
 keystroke(const MouseWatcherParameter &param) {
   PGItem::background_keystroke(param);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGMouseWatcherBackground::candidate
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever
+//               the user uses the IME.
+////////////////////////////////////////////////////////////////////
+void PGMouseWatcherBackground::
+candidate(const MouseWatcherParameter &param) {
+  PGItem::background_candidate(param);
+}

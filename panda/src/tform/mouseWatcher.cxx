@@ -745,9 +745,9 @@ keystroke(int keycode) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 candidate(const wstring &candidate_string, size_t highlight_start, 
-          size_t highlight_end) {
+          size_t highlight_end, size_t cursor_pos) {
   MouseWatcherParameter param;
-  param.set_candidate(candidate_string, highlight_start, highlight_end);
+  param.set_candidate(candidate_string, highlight_start, highlight_end, cursor_pos);
   param.set_modifier_buttons(_mods);
   param.set_mouse(_mouse);
 
@@ -1016,7 +1016,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
         break;
 
       case ButtonEvent::T_candidate:
-        candidate(be._candidate_string, be._highlight_start, be._highlight_end);
+        candidate(be._candidate_string, be._highlight_start, be._highlight_end, be._cursor_pos);
         break;
 
       case ButtonEvent::T_resume_down:

@@ -96,10 +96,12 @@ set_keycode(int keycode) {
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcherParameter::
 set_candidate(const wstring &candidate_string,
-              size_t highlight_start, size_t highlight_end) {
+              size_t highlight_start, size_t highlight_end,
+              size_t cursor_pos) {
   _candidate_string = candidate_string;
   _highlight_start = highlight_start;
   _highlight_end = highlight_end;
+  _cursor_pos = cursor_pos;
   _flags |= F_has_candidate;
 }
 
@@ -255,6 +257,17 @@ get_highlight_start() const {
 INLINE size_t MouseWatcherParameter::
 get_highlight_end() const {
   return _highlight_end;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherParameter::get_cursor_pos
+//       Access: Published
+//  Description: Returns the position of the user's edit cursor within
+//               the candidate string.
+////////////////////////////////////////////////////////////////////
+INLINE size_t MouseWatcherParameter::
+get_cursor_pos() const {
+  return _cursor_pos;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -43,7 +43,8 @@ public:
   INLINE void set_keycode(int keycode);
   INLINE void set_candidate(const wstring &candidate_string,
                             size_t highlight_start, 
-                            size_t higlight_end);
+                            size_t higlight_end,
+                            size_t cursor_pos);
   INLINE void set_modifier_buttons(const ModifierButtons &mods);
   INLINE void set_mouse(const LPoint2f &mouse);
   INLINE void set_outside(bool flag);
@@ -65,6 +66,7 @@ PUBLISHED:
   INLINE string get_candidate_string_encoded(TextEncoder::Encoding encoding) const;
   INLINE size_t get_highlight_start() const;
   INLINE size_t get_highlight_end() const;
+  INLINE size_t get_cursor_pos() const;
 
   INLINE const ModifierButtons &get_modifier_buttons() const;
 
@@ -81,6 +83,7 @@ public:
   wstring _candidate_string;
   size_t _highlight_start;
   size_t _highlight_end;
+  size_t _cursor_pos;
   ModifierButtons _mods;
   LPoint2f _mouse;
 

@@ -200,7 +200,8 @@ keystroke(int keycode, double time) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 candidate(const wstring &candidate_string, size_t highlight_start, 
-          size_t highlight_end, double time) {
+          size_t highlight_end, size_t cursor_pos) {
   _button_events.push_back(ButtonEvent(candidate_string, 
-                                       highlight_start, highlight_end));
+                                       highlight_start, highlight_end,
+                                       cursor_pos));
 }

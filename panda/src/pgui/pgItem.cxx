@@ -505,6 +505,23 @@ background_keystroke(const MouseWatcherParameter &param) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::background_candidate
+//       Access: Public, Static
+//  Description: Calls candidate() on all the PGItems with background
+//               focus.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+background_candidate(const MouseWatcherParameter &param) {
+  BackgroundFocus::const_iterator fi;
+  for (fi = _background_focus.begin(); fi != _background_focus.end(); ++fi) {
+    PGItem *item = *fi;
+    if (!item->get_focus()) {
+      item->candidate(param, true);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::set_active
 //       Access: Published, Virtual
 //  Description: Sets whether the PGItem is active for mouse watching.
