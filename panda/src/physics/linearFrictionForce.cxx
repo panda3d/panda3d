@@ -28,14 +28,7 @@ TypeHandle LinearFrictionForce::_type_handle;
 LinearFrictionForce::
 LinearFrictionForce(float coef, float a, bool m) :
   LinearForce(a, m) {
-
-  // friction REALLY shouldn't be outside of [0, 1]
-  if (coef < 0.0f)
-    coef = 0.0f;
-  else if (coef > 1.0f)
-    coef = 1.0f;
-
-  _coef = coef;
+  set_coef(coef);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +48,7 @@ LinearFrictionForce(const LinearFrictionForce &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 LinearFrictionForce::
-~LinearFrictionForce(void) {
+~LinearFrictionForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -64,7 +57,7 @@ LinearFrictionForce::
 // Description : copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearFrictionForce::
-make_copy(void) {
+make_copy() {
   return new LinearFrictionForce(*this);
 }
 
@@ -76,8 +69,14 @@ make_copy(void) {
 LVector3f LinearFrictionForce::
 get_child_vector(const PhysicsObject* po) {
   LVector3f v = po->get_velocity();
-  LVector3f friction = -v * (1.0f - _coef);
-
+  assert(_coef>=0.0f && _coef<=1.0f);
+  // Create a force vector in the opposite direction of v:
+  LVector3f friction = v * -_coef;
+  physics_debug(" v "<<v<<" len "<<v.length()
+      <<" friction "<<friction<<" len "<<friction.length()
+      <<" dot "<<(normalize(v).dot(normalize(friction))));
+  assert(friction.almostEqual(LVector3f::zero()) 
+      || IS_NEARLY_EQUAL(normalize(v).dot(normalize(friction)), -1.0f));
   // cary said to cap this at zero so that friction can't reverse
   // your direction, but it seems to me that if you're computing:
   //     v + (-v * _coef), _coef in [0, 1]
