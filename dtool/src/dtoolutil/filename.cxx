@@ -14,6 +14,7 @@
 
 #include "filename.h"
 #include "dSearchPath.h"
+#include "executionEnvironment.h"
 
 #include <stdio.h>  // For rename()
 #include <sys/stat.h>
@@ -191,10 +192,13 @@ Filename::
 Filename(const Filename &dirname, const Filename &basename) {
   if (dirname.empty()) {
     (*this) = basename;
-  } else if (basename.empty()) {
-    (*this) = dirname;
   } else {
-    (*this) = dirname.get_fullpath() + "/" + basename.get_fullpath();
+    string dirpath = dirname.get_fullpath();
+    if (dirpath[dirpath.length() - 1] == '/') {
+      (*this) = dirpath + basename.get_fullpath();
+    } else {
+      (*this) = dirpath + "/" + basename.get_fullpath();
+    }
   }
   _flags = 0;
 }
@@ -475,6 +479,45 @@ standardize() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::make_absolute
+//       Access: Public
+//  Description: Converts the filename to a fully-qualified pathname
+//               from the root (if it is a relative pathname), and
+//               then standardizes it (see standardize()).
+//
+//               This is sometimes a little problematic, since it may
+//               convert the file to its 'true' absolute pathname,
+//               which could be an ugly NFS-named file, irrespective
+//               of symbolic links
+//               (e.g. /.automount/dimbo/root/usr2/fit/people/drose
+//               instead of /fit/people/drose); besides being ugly,
+//               filenames like this may not be consistent across
+//               multiple different platforms.
+////////////////////////////////////////////////////////////////////
+void Filename::
+make_absolute() {
+  make_absolute(ExecutionEnvironment::get_cwd());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::make_absolute
+//       Access: Public
+//  Description: Converts the filename to a fully-qualified filename
+//               from the root (if it is a relative filename), and
+//               then standardizes it (see standardize()).  This
+//               flavor accepts a specific starting directory that the
+//               filename is known to be relative to.
+////////////////////////////////////////////////////////////////////
+void Filename::
+make_absolute(const Filename &start_directory) {
+  if (is_local()) {
+    (*this) = Filename(start_directory, _filename);
+  }
+
+  standardize();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::to_os_specific
 //       Access: Public
 //  Description: Converts the filename from our generic Unix-like
@@ -485,6 +528,8 @@ standardize() {
 //               instance).  Returns the string representing the
 //               converted filename, but does not change the Filename
 //               itself.
+//
+//               See also from_os_specific().
 ////////////////////////////////////////////////////////////////////
 string Filename::
 to_os_specific() const {

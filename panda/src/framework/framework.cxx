@@ -900,7 +900,7 @@ int framework_main(int argc, char *argv[]) {
   for (int a = 1; a < argc; a++)
     if ((argv[a] != (char*)0L) && ((argv[a])[0] != '-') &&
 	((argv[a])[0] != '+') && ((argv[a])[0] != '#'))
-      files.push_back(argv[a]);
+      files.push_back(Filename::from_os_specific(argv[a]));
 
   // load display modules
   GraphicsPipe::resolve_modules();

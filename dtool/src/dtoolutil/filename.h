@@ -116,6 +116,8 @@ public:
   // The following functions deal with the outside world.
 
   INLINE bool is_local() const;
+  void make_absolute();
+  void make_absolute(const Filename &start_directory);
 
   string to_os_specific() const;
 
