@@ -29,6 +29,9 @@
 #endif
 
 #include "memoryUsage.h"
+#if defined(WIN32_VC) && defined(_DEBUG)
+#include <crtdbg.h>
+#endif
 
 #ifndef NDEBUG
 // Nothing in this module gets compiled in NDEBUG mode.
@@ -273,6 +276,42 @@ operator_delete_handler(void *ptr) {
   default_operator_delete(ptr);
 }
 
+#if defined(WIN32_VC) && defined(_DEBUG)
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::win32_malloc_hook
+//       Access: Public, Static
+//  Description: This callback is attached to the Win32 debug malloc
+//               system to be called whenever a pointer is allocated,
+//               reallocated, or freed.  It's used to track the total
+//               memory allocated via calls to malloc().
+////////////////////////////////////////////////////////////////////
+int MemoryUsage::
+win32_malloc_hook(int alloc_type, void *ptr, 
+                  size_t size, int block_use, long request, 
+                  const unsigned char *filename, int line) {
+  MemoryUsage *mu = get_global_ptr();
+  if (mu->_count_memory_usage) {
+    switch (alloc_type) {
+    case _HOOK_ALLOC:
+      mu->_total_size += size;
+      break;
+      
+    case _HOOK_REALLOC:
+      mu->_total_size += size - _msize(ptr);
+      break;
+      
+    case _HOOK_FREE:
+      mu->_total_size -= _msize(ptr);
+      break;
+    }
+  }
+
+  return true;
+}
+#endif  // WIN32_VC && _DEBUG
+
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::Constructor
 //       Access: Private
@@ -280,11 +319,26 @@ operator_delete_handler(void *ptr) {
 ////////////////////////////////////////////////////////////////////
 MemoryUsage::
 MemoryUsage() {
-  // We must get this here instead of in config_express.cxx, because we
-  // need to know it at static init time, and who knows when the code
-  // in config_express will be executed.
+  // We must get these variables here instead of in
+  // config_express.cxx, because we need to know it at static init
+  // time, and who knows when the code in config_express will be
+  // executed.
+
+  // track-memory-usage should be true to enable full-force tracking
+  // of C++ allocations and recordkeeping by type.  It's quite
+  // expensive.
   _track_memory_usage =
     config_express.GetBool("track-memory-usage", false);
+
+  // count-memory-usage is a much lighter-weight version, and only
+  // tracks the total memory allocation.  However, it only works for
+  // certain build environments.
+#if defined(WIN32_VC) && defined(_DEBUG)
+  _count_memory_usage =
+    config_express.GetBool("count-memory-usage", true);
+#else
+  _count_memory_usage = false;
+#endif
 
   if (_track_memory_usage) {
     // Redefine the global pointers for operator new and operator
@@ -294,9 +348,16 @@ MemoryUsage() {
     global_operator_delete = &operator_delete_handler;
   }
 
+#if defined(WIN32_VC) && defined(_DEBUG)
+  if (_count_memory_usage) {
+    _CrtSetAllocHook(&win32_malloc_hook);
+  }
+#endif
+
   _freeze_index = 0;
   _count = 0;
-  _allocated_size = 0;
+  _current_cpp_size = 0;
+  _cpp_size = 0;
   _total_size = 0;
 }
 
@@ -467,9 +528,9 @@ ns_remove_pointer(ReferenceCount *ptr) {
       // pointer, remove it from the table.
       if (info._freeze_index == _freeze_index) {
         _count--;
-        _allocated_size -= info._size;
+        _current_cpp_size -= info._size;
       }
-      _total_size -= info._size;
+      _cpp_size -= info._size;
 
       // We have to protect modifications to the table from recursive
       // calls by turning off _track_memory_usage while we adjust it.
@@ -513,11 +574,11 @@ ns_record_void_pointer(void *ptr, size_t size) {
     }
 
     if (info._freeze_index == _freeze_index) {
-      _allocated_size += size - info._size;
+      _current_cpp_size += size - info._size;
     } else {
-      _allocated_size += size;
+      _current_cpp_size += size;
     }
-    _total_size += size - info._size;
+    _cpp_size += size - info._size;
 
     info._void_ptr = ptr;
     info._size = size;
@@ -570,9 +631,9 @@ ns_remove_void_pointer(void *ptr) {
 
       if (info._freeze_index == _freeze_index) {
         _count--;
-        _allocated_size -= info._size;
+        _current_cpp_size -= info._size;
       }
-      _total_size -= info._size;
+      _cpp_size -= info._size;
 
       // We have to protect modifications to the table from recursive
       // calls by turning off _track_memory_usage while we adjust it.
@@ -584,26 +645,39 @@ ns_remove_void_pointer(void *ptr) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_get_allocated_size
+//     Function: MemoryUsage::ns_get_current_cpp_size
 //       Access: Private
 //  Description: Returns the total number of bytes of allocated memory
-//               as counted, excluding the memory previously frozen.
+//               via the C++ operators new and delete as counted,
+//               not including the memory previously frozen.
 ////////////////////////////////////////////////////////////////////
 size_t MemoryUsage::
-ns_get_allocated_size() {
-  nassertr(_track_memory_usage, 0);
-  return _allocated_size;
+ns_get_current_cpp_size() {
+  return _current_cpp_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::ns_get_cpp_size
+//       Access: Private
+//  Description: Returns the total number of bytes of allocated memory
+//               via the C++ operators new and delete as counted,
+//               including the memory previously frozen.
+////////////////////////////////////////////////////////////////////
+size_t MemoryUsage::
+ns_get_cpp_size() {
+  return _cpp_size;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::ns_get_total_size
 //       Access: Private
-//  Description: Returns the total number of bytes of allocated memory
-//               as counted, including the memory previously frozen.
+//  Description: Returns the total size of the dynamic heap, as nearly
+//               as can be determined, including all allocated memory
+//               if possible, in addition to that tracked by
+//               get_cpp_size().
 ////////////////////////////////////////////////////////////////////
 size_t MemoryUsage::
 ns_get_total_size() {
-  nassertr(_track_memory_usage, 0);
   return _total_size;
 }
 
@@ -753,7 +827,7 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
 void MemoryUsage::
 ns_freeze() {
   _count = 0;
-  _allocated_size = 0;
+  _current_cpp_size = 0;
   _trend_types.clear();
   _trend_ages.clear();
   _freeze_index++;
@@ -884,7 +958,7 @@ consolidate_void_ptr(MemoryInfo &info) {
     info._size = typed_info.get_size();
     info._flags |= MemoryInfo::F_size_known;
     if (typed_info._freeze_index == _freeze_index) {
-      _allocated_size += info._size;
+      _current_cpp_size += info._size;
     }
   }
 
@@ -896,7 +970,7 @@ consolidate_void_ptr(MemoryInfo &info) {
   // entry.
   if (info._freeze_index == _freeze_index) {
     _count--;
-    _allocated_size -= info._size;
+    _current_cpp_size -= info._size;
   }
     
   // We have to protect modifications to the table from recursive

@@ -67,17 +67,33 @@ public:
 #ifdef NDEBUG
 public:
   INLINE static bool is_tracking() { return false; }
-  INLINE static size_t get_allocated_size() { return 0; }
+  INLINE static bool is_counting() { return false; }
+  INLINE static size_t get_current_cpp_size() { return 0; }
+  INLINE static bool has_cpp_size() { return false; }
+  INLINE static size_t get_cpp_size() { return 0; }
+  INLINE static bool has_total_size() { return false; }
+  INLINE static size_t get_total_size() { return 0; }
 
 #else  // NDEBUG
 public:
   static void *operator_new_handler(size_t size);
   static void operator_delete_handler(void *ptr);
 
+#if defined(WIN32_VC) && defined(_DEBUG)
+  static int win32_malloc_hook(int alloc_type, void *ptr, 
+                               size_t size, int block_use, long request, 
+                               const unsigned char *filename, int line);
+#endif
+    
 PUBLISHED:
   INLINE static bool is_tracking();
-  INLINE static size_t get_allocated_size();
+  INLINE static bool is_counting();
+  INLINE static size_t get_current_cpp_size();
+  INLINE static bool has_cpp_size();
+  INLINE static size_t get_cpp_size();
+  INLINE static bool has_total_size();
   INLINE static size_t get_total_size();
+
   INLINE static int get_num_pointers();
   INLINE static void get_pointers(MemoryUsagePointers &result);
   INLINE static void get_pointers_of_type(MemoryUsagePointers &result,
@@ -105,7 +121,8 @@ private:
   void ns_record_void_pointer(void *ptr, size_t size);
   void ns_remove_void_pointer(void *ptr);
 
-  size_t ns_get_allocated_size();
+  size_t ns_get_current_cpp_size();
+  size_t ns_get_cpp_size();
   size_t ns_get_total_size();
   int ns_get_num_pointers();
   void ns_get_pointers(MemoryUsagePointers &result);
@@ -125,12 +142,16 @@ private:
 
   static MemoryUsage *_global_ptr;
 
-  // Cannot use a pmap, since that would be recursive!
+  // We shouldn't use a pmap, since that would be recursive!
+  // Actually, it turns out that it doesn't matter, since somehow the
+  // pallocator gets used even though we specify dallocator here, so
+  // we have to make special code that handles the recursion anyway.
   typedef map<void *, MemoryInfo, less<void *>, dallocator<MemoryInfo> > Table;
   Table _table;
   int _freeze_index;
   int _count;
-  size_t _allocated_size;
+  size_t _current_cpp_size;
+  size_t _cpp_size;
   size_t _total_size;
 
   class TypeHistogram {
@@ -165,6 +186,7 @@ private:
 
 
   bool _track_memory_usage;
+  bool _count_memory_usage;
 
 #endif  // NDEBUG
 };

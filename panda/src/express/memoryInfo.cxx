@@ -20,6 +20,9 @@
 #include "typedReferenceCount.h"
 #include "typeHandle.h"
 
+#ifndef NDEBUG
+// Nothing in this module gets compiled in NDEBUG mode.
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryInfo::Constructor
 //       Access: Public
@@ -147,3 +150,5 @@ update_type_handle(TypeHandle &destination, TypeHandle refined) {
     destination = refined;
   }
 }
+
+#endif  // NDEBUG

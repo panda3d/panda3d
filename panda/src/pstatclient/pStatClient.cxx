@@ -40,7 +40,8 @@
 PStatClient *PStatClient::_global_pstats = NULL;
 
 #ifndef CPPPARSER
-PStatCollector _memory_usage_pcollector("Panda memory usage");
+PStatCollector _memory_usage_pcollector("Memory usage");
+PStatCollector _cpp_usage_pcollector("Memory usage:C++");
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -371,10 +372,13 @@ main_tick() {
   // code inside the MemoryUsage class, where it fits a little better,
   // simply because MemoryUsage is a very low-level class that doesn't
   // know about PStatClient.
-  if (MemoryUsage::is_tracking()) {
+  if (MemoryUsage::has_cpp_size()) {
+    _cpp_usage_pcollector.set_level(MemoryUsage::get_cpp_size());
+  }
+  if (MemoryUsage::has_total_size()) {
     _memory_usage_pcollector.set_level(MemoryUsage::get_total_size());
   }
-  
+
   get_global_pstats()->get_main_thread().new_frame();
 }
 

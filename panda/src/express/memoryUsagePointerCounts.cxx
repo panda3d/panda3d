@@ -20,6 +20,9 @@
 #include "memoryUsagePointerCounts.h"
 #include "memoryInfo.h"
 
+#ifndef NDEBUG
+// Nothing in this module gets compiled in NDEBUG mode.
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointerCounts::add_info
 //       Access: Public
@@ -75,3 +78,6 @@ output_bytes(ostream &out, size_t size) {
     out << size / (1024 * 1024) << " Mb";
   }
 }
+
+#endif  // NDEBUG
+

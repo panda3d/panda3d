@@ -128,21 +128,81 @@ is_tracking() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::get_allocated_size
+//     Function: MemoryUsage::is_counting
+//       Access: Public, Static
+//  Description: Returns true if the MemoryUsage object is currently
+//               at least counting memory (e.g. count-memory-usage is
+//               configured #t), even if it's not fully tracking it.
+////////////////////////////////////////////////////////////////////
+INLINE bool MemoryUsage::
+is_counting() {
+  return get_global_ptr()->_count_memory_usage;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::get_current_cpp_size
 //       Access: Public, Static
 //  Description: Returns the total number of bytes of allocated memory
-//               as counted, excluding the memory previously frozen.
+//               via the C++ operators new and delete as counted,
+//               not including the memory previously frozen.
 ////////////////////////////////////////////////////////////////////
 INLINE size_t MemoryUsage::
-get_allocated_size() {
-  return get_global_ptr()->ns_get_allocated_size();
+get_current_cpp_size() {
+  return get_global_ptr()->ns_get_current_cpp_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::has_cpp_size
+//       Access: Public, Static
+//  Description: Returns true if the value returned by
+//               get_cpp_size() is meaningful on this particular
+//               system with this particular configuration, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool MemoryUsage::
+has_cpp_size() {
+  return is_tracking();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::get_cpp_size
+//       Access: Public, Static
+//  Description: Returns the total number of bytes of allocated memory
+//               via the C++ operators new and delete as counted,
+//               including the memory previously frozen.
+////////////////////////////////////////////////////////////////////
+INLINE size_t MemoryUsage::
+get_cpp_size() {
+  return get_global_ptr()->ns_get_cpp_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::has_total_size
+//       Access: Public, Static
+//  Description: Returns true if the value returned by
+//               get_total_size() is meaningful on this particular
+//               system with this particular configuration, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool MemoryUsage::
+has_total_size() {
+#if defined(WIN32_VC) && defined(_DEBUG)
+  // Windows in debug mode can count total size without having to do a
+  // full track.
+  return is_counting();
+#else
+  // Other systems require the full hammer.
+  return is_tracking();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::get_total_size
 //       Access: Public, Static
-//  Description: Returns the total number of bytes of allocated memory
-//               as counted, including the memory previously frozen.
+//  Description: Returns the total size of the dynamic heap, as nearly
+//               as can be determined, including all allocated memory
+//               if possible, in addition to that tracked by
+//               get_cpp_size().
 ////////////////////////////////////////////////////////////////////
 INLINE size_t MemoryUsage::
 get_total_size() {
