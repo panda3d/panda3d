@@ -687,6 +687,8 @@ string_cs_type(const string &string) {
     return CST_inverse_sphere;
   } else if (cmp_nocase_uh(string, "geode") == 0) {
     return CST_geode;
+  } else if (cmp_nocase_uh(string, "tube") == 0) {
+    return CST_tube;
   } else {
     return CST_none;
   }
@@ -1059,6 +1061,8 @@ ostream &operator << (ostream &out, EggGroup::CollisionSolidType t) {
     return out << "InverseSphere";
   case EggGroup::CST_geode:
     return out << "Geode";
+  case EggGroup::CST_tube:
+    return out << "Tube";
   }
 
   nassertr(false, out);

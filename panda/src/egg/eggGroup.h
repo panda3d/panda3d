@@ -80,6 +80,7 @@ public:
     CST_sphere               = 0x00040000,
     CST_inverse_sphere       = 0x00050000,
     CST_geode                = 0x00060000,
+    CST_tube                 = 0x00070000,
   };
   enum CollideFlags {
     // The bits here must correspond to those in Flags, below.

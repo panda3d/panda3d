@@ -138,13 +138,14 @@ get_pos2() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_pos3
 //       Access: Public
-//  Description: Only valid if get_num_dimensions() returns 3.
+//  Description: Valid if get_num_dimensions() returns 3 or 4.
 //               Returns the position as a three-dimensional value.
 ////////////////////////////////////////////////////////////////////
 INLINE Vertexd EggVertex::
 get_pos3() const {
-  nassertr(_num_dimensions == 3, LPoint3d(0.0, 0.0, 0.0));
-  return Vertexd(_pos[0], _pos[1], _pos[2]);
+  nassertr(_num_dimensions == 3 || _num_dimensions == 4,
+           LPoint3d(0.0, 0.0, 0.0));
+  return Vertexd(_pos[0] / _pos[3], _pos[1] / _pos[3], _pos[2] / _pos[3]);
 }
 
 
