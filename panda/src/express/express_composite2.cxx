@@ -7,6 +7,6 @@
 #include "reversedNumericData.cxx"
 #include "trueClock.cxx"
 #include "typeHandle.cxx"
-#include "typedObject.cxx "
-#include "typedReferenceCount.cxx "
+#include "typedObject.cxx"
+#include "typedReferenceCount.cxx"
 
