@@ -55,6 +55,11 @@ EXPCL_DIRECT bool toggle_wireframe(NodeRelation *render_arc);
 EXPCL_DIRECT bool toggle_texture(NodeRelation *render_arc);
 EXPCL_DIRECT bool toggle_backface(NodeRelation *render_arc);
 
+// klunky interface since we cant pass array from python->C++
+EXPCL_DIRECT void add_fullscreen_testsize(unsigned int xsize,unsigned int ysize);
+EXPCL_DIRECT void runtest_fullscreen_sizes(GraphicsWindow *win);
+EXPCL_DIRECT bool query_fullscreen_testresult(unsigned int xsize,unsigned int ysize);
+
 EXPCL_DIRECT void take_snapshot(GraphicsWindow *win, const string &name);
 
 EXPCL_DIRECT ConfigShowbase &get_config_showbase();

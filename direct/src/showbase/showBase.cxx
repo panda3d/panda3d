@@ -291,3 +291,36 @@ get_config_showbase() {
   return config_showbase;
 }
 
+// klunky interface since we cant pass array from python->C++ to use verify_window_sizes directly
+static unsigned int num_fullscreen_testsizes=0;
+#define MAX_FULLSCREEN_TESTS 10
+static unsigned int fullscreen_testsizes[MAX_FULLSCREEN_TESTS*2];
+
+void add_fullscreen_testsize(unsigned int xsize,unsigned int ysize) {
+    if((xsize==0) && (ysize==0)) {
+        num_fullscreen_testsizes=0;
+        return;
+    }
+
+    // silently fail if maxtests exceeded
+    if(num_fullscreen_testsizes<MAX_FULLSCREEN_TESTS) {
+        fullscreen_testsizes[num_fullscreen_testsizes*2]=xsize;
+        fullscreen_testsizes[num_fullscreen_testsizes*2+1]=ysize;
+        num_fullscreen_testsizes++;
+    }
+}
+
+void runtest_fullscreen_sizes(GraphicsWindow *win) {
+    (void) win->verify_window_sizes(num_fullscreen_testsizes,fullscreen_testsizes);
+}
+
+bool query_fullscreen_testresult(unsigned int xsize,unsigned int ysize) {
+    // stupid linear search that works ok as long as total tests are small
+    for(int i=0;i<num_fullscreen_testsizes;i++) {
+        if((fullscreen_testsizes[i*2]==xsize) &&
+           (fullscreen_testsizes[i*2+1]==ysize))
+          return true;
+    }
+    return false;
+}
+
