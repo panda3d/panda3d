@@ -34,7 +34,7 @@ class WeakPointerToVoid;
 //               ReferenceCount object in the world with the size of
 //               this object.
 ////////////////////////////////////////////////////////////////////
-class WeakReferenceList {
+class EXPCL_PANDAEXPRESS WeakReferenceList {
 public:
   WeakReferenceList();
   ~WeakReferenceList();
