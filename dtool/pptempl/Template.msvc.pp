@@ -787,8 +787,7 @@ uninstall-$[dirname] :
 
 #if $[ne $[CONFIG_HEADER],]
 $[install_headers_dir] :
-	@test -d $[install_headers_dir] || echo mkdir -p $[install_headers_dir]
-	@test -d $[install_headers_dir] || mkdir -p $[install_headers_dir]
+	mkdir $[install_headers_dir]
 
 $[install_headers_dir]\$[CONFIG_HEADER] : $[CONFIG_HEADER]
 #define local $[CONFIG_HEADER]
