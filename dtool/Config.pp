@@ -313,7 +313,8 @@
 #define IPC_IPATH
 #define IPC_LPATH
 #define IPC_LIBS
-#defer HAVE_IPC $[HAVE_NSPR]
+//#defer HAVE_IPC $[HAVE_NSPR]
+#define HAVE_IPC
 
 // Do you want to build the network interface?  What additional libraries
 // are required?  Currently, this requires NSPR.
