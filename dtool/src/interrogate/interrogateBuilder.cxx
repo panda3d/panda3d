@@ -1547,7 +1547,7 @@ get_wrapper(FunctionIndex function_index, WrapperBuilder *wbuilder,
 
   iwrapper._function = function_index;
 
-  // We do assume that two different libraries will not has to the
+  // We do assume that two different libraries will not hash to the
   // same name.  This is pretty unlikely, although there could be big
   // problems if it ever happens.  If it does, we'll probably need to
   // add an interface so the user can specify a hash offset on a

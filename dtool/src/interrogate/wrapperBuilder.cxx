@@ -25,6 +25,7 @@
 #include <cppFunctionType.h>
 #include <cppParameterList.h>
 #include <cppStructType.h>
+#include <cppReferenceType.h>
 #include <notify.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -144,6 +145,23 @@ set_function(CPPInstance *function, const string &description,
     param._remap = new ParameterRemapThis(_struct_type, is_const);
     _parameters.push_back(param);
     _has_this = true;
+
+    // Also check the name of the function.  If it's one of the
+    // assignment-style operators, flag it as such.
+    string fname = _function->get_simple_name();
+    if (fname == "operator =" ||
+	fname == "operator *=" ||
+	fname == "operator /=" ||
+	fname == "operator %=" ||
+	fname == "operator +=" ||
+	fname == "operator -=" ||
+	fname == "operator |=" ||
+	fname == "operator &=" ||
+	fname == "operator ^=" ||
+	fname == "operator <<=" ||
+	fname == "operator >>=") {
+      _type = T_assignment_method;
+    }
   }
 
   const CPPParameterList::Parameters &params = 
@@ -174,13 +192,29 @@ set_function(CPPInstance *function, const string &description,
   }
 
   if (_type == T_constructor) {
-    // Constructors are a special case.
+    // Constructors are a special case.  These appear to return void
+    // as seen by the parser, but we know they actually return a new
+    // concrete instance.
 
     if (_struct_type == (CPPStructType *)NULL) {
       nout << "Method " << *_function << " has no struct type\n";
       _is_valid = false;
     } else {
       _return_type = make_remap(_struct_type);
+      _void_return = false;
+    }
+
+  } else if (_type == T_assignment_method) {
+    // Assignment-type methods are also a special case.  We munge
+    // these to return *this, which is a semi-standard C++ convention
+    // anyway.  We just enforce it.
+
+    if (_struct_type == (CPPStructType *)NULL) {
+      nout << "Method " << *_function << " has no struct type\n";
+      _is_valid = false;
+    } else {
+      CPPType *ref_type = CPPType::new_type(new CPPReferenceType(_struct_type));
+      _return_type = make_remap(ref_type);
       _void_return = false;
     }
 
@@ -573,41 +607,70 @@ call_function(ostream &out, int indent_level, bool convert_result,
       return_expr = _return_type->get_return_expr(new_str);
     }
 
+  } else if (_type == T_constructor) {
+    // A special case for constructors.
+    return_expr = "new " + get_call_str(pexprs);
+
+  } else if (_type == T_assignment_method) {
+    // Another special case for assignment operators.
+    indent(out, indent_level)
+      << get_call_str(pexprs) << ";\n";
+
+    string this_expr = get_parameter_expr(0, pexprs);
+    string ref_expr = "*" + this_expr;
+
+    if (!convert_result) {
+      return_expr = ref_expr;
+    } else {
+      string new_str =
+	_return_type->prepare_return_expr(out, indent_level, ref_expr);
+      return_expr = _return_type->get_return_expr(new_str);
+
+      // Now a simple special-case test.  Often, we will have converted
+      // the reference-returning assignment operator to a pointer.  In
+      // this case, we might inadventent generate code like "return
+      // &(*this)", when "return this" would do.  We check for this here
+      // and undo it as a special case.
+      
+      // There's no real good reason to do this, other than that it
+      // feels more satisfying to a casual perusal of the generated
+      // code.  It *is* conceivable that some broken compilers wouldn't
+      // like "&(*this)", though.
+      
+      if (return_expr == "&(" + ref_expr + ")" ||
+	  return_expr == "&" + ref_expr) {
+	return_expr = this_expr;
+      }
+    }
+          
+  } else if (_void_return) {
+    indent(out, indent_level)
+      << get_call_str(pexprs) << ";\n";
+
   } else {
     string call = get_call_str(pexprs);
 
-    // Now output that call.
-    if (_type == T_constructor) {
-      // A special case for constructors.
-      return_expr = "new " + call;
-      
-    } else if (_void_return) {
-      indent(out, indent_level)
-	<< call << ";\n";
+    if (!convert_result) {
+      return_expr = get_call_str(pexprs);
       
     } else {
-      if (!convert_result) {
-	return_expr = call;
-
+      if (_return_type->return_value_should_be_simple()) {
+	// We have to assign the result to a temporary first; this makes
+	// it a bit easier on poor old VC++.
+	indent(out, indent_level);
+	_return_type->get_orig_type()->output_instance(out, "result",
+						       &parser);
+	out << " = " << call << ";\n";
+	
+	string new_str =
+	  _return_type->prepare_return_expr(out, indent_level, "result");
+	return_expr = _return_type->get_return_expr(new_str);
+	
       } else {
-	if (_return_type->return_value_should_be_simple()) {
-	  // We have to assign the result to a temporary first; this makes
-	  // it a bit easier on poor old VC++.
-	  indent(out, indent_level);
-	  _return_type->get_orig_type()->output_instance(out, "result",
-							 &parser);
-	  out << " = " << call << ";\n";
-	  
-	  string new_str =
-	    _return_type->prepare_return_expr(out, indent_level, "result");
-	  return_expr = _return_type->get_return_expr(new_str);
-	  
-	} else {
-	  // This should be simple enough that we can return it directly.
-	  string new_str = 
-	    _return_type->prepare_return_expr(out, indent_level, call);
-	  return_expr = _return_type->get_return_expr(new_str);
-	}
+	// This should be simple enough that we can return it directly.
+	string new_str = 
+	  _return_type->prepare_return_expr(out, indent_level, call);
+	return_expr = _return_type->get_return_expr(new_str);
       }
     }
   }

@@ -40,6 +40,7 @@ public:
     T_constructor,
     T_destructor,
     T_typecast_method,
+    T_assignment_method,
     T_typecast,
     T_getter,
     T_setter
