@@ -477,7 +477,9 @@ void GuiButton::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
 
 void GuiButton::unmanage(void) {
   if (_mgr != (GuiManager*)0L)
-    _mgr->remove_region(_rgn);
+    if ((_state != NONE) && (_state != INACTIVE) &&
+	(_state != INACTIVE_ROLLOVER))
+      _mgr->remove_region(_rgn);
   if (_behavior_running)
     this->stop_behavior();
   switch_state(NONE);
