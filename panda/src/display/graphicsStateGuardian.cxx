@@ -867,7 +867,10 @@ begin_frame() {
   // changed between frames.
   if (_lighting_enabled_this_frame) {
     for (int i = 0; i < _max_lights; i++) {
-      enable_light(i, false);
+      if (_light_info[i]._enabled) {
+        enable_light(i, false);
+        _light_info[i]._enabled = false;
+      }
       _light_info[i]._light = (Light *)NULL;
     }
 
@@ -1238,6 +1241,7 @@ issue_light(const LightAttrib *attrib) {
           // enable the light, not reapply it.
           cur_light_id = -2;
           enable_light(i, true);
+          _light_info[i]._enabled = true;
           _light_info[i]._next_enabled = true;
           break;
         }
@@ -1268,6 +1272,7 @@ issue_light(const LightAttrib *attrib) {
         
       if (cur_light_id >= 0) {
         enable_light(cur_light_id, true);
+        _light_info[cur_light_id]._enabled = true;
         _light_info[cur_light_id]._next_enabled = true;
         
         if (!any_bound) {
@@ -1290,6 +1295,7 @@ issue_light(const LightAttrib *attrib) {
   for (i = 0; i < _max_lights; i++) {
     if (!_light_info[i]._next_enabled) {
       enable_light(i, false);
+      _light_info[i]._enabled = false;
     }
   }
 
