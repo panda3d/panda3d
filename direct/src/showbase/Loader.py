@@ -3,11 +3,17 @@
 from PandaModules import *
 from DirectNotifyGlobal import *
 
+# You can specify a phaseChecker callback to check
+# a modelPath to see if it is being loaded in the correct
+# phase
+phaseChecker = None
+
 class Loader:
 
     """Loader class: contains method to load models, sounds and code"""
 
     notify = directNotify.newCategory("Loader")
+    notify.setDebug(1)
     
     # special methods
     def __init__(self, base):
@@ -22,6 +28,8 @@ class Loader:
         Attempt to load a model from given file path, return
         a nodepath to the model if successful or None otherwise."""
         Loader.notify.debug("Loading model: %s" % (modelPath) )
+        if phaseChecker:
+            phaseChecker(modelPath)
         node = self.loader.loadSync(Filename(modelPath))
         if (node != None):
             nodePath = self.base.hidden.attachNewNode(node)
@@ -35,6 +43,8 @@ class Loader:
         then attempt to load it from disk. Return a nodepath to
         the model if successful or None otherwise"""
         Loader.notify.debug("Loading model once: %s" % (modelPath))
+        if phaseChecker:
+            phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
         if (node != None):
             nodePath = self.base.hidden.attachNewNode(node)
@@ -48,6 +58,8 @@ class Loader:
         then attempt to load it from disk. Return a nodepath to
         a copy of the model if successful or None otherwise"""
         Loader.notify.debug("Loading model copy: %s" % (modelPath))
+        if phaseChecker:
+            phaseChecker(modelPath)
         node = ModelPool.loadModel(modelPath)
         if (node != None):
             return (NodePath(node).copyTo(self.base.hidden))
@@ -65,6 +77,8 @@ class Loader:
         model under hidden."""
         
         Loader.notify.debug("Loading model once node: %s" % (modelPath))
+        if phaseChecker:
+            phaseChecker(modelPath)
         return ModelPool.loadModel(modelPath)
 
     def unloadModel(self, modelPath):
@@ -81,9 +95,13 @@ class Loader:
 
         if alphaPath == None:
             Loader.notify.debug("Loading texture: %s" % (texturePath) )
+            if phaseChecker:
+                phaseChecker(texturePath)
             texture = TexturePool.loadTexture(texturePath)
         else:
             Loader.notify.debug("Loading texture: %s %s" % (texturePath, alphaPath) )
+            if phaseChecker:
+                phaseChecker(texturePath)
             texture = TexturePool.loadTexture(texturePath, alphaPath)
         return texture
 
@@ -99,6 +117,8 @@ class Loader:
         Attempt to load a sound from the given file path using
         Cary's sound class. Returns None if not found"""
         Loader.notify.debug("Loading sound: %s" % (soundPath) )
+        if phaseChecker:
+            phaseChecker(soundPath)
         sound = AudioPool.loadSound(soundPath)
         return sound
 
@@ -108,12 +128,4 @@ class Loader:
         if sound:
             Loader.notify.debug("Unloading sound: %s" % (sound) )
             AudioPool.releaseSound(sound)
-
-
-
-
-
-
-
-
 
