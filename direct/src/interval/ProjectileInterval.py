@@ -30,17 +30,18 @@ class ProjectileInterval(Interval):
         """
         You may specify several different sets of input parameters.
         (If startPos is not provided, it will be obtained from the node's
-        current position)
+        position at the time that the interval is first started. Note that
+        in this case you must provide a duration.)
         
         # go from startPos to endPos in duration seconds
         startPos, endPos, duration
         # given a starting velocity, go for a specific time period
         startPos, startVel, duration
-        # given a starting velocity, go until you hit a given Z plane (TODO)
+        # given a starting velocity, go until you hit a given Z plane
         startPos, startVel, endZ
         
         You may alter gravity by providing a multiplier in 'gravityMult'.
-        '2.' will make gravity twice as strong, '.5' twice as weak.
+        '2.' will make gravity twice as strong, '.5' half as strong.
         '-1.' will reverse gravity
         """
         self.node = node
@@ -59,17 +60,15 @@ class ProjectileInterval(Interval):
 
         args = (startPos, endPos, duration,
                 startVel, endZ, gravityMult)
-        self.needToCalcTraj = 0
+        self.implicitStartPos = 0
         if startPos is None:
+            if duration is None:
+                self.notify.error('must provide either startPos or duration')
+            self.duration = duration
             # we can't calc the trajectory until we know our starting
             # position; delay until the interval is actually started
             self.trajectoryArgs = args
-            self.needToCalcTraj = 1
-            # if a duration was not provided, choose a temporary value
-            if duration is None:
-                self.duration = 1
-            else:
-                self.duration = duration
+            self.implicitStartPos = 1
         else:
             self.__calcTrajectory(*args)
 
@@ -79,8 +78,7 @@ class ProjectileInterval(Interval):
                          endPos = None, duration = None,
                          startVel = None, endZ = None,
                          gravityMult = None):
-        self.needToCalcTraj = 0
-        if not startPos:
+        if startPos is None:
             startPos = self.node.getPos()
 
         def doIndirections(*items):
@@ -149,7 +147,7 @@ class ProjectileInterval(Interval):
             self.duration = time
             self.endPos = self.__calcPos(self.duration)
         else:
-            self.notify.error('invalid set of inputs')
+            self.notify.error('invalid set of inputs to ProjectileInterval')
 
         self.notify.debug('startPos: %s' % `self.startPos`)
         self.notify.debug('endPos:   %s' % `self.endPos`)
@@ -158,7 +156,7 @@ class ProjectileInterval(Interval):
         self.notify.debug('z-accel:  %s' % self.zAcc)
 
     def __initialize(self):
-        if self.needToCalcTraj:
+        if self.implicitStartPos:
             self.__calcTrajectory(*self.trajectoryArgs)
 
     def privInitialize(self, t):
