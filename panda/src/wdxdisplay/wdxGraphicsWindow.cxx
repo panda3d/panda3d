@@ -54,6 +54,8 @@ typedef map<HWND,wdxGraphicsWindow *> HWND_PANDAWIN_MAP;
 HWND_PANDAWIN_MAP hwnd_pandawin_map;
 wdxGraphicsWindow* global_wdxwinptr = NULL;  // need this for temporary windproc
 
+#define MAX_DEVICES 20
+
 extern bool dx_full_screen_antialiasing;  // defined in dxgsg_config.cxx
 
 #define MOUSE_ENTERED 0
@@ -1291,24 +1293,35 @@ dx_setup() {
 
     // Check for DirectX 7 by looking for DirectDrawCreateEx
 
-    HINSTANCE DDHinst = LoadLibrary( "ddraw.dll" );
+    HINSTANCE DDHinst = LoadLibrary("ddraw.dll");
     if(DDHinst == 0) {
-        wdxdisplay_cat.fatal() << "can't locate DDRAW.DLL!" << endl;
+        wdxdisplay_cat.fatal() << "can't locate DDRAW.DLL!\n";
         exit(1);
     }
 
-    if(NULL == GetProcAddress( DDHinst, "DirectDrawCreateEx" )) {
-        wdxdisplay_cat.fatal() << "Panda currently requires at least DirectX 7.0!" << endl;
+    typedef HRESULT (WINAPI * LPDIRECTDRAWCREATEEX)(GUID FAR * lpGuid, LPVOID  *lplpDD, REFIID  iid,IUnknown FAR *pUnkOuter);
+
+    // load all ddraw exports dynamically to avoid static link to ddraw.dll, in case system doesnt have it
+
+    LPDIRECTDRAWCREATEEX pDDCreateEx = (LPDIRECTDRAWCREATEEX) GetProcAddress(DDHinst,"DirectDrawCreateEx");
+    if(pDDCreateEx == NULL) {
+        wdxdisplay_cat.fatal() << "Panda currently requires at least DirectX 7.0!\n";
+        exit(1);
+    }
+
+    LPDIRECTDRAWENUMERATEEX pDDEnumEx = (LPDIRECTDRAWENUMERATEEX) GetProcAddress(DDHinst,"DirectDrawEnumerateEx");
+    if(pDDEnumEx == NULL) {
+        wdxdisplay_cat.fatal() << "GetProcAddr failed for DirectDrawEnumerateEx!\n";
         exit(1);
     }
 
     GUID DriverGUID;
     ZeroMemory(&DriverGUID,sizeof(GUID));
 
-      // search for early voodoo-type non-primary display drivers
-      // if they exist, use them for 3D  (could examine 3D devices on all
-      // drivers and pick the best one, but I'll assume the computer setuper knows what he's doing)
-    if(hr = DirectDrawEnumerateEx( DriverEnumCallback, &DriverGUID, DDENUM_NONDISPLAYDEVICES )) {
+    // search for early voodoo-type non-primary display drivers
+    // if they exist, use them for 3D  (could examine 3D devices on all
+    // drivers and pick the best one, but I'll assume the computer setuper knows what he's doing)
+    if(hr = (*pDDEnumEx)( DriverEnumCallback, &DriverGUID, DDENUM_NONDISPLAYDEVICES )) {
         wdxdisplay_cat.fatal()   << "config() - DirectDrawEnumerateEx failed : result = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
@@ -1319,14 +1332,14 @@ dx_setup() {
     }
 
       // Create the Direct Draw Object
-    hr = DirectDrawCreateEx(pOurDriverGUID, (void **)&pDD, IID_IDirectDraw7, NULL);
+    hr = (*pDDCreateEx)(pOurDriverGUID, (void **)&pDD, IID_IDirectDraw7, NULL);
     if(hr != DD_OK) {
         wdxdisplay_cat.fatal()
         << "config() - DirectDrawCreateEx failed : result = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
     }
 
-    FreeLibrary(DDHinst);    //undo LoadLib above, decrement ddrawl.dll refcnt (after DDrawCreate, since dont want to unload/reload)
+    FreeLibrary(DDHinst);    //undo LoadLib above, decrement ddraw.dll refcnt (after DDrawCreate, since dont want to unload/reload)
 
     pDD->GetDeviceIdentifier(&_DXDeviceID,0x0);
 
@@ -1344,8 +1357,7 @@ dx_setup() {
         exit(1);
     }
 
-    D3DDEVICEDESC7 d3ddevs[2];  // put HAL in 0, TnLHAL in 1
-
+    D3DDEVICEDESC7 d3ddevs[MAX_DEVICES];  // put HAL in 0, TnLHAL in 1
 
     // just look for HAL and TnL devices right now.  I dont think
     // we have any interest in the sw rasts at this point

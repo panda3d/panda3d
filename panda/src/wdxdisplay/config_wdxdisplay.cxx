@@ -29,6 +29,7 @@ ConfigureFn(config_wdxdisplay) {
   init_libwdxdisplay();
 }
 
+int dx_use_multimon = config_wdxdisplay.GetInt("dx-multimon", 1);
 bool dx_force_16bpp_zbuffer = config_wdxdisplay.GetBool("dx-force-16bpp-zbuffer", false);
 bool bResponsive_minimized_fullscreen_window = config_wdxdisplay.GetBool("responsive-minimized-fullscreen-window",false);
 

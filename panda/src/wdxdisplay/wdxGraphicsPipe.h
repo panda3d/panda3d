@@ -68,7 +68,7 @@ private:
 
 //  int               _width;
 //  int               _height;
-  bool              _shift;
+//  bool              _shift;
 
 protected:
 

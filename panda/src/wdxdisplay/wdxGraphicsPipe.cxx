@@ -33,8 +33,8 @@ wdxGraphicsPipe::wdxGraphicsPipe(const PipeSpecifier& spec)
 : InteractiveGraphicsPipe(spec) {
 //    _width = GetSystemMetrics(SM_CXSCREEN);
 //    _height = GetSystemMetrics(SM_CYSCREEN);
-    _shift = false;
-//  global_pipe = this;
+//    _shift = false;
+//    global_pipe = this;
 }
 
 ////////////////////////////////////////////////////////////////////
