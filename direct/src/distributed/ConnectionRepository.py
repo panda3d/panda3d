@@ -317,3 +317,17 @@ class ConnectionRepository(DirectObject.DirectObject):
             self.notify.info('*** RESTORING SIMULATED PULLED-NETWORK-PLUG ***')
             self.tcpConn = self.hijackedTcpConn
             del self.hijackedTcpConn
+
+    def doFind(self, str):
+        """ returns list of distributed objects with matching str in value """
+        for value in self.doId2do.values():
+            if `value`.find(str) >= 0:
+                return value
+
+    def doFindAll(self, str):
+        """ returns list of distributed objects with matching str in value """
+        matches = []
+        for value in self.doId2do.values():
+            if `value`.find(str) >= 0:
+                matches.append(value)
+        return matches
