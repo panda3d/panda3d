@@ -170,6 +170,9 @@ get_all_defs(SFNodeRef &vrml, VRMLToEggConverter::Nodes &nodes) {
       vrml._p = (*ni).second;
     }
     return;
+
+  default:
+    break;
   }
 
   VrmlNode *node = vrml._p;
@@ -395,8 +398,6 @@ void VRMLToEggConverter::
 vrml_shape(const VrmlNode *node, EggGroup *group,
 	   const LMatrix4d &net_transform) {
   const VrmlNode *geometry = node->get_value("geometry")._sfnode._p;
-
-  double transparency = 0.0;
 
   if (geometry != NULL) {
     VRMLAppearance appearance(node->get_value("appearance")._sfnode._p);
