@@ -30,45 +30,16 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
         if (doneEvent == None) and (style != NoButtons):
             self.notify.error("Boxes with buttons must specify a doneEvent.")
             
-        self.doneEvent = doneEvent
+        self.__doneEvent = doneEvent
         self.message = message
         self.style = style
         self.font = font
         self.wordwrap = wordwrap
-        self.isLoaded = 0
 
         # initialize our OnscreenPanel essence
         # NOTE: all db's have the same name so we can kill them easily
         OnscreenPanel.OnscreenPanel.__init__(self, "globalDialog")
          
-	return None
-
-    def show(self):
-	"""show(self)
-	"""
-	if self.isLoaded == 0:
-	    self.load()
-        base.transitions.fadeScreen()
-        OnscreenPanel.OnscreenPanel.show(self)
-        
-	return None
-
-    def hide(self):
-	"""hide(self)
-	"""
-	if self.isLoaded == 0:
-	    return None
-        base.transitions.noTransitions()        
-        OnscreenPanel.OnscreenPanel.hide(self)
-
-	return None
-	
-    def load(self):
-	"""load(self)
-	"""
-	if self.isLoaded == 1:
-	    return None
-
         # make the panel
         self.makePanel(rect = (-0.5, 0.5, -0.4, 0.4),
                        drawOrder = 32000, font = self.font,
@@ -95,19 +66,30 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
             "Sanity check"
             self.notify.error("No such style as: " + str(self.style))
             
-	self.isLoaded = 1
+	return None
+
+    def show(self):
+	"""show(self)
+	"""
+        base.transitions.fadeScreen()
+        OnscreenPanel.OnscreenPanel.show(self)
+        
+	return None
+
+    def hide(self):
+	"""hide(self)
+	"""
+        base.transitions.noTransitions()        
+        OnscreenPanel.OnscreenPanel.hide(self)
+
 	return None
 	
-    def unload(self):
+    def cleanup(self):
 	"""unload(self)
 	"""
-	if self.isLoaded == 0:
-	    return None
-	
 	self.hide()
-        self.cleanup()
+        OnscreenPanel.OnscreenPanel.cleanup(self)
 
-	self.isLoaded = 0
 	return None
 
     # def handleRollover(self):
@@ -117,16 +99,15 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
         assert(self.style != NoButtons)
         if (okButton == item):
             self.doneStatus = "ok"	
-            messenger.send(self.doneEvent)
+            messenger.send(self.__doneEvent)
 
     def handleCancel(self, cancelButton, item):
         assert(self.style == TwoChoice)
         if (cancelButton == item):
             self.doneStatus = "cancel"
-            messenger.send(self.doneEvent)
+            messenger.send(self.__doneEvent)
 
     def setMessage(self, message):
         """setMessage(self, string)
         """
-        if self.isLoaded == 1:
-            self.panelText[0].setText(message)
+        self.panelText[0].setText(message)
