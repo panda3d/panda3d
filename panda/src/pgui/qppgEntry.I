@@ -1,0 +1,384 @@
+// Filename: qppgEntry.I
+// Created by:  drose (13Mar02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::set_text
+//       Access: Published
+//  Description: Changes the text currently displayed within the
+//               entry.  This uses the Unicode encoding currently
+//               specified for the "focus" TextNode; therefore, the
+//               TextNode must exist before calling set_text().
+////////////////////////////////////////////////////////////////////
+INLINE void qpPGEntry:: 
+set_text(const string &text) {
+  qpTextNode *text_node = get_text_def(S_focus);
+  nassertv(text_node != (qpTextNode *)NULL);
+  set_wtext(text_node->decode_text(text));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_text
+//       Access: Published
+//  Description: Returns the text currently displayed within the
+//               entry.  This uses the Unicode encoding currently
+//               specified for the "focus" TextNode; therefore, the
+//               TextNode must exist before calling get_text().
+////////////////////////////////////////////////////////////////////
+INLINE string qpPGEntry:: 
+get_text() const {
+  qpTextNode *text_node = get_text_def(S_focus);
+  nassertr(text_node != (qpTextNode *)NULL, string());
+  return text_node->encode_wtext(get_wtext());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::set_cursor_position
+//       Access: Published
+//  Description: Sets the current position of the cursor.  This is the
+//               position within the text at which the next letter
+//               typed by the user will be inserted; normally it is
+//               the same as the length of the text.
+////////////////////////////////////////////////////////////////////
+INLINE void qpPGEntry:: 
+set_cursor_position(int position) {
+  if (_cursor_position != position) {
+    _cursor_position = position;
+    _cursor_stale = true;
+    _blink_start = ClockObject::get_global_clock()->get_frame_time();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_cursor_position
+//       Access: Published
+//  Description: Returns the current position of the cursor.
+////////////////////////////////////////////////////////////////////
+INLINE int qpPGEntry:: 
+get_cursor_position() const {
+  return _cursor_position;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::set_max_chars
+//       Access: Published
+//  Description: Sets the maximum number of characters that may be
+//               typed into the entry.  This is a limit on the number
+//               of characters, as opposed to the width of the entry;
+//               see also set_max_width().
+//
+//               If this is 0, there is no limit.
+////////////////////////////////////////////////////////////////////
+INLINE void qpPGEntry:: 
+set_max_chars(int max_chars) {
+  _max_chars = max_chars;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_max_chars
+//       Access: Published
+//  Description: Returns the current maximum number of characters that
+//               may be typed into the entry, or 0 if there is no
+//               limit.  See set_max_chars().
+////////////////////////////////////////////////////////////////////
+INLINE int qpPGEntry:: 
+get_max_chars() const {
+  return _max_chars;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::set_max_width
+//       Access: Published
+//  Description: Sets the maximum width of all characters that may be
+//               typed into the entry.  This is a limit on the width
+//               of the formatted text, not a fixed limit on the
+//               number of characters; also set_max_chars().
+//
+//               If this is 0, there is no limit.
+//
+//               If _num_lines is more than 1, rather than being a
+//               fixed width on the whole entry, this becomes instead
+//               the wordwrap width (and the width limit on the entry
+//               is essentially _max_width * _num_lines).
+////////////////////////////////////////////////////////////////////
+INLINE void qpPGEntry:: 
+set_max_width(float max_width) {
+  _max_width = max_width;
+  _text_geom_stale = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_max_width
+//       Access: Published
+//  Description: Returns the current maximum width of the characters
+//               that may be typed into the entry, or 0 if there is no
+//               limit.  See set_max_width().
+////////////////////////////////////////////////////////////////////
+INLINE float qpPGEntry:: 
+get_max_width() const {
+  return _max_width;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::set_num_lines
+//       Access: Published
+//  Description: Sets the number of lines of text the qpPGEntry will
+//               use.  This only has meaning if _max_width is not 0;
+//               _max_width indicates the wordwrap width of each line.
+////////////////////////////////////////////////////////////////////
+INLINE void qpPGEntry:: 
+set_num_lines(int num_lines) {
+  nassertv(num_lines >= 1);
+  _num_lines = num_lines;
+  _text_geom_stale = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_num_lines
+//       Access: Published
+//  Description: Returns the number of lines of text the qpPGEntry will
+//               use, if _max_width is not 0.  See set_num_lines().
+////////////////////////////////////////////////////////////////////
+INLINE int qpPGEntry:: 
+get_num_lines() const {
+  return _num_lines;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::set_blink_rate
+//       Access: Published
+//  Description: Sets the number of times per second the cursor will
+//               blink while the entry has keyboard focus.
+//
+//               If this is 0, the cursor does not blink, but is held
+//               steady.
+////////////////////////////////////////////////////////////////////
+INLINE void qpPGEntry:: 
+set_blink_rate(float blink_rate) {
+  _blink_rate = blink_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_blink_rate
+//       Access: Published
+//  Description: Returns the number of times per second the cursor
+//               will blink, or 0 if the cursor is not to blink.
+////////////////////////////////////////////////////////////////////
+INLINE float qpPGEntry:: 
+get_blink_rate() const {
+  return _blink_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_cursor_def
+//       Access: Published
+//  Description: Returns the Node that will be rendered to represent
+//               the cursor.  You can attach suitable cursor geometry
+//               to this node.
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode *qpPGEntry:: 
+get_cursor_def() {
+  return _cursor_def;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::clear_cursor_def
+//       Access: Published
+//  Description: Removes all the children from the cursor_def node, in
+//               preparation for adding a new definition.
+////////////////////////////////////////////////////////////////////
+INLINE void qpPGEntry:: 
+clear_cursor_def() {
+  get_cursor_def()->remove_all_children();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::set_cursor_keys_active
+//       Access: Published
+//  Description: Sets whether the arrow keys (and home/end) control
+//               movement of the cursor.  If true, they are active; if
+//               false, they are ignored.
+////////////////////////////////////////////////////////////////////
+INLINE void qpPGEntry:: 
+set_cursor_keys_active(bool flag) {
+  _cursor_keys_active = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_cursor_keys_active
+//       Access: Published
+//  Description: Returns whether the arrow keys are currently set to
+//               control movement of the cursor; see
+//               set_cursor_keys_active().
+////////////////////////////////////////////////////////////////////
+INLINE bool qpPGEntry:: 
+get_cursor_keys_active() const {
+  return _cursor_keys_active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::set_obscure_mode
+//       Access: Published
+//  Description: Specifies whether obscure mode should be enabled.  In
+//               obscure mode, a string of asterisks is displayed
+//               instead of the literal text, e.g. for entering
+//               passwords.
+//
+//               In obscure mode, the width of the text is computed
+//               based on the width of the string of asterisks, not on
+//               the width of the actual text.  This has implications
+//               on the maximum length of text that may be entered if
+//               max_width is in effect.
+////////////////////////////////////////////////////////////////////
+INLINE void qpPGEntry:: 
+set_obscure_mode(bool flag) {
+  if (_obscure_mode != flag) {
+    _obscure_mode = flag;
+    _text_geom_stale = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_obscure_mode
+//       Access: Published
+//  Description: Specifies whether obscure mode is enabled.  See
+//               set_obscure_mode().
+////////////////////////////////////////////////////////////////////
+INLINE bool qpPGEntry:: 
+get_obscure_mode() const {
+  return _obscure_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_accept_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the accept
+//               event for all PGEntries.  The accept event is the
+//               concatenation of this string followed by get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string qpPGEntry::
+get_accept_prefix() {
+  return "accept-";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_overflow_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the overflow
+//               event for all PGEntries.  The overflow event is the
+//               concatenation of this string followed by get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string qpPGEntry::
+get_overflow_prefix() {
+  return "overflow-";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_type_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the type
+//               event for all PGEntries.  The type event is the
+//               concatenation of this string followed by get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string qpPGEntry::
+get_type_prefix() {
+  return "type-";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_erase_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the erase
+//               event for all PGEntries.  The erase event is the
+//               concatenation of this string followed by get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string qpPGEntry::
+get_erase_prefix() {
+  return "erase-";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_accept_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown when the
+//               entry is accepted normally.
+////////////////////////////////////////////////////////////////////
+INLINE string qpPGEntry::
+get_accept_event(const ButtonHandle &button) const {
+  return "accept-" + button.get_name() + "-" + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_overflow_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown when too
+//               much text is attempted to be entered into the
+//               qpPGEntry, exceeding either the limit set via
+//               set_max_chars() or via set_max_width().
+////////////////////////////////////////////////////////////////////
+INLINE string qpPGEntry::
+get_overflow_event() const {
+  return "overflow-" + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_type_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown whenever
+//               the user extends the text by typing.
+////////////////////////////////////////////////////////////////////
+INLINE string qpPGEntry::
+get_type_event() const {
+  return "type-" + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_erase_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown whenever
+//               the user erases characters in the text.
+////////////////////////////////////////////////////////////////////
+INLINE string qpPGEntry::
+get_erase_event() const {
+  return "erase-" + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::set_wtext
+//       Access: Public
+//  Description: Changes the text currently displayed within the
+//               entry.
+////////////////////////////////////////////////////////////////////
+INLINE void qpPGEntry:: 
+set_wtext(const wstring &wtext) {
+  _wtext = wtext;
+  _text_geom_stale = true;
+  _cursor_stale = true;
+  _blink_start = ClockObject::get_global_clock()->get_frame_time();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpPGEntry::get_wtext
+//       Access: Public
+//  Description: Returns the text currently displayed within the
+//               entry.
+////////////////////////////////////////////////////////////////////
+INLINE const wstring &qpPGEntry:: 
+get_wtext() const {
+  return _wtext;
+}
