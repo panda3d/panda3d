@@ -113,7 +113,7 @@ void WindowParseFunctor::operator()(std::string S) {
   int hw_chan_offset = 0;
   bool dvr = false;
   if (!S.empty()) {
-    int hw_chan_offset = ChanReadNextInt(S);
+    hw_chan_offset = ChanReadNextInt(S);
     hw_chans = true;
   }
   if (!S.empty()) {
