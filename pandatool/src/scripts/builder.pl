@@ -11,9 +11,8 @@ my $WIN_INSTALLDIR="\\\\dimbo\\panda\\win";
 
 ### DEBUG SETTINGS
 # my $DEBUG_TREECOPY = 1;
-my $DEBUG_GENERATE_PYTHON_CODE_ONLY = 0; 
-
-#$DEBUG_GENERATE_PYTHON_CODE_ONLY=1;
+# my $DEBUG_GENERATE_PYTHON_CODE_ONLY = 1;
+# my $DEBUG_MAKEBSC_ONLY=1;
 
 if ($ENV{'DEBUG_GENERATE_PYTHON_CODE_ONLY'} ne '') {
   $DEBUG_GENERATE_PYTHON_CODE_ONLY = 1;
@@ -36,7 +35,7 @@ for(my $i=0;$i<=$#inst_dirnames;$i++) {
     $inst_dirs[$i]=$WIN_INSTALLDIR."\\".$inst_dirnames[$i];
 }
 
-my $VC7BINDIR="C:\\PROGRA~1\\Microsoft Visual Studio .NET\\Vc7\\BIN";
+my $VC7_BINDIRS="/msvc7/Vc7/bin".$DIRPATH_SEPARATOR."/msvc7/Common7/Tools/Bin".$DIRPATH_SEPARATOR."/msvc7/Common7/Tools".$DIRPATH_SEPARATOR."/msvc7/Common7/IDE";
 
 #if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
 #    $ENV{'PANDA_OPTIMIZE'}='4';  # var has meaning to my special Config.pp
@@ -220,8 +219,11 @@ sub make_bsc_file() {
     close(OUTFILE);
     close(FILES);
 
-    # vc7 dirs are not in path env-var by default
-    $bscmake_str=$VC7BINDIR."\\bscmake /o ".$outputfilepath." @".$cmdfilepath."\n";
+    # vc7 dirs are not in path env-var by default    
+    $ENV{'PATH'}=$VC7_BINDIRS.$DIRPATH_SEPARATOR.$ENV{'PATH'};
+    print $ENV{'PATH'}, "\n";
+
+    $bscmake_str="bscmake /o ".$outputfilepath." @".$cmdfilepath."\n";
     &myexecstr($bscmake_str,"bscmake failed!!!","DO_LOG","NT cmd");
 
     &myexecstr("copy ".$outputfilepath." ".$inst_dirs[$DEBUGNUM], "copy of ".$outputfilepath." failed!!", "DO_LOG","NT cmd");
@@ -638,10 +640,15 @@ foreach my $dir1 (@dirstodolist) {
 }
 
 # pick up cygwin utils
-$ENV{'PATH'}=$ENV{'WINTOOLS'}."/bin".$DIRPATH_SEPARATOR.$ENV{'WINTOOLS'}."/lib".$DIRPATH_SEPARATOR."/bin".$DIRPATH_SEPARATOR."/contrib/bin".$DIRPATH_SEPARATOR.$ENV{'PATH'}."/c/WINNT/system32".$DIRPATH_SEPARATOR."/c/WINNT";
+$ENV{'PATH'}=$ENV{'WINTOOLS'}."/bin".$DIRPATH_SEPARATOR.$ENV{'WINTOOLS'}."/lib".$DIRPATH_SEPARATOR."/bin".$DIRPATH_SEPARATOR.$ENV{'PATH'}."/c/WINNT/system32".$DIRPATH_SEPARATOR."/c/WINNT";
 
 # want build to pick up python dll's from /usr/lib before /c/python16
 # $ENV{'PATH'}="/usr/lib".$DIRPATH_SEPARATOR.$ENV{'PATH'};  not needed
+
+if($DEBUG_MAKEBSC_ONLY) {
+  &make_bsc_file();
+  exit(0);
+}
 
 if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
   # update wintools
