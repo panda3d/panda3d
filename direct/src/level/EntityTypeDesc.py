@@ -45,6 +45,14 @@ class EntityTypeDesc:
         """ returns dict of attribName -> attribDescriptor """
         return self.attribDescDict
 
+    def getAttribsOfType(self, type):
+        """returns list of attrib names of the given type"""
+        names = []
+        for attribName, desc in self.attribDescDict.items():
+            if desc.getDatatype() == type:
+                names.append(attribName)
+        return names
+
     def privCompileAttribDescs(entTypeClass):
         """this compiles an ordered list of attribDescs for the Entity class
         passed in. The attribute descriptors describe the properties of each

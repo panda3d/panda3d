@@ -121,13 +121,4 @@ def privUpdateSpec(spec, modelPath, entTypeModule, newZonesGloballyVisible=0):
             spec.doSetAttrib(entId, 'visibility', visList)
 
     # make sure none of the zones reference removed zones
-    # TODO: prune from other zoneList attribs
-    for entId in zoneEntIds:
-        visList = spec.getEntitySpec(entId)['visibility']
-        visDict = list2dict(visList)
-        for zoneNum in removedZoneNums:
-            if zoneNum in visDict:
-                del visDict[zoneNum]
-        visList = visDict.keys()
-        visList.sort()
-        spec.doSetAttrib(entId, 'visibility', visList)
+    spec.removeZoneReferences(removedZoneNums)

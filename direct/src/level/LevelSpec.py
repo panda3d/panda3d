@@ -98,7 +98,15 @@ class LevelSpec:
         return self.privGetScenarioEntityDict(scenario).keys()
 
     def getAllEntIds(self):
+        """this returns all of the entIds involved in the current scenario"""
         return self.getGlobalEntIds() + self.getScenarioEntIds()
+
+    def getAllEntIdsFromAllScenarios(self):
+        """this returns all of the entIds involved in all scenarios"""
+        entIds = self.getGlobalEntIds()
+        for scenario in xrange(self.getNumScenarios()):
+            entIds.extend(self.getScenarioEntIds(scenario))
+        return entIds
 
     def getEntitySpec(self, entId):
         assert entId in self.entId2specDict
@@ -120,7 +128,7 @@ class LevelSpec:
         return self.getEntityZoneEntId(spec['parentEntId'])
 
     def getEntType2ids(self, entIds):
-        """given list of entIds, return dict of entType 2 entIds"""
+        """given list of entIds, return dict of entType->entIds"""
         entType2ids = {}
         for entId in entIds:
             type = self.getEntityType(entId)
@@ -221,6 +229,30 @@ class LevelSpec:
             dict = self.entId2specDict[entId]
             del dict[entId]
             del self.entId2specDict[entId]
+
+        def removeZoneReferences(self, removedZoneNums):
+            """call with a list of zoneNums of zone entities that have just
+            been removed; will clean up references to those zones"""
+            assert self.hasEntityTypeReg()
+            # get dict of entType->entIds, for ALL scenarios
+            type2ids = self.getEntType2ids(self.getAllEntIdsFromAllScenarios())
+            # figure out which entity types have attributes that need to be
+            # updated
+            for type in type2ids:
+                typeDesc = self.entTypeReg.getTypeDesc(type)
+                visZoneListAttribs = typeDesc.getAttribsOfType('visZoneList')
+                if len(visZoneListAttribs) > 0:
+                    # this entity type has at least one attrib of type
+                    # 'visZoneList'.
+                    # run through all of the existing entities of this type
+                    for entId in type2ids[type]:
+                        spec = self.getEntitySpec(entId)
+                        # for each attrib of type 'visZoneList'...
+                        for attribName in visZoneListAttribs:
+                            # remove each of the removed zoneNums
+                            for zoneNum in removedZoneNums:
+                                while zoneNum in spec[attribName]:
+                                    spec[attribName].remove(zoneNum)
 
         def getSpecImportsModuleName(self):
             # name of module that should be imported by spec py file
