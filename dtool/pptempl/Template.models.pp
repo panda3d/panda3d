@@ -288,14 +288,14 @@ $[TAB]multify xf $[source] -C $[DATABASE]
     #define scene $[SCENE_PREFIX]$[MODEL].1-0.dsc
     #define source $[DATABASE]/SCENES/$[scene]
 $[target] : $[source]
-$[TAB]soft -D libsoftegg soft2egg $[SOFT2EGG_OPTS] $[if $[SOFTIMAGE_RSRC],-r "$[osfilename $[SOFTIMAGE_RSRC]]"] -p -M $[target] -N $[CHAR_NAME] -d $[DATABASE] -t $[DATABASE]/PICTURES -s $[scene]
+$[TAB]$[SOFT2EGG] $[SOFT2EGG_OPTS] $[if $[SOFTIMAGE_RSRC],-r "$[osfilename $[SOFTIMAGE_RSRC]]"] -p -M $[target] -N $[CHAR_NAME] -d $[DATABASE] -t $[DATABASE]/PICTURES -s $[scene]
   #endif
   #if $[NURBS_MODEL]
     #define target $[EGG_PREFIX]$[NURBS_MODEL].egg
     #define scene $[SCENE_PREFIX]$[MODEL].1-0.dsc
     #define source $[DATABASE]/SCENES/$[scene]
 $[target] : $[source]
-$[TAB]soft -D libsoftegg soft2egg $[SOFT2EGG_OPTS] $[if $[SOFTIMAGE_RSRC],-r "$[osfilename $[SOFTIMAGE_RSRC]]"] -n -M $[target] -N $[CHAR_NAME] -d $[DATABASE] -t $[DATABASE]/PICTURES -s $[scene]
+$[TAB]$[SOFT2EGG] $[SOFT2EGG_OPTS] $[if $[SOFTIMAGE_RSRC],-r "$[osfilename $[SOFTIMAGE_RSRC]]"] -n -M $[target] -N $[CHAR_NAME] -d $[DATABASE] -t $[DATABASE]/PICTURES -s $[scene]
   #endif
 
 #end soft_char_egg
@@ -313,7 +313,7 @@ $[TAB]soft -D libsoftegg soft2egg $[SOFT2EGG_OPTS] $[if $[SOFTIMAGE_RSRC],-r "$[
       #set end $[word 2,$[$[anim]_frames]]
     #endif
 $[target] : $[source]
-$[TAB]soft -D libsoftegg soft2egg $[SOFT2EGG_OPTS] $[if $[SOFTIMAGE_RSRC],-r "$[osfilename $[SOFTIMAGE_RSRC]]"] -a -A $[target] -N $[CHAR_NAME] -d $[DATABASE] -s $[scene] $[begin:%=-b%] $[end:%=-e%]
+$[TAB]$[SOFT2EGG] $[SOFT2EGG_OPTS] $[if $[SOFTIMAGE_RSRC],-r "$[osfilename $[SOFTIMAGE_RSRC]]"] -a -A $[target] -N $[CHAR_NAME] -d $[DATABASE] -s $[scene] $[begin:%=-b%] $[end:%=-e%]
   #end anim
 #end soft_char_egg
 
