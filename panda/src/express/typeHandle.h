@@ -294,13 +294,14 @@ PUBLISHED:
   // get_class_type().
   virtual TypeHandle get_type() const=0;
 
+  INLINE bool is_of_type(TypeHandle handle) const;
+  INLINE bool is_exact_type(TypeHandle handle) const;
+
+public:
   // Derived classes should override this function to call
   // init_type().  It will only be called in error situations when the
   // type was for some reason not properly initialized.
   virtual TypeHandle force_init_type()=0;
-
-  INLINE bool is_of_type(TypeHandle handle) const;
-  INLINE bool is_exact_type(TypeHandle handle) const;
 
 public:
   static TypeHandle get_class_type() {

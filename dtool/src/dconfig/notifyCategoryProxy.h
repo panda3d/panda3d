@@ -124,14 +124,25 @@ INLINE ostream &operator << (ostream &out, NotifyCategoryProxy<GetCategory> &pro
 #else // WIN32_VC
 
 #define NotifyCategoryDecl(basename, expcl, exptp) \
-  class expcl NotifyCategoryGetCategory_ ## basename { \
+  class NotifyCategoryGetCategory_ ## basename { \
   public: \
     NotifyCategoryGetCategory_ ## basename(); \
     static NotifyCategory *get_category(); \
   }; \
-  extern expcl NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename> basename ## _cat;
+  extern NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename> basename ## _cat;
 
 #endif  // WIN32_VC
+
+// This macro is the same as the above, except that it declares a category
+// that is not intended to be exported from any DLL.
+
+#define NotifyCategoryDeclNoExport(basename) \
+  class NotifyCategoryGetCategory_ ## basename { \
+  public: \
+    NotifyCategoryGetCategory_ ## basename(); \
+    static NotifyCategory *get_category(); \
+  }; \
+  extern NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename> basename ## _cat;
 
 // This macro defines the actual declaration of the
 // NotifyCategoryProxy object defined above; it should appear in the
