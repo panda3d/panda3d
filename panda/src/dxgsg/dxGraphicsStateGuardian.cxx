@@ -945,7 +945,7 @@ transform_color(Colorf &InColor,D3DCOLOR &OutRGBAColor) {
 
 	LPoint4f temp_pnt(InColor[0], InColor[1], InColor[2], 1.0f);
 	Colorf out_color = temp_pnt * _current_color_mat;  // maybe expand this out for efficiency
-	out_color[3] = (out_color[3] * _current_alpha_scale) + _current_alpha_offset;
+	out_color[3] = (InColor[3] * _current_alpha_scale) + _current_alpha_offset;
 	OutRGBAColor = Colorf_to_D3DCOLOR(out_color);
 }
 
