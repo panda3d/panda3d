@@ -40,8 +40,6 @@ void GeomBinFixed::
 record_current_state(GraphicsStateGuardian *, CullState *cs,
 		     int draw_order, CullTraverser *) {
   // Get the transform matrix from the state.
-  LMatrix4f mat;
-
   TransformAttribute *trans_attrib = NULL;
   get_attribute_into(trans_attrib, cs->get_attributes(),
 		     TransformTransition::get_class_type());

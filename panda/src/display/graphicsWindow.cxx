@@ -313,9 +313,9 @@ flag_redisplay() {
 void GraphicsWindow::
 declare_channel(int index, GraphicsChannel *chan) {
   nassertv(index >= 0);
-  if (index >= _channels.size()) {
+  if (index >= (int)_channels.size()) {
     _channels.reserve(index);
-    while (index >= _channels.size()) {
+    while (index >= (int)_channels.size()) {
       _channels.push_back(NULL);
     }
   }

@@ -18,7 +18,7 @@ clear(void) {
 ////////////////////////////////////////////////////////////////////
 INLINE Physical *PhysicalNode::
 get_physical(int index) const {
-  nassertr(index >= 0 && index < _physicals.size(),
+  nassertr(index >= 0 && index < (int)_physicals.size(),
 	   (Physical *) NULL);
   return _physicals[index];
 }

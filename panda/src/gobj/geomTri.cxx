@@ -198,7 +198,6 @@ get_tris() const {
   int k = 0;
 
   for (int i = 0; i < _numprims; i++) {
-    ushort indices[3];
     if (_vindex.empty()) {
       for (int j = 0; j < 3; j++) {
 	tris.push_back(k++);
@@ -210,7 +209,7 @@ get_tris() const {
     }
   }
 
-  nassertr(tris.size() == num_tris * 3, PTA_ushort());
+  nassertr((int)tris.size() == num_tris * 3, PTA_ushort());
   return tris;
 }
 

@@ -73,7 +73,7 @@ void ChatInput::transmit_data(NodeAttributes &data) {
 	  char ch = be._button.get_ascii_equivalent();
 	  
 	  if (isprint(ch)) {
-	    if (has_max_chars() && _str.size() >= get_max_chars()) {
+	    if (has_max_chars() && (int)_str.size() >= get_max_chars()) {
 	      throw_event("chat_overflow");
 	    } else {
 	      _str += ch;

@@ -155,7 +155,7 @@ get_num_vertices() const {
 ////////////////////////////////////////////////////////////////////
 INLINE Vertexf LineSegs::
 get_vertex(int vertex) const {
-  nassertr(vertex >= 0 && vertex < _created_verts.size(), 
+  nassertr(vertex >= 0 && vertex < (int)_created_verts.size(), 
 	   Vertexf(0.0, 0.0, 0.0));
   return _created_verts[vertex];
 }
@@ -171,7 +171,7 @@ get_vertex(int vertex) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void LineSegs::
 set_vertex(int vertex, const Vertexf &vert) {
-  nassertv(vertex >= 0 && vertex < _created_verts.size());
+  nassertv(vertex >= 0 && vertex < (int)_created_verts.size());
   _created_verts[vertex] = vert;
 }
 
@@ -196,7 +196,7 @@ set_vertex(int vertex, float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 INLINE Colorf LineSegs::
 get_vertex_color(int vertex) const {
-  nassertr(vertex >= 0 && vertex < _created_colors.size(), 
+  nassertr(vertex >= 0 && vertex < (int)_created_colors.size(), 
 	   Colorf(0.0, 0.0, 0.0, 0.0));
   return _created_colors[vertex];
 }
@@ -209,7 +209,7 @@ get_vertex_color(int vertex) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void LineSegs::
 set_vertex_color(int vertex, const Colorf &color) {
-  nassertv(vertex >= 0 && vertex < _created_verts.size());
+  nassertv(vertex >= 0 && vertex < (int)_created_verts.size());
   _created_colors[vertex] = color;
 }
 

@@ -27,6 +27,8 @@ public:
   virtual void begin_group();
   virtual void add_entry(CollisionEntry *entry);
 
+  void sort_entries();
+
   int get_num_entries() const;
   CollisionEntry *get_entry(int n) const;
 

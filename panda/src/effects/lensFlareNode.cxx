@@ -110,7 +110,7 @@ set_geometry(GeomSprite *sprite, const PTA_float &geom_scales,
   nassertv(geom_colors.size() == geom_offsets.size());
 
   float world_scale = _texel_scale * _global_scale;
-  for(int i = 0; i < geom_scales.size(); i++)
+  for(int i = 0; i < (int)geom_scales.size(); i++)
   {
     LVector3f position = (delta * geom_offsets[i]) + light;
     float view_scale;
@@ -158,7 +158,7 @@ prepare_flares(const LVector3f &delta, const LPoint3f &light, const float &angle
   {
     if (_flares.size() > _flare_arcs.size())
     {
-      for(int i = _flare_arcs.size(); i < _flares.size(); i++)
+      for(int i = _flare_arcs.size(); i < (int)_flares.size(); i++)
       {
 	GeomSprite *sprite = new GeomSprite();
 	GeomNode *node = new GeomNode();
@@ -187,7 +187,7 @@ prepare_flares(const LVector3f &delta, const LPoint3f &light, const float &angle
       }
     }
 
-    for(int i = 0; i < _flares.size(); i++)
+    for(int i = 0; i < (int)_flares.size(); i++)
     {
       GeomNode *node = DCAST(GeomNode, _flare_arcs[i]->get_child());
       GeomSprite *sprite = DCAST(GeomSprite, node->get_geom(0));
@@ -282,7 +282,7 @@ void LensFlareNode::
 render_children(const vector_relation &arcs, const AllAttributesWrapper &attrib,
 		AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg)
 {
-  for(int i = 0; i < arcs.size(); i++)
+  for(int i = 0; i < (int)arcs.size(); i++)
   {
     render_child(arcs[i], attrib, trans, gsg);
   }
@@ -377,38 +377,38 @@ write_datagram(BamWriter *manager, Datagram &me) {
   Node::write_datagram(manager, me);
 
   me.add_uint16(_flares.size());
-  for(i = 0; i < _flares.size(); i++)
+  for(i = 0; i < (int)_flares.size(); i++)
   {
     manager->write_pointer(me, _flares[i]);
   }
   manager->write_pointer(me, _blind);
   
   me.add_uint16(_flare_arcs.size());
-  for(i = 0; i < _flare_arcs.size(); i++)
+  for(i = 0; i < (int)_flare_arcs.size(); i++)
   {
     manager->write_pointer(me, _flare_arcs[i]);
   }
 
   me.add_uint16(_flare_scales.size());
-  for(i = 0; i < _flare_scales.size(); i++)
+  for(i = 0; i < (int)_flare_scales.size(); i++)
   {
     WRITE_PTA(manager, me, IPD_float::write_datagram, _flare_scales[i])
   }
 
   me.add_uint16(_flare_angle_scales.size());
-  for(i = 0; i < _flare_angle_scales.size(); i++)
+  for(i = 0; i < (int)_flare_angle_scales.size(); i++)
   {
     WRITE_PTA(manager, me, IPD_float::write_datagram, _flare_angle_scales[i])
   }
 
   me.add_uint16(_flare_offsets.size());
-  for(i = 0; i < _flare_offsets.size(); i++)
+  for(i = 0; i < (int)_flare_offsets.size(); i++)
   {
     WRITE_PTA(manager, me, IPD_float::write_datagram, _flare_offsets[i])
   }
 
   me.add_uint16(_flare_colors.size());
-  for(i = 0; i < _flare_colors.size(); i++)
+  for(i = 0; i < (int)_flare_colors.size(); i++)
   {
     WRITE_PTA(manager, me, IPD_Colorf::write_datagram, _flare_colors[i])
   }

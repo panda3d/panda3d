@@ -15,18 +15,19 @@
 ////////////////////////////////////////////////////////////////////
 SpriteParticleRenderer::
 SpriteParticleRenderer(Texture *tex) :
-  _animate_x_ratio(false),
-  _animate_y_ratio(false),
-  _animate_theta(false),
-  _blend_method(PP_BLEND_LINEAR),
-  _pool_size(0),
+  BaseParticleRenderer(PR_ALPHA_NONE),
+  _color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
   _initial_x_texel_ratio(0.02f),
   _final_x_texel_ratio(0.02f),
   _initial_y_texel_ratio(0.02f),
   _final_y_texel_ratio(0.02f),
   _theta(0.0f),
-  _color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
-  BaseParticleRenderer(PR_ALPHA_NONE) {
+  _animate_x_ratio(false),
+  _animate_y_ratio(false),
+  _animate_theta(false),
+  _blend_method(PP_BLEND_LINEAR),
+  _pool_size(0)
+{
   _sprite_primitive = new GeomSprite(tex);
   init_geoms();
 }
@@ -38,7 +39,7 @@ SpriteParticleRenderer(Texture *tex) :
 ////////////////////////////////////////////////////////////////////
 SpriteParticleRenderer::
 SpriteParticleRenderer(const SpriteParticleRenderer& copy) :
-  _pool_size(0), BaseParticleRenderer(copy) {
+  BaseParticleRenderer(copy), _pool_size(0) {
   _animate_x_ratio = copy._animate_x_ratio;
   _animate_y_ratio = copy._animate_y_ratio;
   _animate_theta = copy._animate_theta;
@@ -170,7 +171,6 @@ void SpriteParticleRenderer::
 render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   BaseParticle *cur_particle;
 
-  int cur_index = 0;
   int remaining_particles = ttl_particles;
   int i;
 
@@ -194,7 +194,7 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   _aabb_max.set(-99999.0f, -99999.0f, -99999.0f);
 
   // run through every filled slot
-  for (i = 0; i < po_vector.size(); i++) {
+  for (i = 0; i < (int)po_vector.size(); i++) {
     cur_particle = (BaseParticle *) po_vector[i].p();
 
     if (cur_particle->get_alive() == false)

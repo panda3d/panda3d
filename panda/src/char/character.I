@@ -45,6 +45,6 @@ get_num_parts() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PartGroup *Character::
 get_part(int n) const {
-  nassertr(n >= 0 && n < _parts.size(), NULL);
+  nassertr(n >= 0 && n < (int)_parts.size(), NULL);
   return _parts[n];
 }

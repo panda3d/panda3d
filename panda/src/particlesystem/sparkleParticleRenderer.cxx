@@ -15,10 +15,11 @@
 
 SparkleParticleRenderer::
 SparkleParticleRenderer(void) :
+  BaseParticleRenderer(PR_ALPHA_NONE),
   _center_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
   _edge_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
-  _birth_radius(0.1f), _death_radius(0.1f),
-  BaseParticleRenderer(PR_ALPHA_NONE) {
+  _birth_radius(0.1f), _death_radius(0.1f)
+{
   _line_primitive = new GeomLine;
   init_geoms();
 }
@@ -34,9 +35,10 @@ SparkleParticleRenderer(const Colorf& center, const Colorf& edge,
 			float birth_radius, float death_radius,
 			SparkleParticleLifeScale life_scale,
 			ParticleRendererAlphaMode alpha_mode) :
+  BaseParticleRenderer(alpha_mode),
   _center_color(center), _edge_color(edge), _birth_radius(birth_radius),
-  _death_radius(death_radius), _life_scale(life_scale),
-  BaseParticleRenderer(alpha_mode) {
+  _death_radius(death_radius), _life_scale(life_scale)
+{
   _line_primitive = new GeomLine;
   init_geoms();
 }
@@ -147,7 +149,6 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   BaseParticle *cur_particle;
 
-  int cur_index = 0;
   int remaining_particles = ttl_particles;
   int i;
 
@@ -161,7 +162,7 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   // run through the array
 
-  for (i = 0; i < po_vector.size(); i++) {
+  for (i = 0; i < (int)po_vector.size(); i++) {
     cur_particle = (BaseParticle *) po_vector[i].p();
 
     if (cur_particle->get_alive() == false)

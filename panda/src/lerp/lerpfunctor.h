@@ -148,7 +148,7 @@ private:
 
 template <class value>
 SimpleLerpFunctor<value>::SimpleLerpFunctor(const SimpleLerpFunctor<value>& c)
-  : _start(c._start), _end(c._end), _diff_cache(c._diff_cache), LerpFunctor(c)
+  : LerpFunctor(c), _start(c._start), _end(c._end), _diff_cache(c._diff_cache)
   {}
 
 template <class value>

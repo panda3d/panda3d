@@ -51,6 +51,9 @@ public:
   INLINE bool has_into_intersection_point() const;
   INLINE const LPoint3f &get_into_intersection_point() const;
 
+  INLINE bool has_from_intersection_point() const;
+  INLINE LPoint3f get_from_intersection_point() const;
+
   INLINE void set_into_surface_normal(const LVector3f &normal);
   INLINE bool has_into_surface_normal() const;
   INLINE const LVector3f &get_into_surface_normal() const;

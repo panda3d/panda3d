@@ -23,7 +23,7 @@
 class EXPCL_PANDAEXPRESS AsyncUtility {
 public:
   AsyncUtility(float frequency = 0.2);
-  ~AsyncUtility(void);
+  virtual ~AsyncUtility(void);
 
   void create_thread(void);
 

@@ -18,11 +18,11 @@ PointParticleRenderer(ParticleRendererAlphaMode am,
 		      PointParticleBlendType bt,
 		      ParticleRendererBlendMethod bm,
 		      const Colorf& sc, const Colorf& ec) :
-  _point_size(point_size),
-  _blend_type(bt), _blend_method(bm),
+  BaseParticleRenderer(am), 
   _start_color(sc), _end_color(ec),
-  BaseParticleRenderer(am) {
-
+  _point_size(point_size),
+  _blend_type(bt), _blend_method(bm)
+{
   _point_primitive = new GeomPoint;
   init_geoms();
 }
@@ -35,9 +35,9 @@ PointParticleRenderer(ParticleRendererAlphaMode am,
 
 PointParticleRenderer::
 PointParticleRenderer(const PointParticleRenderer& copy) :
-  _max_pool_size(0),
-  BaseParticleRenderer(copy) {
-
+  BaseParticleRenderer(copy),
+  _max_pool_size(0)
+{
   _blend_type = copy._blend_type;
   _blend_method = copy._blend_method;
   _start_color = copy._start_color;
@@ -197,7 +197,6 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   BaseParticle *cur_particle;
 
-  int cur_index = 0;
   int remaining_particles = ttl_particles;
   int i;
 
@@ -211,7 +210,7 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   // run through every filled slot
 
-  for (i = 0; i < po_vector.size(); i++) {
+  for (i = 0; i < (int)po_vector.size(); i++) {
     cur_particle = (BaseParticle *) po_vector[i].p();
 
     if (cur_particle->get_alive() == false)

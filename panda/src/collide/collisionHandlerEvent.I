@@ -23,6 +23,18 @@ operator () (const PT(CollisionEntry) &a,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerEvent::SortEntries::operator =
+//       Access: Public
+//  Description: The assignment operator does absolutely nothing,
+//               since this is just a function object class that
+//               stores no data.  We define it just to quiet up g++ in
+//               -Wall mode.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionHandlerEvent::SortEntries::
+operator = (const CollisionHandlerEvent::SortEntries &) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerEvent::set_in_pattern
 //       Access: Public
 //  Description: Sets the pattern string that indicates how the event

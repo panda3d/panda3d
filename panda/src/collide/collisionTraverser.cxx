@@ -541,12 +541,16 @@ compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
     PTA_ushort tris = geom->get_tris();
     
     for (int i = 0; i < (int)tris.size(); i += 3) {
-      // Generate a temporary CollisionPolygon on the fly for each
-      // triangle in the Geom.
-      CollisionPolygon poly(coords[tris[i]], coords[tris[i + 1]],
-			    coords[tris[i + 2]]);
-      if (entry.get_from()->test_intersection((*ci).second, entry, &poly) != 0) {
-	return;
+      if (CollisionPolygon::verify_points(coords[tris[i]],
+					  coords[tris[i + 1]],
+					  coords[tris[i + 2]])) {
+	// Generate a temporary CollisionPolygon on the fly for each
+	// triangle in the Geom.
+	CollisionPolygon poly(coords[tris[i]], coords[tris[i + 1]],
+			      coords[tris[i + 2]]);
+	if (entry.get_from()->test_intersection((*ci).second, entry, &poly) != 0) {
+	  return;
+	}
       }
     }
   }

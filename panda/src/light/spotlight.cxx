@@ -115,9 +115,9 @@ bool Spotlight::make_image(Texture* texture, float radius)
   color[1] = (int)(_color[1] * 255.0f);
   color[2] = (int)(_color[2] * 255.0f);
 
-  float cutoff = get_cutoff_angle();
-  float dist = 1 / (float)tan(cutoff);
-  int bufsize = size * size * 3;
+  //  float cutoff = get_cutoff_angle();
+  //  float dist = 1 / (float)tan(cutoff);
+  //  int bufsize = size * size * 3;
   int half_width = (size - 2) / 2;
   float dXY = 1 / (float)half_width;
   float Y = dXY + dXY;

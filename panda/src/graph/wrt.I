@@ -328,8 +328,7 @@ uncached_wrt_base(const Node *from,
 		  InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
 		  TransitionWrapper &result,
 		  TypeHandle graph_type) {
-
-  UpdateSeq now = last_graph_update[graph_type];
+  //  UpdateSeq now = last_graph_update[graph_type];
 
   TransitionWrapper net_from_trans = TransitionWrapper::init_from(result);
   get_uncached_net_transition(from, from_arcs_begin, from_arcs_end,

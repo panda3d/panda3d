@@ -275,10 +275,12 @@ up(CoordinateSystem cs) {
   case CS_yup_right:
   case CS_yup_left:
     return LVector3<NumType>(0.0, 1.0, 0.0);
+
+  default:
+    linmath_cat.error()
+      << "Invalid coordinate system!\n";
+    return LVector3<NumType>(0.0, 0.0, 0.0);
   }
-  linmath_cat.error()
-    << "Invalid coordinate system!\n";
-  return LVector3<NumType>(0.0, 0.0, 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -317,10 +319,12 @@ forward(CoordinateSystem cs) {
 
   case CS_yup_left:
     return LVector3<NumType>(0.0, 0.0, 1.0);
+
+  default:
+    linmath_cat.error()
+      << "Invalid coordinate system!\n";
+    return LVector3<NumType>(0.0, 0.0, 0.0);
   }
-  linmath_cat.error()
-    << "Invalid coordinate system!\n";
-  return LVector3<NumType>(0.0, 0.0, 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////

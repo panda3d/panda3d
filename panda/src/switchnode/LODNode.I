@@ -56,7 +56,7 @@ add_switch(float in, float out) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool LODNode::
 set_switch(int index, float in, float out) {
-  nassertr(index >= 0 && index < _lod._switch_vector.size(), false);
+  nassertr(index >= 0 && index < (int)_lod._switch_vector.size(), false);
   _lod._switch_vector[index].set_range(in, out);
   return true;
 }

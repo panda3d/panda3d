@@ -67,7 +67,7 @@ do_particles(float dt) {
   cur = _ps_list.begin();
 
   //  cout << "PSM::do_particles on a vector of size " << _ps_list.size() << endl;
-  int cs = 0;
+  //  int cs = 0;
 
   while (cur != _ps_list.end()) {
     ParticleSystem *cur_ps = *cur;

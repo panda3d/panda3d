@@ -82,7 +82,7 @@ add_forces_from(const ForceNode &other) {
 ////////////////////////////////////////////////////////////////////
 void ForceNode::
 remove_force(int index) {
-  nassertv(index >= 0 && index <= _forces.size());
+  nassertv(index >= 0 && index <= (int)_forces.size());
 
   vector< PT(BaseForce) >::iterator remove;
   remove = _forces.begin() + index;

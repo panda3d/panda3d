@@ -17,8 +17,8 @@ TypeHandle ClientBase::_type_handle;
 ////////////////////////////////////////////////////////////////////
 ClientBase::
 ClientBase(const string &server) :
-  _server(server), _sleep_time(1000000/60),
-  _shutdown(false), _forked(false) 
+  _sleep_time(1000000/60), _server(server),
+  _forked(false), _shutdown(false)
 {
 }
 

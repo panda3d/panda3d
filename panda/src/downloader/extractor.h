@@ -26,7 +26,7 @@ class EXPCL_PANDAEXPRESS Extractor : public AsyncUtility {
 public:
   Extractor(void);
   Extractor(PT(Buffer) buffer);
-  ~Extractor(void);
+  virtual ~Extractor(void);
 
   int request_extract(const Filename &source_file,
 		 const string &event_name, const Filename &rel_path = "");

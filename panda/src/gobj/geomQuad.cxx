@@ -95,7 +95,7 @@ get_tris() const {
     tris.push_back(indices[3]);
   }
 
-  nassertr(tris.size() == num_tris * 3, PTA_ushort());
+  nassertr((int)tris.size() == num_tris * 3, PTA_ushort());
   return tris;
 }
 

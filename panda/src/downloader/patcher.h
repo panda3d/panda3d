@@ -26,7 +26,7 @@ class EXPCL_PANDAEXPRESS Patcher : public AsyncUtility {
 public:
   Patcher(void);
   Patcher(PT(Buffer) buffer);
-  ~Patcher(void);
+  virtual ~Patcher(void);
 
   int request_patch(const Filename &patch,
 		    const Filename &infile, const string &event_name);

@@ -28,7 +28,7 @@ class EXPCL_PANDA Light : virtual public ReferenceCount
     public:
 	
 	Light( void ) { _color.set(0.0, 0.0, 0.0, 1.0); }
-	~Light( void ) { }
+	virtual ~Light( void ) { }
 
 	virtual void apply( GraphicsStateGuardian* gsg ) = 0;
 

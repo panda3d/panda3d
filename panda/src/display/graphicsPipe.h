@@ -68,7 +68,7 @@ public:
   class EXPCL_PANDA PipeSpec : public PipeParam {
   public:
     INLINE PipeSpec(void) : PipeParam() {}
-    INLINE PipeSpec(PipeSpecifier& p) : _p(p), PipeParam() {}
+    INLINE PipeSpec(PipeSpecifier& p) : PipeParam(), _p(p) {}
     virtual ~PipeSpec(void);
     INLINE const PipeSpecifier &get_specifier(void) { return _p; }
   public:

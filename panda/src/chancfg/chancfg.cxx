@@ -189,7 +189,11 @@ SetupFOV ChanResolveFOV(SetupFOV& fov, float sizeX, float sizeY) {
       chancfg_cat->debug() << "ChanResolveFOV:: setting horiz = " << horiz
 			   << " and vert = " << vert << endl;
     break;
+
+  default:
+    break;
   }
+
   ret.setFOV(horiz, vert);
   return ret;
 }
@@ -340,7 +344,7 @@ PT(GraphicsWindow) ChanConfig(GraphicsPipe* pipe, std::string cfg,
 
   bool border = !chanconfig.GetBool("no-border", !W.getBorder());
   bool fullscreen = chanconfig.GetBool("fullscreen", false);
-  bool cursor = chanconfig.GetBool("cursor-visible", W.getCursor());
+  //  bool cursor = chanconfig.GetBool("cursor-visible", W.getCursor());
   int want_depth_bits = chanconfig.GetInt("want-depth-bits", 1);
   int want_color_bits = chanconfig.GetInt("want-color-bits", 1);
 

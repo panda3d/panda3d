@@ -490,8 +490,7 @@ void setup_framerate(void) {
 
   if (framerate_font != (NamedNode *)0L) {
     framerate_text = new TextNode("framerate_text");
-    RenderRelation *text_arc = new RenderRelation(framerate_node,
-						  framerate_text);
+    new RenderRelation(framerate_node, framerate_text);
 
     LMatrix4f mat = LMatrix4f::scale_mat(0.05) *
       LMatrix4f::translate_mat(-0.95, 0.0, 0.95);

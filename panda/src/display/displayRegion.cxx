@@ -16,8 +16,10 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
-DisplayRegion(GraphicsLayer *layer) : _layer(layer),
-  _l(0.), _r(1.), _b(0.), _t(1.), _active(true)
+DisplayRegion(GraphicsLayer *layer) :
+  _l(0.), _r(1.), _b(0.), _t(1.), 
+  _layer(layer),
+  _active(true)
 {
 }
 
@@ -29,7 +31,9 @@ DisplayRegion(GraphicsLayer *layer) : _layer(layer),
 DisplayRegion::
 DisplayRegion(GraphicsLayer *layer, const float l,
 	      const float r, const float b, const float t)
-  : _layer(layer), _l(l), _r(r), _b(b), _t(t), _active(true)
+  : _l(l), _r(r), _b(b), _t(t),
+    _layer(layer),
+    _active(true)
 {
 }
 
@@ -42,9 +46,9 @@ DisplayRegion(GraphicsLayer *layer, const float l,
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 DisplayRegion(int xsize, int ysize) : 
-  _layer((GraphicsLayer *)0L),
   _l(0.), _r(1.), _b(0.), _t(1.),
   _pl(0), _pr(xsize), _pb(0), _pt(ysize),
+  _layer((GraphicsLayer *)0L),
   _active(true)
 {
 }

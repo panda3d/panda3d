@@ -28,7 +28,7 @@ public:
     _want_id = id;
   }
   bool operator()(PT(TokenType) tok) const {
-    return tok->_id == _want_id;
+    return (int)tok->_id == _want_id;
   }
   int _want_id;
 };

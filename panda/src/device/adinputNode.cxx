@@ -30,7 +30,7 @@ TypeHandle ADInputNode::_channels_type;
 ////////////////////////////////////////////////////////////////////
 ADInputNode::
 ADInputNode(PT(ClientBase) client, const string &adinput) :
-  DataNode(adinput), _adinput(adinput), _client(client)
+  DataNode(adinput), _client(client), _adinput(adinput)
 {
   _client->add_remote_analog(_adinput);
   _client->add_remote_button(_adinput);

@@ -163,7 +163,7 @@ create(GeomNode *previous, bool) {
 	_created_verts.push_back((*sl)._point);
 	_created_colors.push_back((*sl)._color);
 	v++;
-	nassertr(v == _created_verts.size(), previous);
+	nassertr(v == (int)_created_verts.size(), previous);
       }
     }
       

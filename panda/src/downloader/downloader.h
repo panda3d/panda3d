@@ -30,7 +30,7 @@ class EXPCL_PANDAEXPRESS Downloader : public AsyncUtility {
 public:
   Downloader(void);
   Downloader(PT(Buffer) buffer);
-  ~Downloader(void);
+  virtual ~Downloader(void);
 
   bool connect_to_server(const string &name, uint port=80);
   void disconnect_from_server(void);

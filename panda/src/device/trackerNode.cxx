@@ -33,7 +33,7 @@ TypeHandle TrackerNode::_aquat_dt_type;
 TrackerNode::
 TrackerNode(PT(ClientBase) client, const string &tracker, 
 	    int sensor) :
-  DataNode(tracker), _tracker(tracker), _client(client), _sensor(sensor)
+  DataNode(tracker), _client(client), _tracker(tracker), _sensor(sensor)
 {
   _client->add_remote_tracker(_tracker, _sensor);
   

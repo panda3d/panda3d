@@ -138,7 +138,9 @@ set_into_intersection_point(const LPoint3f &point) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::has_into_intersection_point
 //       Access: Public
-//  Description: 
+//  Description: Returns true if the detected collision knows its
+//               intersection point in the coordinate space of the
+//               collided-into object, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionEntry::
 has_into_intersection_point() const {
@@ -148,12 +150,42 @@ has_into_intersection_point() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_into_intersection_point
 //       Access: Public
-//  Description: 
+//  Description: Returns the intersection point in the coordinate
+//               space of the collided-into object.  It is an error to
+//               call this if has_into_intersection_point() returns
+//               false.
 ////////////////////////////////////////////////////////////////////
 INLINE const LPoint3f &CollisionEntry::
 get_into_intersection_point() const {
   nassertr(has_into_intersection_point(), _into_intersection_point);
   return _into_intersection_point;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::has_from_intersection_point
+//       Access: Public
+//  Description: Returns true if the detected collision knows its
+//               intersection point in the coordinate space of the
+//               colliding object, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionEntry::
+has_from_intersection_point() const {
+  // Since we derive the from_intersection_point from the
+  // into_intersection_point, this is really the same question.
+  return has_into_intersection_point();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_from_intersection_point
+//       Access: Public
+//  Description: Returns the intersection point in the coordinate
+//               space of the colliding object.  It is an error to
+//               call this if has_from_intersection_point() returns
+//               false.
+////////////////////////////////////////////////////////////////////
+INLINE LPoint3f CollisionEntry::
+get_from_intersection_point() const {
+  return get_into_intersection_point() * get_inv_wrt_space();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -170,7 +202,9 @@ set_into_surface_normal(const LVector3f &normal) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::has_into_surface_normal
 //       Access: Public
-//  Description: 
+//  Description: Returns true if the detected collision knows the
+//               surface normal of the collided-into object at the
+//               point of the collision, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionEntry::
 has_into_surface_normal() const {
@@ -180,7 +214,10 @@ has_into_surface_normal() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_into_surface_normal
 //       Access: Public
-//  Description: 
+//  Description: Returns the surface normal of the collided-into
+//               object at the point of the collision.  It is an error
+//               to call this if has_into_surface_normal() returns
+//               false.
 ////////////////////////////////////////////////////////////////////
 INLINE const LVector3f &CollisionEntry::
 get_into_surface_normal() const {
@@ -203,7 +240,10 @@ set_into_depth(float depth) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::has_into_depth
 //       Access: Public
-//  Description: 
+//  Description: Returns true if the collision entry knows how "deep"
+//               the collision was into the collided-into object; that
+//               is, how far into the surface of the collided-into
+//               object the colliding object has penetrated.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionEntry::
 has_into_depth() const {
@@ -213,7 +253,11 @@ has_into_depth() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_into_depth
 //       Access: Public
-//  Description: 
+//  Description: Returns how "deep" the collision was into the
+//               collided-into object; that is, how far into the
+//               surface of the collided-into object the colliding
+//               object has penetrated.  It is an error to call this
+//               if has_into_depth() returns false.
 ////////////////////////////////////////////////////////////////////
 INLINE float CollisionEntry::
 get_into_depth() const {

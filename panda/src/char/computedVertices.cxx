@@ -79,12 +79,12 @@ write_datagram(Datagram &dest)
   dest.add_int16(_joint_index);
   dest.add_float64(_effect);
   dest.add_uint16(_vindex.size());
-  for(i = 0; i < _vindex.size(); i++)
+  for(i = 0; i < (int)_vindex.size(); i++)
   {
     dest.add_uint16(_vindex[i]);
   }
   dest.add_uint16(_nindex.size());
-  for(i = 0; i < _nindex.size(); i++)
+  for(i = 0; i < (int)_nindex.size(); i++)
   {
     dest.add_uint16(_nindex[i]);
   }
@@ -158,7 +158,9 @@ update(Character *character) {
     // We have some uv morphs.  These don't particularly need to be
     // done before the joints are computed, but do them now anyway.
     int table_size = sizeof(TexCoordf) * _orig_texcoords.size();
-    TexCoordf *morphed_texcoords = (TexCoordf *)alloca(table_size);
+
+    // **** Is this right?  Test it!
+    //    TexCoordf *morphed_texcoords = (TexCoordf *)alloca(table_size);
     memcpy(character->_cv._texcoords, _orig_texcoords, table_size);
 
     compute_morphs(character->_cv._texcoords.p(), _texcoord_morphs, character);
@@ -167,7 +169,9 @@ update(Character *character) {
   if (!_color_morphs.empty()) {
     // We have some color morphs.  Do these now too.
     int table_size = sizeof(Colorf) * _orig_colors.size();
-    Colorf *morphed_colors = (Colorf *)alloca(table_size);
+
+    // **** Is this right?  Test it!
+    // Colorf *morphed_colors = (Colorf *)alloca(table_size);
     memcpy(character->_cv._colors, _orig_colors, table_size);
 
     compute_morphs(character->_cv._colors.p(), _color_morphs, character);
@@ -308,27 +312,27 @@ write_datagram(BamWriter *manager, Datagram &me)
   int i;
 
   me.add_uint16(_transforms.size());
-  for(i = 0; i < _transforms.size(); i++){
+  for(i = 0; i < (int)_transforms.size(); i++){
     _transforms[i].write_datagram(me);
   }
 
   me.add_uint16(_vertex_morphs.size());
-  for(i = 0; i < _vertex_morphs.size(); i++){
+  for(i = 0; i < (int)_vertex_morphs.size(); i++){
     _vertex_morphs[i].write_datagram(me);
   } 
 
   me.add_uint16(_normal_morphs.size());
-  for(i = 0; i < _normal_morphs.size(); i++){
+  for(i = 0; i < (int)_normal_morphs.size(); i++){
     _normal_morphs[i].write_datagram(me);
   } 
   
   me.add_uint16(_texcoord_morphs.size());
-  for(i = 0; i < _texcoord_morphs.size(); i++){
+  for(i = 0; i < (int)_texcoord_morphs.size(); i++){
     _texcoord_morphs[i].write_datagram(me);
   } 
 
   me.add_uint16(_color_morphs.size());
-  for(i = 0; i < _color_morphs.size(); i++){
+  for(i = 0; i < (int)_color_morphs.size(); i++){
     _color_morphs[i].write_datagram(me);
   } 
 

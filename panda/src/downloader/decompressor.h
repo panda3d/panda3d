@@ -26,7 +26,7 @@ class EXPCL_PANDAEXPRESS Decompressor : public AsyncUtility {
 public:
   Decompressor(void);
   Decompressor(PT(Buffer) buffer);
-  ~Decompressor(void);
+  virtual ~Decompressor(void);
 
   int request_decompress(const Filename &source_file,
 			 const string &event_name);

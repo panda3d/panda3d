@@ -1,4 +1,3 @@
-ignoreconstruct GraphicsWindow
 ignoremember get_properties
 ignoremember set_draw_callback
 ignoremember set_idle_callback

@@ -111,7 +111,7 @@ write_datagram(Datagram &dest)
 {
   dest.add_int16(_slider_index);
   dest.add_uint16(_morphs.size());
-  for(int i = 0; i < _morphs.size(); i++)
+  for(int i = 0; i < (int)_morphs.size(); i++)
   {
     _morphs[i].write_datagram(dest);
   }

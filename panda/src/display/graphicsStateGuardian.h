@@ -164,7 +164,7 @@ public:
   // Make a factory parameter type for the window pointer
   class EXPCL_PANDA GsgWindow : public GsgParam {
   public:
-    INLINE GsgWindow(GraphicsWindow* w) : _w(w), GsgParam() {}
+    INLINE GsgWindow(GraphicsWindow* w) : GsgParam(), _w(w) {}
     virtual ~GsgWindow(void);
     INLINE GraphicsWindow* get_window(void) { return _w; }
   public:

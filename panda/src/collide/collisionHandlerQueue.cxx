@@ -8,6 +8,21 @@
 
 TypeHandle CollisionHandlerQueue::_type_handle;
 
+// This class is used in sort_entries(), below.
+class CollisionEntrySorter {
+public:
+  CollisionEntrySorter(CollisionEntry *entry) {
+    _entry = entry;
+    _dist = (entry->get_from_intersection_point() - LPoint3f::origin()).length();
+  }
+  bool operator < (const CollisionEntrySorter &other) const {
+    return _dist < other._dist;
+  }
+
+  CollisionEntry *_entry;
+  double _dist;
+};
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerQueue::Constructor
 //       Access: Public
@@ -40,6 +55,40 @@ void CollisionHandlerQueue::
 add_entry(CollisionEntry *entry) {
   nassertv(entry != (CollisionEntry *)NULL);
   _entries.push_back(entry);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerQueue::sort_entries
+//       Access: Public
+//  Description: Sorts all the detected collisions front-to-back by
+//               from_intersection_point() so that those intersection
+//               points closest to the origin appear first.
+////////////////////////////////////////////////////////////////////
+void CollisionHandlerQueue::
+sort_entries() {
+  // Build up a temporary vector of entries so we can sort the
+  // pointers.  This uses the class defined above.
+  typedef vector<CollisionEntrySorter> Sorter;
+  Sorter sorter;
+  sorter.reserve(_entries.size());
+  
+  Entries::const_iterator ei;
+  for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
+    sorter.push_back(CollisionEntrySorter(*ei));
+  }
+
+  sort(sorter.begin(), sorter.end());
+  nassertv(sorter.size() == _entries.size());
+
+  // Now that they're sorted, get them back.
+  Entries sorted_entries;
+  sorted_entries.reserve(sorter.size());
+  Sorter::const_iterator si;
+  for (si = sorter.begin(); si != sorter.end(); ++si) {
+    sorted_entries.push_back((*si)._entry);
+  }
+
+  _entries.swap(sorted_entries);
 }
 
 ////////////////////////////////////////////////////////////////////

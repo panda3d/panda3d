@@ -39,8 +39,6 @@ void GeomBinBackToFront::
 record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
 		     CullTraverser *trav) {
   // Get the transform matrix from the state.
-  LMatrix4f mat;
-
   TransformAttribute *trans_attrib = NULL;
   get_attribute_into(trans_attrib, cs->get_attributes(),
 		     TransformTransition::get_class_type());

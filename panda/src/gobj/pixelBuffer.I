@@ -320,7 +320,7 @@ set_uchar_rgb_texel(const uchar color[3], int x, int y, int width)
 ////////////////////////////////////////////////////////////////////
 INLINE void PixelBuffer::
 store_unsigned_byte(int &index, double value) {
-  nassertv(index >= 0 && index < _image.size());
+  nassertv(index >= 0 && index < (int)_image.size());
   _image[index++] = (uchar)(value * 255.0);
 }
 
@@ -334,7 +334,7 @@ store_unsigned_byte(int &index, double value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PixelBuffer::
 store_unsigned_short(int &index, double value) {
-  nassertv(index >= 0 && index+1 < _image.size());
+  nassertv(index >= 0 && index+1 < (int)_image.size());
   union {
     ushort us;
     uchar uc[2];
@@ -354,7 +354,7 @@ store_unsigned_short(int &index, double value) {
 ////////////////////////////////////////////////////////////////////
 INLINE double PixelBuffer::
 get_unsigned_byte(int &index) const {
-  nassertr(index >= 0 && index < _image.size(), 0.0);
+  nassertr(index >= 0 && index < (int)_image.size(), 0.0);
   return (double)_image[index++] / 255.0;
 }
 
@@ -368,7 +368,7 @@ get_unsigned_byte(int &index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE double PixelBuffer::
 get_unsigned_short(int &index) const {
-  nassertr(index >= 0 && index+1 < _image.size(), 0.0);
+  nassertr(index >= 0 && index+1 < (int)_image.size(), 0.0);
   union {
     ushort us;
     uchar uc[2];

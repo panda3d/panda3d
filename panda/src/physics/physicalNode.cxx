@@ -82,7 +82,7 @@ add_physicals_from(const PhysicalNode &other) {
 ////////////////////////////////////////////////////////////////////
 void PhysicalNode::
 remove_physical(int index) {
-  nassertv(index >= 0 && index <= _physicals.size());
+  nassertv(index >= 0 && index <= (int)_physicals.size());
 
   vector< PT(Physical) >::iterator remove;
   remove = _physicals.begin() + index;

@@ -31,8 +31,9 @@ LineParticleRenderer::
 LineParticleRenderer(const Colorf& head,
                      const Colorf& tail,
                      ParticleRendererAlphaMode alpha_mode) :
-  _head_color(head), _tail_color(tail),
-  BaseParticleRenderer(alpha_mode) {
+  BaseParticleRenderer(alpha_mode),
+  _head_color(head), _tail_color(tail)
+{
   _line_primitive = new GeomLine;
   init_geoms();
 }
@@ -140,7 +141,6 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   BaseParticle *cur_particle;
 
-  int cur_index = 0;
   int remaining_particles = ttl_particles;
   int i;
 
@@ -154,7 +154,7 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   // run through the array
 
-  for (i = 0; i < po_vector.size(); i++) {
+  for (i = 0; i < (int)po_vector.size(); i++) {
     cur_particle = (BaseParticle *) po_vector[i].p();
 
     if (cur_particle->get_alive() == false)

@@ -128,7 +128,8 @@ get_solid(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::remove_solid
 //       Access: Public
-//  Description: 
+//  Description: Removes the solid with the indicated index.  This
+//               will shift all subsequent indices down by one.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionNode::
 remove_solid(int n) { 
@@ -140,7 +141,9 @@ remove_solid(int n) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::add_solid
 //       Access: Public
-//  Description: 
+//  Description: Adds the indicated solid to the node.  Returns the
+//               index of the new solid within the node's list of
+//               solids.
 ////////////////////////////////////////////////////////////////////
 INLINE int CollisionNode::
 add_solid(CollisionSolid *solid) {

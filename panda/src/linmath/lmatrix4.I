@@ -1161,6 +1161,7 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
     case CS_yup_left: return z_to_y_up_mat();
     case CS_zup_right: return scale_mat(1.0, -1.0, 1.0);
     case CS_yup_right: return scale_mat(1.0, -1.0, 1.0) * z_to_y_up_mat();
+    default: break;
     }
     break;
 
@@ -1170,6 +1171,7 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
     case CS_yup_left: return ident_mat();
     case CS_zup_right: return scale_mat(1.0, 1.0, -1.0) * y_to_z_up_mat();
     case CS_yup_right: return scale_mat(1.0, 1.0, -1.0);
+    default: break;
     }
     break;
 
@@ -1179,6 +1181,7 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
     case CS_yup_left: return scale_mat(1.0, -1.0, 1.0) * z_to_y_up_mat();
     case CS_zup_right: return ident_mat();
     case CS_yup_right: return z_to_y_up_mat();
+    default: break;
     }
     break;
 
@@ -1188,7 +1191,11 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
     case CS_yup_left: return scale_mat(1.0, 1.0, -1.0);
     case CS_zup_right: return y_to_z_up_mat();
     case CS_yup_right: return ident_mat();
+    default: break;
     }
+    break;
+
+  default:
     break;
   }
 

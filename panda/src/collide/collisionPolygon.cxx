@@ -61,6 +61,45 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::verify_points
+//       Access: Public, Static
+//  Description: Verifies that the indicated set of points will define
+//               a valid CollisionPolygon: that is, at least three
+//               non-collinear points, with no points repeated.
+////////////////////////////////////////////////////////////////////
+bool CollisionPolygon::
+verify_points(const LPoint3f *begin, const LPoint3f *end) {
+  int num_points = end - begin;
+  if (num_points < 3) {
+    return false;
+  }
+
+  // Create a plane to determine the planarity of the first three
+  // points.
+  Planef plane(begin[0], begin[1], begin[2]);
+  LVector3f normal = plane.get_normal();
+  float normal_length = normal.length();
+  bool all_ok = IS_THRESHOLD_EQUAL(normal_length, 1.0, 0.001);
+  
+  const LPoint3f *pi;
+  for (pi = begin; pi != end && all_ok; ++pi) {
+    if ((*pi).is_nan()) {
+      all_ok = false;
+    } else {
+      // Make sure no points are repeated.
+      const LPoint3f *pj;
+      for (pj = begin; pj != pi && all_ok; ++pj) {
+	if ((*pj).almost_equal(*pi)) {
+	  all_ok = false;
+	}
+      }
+    }
+  }
+
+  return all_ok;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::test_intersection
 //       Access: Public, Virtual
 //  Description: 
@@ -360,7 +399,7 @@ is_inside(const LPoint2f &p) const {
   // order, a point is interior to the polygon iff the point is not right of
   // each of the edges.
 
-  for (int i = 0; i < _points.size() - 1; i++) {
+  for (int i = 0; i < (int)_points.size() - 1; i++) {
     if (is_right(p - _points[i], _points[i+1] - _points[i])) {
       return false;
     }
@@ -396,33 +435,16 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
 #ifndef NDEBUG
   // Make sure all the source points are good.
   {
-    float normal_length = normal.length();
-    bool all_ok = IS_THRESHOLD_EQUAL(normal_length, 1.0, 0.001);
-
-    const LPoint3f *pi;
-    for (pi = begin; pi != end && all_ok; ++pi) {
-      if ((*pi).is_nan()) {
-	all_ok = false;
-      } else {
-	// Make sure no points are repeated.
-	const LPoint3f *pj;
-	for (pj = begin; pj != pi && all_ok; ++pj) {
-	  if ((*pj).almost_equal(*pi)) {
-	    all_ok = false;
-	  }
-	}
-      }
-    }
-
-    if (!all_ok) {
-      collide_cat.error() << "Invalid points passed to CollisionPolygon:\n";
+    if (!verify_points(begin, end)) {
+      collide_cat.error() << "Invalid points in CollisionPolygon:\n";
+      const LPoint3f *pi;
       for (pi = begin; pi != end; ++pi) {
 	collide_cat.error(false) << "  " << (*pi) << "\n";
       }
       collide_cat.error(false) 
-	<< "  normal " << normal << " with length " << normal_length << "\n";
+	<< "  normal " << normal << " with length " << normal.length() << "\n";
       
-      nassertv(false);
+      return;
     }
   }
 
@@ -497,7 +519,7 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
   // be convex) is also a point within the polygon.
 
   _median = _points[0];
-  for (int n = 1; n < _points.size(); n++) {
+  for (int n = 1; n < (int)_points.size(); n++) {
     _median += _points[n];
   }
   _median /= _points.size();
@@ -580,7 +602,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 
   CollisionPlane::write_datagram(manager, me);
   me.add_uint16(_points.size());
-  for(i = 0; i < _points.size(); i++)
+  for(i = 0; i < (int)_points.size(); i++)
   {
     _points[i].write_datagram(me);
   }

@@ -356,7 +356,6 @@ get_tris() const {
       v1 = _vindex[k++];
     }
 
-    bool even = true;
     int len = _primlengths[i] - 2;
 
     for (int j = 0; j < len; j++) {
@@ -374,7 +373,7 @@ get_tris() const {
     }
   }
 
-  nassertr(tris.size() == num_tris * 3, PTA_ushort());
+  nassertr((int)tris.size() == num_tris * 3, PTA_ushort());
   return tris;
 }
 

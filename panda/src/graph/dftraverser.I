@@ -14,38 +14,37 @@
 ////////////////////////////////////////////////////////////////////
 template<class Visitor, class LevelState>
 INLINE DFTraverser<Visitor, LevelState>::
-DFTraverser(NodeRelation *arc,
-	    Visitor &visitor,
+DFTraverser(Visitor &visitor,
 	    const AttributeWrapper &initial_render_state,
-	    const LevelState &initial_level_state,
 	    TypeHandle graph_type) :
   _visitor(visitor),
   _initial_render_state(initial_render_state),
   _graph_type(graph_type)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DFTraverser::start
+//       Access: Public
+//  Description: Starts the traversal from the indicated arc.
+////////////////////////////////////////////////////////////////////
+template<class Visitor, class LevelState>
+INLINE void DFTraverser<Visitor, LevelState>::
+start(NodeRelation *arc, const LevelState &initial_level_state) {
   traverse(arc, _initial_render_state, initial_level_state);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DFTraverser::Constructor
+//     Function: DFTraverser::start
 //       Access: Public
-//  Description: 
+//  Description: Starts the traversal from the indicated node.
 ////////////////////////////////////////////////////////////////////
 template<class Visitor, class LevelState>
-INLINE DFTraverser<Visitor, LevelState>::
-DFTraverser(Node *root,
-	    Visitor &visitor,
-	    const AttributeWrapper &initial_render_state,
-	    const LevelState &initial_level_state,
-	    TypeHandle graph_type) :
-  _visitor(visitor),
-  _initial_render_state(initial_render_state),
-  _graph_type(graph_type)
-{
+INLINE void DFTraverser<Visitor, LevelState>::
+start(Node *root, const LevelState &initial_level_state) {
   LevelState level_state(initial_level_state);
   traverse(root, _initial_render_state, level_state);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DFTraverser::Traverse

@@ -484,7 +484,7 @@ get_tris() const {
     }
   }
 
-  nassertr(tris.size() == num_tris * 3, PTA_ushort());
+  nassertr((int)tris.size() == num_tris * 3, PTA_ushort());
   return tris;
 }
 

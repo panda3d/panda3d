@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 ParticleSystem::
 ParticleSystem(int pool_size) :
-  _particle_pool_size(pool_size), Physical(pool_size, false)
+  Physical(pool_size, false), _particle_pool_size(pool_size)
 {
   _birth_rate = 0.0f;
   _tics_since_birth = _birth_rate;
@@ -64,9 +64,10 @@ ParticleSystem(int pool_size) :
 ////////////////////////////////////////////////////////////////////
 ParticleSystem::
 ParticleSystem(const ParticleSystem& copy) :
+  Physical(copy), 
   _system_age(0.0f),
-  _template_system_flag(false),
-  Physical(copy) {
+  _template_system_flag(false)
+{
 
   _particle_pool_size = copy._particle_pool_size;
   _birth_rate = copy._birth_rate;

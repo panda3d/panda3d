@@ -821,8 +821,6 @@ translate_mat(NumType tx, NumType ty) {
 template<class NumType>
 LMatrix3<NumType> LMatrix3<NumType>::
 rotate_mat(NumType angle) {
-  LMatrix3<NumType> mat;
-    
   double s = sin(deg_2_rad(angle));
   double c = cos(deg_2_rad(angle));
 

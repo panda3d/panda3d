@@ -641,6 +641,9 @@ describe_attr(ostream &out, const Geom *geom,
 
   case G_OVERALL:
     out << "Overall:" << pad << array[0];
+
+  case G_OFF:
+    break;
   }
   out << "\n";
 }

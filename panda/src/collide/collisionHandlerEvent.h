@@ -49,6 +49,7 @@ private:
     INLINE bool 
     operator () (const PT(CollisionEntry) &a, 
 		 const PT(CollisionEntry) &b) const;
+    INLINE void operator = (const SortEntries &other);
   };
 
   typedef set<PT(CollisionEntry), SortEntries> Colliding;

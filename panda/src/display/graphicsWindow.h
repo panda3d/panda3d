@@ -202,7 +202,7 @@ public:
   class EXPCL_PANDA WindowProps : public FactoryParam {
   public:
     INLINE WindowProps(void) : WindowParam() {}
-    INLINE WindowProps(const Properties& p) : _p(p), WindowParam() {}
+    INLINE WindowProps(const Properties& p) : WindowParam(), _p(p) {}
     virtual ~WindowProps(void);
     INLINE Properties get_properties(void) { return _p; }
   public:
@@ -217,7 +217,7 @@ public:
   // make a factory parameter type for the GraphicsPipe*
   class EXPCL_PANDA WindowPipe : public FactoryParam {
   public:
-    INLINE WindowPipe(GraphicsPipe* p) : _p(p), WindowParam() {}
+    INLINE WindowPipe(GraphicsPipe* p) : WindowParam(), _p(p) {}
     virtual ~WindowPipe(void);
     INLINE GraphicsPipe* get_pipe(void) { return _p; }
   public:

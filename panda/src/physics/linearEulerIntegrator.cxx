@@ -80,7 +80,7 @@ child_integrate(Physical *physical,
 
     // run through each acting force and sum it
     LVector3f f;
-    LMatrix4f force_to_object_xform;
+    //    LMatrix4f force_to_object_xform;
 
     ForceNode *force_node;
     vector< PT(LinearForce) >::const_iterator f_cur;

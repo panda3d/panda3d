@@ -27,6 +27,13 @@ public:
 
   virtual CollisionSolid *make_copy();
 
+  INLINE static bool verify_points(const LPoint3f &a, const LPoint3f &b,
+				   const LPoint3f &c);
+  INLINE static bool verify_points(const LPoint3f &a, const LPoint3f &b,
+				   const LPoint3f &c, const LPoint3f &d);
+  static bool verify_points(const LPoint3f *begin, const LPoint3f *end);
+
+
   virtual int
   test_intersection(CollisionHandler *record,
 		    const CollisionEntry &entry,

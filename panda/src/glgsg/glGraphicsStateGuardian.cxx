@@ -990,7 +990,7 @@ draw_sprite(const GeomSprite *geom) {
   if (x_overall == true)
     scaled_width = geom->_x_texel_ratio[0] * half_width;
   else {
-    nassertv((geom->_x_texel_ratio.size() >= geom->get_num_prims()));
+    nassertv(((int)geom->_x_texel_ratio.size() >= geom->get_num_prims()));
     x_walk = &geom->_x_texel_ratio[0];
   }
 
@@ -998,7 +998,7 @@ draw_sprite(const GeomSprite *geom) {
   if (y_overall == true)
     scaled_height = geom->_y_texel_ratio[0] * half_height * aspect_ratio;
   else {
-    nassertv((geom->_y_texel_ratio.size() >= geom->get_num_prims()));
+    nassertv(((int)geom->_y_texel_ratio.size() >= geom->get_num_prims()));
     y_walk = &geom->_y_texel_ratio[0];
   }
 
@@ -1007,7 +1007,7 @@ draw_sprite(const GeomSprite *geom) {
     if (theta_overall == true)
       theta = geom->_theta[0];
     else {
-      nassertv((geom->_theta.size() >= geom->get_num_prims()));
+      nassertv(((int)geom->_theta.size() >= geom->get_num_prims()));
       theta_walk = &geom->_theta[0];
     }
   }
@@ -3455,9 +3455,11 @@ get_image_type(PixelBuffer::Type type) {
 #endif
   case PixelBuffer::T_float:
     return GL_FLOAT;
+
+  default:
+    glgsg_cat.error() << "Invalid PixelBuffer::Type value!\n";
+    return GL_UNSIGNED_BYTE;
   }
-  glgsg_cat.error() << "Invalid PixelBuffer::Type value!\n";
-  return GL_UNSIGNED_BYTE;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3548,12 +3550,13 @@ get_internal_image_format(PixelBuffer::Format format) {
   case PixelBuffer::F_blue:
   case PixelBuffer::F_luminance:
     return GL_LUMINANCE;
-  }
 
-  glgsg_cat.error()
-    << "Invalid image format in get_internal_image_format(): "
-    << (int)format << "\n";
-  return GL_RGB;
+  default:
+    glgsg_cat.error()
+      << "Invalid image format in get_internal_image_format(): "
+      << (int)format << "\n";
+    return GL_RGB;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3586,20 +3589,21 @@ get_texture_apply_mode_type( TextureApplyProperty::Mode am ) const
 GLenum GLGraphicsStateGuardian::
 get_depth_func_type(DepthTestProperty::Mode m) const
 {
-    switch(m)
-    {
-        case DepthTestProperty::M_never: return GL_NEVER;
-        case DepthTestProperty::M_less: return GL_LESS;
-        case DepthTestProperty::M_equal: return GL_EQUAL;
-        case DepthTestProperty::M_less_equal: return GL_LEQUAL;
-        case DepthTestProperty::M_greater: return GL_GREATER;
-        case DepthTestProperty::M_not_equal: return GL_NOTEQUAL;
-        case DepthTestProperty::M_greater_equal: return GL_GEQUAL;
-        case DepthTestProperty::M_always: return GL_ALWAYS;
-    }
+  switch(m) {
+  case DepthTestProperty::M_never: return GL_NEVER;
+  case DepthTestProperty::M_less: return GL_LESS;
+  case DepthTestProperty::M_equal: return GL_EQUAL;
+  case DepthTestProperty::M_less_equal: return GL_LEQUAL;
+  case DepthTestProperty::M_greater: return GL_GREATER;
+  case DepthTestProperty::M_not_equal: return GL_NOTEQUAL;
+  case DepthTestProperty::M_greater_equal: return GL_GEQUAL;
+  case DepthTestProperty::M_always: return GL_ALWAYS;
+
+  default:
     glgsg_cat.error()
       << "Invalid DepthTestProperty::Mode value" << endl;
     return GL_LESS;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3610,19 +3614,21 @@ get_depth_func_type(DepthTestProperty::Mode m) const
 GLenum GLGraphicsStateGuardian::
 get_stencil_func_type(StencilProperty::Mode m) const
 {
-    switch(m) {
-        case StencilProperty::M_never: return GL_NEVER;
-        case StencilProperty::M_less: return GL_LESS;
-        case StencilProperty::M_equal: return GL_EQUAL;
-        case StencilProperty::M_less_equal: return GL_LEQUAL;
-        case StencilProperty::M_greater: return GL_GREATER;
-        case StencilProperty::M_not_equal: return GL_NOTEQUAL;
-        case StencilProperty::M_greater_equal: return GL_GEQUAL;
-        case StencilProperty::M_always: return GL_ALWAYS;
-    }
+  switch(m) {
+  case StencilProperty::M_never: return GL_NEVER;
+  case StencilProperty::M_less: return GL_LESS;
+  case StencilProperty::M_equal: return GL_EQUAL;
+  case StencilProperty::M_less_equal: return GL_LEQUAL;
+  case StencilProperty::M_greater: return GL_GREATER;
+  case StencilProperty::M_not_equal: return GL_NOTEQUAL;
+  case StencilProperty::M_greater_equal: return GL_GEQUAL;
+  case StencilProperty::M_always: return GL_ALWAYS;
+
+  default:
     glgsg_cat.error()
       << "Invalid StencilProperty::Mode value" << endl;
     return GL_LESS;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3660,9 +3666,11 @@ get_fog_mode_type(Fog::Mode m) const {
 #ifdef GL_FOG_FUNC_SGIS
     case Fog::M_spline: return GL_FOG_FUNC_SGIS;
 #endif
+
+  default:
+    glgsg_cat.error() << "Invalid Fog::Mode value" << endl;
+    return GL_EXP;
   }
-  glgsg_cat.error() << "Invalid Fog::Mode value" << endl;
-  return GL_EXP;
 }
 
 ////////////////////////////////////////////////////////////////////

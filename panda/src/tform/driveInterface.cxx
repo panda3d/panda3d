@@ -707,6 +707,9 @@ apply(double x, double y, bool any_button) {
   case CS_yup_left:
     step[1] = 0.0;
     break;
+
+  default:
+    break;
   }
 
   _xyz += step;

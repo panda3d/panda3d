@@ -68,7 +68,6 @@ void GeomBinUnsorted::
 draw(CullTraverser *trav) {
   PStatTimer timer(CullTraverser::_draw_pcollector);
   GraphicsStateGuardian *gsg = trav->get_gsg();
-  TypeHandle graph_type = trav->get_graph_type();
 
   if (cull_cat.is_spam()) {
     cull_cat.spam() 

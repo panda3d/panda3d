@@ -17,7 +17,7 @@
 
 GeomParticleRenderer::
 GeomParticleRenderer(ParticleRendererAlphaMode am, Node *geom_node) :
-  _geom_node(geom_node), _pool_size(0), BaseParticleRenderer(am) {
+  BaseParticleRenderer(am),  _geom_node(geom_node), _pool_size(0) {
 
   _dead_particle_parent_node = new Node;
 
@@ -33,7 +33,7 @@ GeomParticleRenderer(ParticleRendererAlphaMode am, Node *geom_node) :
 
 GeomParticleRenderer::
 GeomParticleRenderer(const GeomParticleRenderer& copy) :
-  _pool_size(0), BaseParticleRenderer(copy) {
+  BaseParticleRenderer(copy), _pool_size(0) {
 
   _dead_particle_parent_node = new Node;
 
@@ -133,7 +133,7 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   // run through the particle vector
 
-  for (i = 0; i < po_vector.size(); i++) {
+  for (i = 0; i < (int)po_vector.size(); i++) {
     RenderRelation *cur_arc;
 
     cur_particle = (BaseParticle *) po_vector[i].p();

@@ -993,9 +993,6 @@ void glxGraphicsWindow::handle_changes(void)
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::process_event(XEvent event)
 {
-  glxGraphicsPipe* pipe = DCAST(glxGraphicsPipe, _pipe);
-  bool down = false;
-
   switch (event.type) {
   case MappingNotify:
     break;
@@ -1096,7 +1093,7 @@ void glxGraphicsWindow::process_event(XEvent event)
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::process_events(void)
 {
-  XEvent event, ahead;
+  XEvent event;
   int got_event;
   glxGraphicsWindow* window;
 

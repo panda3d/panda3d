@@ -76,18 +76,17 @@ get_user_alpha(void) const {
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleRenderer::
 get_cur_alpha(BaseParticle* bp) {
-  switch(_alpha_mode)
-  {
-    case PR_ALPHA_OUT:
-      return 1.0f - bp->get_parameterized_age();
-      break;
-    case PR_ALPHA_IN:
-      return bp->get_parameterized_age();
-      break;
-    case PR_ALPHA_USER:
-      return _user_alpha;
-      break;
+  switch(_alpha_mode) {
+  case PR_ALPHA_OUT:
+    return 1.0f - bp->get_parameterized_age();
+
+  case PR_ALPHA_IN:
+    return bp->get_parameterized_age();
+
+  case PR_ALPHA_USER:
+    return _user_alpha;
+
+  default:
+    return 1.0; // should not get here
   }
-  
-  return 1.0; // should not get here
 }

@@ -28,8 +28,8 @@ template<class SwitchType>
 INLINE MovingPart<SwitchType>::
 MovingPart(const MovingPart<SwitchType> &copy) :
   MovingPartBase(copy),
-  _initial_value(copy._initial_value),
-  _value(copy._value) 
+  _value(copy._value),
+  _initial_value(copy._initial_value)
 {
 }
 
@@ -41,10 +41,11 @@ MovingPart(const MovingPart<SwitchType> &copy) :
 template<class SwitchType>
 INLINE MovingPart<SwitchType>::
 MovingPart(PartGroup *parent, const string &name, 
-	   const ValueType &initial_value)
-  : MovingPartBase(parent, name),
-    _initial_value(initial_value),
-    _value(initial_value) {
+	   const ValueType &initial_value) :
+  MovingPartBase(parent, name),
+  _value(initial_value),
+  _initial_value(initial_value)
+{
 }
 
 ////////////////////////////////////////////////////////////////////

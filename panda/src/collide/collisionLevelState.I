@@ -21,7 +21,7 @@ get_num_colliders() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionLevelState::
 has_collider(int n) const {
-  nassertr(n >= 0 && n < _colliders.size(), false);
+  nassertr(n >= 0 && n < (int)_colliders.size(), false);
   return (_current & get_mask(n)) != 0;
 }
 
@@ -34,7 +34,7 @@ has_collider(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionLevelState::
 has_collider_with_geom(int n) const {
-  nassertr(n >= 0 && n < _colliders.size(), false);
+  nassertr(n >= 0 && n < (int)_colliders.size(), false);
   return (_current & _colliders_with_geom & get_mask(n)) != 0;
 }
 
@@ -80,7 +80,7 @@ reached_collision_node() {
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSolid *CollisionLevelState::
 get_collider(int n) const {
-  nassertr(n >= 0 && n < _colliders.size(), NULL);
+  nassertr(n >= 0 && n < (int)_colliders.size(), NULL);
   nassertr(has_collider(n), NULL);
 
   return _colliders[n]._collider;
@@ -93,7 +93,7 @@ get_collider(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionNode *CollisionLevelState::
 get_node(int n) const {
-  nassertr(n >= 0 && n < _colliders.size(), NULL);
+  nassertr(n >= 0 && n < (int)_colliders.size(), NULL);
   nassertr(has_collider(n), NULL);
 
   return _colliders[n]._node;
@@ -106,7 +106,7 @@ get_node(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4f &CollisionLevelState::
 get_space(int n) const {
-  nassertr(n >= 0 && n < _colliders.size(), LMatrix4f::ident_mat());
+  nassertr(n >= 0 && n < (int)_colliders.size(), LMatrix4f::ident_mat());
   nassertr(has_collider(n), LMatrix4f::ident_mat());
 
   return _colliders[n]._space;
@@ -119,7 +119,7 @@ get_space(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4f &CollisionLevelState::
 get_inv_space(int n) const {
-  nassertr(n >= 0 && n < _colliders.size(), LMatrix4f::ident_mat());
+  nassertr(n >= 0 && n < (int)_colliders.size(), LMatrix4f::ident_mat());
   nassertr(has_collider(n), LMatrix4f::ident_mat());
 
   return _colliders[n]._inv_space;
@@ -132,9 +132,9 @@ get_inv_space(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE const GeometricBoundingVolume *CollisionLevelState::
 get_local_bound(int n) const {
-  nassertr(n >= 0 && n < _colliders.size(), NULL);
+  nassertr(n >= 0 && n < (int)_colliders.size(), NULL);
   nassertr(has_collider(n), NULL);
-  nassertr(n >= 0 && n < _local_bounds.size(), NULL);
+  nassertr(n >= 0 && n < (int)_local_bounds.size(), NULL);
   return _local_bounds[n];
 }
 
@@ -145,7 +145,7 @@ get_local_bound(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionLevelState::
 omit_collider(int n) {
-  nassertv(n >= 0 && n < _colliders.size());
+  nassertv(n >= 0 && n < (int)_colliders.size());
   nassertv(has_collider(n));
 
   _current &= ~get_mask(n);

@@ -301,7 +301,7 @@ decompress(Filename &source_file, Filename &dest_file) {
 			dest_buffer_length, write_stream);
       if (ret == ZCompressorBase::S_error)
 	return false;
-      if (decompressor.get_total_in() == source_file_length &&
+      if ((int)decompressor.get_total_in() == source_file_length &&
 	  avail_out == dest_buffer_length)
 	handled_all_input = true;
     }
