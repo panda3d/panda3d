@@ -107,7 +107,7 @@ install-bam : $[install_bam_targets]
     $[installed_other]
 install-other : $[install_other_targets]
 
-install : install-other install-bam
+install : all install-other install-bam
 uninstall : uninstall-other uninstall-bam uninstall-egg
 
 clean-bam :
