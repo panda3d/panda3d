@@ -33,7 +33,7 @@ class EXPCL_PANDAPHYSICS LinearIntegrator : public BaseIntegrator {
 public:
   virtual ~LinearIntegrator();
 
-  void integrate(Physical *physical, pvector< PT(LinearForce) > &forces,
+  void integrate(Physical *physical, LinearForceVector &forces,
                  float dt);
   
   virtual void output(ostream &out) const;
@@ -48,7 +48,7 @@ private:
   // this allows baseLinearIntegrator to censor/modify data that the
   // actual integration function receives.
   virtual void child_integrate(Physical *physical, 
-                               pvector< PT(LinearForce) > &forces,
+                               LinearForceVector &forces,
                                float dt) = 0;
 };
 

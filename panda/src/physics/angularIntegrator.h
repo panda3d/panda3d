@@ -32,7 +32,7 @@ class EXPCL_PANDAPHYSICS AngularIntegrator : public BaseIntegrator {
 public:
   virtual ~AngularIntegrator();
 
-  void integrate(Physical *physical, pvector< PT(AngularForce) > &forces,
+  void integrate(Physical *physical, AngularForceVector &forces,
                  float dt);
   
   virtual void output(ostream &out) const;
@@ -46,7 +46,7 @@ private:
 
   // this allows baseAngularIntegrator to censor/modify data that the
   // actual integration function receives.
-  virtual void child_integrate(Physical *physical, pvector< PT(AngularForce) > &forces,
+  virtual void child_integrate(Physical *physical, AngularForceVector &forces,
                                float dt) = 0;
 };
 

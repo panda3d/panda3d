@@ -46,7 +46,7 @@ LinearIntegrator::
 //               virtual.
 ////////////////////////////////////////////////////////////////////
 void LinearIntegrator::
-integrate(Physical *physical, pvector< PT(LinearForce) > &forces,
+integrate(Physical *physical, LinearForceVector &forces,
           float dt) {
 /* <-- darren, 2000.10.06
   // cap dt so physics don't go flying off on lags
@@ -54,7 +54,7 @@ integrate(Physical *physical, pvector< PT(LinearForce) > &forces,
     dt = _max_linear_dt;
 */
 
-  pvector< PT(PhysicsObject) >::const_iterator current_object_iter;
+  PhysicsObject::Vector::const_iterator current_object_iter;
   current_object_iter = physical->get_object_vector().begin();
   for (; current_object_iter != physical->get_object_vector().end();
        current_object_iter++) {

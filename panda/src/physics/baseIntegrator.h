@@ -40,6 +40,8 @@ class Physical;
 class EXPCL_PANDAPHYSICS BaseIntegrator : public ReferenceCount {
 public:
   typedef pvector<LMatrix4f> MatrixVector;
+  typedef pvector<PT(LinearForce)> LinearForceVector;
+  typedef pvector<PT(AngularForce)> AngularForceVector;
 
   virtual ~BaseIntegrator();
   
@@ -57,9 +59,9 @@ protected:
   INLINE const MatrixVector &get_precomputed_angular_matrices() const;
 
   void precompute_linear_matrices(Physical *physical,
-                                  const pvector< PT(LinearForce) > &forces);
+                                  const LinearForceVector &forces);
   void precompute_angular_matrices(Physical *physical,
-                                   const pvector< PT(AngularForce) > &forces);
+                                   const AngularForceVector &forces);
 
 private:
   // since the wrt for each physicsobject between its physicalnode

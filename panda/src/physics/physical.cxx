@@ -74,23 +74,23 @@ Physical(const Physical& copy) {
   _physics_manager = (PhysicsManager *) NULL;
 
   // copy the forces.
-  pvector< PT(LinearForce) >::const_iterator lf_cur;
-  pvector< PT(LinearForce) >::const_iterator lf_end = copy._linear_forces.end();
+  LinearForceVector::const_iterator lf_cur;
+  LinearForceVector::const_iterator lf_end = copy._linear_forces.end();
 
   for (lf_cur = copy._linear_forces.begin(); lf_cur != lf_end; lf_cur++) {
     _linear_forces.push_back((*lf_cur)->make_copy());
   }
 
-  pvector< PT(AngularForce) >::const_iterator af_cur;
-  pvector< PT(AngularForce) >::const_iterator af_end = copy._angular_forces.end();
+  AngularForceVector::const_iterator af_cur;
+  AngularForceVector::const_iterator af_end = copy._angular_forces.end();
 
   for (af_cur = copy._angular_forces.begin(); af_cur != af_end; af_cur++) {
     _angular_forces.push_back((*af_cur)->make_copy());
   }
 
   // copy the physics objects
-  pvector< PT(PhysicsObject) >::const_iterator p_cur;
-  pvector< PT(PhysicsObject) >::const_iterator p_end = copy._physics_objects.end();
+  PhysicsObject::Vector::const_iterator p_cur;
+  PhysicsObject::Vector::const_iterator p_end = copy._physics_objects.end();
 
   for (p_cur = copy._physics_objects.begin(); p_cur != p_end; p_cur++) {
     // oooh so polymorphic.
@@ -144,7 +144,7 @@ write_physics_objects(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_physics_objects ("<<_physics_objects.size()<<" objects)\n";
-  for (PhysicsObjectVector::const_iterator i=_physics_objects.begin();
+  for (PhysicsObject::Vector::const_iterator i=_physics_objects.begin();
        i != _physics_objects.end();
        ++i) {
     (*i)->write(out, indent+2);

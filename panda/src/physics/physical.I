@@ -78,7 +78,7 @@ add_angular_force(AngularForce *f) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
 remove_linear_force(LinearForce *f) {
-  pvector< PT(LinearForce) >::iterator found;
+  LinearForceVector::iterator found;
 
   // this is a PT because the templates don't like what should be
   // perfectly allowable, which is to search for bf directly.
@@ -98,7 +98,7 @@ remove_linear_force(LinearForce *f) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
 remove_angular_force(AngularForce *f) {
-  pvector< PT(AngularForce) >::iterator found;
+  AngularForceVector::iterator found;
 
   PT(AngularForce) pt_af = f;
   found = find(_angular_forces.begin(), _angular_forces.end(), pt_af);
@@ -150,7 +150,7 @@ get_physical_node() const {
 //    Function : get_object_vector
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-INLINE const pvector< PT(PhysicsObject) > &Physical::
+INLINE const PhysicsObject::Vector &Physical::
 get_object_vector() const {
   return _physics_objects;
 }
@@ -159,7 +159,7 @@ get_object_vector() const {
 //    Function : get_linear_forces
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-INLINE const pvector< PT(LinearForce) > &Physical::
+INLINE const Physical::LinearForceVector &Physical::
 get_linear_forces() const {
   return _linear_forces;
 }
@@ -168,7 +168,7 @@ get_linear_forces() const {
 //    Function : get_angular_forces
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-INLINE const pvector< PT(AngularForce) > &Physical::
+INLINE const Physical::AngularForceVector &Physical::
 get_angular_forces() const {
   return _angular_forces;
 }

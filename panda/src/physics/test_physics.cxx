@@ -58,7 +58,7 @@ int main(int, char **) {
   b.add_linear_force(new LinearJitterForce(0.1f));
   
   int i=0;
-  for (Physical::PhysicsObjectVector::const_iterator co=b.get_object_vector().begin();
+  for (PhysicsObject::Vector::const_iterator co=b.get_object_vector().begin();
        co != b.get_object_vector().end();
        ++i, ++co) {
     (*co)->set_position(i * 2.0f, float(i), 0.0f);
@@ -71,7 +71,7 @@ int main(int, char **) {
   physics_manager.add_linear_force(new LinearVectorForce(0.0f, 0.0f, -9.8f, 1.0f, false));
 
   cout << "Object vector:" << endl;
-  for (Physical::PhysicsObjectVector::const_iterator co=b.get_object_vector().begin();
+  for (PhysicsObject::Vector::const_iterator co=b.get_object_vector().begin();
        co != b.get_object_vector().end();
        ++co) {
     cout << "vel: " << (*co)->get_velocity() << "  ";
@@ -81,7 +81,7 @@ int main(int, char **) {
   physics_manager.do_physics(1.0f);
   cout << "Physics have been applied." << endl;
 
-  for (Physical::PhysicsObjectVector::const_iterator co=b.get_object_vector().begin();
+  for (PhysicsObject::Vector::const_iterator co=b.get_object_vector().begin();
        co != b.get_object_vector().end();
        ++co) {
     cout << "vel: " << (*co)->get_velocity() << "  ";

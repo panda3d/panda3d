@@ -42,7 +42,7 @@ AngularIntegrator::
 // Description : high-level integration.  API.
 ////////////////////////////////////////////////////////////////////
 void AngularIntegrator::
-integrate(Physical *physical, pvector< PT(AngularForce) >& forces,
+integrate(Physical *physical, AngularForceVector& forces,
           float dt) {
   // intercept in case we want to censor/adjust values
   if (dt > _max_angular_dt)

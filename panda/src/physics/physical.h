@@ -40,6 +40,11 @@ class PhysicsManager;
 //               it from this.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS Physical : public TypedReferenceCount {
+public:
+  //typedef pvector<PT(PhysicsObject)> PhysicsObjectVector;
+  typedef pvector<PT(LinearForce)> LinearForceVector;
+  typedef pvector<PT(AngularForce)> AngularForceVector;
+
 PUBLISHED:
   Physical(int total_objects = 1, bool pre_alloc = false);
   Physical(const Physical& copy);
@@ -75,11 +80,7 @@ PUBLISHED:
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 public:
-  typedef pvector< PT(PhysicsObject) > PhysicsObjectVector;
-  typedef pvector< PT(LinearForce) > LinearForceVector;
-  typedef pvector< PT(AngularForce) > AngularForceVector;
-
-  INLINE const PhysicsObjectVector &get_object_vector() const;
+  INLINE const PhysicsObject::Vector &get_object_vector() const;
   INLINE const LinearForceVector &get_linear_forces() const;
   INLINE const AngularForceVector &get_angular_forces() const;
 
@@ -89,7 +90,7 @@ public:
 protected:
   float _viscosity;
   // containers
-  PhysicsObjectVector _physics_objects;
+  PhysicsObject::Vector _physics_objects;
   LinearForceVector _linear_forces;
   AngularForceVector _angular_forces;
 

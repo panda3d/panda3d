@@ -57,7 +57,7 @@ LinearEulerIntegrator::
 ////////////////////////////////////////////////////////////////////
 void LinearEulerIntegrator::
 child_integrate(Physical *physical,
-                pvector< PT(LinearForce) >& forces,
+                LinearForceVector& forces,
                 float dt) {
   // perform the precomputation.  Note that the vector returned by
   // get_precomputed_matrices() has the matrices loaded in order of force
@@ -77,10 +77,10 @@ child_integrate(Physical *physical,
   // velocity of each physicsobject in the set.  Accordingly, we have
   // to grunt our way through each one.  wrt caching of the xform matrix
   // should help.
-  pvector< PT(PhysicsObject) >::const_iterator current_object_iter;
+  PhysicsObject::Vector::const_iterator current_object_iter;
   current_object_iter = physical->get_object_vector().begin();
   for (; current_object_iter != physical->get_object_vector().end();
-       current_object_iter++) {
+       ++current_object_iter) {
     PhysicsObject *current_object = *current_object_iter;
 
     // bail out if this object doesn't exist or doesn't want to be
@@ -93,7 +93,7 @@ child_integrate(Physical *physical,
       continue;
     }
     
-    LVector3f md_accum_vec;
+    LVector3f md_accum_vec; // mass dependent accumulation vector.
     LVector3f non_md_accum_vec;
     LVector3f accel_vec;
     LVector3f vel_vec;
@@ -107,7 +107,7 @@ child_integrate(Physical *physical,
     //    LMatrix4f force_to_object_xform;
 
     ForceNode *force_node;
-    pvector< PT(LinearForce) >::const_iterator f_cur;
+    LinearForceVector::const_iterator f_cur;
 
     // global forces
     f_cur = forces.begin();

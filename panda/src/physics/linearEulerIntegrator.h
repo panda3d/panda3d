@@ -36,7 +36,7 @@ PUBLISHED:
 
 private:
   virtual void child_integrate(Physical *physical,
-                               pvector< PT(LinearForce) >& forces,
+                               LinearForceVector& forces,
                                float dt);
 };
 

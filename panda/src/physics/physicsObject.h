@@ -30,6 +30,9 @@
 //               NOT derive from this.  Derive from Physical instead.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS PhysicsObject : public TypedReferenceCount {
+public:
+  typedef pvector<PT(PhysicsObject)> Vector;
+
 PUBLISHED:
   PhysicsObject();
   PhysicsObject(const PhysicsObject &copy);
