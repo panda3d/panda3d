@@ -21,26 +21,35 @@ class ParticlePanel(AppShell):
     usestatusarea  = 0
     balloonState = 'both'
     
-    def __init__(self, particleEffect, particles, **kw):
+    def __init__(self, particleEffect = None, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title',     self.appname,       None),
             )
         self.defineoptions(kw, optiondefs)
 
-	self.particleEffect = particleEffect
-	self.particles = particles 
+        # Record particle effect
+        if particleEffect != None:
+            self.particleEffect = particleEffect
+        else:
+            # Or create a new one if none given
+            self.particleEffect = ParticleEffect.ParticleEffect(name)
 
+        # Initialize application specific info
         AppShell.__init__(self)
 
+        # Initialize panel Pmw options
         self.initialiseoptions(ParticlePanel)
 
-        self.updateInfo()
+        # Update panel values to reflect particle effect's state
+        self.selectEffectNamed(self.effectDict.keys()[0])
 
     def appInit(self):
         self.widgetDict = {}
-        self.systemDict = {}
-        self.systemDict['system 0'] = self.particles
+        self.variableDict = {}
+        self.effectDict = {}
+        self.effectDict[self.particleEffect.getName()] = (
+            self.particleEffect)
 
     def createInterface(self):
         # Handle to the toplevels hull
@@ -54,16 +63,16 @@ class ParticlePanel(AppShell):
             command = lambda s = self: s.particles.printParams())
 
         # Combo box to switch between particle systems
-        self.systemSelector = Pmw.ComboBox(self.menuFrame,
+        self.effectSelector = Pmw.ComboBox(self.menuFrame,
                                      labelpos = W,
                                      label_text = 'Particle System',
                                      entry_width = 16,
-                                     selectioncommand = self.selectSystemNamed,
+                                     selectioncommand = self.selectEffectNamed,
                                      scrolledlist_items = ('system 0',))
-        self.systemSelector.selectitem('system 0')
-        self.systemSelector.pack(side = 'left', expand = 0)
+        self.effectSelector.selectitem('system 0')
+        self.effectSelector.pack(side = 'left', expand = 0)
 
-        self.systemActive = self.createCheckbutton(
+        self.createCheckbutton(
             self.menuFrame, 'System', 'Active',
             'Turn particle systems on/off',
             self.toggleParticleSystem, 1)
@@ -106,12 +115,12 @@ class ParticlePanel(AppShell):
         self.createFloaters(systemPage, systemFloaterDefs)
         # Checkboxes
         # Note: Sense is reversed on this one
-        self.systemLocalVelocity = self.createCheckbutton(
+        self.createCheckbutton(
             systemPage, 'System', 'Render Relative Velocities',
             ('On: velocities are in render space; ' +
              'Off: velocities are in particle local space'),
             self.toggleSystemLocalVelocity, 0)
-        self.systemGrowsOlder = self.createCheckbutton(
+        self.createCheckbutton(
             systemPage, 'System', 'Grows Older',
             'On: system has a lifespan',
             self.toggleSystemGrowsOlder, 0)
@@ -127,7 +136,7 @@ class ParticlePanel(AppShell):
         hpr.addMenuItem('Popup Placer Panel', Placer.Placer)
 
         ## FACTORY PAGE ##
-        self.factoryTypeMenu = self.createOptionMenu(
+        self.createOptionMenu(
             factoryPage,
             'Factory', 'Factory Type',
             'Select type of particle factory',
@@ -189,9 +198,9 @@ class ParticlePanel(AppShell):
         self.factoryNotebook.pack(expand = 1, fill = BOTH)
 
         ## EMITTER PAGE ##
-        self.emitterTypeMenu = self.createOptionMenu(
+        self.createOptionMenu(
             emitterPage, 'Emitter',
-            'Emitter type',
+            'Emitter Type',
             'Select type of particle emitter',
             ('BoxEmitter', 'DiscEmitter', 'LineEmitter', 'PointEmitter',
              'RectangleEmitter', 'RingEmitter', 'SphereVolumeEmitter',
@@ -279,7 +288,7 @@ class ParticlePanel(AppShell):
         self.createFloater(customPage, 'Disc Emitter', 'Outer Velocity',
                            'Launch velocity multiplier at edge of disc',
                            command = self.setEmitterDiscOuterVelocity)
-        self.emitterDiscCubicLerping = self.createCheckbutton(
+        self.createCheckbutton(
             customPage, 'Disc Emitter', 'Cubic Lerping',
             'On: magnitude/angle interpolation from center',
             self.toggleEmitterDiscCubicLerping, 0)
@@ -343,8 +352,8 @@ class ParticlePanel(AppShell):
         self.emitterNotebook.pack(fill = X)
 
         ## RENDERER PAGE ##
-        self.rendererTypeMenu = self.createOptionMenu(
-            rendererPage, 'Renderer', 'Renderer type',
+        self.createOptionMenu(
+            rendererPage, 'Renderer', 'Renderer Type',
             'Select type of particle renderer',
             ('LineParticleRenderer', 'GeomParticleRenderer',
              'PointParticleRenderer', 'SparkleParticleRenderer',
@@ -444,17 +453,17 @@ class ParticlePanel(AppShell):
             '<Return>', self.setRendererSpriteTexture)
         self.rendererSpriteTextureEntry.pack(
             side = LEFT, expand = 1, fill = X)
-        self.rendererSpriteXScale = self.createCheckbutton(
+        self.createCheckbutton(
             spritePage, 'Sprite Renderer', 'X Scale',
             ("On: x scale is interpolated over particle's life; " +
              "Off: stays as start_X_Scale"),
             self.toggleRendererSpriteXScale, 0)
-        self.rendererSpriteYScale = self.createCheckbutton(
+        self.createCheckbutton(
             spritePage, 'Sprite Renderer', 'Y Scale',
             ("On: y scale is interpolated over particle's life; " +
              "Off: stays as start_Y_Scale"),
             self.toggleRendererSpriteYScale, 0)
-        self.rendererSpriteAnimAngle = self.createCheckbutton(
+        self.createCheckbutton(
             spritePage, 'Sprite Renderer', 'Anim Angle',
             ("On: particles that are set to spin on the Z axis will " +
              "spin appropriately"),
@@ -485,19 +494,81 @@ class ParticlePanel(AppShell):
                               'Interpolation blend type for X and Y scaling',
                               ('PP_NO_BLEND', 'PP_LINEAR', 'PP_CUBIC'),
                               self.setRendererSpriteBlendMethod)
-        self.rendererSpriteAlphaDisable = self.createCheckbutton(
+        self.createCheckbutton(
             spritePage, 'Sprite Renderer', 'Alpha Disable',
             'On: alpha blending is disabled',
             self.toggleRendererSpriteAlphaDisable, 0)
         self.rendererNotebook.pack(fill = X)
 
         ## FORCE PAGE ##
-        # fn = ForceNode()
-        # lvf = LinearVectorForce()
-        # lvf.setVector(0,0,-4)
-        # fn.addForce(lvf)
-        # physicsMgr.addLinearForce(lvf)
-        # render.attachNewNode(fn)
+        # Menu to select between differnt Forces
+        self.createOptionMenu(
+            forcePage, 'Force',
+            'Active Force',
+            'Select force component', [],
+            self.selectForceType)
+        
+        forceFrame = Frame(forcePage, borderwidth = 2, relief = 'sunken')
+        self.forcesButton = Menubutton(forceFrame, text = 'Forces',
+                                       font=('MSSansSerif', 14, 'bold'),
+                                       activebackground = '#909090')
+        forcesMenu = Menu(self.forcesButton)
+        forcesMenu.add_command(label = 'Add Linear Cylinder Vortex Force',
+                            command = self.addLinearCylinderVortexForce)
+        forcesMenu.add_command(label = 'Add Linear Distance Force',
+                            command = self.addLinearDistanceForce)
+        forcesMenu.add_command(label = 'Add Linear Friction Force',
+                            command = self.addLinearFrictionForce)
+        forcesMenu.add_command(label = 'Add Linear Jitter Force',
+                            command = self.addLinearJitterForce)
+        forcesMenu.add_command(label = 'Add Linear Noise Force',
+                            command = self.addLinearNoiseForce)
+        forcesMenu.add_command(label = 'Add Linear Random Force',
+                            command = self.addLinearRandomForce)
+        forcesMenu.add_command(label = 'Add Linear Sink Force',
+                            command = self.addLinearSinkForce)
+        forcesMenu.add_command(label = 'Add Linear Source Force',
+                            command = self.addLinearSourceForce)
+        forcesMenu.add_command(label = 'Add Linear User Defined Force',
+                            command = self.addLinearUserDefinedForce)
+        forcesMenu.add_command(label = 'Add Linear Vector Force',
+                            command = self.addLinearVectorForce)
+        self.forcesButton.pack(expand = 0)
+        self.forcesButton['menu'] = forcesMenu
+        
+        # Notebook pages for force specific controls
+        self.forceNotebook = Pmw.NoteBook(forceFrame, tabpos = None,
+                                          borderwidth = 0)
+        # Put this here so it isn't called right away
+        self.forceNotebook['raisecommand'] = self.updateForceWidgets
+
+        # Widget to select a force to configure
+        nameList = map(lambda x: x.getName(), self.particleEffect.getForces())
+        forceMenuFrame = Frame(forceFrame)
+        self.forceMenu = Pmw.ComboBox(
+            forceMenuFrame, labelpos = W, label_text = 'Force:',
+            entry_width = 20,
+            selectioncommand = self.selectForceNamed,
+            scrolledlist_items = nameList)
+        self.forceMenu.pack(side = 'left', fill = 'x', expand = 0)
+        self.bind(self.forceMenu, 'Select force to configure')
+        
+        self.forceActive = BooleanVar()
+        self.forceActiveButton = Checkbutton(
+            forceMenuFrame,
+            text = 'On/Off',
+            variable = self.forceActive,
+            command = self.toggleActiveForce)
+        self.forceActiveButton.pack(side = 'left', fill = 'x', expand = 0)
+
+        # Pack force menu
+        forceMenuFrame.pack(fill = 'x', expand = 0, padx = 2)
+
+        self.forceNotebook.setnaturalsize()
+        self.forceNotebook.pack(expand = 1, fill = BOTH)
+        
+        forceFrame.pack(expand = 1, fill = BOTH)
+
         
         self.factoryNotebook.setnaturalsize()
         self.emitterNotebook.setnaturalsize()
@@ -519,7 +590,8 @@ class ParticlePanel(AppShell):
         widget.pack(fill = X)
         self.bind(widget, balloonHelp)
         self.widgetDict[category + '-' + text] = widget
-        return bool
+        self.variableDict[category + '-' + text] = bool
+        return widget
         
     def createRadiobutton(self, parent, side, category, text,
                           balloonHelp, variable, value,
@@ -627,7 +699,8 @@ class ParticlePanel(AppShell):
     def createOptionMenu(self, parent, category, text, balloonHelp,
                          items, command):
         optionVar = StringVar()
-        optionVar.set(items[0])
+        if len(items) > 0:
+            optionVar.set(items[0])
         widget = Pmw.OptionMenu(parent, labelpos = W, label_text = text,
                                 label_width = 12, menu_tearoff = 1,
                                 menubutton_textvariable = optionVar,
@@ -636,11 +709,30 @@ class ParticlePanel(AppShell):
         widget['command'] = command
         widget.pack(fill = X)
         self.bind(widget.component('menubutton'), balloonHelp)
-        self.widgetDict[category + '-' + text] = optionVar
+        self.widgetDict[category + '-' + text] = widget
+        self.variableDict[category + '-' + text] = optionVar
         return optionVar
+
+    def createComboBox(self, parent, category, text, balloonHelp,
+                         items, command):
+        widget = Pmw.ComboBox(parent
+                              labelpos = W,
+                              label_text = text,
+                              entry_width = 16,
+                              scrolledlist_items = items)
+        if len(items) > 0:
+            widget.selectitem(items[0])
+        widget['command'] = command
+        widget.pack(side = 'left', expand = 0)
+        self.bind(widget.component('menubutton'), balloonHelp)
+        self.widgetDict[category + '-' + text] = optionVar
+        return widget
 
     def getWidget(self, category, text):
         return self.widgetDict[category + '-' + text]
+
+    def getVariable(self, category, text):
+        return self.variableDict[category + '-' + text]
 
     ### PARTICLE SYSTEM COMMANDS ###
     def updateInfo(self, page = 'System'):
@@ -655,9 +747,12 @@ class ParticlePanel(AppShell):
         elif page == 'Renderer':
             self.selectRendererPage()
             self.updateRendererWidgets()
+        elif page == 'Force':
+            self.selectForcePage()
+            self.updateForceWidgets()
 
     def toggleParticleSystem(self):
-        if self.systemActive.get():
+        if self.getWidget('System', 'Active').get():
             self.particleEffect.enable()
         else:
             self.particleEffect.disable()
@@ -679,8 +774,10 @@ class ParticlePanel(AppShell):
         self.getWidget('System', 'Pos').set([pos[0], pos[1], pos[2]], 0)
         hpr = self.particles.nodePath.getHpr()
         self.getWidget('System', 'Hpr').set([hpr[0], hpr[1], hpr[2]], 0)
-        self.systemLocalVelocity.set(self.particles.getLocalVelocityFlag())
-        self.systemGrowsOlder.set(self.particles.getSystemGrowsOlderFlag())
+        self.getWidget('System', 'Render Relative Velocities').set(
+            self.particles.getLocalVelocityFlag())
+        self.getWidget('System', 'Grows Older').set(
+            self.particles.getSystemGrowsOlderFlag())
     def setSystemPoolSize(self, value):
 	self.particles.setPoolSize(int(value))
     def setSystemBirthRate(self, value):
@@ -692,9 +789,11 @@ class ParticlePanel(AppShell):
     def setSystemLifespan(self, value):
 	self.particles.setSystemLifespan(value)
     def toggleSystemLocalVelocity(self):
-	self.particles.setLocalVelocityFlag(self.systemLocalVelocity.get())
+	self.particles.setLocalVelocityFlag(
+            self.getWidget('System', 'Render Relative Velocities').get())
     def toggleSystemGrowsOlder(self):
-	self.particles.setSystemGrowsOlderFlag(self.systemGrowsOlder.get())
+	self.particles.setSystemGrowsOlderFlag(
+            self.getWidget('System', 'Grows Older').get())
     def setSystemPos(self, pos):
 	self.particles.nodePath.setPos(Vec3(pos[0], pos[1], pos[2]))
     def setSystemHpr(self, pos):
@@ -757,7 +856,7 @@ class ParticlePanel(AppShell):
     def selectEmitterPage(self):
         type = self.particles.emitter.__class__.__name__
         self.emitterNotebook.selectpage(type)
-        self.emitterTypeMenu.set(type)
+        self.getVariable('Emitter', 'Emitter Type').set(type)
         
     def updateEmitterWidgets(self):
         emitter = self.particles.emitter
@@ -796,7 +895,7 @@ class ParticlePanel(AppShell):
             self.getWidget('Disc Emitter', 'Inner Velocity').set(
                 outerMagnitude, 0)
             cubicLerping = emitter.getCubicLerping()
-            self.emitterDiscCubicLerping.set(cubicLerping)
+            self.getWidget('Disc Emitter', 'Cubic Lerping').set(cubicLerping)
         elif isinstance(emitter, LineEmitter):
             min = emitter.getEndpoint1()
             self.getWidget('Line Emitter', 'Min').set(
@@ -1018,9 +1117,12 @@ class ParticlePanel(AppShell):
             texture = renderer.getTexture()
 	    if (texture != None):
 		self.rendererSpriteTexture = texture.getName()
-            self.rendererSpriteXScale.set(renderer.getXScaleFlag())
-            self.rendererSpriteYScale.set(renderer.getYScaleFlag())
-            self.rendererSpriteAnimAngle.set(renderer.getAnimAngleFlag())
+            self.getWidget('Sprite Renderer', 'X Scale').set(
+                renderer.getXScaleFlag())
+            self.getWidget('Sprite Renderer', 'Y Scale').set(
+                renderer.getYScaleFlag())
+            self.getWidget('Sprite Renderer', 'Anim Angle').set(
+                renderer.getAnimAngleFlag())
             initialXScale = renderer.getInitialXScale()
             self.getWidget('Sprite Renderer', 'Initial X Scale').set(
                 initialXScale)
@@ -1044,12 +1146,13 @@ class ParticlePanel(AppShell):
 		bMethod = "PP_BLEND_LINEAR"
 	    elif (blendMethod == BaseParticleRenderer.PPBLENDCUBIC):
 		bMethod = "PP_BLEND_CUBIC"
-            self.rendererSpriteAlphaDisable.set(renderer.getAlphaDisable())
+            self.getWidget('Sprite Renderer', 'Alpha Disable').set(
+                renderer.getAlphaDisable())
 
     def selectRendererPage(self):
         type = self.particles.renderer.__class__.__name__
         self.rendererNotebook.selectpage(type)
-        self.rendererTypeMenu.set(type)
+        self.getVariable('Renderer', 'Renderer Type').set(type)
 
     # All #
     def setRendererAlphaMode(self, alphaMode):
@@ -1136,13 +1239,13 @@ class ParticlePanel(AppShell):
 	    print "Couldn't find rendererSpriteTexture"
     def toggleRendererSpriteXScale(self):
 	self.particles.renderer.setXScaleFlag(
-            self.rendererSpriteXScale.get())
+            self.getWidget('Sprite Renderer', 'X Scale').get())
     def toggleRendererSpriteYScale(self):
 	self.particles.renderer.setYScaleFlag(
-            self.rendererSpriteYScale.get())
+            self.getWidget('Sprite Renderer', 'Y Scale').get())
     def toggleRendererSpriteAnimAngle(self):
 	self.particles.renderer.setAnimAngleFlag(
-            self.rendererSpriteAnimAngle.get())
+            self.getWidget('Sprite Renderer', 'Anim Angle').get())
     def setRendererSpriteInitialXScale(self, xScale):
 	self.particles.renderer.setInitialXScale(xScale)
     def setRendererSpriteFinalXScale(self, xScale):
@@ -1166,17 +1269,76 @@ class ParticlePanel(AppShell):
 	self.particles.renderer.setAlphaBlendMethod(bMethod)
     def toggleRendererSpriteAlphaDisable(self):
 	self.particles.renderer.setAlphaDisable(
-            self.rendererSpriteAlphaDisable.get())
+            self.getWidget('Sprite Renderer', 'Alpha Disable').get())
         
-    def selectSystemNamed(self, name):
-        system = self.systemDict.get(name, None)
-        if system == None:
-            system = Particles.Particles('new-particles')
-            self.systemDict[name] = system
-        if system:
-            self.particles = system
+    ## FORCES COMMANDS ##
+    def selectForceType(self, type):
+        self.forceNotebook.selectpage(type)
+        self.updateForceWidgets()
+
+    def selectForcePage(self):
+        if self.forces:
+            type = self.forces.__class__.__name__
+            self.forceNotebook.selectpage(type)
+            self.getVariable('Emitter', 'Emitter Type').set(type)
+        
+    def updateForceWidgets(self):
+        pass
+
+    def addLinearCylinderVortexForce(self):
+        f = LinearCylinderVortexForce()
+        self.activeForce.addLinearForce(f)
+    def addLinearDistanceForce(self):
+        f = LinearDistanceForce()
+        self.activeForce.addLinearForce(f)
+    def addLinearFrictionForce(self):
+        f = LinearFrictionForce()
+        self.activeForce.addLinearForce(f)
+    def addLinearJitterForce(self):
+        f = LinearJitterForce()
+        self.activeForce.addLinearForce(f)
+    def addLinearNoiseForce(self):
+        f = LinearNoiseForce()
+        self.activeForce.addLinearForce(f)
+    def addLinearRandomForce(self):
+        f = LinearRandomForce()
+        self.activeForce.addLinearForce(f)
+    def addLinearSinkForce(self):
+        f = LinearSingForce()
+        self.activeForce.addLinearForce(f)
+    def addLinearSourceForce(self):
+        f = LinearSourceForce()
+        self.activeForce.addLinearForce(f)
+    def addLinearUserDefinedForce(self):
+        f = LinearUserDefinedForce()
+        self.activeForce.addLinearForce(f)
+    def addLinearVectorForce(self):
+        f = LinearVectorForce()
+        self.activeForce.addLinearForce(f)
+
+    ## SYSTEM COMMANDS ##
+    def selectEffectNamed(self, name):
+        effect = self.effectDict.get(name, None)
+        if effect:
+            self.particleEffect = effect
+            # Default to first particle in particlesDict
+            self.particles = self.particleEffect.getParticles()[0]
+            # See if particle effect has any forces
+            forcesList = self.particleEffect.getForces()
+            if len(forcesList) > 0:
+                self.forces = forcesList[0]
+            else:
+                self.forces = None
             self.mainNotebook.selectpage('System')
             self.updateInfo('System')
+        else:
+            print 'ParticlePanel: No effect named ' + name
+
+    def createEffectNamed(self, name):
+        effect = ParticleEffect.ParticleEffect(name)
+        self.effectDict[name] = effect
+        self.selectEffectNamed(name)
+            
 
 ######################################################################
 

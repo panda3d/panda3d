@@ -20,5 +20,4 @@ pe.addForces(f)
 pe.enable()
 
 # Particle Panel
-p = pe.particles[0]
-ParticlePanel.ParticlePanel(pe, p)
+ParticlePanel.ParticlePanel(pe)

@@ -35,7 +35,7 @@ class Particles(ParticleSystem.ParticleSystem):
     particleNum = 1
 
     def __init__(self, name = None, poolSize = 1024):
-	"""__init__(self, name, poolSize)"""
+	"""__init__(name, poolSize)"""
 
 	if (name == None):
 	    self.name = 'particles-%d' % self.particleNum
@@ -64,17 +64,17 @@ class Particles(ParticleSystem.ParticleSystem):
 	self.setEmitter("SphereVolumeEmitter")
 
     def enable(self):
-	"""enable(self)"""
+	"""enable()"""
 	physicsMgr.attachPhysical(self)
 	particleMgr.attachParticlesystem(self)
 
     def disable(self):
-	"""disable(self)"""
+	"""disable()"""
 	physicsMgr.removePhysical(self)
 	particleMgr.removeParticlesystem(self)
 
     def setFactory(self, type):
-	"""setFactory(self, type)"""
+	"""setFactory(type)"""
 	if (self.factoryType == type):
 	    return None
 	if (self.factory):
@@ -93,7 +93,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	ParticleSystem.ParticleSystem.setFactory(self, self.factory)
 
     def setRenderer(self, type):
-	"""setRenderer(self, type)"""
+	"""setRenderer(type)"""
 	if (self.rendererType == type):
 	    return None
 	if (self.renderer):
@@ -124,7 +124,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	ParticleSystem.ParticleSystem.setRenderer(self, self.renderer)
 
     def setEmitter(self, type):
-	"""setEmitter(self, type)"""
+	"""setEmitter(type)"""
 	if (self.emitterType == type):
 	    return None
 	if (self.emitter):
@@ -154,8 +154,22 @@ class Particles(ParticleSystem.ParticleSystem):
 	    return None
 	ParticleSystem.ParticleSystem.setEmitter(self, self.emitter)
 
+    ## Getters ##
+    def getName(self):
+        """getName()"""
+        return self.name
+    def getFactory(self):
+        """getFactory()"""
+        return self.factory
+    def getEmitter(self):
+        """getEmitter()"""
+        return self.emitter
+    def getRenderer(self):
+        """getRenderer()"""
+        return self.renderer
+
     def bakeConfig(self, filename):
-	"""saveFileData(self, filename)"""
+	"""bakeConfig(filename)"""
 	#fname = Filename(filename)
 	#fname.resolveFilename(getParticlePath())
 	#fname.resolveFilename(getModelPath())
@@ -168,7 +182,7 @@ class Particles(ParticleSystem.ParticleSystem):
         f.close()
 
     def saveConfig(self, filename):
-	"""saveFileData(self, filename)"""
+	"""saveFileData(filename)"""
 	#fname = Filename(filename)
 	#fname.resolveFilename(getParticlePath())
 	#fname.resolveFilename(getModelPath())
@@ -181,7 +195,7 @@ class Particles(ParticleSystem.ParticleSystem):
         f.close()
 
     def loadConfig(self, filename):
-	"""getFileData(self, filename)
+	"""getFileData(filename)
         Open the specified file and strip out unwanted whitespace and
         empty lines.  Return file as list, one file line per element.
         """
@@ -191,7 +205,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	execfile(filename.toOsSpecific())
 
     def printParams(self, file = sys.stdout, bakeflag = 0):
-	"""printParams(self, file)"""
+	"""printParams(file)"""
 	targ = 'self'
 	if (bakeflag == 0):
 	    targ = 'p'
