@@ -139,6 +139,27 @@ class LevelSpec:
     def privGetScenarioEntityDict(self, scenario):
         return self.specDict['scenarios'][scenario][0]
 
+    def printZones(self):
+        """currently prints list of modelZoneNum->zone name"""
+        # this could be more efficient
+        allIds = self.getAllEntIds()
+        type2id = self.getEntType2ids(allIds)
+        zoneIds = type2id['zone']
+        # omit the UberZone
+        if 0 in zoneIds:
+            zoneIds.remove(0)
+        # need to sort the zones by modelZoneNum
+        zoneNum2zoneId = {}
+        for id in zoneIds:
+            spec = self.getEntitySpec(id)
+            zoneNum2zoneId[spec['modelZoneNum']] = id
+        modelZoneNums = zoneNum2zoneId.keys()
+        modelZoneNums.sort()
+        for zoneNum in modelZoneNums:
+            id = zoneNum2zoneId[zoneNum]
+            spec = self.getEntitySpec(id)
+            print 'zone %s : %s' % (spec['modelZoneNum'], spec['name'])
+
     if __dev__:
         def setLevel(self, level):
             self.level = level
