@@ -117,6 +117,7 @@ class ShowBase:
         # one is in use at a given time.
         self.trackball = self.dataUnused.attachNewNode(Trackball('trackball'))
         self.drive = self.dataUnused.attachNewNode(DriveInterface('drive'))
+        self.noMouse = self.dataUnused.attachNewNode('noMouse')
         self.mouse2cam = self.dataUnused.attachNewNode(Transform2SG('mouse2cam'))
         self.mouse2cam.node().setArc(self.camera.getBottomArc())
         self.useDrive()
@@ -254,6 +255,7 @@ class ShowBase:
     def disableMouse(self):
         self.drive.reparentTo(self.dataUnused)
         self.trackball.reparentTo(self.dataUnused)
+        self.noMouse.reparentTo(self.mouseValve, 0)
         self.mouse2cam.reparentTo(self.dataUnused)
         self.mouseInterface = None
         self.mouseInterfaceNode = None
@@ -267,6 +269,7 @@ class ShowBase:
         """
         # Get rid of the trackball
         self.trackball.reparentTo(self.dataUnused)
+        self.noMouse.reparentTo(self.dataUnused)
         # Update the mouseInterface to point to the drive
         self.mouseInterface = self.drive
         self.mouseInterfaceNode = self.mouseInterface.getBottomNode()
@@ -284,6 +287,7 @@ class ShowBase:
         """
         # Get rid of the drive
         self.drive.reparentTo(self.dataUnused)
+        self.noMouse.reparentTo(self.dataUnused)
         # Update the mouseInterface to point to the trackball
         self.mouseInterface = self.trackball
         self.mouseInterfaceNode = self.mouseInterface.getBottomNode()
