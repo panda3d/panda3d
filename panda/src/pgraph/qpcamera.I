@@ -48,7 +48,7 @@ is_active() const {
 //               represent the root of any subgraph.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpCamera::
-set_scene(PandaNode *scene) {
+set_scene(const NodeChain &scene) {
   _scene = scene;
 }
 
@@ -58,7 +58,7 @@ set_scene(PandaNode *scene) {
 //  Description: Returns the scene that will be rendered by the
 //               camera.  See set_scene().
 ////////////////////////////////////////////////////////////////////
-INLINE PandaNode *qpCamera::
+INLINE const NodeChain &qpCamera::
 get_scene() const {
   return _scene;
 }

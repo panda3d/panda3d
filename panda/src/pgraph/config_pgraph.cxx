@@ -18,6 +18,7 @@
 
 #include "config_pgraph.h"
 
+#include "billboardAttrib.h"
 #include "qpcamera.h"
 #include "colorAttrib.h"
 #include "qpgeomNode.h"
@@ -57,6 +58,7 @@ init_libpgraph() {
   }
   initialized = true;
 
+  BillboardAttrib::init_type();
   qpCamera::init_type();
   ColorAttrib::init_type();
   qpGeomNode::init_type();
@@ -70,6 +72,7 @@ init_libpgraph() {
   ColorAttrib::init_type();
   TransformState::init_type();
 
+  BillboardAttrib::register_with_read_factory();
   ColorAttrib::register_with_read_factory();
   qpGeomNode::register_with_read_factory();
   PandaNode::register_with_read_factory();

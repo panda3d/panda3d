@@ -28,6 +28,7 @@
 #include "ordered_vector.h"
 
 class GraphicsStateGuardianBase;
+class BillboardAttrib;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderState
@@ -77,13 +78,17 @@ PUBLISHED:
   CPT(RenderState) compose(const RenderState *other) const;
   CPT(RenderState) invert_compose(const RenderState *other) const;
 
-  CPT(RenderState) add(const RenderAttrib *attrib, int override = 0) const;
-  CPT(RenderState) remove(TypeHandle type) const;
+  CPT(RenderState) add_attrib(const RenderAttrib *attrib, int override = 0) const;
+  CPT(RenderState) remove_attrib(TypeHandle type) const;
+
+  const RenderAttrib *get_attrib(TypeHandle type) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
 
 public:
+  INLINE const BillboardAttrib *get_billboard() const;
+
   CPT(RenderState) issue_delta_modify(const RenderState *other, 
                                       GraphicsStateGuardianBase *gsg) const;
   CPT(RenderState) issue_delta_set(const RenderState *other, 
@@ -93,6 +98,7 @@ private:
   static CPT(RenderState) return_new(RenderState *state);
   CPT(RenderState) do_compose(const RenderState *other) const;
   CPT(RenderState) do_invert_compose(const RenderState *other) const;
+  void determine_billboard();
 
 private:
   typedef pset<const RenderState *, IndirectLess<RenderState> > States;
@@ -144,6 +150,14 @@ private:
   };
   typedef ov_set<Attribute> Attributes;
   Attributes _attributes;
+
+  // We cache the pointer to the BillboardAttrib stored in the state,
+  // if there is one.
+  const BillboardAttrib *_billboard;
+  enum Flags {
+    F_checked_billboard    = 0x0001,
+  };
+  short _flags;
 
 public:
   static void register_with_read_factory();

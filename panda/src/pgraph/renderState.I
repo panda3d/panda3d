@@ -148,3 +148,22 @@ get_override(int n) const {
   nassertr(n >= 0 && n < (int)_attributes.size(), 0);
   return _attributes[n]._override;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_billboard
+//       Access: Public
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a BillboardAttrib on this state.  It returns a
+//               pointer to the BillboardAttrib, if there is one, or
+//               NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const BillboardAttrib *RenderState::
+get_billboard() const {
+  if ((_flags & F_checked_billboard) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal billboard cache.
+    ((RenderState *)this)->determine_billboard();
+  }
+  return _billboard;
+}

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "renderState.h"
+#include "billboardAttrib.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "datagramIterator.h"
@@ -38,6 +39,7 @@ RenderState::
 RenderState() {
   _saved_entry = _states.end();
   _self_compose = (RenderState *)NULL;
+  _flags = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -399,7 +401,7 @@ invert_compose(const RenderState *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::add
+//     Function: RenderState::add_attrib
 //       Access: Published
 //  Description: Returns a new RenderState object that represents the
 //               same as the source state, with the new RenderAttrib
@@ -407,7 +409,7 @@ invert_compose(const RenderState *other) const {
 //               same type, it is replaced.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) RenderState::
-add(const RenderAttrib *attrib, int override) const {
+add_attrib(const RenderAttrib *attrib, int override) const {
   RenderState *new_state = new RenderState;
   back_insert_iterator<Attributes> result = 
     back_inserter(new_state->_attributes);
@@ -441,14 +443,14 @@ add(const RenderAttrib *attrib, int override) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::remove
+//     Function: RenderState::remove_attrib
 //       Access: Published
 //  Description: Returns a new RenderState object that represents the
 //               same as the source state, with the indicated
 //               RenderAttrib removed
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) RenderState::
-remove(TypeHandle type) const {
+remove_attrib(TypeHandle type) const {
   RenderState *new_state = new RenderState;
   back_insert_iterator<Attributes> result = 
     back_inserter(new_state->_attributes);
@@ -464,6 +466,23 @@ remove(TypeHandle type) const {
   }
 
   return return_new(new_state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_attrib
+//       Access: Published, Virtual
+//  Description: Looks for a RenderAttrib of the indicated type in the
+//               state, and returns it if it is found, or NULL if it
+//               is not.
+////////////////////////////////////////////////////////////////////
+const RenderAttrib *RenderState::
+get_attrib(TypeHandle type) const {
+  Attributes::const_iterator ai;
+  ai = _attributes.find(Attribute(type));
+  if (ai != _attributes.end()) {
+    return (*ai)._attrib;
+  }
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -805,6 +824,21 @@ do_invert_compose(const RenderState *other) const {
   }
 
   return return_new(new_state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_billboard
+//       Access: Private
+//  Description: This is the private implementation of
+//               get_billboard().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_billboard() {
+  const RenderAttrib *attrib = get_attrib(BillboardAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    _billboard = DCAST(BillboardAttrib, attrib);
+  }
+  _flags |= F_checked_billboard;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -41,17 +41,20 @@ public:
   qpCullTraverser();
 
   void set_initial_state(const RenderState *initial_state);
-  void set_world_transform(const TransformState *world_transform);
+  void set_camera_transform(const TransformState *camera_transform);
+  void set_render_transform(const TransformState *render_transform);
   void set_cull_handler(CullHandler *cull_handler);
 
   void traverse(PandaNode *root);
 
 private:
-  void r_traverse(PandaNode *node, const TransformState *transform,
+  void r_traverse(PandaNode *node, const TransformState *render_transform,
+                  const TransformState *net_transform,
                   const RenderState *state, int flags);
 
   CPT(RenderState) _initial_state;
-  CPT(TransformState) _world_transform;
+  CPT(TransformState) _camera_transform;
+  CPT(TransformState) _render_transform;
   CullHandler *_cull_handler;
 };
 

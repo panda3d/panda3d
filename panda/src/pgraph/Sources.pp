@@ -6,6 +6,7 @@
   #define TARGET pgraph
   
   #define SOURCES \
+    billboardAttrib.h billboardAttrib.I \
     qpcamera.h qpcamera.I \
     colorAttrib.h colorAttrib.I \
     config_pgraph.h \
@@ -29,6 +30,7 @@
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
   #define INCLUDED_SOURCES \
+    billboardAttrib.cxx \
     qpcamera.cxx \
     colorAttrib.cxx \
     config_pgraph.cxx \
@@ -57,6 +59,7 @@
   #endif
 
   #define INSTALL_HEADERS \
+    billboardAttrib.h billboardAttrib.I \
     qpcamera.h qpcamera.I \
     colorAttrib.h colorAttrib.I \
     config_pgraph.h \

@@ -1,0 +1,105 @@
+// Filename: billboardAttrib.h
+// Created by:  drose (27Feb02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef BILLBOARDATTRIB_H
+#define BILLBOARDATTRIB_H
+
+#include "pandabase.h"
+
+#include "renderAttrib.h"
+#include "luse.h"
+#include "nodeChain.h"
+
+////////////////////////////////////////////////////////////////////
+//       Class : BillboardAttrib
+// Description : Indicates that geometry at this node should
+//               automatically rotate to face the camera, or any other
+//               arbitrary node.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA BillboardAttrib : public RenderAttrib {
+private:
+  INLINE BillboardAttrib();
+
+PUBLISHED:
+  static CPT(RenderAttrib) make(const LVector3f &up_vector,
+                                bool eye_relative,
+                                bool axial_rotate,
+                                float offset,
+                                const NodeChain &look_at,
+                                const LPoint3f &look_at_point);
+  INLINE static CPT(RenderAttrib) make_axis();
+  INLINE static CPT(RenderAttrib) make_point_eye();
+  INLINE static CPT(RenderAttrib) make_point_world();
+
+  INLINE bool is_off() const;
+  INLINE const LVector3f &get_up_vector() const;
+  INLINE bool get_eye_relative() const;
+  INLINE bool get_axial_rotate() const;
+  INLINE float get_offset() const;
+  INLINE const NodeChain &get_look_at() const;
+  INLINE const LPoint3f &get_look_at_point() const;
+
+public:
+  virtual void output(ostream &out) const;
+
+  CPT(TransformState) do_billboard(const TransformState *net_transform,
+                                   const TransformState *camera_transform) const;
+
+protected:
+  virtual int compare_to_impl(const RenderAttrib *other) const;
+  virtual RenderAttrib *make_default_impl() const;
+
+private:
+  bool _off;
+  LVector3f _up_vector;
+  bool _eye_relative;
+  bool _axial_rotate;
+  float _offset;
+  NodeChain _look_at;
+  LPoint3f _look_at_point;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
+  
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    RenderAttrib::init_type();
+    register_type(_type_handle, "BillboardAttrib",
+                  RenderAttrib::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
+};
+
+#include "billboardAttrib.I"
+
+#endif
+

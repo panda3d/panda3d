@@ -249,7 +249,7 @@ get_child_sort(int n) const {
 INLINE void PandaNode::
 set_attrib(const RenderAttrib *attrib, int override) {
   CDWriter cdata(_cycler);
-  cdata->_state = cdata->_state->add(attrib, override);
+  cdata->_state = cdata->_state->add_attrib(attrib, override);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -282,7 +282,7 @@ get_attrib(TypeHandle type) const {
 INLINE void PandaNode::
 clear_attrib(TypeHandle type) {
   CDWriter cdata(_cycler);
-  cdata->_state = cdata->_state->remove(type);
+  cdata->_state = cdata->_state->remove_attrib(type);
 }
 
 ////////////////////////////////////////////////////////////////////

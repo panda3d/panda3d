@@ -31,8 +31,7 @@ TypeHandle qpCamera::_type_handle;
 qpCamera::
 qpCamera(const string &name) :
   qpLensNode(name),
-  _active(true),
-  _scene((PandaNode *)NULL)
+  _active(true)
 {
 }
 

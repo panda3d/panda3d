@@ -19,6 +19,7 @@
 #include "qpcullTraverser.h"
 #include "transformState.h"
 #include "renderState.h"
+#include "billboardAttrib.h"
 #include "cullHandler.h"
 #include "dcast.h"
 #include "qpgeomNode.h"
@@ -31,7 +32,8 @@
 qpCullTraverser::
 qpCullTraverser() {
   _initial_state = RenderState::make_empty();
-  _world_transform = DCAST(TransformState, TransformState::make_identity());
+  _camera_transform = DCAST(TransformState, TransformState::make_identity());
+  _render_transform = DCAST(TransformState, TransformState::make_identity());
   _cull_handler = (CullHandler *)NULL;
 }
 
@@ -48,14 +50,28 @@ set_initial_state(const RenderState *initial_state) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpCullTraverser::set_world_transform
+//     Function: qpCullTraverser::set_camera_transform
 //       Access: Public
-//  Description: Specifies the position of the world relative to the
-//               camera.
+//  Description: Specifies the position of the camera relative to the
+//               starting node, without any compensating
+//               coordinate-system transforms that might have been
+//               introduced for the purposes of rendering.
 ////////////////////////////////////////////////////////////////////
 void qpCullTraverser::
-set_world_transform(const TransformState *world_transform) {
-  _world_transform = world_transform;
+set_camera_transform(const TransformState *camera_transform) {
+  _camera_transform = camera_transform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::set_render_transform
+//       Access: Public
+//  Description: Specifies the position of the starting node relative
+//               to the camera, pretransformed as appropriate for
+//               rendering.
+////////////////////////////////////////////////////////////////////
+void qpCullTraverser::
+set_render_transform(const TransformState *render_transform) {
+  _render_transform = render_transform;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,7 +94,8 @@ void qpCullTraverser::
 traverse(PandaNode *root) {
   nassertv(_cull_handler != (CullHandler *)NULL);
 
-  r_traverse(root, _world_transform, _initial_state, 0);
+  r_traverse(root, _render_transform, TransformState::make_identity(),
+             _initial_state, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,10 +104,24 @@ traverse(PandaNode *root) {
 //  Description: The recursive traversal implementation.
 ////////////////////////////////////////////////////////////////////
 void qpCullTraverser::
-r_traverse(PandaNode *node, const TransformState *transform,
+r_traverse(PandaNode *node, 
+           const TransformState *render_transform,
+           const TransformState *net_transform,
            const RenderState *state, int flags) {
-  CPT(TransformState) next_transform = transform->compose(node->get_transform());
+  CPT(TransformState) next_render_transform = 
+    render_transform->compose(node->get_transform());
+  CPT(TransformState) next_net_transform = 
+    net_transform->compose(node->get_transform());
   CPT(RenderState) next_state = state->compose(node->get_state());
+
+  const BillboardAttrib *billboard = state->get_billboard();
+  if (billboard != (const BillboardAttrib *)NULL) {
+    // Got to apply a billboard transform here.
+    CPT(TransformState) billboard_transform = 
+      billboard->do_billboard(net_transform, _camera_transform);
+    next_render_transform = next_render_transform->compose(billboard_transform);
+    next_net_transform = next_net_transform->compose(billboard_transform);
+  }
 
   if (node->is_geom_node()) {
     qpGeomNode *geom_node;
@@ -101,7 +132,7 @@ r_traverse(PandaNode *node, const TransformState *transform,
       Geom *geom = geom_node->get_geom(i);
       CPT(RenderState) geom_state = 
         next_state->compose(geom_node->get_geom_state(i));
-      _cull_handler->record_geom(geom, next_transform, geom_state);
+      _cull_handler->record_geom(geom, next_render_transform, geom_state);
     }
   }
 
@@ -109,6 +140,6 @@ r_traverse(PandaNode *node, const TransformState *transform,
   PandaNode::Children cr = node->get_children();
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
-    r_traverse(cr.get_child(i), next_transform, next_state, flags);
+    r_traverse(cr.get_child(i), next_render_transform, next_net_transform, next_state, flags);
   }
 }

@@ -270,7 +270,7 @@ main(int argc, char *argv[]) {
   // Now we just need to make a scene graph for the camera to render.
   PT(PandaNode) render = new PandaNode("render");
   render->add_child(camera);
-  camera->set_scene(render);
+  camera->set_scene(NodeChain(render));
 
   // Set up a data graph for tracking user input.  For now, this uses
   // the old-style graph interface.

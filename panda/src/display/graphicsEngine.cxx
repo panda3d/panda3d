@@ -137,8 +137,8 @@ cull_and_draw_together(GraphicsWindow *win, DisplayRegion *dr) {
     return;
   }
 
-  PandaNode *scene = camera_node->get_scene();
-  if (scene == (PandaNode *)NULL) {
+  NodeChain scene = camera_node->get_scene();
+  if (scene.is_empty()) {
     // No scene, no draw.
     return;
   }
@@ -161,20 +161,22 @@ cull_and_draw_together(GraphicsWindow *win, DisplayRegion *dr) {
   // The world transform is computed from the camera's position; we
   // then might need to adjust it into the GSG's internal coordinate
   // system.
-  CPT(TransformState) world_transform = camera.get_rel_transform(NodeChain());
+  trav.set_camera_transform(scene.get_rel_transform(camera));
+
+  CPT(TransformState) render_transform = camera.get_rel_transform(scene);
   CoordinateSystem external_cs = gsg->get_coordinate_system();
   CoordinateSystem internal_cs = gsg->get_internal_coordinate_system();
   if (internal_cs != CS_default && internal_cs != external_cs) {
     CPT(TransformState) cs_transform = 
       TransformState::make_mat(LMatrix4f::convert_mat(external_cs, internal_cs));
-    world_transform = cs_transform->compose(world_transform);
+    render_transform = cs_transform->compose(render_transform);
   }
-  trav.set_world_transform(world_transform);
+  trav.set_render_transform(render_transform);
   
   DisplayRegionStack old_dr = gsg->push_display_region(dr);
   gsg->prepare_display_region();
   
-  trav.traverse(scene);
+  trav.traverse(scene.node());
   
   gsg->pop_display_region(old_dr);
 }

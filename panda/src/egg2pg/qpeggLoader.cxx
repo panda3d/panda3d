@@ -24,6 +24,7 @@
 #include "transformState.h"
 #include "textureAttrib.h"
 #include "texturePool.h"
+#include "billboardAttrib.h"
 #include "qpgeomNode.h"
 #include "string_utils.h"
 #include "eggPrimitive.h"
@@ -985,13 +986,13 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
     bin = render_mode->get_bin();
   }
 
-  bucket._state = bucket._state->add(TextureAttrib::make_off());
+  bucket._state = bucket._state->add_attrib(TextureAttrib::make_off());
   if (egg_prim->has_texture()) {
     PT(EggTexture) egg_tex = egg_prim->get_texture();
 
     const TextureDef &def = _textures[egg_tex];
     if (def._texture != (const RenderAttrib *)NULL) {
-      bucket._state = bucket._state->add(def._texture);
+      bucket._state = bucket._state->add_attrib(def._texture);
       //      bucket._trans.set_transition(def._apply);
 
       // If neither the primitive nor the texture specified an alpha
@@ -1499,25 +1500,23 @@ create_group_arc(EggGroup *egg_group, PandaNode *parent, PandaNode *node) {
     node->set_transform(TransformState::make_mat(matf));
   }
 
-  /*
   // If the group has a billboard flag, apply that.
   switch (egg_group->get_billboard_type()) {
   case EggGroup::BT_point_camera_relative:
-    arc->set_transition(new BillboardTransition(BillboardTransition::point_eye()));
+    node->set_attrib(BillboardAttrib::make_point_eye());
     break;
 
   case EggGroup::BT_point_world_relative:
-    arc->set_transition(new BillboardTransition(BillboardTransition::point_world()));
+    node->set_attrib(BillboardAttrib::make_point_world());
     break;
 
   case EggGroup::BT_axis:
-    arc->set_transition(new BillboardTransition(BillboardTransition::axis()));
+    node->set_attrib(BillboardAttrib::make_axis());
     break;
 
   case EggGroup::BT_none:
     break;
   }
-  */
 
   /*
   if (egg_group->get_decal_flag()) {
