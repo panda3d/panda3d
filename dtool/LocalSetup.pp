@@ -107,6 +107,13 @@ $[define] HAVE_GLUT 1
 $[undef] HAVE_GLUT
 #endif
 
+/* Define if we have DirectX installed and want to build for DX.  */
+#if $[HAVE_DX]
+$[define] HAVE_DX 1
+#else
+$[undef] HAVE_DX
+#endif
+
 /* Define if we want to build the Renderman interface.  */
 #if $[HAVE_RIB]
 $[define] HAVE_RIB 1

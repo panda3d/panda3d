@@ -1,6 +1,7 @@
 #define DIRECTORY_IF_DX yes
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolutil:c dtoolbase:c dtool:m
+#define USE_DX yes
 
 #begin lib_target
   #define TARGET wdxdisplay
