@@ -109,7 +109,6 @@ expand_string(const string &str) {
 
   result += str.substr(last);
 
-  cerr << "Expanding " << str << " to " << result << "\n";
   return result;
 }
 
