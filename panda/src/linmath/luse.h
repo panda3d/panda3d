@@ -61,6 +61,9 @@
 #include "lorientation.h"
 #include "lcast_to.h"
 
+//ensure FLOATTYPE is set to float for macros are used outside of LINMATH
+#include "fltnames.h"
+
 // This macro defines the cast-to-another-numeric-type operator for
 // all of the things defined in this package.  It works by virtue of
 // there being an appropriate lcast_to() template function defined for

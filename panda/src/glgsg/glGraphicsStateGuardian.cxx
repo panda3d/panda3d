@@ -215,16 +215,16 @@ reset() {
 
   // Set up our clear values to invalid values, so the glClear* calls
   // will be made initially.
-  _clear_color_red = -1.0; 
-  _clear_color_green = -1.0;
-  _clear_color_blue = -1.0; 
-  _clear_color_alpha = -1.0;
-  _clear_depth = -1.0;
+  _clear_color_red = -1.0f; 
+  _clear_color_green = -1.0f;
+  _clear_color_blue = -1.0f; 
+  _clear_color_alpha = -1.0f;
+  _clear_depth = -1.0f;
   _clear_stencil = -1;
-  _clear_accum_red = -1.0;
-  _clear_accum_green = -1.0;
-  _clear_accum_blue = -1.0; 
-  _clear_accum_alpha = -1.0;
+  _clear_accum_red = -1.0f;
+  _clear_accum_green = -1.0f;
+  _clear_accum_blue = -1.0f; 
+  _clear_accum_alpha = -1.0f;
 
   // Set up the specific state values to GL's known initial values.
   _draw_buffer_mode = (has_back) ? GL_BACK : GL_FRONT;
@@ -232,8 +232,8 @@ reset() {
   _shade_model_mode = GL_SMOOTH;
   glFrontFace(GL_CCW);
 
-  _line_width = 1.0;
-  _point_size = 1.0;
+  _line_width = 1.0f;
+  _point_size = 1.0f;
   _depth_mask = false;
   _fog_mode = GL_EXP;
   _alpha_func = GL_ALWAYS;
@@ -2473,19 +2473,19 @@ issue_transform(const TransformAttribute *attrib) {
     glBegin(GL_LINES);
     
     // X axis in red
-    glColor3f(1.0, 0.0, 0.0);
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(1.0, 0.0, 0.0);
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(1.0f, 0.0f, 0.0f);
     
     // Y axis in green
-    glColor3f(0.0, 1.0, 0.0);
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(0.0, 1.0, 0.0);
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
 
     // Z axis in blue
-    glColor3f(0.0, 0.0, 1.0);
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(0.0, 0.0, 1.0);
+    glColor3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 0.0f, 1.0f);
   
     glEnd();
     enable_lighting(lighting_was_enabled);
@@ -2712,7 +2712,7 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
 
   // Initialize the current ambient light total and newly enabled
   // light list
-  Colorf cur_ambient_light(0.0, 0.0, 0.0, 1.0);
+  Colorf cur_ambient_light(0.0f, 0.0f, 0.0f, 1.0f);
   int i;
   for (i = 0; i < _max_lights; i++) {
     _light_info[i]._next_enabled = false;
@@ -3143,7 +3143,7 @@ issue_polygon_offset(const PolygonOffsetAttribute *attrib) {
   if(attrib->get_units() != 0 || attrib->get_factor() != 0)
   {
 //    GLfloat newfactor=attrib->get_factor();
-    GLfloat newfactor= 1.0;
+    GLfloat newfactor= 1.0f;
 
     GLfloat newunits=attrib->get_units();
     glPolygonOffset(newfactor,newunits);
@@ -3233,11 +3233,11 @@ begin_decal(GeomNode *base_geom) {
     set_state(state, false);
 #else
 // use old way instead
-    glPolygonOffset(0.0,POLYGON_OFFSET_MULTIPLIER * _decal_level);
+    glPolygonOffset(0.0f,POLYGON_OFFSET_MULTIPLIER * _decal_level);
     glEnable(GL_POLYGON_OFFSET_FILL);
 #endif
   } else {
-    // GL 1.0-style: use three-step rendering to do decals.
+    // GL 1.0f-style: use three-step rendering to do decals.
 
     if (_decal_level > 1) {
       // If we're already decaling, just draw the geometry.
@@ -3289,14 +3289,14 @@ end_decal(GeomNode *base_geom) {
     set_state(state, false);
 #else
 // use old way instead
-    glPolygonOffset(0.0,POLYGON_OFFSET_MULTIPLIER * _decal_level);
+    glPolygonOffset(0.0f,POLYGON_OFFSET_MULTIPLIER * _decal_level);
     if (_decal_level == 0) {
         glDisable(GL_POLYGON_OFFSET_FILL);
     }
 #endif
 
   } else {
-    // GL 1.0-style: use three-step rendering to do decals.
+    // GL 1.0f-style: use three-step rendering to do decals.
 
     if (_decal_level == 0) {
       // Now we need to re-render the base geometry with the depth write
@@ -4090,16 +4090,16 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
     "mipmap_level_9.rgb"
   };
   static const RGBColorf level_colors[num_levels] = {
-    RGBColorf(1.0, 1.0, 1.0),
-    RGBColorf(1.0, 0.0, 0.0),
-    RGBColorf(0.0, 1.0, 0.0),
-    RGBColorf(0.0, 0.0, 1.0),
-    RGBColorf(1.0, 1.0, 0.0),
-    RGBColorf(0.0, 1.0, 1.0),
-    RGBColorf(1.0, 0.0, 1.0),
-    RGBColorf(1.0, 0.5, 0.0),
-    RGBColorf(0.0, 1.0, 0.5),
-    RGBColorf(0.83, 0.71, 1.0)
+    RGBColorf(1.0f, 1.0f, 1.0f),
+    RGBColorf(1.0f, 0.0f, 0.0f),
+    RGBColorf(0.0f, 1.0f, 0.0f),
+    RGBColorf(0.0f, 0.0f, 1.0f),
+    RGBColorf(1.0f, 1.0f, 0.0f),
+    RGBColorf(0.0f, 1.0f, 1.0f),
+    RGBColorf(1.0f, 0.0f, 1.0f),
+    RGBColorf(1.0f, 0.5, 0.0f),
+    RGBColorf(0.0f, 1.0f, 0.5),
+    RGBColorf(0.83, 0.71, 1.0f)
   };
 
   level = level % num_levels;

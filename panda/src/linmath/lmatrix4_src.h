@@ -48,6 +48,11 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase4) get_col(int col) const;
 
   INLINE_LINMATH FLOATNAME(LVecBase3) get_row3(int row) const;
+
+  // these versions inline better
+  INLINE_LINMATH void get_row(FLOATNAME(LVecBase4) &result_vec, int row) const;
+  INLINE_LINMATH void get_row3(FLOATNAME(LVecBase3) &result_vec, int row) const;
+
   INLINE_LINMATH FLOATNAME(LVecBase3) get_col3(int col) const;
 
   INLINE_LINMATH FLOATTYPE &operator () (int row, int col);
@@ -83,7 +88,14 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase3)
   xform_vec(const FLOATNAME(LVecBase3) &v) const;
 
+  // this = other1 * other2
+  INLINE_LINMATH void multiply(const FLOATNAME(LMatrix4) &other1, const FLOATNAME(LMatrix4) &other2);
+
+	// this = scale_mat(scale_vector) * other_mat, efficiently
+  INLINE_LINMATH void scale_multiply(const FLOATNAME(LVecBase3) &scale_vector,const FLOATNAME(LMatrix4) &other_mat);
+
   INLINE_LINMATH FLOATNAME(LMatrix4) operator * (const FLOATNAME(LMatrix4) &other) const;
+
   INLINE_LINMATH FLOATNAME(LMatrix4) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LMatrix4) operator / (FLOATTYPE scalar) const;
 
@@ -147,7 +159,7 @@ public:
 public:
   union {
         struct {
-	   FLOATTYPE  _00, _01, _02, _03;
+		   FLOATTYPE  _00, _01, _02, _03;
            FLOATTYPE  _10, _11, _12, _13;
            FLOATTYPE  _20, _21, _22, _23;
            FLOATTYPE  _30, _31, _32, _33;

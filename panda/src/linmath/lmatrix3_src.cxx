@@ -6,9 +6,9 @@
 TypeHandle FLOATNAME(LMatrix3)::_type_handle;
 
 FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::_ident_mat =
-  FLOATNAME(LMatrix3)(1.0, 0.0, 0.0,
-		      0.0, 1.0, 0.0,
-		      0.0, 0.0, 1.0);
+  FLOATNAME(LMatrix3)(1.0f, 0.0f, 0.0f,
+		      0.0f, 1.0f, 0.0f,
+		      0.0f, 0.0f, 1.0f);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::fill

@@ -27,7 +27,9 @@
 #undef FLOATTYPE
 #undef FLOATNAME
 #undef FLOATTOKEN
+#undef FLOATCONST
 
 #define FLOATTYPE float
 #define FLOATNAME(ARG) ARG##f
 #define FLOATTOKEN 'f'
+#define FLOATCONST(ARG) ARG##f

@@ -107,27 +107,27 @@ FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3) {
   _m.m._00 = upper3._m.m._00;
   _m.m._01 = upper3._m.m._01;
   _m.m._02 = upper3._m.m._02;
-  _m.m._03 = 0.0;
+  _m.m._03 = 0.0f;
 
   _m.m._10 = upper3._m.m._10;
   _m.m._11 = upper3._m.m._11;
   _m.m._12 = upper3._m.m._12;
-  _m.m._13 = 0.0;
+  _m.m._13 = 0.0f;
 
   _m.m._20 = upper3._m.m._20;
   _m.m._21 = upper3._m.m._21;
   _m.m._22 = upper3._m.m._22;
-  _m.m._23 = 0.0;
+  _m.m._23 = 0.0f;
 
-  _m.m._30 = 0.0;
-  _m.m._31 = 0.0;
-  _m.m._32 = 0.0;
-  _m.m._33 = 1.0;
+  _m.m._30 = 0.0f;
+  _m.m._31 = 0.0f;
+  _m.m._32 = 0.0f;
+  _m.m._33 = 1.0f;
 
-//  set(upper3(0, 0), upper3(0, 1), upper3(0, 2), 0.0,
-//      upper3(1, 0), upper3(1, 1), upper3(1, 2), 0.0,
-//      upper3(2, 0), upper3(2, 1), upper3(2, 2), 0.0,
-//      0.0, 0.0, 0.0, 1.0);
+//  set(upper3(0, 0), upper3(0, 1), upper3(0, 2), 0.0f,
+//      upper3(1, 0), upper3(1, 1), upper3(1, 2), 0.0f,
+//      upper3(2, 0), upper3(2, 1), upper3(2, 2), 0.0f,
+//      0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -142,27 +142,27 @@ FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3,
   _m.m._00 = upper3._m.m._00;
   _m.m._01 = upper3._m.m._01;
   _m.m._02 = upper3._m.m._02;
-  _m.m._03 = 0.0;
+  _m.m._03 = 0.0f;
 
   _m.m._10 = upper3._m.m._10;
   _m.m._11 = upper3._m.m._11;
   _m.m._12 = upper3._m.m._12;
-  _m.m._13 = 0.0;
+  _m.m._13 = 0.0f;
 
   _m.m._20 = upper3._m.m._20;
   _m.m._21 = upper3._m.m._21;
   _m.m._22 = upper3._m.m._22;
-  _m.m._23 = 0.0;
+  _m.m._23 = 0.0f;
 
   _m.m._30 = trans._v.v._0;
   _m.m._31 = trans._v.v._1;
   _m.m._32 = trans._v.v._2;
-  _m.m._33 = 1.0;
+  _m.m._33 = 1.0f;
 
-//  set(upper3(0, 0), upper3(0, 1), upper3(0, 2), 0.0,
-//      upper3(1, 0), upper3(1, 1), upper3(1, 2), 0.0,
-//      upper3(2, 0), upper3(2, 1), upper3(2, 2), 0.0,
-//      trans[0], trans[1], trans[2], 1.0);
+//  set(upper3(0, 0), upper3(0, 1), upper3(0, 2), 0.0f,
+//      upper3(1, 0), upper3(1, 1), upper3(1, 2), 0.0f,
+//      upper3(2, 0), upper3(2, 1), upper3(2, 2), 0.0f,
+//      trans[0], trans[1], trans[2], 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -340,6 +340,13 @@ get_row3(int row) const {
 			      (*this)(row, 2));
 }
 
+INLINE_LINMATH void FLOATNAME(LMatrix4)::
+get_row3(FLOATNAME(LVecBase3) &result_vec,int row) const {
+  result_vec._v.v._0 = (*this)(row, 0);
+  result_vec._v.v._1 = (*this)(row, 1);
+  result_vec._v.v._2 = (*this)(row, 2);
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::get_col3
 //       Access: Public
@@ -372,8 +379,8 @@ operator () (int row, int col) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix4)::
 operator () (int row, int col) const {
-  //  nassertr(row >= 0 && row < 4, 0.0);
-  //  nassertr(col >= 0 && col < 4, 0.0);
+  //  nassertr(row >= 0 && row < 4, 0.0f);
+  //  nassertr(col >= 0 && col < 4, 0.0f);
   return _m.data[row * 4 + col];
 }
 
@@ -399,8 +406,8 @@ is_nan() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix4)::
 get_cell(int row, int col) const {
-//  nassertr(row >= 0 && row < 4, 0.0);
-//  nassertr(col >= 0 && col < 4, 0.0);
+//  nassertr(row >= 0 && row < 4, 0.0f);
+//  nassertr(col >= 0 && col < 4, 0.0f);
   return _m.data[row * 4 + col];
 }
 
@@ -565,7 +572,7 @@ xform_point(const FLOATNAME(LVecBase3) &v) const {
 
 	FLOATNAME(LVecBase3) v_res;
 
-	// v._v.v._3 == 1.0 for this case
+	// v._v.v._3 == 1.0f for this case
 
 	v_res._v.v._0 = v._v.v._0*_m.m._00 + v._v.v._1*_m.m._10 + v._v.v._2*_m.m._20 + _m.m._30;
 	v_res._v.v._1 = v._v.v._0*_m.m._01 + v._v.v._1*_m.m._11 + v._v.v._2*_m.m._21 + _m.m._31;
@@ -591,7 +598,7 @@ INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 xform_vec(const FLOATNAME(LVecBase3) &v) const {
 	FLOATNAME(LVecBase3) v_res;
 
-	// v._v.v._3 == 0.0 for this case
+	// v._v.v._3 == 0.0f for this case
 
 	v_res._v.v._0 = v._v.v._0*_m.m._00 + v._v.v._1*_m.m._10 + v._v.v._2*_m.m._20;
 	v_res._v.v._1 = v._v.v._0*_m.m._01 + v._v.v._1*_m.m._11 + v._v.v._2*_m.m._21;
@@ -693,6 +700,44 @@ typedef union {
   return t;
 }
 
+// this = other1 * other2
+INLINE_LINMATH void FLOATNAME(LMatrix4)::
+multiply(const FLOATNAME(LMatrix4) &other1, const FLOATNAME(LMatrix4) &other2) {
+// faster than operator * since it writes result in place, avoiding extra copying
+// this will fail if you try to mat.multiply(mat,other_mat)
+
+  #ifdef _DEBUG
+     assert((&other1 != this) && (&other2 != this));
+  #endif
+
+  MATRIX4_PRODUCT((*this),other1,other2);
+}
+
+// this = scale_mat(scale_vector) * other_mat, efficiently
+INLINE_LINMATH void FLOATNAME(LMatrix4)::
+scale_multiply(const FLOATNAME(LVecBase3) &scale_vector,const FLOATNAME(LMatrix4) &other_mat) {
+  #ifdef _DEBUG
+     assert(&other_mat != this);
+  #endif
+  
+   // optimize for 0.0 or 1.0 factors?
+  
+  _m.m._00 = other_mat._m.m._00 * scale_vector._v.v._0;
+  _m.m._01 = other_mat._m.m._01 * scale_vector._v.v._0;
+  _m.m._02 = other_mat._m.m._02 * scale_vector._v.v._0;
+  _m.m._03 = other_mat._m.m._03 * scale_vector._v.v._0;
+
+  _m.m._10 = other_mat._m.m._10 * scale_vector._v.v._1;
+  _m.m._11 = other_mat._m.m._11 * scale_vector._v.v._1;
+  _m.m._12 = other_mat._m.m._12 * scale_vector._v.v._1;
+  _m.m._13 = other_mat._m.m._13 * scale_vector._v.v._1;
+
+  _m.m._20 = other_mat._m.m._20 * scale_vector._v.v._2;
+  _m.m._21 = other_mat._m.m._21 * scale_vector._v.v._2;
+  _m.m._22 = other_mat._m.m._22 * scale_vector._v.v._2;
+  _m.m._23 = other_mat._m.m._23 * scale_vector._v.v._2;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::matrix * scalar
 //       Access: Public
@@ -733,7 +778,7 @@ operator * (FLOATTYPE scalar) const {
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 operator / (FLOATTYPE scalar) const {
   FLOATNAME(LMatrix4) t;
-  FLOATTYPE recip_scalar = 1.0/scalar;
+  FLOATTYPE recip_scalar = 1.0f/scalar;
 
   t._m.m._00 = _m.m._00 * recip_scalar;
   t._m.m._01 = _m.m._01 * recip_scalar;
@@ -866,7 +911,7 @@ operator *= (FLOATTYPE scalar) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator /= (FLOATTYPE scalar) {
-  FLOATTYPE recip_scalar = 1.0/scalar;
+  FLOATTYPE recip_scalar = 1.0f/scalar;
   _m.m._00 *= recip_scalar;
   _m.m._01 *= recip_scalar;
   _m.m._02 *= recip_scalar;
@@ -960,10 +1005,10 @@ transpose_in_place() {
 //         (transpose upper 3x3 and take negative of translation component)
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 invert_from(const FLOATNAME(LMatrix4) &other) {
-  if (IS_NEARLY_EQUAL(other._m.m._30, 0.0) &&
-      IS_NEARLY_EQUAL(other._m.m._31, 0.0) &&
-      IS_NEARLY_EQUAL(other._m.m._32, 0.0) &&
-      IS_NEARLY_EQUAL(other._m.m._33, 1.0)) {
+  if (IS_NEARLY_EQUAL(other._m.m._30, 0.0f) &&
+      IS_NEARLY_EQUAL(other._m.m._31, 0.0f) &&
+      IS_NEARLY_EQUAL(other._m.m._32, 0.0f) &&
+      IS_NEARLY_EQUAL(other._m.m._33, 1.0f)) {
     return invert_affine_from(other);
   }
 
@@ -1015,17 +1060,17 @@ invert_affine_from(const FLOATNAME(LMatrix4) &other) {
   rot.invert_from(other.get_upper_3());  // probably could use transpose here
 
   set_upper_3(rot);
-//  set_col(3, FLOATNAME(LVecBase4)(0.0, 0.0, 0.0, 1.0));
+//  set_col(3, FLOATNAME(LVecBase4)(0.0f, 0.0f, 0.0f, 1.0f));
 
-  _m.m._03 = 0.0;
-  _m.m._13 = 0.0;
-  _m.m._23 = 0.0;
-  _m.m._33 = 1.0;
+  _m.m._03 = 0.0f;
+  _m.m._13 = 0.0f;
+  _m.m._23 = 0.0f;
+  _m.m._33 = 1.0f;
 
   // compute -C*inv(A)
 /*
   for (int i = 0; i < 3; i++) {
-    (*this)(3, i) = 0.0;
+    (*this)(3, i) = 0.0f;
     for (int j = 0; j < 3; j++) {
       (*this)(3, i) -= other(3, j) * (*this)(j, i);
     }
@@ -1068,10 +1113,10 @@ invert_in_place() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 translate_mat(const FLOATNAME(LVecBase3) &trans) {
-  return FLOATNAME(LMatrix4)(1.0, 0.0, 0.0, 0.0,
-			   0.0, 1.0, 0.0, 0.0,
-			   0.0, 0.0, 1.0, 0.0,
-			   trans._v.v._0, trans._v.v._1, trans._v.v._2, 1.0);
+  return FLOATNAME(LMatrix4)(1.0f, 0.0f, 0.0f, 0.0f,
+			   0.0f, 1.0f, 0.0f, 0.0f,
+			   0.0f, 0.0f, 1.0f, 0.0f,
+			   trans._v.v._0, trans._v.v._1, trans._v.v._2, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1082,10 +1127,10 @@ translate_mat(const FLOATNAME(LVecBase3) &trans) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 translate_mat(FLOATTYPE tx, FLOATTYPE ty, FLOATTYPE tz) {
-  return FLOATNAME(LMatrix4)(1.0, 0.0, 0.0, 0.0,
-			   0.0, 1.0, 0.0, 0.0,
-			   0.0, 0.0, 1.0, 0.0,
-			   tx, ty, tz, 1.0);
+  return FLOATNAME(LMatrix4)(1.0f, 0.0f, 0.0f, 0.0f,
+			   0.0f, 1.0f, 0.0f, 0.0f,
+			   0.0f, 0.0f, 1.0f, 0.0f,
+			   tx, ty, tz, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1121,14 +1166,14 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
   // pass in something like (.5,.5,0).  need to add flag parameter so caller
   // can request normalization if needed
   
-  if((cabs(axis_0)+cabs(axis_1)+cabs(axis_2)) != 1.0) {
+  if((cabs(axis_0)+cabs(axis_1)+cabs(axis_2)) != 1.0f) {
 */  
 
 	  FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
 	  #ifdef _DEBUG
-	      nassertr(length_sq != 0.0, ident_mat());
+	      nassertr(length_sq != 0.0f, ident_mat());
    	  #endif
-	  FLOATTYPE recip_length = 1.0/csqrt(length_sq);
+	  FLOATTYPE recip_length = 1.0f/csqrt(length_sq);
 
 	  axis_0 *= recip_length;
 	  axis_1 *= recip_length;
@@ -1138,7 +1183,7 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
   FLOATTYPE angle_rad=deg_2_rad(angle);
   FLOATTYPE s,c;
   csincos(angle_rad,&s,&c);
-  FLOATTYPE t = 1.0 - c;
+  FLOATTYPE t = 1.0f - c;
 
   FLOATTYPE t0,t1,t2,s0,s1,s2;
 
@@ -1161,14 +1206,14 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
   mat._m.m._21 = t2 * axis_1 - s0;
   mat._m.m._22 = t2 * axis_2 + c;
 
-  mat._m.m._03 = 0.0;
-  mat._m.m._13 = 0.0;
-  mat._m.m._23 = 0.0;
+  mat._m.m._03 = 0.0f;
+  mat._m.m._13 = 0.0f;
+  mat._m.m._23 = 0.0f;
 
-  mat._m.m._30 = 0.0;
-  mat._m.m._31 = 0.0;
-  mat._m.m._32 = 0.0;
-  mat._m.m._33 = 1.0;
+  mat._m.m._30 = 0.0f;
+  mat._m.m._31 = 0.0f;
+  mat._m.m._32 = 0.0f;
+  mat._m.m._33 = 1.0f;
 
   return mat;
 }
@@ -1211,7 +1256,7 @@ rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
   FLOATTYPE angle_rad=deg_2_rad(angle);
   FLOATTYPE s,c;
   csincos(angle_rad,&s,&c);
-  FLOATTYPE t = 1.0 - c;
+  FLOATTYPE t = 1.0f - c;
 
   FLOATTYPE t0,t1,t2,s0,s1,s2;
 
@@ -1234,14 +1279,14 @@ rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
   result_mat._m.m._21 = t2 * axis_1 - s0;
   result_mat._m.m._22 = t2 * axis_2 + c;
 
-  result_mat._m.m._03 = 0.0;
-  result_mat._m.m._13 = 0.0;
-  result_mat._m.m._23 = 0.0;
+  result_mat._m.m._03 = 0.0f;
+  result_mat._m.m._13 = 0.0f;
+  result_mat._m.m._23 = 0.0f;
 
-  result_mat._m.m._30 = 0.0;
-  result_mat._m.m._31 = 0.0;
-  result_mat._m.m._32 = 0.0;
-  result_mat._m.m._33 = 1.0;
+  result_mat._m.m._30 = 0.0f;
+  result_mat._m.m._31 = 0.0f;
+  result_mat._m.m._32 = 0.0f;
+  result_mat._m.m._33 = 1.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1252,10 +1297,10 @@ rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 scale_mat(const FLOATNAME(LVecBase3) &scale) {
-  return FLOATNAME(LMatrix4)(scale._v.v._0, 0.0, 0.0, 0.0,
-			   0.0, scale._v.v._1, 0.0, 0.0,
-			   0.0, 0.0, scale._v.v._2, 0.0,
-			   0.0, 0.0, 0.0, 1.0);
+  return FLOATNAME(LMatrix4)(scale._v.v._0, 0.0f, 0.0f, 0.0f,
+			   0.0f, scale._v.v._1, 0.0f, 0.0f,
+			   0.0f, 0.0f, scale._v.v._2, 0.0f,
+			   0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 
@@ -1267,12 +1312,12 @@ scale_mat(const FLOATNAME(LVecBase3) &scale) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz) {
-  return FLOATNAME(LMatrix4)(sx, 0.0, 0.0, 0.0,
-			   0.0, sy, 0.0, 0.0,
-			   0.0, 0.0, sz, 0.0,
-			   0.0, 0.0, 0.0, 1.0);
+  return FLOATNAME(LMatrix4)(
+			   sx, 0.0f, 0.0f, 0.0f,
+			   0.0f, sy, 0.0f, 0.0f,
+			   0.0f, 0.0f, sz, 0.0f,
+			   0.0f, 0.0f, 0.0f, 1.0f);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::scale_mat
@@ -1282,12 +1327,12 @@ scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 scale_mat(FLOATTYPE scale) {
-  return FLOATNAME(LMatrix4)(scale, 0.0, 0.0, 0.0,
-			   0.0, scale, 0.0, 0.0,
-			   0.0, 0.0, scale, 0.0,
-			   0.0, 0.0, 0.0, 1.0);
+  return FLOATNAME(LMatrix4)(
+			   scale, 0.0f, 0.0f, 0.0f,
+			   0.0f, scale, 0.0f, 0.0f,
+			   0.0f, 0.0f, scale, 0.0f,
+			   0.0f, 0.0f, 0.0f, 1.0f);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::y_to_z_up_mat
@@ -1332,8 +1377,6 @@ generate_hash(ChecksumHashGenerator &hash) const {
   generate_hash(hash, NEARLY_ZERO(FLOATTYPE));
 }
 
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: transpose
 //  Description: Transposes the given matrix and returns it.
@@ -1356,3 +1399,4 @@ invert(const FLOATNAME(LMatrix4) &a) {
   nassertr(nonsingular, FLOATNAME(LMatrix4)::ident_mat());
   return result;
 }
+

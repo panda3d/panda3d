@@ -6,22 +6,22 @@
 TypeHandle FLOATNAME(LMatrix4)::_type_handle;
 
 const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_ident_mat =
-  FLOATNAME(LMatrix4)(1.0, 0.0, 0.0, 0.0,
-		      0.0, 1.0, 0.0, 0.0,
-		      0.0, 0.0, 1.0, 0.0,
-		      0.0, 0.0, 0.0, 1.0);
+  FLOATNAME(LMatrix4)(1.0f, 0.0f, 0.0f, 0.0f,
+		      0.0f, 1.0f, 0.0f, 0.0f,
+		      0.0f, 0.0f, 1.0f, 0.0f,
+		      0.0f, 0.0f, 0.0f, 1.0f);
 
 const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_y_to_z_up_mat =
-  FLOATNAME(LMatrix4)(1.0, 0.0, 0.0, 0.0,
-		      0.0, 0.0, 1.0, 0.0,
-		      0.0,-1.0, 0.0, 0.0,
-		      0.0, 0.0, 0.0, 1.0);
+  FLOATNAME(LMatrix4)(1.0f, 0.0f, 0.0f, 0.0f,
+		      0.0f, 0.0f, 1.0f, 0.0f,
+		      0.0f,-1.0f, 0.0f, 0.0f,
+		      0.0f, 0.0f, 0.0f, 1.0f);
 
 const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_z_to_y_up_mat =
-  FLOATNAME(LMatrix4)(1.0, 0.0, 0.0, 0.0,
-		      0.0, 0.0,-1.0, 0.0,
-		      0.0, 1.0, 0.0, 0.0,
-		      0.0, 0.0, 0.0, 1.0);
+  FLOATNAME(LMatrix4)(1.0f, 0.0f, 0.0f, 0.0f,
+		      0.0f, 0.0f,-1.0f, 0.0f,
+		      0.0f, 1.0f, 0.0f, 0.0f,
+		      0.0f, 0.0f, 0.0f, 1.0f);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::convert_mat
@@ -42,8 +42,8 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
     switch (to) {
     case CS_zup_left: return ident_mat();
     case CS_yup_left: return z_to_y_up_mat();
-    case CS_zup_right: return scale_mat(1.0, -1.0, 1.0);
-    case CS_yup_right: return scale_mat(1.0, -1.0, 1.0) * z_to_y_up_mat();
+    case CS_zup_right: return scale_mat(1.0f, -1.0f, 1.0f);
+    case CS_yup_right: return scale_mat(1.0f, -1.0f, 1.0f) * z_to_y_up_mat();
     default: break;
     }
     break;
@@ -52,16 +52,16 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
     switch (to) {
     case CS_zup_left: return y_to_z_up_mat();
     case CS_yup_left: return ident_mat();
-    case CS_zup_right: return scale_mat(1.0, 1.0, -1.0) * y_to_z_up_mat();
-    case CS_yup_right: return scale_mat(1.0, 1.0, -1.0);
+    case CS_zup_right: return scale_mat(1.0f, 1.0f, -1.0f) * y_to_z_up_mat();
+    case CS_yup_right: return scale_mat(1.0f, 1.0f, -1.0f);
     default: break;
     }
     break;
 
   case CS_zup_right:
     switch (to) {
-    case CS_zup_left: return scale_mat(1.0, -1.0, 1.0);
-    case CS_yup_left: return scale_mat(1.0, -1.0, 1.0) * z_to_y_up_mat();
+    case CS_zup_left: return scale_mat(1.0f, -1.0f, 1.0f);
+    case CS_yup_left: return scale_mat(1.0f, -1.0f, 1.0f) * z_to_y_up_mat();
     case CS_zup_right: return ident_mat();
     case CS_yup_right: return z_to_y_up_mat();
     default: break;
@@ -70,8 +70,8 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
 
   case CS_yup_right:
     switch (to) {
-    case CS_zup_left: return scale_mat(1.0, 1.0, -1.0) * y_to_z_up_mat();
-    case CS_yup_left: return scale_mat(1.0, 1.0, -1.0);
+    case CS_zup_left: return scale_mat(1.0f, 1.0f, -1.0f) * y_to_z_up_mat();
+    case CS_yup_left: return scale_mat(1.0f, 1.0f, -1.0f);
     case CS_zup_right: return y_to_z_up_mat();
     case CS_yup_right: return ident_mat();
     default: break;
@@ -221,7 +221,7 @@ decompose_mat(int index[4]) {
   int i, j, k;
   FLOATTYPE vv[4];
   for (i = 0; i < 4; i++) {
-    FLOATTYPE big = 0.0;
+    FLOATTYPE big = 0.0f;
     for (j = 0; j < 4; j++) {
       FLOATTYPE temp = fabs((*this)(i,j));
       if (temp > big) {
@@ -232,7 +232,7 @@ decompose_mat(int index[4]) {
     if (IS_NEARLY_ZERO(big)) {
       return false;
     }
-    vv[i] = 1.0 / big;
+    vv[i] = 1.0f / big;
   }
 
   for (j = 0; j < 4; j++) {
@@ -244,7 +244,7 @@ decompose_mat(int index[4]) {
       (*this)(i,j) = sum;
     }
 
-    FLOATTYPE big = 0.0;
+    FLOATTYPE big = 0.0f;
     int imax = -1;
     for (i = j; i < 4; i++) {
       FLOATTYPE sum = (*this)(i,j);
@@ -270,12 +270,12 @@ decompose_mat(int index[4]) {
     }
     index[j] = imax;
 
-    if ((*this)(j,j) == 0.0) {
+    if ((*this)(j,j) == 0.0f) {
       (*this)(j,j) = NEARLY_ZERO(FLOATTYPE);
     }
 
     if (j != 4 - 1) {
-      FLOATTYPE dum = 1.0 / (*this)(j,j);
+      FLOATTYPE dum = 1.0f / (*this)(j,j);
       for (i = j + 1; i < 4; i++) {
 	(*this)(i,j) *= dum;
       }

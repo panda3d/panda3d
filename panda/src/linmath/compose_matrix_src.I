@@ -53,7 +53,7 @@ decompose_matrix(const FLOATNAME(LMatrix4) &mat,
 		 FLOATNAME(LVecBase3) &translate,
 		 CoordinateSystem cs) {
   // Get the translation first.
-  translate = mat.get_row3(3);
+  mat.get_row3(translate,3);
   return decompose_matrix(mat.get_upper_3(), scale, hpr, cs);
 }
 
@@ -79,7 +79,7 @@ decompose_matrix(const FLOATNAME(LMatrix4) &mat,
 		 FLOATTYPE roll,
 		 CoordinateSystem cs) {
   // Get the translation first.
-  translate = mat.get_row3(3);
+  mat.get_row3(translate,3);
   return decompose_matrix(mat.get_upper_3(), scale, hpr, roll, cs);
 }
 

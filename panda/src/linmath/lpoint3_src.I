@@ -206,7 +206,7 @@ operator / (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
 origin(CoordinateSystem) {
-  return FLOATNAME(LPoint3)(0.0, 0.0, 0.0);
+  return FLOATNAME(LPoint3)(0.0f, 0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////

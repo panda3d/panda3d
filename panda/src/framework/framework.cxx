@@ -1009,16 +1009,6 @@ static void move_gridded_stuff(GriddedMotionType gridmotiontype,gridded_file_inf
 
 			  xpos = InfoArr[i].xstart = InfoArr[i].xend;
 			  ypos = InfoArr[i].ystart = InfoArr[i].yend;
-/*
-			  if(InfoArr[i].xend == -wander_area_pos_offset) {
-				  InfoArr[i].xend = wander_area_pos_offset;
-				  InfoArr[i].yend = wander_area_pos_offset;
-			  } else {
-				  InfoArr[i].xend = -wander_area_pos_offset;
-				  InfoArr[i].yend = -wander_area_pos_offset;
-
-			  }
-*/
 
 			  InfoArr[i].xend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
 			  InfoArr[i].yend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;

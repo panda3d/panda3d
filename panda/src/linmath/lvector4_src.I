@@ -198,11 +198,11 @@ length_squared() const {
 INLINE_LINMATH bool FLOATNAME(LVector4)::
 normalize() {
   FLOATTYPE l2 = length_squared();
-  if (l2 == (FLOATTYPE)0.0) {
-    set(0.0, 0.0, 0.0, 0.0);
+  if (l2 == (FLOATTYPE)0.0f) {
+    set(0.0f, 0.0f, 0.0f, 0.0f);
     return false;
 
-  } else if (!IS_THRESHOLD_EQUAL(l2, 1.0, NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE))) {
+  } else if (!IS_THRESHOLD_EQUAL(l2, 1.0f, NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE))) {
     (*this) /= csqrt(l2);
   }
 
@@ -226,6 +226,6 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
 operator / (FLOATTYPE scalar) const {
-  FLOATTYPE recip_scalar = 1.0/scalar;
+  FLOATTYPE recip_scalar = 1.0f/scalar;
   return FLOATNAME(LVector4)(FLOATNAME(LVecBase4)::operator * (recip_scalar));
 }

@@ -225,7 +225,7 @@ recompute_viz(Node *parent) {
     p1 = LPoint3f(1.0, 1.0, -(normal[0] + normal[1] + D)/normal[2]) - cp;
   }
 
-  p1 = normalize(p1);
+  p1.normalize();
   p2 = cross(normal, p1);
   p3 = cross(normal, p2);
   p4 = cross(normal, p3);

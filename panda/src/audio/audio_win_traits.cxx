@@ -851,7 +851,7 @@ void WinSamplePlayer::play_sound(AudioTraits::SoundClass* sample,
     chan->Stop();
     DWORD l = wsample->get_length();
     WAVEFORMATEX f = wsample->get_format();
-    float factor = ((float)l) / wsample->get_format().nAvgBytesPerSec;
+    float factor = ((float)l) / f.nAvgBytesPerSec;
     factor = start_time / factor;
     if (factor > 1.)
       factor = 1.;

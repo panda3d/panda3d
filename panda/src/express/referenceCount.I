@@ -150,7 +150,9 @@ unref_consider_delete() {
 ////////////////////////////////////////////////////////////////////
 INLINE int ReferenceCount::
 get_ref_count() const {
+ #ifndef NDEBUG
   test_ref_count_integrity();
+ #endif
   return _ref_count;
 }
 
@@ -259,6 +261,7 @@ unref() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ReferenceCount::
 test_ref_count_integrity() const {
+ #ifndef NDEBUG
   nassertv(this != NULL);
 
   // If this assertion fails, we're trying to access a pointer that
@@ -273,6 +276,7 @@ test_ref_count_integrity() const {
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
   nassertv(_ref_count >= 0);
+ #endif
 }
 
 ////////////////////////////////////////////////////////////////////

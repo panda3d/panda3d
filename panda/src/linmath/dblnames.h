@@ -27,7 +27,10 @@
 #undef FLOATTYPE
 #undef FLOATNAME
 #undef FLOATTOKEN
+#undef FLOATCONST
 
 #define FLOATTYPE double
 #define FLOATNAME(ARG) ARG##d
 #define FLOATTOKEN 'd'
+#define FLOATCONST(ARG) ARG
+

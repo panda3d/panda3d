@@ -39,8 +39,8 @@ FLOATNAME(LOrientation)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) :
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
 FLOATNAME(LOrientation)(const FLOATNAME(LVector3) &point_at, float twist) {
-  float radians = twist * ((float) MathNumbers::pi / 180.0f);
-  float theta_over_2 = radians / 2.0f;
+  float radians = deg_2_rad(twist);
+  float theta_over_2 = radians * FLOATCONST(0.5);
   float sin_to2 = sinf(theta_over_2);
 
   set_r(cosf(theta_over_2));

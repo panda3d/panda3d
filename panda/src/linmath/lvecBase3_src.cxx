@@ -6,13 +6,13 @@
 TypeHandle FLOATNAME(LVecBase3)::_type_handle;
 
 const FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::_zero =
-  FLOATNAME(LVecBase3)(0.0, 0.0, 0.0);
+  FLOATNAME(LVecBase3)(0.0f, 0.0f, 0.0f);
 const FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::_unit_x =
-  FLOATNAME(LVecBase3)(1.0, 0.0, 0.0);
+  FLOATNAME(LVecBase3)(1.0f, 0.0f, 0.0f);
 const FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::_unit_y =
-  FLOATNAME(LVecBase3)(0.0, 1.0, 0.0);
+  FLOATNAME(LVecBase3)(0.0f, 1.0f, 0.0f);
 const FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::_unit_z =
-  FLOATNAME(LVecBase3)(0.0, 0.0, 1.0);
+  FLOATNAME(LVecBase3)(0.0f, 0.0f, 1.0f);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::init_type

@@ -10,6 +10,9 @@
 
 class EXPCL_PANDA MathNumbers {
 PUBLISHED:
+  static const float pi_f;
+  static const float ln2_f;
+
   static const double pi;
   static const double ln2;
 };

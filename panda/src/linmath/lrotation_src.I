@@ -59,8 +59,8 @@ FLOATNAME(LRotation)(const FLOATNAME(LMatrix4) &m) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation)::
 FLOATNAME(LRotation)(const FLOATNAME(LVector3) &axis, FLOATTYPE angle) {
-  FLOATTYPE radians = angle * ((FLOATTYPE) MathNumbers::pi / (FLOATTYPE)180.0);
-  FLOATTYPE theta_over_2 = radians / (FLOATTYPE)2.0;
+  FLOATTYPE radians = deg_2_rad(angle);
+  FLOATTYPE theta_over_2 = radians * FLOATCONST(0.5);
   FLOATTYPE sin_to2 = csin(theta_over_2);
 
   set_r(ccos(theta_over_2));

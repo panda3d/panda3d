@@ -226,11 +226,11 @@ set_k(FLOATTYPE k) {
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 normalize() {
   FLOATTYPE l2 = (*this).dot(*this);
-  if (l2 == (FLOATTYPE)0.0) {
-    set(0.0, 0.0, 0.0, 0.0);
+  if (l2 == (FLOATTYPE)0.0f) {
+    set(0.0f, 0.0f, 0.0f, 0.0f);
     return false;
 
-  } else if (!IS_THRESHOLD_EQUAL(l2, 1.0, NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE))) {
+  } else if (!IS_THRESHOLD_EQUAL(l2, 1.0f, NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE))) {
     (*this) /= csqrt(l2);
   }
 

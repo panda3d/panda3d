@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
   /*
   LMatrix4d x = LMatrix4d::ident_mat();
   LMatrix4d y = LMatrix4d::rotate_mat(90.0, LVector3d::up());
-  LMatrix4d a = LMatrix4d::translate_mat(10.0, 10.0, 0.0);
+  LMatrix4d a = LMatrix4d::translate_mat(10.0, 10.0, 0.0f);
 
   nout << "x is " << x << "\ny is " << y << "\n"
        << "x * y is " << x * y << "\n"
@@ -73,14 +73,14 @@ int main(int argc, char *argv[]) {
        << "r * invert(y) is " << r * invert(y) << "\n"
        << "r * a is " << r * a << "\n";
 
-  LPoint3d p(0.0, 1.0, 1.0);
+  LPoint3d p(0.0f, 1.0f, 1.0f);
   nout << "p is " << p << "\n"
        << "p * x is " << p * x << "\n"
        << "p * y is " << p * y << "\n"
        << "p * invert(y) is " << p * invert(y) << "\n" 
        << "p * a is " << p * a << "\n";
 
-  LVecBase4d q(0.0, 1.0, 1.0, 1.0);
+  LVecBase4d q(0.0f, 1.0f, 1.0f, 1.0f);
   nout << "q is " << q << "\n"
        << "q * x is " << q * x << "\n"
        << "q * y is " << q * y << "\n"
@@ -102,8 +102,8 @@ int main(int argc, char *argv[]) {
        << "\n";
 
   {
-    LVecBase3f hpr(0.0, 0.0, 0.0);
-    LVecBase3f scale(1.0, 1.0, 1.0);
+    LVecBase3f hpr(0.0f, 0.0f, 0.0f);
+    LVecBase3f scale(1.0f, 1.0f, 1.0f);
 
     if (argc > 3) {
       hpr.set(atof(argv[1]), atof(argv[2]), atof(argv[3]));

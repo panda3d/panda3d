@@ -198,18 +198,18 @@ reset() {
 
 	// Set up our clear values to invalid values, so the glClear* calls
 	// will be made initially.
-	_clear_color_red = -1.0; 
-	_clear_color_green = -1.0;
-	_clear_color_blue = -1.0; 
-	_clear_color_alpha = -1.0;
-	_clear_depth = -1.0;
+	_clear_color_red = -1.0f; 
+	_clear_color_green = -1.0f;
+	_clear_color_blue = -1.0f; 
+	_clear_color_alpha = -1.0f;
+	_clear_depth = -1.0f;
 	_clear_stencil = -1;
-	_clear_accum_red = -1.0;
-	_clear_accum_green = -1.0;
-	_clear_accum_blue = -1.0; 
-	_clear_accum_alpha = -1.0;
-	_line_width = 1.0;
-	_point_size = 1.0;
+	_clear_accum_red = -1.0f;
+	_clear_accum_green = -1.0f;
+	_clear_accum_blue = -1.0f; 
+	_clear_accum_alpha = -1.0f;
+	_line_width = 1.0f;
+	_point_size = 1.0f;
 	_depth_mask = false;
 	_fog_mode = D3DFOG_EXP;
 	_alpha_func = D3DCMP_ALWAYS;
@@ -274,7 +274,7 @@ init_dx(  LPDIRECTDRAW7     context,
 
 	if(dx_show_fps_meter) {
 		_start_time = timeGetTime();
-		_current_fps = 0.0;
+		_current_fps = 0.0f;
 		_start_frame_count = _cur_frame_count = 0;
 	}
 
@@ -465,7 +465,7 @@ init_dx(  LPDIRECTDRAW7     context,
 
 #ifdef _DEBUG
 	if ((_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_MIPMAPLODBIAS) &&
-		(dx_global_miplevel_bias!=0.0)) {
+		(dx_global_miplevel_bias!=0.0f)) {
 		_d3dDevice->SetTextureStageState(0, D3DTSS_MIPMAPLODBIAS, *((LPDWORD) (&dx_global_miplevel_bias)) );
 	}
 #endif
@@ -508,7 +508,7 @@ clear(const RenderBuffer &buffer) {
 	_color_clear_value[0] = .5;           
 	/*  The following lines will cause the background color to cycle from black to red.
 	_color_clear_value[0] += .001;
-	 if (_color_clear_value[0] > 1.0) _color_clear_value[0] = 0.0;
+	 if (_color_clear_value[0] > 1.0f) _color_clear_value[0] = 0.0f;
 	 */
 }
 
@@ -938,7 +938,7 @@ render_subgraph(RenderTraverser *traverser,
   	     dxgsg_cat.info() << "cur projection matrix: " << projection_mat << endl;
 	  }
 
-	  // note: a projection matrix that does not have a [3][4] value of 1.0 is
+	  // note: a projection matrix that does not have a [3][4] value of 1.0f is
 	  //       not w-compliant and could cause problems with fog
 
 	}
@@ -1225,7 +1225,7 @@ draw_point(const GeomPoint *geom) {
 
 	if (!bPrintedMsg && (geom->get_size()!=1.0f)) {
 		bPrintedMsg=TRUE;
-		dxgsg_cat.warning() << "D3D does not support drawing points of non-unit size, setting point size to 1.0!\n";
+		dxgsg_cat.warning() << "D3D does not support drawing points of non-unit size, setting point size to 1.0f!\n";
 	}
 #endif
 
@@ -1360,7 +1360,7 @@ draw_line(const GeomLine* geom) {
 
 	if (!bPrintedMsg && (geom->get_width()!=1.0f)) {
 		bPrintedMsg=TRUE;
-		dxgsg_cat.warning() << "DX does not support drawing lines with a non-1.0 pixel width, setting width to 1.0!\n";
+		dxgsg_cat.warning() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
 	}
 #endif
 
@@ -1471,7 +1471,7 @@ draw_linestrip(const GeomLinestrip* geom) {
 
 	if (!bPrintedMsg && (geom->get_width()!=1.0f)) {
 		bPrintedMsg=TRUE;
-		dxgsg_cat.warning() << "DX does not support drawing lines with a non-1.0 pixel width, setting width to 1.0!\n";
+		dxgsg_cat.warning() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
 	}
 #endif
 
@@ -1843,7 +1843,7 @@ draw_sprite(const GeomSprite *geom) {
 	#endif
 
 	_pCurFvfBufPtr = _pFvfBufBasePtr;		   // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
-	const float TexCrdSets[4][2] = {{0.0,0.0},{1.0,0.0},{0.0,1.0},{1.0,1.0}};
+	const float TexCrdSets[4][2] = {{0.0f,0.0f},{1.0f,0.0f},{0.0f,1.0f},{1.0f,1.0f}};
 
 #define QUADVERTLISTLEN 6
 
@@ -1871,13 +1871,14 @@ draw_sprite(const GeomSprite *geom) {
 
 			// create the rotated points.  BUGBUG: this matmult will be slow if we dont get inlining
 			// rotate_mat calls sin() on an unbounded val, possible to make it faster with lookup table (modulate to 0-360 range?)
-			LMatrix3f xform_mat = LMatrix3f::rotate_mat(theta) *   
+
+			LMatrix3f xform_mat = LMatrix3f::rotate_mat(theta) *
 								  LMatrix3f::scale_mat(scaled_width, scaled_height);
 
-			ur = (LVector3f( 1,  1, 0) * xform_mat) + pSpr->_v;
-			ul = (LVector3f(-1,  1, 0) * xform_mat) + pSpr->_v;
-			lr = (LVector3f( 1, -1, 0) * xform_mat) + pSpr->_v;
-			ll = (LVector3f(-1, -1, 0) * xform_mat) + pSpr->_v;
+			ur = (LVector3f( 1.0f,  1.0f, 0.0f) * xform_mat) + pSpr->_v;
+			ul = (LVector3f(-1.0f,  1.0f, 0.0f) * xform_mat) + pSpr->_v;
+			lr = (LVector3f( 1.0f, -1.0f, 0.0f) * xform_mat) + pSpr->_v;
+			ll = (LVector3f(-1.0f, -1.0f, 0.0f) * xform_mat) + pSpr->_v;
 		} else {
 			// create points for unrotated rect sprites
 			float x,y,negx,negy,z;
@@ -2301,9 +2302,9 @@ draw_tri(const GeomTri *geom) {
 #if 0
 	// test triangle for me to dbg experiments only
 	float vert_buf[15] = {
-		0.0, 0.0, 0.0,  0.0, 0.0, 
-		33.0, 0.0, 0.0,  0.0, 2.0, 
-		0.0, 0.0, 33.0,  2.0, 0.0
+		0.0f, 0.0f, 0.0f,  0.0f, 0.0f, 
+		33.0, 0.0f, 0.0f,  0.0f, 2.0, 
+		0.0f, 0.0f, 33.0,  2.0, 0.0f
 	};
 
 	_d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSU,D3DTADDRESS_BORDER);
@@ -2874,7 +2875,7 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 	if (DOTEXTURING) {
 		// numRings already includes 1st and last rings for this case
 		dtheta = (float)(M_PI / (wNumRings-1));		//Angle between each ring (ignore 2 fake rings)  
-		theta = 0.0;
+		theta = 0.0f;
 	} else {
 		dtheta = (float)(M_PI / (wNumRings + 1));	//Angle between each ring		 
 		theta = dtheta;
@@ -2883,7 +2884,7 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 
 	for (i = 0; i < wNumRings; i++) {
 		float costheta,sintheta,cosphi,sinphi;
-		phi =   0.0;
+		phi =   0.0f;
 
 		if (DOTEXTURING) {
 			texCoords[1] = theta * reciprocal_PI;  // v is the same for each ring
@@ -2917,7 +2918,7 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 				add_DWORD_to_FVFBuf(p_colr);
 
 			if (DOTEXTURING) {
-				texCoords[0] = 1.0 - phi*reciprocal_2PI;
+				texCoords[0] = 1.0f - phi*reciprocal_2PI;
 				add_to_FVFBuf((void *)texCoords, sizeof(TexCoordf));   
 			}
 
@@ -3112,7 +3113,7 @@ issue_alpha_transform(const AlphaTransformAttribute *attrib) {
 	_current_alpha_offset= attrib->get_offset();
 	_current_alpha_scale = attrib->get_scale();
 
-	if ((_current_alpha_offset == 0.0) && (_current_alpha_scale == 1.0)) {
+	if ((_current_alpha_offset == 0.0f) && (_current_alpha_scale == 1.0f)) {
 		_alpha_transform_enabled = false;
 	} else {
 		_alpha_transform_enabled = true;
@@ -3830,7 +3831,7 @@ apply_fog(Fog *fog) {
 
 	Colorf  fog_colr = fog->get_color();
 	_d3dDevice->SetRenderState(D3DRENDERSTATE_FOGCOLOR, 
-				   D3DRGBA(fog_colr[0], fog_colr[1], fog_colr[2], 0.0));
+				   D3DRGBA(fog_colr[0], fog_colr[1], fog_colr[2], 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4117,12 +4118,12 @@ issue_transform(const TransformAttribute *attrib) {
 		}        VERTFORMAT;
 
 		VERTFORMAT vert_buf[] = {
-			{0.0, 0.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(1.0, 0.0, 0.0, 1.0)},	   // red
-			{3.0, 0.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(1.0, 0.0, 0.0, 1.0)},	   // red
-			{0.0, 0.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(0.0, 1.0, 0.0, 1.0)},	   // grn
-			{0.0, 3.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(0.0, 1.0, 0.0, 1.0)},	   // grn
-			{0.0, 0.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(0.0, 0.0, 1.0, 1.0)},	   // blu
-			{0.0, 0.0, 3.0,  0.0, -1.0, 0.0,  D3DRGBA(0.0, 0.0, 1.0, 1.0)},	   // blu
+			{0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  D3DRGBA(1.0f, 0.0f, 0.0f, 1.0f)},	   // red
+			{3.0, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  D3DRGBA(1.0f, 0.0f, 0.0f, 1.0f)},	   // red
+			{0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  D3DRGBA(0.0f, 1.0f, 0.0f, 1.0f)},	   // grn
+			{0.0f, 3.0, 0.0f,  0.0f, -1.0f, 0.0f,  D3DRGBA(0.0f, 1.0f, 0.0f, 1.0f)},	   // grn
+			{0.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  D3DRGBA(0.0f, 0.0f, 1.0f, 1.0f)},	   // blu
+			{0.0f, 0.0f, 3.0,  0.0f, -1.0f, 0.0f,  D3DRGBA(0.0f, 0.0f, 1.0f, 1.0f)},	   // blu
 		};
 
 		HRESULT hr = _d3dDevice->DrawPrimitive(D3DPT_LINELIST, D3DFVF_DIFFUSE | D3DFVF_XYZ | D3DFVF_NORMAL,

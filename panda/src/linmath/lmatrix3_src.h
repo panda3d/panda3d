@@ -41,6 +41,9 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase2) get_row2(int row) const;
   INLINE_LINMATH FLOATNAME(LVecBase2) get_col2(int col) const;
 
+  // these versions inline better
+  INLINE_LINMATH void get_row(FLOATNAME(LVecBase3) &result_vec, int row) const;
+
   INLINE_LINMATH FLOATTYPE &operator () (int row, int col);
   INLINE_LINMATH FLOATTYPE operator () (int row, int col) const;
 
@@ -76,9 +79,15 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase2)
   xform_vec(const FLOATNAME(LVecBase2) &v) const;
 
+  // this = other1 * other2
+  INLINE_LINMATH void multiply(const FLOATNAME(LMatrix3) &other1, const FLOATNAME(LMatrix3) &other2);
+
   INLINE_LINMATH FLOATNAME(LMatrix3) operator * (const FLOATNAME(LMatrix3) &other) const;
   INLINE_LINMATH FLOATNAME(LMatrix3) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LMatrix3) operator / (FLOATTYPE scalar) const;
+
+  // this = scale_mat(scale_vector) * other_mat, efficiently
+  INLINE_LINMATH void scale_multiply(const FLOATNAME(LVecBase3) &scale_vector,const FLOATNAME(LMatrix3) &other_mat);
 
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator += (const FLOATNAME(LMatrix3) &other);
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator -= (const FLOATNAME(LMatrix3) &other);

@@ -507,7 +507,7 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
 operator / (FLOATTYPE scalar) const {
-  FLOATTYPE recip_scalar = 1.0/scalar;
+  FLOATTYPE recip_scalar = 1.0f/scalar;
   return FLOATNAME(LVecBase4)(_v.v._0 * recip_scalar,
 			      _v.v._1 * recip_scalar,
 			      _v.v._2 * recip_scalar,
@@ -560,7 +560,7 @@ operator *= (FLOATTYPE scalar) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
 operator /= (FLOATTYPE scalar) {
-  FLOATTYPE recip_scalar = 1.0/scalar;
+  FLOATTYPE recip_scalar = 1.0f/scalar;
   _v.v._0 *= recip_scalar;
   _v.v._1 *= recip_scalar;
   _v.v._2 *= recip_scalar;

@@ -2,7 +2,7 @@
 TypeHandle FLOATNAME(LQuaternion)::_type_handle;
 
 const FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::_ident_quat =
-  FLOATNAME(LQuaternion)(1.0, 0.0, 0.0, 0.0);
+  FLOATNAME(LQuaternion)(1.0f, 0.0f, 0.0f, 0.0f);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::pure_imaginary_quat
