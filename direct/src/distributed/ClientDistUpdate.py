@@ -1,7 +1,7 @@
 """ClientDistUpdate module: contains the ClientDistUpdate class"""
 
 import DirectNotifyGlobal
-import Datagram
+from PyDatagram import PyDatagram
 from MsgTypes import *
 
 # These are stored here so that the distributed classes we load on the fly
@@ -55,40 +55,20 @@ class ClientDistUpdate:
                     self.divisors.append(componentField.getElementDivisor(j))
         else:
             self.notify.error("field is neither atom nor molecule")
-        return None
 
     def updateField(self, cdc, do, di):
         # Get the arguments into a list
-        args = self.extractArgs(di)
-
+        args = map(lambda type, div: di.getArg(type,div), self.types, self.divisors)
         assert(self.notify.debug("Received update for %d: %s.%s(%s)" % (do.doId, cdc.name, self.name, args)))
-
         # Apply the function to the object with the arguments
         if self.func != None:
             apply(self.func, [do] + args)
-        return None
 
-    def extractArgs(self, di):
-        args = []
-        assert(len(self.types) == len(self.divisors))
-        numTypes = len(self.types)
-        for i in range(numTypes):
-            args.append(di.getArg(self.types[i], self.divisors[i]))
-        return args
-
-    def addArgs(self, datagram, args):
-        # Add the args to the datagram
-        numElems = len(args)
-        assert (numElems == len(self.types) == len(self.divisors))
-        for i in range(0, numElems):
-            datagram.putArg(args[i], self.types[i], self.divisors[i])
-    
     def sendUpdate(self, cr, do, args, sendToId = None):
         if sendToId == None:
             sendToId = do.doId
-
         assert(self.notify.debug("Sending update for %d: %s(%s)" % (sendToId, self.name, args)))
-        datagram = Datagram.Datagram()
+        datagram = PyDatagram()
         # Add message type
         datagram.addUint16(CLIENT_OBJECT_UPDATE_FIELD)
         # Add the DO id
@@ -96,6 +76,7 @@ class ClientDistUpdate:
         # Add the field id
         datagram.addUint16(self.number)
         # Add the arguments
-        self.addArgs(datagram, args)
+        for arg, type, div in zip(args, self.types, self.divisors):
+            datagram.putArg(arg, type, div)
         # send the datagram
         cr.send(datagram)
