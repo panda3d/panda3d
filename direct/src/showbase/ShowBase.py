@@ -379,7 +379,7 @@ class ShowBase(DirectObject.DirectObject):
                     self.notify.info("Could not make graphics pipe %s." % (pipeType.getName()))
 
     def openWindow(self, props = None, pipe = None, gsg = None,
-                   type = None, name = None):
+                   type = None, name = None, scene = None, aspectRatio = None):
         """
         Creates a window and adds it to the list of windows that are
         to be updated every frame.
@@ -440,7 +440,7 @@ class ShowBase(DirectObject.DirectObject):
         self.winList.append(win)
 
         # Set up a 3-d camera for the window by default.
-        self.makeCamera(win)
+        self.makeCamera(win, scene = scene, aspectRatio = aspectRatio)
             
         return win
 
