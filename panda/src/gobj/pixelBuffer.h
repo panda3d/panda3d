@@ -141,8 +141,11 @@ private:
 protected:
   int _xsize;
   int _ysize;
-  int _xorg;  // origin is not a well defined concept for PixelBuffer.  It's zero by default &
-  int _yorg;  // not used by any internal code other than constructors, should probably be deleted from API
+
+  // pixelbuffer "origin" represents upper left screen point at which
+  // pixelbuffer should be drawn using draw_pixel_buffer
+  int _xorg; 
+  int _yorg; 
   int _border;
   int _components;
   int _component_width;
