@@ -52,7 +52,7 @@ X509_STORE *HTTPClient::_x509_store = NULL;
 HTTPClient::
 HTTPClient() {
   _http_version = HV_11;
-  _verify_ssl = verify_ssl;
+  _verify_ssl = verify_ssl ? VS_normal : VS_no_verify;
   make_ctx();
 }
 
@@ -66,7 +66,7 @@ HTTPClient(const HTTPClient &copy) {
   // We can initialize these to default values because the operator =
   // function will copy them in a second.
   _http_version = HV_11;
-  _verify_ssl = verify_ssl;
+  _verify_ssl = verify_ssl ? VS_normal : VS_no_verify;
   make_ctx();
 
   (*this) = copy;
@@ -81,7 +81,7 @@ void HTTPClient::
 operator = (const HTTPClient &copy) {
   _proxy = copy._proxy;
   _http_version = copy._http_version;
-  set_verify_ssl(copy._verify_ssl);
+  _verify_ssl = copy._verify_ssl;
   clear_expected_servers();
 
   ExpectedServers::const_iterator ei;
@@ -351,13 +351,6 @@ make_ctx() {
     SSL_CTX_set_msg_callback(_ssl_ctx, ssl_msg_callback);
   }
 #endif
-
-  // Insist on verifying servers if we are configured to.
-  if (_verify_ssl) {
-    SSL_CTX_set_verify(_ssl_ctx, SSL_VERIFY_PEER, NULL);
-  } else {
-    SSL_CTX_set_verify(_ssl_ctx, SSL_VERIFY_NONE, NULL);
-  }
 
   // Get the configured set of expected servers.
   {
@@ -664,11 +657,11 @@ establish_https_proxy(const URLSpec &url) {
         << ": " << doc->get_status_code() << " "
         << doc->get_status_string() << "\n";
       
-      if (!get_verify_ssl()) {
+      if (get_verify_ssl() == VS_no_verify) {
         // If the proxy refused to open a raw connection for us, see
         // if it will handle the https communication itself.  For
         // other error codes, just return error.  (We can only
-        // reliably do this if verify_ssl is not true, since we're not
+        // reliably do this if verify_ssl is minimal, since we're not
         // sure whether to trust the proxy to do the verification for
         // us.)
         if ((doc->get_status_code() / 100) == 4) {
@@ -719,25 +712,45 @@ make_https_connection(BIO *bio, const URLSpec &url) const {
 #ifdef REPORT_SSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
-    BIO_free_all(bio);
+    BIO_free_all(sbio);
     return NULL;
   }
 
   long verify_result = SSL_get_verify_result(ssl);
-  if (verify_result != X509_V_OK) {
-    downloader_cat.warning()
+  if (verify_result == X509_V_ERR_CERT_HAS_EXPIRED) {
+    downloader_cat.info()
+      << "Expired certificate from " << url.get_server() << ":"
+      << url.get_port() << "\n";
+    if (get_verify_ssl() == VS_normal) {
+      BIO_free_all(sbio);
+      return NULL;
+    }
+
+  } else if (verify_result == X509_V_ERR_CERT_NOT_YET_VALID) {
+    downloader_cat.info()
+      << "Premature certificate from " << url.get_server() << ":"
+      << url.get_port() << "\n";
+    if (get_verify_ssl() == VS_normal) {
+      BIO_free_all(sbio);
+      return NULL;
+    }
+
+  } else if (verify_result != X509_V_OK) {
+    downloader_cat.info()
       << "Unable to verify identity of " << url.get_server() << ":" 
       << url.get_port() << ", verify error code " << verify_result << "\n";
+    if (get_verify_ssl() != VS_no_verify) {
+      BIO_free_all(sbio);
+      return NULL;
+    }
   }
 
   X509 *cert = SSL_get_peer_certificate(ssl);
   if (cert == (X509 *)NULL) {
     downloader_cat.info()
       << "No certificate was presented by server.\n";
-
-    if (!_expected_servers.empty()) {
-      downloader_cat.info()
-        << "Not allowing connection since no certificates could be matched.\n";
+    if (get_verify_ssl() != VS_no_verify ||
+        !_expected_servers.empty()) {
       BIO_free_all(sbio);
       return NULL;
     }
@@ -752,13 +765,15 @@ make_https_connection(BIO *bio, const URLSpec &url) const {
 
     X509_NAME *subject = X509_get_subject_name(cert);
 
-    string org_name = get_x509_name_component(subject, NID_organizationName);
-    string org_unit_name = get_x509_name_component(subject, NID_organizationalUnitName);
-    string common_name = get_x509_name_component(subject, NID_commonName);
-
-    downloader_cat.info()
-      << "Server is " << common_name << " from " << org_unit_name
-      << " / " << org_name << "\n";
+    if (downloader_cat.is_debug()) {
+      string org_name = get_x509_name_component(subject, NID_organizationName);
+      string org_unit_name = get_x509_name_component(subject, NID_organizationalUnitName);
+      string common_name = get_x509_name_component(subject, NID_commonName);
+      
+      downloader_cat.debug()
+        << "Server is " << common_name << " from " << org_unit_name
+        << " / " << org_name << "\n";
+    }
 
     if (!verify_server(subject)) {
       downloader_cat.info()

@@ -76,8 +76,14 @@ PUBLISHED:
 
   bool load_certificates(const Filename &filename);
 
-  INLINE void set_verify_ssl(bool verify_ssl);
-  INLINE bool get_verify_ssl() const;
+  enum VerifySSL {
+    VS_no_verify,     // Don't care who we talk to
+    VS_no_date_check, // Must identify certs, but old, expired certs are OK
+    VS_normal         // Identify certs and also check expiration dates.
+  };
+
+  INLINE void set_verify_ssl(VerifySSL verify_ssl);
+  INLINE VerifySSL get_verify_ssl() const;
 
   bool add_expected_server(const string &server_attributes);
   void clear_expected_servers();
@@ -113,7 +119,7 @@ private:
 
   URLSpec _proxy;
   HTTPVersion _http_version;
-  bool _verify_ssl;
+  VerifySSL _verify_ssl;
 
   typedef pmap<string, string> Usernames;
   Usernames _usernames;

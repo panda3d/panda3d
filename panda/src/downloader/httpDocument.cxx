@@ -77,7 +77,9 @@ send_request(const string &method, const URLSpec &url, const string &body) {
   // Let's call this before we call make_header(), so we'll get the
   // right HTTP version and proxy information etc.
   set_url(url);
-  prepare_for_next();
+  if (!prepare_for_next()) {
+    return false;
+  }
 
   string header;
   make_header(header, method, url, body);
