@@ -110,8 +110,8 @@ public:
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
                 const DisplayRegion *dr);
 
-  virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr);
-  virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
+  virtual bool copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr);
+  virtual bool copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                                  const RenderBuffer &rb);
 
   virtual void apply_material(const Material *material);

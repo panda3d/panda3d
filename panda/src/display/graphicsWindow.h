@@ -36,6 +36,7 @@
 #include "iterator_types.h"
 #include "notify.h"
 #include "pmutex.h"
+#include "filename.h"
 
 #include "pvector.h"
 #include "pdeque.h"
@@ -96,6 +97,9 @@ PUBLISHED:
 
   int get_num_display_regions() const;
   DisplayRegion *get_display_region(int n) const;
+
+  Filename take_screenshot(const string &prefix = "screenshot");
+  bool take_screenshot(const Filename &filename);
 
   // Mouse and keyboard routines
   int get_num_input_devices() const;

@@ -45,3 +45,4 @@ const float win_background_b = config_framework.GetFloat("win-background-b", 0.4
 const string record_session = config_framework.GetString("record-session", "");
 const string playback_session = config_framework.GetString("playback-session", "");
 
+

@@ -1954,9 +1954,9 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+bool GLGraphicsStateGuardian::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
-  nassertv(pb != NULL && dr != NULL);
+  nassertr(pb != NULL && dr != NULL, false);
   set_pack_alignment(1);
 
   // Bug fix for RE, RE2, and VTX - need to disable texturing in order
@@ -2014,7 +2014,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
   // pixelbuffer "origin" represents upper left screen point at which
   // pixelbuffer should be drawn using draw_pixel_buffer
-  nassertv(!pb->_image.empty());
+  nassertr(!pb->_image.empty(), false);
   glReadPixels(pb->get_xorg() + xo, pb->get_yorg() + yo,
                pb->get_xsize(), pb->get_ysize(),
                external_format,
@@ -2035,6 +2035,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   }
 
   report_gl_errors();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2042,11 +2043,11 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+bool GLGraphicsStateGuardian::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                   const RenderBuffer &rb) {
   set_read_buffer(rb);
-  copy_pixel_buffer(pb, dr);
+  return copy_pixel_buffer(pb, dr);
 }
 
 ////////////////////////////////////////////////////////////////////

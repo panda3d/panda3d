@@ -3318,20 +3318,17 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian8::
+bool DXGraphicsStateGuardian8::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
     RECT SrcCopyRect;
-    nassertv(pb != NULL && dr != NULL);
+    nassertr(pb != NULL && dr != NULL, false);
 
     int xo, yo, w, h;
     dr->get_region_pixels(xo, yo, w, h);
 
     // only handled simple case
-    nassertv(xo==0);
-    nassertv(yo==0);
-    nassertv(w==pb->get_xsize());
-    nassertv(h==pb->get_ysize());
+    nassertr(xo == 0 && yo==0 && w == pb->get_xsize() && h == pb->get_ysize(), false);
 
     IDirect3DSurface8 *pD3DSurf;
     HRESULT hr;
@@ -3345,7 +3342,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
        if(FAILED(hr)) {
            dxgsg8_cat.error() << "GetBackBuffer failed" << D3DERRORSTRING(hr);
-           exit(1);
+           return false;
        }
 
        D3DSURFACE_DESC SurfDesc;
@@ -3389,31 +3386,32 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
         hr=_pD3DDevice->CreateImageSurface(TmpSurfXsize,TmpSurfYsize,D3DFMT_A8R8G8B8,&pD3DSurf);
         if(FAILED(hr)) {
            dxgsg8_cat.error() << "CreateImageSurface failed in copy_pixel_buffer()" << D3DERRORSTRING(hr);
-           exit(1);
+           return false;
         }
 
         hr=_pD3DDevice->GetFrontBuffer(pD3DSurf);
 
         if(hr==D3DERR_DEVICELOST) {
-           // dont necessary want to exit in this case
            pD3DSurf->Release();
            dxgsg8_cat.error() << "copy_pixel_buffer failed: device lost\n";
-           return;
+           return false;
         }
     } else {
         dxgsg8_cat.error() << "copy_pixel_buffer: unhandled current_read_pixel_buffer type\n";
+        return false;
     }
 
     if((RECT_XSIZE(SrcCopyRect)>w) || (RECT_YSIZE(SrcCopyRect)>h)) {
      dxgsg8_cat.error() << "copy_pixel_buffer: pixel buffer size does not match selected screen RenderBuffer size!\n";
-     exit(1);
+     return false;
     }
 
     (void) ConvertD3DSurftoPixBuf(SrcCopyRect,pD3DSurf,pb);
 
     RELEASE(pD3DSurf,dxgsg8,"pD3DSurf",RELEASE_ONCE);
 
-    nassertv(!pb->_image.empty());
+    nassertr(!pb->_image.empty(), false);
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3421,11 +3419,11 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian8::
+bool DXGraphicsStateGuardian8::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                   const RenderBuffer &rb) {
     set_read_buffer(rb);
-    copy_pixel_buffer(pb, dr);
+    return copy_pixel_buffer(pb, dr);
 }
 
 ////////////////////////////////////////////////////////////////////

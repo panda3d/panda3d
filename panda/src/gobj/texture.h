@@ -116,8 +116,8 @@ public:
 
   INLINE void apply(GraphicsStateGuardianBase *gsg);
 
-  virtual void copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr);
-  virtual void copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
+  virtual bool copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr);
+  virtual bool copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
                     const RenderBuffer &rb);
 
   // These bits are used as parameters to Texture::mark_dirty() and

@@ -422,12 +422,12 @@ copy(const PixelBuffer *pb) {
     _image.v() = pb->_image.v();
 }
 
-void PixelBuffer::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) {
-  gsg->copy_pixel_buffer(this, dr);
+bool PixelBuffer::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) {
+  return gsg->copy_pixel_buffer(this, dr);
 }
 
-void PixelBuffer::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
+bool PixelBuffer::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
                        const RenderBuffer &rb) {
-  gsg->copy_pixel_buffer(this, dr, rb);
+  return gsg->copy_pixel_buffer(this, dr, rb);
 }
 

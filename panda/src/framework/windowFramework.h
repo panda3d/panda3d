@@ -100,7 +100,7 @@ public:
   INLINE bool get_one_sided_reverse() const;
   INLINE bool get_lighting() const;
   INLINE BackgroundType get_background_type() const;
-
+  
 protected:
   PT(Camera) make_camera();
   void setup_lights();

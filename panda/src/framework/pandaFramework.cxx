@@ -618,6 +618,14 @@ do_frame() {
   DataGraphTraverser dg_trav;
   dg_trav.traverse(_data_root.node());
   _event_handler.process_events();
+
+  if (!_screenshot_text.is_empty()) {
+    double now = ClockObject::get_global_clock()->get_frame_time();
+    if (now >= _screenshot_clear_time) {
+      _screenshot_text.remove_node();
+    }
+  }
+
   if (_recorder != (RecorderController *)NULL) {
     _recorder->record_frame();
   }
@@ -701,11 +709,35 @@ do_enable_default_keys() {
   define_key("arrow_left", "move highlight to sibling", event_arrow_left, this);
   define_key("arrow_right", "move highlight to sibling", event_arrow_right, this);
   define_key("shift-s", "activate PStats", event_S, this);
+  define_key("f9", "Take screenshot", event_f9, this);
   define_key(",", "change background color", event_comma, this);
   define_key("?", "", event_question, this);
   define_key("shift-/", "", event_question, this);
 
   _event_handler.add_hook("window-event", event_window_event, this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::clear_text
+//       Access: Protected
+//  Description: Removes any onscreen text (like help text or
+//               screenshot filename).  Returns true if there was any
+//               text in the first place, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PandaFramework::
+clear_text() {
+  bool any_text = false;
+  if (!_screenshot_text.is_empty()) {
+    _screenshot_text.remove_node();
+    any_text = true;
+  }
+
+  if (!_help_text.is_empty()) {
+    _help_text.remove_node();
+    any_text = true;
+  }
+
+  return any_text;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1031,13 +1063,55 @@ event_arrow_right(CPT_Event, void *data) {
 //  Description: Default handler for shift-S key: activate stats.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_S(CPT_Event, void *data) {
+event_S(CPT_Event, void *) {
 #ifdef DO_PSTATS
   nout << "Connecting to stats host" << endl;
   PStatClient::connect();
 #else
   nout << "Stats host not supported." << endl;
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_f9
+//       Access: Protected, Static
+//  Description: Default handler for f9 key: take screenshot.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_f9(CPT_Event event, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  if (event->get_num_parameters() == 1) {
+    EventParameter param = event->get_parameter(0);
+    WindowFramework *wf;
+    DCAST_INTO_V(wf, param.get_ptr());
+
+    if (self->clear_text()) {
+      // Render one more frame to remove the text.
+      self->_engine.render_frame();
+    }
+
+    Filename filename = wf->get_graphics_window()->take_screenshot();
+    string text;
+    if (filename.empty()) {
+      text = "Screenshot failed";
+    } else {
+      text = filename;
+    }
+
+    TextNode *text_node = new TextNode("screenshot");
+    self->_screenshot_text = NodePath(text_node);
+    text_node->set_align(TextNode::A_center);
+    text_node->set_shadow_color(0.0f, 0.0f, 0.0f, 1.0f);
+    text_node->set_shadow(0.04f, 0.04f);
+    text_node->set_text(text);
+    self->_screenshot_text.set_scale(0.06);
+    self->_screenshot_text.set_pos(0.0, 0.0, -0.7);
+    self->_screenshot_text.reparent_to(wf->get_aspect_2d());
+
+    double now = ClockObject::get_global_clock()->get_frame_time();
+    self->_screenshot_clear_time = now + 2.0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1073,15 +1147,17 @@ event_comma(CPT_Event event, void *) {
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
 event_question(CPT_Event event, void *data) {
-  cerr << "got question\n";
   PandaFramework *self = (PandaFramework *)data;
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
     DCAST_INTO_V(wf, param.get_ptr());
 
+    self->_screenshot_text.remove_node();
+
     if (!self->_help_text.is_empty()) {
       self->_help_text.remove_node();
+      // This key is a toggle; remove the help text and do nothing else.
 
     } else {
       // Build up a string to display.
@@ -1096,12 +1172,12 @@ event_question(CPT_Event event, void *data) {
 
       string help_text = help.str();
 
-      TextNode *text_node = new TextNode("text");
+      TextNode *text_node = new TextNode("help");
       self->_help_text = NodePath(text_node);
-      text_node->set_text(help_text);
       text_node->set_align(TextNode::A_left);
       text_node->set_shadow_color(0.0f, 0.0f, 0.0f, 1.0f);
       text_node->set_shadow(0.04f, 0.04f);
+      text_node->set_text(help_text);
 
       LVecBase4f frame = text_node->get_frame_actual();
 

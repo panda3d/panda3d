@@ -43,8 +43,8 @@ PUBLISHED:
 public:
   virtual void config( void ) { WritableConfigurable::config(); }
 
-  virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *)=0;
-  virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *,
+  virtual bool copy(GraphicsStateGuardianBase *, const DisplayRegion *)=0;
+  virtual bool copy(GraphicsStateGuardianBase *, const DisplayRegion *,
                     const RenderBuffer &rb)=0;
 
 PUBLISHED:

@@ -81,6 +81,9 @@ const bool yield_timeslice = config_display.GetBool("yield-timeslice", false);
 // This variable may be repeated several times.
 
 
+const string screenshot_filename = config_display.GetString("screenshot-filename", "%~p-%a-%b-%d-%H-%M-%S-%Y-%~f.%~e");
+const string screenshot_extension = config_display.GetString("screenshot-extension", "jpg");
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libdisplay
 //  Description: Initializes the library.  This must be called at

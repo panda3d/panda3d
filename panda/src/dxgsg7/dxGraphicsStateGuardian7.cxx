@@ -3641,21 +3641,18 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian7::
+bool DXGraphicsStateGuardian7::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
     extern HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf);
 
-    nassertv(pb != NULL && dr != NULL);
+    nassertr(pb != NULL && dr != NULL, false);
 
     int xo, yo, w, h;
     dr->get_region_pixels(xo, yo, w, h);
 
     // only handled simple case
-    nassertv(xo==0);
-    nassertv(yo==0);
-    nassertv(w==pb->get_xsize());
-    nassertv(h==pb->get_ysize());
+    nassertr(xo == 0 && yo==0 && w == pb->get_xsize() && h == pb->get_ysize(), false);
 
 /*
     set_pack_alignment(1);
@@ -3669,7 +3666,8 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
     (void) ConvertDDSurftoPixBuf(pb,((_cur_read_pixel_buffer & RenderBuffer::T_back) ? _pScrn->pddsBack : _pScrn->pddsPrimary));
 
-    nassertv(!pb->_image.empty());
+    nassertr(!pb->_image.empty(), false);
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3677,11 +3675,11 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian7::
+bool DXGraphicsStateGuardian7::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                   const RenderBuffer &rb) {
     set_read_buffer(rb);
-    copy_pixel_buffer(pb, dr);
+    return copy_pixel_buffer(pb, dr);
 }
 
 ////////////////////////////////////////////////////////////////////

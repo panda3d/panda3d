@@ -115,6 +115,7 @@ protected:
   virtual PT(WindowFramework) make_window_framework();
   virtual void make_default_pipe();
   virtual void do_enable_default_keys();
+  bool clear_text();
 
   static void event_esc(CPT_Event, void *data);
   static void event_f(CPT_Event, void *data);
@@ -133,6 +134,7 @@ protected:
   static void event_arrow_left(CPT_Event, void *data);
   static void event_arrow_right(CPT_Event, void *data);
   static void event_S(CPT_Event, void *data);
+  static void event_f9(CPT_Event, void *data);
   static void event_comma(CPT_Event, void *data);
   static void event_question(CPT_Event event, void *data);
   static void event_window_event(CPT_Event, void *data);
@@ -181,6 +183,8 @@ private:
   KeyDefinitions _key_definitions;
 
   NodePath _help_text;
+  NodePath _screenshot_text;
+  double _screenshot_clear_time;
 
   PT(RecorderController) _recorder;
 };

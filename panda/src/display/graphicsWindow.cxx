@@ -386,6 +386,122 @@ get_display_region(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::take_screenshot
+//       Access: Published
+//  Description: Saves a screenshot of the window to a default
+//               filename, and returns the filename, or empty string
+//               if the screenshot failed.  The default filename is
+//               generated from the supplied prefix and from the
+//               Configrc variable screenshot-filename, which contains
+//               the following strings:
+//
+//                 %~p - the supplied prefix
+//                 %~f - the frame count
+//                 %~e - the value of screenshot-extension
+//                 All other % strings in strftime().
+////////////////////////////////////////////////////////////////////
+Filename GraphicsWindow::
+take_screenshot(const string &prefix) {
+  time_t now = time(NULL);
+  struct tm *ttm = localtime(&now);
+  int frame_count = ClockObject::get_global_clock()->get_frame_count();
+
+  static const int buffer_size = 1024;
+  char buffer[buffer_size];
+
+  ostringstream filename_strm;
+
+  size_t i = 0;
+  while (i < screenshot_filename.length()) {
+    char ch1 = screenshot_filename[i++];
+    if (ch1 == '%' && i < screenshot_filename.length()) {
+      char ch2 = screenshot_filename[i++];
+      if (ch2 == '~' && i < screenshot_filename.length()) {
+        char ch3 = screenshot_filename[i++];
+        switch (ch3) {
+        case 'p':
+          filename_strm << prefix;
+          break;
+
+        case 'f':
+          filename_strm << frame_count;
+          break;
+
+        case 'e':
+          filename_strm << screenshot_extension;
+          break;
+        }
+
+      } else {
+        // Use strftime() to decode the percent code.
+        char format[3] = {'%', ch2, '\0'};
+        if (strftime(buffer, buffer_size, format, ttm)) {
+          for (char *b = buffer; *b != '\0'; b++) {
+            switch (*b) {
+            case ' ':
+            case ':':
+            case '/':
+              filename_strm << '-';
+              break;
+
+            case '\n':
+              break;
+
+            default:
+              filename_strm << *b;
+            }
+          }
+        }
+      }
+    } else {
+      filename_strm << ch1;
+    }
+  }
+
+  Filename filename = filename_strm.str();
+  if (take_screenshot(filename)) {
+    return filename;
+  }
+  return Filename();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::take_screenshot
+//       Access: Published
+//  Description: Saves a screenshot of the window to the indicated
+//               filename.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool GraphicsWindow::
+take_screenshot(const Filename &filename) {
+  if (_gsg == (GraphicsStateGuardian *)NULL) {
+    return false;
+  }
+
+  WindowProperties props = get_properties();
+  if (!props.has_size()) {
+    return false;
+  }
+
+  int x_size = props.get_x_size();
+  int y_size = props.get_y_size();
+
+  PixelBuffer p(x_size, y_size, 3, 1, PixelBuffer::T_unsigned_byte,
+                PixelBuffer::F_rgb);
+
+  DisplayRegion dr(x_size, y_size);
+  RenderBuffer rb = _gsg->get_render_buffer(RenderBuffer::T_front);
+  if (!p.copy(_gsg, &dr, rb)) {
+    return false;
+  }
+
+  if (!p.write(filename)) {
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_num_input_devices
 //       Access: Published
 //  Description: Returns the number of separate input devices

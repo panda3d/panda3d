@@ -606,13 +606,15 @@ get_ram_image() {
   }
 }
 
-void Texture::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) {
+bool Texture::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) {
   gsg->copy_texture(prepare(gsg), dr);
+  return true;
 }
 
-void Texture::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
+bool Texture::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
                    const RenderBuffer &rb) {
   gsg->copy_texture(prepare(gsg), dr, rb);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
