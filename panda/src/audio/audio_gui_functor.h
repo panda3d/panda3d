@@ -20,7 +20,7 @@
 #define __AUDIO_GUI_FUNCTOR_H__
 
 #include <guiBehavior.h>
-#include "audio_sound.h"
+#include "audioSound.h"
 
 class EXPCL_PANDA AudioGuiFunctor : public GuiBehavior::BehaviorFunctor {
 protected:

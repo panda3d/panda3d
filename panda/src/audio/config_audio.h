@@ -24,22 +24,19 @@
 
 NotifyCategoryDecl(audio, EXPCL_PANDA, EXPTP_PANDA);
 
-extern EXPCL_PANDA int audio_sample_voices;
-extern EXPCL_PANDA int audio_mix_freq;
-extern EXPCL_PANDA string* audio_mode_flags;
-extern EXPCL_PANDA int audio_driver_select;
-extern EXPCL_PANDA string* audio_driver_params;
-extern EXPCL_PANDA int audio_buffer_size;
-extern EXPCL_PANDA string* audio_device;
-extern EXPCL_PANDA int audio_auto_update_delay;
-extern EXPCL_PANDA bool audio_is_active;
-extern EXPCL_PANDA bool audio_sfx_active;
-extern EXPCL_PANDA bool audio_music_active;
-extern EXPCL_PANDA float audio_master_sfx_volume;
-extern EXPCL_PANDA float audio_master_music_volume;
-extern EXPCL_PANDA int audio_thread_priority;
+extern EXPCL_PANDA bool audio_active;
+extern EXPCL_PANDA float audio_volume;
 
-extern EXPCL_PANDA void audio_load_loaders();
+extern EXPCL_PANDA bool audio_software_midi;
+extern EXPCL_PANDA string* audio_dls_file;
+
+extern EXPCL_PANDA bool audio_play_midi;
+extern EXPCL_PANDA bool audio_play_wave;
+extern EXPCL_PANDA bool audio_play_mp3;
+
+extern EXPCL_PANDA int audio_output_rate;
+extern EXPCL_PANDA int audio_output_bits;
+extern EXPCL_PANDA int audio_output_channels;
 
 #ifndef NDEBUG //[
   // Non-release build:

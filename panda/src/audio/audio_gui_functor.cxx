@@ -28,11 +28,13 @@ AudioGuiFunctor::~AudioGuiFunctor() {
   _prev.clear();
 }
 
-#include "audio_manager.h"
+#include "audioManager.h"
 
 void AudioGuiFunctor::doit(GuiBehavior* b) {
-  if (_sound != (AudioSound*)0L)
-    AudioManager::play(_sound);
-  if (_prev != (GuiBehavior::BehaviorFunctor*)0L)
+  if (_sound) {
+    _sound->play();
+  }
+  if (_prev) {
     _prev->doit(b);
+  }
 }
