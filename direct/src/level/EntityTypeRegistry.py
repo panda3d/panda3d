@@ -37,8 +37,24 @@ class EntityTypeRegistry:
 
             self.privCompileAttribDescs(c)
 
-    def getAttributeDescriptors(self, entityTypeName):
-        return self.typeName2class[entityTypeName]._attribDescs
+    def getAttribNames(self, entityTypeName):
+        """ returns ordered list of attribute names for entity type """
+        # TODO: precompute this
+        attribDescs = self.typeName2class[entityTypeName]._attribDescs
+        attribNames = []
+        for desc in attribDescs:
+            attribNames.append(desc.getName())
+        return attribNames
+
+    def getAttribDescs(self, entityTypeName):
+        """ returns dict of attribName -> attribDescriptor """
+        # TODO: precompute this
+        attribDescs = self.typeName2class[entityTypeName]._attribDescs
+        attribNames = self.getAttribNames(entityTypeName)
+        name2desc = {}
+        for name, desc in zip(attribNames, attribDescs):
+            name2desc[name] = desc
+        return name2desc
 
     def privCompileAttribDescs(self, entTypeClass):
         # has someone already compiled the info?
