@@ -101,13 +101,8 @@ def privUpdateSpec(spec, modelPath, entTypeModule):
 
             print 'adding entity %s for new zone %s' % (entId, zoneNum)
             insertZoneEntity(entId, zoneNum)
-            # by default, new zone can see every other zone
-            visList = list(modelZoneNums)
-            # cur zone and uberzone are implicit
-            visList.remove(zoneNum)
-            visList.remove(0)
-            visList.sort()
-            spec.doSetAttrib(entId, 'visibility', visList)
+            # by default, new zone can't see any other zones
+            spec.doSetAttrib(entId, 'visibility', [])
 
     # make sure none of the zones reference removed zones, and add
     # the new zones to each zone's visibility list
