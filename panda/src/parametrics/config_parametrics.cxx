@@ -6,6 +6,8 @@
 #include "config_parametrics.h"
 #include "curve.h"
 #include "curveDrawer.h"
+#include "curveFitter.h"
+#include "hermiteCurve.h"
 #include "nurbsCurve.h"
 #include "nurbsCurveDrawer.h"
 
@@ -19,6 +21,8 @@ ConfigureFn(config_parametrics) {
   PiecewiseCurve::init_type();
   CubicCurveseg::init_type();
   ParametricCurveDrawer::init_type();
+  CurveFitter::init_type();
+  HermiteCurve::init_type();
   NurbsCurve::init_type();
   NurbsCurveDrawer::init_type();
 }
