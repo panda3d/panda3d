@@ -56,7 +56,7 @@ xform(const FLOATNAME(LVecBase3) &v) const {
   FLOATNAME(LQuaternion) v_quat(0.0f, v[0], v[1], v[2]);
 
   FLOATNAME(LQuaternion) inv(_v.data[0], -_v.data[1], -_v.data[2], -_v.data[3]);
-  v_quat = (*this) * v_quat * inv;
+  v_quat = inv * v_quat * (*this);
 
   return FLOATNAME(LVecBase3)(v_quat[1], v_quat[2], v_quat[3]);
 }
@@ -67,11 +67,11 @@ xform(const FLOATNAME(LVecBase3) &v) const {
 //  Description: actual multiply call (non virtual)
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
-multiply(const FLOATNAME(LQuaternion)& rhs) const {
-  FLOATTYPE r = (_v.data[0] * rhs._v.data[0]) - (_v.data[1] * rhs._v.data[1]) - (_v.data[2] * rhs._v.data[2]) - (_v.data[3] * rhs._v.data[3]);
-  FLOATTYPE i = (_v.data[1] * rhs._v.data[0]) + (_v.data[0] * rhs._v.data[1]) - (_v.data[3] * rhs._v.data[2]) + (_v.data[2] * rhs._v.data[3]);
-  FLOATTYPE j = (_v.data[2] * rhs._v.data[0]) + (_v.data[3] * rhs._v.data[1]) + (_v.data[0] * rhs._v.data[2]) - (_v.data[1] * rhs._v.data[3]);
-  FLOATTYPE k = (_v.data[3] * rhs._v.data[0]) - (_v.data[2] * rhs._v.data[1]) + (_v.data[1] * rhs._v.data[2]) + (_v.data[0] * rhs._v.data[3]);
+multiply(const FLOATNAME(LQuaternion) &rhs) const {
+  FLOATTYPE r = (rhs._v.v._0 * _v.v._0) - (rhs._v.v._1 * _v.v._1) - (rhs._v.v._2 * _v.v._2) - (rhs._v.v._3 * _v.v._3);
+  FLOATTYPE i = (rhs._v.v._1 * _v.v._0) + (rhs._v.v._0 * _v.v._1) - (rhs._v.v._3 * _v.v._2) + (rhs._v.v._2 * _v.v._3);
+  FLOATTYPE j = (rhs._v.v._2 * _v.v._0) + (rhs._v.v._3 * _v.v._1) + (rhs._v.v._0 * _v.v._2) - (rhs._v.v._1 * _v.v._3);
+  FLOATTYPE k = (rhs._v.v._3 * _v.v._0) - (rhs._v.v._2 * _v.v._1) + (rhs._v.v._1 * _v.v._2) + (rhs._v.v._0 * _v.v._3);
 
   return FLOATNAME(LQuaternion)(r, i , j, k);
 }

@@ -106,11 +106,11 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr) {
   csincos(a, &s, &c);
   quat_r.set(c, v[0] * s, v[1] * s, v[2] * s);
 
-  (*this) = quat_h * quat_p * quat_r;
+  (*this) = quat_r * quat_p * quat_h;
 
   if (!temp_hpr_fix) {
     // Compute the old, broken hpr.
-    (*this) = invert(quat_r) * quat_h * quat_p;
+    (*this) = quat_p * quat_h * invert(quat_r);
   }
 
 #ifndef NDEBUG

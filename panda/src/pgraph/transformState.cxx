@@ -705,7 +705,7 @@ do_compose(const TransformState *other) const {
     float scale = get_uniform_scale();
 
     pos += quat.xform(other->get_pos()) * scale;
-    quat *= other->get_quat();
+    quat = other->get_quat() * quat;
     quat.normalize();
     scale *= other->get_uniform_scale();
 
@@ -768,7 +768,7 @@ do_invert_compose(const TransformState *other) const {
     // Now compose the inverted transform with the other transform.
     if (!other->is_identity()) {
       pos += quat.xform(other->get_pos()) * scale;
-      quat *= other->get_quat();
+      quat = other->get_quat() * quat;
       quat.normalize();
       scale *= other->get_uniform_scale();
     }
