@@ -30,9 +30,9 @@ TrackerNode::
 TrackerNode(ClientBase *client, const string &device_name) :
   DataNode(device_name)
 {
-  _transform_output = define_output("transform", EventStoreMat4::get_class_type());
+  _transform_output = define_output("transform", EventStoreTransform::get_class_type());
 
-  _transform = new EventStoreMat4(LMatrix4f::ident_mat());
+  _transform = new EventStoreTransform(TransformState::make_identity());
 
   nassertv(client != (ClientBase *)NULL);
   set_tracker_coordinate_system(client->get_coordinate_system());
@@ -97,8 +97,9 @@ do_transmit_data(const DataNodeTransmit &, DataNodeTransmit &output) {
     }
     _mat.set_row(3, _data.get_pos());
 
-    // Now send our matrix down the pipe.
-    _transform->set_value(_mat);
+    // Now send our matrix down the pipe.  TODO: store this
+    // componentwise instead of just as a matrix-based transform.
+    _transform->set_value(TransformState::make_mat(_mat));
     output.set_data(_transform_output, EventParameter(_transform));
   }
 }
