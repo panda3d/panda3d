@@ -226,10 +226,12 @@ get_proxy() const {
 //               schemes.  This is either a semicolon-delimited set of
 //               hostname:ports, or a semicolon-delimited set of pairs
 //               of the form "scheme=hostname:port", or a combination.
-//               A particular scheme and/or proxy host may be listed
-//               more than once.  This is a convenience function that
-//               can be used in place of explicit calls to add_proxy()
-//               for each scheme/proxy pair.
+//               Use the keyword DIRECT, or an empty string, to
+//               represent a direct connection.  A particular scheme
+//               and/or proxy host may be listed more than once.  This
+//               is a convenience function that can be used in place
+//               of explicit calls to add_proxy() for each
+//               scheme/proxy pair.
 ////////////////////////////////////////////////////////////////////
 void HTTPClient::
 set_proxy_spec(const string &proxy_spec) {
@@ -246,17 +248,21 @@ set_proxy_spec(const string &proxy_spec) {
 
     // Divide out the scheme and the hostname.
     string scheme;
-    URLSpec url;
+    string proxy;
     size_t equals = spec.find('=');
     if (equals == string::npos) {
       scheme = "";
-      url = URLSpec(spec, true);
+      proxy = trim_blanks(spec);
     } else {
       scheme = trim_blanks(spec.substr(0, equals));
-      url = URLSpec(spec.substr(equals + 1), true);
+      proxy = trim_blanks(spec.substr(equals + 1));
     }
 
-    add_proxy(scheme, url);
+    if (proxy == "DIRECT" || proxy.empty()) {
+      add_proxy(scheme, URLSpec());
+    } else {
+      add_proxy(scheme, URLSpec(proxy, true));
+    }
   }
 }
 
@@ -289,7 +295,11 @@ get_proxy_spec() const {
         result += scheme;
         result += "=";
       }
-      result += url.get_url();
+      if (url.empty()) {
+        result += "DIRECT";
+      } else {
+        result += url.get_url();
+      }
     }
   }
 
@@ -369,26 +379,32 @@ clear_proxy() {
 //  Description: Adds the indicated proxy host as a proxy for
 //               communications on the given scheme.  Usually the
 //               scheme is "http" or "https".  It may be the empty
-//               string to indicate a general proxy.
+//               string to indicate a general proxy.  The proxy string
+//               may be the empty URL to indicate a direct connection.
 ////////////////////////////////////////////////////////////////////
 void HTTPClient::
 add_proxy(const string &scheme, const URLSpec &proxy) {
-  if (!proxy.empty()) {
-    URLSpec proxy_url(proxy);
+  URLSpec proxy_url(proxy);
+  
+  // The scheme is always converted to lowercase.
+  string lc_scheme;
+  lc_scheme.reserve(scheme.length());
+  string::const_iterator si;
+  for (si = scheme.begin(); si != scheme.end(); ++si) {
+    lc_scheme += tolower(*si);
+  }
+  
+  // Remove the trailing colon, if there is one.
+  if (!lc_scheme.empty() && lc_scheme[lc_scheme.length() - 1] == ':') {
+    lc_scheme = lc_scheme.substr(0, lc_scheme.length() - 1);
+  }
 
-    // The scheme is always converted to lowercase.
-    string lc_scheme;
-    lc_scheme.reserve(scheme.length());
-    string::const_iterator si;
-    for (si = scheme.begin(); si != scheme.end(); ++si) {
-      lc_scheme += tolower(*si);
-    }
-    
-    // Remove the trailing colon, if there is one.
-    if (!lc_scheme.empty() && lc_scheme[lc_scheme.length() - 1] == ':') {
-      lc_scheme = lc_scheme.substr(0, lc_scheme.length() - 1);
-    }
-    
+  if (!proxy_url.empty()) {
+    // Enforce the scheme that we use to communicate to the proxy
+    // itself.  This is not the same as lc_scheme, which is the scheme
+    // of the requested connection.  Generally, all proxies speak
+    // HTTP, except for Socks proxies.
+
     if (lc_scheme == "socks") {
       // Scheme "socks" implies we talk to the proxy via the "socks"
       // scheme, no matter what scheme the user actually specified.
@@ -399,9 +415,9 @@ add_proxy(const string &scheme, const URLSpec &proxy) {
       // proxy, the default is "http".
       proxy_url.set_scheme("http");
     }
-    
-    _proxies_by_scheme[lc_scheme].push_back(proxy_url);
   }
+  
+  _proxies_by_scheme[lc_scheme].push_back(proxy_url);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -444,9 +460,9 @@ add_direct_host(const string &hostname) {
 //       Access: Published
 //  Description: Fills up the indicated vector with the list of
 //               URLSpec objects, in the order in which they should be
-//               tried, that are appropriate for the indicated URL.
-//               The vector is left empty if a direct connection
-//               should be used.
+//               tried, that are appropriate proxies to try for the
+//               indicated URL.  The empty URL is returned for a
+//               direct connection.
 //
 //               It is the user's responsibility to empty this vector
 //               before calling this method; otherwise, the proxy
@@ -464,51 +480,64 @@ get_proxies_for_url(const URLSpec &url, pvector<URLSpec> &proxies) const {
     for (si = _direct_hosts.begin(); si != _direct_hosts.end(); ++si) {
       if ((*si).matches(hostname)) {
         // It matches, so don't use any proxies.
+        proxies.push_back(URLSpec());
         return;
       }
     }
   }
 
+  // Build our list of proxies into a temporary vector, so we can pull
+  // out duplicates later.
+  pvector<URLSpec> temp_list;
+
   // Now choose the appropriate proxy based on the scheme.
   string scheme = url.get_scheme();
   bool got_any = false;
 
-  if (scheme.empty()) {
-    // An empty scheme implies we will want to make a direct
-    // connection to this host, so we will need a socks-style or
-    // https-style scheme.
-    if (get_proxies_for_scheme("socks", proxies)) {
-      got_any = true;
-    }
-    if (get_proxies_for_scheme("https", proxies)) {
-      got_any = true;
-    }
-
-  } else {
-    // Otherwise, try to match the proxy to the scheme.
-    if (get_proxies_for_scheme(scheme, proxies)) {
+  if (!scheme.empty()) {
+    // If we have a scheme, try to match it.
+    if (get_proxies_for_scheme(scheme, temp_list)) {
       got_any = true;
     }
   }
 
-  // If we didn't find our scheme of choice, fall back to the default
-  // proxy type.
+  if (!got_any && (scheme.empty() || url.is_ssl())) {
+    // An empty scheme (or an ssl-style scheme) implies we will need
+    // to make a direct connection, so fallback to a socks-style
+    // and/or https-style scheme.
+
+    if (get_proxies_for_scheme("socks", temp_list)) {
+      got_any = true;
+    }
+    if (get_proxies_for_scheme("https", temp_list)) {
+      got_any = true;
+    }
+  }
+
   if (!got_any) {
-    if (get_proxies_for_scheme("", proxies)) {
+    // If we didn't find our scheme of choice, fall back to the default
+    // proxy type, if we've got one.
+    if (get_proxies_for_scheme("", temp_list)) {
       got_any = true;
     }
   }
 
-  // Failing that, use SOCKS for an SSL-type connection.
-  if (!got_any && scheme == "https") {
-    if (get_proxies_for_scheme("socks", proxies)) {
-      got_any = true;
-    }
-  }
+  // We always try a direct connection if all else fails.
+  temp_list.push_back(URLSpec());
 
-  // And failing that, try the http proxy.
+  // Finally, as a very last resort, fall back to the HTTP proxy.
   if (!got_any) {
-    get_proxies_for_scheme("http", proxies);
+    get_proxies_for_scheme("http", temp_list);
+  }
+
+  // Now remove duplicate entries as we copy the resulting list out.
+  pvector<URLSpec>::iterator pi;
+  pset<URLSpec> used;
+  for (pi = temp_list.begin(); pi != temp_list.end(); ++pi) {
+    if (used.insert(*pi).second) {
+      // This is a unique one.
+      proxies.push_back(*pi);
+    }
   }
 }
 
@@ -517,8 +546,8 @@ get_proxies_for_url(const URLSpec &url, pvector<URLSpec> &proxies) const {
 //       Access: Published
 //  Description: Returns a semicolon-delimited list of proxies, in the
 //               order in which they should be tried, that are
-//               appropriate for the indicated URL.  The empty string
-//               is returned if a direct connection should be used.
+//               appropriate for the indicated URL.  The keyword
+//               DIRECT indicates a direct connection should be tried.
 ////////////////////////////////////////////////////////////////////
 string HTTPClient::
 get_proxies_for_url(const URLSpec &url) const {
@@ -528,12 +557,20 @@ get_proxies_for_url(const URLSpec &url) const {
   string result;
   if (!proxies.empty()) {
     pvector<URLSpec>::const_iterator pi = proxies.begin();
-    result += (*pi).get_url();
+    if ((*pi).get_url().empty()) {
+      result += "DIRECT";
+    } else {
+      result += (*pi).get_url();
+    }
     ++pi;
 
     while (pi != proxies.end()) {
       result += ";";
-      result += (*pi).get_url();
+      if ((*pi).get_url().empty()) {
+        result += "DIRECT";
+      } else {
+        result += (*pi).get_url();
+      }
       ++pi;
     }
   }

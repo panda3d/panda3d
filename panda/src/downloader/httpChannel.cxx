@@ -245,8 +245,8 @@ run() {
 
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
-      << "begin run(), _state = " << (int)_state << ", _done_state = "
-      << (int)_done_state << "\n";
+      << "begin run(), _state = " << _state << ", _done_state = "
+      << _done_state << "\n";
   }
 
   if (_state == _done_state) {
@@ -295,7 +295,7 @@ run() {
 
     if (downloader_cat.is_spam()) {
       downloader_cat.spam()
-        << "continue run(), _state = " << (int)_state << "\n";
+        << "continue run(), _state = " << _state << "\n";
     }
 
     switch (_state) {
@@ -381,7 +381,7 @@ run() {
       
     default:
       downloader_cat.warning()
-        << "Unhandled state " << (int)_state << "\n";
+        << "Unhandled state " << _state << "\n";
       return false;
     }
 
@@ -394,8 +394,8 @@ run() {
 
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
-      << "later run(), _state = " << (int)_state
-      << ", _done_state = " << (int)_done_state << "\n";
+      << "later run(), _state = " << _state
+      << ", _done_state = " << _done_state << "\n";
   }
   return true;
 }
@@ -623,8 +623,8 @@ bool HTTPChannel::
 reached_done_state() {
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
-      << "terminating run(), _state = " << (int)_state
-      << ", _done_state = " << (int)_done_state << "\n";
+      << "terminating run(), _state = " << _state
+      << ", _done_state = " << _done_state << "\n";
   }
 
   if (_state == S_failure || _download_dest == DD_none) {
@@ -665,6 +665,7 @@ run_try_next_proxy() {
     _proxy_auth = (HTTPAuthorization *)NULL;
     _proxy_next_index++;
     close_connection();
+    reconsider_proxy();
     _state = S_connecting;
     return false;
   }
@@ -684,6 +685,7 @@ bool HTTPChannel::
 run_connecting() {
   _status_code = 0;
   _status_string = string();
+
   if (BIO_do_connect(*_bio) <= 0) {
     if (BIO_should_retry(*_bio)) {
       _state = S_connecting_wait;
@@ -1884,6 +1886,36 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
   // connection.
   _want_ssl = _request.get_url().is_ssl();
 
+  _first_byte = first_byte;
+  _last_byte = last_byte;
+  _connect_count = 0;
+
+  reconsider_proxy();
+
+  // Also, reset from whatever previous request might still be pending.
+  if (_state == S_failure || (_state < S_read_header && _state != S_ready)) {
+    reset_to_new();
+
+  } else if (_state == S_read_header) {
+    // Roll one step forwards to start skipping past the previous
+    // body.
+    _state = S_begin_body;
+  }
+
+  _done_state = (_method == HTTPEnum::M_connect) ? S_ready : S_read_header;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::reconsider_proxy
+//       Access: Private
+//  Description: Reevaluates the flags and strings that are computed
+//               based on the particular proxy we are attempting to
+//               connect to.  This should be called when we initiate a
+//               request, and also whenever we change proxies while
+//               processing a request.
+////////////////////////////////////////////////////////////////////
+void HTTPChannel::
+reconsider_proxy() {
   _proxy_tunnel = false;
   _proxy_serves_document = false;
 
@@ -1899,10 +1931,6 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
     // hand us the document.
     _proxy_serves_document = !_proxy_tunnel;
   }
-
-  _first_byte = first_byte;
-  _last_byte = last_byte;
-  _connect_count = 0;
 
   make_header();
   make_request_text();
@@ -1925,19 +1953,8 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
     _proxy_header = string();
     _proxy_request_text = string();
   }
-
-  // Also, reset from whatever previous request might still be pending.
-  if (_state == S_failure || (_state < S_read_header && _state != S_ready)) {
-    reset_to_new();
-
-  } else if (_state == S_read_header) {
-    // Roll one step forwards to start skipping past the previous
-    // body.
-    _state = S_begin_body;
-  }
-
-  _done_state = (_method == HTTPEnum::M_connect) ? S_ready : S_read_header;
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::reset_for_new_request
@@ -3049,6 +3066,88 @@ close_connection() {
   _working_get = string();
   _sent_so_far = 0;
   _read_index++;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::State output operator
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, HTTPChannel::State state) {
+#ifdef NDEBUG
+  return out << (int)state;
+#else
+  switch (state) {
+  case HTTPChannel::S_new:
+    return out << "new";
+
+  case HTTPChannel::S_try_next_proxy:
+    return out << "try_next_proxy";
+
+  case HTTPChannel::S_connecting:
+    return out << "connecting";
+
+  case HTTPChannel::S_connecting_wait:
+    return out << "connecting_wait";
+
+  case HTTPChannel::S_http_proxy_ready:
+    return out << "http_proxy_ready";
+
+  case HTTPChannel::S_http_proxy_request_sent:
+    return out << "http_proxy_request_sent";
+
+  case HTTPChannel::S_http_proxy_reading_header:
+    return out << "http_proxy_reading_header";
+
+  case HTTPChannel::S_socks_proxy_greet:
+    return out << "socks_proxy_greet";
+
+  case HTTPChannel::S_socks_proxy_greet_reply:
+    return out << "socks_proxy_greet_reply";
+
+  case HTTPChannel::S_socks_proxy_connect:
+    return out << "socks_proxy_connect";
+
+  case HTTPChannel::S_socks_proxy_connect_reply:
+    return out << "socks_proxy_connect_reply";
+
+  case HTTPChannel::S_setup_ssl:
+    return out << "setup_ssl";
+
+  case HTTPChannel::S_ssl_handshake:
+    return out << "ssl_handshake";
+
+  case HTTPChannel::S_ready:
+    return out << "ready";
+
+  case HTTPChannel::S_request_sent:
+    return out << "request_sent";
+
+  case HTTPChannel::S_reading_header:
+    return out << "reading_header";
+
+  case HTTPChannel::S_read_header:
+    return out << "read_header";
+
+  case HTTPChannel::S_begin_body:
+    return out << "begin_body";
+
+  case HTTPChannel::S_reading_body:
+    return out << "reading_body";
+
+  case HTTPChannel::S_read_body:
+    return out << "read_body";
+
+  case HTTPChannel::S_read_trailer:
+    return out << "read_trailer";
+
+  case HTTPChannel::S_failure:
+    return out << "failure";
+  }
+
+  return out << "invalid state(" << (int)state << ")";
+#endif  // NDEBUG
 }
 
 #endif  // HAVE_SSL

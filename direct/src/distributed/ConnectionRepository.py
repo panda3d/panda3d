@@ -30,14 +30,14 @@ class ConnectionRepository(DirectObject.DirectObject):
         # (e.g. QueuedConnectionManager, etc.) to establish the
         # connection, which ultimately uses the NSPR socket library.
         # This is a much better socket library, but it may be more
-        # than you need for most applications; and the proxy support
-        # is weak.
+        # than you need for most applications; and there is no support
+        # for proxies.
 
         # Set it to 'default' to use the HTTPClient interface if a
         # proxy is in place, but the NSPR interface if we don't have a
         # proxy.
-        
         self.connectMethod = self.config.GetString('connect-method', 'default')
+        
         self.connectHttp = None
         self.http = None
         self.qcm = None
@@ -52,8 +52,7 @@ class ConnectionRepository(DirectObject.DirectObject):
         self.rsDoReport = self.config.GetBool('reader-statistics', 0)
         self.rsUpdateInterval = self.config.GetDouble('reader-statistics-interval', 10)
 
-
-    def connect(self, serverList, allowProxy,
+    def connect(self, serverList, 
                 successCallback = None, successArgs = [],
                 failureCallback = None, failureArgs = []):
         """
@@ -67,14 +66,12 @@ class ConnectionRepository(DirectObject.DirectObject):
         """
 
         hasProxy = 0
-        if allowProxy:
-            if self.http == None:
-                self.http = HTTPClient()
+        if self.checkHttp():
             proxies = self.http.getProxiesForUrl(serverList[0])
-            hasProxy = (proxies != '')
+            hasProxy = (proxies != 'DIRECT')
 
         if hasProxy:
-            self.notify.info("Connecting to gameserver via proxy: %s" % (proxies))
+            self.notify.info("Connecting to gameserver via proxy list: %s" % (proxies))
         else:
             self.notify.info("Connecting to gameserver directly (no proxy).");
 
@@ -96,16 +93,8 @@ class ConnectionRepository(DirectObject.DirectObject):
             # itself repeatedly until we establish a connection (or
             # run out of servers).
 
-            if self.http == None:
-                self.http = HTTPClient()
-
             ch = self.http.makeChannel(0)
-            # Temporary try..except for old Pandas.
-            try:
-                ch.setAllowProxy(allowProxy)
-            except:
-                pass
-            self.httpConnectCallback(ch, serverList, 0, hasProxy,
+            self.httpConnectCallback(ch, serverList, 0,
                                      successCallback, successArgs,
                                      failureCallback, failureArgs)
 
@@ -142,7 +131,7 @@ class ConnectionRepository(DirectObject.DirectObject):
 
             # Failed to connect.
             if failureCallback:
-                failureCallback(hasProxy, 0, *failureArgs)
+                failureCallback(0, *failureArgs)
 
     def disconnect(self):
         """Closes the previously-established connection.
@@ -156,7 +145,7 @@ class ConnectionRepository(DirectObject.DirectObject):
             self.tcpConn = None
         self.stopReaderPollTask()
                     
-    def httpConnectCallback(self, ch, serverList, serverIndex, hasProxy,
+    def httpConnectCallback(self, ch, serverList, serverIndex,
                             successCallback, successArgs,
                             failureCallback, failureArgs):
         if ch.isConnectionReady():
@@ -175,13 +164,26 @@ class ConnectionRepository(DirectObject.DirectObject):
             ch.spawnTask(name = 'connect-to-server',
                          callback = self.httpConnectCallback,
                          extraArgs = [ch, serverList, serverIndex + 1,
-                                      hasProxy,
                                       successCallback, successArgs,
                                       failureCallback, failureArgs])
         else:
             # No more servers to try; we have to give up now.
             if failureCallback:
-                failureCallback(hasProxy, ch.getStatusCode(), *failureArgs)
+                failureCallback(ch.getStatusCode(), *failureArgs)
+
+    def checkHttp(self):
+        # Creates an HTTPClient, if possible, if we don't have one
+        # already.  This might fail if the OpenSSL library isn't
+        # available.  Returns the HTTPClient (also self.http), or None
+        # if not set.
+        
+        if self.http == None:
+            try:
+                self.http = HTTPClient()
+            except:
+                pass
+
+        return self.http
 
     def startReaderPollTask(self):
         # Stop any tasks we are running now

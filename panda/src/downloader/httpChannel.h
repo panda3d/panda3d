@@ -180,6 +180,7 @@ private:
   void begin_request(HTTPEnum::Method method, const DocumentSpec &url, 
                      const string &body, bool nonblocking,
                      size_t first_byte, size_t last_byte);
+  void reconsider_proxy();
   void reset_for_new_request();
 
   void finished_body(bool has_trailer);
@@ -215,6 +216,35 @@ private:
   void reset_to_new();
   void close_connection();
 
+public:
+  // This is declared public solely so we can make an ostream operator
+  // for it.
+  enum State {
+    S_new,
+    S_try_next_proxy,
+    S_connecting,
+    S_connecting_wait,
+    S_http_proxy_ready,
+    S_http_proxy_request_sent,
+    S_http_proxy_reading_header,
+    S_socks_proxy_greet,
+    S_socks_proxy_greet_reply,
+    S_socks_proxy_connect,
+    S_socks_proxy_connect_reply,
+    S_setup_ssl,
+    S_ssl_handshake,
+    S_ready,
+    S_request_sent,
+    S_reading_header,
+    S_read_header,
+    S_begin_body,
+    S_reading_body,
+    S_read_body,
+    S_read_trailer,
+    S_failure
+  };
+
+private:
   typedef pvector<URLSpec> Proxies;
 
   HTTPClient *_client;
@@ -301,30 +331,6 @@ private:
   // case of nonblocking I/O we have to be able to return to the
   // caller after any I/O operation and resume later where we left
   // off.
-  enum State {
-    S_new,
-    S_try_next_proxy,
-    S_connecting,
-    S_connecting_wait,
-    S_http_proxy_ready,
-    S_http_proxy_request_sent,
-    S_http_proxy_reading_header,
-    S_socks_proxy_greet,
-    S_socks_proxy_greet_reply,
-    S_socks_proxy_connect,
-    S_socks_proxy_connect_reply,
-    S_setup_ssl,
-    S_ssl_handshake,
-    S_ready,
-    S_request_sent,
-    S_reading_header,
-    S_read_header,
-    S_begin_body,
-    S_reading_body,
-    S_read_body,
-    S_read_trailer,
-    S_failure
-  };
   State _state;
   State _done_state;
   double _started_connecting_time;
@@ -363,6 +369,8 @@ private:
   friend class IdentityStreamBuf;
   friend class HTTPClient;
 };
+
+ostream &operator << (ostream &out, HTTPChannel::State state);
 
 #include "httpChannel.I"
 
