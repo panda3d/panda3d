@@ -53,7 +53,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.dnaStore = DNAStorage()
 	loadDNAFile(self.dnaStore, 'dna/storage.dna',
                     getDefaultCoordinateSystem())
-        self.dnaOutputFile = 'toontown-working.dna'
+        self.dnaOutputFile = 'toontown_working.dna'
 
 	# Top level DNA Data Object
 	self.levelObjectsDNA = DNAData('LevelObjects')
@@ -401,7 +401,7 @@ class LevelEditor(NodePath, PandaObject):
             self.pieMenuDictionary['toontownCentralStyleMenu'])
 	self.attributeDictionary['streetTexture'] = 'street_street_tex'
 	self.attributeDictionary['sidewalkTexture'] = 'street_sidewalk_tex'
-        self.dnaOutputFile = 'toontownCentral-working.dna'
+        self.dnaOutputFile = 'toontown_central_working.dna'
 
     def editDonaldsDock(self):
 	self.levelMap.setPos(0.0,0.0,0.0)
@@ -414,7 +414,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.attributeDictionary['streetTexture'] = 'street_street_dock_tex'
 	self.attributeDictionary['sidewalkTexture'] = (
             'street_sidewalk_dock_tex')
-        self.dnaOutputFile = 'donaldsDock-working.dna'
+        self.dnaOutputFile = 'donalds_dock_working.dna'
 
     def editMinniesMelodyLand(self):
 	self.levelMap.setPos(0.0,0.0,0.0)
@@ -427,7 +427,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.attributeDictionary['streetTexture'] = 'street_street_dock_tex'
 	self.attributeDictionary['sidewalkTexture'] = (
             'street_sidewalk_dock_tex')
-        self.dnaOutputFile = 'minniesMelodyLand-working.dna'
+        self.dnaOutputFile = 'minnies_melody_land_working.dna'
 
     def editTheBurrrgh(self):
 	self.levelMap.setPos(0.0,0.0,0.0)
@@ -440,7 +440,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.attributeDictionary['streetTexture'] = 'street_street_dock_tex'
 	self.attributeDictionary['sidewalkTexture'] = (
             'street_sidewalk_dock_tex')
-        self.dnaOutputFile = 'theBurrrgh-working.dna'
+        self.dnaOutputFile = 'the_burrrgh_working.dna'
 
     def showMap(self, mapName):
         if self.activeMap:
