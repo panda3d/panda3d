@@ -29,27 +29,31 @@ class ParentMgr:
     def __init__(self):
         self.token2nodepath = {}
         # these are nodepaths that have requested to be parented to
-        # a node that has not yet been registered
-        self.pendingChildren = {}
-        # for efficient removal of pending children, we keep a dict
-        # of pending children to their pending parent
+        # a node that has not yet registered as a parent
+        self.pendingParentToken2children = {}
+        # Multiple reparent requests may come in for a given child
+        # before that child can successfully be reparented. We need to
+        # make sure that each child is only scheduled to be parented to
+        # a single parent, at most.
+        # For efficient removal of pending children, we keep a dict
+        # of pending children to the token of the parent they're waiting for
         self.pendingChild2parentToken = {}
 
     def destroy(self):
         del self.token2nodepath
-        del self.pendingChildren
+        del self.pendingParentToken2children
         del self.pendingChild2parentToken
 
     def privRemoveReparentRequest(self, child):
         """ this internal function removes any currently-pending reparent
-        request for the child nodepath """
+        request for the given child nodepath """
         if child in self.pendingChild2parentToken:
             self.notify.debug("cancelling pending reparent of %s to '%s'" %
                               (repr(child),
                                self.pendingChild2parentToken[child]))
             parentToken = self.pendingChild2parentToken[child]
             del self.pendingChild2parentToken[child]
-            self.pendingChildren[parentToken].remove(child)
+            self.pendingParentToken2children[parentToken].remove(child)
 
     def requestReparent(self, child, parentToken):
         if self.token2nodepath.has_key(parentToken):
@@ -64,13 +68,12 @@ class ParentMgr:
             self.notify.warning(
                 "child %s requested reparent to '%s', not in list" %
                 (repr(child), parentToken))
-            if not self.pendingChildren.has_key(parentToken):
-                self.pendingChildren[parentToken] = []
             # cancel any pending reparent on behalf of this child
             self.privRemoveReparentRequest(child)
             # make note of this pending parent request
             self.pendingChild2parentToken[child] = parentToken
-            self.pendingChildren[parentToken].append(child)
+            self.pendingParentToken2children.setdefault(parentToken, [])
+            self.pendingParentToken2children[parentToken].append(child)
             # there is no longer any valid place for the child in the
             # scenegraph; put it under hidden
             child.reparentTo(hidden)
@@ -85,8 +88,9 @@ class ParentMgr:
         self.token2nodepath[token] = parent
 
         # if we have any pending children, add them
-        if self.pendingChildren.has_key(token):
-            children = self.pendingChildren[token]
+        if token in self.pendingParentToken2children:
+            children = self.pendingParentToken2children[token]
+            del self.pendingParentToken2children[token]
             for child in children:
                 # NOTE: We do a plain-old reparentTo here (non-wrt)
                 # under the assumption that the node has been
@@ -99,6 +103,13 @@ class ParentMgr:
                 # other distributed objects, and a remote toon is
                 # requesting to be parented to geometry owned by a
                 # distributed object that has not yet been manifested.
+                #
+                # (The situation in the factory is a little different;
+                # the distributed toons of your companions are never
+                # disabled, since the toons are in the factory's uberzone.
+                # They send out requests to be parented to nodes that
+                # may be distributed objects, which may not be generated
+                # on your client)
                 #
                 # It is therefore important for that remote toon to
                 # have his position set as a required field, relative
@@ -115,7 +126,9 @@ class ParentMgr:
                 self.notify.debug("performing reparent of %s to '%s'" %
                                   (repr(child), token))
                 child.reparentTo(self.token2nodepath[token])
-            del self.pendingChildren[token]
+                # remove this child from the child->parent table
+                assert (self.pendingChild2parentToken[child] == token)
+                del self.pendingChild2parentToken[child]
 
     def unregisterParent(self, token):
         if not self.token2nodepath.has_key(token):
