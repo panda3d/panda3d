@@ -65,6 +65,7 @@ dc_cleanup_parser() {
 %token KW_UINT8ARRAY
 %token KW_UINT16ARRAY
 %token KW_UINT32ARRAY
+%token KW_UINT32UINT8ARRAY
 
 %token KW_MOL
 
@@ -371,6 +372,10 @@ type_token:
         | KW_UINT32ARRAY
 {
   $$ = ST_uint32array;
+}
+        | KW_UINT32UINT8ARRAY
+{
+  $$ = ST_uint32uint8array;
 }
         ;
 

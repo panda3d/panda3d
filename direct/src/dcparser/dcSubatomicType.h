@@ -52,6 +52,10 @@ enum DCSubatomicType {
   ST_int8array,
   ST_uint8array,
 
+  // A special-purpose array: a list of alternating uint32 and uint8
+  // values.  In Python, this becomes a list of 2-tuples.
+  ST_uint32uint8array,
+
   // New additions should be added at the end to prevent the file hash
   // code from changing.
 

@@ -204,6 +204,26 @@ end_array() {
     // These types accept arrays.
     return true;
 
+  case ST_uint32uint8array:
+    {
+      // In this special case type, we collapse every other 32-bit
+      // value down to an 8-bit value after formatting.
+      string new_value;
+      size_t p = 0;
+      while (p < _default_value.size()) {
+        // We should have at least 8 bytes for each two elements.  If
+        // we don't, maybe the user gave us an odd number of elements.
+        if (p + 8 > _default_value.size()) {
+          return false;
+        }
+        new_value += _default_value.substr(p, 5);
+        p += 8;
+      }
+
+      _default_value = new_value;
+      return true;
+    }
+
   default:
     return false;
   }
@@ -244,6 +264,7 @@ format_default_value(double num, string &formatted) const {
   case ST_uint32:
   case ST_int32array:
   case ST_uint32array:
+  case ST_uint32uint8array:
     formatted =
       string(1, (char)(int_value & 0xff)) +
       string(1, (char)((int_value >> 8) & 0xff)) +
@@ -423,6 +444,7 @@ get_element_default(int n) const {
   case ST_uint8array:
   case ST_uint16array:
   case ST_uint32array:
+  case ST_uint32uint8array:
   case ST_blob:
   case ST_string:
     // These array types also want an implicit length.
