@@ -30,18 +30,27 @@ compare_to(const DocumentSpec &other) const {
   if (_flags != other._flags) {
     return (_flags - other._flags);
   }
-  if (_request_mode != other._request_mode) {
-    return (int)_request_mode - (int)other._request_mode;
-  }
   int c = _url.compare_to(other._url);
   if (c != 0) {
     return c;
   }
-  c = _tag.compare_to(other._tag);
-  if (c != 0) {
-    return c;
+  if (has_tag()) {
+    c = _tag.compare_to(other._tag);
+    if (c != 0) {
+      return c;
+    }
   }
-  return _date.compare_to(other._date);
+  if (has_date()) {
+    c = _date.compare_to(other._date);
+    if (c != 0) {
+      return c;
+    }
+  }
+
+  // We don't consider _request_mode or _cache_control significant in
+  // the comparison.
+
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
