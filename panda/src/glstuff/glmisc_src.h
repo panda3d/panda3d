@@ -17,18 +17,19 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
+#include "configVariableBool.h"
 
 //#define GSG_VERBOSE 1
 
-extern bool CLP(cheap_textures);
-extern bool CLP(ignore_clamp);
-extern bool CLP(ignore_filters);
-extern bool CLP(ignore_mipmaps);
-extern bool CLP(force_mipmaps);
-extern bool CLP(show_mipmaps);
-extern bool CLP(save_mipmaps);
-extern bool CLP(auto_normalize_lighting);
-extern bool CLP(color_mask);
+extern ConfigVariableBool CLP(cheap_textures);
+extern ConfigVariableBool CLP(ignore_clamp);
+extern ConfigVariableBool CLP(ignore_filters);
+extern ConfigVariableBool CLP(ignore_mipmaps);
+extern ConfigVariableBool CLP(force_mipmaps);
+extern ConfigVariableBool CLP(show_mipmaps);
+extern ConfigVariableBool CLP(save_mipmaps);
+extern ConfigVariableBool CLP(auto_normalize_lighting);
+extern ConfigVariableBool CLP(color_mask);
 
 extern EXPCL_GL void CLP(init_classes)();
 

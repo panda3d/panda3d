@@ -13,6 +13,8 @@
     
   #define INSTALL_HEADERS \
      glext.h \
+     glmisc_src.cxx \
+     glmisc_src.h \
      glstuff_src.cxx \
      glstuff_src.h \
      glstuff_undef_src.h \
