@@ -51,6 +51,8 @@ private:
   int _source_buffer_length;
   Filename _source_file;
   Filename _rel_path;
+  char *_buffer_start;
+  int _buffer_size;
 };
 
 #endif

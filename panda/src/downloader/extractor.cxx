@@ -91,6 +91,8 @@ initiate(Filename &source_file, const Filename &rel_path) {
   if (_mfile != NULL)
     delete _mfile;
   _mfile = new Multifile;
+  _buffer_start = _buffer->_buffer;
+  _buffer_size = _source_buffer_length;
   return ES_success;
 }
 
@@ -114,13 +116,9 @@ run(void) {
   }
 
   // Write to the out file
-  char *start = _buffer->_buffer;
-  int size = _source_buffer_length; 
-  if (_mfile->write(start, size, _rel_path) == true) {
+  if (_mfile->write(_buffer_start, _buffer_size, _rel_path) == true) {
     _read_stream.close();
     _source_file.unlink();
-    delete _mfile;
-    _mfile = NULL;
     return ES_success;
   }
   return ES_ok;
