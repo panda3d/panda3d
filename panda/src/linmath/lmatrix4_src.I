@@ -1078,7 +1078,10 @@ INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 invert_affine_from(const FLOATNAME(LMatrix4) &other) {
   FLOATNAME(LMatrix3) rot;
 
-  rot.invert_from(other.get_upper_3());  // probably could use transpose here
+  // probably could use transpose here
+  if (!rot.invert_from(other.get_upper_3())) {
+    return false;
+  }
 
   set_upper_3(rot);
 //  set_col(3, FLOATNAME(LVecBase4)(0.0f, 0.0f, 0.0f, 1.0f));
