@@ -21,7 +21,7 @@
 #define __AUDIOSOUND_H__
 
 #include "config_audio.h"
-#include <ReferenceCount.h>
+#include <referenceCount.h>
 #include <namable.h>
 #include <pointerTo.h>
 
