@@ -131,7 +131,7 @@ class Particles(ParticleSystem.ParticleSystem):
             self.renderer = LineParticleRenderer.LineParticleRenderer()
         elif (type == "GeomParticleRenderer"):
             self.renderer = GeomParticleRenderer.GeomParticleRenderer()
-            npath = hidden.attachNewNode(NamedNode('default-geom'))
+            npath = hidden.attachNewNode('default-geom')
             # This was moved here because we do not want to download
             # the direct tools with toontown.
             import DirectSelection
