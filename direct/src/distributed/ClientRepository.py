@@ -19,6 +19,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def __init__(self):
         ConnectionRepository.ConnectionRepository.__init__(self, base.config)
+        self.setClientDatagram(1)
 
         self.recorder = base.recorder
         
@@ -95,9 +96,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def handleGenerateWithRequired(self, di):
         # Get the class Id
-        classId = di.getArg(STUint16);
+        classId = di.getUint16();
         # Get the DO Id
-        doId = di.getArg(STUint32)
+        doId = di.getUint32()
         # Look up the dclass
         dclass = self.dclassesByNumber[classId]
         # Create a new distributed object, and put it in the dictionary
@@ -105,9 +106,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def handleGenerateWithRequiredOther(self, di):
         # Get the class Id
-        classId = di.getArg(STUint16);
+        classId = di.getUint16();
         # Get the DO Id
-        doId = di.getArg(STUint32)
+        doId = di.getUint32()
         # Look up the dclass
         dclass = self.dclassesByNumber[classId]
         # Create a new distributed object, and put it in the dictionary
@@ -116,9 +117,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
     def handleQuietZoneGenerateWithRequired(self, di):
         # Special handler for quiet zone generates -- we need to filter
         # Get the class Id
-        classId = di.getArg(STUint16);
+        classId = di.getUint16();
         # Get the DO Id
-        doId = di.getArg(STUint32)
+        doId = di.getUint32()
         # Look up the dclass
         dclass = self.dclassesByNumber[classId]
         # If the class is a neverDisable class (which implies uberzone) we
@@ -130,9 +131,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
     def handleQuietZoneGenerateWithRequiredOther(self, di):
         # Special handler for quiet zone generates -- we need to filter
         # Get the class Id
-        classId = di.getArg(STUint16);
+        classId = di.getUint16();
         # Get the DO Id
-        doId = di.getArg(STUint32)
+        doId = di.getUint32()
         # Look up the dclass
         dclass = self.dclassesByNumber[classId]
         # If the class is a neverDisable class (which implies uberzone) we
@@ -222,7 +223,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def handleDisable(self, di):
         # Get the DO Id
-        doId = di.getArg(STUint32)
+        doId = di.getUint32()
         # disable it.
         self.disableDoId(doId)
 
@@ -249,7 +250,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def handleDelete(self, di):
         # Get the DO Id
-        doId = di.getArg(STUint32)
+        doId = di.getUint32()
         self.deleteObject(doId)
 
     def deleteObject(self, doId):
@@ -285,7 +286,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def handleUpdateField(self, di):
         # Get the DO Id
-        doId = di.getArg(STUint32)
+        doId = di.getUint32()
         #print("Updating " + str(doId))
         # Find the DO
             
@@ -368,14 +369,13 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # send the message
         self.send(datagram)
 
-    def handleDatagram(self, datagram):
+    def handleDatagram(self, di):
         if self.notify.getDebug():
             print "ClientRepository received datagram:"
-            datagram.dumpHex(ostream)
-        di = PyDatagramIterator(datagram)
-        msgType = di.getUint16()
-        if self.notify.getDebug():
-            self.notify.debug("handleDatagram: msgType: " + `msgType`)
+            di.getDatagram().dumpHex(ostream)
+
+        msgType = self.getMsgType()
+        
         # watch for setZoneDones
         if msgType == CLIENT_DONE_SET_ZONE_RESP:
             self.handleSetZoneDone()

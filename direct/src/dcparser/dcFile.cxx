@@ -45,10 +45,25 @@ DCFile() {
 ////////////////////////////////////////////////////////////////////
 DCFile::
 ~DCFile() {
+  clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::clear
+//       Access: Published
+//  Description: Removes all of the classes defined within the DCFile
+//               and prepares it for reading a new file.
+////////////////////////////////////////////////////////////////////
+void DCFile::
+clear() {
   Classes::iterator ci;
   for (ci = _classes.begin(); ci != _classes.end(); ++ci) {
     delete (*ci);
   }
+  
+  _classes.clear();
+  _imports.clear();
+  _classes_by_name.clear();
 }
 
 #ifdef WITHIN_PANDA

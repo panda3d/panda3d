@@ -3,6 +3,7 @@ import Task
 import DirectNotifyGlobal
 import DirectObject
 from PyDatagram import PyDatagram
+from PyDatagramIterator import PyDatagramIterator
 
 import types
 
@@ -20,6 +21,7 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
     def __init__(self, config):
         DirectObject.DirectObject.__init__(self)
         CConnectionRepository.__init__(self)
+        self.setPythonRepository(self)
 
         self.config = config
         
@@ -44,44 +46,48 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
         self.connectHttp = None
         self.http = None
 
+        # This DatagramIterator is constructed once, and then re-used
+        # each time we read a datagram.
+        self.__di = PyDatagramIterator()
+
         self.recorder = None
 
     def readDCFile(self, dcFileNames = None):
 
         """ Reads in the dc files listed in dcFileNames, or if
         dcFileNames is None, reads in all of the dc files listed in
-        the Configrc file.
-
-        The resulting DCFile object is stored in self.dcFile. """
+        the Configrc file. """
         
-        self.dcFile = DCFile()
+        dcFile = self.getDcFile()
+        dcFile.clear()
         self.dclassesByName = {}
         self.dclassesByNumber = {}
+        self.hashVal = 0
         
         dcImports = {}
         if dcFileNames == None:
-            readResult = self.dcFile.readAll()
+            readResult = dcFile.readAll()
             if not readResult:
                 self.notify.error("Could not read dc file.")
         else:
             for dcFileName in dcFileNames:
-                readResult = self.dcFile.read(Filename(dcFileName))
+                readResult = dcFile.read(Filename(dcFileName))
                 if not readResult:
                     self.notify.error("Could not read dc file: %s" % (dcFileName))
-        self.hashVal = self.dcFile.getHash()
+        self.hashVal = dcFile.getHash()
 
         # Now import all of the modules required by the DC file.
-        for n in range(self.dcFile.getNumImportModules()):
-            moduleName = self.dcFile.getImportModule(n)
+        for n in range(dcFile.getNumImportModules()):
+            moduleName = dcFile.getImportModule(n)
             moduleName = self.mangleDCName(moduleName)
 
             module = __import__(moduleName, globals(), locals())
 
-            if self.dcFile.getNumImportSymbols(n) > 0:
+            if dcFile.getNumImportSymbols(n) > 0:
                 # "from moduleName import symbolName, symbolName, ..."
                 # Copy just the named symbols into the dictionary.
-                for i in range(self.dcFile.getNumImportSymbols(n)):
-                    symbolName = self.dcFile.getImportSymbol(n, i)
+                for i in range(dcFile.getNumImportSymbols(n)):
+                    symbolName = dcFile.getImportSymbol(n, i)
                     if symbolName == '*':
                         # Get all symbols.
                         dcImports.update(module.__dict__)
@@ -105,8 +111,8 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
 
         # Now get the class definition for the classes named in the DC
         # file.
-        for i in range(self.dcFile.getNumClasses()):
-            dclass = self.dcFile.getClass(i)
+        for i in range(dcFile.getNumClasses()):
+            dclass = dcFile.getClass(i)
             number = dclass.getNumber()
             className = dclass.getName()
             className = self.mangleDCName(className)
@@ -298,9 +304,8 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
 
     def readerPollOnce(self):
         if self.checkDatagram():
-            dg = PyDatagram()
-            self.getDatagram(dg)
-            self.handleDatagram(dg)
+            self.getDatagramIterator(self.__di)
+            self.handleDatagram(self.__di)
             return 1
 
         # Unable to receive a datagram: did we lose the connection?
@@ -314,7 +319,7 @@ class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
         # unexpectedly lost connection to the gameserver.
         self.notify.warning("Lost connection to gameserver.")
 
-    def handleDatagram(self, datagram):
+    def handleDatagram(self, di):
         # This class is meant to be pure virtual, and any classes that
         # inherit from it need to make their own handleDatagram method
         pass

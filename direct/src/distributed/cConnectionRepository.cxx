@@ -17,9 +17,13 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cConnectionRepository.h"
+#include "dcmsgtypes.h"
+#include "dcClass.h"
+
 #include "config_distributed.h"
 #include "httpChannel.h"
 #include "urlSpec.h"
+#include "datagramIterator.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::Constructor
@@ -28,6 +32,9 @@
 ////////////////////////////////////////////////////////////////////
 CConnectionRepository::
 CConnectionRepository() :
+#ifdef HAVE_PYTHON
+  _python_repository(NULL),
+#endif
 #ifdef HAVE_SSL
   _http_conn(NULL),
 #endif
@@ -35,7 +42,12 @@ CConnectionRepository() :
   _cw(&_qcm, 0),
   _qcr(&_qcm, 0),
 #endif
-  _simulated_disconnect(false)
+  _client_datagram(true),
+  _simulated_disconnect(false),
+  _msg_channel(0),
+  _msg_sender(0),
+  _sec_code(0),
+  _msg_type(0)
 {
 #ifdef HAVE_NSPR
   if (min_lag != 0.0 || max_lag != 0.0) {
@@ -103,7 +115,9 @@ try_connect_nspr(const URLSpec &url) {
 //       Access: Published
 //  Description: Returns true if a new datagram is available, false
 //               otherwise.  If the return value is true, the new
-//               datagram may be retrieved via get_datagram().
+//               datagram may be retrieved via get_datagram(), or
+//               preferably, with get_datagram_iterator() and
+//               get_msg_type().
 ////////////////////////////////////////////////////////////////////
 bool CConnectionRepository::
 check_datagram() {
@@ -111,7 +125,46 @@ check_datagram() {
     return false;
   }
 
-  return do_check_datagram();
+  while (do_check_datagram()) {
+    // Start breaking apart the datagram.
+    _di = DatagramIterator(_dg);
+
+    if (!_client_datagram) {
+      _msg_channel = _di.get_uint32();
+      _msg_sender = _di.get_uint32();
+      _sec_code = _di.get_uint8();
+      
+#ifdef HAVE_PYTHON
+      // For now, we need to stuff this field onto the Python
+      // structure, to support legacy code that expects to find it
+      // there.
+      if (_python_repository != (PyObject *)NULL) {
+        PyObject *value = PyInt_FromLong(_msg_sender);
+        PyObject_SetAttrString(_python_repository, "msgSender", value);
+        Py_DECREF(value);
+      }
+#endif  // HAVE_PYTHON
+    }
+
+    _msg_type = _di.get_uint16();
+
+    // Is this a message that we can process directly?
+    switch (_msg_type) {
+#ifdef HAVE_PYTHON
+    case CLIENT_OBJECT_UPDATE_FIELD:
+    case STATESERVER_OBJECT_UPDATE_FIELD:
+      handle_update_field();
+      break;
+#endif  // HAVE_PYTHON
+
+    default:
+      // Some unknown message; let the caller deal with it.
+      return true;
+    }
+  }
+
+  // No datagrams available.
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -302,4 +355,43 @@ do_check_datagram() {
 #endif  // HAVE_SSL
 
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::handle_update_field
+//       Access: Private
+//  Description: Directly handles an update message on a field.
+//               Python never touches the datagram; it just gets its
+//               distributed method called with the appropriate
+//               parameters.
+////////////////////////////////////////////////////////////////////
+void CConnectionRepository::
+handle_update_field() {
+#ifdef HAVE_PYTHON
+  int do_id = _di.get_uint32();
+  if (_python_repository != (PyObject *)NULL) {
+    PyObject *doId2do =
+      PyObject_GetAttrString(_python_repository, "doId2do");
+    nassertv(doId2do != NULL);
+
+    PyObject *doId = PyInt_FromLong(do_id);
+    PyObject *distobj = PyDict_GetItem(doId2do, doId);
+    Py_DECREF(doId);
+    Py_DECREF(doId2do);
+
+    if (distobj != NULL) {
+      PyObject *dclass_obj = PyObject_GetAttrString(distobj, "dclass");
+      nassertv(dclass_obj != NULL);
+
+      PyObject *dclass_this = PyObject_GetAttrString(dclass_obj, "this");
+      Py_DECREF(dclass_obj);
+      nassertv(dclass_this != NULL);
+
+      DCClass *dclass = (DCClass *)PyInt_AsLong(dclass_this);
+      Py_DECREF(dclass_this);
+
+      dclass->receive_update(distobj, _di); 
+    }
+  }
+#endif  // HAVE_PYTHON  
 }

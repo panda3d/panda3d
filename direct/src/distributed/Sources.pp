@@ -1,10 +1,12 @@
+#define C++FLAGS -DWITHIN_PANDA
+
 #begin lib_target
   #define BUILD_TARGET $[HAVE_PYTHON]
   #define USE_PACKAGES ssl nspr
 
   #define TARGET distributed
   #define LOCAL_LIBS \
-    directbase
+    directbase dcparser
   #define OTHER_LIBS \
     downloader:c net:c panda:m express:c pandaexpress:m \
     interrogatedb:c dconfig:c dtoolconfig:m \

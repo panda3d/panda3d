@@ -34,6 +34,8 @@ PUBLISHED:
   DCFile();
   ~DCFile();
 
+  void clear();
+
 #ifdef WITHIN_PANDA
   bool read_all();
 #endif

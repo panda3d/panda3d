@@ -21,6 +21,8 @@
 
 #include "directbase.h"
 #include "pointerTo.h"
+#include "dcFile.h"
+#include "dcField.h"  // to pick up Python.h
 
 #ifdef HAVE_NSPR
 #include "queuedConnectionManager.h"
@@ -53,6 +55,15 @@ PUBLISHED:
   CConnectionRepository();
   ~CConnectionRepository();
 
+  INLINE DCFile &get_dc_file();
+
+  INLINE void set_client_datagram(bool client_datagram);
+  INLINE bool get_client_datagram() const;
+
+#ifdef HAVE_PYTHON
+  INLINE void set_python_repository(PyObject *python_repository);
+#endif
+
 #ifdef HAVE_SSL
   void set_connection_http(HTTPChannel *channel);
 #endif
@@ -66,6 +77,12 @@ PUBLISHED:
 
   bool check_datagram();
   INLINE void get_datagram(Datagram &dg);
+  INLINE void get_datagram_iterator(DatagramIterator &di);
+  INLINE unsigned int get_msg_channel() const;
+  INLINE unsigned int get_msg_sender() const;
+  INLINE unsigned char get_sec_code() const;
+  INLINE unsigned int get_msg_type() const;
+
   bool is_connected();
 
   bool send_datagram(const Datagram &dg);
@@ -80,6 +97,11 @@ PUBLISHED:
 
 private:
   bool do_check_datagram();
+  void handle_update_field();
+
+#ifdef HAVE_PYTHON
+  PyObject *_python_repository;
+#endif
 
 #ifdef HAVE_SSL
   SocketStream *_http_conn;
@@ -92,8 +114,16 @@ private:
   PT(Connection) _nspr_conn;
 #endif
 
-  Datagram _dg;
+  DCFile _dc_file;
+  bool _client_datagram;
   bool _simulated_disconnect;
+
+  Datagram _dg;
+  DatagramIterator _di;
+  unsigned int _msg_channel;
+  unsigned int _msg_sender;
+  unsigned char _sec_code;
+  unsigned int _msg_type;
 };
 
 #include "cConnectionRepository.I"

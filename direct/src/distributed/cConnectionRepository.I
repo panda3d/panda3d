@@ -17,6 +17,57 @@
 ////////////////////////////////////////////////////////////////////
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_dc_file
+//       Access: Published
+//  Description: Returns the DCFile object associated with this
+//               repository.
+////////////////////////////////////////////////////////////////////
+INLINE DCFile &CConnectionRepository::
+get_dc_file() {
+  return _dc_file;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::set_client_datagram
+//       Access: Published
+//  Description: Sets the client_datagram flag.  If this is true,
+//               incoming datagrams are not expected to be prefixed
+//               with the server routing information like message
+//               sender, channel number, etc.; otherwise, these server
+//               fields are parsed and removed from each incoming
+//               datagram.
+////////////////////////////////////////////////////////////////////
+INLINE void CConnectionRepository::
+set_client_datagram(bool client_datagram) {
+  _client_datagram = client_datagram;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_client_datagram
+//       Access: Published
+//  Description: Returns the client_datagram flag.
+////////////////////////////////////////////////////////////////////
+INLINE bool CConnectionRepository::
+get_client_datagram() const {
+  return _client_datagram;
+}
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::set_python_repository
+//       Access: Published
+//  Description: Records the pointer to the Python class that derives
+//               from CConnectionRepository.  This allows the C++
+//               implementation to directly manipulation some python
+//               structures on the repository.
+////////////////////////////////////////////////////////////////////
+INLINE void CConnectionRepository::
+set_python_repository(PyObject *python_repository) {
+  _python_repository = python_repository;
+}
+#endif  // HAVE_PYTHON
+
 #ifdef HAVE_NSPR
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::get_qcm
@@ -68,6 +119,67 @@ get_qcr() {
 INLINE void CConnectionRepository::
 get_datagram(Datagram &dg) {
   dg = _dg;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_datagram_iterator
+//       Access: Published
+//  Description: Fills the DatagramIterator object with the iterator
+//               for the datagram most recently retrieved by
+//               check_datagram().  This iterator has already read
+//               past the datagram header and the message type, and is
+//               positioned at the beginning of data.
+////////////////////////////////////////////////////////////////////
+INLINE void CConnectionRepository::
+get_datagram_iterator(DatagramIterator &di) {
+  di = _di;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_msg_channel
+//       Access: Published
+//  Description: Returns the channel from which the current message
+//               was sent, according to the datagram headers.  This
+//               information is not available to the client.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int CConnectionRepository::
+get_msg_channel() const {
+  return _msg_channel;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_msg_sender
+//       Access: Published
+//  Description: Returns the sender ID of the current message,
+//               according to the datagram headers.  This information
+//               is not available to the client.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int CConnectionRepository::
+get_msg_sender() const {
+  return _msg_sender;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_sec_code
+//       Access: Published
+//  Description: Returns the security code associated with the current
+//               message, according to the datagram headers.  This
+//               information is not available to the client.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned char CConnectionRepository::
+get_sec_code() const {
+  return _sec_code;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_msg_type
+//       Access: Published
+//  Description: Returns the type ID of the current message,
+//               according to the datagram headers.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int CConnectionRepository::
+get_msg_type() const {
+  return _msg_type;
 }
 
 ////////////////////////////////////////////////////////////////////
