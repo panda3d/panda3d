@@ -217,7 +217,7 @@ class Interval(DirectObject):
         # Subclasses should call this when the interval transitions to
         # its final state.
         if self.doneEvent:
-            messenger.throw(self.doneEvent)
+            messenger.send(self.doneEvent)
 
     def setupPlay(self, startT, endT, playRate, doLoop):
         duration = self.getDuration()
