@@ -49,21 +49,8 @@ CullBinFixed::
 ////////////////////////////////////////////////////////////////////
 void CullBinFixed::
 add_object(CullableObject *object) {
-  // Determine the center of the bounding volume.
-  const BoundingVolume &volume = object->_geom->get_bound();
-
-  if (!volume.is_empty() &&
-      volume.is_of_type(GeometricBoundingVolume::get_class_type())) {
-    const GeometricBoundingVolume *gbv;
-    DCAST_INTO_V(gbv, &volume);
-    
-    LPoint3f center = gbv->get_approx_center();
-    nassertv(object->_transform != (const TransformState *)NULL);
-    center = center * object->_transform->get_mat();
-
-    int draw_order = object->_state->get_draw_order();
-    _objects.push_back(ObjectData(object, draw_order));
-  }
+  int draw_order = object->_state->get_draw_order();
+  _objects.push_back(ObjectData(object, draw_order));
 }
 
 ////////////////////////////////////////////////////////////////////
