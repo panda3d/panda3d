@@ -570,7 +570,9 @@ $[target] : $[source] $[dependencies $[source]]
 #define source $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]]
 #define ipath $[file_ipath]
 #define flags $[c++flags] $[CFLAGS_SHARED]
-$[target] : $[source] $[dependencies $[file]]
+// Yacc must run before some files can be compiled, so all files
+// depend on yacc having run.
+$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
 	$[COMPILE_C++]
 
 #end file
@@ -582,7 +584,7 @@ $[target] : $[source] $[dependencies $[file]]
 #define source $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]]
 #define ipath $[file_ipath]
 #define flags $[c++flags]
-$[target] : $[source] $[dependencies $[file]]
+$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
 	$[COMPILE_C++]
 
 #end file
