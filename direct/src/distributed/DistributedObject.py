@@ -52,6 +52,9 @@ class DistributedObject(PandaObject):
             # These are used by getCallbackContext() and doCallbackContext().
             self.__nextContext = 0
             self.__callbacks = {}
+
+            # This is used by doneBarrier().
+            self.__barrierContext = None
             
         return None
 
@@ -290,4 +293,19 @@ class DistributedObject(PandaObject):
             del self.__callbacks[context]
         else:
             self.notify.warning("Got unexpected context from AI: %s" % (context))
+        
+    def doBarrierWait(self, context):
+        # This message is sent by the AI to tell us the context number
+        # for the current barrier.  When the client is done handling
+        # whatever it should handle in its current state, it should
+        # call doneBarrier(), which will send the context number back
+        # to the AI.
+        self.__barrierContext = context
+        
+    def doneBarrier(self):
+        # Tells the AI we have finished handling our task.
+        assert(self.__barrierContext != None)
+        self.sendUpdate("doBarrierReady", [self.__barrierContext])
+        self.__barrierContext = None
+        
         
