@@ -97,7 +97,7 @@ make_copy() const {
 LMatrix4f PhysicsObject::
 get_lcs() const {
   LMatrix4f m = LMatrix4f::translate_mat(_position);
-  if (_oriented == true) {
+  if (_oriented) {
     m=m*_orientation;
   }
   return m;

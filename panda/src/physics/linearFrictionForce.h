@@ -29,10 +29,10 @@ class EXPCL_PANDAPHYSICS LinearFrictionForce : public LinearForce {
 PUBLISHED:
   LinearFrictionForce(float coef = 1.0f, float a = 1.0f, bool m = false);
   LinearFrictionForce(const LinearFrictionForce &copy);
-  virtual ~LinearFrictionForce(void);
+  virtual ~LinearFrictionForce();
 
   INLINE void set_coef(float coef);
-  INLINE float get_coef(void) const;
+  INLINE float get_coef() const;
   
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
@@ -40,19 +40,19 @@ PUBLISHED:
 private:
   float _coef;
 
-  virtual LinearForce *make_copy(void);
+  virtual LinearForce *make_copy();
   virtual LVector3f get_child_vector(const PhysicsObject *);
 
 public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LinearForce::init_type();
     register_type(_type_handle, "LinearFrictionForce",
                   LinearForce::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
