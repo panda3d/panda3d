@@ -417,22 +417,7 @@ collapse_nodes(Node *node1, Node *node2, bool) {
     return NULL;
   }
 
-  // We get to choose whether to remove node1 or node2.
-  if (node2->is_exact_type(Node::get_class_type()) ||
-      node2->is_exact_type(NamedNode::get_class_type())) {
-    // Node2 isn't anything special, so preserve node1.
-    return node1;
-
-  } else if (node1->is_exact_type(Node::get_class_type()) ||
-             node1->is_exact_type(NamedNode::get_class_type())) {
-    // Node1 isn't anything special, so preserve node2.
-    return node2;
-
-  } else {
-    // Both node1 and node2 are some special kind of node.  Don't
-    // want to risk removing either of them.
-    return NULL;
-  }
+  return node2->combine_with(node1);
 }
 
 ////////////////////////////////////////////////////////////////////

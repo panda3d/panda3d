@@ -39,6 +39,7 @@ public:
   virtual ~NamedNode();
 
   virtual Node *make_copy() const;
+  virtual Node *combine_with(Node *other); 
 
   virtual bool preserve_name() const;
 

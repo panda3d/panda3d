@@ -48,6 +48,7 @@ public:
 
   virtual Node *make_copy() const;
   virtual void xform(const LMatrix4f &mat);
+  virtual Node *combine_with(Node *other); 
 
   virtual void write(ostream &out, int indent_level = 0) const;
 

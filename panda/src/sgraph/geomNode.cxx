@@ -112,6 +112,34 @@ xform(const LMatrix4f &mat) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::combine_with
+//       Access: Public, Virtual
+//  Description: Collapses this node with the other node, if possible,
+//               and returns a pointer to the combined node, or NULL
+//               if the two nodes cannot safely be combined.
+//
+//               The return value may be this, other, or a new node
+//               altogether.
+//
+//               This function is called from GraphReducer::flatten(),
+//               and need not deal with children; its job is just to
+//               decide whether to collapse the two nodes and what the
+//               collapsed node should look like.
+////////////////////////////////////////////////////////////////////
+Node *GeomNode::
+combine_with(Node *other) {
+  if (is_exact_type(get_class_type()) &&
+      other->is_exact_type(get_class_type())) {
+    // Two GeomNodes can combine by moving Geoms from one to the other.
+    GeomNode *gother = DCAST(GeomNode, other);
+    add_geoms_from(gother);
+    return this;
+  }
+
+  return (Node *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::write
 //       Access: Public
 //  Description:

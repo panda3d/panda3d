@@ -304,17 +304,12 @@ collapse_nodes(Node *node1, Node *node2, bool siblings) {
   // We can collapse two GeomNodes easily, if they're siblings.  If
   // they're parent-child, we'd probably better not (it might
   // interfere with decaling).
-  if (siblings &&
-      node1->is_exact_type(GeomNode::get_class_type()) &&
+  if (node1->is_exact_type(GeomNode::get_class_type()) &&
       node2->is_exact_type(GeomNode::get_class_type())) {
-    GeomNode *gnode1;
-    DCAST_INTO_R(gnode1, node1, NULL);
-    GeomNode *gnode2;
-    DCAST_INTO_R(gnode2, node2, NULL);
-    gnode1->add_geoms_from(gnode2);
-    return gnode1;
-
-  } else {
-    return GraphReducer::collapse_nodes(node1, node2, siblings);
+    if (!siblings) {
+      return (Node *)NULL;
+    }
   }
+
+  return GraphReducer::collapse_nodes(node1, node2, siblings);
 }

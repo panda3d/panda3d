@@ -70,6 +70,7 @@ public:
   virtual bool safe_to_transform() const;
   virtual bool safe_to_combine() const;
   virtual void xform(const LMatrix4f &mat);
+  virtual Node *combine_with(Node *other); 
 
   virtual void transform_changed(NodeRelation *arc);
 

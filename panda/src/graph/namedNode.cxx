@@ -47,6 +47,41 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NamedNode::combine_with
+//       Access: Public, Virtual
+//  Description: Collapses this node with the other node, if possible,
+//               and returns a pointer to the combined node, or NULL
+//               if the two nodes cannot safely be combined.
+//
+//               The return value may be this, other, or a new node
+//               altogether.
+//
+//               This function is called from GraphReducer::flatten(),
+//               and need not deal with children; its job is just to
+//               decide whether to collapse the two nodes and what the
+//               collapsed node should look like.
+////////////////////////////////////////////////////////////////////
+Node *NamedNode::
+combine_with(Node *other) {
+  // An unadorned NamedNode combines with other Nodes by yielding
+  // completely.  However, if we are actually some fancy Node type
+  // that derives from NamedNode but didn't redefine this function, we
+  // should refuse to combine.
+  if (is_exact_type(get_class_type())) {
+    // No, we're an ordinary NamedNode.
+    if (other->is_exact_type(Node::get_class_type())) {
+      // And the other node isn't even named, so we override.
+      return this;
+    }
+    // The other node is also a NamedNode, or better, so it wins.
+    return other;
+  }
+
+  // We're something other than an ordinary NamedNode.  Don't combine.
+  return (Node *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NamedNode::preserve_name
 //       Access: Public, Virtual
 //  Description: Returns true if the node's name has extrinsic meaning
