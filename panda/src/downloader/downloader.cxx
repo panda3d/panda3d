@@ -830,6 +830,13 @@ parse_header(DownloadStatus *status) {
 
     // Two consecutive (CR LF)s indicates end of HTTP header
     if (nl == p) {
+      // Make sure we didn't get a redirect
+      if (redirect == true) {
+	downloader_cat.error()
+	  << "Downloader::parse_header() - Got a 302 redirect but no "
+	  << "Location directive" << endl;
+	return EU_error_abort;
+      }
       if (downloader_cat.is_debug())
         downloader_cat.debug()
           << "Downloader::parse_header() - Header is complete" << endl;
