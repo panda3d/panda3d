@@ -7,9 +7,9 @@
 ; release dlls
 
 libpanda         0x60000000 0x00770000
-libpandadx       0x60770000 0x00050000
-libpandagl       0x607c0000 0x00040000
-libpandaexpress  0x60800000 0x000c0000
+libpandadx       0x61000000 0x00050000 ; hacked
+libpandagl       0x62000000 0x00040000 ; hacked
+libpandaexpress  0x63000000 0x000c0000 ; hacked
 libpandaphysics  0x608c0000 0x00080000
 libshader        0x60940000 0x00030000
 libdtool         0x60970000 0x00020000
