@@ -260,7 +260,7 @@ un_bind(){
 
 
   cgGLDisableProfile(_cg_shader->cgVertexProfile);// Disable Our Vertex Profile
-  cgGLDisableProfile(_cg_shader->cgFragmentProfile);// Disable Our Fragment Profile	
+  cgGLDisableProfile(_cg_shader->cgFragmentProfile);// Disable Our Fragment Profile
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -268,16 +268,16 @@ un_bind(){
 //       Access: Published
 //  Description: Select a matrix type and a transform type
 //               Matrices you can send to your shaders are:
-//                M_MODELVIEW,M_PROJECTION,M_TEXTURE,M_MODELVIEW_PROJECTION,
+//                MTXMODELVIEW,MTXPROJECTION,MTXTEXTURE,MTXMODELVIEWPROJECTION,
 //               and they can have th transforms:
-//                T_IDENTITY,T_TRANSPOSE,T_INVERSE,T_INVERSE_TRANSPOSE,
+//                TRFIDENTITY,TRFTRANSPOSE,TRFINVERSE,TRFINVERSETRANSPOSE,
 ////////////////////////////////////////////////////////////////////
 void CLP(CgShaderContext)::
 set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type t,
   bool vert_or_frag) {
   // MODELVIEW BEGINS
-  if (m == M_MODELVIEW) {
-    if (t == T_IDENTITY) {
+  if (m == CgShader::MTXMODELVIEW) {
+    if (t == CgShader::TRFIDENTITY) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname],
           CG_GL_MODELVIEW_MATRIX, CG_GL_MATRIX_IDENTITY);
@@ -285,7 +285,7 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
         cgGLSetStateMatrixParameter(_cg_shader->_fragment_matrix_params[pname],
           CG_GL_MODELVIEW_MATRIX, CG_GL_MATRIX_IDENTITY);
       }
-    } else if (t == T_TRANSPOSE) {
+    } else if (t == CgShader::TRFTRANSPOSE) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname], 
           CG_GL_MODELVIEW_MATRIX, CG_GL_MATRIX_TRANSPOSE);
@@ -293,7 +293,7 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
         cgGLSetStateMatrixParameter(_cg_shader->_fragment_matrix_params[pname], 
           CG_GL_MODELVIEW_MATRIX, CG_GL_MATRIX_TRANSPOSE);
       }
-    } else if (t == T_INVERSE) {
+    } else if (t == CgShader::TRFINVERSE) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname], 
           CG_GL_MODELVIEW_MATRIX, CG_GL_MATRIX_INVERSE);
@@ -301,7 +301,7 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
         cgGLSetStateMatrixParameter(_cg_shader->_fragment_matrix_params[pname], 
           CG_GL_MODELVIEW_MATRIX, CG_GL_MATRIX_INVERSE);
       }
-    } else if (t == T_INVERSE_TRANSPOSE) {
+    } else if (t == CgShader::TRFINVERSETRANSPOSE) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname], 
           CG_GL_MODELVIEW_MATRIX, CG_GL_MATRIX_INVERSE_TRANSPOSE);
@@ -312,8 +312,8 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
     }
   // MODELVIEW ENDS
   // PROJECTION BEGINS
-  } else if (m == M_PROJECTION) {
-    if (t == T_IDENTITY) {
+  } else if (m == CgShader::MTXPROJECTION) {
+    if (t == CgShader::TRFIDENTITY) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname],
           CG_GL_PROJECTION_MATRIX, CG_GL_MATRIX_IDENTITY);
@@ -321,7 +321,7 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
         cgGLSetStateMatrixParameter(_cg_shader->_fragment_matrix_params[pname], 
           CG_GL_PROJECTION_MATRIX, CG_GL_MATRIX_IDENTITY);
       }
-    } else if (t == T_TRANSPOSE) {
+    } else if (t == CgShader::TRFTRANSPOSE) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname], 
           CG_GL_PROJECTION_MATRIX, CG_GL_MATRIX_TRANSPOSE);
@@ -329,7 +329,7 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
         cgGLSetStateMatrixParameter(_cg_shader->_fragment_matrix_params[pname], 
           CG_GL_PROJECTION_MATRIX, CG_GL_MATRIX_TRANSPOSE);
       }
-    } else if (t == T_INVERSE) {
+    } else if (t == CgShader::TRFINVERSE) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname], 
           CG_GL_PROJECTION_MATRIX, CG_GL_MATRIX_INVERSE);
@@ -337,7 +337,7 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
         cgGLSetStateMatrixParameter(_cg_shader->_fragment_matrix_params[pname], 
           CG_GL_PROJECTION_MATRIX, CG_GL_MATRIX_INVERSE);
       }
-    } else if (t == T_INVERSE_TRANSPOSE) {
+    } else if (t == CgShader::TRFINVERSETRANSPOSE) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname], 
           CG_GL_PROJECTION_MATRIX, CG_GL_MATRIX_INVERSE_TRANSPOSE);
@@ -348,8 +348,8 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
     }
   // PROJECTION ENDS
   // TEXTURE BEGINS
-  } else if (m == M_TEXTURE) {
-    if (t == T_IDENTITY) {
+  } else if (m == CgShader::MTXTEXTURE) {
+    if (t == CgShader::TRFIDENTITY) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname], 
           CG_GL_TEXTURE_MATRIX, CG_GL_MATRIX_IDENTITY);
@@ -357,7 +357,7 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
         cgGLSetStateMatrixParameter(_cg_shader->_fragment_matrix_params[pname], 
           CG_GL_TEXTURE_MATRIX, CG_GL_MATRIX_IDENTITY);
       }
-    } else if (t == T_TRANSPOSE) {
+    } else if (t == CgShader::TRFTRANSPOSE) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname], 
           CG_GL_TEXTURE_MATRIX, CG_GL_MATRIX_TRANSPOSE);
@@ -365,7 +365,7 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
         cgGLSetStateMatrixParameter(_cg_shader->_fragment_matrix_params[pname], 
           CG_GL_TEXTURE_MATRIX, CG_GL_MATRIX_TRANSPOSE);
       }
-    } else if (t == T_INVERSE) {
+    } else if (t == CgShader::TRFINVERSE) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname], 
           CG_GL_TEXTURE_MATRIX, CG_GL_MATRIX_INVERSE);
@@ -373,7 +373,7 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
         cgGLSetStateMatrixParameter(_cg_shader->_fragment_matrix_params[pname], 
           CG_GL_TEXTURE_MATRIX, CG_GL_MATRIX_INVERSE);
       }
-    } else if (t == T_INVERSE_TRANSPOSE) {
+    } else if (t == CgShader::TRFINVERSETRANSPOSE) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname], 
           CG_GL_TEXTURE_MATRIX, CG_GL_MATRIX_INVERSE_TRANSPOSE);
@@ -384,8 +384,8 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
     }
   // TEXTURE ENDS
   // MODELVIEWPROJECTION BEGINS
-  } else if (m == M_MODELVIEW_PROJECTION) {
-    if (t == T_IDENTITY) {
+  } else if (m == CgShader::MTXMODELVIEWPROJECTION) {
+    if (t == CgShader::TRFIDENTITY) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname], 
           CG_GL_MODELVIEW_PROJECTION_MATRIX, CG_GL_MATRIX_IDENTITY);
@@ -393,7 +393,7 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
         cgGLSetStateMatrixParameter(_cg_shader->_fragment_matrix_params[pname], 
           CG_GL_MODELVIEW_PROJECTION_MATRIX, CG_GL_MATRIX_IDENTITY);
       }
-    } else if (t == T_TRANSPOSE) {
+    } else if (t == CgShader::TRFTRANSPOSE) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname], 
           CG_GL_MODELVIEW_PROJECTION_MATRIX, CG_GL_MATRIX_TRANSPOSE);
@@ -401,7 +401,7 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
         cgGLSetStateMatrixParameter(_cg_shader->_fragment_matrix_params[pname], 
           CG_GL_MODELVIEW_PROJECTION_MATRIX, CG_GL_MATRIX_TRANSPOSE);
       }
-    } else if (t == T_INVERSE) {
+    } else if (t == CgShader::TRFINVERSE) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname], 
           CG_GL_MODELVIEW_PROJECTION_MATRIX, CG_GL_MATRIX_INVERSE);
@@ -409,7 +409,7 @@ set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type
         cgGLSetStateMatrixParameter(_cg_shader->_fragment_matrix_params[pname], 
           CG_GL_MODELVIEW_PROJECTION_MATRIX, CG_GL_MATRIX_INVERSE);
       }
-    } else if (t == T_INVERSE_TRANSPOSE) {
+    } else if (t == CgShader::TRFINVERSETRANSPOSE) {
       if (vert_or_frag) {
         cgGLSetStateMatrixParameter(_cg_shader->_vertex_matrix_params[pname], 
           CG_GL_MODELVIEW_PROJECTION_MATRIX, CG_GL_MATRIX_INVERSE_TRANSPOSE);

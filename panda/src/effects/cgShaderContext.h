@@ -49,32 +49,6 @@ class EXPCL_PANDAFX CgShaderContext: public TypedReferenceCount {
 
 PUBLISHED:
 
-  enum Bind_Type {
-    BONCE,
-    BFRAME,
-    BVERTEX,
-  };
-
-  enum Param_Type {
-    PMATRIX,
-    PTEXTURE,
-    PNUMERIC,
-  };
-
-
-  enum Matrix_Type {
-      M_MODELVIEW,
-      M_PROJECTION,
-      M_TEXTURE,
-      M_MODELVIEW_PROJECTION,
-  };
-
-  enum Transform_Type {
-      T_IDENTITY,
-      T_TRANSPOSE,
-      T_INVERSE,
-      T_INVERSE_TRANSPOSE,
-  };
 
   INLINE CgShaderContext(PT(CgShader) cg_shader);
 
@@ -109,8 +83,8 @@ public:
 
   INLINE virtual void set_param(const string &pname, Texture *t, bool vert_or_frag, GraphicsStateGuardianBase *gsg);
 
-  virtual void set_param(const string &pname, Matrix_Type m,
-    Transform_Type t, bool vert_or_frag);
+  virtual void set_param(const string &pname, CgShader::Matrix_Type m,
+    CgShader::Transform_Type t, bool vert_or_frag);
 
 
   INLINE virtual void enable_texture_param(const string &pname, bool vert_or_frag);

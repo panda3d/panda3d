@@ -61,7 +61,7 @@ un_bind() {
 //  Description: Overloaded version to set Matrix parameters
 ////////////////////////////////////////////////////////////////////
 void CgShaderContext::
-set_param(const string &pname, Matrix_Type m, Transform_Type t,
+set_param(const string &pname, CgShader::Matrix_Type m, CgShader::Transform_Type t,
   bool vert_or_frag) {
 }
 
