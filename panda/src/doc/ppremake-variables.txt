@@ -77,11 +77,14 @@ scanned:
   $[SUBDIRS] - A space-delimited list of source subdirectories within
     this source directory.  These are simply directory names, without
     slashes; prefix each name with $[DIRPREFIX] to make them relative
-    to $[TOPDIR].
+    to $[TOPDIR].  These are automatically sorted in dependency order,
+    such that a particular directory always appears following all the
+    directories it depends on.
 
   $[SUBTREE] - A space-delimited list of names of all source
     subdirectories, including this one, at this level and below.  The
-    subdirectory names are relative to $[TOPDIR].
+    subdirectory names are relative to $[TOPDIR].  As above, these are
+    sorted into dependency order.
 
 The following variables are built into the ppremake executable, and
 are updated with the current values as *each* different file is read
@@ -103,6 +106,39 @@ filled in after all Sources.pp files have been read:
     relative to $[TOPDIR].  Note that this variable is not available
     until after all the Sources.pp files have been read, so it cannot
     itself be referenced within a Sources.pp file.
+
+The following variables are not set by the ppremake executable, but
+are required to be set by one of the startup scripts, typically
+$DTOOL/pptempl/System.pp:
+
+  $[GLOBAL_FILE] - the full pathname to the file that should be read
+    within the global scope after reading each Sources.pp file and
+    before reading each Template file.
+
+  $[TEMPLATE_FILE] - the full pathname to the file that should be read
+    once for each Sources.pp file to generate the actual output
+    makefiles appropriate to each directory.
+
+  $[DEPENDS_FILE] - the full pathname to the file that should be read
+    once for each Sources.pp file to determine the inter-directory
+    dependencies and inter-file dependencies.
+
+  $[DEPENDENCY_CACHE_FILENAME] - the name of the file (with no
+    directory part of the filename) that is used to cache the
+    inter-file dependencies for each source file in a given directory
+    between sessions.  A file by this name is automatically created in
+    each source directory.
+
+  $[DEPEND_DIRS] - the list of directories that the current directory
+    depends on.  This is set by the script named by $[DEPENDS_FILE],
+    and has a different value within each source directory.
+
+  $[DEPENDABLE_HEADERS] - the list of source filenames within the
+    current directory that are considered source header files and that
+    might be listed with the #include directory in some other file.
+    This is used to determine the set of inter-file dependencies.
+    Like $[DEPEND_DIRS], this is set by the $[DEPENDS_FILE] script,
+    and has a different value within each source directory.
 
 
 The following functions are built into the ppremake executable.  In

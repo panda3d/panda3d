@@ -44,6 +44,25 @@ WHY PPREMAKE?
   the other.
 
 
+WHAT IS PPREMAKE, EXACTLY?
+
+  By design, ppremake is more of a scripting language framework than a
+  specific application.  It is intended to contain as few assumptions
+  as possible about the structure of the source tree it is processing
+  or the precise nature of the makefiles (or other build scripts) it
+  is generating.
+
+  The ppremake executable is hardcoded to define a set of useful
+  predefined variables and functions, and to follow a particular
+  procedure to get started scanning a source directory when it is
+  invoked.  However, once it is started, the actual behavior of
+  ppremake, including the meaning of all the variables defined within
+  the various Sources.pp files (see below) and all of the generated
+  output, is almost entirely controlled by scripts written in its own
+  scripting language.  Most of these are control scripts are defined
+  in the directory $DTOOL/pptempl.
+
+
 SOURCE TREE AND INSTALL TREE HIERARCHY 
 
   The layout of the source tree and of the install tree for Panda are
