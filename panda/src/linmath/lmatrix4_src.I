@@ -313,6 +313,14 @@ get_row(int row) const {
 			      (*this)(row, 3));
 }
 
+INLINE_LINMATH void FLOATNAME(LMatrix4)::
+get_row(FLOATNAME(LVecBase4) &result_vec,int row) const {
+  result_vec._v.v._0 = (*this)(row, 0);
+  result_vec._v.v._1 = (*this)(row, 1);
+  result_vec._v.v._2 = (*this)(row, 2);
+  result_vec._v.v._3 = (*this)(row, 3);
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::get_col
 //       Access: Public
