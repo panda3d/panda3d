@@ -26,9 +26,15 @@
 #include "ramfile.h"
 
 #ifdef HAVE_SSL
+#include <openssl/x509.h>
 #ifdef REPORT_OPENSSL_ERRORS
 #include <openssl/err.h>
 #endif
+
+#ifdef WIN32_VC
+  #include <windows.h>  // for select()
+  #undef X509_NAME
+#endif  // WIN32_VC
 
 TypeHandle HTTPChannel::_type_handle;
 
