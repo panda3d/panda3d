@@ -2156,9 +2156,13 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
             wdxdisplay_cat.fatal() << "Stencil ability requested, but device #" << pDevInfo->cardID << " (" << _dxgsg->scrn.DXDeviceID.Description<<"), has no stencil capability!\n";
             exit(1);
     }
+
+    // just because TNL is true, it doesnt mean vtx shaders are supported in HW (see GF2)
+    // for this case, you probably want MIXED processing to use HW for fixed-fn vertex processing
+    // and SW for vtx shaders
     _dxgsg->scrn.bIsTNLDevice=((d3dcaps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)!=0);
-
-
+    _dxgsg->scrn.bCanUseHWVertexShaders = (d3dcaps.VertexShaderVersion < D3DVS_VERSION(1,0));
+    _dxgsg->scrn.bCanUsePixelShaders = (d3dcaps.PixelShaderVersion < D3DPS_VERSION(1,0));
 
     bool bNeedZBuffer = ((!(d3dcaps.RasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR )) 
                          && (_props._mask & W_DEPTH));
@@ -2369,7 +2373,6 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
     }
 
     pPresParams->Windowed = !_props._fullscreen;
-    DWORD dwBehaviorFlags=0x0;
   
     if(dx_multisample_antialiasing_level>1) {
     // need to check both rendertarget and zbuffer fmts
@@ -2400,6 +2403,7 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
     pPresParams->hDeviceWindow = Display.hWnd;
     pPresParams->BackBufferWidth = Display.DisplayMode.Width;
     pPresParams->BackBufferHeight = Display.DisplayMode.Height;
+    DWORD dwBehaviorFlags=0x0;
     
     if(_dxgsg->scrn.bIsTNLDevice) {
        dwBehaviorFlags|=D3DCREATE_HARDWARE_VERTEXPROCESSING;
@@ -3083,9 +3087,12 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
 #define D3D_SDK_VERSION_8_1  220
 
     // are we using 8.0 or 8.1?
-    WIN32_FIND_DATA FindFileData;
-    HANDLE hFind = FindFirstFile("dpnhpast.dll",&FindFileData);  // this dll exists on 8.1 but not 8.0
-
+    WIN32_FIND_DATA TempFindData;
+    HANDLE hFind;
+    char tmppath[MAX_PATH];
+    GetSystemDirectory(tmppath,MAX_PATH);
+    strcat(tmppath,"\\dpnhpast.dll");
+    hFind = FindFirstFile ( tmppath,&TempFindData );
     if(hFind != INVALID_HANDLE_VALUE) {
          FindClose(hFind);
          _bIsDX81=true;

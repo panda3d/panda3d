@@ -61,6 +61,8 @@
 #endif
 #endif
 
+typedef DWORD DXShaderHandle;
+
 #define ISPOW2(X) (((X) & ((X)-1))==0)
 #define IS_VALID_PTR(PTR)  (!IsBadWritePtr(PTR,sizeof(void*)))
 
@@ -184,6 +186,8 @@ typedef struct {
       ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
       bool              bIsLowVidMemCard;
       bool              bIsTNLDevice;
+      bool              bCanUseHWVertexShaders;
+      bool              bCanUsePixelShaders;
       bool              bIsDX81;
       UINT              SupportedScreenDepthsMask;
       UINT              SupportedTexFmtsMask;
