@@ -1040,7 +1040,10 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
       // Transform it into the appropriate coordinate space.
       PT(GeometricBoundingVolume) local_frustum;
       local_frustum = DCAST(GeometricBoundingVolume, bv->make_copy());
-      local_frustum->xform(scene_setup->get_camera_transform()->get_mat());
+
+      CPT(TransformState) cull_center_transform = 
+        scene_setup->get_cull_center().get_transform(scene_setup->get_scene_root());
+      local_frustum->xform(cull_center_transform->get_mat());
 
       trav.set_view_frustum(local_frustum);
     }
