@@ -639,11 +639,18 @@ compute_tex_matrix(LMatrix3d &transform) {
 
   TexCoordd range = _placed._max_uv - _placed._min_uv;
 
-  int x_origin = (int)floor(_placed._min_uv[0] * x_size / range[0] + 0.5);
-  int y_origin = (int)floor(_placed._min_uv[1] * y_size / range[1] + 0.5);
+  int x_origin = 0;
+  int y_origin = 0;
 
-  x_size = (int)floor(x_size / range[0] + 0.5);
-  y_size = (int)floor(y_size / range[1] + 0.5);
+  if (range[0] != 0.0) {
+    x_size = (int)floor(x_size / range[0] + 0.5);
+    x_origin = (int)floor(_placed._min_uv[0] * x_size / range[0] + 0.5);
+  }
+
+  if (range[1] != 0.0) { 
+    y_size = (int)floor(y_size / range[1] + 0.5);
+    y_origin = (int)floor(_placed._min_uv[1] * y_size / range[1] + 0.5);
+  }
 
   int x = _placed._x + _placed._margin - x_origin;
   int y = -_placed._y + _placed._margin - y_origin;
@@ -733,11 +740,18 @@ fill_image(PNMImage &image) {
   // Actually, it might differ a great deal because of the UV range.
   TexCoordd range = _placed._max_uv - _placed._min_uv;
 
-  int x_origin = (int)floor(_placed._min_uv[0] * x_size / range[0] + 0.5);
-  int y_origin = (int)floor(_placed._min_uv[1] * y_size / range[1] + 0.5);
+  int x_origin = 0;
+  int y_origin = 0;
 
-  x_size = (int)floor(x_size / range[0] + 0.5);
-  y_size = (int)floor(y_size / range[1] + 0.5);
+  if (range[0] != 0.0) {
+    x_size = (int)floor(x_size / range[0] + 0.5);
+    x_origin = (int)floor(_placed._min_uv[0] * x_size / range[0] + 0.5);
+  }
+
+  if (range[1] != 0.0) { 
+    y_size = (int)floor(y_size / range[1] + 0.5);
+    y_origin = (int)floor(_placed._min_uv[1] * y_size / range[1] + 0.5);
+  }
 
   // Now we get a PNMImage that represents the source texture at that
   // size.
