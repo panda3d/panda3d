@@ -503,6 +503,7 @@ parse_comment(const FltRecord *flt_record, const string &name,
       _error = true;
       return false;
     }
+    p++;
   }
 
   // No <egg> appears in this comment.
