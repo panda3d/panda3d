@@ -228,8 +228,7 @@ xform(const LMatrix4f &mat) {
     setup_points(verts_begin, verts_end);
   }
 
-  mark_viz_stale();
-  mark_bound_stale();
+  CollisionSolid::xform(mat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -513,7 +512,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     into_depth = from_radius - dist_to_plane(orig_center);
   }
 
-  new_entry->set_surface_normal(get_normal());
+  new_entry->set_surface_normal(has_effective_normal() ? get_effective_normal() : get_normal());
   new_entry->set_surface_point(from_center - get_normal() * dist);
   new_entry->set_interior_point(from_center - get_normal() * (dist + into_depth));
 
@@ -581,7 +580,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  new_entry->set_surface_normal(get_normal());
+  new_entry->set_surface_normal(has_effective_normal() ? get_effective_normal() : get_normal());
   new_entry->set_surface_point(plane_point);
 
   return new_entry;
@@ -650,7 +649,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  new_entry->set_surface_normal(get_normal());
+  new_entry->set_surface_normal(has_effective_normal() ? get_effective_normal() : get_normal());
   new_entry->set_surface_point(plane_point);
 
   return new_entry;

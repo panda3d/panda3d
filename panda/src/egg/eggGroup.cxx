@@ -781,10 +781,6 @@ string_cs_type(const string &string) {
     return CST_polyset;
   } else if (cmp_nocase_uh(string, "sphere") == 0) {
     return CST_sphere;
-  } else if (cmp_nocase_uh(string, "inversesphere") == 0) {
-    return CST_inverse_sphere;
-  } else if (cmp_nocase_uh(string, "geode") == 0) {
-    return CST_geode;
   } else if (cmp_nocase_uh(string, "tube") == 0) {
     return CST_tube;
   } else {
@@ -817,6 +813,8 @@ string_collide_flags(const string &string) {
     return CF_center;
   } else if (cmp_nocase_uh(string, "turnstile") == 0) {
     return CF_turnstile;
+  } else if (cmp_nocase_uh(string, "level") == 0) {
+    return CF_level;
   } else {
     return CF_none;
   }
@@ -1155,10 +1153,6 @@ ostream &operator << (ostream &out, EggGroup::CollisionSolidType t) {
     return out << "Polyset";
   case EggGroup::CST_sphere:
     return out << "Sphere";
-  case EggGroup::CST_inverse_sphere:
-    return out << "InverseSphere";
-  case EggGroup::CST_geode:
-    return out << "Geode";
   case EggGroup::CST_tube:
     return out << "Tube";
   }
@@ -1204,6 +1198,10 @@ ostream &operator << (ostream &out, EggGroup::CollideFlags t) {
   }
   if (bits & EggGroup::CF_turnstile) {
     out << space << "turnstile";
+    space = " ";
+  }
+  if (bits & EggGroup::CF_level) {
+    out << space << "level";
     space = " ";
   }
   return out;

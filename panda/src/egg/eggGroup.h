@@ -78,9 +78,7 @@ PUBLISHED:
     CST_polygon              = 0x00020000,
     CST_polyset              = 0x00030000,
     CST_sphere               = 0x00040000,
-    CST_inverse_sphere       = 0x00050000,
-    CST_geode                = 0x00060000,
-    CST_tube                 = 0x00070000,
+    CST_tube                 = 0x00050000,
   };
   enum CollideFlags {
     // The bits here must correspond to those in Flags, below.
@@ -92,6 +90,7 @@ PUBLISHED:
     CF_solid                 = 0x00800000,
     CF_center                = 0x01000000,
     CF_turnstile             = 0x02000000,
+    CF_level                 = 0x04000000,
   };
 
   EggGroup(const string &name = "");
@@ -256,7 +255,7 @@ private:
     F_decal_flag             = 0x00002000,
     F_direct_flag            = 0x00004000,
     F_cs_type                = 0x00070000,
-    F_collide_flags          = 0x03f80000,
+    F_collide_flags          = 0x07f80000,
   };
   enum Flags2 {
     F2_collide_mask          = 0x00000001,

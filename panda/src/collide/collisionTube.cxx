@@ -62,6 +62,7 @@ xform(const LMatrix4f &mat) {
   _radius = length(radius_v);
 
   recalc_internals();
+  CollisionSolid::xform(mat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -367,9 +368,6 @@ recalc_internals() {
   look_at(_mat, direction, LVector3f(0.0f, 0.0f, 1.0f), CS_zup_right);
   _mat.set_row(3, _a);
   _inv_mat.invert_from(_mat);
-
-  mark_viz_stale();
-  mark_bound_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -693,8 +691,8 @@ set_intersection_point(CollisionEntry *new_entry,
   // our collision was tangential.
   LPoint3f orig_point = into_intersection_point - normal * extra_radius;
 
+  new_entry->set_surface_normal(has_effective_normal() ? get_effective_normal() : normal);
   new_entry->set_surface_point(point);
-  new_entry->set_surface_normal(normal);
   new_entry->set_interior_point(orig_point);
 }
 

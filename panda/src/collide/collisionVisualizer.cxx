@@ -146,19 +146,20 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       const CollisionSolid *solid = (*si).first;
       const SolidInfo &solid_info = (*si).second;
       PT(PandaNode) node = solid->get_viz(xform_data);
+      if (node != (PandaNode *)NULL) {
+        CullTraverserData next_data(xform_data, node);
         
-      CullTraverserData next_data(xform_data, node);
+        // We don't want to inherit the render state from above for
+        // these guys.  Instead, we choose the state according to
+        // whether a collision was detected or not.
+        if (solid_info._detected_count > 0) {
+          next_data._state = get_detected_state();
+        } else {
+          next_data._state = get_tested_state();
+        }
         
-      // We don't want to inherit the render state from above for
-      // these guys.  Instead, we choose the state according to
-      // whether a collision was detected or not.
-      if (solid_info._detected_count > 0) {
-        next_data._state = get_detected_state();
-      } else {
-        next_data._state = get_tested_state();
+        trav->traverse(next_data);
       }
-        
-      trav->traverse(next_data);
     }
 
     // Now draw all of the detected points.

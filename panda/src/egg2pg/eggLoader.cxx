@@ -1555,8 +1555,7 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     CharacterMaker char_maker(egg_group, *this);
     node = char_maker.make_node();
 
-  } else if (egg_group->get_cs_type() != EggGroup::CST_none &&
-             egg_group->get_cs_type() != EggGroup::CST_geode) {
+  } else if (egg_group->get_cs_type() != EggGroup::CST_none) {
     // A collision group: create collision geometry.
     node = new CollisionNode(egg_group->get_name());
 
@@ -1771,17 +1770,8 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
 
   switch (start_group->get_cs_type()) {
   case EggGroup::CST_none:
-  case EggGroup::CST_geode:
     // No collision flags; do nothing.  Don't even traverse further.
     return;
-
-  case EggGroup::CST_inverse_sphere:
-    // These aren't presently supported.
-    egg2pg_cat.error()
-      << "Not presently supported: <Collide> { "
-      << egg_group->get_cs_type() << " }\n";
-    _error = true;
-    break;
 
   case EggGroup::CST_plane:
     make_collision_plane(egg_group, cnode, start_group->get_collide_flags());
@@ -2158,6 +2148,9 @@ apply_collision_flags(CollisionSolid *solid,
                       EggGroup::CollideFlags flags) {
   if ((flags & EggGroup::CF_intangible) != 0) {
     solid->set_tangible(false);
+  }
+  if ((flags & EggGroup::CF_level) != 0) {
+    solid->set_effective_normal(LVector3f::up());
   }
 }
 

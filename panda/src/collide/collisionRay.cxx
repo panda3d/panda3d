@@ -63,8 +63,8 @@ void CollisionRay::
 xform(const LMatrix4f &mat) {
   _origin = _origin * mat;
   _direction = _direction * mat;
-  mark_viz_stale();
-  mark_bound_stale();
+
+  CollisionSolid::xform(mat);
 }
 
 ////////////////////////////////////////////////////////////////////

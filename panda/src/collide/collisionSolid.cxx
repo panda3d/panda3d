@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
 #include "collisionSolid.h"
 #include "config_collide.h"
 #include "collisionSphere.h"
@@ -43,8 +42,7 @@ TypeHandle CollisionSolid::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CollisionSolid::
 CollisionSolid() {
-  _viz_geom_stale = true;
-  _tangible = true;
+  _flags = F_viz_geom_stale | F_tangible;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,10 +52,10 @@ CollisionSolid() {
 ////////////////////////////////////////////////////////////////////
 CollisionSolid::
 CollisionSolid(const CollisionSolid &copy) :
-  _tangible(copy._tangible)
+  _effective_normal(copy._effective_normal),
+  _flags(copy._flags)
 {
-  // Actually, there's not a whole lot here we want to copy.
-  _viz_geom_stale = true;
+  _flags &= ~F_viz_geom_stale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,6 +83,21 @@ test_intersection(const CollisionEntry &) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::xform
+//       Access: Public, Virtual
+//  Description: Transforms the solid by the indicated matrix.
+////////////////////////////////////////////////////////////////////
+void CollisionSolid::
+xform(const LMatrix4f &mat) {
+  if (has_effective_normal()) {
+    _effective_normal = _effective_normal * mat;
+  }
+
+  mark_viz_stale();
+  mark_bound_stale();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::get_viz
 //       Access: Public, Virtual
 //  Description: Returns a GeomNode that may be rendered to visualize
@@ -94,14 +107,14 @@ test_intersection(const CollisionEntry &) const {
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) CollisionSolid::
 get_viz(const CullTraverserData &) const {
-  if (_viz_geom_stale) {
+  if ((_flags & F_viz_geom_stale) != 0) {
     if (_viz_geom == (GeomNode *)NULL) {
       ((CollisionSolid *)this)->_viz_geom = new GeomNode("viz");
     } else {
       _viz_geom->remove_all_geoms();
     }
     ((CollisionSolid *)this)->fill_viz_geom();
-    ((CollisionSolid *)this)->_viz_geom_stale = false;
+    ((CollisionSolid *)this)->_flags &= ~F_viz_geom_stale;
   }
   return _viz_geom.p();
 }
@@ -246,9 +259,13 @@ report_undefined_from_intersection(TypeHandle from_type) {
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void CollisionSolid::
-write_datagram(BamWriter *, Datagram &me)
-{
-  me.add_uint8(_tangible);
+write_datagram(BamWriter *, Datagram &me) {
+  // For now, we need only 8 bits of flags.  If we need to expand this
+  // later, we will have to increase the bam version.
+  me.add_uint8(_flags);
+  if ((_flags & F_effective_normal) != 0) {
+    _effective_normal.write_datagram(me);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -260,9 +277,11 @@ write_datagram(BamWriter *, Datagram &me)
 //               place
 ////////////////////////////////////////////////////////////////////
 void CollisionSolid::
-fillin(DatagramIterator& scan, BamReader*)
-{
-  _tangible = (scan.get_uint8() != 0);
+fillin(DatagramIterator &scan, BamReader*) {
+  _flags = scan.get_uint8();
+  if ((_flags & F_effective_normal) != 0) {
+    _effective_normal.read_datagram(scan);
+  }
 }
 
 
@@ -296,21 +315,29 @@ get_solid_viz_state() {
        TransparencyAttrib::make(TransparencyAttrib::M_alpha));
   }
 
-  if (_tangible) {
-    static CPT(RenderState) tangible_state = (const RenderState *)NULL;
-    if (tangible_state == (const RenderState *)NULL) {
-      tangible_state = base_state->add_attrib
-        (ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 1.0f, 0.5f)));
-    }
-    return tangible_state;
-
-  } else {
+  if (!is_tangible()) {
     static CPT(RenderState) intangible_state = (const RenderState *)NULL;
     if (intangible_state == (const RenderState *)NULL) {
       intangible_state = base_state->add_attrib
         (ColorAttrib::make_flat(Colorf(1.0f, 0.3f, 0.5f, 0.5f)));
     }
     return intangible_state;
+
+  } else if (has_effective_normal()) {
+    static CPT(RenderState) fakenormal_state = (const RenderState *)NULL;
+    if (fakenormal_state == (const RenderState *)NULL) {
+      fakenormal_state = base_state->add_attrib
+        (ColorAttrib::make_flat(Colorf(0.5f, 0.5f, 1.0f, 0.5f)));
+    }
+    return fakenormal_state;
+
+  } else {
+    static CPT(RenderState) tangible_state = (const RenderState *)NULL;
+    if (tangible_state == (const RenderState *)NULL) {
+      tangible_state = base_state->add_attrib
+        (ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 1.0f, 0.5f)));
+    }
+    return tangible_state;
   }
 }
 
@@ -335,7 +362,7 @@ get_wireframe_viz_state() {
        TransparencyAttrib::make(TransparencyAttrib::M_none));
   }
 
-  if (_tangible) {
+  if (is_tangible()) {
     static CPT(RenderState) tangible_state = (const RenderState *)NULL;
     if (tangible_state == (const RenderState *)NULL) {
       tangible_state = base_state->add_attrib

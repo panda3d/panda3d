@@ -971,19 +971,6 @@ GROUPING ENTRIES
       The geometry represents a sphere.  The vertices in the group are
       averaged together to determine the sphere's center and radius.
 
-    InverseSphere
-
-      The geometry represents a sphere with the normal inverted, to
-      make a hollow spherical shell.
-
-    Geode
-
-      The geometry is not a collision surface after all, but is in
-      fact true geometry.  This is intended to be used in conjunction
-      with one or more flags to define collision properties for normal
-      geometry.
-
-
 
     The flags may be any zero or more of:
 
@@ -1037,6 +1024,13 @@ GROUPING ENTRIES
       is intended to implement a one-way wall, through which players
       can go forwards but not back.  Presently, this is only
       implemented for planes, polygons, and polysets.
+
+    level
+
+      Stores a special effective normal with the collision solid that
+      points up, regardless of the actual shape or orientation of the
+      solid.  This can be used to allow an avatar to stand on a
+      sloping surface without having a tendency to slide downward.
 
 
   <ObjectType> { type }

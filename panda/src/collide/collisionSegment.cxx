@@ -65,8 +65,8 @@ void CollisionSegment::
 xform(const LMatrix4f &mat) {
   _a = _a * mat;
   _b = _b * mat;
-  mark_viz_stale();
-  mark_bound_stale();
+
+  CollisionSolid::xform(mat);
 }
 
 ////////////////////////////////////////////////////////////////////

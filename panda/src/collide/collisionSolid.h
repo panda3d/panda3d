@@ -62,11 +62,16 @@ PUBLISHED:
   INLINE void set_tangible(bool tangible);
   INLINE bool is_tangible() const;
 
+  INLINE void set_effective_normal(const LVector3f &effective_normal);
+  INLINE void clear_effective_normal();
+  INLINE bool has_effective_normal() const;
+  INLINE const LVector3f &get_effective_normal() const;
+
 public:
   virtual PT(CollisionEntry)
   test_intersection(const CollisionEntry &entry) const;
 
-  virtual void xform(const LMatrix4f &mat)=0;
+  virtual void xform(const LMatrix4f &mat);
 
   virtual PT(PandaNode) get_viz(const CullTraverserData &data) const;
 
@@ -94,8 +99,16 @@ protected:
   CPT(RenderState) get_other_viz_state();
 
   PT(GeomNode) _viz_geom;
-  bool _viz_geom_stale;
-  bool _tangible;
+
+private:
+  LVector3f _effective_normal;
+
+  enum Flags {
+    F_tangible         = 0x01,
+    F_effective_normal = 0x02,
+    F_viz_geom_stale   = 0x04,
+  };
+  int _flags;
 
 public:
   virtual void write_datagram(BamWriter* manager, Datagram &me);
