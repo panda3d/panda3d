@@ -1978,6 +1978,8 @@ draw_prim_inner_loop(int nVerts, const Geom *geom, ushort perFlags) {
 void DXGraphicsStateGuardian::
 draw_prim_inner_loop_coordtexonly(int nVerts, const Geom *geom) {
     // inc'ing local ptrs avoids 'this' ptr derefs for member fields
+    // bypass all the slow vertex iterator stuff
+
     Vertexf *pCurVert = _pCurCoord;
     ushort *pCurVertIndex = _pCurCoordIndex;
     TexCoordf *pCurTexCoord = _pCurTexCoord;
@@ -1987,9 +1989,15 @@ draw_prim_inner_loop_coordtexonly(int nVerts, const Geom *geom) {
     bool bDoIndexedTexCoords = (_texcoord_indexes != NULL);
     bool bDoIndexedCoords = (_vindexes != NULL);
 
+    if(bDoIndexedTexCoords)
+        pCurTexCoord=&_texcoords[0];
+
+    if(bDoIndexedCoords)
+        pCurVert=&_coords[0];
+
     for(;nVerts > 0;nVerts--) {
         if(bDoIndexedCoords) {
-           memcpy(LocalFvfBufPtr,(void*)&_coords[*pCurVertIndex],sizeof(D3DVECTOR));
+           memcpy(LocalFvfBufPtr,(void*)&pCurVert[*pCurVertIndex],sizeof(D3DVECTOR));
            pCurVertIndex++;           
         } else {
            memcpy(LocalFvfBufPtr,(void*)pCurVert,sizeof(D3DVECTOR));
@@ -2002,7 +2010,7 @@ draw_prim_inner_loop_coordtexonly(int nVerts, const Geom *geom) {
         LocalFvfBufPtr += sizeof(DWORD);
 
         if(bDoIndexedTexCoords) {
-           memcpy(LocalFvfBufPtr,(void*)&_texcoords[*pCurTexCoordIndex],sizeof(TexCoordf));
+           memcpy(LocalFvfBufPtr,(void*)&pCurTexCoord[*pCurTexCoordIndex],sizeof(TexCoordf));
            pCurTexCoordIndex++;
         } else {
            memcpy(LocalFvfBufPtr,(void*)pCurTexCoord,sizeof(TexCoordf));
