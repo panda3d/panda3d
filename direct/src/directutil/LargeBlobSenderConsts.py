@@ -7,4 +7,4 @@ ChunkSize = 100
 FilePattern = 'largeBlob.%s'
 
 def getLargeBlobPath():
-    return config.GetString('large-blob-path', 'i:\beta\largeblob')
+    return config.GetString('large-blob-path', 'i:\\beta\\largeblob')
