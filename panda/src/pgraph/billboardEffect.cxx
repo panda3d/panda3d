@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "billboardEffect.h"
+#include "nodePath.h"
 #include "look_at.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -105,6 +106,10 @@ do_billboard(const TransformState *net_transform,
              const TransformState *camera_transform) const {
   // Determine the relative transform to our camera (or other look_at
   // coordinate space).
+  if (!_look_at.is_empty()) {
+    camera_transform = _look_at.get_net_transform();
+  }
+
   CPT(TransformState) rel_transform =
     net_transform->invert_compose(camera_transform);
   const LMatrix4f &rel_mat = rel_transform->get_mat();
@@ -123,13 +128,8 @@ do_billboard(const TransformState *net_transform,
     camera_pos = LVector3f::forward() * rel_mat;
 
   } else {
-//  camera_pos= -rel_mat.get_row3(3);
-
-    camera_pos[0] = -rel_mat(3,0);
-    camera_pos[1] = -rel_mat(3,1);
-    camera_pos[2] = -rel_mat(3,2);
-
     up = _up_vector;
+    camera_pos = -(_look_at_point * rel_mat);
   }
 
   // Now determine the rotation matrix for the Billboard.

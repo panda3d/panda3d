@@ -275,14 +275,12 @@ setup_scene(const NodePath &camera, GraphicsStateGuardian *gsg) {
   // The render transform is the same as the world transform, except
   // it is converted into the GSG's internal coordinate system.  This
   // is the transform that the GSG will apply to all of its vertices.
-  CPT(TransformState) render_transform = world_transform;
-
+  CPT(TransformState) cs_transform = TransformState::make_identity();
   CoordinateSystem external_cs = gsg->get_coordinate_system();
   CoordinateSystem internal_cs = gsg->get_internal_coordinate_system();
   if (internal_cs != CS_default && internal_cs != external_cs) {
-    CPT(TransformState) cs_transform = 
+    cs_transform = 
       TransformState::make_mat(LMatrix4f::convert_mat(external_cs, internal_cs));
-    render_transform = cs_transform->compose(render_transform);
   }
 
   scene_setup->set_scene_root(scene_root);
@@ -291,7 +289,7 @@ setup_scene(const NodePath &camera, GraphicsStateGuardian *gsg) {
   scene_setup->set_lens(lens);
   scene_setup->set_camera_transform(camera_transform);
   scene_setup->set_world_transform(world_transform);
-  scene_setup->set_render_transform(render_transform);
+  scene_setup->set_cs_transform(cs_transform);
 
   return scene_setup;
 }

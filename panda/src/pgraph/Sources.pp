@@ -19,6 +19,7 @@
     colorBlendAttrib.I colorBlendAttrib.h \
     colorScaleAttrib.I colorScaleAttrib.h \
     colorWriteAttrib.I colorWriteAttrib.h \
+    compassEffect.I compassEffect.h \
     config_pgraph.h \
     cullBin.I cullBin.h \
     cullBinAttrib.I cullBinAttrib.h \
@@ -100,6 +101,7 @@
     colorBlendAttrib.cxx \
     colorScaleAttrib.cxx \
     colorWriteAttrib.cxx \
+    compassEffect.cxx \
     config_pgraph.cxx \
     cullBin.cxx \
     cullBinAttrib.cxx \
@@ -180,6 +182,7 @@
     colorBlendAttrib.I colorBlendAttrib.h \
     colorScaleAttrib.I colorScaleAttrib.h \
     colorWriteAttrib.I colorWriteAttrib.h \
+    compassEffect.I compassEffect.h \
     config_pgraph.h \
     cullBin.I cullBin.h \
     cullBinAttrib.I cullBinAttrib.h \

@@ -34,6 +34,7 @@
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "billboardEffect.h"
+#include "compassEffect.h"
 #include "showBoundsEffect.h"
 #include "transparencyAttrib.h"
 #include "materialPool.h"
@@ -2376,14 +2377,16 @@ do_billboard_point_world(const NodePath &camera, float offset) {
 //     Function: NodePath::set_billboard_axis
 //       Access: Published
 //  Description: Puts a billboard transition on the node such that it
-//               will rotate in two dimensions around the up axis.
+//               will rotate in two dimensions around the up axis,
+//               towards a specified "camera" instead of to the
+//               viewing camera.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_billboard_axis(float offset) {
+set_billboard_axis(const NodePath &camera, float offset) {
   nassertv_always(!is_empty());
   CPT(RenderEffect) billboard = BillboardEffect::make
     (LVector3f::up(), false, true, 
-     offset, NodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
+     offset, camera, LPoint3f(0.0f, 0.0f, 0.0f));
   node()->set_effect(billboard);
 }
 
@@ -2393,14 +2396,15 @@ set_billboard_axis(float offset) {
 //  Description: Puts a billboard transition on the node such that it
 //               will rotate in three dimensions about the origin,
 //               keeping its up vector oriented to the top of the
-//               camera.
+//               camera, towards a specified "camera" instead of to
+//               the viewing camera.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_billboard_point_eye(float offset) {
+set_billboard_point_eye(const NodePath &camera, float offset) {
   nassertv_always(!is_empty());
   CPT(RenderEffect) billboard = BillboardEffect::make
     (LVector3f::up(), true, false,
-     offset, NodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
+     offset, camera, LPoint3f(0.0f, 0.0f, 0.0f));
   node()->set_effect(billboard);
 }
 
@@ -2409,14 +2413,15 @@ set_billboard_point_eye(float offset) {
 //       Access: Published
 //  Description: Puts a billboard transition on the node such that it
 //               will rotate in three dimensions about the origin,
-//               keeping its up vector oriented to the sky.
+//               keeping its up vector oriented to the sky, towards a
+//               specified "camera" instead of to the viewing camera.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_billboard_point_world(float offset) {
+set_billboard_point_world(const NodePath &camera, float offset) {
   nassertv_always(!is_empty());
   CPT(RenderEffect) billboard = BillboardEffect::make
     (LVector3f::up(), false, false,
-     offset, NodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
+     offset, camera, LPoint3f(0.0f, 0.0f, 0.0f));
   node()->set_effect(billboard);
 }
 
@@ -2441,6 +2446,43 @@ bool NodePath::
 has_billboard() const {
   nassertr_always(!is_empty(), false);
   return node()->has_effect(BillboardEffect::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_compass
+//       Access: Published
+//  Description: Puts a compass effect on the node, so that it will
+//               retain a fixed rotation relative to the reference
+//               node (or render if the reference node is empty)
+//               regardless of the transforms above it.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_compass(const NodePath &reference) {
+  nassertv_always(!is_empty());
+  node()->set_effect(CompassEffect::make(reference));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_compass
+//       Access: Published
+//  Description: Removes any compass effect from the node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_compass() {
+  nassertv_always(!is_empty());
+  node()->clear_effect(CompassEffect::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_compass
+//       Access: Published
+//  Description: Returns true if there is any compass effect on
+//               the node.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_compass() const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_effect(CompassEffect::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////

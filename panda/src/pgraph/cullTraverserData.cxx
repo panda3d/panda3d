@@ -24,6 +24,7 @@
 #include "textureAttrib.h"
 #include "renderModeAttrib.h"
 #include "billboardEffect.h"
+#include "compassEffect.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::apply_transform_and_state
@@ -73,6 +74,21 @@ apply_transform_and_state(CullTraverser *trav) {
   _state = _state->compose(node_state);
 
   const RenderEffects *node_effects = node()->get_effects();
+
+  const CompassEffect *compass = node_effects->get_compass();
+  if (compass != (const CompassEffect *)NULL) {
+    // Got to apply a compass transform here.
+    CPT(TransformState) compass_transform = 
+      compass->do_compass(_net_transform, node_transform);
+    _render_transform = _render_transform->compose(compass_transform);
+    _net_transform = _net_transform->compose(compass_transform);
+
+    // We can't reliably cull within a compass, because the geometry
+    // might get rotated out of its bounding volume.  So once we get
+    // within a compass, we consider it all visible.
+    _view_frustum = (GeometricBoundingVolume *)NULL;
+  }
+
   const BillboardEffect *billboard = node_effects->get_billboard();
   if (billboard != (const BillboardEffect *)NULL) {
     // Got to apply a billboard transform here.

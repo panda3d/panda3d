@@ -8,6 +8,7 @@
 #include "colorBlendAttrib.cxx"
 #include "colorScaleAttrib.cxx"
 #include "colorWriteAttrib.cxx"
+#include "compassEffect.cxx"
 #include "config_pgraph.cxx"
 #include "cullBin.cxx"
 #include "cullBinAttrib.cxx"

@@ -19,6 +19,7 @@
 #include "renderEffects.h"
 #include "billboardEffect.h"
 #include "decalEffect.h"
+#include "compassEffect.h"
 #include "showBoundsEffect.h"
 #include "config_pgraph.h"
 #include "bamReader.h"
@@ -458,6 +459,21 @@ determine_decal() {
     _flags |= F_has_decal;
   }
   _flags |= F_checked_decal;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::determine_compass
+//       Access: Private
+//  Description: This is the private implementation of has_compass().
+////////////////////////////////////////////////////////////////////
+void RenderEffects::
+determine_compass() {
+  const RenderEffect *effect = get_effect(CompassEffect::get_class_type());
+  _compass = (const CompassEffect *)NULL;
+  if (effect != (const RenderEffect *)NULL) {
+    _compass = DCAST(CompassEffect, effect);
+  }
+  _flags |= F_checked_compass;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -886,6 +886,42 @@ get_distance(const NodePath &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_billboard_axis
+//       Access: Published
+//  Description: Puts a billboard transition on the node such that it
+//               will rotate in two dimensions around the up axis.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_billboard_axis(float offset) {
+  set_billboard_axis(NodePath(), offset);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_billboard_point_eye
+//       Access: Published
+//  Description: Puts a billboard transition on the node such that it
+//               will rotate in three dimensions about the origin,
+//               keeping its up vector oriented to the top of the
+//               camera.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_billboard_point_eye(float offset) {
+  set_billboard_point_eye(NodePath(), offset);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_billboard_point_world
+//       Access: Published
+//  Description: Puts a billboard transition on the node such that it
+//               will rotate in three dimensions about the origin,
+//               keeping its up vector oriented to the sky.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_billboard_point_world(float offset) {
+  set_billboard_point_world(NodePath(), offset);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::adjust_all_priorities
 //       Access: Published
 //  Description: Adds the indicated adjustment amount (which may be

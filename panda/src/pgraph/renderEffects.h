@@ -28,6 +28,7 @@
 #include "ordered_vector.h"
 
 class BillboardEffect;
+class CompassEffect;
 class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
@@ -89,12 +90,14 @@ PUBLISHED:
 public:
   INLINE const BillboardEffect *get_billboard() const;
   INLINE bool has_decal() const;
+  INLINE const CompassEffect *get_compass() const;
   INLINE bool has_show_bounds() const;
 
 private:
   static CPT(RenderEffects) return_new(RenderEffects *state);
   void determine_billboard();
   void determine_decal();
+  void determine_compass();
   void determine_show_bounds();
 
 private:
@@ -129,6 +132,7 @@ private:
   // We cache the pointer to some critical effects stored in the
   // state, if they exist.
   const BillboardEffect *_billboard;
+  const CompassEffect *_compass;
 
   enum Flags {
     F_checked_billboard    = 0x0001,
@@ -136,6 +140,7 @@ private:
     F_has_decal            = 0x0004,
     F_checked_show_bounds  = 0x0008,
     F_has_show_bounds      = 0x0010,
+    F_checked_compass      = 0x0020,
   };
   short _flags;
 

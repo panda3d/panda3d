@@ -182,6 +182,25 @@ has_decal() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::get_compass
+//       Access: Public
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a CompassEffect on this state.  It returns a
+//               pointer to the CompassEffect, if there is one, or
+//               NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const CompassEffect *RenderEffects::
+get_compass() const {
+  if ((_flags & F_checked_compass) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal compass cache.
+    ((RenderEffects *)this)->determine_compass();
+  }
+  return _compass;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::has_show_bounds
 //       Access: Public
 //  Description: This function is provided as an optimization, to

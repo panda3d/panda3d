@@ -27,6 +27,7 @@
 #include "colorBlendAttrib.h"
 #include "colorScaleAttrib.h"
 #include "colorWriteAttrib.h"
+#include "compassEffect.h"
 #include "cullFaceAttrib.h"
 #include "cullBin.h"
 #include "cullBinAttrib.h"
@@ -167,6 +168,7 @@ init_libpgraph() {
   ColorBlendAttrib::init_type();
   ColorScaleAttrib::init_type();
   ColorWriteAttrib::init_type();
+  CompassEffect::init_type();
   CullFaceAttrib::init_type();
   CullBin::init_type();
   CullBinAttrib::init_type();
@@ -230,6 +232,7 @@ init_libpgraph() {
   BillboardEffect::register_with_read_factory();
   Camera::register_with_read_factory();
   ClipPlaneAttrib::register_with_read_factory();
+  CompassEffect::register_with_read_factory();
   ColorAttrib::register_with_read_factory();
   ColorBlendAttrib::register_with_read_factory();
   ColorScaleAttrib::register_with_read_factory();

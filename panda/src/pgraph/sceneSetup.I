@@ -26,7 +26,7 @@ INLINE SceneSetup::
 SceneSetup() {
   _camera_transform = TransformState::make_identity();
   _world_transform = TransformState::make_identity();
-  _render_transform = TransformState::make_identity();
+  _cs_transform = TransformState::make_identity();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,6 +145,7 @@ get_camera_transform() const {
 INLINE void SceneSetup::
 set_world_transform(const TransformState *world_transform) {
   _world_transform = world_transform;
+  _render_transform = _cs_transform->compose(_world_transform);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -160,16 +161,29 @@ get_world_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SceneSetup::set_render_transform
+//     Function: SceneSetup::set_cs_transform
 //       Access: Public
-//  Description: Specifies the position of the starting node relative
-//               to the camera, pretransformed as appropriate for
-//               rendering.  This is the same as the world transform,
-//               with a possible coordinate-system conversion applied.
+//  Description: Specifies the pretransformation to apply to the world
+//               transform to produce the appropriate transformation
+//               for rendering.  This is usually the appropriate
+//               coordinate-system conversion for the current GSG.
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneSetup::
-set_render_transform(const TransformState *render_transform) {
-  _render_transform = render_transform;
+set_cs_transform(const TransformState *cs_transform) {
+  _cs_transform = cs_transform;
+  _render_transform = _cs_transform->compose(_world_transform);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneSetup::get_cs_transform
+//       Access: Public
+//  Description: Returns the pretransformation to apply to the world
+//               transform to produce the appropriate transformation
+//               for rendering.
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *SceneSetup::
+get_cs_transform() const {
+  return _cs_transform;
 }
 
 ////////////////////////////////////////////////////////////////////

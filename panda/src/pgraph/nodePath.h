@@ -462,11 +462,18 @@ PUBLISHED:
   void do_billboard_axis(const NodePath &camera, float offset);
   void do_billboard_point_eye(const NodePath &camera, float offset);
   void do_billboard_point_world(const NodePath &camera, float offset);
-  void set_billboard_axis(float offset = 0.0);
-  void set_billboard_point_eye(float offset = 0.0);
-  void set_billboard_point_world(float offset = 0.0);
+  INLINE void set_billboard_axis(float offset = 0.0);
+  INLINE void set_billboard_point_eye(float offset = 0.0);
+  INLINE void set_billboard_point_world(float offset = 0.0);
+  void set_billboard_axis(const NodePath &camera, float offset);
+  void set_billboard_point_eye(const NodePath &camera, float offset);
+  void set_billboard_point_world(const NodePath &camera, float offset);
   void clear_billboard();
   bool has_billboard() const;
+
+  void set_compass(const NodePath &reference = NodePath());
+  void clear_compass();
+  bool has_compass() const;
 
   void set_transparency(bool transparency, int priority = 0);
   void clear_transparency();
