@@ -190,13 +190,16 @@ class ShowBase:
         else:
             self.tkroot = None
 
-    def igloop(self, state):
-        # First, traverse the data graph.  This reads all the control
+    def dataloop(self, state):
+        # traverse the data graph.  This reads all the control
         # inputs (from the mouse and keyboard, for instance) and also
         # directly acts upon them (for instance, to move the avatar).
         directTraverseDataGraph(self.dataRoot.node())
 
-        # Then, run the collision traversal if we have a
+        return Task.cont
+
+    def igloop(self, state):
+        # run the collision traversal if we have a
         # CollisionTraverser set.
         if self.cTrav:
             self.cTrav.traverse(self.render)
@@ -208,11 +211,17 @@ class ShowBase:
     
     def restart(self):
         self.shutdown()
-        self.taskMgr.spawnTaskNamed(Task.Task(self.igloop), 'igloop')
+        # give the igloop task a reasonably "late" priority,
+        # so that it will get run after most tasks
+        self.taskMgr.spawnTaskNamed(Task.Task(self.igloop, 50), 'igloop')
+        # give the dataloop task a reasonably "early" priority,
+        # so that it will get run before most tasks
+        self.taskMgr.spawnTaskNamed(Task.Task(self.dataloop, -50), 'dataloop')
         self.eventMgr.restart()
 
     def shutdown(self):
         self.taskMgr.removeTasksNamed('igloop')
+        self.taskMgr.removeTasksNamed('dataloop')
         self.eventMgr.shutdown()
 
     def toggleBackface(self):
