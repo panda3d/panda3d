@@ -18,15 +18,20 @@
 
 #include "eggOptchar.h"
 #include "eggOptcharUserData.h"
+#include "vertexMembership.h"
 
-#include "dcast.h"
 #include "eggJointData.h"
 #include "eggSliderData.h"
 #include "eggCharacterCollection.h"
 #include "eggCharacterData.h"
 #include "eggBackPointer.h"
+#include "eggGroupNode.h"
+#include "eggVertexPool.h"
 #include "string_utils.h"
+#include "dcast.h"
 #include "pset.h"
+
+#include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggOptchar::Constructor
@@ -83,6 +88,16 @@ EggOptchar() {
      "is recomputed appropriately under its new parent so that the animation "
      "is not affected (the effect is similar to NodePath::wrt_reparent_to).",
      &EggOptchar::dispatch_vector_string_pair, NULL, &_reparent_joints);
+
+  add_option
+    ("q", "quantum", 0,
+     "Quantize joint membership values to the given unit.  This is "
+     "the smallest significant change in joint membership.  The "
+     "default is 0.01; specifying 0 means to preserve the original "
+     "values.",
+     &EggOptchar::dispatch_double, NULL, &_vref_quantum);
+
+  _vref_quantum = 0.01;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -138,6 +153,11 @@ run() {
     if (process_joints()) {
       do_reparent();
     }
+
+    // Quantize the vertex memberships.  We call this even if
+    // _vref_quantum is 0, because this also normalizes the vertex
+    // memberships.
+    quantize_vertices();
 
     // We currently do not implement optimizing morph sliders.  Need
     // to add this at some point; it's quite easy.  Identity and empty
@@ -630,6 +650,105 @@ do_reparent() {
   for (int ci = 0; ci < num_characters; ci++) {
     EggCharacterData *char_data = _collection->get_character(ci);
     char_data->do_reparent();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggOptchar::quantize_vertices
+//       Access: Private
+//  Description: Walks through all of the loaded egg files, looking
+//               for vertices whose joint memberships are then
+//               quantized according to _vref_quantum.
+////////////////////////////////////////////////////////////////////
+void EggOptchar::
+quantize_vertices() {
+  Eggs::iterator ei;
+  for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
+    quantize_vertices(*ei);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggOptchar::quantize_vertices
+//       Access: Private
+//  Description: Recursively walks through the indicated egg
+//               hierarchy, looking for vertices whose joint
+//               memberships are then quantized according to
+//               _vref_quantum.
+////////////////////////////////////////////////////////////////////
+void EggOptchar::
+quantize_vertices(EggNode *egg_node) {
+  if (egg_node->is_of_type(EggVertexPool::get_class_type())) {
+    EggVertexPool *vpool = DCAST(EggVertexPool, egg_node);
+    EggVertexPool::iterator vi;
+    for (vi = vpool->begin(); vi != vpool->end(); ++vi) {
+      quantize_vertex(*vi);
+    }
+    
+  } else if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
+    EggGroupNode *group = DCAST(EggGroupNode, egg_node);
+    EggGroupNode::iterator ci;
+    for (ci = group->begin(); ci != group->end(); ++ci) {
+      quantize_vertices(*ci);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggOptchar::quantize_vertex
+//       Access: Private
+//  Description: Quantizes the indicated vertex's joint membership.
+////////////////////////////////////////////////////////////////////
+void EggOptchar::
+quantize_vertex(EggVertex *egg_vertex) {
+  if (egg_vertex->gref_size() == 0) {
+    // Never mind on this vertex.
+    return;
+  }
+
+  // First, get a copy of the existing membership.
+  VertexMemberships memberships;
+  EggVertex::GroupRef::const_iterator gi;
+  double net_membership = 0.0;
+  for (gi = egg_vertex->gref_begin(); gi != egg_vertex->gref_end(); ++gi) {
+    EggGroup *group = (*gi);
+    double membership = group->get_vertex_membership(egg_vertex);
+    memberships.push_back(VertexMembership(group, membership));
+    net_membership += membership;
+  }
+  nassertv(net_membership != 0.0);
+
+  // Now normalize all the memberships so the net membership is 1.0,
+  // and then quantize the result (if the user so requested).
+  double factor = 1.0 / net_membership;
+  net_membership = 0.0;
+  VertexMemberships::iterator mi;
+  VertexMemberships::iterator largest = memberships.begin();
+
+  for (mi = memberships.begin(); mi != memberships.end(); ++mi) {
+    if ((*largest) < (*mi)) {
+      // Remember the largest membership value, so we can readjust it
+      // at the end.
+      largest = mi;
+    }
+
+    double value = (*mi)._membership * factor;
+    if (_vref_quantum != 0.0) {
+      value = floor(value / _vref_quantum + 0.5) * _vref_quantum;
+    }
+    (*mi)._membership = value;
+
+    net_membership += value;
+  }
+
+  // The the largest membership value gets corrected again by the
+  // roundoff error.
+  (*largest)._membership += 1.0 - net_membership;
+
+  // Finally, walk back through and apply these computed values to the
+  // vertex.
+  for (mi = memberships.begin(); mi != memberships.end(); ++mi) {
+    (*mi)._group->set_vertex_membership(egg_vertex, (*mi)._membership);
   }
 }
 

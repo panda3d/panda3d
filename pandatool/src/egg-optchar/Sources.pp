@@ -13,6 +13,7 @@
   #define SOURCES \
     config_egg_optchar.cxx config_egg_optchar.h \
     eggOptchar.cxx eggOptchar.h \
-    eggOptcharUserData.I eggOptcharUserData.cxx eggOptcharUserData.h
+    eggOptcharUserData.I eggOptcharUserData.cxx eggOptcharUserData.h \
+    vertexMembership.I vertexMembership.cxx vertexMembership.h
 
 #end bin_target

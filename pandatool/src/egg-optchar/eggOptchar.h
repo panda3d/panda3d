@@ -65,6 +65,10 @@ private:
   void describe_component(EggComponentData *comp_data, int indent_level);
   void do_reparent();
 
+  void quantize_vertices();
+  void quantize_vertices(EggNode *egg_node);
+  void quantize_vertex(EggVertex *egg_vertex);
+
   bool _list_hierarchy;
   bool _list_hierarchy_p;
   bool _keep_all;
@@ -79,6 +83,8 @@ private:
 
   vector_string _keep_components;
   vector_string _expose_components;
+
+  double _vref_quantum;
 };
 
 #endif
