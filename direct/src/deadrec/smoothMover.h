@@ -83,8 +83,8 @@ PUBLISHED:
   void mark_position();
   void clear_positions(bool reset_velocity);
 
-  INLINE void compute_smooth_position();
-  void compute_smooth_position(double timestamp);
+  INLINE bool compute_smooth_position();
+  bool compute_smooth_position(double timestamp);
   bool get_latest_position();
 
   INLINE const LPoint3f &get_smooth_pos() const;
@@ -153,6 +153,7 @@ private:
   LMatrix4f _smooth_mat;
   double _smooth_timestamp;
   bool _smooth_position_known;
+  bool _smooth_position_changed;
   bool _computed_smooth_mat;
 
   double _smooth_forward_velocity;

@@ -44,6 +44,7 @@ SmoothMover() {
   _smooth_mat = LMatrix4f::ident_mat();
   _smooth_timestamp = 0.0;
   _smooth_position_known = false;
+  _smooth_position_changed = true;
   _computed_smooth_mat = true;
 
   _smooth_forward_velocity = 0.0;
@@ -170,8 +171,13 @@ clear_positions(bool reset_velocity) {
 //               the previous position reports.  After this call has
 //               been made, get_smooth_pos() etc. may be called to
 //               retrieve the smoothed position.
+//
+//               The return value is true if the value has changed (or
+//               might have changed) since the last call to
+//               compute_smooth_position(), or false if it remains the
+//               same.
 ////////////////////////////////////////////////////////////////////
-void SmoothMover::
+bool SmoothMover::
 compute_smooth_position(double timestamp) {
   if (_points.empty()) {
     // With no position reports available, this function does nothing,
@@ -185,14 +191,18 @@ compute_smooth_position(double timestamp) {
         _smooth_rotational_velocity = 0.0;
       }
     }
-    return;
+    bool result = _smooth_position_changed;
+    _smooth_position_changed = false;
+    return result;
   }
   if (_smooth_mode == SM_off) {
     // With smoothing disabled, this function also does nothing,
     // except to ensure that any old bogus position reports are
     // cleared.
     clear_positions(false);
-    return;
+    bool result = _smooth_position_changed;
+    _smooth_position_changed = false;
+    return result;
   }
 
   // First, back up in time by the specified delay factor.
@@ -226,14 +236,20 @@ compute_smooth_position(double timestamp) {
   }
 
   if (point_before == -1) {
-    nassertv(point_after != -1);
+    nassertr(point_after != -1, false);
     // If we only have an after point, we have to start there.
+    bool result = !(_last_point_before == point_before && 
+                    _last_point_after == point_after);
     const SamplePoint &point = _points[point_after];
     set_smooth_pos(point._pos, point._hpr, timestamp);
     _smooth_forward_velocity = 0.0;
     _smooth_rotational_velocity = 0.0;
-    return;
+    _last_point_before = point_before;
+    _last_point_after = point_after;
+    return result;
   }
+
+  bool result = true;
 
   if (point_after == -1 || timestamp_before == timestamp_after) {
     // If we only have a before point, we have to stop there, unless
@@ -246,6 +262,11 @@ compute_smooth_position(double timestamp) {
       _smooth_forward_velocity = 0.0;
       _smooth_rotational_velocity = 0.0;
     }
+
+    result = !(_last_point_before == point_before && 
+               _last_point_after == point_after);
+    _last_point_before = point_before;
+    _last_point_after = point_after;
 
   } else {
     // If we have two points, we can linearly interpolate between them.
@@ -262,6 +283,8 @@ compute_smooth_position(double timestamp) {
     _last_point_before = -1;
     _last_point_after = -1;
   }
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -328,6 +351,7 @@ set_smooth_pos(const LPoint3f &pos, const LVecBase3f &hpr,
   _smooth_hpr = hpr;
   _smooth_timestamp = timestamp;
   _smooth_position_known = true;
+  _smooth_position_changed = true;
   _computed_smooth_mat = false;
 }
 

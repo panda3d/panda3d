@@ -276,9 +276,9 @@ set_timestamp(double timestamp) {
 //               With no parameter, the function uses
 //               ClockObject::get_frame_time() as the default time.
 ////////////////////////////////////////////////////////////////////
-INLINE void SmoothMover::
+INLINE bool SmoothMover::
 compute_smooth_position() {
-  compute_smooth_position(ClockObject::get_global_clock()->get_frame_time());
+  return compute_smooth_position(ClockObject::get_global_clock()->get_frame_time());
 }
 
 ////////////////////////////////////////////////////////////////////
