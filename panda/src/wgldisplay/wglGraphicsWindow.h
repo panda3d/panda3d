@@ -112,6 +112,7 @@ private:
   HPALETTE          _colormap;
   HCURSOR           _hMouseCursor;
   HWND              _hOldForegroundWindow;
+  UINT_PTR          _PandaPausedTimer;
 
   DEVMODE           *_pCurrent_display_settings;
 

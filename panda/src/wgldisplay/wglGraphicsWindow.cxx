@@ -49,6 +49,8 @@ TypeHandle wglGraphicsWindow::_type_handle;
 #define ERRORBOX_TITLE "Panda3D Error"
 #define WGL_WINDOWCLASSNAME "wglDisplay"
 
+#define PAUSED_TIMER_ID  7   // completely arbitrary choice
+
 typedef map<HWND,wglGraphicsWindow *> HWND_PANDAWIN_MAP;
 
 HWND_PANDAWIN_MAP hwnd_pandawin_map;
@@ -274,6 +276,7 @@ void wglGraphicsWindow::config(void) {
     global_wglwinptr = this;  // need this until we get an HWND from CreateWindow
 
     _exiting_window = false;
+    _PandaPausedTimer = NULL;
     _mouse_input_enabled = false;
     _mouse_motion_enabled = false;
     _mouse_passive_motion_enabled = false;
@@ -1090,20 +1093,33 @@ handle_keyrelease(ButtonHandle key) {
   }
 }
 
-void INLINE wglGraphicsWindow::process_events(void) {
+void INLINE process_1_event(void) {
   MSG msg;
 
-  while(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-      if(!GetMessage(&msg, NULL, 0, 0)) {
-          // WM_QUIT received
-          DestroyAllWindows(false);
-          exit(msg.wParam);  // this will invoke AtExitFn
-      }
+  if(!GetMessage(&msg, NULL, 0, 0)) {
+      // WM_QUIT received
+      DestroyAllWindows(false);
+      exit(msg.wParam);  // this will invoke AtExitFn
+  }
 
-      // Translate virtual key messages
-      TranslateMessage(&msg);
-      // Call window_proc
-      DispatchMessage(&msg);
+  // Translate virtual key messages
+  TranslateMessage(&msg);
+  // Call window_proc
+  DispatchMessage(&msg);
+}
+
+void INLINE wglGraphicsWindow::process_events(void) {
+  if(_window_inactive) {
+      // Get 1 msg at a time until no more are left and we block and sleep,
+      // or that message changes _window_inactive status and we leave in
+      process_1_event();
+  } else {
+      MSG msg;
+
+      // handle all msgs on queue in a row
+      while(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+          process_1_event();
+      }
   }
 }
 
@@ -1129,30 +1145,30 @@ supports_update() const {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::update(void) {
 #ifdef DO_PSTATS
-    if(!_window_inactive) {
-        _show_code_pcollector.stop();
-        PStatClient::main_tick();
-    }
+  _show_code_pcollector.stop();
+
+  if(!_window_inactive) {
+      PStatClient::main_tick();
+  }
 #endif
 
   process_events();
 
   if(_window_inactive) {
-      Sleep( 500 );   // Dont consume CPU.
-      if(!EventQueue::get_global_event_queue()->is_queue_full())
-          throw_event("PandaPaused");   // throw panda event to invoke network-only processing
-      return;
-  } else {
-
-      call_draw_callback(true);
-
+      // note _window_inactive must be checked after process_events is called, to avoid draw_callback being called
       if(_idle_callback)
           call_idle_callback();
-
-    #ifdef DO_PSTATS
-        _show_code_pcollector.start();
-    #endif
+      return;
   }
+
+  call_draw_callback(true);
+
+  if(_idle_callback)
+    call_idle_callback();
+
+#ifdef DO_PSTATS
+  _show_code_pcollector.start();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1287,7 +1303,8 @@ void wglGraphicsWindow::deactivate_window(void) {
     // current policy is to suspend minimized or deactivated fullscreen windows, but leave
     // regular windows running normally
 #ifdef _DEBUG
-   wgldisplay_cat.spam()  << "deactivate_window called"  << endl;
+   if(wgldisplay_cat.is_spam())
+       wgldisplay_cat.spam()  << "deactivate_window called"  << endl;
 #endif
 
    if((!_props._fullscreen) || _exiting_window) 
@@ -1300,9 +1317,6 @@ void wglGraphicsWindow::deactivate_window(void) {
        wgldisplay_cat.spam() << "WGL window deactivated, releasing gl context and waiting...\n";
    _window_inactive = true;
    unmake_current();
-
-   // bugbug: this isnt working right now on many drivers.  may have to
-   // destroy window and recreate a new OGL context for this to work
 
    // make sure window is minimized
 
@@ -1319,6 +1333,11 @@ void wglGraphicsWindow::deactivate_window(void) {
 
    // revert to default display mode
    ChangeDisplaySettings(NULL,0x0);
+
+   _PandaPausedTimer = SetTimer(_mwindow,PAUSED_TIMER_ID,1500,NULL);
+   if(_PandaPausedTimer!=PAUSED_TIMER_ID) {
+       wgldisplay_cat.error() << "Error in SetTimer!\n";
+   }
 }
 
 void wglGraphicsWindow::reactivate_window(void) {
@@ -1327,6 +1346,11 @@ void wglGraphicsWindow::reactivate_window(void) {
             wgldisplay_cat.spam() << "WGL window re-activated...\n";
 
         _window_inactive = false;
+
+        if(_PandaPausedTimer!=NULL) {
+            KillTimer(_mwindow,_PandaPausedTimer);
+            _PandaPausedTimer = NULL;
+        }
 
         // move window to top of zorder,
         SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
@@ -1373,7 +1397,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           //_props._yorg = HIWORD(lparam);
           break;
 
-      case WM_ACTIVATE: 
+    case WM_ACTIVATE: 
             #ifdef _DEBUG
               wgldisplay_cat.spam()  << "WM_ACTIVATE received"  << endl;
             #endif
@@ -1521,6 +1545,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                handle_mouse_entry(MOUSE_EXITED);
           }
           break;
+
+    case WM_TIMER:
+      if((wparam==_PandaPausedTimer) && _window_inactive) {
+         // wgldisplay_cat.spam() << "throwing PandaPaused\n";
+         throw_event("PandaPaused");   // throw panda event to invoke network-only processing
+      }
+
+      break;
   }
 
   return DefWindowProc(hwnd, msg, wparam, lparam);
