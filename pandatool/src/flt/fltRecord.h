@@ -94,7 +94,7 @@ protected:
   FltHeader *_header;
 
 private:
-  typedef vector<PT(FltRecord)> Records;
+  typedef pvector<PT(FltRecord)> Records;
   Records _children;
   Records _subfaces;
   Records _extensions;

@@ -26,7 +26,7 @@
 #include <globPattern.h>
 #include <eggTexture.h>
 
-#include <vector>
+#include "pvector.h"
 
 class PNMFileType;
 class EggFile;
@@ -51,7 +51,7 @@ public:
   void output(ostream &out) const;
 
 private:
-  typedef vector<GlobPattern> Patterns;
+  typedef pvector<GlobPattern> Patterns;
   Patterns _texture_patterns;
   Patterns _egg_patterns;
 
@@ -82,7 +82,7 @@ private:
     KW_cont
   };
 
-  typedef vector<Keyword> Keywords;
+  typedef pvector<Keyword> Keywords;
   Keywords _keywords;
 
   PaletteGroups _palette_groups;

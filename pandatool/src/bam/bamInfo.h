@@ -26,7 +26,7 @@
 #include <pt_Node.h>
 #include <sceneGraphAnalyzer.h>
 
-#include <vector>
+#include "pvector.h"
 
 class TypedWritable;
 
@@ -49,7 +49,7 @@ private:
   void describe_general_object(TypedWritable *object);
   void list_hierarchy(Node *node, int indent_level);
 
-  typedef vector<Filename> Filenames;
+  typedef pvector<Filename> Filenames;
   Filenames _filenames;
 
   bool _ls;

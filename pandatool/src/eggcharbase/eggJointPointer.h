@@ -48,7 +48,7 @@ public:
   virtual void optimize();
 
 protected:
-  typedef vector<LMatrix4d> RebuildFrames;
+  typedef pvector<LMatrix4d> RebuildFrames;
   RebuildFrames _rebuild_frames;
 
 public:

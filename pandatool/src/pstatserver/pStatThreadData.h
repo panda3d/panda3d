@@ -23,7 +23,7 @@
 
 #include <referenceCount.h>
 
-#include <deque>
+#include "pdeque.h"
 
 class PStatCollectorDef;
 class PStatFrameData;
@@ -71,7 +71,7 @@ public:
 private:
   const PStatClientData *_client_data;
 
-  typedef deque<PStatFrameData *> Frames;
+  typedef pdeque<PStatFrameData *> Frames;
   Frames _frames;
   int _first_frame_number;
   float _history;

@@ -40,7 +40,7 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
-  typedef vector<LPoint3f> Points;
+  typedef pvector<LPoint3f> Points;
   Points _points;
 
 public:

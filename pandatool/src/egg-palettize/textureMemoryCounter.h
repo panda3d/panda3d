@@ -27,8 +27,8 @@ class TextureImage;
 class DestTextureImage;
 class TexturePlacement;
 
-#include <map>
-#include <set>
+#include "pmap.h"
+#include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextureMemoryCounter
@@ -64,10 +64,10 @@ private:
   int _duplicate_bytes;
   int _coverage_bytes;
 
-  typedef map<TextureImage *, int> Textures;
+  typedef pmap<TextureImage *, int> Textures;
   Textures _textures;
 
-  typedef set<PaletteImage *> Palettes;
+  typedef pset<PaletteImage *> Palettes;
   Palettes _palettes;
 };
 

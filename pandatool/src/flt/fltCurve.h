@@ -40,7 +40,7 @@ public:
     CT_bezier              = 6
   };
 
-  typedef vector<LPoint3d> ControlPoints;
+  typedef pvector<LPoint3d> ControlPoints;
 
   CurveType _curve_type;
   ControlPoints _control_points;

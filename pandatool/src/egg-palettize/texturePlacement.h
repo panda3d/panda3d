@@ -27,7 +27,7 @@
 #include <typedWritable.h>
 #include <luse.h>
 
-#include <set>
+#include "pset.h"
 
 class TextureImage;
 class DestTextureImage;
@@ -112,7 +112,7 @@ private:
   TexturePosition _placed;
   OmitReason _omit_reason;
 
-  typedef set<TextureReference *> References;
+  typedef pset<TextureReference *> References;
   References _references;
 
   // The TypedWritable interface follows.

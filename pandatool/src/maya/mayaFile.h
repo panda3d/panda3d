@@ -63,7 +63,7 @@ private:
 
   EggGroup *get_egg_group(const string &name, EggData &data);
 
-  typedef map<string, EggGroup *> Groups;
+  typedef pmap<string, EggGroup *> Groups;
   Groups _groups;
 
 public:

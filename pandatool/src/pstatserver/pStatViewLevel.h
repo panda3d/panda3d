@@ -21,7 +21,7 @@
 
 #include <pandatoolbase.h>
 
-#include <vector>
+#include "pvector.h"
 
 class PStatClientData;
 
@@ -50,7 +50,7 @@ private:
   float _value_alone;
   PStatViewLevel *_parent;
 
-  typedef vector<PStatViewLevel *> Children;
+  typedef pvector<PStatViewLevel *> Children;
   Children _children;
 
   friend class PStatView;

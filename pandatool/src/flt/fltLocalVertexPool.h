@@ -53,7 +53,7 @@ public:
     AM_has_uv_7          = 0x00100000
   };
 
-  typedef vector<PT(FltVertex)> Vertices;
+  typedef pvector<PT(FltVertex)> Vertices;
   Vertices _vertices;
 
 public:

@@ -28,7 +28,7 @@
 #include <pointerTo.h>
 #include <luse.h>
 
-#include <map>
+#include "pmap.h"
 
 class PStatCollectorDef;
 
@@ -101,12 +101,12 @@ private:
   string _client_hostname;
   string _client_progname;
 
-  typedef map<int, PStatView> Views;
+  typedef pmap<int, PStatView> Views;
   Views _views;
-  typedef map<int, Views> LevelViews;
+  typedef pmap<int, Views> LevelViews;
   LevelViews _level_views;
 
-  typedef map<int, RGBColorf> Colors;
+  typedef pmap<int, RGBColorf> Colors;
   Colors _colors;
 };
 

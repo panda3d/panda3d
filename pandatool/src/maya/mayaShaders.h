@@ -21,7 +21,7 @@
 
 #include <pandatoolbase.h>
 
-#include <map>
+#include "pmap.h"
 #include <string>
 
 class MayaShader;
@@ -34,7 +34,7 @@ public:
 
 protected:
 
-  typedef map<string, MayaShader *> Shaders;
+  typedef pmap<string, MayaShader *> Shaders;
   Shaders _shaders;
 };
 

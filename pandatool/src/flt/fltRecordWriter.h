@@ -55,7 +55,7 @@ private:
   Datagram _datagram;
   FltOpcode _opcode;
 
-  typedef set<int> Instances;
+  typedef pset<int> Instances;
   Instances _instances_written;
 };
 

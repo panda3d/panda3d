@@ -25,9 +25,9 @@
 
 #include <typedWritable.h>
 
-#include <vector>
-#include <set>
-#include <map>
+#include "pvector.h"
+#include "pset.h"
+#include "pmap.h"
 
 class PNMFileType;
 class EggFile;
@@ -112,23 +112,23 @@ public:
   PNMFileType *_shadow_alpha_type;
 
 private:
-  typedef vector<TexturePlacement *> Placements;
+  typedef pvector<TexturePlacement *> Placements;
   void compute_statistics(ostream &out, int indent_level,
                           const Placements &placements) const;
 
-  typedef map<string, EggFile *> EggFiles;
+  typedef pmap<string, EggFile *> EggFiles;
   EggFiles _egg_files;
 
-  typedef vector<EggFile *> CommandLineEggs;
+  typedef pvector<EggFile *> CommandLineEggs;
   CommandLineEggs _command_line_eggs;
 
-  typedef set<TextureImage *> CommandLineTextures;
+  typedef pset<TextureImage *> CommandLineTextures;
   CommandLineTextures _command_line_textures;
 
-  typedef map<string, PaletteGroup *> Groups;
+  typedef pmap<string, PaletteGroup *> Groups;
   Groups _groups;
 
-  typedef map<string, TextureImage *> Textures;
+  typedef pmap<string, TextureImage *> Textures;
   Textures _textures;
 
 

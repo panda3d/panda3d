@@ -48,7 +48,7 @@ protected:
   virtual bool build_record(FltRecordWriter &writer) const;
 
 private:
-  typedef vector<PT(FltVertex)> Vertices;
+  typedef pvector<PT(FltVertex)> Vertices;
   Vertices _vertices;
 
 public:

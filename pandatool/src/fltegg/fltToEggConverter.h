@@ -70,7 +70,7 @@ public:
 private:
   void cleanup();
 
-  typedef vector< PT_EggVertex > EggVertices;
+  typedef pvector< PT_EggVertex > EggVertices;
 
   void convert_record(const FltRecord *flt_record, FltToEggLevelState &state);
   void dispatch_record(const FltRecord *flt_record, FltToEggLevelState &state);
@@ -102,7 +102,7 @@ private:
 
   PT(EggVertexPool) _main_egg_vpool;
 
-  typedef map<const FltTexture *, PT(EggTexture) > Textures;
+  typedef pmap<const FltTexture *, PT(EggTexture) > Textures;
   Textures _textures;
 };
 

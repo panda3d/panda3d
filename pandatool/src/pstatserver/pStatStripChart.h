@@ -28,7 +28,7 @@
 #include <luse.h>
 #include <vector_int.h>
 
-#include <map>
+#include "pmap.h"
 
 class PStatView;
 
@@ -78,8 +78,8 @@ protected:
     int _collector_index;
     float _net_value;
   };
-  typedef vector<ColorData> FrameData;
-  typedef map<int, FrameData> Data;
+  typedef pvector<ColorData> FrameData;
+  typedef pmap<int, FrameData> Data;
 
   const FrameData &get_frame_data(int frame_number);
 

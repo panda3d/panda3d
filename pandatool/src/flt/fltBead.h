@@ -68,7 +68,7 @@ private:
   bool _has_transform;
   LMatrix4d _transform;
 
-  typedef vector<PT(FltTransformRecord)> Transforms;
+  typedef pvector<PT(FltTransformRecord)> Transforms;
   Transforms _transform_steps;
 
   int _replicate_count;

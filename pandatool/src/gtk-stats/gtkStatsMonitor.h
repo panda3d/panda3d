@@ -24,7 +24,7 @@
 #include <pStatMonitor.h>
 #include <pointerTo.h>
 
-#include <set>
+#include "pset.h"
 
 
 class GtkStatsWindow;
@@ -58,7 +58,7 @@ public:
   void add_window(GtkStatsWindow *window);
   void remove_window(GtkStatsWindow *window);
 
-  typedef set<GtkStatsWindow *> Windows;
+  typedef pset<GtkStatsWindow *> Windows;
   Windows _windows;
 
   bool _destructing;

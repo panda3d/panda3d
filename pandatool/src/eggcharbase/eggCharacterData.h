@@ -27,7 +27,7 @@
 #include <pointerTo.h>
 #include <namable.h>
 
-#include <map>
+#include "pmap.h"
 
 class EggCharacterCollection;
 class EggSliderData;
@@ -82,13 +82,13 @@ protected:
     int _model_index;
     PT(EggNode) _model_root;
   };
-  typedef vector<Model> Models;
+  typedef pvector<Model> Models;
   Models _models;
 
   EggCharacterCollection *_collection;
   EggJointData *_root_joint;
 
-  typedef map<string, EggSliderData *> Sliders;
+  typedef pmap<string, EggSliderData *> Sliders;
   Sliders _sliders;
 };
 

@@ -27,7 +27,7 @@
 #include <luse.h>
 #include <vector_int.h>
 
-#include <map>
+#include "pmap.h"
 
 class PStatView;
 
@@ -104,7 +104,7 @@ protected:
   typedef vector_int Labels;
   Labels _labels;
 
-  typedef vector<GuideBar> GuideBars;
+  typedef pvector<GuideBar> GuideBars;
   GuideBars _guide_bars;
   int _guide_bar_units;
   string _unit_name;

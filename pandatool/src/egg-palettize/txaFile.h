@@ -26,7 +26,7 @@
 #include <filename.h>
 #include <vector_string.h>
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TxaFile
@@ -56,7 +56,7 @@ private:
   bool parse_remap_line(const vector_string &words);
   bool parse_remapchar_line(const vector_string &words);
 
-  typedef vector<TxaLine> Lines;
+  typedef pvector<TxaLine> Lines;
   Lines _lines;
 };
 

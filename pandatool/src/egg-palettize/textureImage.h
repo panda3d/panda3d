@@ -29,8 +29,8 @@
 #include <filename.h>
 #include <pnmImage.h>
 
-#include <map>
-#include <set>
+#include "pmap.h"
+#include "pset.h"
 
 class SourceTextureImage;
 class DestTextureImage;
@@ -88,10 +88,10 @@ public:
   void write_scale_info(ostream &out, int indent_level = 0);
 
 private:
-  typedef set<EggFile *> EggFiles;
-  typedef vector<EggFile *> WorkingEggs;
-  typedef map<string, SourceTextureImage *> Sources;
-  typedef map<string, DestTextureImage *> Dests;
+  typedef pset<EggFile *> EggFiles;
+  typedef pvector<EggFile *> WorkingEggs;
+  typedef pmap<string, SourceTextureImage *> Sources;
+  typedef pmap<string, DestTextureImage *> Dests;
 
   static int compute_egg_count(PaletteGroup *group,
                                const WorkingEggs &egg_files);
@@ -121,7 +121,7 @@ private:
 
   EggFiles _egg_files;
 
-  typedef map<PaletteGroup *, TexturePlacement *> Placement;
+  typedef pmap<PaletteGroup *, TexturePlacement *> Placement;
   Placement _placement;
 
   Sources _sources;

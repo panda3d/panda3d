@@ -31,7 +31,7 @@
 #include <pt_EggMaterial.h>
 #include <vector_PT_EggVertex.h>
 
-#include <map>
+#include "pmap.h"
 
 class LwoToEggConverter;
 class LwoSurfaceBlock;

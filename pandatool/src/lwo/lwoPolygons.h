@@ -68,7 +68,7 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
-  typedef vector< PT(Polygon) > Polygons;
+  typedef pvector< PT(Polygon) > Polygons;
   Polygons _polygons;
 
 public:

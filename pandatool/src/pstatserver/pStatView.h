@@ -72,7 +72,7 @@ private:
   bool _show_level;
   bool _all_collectors_known;
 
-  typedef map<int, PStatViewLevel *> Levels;
+  typedef pmap<int, PStatViewLevel *> Levels;
   Levels _levels;
 
   int _level_index;

@@ -240,18 +240,18 @@ private:
   // Instance subtrees.  These are standalone subtrees, which may be
   // referenced by various points in the hierarchy, stored by instance
   // ID number.
-  typedef map<int, PT(FltInstanceDefinition)> Instances;
+  typedef pmap<int, PT(FltInstanceDefinition)> Instances;
   Instances _instances;
 
 
   // Support for the vertex palette.
   int update_vertex_lookups();
 
-  typedef vector<PT(FltVertex)> Vertices;
-  typedef set<FltVertex *> UniqueVertices;
+  typedef pvector<PT(FltVertex)> Vertices;
+  typedef pset<FltVertex *> UniqueVertices;
 
-  typedef map<int, FltVertex *> VerticesByOffset;
-  typedef map<FltVertex *, int> OffsetsByVertex;
+  typedef pmap<int, FltVertex *> VerticesByOffset;
+  typedef pmap<FltVertex *, int> OffsetsByVertex;
 
   Vertices _vertices;
   UniqueVertices _unique_vertices;
@@ -267,26 +267,26 @@ private:
 
   // Support for the color palette.
   bool _got_color_palette;
-  typedef vector<FltPackedColor> Colors;
-  typedef map<int, string> ColorNames;
+  typedef pvector<FltPackedColor> Colors;
+  typedef pmap<int, string> ColorNames;
   Colors _colors;
   ColorNames _color_names;
 
 
   // Support for the material palette.
   bool _got_14_material_palette;
-  typedef map<int, PT(FltMaterial)> Materials;
+  typedef pmap<int, PT(FltMaterial)> Materials;
   Materials _materials;
 
 
   // Support for the texture palette.
   AttrUpdate _auto_attr_update;
-  typedef map<int, PT(FltTexture)> Textures;
+  typedef pmap<int, PT(FltTexture)> Textures;
   Textures _textures;
 
 
   // Support for the light source palette.
-  typedef map<int, PT(FltLightSourceDefinition)> LightSources;
+  typedef pmap<int, PT(FltLightSourceDefinition)> LightSources;
   LightSources _light_sources;
 
 

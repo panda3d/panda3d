@@ -28,7 +28,7 @@
 #include <luse.h>
 #include <vector_int.h>
 
-#include <map>
+#include "pmap.h"
 
 class PStatFrameData;
 
@@ -83,7 +83,7 @@ private:
     float _start;
     float _end;
   };
-  typedef vector<ColorBar> ColorBars;
+  typedef pvector<ColorBar> ColorBars;
 
   class BarBuilder {
   public:
@@ -96,7 +96,7 @@ private:
     ColorBars _color_bars;
   };
 
-  typedef map<int, BarBuilder> PageData;
+  typedef pmap<int, BarBuilder> PageData;
   PageData _page_data;
   int _current_frame;
 };

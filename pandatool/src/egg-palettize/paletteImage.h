@@ -86,10 +86,10 @@ private:
     int _x_size, _y_size;
   };
 
-  typedef vector<ClearedRegion> ClearedRegions;
+  typedef pvector<ClearedRegion> ClearedRegions;
   ClearedRegions _cleared_regions;
 
-  typedef vector<TexturePlacement *> Placements;
+  typedef pvector<TexturePlacement *> Placements;
   Placements _placements;
 
   PalettePage *_page;

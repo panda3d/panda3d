@@ -22,7 +22,7 @@
 
 #include <pandatoolbase.h>
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CharBitmap
@@ -32,8 +32,8 @@
 ////////////////////////////////////////////////////////////////////
 class CharBitmap {
 public:
-  typedef vector<char> Row;
-  typedef vector<Row> Block;
+  typedef pvector<char> Row;
+  typedef pvector<Row> Block;
 
   CharBitmap(int character, int width, int height,
              int hoff, int voff, double dx, double dy);

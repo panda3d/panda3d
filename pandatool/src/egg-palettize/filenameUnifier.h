@@ -23,7 +23,7 @@
 
 #include <filename.h>
 
-#include <map>
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FilenameUnifier
@@ -52,7 +52,7 @@ private:
   static Filename _txa_dir;
   static Filename _rel_dirname;
 
-  typedef map<string, string> CanonicalFilenames;
+  typedef pmap<string, string> CanonicalFilenames;
   static CanonicalFilenames _canonical_filenames;
 };
 

@@ -23,7 +23,7 @@
 
 #include "charPlacement.h"
 
-#include <vector>
+#include "pvector.h"
 
 class CharPlacement;
 
@@ -40,7 +40,7 @@ public:
 
   bool place_character(const CharBitmap *bm);
 
-  typedef vector<CharPlacement> Placements;
+  typedef pvector<CharPlacement> Placements;
   Placements _placements;
 
   int _working_xsize, _working_ysize;

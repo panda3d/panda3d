@@ -156,7 +156,7 @@ public:
     LPoint2d _real_earth;
   };
 
-  typedef vector<GeospecificControlPoint> GeospecificControlPoints;
+  typedef pvector<GeospecificControlPoint> GeospecificControlPoints;
 
   struct SubtextureDef {
     string _name;
@@ -165,7 +165,7 @@ public:
     int _right;
     int _top;
   };
-  typedef vector<SubtextureDef> SubtextureDefs;
+  typedef pvector<SubtextureDef> SubtextureDefs;
 
   int _num_texels_u;
   int _num_texels_v;

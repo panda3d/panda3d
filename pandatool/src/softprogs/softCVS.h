@@ -27,8 +27,8 @@
 #include <vector_string.h>
 #include <filename.h>
 
-#include <vector>
-#include <set>
+#include "pvector.h"
+#include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SoftCVS
@@ -43,8 +43,8 @@ public:
   void run();
 
 private:
-  typedef vector<SoftFilename> SceneFiles;
-  typedef multiset<SoftFilename> ElementFiles;
+  typedef pvector<SoftFilename> SceneFiles;
+  typedef pmultipset<SoftFilename> ElementFiles;
 
   void traverse_root();
   void traverse_subdir(const Filename &directory);
@@ -54,7 +54,7 @@ private:
   void remove_unused_elements();
 
   bool rename_file(SceneFiles::iterator begin, SceneFiles::iterator end);
-  bool scan_cvs(const string &dirname, set<string> &cvs_elements);
+  bool scan_cvs(const string &dirname, pset<string> &cvs_elements);
 
   void scan_scene_file(istream &in);
 

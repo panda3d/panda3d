@@ -63,10 +63,10 @@ private:
   PaletteGroup *_group;
   TextureProperties _properties;
 
-  typedef vector<TexturePlacement *> Assigned;
+  typedef pvector<TexturePlacement *> Assigned;
   Assigned _assigned;
 
-  typedef vector<PaletteImage *> Images;
+  typedef pvector<PaletteImage *> Images;
   Images _images;
 
   // The TypedWritable interface follows.

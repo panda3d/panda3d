@@ -25,8 +25,8 @@
 
 #include <connectionManager.h>
 
-#include <map>
-#include <deque>
+#include "pmap.h"
+#include "pdeque.h"
 
 class PStatReader;
 
@@ -68,13 +68,13 @@ private:
 
   PStatListener *_listener;
 
-  typedef map<PT(Connection), PStatReader *> Readers;
+  typedef pmap<PT(Connection), PStatReader *> Readers;
   Readers _readers;
-  typedef vector<PStatReader *> LostReaders;
+  typedef pvector<PStatReader *> LostReaders;
   LostReaders _lost_readers;
   LostReaders _removed_readers;
 
-  typedef deque<int> Ports;
+  typedef pdeque<int> Ports;
   Ports _available_udp_ports;
   int _next_udp_port;
 };

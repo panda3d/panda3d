@@ -26,7 +26,7 @@
 
 #include <pointerTo.h>
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LwoGroupChunk
@@ -43,7 +43,7 @@ protected:
   bool read_subchunks_iff(IffInputFile *in, size_t stop_at);
   void write_chunks(ostream &out, int indent_level) const;
 
-  typedef vector< PT(IffChunk) > Chunks;
+  typedef pvector< PT(IffChunk) > Chunks;
   Chunks _chunks;
 
 public:

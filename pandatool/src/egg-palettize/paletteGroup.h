@@ -27,8 +27,8 @@
 #include <namable.h>
 #include <typedWritable.h>
 
-#include <set>
-#include <vector>
+#include "pset.h"
+#include "pvector.h"
 
 class EggFile;
 class TexturePlacement;
@@ -59,8 +59,8 @@ public:
   void group_with(PaletteGroup *other);
   const PaletteGroups &get_groups() const;
 
-  void get_placements(vector<TexturePlacement *> &placements) const;
-  void get_complete_placements(vector<TexturePlacement *> &placements) const;
+  void get_placements(pvector<TexturePlacement *> &placements) const;
+  void get_complete_placements(pvector<TexturePlacement *> &placements) const;
 
   void reset_dependency_level();
   void set_dependency_level(int level);
@@ -97,10 +97,10 @@ private:
   int _dependency_order;
   int _dirname_order;
 
-  typedef set<TexturePlacement *> Placements;
+  typedef pset<TexturePlacement *> Placements;
   Placements _placements;
 
-  typedef map<TextureProperties, PalettePage *> Pages;
+  typedef pmap<TextureProperties, PalettePage *> Pages;
   Pages _pages;
 
 
@@ -121,7 +121,7 @@ private:
   // don't use them otherwise.
   int _num_placements;
   int _num_pages;
-  vector<PalettePage *> _load_pages;
+  pvector<PalettePage *> _load_pages;
 
 public:
   static TypeHandle get_class_type() {

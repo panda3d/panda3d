@@ -23,7 +23,7 @@
 
 #include <typedWritable.h>
 
-#include <set>
+#include "pset.h"
 
 class PaletteGroup;
 
@@ -35,7 +35,7 @@ class PaletteGroup;
 ////////////////////////////////////////////////////////////////////
 class PaletteGroups : public TypedWritable {
 private:
-  typedef set<PaletteGroup *> Groups;
+  typedef pset<PaletteGroup *> Groups;
 
 public:
 #ifndef WIN32_VC

@@ -28,7 +28,7 @@
 #include <namable.h>
 #include <typedWritable.h>
 
-#include <set>
+#include "pset.h"
 
 class SourceTextureImage;
 class EggData;
@@ -51,7 +51,7 @@ public:
                          const Filename &dest_filename);
 
   void scan_textures();
-  void get_textures(set<TextureImage *> &result) const;
+  void get_textures(pset<TextureImage *> &result) const;
 
   void pre_txa_file();
   void match_txa_groups(const PaletteGroups &groups);
@@ -85,7 +85,7 @@ private:
   Filename _source_filename;
   Filename _dest_filename;
 
-  typedef vector<TextureReference *> Textures;
+  typedef pvector<TextureReference *> Textures;
   Textures _textures;
 
   bool _first_txa_match;

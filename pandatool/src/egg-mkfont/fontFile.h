@@ -56,7 +56,7 @@ protected:
   double _vppp;
   double _hppp;
 
-  typedef vector<CharBitmap *> Chars;
+  typedef pvector<CharBitmap *> Chars;
   Chars _chars;
 };
 

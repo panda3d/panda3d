@@ -25,8 +25,8 @@
 #include <lwoHeader.h>
 #include <pointerTo.h>
 
-#include <vector>
-#include <map>
+#include "pvector.h"
+#include "pmap.h"
 
 class CLwoLayer;
 class CLwoClip;
@@ -77,19 +77,19 @@ private:
   CPT(LwoHeader) _lwo_header;
 
   CLwoLayer *_generic_layer;
-  typedef vector<CLwoLayer *> Layers;
+  typedef pvector<CLwoLayer *> Layers;
   Layers _layers;
 
-  typedef vector<CLwoClip *> Clips;
+  typedef pvector<CLwoClip *> Clips;
   Clips _clips;
 
-  typedef vector<CLwoPoints *> Points;
+  typedef pvector<CLwoPoints *> Points;
   Points _points;
 
-  typedef vector<CLwoPolygons *> Polygons;
+  typedef pvector<CLwoPolygons *> Polygons;
   Polygons _polygons;
 
-  typedef map<string, CLwoSurface *> Surfaces;
+  typedef pmap<string, CLwoSurface *> Surfaces;
   Surfaces _surfaces;
 };
 

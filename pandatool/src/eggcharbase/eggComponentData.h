@@ -57,7 +57,7 @@ protected:
 
   // This points back to all the egg structures that reference this
   // particular table or slider.
-  typedef vector<EggBackPointer *> BackPointers;
+  typedef pvector<EggBackPointer *> BackPointers;
   BackPointers _back_pointers;
 
 

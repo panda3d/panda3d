@@ -26,9 +26,9 @@
 #include <vector_string.h>
 
 #include <string>
-#include <vector>
-#include <deque>
-#include <map>
+#include "pvector.h"
+#include "pdeque.h"
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ProgramBase
@@ -51,7 +51,7 @@ public:
 
   virtual void parse_command_line(int argc, char *argv[]);
 
-  typedef deque<string> Args;
+  typedef pdeque<string> Args;
   Filename _program_name;
   Args _program_args;
 
@@ -129,14 +129,14 @@ private:
   typedef vector_string Runlines;
   Runlines _runlines;
 
-  typedef map<string, Option> OptionsByName;
-  typedef vector<const Option *> OptionsByIndex;
+  typedef pmap<string, Option> OptionsByName;
+  typedef pvector<const Option *> OptionsByIndex;
   OptionsByName _options_by_name;
   OptionsByIndex _options_by_index;
   int _next_sequence;
   bool _sorted_options;
 
-  typedef map<string, string> GotOptions;
+  typedef pmap<string, string> GotOptions;
   GotOptions _got_options;
 
   bool _last_newline;

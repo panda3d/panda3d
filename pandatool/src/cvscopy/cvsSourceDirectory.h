@@ -22,7 +22,7 @@
 #include <pandatoolbase.h>
 #include <filename.h>
 
-#include <vector>
+#include "pvector.h"
 
 class CVSSourceTree;
 
@@ -59,7 +59,7 @@ private:
   string _dirname;
   int _depth;
 
-  typedef vector<CVSSourceDirectory *> Children;
+  typedef pvector<CVSSourceDirectory *> Children;
   Children _children;
 };
 

@@ -50,7 +50,7 @@ protected:
   bool _got_coordinate_system;
   CoordinateSystem _coordinate_system;
 
-  typedef vector<PT(EggData)> Eggs;
+  typedef pvector<PT(EggData)> Eggs;
   Eggs _eggs;
 
   bool _force_complete;

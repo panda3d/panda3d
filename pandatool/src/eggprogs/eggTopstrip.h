@@ -24,7 +24,7 @@
 #include <eggCharacterFilter.h>
 #include <luse.h>
 
-#include <vector>
+#include "pvector.h"
 
 class EggJointData;
 class EggJointPointer;

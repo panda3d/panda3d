@@ -66,15 +66,15 @@ public:
   class EggInfo {
   public:
     PT(EggData) _egg;
-    typedef vector<PT(EggNode)> Models;
+    typedef pvector<PT(EggNode)> Models;
     Models _models;
     int _first_model_index;
   };
 
-  typedef vector<EggInfo> Eggs;
+  typedef pvector<EggInfo> Eggs;
   Eggs _eggs;
 
-  typedef vector<EggCharacterData *> Characters;
+  typedef pvector<EggCharacterData *> Characters;
   Characters _characters;
   Characters _characters_by_model_index;
 
@@ -92,9 +92,9 @@ private:
   void add_morph_back_pointers(EggAttributes *attrib, EggObject *egg_object,
                                int model_index, EggCharacterData *char_data);
 
-  typedef vector<EggNode *> EggNodeList;
-  typedef map<EggNode *, EggNodeList> TopEggNodes;
-  typedef map<string, TopEggNodes> TopEggNodesByName;
+  typedef pvector<EggNode *> EggNodeList;
+  typedef pmap<EggNode *, EggNodeList> TopEggNodes;
+  typedef pmap<string, TopEggNodes> TopEggNodesByName;
   TopEggNodesByName _top_egg_nodes;
 
   int _next_model_index;

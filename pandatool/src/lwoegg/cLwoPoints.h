@@ -25,7 +25,7 @@
 #include <eggVertexPool.h>
 #include <pointerTo.h>
 
-#include <map>
+#include "pmap.h"
 
 class LwoToEggConverter;
 class LwoVertexMap;
@@ -55,7 +55,7 @@ public:
 
   // A number of vertex maps of different types may be associated, but
   // we only care about some of the types here.
-  typedef map<string, const LwoVertexMap *> VMap;
+  typedef pmap<string, const LwoVertexMap *> VMap;
   VMap _txuv;
   VMap _pick;
 };

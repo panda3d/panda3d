@@ -81,7 +81,7 @@ protected:
   CVSSourceDirectory *_model_dir;
   CVSSourceDirectory *_map_dir;
 
-  typedef map<string, CVSSourceDirectory *> CopiedFiles;
+  typedef pmap<string, CVSSourceDirectory *> CopiedFiles;
   CopiedFiles _copied_files;
 };
 

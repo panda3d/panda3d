@@ -45,7 +45,7 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
-  typedef map<int, PTA_float> VMap;
+  typedef pmap<int, PTA_float> VMap;
   VMap _vmap;
 
 public:

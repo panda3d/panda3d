@@ -25,7 +25,7 @@
 #include <eggGroup.h>
 #include <pointerTo.h>
 
-#include <map>
+#include "pmap.h"
 
 class LwoToEggConverter;
 class CLwoPoints;
@@ -61,14 +61,14 @@ public:
   PT(EggGroup) _egg_group;
 
   const LwoTags *_tags;
-  typedef map<IffId, const LwoPolygonTags *> PTags;
+  typedef pmap<IffId, const LwoPolygonTags *> PTags;
   PTags _ptags;
 
   const LwoPolygonTags *_surf_ptags;
 
   // There might be named maps associated with the polygons to bring a
   // per-polygon mapping to the UV's.
-  typedef map<string, const LwoDiscontinuousVertexMap *> VMad;
+  typedef pmap<string, const LwoDiscontinuousVertexMap *> VMad;
   VMad _txuv;
 
 private:

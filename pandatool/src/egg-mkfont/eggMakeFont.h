@@ -91,7 +91,7 @@ private:
   double _small_caps_scale;
 
   FontFile *_font;
-  typedef map<int, PT(EggGroup)> EggDefs;
+  typedef pmap<int, PT(EggGroup)> EggDefs;
   EggDefs _egg_defs;
 
   CharLayout _layout;

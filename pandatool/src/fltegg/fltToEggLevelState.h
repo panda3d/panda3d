@@ -56,7 +56,7 @@ private:
     EggGroup *_plain;
   };
 
-  typedef map<LMatrix4d, ParentNodes *> Parents;
+  typedef pmap<LMatrix4d, ParentNodes *> Parents;
   Parents _parents;
 };
 

@@ -21,8 +21,8 @@
 
 #include <pandatoolbase.h>
 
-#include <vector>
-#include <map>
+#include "pvector.h"
+#include "pmap.h"
 
 class CVSSourceDirectory;
 
@@ -58,7 +58,7 @@ public:
   void add_file(const string &filename, CVSSourceDirectory *dir);
 
 private:
-  typedef vector<CVSSourceDirectory *> Directories;
+  typedef pvector<CVSSourceDirectory *> Directories;
 
   CVSSourceDirectory *
   prompt_user(const string &filename, CVSSourceDirectory *suggested_dir,
@@ -81,7 +81,7 @@ private:
   string _path;
   CVSSourceDirectory *_root;
 
-  typedef map<string, Directories> Filenames;
+  typedef pmap<string, Directories> Filenames;
   Filenames _filenames;
 
   static bool _got_start_fullpath;

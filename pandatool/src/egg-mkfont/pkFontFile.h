@@ -58,7 +58,7 @@ private:
   bool _extract_all;
   string _extract_only;
 
-  vector<unsigned char> _pk;
+  pvector<unsigned char> _pk;
 };
 
 #endif

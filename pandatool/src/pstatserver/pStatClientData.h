@@ -27,7 +27,7 @@
 #include <referenceCount.h>
 #include <pointerTo.h>
 
-#include <vector>
+#include "pvector.h"
 
 class PStatReader;
 
@@ -80,7 +80,7 @@ private:
     bool _is_level;
   };
 
-  typedef vector<Collector> Collectors;
+  typedef pvector<Collector> Collectors;
   Collectors _collectors;
 
   class Thread {
@@ -88,7 +88,7 @@ private:
     string _name;
     PT(PStatThreadData) _data;
   };
-  typedef vector<Thread> Threads;
+  typedef pvector<Thread> Threads;
   Threads _threads;
 
   static PStatCollectorDef _null_collector;

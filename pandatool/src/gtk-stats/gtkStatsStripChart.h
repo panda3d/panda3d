@@ -27,7 +27,7 @@
 #include <pointerTo.h>
 
 #include <gtk--.h>
-#include <map>
+#include "pmap.h"
 
 class PStatView;
 class GtkStatsGuide;
@@ -83,7 +83,7 @@ private:
   Gdk_GC _light_gc;
 
   // Table of graphics contexts for our various collectors.
-  typedef map<int, Gdk_GC> GCs;
+  typedef pmap<int, Gdk_GC> GCs;
   GCs _gcs;
 
   Gtk::Alignment *_label_align;

@@ -53,7 +53,7 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
-  typedef vector<EggJointData *> Children;
+  typedef pvector<EggJointData *> Children;
   Children _children;
   EggJointData *_parent;
 

@@ -26,7 +26,7 @@
 #include <dSearchPath.h>
 #include <pointerTo.h>
 
-#include <set>
+#include "pset.h"
 
 class FltRecord;
 class FltTexture;
@@ -68,8 +68,8 @@ private:
                     bool new_file);
 
 
-  typedef set<PT(FltExternalReference)> Refs;
-  typedef set<PT(FltTexture)> Textures;
+  typedef pset<PT(FltExternalReference)> Refs;
+  typedef pset<PT(FltTexture)> Textures;
 
   void scan_flt(FltRecord *record, Refs &refs, Textures &textures);
 
