@@ -26,8 +26,41 @@ def apropos(obj, *args):
     Obsolete, use pdir
     """
     print 'Use pdir instead'
-    
+
+def getClassLineage(obj):
+    """ getClassLineage(obj): print object inheritance list """
+    # Just a dictionary, return dictionary
+    if type(obj) == types.DictionaryType:
+        return [obj]
+    # Instance, make a list with the instance and its class interitance
+    elif type(obj) == types.InstanceType:
+        return [obj] + getClassLineage(obj.__class__)
+    # Class, see what it derives from
+    elif type(obj) == types.ClassType:
+        lineage = [obj]
+        for c in obj.__bases__:
+            lineage = lineage + getClassLineage(c)
+        return lineage
+    # Not what I'm looking for
+    else:
+        return []
+
 def pdir(obj, str = None, fOverloaded = 0, width = None,
+            fTruncate = 1, lineWidth = 75):
+    # Remove redundant class entries
+    uniqueLineage = []
+    for l in getClassLineage(obj):
+        if type(l) == types.ClassType:
+            if l in uniqueLineage:
+                break
+        uniqueLineage.append(l)
+    # Pretty print out directory info
+    print
+    for obj in uniqueLineage:
+        _pdir(obj, str, fOverloaded, width, fTruncate, lineWidth)
+        print
+
+def _pdir(obj, str = None, fOverloaded = 0, width = None,
             fTruncate = 1, lineWidth = 75):
     """
     Print out a formatted list of members and methods of an instance or class
@@ -40,6 +73,7 @@ def pdir(obj, str = None, fOverloaded = 0, width = None,
             padAfter = max(0,70 - length - padBefore)
             header = '*' * padBefore + name + '*' * padAfter
         print header
+        print
     def printInstanceHeader(i, printHeader = printHeader):
         printHeader(i.__class__.__name__ + ' INSTANCE INFO')
     def printClassHeader(c, printHeader = printHeader):
@@ -106,14 +140,6 @@ def pdir(obj, str = None, fOverloaded = 0, width = None,
             # Cut off line (keeping at least 1 char)
             value = value[:max(1,lineWidth - maxWidth)]
         print (format % key)[:maxWidth] + '\t' + value
-    # Check for parent classes
-    if type(obj) == types.InstanceType:
-        print
-        pdir(obj.__class__, str = str )
-    elif type(obj) == types.ClassType:
-        for parentClass in obj.__bases__:
-            print
-            pdir(parentClass, str = str)
 
 def aproposAll(obj):
     """
