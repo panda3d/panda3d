@@ -22,6 +22,7 @@ enum ErrorUtilCode {
   // General errors
   EU_error_abort = -1,
   EU_error_file_empty = -2,
+  EU_error_file_invalid = -3,
 
   // General network errors
   EU_error_network_dead = -30,
@@ -50,6 +51,7 @@ enum ErrorUtilCode {
   EU_error_write_disk_not_found = -64,
   EU_error_write_disk_sector_not_found = -65,
   EU_error_write_disk_fault = -66,
+  EU_error_write_file_rename = -67,
 
   // HTTP errors
   EU_error_http_server_timeout = -70,

@@ -87,6 +87,8 @@ error_to_text(int err) {
       return "EU_error_abort";
     case EU_error_file_empty:
       return "EU_error_file_empty";
+    case EU_error_file_invalid:
+      return "EU_error_file_invalid";
     case EU_error_network_dead:
       return "EU_error_network_dead";
     case EU_error_network_unreachable:
@@ -127,6 +129,8 @@ error_to_text(int err) {
       return "EU_error_write_disk_sector_not_found";
     case EU_error_write_disk_fault:
       return "EU_error_write_disk_fault";
+    case EU_error_write_file_rename:
+      return "EU_error_write_file_rename";
     case EU_error_http_server_timeout:
       return "EU_error_http_server_timeout";
     case EU_error_http_gateway_timeout:

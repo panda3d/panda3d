@@ -211,8 +211,7 @@ initiate(Filename &patch_file, Filename &file) {
   if (magic_number != _magic_number) {
     express_cat.error()
       << "Patchfile::apply() - invalid patch file: " << _patch_file << endl;
-    //return PF_error_invalidpatchfile;
-    return EU_error_abort;
+    return EU_error_file_invalid;
   }
 
   // get the length of the patched result file
@@ -230,8 +229,7 @@ initiate(Filename &patch_file, Filename &file) {
     express_cat.error()
       << "Patchfile::apply() - patch intended for file: " << name
       << ", not file: " << file << endl;
-    //return PF_error_wrongpatchfile;
-    return EU_error_abort;
+    return EU_error_file_invalid;
   }
 
   express_cat.debug()
@@ -348,8 +346,7 @@ run(void) {
         express_cat.error()
           << "Patchfile::apply() failed to rename temp file to: " << _orig_file
           << endl;
-        //return PF_error_renamingtempfile;
-        return EU_error_abort;
+        return EU_error_write_file_rename;
       }
 
       return EU_success;
