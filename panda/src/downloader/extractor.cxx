@@ -81,10 +81,10 @@ initiate(Filename &source_file, const Filename &rel_path) {
   _source_file_length = _read_stream.tellg();
   _read_stream.seekg(0, ios::beg);
 
-  // Read from the source file and write to the appropriate extracted file
   _total_bytes_read = 0;
   _read_all_input = false;
   _handled_all_input = false;
+  _mfile.reset();
   return ES_success;
 }
 
