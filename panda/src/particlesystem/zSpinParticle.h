@@ -1,6 +1,6 @@
 // Filename: zSpinParticle.h
 // Created by:  charles (16Aug00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef ZSPINPARTICLE_H
@@ -18,11 +18,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS ZSpinParticle : public BaseParticle {
 private:
-  float _initial_theta;
-  float _cur_theta;
-  float _target_theta;
-  float _dtheta;
-  bool _positive_increment;
+  float _initial_angle;
+  float _final_angle;
+  float _cur_angle;
 
 public:
   ZSpinParticle(void);
@@ -35,11 +33,13 @@ public:
   virtual void update(void);
   virtual void die(void);
 
-  virtual float get_theta(void) const;
+  virtual float get_angle(void) const;
 
-  // these are dumped into one function so that the direction
-  // of rotation can be calculated at this time.
-  INLINE void set_thetas(float cur, float target);
+  INLINE void set_initial_angle(float t);
+  INLINE float get_initial_angle(void) const;
+
+  INLINE void set_final_angle(float t);
+  INLINE float get_final_angle(void) const;
 };
 
 #include "zSpinParticle.I"

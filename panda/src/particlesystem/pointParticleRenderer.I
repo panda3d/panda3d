@@ -7,7 +7,6 @@
 //    Function : set_point_size
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void PointParticleRenderer::
 set_point_size(float point_size) {
   _point_primitive->set_size(point_size);
@@ -15,30 +14,27 @@ set_point_size(float point_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_color1
+//    Function : set_start_color
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void PointParticleRenderer::
-set_color1(const Colorf& c1) {
-  _color1 = c1;
+set_start_color(const Colorf& sc) {
+  _start_color = sc;
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_color2
+//    Function : set_end_color
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void PointParticleRenderer::
-set_color2(const Colorf& c2) {
-  _color2 = c2;
+set_end_color(const Colorf& ec) {
+  _end_color = ec;
 }
 
 ////////////////////////////////////////////////////////////////////
 //    Function : set_blend_type
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void PointParticleRenderer::
 set_blend_type(PointParticleBlendType bt) {
   _blend_type = bt;
@@ -48,7 +44,6 @@ set_blend_type(PointParticleBlendType bt) {
 //    Function : set_blend_method
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void PointParticleRenderer::
 set_blend_method(ParticleRendererBlendMethod bm) {
   _blend_method = bm;
@@ -58,37 +53,33 @@ set_blend_method(ParticleRendererBlendMethod bm) {
 //    Function : get_point_size
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-
 INLINE float PointParticleRenderer::
 get_point_size(void) const {
   return _point_size;
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_color1
+//    Function : get_start_color
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-
 INLINE const Colorf& PointParticleRenderer::
-get_color1(void) const {
-  return _color1;
+get_start_color(void) const {
+  return _start_color;
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_color2
+//    Function : get_end_color
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-
 INLINE const Colorf& PointParticleRenderer::
-get_color2(void) const {
-  return _color2;
+get_end_color(void) const {
+  return _end_color;
 }
 
 ////////////////////////////////////////////////////////////////////
 //    Function : get_blend_type
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-
 INLINE PointParticleBlendType PointParticleRenderer::
 get_blend_type(void) const {
   return _blend_type;
@@ -98,7 +89,6 @@ get_blend_type(void) const {
 //    Function : get_blend_method
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-
 INLINE ParticleRendererBlendMethod PointParticleRenderer::
 get_blend_method(void) const {
   return _blend_method;

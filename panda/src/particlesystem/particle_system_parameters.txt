@@ -1,0 +1,368 @@
+==========================
+Particle System Parameters
+==========================
+rev. 2
+Darren Ranalli, 10.10.2000
+
+===========
+Conventions
+===========
+In this document, parameters are presented in the following format:
+
+  PandaType Name : Range/Value Set // comment
+
+If "Range/Value Set" is not present, any value is valid. "inf" is infinity.
+
+A "Value Set" {VALUE1, VALUE2...} is analogous to a C++ enum; it is a set of discrete values.
+
+LINEAR means an even, linear interpolation. CUBIC means interpolation with ease-in and ease-out.
+
+All "Spread" parameters specify the maximum amount by which a value can vary above or below the
+base value.
+
+Parameter names ("Name" above) are presented with every word but the first word capitalized
+for readability, e.g. "blueWidgetLength", but their corresponding accessor class member
+functions have no capital letters and an underscore between each word, e.g.
+"get_blue_widget_length()" and "set_blue_widget_length()".
+
+
+================
+Particle Systems
+================
+CLASS: ParticleSystem
+
+Particle systems have the following methods:
+  void render(void); // renders the particle system's particles*
+  void update(float dt); // updates the state of the particle system for "dt" seconds of elapsed time*
+
+*NOTE: render() and update() should not be called for a particle system that is attached to a
+ ParticleSystemManager. (see below) Use the corresponding ParticleSystemManager methods instead.
+
+Every particle system has the following parameters:
+  int poolSize           : [0,inf) // size of particle pool; this is the maximum number of simultaneous particles
+  float birthRate        : (0,inf) // period of time in seconds between particle births
+  int litterSize         : [1,inf) // number of particles to create at each birth
+  int litterSpread       : [0,inf) // variation above and below litterSize
+  bool localVelocityFlag : // if true, velocities are absolute; if false, velocities are relative (TODO: relative to what?)
+  bool systemGrowsOlder  : // if true, system has a lifespan
+  float systemLifespan   : [0,inf) // age in seconds at which system should die -- only used if systemGrowsOlder is true
+  BaseParticleRenderer* renderer : // pointer to particle renderer (see below)
+  BaseParticleEmitter* emitter   : // pointer to particle emitter (see below)
+  BaseParticleFactory* factory   : // pointer to particle factory (see below)
+  Node* renderParent : // scene graph node relative to which particles will be emitted/rendered (TODO: i think)
+
+TODO: what about particle system spawn-on-death? Is that useful, or should it be done external to the particle system?
+
+
+==========================
+Particle System Components
+==========================
+A particle system is characterized by three components. Each particle
+system has one of each of the following components:
+
+1) particle factory
+2) particle emitter
+3) particle renderer
+
+Particle factories are responsible for generating particles, and assigning
+values for their internal attributes (lifespan, mass, etc.). Different
+particle factories produce particles with specific orientation/rotation
+capabilities.
+
+Particle emitters are used to assign initial locations and velocity vectors
+for particles.
+
+Particle renderers are responsible for translating a particle object into
+a visible object in the scene graph.
+
+
+==================
+Particle Factories
+==================
+
+All factories have the following parameters:
+  float lifespanBase           : [0,inf) // average lifespan in seconds
+  float lifespanSpread         : [0,inf) // spread == variation above and below base value
+  float massBase               : [0,inf) // average particle mass
+  float massSpread             : [0,inf)
+  float terminalVelocityBase   : [0,inf) // average particle terminal velocity
+  float terminalVelocitySpread : [0,inf)
+
+--------------------
+PointParticleFactory
+--------------------
+CLASS: PointParticleFactory
+
+generates simple particles
+
+no additional parameters
+
+--------------------
+ZSpinParticleFactory
+--------------------
+CLASS: ZSpinParticleFactory
+
+generates particles that spin around the "Z" axis (pointing straight into the screen)
+
+parameters:
+  float initialAngle       : // starting angle in degrees
+  float finalAngle         : // final angle in degrees
+  float initialAngleSpread : // spread of initial angle
+  float finalAngleSpread   : // spread of final angle
+
+-----------------------
+OrientedParticleFactory
+-----------------------
+CLASS: OrientedParticleFactory
+
+generates particles that can have any arbitrary orientation
+
+not yet implemented
+
+
+=================
+Particle Emitters
+=================
+Particle emitters are generally categorized by the volume of space they represent,
+in which particles are generated.
+
+All particle emitters can function in one of three emission modes: Explicit, Radiate, and Custom.
+These modes affect the velocity with which particles are emitted.
+
+Explicit emission: particles are all emitted in parallel, in the same direction
+Radiate emission: particles are emitted away from a specific point
+Custom emission: particles are emitted with a velocity that is determined by the particular emitter
+
+Regardless of the current emission mode, all emitters have the following parameters:
+  enum emissionType              : {ET_EXPLICIT, ET_RADIATE, ET_CUSTOM} // emission mode
+  LVector3f explicitLaunchVector : // all particles launch with this velocity in Explicit mode
+  LPoint3f  radiateOrigin        : // particles launch away from this point in Radiate mode
+  float amplitude                : (-inf,inf) // launch velocity multiplier (all emission modes)
+  float amplitudeSpread          : [0,inf) // spread for launch velocity multiplier (all emission modes)
+
+----------
+BoxEmitter
+----------
+CLASS: BoxEmitter
+
+parameters:
+  LPoint3f minBound, maxBound : // two points that define the box volume
+
+Custom emission description:
+  particles have no initial velocity
+
+-----------
+DiscEmitter
+-----------
+CLASS: DiscEmitter
+
+parameters:
+  float radius          : [0,inf) // radius of disc, in world coord units
+  float outerAngle      : [0,360] // Custom emission: particle launch angle at outer edge of disc *
+  float innerAngle      : [0,360] // Custom emission: particle launch angle at center of disc *
+  float outerMagnitude  : // Custom emission: launch velocity multiplier at outer edge of disc
+  float innerMagnitude  : // Custom emission: launch velocity multiplier at center of disc
+  bool cubicLerping     : // Custom emission: if true, magnitude/angle interpolation from center
+                             to edge is cubic (ease-in, ease-out)
+
+Custom emission description:
+  particles are emitted according to center/edge velocity magnitudes, and center/edge angles. particles
+  emitted from areas on the inside of the disc use interpolated magnitudes and angles; interpolation is
+  either linear or cubic.
+
+* 0 degrees emits particles away from the disc center, 180 emits particles back towards the disc center.
+  these angles do not quite work correctly yet for angles < 0 and > 360
+
+-----------
+LineEmitter
+-----------
+CLASS: LineEmitter
+
+parameters:
+  LPoint3f endpoint1, endpoint2 : // two points that define the line
+
+Custom emission description:
+  particles have no initial velocity
+
+------------
+PointEmitter
+------------
+CLASS: PointEmitter
+
+parameters:
+  LVector3f location  : // location of emitter point
+
+Custom emission description:
+  particles have no initial velocity
+
+----------------
+RectangleEmitter
+----------------
+CLASS: RectangleEmitter
+
+parameters:
+  LPoint2f minBound, maxBound : // two 2D co-planar (duh) points that define the rectangle
+
+Custom emission description:
+  particles have no initial velocity
+
+-----------
+RingEmitter
+-----------
+CLASS: RingEmitter
+
+parameters:
+  float radius    : [0,inf) // radius of disc, in world coord units
+  float angle     : [0,360] // Custom emission: particle launch angle *
+
+Custom emission description:
+  particles are emitted from the ring at an angle with respect to the vector from the ring center
+  to the spawn point
+
+* 0 degrees emits particles away from the center of the ring, 180 emits particles back towards the ring center.
+  these angles do not quite work correctly yet for angles < 0 and > 360
+
+--------------------
+SphereSurfaceEmitter
+--------------------
+CLASS: SphereSurfaceEmitter
+
+parameters:
+  float radius    : [0,inf) // radius of sphere, in world coord units
+
+Custom emission description:
+  particles have no initial velocity
+
+-------------------
+SphereVolumeEmitter
+-------------------
+CLASS: SphereVolumeEmitter
+
+parameters:
+  float radius    : [0,inf) // radius of sphere, in world coord units
+
+Custom emission description:
+  particles are emitted away from the sphere center. Their velocity is dependent
+  on their spawn location within the sphere: it is 0 at the center, of magnitude
+  1 at the outer edge of the sphere, and linearly interpolated in between.
+
+------------------
+TangentRingEmitter
+------------------
+CLASS: TangentRingEmitter
+
+parameters:
+  float radius    : [0,inf) // radius of ring, in world coord units
+
+Custom emission description:
+  particles are emitted tangentially to the ring edge, with velocity magnitude of 1
+
+
+==================
+Particle Renderers
+==================
+Particle renderers add particles to the visible scene graph according to the information
+stored in the particle objects (position, orientation, velocity, etc.) and according to
+the type of the renderer.
+
+All particle renderers have the following parameters:
+  enum alphaMode  : {NO_ALPHA,ALPHA_OUT,ALPHA_IN,ALPHA_USER} // alpha setting over particles' lifetime
+  float userAlpha : [0,1] // alpha value for ALPHA_USER alpha mode
+
+---------------------
+PointParticleRenderer
+---------------------
+CLASS: PointParticleRenderer
+
+renders particles as points (pixels/squares)
+
+parameters:
+  float pointSize   : [0,inf) // width and height of points, in pixels
+  Colorf startColor : 4-vector(RGBA), ([0,1], [0,1], [0,1], [0,1]) // starting color of point
+  Colorf endColor   : 4-vector(RGBA), ([0,1], [0,1], [0,1], [0,1]) // ending color of point
+  enum blendType    : {ONE_COLOR, BLEND_LIFE, BLEND_VEL} // see note below
+  enum blendMethod  : {LINEAR, CUBIC} // interpolation method between colors
+
+NOTE: blendType:
+  ONE_COLOR  -> point is always startColor
+  BLEND_LIFE -> color is interp'd from start to endColor according to age/lifespan
+  BLEND_VEL  -> color is interp'd between start and endColor according to velocity/terminal velocity
+
+--------------------
+LineParticleRenderer
+--------------------
+CLASS: LineParticleRenderer
+
+renders particles as lines (between current position and last position)
+
+parameters:
+  Colorf headColor : 4-vector(RGBA), ([0,1], [0,1], [0,1], [0,1]) // color of leading end (head)
+  Colorf tailColor : 4-vector(RGBA), ([0,1], [0,1], [0,1], [0,1]) // color of trailing end (tail)
+
+-----------------------
+SparkleParticleRenderer
+-----------------------
+CLASS: SparkleParticleRenderer
+
+renders particles as "star" / "sparkle" objects (three equal-length perpendicular axial lines
+crossing at their midpoints... kind of like jacks)
+sparkle particles appear to "sparkle" when they are viewed as being smaller than a pixel.
+
+parameters:
+  Colorf centerColor : 4-vector(RGBA), ([0,1], [0,1], [0,1], [0,1]) // color of sparkle center
+  Colorf edgeColor   : 4-vector(RGBA), ([0,1], [0,1], [0,1], [0,1]) // color of sparkle line endpoints
+  float birthRadius  : [0,inf) // initial sparkle radius in world coord units
+  float deathRadius  : [0,inf) // final sparkle radius in world coord units
+  enum lifeScale     : {NO_SCALE, SCALE} // if NO_SCALE, sparkle is always of radius birthRadius
+
+----------------------
+SpriteParticleRenderer
+----------------------
+CLASS: SpriteParticleRenderer
+
+renders particles as an image, using a Panda "Texture" object. The image is always facing the
+viewer.
+
+parameters:
+  Texture texture        : // a Panda "Texture" object to use as the sprite image
+  Colorf color           : 4-vector(RGBA), ([0,1], [0,1], [0,1], [0,1]) // TODO: what is this for? maybe alpha...
+  bool xScaleFlag        : // if true, x scale is interpolated over particle's life; if false, stays as start_X_Scale
+  bool yScaleFlag        : // if true, y scale is interpolated over particle's life; if false, stays as start_Y_Scale
+  bool animAngleFlag     : // if true, particles that are set to spin on the Z axis will spin appropriately
+  float initial_X_Scale  : [0,inf) // initial X scaling factor
+  float final_X_Scale    : [0,inf) // final X scaling factor, if interpolation is enabled (see xScaleFlag)
+  float initial_Y_Scale  : [0,inf) // initial Y scaling factor
+  float final_Y_Scale    : [0,inf) // final Y scaling factor, if interpolation is enabled (see yScaleFlag)
+  float nonAnimatedTheta : // if animAngleFlag is false, this sets the counterclockwise Z rotation of all sprites, in degrees
+  enum alphaBlendMethod  : {LINEAR, CUBIC} // sets the interpolation blend method for X and Y scaling
+  bool alphaDisable      : // if true, alpha blending is disabled
+
+--------------------
+GeomParticleRenderer
+--------------------
+CLASS: GeomParticleRenderer
+
+renders particles as full 3D objects
+
+parameters:
+  Node* geomNode : a geometry scene graph node (?)
+
+
+========================
+Particle System Managers
+========================
+CLASS: ParticleSystemManager
+
+Particle system managers hide the details of using particle systems from the application. Once a particle
+system is created, it is recommended to attach it to a ParticleSystemManager object. Any number of particle
+systems can be attached to a single ParticleSystemManager.
+
+Particle system managers have the following methods:
+  void attach_particlesystem(ParticleSystem *ps); // attach a particle system to this manager
+  void remove_particlesystem(ParticleSystem *ps); // un-attach a particle system from this manager
+  void clear(void);             // un-attach all particle systems from this manager
+  void do_particles(float dt);  // update all attached particle systems for "dt" seconds of elapsed time
+
+Particle system managers have the following parameter:
+  int frameStepping : [1..inf) // particle systems will be rendered once every frameStepping calls to do_particles()
+                               // (automatic default is 1, or "render on every call to do_particles()")

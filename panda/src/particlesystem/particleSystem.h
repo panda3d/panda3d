@@ -1,6 +1,6 @@
 // Filename: particleSystem.h
 // Created by:  charles (14Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef PARTICLESYSTEM_H
@@ -40,7 +40,7 @@ private:
   float _birth_rate;
   float _tics_since_birth;
   int _litter_size;
-  int _litter_delta;
+  int _litter_spread;
   float _system_age;
   float _system_lifespan;
 
@@ -83,56 +83,40 @@ public:
   ~ParticleSystem(void);
 
   // access/queries
-
   INLINE void set_pool_size(int size);
-  INLINE int get_pool_size(void) const;
-
   INLINE void set_birth_rate(float new_br);
-  INLINE float get_birth_rate(void) const;
-
   INLINE void set_litter_size(int new_ls);
-  INLINE int get_litter_size(void) const;
-
-  INLINE void set_litter_delta(int new_ld);
-  INLINE int get_litter_delta(void) const;
-
-  INLINE void set_renderer(BaseParticleRenderer *r);
-  INLINE BaseParticleRenderer *get_renderer(void) const;
-
-  INLINE void set_emitter(BaseParticleEmitter *e);
-  INLINE BaseParticleEmitter *get_emitter(void) const;
-
-  INLINE void set_factory(BaseParticleFactory *f);
-  INLINE BaseParticleFactory *get_factory(void) const;
-
-  INLINE void set_active_system_flag(bool a);
-  INLINE bool get_active_system_flag(void) const;
-
+  INLINE void set_litter_spread(int new_ld);
   INLINE void set_local_velocity_flag(bool lv);
-  INLINE bool get_local_velocity_flag(void) const;
-
-  INLINE void set_spawn_on_death_flag(bool sod);
-  INLINE bool get_spawn_on_death_flag(void) const;
-
   INLINE void set_system_grows_older_flag(bool sgo);
-  INLINE bool get_system_grows_older_flag(void) const;
-
   INLINE void set_system_lifespan(float sl);
-  INLINE float get_system_lifespan(void) const;
-
   INLINE void set_system_age(float age);
-  INLINE float get_system_age(void) const;
-
+  INLINE void set_active_system_flag(bool a);
+  INLINE void set_spawn_on_death_flag(bool sod);
   INLINE void set_spawn_render_node(Node *node);
-  INLINE Node *get_spawn_render_node(void) const;
+  INLINE void set_template_system_flag(bool tsf);
+  INLINE void set_render_parent(Node *node);
+  INLINE void set_renderer(BaseParticleRenderer *r);
+  INLINE void set_emitter(BaseParticleEmitter *e);
+  INLINE void set_factory(BaseParticleFactory *f);
 
+  INLINE int get_pool_size(void) const;
+  INLINE float get_birth_rate(void) const;
+  INLINE int get_litter_size(void) const;
+  INLINE int get_litter_spread(void) const;
+  INLINE bool get_local_velocity_flag(void) const;
+  INLINE bool get_system_grows_older_flag(void) const;
+  INLINE float get_system_lifespan(void) const;
+  INLINE float get_system_age(void) const;
+  INLINE bool get_active_system_flag(void) const;
+  INLINE bool get_spawn_on_death_flag(void) const;
+  INLINE Node *get_spawn_render_node(void) const;
   INLINE bool get_i_was_spawned_flag(void) const;
   INLINE int get_living_particles(void) const;
-
-  INLINE void set_template_system_flag(bool tsf);
-
   INLINE Node *get_render_parent(void) const;
-  INLINE void set_render_parent(Node *node);
+  INLINE BaseParticleRenderer *get_renderer(void) const;
+  INLINE BaseParticleEmitter *get_emitter(void) const;
+  INLINE BaseParticleFactory *get_factory(void) const;
 
   // particle template vector
 

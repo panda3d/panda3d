@@ -1,6 +1,6 @@
 // Filename: baseParticle.h
 // Created by:  charles (14Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef BASEPARTICLE_H
@@ -20,6 +20,8 @@ private:
   float _age;
   float _lifespan;
   bool _alive;
+
+  LPoint3f _last_position;
 
 protected:
   BaseParticle(int lifespan = 0, bool alive = false);

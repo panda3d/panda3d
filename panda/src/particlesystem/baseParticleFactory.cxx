@@ -1,4 +1,4 @@
-// Filename: baseParticleFactory.cxx
+// Filename: baseParticleFactory.C
 // Created by:  charles (05Jul00)
 // 
 ////////////////////////////////////////////////////////////////////
@@ -12,11 +12,14 @@
 ////////////////////////////////////////////////////////////////////
 BaseParticleFactory::
 BaseParticleFactory(void) {
+  _mass_base = 1.0f;
+  _mass_spread = 0.0f;
+  
   _terminal_velocity_base = PhysicsObject::_default_terminal_velocity;
-  _terminal_velocity_delta = 0.0f;
+  _terminal_velocity_spread = 0.0f;
 
   _lifespan_base = 1.0f;
-  _lifespan_delta = 0.0f;
+  _lifespan_spread = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -27,9 +30,9 @@ BaseParticleFactory(void) {
 BaseParticleFactory::
 BaseParticleFactory(const BaseParticleFactory &copy) {
   _terminal_velocity_base = copy._terminal_velocity_base;
-  _terminal_velocity_delta = copy._terminal_velocity_delta;
+  _terminal_velocity_spread = copy._terminal_velocity_spread;
   _lifespan_base = copy._lifespan_base;
-  _lifespan_delta = copy._lifespan_delta;
+  _lifespan_spread = copy._lifespan_spread;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,19 +53,15 @@ populate_particle(BaseParticle *bp) {
   float lifespan = _lifespan_base;
   float mass = _mass_base;
   float tv = _terminal_velocity_base;
-  float t;
 
   // lifespan
-  t = bounded_rand();
-  lifespan += _lifespan_delta - (2.0f * t * _lifespan_delta);
+  lifespan += SPREAD(_lifespan_spread);
 
   // mass
-  t = bounded_rand();
-  mass += _mass_delta - (2.0f * t * _mass_delta);
+  mass += SPREAD(_mass_spread);
 
   // tv
-  t = bounded_rand();
-  tv += _terminal_velocity_delta - (2.0f * t * _terminal_velocity_delta);
+  tv += SPREAD(_terminal_velocity_spread);
 
   bp->set_lifespan(lifespan);
   bp->set_mass(mass);

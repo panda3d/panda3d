@@ -1,32 +1,40 @@
 // Filename: zSpinParticle.I
 // Created by:  charles (16Aug00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//       Class : set_thetas
-// Description : public
+//    Function : set_initial_angle
+// Description : accessor
 ////////////////////////////////////////////////////////////////////
 INLINE void ZSpinParticle::
-set_thetas(float cur, float target) {
-  _initial_theta = cur;
-  _cur_theta = cur;
-  _target_theta = target;
-
-  float diff = _target_theta - _initial_theta;
-
-  // figure out which way to spin.
-  if (diff < 0) {
-    if (fabs(diff) >= 180)
-      _positive_increment = true;
-    else
-      _positive_increment = false;
-  }
-  else {
-    if (fabs(diff) >= 180)
-      _positive_increment = false;
-    else
-      _positive_increment = true;
-  }
+set_initial_angle(float t) {
+  _initial_angle = t;
 }
 
+////////////////////////////////////////////////////////////////////
+//    Function : get_initial_angle
+// Description : accessor
+////////////////////////////////////////////////////////////////////
+INLINE float ZSpinParticle::
+get_initial_angle(void) const {
+  return _initial_angle;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : set_final_angle
+// Description : accessor
+////////////////////////////////////////////////////////////////////
+INLINE void ZSpinParticle::
+set_final_angle(float t) {
+  _final_angle = t;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_final_angle
+// Description : accessor
+////////////////////////////////////////////////////////////////////
+INLINE float ZSpinParticle::
+get_final_angle(void) const {
+  return _final_angle;
+}

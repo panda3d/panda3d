@@ -16,9 +16,9 @@
 class EXPCL_PANDAPHYSICS RectangleEmitter : public BaseParticleEmitter {
 private:
   LPoint2f _vmin, _vmax;
-  LVector3f _launch_vec;
-  
-  virtual void assign_initial_values(LPoint3f& pos, LVector3f& vel);
+
+  virtual void assign_initial_position(LPoint3f& pos);
+  virtual void assign_initial_velocity(LVector3f& vel);
 
 public:
   RectangleEmitter(void);
@@ -26,9 +26,12 @@ public:
   virtual ~RectangleEmitter(void);
 
   virtual BaseParticleEmitter *make_copy(void);
-  
-  INLINE void set_boundaries(const LPoint2f& vmin, const LPoint2f& vmax);
-  INLINE void set_launch_vec(const LVector3f& lv);
+
+  INLINE void set_min_bound(const LPoint2f& vmin);
+  INLINE void set_max_bound(const LPoint2f& vmax);
+
+  INLINE LPoint2f get_min_bound(void) const;
+  INLINE LPoint2f get_max_bound(void) const;
 };
 
 #include "rectangleEmitter.I"

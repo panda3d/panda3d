@@ -4,24 +4,41 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_endpoints
+//    Function : set_endpoint1
 //      Access : Public
 // Description : endpoint assignment
 ////////////////////////////////////////////////////////////////////
-
 INLINE void LineEmitter::
-set_endpoints(const LPoint3f& vmin, const LPoint3f& vmax) {
-  _vmin = vmin; _vmax = vmax;
+set_endpoint1(const LPoint3f& point) {
+  _endpoint1 = point;
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_launch_vec
+//    Function : set_endpoint2
 //      Access : Public
-// Description : launch assignment
+// Description : endpoint assignment
 ////////////////////////////////////////////////////////////////////
-
 INLINE void LineEmitter::
-set_launch_vec(const LVector3f& lv) { 
-  _launch_vec = lv; 
+set_endpoint2(const LPoint3f& point) {
+  _endpoint2 = point;
 }
 
+////////////////////////////////////////////////////////////////////
+//    Function : get_endpoint1
+//      Access : Public
+// Description : endpoint accessor
+////////////////////////////////////////////////////////////////////
+INLINE LPoint3f LineEmitter::
+get_endpoint1(void) const {
+  return _endpoint1;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_endpoint2
+//      Access : Public
+// Description : endpoint accessor
+////////////////////////////////////////////////////////////////////
+INLINE LPoint3f LineEmitter::
+get_endpoint2(void) const {
+  return _endpoint2;
+}

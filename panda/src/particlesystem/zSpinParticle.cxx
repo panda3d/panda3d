@@ -1,6 +1,6 @@
-// Filename: zSpinParticle.cxx
+// Filename: zSpinParticle.C
 // Created by:  charles (16Aug00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "zSpinParticle.h"
@@ -13,10 +13,9 @@
 ZSpinParticle::
 ZSpinParticle(void) :
   BaseParticle() {
-  _cur_theta = 0.0f;
-  _initial_theta = 0.0f;
-  _target_theta = 0.0f;
-  _positive_increment = true;
+  _initial_angle = 0.0f;
+  _final_angle = 0.0f;
+  _cur_angle = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -27,10 +26,9 @@ ZSpinParticle(void) :
 ZSpinParticle::
 ZSpinParticle(const ZSpinParticle &copy) :
   BaseParticle(copy) {
-  _cur_theta = copy._cur_theta;
-  _initial_theta = copy._initial_theta;
-  _target_theta = copy._target_theta;
-  _positive_increment = copy._positive_increment;
+  _initial_angle = copy._initial_angle;
+  _final_angle = copy._final_angle;
+  _cur_angle = copy._cur_angle;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +53,7 @@ make_copy(void) const {
 ////////////////////////////////////////////////////////////////////
 //    Function : init
 //      Access : public, virtual
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 void ZSpinParticle::
 init(void) {
@@ -70,15 +68,17 @@ void ZSpinParticle::
 update(void) {
   float t = get_parameterized_age();
 
-  if (_positive_increment)
-    _cur_theta = _initial_theta + (t * (fabs(_target_theta - _initial_theta)));
-  else
-    _cur_theta = _initial_theta - (t * (fabs(_target_theta - _initial_theta)));
+  // interpolate the current orientation
+  _cur_angle = _initial_angle + (t * (_final_angle - _initial_angle));
 
-  if (_cur_theta >= 360.0f)
-    _cur_theta -= 360.0f;
-  else if (_cur_theta < 0.0f)
-    _cur_theta += 360.0f;
+  // normalize the result to [0..360)
+  _cur_angle = fmod(_cur_angle, 360.0f);
+
+  // if _cur_angle was negative, it is still negative after fmod,
+  // but greater than -360.
+  // wrap it around by adding 360
+  if(_cur_angle < 0.0f)
+    _cur_angle += 360.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,11 +91,11 @@ die(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_theta
+//    Function : get_angle
 //      Access : public, virtual
 // Description :
 ////////////////////////////////////////////////////////////////////
 float ZSpinParticle::
-get_theta(void) const {
-  return _cur_theta;
+get_angle(void) const {
+  return _cur_angle;
 }

@@ -1,4 +1,4 @@
-// Filename: baseParticleEmitter.cxx
+// Filename: baseParticleEmitter.C
 // Created by:  charles (14Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
@@ -14,7 +14,11 @@
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter::
 BaseParticleEmitter(void) {
+  _emission_type = ET_RADIATE;
+  _explicit_launch_vector.set(1,0,0);
+  _radiate_origin.set(0,0,0);
   _amplitude = 1.0f;
+  _amplitude_spread = 0.0f;
   _offset_force.set(0,0,0);
 }
 
@@ -25,8 +29,12 @@ BaseParticleEmitter(void) {
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter::
 BaseParticleEmitter(const BaseParticleEmitter &copy) {
-  _offset_force = copy._offset_force;
+  _emission_type = copy._emission_type;
+  _explicit_launch_vector = copy._explicit_launch_vector;
+  _radiate_origin = copy._radiate_origin;
   _amplitude = copy._amplitude;
+  _amplitude_spread = copy._amplitude_spread;
+  _offset_force = copy._offset_force;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,15 +47,30 @@ BaseParticleEmitter::
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticleEmitter::bounded_rand
-//      Access : Private
-// Description : Random number in [0, 1]
+//    Function : generate
+//      Access : Public
+// Description : parent generation function
 ////////////////////////////////////////////////////////////////////
-float BaseParticleEmitter::bounded_rand(void)
-{
-  int value = rand() & 0x7fffffff;
-  float f_value = (float) value / (float) 0x7fffffff;
+void BaseParticleEmitter::
+generate(LPoint3f& pos, LVector3f& vel) {
+  assign_initial_position(pos);
 
-  return f_value;
+  switch(_emission_type)
+  {
+    case ET_EXPLICIT:
+      vel = _explicit_launch_vector;
+      break;
+
+    case ET_RADIATE:
+      vel = pos - _radiate_origin;
+      vel.normalize();
+      break;
+
+    case ET_CUSTOM:
+      assign_initial_velocity(vel);
+      break;
+  }
+
+  vel *= _amplitude + SPREAD(_amplitude_spread);
+  vel += _offset_force;
 }
-

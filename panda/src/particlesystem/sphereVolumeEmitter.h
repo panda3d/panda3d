@@ -17,15 +17,23 @@ class EXPCL_PANDAPHYSICS SphereVolumeEmitter : public BaseParticleEmitter {
 private:
   float _radius;
 
-  virtual void assign_initial_values(LPoint3f& pos, LVector3f& vel);
-  
+  ///////////////////////////////
+  // scratch variables that carry over from position calc to velocity calc
+  LPoint3f _particle_pos;
+  ///////////////////////////////
+
+  virtual void assign_initial_position(LPoint3f& pos);
+  virtual void assign_initial_velocity(LVector3f& vel);
+
 public:
   SphereVolumeEmitter(void);
   SphereVolumeEmitter(const SphereVolumeEmitter &copy);
   virtual ~SphereVolumeEmitter(void);
 
   virtual BaseParticleEmitter *make_copy(void);
+
   INLINE void set_radius(float r);
+  INLINE float get_radius(void) const;
 };
 
 #include "sphereVolumeEmitter.I"

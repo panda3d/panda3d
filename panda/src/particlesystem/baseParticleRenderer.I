@@ -8,20 +8,9 @@
 //       Class : Public
 // Description : Query the geomnode pointer
 ////////////////////////////////////////////////////////////////////
-
 INLINE GeomNode *BaseParticleRenderer::
 get_render_node(void) const {
   return _render_node;
-}
-
-////////////////////////////////////////////////////////////////////
-//    Function : get_alpha_decay
-//      Access : Public
-////////////////////////////////////////////////////////////////////
-
-INLINE ParticleRendererAlphaDecay BaseParticleRenderer::
-get_alpha_decay(void) const {
-  return _alpha_decay;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -29,7 +18,6 @@ get_alpha_decay(void) const {
 //      Access : Private
 // Description : kills the intermediate alpha node/arc
 ////////////////////////////////////////////////////////////////////
-
 INLINE void BaseParticleRenderer::
 disable_alpha(void) {
   _alpha_node.clear();
@@ -43,56 +31,63 @@ disable_alpha(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_alpha_decay
+//    Function : set_alpha_mode
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-
 INLINE void BaseParticleRenderer::
-set_alpha_decay(ParticleRendererAlphaDecay ad) {
-  update_alpha_state(ad);
+set_alpha_mode(ParticleRendererAlphaMode am) {
+  update_alpha_mode(am);
   init_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : color_lerp
-//      Access : Protected
-// Description : Linear interpolate 2 color vectors
+//    Function : get_alpha_mode
+//      Access : public
 ////////////////////////////////////////////////////////////////////
-
-INLINE Colorf BaseParticleRenderer::
-color_lerp(float t, const Colorf& c1, const Colorf& c2) {
-  return (c1 + (c2 - c1) * t);
+INLINE ParticleRendererAlphaMode BaseParticleRenderer::
+get_alpha_mode(void) const {
+  return _alpha_mode;
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : color_clerp
-//      Access : Protected
-// Description : Cubic interpolation between 2 color vectors.
+//    Function : set_user_alpha
+//      Access : public
+// Description : sets alpha for "user" alpha mode
 ////////////////////////////////////////////////////////////////////
-
-INLINE Colorf BaseParticleRenderer::
-color_clerp(float t, const Colorf& c1, const Colorf& c2) {
-  float cubic_t = t * t * ((2 * t) - 3);
-  return color_lerp(cubic_t, c1, c2);
+INLINE void BaseParticleRenderer::
+set_user_alpha(float ua) {
+  _user_alpha = ua;
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : cubic_smooth
-//      Access : Protected
-// Description : smooths out a linear parameterized t in [0,1]
+//    Function : get_user_alpha
+//      Access : public
+// Description : gets alpha for "user" alpha mode
 ////////////////////////////////////////////////////////////////////
-
 INLINE float BaseParticleRenderer::
-cubic_smooth(float t) {
-  return t * t * (3 - (2 * t));
+get_user_alpha(void) const {
+  return _user_alpha;
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : lerp
-//      Access : Protected
+//    Function : get_cur_alpha
+//      Access : public
+// Description : gets current alpha for a particle
 ////////////////////////////////////////////////////////////////////
-
 INLINE float BaseParticleRenderer::
-lerp(float t, float x0, float x1) {
-  return x0 + (t * (x1 - x0));
+get_cur_alpha(BaseParticle* bp) {
+  switch(_alpha_mode)
+  {
+    case PR_ALPHA_OUT:
+      return 1.0f - bp->get_parameterized_age();
+      break;
+    case PR_ALPHA_IN:
+      return bp->get_parameterized_age();
+      break;
+    case PR_ALPHA_USER:
+      return _user_alpha;
+      break;
+  }
+  
+  return 1.0; // should not get here
 }

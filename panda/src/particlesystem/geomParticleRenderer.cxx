@@ -1,4 +1,4 @@
-// Filename: geomParticleRenderer.cxx
+// Filename: geomParticleRenderer.C
 // Created by:  charles (05Jul00)
 // 
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 ////////////////////////////////////////////////////////////////////
 
 GeomParticleRenderer::
-GeomParticleRenderer(ParticleRendererAlphaDecay ad, Node *geom_node) :
-  _geom_node(geom_node), _pool_size(0), BaseParticleRenderer(ad) {
+GeomParticleRenderer(ParticleRendererAlphaMode am, Node *geom_node) :
+  _geom_node(geom_node), _pool_size(0), BaseParticleRenderer(am) {
 
   _dead_particle_parent_node = new Node;
 
@@ -148,15 +148,14 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       PT(ColorTransition) alpha;
       xform = new TransformTransition(LMatrix4f::translate_mat(pos));
 
-      if ((_alpha_decay != PR_ALPHA_INVALID) && (_alpha_decay != PR_NO_ALPHA) &&
-	  (_alpha_decay != PR_ALPHA_USER)) {
+      if ((_alpha_mode != PR_ALPHA_NONE) && (_alpha_mode != PR_ALPHA_USER)) {
 
 	float alpha_scalar = cur_particle->get_parameterized_age();
 
-	if (_alpha_decay == PR_ALPHA_IN) {
+	if (_alpha_mode == PR_ALPHA_IN) {
 	  alpha = new ColorTransition(1.0f, 1.0f, 1.0f, alpha_scalar);
 	}
-	else if (_alpha_decay == PR_ALPHA_OUT) {
+	else if (_alpha_mode == PR_ALPHA_OUT) {
 	  alpha = new ColorTransition(1.0f, 1.0f, 1.0f, 1.0f - alpha_scalar);
 	}
 

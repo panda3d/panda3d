@@ -1,4 +1,4 @@
-// Filename: pointEmitter.cxx
+// Filename: pointEmitter.C
 // Created by:  charles (22Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
@@ -13,8 +13,7 @@
 PointEmitter::
 PointEmitter(void) : 
   BaseParticleEmitter() {
-  _point.set(0.0f, 0.0f, 0.0f);
-  _launch_vec.set(0, 0, 0);
+  _location.set(0.0f, 0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -25,8 +24,7 @@ PointEmitter(void) :
 PointEmitter::
 PointEmitter(const PointEmitter &copy) :
   BaseParticleEmitter(copy) {
-  _point = copy._point;
-  _launch_vec = copy._launch_vec;
+  _location = copy._location;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,13 +47,21 @@ make_copy(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : PointEmitter::create_particle_location
+//    Function : PointEmitter::assign_initial_position
 //      Access : Public
-// Description : Generates a location on the point
+// Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void PointEmitter::
-assign_initial_values(LPoint3f& pos, LVector3f& vel)
-{
-  pos = _point;
-  vel = _launch_vec;
+assign_initial_position(LPoint3f& pos) {
+  pos = _location;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : PointEmitter::assign_initial_velocity
+//      Access : Public
+// Description : Generates a velocity for a new particle
+////////////////////////////////////////////////////////////////////
+void PointEmitter::
+assign_initial_velocity(LVector3f& vel) {
+  vel.set(0,0,0);
 }

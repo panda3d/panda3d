@@ -1,59 +1,77 @@
 // Filename: zSpinParticleFactory.I
 // Created by:  charles (16Aug00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
-// Function : set_initial_theta
+// Function : set_initial_angle
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void ZSpinParticleFactory::
-set_initial_theta(float theta) {
-  _initial_theta = theta;
+set_initial_angle(float angle) {
+  _initial_angle = angle;
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : set_final_theta
+// Function : set_final_angle
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void ZSpinParticleFactory::
-set_final_theta(float theta) {
-  _final_theta = theta;
+set_final_angle(float angle) {
+  _final_angle = angle;
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : set_theta_delta
+// Function : set_initial_angle_spread
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void ZSpinParticleFactory::
-set_theta_delta(float delta) {
-  _theta_delta = delta;
+set_initial_angle_spread(float spread) {
+  _initial_angle_spread = spread;
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : get_initial_theta
+// Function : set_final_angle_spread
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float ZSpinParticleFactory::
-get_initial_theta(void) const {
-  return _initial_theta;
+INLINE void ZSpinParticleFactory::
+set_final_angle_spread(float spread) {
+  _final_angle_spread = spread;
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : get_final_theta
+// Function : get_initial_angle
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float ZSpinParticleFactory::
-get_final_theta(void) const {
-  return _final_theta;
+get_initial_angle(void) const {
+  return _initial_angle;
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : get_theta_delta
+// Function : get_final_angle
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float ZSpinParticleFactory::
-get_theta_delta(void) const {
-  return _theta_delta;
+get_final_angle(void) const {
+  return _final_angle;
+}
+
+////////////////////////////////////////////////////////////////////
+// Function : get_initial_angle_spread
+//   Access : public
+////////////////////////////////////////////////////////////////////
+INLINE float ZSpinParticleFactory::
+get_initial_angle_spread(void) const {
+  return _initial_angle_spread;
+}
+
+////////////////////////////////////////////////////////////////////
+// Function : get_final_angle_spread
+//   Access : public
+////////////////////////////////////////////////////////////////////
+INLINE float ZSpinParticleFactory::
+get_final_angle_spread(void) const {
+  return _final_angle_spread;
 }

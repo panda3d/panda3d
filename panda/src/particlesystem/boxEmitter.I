@@ -4,23 +4,41 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_boundaries
+//    Function : set_min_bound
 //      Access : Public
 // Description : boundary assignment
 ////////////////////////////////////////////////////////////////////
-
 INLINE void BoxEmitter::
-set_boundaries(const LPoint3f& vmin, const LPoint3f& vmax) {
-  _vmin = vmin; _vmax = vmax; 
+set_min_bound(const LPoint3f& vmin) {
+  _vmin = vmin;
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_launch_vec
+//    Function : set_max_bound
 //      Access : Public
-// Description : launch vec assignment
+// Description : boundary assignment
 ////////////////////////////////////////////////////////////////////
-
 INLINE void BoxEmitter::
-set_launch_vec(const LVector3f& lv) { 
-  _launch_vec = lv; 
+set_max_bound(const LPoint3f& vmax) {
+  _vmax = vmax;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_min_bound
+//      Access : Public
+// Description : boundary accessor
+////////////////////////////////////////////////////////////////////
+INLINE LPoint3f BoxEmitter::
+get_min_bound(void) const {
+  return _vmin;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_max_bound
+//      Access : Public
+// Description : boundary accessor
+////////////////////////////////////////////////////////////////////
+INLINE LPoint3f BoxEmitter::
+get_max_bound(void) const {
+  return _vmax;
 }

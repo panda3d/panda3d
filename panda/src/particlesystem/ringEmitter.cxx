@@ -1,4 +1,4 @@
-// Filename: ringEmitter.cxx
+// Filename: ringEmitter.C
 // Created by:  charles (22Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
@@ -12,7 +12,7 @@
 ////////////////////////////////////////////////////////////////////
 RingEmitter::
 RingEmitter(void) :
-  _radius(0.0f), _aoe(0.0f), _mag(0.0f) {
+  _radius(0.0f), _aoe(0.0f) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -25,7 +25,9 @@ RingEmitter(const RingEmitter &copy) :
   BaseParticleEmitter(copy) {
   _radius = copy._radius;
   _aoe = copy._aoe;
-  _mag = copy._mag;
+  
+  _sin_theta = copy._sin_theta;
+  _cos_theta = copy._cos_theta;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,28 +50,42 @@ make_copy(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : RingEmitter::create_particle_location
+//    Function : DiscEmitter::assign_initial_position
 //      Access : Public
-// Description : Generates a location on the ring
+// Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void RingEmitter::
-assign_initial_values(LPoint3f& pos, LVector3f& vel)
-{
-  float theta = bounded_rand() * 2.0f * MathNumbers::pi;
-  float cos_theta = cosf(theta);
-  float sin_theta = sinf(theta);
+assign_initial_position(LPoint3f& pos) {
+  float theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi;
+  _cos_theta = cosf(theta);
+  _sin_theta = sinf(theta);
 
-  float new_x = cos_theta * _radius;
-  float new_y = sin_theta * _radius;
+  float new_x = _cos_theta * _radius;
+  float new_y = _sin_theta * _radius;
 
   pos.set(new_x, new_y, 0.0f);
+}
 
-  float vel_z = _mag * sinf(_aoe * (MathNumbers::pi / 180.0f));
-  float abs_diff = fabs((_mag *_mag) - (vel_z * vel_z));
+////////////////////////////////////////////////////////////////////
+//    Function : DiscEmitter::assign_initial_velocity
+//      Access : Public
+// Description : Generates a velocity for a new particle
+////////////////////////////////////////////////////////////////////
+void RingEmitter::
+assign_initial_velocity(LVector3f& vel) {
+  float vel_z = sinf(_aoe * (MathNumbers::pi / 180.0f));
+  float abs_diff = fabs(1.0f - (vel_z * vel_z));
   float root_mag_minus_z_squared = sqrtf(abs_diff);
 
-  float vel_x = cos_theta * root_mag_minus_z_squared;
-  float vel_y = sin_theta * root_mag_minus_z_squared;
+  float vel_x = _cos_theta * root_mag_minus_z_squared;
+  float vel_y = _sin_theta * root_mag_minus_z_squared;
+
+  // quick and dirty
+  if((_aoe > 90.0f) && (_aoe < 270.0f))
+  {
+    vel_x = -vel_x;
+    vel_y = -vel_y;
+  }
 
   vel.set(vel_x, vel_y, vel_z);
 }

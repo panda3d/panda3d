@@ -13,12 +13,12 @@ set_lifespan_base(float lb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_lifespan_delta
+//    Function : set_lifespan_spread
 // Description : public
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleFactory::
-set_lifespan_delta(float ld) {
-  _lifespan_delta = ld;
+set_lifespan_spread(float ld) {
+  _lifespan_spread = ld;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -31,12 +31,12 @@ set_mass_base(float mb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_mass_delta
+//    Function : set_mass_spread
 // Description : public
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleFactory::
-set_mass_delta(float md) {
-  _mass_delta = md;
+set_mass_spread(float md) {
+  _mass_spread = md;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,12 +49,12 @@ set_terminal_velocity_base(float tvb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_terminal_velocity_delta
+//    Function : set_terminal_velocity_spread
 // Description : public
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleFactory::
-set_terminal_velocity_delta(float tvd) {
-  _terminal_velocity_delta = tvd;
+set_terminal_velocity_spread(float tvd) {
+  _terminal_velocity_spread = tvd;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,12 +67,12 @@ get_lifespan_base(void) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_lifespan_delta
+//    Function : get_lifespan_spread
 // Description : public
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleFactory::
-get_lifespan_delta(void) const {
-  return _lifespan_delta;
+get_lifespan_spread(void) const {
+  return _lifespan_spread;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,12 +85,12 @@ get_mass_base(void) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_mass_delta
+//    Function : get_mass_spread
 // Description : public
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleFactory::
-get_mass_delta(void) const {
-  return _mass_delta;
+get_mass_spread(void) const {
+  return _mass_spread;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,19 +103,11 @@ get_terminal_velocity_base(void) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_terminal_velocity_delta
+//    Function : get_terminal_velocity_spread
 // Description : public
 ////////////////////////////////////////////////////////////////////
 INLINE float BaseParticleFactory::
-get_terminal_velocity_delta(void) const {
-  return _terminal_velocity_delta;
+get_terminal_velocity_spread(void) const {
+  return _terminal_velocity_spread;
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : bounded_rand
-// Description : public
-////////////////////////////////////////////////////////////////////
-INLINE float BaseParticleFactory::
-bounded_rand(void) const {
-  return ((float) (rand() % 0x7fffffff) / (float) 0x7fffffff);
-}

@@ -1,4 +1,4 @@
-// Filename: boxEmitter.cxx
+// Filename: boxEmitter.C
 // Created by:  charles (22Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
@@ -15,7 +15,6 @@ BoxEmitter(void) :
   BaseParticleEmitter() {
   _vmin.set(0.0f, 0.0f, 0.0f);
   _vmax.set(0.0f, 0.0f, 0.0f);
-  _launch_vec.set(0.0f, 0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -28,7 +27,6 @@ BoxEmitter(const BoxEmitter &copy) :
   BaseParticleEmitter(copy) {
   _vmin = copy._vmin;
   _vmax = copy._vmax;
-  _launch_vec = copy._launch_vec;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,16 +49,15 @@ make_copy(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BoxEmitter::create_particle_location
+//    Function : BoxEmitter::assign_initial_position
 //      Access : Public
-// Description : Generates a location in the box
+// Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void BoxEmitter::
-assign_initial_values(LPoint3f& pos, LVector3f& vel)
-{
-  float t_x = bounded_rand();
-  float t_y = bounded_rand();
-  float t_z = bounded_rand();
+assign_initial_position(LPoint3f& pos) {
+  float t_x = NORMALIZED_RAND();
+  float t_y = NORMALIZED_RAND();
+  float t_z = NORMALIZED_RAND();
 
   LVector3f v_diff = _vmax - _vmin;
 
@@ -69,5 +66,14 @@ assign_initial_values(LPoint3f& pos, LVector3f& vel)
   float lerp_z = _vmin[2] + t_z * v_diff[2];
 
   pos.set(lerp_x, lerp_y, lerp_z);
-  vel = _launch_vec;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : BoxEmitter::assign_initial_velocity
+//      Access : Public
+// Description : Generates a velocity for a new particle
+////////////////////////////////////////////////////////////////////
+void BoxEmitter::
+assign_initial_velocity(LVector3f& vel) {
+  vel.set(0,0,0);
 }

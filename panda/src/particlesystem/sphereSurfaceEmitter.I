@@ -13,9 +13,16 @@
 
 INLINE void SphereSurfaceEmitter::
 set_radius(float r) { 
-  if (r == 0.0f)
-    particlesystem_cat.error() << "SphereSurfaceEmitter cannot have "
-			      << "radius of 0." << endl;
-  else
-    _radius = r; 
+  _radius = r; 
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_radius
+//      Access : public
+// Description : radius get
+////////////////////////////////////////////////////////////////////
+
+INLINE float SphereSurfaceEmitter::
+get_radius(void) const { 
+  return _radius; 
 }

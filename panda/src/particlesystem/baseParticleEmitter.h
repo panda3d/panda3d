@@ -1,6 +1,6 @@
 // Filename: baseParticleEmitter.h
 // Created by:  charles (14Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef BASEPARTICLEEMITTER_H
@@ -10,6 +10,8 @@
 #include <referenceCount.h>
 #include <luse.h>
 
+#include "particleCommonFuncs.h"
+
 #include <mathNumbers.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -18,28 +20,49 @@
 //               particles are randomly generated.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS BaseParticleEmitter : public ReferenceCount {
-private:
-  virtual void assign_initial_values(LPoint3f& pos, LVector3f& vel) = 0;
-  LVector3f _offset_force;
+public:
+  enum emissionType {
+    ET_EXPLICIT, // all particles are emitted in the same direction
+    ET_RADIATE,  // all particles radiate away from a single point
+    ET_CUSTOM    // particle launch vectors are dependent on particular emitter
+  };
+
+  virtual ~BaseParticleEmitter(void);
+  virtual BaseParticleEmitter *make_copy(void) = 0;
+
+  void generate(LPoint3f& pos, LVector3f& vel);
+
+  INLINE void set_emission_type(emissionType et);
+  INLINE void set_amplitude(float a);
+  INLINE void set_amplitude_spread(float as);
+  INLINE void set_offset_force(const LVector3f& of);  // this is a constant force applied to all particles
+  INLINE void set_explicit_launch_vector(const LVector3f& elv);
+  INLINE void set_radiate_origin(const LPoint3f& ro);
+
+  INLINE emissionType get_emission_type(void) const;
+  INLINE float get_amplitude(void) const;
+  INLINE float get_amplitude_spread(void) const;
+  INLINE LVector3f get_offset_force(void) const;
+  INLINE LVector3f get_explicit_launch_vector(void) const;
+  INLINE LPoint3f get_radiate_origin(void) const;
 
 protected:
   BaseParticleEmitter(void);
   BaseParticleEmitter(const BaseParticleEmitter &copy);
 
+  emissionType _emission_type;
+  LVector3f _explicit_launch_vector;
+  LPoint3f  _radiate_origin;
+
   float _amplitude;
-  float bounded_rand(void);
+  float _amplitude_spread;
 
-public:
-  virtual ~BaseParticleEmitter(void);
-  virtual BaseParticleEmitter *make_copy(void) = 0;
+private:
+  // these should be called in sequence (pos, then vel)
+  virtual void assign_initial_position(LPoint3f& pos) = 0;
+  virtual void assign_initial_velocity(LVector3f& vel) = 0;
 
-  INLINE void set_offset_force(const LVector3f& of);
-  INLINE LVector3f get_offset_force(void) const;
-
-  INLINE void set_amplitude(float a);
-  INLINE float get_amplitude(void) const;
-
-  INLINE void generate(LPoint3f& pos, LVector3f& vel);
+  LVector3f _offset_force;
 };
 
 #include "baseParticleEmitter.I"

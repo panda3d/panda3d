@@ -1,6 +1,6 @@
 // Filename: particleSystemManager.h
 // Created by:  charles (28Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef PARTICLESYSTEMMANAGER_H

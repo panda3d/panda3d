@@ -41,7 +41,7 @@ private:
 
 public:
 
-  GeomParticleRenderer(ParticleRendererAlphaDecay ad = PR_NO_ALPHA,
+  GeomParticleRenderer(ParticleRendererAlphaMode am = PR_ALPHA_NONE,
 		       Node *geom_node = (Node *) NULL);
   GeomParticleRenderer(const GeomParticleRenderer& copy);
   virtual ~GeomParticleRenderer(void);

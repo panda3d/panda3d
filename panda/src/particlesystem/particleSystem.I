@@ -39,6 +39,7 @@ set_pool_size(int size) {
 INLINE void ParticleSystem::
 set_birth_rate(float new_br) {
   _birth_rate = new_br;
+  if(IS_NEARLY_ZERO(_birth_rate)) _birth_rate = NEARLY_ZERO(float);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,13 +53,13 @@ set_litter_size(int new_ls) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_litter_delta
+//    Function : set_litter_spread
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ParticleSystem::
-set_litter_delta(int new_ld) {
-  _litter_delta = new_ld;
+set_litter_spread(int new_ld) {
+  _litter_spread = new_ld;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -246,12 +247,12 @@ get_litter_size(void) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_litter_delta
+//    Function : get_litter_spread
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE int ParticleSystem::
-get_litter_delta(void) const {
-  return _litter_delta;
+get_litter_spread(void) const {
+  return _litter_spread;
 }
 
 ////////////////////////////////////////////////////////////////////

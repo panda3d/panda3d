@@ -11,13 +11,20 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : TangentRingEmitter
 // Description : Describes a planar ring region in which
-//               tangent particles are generated.
+//               tangent particles are generated, and particles
+//               fly off tangential to the ring.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS TangentRingEmitter : public BaseParticleEmitter {
 private:
   float _radius;
 
-  virtual void assign_initial_values(LPoint3f& pos, LVector3f& vel);
+  ///////////////////////////////
+  // scratch variables that carry over from position calc to velocity calc
+  float _x, _y;
+  ///////////////////////////////
+
+  virtual void assign_initial_position(LPoint3f& pos);
+  virtual void assign_initial_velocity(LVector3f& vel);
 
 public:
   TangentRingEmitter(void);

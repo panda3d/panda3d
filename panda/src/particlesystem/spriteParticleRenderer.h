@@ -1,6 +1,6 @@
 // Filename: spriteParticleRenderer.h
 // Created by:  charles (13Jul00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef SPRITEPARTICLERENDERER_H
@@ -61,26 +61,29 @@ public:
   virtual BaseParticleRenderer *make_copy(void);
 
   INLINE void set_texture(Texture *tex);
-  INLINE Texture *get_texture(void) const;
-
   INLINE void set_color(const Colorf &color);
-
-  // this is the main interface for whether or not you want the sizes
-  // to change over the course of the particle's lifetime.
-  INLINE void set_animation_flags(bool animate_x_ratio,
-				  bool animate_y_ratio,
-				  bool animate_theta);
-
-  INLINE void set_x_ratios(float initial_x_texel_ratio,
-			   float final_x_texel_ratio = 0.0f);
-  INLINE void set_y_ratios(float initial_y_texel_ratio,
-			   float final_y_texel_ratio = 0.0f);
+  INLINE void set_x_scale_flag(bool animate_x_ratio);
+  INLINE void set_y_scale_flag(bool animate_y_ratio);
+  INLINE void set_anim_angle_flag(bool animate_theta);
+  INLINE void set_initial_x_scale(float initial_x_scale);
+  INLINE void set_final_x_scale(float final_x_scale);
+  INLINE void set_initial_y_scale(float initial_y_scale);
+  INLINE void set_final_y_scale(float final_y_scale);
   INLINE void set_nonanimated_theta(float theta);
-
-  // alpha
-  INLINE void set_blend_type(ParticleRendererBlendMethod bm);
-
+  INLINE void set_alpha_blend_method(ParticleRendererBlendMethod bm);
   INLINE void set_alpha_disable(bool ad);
+
+  INLINE Texture *get_texture(void) const;
+  INLINE Colorf get_color(void) const;
+  INLINE bool get_x_scale_flag(void) const;
+  INLINE bool get_y_scale_flag(void) const;
+  INLINE bool get_anim_angle_flag(void) const;
+  INLINE float get_initial_x_scale(void) const;
+  INLINE float get_final_x_scale(void) const;
+  INLINE float get_initial_y_scale(void) const;
+  INLINE float get_final_y_scale(void) const;
+  INLINE float get_nonanimated_theta(void) const;
+  INLINE ParticleRendererBlendMethod get_alpha_blend_method(void) const;
   INLINE bool get_alpha_disable(void) const;
 };
 

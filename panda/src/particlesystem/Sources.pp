@@ -14,7 +14,8 @@
     config_particlesystem.cxx config_particlesystem.h discEmitter.I \
     discEmitter.cxx discEmitter.h geomParticleRenderer.I \
     geomParticleRenderer.cxx geomParticleRenderer.h lineEmitter.I \
-    lineEmitter.cxx lineEmitter.h orientedParticle.I \
+    lineEmitter.cxx lineEmitter.h lineParticleRenderer.I \
+    lineParticleRenderer.cxx lineParticleRenderer.h orientedParticle.I \
     orientedParticle.cxx orientedParticle.h orientedParticleFactory.I \
     orientedParticleFactory.cxx orientedParticleFactory.h \
     particleSystem.I particleSystem.cxx particleSystem.h \
@@ -41,7 +42,8 @@
     baseParticleRenderer.I baseParticleRenderer.h boxEmitter.I \
     boxEmitter.h config_particlesystem.h discEmitter.I discEmitter.h \
     emitters.h geomParticleRenderer.I geomParticleRenderer.h \
-    lineEmitter.I lineEmitter.h orientedParticle.I orientedParticle.h \
+    lineEmitter.I lineEmitter.h lineParticleRenderer.I \
+    lineParticleRenderer.h orientedParticle.I orientedParticle.h \
     orientedParticleFactory.I orientedParticleFactory.h \
     particleSystem.I particleSystem.h particleSystemManager.I \
     particleSystemManager.h particlefactories.h particles.h \

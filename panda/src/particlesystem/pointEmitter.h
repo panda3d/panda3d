@@ -15,10 +15,10 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS PointEmitter : public BaseParticleEmitter {
 private:
-  LPoint3f _point;
-  LVector3f _launch_vec;
- 
-  virtual void assign_initial_values(LPoint3f& pos, LVector3f& vel);
+  LPoint3f _location;
+
+  virtual void assign_initial_position(LPoint3f& pos);
+  virtual void assign_initial_velocity(LVector3f& vel);
  
 public:
   PointEmitter(void);
@@ -26,9 +26,9 @@ public:
   virtual ~PointEmitter(void);
 
   virtual BaseParticleEmitter *make_copy(void);
-   
-  INLINE void set_point(const LPoint3f& p);
-  INLINE void set_launch_vec(const LVector3f &v);
+
+  INLINE void set_location(const LPoint3f& p);
+  INLINE LPoint3f get_location(void) const;
 };
 
 #include "pointEmitter.I"

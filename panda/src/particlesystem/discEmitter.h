@@ -20,11 +20,16 @@ private:
   float _outer_magnitude, _inner_magnitude;
   bool _cubic_lerping;
 
-  virtual void assign_initial_values(LPoint3f& pos, LVector3f& vel);
+  ///////////////////////////////
+  // scratch variables that carry over from position calc to velocity calc
+  float _distance_from_center;
+  float _sinf_theta;
+  float _cosf_theta;
+  ///////////////////////////////
 
-  INLINE float lerp(float t, float x0, float x1);
-  INLINE float cubic_lerp(float t, float x0, float x1);
-  
+  virtual void assign_initial_position(LPoint3f& pos);
+  virtual void assign_initial_velocity(LVector3f& vel);
+
 public:
   DiscEmitter(void);
   DiscEmitter(const DiscEmitter &copy);
@@ -33,11 +38,18 @@ public:
   virtual BaseParticleEmitter *make_copy(void);
 
   INLINE void set_radius(float r);
-  INLINE void set_outer_aoe(float o_aoe);
-  INLINE void set_inner_aoe(float i_aoe);
+  INLINE void set_outer_angle(float o_angle);
+  INLINE void set_inner_angle(float i_angle);
   INLINE void set_outer_magnitude(float o_mag);
   INLINE void set_inner_magnitude(float i_mag);
   INLINE void set_cubic_lerping(bool clerp);
+
+  INLINE float get_radius(void) const;
+  INLINE float get_outer_angle(void) const;
+  INLINE float get_inner_angle(void) const;
+  INLINE float get_outer_magnitude(void) const;
+  INLINE float get_inner_magnitude(void) const;
+  INLINE bool get_cubic_lerping(void) const;
 };
 
 #include "discEmitter.I"

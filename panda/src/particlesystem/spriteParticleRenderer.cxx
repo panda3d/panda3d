@@ -1,6 +1,6 @@
-// Filename: spriteParticleRenderer.cxx
+// Filename: spriteParticleRenderer.C
 // Created by:  charles (13Jul00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <boundingSphere.h>
@@ -15,16 +15,18 @@
 ////////////////////////////////////////////////////////////////////
 SpriteParticleRenderer::
 SpriteParticleRenderer(Texture *tex) :
-  _animate_x_ratio(false), 
+  _animate_x_ratio(false),
   _animate_y_ratio(false),
   _animate_theta(false),
   _blend_method(PP_BLEND_LINEAR),
-  _pool_size(0), 
+  _pool_size(0),
   _initial_x_texel_ratio(0.02f),
+  _final_x_texel_ratio(0.02f),
   _initial_y_texel_ratio(0.02f),
+  _final_y_texel_ratio(0.02f),
   _theta(0.0f),
   _color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
-  BaseParticleRenderer(PR_NO_ALPHA) {
+  BaseParticleRenderer(PR_ALPHA_NONE) {
   _sprite_primitive = new GeomSprite(tex);
   init_geoms();
 }
@@ -222,16 +224,13 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     // put the current color into the array
     Colorf c = _color;
 
-    if (!(get_alpha_decay() == PR_NO_ALPHA || 
-	  get_alpha_decay() == PR_ALPHA_INVALID)) {
+    if (!(get_alpha_mode() == PR_ALPHA_NONE)) {
       float t = cur_particle->get_parameterized_age();
 
-      if (get_alpha_decay() == PR_ALPHA_OUT)
-	c[3] = 1.0f - t;
-      else {
-	if (get_alpha_decay() == PR_ALPHA_IN)
-	  c[3] = t;
-      }	  
+      if (get_alpha_mode() == PR_ALPHA_OUT)
+        c[3] = 1.0f - t;
+      else if (get_alpha_mode() == PR_ALPHA_IN)
+        c[3] = t;
     }
 
     *cur_color++ = c;
@@ -240,24 +239,22 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     if (_animate_x_ratio == true) {
       float t = cur_particle->get_parameterized_age();
 
-      // this ... isn't pretty. (ghetto cubic)
       if (_blend_method == PP_BLEND_CUBIC)
-	t = t * t * (3 - (2 * t));
+        t = CUBIC_T(t);
 
-      *cur_x_texel++ = (_initial_x_texel_ratio + 
-			(t * (_final_x_texel_ratio - _initial_x_texel_ratio)));
+      *cur_x_texel++ = (_initial_x_texel_ratio +
+        (t * (_final_x_texel_ratio - _initial_x_texel_ratio)));
     }
 
     // handle y scaling
     if (_animate_y_ratio == true) {
       float t = cur_particle->get_parameterized_age();
 
-      // this ... isn't pretty either.
       if (_blend_method == PP_BLEND_CUBIC)
-	t = t * t * (3 - (2 * t));
+        t = CUBIC_T(t);
 
       *cur_y_texel++ = (_initial_y_texel_ratio +
-			(t * (_final_y_texel_ratio - _initial_y_texel_ratio)));
+        (t * (_final_y_texel_ratio - _initial_y_texel_ratio)));
     }
 
     // handle theta

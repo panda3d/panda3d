@@ -1,6 +1,6 @@
-// Filename: particleSystemManager.cxx
+// Filename: particleSystemManager.C
 // Created by:  charles (28Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "particleSystemManager.h"
@@ -80,22 +80,22 @@ do_particles(float dt) {
 
       // handle age
       if (cur_ps->get_system_grows_older_flag() == true) {
-	float age = cur_ps->get_system_age() + dt;
-	cur_ps->set_system_age(age);
+        float age = cur_ps->get_system_age() + dt;
+        cur_ps->set_system_age(age);
 
-	// handle death
-	if (age >= cur_ps->get_system_lifespan()) {
-	  list< PT(ParticleSystem) >::iterator kill = cur;
-	  cur++;
+        // handle death
+        if (age >= cur_ps->get_system_lifespan()) {
+          list< PT(ParticleSystem) >::iterator kill = cur;
+          cur++;
 
-	  _ps_list.erase(kill);
-	  render_due = false;
-	}
+          _ps_list.erase(kill);
+          render_due = false;
+        }
       }
 
       // handle render
       if (render_due) {
-	cur_ps->render();
+        cur_ps->render();
       }
     }
 

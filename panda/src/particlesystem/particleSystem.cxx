@@ -1,4 +1,4 @@
-// Filename: particleSystem.cxx
+// Filename: particleSystem.C
 // Created by:  charles (14Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
@@ -13,6 +13,7 @@
 #include <transformTransition.h>
 #include <physicsManager.h>
 #include <physicalNode.h>
+#include <nearly_zero.h>
 
 #include "config_particlesystem.h"
 #include "particleSystem.h"
@@ -31,8 +32,9 @@ ParticleSystem(int pool_size) :
   _particle_pool_size(pool_size), Physical(pool_size, false)
 {
   _birth_rate = 0.0f;
+  _tics_since_birth = _birth_rate;
   _litter_size = 0;
-  _litter_delta = 0;
+  _litter_spread = 0;
   _living_particles = 0;
   _active_system_flag = true;
   _local_velocity_flag = true;
@@ -69,7 +71,7 @@ ParticleSystem(const ParticleSystem& copy) :
   _particle_pool_size = copy._particle_pool_size;
   _birth_rate = copy._birth_rate;
   _litter_size = copy._litter_size;
-  _litter_delta = copy._litter_delta;
+  _litter_spread = copy._litter_spread;
   _active_system_flag = copy._active_system_flag;
   _local_velocity_flag = copy._local_velocity_flag;
   _spawn_on_death_flag = copy._spawn_on_death_flag;
@@ -117,8 +119,8 @@ ParticleSystem::
 bool ParticleSystem::
 birth_particle(void) {
   int pool_index;
-  float lifespan;
-  float mass, t;
+//  float lifespan;
+//  float mass, t;
 
   //  cout << "ParticleSystem::birth_particle" << endl;
 
@@ -158,7 +160,7 @@ birth_particle(void) {
   if (_local_velocity_flag == false)
     new_vel = new_vel * birth_to_render_xform;
 
-  bp->set_position(world_pos);
+  bp->set_position_HandOfGod(world_pos/* + (NORMALIZED_RAND() * new_vel)*/);
   bp->set_velocity(new_vel);
 
   _living_particles++;
@@ -180,8 +182,8 @@ birth_litter(void) {
 
   litter_size = _litter_size;
 
-  if (_litter_delta != 0)
-    litter_size += _litter_delta - (rand() % (2 * _litter_delta));
+  if (_litter_spread != 0)
+    litter_size += _litter_spread - (rand() % (2 * _litter_spread));
 
   int i;
 
@@ -265,7 +267,7 @@ spawn_child_system(BaseParticle *bp) {
 ////////////////////////////////////////////////////////////////////
 void ParticleSystem::
 kill_particle(int pool_index) {
-  vector< PT(PhysicsObject) >::iterator cur;
+//  vector< PT(PhysicsObject) >::iterator cur;
 
   // get a handle on our particle
   BaseParticle *bp = (BaseParticle *) _physics_objects[pool_index].p();
@@ -384,11 +386,13 @@ update(float dt) {
     ttl_updates_left--;
   }
 
+
   // generate new particles if necessary.
   _tics_since_birth += dt;
 
-  if (_tics_since_birth >= _birth_rate) {
+  while (_tics_since_birth >= _birth_rate) {
     birth_litter();
-    _tics_since_birth = 0.0f;
+    _tics_since_birth -= _birth_rate;
   }
+
 }

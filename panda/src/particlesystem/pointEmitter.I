@@ -9,16 +9,11 @@
 // Description : point setting
 ////////////////////////////////////////////////////////////////////
 INLINE void PointEmitter::
-set_point(const LPoint3f& p) { 
-  _point = p; 
+set_location(const LPoint3f& p) { 
+  _location = p; 
 }
 
-////////////////////////////////////////////////////////////////////
-//    Function : set_launch_vec
-//      Access : public
-// Description : launch_vec setting
-////////////////////////////////////////////////////////////////////
-INLINE void PointEmitter::
-set_launch_vec(const LVector3f &v) {
-  _launch_vec = v;
+INLINE LPoint3f PointEmitter::
+get_location(void) const {
+  return _location;
 }

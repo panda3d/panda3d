@@ -1,4 +1,4 @@
-// Filename: sphereVolumeEmitter.cxx
+// Filename: sphereVolumeEmitter.C
 // Created by:  charles (22Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
@@ -24,6 +24,7 @@ SphereVolumeEmitter::
 SphereVolumeEmitter(const SphereVolumeEmitter &copy) :
   BaseParticleEmitter(copy) {
   _radius = copy._radius;
+  _particle_pos = copy._particle_pos;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,29 +47,40 @@ make_copy(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : SphereVolumeEmitter::create_particle_location
+//    Function : SphereVolumeEmitter::assign_initial_position
 //      Access : Public
-// Description : Generates a location in the sphere
+// Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void SphereVolumeEmitter::
-assign_initial_values(LPoint3f& pos, LVector3f& vel)
-{
+assign_initial_position(LPoint3f& pos) {
   float z, theta, r;
   float t;
 
-  z = _radius - (2.0f * _radius * bounded_rand());
+  z = SPREAD(_radius);
   r = sqrtf((_radius * _radius) - (z * z));
-  theta = bounded_rand() * 2.0f * MathNumbers::pi;
+  theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi;
 
-  t = bounded_rand();
+  t = NORMALIZED_RAND();
 
   while (t == 0.0f)
-    t = bounded_rand();
+    t = NORMALIZED_RAND();
 
   float pos_x = r * cosf(theta) * t;
   float pos_y = r * sinf(theta) * t;
   float pos_z = z * t;
 
-  pos.set(pos_x, pos_y, pos_z);
-  vel = pos / _radius;
+  _particle_pos.set(pos_x, pos_y, pos_z);
+  pos = _particle_pos;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : SphereVolumeEmitter::assign_initial_velocity
+//      Access : Public
+// Description : Generates a velocity for a new particle
+////////////////////////////////////////////////////////////////////
+void SphereVolumeEmitter::
+assign_initial_velocity(LVector3f& vel) {
+  // set velocity to [0..1] according to distance from center,
+  // along vector from center to position
+  vel = _particle_pos / _radius;
 }

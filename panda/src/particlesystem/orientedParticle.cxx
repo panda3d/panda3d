@@ -1,4 +1,4 @@
-// Filename: orientedParticle.cxx
+// Filename: orientedParticle.C
 // Created by:  charles (19Jun00)
 // 
 ////////////////////////////////////////////////////////////////////

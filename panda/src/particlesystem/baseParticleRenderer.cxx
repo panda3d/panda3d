@@ -1,6 +1,6 @@
-// Filename: baseParticleRenderer.cxx
+// Filename: baseParticleRenderer.C
 // Created by:  charles (20Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <pandabase.h>
@@ -14,12 +14,14 @@
 // Description : Default Constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleRenderer::
-BaseParticleRenderer(ParticleRendererAlphaDecay alpha_decay) :
-  _alpha_arc((RenderRelation *) NULL), 
-  _alpha_decay(PR_ALPHA_INVALID) {
+BaseParticleRenderer(ParticleRendererAlphaMode alpha_mode) :
+  _alpha_arc((RenderRelation *) NULL),
+  _alpha_mode(PR_NOT_INITIALIZED_YET) {
   _render_node = new GeomNode("BaseParticleRenderer render node");
 
-  update_alpha_state(alpha_decay);
+  _user_alpha = 1.0;
+
+  update_alpha_mode(alpha_mode);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -30,10 +32,12 @@ BaseParticleRenderer(ParticleRendererAlphaDecay alpha_decay) :
 BaseParticleRenderer::
 BaseParticleRenderer(const BaseParticleRenderer& copy) :
   _alpha_arc((RenderRelation *) NULL),
-  _alpha_decay(PR_ALPHA_INVALID) {
+  _alpha_mode(PR_ALPHA_NONE) {
   _render_node = new GeomNode("BaseParticleRenderer render node");
 
-  update_alpha_state(copy._alpha_decay);
+  _user_alpha = copy._user_alpha;
+
+  update_alpha_mode(copy._alpha_mode);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -43,7 +47,7 @@ BaseParticleRenderer(const BaseParticleRenderer& copy) :
 ////////////////////////////////////////////////////////////////////
 BaseParticleRenderer::
 ~BaseParticleRenderer(void) {
-  if (_alpha_decay == PR_ALPHA_OUT || _alpha_decay == PR_ALPHA_IN)
+  if(_alpha_mode != PR_ALPHA_NONE)
     remove_arc(_alpha_arc);
 }
 
@@ -71,16 +75,14 @@ enable_alpha(void) {
 // Description : handles the base class part of alpha updating.
 ////////////////////////////////////////////////////////////////////
 void BaseParticleRenderer::
-update_alpha_state(ParticleRendererAlphaDecay ad) {
-  if (_alpha_decay == ad)
+update_alpha_mode(ParticleRendererAlphaMode am) {
+  if (_alpha_mode == am)
     return;
 
-  if (ad == PR_NO_ALPHA && _alpha_decay != PR_NO_ALPHA)
+  if ((am == PR_ALPHA_NONE) && (_alpha_mode != PR_ALPHA_NONE))
     disable_alpha();
-  else if ((_alpha_decay == PR_ALPHA_INVALID || _alpha_decay == PR_NO_ALPHA) && 
-	   ad != PR_NO_ALPHA)
+  else if ((am != PR_ALPHA_NONE) && (_alpha_mode == PR_ALPHA_NONE))
     enable_alpha();
 
-  _alpha_decay = ad;
+  _alpha_mode = am;
 }
-

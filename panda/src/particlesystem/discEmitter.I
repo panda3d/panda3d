@@ -15,25 +15,25 @@ set_radius(float r) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_outer_aoe
+//    Function : set_outer_angle
 //      Access : Public
 // Description : aoe assignement
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
-set_outer_aoe(float o_aoe) { 
-  _outer_aoe = o_aoe; 
+set_outer_angle(float o_angle) {
+  _outer_aoe = o_angle;
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_inner_aoe
+//    Function : set_inner_angle
 //      Access : Public
 // Description : aoe assignment
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
-set_inner_aoe(float i_aoe) { 
-  _inner_aoe = i_aoe; 
+set_inner_angle(float i_angle) {
+  _inner_aoe = i_angle;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,23 +70,67 @@ set_cubic_lerping(bool clerp) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : lerp
-//      Access : private
-// Description : yali
+//    Function : get_radius
+//      Access : Public
+// Description : radius accessor
 ////////////////////////////////////////////////////////////////////
 
 INLINE float DiscEmitter::
-lerp(float t, float x0, float x1) {
-  return x0 + (t * (x1 - x0)); 
+get_radius(void) const {
+  return _radius;
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : cubic_lerp
-//      Access : private
-// Description : yaci
+//    Function : get_outer_angle
+//      Access : Public
+// Description : aoe accessor
 ////////////////////////////////////////////////////////////////////
 
 INLINE float DiscEmitter::
-cubic_lerp(float t, float x0, float x1) {
-  return x0 + ((t * t * (3 - (2 * t))) * (x1 - x0)); 
+get_outer_angle(void) const {
+  return _outer_aoe;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_inner_angle
+//      Access : Public
+// Description : aoe accessor
+////////////////////////////////////////////////////////////////////
+
+INLINE float DiscEmitter::
+get_inner_angle(void) const { 
+  return _inner_aoe; 
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_outer_magnitude
+//      Access : public
+// Description : mag accessor
+////////////////////////////////////////////////////////////////////
+
+INLINE float DiscEmitter::
+get_outer_magnitude(void) const { 
+  return _outer_magnitude; 
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_inner_magnitude
+//      Access : public
+// Description : mag accessor
+////////////////////////////////////////////////////////////////////
+
+INLINE float DiscEmitter::
+get_inner_magnitude(void) const { 
+  return _inner_magnitude; 
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_cubic_lerping
+//      Access : public
+// Description : clerp flag accessor
+////////////////////////////////////////////////////////////////////
+
+INLINE bool DiscEmitter::
+get_cubic_lerping(void) const { 
+  return _cubic_lerping; 
 }

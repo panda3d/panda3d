@@ -31,21 +31,21 @@ set_life_scale(SparkleParticleLifeScale ls) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_birth_mag
+//    Function : set_birth_radius
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SparkleParticleRenderer::
-set_birth_mag(float mag) {
-  _birth_mag = mag;
+set_birth_radius(float radius) {
+  _birth_radius = radius;
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_death_mag
+//    Function : set_death_radius
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SparkleParticleRenderer::
-set_death_mag(float mag) {
-  _death_mag = mag;
+set_death_radius(float radius) {
+  _death_radius = radius;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,33 +76,33 @@ get_life_scale(void) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_birth_mag
+//    Function : get_birth_radius
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float SparkleParticleRenderer::
-get_birth_mag(void) const {
-  return _birth_mag;
+get_birth_radius(void) const {
+  return _birth_radius;
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_death_mag
+//    Function : get_death_radius
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float SparkleParticleRenderer::
-get_death_mag(void) const {
-  return _death_mag;
+get_death_radius(void) const {
+  return _death_radius;
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_magnitude
+//    Function : get_radius
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE float SparkleParticleRenderer::
-get_magnitude(BaseParticle *bp) {
+get_radius(BaseParticle *bp) {
   if (_life_scale == SP_NO_SCALE)
-    return _birth_mag;
+    return _birth_radius;
   else {
-    float s_x = cubic_smooth(bp->get_parameterized_age());
-    return lerp(s_x, _birth_mag, _death_mag);
+    float s_x = CUBIC_T(bp->get_parameterized_age());
+    return LERP(s_x, _birth_radius, _death_radius);
   }
 }

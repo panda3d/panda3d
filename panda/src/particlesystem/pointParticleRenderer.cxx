@@ -1,4 +1,4 @@
-// Filename: pointParticleRenderer.cxx
+// Filename: pointParticleRenderer.C
 // Created by:  charles (20Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
@@ -13,15 +13,15 @@
 ////////////////////////////////////////////////////////////////////
 
 PointParticleRenderer::
-PointParticleRenderer(ParticleRendererAlphaDecay ad,
+PointParticleRenderer(ParticleRendererAlphaMode am,
 		      float point_size,
 		      PointParticleBlendType bt,
 		      ParticleRendererBlendMethod bm,
-		      const Colorf& c1, const Colorf& c2) :
+		      const Colorf& sc, const Colorf& ec) :
   _point_size(point_size),
-  _blend_type(bt), _blend_method(bm), 
-  _color1(c1), _color2(c2), 
-  BaseParticleRenderer(ad) {
+  _blend_type(bt), _blend_method(bm),
+  _start_color(sc), _end_color(ec),
+  BaseParticleRenderer(am) {
 
   _point_primitive = new GeomPoint;
   init_geoms();
@@ -40,8 +40,8 @@ PointParticleRenderer(const PointParticleRenderer& copy) :
 
   _blend_type = copy._blend_type;
   _blend_method = copy._blend_method;
-  _color1 = copy._color1;
-  _color2 = copy._color2;
+  _start_color = copy._start_color;
+  _end_color = copy._end_color;
   _point_primitive = new GeomPoint;
   init_geoms();
 }
@@ -141,7 +141,7 @@ create_color(const BaseParticle *p) {
     //// Constant solid color
 
   case PP_ONE_COLOR:
-    color = _color1;
+    color = _start_color;
     break;
 
     //// Blending colors based on life
@@ -152,9 +152,9 @@ create_color(const BaseParticle *p) {
     have_alpha_t = true;
 
     if (_blend_method == PP_BLEND_CUBIC)
-      life_t = cubic_smooth(life_t);
+      life_t = CUBIC_T(life_t);
 
-    color = color_lerp(life_t, _color1, _color2);
+    color = LERP(life_t, _start_color, _end_color);
 
     break;
 
@@ -164,21 +164,20 @@ create_color(const BaseParticle *p) {
     vel_t = p->get_parameterized_vel();
 
     if (_blend_method == PP_BLEND_CUBIC)
-      vel_t = cubic_smooth(vel_t);
+      vel_t = CUBIC_T(vel_t);
 
-    color = color_lerp(vel_t, _color1, _color2);
+    color = LERP(vel_t, _start_color, _end_color);
 
     break;
   }
 
   // handle alpha channel
 
-  if (!((_alpha_decay == PR_NO_ALPHA) || (_alpha_decay == PR_ALPHA_USER) ||
-	(_alpha_decay == PR_ALPHA_INVALID))) {
+  if (!((_alpha_mode == PR_ALPHA_NONE) || (_alpha_mode == PR_ALPHA_USER))) {
     if (have_alpha_t == false)
       alpha_linear_t = p->get_parameterized_age();
 
-    if (_alpha_decay == PR_ALPHA_OUT)
+    if (_alpha_mode == PR_ALPHA_OUT)
       color[3] = 1.0f - alpha_linear_t;
     else
       color[3] = alpha_linear_t;

@@ -4,15 +4,63 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : generate
+//    Function : set_emission_type
 //      Access : Public
-// Description : parent generation function
+// Description : emission type assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleEmitter::
-generate(LPoint3f& pos, LVector3f& vel) {
-  assign_initial_values(pos, vel);
-  vel *= _amplitude;
-  vel += _offset_force;
+set_emission_type(emissionType et) {
+  _emission_type = et;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_emission_type
+//      Access : Public
+// Description : emission type query
+////////////////////////////////////////////////////////////////////
+INLINE BaseParticleEmitter::emissionType BaseParticleEmitter::
+get_emission_type(void) const {
+  return _emission_type;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : set_explicit_launch_vector
+//      Access : Public
+// Description : assignment of explicit emission launch vector
+////////////////////////////////////////////////////////////////////
+INLINE void BaseParticleEmitter::
+set_explicit_launch_vector(const LVector3f& elv) {
+  _explicit_launch_vector = elv;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_explicit_launch_vector
+//      Access : Public
+// Description : query for explicit emission launch vector
+////////////////////////////////////////////////////////////////////
+INLINE LVector3f BaseParticleEmitter::
+get_explicit_launch_vector(void) const {
+  return _explicit_launch_vector;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : set_radiate_origin
+//      Access : Public
+// Description : assignment of radiate emission origin point
+////////////////////////////////////////////////////////////////////
+INLINE void BaseParticleEmitter::
+set_radiate_origin(const LPoint3f& ro) {
+  _radiate_origin = ro;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_radiate_origin
+//      Access : Public
+// Description : query for explicit emission launch vector
+////////////////////////////////////////////////////////////////////
+INLINE LPoint3f BaseParticleEmitter::
+get_radiate_origin(void) const {
+  return _radiate_origin;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,6 +81,26 @@ set_amplitude(float a) {
 INLINE float BaseParticleEmitter::
 get_amplitude(void) const {
   return _amplitude;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : set_amplitude_spread
+//      Access : Public
+// Description : amplitude spread assignment
+////////////////////////////////////////////////////////////////////
+INLINE void BaseParticleEmitter::
+set_amplitude_spread(float as) { 
+  _amplitude_spread = as;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_amplitude_spread
+//      Access : Public
+// Description : amplitude spread query
+////////////////////////////////////////////////////////////////////
+INLINE float BaseParticleEmitter::
+get_amplitude_spread(void) const {
+  return _amplitude_spread;
 }
 
 ////////////////////////////////////////////////////////////////////

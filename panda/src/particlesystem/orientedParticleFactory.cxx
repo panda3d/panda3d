@@ -1,4 +1,4 @@
-// Filename: orientedParticleFactory.cxx
+// Filename: orientedParticleFactory.C
 // Created by:  charles (05Jul00)
 // 
 ////////////////////////////////////////////////////////////////////

@@ -1,4 +1,4 @@
-// Filename: rectangleEmitter.cxx
+// Filename: rectangleEmitter.C
 // Created by:  charles (22Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
@@ -15,7 +15,6 @@ RectangleEmitter(void) :
   BaseParticleEmitter() {
   _vmin.set(0.0f, 0.0f);
   _vmax.set(0.0f, 0.0f);
-  _launch_vec.set(0.0f, 0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -28,7 +27,6 @@ RectangleEmitter(const RectangleEmitter &copy) :
   BaseParticleEmitter(copy) {
   _vmin = copy._vmin;
   _vmax = copy._vmax;
-  _launch_vec = copy._launch_vec;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,15 +49,14 @@ make_copy(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : RectangleEmitter::create_particle_location
+//    Function : RectangleEmitter::assign_initial_position
 //      Access : Public
-// Description : Generates a location on the rectangle
+// Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void RectangleEmitter::
-assign_initial_values(LPoint3f& pos, LVector3f& vel)
-{
-  float t_x = bounded_rand();
-  float t_y = bounded_rand();
+assign_initial_position(LPoint3f& pos) {
+  float t_x = NORMALIZED_RAND();
+  float t_y = NORMALIZED_RAND();
 
   LVector2f v_diff = _vmax - _vmin;
 
@@ -67,5 +64,14 @@ assign_initial_values(LPoint3f& pos, LVector3f& vel)
   float lerp_y = _vmin[1] + t_y * v_diff[1];
 
   pos.set(lerp_x, lerp_y, 0.0f);
-  vel = _launch_vec;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : RectangleEmitter::assign_initial_velocity
+//      Access : Public
+// Description : Generates a velocity for a new particle
+////////////////////////////////////////////////////////////////////
+void RectangleEmitter::
+assign_initial_velocity(LVector3f& vel) {
+  vel.set(0.0f,0.0f,0.0f);
 }

@@ -1,4 +1,4 @@
-// Filename: pointParticleFactory.cxx
+// Filename: pointParticleFactory.C
 // Created by:  charles (05Jul00)
 // 
 ////////////////////////////////////////////////////////////////////

@@ -1,4 +1,4 @@
-// Filename: sparkleParticleRenderer.cxx
+// Filename: sparkleParticleRenderer.C
 // Created by:  charles (27Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
@@ -17,8 +17,8 @@ SparkleParticleRenderer::
 SparkleParticleRenderer(void) :
   _center_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
   _edge_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
-  _birth_mag(0.1f), _death_mag(0.1f),
-  BaseParticleRenderer(PR_NO_ALPHA) {
+  _birth_radius(0.1f), _death_radius(0.1f),
+  BaseParticleRenderer(PR_ALPHA_NONE) {
   _line_primitive = new GeomLine;
   init_geoms();
 }
@@ -31,12 +31,12 @@ SparkleParticleRenderer(void) :
 
 SparkleParticleRenderer::
 SparkleParticleRenderer(const Colorf& center, const Colorf& edge,
-			float birth_mag, float death_mag,
+			float birth_radius, float death_radius,
 			SparkleParticleLifeScale life_scale,
-			ParticleRendererAlphaDecay alpha_decay) :
-  _center_color(center), _edge_color(edge), _birth_mag(birth_mag),
-  _death_mag(death_mag), _life_scale(life_scale), 
-  BaseParticleRenderer(alpha_decay) {
+			ParticleRendererAlphaMode alpha_mode) :
+  _center_color(center), _edge_color(edge), _birth_radius(birth_radius),
+  _death_radius(death_radius), _life_scale(life_scale), 
+  BaseParticleRenderer(alpha_mode) {
   _line_primitive = new GeomLine;
   init_geoms();
 }
@@ -52,8 +52,8 @@ SparkleParticleRenderer(const SparkleParticleRenderer& copy) :
   BaseParticleRenderer(copy) {
   _center_color = copy._center_color;
   _edge_color = copy._edge_color;
-  _birth_mag = copy._birth_mag;
-  _death_mag = copy._death_mag;
+  _birth_radius = copy._birth_radius;
+  _death_radius = copy._death_radius;
   _life_scale = copy._life_scale;
 
   _line_primitive = new GeomLine;
@@ -186,8 +186,8 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     // draw the particle.
 
-    float mag = get_magnitude(cur_particle);
-    float neg_mag = -mag;
+    float radius = get_radius(cur_particle);
+    float neg_radius = -radius;
     float alpha;
 
     LPoint3f pos = cur_particle->get_position();
@@ -196,10 +196,10 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     // handle alpha
 
-    if (_alpha_decay != PR_NO_ALPHA) {
+    if (_alpha_mode != PR_ALPHA_NONE) {
       alpha = cur_particle->get_parameterized_age();
 
-      if (_alpha_decay == PR_ALPHA_OUT)
+      if (_alpha_mode == PR_ALPHA_OUT)
 	alpha = 1.0f - alpha;
 
       center_color[3] = alpha;
@@ -209,17 +209,17 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     // 6 lines coming from the center point.
 
     *cur_vert++ = pos;
-    *cur_vert++ = pos + Vertexf(mag, 0.0f, 0.0f);
+    *cur_vert++ = pos + Vertexf(radius, 0.0f, 0.0f);
     *cur_vert++ = pos;
-    *cur_vert++ = pos + Vertexf(neg_mag, 0.0f, 0.0f);
+    *cur_vert++ = pos + Vertexf(neg_radius, 0.0f, 0.0f);
     *cur_vert++ = pos;
-    *cur_vert++ = pos + Vertexf(0.0f, mag, 0.0f);
+    *cur_vert++ = pos + Vertexf(0.0f, radius, 0.0f);
     *cur_vert++ = pos;
-    *cur_vert++ = pos + Vertexf(0.0f, neg_mag, 0.0f);
+    *cur_vert++ = pos + Vertexf(0.0f, neg_radius, 0.0f);
     *cur_vert++ = pos;
-    *cur_vert++ = pos + Vertexf(0.0f, 0.0f, mag);
+    *cur_vert++ = pos + Vertexf(0.0f, 0.0f, radius);
     *cur_vert++ = pos;
-    *cur_vert++ = pos + Vertexf(0.0f, 0.0f, neg_mag);
+    *cur_vert++ = pos + Vertexf(0.0f, 0.0f, neg_radius);
 
     *cur_color++ = center_color;
     *cur_color++ = edge_color;

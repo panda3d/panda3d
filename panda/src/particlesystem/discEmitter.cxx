@@ -1,4 +1,4 @@
-// Filename: discEmitter.cxx
+// Filename: discEmitter.C
 // Created by:  charles (22Jun00)
 // 
 ////////////////////////////////////////////////////////////////////
@@ -32,6 +32,10 @@ DiscEmitter(const DiscEmitter &copy) :
   _inner_magnitude = copy._inner_magnitude;
   _outer_magnitude = copy._outer_magnitude;
   _cubic_lerping = copy._cubic_lerping;
+
+  _distance_from_center = copy._distance_from_center;
+  _sinf_theta = copy._sinf_theta;
+  _cosf_theta = copy._cosf_theta;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,44 +58,59 @@ make_copy(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : DiscEmitter::create_particle_location 
-//      Access : Public 
-// Description : Generates a location on the disc
+//    Function : DiscEmitter::assign_initial_position
+//      Access : Public
+// Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void DiscEmitter::
-assign_initial_values(LPoint3f& pos, LVector3f& vel) {
+assign_initial_position(LPoint3f& pos) {
   // position
-  float theta = bounded_rand() * 2.0f * MathNumbers::pi;
+  float theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi;
 
-  float t = bounded_rand();
-  float r_scalar = t * _radius;
+  _distance_from_center = NORMALIZED_RAND();
+  float r_scalar = _distance_from_center * _radius;
 
-  float sinf_theta = sinf(theta);
-  float cosf_theta = cosf(theta);
+  _sinf_theta = sinf(theta);
+  _cosf_theta = cosf(theta);
 
-  float new_x = cosf_theta * r_scalar;
-  float new_y = sinf_theta * r_scalar;
+  float new_x = _cosf_theta * r_scalar;
+  float new_y = _sinf_theta * r_scalar;
 
   pos.set(new_x, new_y, 0.0f);
+}
 
-  // lerp type
+////////////////////////////////////////////////////////////////////
+//    Function : DiscEmitter::assign_initial_velocity
+//      Access : Public
+// Description : Generates a velocity for a new particle
+////////////////////////////////////////////////////////////////////
+void DiscEmitter::
+assign_initial_velocity(LVector3f& vel) {
   float aoe, mag;
 
+  // lerp type
   if (_cubic_lerping == true) {
-    aoe = cubic_lerp(t, _inner_aoe, _outer_aoe);
-    mag = cubic_lerp(t, _inner_magnitude, _outer_magnitude);
+    aoe = CLERP(_distance_from_center, _inner_aoe, _outer_aoe);
+    mag = CLERP(_distance_from_center, _inner_magnitude, _outer_magnitude);
   }
   else {
-    aoe = lerp(t, _inner_aoe, _outer_aoe);
-    mag = lerp(t, _inner_magnitude, _outer_magnitude);
+    aoe = LERP(_distance_from_center, _inner_aoe, _outer_aoe);
+    mag = LERP(_distance_from_center, _inner_magnitude, _outer_magnitude);
   }
 
   // velocity
   float vel_z = mag * sinf(aoe * (MathNumbers::pi / 180.0f));
   float abs_diff = fabs((mag * mag) - (vel_z * vel_z));
   float root_mag_minus_z_squared = sqrtf(abs_diff);
-  float vel_x = cosf_theta * root_mag_minus_z_squared;
-  float vel_y = sinf_theta * root_mag_minus_z_squared;
+  float vel_x = _cosf_theta * root_mag_minus_z_squared;
+  float vel_y = _sinf_theta * root_mag_minus_z_squared;
+
+  // quick and dirty
+  if((aoe > 90.0f) && (aoe < 270.0f))
+  {
+    vel_x = -vel_x;
+    vel_y = -vel_y;
+  }
 
   vel.set(vel_x, vel_y, vel_z);
 }

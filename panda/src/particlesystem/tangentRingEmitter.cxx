@@ -1,4 +1,4 @@
-// Filename: tangentRingEmitter.cxx
+// Filename: tangentRingEmitter.C
 // Created by:  charles (25Jul00)
 // 
 ////////////////////////////////////////////////////////////////////
@@ -46,17 +46,26 @@ make_copy(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : assign_initial_values
-//       Access : private, virtual
-//  Description : fills in a newly-born particle
+//    Function : TangentRingEmitter::assign_initial_position
+//      Access : Public
+// Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void TangentRingEmitter::
-assign_initial_values(LPoint3f& pos, LVector3f& vel) {
-  float theta = bounded_rand() * 2.0f * MathNumbers::pi;
+assign_initial_position(LPoint3f& pos) {
+  float theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi;
 
-  float x = _radius * cosf(theta);
-  float y = _radius * sinf(theta);
+  _x = cosf(theta);
+  _y = sinf(theta);
 
-  pos.set(x, y, 0);
-  vel.set(-y, x, 0);
+  pos.set(_radius * _x, _radius * _y, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : TangentRingEmitter::assign_initial_velocity
+//      Access : Public
+// Description : Generates a velocity for a new particle
+////////////////////////////////////////////////////////////////////
+void TangentRingEmitter::
+assign_initial_velocity(LVector3f& vel) {
+  vel.set(-_y, _x, 0);
 }
