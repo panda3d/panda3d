@@ -38,7 +38,7 @@ get_binding(int attr) const {
 //               nonindexed, depending on whether get_coords_index()
 //               returns a NULL array.
 ////////////////////////////////////////////////////////////////////
-INLINE const PTA_Vertexf &Geom::
+INLINE PTA_Vertexf Geom::
 get_coords_array() const {
   return _coords;
 }
@@ -51,7 +51,7 @@ get_coords_array() const {
 //               be indexed or nonindexed, depending on whether
 //               get_normals_index() returns a NULL array.
 ////////////////////////////////////////////////////////////////////
-INLINE const PTA_Normalf &Geom::
+INLINE PTA_Normalf Geom::
 get_normals_array() const {
   return _norms;
 }
@@ -64,7 +64,7 @@ get_normals_array() const {
 //               be indexed or nonindexed, depending on whether
 //               get_colors_index() returns a NULL array.
 ////////////////////////////////////////////////////////////////////
-INLINE const PTA_Colorf &Geom::
+INLINE PTA_Colorf Geom::
 get_colors_array() const {
   return _colors;
 }
@@ -78,7 +78,7 @@ get_colors_array() const {
 //               depending on whether get_texcoords_index() returns a
 //               NULL array.
 ////////////////////////////////////////////////////////////////////
-INLINE const PTA_TexCoordf &Geom::
+INLINE PTA_TexCoordf Geom::
 get_texcoords_array() const {
   return _texcoords;
 }
@@ -89,7 +89,7 @@ get_texcoords_array() const {
 //  Description: Returns the array of indices that, if nonempty, will
 //               be used to traverse the vertices in coords_array.
 ////////////////////////////////////////////////////////////////////
-INLINE const PTA_ushort &Geom::
+INLINE PTA_ushort Geom::
 get_coords_index() const {
   return _vindex;
 }
@@ -100,7 +100,7 @@ get_coords_index() const {
 //  Description: Returns the array of indices that, if nonempty, will
 //               be used to traverse the vertices in normals_array.
 ////////////////////////////////////////////////////////////////////
-INLINE const PTA_ushort &Geom::
+INLINE PTA_ushort Geom::
 get_normals_index() const {
   return _nindex;
 }
@@ -111,7 +111,7 @@ get_normals_index() const {
 //  Description: Returns the array of indices that, if nonempty, will
 //               be used to traverse the vertices in colors_array.
 ////////////////////////////////////////////////////////////////////
-INLINE const PTA_ushort &Geom::
+INLINE PTA_ushort Geom::
 get_colors_index() const {
   return _cindex;
 }
@@ -122,7 +122,7 @@ get_colors_index() const {
 //  Description: Returns the array of indices that, if nonempty, will
 //               be used to traverse the vertices in texcoords_array.
 ////////////////////////////////////////////////////////////////////
-INLINE const PTA_ushort &Geom::
+INLINE PTA_ushort Geom::
 get_texcoords_index() const {
   return _tindex;
 }

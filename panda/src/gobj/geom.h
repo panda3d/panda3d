@@ -182,14 +182,14 @@ PUBLISHED:
   virtual bool is_dynamic() const;
 
   INLINE GeomBindType get_binding(int attr) const;
-  INLINE const PTA_Vertexf &get_coords_array() const;
-  INLINE const PTA_Normalf &get_normals_array() const;
-  INLINE const PTA_Colorf &get_colors_array() const;
-  INLINE const PTA_TexCoordf &get_texcoords_array() const;
-  INLINE const PTA_ushort &get_coords_index() const;
-  INLINE const PTA_ushort &get_normals_index() const;
-  INLINE const PTA_ushort &get_colors_index() const;
-  INLINE const PTA_ushort &get_texcoords_index() const;
+  INLINE PTA_Vertexf get_coords_array() const;
+  INLINE PTA_Normalf get_normals_array() const;
+  INLINE PTA_Colorf get_colors_array() const;
+  INLINE PTA_TexCoordf get_texcoords_array() const;
+  INLINE PTA_ushort get_coords_index() const;
+  INLINE PTA_ushort get_normals_index() const;
+  INLINE PTA_ushort get_colors_index() const;
+  INLINE PTA_ushort get_texcoords_index() const;
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
 
