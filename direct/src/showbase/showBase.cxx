@@ -124,10 +124,9 @@ PT(GraphicsPipe) make_graphics_pipe() {
   return main_pipe;
 }
 
-PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe,
-                                        NamedNode *render,
-                                        NamedNode *camera,
-                                        NodeAttributes &initial_state) {
+ChanConfig make_graphics_window(GraphicsPipe *pipe,
+                                NamedNode *render,
+                                NodeAttributes &initial_state) {
   PT(GraphicsWindow) main_win;
   ChanCfgOverrides override;
 
@@ -147,7 +146,8 @@ PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe,
   override.setField(ChanCfgOverrides::Title, title);
 
   std::string conf = config_showbase.GetString("chan-config", chan_config);
-  main_win = ChanConfig(pipe, conf, camera, render, override);
+  ChanConfig chan_config(pipe, conf, render, override);
+  main_win = chan_config.get_win();
   assert(main_win != (GraphicsWindow*)0L);
 
   WindowCallback *wcb =
@@ -157,7 +157,7 @@ PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe,
   main_win->set_draw_callback(wcb);
   main_win->set_idle_callback(wcb);
 
-  return main_win;
+  return chan_config;
 }
 
 // Create a scene graph, associated with the indicated window, that

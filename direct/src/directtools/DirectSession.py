@@ -7,6 +7,7 @@ from DirectGrid import *
 from DirectGeometry import *
 from DirectLights import *
 from DirectSessionPanel import *
+from DirectCamConfig import *
 from tkSimpleDialog import askstring
 import Placer
 import EntryScale
@@ -34,7 +35,7 @@ class DirectSession(PandaObject):
         self.drList = DisplayRegionList()
         self.iRayList = map(lambda x: x.iRay, self.drList)
         self.dr = self.drList[0]
-        self.camera = self.dr.camera
+        self.camera = self.dr.cam
         self.iRay = self.dr.iRay
 
         self.cameraControl = DirectCameraControl()
@@ -110,6 +111,7 @@ class DirectSession(PandaObject):
         
         # One run through the context task to init everything
         self.drList.updateContext()
+        self.drList.camUpdate('')
 
         self.actionEvents = [
             ['select', self.select],
@@ -633,12 +635,40 @@ class DirectSession(PandaObject):
         for iRay in self.iRayList:
             iRay.removeUnpickable(item)
 
-class DisplayRegionList:
+class DisplayRegionList(PandaObject):
     def __init__(self):
         self.displayRegionList = []
-        for camera in base.cameraList:
-            self.displayRegionList.append(
-                DisplayRegionContext(base.win, camera))
+        self.displayRegionLookup = {}
+        i = 0
+
+        for cameraGroup in base.cameraList:
+            camList=cameraGroup.findAllMatches('**/+Camera')
+            for cameraIndex in range(camList.getNumPaths()):
+                camera = camList[cameraIndex]
+                if camera.getName()=='<noname>':
+                    camera.setName('Camera%d' % cameraIndex)
+                self.displayRegionList.append(
+                    DisplayRegionContext(base.win,
+                                         camera))
+                if camera.getName()!='<noname>' or len(camera.getName())==0:
+                    self.displayRegionLookup[camera.getName()]=i
+                    i = i + 1
+        for cameraIndex in range(len(base.groupList)):
+            self.displayRegionList[cameraIndex].setGroup(
+                base.groupList[cameraIndex])
+        self.accept("CamChange",self.camUpdate)
+        self.accept("DIRECT_mouse1",self.mouseUpdate)
+        self.accept("DIRECT_mouse2",self.mouseUpdate)
+        self.accept("DIRECT_mouse3",self.mouseUpdate)
+        self.accept("DIRECT_mouse1Up",self.mouseUpdate)
+        self.accept("DIRECT_mouse2Up",self.mouseUpdate)
+        self.accept("DIRECT_mouse3Up",self.mouseUpdate)
+
+        #setting up array of camera nodes
+        cameraList = []
+        for dr in self.displayRegionList:
+            cameraList.append(dr.cam)
+        setCameraOffsets(cameraList)
 
     def __getitem__(self, index):
         return self.displayRegionList[index]
@@ -647,16 +677,7 @@ class DisplayRegionList:
         return len(self.displayRegionList)
 
     def updateContext(self):
-        for dr in self.displayRegionList:
-            dr.contextTask(None)
-        
-    def spawnContextTask(self):
-        for dr in self.displayRegionList:
-            dr.start()
-
-    def removeContextTask(self):
-        for dr in self.displayRegionList:
-            dr.stop()
+        self.contextTask(None)
 
     def setNearFar(self, near, far):
         for dr in self.displayRegionList:
@@ -682,19 +703,24 @@ class DisplayRegionList:
         for dr in self.displayRegionList:
             dr.camNode.setVfov(fov)
 
-class DisplayRegionContext:
-    def __init__(self, win, camera):
-        self.win = win
-        self.camera = camera
-        self.cam = self.camera.find('**/+Camera')
-        self.camNode = self.cam.getNode(0)
-        self.iRay = SelectionRay(self.camera)
-        self.nearVec = Vec3(0)
-        self.mouseX = 0.0
-        self.mouseY = 0.0
+    def camUpdate(self, camName):
+        if self.displayRegionLookup.has_key(camName):
+            self.displayRegionList[self.displayRegionLookup[camName]].camUpdate()
+        else:
+            for dr in self.displayRegionList:
+                dr.camUpdate()
 
-    def __getitem__(self,key):
-        return self.__dict__[key]
+    def mouseUpdate(self):
+        for dr in self.displayRegionList:
+            dr.mouseUpdate()
+        direct.dr = self.getCurrentDr()
+
+    def getCurrentDr(self):
+        for dr in self.displayRegionList:
+            if (dr.mouseX >= -1.0 and dr.mouseX <= 1.0 and
+                dr.mouseY >= -1.0 and dr.mouseY <= 1.0):
+                return dr
+        return self.displayRegionList[0]
 
     def start(self):
         # First shutdown any existing task
@@ -715,6 +741,40 @@ class DisplayRegionContext:
 
     def contextTask(self, state):
         # Window Data
+        self.mouseUpdate()
+        return Task.cont
+
+
+class DisplayRegionContext:
+    def __init__(self, win, cam):
+        self.win = win
+        self.cam = cam
+        self.camNode = self.cam.getNode(0)
+        self.iRay = SelectionRay(self.cam)
+        self.nearVec = Vec3(0)
+        self.mouseX = 0.0
+        self.mouseY = 0.0
+        numDrs = self.camNode.getNumDrs()
+        self.dr = self.camNode.getDr(0)
+        left = self.dr.getLeft()
+        right = self.dr.getRight()
+        bottom = self.dr.getBottom()
+        top = self.dr.getTop()
+        self.originX = left+right-1
+        self.originY = top+bottom-1
+        self.scaleX = 1.0/(right-left)
+        self.scaleY = 1.0/(top-bottom)
+        self.camUpdate()
+
+    def __getitem__(self,key):
+        return self.__dict__[key]
+
+    def setGroup(self, groupIndex):
+        self.groupIndex = groupIndex
+
+
+    def camUpdate(self):
+        # Window Data
         self.width = self.win.getWidth()
         self.height = self.win.getHeight()
         self.near = self.camNode.getNear()
@@ -727,6 +787,8 @@ class DisplayRegionContext:
         self.right = self.nearWidth * 0.5
         self.top = self.nearHeight * 0.5
         self.bottom = -self.nearHeight * 0.5
+
+    def mouseUpdate(self):
         # Mouse Data
         # Last frame
         self.mouseLastX = self.mouseX
@@ -736,14 +798,20 @@ class DisplayRegionContext:
         if (base.mouseWatcherNode.hasMouse()):
             self.mouseX = base.mouseWatcherNode.getMouseX()
             self.mouseY = base.mouseWatcherNode.getMouseY()
+            self.mouseX = (self.mouseX-self.originX)*self.scaleX
+            self.mouseY = (self.mouseY-self.originY)*self.scaleY
         # Delta percent of window the mouse moved
         self.mouseDeltaX = self.mouseX - self.mouseLastX
         self.mouseDeltaY = self.mouseY - self.mouseLastY
         self.nearVec.set((self.nearWidth*0.5) * self.mouseX,
                          self.near,
                          (self.nearHeight*0.5) * self.mouseY)
-        # Continue the task
-        return Task.cont
 
 # Create one
 __builtin__.direct = base.direct = DirectSession()
+
+
+
+
+
+

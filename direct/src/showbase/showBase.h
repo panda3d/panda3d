@@ -30,6 +30,7 @@
 #include <nodePath.h>
 #include <dconfig.h>
 #include <dSearchPath.h>
+#include <chancfg.h>
 
 ConfigureDecl(config_showbase, EXPCL_DIRECT, EXPTP_DIRECT);
 typedef Config::Config<ConfigureGetConfig_config_showbase> ConfigShowbase;
@@ -42,10 +43,9 @@ BEGIN_PUBLISH
 EXPCL_DIRECT DSearchPath &get_particle_path();
 
 EXPCL_DIRECT PT(GraphicsPipe) make_graphics_pipe();
-EXPCL_DIRECT PT(GraphicsWindow)
+EXPCL_DIRECT ChanConfig
   make_graphics_window(GraphicsPipe *pipe,
                        NamedNode *render,
-                       NamedNode *camera,
                        NodeAttributes &initial_state);
 
 EXPCL_DIRECT NodePath setup_panda_2d(GraphicsWindow *win, const string &name);

@@ -24,7 +24,6 @@ import FSM
 import State
 
 globalClock = ClockObject.getGlobalClock()
-
 class ShowBase:
 
     notify = directNotify.newCategory("ShowBase")
@@ -75,18 +74,24 @@ class ShowBase:
         # This will be the list of cameras, one per display region
         # For now, we only have one display region, so just create the
         # default camera
-        self.camera = self.render.attachNewNode('camera')
-        # And put it in the list
-        self.cameraList = [ self.camera ]
+        
         self.dataRoot = NodePath(NamedNode('dataRoot'), DataRelation.getClassType())
         # Cache the node so we do not ask for it every frame
         self.dataRootNode = self.dataRoot.node()
         self.dataUnused = NodePath(NamedNode('dataUnused'), DataRelation.getClassType())
         self.pipe = makeGraphicsPipe()
-        self.win = makeGraphicsWindow(self.pipe,
-                                      self.renderTop.node(),
-                                      self.camera.node(),
-                                      self.initialState)
+        chanConfig = makeGraphicsWindow(self.pipe,
+                                        self.renderTop.node(),
+                                        self.initialState)
+        self.win = chanConfig.getWin()
+        self.cameraList = []
+        for i in range(chanConfig.getNumGroups()):
+            self.cameraList.append(self.render.attachNewNode(
+                chanConfig.getGroupNode(i)))
+        self.groupList = []
+        for i in range(chanConfig.getNumDrs()):
+            self.groupList.append(chanConfig.getGroupMembership(i))
+        self.camera = self.cameraList[0]
 
         # This is a placeholder for a CollisionTraverser.  If someone
         # stores a CollisionTraverser pointer here, we'll traverse it
