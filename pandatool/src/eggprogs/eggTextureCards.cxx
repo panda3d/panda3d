@@ -80,9 +80,16 @@ EggTextureCards() : EggWriter(true, true) {
      "(or \"r\" or \"c\").  The default is to leave this unspecified.",
      &EggTextureCards::dispatch_wrap_mode, NULL, &_wrap_mode);
 
+  add_option
+    ("f", "format", 0,
+     "Indicates the format of the texture: typical choices are \"rgba12\" "
+     "or \"rgb5\" or \"alpha\".  The default is to leave this unspecified.",
+     &EggTextureCards::dispatch_format, NULL, &_format);
+
   _polygon_geometry.set(-0.5, 0.5, -0.5, 0.5);
   _polygon_color.set(1.0, 1.0, 1.0, 1.0);
   _wrap_mode = EggTexture::WM_unspecified;
+  _format = EggTexture::F_unspecified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,6 +141,28 @@ dispatch_wrap_mode(const string &opt, const string &arg, void *var) {
            << arg << "\n";
       return false;
     }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTextureCards::dispatch_format
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               one parameter, which is to be interpreted as a
+//               Format string.  The data pointer is to a Format
+//               enum variable.
+////////////////////////////////////////////////////////////////////
+bool EggTextureCards::
+dispatch_format(const string &opt, const string &arg, void *var) {
+  EggTexture::Format *fp = (EggTexture::Format *)var;
+
+  *fp = EggTexture::string_format(arg);
+  if (*fp == EggTexture::F_unspecified) {
+    nout << "Invalid format parameter for -" << opt << ": "
+         << arg << "\n";
+    return false;
   }
 
   return true;
@@ -251,6 +280,7 @@ run() {
     if (texture_ok) {
       EggTexture *tref = new EggTexture(name, filename);
       tref->set_wrap_mode(_wrap_mode);
+      tref->set_format(_format);
       group->add_child(tref);
 
       // Each polygon gets placed in its own sub-group.  This will make

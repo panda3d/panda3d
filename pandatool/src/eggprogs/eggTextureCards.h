@@ -42,6 +42,7 @@ protected:
   virtual bool handle_args(Args &args);
 
   static bool dispatch_wrap_mode(const string &opt, const string &arg, void *var);
+  static bool dispatch_format(const string &opt, const string &arg, void *var);
 
 private:
   bool scan_texture(const Filename &filename, LVecBase4d &geometry);
@@ -57,6 +58,7 @@ public:
   Colorf _polygon_color;
   vector_string _texture_names;
   EggTexture::WrapMode _wrap_mode;
+  EggTexture::Format _format;
 };
 
 #endif
