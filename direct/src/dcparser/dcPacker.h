@@ -80,7 +80,7 @@ PUBLISHED:
   INLINE PN_uint64 unpack_uint64();
   INLINE string unpack_string();
   INLINE string unpack_literal_value();
-  INLINE void unpack_validate();
+  void unpack_validate();
   void unpack_skip();
 
 #ifdef HAVE_PYTHON
