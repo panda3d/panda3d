@@ -29,8 +29,10 @@
 class Node;
 class TextGlyph;
 
+#ifdef __GNUC__
 // For some reason, gcc's <string> doesn't define this.
 typedef basic_string<wchar_t> wstring;
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextFont
