@@ -67,8 +67,11 @@ BACKGROUND_SORT_INDEX = -100
 MIDGROUND_SORT_INDEX = 0
 FOREGROUND_SORT_INDEX = 100
 
+def loadDefaultFont():
+    return loader.loadFont("models/fonts/Comic")
+
 defaultFont = None
-defaultFontName = "models/fonts/Comic"
+defaultFontFunc = loadDefaultFont
 defaultClickSound = None
 defaultRolloverSound = None
 defaultDialogGeom = None
@@ -98,16 +101,16 @@ def setDefaultClickSound(newSound):
 def getDefaultFont():
     global defaultFont
     if defaultFont == None:
-        defaultFont = loader.loadFont(defaultFontName)
+        defaultFont = defaultFontFunc()
     return defaultFont
 
 def setDefaultFont(newFont):
     global defaultFont
     defaultFont = newFont
 
-def setDefaultFontName(newFontName):
-    global defaultFontName
-    defaultFontName = newFontName
+def setDefaultFontFunc(newFontFunc):
+    global defaultFontFunc
+    defaultFontFunc = newFontFunc
 
 def getDefaultDialogGeom():
     global defaultDialogGeom
