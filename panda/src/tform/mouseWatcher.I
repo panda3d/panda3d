@@ -21,11 +21,24 @@
 //     Function: MouseWatcher::has_mouse
 //       Access: Published
 //  Description: Returns true if the mouse is anywhere within the
-//               window, false otherwise.
+//               window, false otherwise.  Also see is_mouse_open().
 ////////////////////////////////////////////////////////////////////
 INLINE bool MouseWatcher::
 has_mouse() const {
   return _has_mouse;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::is_mouse_open
+//       Access: Published
+//  Description: Returns true if the mouse is within the window and
+//               not over some particular MouseWatcherRegion that is
+//               marked to suppress mouse events; that is, that the
+//               mouse is in open space within the window.
+////////////////////////////////////////////////////////////////////
+INLINE bool MouseWatcher::
+is_mouse_open() const {
+  return _has_mouse && !_suppressed;
 }
 
 ////////////////////////////////////////////////////////////////////

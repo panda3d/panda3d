@@ -65,6 +65,7 @@ PUBLISHED:
   bool remove_region(MouseWatcherRegion *region);
 
   INLINE bool has_mouse() const;
+  INLINE bool is_mouse_open() const;
   INLINE const LPoint2f &get_mouse() const;
   INLINE float get_mouse_x() const;
   INLINE float get_mouse_y() const;
@@ -122,6 +123,7 @@ private:
   Groups _groups;
 
   bool _has_mouse;
+  bool _suppressed;
   LPoint2f _mouse;
 
   PT(MouseWatcherRegion) _current_region;

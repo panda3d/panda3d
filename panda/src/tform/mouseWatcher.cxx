@@ -44,6 +44,7 @@ TypeHandle MouseWatcher::_button_events_type;
 MouseWatcher::
 MouseWatcher(const string &name) : DataNode(name) {
   _has_mouse = false;
+  _suppressed = false;
   _current_region = (MouseWatcherRegion *)NULL;
   _button_down_region = (MouseWatcherRegion *)NULL;
   _button_down = false;
@@ -526,12 +527,12 @@ transmit_data(NodeAttributes &data) {
     }
   }
 
-  bool suppress_below = false;
+  _suppressed = false;
   if (_current_region != (MouseWatcherRegion *)NULL) {
-    suppress_below = _current_region->get_suppress_below();
+    _suppressed = _current_region->get_suppress_below();
   }
 
-  if (suppress_below) {
+  if (_suppressed) {
     // We used to suppress *everything* below, but on reflection we
     // really only want to suppress the mouse position information.
     // Button events must still get through.
