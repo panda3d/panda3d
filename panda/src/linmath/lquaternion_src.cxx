@@ -148,101 +148,74 @@ get_hpr() const {
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LQuaternion)::
 set_from_matrix(const FLOATNAME(LMatrix3) &m) {
-  FLOATTYPE m00 = m.get_cell(0, 0);
-  FLOATTYPE m01 = m.get_cell(0, 1);
-  FLOATTYPE m02 = m.get_cell(0, 2);
-  FLOATTYPE m10 = m.get_cell(1, 0);
-  FLOATTYPE m11 = m.get_cell(1, 1);
-  FLOATTYPE m12 = m.get_cell(1, 2);
-  FLOATTYPE m20 = m.get_cell(2, 0);
-  FLOATTYPE m21 = m.get_cell(2, 1);
-  FLOATTYPE m22 = m.get_cell(2, 2);
+  FLOATTYPE m00 = m(0, 0);
+  FLOATTYPE m01 = m(0, 1);
+  FLOATTYPE m02 = m(0, 2);
+  FLOATTYPE m10 = m(1, 0);
+  FLOATTYPE m11 = m(1, 1);
+  FLOATTYPE m12 = m(1, 2);
+  FLOATTYPE m20 = m(2, 0);
+  FLOATTYPE m21 = m(2, 1);
+  FLOATTYPE m22 = m(2, 2);
 
-  FLOATTYPE T = m00 + m11 + m22 + 1.;
+  FLOATTYPE T = m00 + m11 + m22 + 1.0f;
 
-  if (T > 0.) {
-    // the easy case
+  if (T > 0.0f) {
+    // The easy case.
     FLOATTYPE S = 0.5 / csqrt(T);
     _v.data[0] = 0.25 / S;
     _v.data[1] = (m21 - m12) * S;
     _v.data[2] = (m02 - m20) * S;
     _v.data[3] = (m10 - m01) * S;
+
   } else {
-    // Figure out which column to take as root.  We'll choose the
-    // largest so that we get the greatest precision.
-    int c = 0;
-    FLOATTYPE S;
+    // The harder case.  First, figure out which column to take as
+    // root.  We'll choose the largest so that we get the greatest
+    // precision.
 
-    // Define a few handy macros to define the determinant for each
-    // column.  This just saves some needless repetition of the
-    // expressions.
-#define CHOOSE_COLUMN_0 { c = 0; S = 1. + m00 - m11 - m22; }
-#define CHOOSE_COLUMN_1 { c = 1; S = 1. + m11 - m22 - m00; }
-#define CHOOSE_COLUMN_2 { c = 2; S = 1. + m22 - m00 - m11; }
+    // It is tempting to try to compare the absolute values of the
+    // diagonal values in the code below, instead of their normal,
+    // signed values.  Don't do it.  We are actually maximizing the
+    // value of S (computed within the switch statement below), which
+    // must always be positive, and is therefore based on the diagonal
+    // whose actual value--not absolute value--is greater than those
+    // of the other two.
 
-    if (cabs(m00) > cabs(m11)) {
-      if (cabs(m00) > cabs(m22)) {
-        // Column 0 is dominant.
-        CHOOSE_COLUMN_0;
-        if (S == 0.0f) {
-          // When S goes to zero, take the second choice.
-          if (cabs(m11) > cabs(m22)) {
-            CHOOSE_COLUMN_1;
-          } else {
-            CHOOSE_COLUMN_2;
-          }
-        }
-      } else {
-        // Column 2 is dominant.
-        CHOOSE_COLUMN_2;
-        if (S == 0.0f) {
-          // When S goes to zero, take the second choice.
-          CHOOSE_COLUMN_0;
-        }
-      }
+    // We already know that m00 + m11 + m22 <= -1 (because we are here
+    // in the harder case).
 
-    } else if (cabs(m11) > cabs(m22)) {
-      // Column 1 is dominant.
-      CHOOSE_COLUMN_1;
-      if (S == 0.0f) {
-        CHOOSE_COLUMN_2;
-      }
-
-    } else {
-      // Column 2 is dominant.
-      CHOOSE_COLUMN_2;
-      if (S == 0.0f) {
-        CHOOSE_COLUMN_1;
-      }
-    }
-
-#undef CHOOSE_COLUMN_0
-#undef CHOOSE_COLUMN_1
-#undef CHOOSE_COLUMN_2
-
-    S = csqrt(S);
-    switch (c) {
-    case 0:
+    if (m00 > m11 && m00 > m22) {
+      // m00 is larger than m11 and m22.
+      FLOATTYPE S = 1.0f + m00 - (m11 + m22);
+      nassertv(S > 0.0f);
+      S = csqrt(S);
       _v.data[1] = S * 0.5f;
       S = 0.5f / S;
       _v.data[2] = (m01 + m10) * S;
       _v.data[3] = (m02 + m20) * S;
       _v.data[0] = (m12 - m21) * S;
-      break;
-    case 1:
+
+    } else if (m11 > m22) {
+      // m11 is larger than m00 and m22.
+      FLOATTYPE S = 1.0f + m11 - (m22 + m00);
+      nassertv(S > 0.0f);
+      S = csqrt(S);
       _v.data[2] = S * 0.5f;
       S = 0.5f / S;
       _v.data[3] = (m12 + m21) * S;
       _v.data[1] = (m10 + m01) * S;
       _v.data[0] = (m20 - m02) * S;
-      break;
-    case 2:
+
+    } else {
+      // m22 is larger than m00 and m11.
+      FLOATTYPE S = 1.0f + m22 - (m00 + m11);
+      nassertv(S > 0.0f);
+      S = csqrt(S);
       _v.data[3] = S * 0.5f;
       S = 0.5f / S;
       _v.data[1] = (m20 + m02) * S;
       _v.data[2] = (m21 + m12) * S;
       _v.data[0] = (m01 - m10) * S;
-      break;
     }
   }
 }
