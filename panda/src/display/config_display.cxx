@@ -58,12 +58,6 @@ const bool pipe_spec_is_remote = config_display.Defined("pipe-machine")
 const bool compare_state_by_pointer =
 config_display.GetBool("compare-state-by-pointer", true);
 
-// This is normally true to enable the cull traversal to perform
-// state-sorting and alpha-sorting.  Turn this false to disable these
-// features and likely improve cull performance at the expense of draw
-// (and at the expense of correct alpha).
-const bool cull_sorting = config_display.GetBool("cull-sorting", true);
-
 // This is normally true; set it false to disable view-frustum culling
 // (primarily useful for debugging).
 const bool view_frustum_cull = config_display.GetBool("view-frustum-cull", true);
@@ -72,6 +66,17 @@ const bool view_frustum_cull = config_display.GetBool("view-frustum-cull", true)
 // graph for TransformState and RenderState counts.  This adds a bit
 // of per-frame overhead to count these things up.
 const bool pstats_unused_states = config_display.GetBool("pstats-unused-states", false);
+
+// This is the default threading model to use when the GraphicsEngine
+// is created, e.g. app-cull-draw or appculldraw or some such.  (See
+// GraphicsEngine::set_threading_model()).
+
+// Warning!  The code that uses this is currently experimental and
+// incomplete, and will almost certainly crash!  Do not set
+// threading-model to anything other than its default of a
+// single-threaded model unless you are developing Panda's threading
+// system!
+const string threading_model = config_display.GetString("threading-model", "appculldraw");
 
 
 Config::ConfigTable::Symbol::iterator pipe_modules_begin(void) {

@@ -23,6 +23,9 @@
 #include "graphicsWindow.h"
 #include "sceneSetup.h"
 #include "pointerTo.h"
+#include "thread.h"
+#include "mutex.h"
+#include "conditionVar.h"
 #include "pset.h"
 #include "pStatCollector.h"
 
@@ -46,6 +49,7 @@ class DisplayRegion;
 class EXPCL_PANDA GraphicsEngine : public Namable {
 PUBLISHED:
   GraphicsEngine(Pipeline *pipeline = NULL);
+  ~GraphicsEngine();
 
   void add_window(GraphicsWindow *window);
   bool remove_window(GraphicsWindow *window);
@@ -53,7 +57,24 @@ PUBLISHED:
   void render_frame();
   void render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr);
 
+  enum ThreadingModel {
+    TM_invalid,
+    TM_appculldraw,
+    TM_appcull_draw,
+    TM_app_culldraw,
+    TM_app_cull_draw,
+    TM_appcdraw,
+    TM_app_cdraw,
+  };
+
+  void set_threading_model(ThreadingModel threading_model);
+  INLINE ThreadingModel get_threading_model() const;
+
+public:
+  static ThreadingModel string_threading_model(const string &string);
+  
 private:
+  INLINE void start_cull();
   void cull_and_draw_together();
   void cull_and_draw_together(GraphicsStateGuardian *gsg, DisplayRegion *dr);
 
@@ -69,14 +90,55 @@ private:
 
   bool setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup);
 
+  void terminate_threads();
+
+  enum ThreadState {
+    TS_wait,
+    TS_do_frame,
+    TS_terminate
+  };
+
+  class CullThread : public Thread {
+  public:
+    CullThread(const string &name, GraphicsEngine *engine);
+    virtual void thread_main();
+
+    GraphicsEngine *_engine;
+    Mutex _cv_mutex;
+    ConditionVar _cv;
+    ThreadState _thread_state;
+  };
+
+  class DrawThread : public Thread {
+  public:
+    DrawThread(const string &name, GraphicsEngine *engine);
+    virtual void thread_main();
+
+    GraphicsEngine *_engine;
+    Mutex _cv_mutex;
+    ConditionVar _cv;
+    ThreadState _thread_state;
+  };
+
   Pipeline *_pipeline;
 
   typedef pset<PT(GraphicsWindow)> Windows;
   Windows _windows;
 
+  ThreadingModel _threading_model;
+  bool _cull_sorting;
+
+  PT(CullThread) _cull_thread;
+  PT(DrawThread) _draw_thread;
+
   static PStatCollector _cull_pcollector;
   static PStatCollector _draw_pcollector;
+
+  friend class CullThread;
 };
+
+ostream &
+operator << (ostream &out, GraphicsEngine::ThreadingModel threading_model);
 
 #include "graphicsEngine.I"
 

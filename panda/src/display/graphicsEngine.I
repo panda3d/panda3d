@@ -16,3 +16,30 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::get_threading_model
+//       Access: Published
+//  Description: Returns the current threading model in use; see
+//               set_threading_model().
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsEngine::ThreadingModel GraphicsEngine::
+get_threading_model() const {
+  return _threading_model;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::start_cull
+//       Access: Private
+//  Description: Starts the cull stage for the current frame.  This
+//               may or may not execute within a sub-thread, according
+//               to the current threading model.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsEngine::
+start_cull() {
+  if (_cull_sorting) {
+    cull_bin_draw();
+  } else {
+    cull_and_draw_together();
+  }
+}

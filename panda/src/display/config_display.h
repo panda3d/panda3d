@@ -36,9 +36,10 @@ extern const bool pipe_spec_is_file;
 extern const bool pipe_spec_is_remote;
 
 extern const bool compare_state_by_pointer;
-extern const bool cull_sorting;
 extern const bool view_frustum_cull;
 extern const bool pstats_unused_states;
+
+extern const string threading_model;
 
 extern Config::ConfigTable::Symbol::iterator pipe_modules_begin(void);
 extern Config::ConfigTable::Symbol::iterator pipe_modules_end(void);

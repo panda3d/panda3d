@@ -26,6 +26,8 @@
 #include "clockObject.h"
 #include "pStatTimer.h"
 #include "pStatClient.h"
+#include "mutexHolder.h"
+#include "string_utils.h"
 
 #ifndef CPPPARSER
 PStatCollector GraphicsEngine::_cull_pcollector("Cull");
@@ -47,6 +49,32 @@ GraphicsEngine(Pipeline *pipeline) :
   if (_pipeline == (Pipeline *)NULL) {
     _pipeline = Pipeline::get_render_pipeline();
   }
+
+  ThreadingModel tm = string_threading_model(threading_model);
+  if (tm == TM_invalid) {
+    display_cat.warning()
+      << "Invalid threading model: " << threading_model << "\n";
+    set_threading_model(TM_appculldraw);
+  } else {
+    set_threading_model(tm);
+  }
+
+  if (tm != TM_appculldraw) {
+    display_cat.info()
+      << "Using threading model " << get_threading_model() << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::Destructor
+//       Access: Published
+//  Description: Gracefully cleans up the graphics engine and its
+//               related threads.  Does not delete the associated
+//               windows.
+////////////////////////////////////////////////////////////////////
+GraphicsEngine::
+~GraphicsEngine() {
+  terminate_threads();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,10 +115,21 @@ remove_window(GraphicsWindow *window) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 render_frame() {
-  if (cull_sorting) {
-    cull_bin_draw();
+  if (_cull_thread == (Thread *)NULL) {
+    // Nonthreaded cull: perform cull within the app thread.  This
+    // corresponds to either TM_appculldraw, TM_appcull_draw, or
+    // TM_appcdraw.
+    start_cull();
+
   } else {
-    cull_and_draw_together();
+    // Threaded cull: perform cull within its own thread.  Here we
+    // simply signal the thread and then let it go about its business
+    // while we return.
+    MutexHolder holder(_cull_thread->_cv_mutex);
+    if (_cull_thread->_thread_state == TS_wait) {
+      _cull_thread->_thread_state = TS_do_frame;
+      _cull_thread->_cv.signal();
+    }
   }
 
   // **** This doesn't belong here; it really belongs in the Pipeline,
@@ -107,13 +146,188 @@ render_frame() {
 //               only for special effects, like shaders, that require
 //               a complete offscreen render pass before they can
 //               complete.
+//
+//               This always executes completely within the calling
+//               thread, regardless of the threading model in use.
+//               Thus, it may be an error to call this from the app
+//               thread if the threading model is not TM_appculldraw;
+//               similarly, it is an error to call it from cull if the
+//               threading model is TM_appcull_draw or
+//               TM_app_cull_draw.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
-  if (cull_sorting) {
+  if (_cull_sorting) {
     cull_bin_draw(gsg, dr);
   } else {
     cull_and_draw_together(gsg, dr);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::set_threading_model
+//       Access: Published
+//  Description: Changes the way the app, cull, and draw steps are
+//               divided among threads.  The allowable settings are:
+//
+//                TM_appculldraw: single-threaded.  All steps are
+//                  performed by the calling thread; render_frame()
+//                  does not return until the frame has been fully
+//                  rendered.
+//
+//                TM_appcull_draw: app and cull are performed
+//                  together, while draw is performed in a separate
+//                  thread.  render_frame() will return after cull has
+//                  been completed; draw will have started in the
+//                  sub-thread.
+//
+//                TM_app_culldraw: app is separate, while cull and
+//                  draw are performed in sequence within a separate
+//                  thread.  render_frame() will return almost
+//                  immediately (after waiting for cull to start in
+//                  the sub-thread).
+//
+//                TM_app_cull_draw: all stages of the pipeline are in
+//                  separate threads.  render_frame() returns almost
+//                  immediately, after waiting for cull to start in
+//                  its sub-thread; when cull finishes, it passes the
+//                  frame off to a separate thread for draw and then
+//                  begins working on culling the next frame.
+//
+//                TM_appcdraw: single-threaded, like TM_appculldraw,
+//                  but cull and draw are performed simultaneously,
+//                  rather than sequentially.  This means that the
+//                  scene will always be rendered in scene graph
+//                  order; binning, state-sorting and back-to-front
+//                  sorting cannot be achieved.
+//
+//                TM_app_cdraw: similar to TM_appcdraw, but the
+//                  cull&draw step is performed in a separate thread.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+set_threading_model(ThreadingModel threading_model) {
+  bool spawn_cull_thread;
+  bool spawn_draw_thread;
+  bool cull_sorting;
+
+  switch (threading_model) {
+  case TM_appculldraw:
+    spawn_cull_thread = false;
+    spawn_draw_thread = false;
+    cull_sorting = true;
+    break;
+
+  case TM_appcull_draw:
+    spawn_cull_thread = false;
+    spawn_draw_thread = true;
+    cull_sorting = true;
+    break;
+
+  case TM_app_culldraw:
+    spawn_cull_thread = true;
+    spawn_draw_thread = false;
+    cull_sorting = true;
+    break;
+
+  case TM_app_cull_draw:
+    spawn_cull_thread = true;
+    spawn_draw_thread = true;
+    cull_sorting = true;
+    break;
+
+  case TM_appcdraw:
+    spawn_cull_thread = false;
+    spawn_draw_thread = false;
+    cull_sorting = false;
+    break;
+
+  case TM_app_cdraw:
+    spawn_cull_thread = true;
+    spawn_draw_thread = false;
+    cull_sorting = false;
+    break;
+
+  default:
+    display_cat.error()
+      << "Invalid threading model: " << (int)threading_model << "\n";
+    return;
+  }
+
+  if ((spawn_cull_thread || spawn_draw_thread) && 
+      !Thread::is_threading_supported()) {
+    display_cat.warning()
+      << "Threading model " << threading_model
+      << " requested but threading not supported.\n";
+    threading_model = (cull_sorting) ? TM_appculldraw : TM_appcdraw;
+    spawn_cull_thread = false;
+    spawn_draw_thread = false;
+  }
+
+  if (_threading_model != threading_model || _cull_sorting != cull_sorting) {
+    terminate_threads();
+
+    _threading_model = threading_model;
+    _cull_sorting = cull_sorting;
+
+    if (spawn_cull_thread) {
+      const char *thread_name;
+      if (spawn_draw_thread) {
+        thread_name = "cull";
+      } else if (cull_sorting) {
+        thread_name = "culldraw";
+      } else {
+        thread_name = "cdraw";
+      }
+      _cull_thread = new CullThread(thread_name, this);
+      MutexHolder holder(_cull_thread->_cv_mutex);
+      if (!_cull_thread->start(TP_normal, false, true)) {
+        display_cat.error()
+          << "Unable to start cull thread.\n";
+        _cull_thread = (CullThread *)NULL;
+      }
+    }
+
+    if (spawn_draw_thread) {
+      _draw_thread = new DrawThread("draw", this);
+      MutexHolder holder(_draw_thread->_cv_mutex);
+      if (!_draw_thread->start(TP_normal, true, true)) {
+        display_cat.error()
+          << "Unable to start draw thread.\n";
+        _draw_thread = (DrawThread *)NULL;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::string_threading_model
+//       Access: Public, Static
+//  Description: Returns the ThreadingModel value corresponding to the
+//               indicated string, or TM_invalid if the threading
+//               model is invalid.
+////////////////////////////////////////////////////////////////////
+GraphicsEngine::ThreadingModel GraphicsEngine::
+string_threading_model(const string &string) {
+  if (cmp_nocase_uh(string, "appculldraw") == 0) {
+    return TM_appculldraw;
+
+  } else if (cmp_nocase_uh(string, "appcull_draw") == 0) {
+    return TM_appcull_draw;
+
+  } else if (cmp_nocase_uh(string, "app_culldraw") == 0) {
+    return TM_app_culldraw;
+
+  } else if (cmp_nocase_uh(string, "app_cull_draw") == 0) {
+    return TM_app_cull_draw;
+
+  } else if (cmp_nocase_uh(string, "appcdraw") == 0) {
+    return TM_appcdraw;
+
+  } else if (cmp_nocase_uh(string, "app_cdraw") == 0) {
+    return TM_app_cdraw;
+
+  } else {
+    return TM_invalid;
   }
 }
 
@@ -191,6 +405,7 @@ cull_bin_draw() {
         DisplayRegion *dr = win->get_display_region(i);
         cull_bin_draw(win->get_gsg(), dr);
       }
+
       win->end_frame();
     }
     win->process_events();
@@ -386,4 +601,125 @@ setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup) {
   gsg->set_scene(scene_setup);
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::terminate_threads
+//       Access: Private
+//  Description: Signals our child threads to terminate and waits for
+//               them to clean up.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+terminate_threads() {
+  if (_cull_thread != (Thread *)NULL) {
+    MutexHolder holder(_cull_thread->_cv_mutex);
+    _cull_thread->_thread_state = TS_terminate;
+    _cull_thread->_cv.signal();
+  }
+  if (_draw_thread != (Thread *)NULL) {
+    MutexHolder holder(_draw_thread->_cv_mutex);
+    _draw_thread->_thread_state = TS_terminate;
+    _draw_thread->_cv.signal();
+  }
+
+  if (_cull_thread != (Thread *)NULL) {
+    _cull_thread->join();
+    _cull_thread = (CullThread *)NULL;
+  }
+  if (_draw_thread != (Thread *)NULL) {
+    _draw_thread->join();
+    _draw_thread = (DrawThread *)NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::CullThread::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+GraphicsEngine::CullThread::
+CullThread(const string &name, GraphicsEngine *engine) : 
+  Thread(name),
+  _engine(engine),
+  _cv(_cv_mutex)
+{
+  _thread_state = TS_wait;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::CullThread::thread_main
+//       Access: Public, Virtual
+//  Description: Runs the cull thread.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::CullThread::
+thread_main() {
+  MutexHolder holder(_cv_mutex);
+  while (_thread_state != TS_terminate) {
+    _cv.wait();
+    if (_thread_state == TS_do_frame) {
+      _engine->start_cull();
+      _thread_state = TS_wait;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::DrawThread::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+GraphicsEngine::DrawThread::
+DrawThread(const string &name, GraphicsEngine *engine) : 
+  Thread(name),
+  _engine(engine),
+  _cv(_cv_mutex)
+{
+  _thread_state = TS_wait;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::DrawThread::thread_main
+//       Access: Public, Virtual
+//  Description: Runs the draw thread.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::DrawThread::
+thread_main() {
+  MutexHolder holder(_cv_mutex);
+  while (_thread_state != TS_terminate) {
+    _cv.wait();
+    if (_thread_state == TS_do_frame) {
+      //      _engine->start_draw();
+      _thread_state = TS_wait;
+    }
+  }
+}
+
+ostream &
+operator << (ostream &out, GraphicsEngine::ThreadingModel threading_model) {
+  switch (threading_model) {
+  case GraphicsEngine::TM_invalid:
+    return out << "invalid";
+    
+  case GraphicsEngine::TM_appculldraw:
+    return out << "appculldraw";
+
+  case GraphicsEngine::TM_appcull_draw:
+    return out << "appcull_draw";
+
+  case GraphicsEngine::TM_app_culldraw:
+    return out << "app_culldraw";
+
+  case GraphicsEngine::TM_app_cull_draw:
+    return out << "app_cull_draw";
+
+  case GraphicsEngine::TM_appcdraw:
+    return out << "appcdraw";
+
+  case GraphicsEngine::TM_app_cdraw:
+    return out << "app_cdraw";
+  
+  default:
+    return out << "**invalid threading model (" << (int)threading_model
+               << ")**";
+  }
 }
