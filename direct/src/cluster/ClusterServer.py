@@ -65,12 +65,12 @@ class ClusterServer(DirectObject.DirectObject):
         self.daemon.serverReady(clusterDaemonClient, clusterDaemonPort)
 
     def startListenerPollTask(self):
-        # Run this task near the start of frame, sometime after the dataloop
+        # Run this task near the start of frame, sometime after the dataLoop
         taskMgr.add(self.listenerPollTask, "serverListenerPollTask",-40)
 
     def listenerPollTask(self, task):
         """ Task to listen for a new connection from the client """
-        # Run this task after the dataloop
+        # Run this task after the dataLoop
         if self.qcl.newConnectionAvailable():
             self.notify.info("New connection is available")
             rendezvous = PointerToConnection()
