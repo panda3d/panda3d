@@ -1278,7 +1278,8 @@ draw_prim_setup(const Geom *geom)
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
-  if (perVertex & (PerColor | PerNormal))
+  if (perVertex & ((wants_colors() ? PerColor : 0) | 
+		   (wants_normals() ? PerNormal : 0)))
 		  _d3dDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, D3DSHADE_GOURAUD);
   else
 		  _d3dDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, D3DSHADE_FLAT);

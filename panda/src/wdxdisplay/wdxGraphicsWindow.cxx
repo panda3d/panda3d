@@ -506,6 +506,7 @@ wdxGraphicsWindow(GraphicsPipe* pipe, const
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsWindow::~wdxGraphicsWindow(void) {
+  AtExitFn();
 #ifdef WBD_GL_MODE
   free(_visual);
 #endif //WBD_GL_MODE
