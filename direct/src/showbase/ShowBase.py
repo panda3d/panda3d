@@ -62,6 +62,7 @@ class ShowBase:
 
         self.audioMgr = audioMgr
 
+        self.wantTk = 0
         self.createRootPanel()
         
         self.restart()

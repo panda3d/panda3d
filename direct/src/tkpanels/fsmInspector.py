@@ -1,0 +1,469 @@
+from Tkinter import *
+from tkSimpleDialog import askstring
+import Pmw
+import math
+import operator
+
+DELTA = (5.0 / 360.) * 2.0 * math.pi
+
+class FSMInspector(Pmw.MegaToplevel):
+    def __init__(self, parent = None, **kw):
+        # Initialize instance variables
+        self.stateInspectorDict = {}
+        
+        #define the megawidget options
+        INITOPT = Pmw.INITOPT
+        optiondefs = (
+            ('title', 'FSM Viewer', None),
+            ('currentFSM', (), None),
+            ('gridSize', '0.25i', self._setGridSize),
+            )
+        self.defineoptions(kw, optiondefs)
+
+        # Initialize the toplevel widget
+        Pmw.MegaToplevel.__init__(self, parent)
+        
+        # Create the components
+        oldInterior = Pmw.MegaToplevel.interior(self)
+        # The Menu Bar
+        balloon = self.balloon = Pmw.Balloon()
+        # Start with balloon help disabled
+        balloon.configure(state = 'none')
+        menubar = self._menubar = self.createcomponent('menubar',
+                (), None,
+                Pmw.MenuBar, (oldInterior,),
+                balloon = balloon)
+        menubar.pack(fill=X)
+        # FSM Menu
+        menubar.addmenu('FSM', 'FSM Operations')
+        menubar.addmenuitem('FSM', 'command',
+                                  'Input grid spacing',
+                                  label = 'Grid spacing...',
+                                  command = self.popupGridDialog)
+        # Create the checkbutton variable
+        self._fGridSnap = IntVar()
+        self._fGridSnap.set(1)
+        menubar.addmenuitem('FSM', 'checkbutton',
+                                  'Enable/disable grid',
+                                  label = 'Snap to grid',
+                                  variable = self._fGridSnap,
+                                  command = self.toggleGridSnap)
+        menubar.addmenuitem('FSM', 'command',
+                                  'Print out FSM layout',
+                                  label = 'Print FSM layout',
+                                  command = self.printLayout)
+        menubar.addmenuitem('FSM', 'command',
+                                  'Exit the FSM Inspector',
+                                  label = 'Exit',
+                                  command = self._exit)
+        
+        # States Menu
+        menubar.addmenu('States', 'State Inspector Operations')
+        menubar.addcascademenu('States', 'Font Size',
+                                     'Set state label size', tearoff = 1)
+        for size in (8, 10, 12, 14, 18, 24):
+            menubar.addmenuitem('Font Size', 'command',
+                'Set font to: ' + `size` + ' Pts', label = `size` + ' Pts',
+                command = lambda s = self, sz = size: s.setFontSize(sz))
+        menubar.addcascademenu('States', 'Marker Size',
+                                     'Set state marker size', tearoff = 1)
+        for size in ('Small', 'Medium', 'Large'):
+            sizeDict = {'Small': '0.25i', 'Medium': '0.375i', 'Large' : '0.5i'}
+            menubar.addmenuitem('Marker Size', 'command',
+                size + ' markers', label = size + ' Markers',
+                command = lambda s = self, sz = size, d = sizeDict:
+                    s.setMarkerSize(d[sz]))
+
+        # The Help menu
+        menubar.addmenu('Help', 'FSM Panel Help Operations')
+        self.toggleBalloonVar = IntVar()
+        self.toggleBalloonVar.set(0)
+        menubar.addmenuitem('Help', 'checkbutton',
+                            'Toggle balloon help',
+                            label = 'Balloon Help',
+                            variable = self.toggleBalloonVar,
+                            command = self.toggleBalloon)
+                    
+        # The Scrolled Canvas
+        self._scrolledCanvas = self.createcomponent('scrolledCanvas',
+                (), None,
+                Pmw.ScrolledCanvas, (oldInterior,),
+                hull_width = 400, hull_height = 400,
+                usehullsize = 1)
+        self._canvas = self._scrolledCanvas.component('canvas')
+        self._canvas['scrollregion'] = ('-2i', '-2i', '2i', '2i')
+        self._scrolledCanvas.resizescrollregion()
+        self._scrolledCanvas.pack(padx = 5, pady = 5, expand=1, fill = BOTH)
+
+        """
+        # The Buttons
+        buttonBox = Frame(oldInterior)
+        #Button(buttonBox, text = 'Inspect Target').pack(side=LEFT,expand=1,fill=X)
+        Button(buttonBox, text = 'Print Layout',
+               command = self.printLayout).pack(side=LEFT,expand=1,fill=X)
+        Button(buttonBox, text = 'Quit',
+               command = self._exit).pack(side=LEFT,expand=1,fill=X)
+        buttonBox.pack(fill=X)
+        """
+        
+        # Update lines
+        self._canvas.bind('<B1-Motion>', self.drawConnections)
+        self._canvas.bind('<ButtonPress-2>', self.mouse2Down)
+        self._canvas.bind('<B2-Motion>', self.mouse2Motion)
+        self._canvas.bind('<Configure>',
+                          lambda e, sc = self._scrolledCanvas:
+                          sc.resizescrollregion())
+
+        self.createStateInspectors()
+
+        self.initialiseoptions(FSMInspector)
+
+    def scrolledCanvas(self):
+        return self._scrolledCanvas
+
+    def canvas(self):
+        return self._canvas
+    
+    def setFontSize(self, size):
+        self._canvas.itemconfigure('labels', font = ('MS Sans Serif', size))
+
+    def setMarkerSize(self, size):
+        for key in self.stateInspectorDict.keys():
+            self.stateInspectorDict[key].setRadius(size)
+        self.drawConnections()
+        
+    def drawConnections(self, event = None):
+        # Get rid of existing arrows
+        self._canvas.delete('arrow')
+        for key in self.stateInspectorDict.keys():
+            si = self.stateInspectorDict[key]
+            state = si.state
+            if state.transitionArray:
+                for name in state.transitionArray:
+                    self.connectStates(si, self.getStateInspector(name))
+
+    def connectStates(self, fromState, toState):
+        endpts = self.computeEndpoints(fromState, toState)
+        line = self._canvas.create_line(endpts, tags = ('arrow',),
+                                        arrow = 'last')
+
+    def computeEndpoints(self, fromState, toState):
+        # Compute angle between two points
+        fromCenter = fromState.center()
+        toCenter = toState.center()
+        angle = self.findAngle(fromCenter, toCenter)
+        
+        # Compute offset fromState point
+        newFromPt = map(operator.__add__,
+                        fromCenter,
+                        self.computePoint( fromState.radius,
+                                           angle + DELTA))
+        
+        # Compute offset toState point
+        newToPt = map(operator.__sub__,
+                      toCenter,
+                      self.computePoint( toState.radius,
+                                         angle - DELTA))
+        return newFromPt + newToPt
+        
+    def computePoint(self, radius, angle):
+        x = radius * math.cos(angle)
+        y = radius * math.sin(angle)
+        return (x, y)
+                         
+    def findAngle(self, fromPoint, toPoint):
+        dx = toPoint[0] - fromPoint[0]
+        dy = toPoint[1] - fromPoint[1]
+        return math.atan2(dy, dx)
+
+    def mouse2Down(self, event):
+        self._width = 1.0 * self._canvas.winfo_width()
+        self._height = 1.0 * self._canvas.winfo_height()
+        xview = self._canvas.xview()
+        yview = self._canvas.yview()        
+        self._left = xview[0]
+        self._top = yview[0]
+        self._dxview = xview[1] - xview[0]
+        self._dyview = yview[1] - yview[0]
+        self._2lx = event.x
+        self._2ly = event.y
+
+    def mouse2Motion(self,event):
+        newx = self._left - ((event.x - self._2lx)/self._width) * self._dxview
+        self._canvas.xview_moveto(newx)
+        newy = self._top - ((event.y - self._2ly)/self._height) * self._dyview
+        self._canvas.yview_moveto(newy)
+        self._2lx = event.x
+        self._2ly = event.y
+        self._left = self._canvas.xview()[0]
+        self._top = self._canvas.yview()[0]
+
+    def createStateInspectors(self):
+        fsm = self['currentFSM']
+        # Number of rows/cols needed to fit inspectors in a grid 
+        dim = int(math.ceil(math.sqrt(len(fsm))))
+        # Separation between nodes
+        spacing = 2.5 * self._canvas.canvasx('0.375i')
+        count = 0
+        for state in self['currentFSM']:
+            si = self.addState(state)
+            if state.defaultPosition:
+                si.setPos(state.defaultPosition[0], state.defaultPosition[1])
+            else:
+                row = int(math.floor(count / dim))
+                col = count % dim
+                si.setPos(col * spacing, row * spacing +
+                          0.5 * (0, spacing)[col % 2])
+            count = count + 1
+        self.drawConnections()
+
+    def getStateInspector(self, name):
+        return self.stateInspectorDict.get(name, None)
+
+    def addState(self, state):
+        si = self.stateInspectorDict[state.name] = StateInspector(self, state)
+        return si
+
+    def enteredState(self, stateName):
+        si = self.stateInspectorDict.get(stateName,None)
+        if si:
+            si.enteredState()
+
+    def exitedState(self, stateName):
+        si = self.stateInspectorDict.get(stateName,None)
+        if si:
+            si.exitedState()
+         
+    def _setGridSize(self):
+        self._gridSize = self['gridSize']
+        self.setGridSize(self._gridSize)
+        
+    def setGridSize(self, size):
+        for key in self.stateInspectorDict.keys():
+            self.stateInspectorDict[key].setGridSize(size)
+
+    def popupGridDialog(self):
+        spacing = askstring('FSM Grid Spacing', 'Grid Spacing:')
+        if spacing:
+            self.setGridSize(spacing)
+            self._gridSize = spacing
+
+    def toggleGridSnap(self):
+        if self._fGridSnap.get():
+            self.setGridSize(self._gridSize)
+        else:
+            self.setGridSize(0)
+
+    def printLayout(self):
+        dict = self.stateInspectorDict
+        keys = dict.keys()
+        keys.sort
+        print '{ '
+        for key in keys[:-1]:
+            si = dict[key]
+            center = si.center()
+            print "'%s' : (%.3f, %.3f)," % \
+                  (si.state.name, center[0], center[1])
+        for key in keys[-1:]:
+            si = dict[key]
+            center = si.center()
+            print "'%s' : (%.3f, %.3f)," % \
+                  (si.state.name, center[0], center[1])
+        print '}'
+
+    def toggleBalloon(self):
+        if self.toggleBalloonVar.get():
+            self.balloon.configure(state = 'balloon')
+        else:
+            self.balloon.configure(state = 'none')
+            
+    def _exit(self):
+        self.destroy()
+        
+class StateInspector(Pmw.MegaArchetype):
+    def __init__(self, inspector, state, **kw):
+
+        # Record state
+        self.state = state
+        # Create a unique tag which you can use to move a marker and
+        # and its corresponding text around together
+        self.tag = state.name
+
+        # Pointers to the inspector's components
+        self.scrolledCanvas = inspector.component('scrolledCanvas')
+        self._canvas = self.scrolledCanvas.component('canvas')
+        
+        #define the megawidget options
+        optiondefs = (
+            ('radius', '0.375i', self._setRadius),
+            ('gridSize', '0.25i', self._setGridSize),
+            )
+        self.defineoptions(kw, optiondefs)
+
+        # Initialize the parent class
+        Pmw.MegaArchetype.__init__(self)
+
+        # Draw the oval
+        self.x = 0
+        self.y = 0
+        half = self._canvas.winfo_fpixels(self['radius'])
+        self.marker = self._canvas.create_oval((self.x - half),
+                                               (self.y - half),
+                                               (self.x + half),
+                                               (self.y + half),
+                                              fill = 'CornflowerBlue',
+                                              tags = (self.tag,'markers'))
+        self.text = self._canvas.create_text(0, 0, text = state.name, 
+                                           justify = CENTER,
+                                           tags = (self.tag,'labels'))
+        # Is this state contain a sub machine?
+        if state.fsmArray:
+            # reduce half by sqrt of 2.0
+            half = half * 0.707106
+            self.rect = self._canvas.create_rectangle((- half), (- half),
+                                                     half, half,
+                                                     tags = (self.tag,))
+
+
+        # The Popup State Menu
+        self._popupMenu = Menu(self._canvas, tearoff = 0)
+        self._popupMenu.add_command(label = 'Request transistion to ' +
+                                    state.name,
+                                    command = self.transitionTo)
+        if state.fsmArray:
+            self._popupMenu.add_command(label = 'Inspect ' + state.name +
+                                        ' submachine',
+                                        command = self.inspectSubMachine)
+                    
+        self.scrolledCanvas.resizescrollregion()
+
+        # Add bindings
+        self._canvas.tag_bind(self.tag, '<Enter>', self.mouseEnter)
+        self._canvas.tag_bind(self.tag, '<Leave>', self.mouseLeave)
+        self._canvas.tag_bind(self.tag, '<ButtonPress-1>', self.mouseDown)
+        self._canvas.tag_bind(self.tag, '<B1-Motion>', self.mouseMotion)
+        self._canvas.tag_bind(self.tag, '<ButtonRelease-1>', self.mouseRelease)
+        self._canvas.tag_bind(self.tag, '<ButtonPress-3>', self.popupStateMenu)
+
+        self.initialiseoptions(StateInspector)
+
+    # Utility methods
+    def _setRadius(self):
+        self.setRadius(self['radius'])
+        
+    def setRadius(self, size):
+        half = self.radius = self._canvas.winfo_fpixels(size)
+        c = self.center()
+        self._canvas.coords(self.marker,
+                            c[0] - half, c[1] - half, c[0] + half, c[1] + half)
+        if self.state.fsmArray:
+            half = self.radius * 0.707106
+            self._canvas.coords(self.rect,
+                            c[0] - half, c[1] - half, c[0] + half, c[1] + half)
+
+    def _setGridSize(self):
+        self.setGridSize(self['gridSize'])
+        
+    def setGridSize(self, size):
+        self.gridSize = self._canvas.winfo_fpixels(size)
+        if self.gridSize == 0:
+            self.fGridSnap = 0
+        else:
+            self.fGridSnap = 1
+
+    def setText(self, text = None):
+        self._canvas.itemconfigure(self.text, text = text)
+        
+    def setPos(self, x, y, snapToGrid = 0):
+        if self.fGridSnap:
+            self.x = round(x / self.gridSize) * self.gridSize
+            self.y = round(y / self.gridSize) * self.gridSize
+        else:
+            self.x = x
+            self.y = y
+        # How far do we have to move?
+        cx, cy = self.center()
+        self._canvas.move(self.tag, self.x - cx, self.y - cy)
+
+    def center(self):
+        c = self._canvas.coords(self.marker)
+        return (c[0] + c[2])/2.0, (c[1] + c[3])/2.0
+
+    # Event Handlers
+    def mouseEnter(self, event):
+        self._canvas.itemconfig(self.marker, width = 2)
+        
+    def mouseLeave(self, event):
+        self._canvas.itemconfig(self.marker, width = 1)
+
+    def mouseDown(self, event):
+        self._canvas.lift(self.tag)
+        self.startx, self.starty = self.center()
+        self.lastx = self._canvas.canvasx(event.x)
+        self.lasty = self._canvas.canvasy(event.y)
+            
+    def mouseMotion(self, event):
+        dx = self._canvas.canvasx(event.x) - self.lastx
+        dy = self._canvas.canvasy(event.y) - self.lasty
+        newx, newy = map(operator.__add__,(self.startx, self.starty), (dx, dy))
+        self.setPos(newx, newy)
+
+    def mouseRelease(self,event):
+        self.scrolledCanvas.resizescrollregion()
+
+    def popupStateMenu(self, event):
+        self._popupMenu.post(event.widget.winfo_pointerx(),
+                             event.widget.winfo_pointery())
+
+    def transitionTo(self):
+        print 'transition to ' + self.tag
+
+    def inspectSubMachine(self):
+        print 'inspect ' + self.tag + ' subMachine'
+
+    def enteredState(self):
+        self._canvas.itemconfigure(self.marker, fill = 'Red')
+
+    def exitedState(self):
+        self._canvas.itemconfigure(self.marker, fill = 'CornflowerBlue')
+
+class dummyState:
+    def __init__(self, name = None, transitionArray = None, fsmArray = 0):
+        self.name = name
+        self.transitionArray = transitionArray
+        self.fsmArray = fsmArray
+        self.defaultPosition = None
+    def hasChildFSMs(self):
+        return fsmArray
+
+class dummyFSM:
+    def __init__(self, stateCollection = (), layout = {}):
+        self.stateCollection = stateCollection
+        if layout:
+            for state in self.stateCollection:
+                pos = layout.get(state.name, None)
+                if pos:
+                    state.defaultPosition= pos
+    def __getitem__(self, item):
+        return self.stateCollection[item]
+    def __len__(self):
+        return len(self.stateCollection)
+        
+if __name__ == '__main__':
+    s0 = dummyState('state-0', ('state-1',))
+    s1 = dummyState('state-1', ('state-2', 'state-3'))
+    s2 = dummyState('state-2', ('state-0', 'state-4', 'state-5'), fsmArray = 1)
+    s3 = dummyState('state-3', ('state-6',))
+    s4 = dummyState('state-4', ('state-2','state-0'))
+    s5 = dummyState('state-5', ('state-0',), fsmArray = 1)
+    s6 = dummyState('state-6', ('state-3', 'state-0'))
+    fsm = dummyFSM((s0, s1, s2, s3, s4, s5, s6),
+                   layout = {'state-0' : (167.83, 0.0),
+                             'state-1' : (95.91, 143.86),
+                             'state-2' : (167.83, 287.72),
+                             'state-3' : (23.98, 263.74),
+                             'state-4' : (335.67, 143.86),
+                             'state-5' : (239.76, 143.86),
+                             'state-6' : (23.98, 71.93)})
+    fsmi = FSMInspector(title = 'My Little Viewer', currentFSM = fsm)
+    mainloop()
