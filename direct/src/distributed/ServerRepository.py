@@ -141,6 +141,11 @@ class ServerRepository:
             # Does the class have a definition defined in the newly
             # imported namespace?
             classDef = dcImports.get(className)
+
+            # Also try it without the dcSuffix.
+            if classDef == None:
+                classDef = dcImports.get(dcClass.getName())
+            
             if classDef == None:
                 self.notify.info("No class definition for %s." % (className))
             else:
