@@ -1,4 +1,5 @@
 *.pyc
+/__init__.py
 /bin/
 /etc/
 /include/
