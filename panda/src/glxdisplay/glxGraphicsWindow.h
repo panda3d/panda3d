@@ -12,7 +12,9 @@
 #include <pandabase.h>
 
 #include <graphicsWindow.h>
+#ifdef DO_PSTATS
 #include <pStatCollector.h>
+#endif /* DO_PSTATS */
 
 #include <X11/Xlib.h>
 #include <GL/glx.h>
