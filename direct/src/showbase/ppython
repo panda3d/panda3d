@@ -1,12 +1,19 @@
 #! /bin/sh
 
+# -w will run with WireGL.
+wgl=
+if [ x"$1" = x"-w" ]; then
+  shift 1
+  wgl=wgl
+fi
+
 # Linux case
 if [ -z "$PANDA_ROOT" ]; then
   # Convert semicolons back to colons
   PYTHONPATH=`echo $PYTHONPATH | sed 'y/;/:/'`
   export PYTHONPATH
   # Run unbuffered output, with any options passed in
-  exec python -u $*
+  exec $wgl python -u $*
   exit 1
 fi
 
@@ -46,13 +53,6 @@ fi
 # Export the proper home environment variable
 HOME=`cygpath -w $HOME`
 export HOME
-
-# -w will run with WireGL.
-wgl=
-if [ x"$1" = x"-w" ]; then
-  shift 1
-  wgl=wgl
-fi
 
 if [ x"$1" = x"-msdev" ]; then
   # used for local machine debugging of vc dlls called by python
