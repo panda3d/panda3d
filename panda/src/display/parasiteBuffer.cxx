@@ -51,8 +51,6 @@ ParasiteBuffer(GraphicsOutput *host, const string &name,
 
   _is_valid = true;
 
-  setup_copy_texture(_name);
-
   nassertv(_x_size <= host->get_x_size() && _y_size <= host->get_y_size());
 }
 

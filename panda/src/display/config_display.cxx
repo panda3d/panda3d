@@ -89,10 +89,10 @@ ConfigVariableBool show_buffers
 
 ConfigVariableBool prefer_parasite_buffer
 ("prefer-parasite-buffer", true,
- PRC_DESC("Set this true to make GraphicsOutput::make_render_texture() try to "
+ PRC_DESC("Set this true to make GraphicsOutput::make_texture_buffer() try to "
           "create a parasite buffer before it tries to create an offscreen "
           "buffer.  This may be desired if you know your graphics API does not "
-          "support render-directly-to-texture and you want to minimize "
+          "support render-to-texture and you want to minimize "
           "framebuffer memory."));
 
 ConfigVariableBool prefer_single_buffer

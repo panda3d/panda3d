@@ -125,6 +125,6 @@ make_gsg(const FrameBufferProperties &properties,
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsBuffer) OsMesaGraphicsPipe::
 make_buffer(GraphicsStateGuardian *gsg, const string &name,
-            int x_size, int y_size, bool want_texture) {
-  return new OsMesaGraphicsBuffer(this, gsg, name, x_size, y_size, want_texture);
+            int x_size, int y_size) {
+  return new OsMesaGraphicsBuffer(this, gsg, name, x_size, y_size);
 }

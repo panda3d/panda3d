@@ -304,13 +304,13 @@ make_window(GraphicsStateGuardian *gsg, const string &name) {
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsBuffer) glxGraphicsPipe::
 make_buffer(GraphicsStateGuardian *gsg, const string &name,
-            int x_size, int y_size, bool want_texture) {
+            int x_size, int y_size) {
   if (!_is_valid) {
     return NULL;
   }
 
 #ifdef HAVE_GLXFBCONFIG
-  return new glxGraphicsBuffer(this, gsg, name, x_size, y_size, want_texture);
+  return new glxGraphicsBuffer(this, gsg, name, x_size, y_size);
 #else
   return NULL;
 #endif  // HAVE_GLXFBCONFIG

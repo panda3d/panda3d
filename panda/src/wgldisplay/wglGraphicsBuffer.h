@@ -43,11 +43,10 @@ class EXPCL_PANDAGL wglGraphicsBuffer : public GraphicsBuffer {
 public:
   wglGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
                     const string &name,
-                    int x_size, int y_size, bool want_texture);
+                    int x_size, int y_size);
   virtual ~wglGraphicsBuffer();
 
   virtual bool begin_frame();
-  virtual void end_frame();
 
   virtual void make_current();
   virtual void release_gsg();
@@ -84,6 +83,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class wglGraphicsStateGuardian;
 };
 
 #include "wglGraphicsBuffer.I"

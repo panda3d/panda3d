@@ -29,7 +29,7 @@ TypeHandle GraphicsBuffer::_type_handle;
 ////////////////////////////////////////////////////////////////////
 GraphicsBuffer::
 GraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-               const string &name, int x_size, int y_size, bool want_texture) :
+               const string &name, int x_size, int y_size) :
   GraphicsOutput(pipe, gsg, name)
 {
 #ifdef DO_MEMORY_USAGE
@@ -47,10 +47,6 @@ GraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _has_size = true;
   _default_display_region->compute_pixels(_x_size, _y_size);
   _open_request = OR_none;
-
-  if (want_texture) {
-    setup_copy_texture(_name);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

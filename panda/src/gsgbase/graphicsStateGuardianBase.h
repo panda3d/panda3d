@@ -45,6 +45,7 @@ class GeomTrifan;
 class GeomSphere;
 
 class PreparedGraphicsObjects;
+class GraphicsOutput;
 class TextureContext;
 class Texture;
 class PixelBuffer;
@@ -168,6 +169,9 @@ public:
   virtual void copy_texture(Texture *tex, const DisplayRegion *dr)=0;
   virtual void copy_texture(Texture *tex, const DisplayRegion *dr,
                             const RenderBuffer &rb)=0;
+
+  virtual bool framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex)=0;
+  virtual void framebuffer_release_texture(GraphicsOutput *win, Texture *tex)=0;
 
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb)=0;
   virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,

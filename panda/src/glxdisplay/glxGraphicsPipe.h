@@ -112,7 +112,7 @@ protected:
                                          const string &name);
   virtual PT(GraphicsBuffer) make_buffer(GraphicsStateGuardian *gsg, 
                                          const string &name,
-                                         int x_size, int y_size, bool want_texture);
+                                         int x_size, int y_size);
 
 private:
 #ifdef HAVE_GLXFBCONFIG

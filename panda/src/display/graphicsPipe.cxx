@@ -203,7 +203,7 @@ make_window(GraphicsStateGuardian *, const string &) {
 //  Description: Creates a new offscreen buffer on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsBuffer) GraphicsPipe::
-make_buffer(GraphicsStateGuardian *, const string &, int, int, bool) {
+make_buffer(GraphicsStateGuardian *, const string &, int, int) {
   display_cat.error()
     << get_type() << " cannot create offscreen buffers.\n";
   return NULL;

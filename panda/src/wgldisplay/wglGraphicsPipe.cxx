@@ -206,8 +206,8 @@ make_window(GraphicsStateGuardian *gsg, const string &name) {
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsBuffer) wglGraphicsPipe::
 make_buffer(GraphicsStateGuardian *gsg, const string &name,
-            int x_size, int y_size, bool want_texture) {
-  return new wglGraphicsBuffer(this, gsg, name, x_size, y_size, want_texture);
+            int x_size, int y_size) {
+  return new wglGraphicsBuffer(this, gsg, name, x_size, y_size);
 }
 
 ////////////////////////////////////////////////////////////////////

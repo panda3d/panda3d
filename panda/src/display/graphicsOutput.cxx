@@ -53,6 +53,7 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _has_size = false;
   _is_valid = false;
   _copy_texture = false;
+  _render_texture = false;
   _flip_ready = false;
   _needs_context = true;
   _sort = 0;
@@ -158,32 +159,48 @@ GraphicsOutput::
 //       Access: Published
 //  Description: Disassociates the texture from the GraphicsOutput.
 //               The texture will no longer be filled as the frame
-//               renders, and it may be used (with its current
-//               contents) as an ordinary texture in its own right.
+//               renders, and it may be used as an ordinary texture in
+//               its own right.  However, its contents may be
+//               undefined.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 detach_texture() {
   MutexHolder holder(_lock);
+
+  if (_render_texture && _gsg != (GraphicsStateGuardian *)NULL) {
+    _gsg->framebuffer_release_texture(this, get_texture());
+  }
+
   _texture = NULL;
   _copy_texture = false;
+  _render_texture = false;
 
   set_inverted(window_inverted);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::setup_copy_texture
-//       Access: Published
-//  Description: Creates a new Texture object, suitable for copying
+//     Function: GraphicsOutput::setup_render_texture
+//       Access: Published, Virtual
+//  Description: Creates a new Texture object, suitable for rendering
 //               the contents of this buffer into, and stores it in
 //               _texture.  This also disassociates the previous
 //               texture (if any).
+//
+//               If the backend supports it, this will actually set up
+//               the framebuffer to render directly into texture
+//               memory; otherwise, the framebuffer will be copied
+//               into the texture after each frame.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
-setup_copy_texture(const string &name) {
+setup_render_texture() {
   MutexHolder holder(_lock);
 
+  if (_render_texture && _gsg != (GraphicsStateGuardian *)NULL) {
+    _gsg->framebuffer_release_texture(this, get_texture());
+  }
+
   _texture = new Texture(true);
-  _texture->set_name(name);
+  _texture->set_name(get_name());
   _texture->set_wrapu(Texture::WM_clamp);
   _texture->set_wrapv(Texture::WM_clamp);
 
@@ -195,6 +212,7 @@ setup_copy_texture(const string &name) {
   }
 
   _copy_texture = true;
+  _render_texture = false;
 
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   set_inverted(_gsg->get_copy_texture_inverted());
@@ -428,7 +446,7 @@ make_texture_buffer(const string &name, int x_size, int y_size) {
 
   GraphicsOutput *buffer = NULL;
 
-  // If the user so indicated in the Configrc file, try to create a
+  // If the user so indicated in the Config.prc file, try to create a
   // parasite buffer first.  We can only do this if the requested size
   // fits within the available framebuffer size.
   if (prefer_parasite_buffer && 
@@ -575,6 +593,12 @@ begin_frame() {
 
   // Okay, we already have a GSG, so activate it.
   make_current();
+
+  if (_render_texture) {
+    // Release the texture so we can render into the pbuffer.
+    _gsg->framebuffer_release_texture(this, get_texture());
+  }
+
   return _gsg->begin_frame();
 }
 
@@ -611,20 +635,36 @@ end_frame() {
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   _gsg->end_frame();
 
-  // If _copy_texture is true, it means we should copy the framebuffer
-  // to the GraphicsOutput's associated texture after the frame has
-  // rendered.  GraphicsBuffer objects that are set up to render
-  // directly into texture memory don't need to do this; they will set
-  // _copy_texture to false.
+  // If _copy_texture is true, it means we should copy or lock the
+  // framebuffer to the GraphicsOutput's associated texture after the
+  // frame has rendered.
   if (_copy_texture) {
-    if (display_cat.is_debug()) {
-      display_cat.debug()
-        << "Copying texture for " << (void *)this << " at frame end.\n";
-    }
     PStatTimer timer(_copy_texture_pcollector);
     nassertv(has_texture());
-    RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
-    _gsg->copy_texture(get_texture(), _default_display_region, buffer);
+
+    // If _render_texture is true, it means we should attempt to lock
+    // the framebuffer directly to the texture memory, avoiding the
+    // copy.
+    if (_render_texture) {
+      if (display_cat.is_debug()) {
+        display_cat.debug()
+          << "Locking texture for " << (void *)this << " at frame end.\n";
+      }
+      if (!_gsg->framebuffer_bind_to_texture(this, get_texture())) {
+        display_cat.warning()
+          << "Lock-to-texture failed, resorting to copy.\n";
+        _render_texture = false;
+      }
+    }
+
+    if (!_render_texture) {
+      if (display_cat.is_debug()) {
+        display_cat.debug()
+          << "Copying texture for " << (void *)this << " at frame end.\n";
+      }
+      RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
+      _gsg->copy_texture(get_texture(), _default_display_region, buffer);
+    }
   }
 
   // If we're not single-buffered, we're now ready to flip.

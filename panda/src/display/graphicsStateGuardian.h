@@ -87,6 +87,7 @@ PUBLISHED:
   INLINE bool get_copy_texture_inverted() const;
   virtual bool get_supports_multisample() const;
   INLINE bool get_supports_generate_mipmap() const;
+  INLINE bool get_supports_render_texture() const;
 
 public:
   INLINE bool set_scene(SceneSetup *scene_setup);
@@ -134,6 +135,9 @@ public:
   virtual CPT(RenderState) begin_decal_nested();
   virtual CPT(RenderState) begin_decal_base_second();
   virtual void finish_decal();
+
+  virtual bool framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex);
+  virtual void framebuffer_release_texture(GraphicsOutput *win, Texture *tex);
 
   INLINE bool reset_if_new();
   virtual void reset();
@@ -285,6 +289,7 @@ protected:
   bool _copy_texture_inverted;
   bool _supports_multisample;
   bool _supports_generate_mipmap;
+  bool _supports_render_texture;
 
 public:
   // Statistics

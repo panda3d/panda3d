@@ -30,19 +30,11 @@
 // Description : An offscreen buffer for rendering into.  This is
 //               similar in function to a GraphicsWindow, except that
 //               the output is not visible to the user.
-//
-//               If want_texture is passed true into the constructor,
-//               the GraphicsBuffer will render directly into a
-//               texture which can be retrieved via get_texture().
-//               This may then be applied to geometry for rendering in
-//               other windows or buffers using the same
-//               GraphicsStateGuardian.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsBuffer : public GraphicsOutput {
 protected:
   GraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                 const string &name,
-                 int x_size, int y_size, bool want_texture);
+                 const string &name, int x_size, int y_size);
 
 PUBLISHED:
   virtual ~GraphicsBuffer();

@@ -75,7 +75,7 @@ PUBLISHED:
   INLINE bool has_texture() const;  
   INLINE Texture *get_texture() const;  
   void detach_texture();
-  void setup_copy_texture(const string &name);
+  virtual void setup_render_texture();
 
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
@@ -157,6 +157,7 @@ protected:
   string _name;
   PT(Texture) _texture;
   bool _copy_texture;
+  bool _render_texture;
   bool _flip_ready;
   bool _needs_context;
 

@@ -34,8 +34,8 @@ TypeHandle wglGraphicsBuffer::_type_handle;
 wglGraphicsBuffer::
 wglGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
                   const string &name,
-                  int x_size, int y_size, bool want_texture) :
-  GraphicsBuffer(pipe, gsg, name, x_size, y_size, want_texture) 
+                  int x_size, int y_size) :
+  GraphicsBuffer(pipe, gsg, name, x_size, y_size) 
 {
   _pbuffer = (HPBUFFERARB)0;
   _pbuffer_dc = (HDC)0;
@@ -73,12 +73,6 @@ begin_frame() {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_R(wglgsg, _gsg, false);
 
-  if (_render_texture) {
-    // Release the texture so we can render into the pbuffer.
-    //    wglgsg->_wglReleaseTexImageARB(_pbuffer, get_draw_buffer_type() == RenderBuffer::T_back ? WGL_BACK_LEFT_ARB : WGL_FRONT_LEFT_ARB);
-    wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
-  }
-
   if (_pbuffer_dc) {
     int flag = 0;
     wglgsg->_wglQueryPbufferARB(_pbuffer, WGL_PBUFFER_LOST_ARB, &flag);
@@ -93,81 +87,6 @@ begin_frame() {
   }
 
   return GraphicsBuffer::begin_frame();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
-void wglGraphicsBuffer::
-end_frame() {
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-  _gsg->end_frame();
-
-  wglGraphicsStateGuardian *wglgsg;
-  DCAST_INTO_V(wglgsg, _gsg);
-
-  // If we've lost the pbuffer image (due to a mode-switch, for
-  // instance), don't attempt to copy it to the texture, since the
-  // frame is invalid.  In fact, now we need to recreate the
-  // pbuffer.
-  if (_pbuffer_dc) {
-    int flag = 0;
-    wglgsg->_wglQueryPbufferARB(_pbuffer, WGL_PBUFFER_LOST_ARB, &flag);
-    if (flag != 0) {
-      wgldisplay_cat.info()
-        << "Pbuffer contents lost.\n";
-      return;
-    }
-  }
-  
-  if (_copy_texture) {
-    nassertv(has_texture());
-    Texture *tex = get_texture();
-
-    if (_render_texture) {
-      // Bind the pbuffer to our associated texture.  This is a newer
-      // extension that might allow us to use the same memory directly
-      // without having to pay for a copy operation.  But we can't
-      // render again to the pbuffer while the texture is valid.
-      TextureContext *tc = tex->prepare_now(wglgsg->get_prepared_objects(), wglgsg);
-      nassertv(tc != (TextureContext *)NULL);
-      wglgsg->bind_texture(tc);
-
-      //      wglgsg->_wglBindTexImageARB(_pbuffer, get_draw_buffer_type() == RenderBuffer::T_back ? WGL_BACK_LEFT_ARB : WGL_FRONT_LEFT_ARB);
-      wglgsg->_wglBindTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
-      
-    } else {
-      // Copy the contents of the frame buffer to our associated
-      // texture.  This is an older interface that guarantees a copy
-      // operation will take place, and it might even require
-      // reformatting pixels on the way, so it may be slower.
-      if (display_cat.is_debug()) {
-        display_cat.debug()
-          << "Copying texture for " << (void *)this << " at frame end.\n";
-      }
-      PStatTimer timer(_copy_texture_pcollector);
-      RenderBuffer buffer = wglgsg->get_render_buffer(get_draw_buffer_type());
-      wglgsg->copy_texture(tex, _default_display_region, buffer);
-    }
-  }
-
-  // If we're not single-buffered, we're now ready to flip.
-  if (!_gsg->get_properties().is_single_buffered()) {
-    _flip_ready = true;
-  }
-
-  if (_one_shot && !show_buffers) {
-    // In one-shot mode, we request the GraphicsEngine to delete the
-    // window after we have rendered a frame.  But when show-buffers
-    // mode is enabled, we don't do this, to give the user a chance to
-    // see the output.
-    _active = false;
-    _delete_flag = true;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

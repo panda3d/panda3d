@@ -34,7 +34,7 @@ class EXPCL_PANDAMESA OsMesaGraphicsBuffer : public GraphicsBuffer {
 public:
   OsMesaGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
                        const string &name,
-                       int x_size, int y_size, bool want_texture);
+                       int x_size, int y_size);
 
   virtual ~OsMesaGraphicsBuffer();
 

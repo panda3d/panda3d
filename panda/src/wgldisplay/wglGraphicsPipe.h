@@ -45,7 +45,7 @@ protected:
                                          const string &name);
   virtual PT(GraphicsBuffer) make_buffer(GraphicsStateGuardian *gsg, 
                                          const string &name,
-                                         int x_size, int y_size, bool want_texture);
+                                         int x_size, int y_size);
 private:
   static int choose_pfnum(const FrameBufferProperties &properties, HDC hdc);
   static int try_for_pfnum(HDC hdc, bool hardware, bool software, 
