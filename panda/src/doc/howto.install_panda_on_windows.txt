@@ -4,7 +4,7 @@ environment.  It is not useful for programmers who are not within the
 VR Studio firewall.
 
 If you are looking for documentation on installing Panda in the rest
-of the world, see INSTALL.txt in this directory.
+of the world, see INSTALL in the root of the panda3d directory.
 
                 ---------------------------------------
                 HOW TO INSTALL PANDA3D ON WINXP/WIN2000
@@ -461,20 +461,19 @@ of the world, see INSTALL.txt in this directory.
     this emacs does not use Cygwin paths, so "/" represents the real 
     root (C:\, not "C:\Cygwin")).  
   - Copy the tarball to your local machine
-    > cp /p/emacs-21.2-fullbin-i386.tar /c
+    > cp /p/emacs-21.3-fullbin-i386.tar /c
   - Untar and install (This will install emacs into C:/emacs-21.3, do 
     not attempt to install it under a directory containing a space,
     like "Program Files".)
     > cd /c
     > tar xvf emacs-21.3-fullbin-i386.tar
-  - Copy lisp/script files
-    > cp $DIRECT/src/directscripts/python-mode.el /c/emacs-21.2/lisp/progmodes
-    > cp $DIRECT/src/directscripts/runPythonEmacs /usr/local/bin
+  - Copy lisp files
+    > cp /p/win/install/direct/src/directscripts/*.el /c/emacs-21.3/site-lisp
   - Update environment variables (win2000/XP).  Note: You should only 
     need to do this if you intend to invoke Emacs from a non-Cygwin 
     prompt.  If you will always be using Cygwin, simply edit your 
     .cshrc file to add:
-       /c/emacs-21.2/bin
+       /c/emacs-21.3/bin
     - Select "Start Menu->Control Panel"
     - Select "System" icon.
     - Select "Advanced->Environment" button.
@@ -637,7 +636,7 @@ of the world, see INSTALL.txt in this directory.
     you run "pview".
 
 *********************************************************************
-  Step 14: (Optional) Build $DIRECT
+  Step 14: Build $DIRECT
 *********************************************************************
 
   > cta dtool personal  
@@ -648,7 +647,7 @@ of the world, see INSTALL.txt in this directory.
   > make install
 
 *********************************************************************
-  Step 15: (Optional) Build $OTP
+  Step 15: Build $OTP
 *********************************************************************
 
   > cta dtool personal
@@ -661,7 +660,7 @@ of the world, see INSTALL.txt in this directory.
   Exit the shell and create a new one
 
 *********************************************************************
-  Step 16: (Optional) Build $TOONTOWN
+  Step 16: Build $TOONTOWN
 *********************************************************************
 
   > cta dtool personal  
@@ -675,13 +674,11 @@ of the world, see INSTALL.txt in this directory.
   Exit the shell and create a new one
 
 *********************************************************************
-  Step 17: (Optional) Generate Python Code
+  Step 17: Generate Python Code
 *********************************************************************
 
-  > cd $DIRECT/bin
-  > genPyCode win-debug (if you have built using OPTIMIZE = 1 or 2)
-  > genPyCode win-release (if you have built using OPTIMIZE = 3 or 4)
-  > genPyCode -n win-publish (for publishes)
+  > genPyCode
+  > genPyCode -n (for publishes)
 
 *********************************************************************
   Step 18: (Optional) Set up a local server
