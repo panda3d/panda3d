@@ -28,7 +28,7 @@ allocate(size_t n) {
 template<class Type>
 INLINE void pallocator<Type>::
 deallocate(void *p, size_t) {
-  return (*global_operator_delete)(p);
+  (*global_operator_delete)(p);
 }
 #endif  // NDEBUG
 
@@ -38,13 +38,13 @@ deallocate(void *p, size_t) {
 template<class Type>
 INLINE pallocator<Type>::pointer pallocator<Type>::
 allocate(pallocator<Type>::size_type n, allocator<void>::const_pointer) {
-  return (*global_operator_new)(n * sizeof(Type));
+  return (pallocator<Type>::pointer)(*global_operator_new)(n * sizeof(Type));
 }
 
 template<class Type>
 INLINE void pallocator<Type>::
 deallocate(pallocator<Type>::pointer p, allocator<Type>::size_type) {
-  return (*global_operator_delete)(p);
+  (*global_operator_delete)(p);
 }
 #endif  // NDEBUG
 
