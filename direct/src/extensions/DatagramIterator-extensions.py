@@ -42,12 +42,12 @@
                 for i in range(len):
                     retVal.append(self.getInt32())
             elif subatomicType == STUint8array:
-                len = self.getUint8() >> 1
+                len = self.getUint8()
                 retVal = []
                 for i in range(len):
                     retVal.append(self.getUint8())
             elif subatomicType == STUint16array:
-                len = self.getUint16()
+                len = self.getUint16() >> 1
                 retVal = []
                 for i in range(len):
                     retVal.append(self.getUint16())
