@@ -1,0 +1,516 @@
+This document describes the use of the Panda's Config.prc
+configuration files and the runtime subsystem that extracts values
+from these files, defined in dtool/src/prc.
+
+The Config.prc files are used for runtime configuration only, and are
+not related to the Config.pp files, which control compile-time
+configuration.  If you are looking for documentation on the Config.pp
+files, see howto.use_ppremake.txt, and ppremake-*.txt, in this
+directory.
+
+
+USING THE PRC FILES
+
+In its default mode, when Panda starts up it will search in the
+install/etc directory (or in the directory named by the environment
+variable PRC_DIR if it is set) for all files named *.prc (that is, any
+files with an extension of "prc") and read each of them for runtime
+configuration.  (It is possible to change this default behavior; see
+CHANGING THE DEFAULT STARTUP BEHAVIOR, below.)
+
+All of the prc files are loaded in alphabetical order, so that the
+files that have the alphabetically later names are loaded last. Since
+variables defined in an later file may shadow variables defined in an
+earlier file, this means that filenames towards the end of the
+alphabet have the most precedence.
+
+Panda by default installs a handful of system prc files into the
+install/etc directory.  These files have names beginning with digits,
+like 20_panda.prc and 40_direct.prc, so that they will be loaded in a
+particular order.  If you create your own prc file in this directory,
+we recommended that you begin its filename with letters, so that it
+will sort to the bottom of the list and will therefore override any of
+the default variables defined in the system prc files.
+
+
+Within a particular prc file, you may define any number of
+configuration variables and their associated value.  Each definition
+must appear one per line, with at least one space separating the
+variable and its definition, e.g.:
+
+load-display pandagl
+
+This specifies that the variable "load-display" should have the value
+"pandagl".
+
+Comments may also appear in the file; they are introduced by a leading
+hash mark (#).  A comment must be on a line by itself; you may not
+place a comment on the same line with a variable definition.
+
+
+The legal values that you may specify for any particular variable
+depends on the variable.  The complete list of available variables and
+the valid values for each is not documented here (a list of the most
+commonly modified variables appears in another document, but also see
+cvMgr.listVariables(), below).
+
+Many variables accept any string value (such as load-display, above);
+many others, such as aspect-ratio, expect a numeric value.
+
+A large number of variables expect a simple boolean true/false value.
+You may observe the Python convention of using 0 vs. 1 to represent
+false vs. true; or you may literally type "false" or "true", or just
+"f" and "t".  For historical reasons, Panda also recognizes the Scheme
+convention of "#f" and "#t".
+
+
+Most variables only accept one value at a time.  If there are two
+different definitions for a given variable in the same file, the
+topmost definition applies.  If there are two different definitions in
+two different files, the definition given in the file loaded later
+applies.
+
+However, some variables accept multiple values.  This is particularly
+common for variables that name search directories, like model-path.
+In the case of these variables, all definitions given for the variable
+are taken together; it is possible to extend the definition by adding
+another prc file, but you cannot completely hide any value defined in
+a previously-loaded prc file.
+
+
+DEFINING CONFIG VARIABLES
+
+New config variables may be defined on-the-fly in either C++ or Python
+code.  To do this, create an instance of one of the following classes:
+
+ConfigVariableString
+ConfigVariableBool
+ConfigVariableInt
+ConfigVariableDouble
+ConfigVariableEnum (C++ only)
+ConfigVariableList
+ConfigVariableSearchPath
+
+These each define a config variable of the corresponding type.  For
+instance, a ConfigVariableInt defines a variable whose value must
+always be an integer value.  The most common variable types are the
+top four, which are self-explanatory; the remaining three are special
+types:
+
+ConfigVariableEnum -
+
+  This is a special template class available in C++ only.  It provides
+  a convenient way to define a variable that may accept any of a
+  handful of different values, each of which is defined by a keyword.
+  For instance, the text-encoding variable may be set to any of
+  "iso8859", "utf8", or "unicode", which correspond to
+  TextEncoder::E_iso8859, E_utf8, and E_unicode, respectively.
+
+  The ConfigVariableEnum class relies on a having sensible pair of
+  functions defined for operator << (ostream) and operator >>
+  (istream) for the enumerated type.  These two functions should
+  reverse each other, so that the output operator generates a keyword
+  for each value of the enumerated type, and the input operator
+  recognizes each of the keywords generated by the output operator.
+
+  This is a template class.  It is templated on its enumerated type,
+  e.g. ConfigVariableEnum<TextEncoder::Encoding>.
+
+ConfigVariableList -
+
+  This class defines a special config variable that records all of its
+  definitions appearing in all prc files and retrieves them as a list,
+  instead of a standard config variable that returns only the topmost
+  definition.  (See "some variables accept multiple values", above.)
+
+  Unlike the other kinds of config variables, a ConfigVariableList is
+  read-only; it can be modified only by loading additional prc files,
+  rather than directly setting its value.  Also, its constructor lacks
+  a default_value parameter (there is no default value; if the
+  variable is not defined in any prc file, it simply returns an empty
+  list).
+
+ConfigVariableSearchPath -
+
+  This class is very similar to a ConfigVariableList, above, except
+  that it is intended specifically to represent the multiple
+  directories of a search path.  In general, a
+  ConfigVariableSearchPath variable can be used in place of a
+  DSearchPath variable.
+
+  Unlike ConfigVariableList, instances of this variable can be locally
+  modified by appending or prepending additional directory names.
+
+
+In general, each of the constructors to the above classes accepts the
+following parameters:
+
+(name, default_value, description = "", flags = 0)
+
+The default_value parameter should be of the same type as the variable
+itself; for instance, the default_value for a ConfigVariableBool must
+be either true or false.  The ConfigVariableList and
+ConfigVariableSearchPath constructors do not have a default_value
+parameter.
+
+The description should be a sentence or two describing the purpose of
+the variable and the effects of setting it.  It will be reported with
+variable.getDescription() or ConfigVariableManager.listVariables();
+see QUERYING CONFIG VARIABLES, below.
+
+The flags variable is usually set to 0, but it may be an integer trust
+level and/or the union of any of the values in the enumerated type
+ConfigFlags::VariableFlags.  For the most part, this is used to
+restrict the variable from being set by unsigned prc files.  See
+SIGNED PRC FILES, below.
+
+Once you have created a config variable of the appropriate type, you
+may generally treat it directly as a simple variable of that type.
+This works in both C++ and in Python.  For instance, you may write
+code such as this:
+
+ConfigVariableInt foo_level("foo-level", -1, "The initial level of foo");
+
+if (foo_level < 0) {
+  cerr << "You didn't specify a valid foo_level!\n";
+
+} else {
+  // Four snarfs for every foo.
+  int snarf_level = 4 * foo_level;
+}
+
+In rare cases, you may find that the implicit typecast operators
+aren't resolved properly by the compiler; if this happens, you can use
+variable.get_value() to retrieve the variable's value explicitly.
+
+
+DIRECTLY ASSIGNING CONFIG VARIABLES
+
+In general, config variables can also be assigned values appropriate
+to their type, again as if they were ordinary variables.  In C++, the
+assignment operator is overloaded to perform this function, e.g.:
+
+  foo_level = 5;
+
+In Python, this is not possible--the assignment operator in Python
+completely replaces the value of the assigned symbol and cannot be
+overloaded.  So the above statement in Python would replace foo_level
+with an actual integer of the value 5.  In many cases, this is close
+enough to what you intended anyway, but if you want to keep the
+original functionality of the config variable (e.g. so you can restore
+it to its original value later), you need to use the set_value()
+method instead, like this:
+
+  fooLevel.setValue(5)
+
+When you assign a variable locally, the new definition shadows all prc
+files that have been read or will ever be read, until you clear your
+definition.  To restore a variable to its original value as defined by
+the topmost prc file, use clear_local_value():
+
+  fooLevel.clearLocalValue()
+
+In general, this interface for assigning config variables is primarily
+intended for the convenience of developing an application
+interactively; it is sometimes useful to change the value of a
+variable on the fly.
+
+
+QUERYING CONFIG VARIABLES
+
+There are several mechanisms for finding out the values of individual
+config variables, as well as for finding the complete list of
+available config variables.
+
+In particular, one easy way to query an existing config variable's
+value is simply to create a new instance, e.g.:
+
+  print ConfigVariableInt("foo-level")
+
+The default value and comment are optional if another instance of the
+same config variable has previously been created, supplying these
+parameters.  However, it is an error if no instance of a particular
+config variable specifies a default value.  It is also an error (but
+it is treated as a warning) if two different instances of a variable
+specify different default values.
+
+(Note that, although it is convenient to create a new instance of the
+variable in order to query or modify its value interactively, we
+recommend that all the references to a particular variable in code
+should reference the same instance wherever possible.  This minimizes
+the potential confusion about which instance should define the
+variable's default value and/or description, and reduces chance of
+conflicts should two such instances differ.)
+
+If you don't know the type of the variable, you can also simply create
+an instance of the generic ConfigVariable class, for the purpose of
+querying an existing variable only (you cannot define a new variable
+with the generic class).
+
+For more detail about a variable, use the ls() method in Python (or
+the write() method in C++), e.g.:
+
+  ConfigVariable("foo-level").ls()
+
+In additional to the variable's current and default values, this also
+prints a breakdown of all of the prc files that contribute to the
+value of the variable, as well as the description passed as the third
+parameter to the primary ConfigVariable constructor.
+
+To get a list of all known config variables, use the methods on
+ConfigVariableManager.  In C++, you can get this object via
+ConfigVariableManager::get_global_ptr(); in Python, use the cvMgr
+builtin, created by ShowBase.py.
+
+  print cvMgr
+
+    Lists all of the variables in active use: all of the variables
+    whose value has been set by one or more prc files, along with the
+    name of the prc file that defines that value.
+
+  cvMgr.listVariables()
+
+    Lists all of the variables currently known to the config system;
+    that is, all variables for which a ConfigVariable instance has
+    been created at runtime, whether or not its value has been changed
+    from the default.  This may omit variables defined in some unused
+    subsystem (like pandaegg, for instance), and it will omit
+    variables defined by Python code which hasn't yet executed
+    (e.g. variables within defined with a function that hasn't yet
+    been called).
+
+    This will also omit variables deemed to be "dynamic" variables,
+    for instance all of the notify-level-* variables, and variables
+    such as pstats-active-*.  These are omitted simply to keep the
+    list of variable names manageable, since the list of dynamic
+    variable names tends to be very large.  Use
+    cvMgr.listDynamicVariables() if you want to see these variable
+    names.
+
+  cvMgr.listUnusedVariables()
+
+    Lists all of the variables that have been defined by some prc
+    file, but which are not known to the config system (no
+    ConfigVariable instance has yet been created for this variable).
+    These variables may represent misspellings or typos in your prc
+    file, or they may be old variables which are no longer used in the
+    system.  However, they may also be legitimate variables for some
+    subsystem or application which simply has not been loaded; there
+    is no way for Panda to make this distinction.
+
+
+RE-READING PRC FILES
+
+If you modify a prc file at some point after Panda has started, Panda
+will not automatically know that it needs to reload its config files
+and will not therefore automatically recognize your change.  However,
+you can force this to happen by making the following call:
+
+  ConfigPageManager::get_global_ptr()->reload_implicit_pages()
+
+Or, in Python:
+
+  cpMgr.reloadImplicitPages()
+
+This will tell Panda to re-read all of the prc files it found
+automatically at startup and update the variables' values accordingly.
+
+
+RUNTIME PRC FILE MANAGEMENT
+
+In addition to the prc files that are found and loaded automatically
+by Panda at startup, you can load files up at runtime as needed.  The
+functions to manage this are defined in load_prc_file.h:
+
+  ConfigPage *page = load_prc_file("myPage.prc")
+
+  ...
+
+  unload_prc_file(page);
+
+(The above shows the C++ syntax; the corresponding Python code is
+similar, but of course the functions are named loadPrcFile() and
+unloadPrcFile().)
+
+That is to say, you can call load_prc_file() to load up a new prc file
+at any time.  Each file you load is added to a LIFO stack of prc
+files.  If a variable is defined in more than one prc file, the
+topmost file on the stack (i.e. the one most recently loaded) is the
+one that defines the variable's value.
+
+You can call unload_prc_file() at any time to unload a file that you
+have previously loaded.  This removes the file from the stack and
+allows any variables it modified to return to their previous value.
+The single parameter to unload_prc_file() should be the pointer that
+was returned from the corresponding call to load_prc_file().  Once you
+have called unload_prc_file(), the pointer is invalid and should no
+longer be used.  It is an error to call unload_prc_file() twice on the
+same pointer.
+
+The filename given to load_prc_file() may refer to any file that is on
+the standard prc file search path (e.g. $PRC_DIR), as well as on the
+model-path.  It may be a physical file on disk, or a subfile of a
+multifile (and mounted via Panda's virtual file system).
+
+You can see the complete list of prc files that have been loaded into
+the config system at any given time, including files loaded explicitly
+via load_prc_file(), as well as files found in the standard prc file
+search path and loaded implicitly at startup.  Simply use
+ConfigPageManager::write(), e.g. in Python:
+
+  print cpMgr
+
+
+COMPILE-TIME OPTIONS FOR FINDING PRC FILES
+
+As described above in USING THE PRC FILES, Panda's default startup
+behavior is to load all files named *.prc in the directory named by
+the environment variable PRC_DIR.  This is actually a bit of an
+oversimplification.  The complete default behavior is as follows:
+
+(1) If PRC_PATH is set, separate it into a list of directories and
+    make a search path out of it.
+
+(2) If PRC_DIR is set, prepend it onto the search path defined by
+    PRC_PATH, above.
+
+(3) If neither was set, put the compiled-in value for DEFAULT_PRC_DIR,
+    which is usually the install/etc directory, alone on the search
+    path.
+
+(4) Look for all files named *.prc on each directory of the resulting
+    search path, and load them up in reverse search path order, and
+    within each directory, in forward alphabetical order.  This means
+    that directories listed first on the search path override
+    directories listed later, and within a directory, files
+    alphabetically later override files alphabetically earlier.
+
+This describes the default behavior, without any modifications to
+Config.pp.  If you wish, you can further fine-tune each of the above
+steps by defining various Config.pp variables at compile time.  The
+following Config.pp variables may be defined:
+
+#define PRC_PATH_ENVVARS PRC_PATH
+#define PRC_DIR_ENVVARS PRC_DIR
+
+  This names the environment variable(s) to use instead of PRC_PATH
+  and PRC_DIR.  In either case, you may name multiple environment
+  variables separated by a space; each variable is consulted one at a
+  time, in the order named, and the results are concatenated.
+
+  For instance, if you put the following line in your Config.pp file:
+
+  #define PRC_PATH_ENVVARS CFG_PATH ETC_PATH
+
+  Then instead of checking $PRC_PATH in step (1), above, Panda will
+  first check $CFG_PATH, and then $ETC_PATH, and the final search path
+  will be the concatenation of both.
+
+  You can also set either or both of PRC_PATH_ENVVARS or
+  PRC_DIR_ENVVARS to the empty string; this will disable runtime
+  checking of environment variables, and force all prc files to be
+  loaded from the directory named by DEFAULT_PRC_DIR.
+
+#define PRC_PATTERNS *.prc
+
+  This describes the filename patterns that are used to identify prc
+  files in each directory in step(4), above.  The default is *.prc,
+  but you can change this if you have any reason to.  You can specify
+  multiple filename patterns separated by a space.  For instance, if
+  you still have some config files named "Configrc", following an
+  older Panda convention, you can define the following in your
+  Config.pp file:
+
+  #define PRC_PATTERNS *.prc Configrc
+
+  This will cause Panda to recognize files named "Configrc", as well
+  as any file ending in the extension prc, as a legitimate prc file.
+
+#define DEFAULT_PRC_DIR $[INSTALL_DIR]/etc
+
+  This is the directory from which to load prc files if all of the
+  variables named by PRC_PATH_ENVVARS and PRC_DIR_ENVVARS are
+  undefined or empty.
+
+#define DEFAULT_PATHSEP
+
+  This doesn't strictly apply to the config system, since it globally
+  affects search paths throughout Panda.  This specifies the character
+  or characters used to separate the different directory names of a
+  search path, for instance $PRC_PATH.  The default character is ':'
+  on Unix, and ';' on Windows.  If you specify multiple characters,
+  any of them may be used as a separator.
+
+
+EXECUTABLE PRC FILES
+
+One esoteric feature of Panda's config system is the ability to
+automatically execute a standalone program which generates a prc file
+as output.
+
+This feature is not enabled by default.  To enable it, you must define
+the Config.pp variable PRC_EXECUTABLE_PATTERNS before you build Panda.
+This variable is similar to PRC_PATTERNS, described above, except it
+names file names which, when found along the standard prc search path,
+should be taken to be the name of an executable program.  Panda will
+execute each of these programs, in the appropriate order according to
+alphabetical sorting with the regular prc files, and whatever the
+program writes to standard output is taken to be the contents of a prc
+file.
+
+By default the contents of the environment variable
+$PRC_EXECUTABLE_ARGS are passed as arguments to the executable
+program.  You can change this to a different environment variable by
+redefining PRC_EXECUTABLE_ARGS_ENVVAR in your Config.pp (or disable
+this feature by defining this to the empty string).
+
+
+SIGNED PRC FILES
+
+Another esoteric feature of Panda's config system is the ability to
+restrict certain config variables to modification only by a prc file
+that has been provided from an authorized source.  This is primarily
+useful when Panda is to be used for deployment of applications (games,
+etc.) to a client; it has little utility in a fully trusted
+environment.
+
+When this feature is enabled, you can specify an optional trust level
+to each ConfigVariable constructor.  The trust level is an integer
+value, greater than 0 (and <= ConfigFlags::F_trust_level_mask), which
+should be or'ed in with the flags parameter.
+
+A number of random keys must be generated ahead of time and compiled
+into Panda; there must be a different key for each required trust
+level.  Each prc file can then optionally be signed by exactly one of
+the available keys.  When a prc file has been signed by a recognized
+key, Panda assigns the corresponding trust level to that prc file.  An
+unsigned prc file has an implicit trust level of 0.
+
+If a signed prc file is modified in any way after it has been signed,
+its signature will no longer match the contents of the file and its
+trust level drops to 0.  The newly-modified file must be signed again
+to restore its trust level.
+
+When a ConfigVariable is constructed with a nonzero trust level, that
+variable's value may then not be modified by any prc file with a trust
+level lower that the variable's trust level.  If a prc file with an
+insufficient trust level attempts to modify the variable, the new
+value is ignored, and the value from the previous trusted prc file (or
+the variable's default value) is retained.
+
+The default trust level for a ConfigVariable is 0, which means the
+variable can be set by any prc file, signed or unsigned.  To
+explicitly specify a trust level of 0, you should use
+ConfigFlags::F_open.
+
+To specify a ConfigVariable that cannot be set by any prc files at
+all, regardless of trust level, use ConfigFlags::F_closed.
+
+This feature is not enabled by default.  It is somewhat complicated to
+enable this feature, because doing so requres generating one or more
+private/public key pairs, and compiling the public keys into the
+low-level Panda system so that it can recognize signed prc files when
+they are provided, and compiling the private keys into standalone
+executables, one for each private key, that can be used to officially
+sign approved prc files.
+
