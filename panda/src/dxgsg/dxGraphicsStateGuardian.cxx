@@ -65,6 +65,7 @@
 #include <stencilAttribute.h>
 #include <stencilTransition.h>
 #include <throw_event.h>
+#include <mmsystem.h>
 
 #ifdef DO_PSTATS
 #include <pStatTimer.h>
