@@ -129,20 +129,22 @@ class Messenger:
             callInfo = acceptorDict.get(object)
             if callInfo:
                 method, extraArgs, persistent = callInfo
-                apply(method, (extraArgs + sentArgs))
                 # If this object was only accepting this event once,
                 # remove it from the dictionary
                 if not persistent:
                     # notify the object that the event has been triggered
                     object._INTERNAL_acceptOnceExpired(event)
-                    # We need to check this because the apply above might
-                    # have done an ignore.
-                    if acceptorDict.has_key(object):
-                        del acceptorDict[object]
+                    del acceptorDict[object]
                     # If the dictionary at this event is now empty, remove
                     # the event entry from the Messenger altogether
                     if (self.dict.has_key(event) and (len(self.dict[event]) == 0)):
                         del self.dict[event]
+
+                # It is important to make the actual call here, after
+                # we have cleaned up the accept hook, because the
+                # method itself might call accept() or acceptOnce()
+                # again.
+                apply(method, (extraArgs + sentArgs))
 
     def clear(self):
         """clear(self)
