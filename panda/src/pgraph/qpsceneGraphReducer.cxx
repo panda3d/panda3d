@@ -527,7 +527,14 @@ operator () (const PandaNode *node1, const PandaNode *node2) const {
   if (node1->get_state() != node2->get_state()) {
     return node1->get_state() < node2->get_state();
   }
-  return node1->get_effects() < node2->get_effects();
+  if (node1->get_effects() != node2->get_effects()) {
+    return node1->get_effects() < node2->get_effects();
+  }
+  if (node1->get_draw_mask() != node2->get_draw_mask()) {
+    return node1->get_draw_mask() < node2->get_draw_mask();
+  }
+
+  return 0;
 }
 
 
@@ -624,7 +631,8 @@ consider_child(PandaNode *grandparent_node, PandaNode *parent_node,
 
   if (parent_node->get_transform() != child_node->get_transform() ||
       parent_node->get_state() != child_node->get_state() ||
-      parent_node->get_effects() != child_node->get_effects()) {
+      parent_node->get_effects() != child_node->get_effects() ||
+      parent_node->get_draw_mask() != child_node->get_draw_mask()) {
     // The two nodes have a different state; too bad.
     return false;
   }
@@ -648,6 +656,9 @@ consider_child(PandaNode *grandparent_node, PandaNode *parent_node,
 bool qpSceneGraphReducer::
 consider_siblings(PandaNode *parent_node, PandaNode *child1,
                   PandaNode *child2) {
+  // We don't have to worry about the states being different betweeen
+  // child1 and child2, since the SortByState object already
+  // guaranteed we only consider children that have the same state.
   return true;
 }
 
