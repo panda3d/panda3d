@@ -4021,6 +4021,8 @@ class LevelStyleManager:
             if ((dnaType == 'street') or (dnaType == 'prop') or
                 (dnaType == 'toon_landmark')):
                 dnaList = self.getCatalogCodes(dnaType)
+                if dnaType == 'prop':
+                    dnaList.append(self.getCatalogCodes('holiday_prop'))
             elif (dnaType == 'sign'):
                 dnaList = [''] + self.getCatalogCodes(dnaType)
             elif (dnaType == 'wall'):
