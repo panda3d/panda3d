@@ -60,7 +60,7 @@ BaseForce::
 void BaseForce::
 output(ostream &out) const {
   #ifndef NDEBUG //[
-  out<<"BaseForce";
+  out<<"BaseForce (id "<<this<<")";
   #endif //] NDEBUG
 }
 
@@ -73,8 +73,16 @@ output(ostream &out) const {
 void BaseForce::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
-  out.width(indent); out<<""; out<<"BaseForce:\n";
-  out.width(indent+2); out<<""; out<<"_force_node "<<_force_node<<"\n";
+  out.width(indent); out<<""; out<<"BaseForce (id "<<this<<"):\n";
+  
+  out.width(indent+2); out<<""; out<<"_force_node ";
+  if (_force_node) {
+    out<<_force_node<<"\n";
+    //_force_node->write(out, indent+4);
+  } else {
+    out.width(indent+4); out<<""<<"null\n";
+  }
+  
   out.width(indent+2); out<<""; out<<"_active "<<_active<<"\n";
   //TypedReferenceCount::write(out);
   #endif //] NDEBUG
