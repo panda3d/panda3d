@@ -1366,7 +1366,14 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
     egg_double_sided = user_data->_double_sided;
   }
 
-  bool double_sided = _respect_maya_double_sided ? maya_double_sided : egg_double_sided;
+  bool double_sided = maya_double_sided;
+  if (!_respect_maya_double_sided) {
+    // If this flag is false, we respect the maya double-sided
+    // settings only if the egg "double-sided" flag is also set.
+    if (!egg_double_sided) {
+      maya_double_sided = false;
+    }
+  }
 
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
