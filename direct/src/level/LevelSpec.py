@@ -94,8 +94,8 @@ class LevelSpec:
 
         def setAttribChange(self, entId, attrib, value, username):
             """ we're being asked to change an attribute """
-            LevelSpec.notify.debug("setAttribChange(%s): %s, %s = '%s'" %
-                                   (username, entId, attrib, repr(value)))
+            LevelSpec.notify.info("setAttribChange(%s): %s, %s = '%s'" %
+                                  (username, entId, attrib, repr(value)))
             assert entId in self.entId2specDict
             specDict = self.entId2specDict[entId]
             assert specDict[entId].has_key(attrib)
@@ -105,7 +105,7 @@ class LevelSpec:
             self.level.handleAttribChange(entId, attrib, value, username)
 
         def insertEntity(self, entId, entType, parentEntId):
-            LevelSpec.notify.debug('inserting entity %s' % entId)
+            LevelSpec.notify.info('inserting entity %s' % entId)
             assert entId not in self.entId2specDict
             assert self.entTypeReg is not None
             globalEnts = self.privGetGlobalEntityDict()
@@ -125,7 +125,7 @@ class LevelSpec:
             self.level.handleEntityInsert(entId)
             
         def removeEntity(self, entId):
-            LevelSpec.notify.debug('removing entity %s' % entId)
+            LevelSpec.notify.info('removing entity %s' % entId)
             assert entId in self.entId2specDict
             # notify the level
             self.level.handleEntityRemove(entId)

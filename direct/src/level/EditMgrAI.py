@@ -16,6 +16,9 @@ class EditMgrAI(EditMgrBase.EditMgrBase):
 
             # dumb linear search for now
             # make this smarter (cache last-allocated id)
+            # Note that this uses the ID range associated with the
+            # AI's username, not the username of the user who requested
+            # the new entity.
             for id in xrange(*EditorGlobals.getEntIdAllocRange()):
                 if not id in entIdDict:
                     break
