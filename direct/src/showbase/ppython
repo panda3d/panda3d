@@ -49,6 +49,10 @@ if [ "$TOONTOWN" ]; then
     TOONTOWN=`cygpath -w $TOONTOWN`
     export TOONTOWN
 fi
+if [ "$PIRATES" ]; then
+    PIRATES=`cygpath -w $PIRATES`
+    export PIRATES
+fi
 if [ "$BARTOP" ]; then
     BARTOP=`cygpath -w $BARTOP`
     export BARTOP
@@ -76,6 +80,11 @@ fi
 if [ "$TTMODELS" ]; then
     TTMODELS=`cygpath -w $TTMODELS`
     export TTMODELS
+fi
+# Pirates models
+if [ "$PMODELS" ]; then
+    PMODELS=`cygpath -w $PMODELS`
+    export PMODELS
 fi
 
 # Export the proper home environment variable

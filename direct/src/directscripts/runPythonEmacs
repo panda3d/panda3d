@@ -40,6 +40,11 @@ if [ "$TOONTOWN" ]; then
     TOONTOWN=`cygpath -w $TOONTOWN`
     export TOONTOWN
 fi
+if [ "$PIRATES" ]; then
+    if [ "$debug" ]; then echo "PIRATES  $PIRATES"; fi
+    PIRATES=`cygpath -w $PIRATES`
+    export PIRATES
+fi
 if [ "$TOONTAG" ]; then
     if [ "$debug" ]; then echo "TOONTAG   $TOONTAG"; fi
     TOONTAG=`cygpath -w $TOONTAG`
@@ -107,6 +112,13 @@ if [ "$TTMODELS" ]; then
     if [ "$debug" ]; then echo "TTMODELS  $TTMODELS"; fi
     TTMODELS=`cygpath -w $TTMODELS`
     export TTMODELS
+fi
+
+# Pirates models
+if [ "$PMODELS" ]; then
+    if [ "$debug" ]; then echo "PMODELS  $PMODELS"; fi
+    PMODELS=`cygpath -w $PMODELS`
+    export PMODELS
 fi
 
 if [ "$BARMODELS" ]; then

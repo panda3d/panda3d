@@ -5,6 +5,7 @@
 # usage: genPyCode [opts] [linux|win-debug|win-release|win-publish|install|release] [other libs]
 
 # -t adds libtoontown
+# -p adds libpirates
 # -v adds libvrpn
 # -e adds libpandaegg
 # -n doesn't perform a squeeze
@@ -16,9 +17,10 @@ optimizeFlag=""
 ppython=ppython
 ppythonOptimizeFlag=""
 
-while getopts tven flag; do
+while getopts tpven flag; do
   case $flag in
     t) extra_genPyCode_libs="$extra_genPyCode_libs libtoontown" ;;
+    p) extra_genPyCode_libs="$extra_genPyCode_libs libpirates" ;;
     v) extra_genPyCode_libs="$extra_genPyCode_libs libvrpn" ;;
     e) extra_genPyCode_libs="$extra_genPyCode_libs libpandaegg" ;;
     n) fSqueeze="" ;;
