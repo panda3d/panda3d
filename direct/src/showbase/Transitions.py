@@ -83,7 +83,7 @@ class Transitions:
                                 0,0,0,1,
                                 t)
 
-    def fadeScreen(self, alpha=0.6):
+    def fadeScreen(self, alpha=0.5):
         """
         Put a semitransparent screen over the camera plane
         to darken out the world. Useful for drawing attention to
