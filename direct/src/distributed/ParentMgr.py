@@ -48,6 +48,13 @@ class ParentMgr:
                 (repr(child), parentToken))
             if not self.pendingChildren.has_key(parentToken):
                 self.pendingChildren[parentToken] = []
+            # make sure the child is not in the pendingChildren list
+            # for more than one parent
+            for key in self.pendingChildren.keys():
+                childList = self.pendingChildren[key]
+                if child in childList:
+                    # take him out of the list
+                    del childList[childList.index(child)]
             self.pendingChildren[parentToken].append(child)
             
     def registerParent(self, token, parent):
