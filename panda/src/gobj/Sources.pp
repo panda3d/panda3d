@@ -34,7 +34,7 @@
     qpgeomCacheManager.h qpgeomCacheManager.I \
     qpgeomVertexAnimationSpec.h qpgeomVertexAnimationSpec.I \
     qpgeomVertexData.h qpgeomVertexData.I \
-    qpgeomVertexDataType.h qpgeomVertexDataType.I \
+    qpgeomVertexColumn.h qpgeomVertexColumn.I \
     qpgeomVertexFormat.h qpgeomVertexFormat.I \
     qpgeomVertexReader.h qpgeomVertexReader.I \
     qpgeomVertexRewriter.h qpgeomVertexRewriter.I \
@@ -85,7 +85,7 @@
     qpgeomCacheManager.cxx \
     qpgeomVertexAnimationSpec.cxx \
     qpgeomVertexData.cxx \
-    qpgeomVertexDataType.cxx \
+    qpgeomVertexColumn.cxx \
     qpgeomVertexFormat.cxx \
     qpgeomVertexReader.cxx \
     qpgeomVertexRewriter.cxx \
@@ -135,7 +135,7 @@
     qpgeomCacheManager.h qpgeomCacheManager.I \
     qpgeomVertexAnimationSpec.h qpgeomVertexAnimationSpec.I \
     qpgeomVertexData.h qpgeomVertexData.I \
-    qpgeomVertexDataType.h qpgeomVertexDataType.I \
+    qpgeomVertexColumn.h qpgeomVertexColumn.I \
     qpgeomVertexFormat.h qpgeomVertexFormat.I \
     qpgeomVertexReader.h qpgeomVertexReader.I \
     qpgeomVertexRewriter.h qpgeomVertexRewriter.I \

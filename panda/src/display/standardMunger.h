@@ -39,8 +39,8 @@ class EXPCL_PANDA StandardMunger : public qpGeomMunger {
 public:
   StandardMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
                  int num_components,
-                 qpGeomVertexDataType::NumericType numeric_type,
-                 qpGeomVertexDataType::Contents contents);
+                 qpGeomVertexColumn::NumericType numeric_type,
+                 qpGeomVertexColumn::Contents contents);
   virtual ~StandardMunger();
 
 protected:
@@ -50,8 +50,8 @@ protected:
 
 private:
   int _num_components;
-  qpGeomVertexDataType::NumericType _numeric_type;
-  qpGeomVertexDataType::Contents _contents;
+  qpGeomVertexColumn::NumericType _numeric_type;
+  qpGeomVertexColumn::Contents _contents;
   CPT(GraphicsStateGuardian) _gsg;
   CPT(ColorAttrib) _color;
   CPT(ColorScaleAttrib) _color_scale;

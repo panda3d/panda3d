@@ -1919,20 +1919,20 @@ make_vertex_data(const EggRenderState *render_state,
 
   // Decide on the format for the vertices.
   PT(qpGeomVertexArrayFormat) array_format = new qpGeomVertexArrayFormat;
-  array_format->add_data_type
+  array_format->add_column
     (InternalName::get_vertex(), vertex_pool->get_num_dimensions(),
-     qpGeomVertexDataType::NT_float32, qpGeomVertexDataType::C_point);
+     qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_point);
 
   if (vertex_pool->has_normals()) {
-    array_format->add_data_type
+    array_format->add_column
       (InternalName::get_normal(), 3, 
-       qpGeomVertexDataType::NT_float32, qpGeomVertexDataType::C_vector);
+       qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_vector);
   }
 
   if (vertex_pool->has_colors()) {
-    array_format->add_data_type
+    array_format->add_column
       (InternalName::get_color(), 1, 
-       qpGeomVertexDataType::NT_packed_dabc, qpGeomVertexDataType::C_color);
+       qpGeomVertexColumn::NT_packed_dabc, qpGeomVertexColumn::C_color);
   }
 
   vector_string uv_names;
@@ -1944,9 +1944,9 @@ make_vertex_data(const EggRenderState *render_state,
       name = string();
     }
     PT(InternalName) iname = InternalName::get_texcoord_name(name);
-    array_format->add_data_type
+    array_format->add_column
       (iname, 2,
-       qpGeomVertexDataType::NT_float32, qpGeomVertexDataType::C_texcoord);
+       qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_texcoord);
   }
 
   PT(qpGeomVertexFormat) temp_format = new qpGeomVertexFormat(array_format);
@@ -1970,9 +1970,9 @@ make_vertex_data(const EggRenderState *render_state,
     blend_palette = new TransformBlendPalette;
 
     PT(qpGeomVertexArrayFormat) anim_array_format = new qpGeomVertexArrayFormat;
-    anim_array_format->add_data_type
+    anim_array_format->add_column
       (InternalName::get_transform_blend(), 1, 
-       qpGeomVertexDataType::NT_uint16, qpGeomVertexDataType::C_index);
+       qpGeomVertexColumn::NT_uint16, qpGeomVertexColumn::C_index);
     temp_format->add_array(anim_array_format);
 
     pset<string> slider_names;
@@ -2060,7 +2060,7 @@ make_vertex_data(const EggRenderState *render_state,
     EggVertex *vertex = (*vi);
     gvw.set_vertex(vertex->get_index());
 
-    gvw.set_data_type(InternalName::get_vertex());
+    gvw.set_column(InternalName::get_vertex());
     gvw.add_data4f(LCAST(float, vertex->get_pos4() * transform));
 
     if (is_dynamic) {
@@ -2069,13 +2069,13 @@ make_vertex_data(const EggRenderState *render_state,
         const EggMorphVertex &morph = (*mvi);
         CPT(InternalName) delta_name = 
           InternalName::get_morph(InternalName::get_vertex(), morph.get_name());
-        gvw.set_data_type(delta_name);
+        gvw.set_column(delta_name);
         gvw.add_data3f(LCAST(float, morph.get_offset() * transform));
       }
     }
 
     if (vertex->has_normal()) {
-      gvw.set_data_type(InternalName::get_normal());
+      gvw.set_column(InternalName::get_normal());
       gvw.add_data3f(LCAST(float, vertex->get_normal() * transform));
 
       if (is_dynamic) {
@@ -2084,14 +2084,14 @@ make_vertex_data(const EggRenderState *render_state,
           const EggMorphNormal &morph = (*mni);
           CPT(InternalName) delta_name = 
             InternalName::get_morph(InternalName::get_normal(), morph.get_name());
-          gvw.set_data_type(delta_name);
+          gvw.set_column(delta_name);
           gvw.add_data3f(LCAST(float, morph.get_offset() * transform));
         }
       }
     }
 
     if (vertex->has_color()) {
-      gvw.set_data_type(InternalName::get_color());
+      gvw.set_column(InternalName::get_color());
       gvw.add_data4f(vertex->get_color());
 
       if (is_dynamic) {
@@ -2100,7 +2100,7 @@ make_vertex_data(const EggRenderState *render_state,
           const EggMorphColor &morph = (*mci);
           CPT(InternalName) delta_name = 
             InternalName::get_morph(InternalName::get_color(), morph.get_name());
-          gvw.set_data_type(delta_name);
+          gvw.set_column(delta_name);
           gvw.add_data4f(morph.get_offset());
         }
       }
@@ -2117,7 +2117,7 @@ make_vertex_data(const EggRenderState *render_state,
         name = string();
       }
       PT(InternalName) iname = InternalName::get_texcoord_name(name);
-      gvw.set_data_type(iname);
+      gvw.set_column(iname);
 
       BakeInUVs::const_iterator buv = render_state->_bake_in_uvs.find(iname);
       if (buv != render_state->_bake_in_uvs.end()) {
@@ -2133,7 +2133,7 @@ make_vertex_data(const EggRenderState *render_state,
           const EggMorphTexCoord &morph = (*mti);
           CPT(InternalName) delta_name = 
             InternalName::get_morph(iname, morph.get_name());
-          gvw.set_data_type(delta_name);
+          gvw.set_column(delta_name);
           TexCoordd duv = morph.get_offset();
           if (buv != render_state->_bake_in_uvs.end()) {
             TexCoordd new_uv = orig_uv + duv;
@@ -2160,7 +2160,7 @@ make_vertex_data(const EggRenderState *render_state,
       blend.normalize_weights();
 
       int palette_index = blend_palette->add_blend(blend);
-      gvw.set_data_type(InternalName::get_transform_blend());
+      gvw.set_column(InternalName::get_transform_blend());
       gvw.set_data1i(palette_index);
     }
   }
@@ -2180,15 +2180,15 @@ make_vertex_data(const EggRenderState *render_state,
 void EggLoader::
 record_morph(qpGeomVertexArrayFormat *array_format,
              CharacterMaker *character_maker,
-             const string &morph_name, InternalName *data_type_name,
+             const string &morph_name, InternalName *column_name,
              int num_components) {
   CPT(InternalName) slider_name = InternalName::make(morph_name);
   CPT(InternalName) delta_name = 
-    InternalName::get_morph(data_type_name, morph_name);
-  if (!array_format->has_data_type(delta_name)) {
-    array_format->add_data_type
+    InternalName::get_morph(column_name, morph_name);
+  if (!array_format->has_column(delta_name)) {
+    array_format->add_column
       (delta_name, num_components,
-       qpGeomVertexDataType::NT_float32, qpGeomVertexDataType::C_morph_delta);
+       qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_morph_delta);
   }
 }
 

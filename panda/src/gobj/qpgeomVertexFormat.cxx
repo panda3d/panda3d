@@ -198,35 +198,35 @@ clear_arrays() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexFormat::get_num_data_types
+//     Function: qpGeomVertexFormat::get_num_columns
 //       Access: Published
-//  Description: Returns the total number of different data types in
+//  Description: Returns the total number of different columns in
 //               the specification, across all arrays.
 ////////////////////////////////////////////////////////////////////
 int qpGeomVertexFormat::
-get_num_data_types() const {
-  int num_data_types = 0;
+get_num_columns() const {
+  int num_columns = 0;
   Arrays::const_iterator ai;
   for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
-    num_data_types += (*ai)->get_num_data_types();
+    num_columns += (*ai)->get_num_columns();
   }
-  return num_data_types;
+  return num_columns;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexFormat::get_data_type
+//     Function: qpGeomVertexFormat::get_column
 //       Access: Published
-//  Description: Returns the ith data type of the specification,
+//  Description: Returns the ith column of the specification,
 //               across all arrays.
 ////////////////////////////////////////////////////////////////////
-const qpGeomVertexDataType *qpGeomVertexFormat::
-get_data_type(int i) const {
+const qpGeomVertexColumn *qpGeomVertexFormat::
+get_column(int i) const {
   Arrays::const_iterator ai;
   for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
-    if (i < (*ai)->get_num_data_types()) {
-      return (*ai)->get_data_type(i);
+    if (i < (*ai)->get_num_columns()) {
+      return (*ai)->get_column(i);
     }
-    i -= (*ai)->get_num_data_types();
+    i -= (*ai)->get_num_columns();
   }
 
   return NULL;
@@ -236,7 +236,7 @@ get_data_type(int i) const {
 //     Function: qpGeomVertexFormat::get_array_with
 //       Access: Published
 //  Description: Returns the index number of the array with the
-//               ith data type.
+//               ith column.
 //
 //               The return value can be passed to get_array_format()
 //               to get the format of the array.  It may also be
@@ -248,10 +248,10 @@ int qpGeomVertexFormat::
 get_array_with(int i) const {
   int array_index = 0;
   for (array_index = 0; array_index < (int)_arrays.size(); array_index++) {
-    if (i < _arrays[array_index]->get_num_data_types()) {
+    if (i < _arrays[array_index]->get_num_columns()) {
       return array_index;
     }
-    i -= _arrays[array_index]->get_num_data_types();
+    i -= _arrays[array_index]->get_num_columns();
   }
 
   return -1;
@@ -261,7 +261,7 @@ get_array_with(int i) const {
 //     Function: qpGeomVertexFormat::get_array_with
 //       Access: Published
 //  Description: Returns the index number of the array with the
-//               indicated data type, or -1 if no arrays contained
+//               indicated column, or -1 if no arrays contained
 //               that name.
 //
 //               The return value can be passed to get_array_format()
@@ -278,65 +278,65 @@ get_array_with(const InternalName *name) const {
   nassertr(_is_registered, -1);
 
   DataTypesByName::const_iterator ai;
-  ai = _data_types_by_name.find(name);
-  if (ai != _data_types_by_name.end()) {
+  ai = _columns_by_name.find(name);
+  if (ai != _columns_by_name.end()) {
     return (*ai).second._array_index;
   }
   return -1;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexFormat::get_data_type
+//     Function: qpGeomVertexFormat::get_column
 //       Access: Published
 //  Description: Returns the specification with the indicated name, or
 //               NULL if the name is not used.  Use get_array_with()
-//               to determine which array this data type is associated
+//               to determine which array this column is associated
 //               with.
 //
 //               This may only be called after the format has been
 //               registered.
 ////////////////////////////////////////////////////////////////////
-const qpGeomVertexDataType *qpGeomVertexFormat::
-get_data_type(const InternalName *name) const {
+const qpGeomVertexColumn *qpGeomVertexFormat::
+get_column(const InternalName *name) const {
   nassertr(_is_registered, NULL);
 
   DataTypesByName::const_iterator ai;
-  ai = _data_types_by_name.find(name);
-  if (ai != _data_types_by_name.end()) {
+  ai = _columns_by_name.find(name);
+  if (ai != _columns_by_name.end()) {
     int array_index = (*ai).second._array_index;
-    int data_type_index = (*ai).second._data_type_index;
+    int column_index = (*ai).second._column_index;
 
     nassertr(array_index >= 0 && array_index < (int)_arrays.size(), NULL);
-    return _arrays[array_index]->get_data_type(data_type_index);
+    return _arrays[array_index]->get_column(column_index);
   }
   return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexFormat::remove_data_type
+//     Function: qpGeomVertexFormat::remove_column
 //       Access: Published
-//  Description: Removes the named data type from the format, from
+//  Description: Removes the named column from the format, from
 //               whichever array it exists in.  If there are other
-//               data types remaining in the array, the array is left
-//               with a gap where the data type used to be; if this
-//               was the only data type in the array, the array is
+//               columns remaining in the array, the array is left
+//               with a gap where the column used to be; if this
+//               was the only column in the array, the array is
 //               removed.
 //
 //               This may not be called once the format has been
 //               registered.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexFormat::
-remove_data_type(const InternalName *name) {
+remove_column(const InternalName *name) {
   nassertv(!_is_registered);
 
   // Since the format's not registered, it doesn't yet have an index
-  // of data types--so we have to search all of the arrays, one at a
+  // of columns--so we have to search all of the arrays, one at a
   // time, until we find it.
   for (int array = 0; array < (int)_arrays.size(); ++array) {
     qpGeomVertexArrayFormat *array_format = _arrays[array];
 
-    if (array_format->get_data_type(name) != (qpGeomVertexDataType *)NULL) {
-      // Here's the array with the named data type!
+    if (array_format->get_column(name) != (qpGeomVertexColumn *)NULL) {
+      // Here's the array with the named column!
       if (array_format->is_registered() ||
           array_format->get_ref_count() > 1) {
         // Get a safe-to-modify copy of the array format.
@@ -344,10 +344,10 @@ remove_data_type(const InternalName *name) {
         array_format = _arrays[array];
       }
 
-      array_format->remove_data_type(name);
+      array_format->remove_column(name);
 
-      // Are there any data types remaining in the array?
-      if (array_format->get_num_data_types() == 0) {
+      // Are there any columns remaining in the array?
+      if (array_format->get_num_columns() == 0) {
         // Remove the whole array.
         remove_array(array);
       }
@@ -355,7 +355,7 @@ remove_data_type(const InternalName *name) {
     }
   }
 
-  // It appears that data type wasn't part of the format anyway.  No
+  // It appears that column wasn't part of the format anyway.  No
   // problem; quietly return.
 }
 
@@ -420,9 +420,9 @@ write_with_data(ostream &out, int indent_level,
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexFormat::get_array_info
 //       Access: Public
-//  Description: Quickly looks up the indicated data type within all
+//  Description: Quickly looks up the indicated column within all
 //               of the nested arrays and sets array_index and
-//               data_type appropriately.  Returns true if the data
+//               column appropriately.  Returns true if the data
 //               type exists in this format, false if it does not.
 //
 //               This may only be called after the format has been
@@ -430,14 +430,14 @@ write_with_data(ostream &out, int indent_level,
 ////////////////////////////////////////////////////////////////////
 bool qpGeomVertexFormat::
 get_array_info(const InternalName *name, int &array_index,
-               const qpGeomVertexDataType *&data_type) const {
+               const qpGeomVertexColumn *&column) const {
   nassertr(_is_registered, false);
 
   DataTypesByName::const_iterator ai;
-  ai = _data_types_by_name.find(name);
-  if (ai != _data_types_by_name.end()) {
+  ai = _columns_by_name.find(name);
+  if (ai != _columns_by_name.end()) {
     array_index = (*ai).second._array_index;
-    data_type = _arrays[array_index]->get_data_type((*ai).second._data_type_index);
+    column = _arrays[array_index]->get_column((*ai).second._column_index);
     return true;
   }
   return false;
@@ -489,7 +489,7 @@ make_registry() {
 void qpGeomVertexFormat::
 do_register() {
   nassertv(!_is_registered);
-  nassertv(_data_types_by_name.empty());
+  nassertv(_columns_by_name.empty());
 
   for (int array = 0; array < (int)_arrays.size(); ++array) {
     const qpGeomVertexArrayFormat *array_format = _arrays[array];
@@ -498,54 +498,74 @@ do_register() {
     }
 
     // Now add the names to the index.
-    int num_data_types = array_format->get_num_data_types();
-    for (int i = 0; i < num_data_types; i++) {
-      const qpGeomVertexDataType *data_type = array_format->get_data_type(i);
+    int num_columns = array_format->get_num_columns();
+    for (int i = 0; i < num_columns; i++) {
+      const qpGeomVertexColumn *column = array_format->get_column(i);
       pair<DataTypesByName::iterator, bool> result;
-      result = _data_types_by_name.insert(DataTypesByName::value_type(data_type->get_name(), DataTypeRecord()));
+      result = _columns_by_name.insert(DataTypesByName::value_type(column->get_name(), DataTypeRecord()));
       if (!result.second) {
         gobj_cat.warning()
-          << "Data type " << data_type->get_name() << " repeated in format.\n";
+          << "Column " << column->get_name() << " repeated in format.\n";
       } else {
         DataTypeRecord &record = (*result.first).second;
         record._array_index = array;
-        record._data_type_index = i;
+        record._column_index = i;
       }
     }
   }
 
-  // Go back through the index now and look for morph descriptions.
+  // Go back through the index now and identify the points, vectors,
+  // and morph descriptions, so we can quickly look these up later.
   DataTypesByName::iterator ni;
-  for (ni = _data_types_by_name.begin(); 
-       ni != _data_types_by_name.end();
+  for (ni = _columns_by_name.begin(); 
+       ni != _columns_by_name.end();
        ++ni) {
     const DataTypeRecord &record = (*ni).second;
-    const qpGeomVertexDataType *data_type = _arrays[record._array_index]->get_data_type(record._data_type_index);
+    const qpGeomVertexColumn *column = _arrays[record._array_index]->get_column(record._column_index);
 
-    // Is it a morph description?
-    if (data_type->get_contents() == qpGeomVertexDataType::C_morph_delta) {
-      MorphRecord morph;
-      morph._delta = data_type->get_name();
-      
-      // The delta name must be of the form "basename.morph.slidername".  
-      int n = morph._delta->find_ancestor("morph");
-      if (n < 0) {
-        gobj_cat.warning()
-          << "vertex format defines " << *data_type->get_name()
-          << ", which is stored as a C_morph_delta, but its name does not include \"morph\".\n";
-      } else {
-        morph._slider = InternalName::make(morph._delta->get_net_basename(n - 1));
-        morph._base = morph._delta->get_ancestor(n + 1);
+    switch (column->get_contents()) {
+    case qpGeomVertexColumn::C_point:
+      // It's a point.
+      _points.push_back(column->get_name());
+      break;
 
-        if (_data_types_by_name.find(morph._base) == _data_types_by_name.end()) {
+    case qpGeomVertexColumn::C_vector:
+      // It's a vector.
+      _vectors.push_back(column->get_name());
+      break;
+
+    case qpGeomVertexColumn::C_morph_delta:
+      {
+        // It's a morph description.
+        MorphRecord morph;
+        morph._delta = column->get_name();
+        
+        // The delta name must be of the form "basename.morph.slidername".  
+        int n = morph._delta->find_ancestor("morph");
+        if (n < 0) {
           gobj_cat.warning()
-            << "vertex format defines " 
-            << *data_type->get_name() << " but does not define "
-            << *morph._base << "\n";
+            << "vertex format defines " << *column->get_name()
+            << ", which is stored as a C_morph_delta, but its name does not include \"morph\".\n";
         } else {
-          _morphs.push_back(morph);
+          morph._slider = InternalName::make(morph._delta->get_net_basename(n - 1));
+          morph._base = morph._delta->get_ancestor(n + 1);
+          
+          if (_columns_by_name.find(morph._base) == _columns_by_name.end()) {
+            gobj_cat.warning()
+              << "vertex format defines " 
+              << *column->get_name() << " but does not define "
+              << *morph._base << "\n";
+          } else {
+            _morphs.push_back(morph);
+          }
         }
       }
+      break;
+
+    default:
+      // Some other type of value we don't care about caching a
+      // pointer to.
+      break;
     }
   }
 
@@ -563,7 +583,10 @@ do_unregister() {
   nassertv(_is_registered);
   _is_registered = false;
 
-  _data_types_by_name.clear();
+  _columns_by_name.clear();
+  _points.clear();
+  _vectors.clear();
+  _morphs.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -644,127 +667,127 @@ qpGeomVertexFormat::Registry::
 Registry() {
   _v3 = register_format(new qpGeomVertexArrayFormat
                         (InternalName::get_vertex(), 3, 
-                         qpGeomVertexDataType::NT_float32,
-                         qpGeomVertexDataType::C_point));
+                         qpGeomVertexColumn::NT_float32,
+                         qpGeomVertexColumn::C_point));
 
   _v3n3 = register_format(new qpGeomVertexArrayFormat
                           (InternalName::get_vertex(), 3, 
-                           qpGeomVertexDataType::NT_float32,
-                           qpGeomVertexDataType::C_point,
+                           qpGeomVertexColumn::NT_float32,
+                           qpGeomVertexColumn::C_point,
                            InternalName::get_normal(), 3, 
-                           qpGeomVertexDataType::NT_float32,
-                           qpGeomVertexDataType::C_vector));
+                           qpGeomVertexColumn::NT_float32,
+                           qpGeomVertexColumn::C_vector));
 
   _v3t2 = register_format(new qpGeomVertexArrayFormat
                           (InternalName::get_vertex(), 3, 
-                           qpGeomVertexDataType::NT_float32,
-                           qpGeomVertexDataType::C_point,
+                           qpGeomVertexColumn::NT_float32,
+                           qpGeomVertexColumn::C_point,
                            InternalName::get_texcoord(), 2, 
-                           qpGeomVertexDataType::NT_float32,
-                           qpGeomVertexDataType::C_texcoord));
+                           qpGeomVertexColumn::NT_float32,
+                           qpGeomVertexColumn::C_texcoord));
 
   _v3n3t2 = register_format(new qpGeomVertexArrayFormat
                             (InternalName::get_vertex(), 3, 
-                             qpGeomVertexDataType::NT_float32,
-                             qpGeomVertexDataType::C_point,
+                             qpGeomVertexColumn::NT_float32,
+                             qpGeomVertexColumn::C_point,
                              InternalName::get_normal(), 3,
-                             qpGeomVertexDataType::NT_float32,
-                             qpGeomVertexDataType::C_vector,
+                             qpGeomVertexColumn::NT_float32,
+                             qpGeomVertexColumn::C_vector,
                              InternalName::get_texcoord(), 2, 
-                             qpGeomVertexDataType::NT_float32,
-                             qpGeomVertexDataType::C_texcoord));
+                             qpGeomVertexColumn::NT_float32,
+                             qpGeomVertexColumn::C_texcoord));
 
   // Define the DirectX-style packed color formats
   _v3cp = register_format(new qpGeomVertexArrayFormat
                           (InternalName::get_vertex(), 3,
-                           qpGeomVertexDataType::NT_float32,
-                           qpGeomVertexDataType::C_point,
+                           qpGeomVertexColumn::NT_float32,
+                           qpGeomVertexColumn::C_point,
                            InternalName::get_color(), 1,
-                           qpGeomVertexDataType::NT_packed_dabc,
-                           qpGeomVertexDataType::C_color));
+                           qpGeomVertexColumn::NT_packed_dabc,
+                           qpGeomVertexColumn::C_color));
 
   _v3n3cp = register_format(new qpGeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
-                             qpGeomVertexDataType::NT_float32,
-                             qpGeomVertexDataType::C_point,
+                             qpGeomVertexColumn::NT_float32,
+                             qpGeomVertexColumn::C_point,
                              InternalName::get_normal(), 3,
-                             qpGeomVertexDataType::NT_float32,
-                             qpGeomVertexDataType::C_point,
+                             qpGeomVertexColumn::NT_float32,
+                             qpGeomVertexColumn::C_point,
                              InternalName::get_color(), 1,
-                             qpGeomVertexDataType::NT_packed_dabc,
-                             qpGeomVertexDataType::C_color));
+                             qpGeomVertexColumn::NT_packed_dabc,
+                             qpGeomVertexColumn::C_color));
 
   _v3cpt2 = register_format(new qpGeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
-                             qpGeomVertexDataType::NT_float32,
-                             qpGeomVertexDataType::C_point,
+                             qpGeomVertexColumn::NT_float32,
+                             qpGeomVertexColumn::C_point,
                              InternalName::get_color(), 1,
-                             qpGeomVertexDataType::NT_packed_dabc,
-                             qpGeomVertexDataType::C_color,
+                             qpGeomVertexColumn::NT_packed_dabc,
+                             qpGeomVertexColumn::C_color,
                              InternalName::get_texcoord(), 2,
-                             qpGeomVertexDataType::NT_float32,
-                             qpGeomVertexDataType::C_texcoord));
+                             qpGeomVertexColumn::NT_float32,
+                             qpGeomVertexColumn::C_texcoord));
 
   _v3n3cpt2 = register_format(new qpGeomVertexArrayFormat
                               (InternalName::get_vertex(), 3,
-                               qpGeomVertexDataType::NT_float32,
-                               qpGeomVertexDataType::C_point,
+                               qpGeomVertexColumn::NT_float32,
+                               qpGeomVertexColumn::C_point,
                                InternalName::get_normal(), 3,
-                               qpGeomVertexDataType::NT_float32,
-                               qpGeomVertexDataType::C_point,
+                               qpGeomVertexColumn::NT_float32,
+                               qpGeomVertexColumn::C_point,
                                InternalName::get_color(), 1,
-                               qpGeomVertexDataType::NT_packed_dabc,
-                               qpGeomVertexDataType::C_color,
+                               qpGeomVertexColumn::NT_packed_dabc,
+                               qpGeomVertexColumn::C_color,
                                InternalName::get_texcoord(), 2,
-                               qpGeomVertexDataType::NT_float32,
-                               qpGeomVertexDataType::C_texcoord));
+                               qpGeomVertexColumn::NT_float32,
+                               qpGeomVertexColumn::C_texcoord));
 
   // Define the OpenGL-style per-byte color formats.  This is not the
   // same as a packed format, above, because the resulting byte order
   // is endian-independent.
   _v3c4 = register_format(new qpGeomVertexArrayFormat
                           (InternalName::get_vertex(), 3,
-                           qpGeomVertexDataType::NT_float32,
-                           qpGeomVertexDataType::C_point,
+                           qpGeomVertexColumn::NT_float32,
+                           qpGeomVertexColumn::C_point,
                            InternalName::get_color(), 4,
-                           qpGeomVertexDataType::NT_uint8,
-                           qpGeomVertexDataType::C_color));
+                           qpGeomVertexColumn::NT_uint8,
+                           qpGeomVertexColumn::C_color));
 
   _v3n3c4 = register_format(new qpGeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
-                             qpGeomVertexDataType::NT_float32,
-                             qpGeomVertexDataType::C_point,
+                             qpGeomVertexColumn::NT_float32,
+                             qpGeomVertexColumn::C_point,
                              InternalName::get_normal(), 3,
-                             qpGeomVertexDataType::NT_float32,
-                             qpGeomVertexDataType::C_point,
+                             qpGeomVertexColumn::NT_float32,
+                             qpGeomVertexColumn::C_point,
                              InternalName::get_color(), 4,
-                             qpGeomVertexDataType::NT_uint8,
-                             qpGeomVertexDataType::C_color));
+                             qpGeomVertexColumn::NT_uint8,
+                             qpGeomVertexColumn::C_color));
 
   _v3c4t2 = register_format(new qpGeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
-                             qpGeomVertexDataType::NT_float32,
-                             qpGeomVertexDataType::C_point,
+                             qpGeomVertexColumn::NT_float32,
+                             qpGeomVertexColumn::C_point,
                              InternalName::get_color(), 4,
-                             qpGeomVertexDataType::NT_uint8,
-                             qpGeomVertexDataType::C_color,
+                             qpGeomVertexColumn::NT_uint8,
+                             qpGeomVertexColumn::C_color,
                              InternalName::get_texcoord(), 2,
-                             qpGeomVertexDataType::NT_float32,
-                             qpGeomVertexDataType::C_texcoord));
+                             qpGeomVertexColumn::NT_float32,
+                             qpGeomVertexColumn::C_texcoord));
 
   _v3n3c4t2 = register_format(new qpGeomVertexArrayFormat
                               (InternalName::get_vertex(), 3,
-                               qpGeomVertexDataType::NT_float32,
-                               qpGeomVertexDataType::C_point,
+                               qpGeomVertexColumn::NT_float32,
+                               qpGeomVertexColumn::C_point,
                                InternalName::get_normal(), 3,
-                               qpGeomVertexDataType::NT_float32,
-                               qpGeomVertexDataType::C_point,
+                               qpGeomVertexColumn::NT_float32,
+                               qpGeomVertexColumn::C_point,
                                InternalName::get_color(), 4,
-                               qpGeomVertexDataType::NT_uint8,
-                               qpGeomVertexDataType::C_color,
+                               qpGeomVertexColumn::NT_uint8,
+                               qpGeomVertexColumn::C_color,
                                InternalName::get_texcoord(), 2,
-                               qpGeomVertexDataType::NT_float32,
-                               qpGeomVertexDataType::C_texcoord));
+                               qpGeomVertexColumn::NT_float32,
+                               qpGeomVertexColumn::C_texcoord));
 }
 
 ////////////////////////////////////////////////////////////////////

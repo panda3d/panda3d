@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeomVertexFormat.h"
-#include "qpgeomVertexDataType.h"
+#include "qpgeomVertexColumn.h"
 #include "qpgeomVertexData.h"
 #include "qpgeomVertexReader.h"
 #include "indent.h"
@@ -38,7 +38,7 @@ qpGeomVertexArrayFormat() :
   _stride(0),
   _total_bytes(0),
   _pad_to(1),
-  _data_types_unsorted(false)
+  _columns_unsorted(false)
 {
 }
 
@@ -49,15 +49,15 @@ qpGeomVertexArrayFormat() :
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayFormat::
 qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                        qpGeomVertexDataType::NumericType numeric_type0,
-                        qpGeomVertexDataType::Contents contents0) :
+                        qpGeomVertexColumn::NumericType numeric_type0,
+                        qpGeomVertexColumn::Contents contents0) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
   _pad_to(1),
-  _data_types_unsorted(false)
+  _columns_unsorted(false)
 {
-  add_data_type(name0, num_components0, numeric_type0, contents0);
+  add_column(name0, num_components0, numeric_type0, contents0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,19 +67,19 @@ qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayFormat::
 qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                        qpGeomVertexDataType::NumericType numeric_type0,
-                        qpGeomVertexDataType::Contents contents0,
+                        qpGeomVertexColumn::NumericType numeric_type0,
+                        qpGeomVertexColumn::Contents contents0,
                         const InternalName *name1, int num_components1,
-                        qpGeomVertexDataType::NumericType numeric_type1,
-                        qpGeomVertexDataType::Contents contents1) :
+                        qpGeomVertexColumn::NumericType numeric_type1,
+                        qpGeomVertexColumn::Contents contents1) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
   _pad_to(1),
-  _data_types_unsorted(false)
+  _columns_unsorted(false)
 {
-  add_data_type(name0, num_components0, numeric_type0, contents0);
-  add_data_type(name1, num_components1, numeric_type1, contents1);
+  add_column(name0, num_components0, numeric_type0, contents0);
+  add_column(name1, num_components1, numeric_type1, contents1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,23 +89,23 @@ qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayFormat::
 qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                        qpGeomVertexDataType::NumericType numeric_type0,
-                        qpGeomVertexDataType::Contents contents0,
+                        qpGeomVertexColumn::NumericType numeric_type0,
+                        qpGeomVertexColumn::Contents contents0,
                         const InternalName *name1, int num_components1,
-                        qpGeomVertexDataType::NumericType numeric_type1,
-                        qpGeomVertexDataType::Contents contents1,
+                        qpGeomVertexColumn::NumericType numeric_type1,
+                        qpGeomVertexColumn::Contents contents1,
                         const InternalName *name2, int num_components2,
-                        qpGeomVertexDataType::NumericType numeric_type2,
-                        qpGeomVertexDataType::Contents contents2) :
+                        qpGeomVertexColumn::NumericType numeric_type2,
+                        qpGeomVertexColumn::Contents contents2) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
   _pad_to(1),
-  _data_types_unsorted(false)
+  _columns_unsorted(false)
 {
-  add_data_type(name0, num_components0, numeric_type0, contents0);
-  add_data_type(name1, num_components1, numeric_type1, contents1);
-  add_data_type(name2, num_components2, numeric_type2, contents2);
+  add_column(name0, num_components0, numeric_type0, contents0);
+  add_column(name1, num_components1, numeric_type1, contents1);
+  add_column(name2, num_components2, numeric_type2, contents2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,27 +115,27 @@ qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayFormat::
 qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                        qpGeomVertexDataType::NumericType numeric_type0,
-                        qpGeomVertexDataType::Contents contents0,
+                        qpGeomVertexColumn::NumericType numeric_type0,
+                        qpGeomVertexColumn::Contents contents0,
                         const InternalName *name1, int num_components1,
-                        qpGeomVertexDataType::NumericType numeric_type1,
-                        qpGeomVertexDataType::Contents contents1,
+                        qpGeomVertexColumn::NumericType numeric_type1,
+                        qpGeomVertexColumn::Contents contents1,
                         const InternalName *name2, int num_components2,
-                        qpGeomVertexDataType::NumericType numeric_type2,
-                        qpGeomVertexDataType::Contents contents2,
+                        qpGeomVertexColumn::NumericType numeric_type2,
+                        qpGeomVertexColumn::Contents contents2,
                         const InternalName *name3, int num_components3,
-                        qpGeomVertexDataType::NumericType numeric_type3,
-                        qpGeomVertexDataType::Contents contents3) :
+                        qpGeomVertexColumn::NumericType numeric_type3,
+                        qpGeomVertexColumn::Contents contents3) :
   _is_registered(false),
   _stride(0),
   _total_bytes(0),
   _pad_to(1),
-  _data_types_unsorted(false)
+  _columns_unsorted(false)
 {
-  add_data_type(name0, num_components0, numeric_type0, contents0);
-  add_data_type(name1, num_components1, numeric_type1, contents1);
-  add_data_type(name2, num_components2, numeric_type2, contents2);
-  add_data_type(name3, num_components3, numeric_type3, contents3);
+  add_column(name0, num_components0, numeric_type0, contents0);
+  add_column(name1, num_components1, numeric_type1, contents1);
+  add_column(name2, num_components2, numeric_type2, contents2);
+  add_column(name3, num_components3, numeric_type3, contents3);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,11 +149,11 @@ qpGeomVertexArrayFormat(const qpGeomVertexArrayFormat &copy) :
   _stride(copy._stride),
   _total_bytes(copy._total_bytes),
   _pad_to(copy._pad_to),
-  _data_types_unsorted(copy._data_types_unsorted)
+  _columns_unsorted(copy._columns_unsorted)
 {
   DataTypes::const_iterator dti;
-  for (dti = copy._data_types.begin(); dti != copy._data_types.end(); ++dti) {
-    add_data_type(*(*dti));
+  for (dti = copy._columns.begin(); dti != copy._columns.end(); ++dti) {
+    add_column(*(*dti));
   }
 }
 
@@ -169,12 +169,12 @@ operator = (const qpGeomVertexArrayFormat &copy) {
   _total_bytes = copy._total_bytes;
   _pad_to = copy._pad_to;
 
-  _data_types.clear();
-  _data_types_by_name.clear();
-  _data_types_unsorted = false;
+  _columns.clear();
+  _columns_by_name.clear();
+  _columns_unsorted = false;
   DataTypes::const_iterator dti;
-  for (dti = copy._data_types.begin(); dti != copy._data_types.end(); ++dti) {
-    add_data_type(*(*dti));
+  for (dti = copy._columns.begin(); dti != copy._columns.end(); ++dti) {
+    add_column(*(*dti));
   }
 }
   
@@ -186,15 +186,15 @@ operator = (const qpGeomVertexArrayFormat &copy) {
 qpGeomVertexArrayFormat::
 ~qpGeomVertexArrayFormat() {
   DataTypes::iterator dti;
-  for (dti = _data_types.begin(); dti != _data_types.end(); ++dti) {
+  for (dti = _columns.begin(); dti != _columns.end(); ++dti) {
     delete (*dti);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayFormat::add_data_type
+//     Function: qpGeomVertexArrayFormat::add_column
 //       Access: Published
-//  Description: Adds a new data type to the specification.  This is a
+//  Description: Adds a new column to the specification.  This is a
 //               table of per-vertex floating-point numbers such as
 //               "vertex" or "normal"; you must specify where in each
 //               record the table starts, and how many components
@@ -204,32 +204,32 @@ qpGeomVertexArrayFormat::
 //               type.
 ////////////////////////////////////////////////////////////////////
 int qpGeomVertexArrayFormat::
-add_data_type(const InternalName *name, int num_components, 
-              qpGeomVertexDataType::NumericType numeric_type, 
-              qpGeomVertexDataType::Contents contents, int start) {
+add_column(const InternalName *name, int num_components, 
+           qpGeomVertexColumn::NumericType numeric_type, 
+           qpGeomVertexColumn::Contents contents, int start) {
   if (start < 0) {
     start = _total_bytes;
 
-    qpGeomVertexDataType temp_data_type
+    qpGeomVertexColumn temp_column
       (name, num_components, numeric_type, contents, 0);
-    int pad_to = temp_data_type.get_component_bytes();
+    int pad_to = temp_column.get_component_bytes();
     start = ((start + pad_to - 1) / pad_to) * pad_to;
   }
 
-  return add_data_type(qpGeomVertexDataType(name, num_components, 
+  return add_column(qpGeomVertexColumn(name, num_components, 
                                             numeric_type, contents, start));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayFormat::add_data_type
+//     Function: qpGeomVertexArrayFormat::add_column
 //       Access: Published
-//  Description: Adds a new data type to the specification.  This is a
+//  Description: Adds a new column to the specification.  This is a
 //               table of per-vertex floating-point numbers such as
 //               "vertex" or "normal"; you must specify where in each
 //               record the table starts, and how many components
 //               (dimensions) exist per vertex.
 //
-//               Adding a data type with the same name as a previous
+//               Adding a column with the same name as a previous
 //               type, or that overlaps with one or more previous
 //               types, quietly removes the previous type(s).
 //
@@ -237,118 +237,118 @@ add_data_type(const InternalName *name, int num_components,
 //               type.
 ////////////////////////////////////////////////////////////////////
 int qpGeomVertexArrayFormat::
-add_data_type(const qpGeomVertexDataType &data_type) {
+add_column(const qpGeomVertexColumn &column) {
   nassertr(!_is_registered, -1);
 
-  // Make sure there isn't already a data type with this name.
-  remove_data_type(data_type.get_name());
+  // Make sure there isn't already a column with this name.
+  remove_column(column.get_name());
 
-  // Also make sure there aren't any data types that overlap with this
+  // Also make sure there aren't any columns that overlap with this
   // one.
-  const qpGeomVertexDataType *orig_data_type = get_data_type(data_type.get_start(), data_type.get_total_bytes());
-  while (orig_data_type != (const qpGeomVertexDataType *)NULL) {
-    remove_data_type(orig_data_type->get_name());
-    orig_data_type = get_data_type(data_type.get_start(), data_type.get_total_bytes());
+  const qpGeomVertexColumn *orig_column = get_column(column.get_start(), column.get_total_bytes());
+  while (orig_column != (const qpGeomVertexColumn *)NULL) {
+    remove_column(orig_column->get_name());
+    orig_column = get_column(column.get_start(), column.get_total_bytes());
   }
 
-  _total_bytes = max(_total_bytes, data_type.get_start() + data_type.get_total_bytes());
-  _pad_to = max(_pad_to, data_type.get_component_bytes());
+  _total_bytes = max(_total_bytes, column.get_start() + column.get_total_bytes());
+  _pad_to = max(_pad_to, column.get_component_bytes());
   _stride = max(_stride, ((_total_bytes + _pad_to - 1) / _pad_to) * _pad_to);
 
-  qpGeomVertexDataType *new_data_type = new qpGeomVertexDataType(data_type);
+  qpGeomVertexColumn *new_column = new qpGeomVertexColumn(column);
 
-  if (!_data_types.empty() && *new_data_type < *_data_types.back()) {
-    _data_types_unsorted = true;
+  if (!_columns.empty() && *new_column < *_columns.back()) {
+    _columns_unsorted = true;
   }
 
-  int new_index = (int)_data_types.size();
-  _data_types.push_back(new_data_type);
-  _data_types_by_name.insert(DataTypesByName::value_type(new_data_type->get_name(), new_data_type));
+  int new_index = (int)_columns.size();
+  _columns.push_back(new_column);
+  _columns_by_name.insert(DataTypesByName::value_type(new_column->get_name(), new_column));
 
   return new_index;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayFormat::remove_data_type
+//     Function: qpGeomVertexArrayFormat::remove_column
 //       Access: Published
-//  Description: Removes the data type with the indicated name, if
+//  Description: Removes the column with the indicated name, if
 //               any.  This leaves a gap in the byte structure.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexArrayFormat::
-remove_data_type(const InternalName *name) {
+remove_column(const InternalName *name) {
   nassertv(!_is_registered);
   DataTypesByName::iterator ni;
-  ni = _data_types_by_name.find(name);
-  if (ni != _data_types_by_name.end()) {
-    qpGeomVertexDataType *data_type = (*ni).second;
-    _data_types_by_name.erase(ni);
+  ni = _columns_by_name.find(name);
+  if (ni != _columns_by_name.end()) {
+    qpGeomVertexColumn *column = (*ni).second;
+    _columns_by_name.erase(ni);
 
     DataTypes::iterator dti;
-    dti = find(_data_types.begin(), _data_types.end(), data_type);
-    nassertv(dti != _data_types.end());
-    _data_types.erase(dti);
+    dti = find(_columns.begin(), _columns.end(), column);
+    nassertv(dti != _columns.end());
+    _columns.erase(dti);
 
-    delete data_type;
+    delete column;
 
-    // Maybe we just removed the tail data_type.  If that's so, we
+    // Maybe we just removed the tail column.  If that's so, we
     // should recompute _total_bytes to reflect the new tail.
-    if (_data_types.empty()) {
+    if (_columns.empty()) {
       _total_bytes = 0;
     } else {
-      consider_sort_data_types();
-      qpGeomVertexDataType *last = _data_types.back();
+      consider_sort_columns();
+      qpGeomVertexColumn *last = _columns.back();
       _total_bytes = last->get_start() + last->get_total_bytes();
     }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayFormat::clear_data_types
+//     Function: qpGeomVertexArrayFormat::clear_columns
 //       Access: Published
-//  Description: Removes all data types previously added, sets the
+//  Description: Removes all columns previously added, sets the
 //               stride to zero, and prepares to start over.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexArrayFormat::
-clear_data_types() {
-  _data_types.clear();
-  _data_types_by_name.clear();
-  _data_types_unsorted = false;
+clear_columns() {
+  _columns.clear();
+  _columns_by_name.clear();
+  _columns_unsorted = false;
   _stride = 0;
   _total_bytes = 0;
   _pad_to = 1;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayFormat::get_data_type
+//     Function: qpGeomVertexArrayFormat::get_column
 //       Access: Published
 //  Description: Returns the specification with the indicated name, or
 //               NULL if the name is not used.
 ////////////////////////////////////////////////////////////////////
-const qpGeomVertexDataType *qpGeomVertexArrayFormat::
-get_data_type(const InternalName *name) const {
+const qpGeomVertexColumn *qpGeomVertexArrayFormat::
+get_column(const InternalName *name) const {
   DataTypesByName::const_iterator ni;
-  ni = _data_types_by_name.find(name);
-  if (ni != _data_types_by_name.end()) {
+  ni = _columns_by_name.find(name);
+  if (ni != _columns_by_name.end()) {
     return (*ni).second;
   }
   return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayFormat::get_data_type
+//     Function: qpGeomVertexArrayFormat::get_column
 //       Access: Published
 //  Description: Returns the first specification that overlaps with
 //               any of the indicated bytes in the range, or NULL if
 //               none do.
 ////////////////////////////////////////////////////////////////////
-const qpGeomVertexDataType *qpGeomVertexArrayFormat::
-get_data_type(int start_byte, int num_bytes) const {
-  consider_sort_data_types();
+const qpGeomVertexColumn *qpGeomVertexArrayFormat::
+get_column(int start_byte, int num_bytes) const {
+  consider_sort_columns();
   DataTypes::const_iterator dti;
-  for (dti = _data_types.begin(); dti != _data_types.end(); ++dti) {
-    const qpGeomVertexDataType *data_type = (*dti);
-    if (data_type->overlaps_with(start_byte, num_bytes)) {
-      return data_type;
+  for (dti = _columns.begin(); dti != _columns.end(); ++dti) {
+    const qpGeomVertexColumn *column = (*dti);
+    if (column->overlaps_with(start_byte, num_bytes)) {
+      return column;
     }
   }
 
@@ -367,24 +367,24 @@ get_data_type(int start_byte, int num_bytes) const {
 ////////////////////////////////////////////////////////////////////
 bool qpGeomVertexArrayFormat::
 is_data_subset_of(const qpGeomVertexArrayFormat &other) const {
-  if (_data_types.size() > other._data_types.size() ||
+  if (_columns.size() > other._columns.size() ||
       get_stride() != other.get_stride()) {
     return false;
   }
 
-  consider_sort_data_types();
-  other.consider_sort_data_types();
+  consider_sort_columns();
+  other.consider_sort_columns();
   size_t i = 0;
   size_t j = 0;
-  while (i < _data_types.size() && j < other._data_types.size()) {
-    if (*_data_types[i] == *other._data_types[j]) {
+  while (i < _columns.size() && j < other._columns.size()) {
+    if (*_columns[i] == *other._columns[j]) {
       ++i;
     }
     ++j;
   }
 
   // If we reached the end of our list, all fields matched.
-  return (i == _data_types.size());
+  return (i == _columns.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -396,9 +396,9 @@ void qpGeomVertexArrayFormat::
 output(ostream &out) const {
   DataTypes::const_iterator dti;
   out << "[";
-  for (dti = _data_types.begin(); dti != _data_types.end(); ++dti) {
-    const qpGeomVertexDataType *data_type = (*dti);
-    out << " " << *data_type;
+  for (dti = _columns.begin(); dti != _columns.end(); ++dti) {
+    const qpGeomVertexColumn *column = (*dti);
+    out << " " << *column;
   }
   out << " ]";
 }
@@ -412,12 +412,12 @@ void qpGeomVertexArrayFormat::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "Array format (stride = " << get_stride() << "):\n";
-  consider_sort_data_types();
+  consider_sort_columns();
   DataTypes::const_iterator dti;
-  for (dti = _data_types.begin(); dti != _data_types.end(); ++dti) {
-    const qpGeomVertexDataType *data_type = (*dti);
+  for (dti = _columns.begin(); dti != _columns.end(); ++dti) {
+    const qpGeomVertexColumn *column = (*dti);
     indent(out, indent_level + 2)
-      << *data_type << " start at " << data_type->get_start() << "\n";
+      << *column << " start at " << column->get_start() << "\n";
   }
 }
 
@@ -429,7 +429,7 @@ write(ostream &out, int indent_level) const {
 void qpGeomVertexArrayFormat::
 write_with_data(ostream &out, int indent_level,
                 const qpGeomVertexData *data, int array_index) const {
-  consider_sort_data_types();
+  consider_sort_columns();
   int num_vertices = data->get_num_vertices();
 
   qpGeomVertexReader reader(data);
@@ -439,14 +439,14 @@ write_with_data(ostream &out, int indent_level,
       << "vertex index " << i << ":\n";
     reader.set_vertex(i);
     DataTypes::const_iterator dti;
-    for (dti = _data_types.begin(); dti != _data_types.end(); ++dti) {
-      const qpGeomVertexDataType *data_type = (*dti);
-      int num_values = min(data_type->get_num_values(), 4);
-      reader.set_data_type(array_index, data_type);
+    for (dti = _columns.begin(); dti != _columns.end(); ++dti) {
+      const qpGeomVertexColumn *column = (*dti);
+      int num_values = min(column->get_num_values(), 4);
+      reader.set_column(array_index, column);
       const LVecBase4f &d = reader.get_data4f();
 
       indent(out, indent_level + 2) 
-        << *data_type->get_name();
+        << *column->get_name();
       for (int v = 0; v < num_values; v++) {
         out << " " << d[v];
       }
@@ -471,13 +471,13 @@ compare_to(const qpGeomVertexArrayFormat &other) const {
   if (_pad_to != other._pad_to) {
     return _pad_to - other._pad_to;
   }
-  if (_data_types.size() != other._data_types.size()) {
-    return (int)_data_types.size() - (int)other._data_types.size();
+  if (_columns.size() != other._columns.size()) {
+    return (int)_columns.size() - (int)other._columns.size();
   }
-  consider_sort_data_types();
-  other.consider_sort_data_types();
-  for (size_t i = 0; i < _data_types.size(); i++) {
-    int compare = _data_types[i]->compare_to(*other._data_types[i]);
+  consider_sort_columns();
+  other.consider_sort_columns();
+  for (size_t i = 0; i < _columns.size(); i++) {
+    int compare = _columns[i]->compare_to(*other._columns[i]);
     if (compare != 0) {
       return compare;
     }
@@ -487,15 +487,15 @@ compare_to(const qpGeomVertexArrayFormat &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayFormat::sort_data_types
+//     Function: qpGeomVertexArrayFormat::sort_columns
 //       Access: Private
-//  Description: Resorts the _data_types vector so that the data types
+//  Description: Resorts the _columns vector so that the columns
 //               are listed in the same order they appear in the
 //               record.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexArrayFormat::
-sort_data_types() {
-  sort(_data_types.begin(), _data_types.end(), IndirectLess<qpGeomVertexDataType>());
+sort_columns() {
+  sort(_columns.begin(), _columns.end(), IndirectLess<qpGeomVertexColumn>());
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -41,8 +41,11 @@ class GraphicsStateGuardianBase;
 //               structure.  Many GeomVertexData structures will only
 //               define one array, with all data elements interleaved
 //               (DirectX 8.0 and before insisted on this format);
-//               some will define multiple arrays.  DirectX calls this
-//               concept a "stream".
+//               some will define multiple arrays.  
+//
+//               DirectX calls this concept of one array a "stream".
+//               It also closely correlates with the concept of a
+//               vertex buffer.
 //
 //               This object is just a block of data.  See
 //               GeomVertexData for the organizing structure.

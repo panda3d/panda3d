@@ -75,6 +75,7 @@ PUBLISHED:
   INLINE void get_blend(LMatrix4f &result) const;
   INLINE void transform_point(LPoint4f &point) const;
   INLINE void transform_point(LPoint3f &point) const;
+  INLINE void transform_vector(LVector3f &point) const;
   INLINE UpdateSeq get_modified() const;
 
   void output(ostream &out) const;

@@ -46,20 +46,20 @@ munge_format_impl(const qpGeomVertexFormat *orig,
   new_format->set_animation(animation);
   PT(qpGeomVertexArrayFormat) new_array_format = new qpGeomVertexArrayFormat;
 
-  const qpGeomVertexDataType *vertex_type = 
-    orig->get_data_type(InternalName::get_vertex());
-  const qpGeomVertexDataType *normal_type = 
-    orig->get_data_type(InternalName::get_normal());
-  const qpGeomVertexDataType *color_type = 
-    orig->get_data_type(InternalName::get_color());
-  const qpGeomVertexDataType *texcoord_type = 
-    orig->get_data_type(InternalName::get_texcoord());
+  const qpGeomVertexColumn *vertex_type = 
+    orig->get_column(InternalName::get_vertex());
+  const qpGeomVertexColumn *normal_type = 
+    orig->get_column(InternalName::get_normal());
+  const qpGeomVertexColumn *color_type = 
+    orig->get_column(InternalName::get_color());
+  const qpGeomVertexColumn *texcoord_type = 
+    orig->get_column(InternalName::get_texcoord());
 
-  if (vertex_type != (const qpGeomVertexDataType *)NULL) {
-    new_array_format->add_data_type
-      (InternalName::get_vertex(), 3, qpGeomVertexDataType::NT_float32,
-       qpGeomVertexDataType::C_point);
-    new_format->remove_data_type(vertex_type->get_name());
+  if (vertex_type != (const qpGeomVertexColumn *)NULL) {
+    new_array_format->add_column
+      (InternalName::get_vertex(), 3, qpGeomVertexColumn::NT_float32,
+       qpGeomVertexColumn::C_point);
+    new_format->remove_column(vertex_type->get_name());
   } else {
     // If we don't have a vertex type, not much we can do.
     return orig;
@@ -69,41 +69,41 @@ munge_format_impl(const qpGeomVertexFormat *orig,
       animation.get_num_transforms() > 0) {
     // If we want hardware animation, we need to reserve space for the
     // blend weights.
-    new_array_format->add_data_type
+    new_array_format->add_column
       (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
-       qpGeomVertexDataType::NT_float32, qpGeomVertexDataType::C_other);
+       qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_other);
 
     if (animation.get_indexed_transforms()) {
       // Also, if we'll be indexing into the transfom palette, reserve
       // space for the index.
-      new_array_format->add_data_type
+      new_array_format->add_column
         (InternalName::get_transform_index(), 1,
-         qpGeomVertexDataType::NT_packed_dcba, qpGeomVertexDataType::C_index);
+         qpGeomVertexColumn::NT_packed_dcba, qpGeomVertexColumn::C_index);
     }                                    
   }
 
-  if (normal_type != (const qpGeomVertexDataType *)NULL) {
-    new_array_format->add_data_type
-      (InternalName::get_normal(), 3, qpGeomVertexDataType::NT_float32,
-       qpGeomVertexDataType::C_vector);
-    new_format->remove_data_type(normal_type->get_name());
+  if (normal_type != (const qpGeomVertexColumn *)NULL) {
+    new_array_format->add_column
+      (InternalName::get_normal(), 3, qpGeomVertexColumn::NT_float32,
+       qpGeomVertexColumn::C_vector);
+    new_format->remove_column(normal_type->get_name());
   }
 
-  if (color_type != (const qpGeomVertexDataType *)NULL) {
-    new_array_format->add_data_type
-      (InternalName::get_color(), 1, qpGeomVertexDataType::NT_packed_dabc,
-       qpGeomVertexDataType::C_color);
-    new_format->remove_data_type(color_type->get_name());
+  if (color_type != (const qpGeomVertexColumn *)NULL) {
+    new_array_format->add_column
+      (InternalName::get_color(), 1, qpGeomVertexColumn::NT_packed_dabc,
+       qpGeomVertexColumn::C_color);
+    new_format->remove_column(color_type->get_name());
   }
 
   // To support multitexture, we will need to add all of the relevant
   // texcoord types, and in the correct order (or at least in a known
   // order).  For now, we just add the default texcoords only.
-  if (texcoord_type != (const qpGeomVertexDataType *)NULL) {
-    new_array_format->add_data_type
+  if (texcoord_type != (const qpGeomVertexColumn *)NULL) {
+    new_array_format->add_column
       (InternalName::get_texcoord(), texcoord_type->get_num_values(),
-       qpGeomVertexDataType::NT_float32, qpGeomVertexDataType::C_texcoord);
-    new_format->remove_data_type(texcoord_type->get_name());
+       qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_texcoord);
+    new_format->remove_column(texcoord_type->get_name());
   }
 
   if (new_array_format->is_data_subset_of(*orig->get_array(0))) {

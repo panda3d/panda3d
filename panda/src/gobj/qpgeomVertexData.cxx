@@ -420,61 +420,61 @@ copy_from(const qpGeomVertexData &source, bool keep_data_objects) {
   for (source_i = 0; source_i < num_arrays; ++source_i) {
     CPTA_uchar array_data = source.get_array(source_i)->get_data();
     const qpGeomVertexArrayFormat *source_array_format = source_format->get_array(source_i);
-    int num_data_types = source_array_format->get_num_data_types();
-    for (int di = 0; di < num_data_types; ++di) {
-      const qpGeomVertexDataType *source_data_type = source_array_format->get_data_type(di);
+    int num_columns = source_array_format->get_num_columns();
+    for (int di = 0; di < num_columns; ++di) {
+      const qpGeomVertexColumn *source_column = source_array_format->get_column(di);
 
-      int dest_i = dest_format->get_array_with(source_data_type->get_name());
+      int dest_i = dest_format->get_array_with(source_column->get_name());
       if (dest_i >= 0 && done_arrays.count(dest_i) == 0) {
         // The data type exists in the new format; we have to copy it.
         const qpGeomVertexArrayFormat *dest_array_format = 
           dest_format->get_array(dest_i);
-        const qpGeomVertexDataType *dest_data_type = 
-          dest_array_format->get_data_type(source_data_type->get_name());
+        const qpGeomVertexColumn *dest_column = 
+          dest_array_format->get_column(source_column->get_name());
 
-        if (dest_data_type->is_bytewise_equivalent(*source_data_type)) {
+        if (dest_column->is_bytewise_equivalent(*source_column)) {
           // We can do a quick bytewise copy.
           PTA_uchar dest_array_data = modify_array(dest_i)->modify_data();
 
-          bytewise_copy(dest_array_data + dest_data_type->get_start(), 
+          bytewise_copy(dest_array_data + dest_column->get_start(), 
                         dest_array_format->get_stride(),
-                        array_data + source_data_type->get_start(), source_array_format->get_stride(),
-                        source_data_type, num_vertices);
+                        array_data + source_column->get_start(), source_array_format->get_stride(),
+                        source_column, num_vertices);
 
-        } else if (dest_data_type->is_packed_argb() && 
-                   source_data_type->is_uint8_rgba()) {
+        } else if (dest_column->is_packed_argb() && 
+                   source_column->is_uint8_rgba()) {
           // A common special case: OpenGL color to DirectX color.
           PTA_uchar dest_array_data = modify_array(dest_i)->modify_data();
 
           uint8_rgba_to_packed_argb
-            (dest_array_data + dest_data_type->get_start(), 
+            (dest_array_data + dest_column->get_start(), 
              dest_array_format->get_stride(),
-             array_data + source_data_type->get_start(), source_array_format->get_stride(),
+             array_data + source_column->get_start(), source_array_format->get_stride(),
              num_vertices);
 
-        } else if (dest_data_type->is_uint8_rgba() && 
-                   source_data_type->is_packed_argb()) {
+        } else if (dest_column->is_uint8_rgba() && 
+                   source_column->is_packed_argb()) {
           // Another common special case: DirectX color to OpenGL
           // color.
           PTA_uchar dest_array_data = modify_array(dest_i)->modify_data();
 
           packed_argb_to_uint8_rgba
-            (dest_array_data + dest_data_type->get_start(), 
+            (dest_array_data + dest_column->get_start(), 
              dest_array_format->get_stride(),
-             array_data + source_data_type->get_start(), source_array_format->get_stride(),
+             array_data + source_column->get_start(), source_array_format->get_stride(),
              num_vertices);
 
         } else {
           // A generic copy.
           if (gobj_cat.is_debug()) {
             gobj_cat.debug()
-              << "generic copy " << *dest_data_type << " from " 
-              << *source_data_type << "\n";
+              << "generic copy " << *dest_column << " from " 
+              << *source_column << "\n";
           }
           qpGeomVertexWriter to(this);
-          to.set_data_type(dest_i, dest_data_type);
+          to.set_column(dest_i, dest_column);
           qpGeomVertexReader from(&source);
-          from.set_data_type(source_i, source_data_type);
+          from.set_column(source_i, source_column);
 
           while (!from.is_at_end()) {
             to.set_data4f(from.get_data4f());
@@ -586,8 +586,8 @@ convert_to(const qpGeomVertexFormat *new_format) const {
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexData) qpGeomVertexData::
 scale_color(const LVecBase4f &color_scale, int num_components,
-            qpGeomVertexDataType::NumericType numeric_type,
-            qpGeomVertexDataType::Contents contents) const {
+            qpGeomVertexColumn::NumericType numeric_type,
+            qpGeomVertexColumn::Contents contents) const {
   int old_color_array = _format->get_array_with(InternalName::get_color());
   if (old_color_array == -1) {
     // Oops, no color anyway.
@@ -603,7 +603,7 @@ scale_color(const LVecBase4f &color_scale, int num_components,
   }
   PStatTimer timer(_scale_color_pcollector);
 
-  PT(qpGeomVertexData) new_data = replace_data_type
+  PT(qpGeomVertexData) new_data = replace_column
     (InternalName::get_color(), num_components, numeric_type,
      contents, get_usage_hint(), true);
 
@@ -634,8 +634,8 @@ scale_color(const LVecBase4f &color_scale, int num_components,
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexData) qpGeomVertexData::
 set_color(const Colorf &color, int num_components,
-          qpGeomVertexDataType::NumericType numeric_type,
-          qpGeomVertexDataType::Contents contents) const {
+          qpGeomVertexColumn::NumericType numeric_type,
+          qpGeomVertexColumn::Contents contents) const {
   int num_vertices = get_num_vertices();
 
   if (gobj_cat.is_debug()) {
@@ -645,7 +645,7 @@ set_color(const Colorf &color, int num_components,
   }
   PStatTimer timer(_set_color_pcollector);
 
-  PT(qpGeomVertexData) new_data = replace_data_type
+  PT(qpGeomVertexData) new_data = replace_column
     (InternalName::get_color(), num_components, numeric_type,
      contents, get_usage_hint(), true);
 
@@ -660,7 +660,7 @@ set_color(const Colorf &color, int num_components,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::replace_data_type
+//     Function: qpGeomVertexData::replace_column
 //       Access: Published
 //  Description: Returns a new GeomVertexData object, suitable for
 //               modification, with the indicated data type replaced
@@ -674,9 +674,9 @@ set_color(const Colorf &color, int num_components,
 //               anything else.
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomVertexData) qpGeomVertexData::
-replace_data_type(const InternalName *name, int num_components,
-                  qpGeomVertexDataType::NumericType numeric_type,
-                  qpGeomVertexDataType::Contents contents,
+replace_column(const InternalName *name, int num_components,
+                  qpGeomVertexColumn::NumericType numeric_type,
+                  qpGeomVertexColumn::Contents contents,
                   qpGeomUsageHint::UsageHint usage_hint,
                   bool keep_animation) const {
   PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*_format);
@@ -686,7 +686,7 @@ replace_data_type(const InternalName *name, int num_components,
   int old_type_array = _format->get_array_with(name);
   if (old_type_array != -1) {
     qpGeomVertexArrayFormat *array_format = new_format->modify_array(old_type_array);
-    if (array_format->get_num_data_types() == 1) {
+    if (array_format->get_num_columns() == 1) {
       // Actually, this array didn't have any other data types, so
       // just drop the whole array.
       new_format->remove_array(old_type_array);
@@ -695,7 +695,7 @@ replace_data_type(const InternalName *name, int num_components,
     } else {
       // Remove the description for the type, but don't bother to
       // repack the array.
-      array_format->remove_data_type(name);
+      array_format->remove_column(name);
     }
   }
     
@@ -799,16 +799,16 @@ bool qpGeomVertexData::
 get_array_info(const InternalName *name, 
                const qpGeomVertexArrayData *&array_data,
                int &num_values, 
-               qpGeomVertexDataType::NumericType &numeric_type, 
+               qpGeomVertexColumn::NumericType &numeric_type, 
                int &start, int &stride) const {
   int array_index;
-  const qpGeomVertexDataType *data_type;
-  if (_format->get_array_info(name, array_index, data_type)) {
+  const qpGeomVertexColumn *column;
+  if (_format->get_array_info(name, array_index, column)) {
     CDReader cdata(_cycler);
     array_data = cdata->_arrays[array_index];
-    num_values = data_type->get_num_values();
-    numeric_type = data_type->get_numeric_type();
-    start = data_type->get_start();
+    num_values = column->get_num_values();
+    numeric_type = column->get_numeric_type();
+    start = column->get_start();
     stride = _format->get_array(array_index)->get_stride();
     return true;
   }
@@ -868,7 +868,7 @@ do_animate_vertices(bool from_app) const {
 void qpGeomVertexData::
 bytewise_copy(unsigned char *to, int to_stride,
               const unsigned char *from, int from_stride,
-              const qpGeomVertexDataType *from_type,
+              const qpGeomVertexColumn *from_type,
               int num_records) {
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
@@ -1033,8 +1033,8 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
           qpGeomVertexRewriter data(new_data, base_name);
           qpGeomVertexReader delta(this, delta_name);
 
-          if (data.get_data_type()->get_num_values() == 4) {
-            if (data.get_data_type()->has_homogeneous_coord()) {
+          if (data.get_column()->get_num_values() == 4) {
+            if (data.get_column()->has_homogeneous_coord()) {
               for (int i = 0; i < num_vertices; i++) {
                 // Scale the delta by the homogeneous coordinate.
                 LPoint4f vertex = data.get_data4f();
@@ -1080,28 +1080,49 @@ update_animated_vertices(qpGeomVertexData::CDWriter &cdata, bool from_app) {
     }
 
     // Now go through and apply the transforms.
-    qpGeomVertexRewriter data(new_data, InternalName::get_vertex());
-    qpGeomVertexReader blendi(this, InternalName::get_transform_blend());
+    int ci;
+    for (ci = 0; ci < _format->get_num_points(); ci++) {
+      qpGeomVertexRewriter data(new_data, _format->get_point(ci));
+      qpGeomVertexReader blendi(this, InternalName::get_transform_blend());
 
-    if (!blendi.has_data_type()) {
-      gobj_cat.warning()
-        << "Vertex data " << get_name()
-        << " has a transform_blend_palette, but no transform_blend data.\n";
-      return;
-    }
-    
-    if (data.get_data_type()->get_num_values() == 4) {
-      for (int i = 0; i < num_vertices; i++) {
-        LPoint4f vertex = data.get_data4f();
-        int bi = blendi.get_data1i();
-        palette->get_blend(bi).transform_point(vertex);
-        data.set_data4f(vertex);
+      if (!blendi.has_column()) {
+        gobj_cat.warning()
+          << "Vertex data " << get_name()
+          << " has a transform_blend_palette, but no transform_blend data.\n";
+        return;
       }
-    } else {
+      
+      if (data.get_column()->get_num_values() == 4) {
+        for (int i = 0; i < num_vertices; i++) {
+          LPoint4f vertex = data.get_data4f();
+          int bi = blendi.get_data1i();
+          palette->get_blend(bi).transform_point(vertex);
+          data.set_data4f(vertex);
+        }
+      } else {
+        for (int i = 0; i < num_vertices; i++) {
+          LPoint3f vertex = data.get_data3f();
+          int bi = blendi.get_data1i();
+          palette->get_blend(bi).transform_point(vertex);
+          data.set_data3f(vertex);
+        }
+      }
+    }
+    for (ci = 0; ci < _format->get_num_vectors(); ci++) {
+      qpGeomVertexRewriter data(new_data, _format->get_vector(ci));
+      qpGeomVertexReader blendi(this, InternalName::get_transform_blend());
+
+      if (!blendi.has_column()) {
+        gobj_cat.warning()
+          << "Vertex data " << get_name()
+          << " has a transform_blend_palette, but no transform_blend data.\n";
+        return;
+      }
+      
       for (int i = 0; i < num_vertices; i++) {
-        LPoint3f vertex = data.get_data3f();
+        LVector3f vertex = data.get_data3f();
         int bi = blendi.get_data1i();
-        palette->get_blend(bi).transform_point(vertex);
+        palette->get_blend(bi).transform_vector(vertex);
         data.set_data3f(vertex);
       }
     }
@@ -1120,12 +1141,12 @@ CPT(qpGeomVertexFormat) qpGeomVertexData::
 get_post_animated_format() const {
   PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*_format);
 
-  new_format->remove_data_type(InternalName::get_transform_blend());
+  new_format->remove_column(InternalName::get_transform_blend());
 
   int num_morphs = _format->get_num_morphs();
   for (int mi = 0; mi < num_morphs; mi++) {
     CPT(InternalName) delta_name = _format->get_morph_delta(mi);
-    new_format->remove_data_type(delta_name);
+    new_format->remove_column(delta_name);
   }
 
   return qpGeomVertexFormat::register_format(new_format);

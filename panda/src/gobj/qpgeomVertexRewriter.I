@@ -42,7 +42,7 @@ qpGeomVertexRewriter(qpGeomVertexData *vertex_data, const string &name) :
   qpGeomVertexWriter(vertex_data),
   qpGeomVertexReader(vertex_data)
 {
-  set_data_type(name);
+  set_column(name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ qpGeomVertexRewriter(qpGeomVertexData *vertex_data, const InternalName *name) :
   qpGeomVertexWriter(vertex_data),
   qpGeomVertexReader(vertex_data)
 {
-  set_data_type(name);
+  set_column(name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -83,7 +83,7 @@ get_vertex_data() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexRewriter::set_data_type
+//     Function: qpGeomVertexRewriter::set_column
 //       Access: Published
 //  Description: Sets up the rewriter to use the nth data type of the
 //               GeomVertexFormat, numbering from 0.
@@ -97,15 +97,15 @@ get_vertex_data() const {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexRewriter::
-set_data_type(int data_type) {
+set_column(int column) {
   // It's important to invoke the writer first, then the reader.  See
   // set_vertex().
-  qpGeomVertexWriter::set_data_type(data_type);
-  return qpGeomVertexReader::set_data_type(data_type);
+  qpGeomVertexWriter::set_column(column);
+  return qpGeomVertexReader::set_column(column);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexRewriter::set_data_type
+//     Function: qpGeomVertexRewriter::set_column
 //       Access: Published
 //  Description: Sets up the rewriter to use the data type with the
 //               indicated name.
@@ -119,12 +119,12 @@ set_data_type(int data_type) {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexRewriter::
-set_data_type(const string &name) {
-  return set_data_type(InternalName::make(name));
+set_column(const string &name) {
+  return set_column(InternalName::make(name));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexRewriter::set_data_type
+//     Function: qpGeomVertexRewriter::set_column
 //       Access: Published
 //  Description: Sets up the rewriter to use the data type with the
 //               indicated name.
@@ -138,17 +138,17 @@ set_data_type(const string &name) {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexRewriter::
-set_data_type(const InternalName *name) {
+set_column(const InternalName *name) {
   // It's important to invoke the writer first, then the reader.  See
   // set_vertex().
-  qpGeomVertexWriter::set_data_type(name);
-  return qpGeomVertexReader::set_data_type(name);
+  qpGeomVertexWriter::set_column(name);
+  return qpGeomVertexReader::set_column(name);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexRewriter::set_data_type
+//     Function: qpGeomVertexRewriter::set_column
 //       Access: Published
-//  Description: Sets up the rewriter to use the indicated data_type
+//  Description: Sets up the rewriter to use the indicated column
 //               description on the given array.
 //
 //               This also resets both the read and write vertex
@@ -160,25 +160,25 @@ set_data_type(const InternalName *name) {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool qpGeomVertexRewriter::
-set_data_type(int array, const qpGeomVertexDataType *data_type) {
+set_column(int array, const qpGeomVertexColumn *column) {
   // It's important to invoke the writer first, then the reader.  See
   // set_vertex().
-  qpGeomVertexWriter::set_data_type(array, data_type);
-  return qpGeomVertexReader::set_data_type(array, data_type);
+  qpGeomVertexWriter::set_column(array, column);
+  return qpGeomVertexReader::set_column(array, column);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexRewriter::has_data_type
+//     Function: qpGeomVertexRewriter::has_column
 //       Access: Published
 //  Description: Returns true if a valid data type has been
 //               successfully set, or false if the data type does not
 //               exist.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexRewriter::
-has_data_type() const {
-  nassertr(qpGeomVertexWriter::get_data_type() == 
-           qpGeomVertexReader::get_data_type(), false);
-  return qpGeomVertexWriter::has_data_type();
+has_column() const {
+  nassertr(qpGeomVertexWriter::get_column() == 
+           qpGeomVertexReader::get_column(), false);
+  return qpGeomVertexWriter::has_column();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -195,16 +195,16 @@ get_array() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexRewriter::get_data_type
+//     Function: qpGeomVertexRewriter::get_column
 //       Access: Published
 //  Description: Returns the description of the data type that the
 //               rewriter is working on.
 ////////////////////////////////////////////////////////////////////
-INLINE const qpGeomVertexDataType *qpGeomVertexRewriter::
-get_data_type() const {
-  nassertr(qpGeomVertexWriter::get_data_type() == 
-           qpGeomVertexReader::get_data_type(), NULL);
-  return qpGeomVertexWriter::get_data_type();
+INLINE const qpGeomVertexColumn *qpGeomVertexRewriter::
+get_column() const {
+  nassertr(qpGeomVertexWriter::get_column() == 
+           qpGeomVertexReader::get_column(), NULL);
+  return qpGeomVertexWriter::get_column();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -228,7 +228,7 @@ set_vertex(int vertex) {
 //       Access: Published
 //  Description: Returns the vertex index at which the rewriter
 //               started.  It will return to this vertex if you reset
-//               the current data_type.
+//               the current column.
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomVertexRewriter::
 get_start_vertex() const {

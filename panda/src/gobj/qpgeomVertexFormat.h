@@ -39,19 +39,28 @@ class qpGeomMunger;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : qpGeomVertexFormat
-// Description : This class defines the layout of the vertex data
-//               arrays stored within a Geom.  The data within a Geom
-//               is typically stored within a single interleaved
-//               array, but it may also be distributed among multiple
-//               different arrays.  Each array is described by a
-//               qpGeomVertexArrayFormat object, referenced within
-//               this object.
+// Description : This class defines the physical layout of the vertex
+//               data stored within a Geom.  The layout consists of a
+//               list of named columns, each of which has a numeric
+//               type and a size.
 //
-//               There are a number of standard pre-defined
+//               The columns are typically interleaved within a single
+//               array, but they may also be distributed among
+//               multiple different arrays; at the extreme, each
+//               column may be alone within its own array (which
+//               amounts to a parallel-array definition).
+//
+//               Thus, a GeomVertexFormat is really a list of
+//               GeomVertexArrayFormats, each of which contains a list
+//               of columns.  However, a particular column name should
+//               not appear more than once in the format, even between
+//               different arrays.
+//
+//               There are a handful of standard pre-defined
 //               GeomVertexFormat objects, or you may define your own
-//               as needed.  You may also record any combination of
-//               standard and/or user-defined data types in your
-//               custom GeomVertexFormat constructions.
+//               as needed.  You may record any combination of
+//               standard and/or user-defined columns in your custom
+//               GeomVertexFormat constructions.
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
@@ -79,15 +88,21 @@ PUBLISHED:
   void insert_array(int array, qpGeomVertexArrayFormat *array_format);
   void clear_arrays();
 
-  int get_num_data_types() const;
+  int get_num_columns() const;
   int get_array_with(int i) const;
-  const qpGeomVertexDataType *get_data_type(int i) const;
+  const qpGeomVertexColumn *get_column(int i) const;
 
   int get_array_with(const InternalName *name) const;
-  const qpGeomVertexDataType *get_data_type(const InternalName *name) const;
-  INLINE bool has_data_type(const InternalName *name) const;
+  const qpGeomVertexColumn *get_column(const InternalName *name) const;
+  INLINE bool has_column(const InternalName *name) const;
 
-  void remove_data_type(const InternalName *name);
+  void remove_column(const InternalName *name);
+
+  INLINE int get_num_points() const;
+  INLINE const InternalName *get_point(int n) const;
+
+  INLINE int get_num_vectors() const;
+  INLINE const InternalName *get_vector(int n) const;
 
   INLINE int get_num_morphs() const;
   INLINE const InternalName *get_morph_slider(int n) const;
@@ -130,7 +145,7 @@ PUBLISHED:
 public:
   bool get_array_info(const InternalName *name,
                       int &array_index,
-                      const qpGeomVertexDataType *&data_type) const;
+                      const qpGeomVertexColumn *&column) const;
 
   int compare_to(const qpGeomVertexFormat &other) const;
 
@@ -152,11 +167,15 @@ private:
   class DataTypeRecord {
   public:
     int _array_index;
-    int _data_type_index;
+    int _column_index;
   };
 
   typedef pmap<const InternalName *, DataTypeRecord> DataTypesByName;
-  DataTypesByName _data_types_by_name;
+  DataTypesByName _columns_by_name;
+
+  typedef pvector< CPT(InternalName) > Columns;
+  Columns _points;
+  Columns _vectors;
 
   class MorphRecord {
   public:

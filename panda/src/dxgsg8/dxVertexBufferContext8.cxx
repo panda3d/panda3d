@@ -41,24 +41,24 @@ DXVertexBufferContext8(qpGeomVertexArrayData *data) :
   // We have to start with the vertex data, and work up from there in
   // order, since that's the way the FVF is defined.
   int n = 0;
-  int num_data_types = array_format->get_num_data_types();
+  int num_columns = array_format->get_num_columns();
 
   _fvf = 0;
   
-  if (n < num_data_types && 
-      array_format->get_data_type(n)->get_name() == InternalName::get_vertex()) {
+  if (n < num_columns && 
+      array_format->get_column(n)->get_name() == InternalName::get_vertex()) {
     ++n;
 
     int num_blend_values = 0;
 
-    if (n < num_data_types &&
-        array_format->get_data_type(n)->get_name() == InternalName::get_transform_weight()) {
+    if (n < num_columns &&
+        array_format->get_column(n)->get_name() == InternalName::get_transform_weight()) {
       // We have hardware vertex animation.
-      num_blend_values = array_format->get_data_type(n)->get_num_values();
+      num_blend_values = array_format->get_column(n)->get_num_values();
       ++n;
       
-      if (n < num_data_types &&
-          array_format->get_data_type(n)->get_name() == InternalName::get_transform_index()) {
+      if (n < num_columns &&
+          array_format->get_column(n)->get_name() == InternalName::get_transform_index()) {
         // Furthermore, it's indexed vertex animation.
         _fvf |= D3DFVF_LASTBETA_UBYTE4;
         ++num_blend_values;
@@ -93,23 +93,23 @@ DXVertexBufferContext8(qpGeomVertexArrayData *data) :
     }
   }
 
-  if (n < num_data_types && 
-      array_format->get_data_type(n)->get_name() == InternalName::get_normal()) {
+  if (n < num_columns && 
+      array_format->get_column(n)->get_name() == InternalName::get_normal()) {
     _fvf |= D3DFVF_NORMAL;
     ++n;
   }
-  if (n < num_data_types && 
-      array_format->get_data_type(n)->get_name() == InternalName::get_color()) {
+  if (n < num_columns && 
+      array_format->get_column(n)->get_name() == InternalName::get_color()) {
     _fvf |= D3DFVF_DIFFUSE;
     ++n;
   }
 
   // For multitexture support, we will need to look for all of the
   // texcoord names and enable them in order.
-  if (n < num_data_types && 
-      array_format->get_data_type(n)->get_name() == InternalName::get_texcoord()) {
-    const qpGeomVertexDataType *data_type = array_format->get_data_type(n);
-    switch (data_type->get_num_values()) {
+  if (n < num_columns && 
+      array_format->get_column(n)->get_name() == InternalName::get_texcoord()) {
+    const qpGeomVertexColumn *column = array_format->get_column(n);
+    switch (column->get_num_values()) {
     case 1:
       _fvf |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE1(0);
       ++n;

@@ -49,10 +49,10 @@ munge_format_impl(const qpGeomVertexFormat *orig,
   PT(qpGeomVertexFormat) new_format = new qpGeomVertexFormat(*orig);
   new_format->set_animation(animation);
 
-  const qpGeomVertexDataType *color_type = 
-    orig->get_data_type(InternalName::get_color());
-  if (color_type != (qpGeomVertexDataType *)NULL &&
-      color_type->get_numeric_type() == qpGeomVertexDataType::NT_packed_dabc) {
+  const qpGeomVertexColumn *color_type = 
+    orig->get_column(InternalName::get_color());
+  if (color_type != (qpGeomVertexColumn *)NULL &&
+      color_type->get_numeric_type() == qpGeomVertexColumn::NT_packed_dabc) {
     // We need to convert the color format; OpenGL doesn't support the
     // byte order of DirectX's packed ARGB format.
     int color_array = orig->get_array_with(InternalName::get_color());
@@ -60,9 +60,9 @@ munge_format_impl(const qpGeomVertexFormat *orig,
     PT(qpGeomVertexArrayFormat) new_array_format = new_format->modify_array(color_array);
 
     // Replace the existing color format with the new format.
-    new_array_format->add_data_type
-      (InternalName::get_color(), 4, qpGeomVertexDataType::NT_uint8,
-       qpGeomVertexDataType::C_color, color_type->get_start());
+    new_array_format->add_column
+      (InternalName::get_color(), 4, qpGeomVertexColumn::NT_uint8,
+       qpGeomVertexColumn::C_color, color_type->get_start());
   }
 
   /*
@@ -70,11 +70,11 @@ munge_format_impl(const qpGeomVertexFormat *orig,
     // Split out the interleaved array into n parallel arrays.
     CPT(qpGeomVertexFormat) format = new_format;
     new_format = new qpGeomVertexFormat;
-    for (int i = 0; i < format->get_num_data_types(); i++) {
-      const qpGeomVertexDataType *data_type = format->get_data_type(i);
+    for (int i = 0; i < format->get_num_columns(); i++) {
+      const qpGeomVertexColumn *column = format->get_column(i);
       PT(qpGeomVertexArrayFormat) new_array_format = new qpGeomVertexArrayFormat;
-      new_array_format->add_data_type(data_type->get_name(), data_type->get_num_components(),
-                                      data_type->get_numeric_type());
+      new_array_format->add_column(column->get_name(), column->get_num_components(),
+                                      column->get_numeric_type());
       new_format->add_array(new_array_format);
     }
   }

@@ -1,4 +1,4 @@
-// Filename: qpgeomVertexDataType.I
+// Filename: qpgeomVertexColumn.I
 // Created by:  drose (06Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,12 +18,12 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::Copy Constructor
+//     Function: qpGeomVertexColumn::Copy Constructor
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomVertexDataType::
-qpGeomVertexDataType(const qpGeomVertexDataType &copy) :
+INLINE qpGeomVertexColumn::
+qpGeomVertexColumn(const qpGeomVertexColumn &copy) :
   _name(copy._name),
   _num_components(copy._num_components),
   _num_values(copy._num_values),
@@ -36,12 +36,12 @@ qpGeomVertexDataType(const qpGeomVertexDataType &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::Copy Assignment Operator
+//     Function: qpGeomVertexColumn::Copy Assignment Operator
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void qpGeomVertexDataType::
-operator = (const qpGeomVertexDataType &copy) {
+INLINE void qpGeomVertexColumn::
+operator = (const qpGeomVertexColumn &copy) {
   _name = copy._name;
   _num_components = copy._num_components;
   _num_values = copy._num_values;
@@ -53,7 +53,7 @@ operator = (const qpGeomVertexDataType &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::get_name
+//     Function: qpGeomVertexColumn::get_name
 //       Access: Published
 //  Description: Returns the name of this particular data field,
 //               e.g. "vertex" or "normal".  The name may be a
@@ -61,98 +61,98 @@ operator = (const qpGeomVertexDataType &copy) {
 //               system-defined field types.  Only the system-defined
 //               field types are used for the actual rendering.
 ////////////////////////////////////////////////////////////////////
-INLINE const InternalName *qpGeomVertexDataType::
+INLINE const InternalName *qpGeomVertexColumn::
 get_name() const {
   return _name;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::get_num_components
+//     Function: qpGeomVertexColumn::get_num_components
 //       Access: Published
-//  Description: Returns the number of components of each data type:
+//  Description: Returns the number of components of the column:
 //               the number of instances of the NumericType in each
 //               element.  This is usually, but not always, the same
 //               thing as get_num_values().
 ////////////////////////////////////////////////////////////////////
-INLINE int qpGeomVertexDataType::
+INLINE int qpGeomVertexColumn::
 get_num_components() const {
   return _num_components;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::get_num_values
+//     Function: qpGeomVertexColumn::get_num_values
 //       Access: Published
-//  Description: Returns the number of numeric values of each data
-//               type: the number of distinct numeric values that go
-//               into each element.  This is usually, but not always,
-//               the same thing as get_num_components(); the
-//               difference is in the case of a composite numeric type
-//               like NT_packed_dcba, which has four numeric values
-//               per component.
+//  Description: Returns the number of numeric values of the column:
+//               the number of distinct numeric values that go into
+//               each element.  This is usually, but not always, the
+//               same thing as get_num_components(); the difference is
+//               in the case of a composite numeric type like
+//               NT_packed_dcba, which has four numeric values per
+//               component.
 ////////////////////////////////////////////////////////////////////
-INLINE int qpGeomVertexDataType::
+INLINE int qpGeomVertexColumn::
 get_num_values() const {
   return _num_values;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::get_numeric_type
+//     Function: qpGeomVertexColumn::get_numeric_type
 //       Access: Published
 //  Description: Returns the token representing the numeric type of
 //               the data storage.
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomVertexDataType::NumericType qpGeomVertexDataType::
+INLINE qpGeomVertexColumn::NumericType qpGeomVertexColumn::
 get_numeric_type() const {
   return _numeric_type;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::get_contents
+//     Function: qpGeomVertexColumn::get_contents
 //       Access: Published
 //  Description: Returns the token representing the semantic meaning of
 //               the stored value.
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomVertexDataType::Contents qpGeomVertexDataType::
+INLINE qpGeomVertexColumn::Contents qpGeomVertexColumn::
 get_contents() const {
   return _contents;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::get_start
+//     Function: qpGeomVertexColumn::get_start
 //       Access: Published
 //  Description: Returns the byte within the array record at which
-//               this data type starts.  This can be set to non-zero
+//               this column starts.  This can be set to non-zero
 //               to implement interleaved arrays.
 ////////////////////////////////////////////////////////////////////
-INLINE int qpGeomVertexDataType::
+INLINE int qpGeomVertexColumn::
 get_start() const {
   return _start;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::get_component_bytes
+//     Function: qpGeomVertexColumn::get_component_bytes
 //       Access: Published
 //  Description: Returns the number of bytes used by each component
 //               (that is, by one element of the numeric type).
 ////////////////////////////////////////////////////////////////////
-INLINE int qpGeomVertexDataType::
+INLINE int qpGeomVertexColumn::
 get_component_bytes() const {
   return _component_bytes;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::get_total_bytes
+//     Function: qpGeomVertexColumn::get_total_bytes
 //       Access: Published
-//  Description: Returns the number of bytes used by the data type:
-//               component_bytes * num_components.
+//  Description: Returns the number of bytes used by each element of
+//               the column: component_bytes * num_components.
 ////////////////////////////////////////////////////////////////////
-INLINE int qpGeomVertexDataType::
+INLINE int qpGeomVertexColumn::
 get_total_bytes() const {
   return _total_bytes;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::has_homogeneous_coord
+//     Function: qpGeomVertexColumn::has_homogeneous_coord
 //       Access: Published
 //  Description: Returns true if this Contents type is one that
 //               includes a homogeneous coordinate in the fourth
@@ -163,7 +163,7 @@ get_total_bytes() const {
 //               you use the 3-component or smaller forms of
 //               get_data() and set_data()).
 ////////////////////////////////////////////////////////////////////
-INLINE bool qpGeomVertexDataType::
+INLINE bool qpGeomVertexColumn::
 has_homogeneous_coord() const {
   switch (_contents) {
   case C_point:
@@ -176,27 +176,27 @@ has_homogeneous_coord() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::overlaps_with
+//     Function: qpGeomVertexColumn::overlaps_with
 //       Access: Published
-//  Description: Returns true if this data type overlaps with any of
+//  Description: Returns true if this column overlaps with any of
 //               the bytes in the indicated range, false if it does
 //               not.
 ////////////////////////////////////////////////////////////////////
-INLINE bool qpGeomVertexDataType::
+INLINE bool qpGeomVertexColumn::
 overlaps_with(int start_byte, int num_bytes) const {
   return (_start < start_byte + num_bytes &&
           _start + _total_bytes > start_byte);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::is_bytewise_equivalent
+//     Function: qpGeomVertexColumn::is_bytewise_equivalent
 //       Access: Published
-//  Description: Returns true if the data store of this data type is
+//  Description: Returns true if the data store of this column is
 //               exactly the same as that of the other, irrespective
 //               of name or start position within the record.
 ////////////////////////////////////////////////////////////////////
-INLINE bool qpGeomVertexDataType::
-is_bytewise_equivalent(const qpGeomVertexDataType &other) const {
+INLINE bool qpGeomVertexColumn::
+is_bytewise_equivalent(const qpGeomVertexColumn &other) const {
   // Not sure if the contents are relevant, but let's say that they
   // are.
   return (_num_components == other._num_components &&
@@ -205,13 +205,13 @@ is_bytewise_equivalent(const qpGeomVertexDataType &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::is_packed_argb
+//     Function: qpGeomVertexColumn::is_packed_argb
 //       Access: Public
-//  Description: Returns true if this data type is the standard
+//  Description: Returns true if this column is the standard
 //               DirectX representation of 4-component color: C_color,
 //               in NT_packed_dabc, with 1 component (4 values).
 ////////////////////////////////////////////////////////////////////
-INLINE bool qpGeomVertexDataType::
+INLINE bool qpGeomVertexColumn::
 is_packed_argb() const {
   return (_num_components == 1 &&
           _numeric_type == NT_packed_dabc &&
@@ -219,13 +219,13 @@ is_packed_argb() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::is_uint8_rgba
+//     Function: qpGeomVertexColumn::is_uint8_rgba
 //       Access: Public
-//  Description: Returns true if this data type is the standard
+//  Description: Returns true if this column is the standard
 //               OpenGL representation of 4-component color: C_color,
 //               in NT_uint8, with 4 components.
 ////////////////////////////////////////////////////////////////////
-INLINE bool qpGeomVertexDataType::
+INLINE bool qpGeomVertexColumn::
 is_uint8_rgba() const {
   return (_num_components == 4 &&
           _numeric_type == NT_uint8 &&
@@ -233,13 +233,13 @@ is_uint8_rgba() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::compare_to
+//     Function: qpGeomVertexColumn::compare_to
 //       Access: Public
-//  Description: This is used to unquify data types, and hence
+//  Description: This is used to unquify columns, and hence
 //               formats, for the GeomVertexFormat registry.
 ////////////////////////////////////////////////////////////////////
-INLINE int qpGeomVertexDataType::
-compare_to(const qpGeomVertexDataType &other) const {
+INLINE int qpGeomVertexColumn::
+compare_to(const qpGeomVertexColumn &other) const {
   if (_name != other._name) {
     return _name < other._name ? -1 : 1;
   }
@@ -259,36 +259,36 @@ compare_to(const qpGeomVertexDataType &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::operator ==
+//     Function: qpGeomVertexColumn::operator ==
 //       Access: Public
-//  Description: Returns true if the two data types are exactly
+//  Description: Returns true if the two columns are exactly
 //               equivalent, false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE bool qpGeomVertexDataType::
-operator == (const qpGeomVertexDataType &other) const {
+INLINE bool qpGeomVertexColumn::
+operator == (const qpGeomVertexColumn &other) const {
   return compare_to(other) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::operator !=
+//     Function: qpGeomVertexColumn::operator !=
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool qpGeomVertexDataType::
-operator != (const qpGeomVertexDataType &other) const {
+INLINE bool qpGeomVertexColumn::
+operator != (const qpGeomVertexColumn &other) const {
   return compare_to(other) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::operator <
+//     Function: qpGeomVertexColumn::operator <
 //       Access: Public
-//  Description: This is used to put data types in order within a
+//  Description: This is used to put columns in order within a
 //               particular GeomVertexArrayFormat.  Note that it is
 //               *not* in the same space as operator == and operator
 //               !=.
 ////////////////////////////////////////////////////////////////////
-INLINE bool qpGeomVertexDataType::
-operator < (const qpGeomVertexDataType &other) const {
+INLINE bool qpGeomVertexColumn::
+operator < (const qpGeomVertexColumn &other) const {
   if (_start != other._start) { 
     return _start < other._start;
   }
@@ -299,7 +299,7 @@ operator < (const qpGeomVertexDataType &other) const {
 }
 
 INLINE ostream &
-operator << (ostream &out, const qpGeomVertexDataType &obj) {
+operator << (ostream &out, const qpGeomVertexColumn &obj) {
   obj.output(out);
   return out;
 }

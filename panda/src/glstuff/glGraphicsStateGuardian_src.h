@@ -20,7 +20,7 @@
 
 #include "graphicsStateGuardian.h"
 #include "geomprimitives.h"
-#include "qpgeomVertexDataType.h"
+#include "qpgeomVertexColumn.h"
 #include "texture.h"
 #include "displayRegion.h"
 #include "material.h"
@@ -241,7 +241,7 @@ protected:
                             GLint external_format, GLenum component_type, 
                             const unsigned char *image);
 
-  static GLenum get_numeric_type(qpGeomVertexDataType::NumericType numeric_type);
+  static GLenum get_numeric_type(qpGeomVertexColumn::NumericType numeric_type);
   GLenum get_texture_target(Texture::TextureType texture_type) const;
   GLenum get_texture_wrap_mode(Texture::WrapMode wm);
   static GLenum get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps);

@@ -80,48 +80,48 @@ get_pad_to() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayFormat::get_num_data_types
+//     Function: qpGeomVertexArrayFormat::get_num_columns
 //       Access: Published
-//  Description: Returns the number of different data types in the
-//               specification.
+//  Description: Returns the number of different columns in the
+//               array.
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomVertexArrayFormat::
-get_num_data_types() const {
-  return (int)_data_types.size();
+get_num_columns() const {
+  return (int)_columns.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayFormat::get_data_type
+//     Function: qpGeomVertexArrayFormat::get_column
 //       Access: Published
-//  Description: Returns the ith data types of the specification.
+//  Description: Returns the ith column of the array.
 ////////////////////////////////////////////////////////////////////
-INLINE const qpGeomVertexDataType *qpGeomVertexArrayFormat::
-get_data_type(int i) const {
-  nassertr(i >= 0 && i < (int)_data_types.size(), NULL);
-  consider_sort_data_types();
-  return _data_types[i];
+INLINE const qpGeomVertexColumn *qpGeomVertexArrayFormat::
+get_column(int i) const {
+  nassertr(i >= 0 && i < (int)_columns.size(), NULL);
+  consider_sort_columns();
+  return _columns[i];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayFormat::has_data_type
+//     Function: qpGeomVertexArrayFormat::has_column
 //       Access: Published
-//  Description: Returns true if the format has the named data type,
+//  Description: Returns true if the array has the named column,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexArrayFormat::
-has_data_type(const InternalName *name) const {
-  return (get_data_type(name) != (qpGeomVertexDataType *)NULL);
+has_column(const InternalName *name) const {
+  return (get_column(name) != (qpGeomVertexColumn *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayFormat::consider_sort_data_types
+//     Function: qpGeomVertexArrayFormat::consider_sort_columns
 //       Access: Private
-//  Description: Resorts the _data_types vector if necessary.
+//  Description: Resorts the _columns vector if necessary.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexArrayFormat::
-consider_sort_data_types() const {
-  if (_data_types_unsorted) {
-    ((qpGeomVertexArrayFormat *)this)->sort_data_types();
+consider_sort_columns() const {
+  if (_columns_unsorted) {
+    ((qpGeomVertexArrayFormat *)this)->sort_columns();
   }
 }
 

@@ -20,7 +20,7 @@
 #include "qpgeom.h"
 #include "qpgeomVertexData.h"
 #include "qpgeomVertexArrayFormat.h"
-#include "qpgeomVertexDataType.h"
+#include "qpgeomVertexColumn.h"
 #include "qpgeomVertexReader.h"
 #include "preparedGraphicsObjects.h"
 #include "internalName.h"
@@ -675,7 +675,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                   const qpGeomVertexData *vertex_data,
                   bool got_mat, const LMatrix4f &mat) const {
   qpGeomVertexReader reader(vertex_data, InternalName::get_vertex());
-  if (!reader.has_data_type()) {
+  if (!reader.has_column()) {
     // No vertex data.
     return;
   }

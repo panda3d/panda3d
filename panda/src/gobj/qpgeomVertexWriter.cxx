@@ -19,9 +19,9 @@
 #include "qpgeomVertexWriter.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexWriter::set_data_type
+//     Function: qpGeomVertexWriter::set_column
 //       Access: Published
-//  Description: Sets up the writer to use the indicated data_type
+//  Description: Sets up the writer to use the indicated column
 //               description on the given array.
 //
 //               This also resets the current write vertex numbers to
@@ -33,7 +33,7 @@
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool qpGeomVertexWriter::
-set_data_type(int array, const qpGeomVertexDataType *data_type) {
+set_column(int array, const qpGeomVertexColumn *column) {
   // Delete the old writer, if we've got one.
   if (_writer != (Writer *)NULL) {
     delete _writer;
@@ -41,10 +41,10 @@ set_data_type(int array, const qpGeomVertexDataType *data_type) {
   }
 
   if (array < 0 || array >= _vertex_data->get_num_arrays() || 
-      data_type == (qpGeomVertexDataType *)NULL) {
+      column == (qpGeomVertexColumn *)NULL) {
     // Clear the data type.
     _array = -1;
-    _data_type = NULL;
+    _column = NULL;
     _stride = 0;
     _write_vertex = _start_vertex;
     _num_vertices = 0;
@@ -53,14 +53,14 @@ set_data_type(int array, const qpGeomVertexDataType *data_type) {
 
   } else {
     _array = array;
-    _data_type = data_type;
+    _column = column;
     _stride = _vertex_data->get_format()->get_array(_array)->get_stride();
 
     set_pointer(_start_vertex);
 
     // Now set up a new writer.
     _writer = make_writer();
-    _writer->_data_type = _data_type;
+    _writer->_column = _column;
 
     return true;
   }
@@ -74,13 +74,13 @@ set_data_type(int array, const qpGeomVertexDataType *data_type) {
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexWriter::Writer *qpGeomVertexWriter::
 make_writer() const {
-  switch (_data_type->get_contents()) {
-  case qpGeomVertexDataType::C_point:
-  case qpGeomVertexDataType::C_texcoord:
+  switch (_column->get_contents()) {
+  case qpGeomVertexColumn::C_point:
+  case qpGeomVertexColumn::C_texcoord:
     // These types are written as a 4-d homogeneous point.
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_float32:
-      switch (_data_type->get_num_components()) {
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_float32:
+      switch (_column->get_num_components()) {
       case 2:
         return new Writer_point_float32_2;
       case 3:
@@ -97,10 +97,10 @@ make_writer() const {
     }
     return new Writer_point;
 
-  case qpGeomVertexDataType::C_color:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
-      switch (_data_type->get_num_components()) {
+  case qpGeomVertexColumn::C_color:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
+      switch (_column->get_num_components()) {
       case 4:
         return new Writer_rgba_uint8_4;
         
@@ -108,8 +108,8 @@ make_writer() const {
         break;
       }
       break;
-    case qpGeomVertexDataType::NT_packed_dabc:
-      switch (_data_type->get_num_components()) {
+    case qpGeomVertexColumn::NT_packed_dabc:
+      switch (_column->get_num_components()) {
       case 1:
         return new Writer_argb_packed;
         
@@ -117,8 +117,8 @@ make_writer() const {
         break;
       }
       break;
-    case qpGeomVertexDataType::NT_float32:
-      switch (_data_type->get_num_components()) {
+    case qpGeomVertexColumn::NT_float32:
+      switch (_column->get_num_components()) {
       case 4:
         return new Writer_rgba_float32_4;
         
@@ -133,9 +133,9 @@ make_writer() const {
 
   default:
     // Otherwise, we just write it as a generic value.
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_float32:
-      switch (_data_type->get_num_components()) {
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_float32:
+      switch (_column->get_num_components()) {
       case 3:
         return new Writer_float32_3;
         
@@ -166,23 +166,23 @@ qpGeomVertexWriter::Writer::
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer::
 set_data1f(unsigned char *pointer, float data) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       *pointer = maybe_scale_color(data);
       break;
       
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       *(PN_uint16 *)pointer = (unsigned int)data;
       break;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dabc:
       nassertv(false);
       break;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       *(PN_float32 *)pointer = data;
       break;
     }
@@ -209,19 +209,19 @@ set_data1f(unsigned char *pointer, float data) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer::
 set_data2f(unsigned char *pointer, const LVecBase2f &data) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
     set_data1f(pointer, data[0]);
 
   case 2:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       maybe_scale_color(data);
       pointer[0] = _a;
       pointer[1] = _b;
       break;
       
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         PN_uint16 *pi = (PN_uint16 *)pointer;
         pi[0] = (unsigned int)data[0];
@@ -229,12 +229,12 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
       }
       break;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dabc:
       nassertv(false);
       break;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         PN_float32 *pi = (PN_float32 *)pointer;
         pi[0] = data[0];
@@ -261,7 +261,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer::
 set_data3f(unsigned char *pointer, const LVecBase3f &data) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
     set_data1f(pointer, data[0]);
     break;
@@ -271,15 +271,15 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
     break;
     
   case 3:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       maybe_scale_color(data);
       pointer[0] = _a;
       pointer[1] = _b;
       pointer[2] = _c;
       break;
       
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         PN_uint16 *pi = (PN_uint16 *)pointer;
         pi[0] = (unsigned int)data[0];
@@ -288,12 +288,12 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
       }
       break;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dabc:
       nassertv(false);
       break;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         PN_float32 *pi = (PN_float32 *)pointer;
         pi[0] = data[0];
@@ -317,7 +317,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
     set_data1f(pointer, data[0]);
     break;
@@ -331,8 +331,8 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     break;
 
   default:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       maybe_scale_color(data);
       pointer[0] = _a;
       pointer[1] = _b;
@@ -340,7 +340,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       pointer[3] = _d;
       break;
 
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         PN_uint16 *pi = (PN_uint16 *)pointer;
         pi[0] = (unsigned int)data[0];
@@ -350,17 +350,17 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       }
       break;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dcba:
       maybe_scale_color(data);
       *(PN_uint32 *)pointer = qpGeomVertexData::pack_abcd(_d, _c, _b, _a);
       break;
       
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dabc:
       maybe_scale_color(data);
       *(PN_uint32 *)pointer = qpGeomVertexData::pack_abcd(_d, _a, _b, _c);
       break;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         PN_float32 *pi = (PN_float32 *)pointer;
         pi[0] = data[0];
@@ -381,23 +381,23 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer::
 set_data1i(unsigned char *pointer, int a) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       *pointer = a;
       break;
       
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       *(PN_uint16 *)pointer = a;
       break;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dabc:
       nassertv(false);
       break;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       *(PN_float32 *)pointer = (float)a;
       break;
     }
@@ -424,19 +424,19 @@ set_data1i(unsigned char *pointer, int a) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer::
 set_data2i(unsigned char *pointer, int a, int b) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
     set_data1i(pointer, a);
     break;
 
   case 2:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       pointer[0] = a;
       pointer[1] = b;
       break;
 
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         PN_uint16 *pi = (PN_uint16 *)pointer;
         pi[0] = a;
@@ -444,12 +444,12 @@ set_data2i(unsigned char *pointer, int a, int b) {
       }
       break;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dabc:
       nassertv(false);
       break;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         PN_float32 *pi = (PN_float32 *)pointer;
         pi[0] = a;
@@ -476,7 +476,7 @@ set_data2i(unsigned char *pointer, int a, int b) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer::
 set_data3i(unsigned char *pointer, int a, int b, int c) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
     set_data1i(pointer, a);
     break;
@@ -486,14 +486,14 @@ set_data3i(unsigned char *pointer, int a, int b, int c) {
     break;
 
   case 3:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       pointer[0] = a;
       pointer[1] = b;
       pointer[2] = c;
       break;
 
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         PN_uint16 *pi = (PN_uint16 *)pointer;
         pi[0] = a;
@@ -502,12 +502,12 @@ set_data3i(unsigned char *pointer, int a, int b, int c) {
       }
       break;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dabc:
       nassertv(false);
       break;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         PN_float32 *pi = (PN_float32 *)pointer;
         pi[0] = a;
@@ -531,7 +531,7 @@ set_data3i(unsigned char *pointer, int a, int b, int c) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer::
 set_data4i(unsigned char *pointer, int a, int b, int c, int d) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
     set_data1i(pointer, a);
     break;
@@ -545,15 +545,15 @@ set_data4i(unsigned char *pointer, int a, int b, int c, int d) {
     break;
 
   default:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       pointer[0] = a;
       pointer[1] = b;
       pointer[2] = c;
       pointer[3] = d;
       break;
 
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         PN_uint16 *pi = (PN_uint16 *)pointer;
         pi[0] = a;
@@ -563,15 +563,15 @@ set_data4i(unsigned char *pointer, int a, int b, int c, int d) {
       }
       break;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dcba:
       *(PN_uint32 *)pointer = qpGeomVertexData::pack_abcd(d, c, b, a);
       break;
       
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dabc:
       *(PN_uint32 *)pointer = qpGeomVertexData::pack_abcd(d, a, b, c);
       break;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         PN_float32 *pi = (PN_float32 *)pointer;
         pi[0] = a;
@@ -592,7 +592,7 @@ set_data4i(unsigned char *pointer, int a, int b, int c, int d) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer_point::
 set_data1f(unsigned char *pointer, float data) {
-  if (_data_type->get_num_values() == 4) {
+  if (_column->get_num_values() == 4) {
     set_data4f(pointer, LVecBase4f(data, 0.0f, 0.0f, 1.0f));
   } else {
     Writer::set_data1f(pointer, data);
@@ -606,7 +606,7 @@ set_data1f(unsigned char *pointer, float data) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer_point::
 set_data2f(unsigned char *pointer, const LVecBase2f &data) {
-  if (_data_type->get_num_values() == 4) {
+  if (_column->get_num_values() == 4) {
     set_data4f(pointer, LVecBase4f(data[0], data[1], 0.0f, 1.0f));
   } else {
     Writer::set_data2f(pointer, data);
@@ -620,7 +620,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer_point::
 set_data3f(unsigned char *pointer, const LVecBase3f &data) {
-  if (_data_type->get_num_values() == 4) {
+  if (_column->get_num_values() == 4) {
     set_data4f(pointer, LVecBase4f(data[0], data[1], data[2], 1.0f));
   } else {
     Writer::set_data3f(pointer, data);
@@ -634,7 +634,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer_point::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
     set_data1f(pointer, data[0] / data[3]);
     break;
@@ -648,8 +648,8 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
     break;
 
   default:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       maybe_scale_color(data);
       pointer[0] = _a;
       pointer[1] = _b;
@@ -657,7 +657,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       pointer[3] = _d;
       break;
 
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         PN_uint16 *pi = (PN_uint16 *)pointer;
         pi[0] = (unsigned int)data[0];
@@ -667,17 +667,17 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       }
       break;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dcba:
       maybe_scale_color(data);
       *(PN_uint32 *)pointer = qpGeomVertexData::pack_abcd(_d, _c, _b, _a);
       break;
       
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dabc:
       maybe_scale_color(data);
       *(PN_uint32 *)pointer = qpGeomVertexData::pack_abcd(_d, _a, _b, _c);
       break;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         PN_float32 *pi = (PN_float32 *)pointer;
         pi[0] = data[0];
@@ -698,7 +698,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer_color::
 set_data1f(unsigned char *pointer, float data) {
-  if (_data_type->get_num_values() == 4) {
+  if (_column->get_num_values() == 4) {
     set_data4f(pointer, LVecBase4f(data, 0.0f, 0.0f, 1.0f));
   } else {
     Writer::set_data1f(pointer, data);
@@ -712,7 +712,7 @@ set_data1f(unsigned char *pointer, float data) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer_color::
 set_data2f(unsigned char *pointer, const LVecBase2f &data) {
-  if (_data_type->get_num_values() == 4) {
+  if (_column->get_num_values() == 4) {
     set_data4f(pointer, LVecBase4f(data[0], data[1], 0.0f, 1.0f));
   } else {
     Writer::set_data2f(pointer, data);
@@ -726,7 +726,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexWriter::Writer_color::
 set_data3f(unsigned char *pointer, const LVecBase3f &data) {
-  if (_data_type->get_num_values() == 4) {
+  if (_column->get_num_values() == 4) {
     set_data4f(pointer, LVecBase4f(data[0], data[1], data[2], 1.0f));
   } else {
     Writer::set_data3f(pointer, data);

@@ -2135,7 +2135,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
 
   const qpGeomVertexArrayData *array_data;
   int num_values;
-  qpGeomVertexDataType::NumericType numeric_type;
+  qpGeomVertexColumn::NumericType numeric_type;
   int start;
   int stride;
 
@@ -2162,7 +2162,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
   if (_vertex_data->get_array_info(InternalName::get_color(),
                                    array_data, num_values, numeric_type, 
                                    start, stride) &&
-      numeric_type != qpGeomVertexDataType::NT_packed_dabc) {
+      numeric_type != qpGeomVertexColumn::NT_packed_dabc) {
     const unsigned char *client_pointer = setup_array_data(array_data);
     GLP(ColorPointer)(num_values, get_numeric_type(numeric_type), 
                       stride, client_pointer + start);
@@ -4430,17 +4430,17 @@ upload_texture_image(CLP(TextureContext) *gtc,
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_numeric_type(qpGeomVertexDataType::NumericType numeric_type) {
+get_numeric_type(qpGeomVertexColumn::NumericType numeric_type) {
   switch (numeric_type) {
-  case qpGeomVertexDataType::NT_uint16:
+  case qpGeomVertexColumn::NT_uint16:
     return GL_UNSIGNED_SHORT;
 
-  case qpGeomVertexDataType::NT_uint8:
-  case qpGeomVertexDataType::NT_packed_dcba:
-  case qpGeomVertexDataType::NT_packed_dabc:
+  case qpGeomVertexColumn::NT_uint8:
+  case qpGeomVertexColumn::NT_packed_dcba:
+  case qpGeomVertexColumn::NT_packed_dabc:
     return GL_UNSIGNED_BYTE;
     
-  case qpGeomVertexDataType::NT_float32:
+  case qpGeomVertexColumn::NT_float32:
     return GL_FLOAT;
   }
 

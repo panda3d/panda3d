@@ -1,4 +1,4 @@
-// Filename: qpgeomVertexDataType.h
+// Filename: qpgeomVertexColumn.h
 // Created by:  drose (06Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,23 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef qpGEOMVERTEXDATATYPE_H
-#define qpGEOMVERTEXDATATYPE_H
+#ifndef qpGEOMVERTEXCOLUMN_H
+#define qpGEOMVERTEXCOLUMN_H
 
 #include "pandabase.h"
 #include "internalName.h"
 #include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : qpGeomVertexDataType
-// Description : This defines how a single data type is interleaved
+//       Class : qpGeomVertexColumn
+// Description : This defines how a single column is interleaved
 //               within a vertex array stored within a Geom.  The
 //               GeomVertexArrayFormat class maintains a list of these
 //               to completely define a particular array structure.
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomVertexDataType {
+class EXPCL_PANDA qpGeomVertexColumn {
 PUBLISHED:
   enum NumericType {
     NT_uint8,        // An integer 0..255
@@ -52,13 +52,11 @@ PUBLISHED:
     C_morph_delta,  // A delta from some base value, defining a blend shape
   };
 
-  INLINE qpGeomVertexDataType(const InternalName *name, int num_components,
+  INLINE qpGeomVertexColumn(const InternalName *name, int num_components,
                               NumericType numeric_type, Contents contents,
                               int start);
-  INLINE qpGeomVertexDataType(const qpGeomVertexDataType &copy);
-  INLINE void operator = (const qpGeomVertexDataType &copy);
-
-  static const qpGeomVertexDataType &error();
+  INLINE qpGeomVertexColumn(const qpGeomVertexColumn &copy);
+  INLINE void operator = (const qpGeomVertexColumn &copy);
 
   INLINE const InternalName *get_name() const;
   INLINE int get_num_components() const;
@@ -71,7 +69,7 @@ PUBLISHED:
   INLINE bool has_homogeneous_coord() const;
 
   INLINE bool overlaps_with(int start_byte, int num_bytes) const;
-  INLINE bool is_bytewise_equivalent(const qpGeomVertexDataType &other) const;
+  INLINE bool is_bytewise_equivalent(const qpGeomVertexColumn &other) const;
 
   void output(ostream &out) const;
 
@@ -79,10 +77,10 @@ public:
   INLINE bool is_packed_argb() const;
   INLINE bool is_uint8_rgba() const;
 
-  INLINE int compare_to(const qpGeomVertexDataType &other) const;
-  INLINE bool operator == (const qpGeomVertexDataType &other) const;
-  INLINE bool operator != (const qpGeomVertexDataType &other) const;
-  INLINE bool operator < (const qpGeomVertexDataType &other) const;
+  INLINE int compare_to(const qpGeomVertexColumn &other) const;
+  INLINE bool operator == (const qpGeomVertexColumn &other) const;
+  INLINE bool operator != (const qpGeomVertexColumn &other) const;
+  INLINE bool operator < (const qpGeomVertexColumn &other) const;
 
 private:
   CPT(InternalName) _name;
@@ -95,8 +93,8 @@ private:
   int _total_bytes;
 };
 
-INLINE ostream &operator << (ostream &out, const qpGeomVertexDataType &obj);
+INLINE ostream &operator << (ostream &out, const qpGeomVertexColumn &obj);
 
-#include "qpgeomVertexDataType.I"
+#include "qpgeomVertexColumn.I"
 
 #endif

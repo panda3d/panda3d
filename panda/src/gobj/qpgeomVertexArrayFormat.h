@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
-#include "qpgeomVertexDataType.h"
+#include "qpgeomVertexColumn.h"
 #include "pvector.h"
 #include "pmap.h"
 
@@ -38,13 +38,15 @@ class FactoryParams;
 //               GeomVertexArrayFormat objects.
 //
 //               A particular array may include any number of standard
-//               or user-defined data types.  All data types consist
-//               of a sequence of one or more floating-point numbers;
-//               the semantic meaning of the data type is implicit
-//               from its name.  The standard array types are named
-//               "vertex", "normal", "texcoord", "color", "tangent",
-//               and "binormal"; other data may be stored simply by
-//               choosing a different name.
+//               or user-defined columns.  All columns consist of a
+//               sequence of one or more numeric values, packed in any
+//               of a variety of formats; the semantic meaning of each
+//               column is defined in general with its contents
+//               member, and in particular by its name.  The standard
+//               array types used most often are named "vertex",
+//               "normal", "texcoord", and "color"; other kinds of
+//               data may be piggybacked into the data record simply
+//               by choosing a unique name.
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
@@ -53,35 +55,35 @@ PUBLISHED:
   qpGeomVertexArrayFormat();
   qpGeomVertexArrayFormat(const qpGeomVertexArrayFormat &copy);
   qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                          qpGeomVertexDataType::NumericType numeric_type0,
-                          qpGeomVertexDataType::Contents contents0);
+                          qpGeomVertexColumn::NumericType numeric_type0,
+                          qpGeomVertexColumn::Contents contents0);
   qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                          qpGeomVertexDataType::NumericType numeric_type0,
-                          qpGeomVertexDataType::Contents contents0,
+                          qpGeomVertexColumn::NumericType numeric_type0,
+                          qpGeomVertexColumn::Contents contents0,
                           const InternalName *name1, int num_components1,
-                          qpGeomVertexDataType::NumericType numeric_type1,
-                          qpGeomVertexDataType::Contents contents1);
+                          qpGeomVertexColumn::NumericType numeric_type1,
+                          qpGeomVertexColumn::Contents contents1);
   qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                          qpGeomVertexDataType::NumericType numeric_type0,
-                          qpGeomVertexDataType::Contents contents0,
+                          qpGeomVertexColumn::NumericType numeric_type0,
+                          qpGeomVertexColumn::Contents contents0,
                           const InternalName *name1, int num_components1,
-                          qpGeomVertexDataType::NumericType numeric_type1,
-                          qpGeomVertexDataType::Contents contents1,
+                          qpGeomVertexColumn::NumericType numeric_type1,
+                          qpGeomVertexColumn::Contents contents1,
                           const InternalName *name2, int num_components2,
-                          qpGeomVertexDataType::NumericType numeric_type2,
-                          qpGeomVertexDataType::Contents contents2);
+                          qpGeomVertexColumn::NumericType numeric_type2,
+                          qpGeomVertexColumn::Contents contents2);
   qpGeomVertexArrayFormat(const InternalName *name0, int num_components0,
-                          qpGeomVertexDataType::NumericType numeric_type0,
-                          qpGeomVertexDataType::Contents contents0,
+                          qpGeomVertexColumn::NumericType numeric_type0,
+                          qpGeomVertexColumn::Contents contents0,
                           const InternalName *name1, int num_components1,
-                          qpGeomVertexDataType::NumericType numeric_type1,
-                          qpGeomVertexDataType::Contents contents1,
+                          qpGeomVertexColumn::NumericType numeric_type1,
+                          qpGeomVertexColumn::Contents contents1,
                           const InternalName *name2, int num_components2,
-                          qpGeomVertexDataType::NumericType numeric_type2,
-                          qpGeomVertexDataType::Contents contents2,
+                          qpGeomVertexColumn::NumericType numeric_type2,
+                          qpGeomVertexColumn::Contents contents2,
                           const InternalName *name3, int num_components3,
-                          qpGeomVertexDataType::NumericType numeric_type3,
-                          qpGeomVertexDataType::Contents contents3);
+                          qpGeomVertexColumn::NumericType numeric_type3,
+                          qpGeomVertexColumn::Contents contents3);
   void operator = (const qpGeomVertexArrayFormat &copy);
   ~qpGeomVertexArrayFormat();
 
@@ -93,20 +95,20 @@ PUBLISHED:
   INLINE int get_total_bytes() const;
   INLINE int get_pad_to() const;
 
-  int add_data_type(const InternalName *name, int num_components,
-                    qpGeomVertexDataType::NumericType numeric_type,
-                    qpGeomVertexDataType::Contents contents,
-                    int start = -1);
-  int add_data_type(const qpGeomVertexDataType &data_type);
-  void remove_data_type(const InternalName *name);
-  void clear_data_types();
+  int add_column(const InternalName *name, int num_components,
+                 qpGeomVertexColumn::NumericType numeric_type,
+                 qpGeomVertexColumn::Contents contents,
+                 int start = -1);
+  int add_column(const qpGeomVertexColumn &column);
+  void remove_column(const InternalName *name);
+  void clear_columns();
 
-  INLINE int get_num_data_types() const;
-  INLINE const qpGeomVertexDataType *get_data_type(int i) const;
+  INLINE int get_num_columns() const;
+  INLINE const qpGeomVertexColumn *get_column(int i) const;
 
-  const qpGeomVertexDataType *get_data_type(const InternalName *name) const;
-  const qpGeomVertexDataType *get_data_type(int start_byte, int num_bytes) const;
-  INLINE bool has_data_type(const InternalName *name) const;
+  const qpGeomVertexColumn *get_column(const InternalName *name) const;
+  const qpGeomVertexColumn *get_column(int start_byte, int num_bytes) const;
+  INLINE bool has_column(const InternalName *name) const;
 
   bool is_data_subset_of(const qpGeomVertexArrayFormat &other) const;
 
@@ -119,8 +121,8 @@ public:
   int compare_to(const qpGeomVertexArrayFormat &other) const;
 
 private:
-  INLINE void consider_sort_data_types() const;
-  void sort_data_types();
+  INLINE void consider_sort_columns() const;
+  void sort_columns();
   void do_register();
 
   bool _is_registered;
@@ -131,12 +133,12 @@ private:
   int _total_bytes;
   int _pad_to;
 
-  typedef pvector<qpGeomVertexDataType *> DataTypes;
-  DataTypes _data_types;
-  bool _data_types_unsorted;
+  typedef pvector<qpGeomVertexColumn *> DataTypes;
+  DataTypes _columns;
+  bool _columns_unsorted;
 
-  typedef pmap<const InternalName *, qpGeomVertexDataType *> DataTypesByName;
-  DataTypesByName _data_types_by_name;
+  typedef pmap<const InternalName *, qpGeomVertexColumn *> DataTypesByName;
+  DataTypesByName _columns_by_name;
 
 public:
   static void register_with_read_factory();

@@ -32,12 +32,13 @@
 //               object, modifying vertices as it goes.
 //
 //               Although it doesn't provide any real performance
-//               benefit over using a separate reader and writer
-//               object, it should probably be used in preference to
-//               separate objects, because it makes an effort to
-//               manage the reference counts properly between the
-//               reader and the writer to avoid accidentally
-//               dereferencing either array while recopying.
+//               benefit over using a separate reader and writer on
+//               the same data, it should probably be used in
+//               preference to a separate reader and writer, because
+//               it makes an effort to manage the reference counts
+//               properly between the reader and the writer to avoid
+//               accidentally dereferencing either array while
+//               recopying.
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
@@ -52,14 +53,14 @@ PUBLISHED:
 
   INLINE qpGeomVertexData *get_vertex_data() const;
 
-  INLINE bool set_data_type(int data_type);
-  INLINE bool set_data_type(const string &name);
-  INLINE bool set_data_type(const InternalName *name);
-  INLINE bool set_data_type(int array, const qpGeomVertexDataType *data_type);
+  INLINE bool set_column(int column);
+  INLINE bool set_column(const string &name);
+  INLINE bool set_column(const InternalName *name);
+  INLINE bool set_column(int array, const qpGeomVertexColumn *column);
 
-  INLINE bool has_data_type() const;
+  INLINE bool has_column() const;
   INLINE int get_array() const;
-  INLINE const qpGeomVertexDataType *get_data_type() const;
+  INLINE const qpGeomVertexColumn *get_column() const;
 
   INLINE void set_vertex(int vertex);
 

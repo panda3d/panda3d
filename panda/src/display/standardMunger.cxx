@@ -35,8 +35,8 @@ TypeHandle StandardMunger::_type_handle;
 StandardMunger::
 StandardMunger(const GraphicsStateGuardianBase *gsg, const RenderState *state,
                int num_components,
-               qpGeomVertexDataType::NumericType numeric_type,
-               qpGeomVertexDataType::Contents contents) :
+               qpGeomVertexColumn::NumericType numeric_type,
+               qpGeomVertexColumn::Contents contents) :
   qpGeomMunger(gsg, state),
   _num_components(num_components),
   _numeric_type(numeric_type),

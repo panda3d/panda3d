@@ -19,9 +19,9 @@
 #include "qpgeomVertexReader.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexReader::set_data_type
+//     Function: qpGeomVertexReader::set_column
 //       Access: Published
-//  Description: Sets up the reader to use the indicated data_type
+//  Description: Sets up the reader to use the indicated column
 //               description on the given array.
 //
 //               This also resets the current read vertex numbers to
@@ -33,7 +33,7 @@
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool qpGeomVertexReader::
-set_data_type(int array, const qpGeomVertexDataType *data_type) {
+set_column(int array, const qpGeomVertexColumn *column) {
   // Delete the old reader, if we've got one.
   if (_reader != (Reader *)NULL) {
     delete _reader;
@@ -41,10 +41,10 @@ set_data_type(int array, const qpGeomVertexDataType *data_type) {
   }
 
   if (array < 0 || array >= _vertex_data->get_num_arrays() || 
-      data_type == (qpGeomVertexDataType *)NULL) {
+      column == (qpGeomVertexColumn *)NULL) {
     // Clear the data type.
     _array = -1;
-    _data_type = NULL;
+    _column = NULL;
     _stride = 0;
     _read_vertex = _start_vertex;
     _num_vertices = 0;
@@ -53,14 +53,14 @@ set_data_type(int array, const qpGeomVertexDataType *data_type) {
 
   } else {
     _array = array;
-    _data_type = data_type;
+    _column = column;
     _stride = _vertex_data->get_format()->get_array(_array)->get_stride();
 
     set_pointer(_start_vertex);
 
     // Now set up a new reader.
     _reader = make_reader();
-    _reader->_data_type = _data_type;
+    _reader->_column = _column;
 
     return true;
   }
@@ -74,16 +74,16 @@ set_data_type(int array, const qpGeomVertexDataType *data_type) {
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexReader::Reader *qpGeomVertexReader::
 make_reader() const {
-  switch (_data_type->get_contents()) {
-  case qpGeomVertexDataType::C_point:
-  case qpGeomVertexDataType::C_texcoord:
+  switch (_column->get_contents()) {
+  case qpGeomVertexColumn::C_point:
+  case qpGeomVertexColumn::C_texcoord:
     // These types are read as a 4-d homogeneous point.
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_float32:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_float32:
       if (sizeof(float) == sizeof(PN_float32)) {
         // Use the native float type implementation for a tiny bit
         // more optimization.
-        switch (_data_type->get_num_components()) {
+        switch (_column->get_num_components()) {
         case 2:
           return new Reader_point_nativefloat_2;
         case 3:
@@ -92,7 +92,7 @@ make_reader() const {
           return new Reader_point_nativefloat_4;
         }
       } else {
-        switch (_data_type->get_num_components()) {
+        switch (_column->get_num_components()) {
         case 2:
           return new Reader_point_float32_2;
         case 3:
@@ -107,10 +107,10 @@ make_reader() const {
     }
     return new Reader_point;
 
-  case qpGeomVertexDataType::C_color:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
-      switch (_data_type->get_num_components()) {
+  case qpGeomVertexColumn::C_color:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
+      switch (_column->get_num_components()) {
       case 4:
         return new Reader_rgba_uint8_4;
         
@@ -118,8 +118,8 @@ make_reader() const {
         break;
       }
       break;
-    case qpGeomVertexDataType::NT_packed_dabc:
-      switch (_data_type->get_num_components()) {
+    case qpGeomVertexColumn::NT_packed_dabc:
+      switch (_column->get_num_components()) {
       case 1:
         return new Reader_argb_packed;
         
@@ -127,8 +127,8 @@ make_reader() const {
         break;
       }
       break;
-    case qpGeomVertexDataType::NT_float32:
-      switch (_data_type->get_num_components()) {
+    case qpGeomVertexColumn::NT_float32:
+      switch (_column->get_num_components()) {
       case 4:
         if (sizeof(float) == sizeof(PN_float32)) {
           // Use the native float type implementation for a tiny bit
@@ -149,9 +149,9 @@ make_reader() const {
 
   default:
     // Otherwise, we just read it as a generic value.
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_float32:
-      switch (_data_type->get_num_components()) {
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_float32:
+      switch (_column->get_num_components()) {
       case 3:
         if (sizeof(float) == sizeof(PN_float32)) {
           // Use the native float type implementation for a tiny bit
@@ -188,26 +188,26 @@ qpGeomVertexReader::Reader::
 ////////////////////////////////////////////////////////////////////
 float qpGeomVertexReader::Reader::
 get_data1f(const unsigned char *pointer) {
-  switch (_data_type->get_numeric_type()) {
-  case qpGeomVertexDataType::NT_uint8:
+  switch (_column->get_numeric_type()) {
+  case qpGeomVertexColumn::NT_uint8:
     return maybe_scale_color(*pointer);
 
-  case qpGeomVertexDataType::NT_uint16:
+  case qpGeomVertexColumn::NT_uint16:
     return *(const PN_uint16 *)pointer;
 
-  case qpGeomVertexDataType::NT_packed_dcba:
+  case qpGeomVertexColumn::NT_packed_dcba:
     {
       PN_uint32 dword = *(const PN_uint32 *)pointer;
       return maybe_scale_color(qpGeomVertexData::unpack_abcd_d(dword));
     }
 
-  case qpGeomVertexDataType::NT_packed_dabc:
+  case qpGeomVertexColumn::NT_packed_dabc:
     {
       PN_uint32 dword = *(const PN_uint32 *)pointer;
       return maybe_scale_color(qpGeomVertexData::unpack_abcd_b(dword));
     }
 
-  case qpGeomVertexDataType::NT_float32:
+  case qpGeomVertexColumn::NT_float32:
     return *(const PN_float32 *)pointer;
   }
 
@@ -221,24 +221,24 @@ get_data1f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const LVecBase2f &qpGeomVertexReader::Reader::
 get_data2f(const unsigned char *pointer) {
-  if (_data_type->get_num_values() == 1) {
+  if (_column->get_num_values() == 1) {
     _v2.set(get_data1i(pointer), 0.0f);
     return _v2;
 
   } else {
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       maybe_scale_color(pointer[0], pointer[1]);
       return _v2;
       
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         const PN_uint16 *pi = (const PN_uint16 *)pointer;
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         maybe_scale_color(qpGeomVertexData::unpack_abcd_d(dword),
@@ -246,7 +246,7 @@ get_data2f(const unsigned char *pointer) {
       }
       return _v2;
       
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         maybe_scale_color(qpGeomVertexData::unpack_abcd_b(dword),
@@ -254,7 +254,7 @@ get_data2f(const unsigned char *pointer) {
       }
       return _v2;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         const PN_float32 *pi = (const PN_float32 *)pointer;
         _v2.set(pi[0], pi[1]);
@@ -273,7 +273,7 @@ get_data2f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const LVecBase3f &qpGeomVertexReader::Reader::
 get_data3f(const unsigned char *pointer) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
     _v3.set(get_data1f(pointer), 0.0f, 0.0f);
     return _v3;
@@ -286,19 +286,19 @@ get_data3f(const unsigned char *pointer) {
     return _v3;
 
   default:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       maybe_scale_color(pointer[0], pointer[1], pointer[2]);
       return _v3;
       
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         const PN_uint16 *pi = (const PN_uint16 *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         maybe_scale_color(qpGeomVertexData::unpack_abcd_d(dword),
@@ -307,7 +307,7 @@ get_data3f(const unsigned char *pointer) {
       }
       return _v3;
       
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         maybe_scale_color(qpGeomVertexData::unpack_abcd_b(dword),
@@ -316,7 +316,7 @@ get_data3f(const unsigned char *pointer) {
       }
       return _v3;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         const PN_float32 *pi = (const PN_float32 *)pointer;
         _v3.set(pi[0], pi[1], pi[2]);
@@ -335,7 +335,7 @@ get_data3f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const LVecBase4f &qpGeomVertexReader::Reader::
 get_data4f(const unsigned char *pointer) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
     _v4.set(get_data1i(pointer), 0.0f, 0.0f, 0.0f);
     return _v4;
@@ -355,19 +355,19 @@ get_data4f(const unsigned char *pointer) {
     return _v4;
 
   default:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       maybe_scale_color(pointer[0], pointer[1], pointer[2], pointer[3]);
       return _v4;
       
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         const PN_uint16 *pi = (const PN_uint16 *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         maybe_scale_color(qpGeomVertexData::unpack_abcd_d(dword),
@@ -377,7 +377,7 @@ get_data4f(const unsigned char *pointer) {
       }
       return _v4;
       
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         maybe_scale_color(qpGeomVertexData::unpack_abcd_b(dword),
@@ -387,7 +387,7 @@ get_data4f(const unsigned char *pointer) {
       }
       return _v4;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         const PN_float32 *pi = (const PN_float32 *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
@@ -406,28 +406,28 @@ get_data4f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 int qpGeomVertexReader::Reader::
 get_data1i(const unsigned char *pointer) {
-  switch (_data_type->get_numeric_type()) {
-  case qpGeomVertexDataType::NT_uint8:
+  switch (_column->get_numeric_type()) {
+  case qpGeomVertexColumn::NT_uint8:
     return *pointer;
 
-  case qpGeomVertexDataType::NT_uint16:
+  case qpGeomVertexColumn::NT_uint16:
     return *(const PN_uint16 *)pointer;
 
-  case qpGeomVertexDataType::NT_packed_dcba:
+  case qpGeomVertexColumn::NT_packed_dcba:
     {
       PN_uint32 dword = *(const PN_uint32 *)pointer;
       return qpGeomVertexData::unpack_abcd_d(dword);
     }
     break;
 
-  case qpGeomVertexDataType::NT_packed_dabc:
+  case qpGeomVertexColumn::NT_packed_dabc:
     {
       PN_uint32 dword = *(const PN_uint32 *)pointer;
       return qpGeomVertexData::unpack_abcd_b(dword);
     }
     break;
 
-  case qpGeomVertexDataType::NT_float32:
+  case qpGeomVertexColumn::NT_float32:
     return (int)*(const PN_float32 *)pointer;
   }
 
@@ -441,20 +441,20 @@ get_data1i(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const int *qpGeomVertexReader::Reader::
 get_data2i(const unsigned char *pointer) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
     _i[0] = get_data1i(pointer);
     _i[1] = 0;
     return _i;
 
   default:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       _i[0] = pointer[0];
       _i[1] = pointer[1];
       return _i;
       
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         const PN_uint16 *pi = (const PN_uint16 *)pointer;
         _i[0] = pi[0];
@@ -462,7 +462,7 @@ get_data2i(const unsigned char *pointer) {
       }
       return _i;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         _i[0] = qpGeomVertexData::unpack_abcd_d(dword);
@@ -470,7 +470,7 @@ get_data2i(const unsigned char *pointer) {
       }
       return _i;
       
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         _i[0] = qpGeomVertexData::unpack_abcd_b(dword);
@@ -478,7 +478,7 @@ get_data2i(const unsigned char *pointer) {
       }
       return _i;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         const PN_float32 *pi = (const PN_float32 *)pointer;
         _i[0] = (int)pi[0];
@@ -498,7 +498,7 @@ get_data2i(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const int *qpGeomVertexReader::Reader::
 get_data3i(const unsigned char *pointer) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
     _i[0] = get_data1i(pointer);
     _i[1] = 0;
@@ -515,14 +515,14 @@ get_data3i(const unsigned char *pointer) {
     return _i;
 
   default:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       _i[0] = pointer[0];
       _i[1] = pointer[1];
       _i[2] = pointer[2];
       return _i;
       
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         const PN_uint16 *pi = (const PN_uint16 *)pointer;
         _i[0] = pi[0];
@@ -531,7 +531,7 @@ get_data3i(const unsigned char *pointer) {
       }
       return _i;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         _i[0] = qpGeomVertexData::unpack_abcd_d(dword);
@@ -540,7 +540,7 @@ get_data3i(const unsigned char *pointer) {
       }
       return _i;
       
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         _i[0] = qpGeomVertexData::unpack_abcd_b(dword);
@@ -549,7 +549,7 @@ get_data3i(const unsigned char *pointer) {
       }
       return _i;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         const PN_float32 *pi = (const PN_float32 *)pointer;
         _i[0] = (int)pi[0];
@@ -570,7 +570,7 @@ get_data3i(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const int *qpGeomVertexReader::Reader::
 get_data4i(const unsigned char *pointer) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
     _i[0] = get_data1i(pointer);
     _i[1] = 0;
@@ -599,15 +599,15 @@ get_data4i(const unsigned char *pointer) {
     return _i;
 
   default:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       _i[0] = pointer[0];
       _i[1] = pointer[1];
       _i[2] = pointer[2];
       _i[3] = pointer[3];
       return _i;
       
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         const PN_uint16 *pi = (const PN_uint16 *)pointer;
         _i[0] = pi[0];
@@ -617,7 +617,7 @@ get_data4i(const unsigned char *pointer) {
       }
       return _i;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         _i[0] = qpGeomVertexData::unpack_abcd_d(dword);
@@ -627,7 +627,7 @@ get_data4i(const unsigned char *pointer) {
       }
       return _i;
       
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         _i[0] = qpGeomVertexData::unpack_abcd_b(dword);
@@ -637,7 +637,7 @@ get_data4i(const unsigned char *pointer) {
       }
       return _i;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         const PN_float32 *pi = (const PN_float32 *)pointer;
         _i[0] = (int)pi[0];
@@ -659,7 +659,7 @@ get_data4i(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 float qpGeomVertexReader::Reader_point::
 get_data1f(const unsigned char *pointer) {
-  if (_data_type->get_num_values() == 4) {
+  if (_column->get_num_values() == 4) {
     const LVecBase4f &v4 = get_data4f(pointer);
     return v4[0] / v4[3];
   } else {
@@ -674,7 +674,7 @@ get_data1f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const LVecBase2f &qpGeomVertexReader::Reader_point::
 get_data2f(const unsigned char *pointer) {
-  if (_data_type->get_num_values() == 4) {
+  if (_column->get_num_values() == 4) {
     const LVecBase4f &v4 = get_data4f(pointer);
     _v2.set(v4[0] / v4[3], v4[1] / v4[3]);
     return _v2;
@@ -690,7 +690,7 @@ get_data2f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const LVecBase3f &qpGeomVertexReader::Reader_point::
 get_data3f(const unsigned char *pointer) {
-  if (_data_type->get_num_values() == 4) {
+  if (_column->get_num_values() == 4) {
     const LVecBase4f &v4 = get_data4f(pointer);
     _v3.set(v4[0] / v4[3], v4[1] / v4[3], v4[2] / v4[3]);
     return _v3;
@@ -706,7 +706,7 @@ get_data3f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const LVecBase4f &qpGeomVertexReader::Reader_point::
 get_data4f(const unsigned char *pointer) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
     _v4.set(get_data1i(pointer), 0.0f, 0.0f, 1.0f);
     return _v4;
@@ -726,19 +726,19 @@ get_data4f(const unsigned char *pointer) {
     return _v4;
 
   default:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       maybe_scale_color(pointer[0], pointer[1], pointer[2], pointer[3]);
       return _v4;
       
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         const PN_uint16 *pi = (const PN_uint16 *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         maybe_scale_color(qpGeomVertexData::unpack_abcd_d(dword),
@@ -748,7 +748,7 @@ get_data4f(const unsigned char *pointer) {
       }
       return _v4;
       
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         maybe_scale_color(qpGeomVertexData::unpack_abcd_b(dword),
@@ -758,7 +758,7 @@ get_data4f(const unsigned char *pointer) {
       }
       return _v4;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         const PN_float32 *pi = (const PN_float32 *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
@@ -777,7 +777,7 @@ get_data4f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 const LVecBase4f &qpGeomVertexReader::Reader_color::
 get_data4f(const unsigned char *pointer) {
-  switch (_data_type->get_num_values()) {
+  switch (_column->get_num_values()) {
   case 1:
     _v4.set(get_data1i(pointer), 0.0f, 0.0f, 1.0f);
     return _v4;
@@ -797,19 +797,19 @@ get_data4f(const unsigned char *pointer) {
     return _v4;
 
   default:
-    switch (_data_type->get_numeric_type()) {
-    case qpGeomVertexDataType::NT_uint8:
+    switch (_column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_uint8:
       maybe_scale_color(pointer[0], pointer[1], pointer[2], pointer[3]);
       return _v4;
       
-    case qpGeomVertexDataType::NT_uint16:
+    case qpGeomVertexColumn::NT_uint16:
       {
         const PN_uint16 *pi = (const PN_uint16 *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
       
-    case qpGeomVertexDataType::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         maybe_scale_color(qpGeomVertexData::unpack_abcd_d(dword),
@@ -819,7 +819,7 @@ get_data4f(const unsigned char *pointer) {
       }
       return _v4;
       
-    case qpGeomVertexDataType::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
         maybe_scale_color(qpGeomVertexData::unpack_abcd_b(dword),
@@ -829,7 +829,7 @@ get_data4f(const unsigned char *pointer) {
       }
       return _v4;
       
-    case qpGeomVertexDataType::NT_float32:
+    case qpGeomVertexColumn::NT_float32:
       {
         const PN_float32 *pi = (const PN_float32 *)pointer;
         _v4.set(pi[0], pi[1], pi[2], pi[3]);

@@ -245,6 +245,23 @@ transform_point(LPoint3f &point) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformBlend::transform_vector
+//       Access: Published
+//  Description: Transforms the indicated vector by the blend matrix.
+//
+//               You should call update_blend() to ensure that the
+//               cache is up-to-date before calling this.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformBlend::
+transform_vector(LVector3f &vector) const {
+  if (!_entries.empty()) {
+    CDReader cdata(_cycler);
+    nassertv(cdata->_global_modified == VertexTransform::get_global_modified());
+    vector = vector * cdata->_result;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformBlend::get_modified
 //       Access: Published
 //  Description: Returns a counter which is guaranteed to increment at

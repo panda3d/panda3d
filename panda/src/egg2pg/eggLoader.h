@@ -149,7 +149,7 @@ private:
   void record_morph
   (qpGeomVertexArrayFormat *array_format,
    CharacterMaker *character_maker, const string &morph_name, 
-   InternalName *data_type_name, int num_components);
+   InternalName *column_name, int num_components);
 
   void make_primitive(const EggRenderState *render_state, 
                       EggPrimitive *egg_prim, Primitives &primitives);

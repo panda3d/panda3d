@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 #include "qpgeomVertexData.h"
-#include "qpgeomVertexDataType.h"
+#include "qpgeomVertexColumn.h"
 #include "internalName.h"
 #include "luse.h"
 #include "pointerTo.h"
@@ -32,19 +32,20 @@
 //               quickly reading a sequence of numeric values from a
 //               vertex table. 
 //
-//               It is particularly optimized for reading a column of
-//               data values for a series of vertices, without
-//               changing data types between each number.  Although
-//               you can use one GeomVertexReader to read one complete
-//               row at a time, by calling set_data_type() repeatedly
-//               for each vertex, it is faster to use a different
-//               GeomVertexReader for each data type.
+//               It is particularly optimized for reading a single
+//               column of data values for a series of vertices,
+//               without changing columns between each number.
+//               Although you can also use one GeomVertexReader to
+//               read across the columns if it is convenient, by
+//               calling set_column() repeatedly at each vertex, it is
+//               faster to read down the columns, and to use a
+//               different GeomVertexReader for each column.
 //
 //               Note that a GeomVertexReader does not keep a
 //               reference count to the actual vertex data buffer (it
 //               grabs the current data buffer from the GeomVertexData
-//               whenever set_data_type() is called).  This means that
-//               it is important not to keep a GeomVertexReader object
+//               whenever set_column() is called).  This means that it
+//               is important not to keep a GeomVertexReader object
 //               around over a long period of time in which the data
 //               buffer is likely to be deallocated; it is intended
 //               for making a quick pass over the data in one session.
@@ -69,14 +70,14 @@ PUBLISHED:
 
   INLINE const qpGeomVertexData *get_vertex_data() const;
 
-  INLINE bool set_data_type(int data_type);
-  INLINE bool set_data_type(const string &name);
-  INLINE bool set_data_type(const InternalName *name);
-  bool set_data_type(int array, const qpGeomVertexDataType *data_type);
+  INLINE bool set_column(int column);
+  INLINE bool set_column(const string &name);
+  INLINE bool set_column(const InternalName *name);
+  bool set_column(int array, const qpGeomVertexColumn *column);
 
-  INLINE bool has_data_type() const;
+  INLINE bool has_column() const;
   INLINE int get_array() const;
-  INLINE const qpGeomVertexDataType *get_data_type() const;
+  INLINE const qpGeomVertexColumn *get_column() const;
 
   INLINE void set_vertex(int vertex);
 
@@ -104,7 +105,7 @@ private:
 
   CPT(qpGeomVertexData) _vertex_data;
   int _array;
-  const qpGeomVertexDataType *_data_type;
+  const qpGeomVertexColumn *_column;
   int _stride;
 
   const unsigned char *_pointer;
@@ -138,7 +139,7 @@ private:
     INLINE void maybe_scale_color(unsigned int a, unsigned int b,
                                   unsigned int c, unsigned int d);
 
-    const qpGeomVertexDataType *_data_type;
+    const qpGeomVertexColumn *_column;
     LVecBase2f _v2;
     LVecBase3f _v3;
     LVecBase4f _v4;

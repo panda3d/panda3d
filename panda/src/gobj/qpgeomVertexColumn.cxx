@@ -1,4 +1,4 @@
-// Filename: qpgeomVertexDataType.cxx
+// Filename: qpgeomVertexColumn.cxx
 // Created by:  drose (06Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,15 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "qpgeomVertexDataType.h"
+#include "qpgeomVertexColumn.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::Constructor
+//     Function: qpGeomVertexColumn::Constructor
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-qpGeomVertexDataType::
-qpGeomVertexDataType(const InternalName *name, int num_components,
+qpGeomVertexColumn::
+qpGeomVertexColumn(const InternalName *name, int num_components,
                      NumericType numeric_type, Contents contents,
                      int start) :
   _name(name),
@@ -60,24 +60,11 @@ qpGeomVertexDataType(const InternalName *name, int num_components,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::error named constructor
-//       Access: Published
-//  Description: Returns a data type specifically to represent an
-//               error condition.
-////////////////////////////////////////////////////////////////////
-const qpGeomVertexDataType &qpGeomVertexDataType::
-error() {
-  static qpGeomVertexDataType error_result
-    (InternalName::get_error(), 1, NT_uint8, C_other, 0);
-  return error_result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexDataType::output
+//     Function: qpGeomVertexColumn::output
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void qpGeomVertexDataType::
+void qpGeomVertexColumn::
 output(ostream &out) const {
   out << *get_name() << "(" << get_num_components() << ")";
 }

@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 #include "qpgeomVertexData.h"
-#include "qpgeomVertexDataType.h"
+#include "qpgeomVertexColumn.h"
 #include "internalName.h"
 #include "luse.h"
 #include "pointerTo.h"
@@ -42,16 +42,18 @@
 //               you call set_vertex() into the middle of existing
 //               data the add_data*() methods will behave like the
 //               corresponding set_data*(), but if they run past the
-//               end of existing data they will quietly add new data.
+//               end of existing data they will quietly add new
+//               vertices.
 //
 //               Like GeomVertexReader, the writer is particularly
-//               optimized for writing a column of data values for a
-//               series of vertices, without changing data types
-//               between each number.  Although you can use one
-//               GeomVertexWriter to write one complete row at a time,
-//               by calling set_data_type() repeatedly for each
-//               vertex, it is faster to use a different
-//               GeomVertexWriter for each data type.
+//               optimized for writing a single column of data values
+//               for a series of vertices, without changing columns
+//               between each number.  Although you can also use one
+//               GeomVertexWriter to write across the columns if it is
+//               convenient, by calling set_column() repeatedly at
+//               each vertex, it is faster to write down the columns,
+//               and to use a different GeomVertexWriter for each
+//               column.
 //
 //               Note that, like a GeomVertexReader, a
 //               GeomVertexWriter does not keep a reference count to
@@ -81,14 +83,14 @@ PUBLISHED:
 
   INLINE qpGeomVertexData *get_vertex_data() const;
 
-  INLINE bool set_data_type(int data_type);
-  INLINE bool set_data_type(const string &name);
-  INLINE bool set_data_type(const InternalName *name);
-  bool set_data_type(int array, const qpGeomVertexDataType *data_type);
+  INLINE bool set_column(int column);
+  INLINE bool set_column(const string &name);
+  INLINE bool set_column(const InternalName *name);
+  bool set_column(int array, const qpGeomVertexColumn *column);
 
-  INLINE bool has_data_type() const;
+  INLINE bool has_column() const;
   INLINE int get_array() const;
-  INLINE const qpGeomVertexDataType *get_data_type() const;
+  INLINE const qpGeomVertexColumn *get_column() const;
 
   INLINE void set_vertex(int vertex);
 
@@ -139,7 +141,7 @@ private:
 
   PT(qpGeomVertexData) _vertex_data;
   int _array;
-  const qpGeomVertexDataType *_data_type;
+  const qpGeomVertexColumn *_column;
   int _stride;
 
   unsigned char *_pointer;
@@ -172,7 +174,7 @@ private:
     INLINE void maybe_scale_color(const LVecBase3f &data);
     INLINE void maybe_scale_color(const LVecBase4f &data);
 
-    const qpGeomVertexDataType *_data_type;
+    const qpGeomVertexColumn *_column;
     unsigned int _a, _b, _c, _d;
   };
 

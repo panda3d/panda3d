@@ -74,7 +74,7 @@ PUBLISHED:
   INLINE static PT(InternalName) get_transform_blend();
   INLINE static PT(InternalName) get_transform_weight();
   INLINE static PT(InternalName) get_transform_index();
-  INLINE static PT(InternalName) get_morph(InternalName *data_type, const string &slider);
+  INLINE static PT(InternalName) get_morph(InternalName *column, const string &slider);
 
 private:
   PT(InternalName) _parent;

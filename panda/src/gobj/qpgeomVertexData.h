@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
 #include "qpgeomVertexFormat.h"
-#include "qpgeomVertexDataType.h"
+#include "qpgeomVertexColumn.h"
 #include "qpgeomVertexArrayData.h"
 #include "qpgeomUsageHint.h"
 #include "transformPalette.h"
@@ -39,7 +39,7 @@
 #include "pvector.h"
 
 class FactoryParams;
-class qpGeomVertexDataType;
+class qpGeomVertexColumn;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : qpGeomVertexData
@@ -47,18 +47,22 @@ class qpGeomVertexDataType;
 //               a Geom, in the structure defined by a particular
 //               GeomVertexFormat object.
 //
-//               The data consists of one or more arrays of floats.
-//               Typically, there will be only one array per Geom, and
-//               the various data types defined in the
-//               GeomVertexFormat will be interleaved throughout that
-//               array.  However, it is possible to have multiple
-//               different arrays, with different combinations of data
-//               types through each one.
+//               The data consists of one or more arrays, each of
+//               which in turn consists of a series of rows, one per
+//               vertex.  All arrays should have the same number of
+//               rows; each vertex is defined by the column data from
+//               a particular row across all arrays.
+//
+//               Often, there will be only one array per Geom, and the
+//               various columns defined in the GeomVertexFormat will
+//               be interleaved within that array.  However, it is
+//               also possible to have multiple different arrays, with
+//               a certain subset of the total columns defined in each
+//               array.
 //
 //               However the data is distributed, the effect is of a
-//               table of vertices, with a value for each of the
-//               GeomVertexFormat's data types, stored for each
-//               vertex.
+//               single table of vertices, where each vertex is
+//               represented by one row of the table.
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
@@ -110,19 +114,19 @@ PUBLISHED:
   CPT(qpGeomVertexData) convert_to(const qpGeomVertexFormat *new_format) const;
   CPT(qpGeomVertexData) 
     scale_color(const LVecBase4f &color_scale, int num_components,
-                qpGeomVertexDataType::NumericType numeric_type,
-                qpGeomVertexDataType::Contents contents) const;
+                qpGeomVertexColumn::NumericType numeric_type,
+                qpGeomVertexColumn::Contents contents) const;
   CPT(qpGeomVertexData) 
     set_color(const Colorf &color, int num_components,
-              qpGeomVertexDataType::NumericType numeric_type,
-              qpGeomVertexDataType::Contents contents) const;
+              qpGeomVertexColumn::NumericType numeric_type,
+              qpGeomVertexColumn::Contents contents) const;
 
   INLINE CPT(qpGeomVertexData) animate_vertices() const;
 
   PT(qpGeomVertexData) 
-    replace_data_type(const InternalName *name, int num_components,
-                      qpGeomVertexDataType::NumericType numeric_type,
-                      qpGeomVertexDataType::Contents contents,
+    replace_column(const InternalName *name, int num_components,
+                      qpGeomVertexColumn::NumericType numeric_type,
+                      qpGeomVertexColumn::Contents contents,
                       qpGeomUsageHint::UsageHint usage_hint,
                       bool keep_animation) const;
 
@@ -135,7 +139,7 @@ public:
   bool get_array_info(const InternalName *name, 
                       const qpGeomVertexArrayData *&array_data,
                       int &num_values,
-                      qpGeomVertexDataType::NumericType &numeric_type, 
+                      qpGeomVertexColumn::NumericType &numeric_type, 
                       int &start, int &stride) const;
 
   static INLINE PN_uint32 pack_abcd(unsigned int a, unsigned int b,
@@ -150,7 +154,7 @@ private:
 
   static void bytewise_copy(unsigned char *to, int to_stride,
                             const unsigned char *from, int from_stride,
-                            const qpGeomVertexDataType *from_type,
+                            const qpGeomVertexColumn *from_type,
                             int num_records);
   static void
   packed_argb_to_uint8_rgba(unsigned char *to, int to_stride,

@@ -225,9 +225,9 @@ get_transform_index() {
 //               indicated data type name, using the named slider.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(InternalName) InternalName::
-get_morph(InternalName *data_type, const string &slider) {
-  // Returns data_type.morph.slider
-  return data_type->append("morph")->append(slider);
+get_morph(InternalName *column, const string &slider) {
+  // Returns column.morph.slider
+  return column->append("morph")->append(slider);
 }
 
 INLINE ostream &

@@ -27,7 +27,7 @@ INLINE qpGeomVertexWriter::
 qpGeomVertexWriter(qpGeomVertexData *vertex_data) :
   _vertex_data(vertex_data),
   _array(0),
-  _data_type(NULL),
+  _column(NULL),
   _pointer(NULL),
   _start_vertex(0),
   _write_vertex(0),
@@ -47,14 +47,14 @@ INLINE qpGeomVertexWriter::
 qpGeomVertexWriter(qpGeomVertexData *vertex_data, const string &name) :
   _vertex_data(vertex_data),
   _array(0),
-  _data_type(NULL),
+  _column(NULL),
   _pointer(NULL),
   _start_vertex(0),
   _write_vertex(0),
   _num_vertices(0),
   _writer(NULL)
 {
-  set_data_type(name);
+  set_column(name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,14 +68,14 @@ INLINE qpGeomVertexWriter::
 qpGeomVertexWriter(qpGeomVertexData *vertex_data, const InternalName *name) :
   _vertex_data(vertex_data),
   _array(0),
-  _data_type(NULL),
+  _column(NULL),
   _pointer(NULL),
   _start_vertex(0),
   _write_vertex(0),
   _num_vertices(0),
   _writer(NULL)
 {
-  set_data_type(name);
+  set_column(name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ get_vertex_data() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexWriter::set_data_type
+//     Function: qpGeomVertexWriter::set_column
 //       Access: Published
 //  Description: Sets up the writer to use the nth data type of the
 //               GeomVertexFormat, numbering from 0.
@@ -116,13 +116,13 @@ get_vertex_data() const {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexWriter::
-set_data_type(int data_type) {
-  return set_data_type(_vertex_data->get_format()->get_array_with(data_type),
-                       _vertex_data->get_format()->get_data_type(data_type));
+set_column(int column) {
+  return set_column(_vertex_data->get_format()->get_array_with(column),
+                       _vertex_data->get_format()->get_column(column));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexWriter::set_data_type
+//     Function: qpGeomVertexWriter::set_column
 //       Access: Published
 //  Description: Sets up the writer to use the data type with the
 //               indicated name.
@@ -135,12 +135,12 @@ set_data_type(int data_type) {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexWriter::
-set_data_type(const string &name) {
-  return set_data_type(InternalName::make(name));
+set_column(const string &name) {
+  return set_column(InternalName::make(name));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexWriter::set_data_type
+//     Function: qpGeomVertexWriter::set_column
 //       Access: Published
 //  Description: Sets up the writer to use the data type with the
 //               indicated name.
@@ -153,21 +153,21 @@ set_data_type(const string &name) {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexWriter::
-set_data_type(const InternalName *name) {
-  return set_data_type(_vertex_data->get_format()->get_array_with(name),
-                       _vertex_data->get_format()->get_data_type(name));
+set_column(const InternalName *name) {
+  return set_column(_vertex_data->get_format()->get_array_with(name),
+                       _vertex_data->get_format()->get_column(name));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexWriter::has_data_type
+//     Function: qpGeomVertexWriter::has_column
 //       Access: Published
 //  Description: Returns true if a valid data type has been
 //               successfully set, or false if the data type does not
 //               exist.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexWriter::
-has_data_type() const {
-  return (_data_type != (qpGeomVertexDataType *)NULL);
+has_column() const {
+  return (_column != (qpGeomVertexColumn *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,14 +182,14 @@ get_array() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexWriter::get_data_type
+//     Function: qpGeomVertexWriter::get_column
 //       Access: Published
 //  Description: Returns the description of the data type that the
 //               writer is working on.
 ////////////////////////////////////////////////////////////////////
-INLINE const qpGeomVertexDataType *qpGeomVertexWriter::
-get_data_type() const {
-  return _data_type;
+INLINE const qpGeomVertexColumn *qpGeomVertexWriter::
+get_column() const {
+  return _column;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -202,7 +202,7 @@ get_data_type() const {
 INLINE void qpGeomVertexWriter::
 set_vertex(int vertex) {
   _start_vertex = vertex;
-  if (_data_type != (qpGeomVertexDataType *)NULL) {
+  if (_column != (qpGeomVertexColumn *)NULL) {
     set_pointer(_start_vertex);
   }
 }
@@ -212,7 +212,7 @@ set_vertex(int vertex) {
 //       Access: Published
 //  Description: Returns the vertex index at which the writer
 //               started.  It will return to this vertex if you reset
-//               the current data_type.
+//               the current column.
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomVertexWriter::
 get_start_vertex() const {
@@ -266,7 +266,7 @@ is_at_end() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 set_data1f(float data) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data1f(inc_pointer(), data);
 }
 
@@ -295,7 +295,7 @@ set_data2f(float x, float y) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 set_data2f(const LVecBase2f &data) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data2f(inc_pointer(), data);
 }
 
@@ -324,7 +324,7 @@ set_data3f(float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 set_data3f(const LVecBase3f &data) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data3f(inc_pointer(), data);
 }
 
@@ -353,7 +353,7 @@ set_data4f(float x, float y, float z, float w) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 set_data4f(const LVecBase4f &data) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data4f(inc_pointer(), data);
 }
 
@@ -368,7 +368,7 @@ set_data4f(const LVecBase4f &data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 set_data1i(int data) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data1i(inc_pointer(), data);
 }
 
@@ -383,7 +383,7 @@ set_data1i(int data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 set_data2i(int a, int b) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data2i(inc_pointer(), a, b);
 }
 
@@ -412,7 +412,7 @@ set_data2i(const int data[2]) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 set_data3i(int a, int b, int c) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data3i(inc_pointer(), a, b, c);
 }
 
@@ -441,7 +441,7 @@ set_data3i(const int data[3]) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 set_data4i(int a, int b, int c, int d) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data4i(inc_pointer(), a, b, c, d);
 }
 
@@ -470,7 +470,7 @@ set_data4i(const int data[4]) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 add_data1f(float data) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data1f(inc_add_pointer(), data);
 }
 
@@ -499,7 +499,7 @@ add_data2f(float x, float y) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 add_data2f(const LVecBase2f &data) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data2f(inc_add_pointer(), data);
 }
 
@@ -528,7 +528,7 @@ add_data3f(float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 add_data3f(const LVecBase3f &data) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data3f(inc_add_pointer(), data);
 }
 
@@ -557,7 +557,7 @@ add_data4f(float x, float y, float z, float w) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 add_data4f(const LVecBase4f &data) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data4f(inc_add_pointer(), data);
 }
 
@@ -572,7 +572,7 @@ add_data4f(const LVecBase4f &data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 add_data1i(int data) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data1i(inc_add_pointer(), data);
 }
 
@@ -587,7 +587,7 @@ add_data1i(int data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 add_data2i(int a, int b) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data2i(inc_add_pointer(), a, b);
 }
 
@@ -616,7 +616,7 @@ add_data2i(const int data[2]) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 add_data3i(int a, int b, int c) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data3i(inc_add_pointer(), a, b, c);
 }
 
@@ -645,7 +645,7 @@ add_data3i(const int data[3]) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 add_data4i(int a, int b, int c, int d) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _writer->set_data4i(inc_add_pointer(), a, b, c, d);
 }
 
@@ -671,10 +671,10 @@ add_data4i(const int data[4]) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::
 set_pointer(int vertex) {
-  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  nassertv(_column != (qpGeomVertexColumn *)NULL);
   _write_vertex = vertex;
   PT(qpGeomVertexArrayData) array_data = _vertex_data->modify_array(_array);
-  _pointer = array_data->modify_data() + _data_type->get_start() + _stride * _write_vertex;
+  _pointer = array_data->modify_data() + _column->get_start() + _stride * _write_vertex;
   _num_vertices = array_data->get_num_vertices();
 }
 
@@ -687,7 +687,7 @@ set_pointer(int vertex) {
 INLINE unsigned char *qpGeomVertexWriter::
 inc_pointer() {
   nassertr(_write_vertex < _num_vertices, NULL);
-  nassertr(_pointer == _vertex_data->get_array(_array)->get_data() + _data_type->get_start() + _stride * _write_vertex, NULL);
+  nassertr(_pointer == _vertex_data->get_array(_array)->get_data() + _column->get_start() + _stride * _write_vertex, NULL);
 
   unsigned char *orig_pointer = _pointer;
   _pointer += _stride;
@@ -723,7 +723,7 @@ inc_add_pointer() {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned int qpGeomVertexWriter::Writer::
 maybe_scale_color(float data) {
-  if (_data_type->get_contents() == qpGeomVertexDataType::C_color) {
+  if (_column->get_contents() == qpGeomVertexColumn::C_color) {
     return (unsigned int)(data * 255.0f);
   } else {
     return (unsigned int)data;
@@ -739,7 +739,7 @@ maybe_scale_color(float data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::Writer::
 maybe_scale_color(const LVecBase2f &data) {
-  if (_data_type->get_contents() == qpGeomVertexDataType::C_color) {
+  if (_column->get_contents() == qpGeomVertexColumn::C_color) {
     _a = (unsigned int)(data[0] * 255.0f);
     _b = (unsigned int)(data[1] * 255.0f);
   } else {
@@ -757,7 +757,7 @@ maybe_scale_color(const LVecBase2f &data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::Writer::
 maybe_scale_color(const LVecBase3f &data) {
-  if (_data_type->get_contents() == qpGeomVertexDataType::C_color) {
+  if (_column->get_contents() == qpGeomVertexColumn::C_color) {
     _a = (unsigned int)(data[0] * 255.0f);
     _b = (unsigned int)(data[1] * 255.0f);
     _c = (unsigned int)(data[2] * 255.0f);
@@ -777,7 +777,7 @@ maybe_scale_color(const LVecBase3f &data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexWriter::Writer::
 maybe_scale_color(const LVecBase4f &data) {
-  if (_data_type->get_contents() == qpGeomVertexDataType::C_color) {
+  if (_column->get_contents() == qpGeomVertexColumn::C_color) {
     _a = (unsigned int)(data[0] * 255.0f);
     _b = (unsigned int)(data[1] * 255.0f);
     _c = (unsigned int)(data[2] * 255.0f);

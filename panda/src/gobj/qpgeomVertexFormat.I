@@ -122,20 +122,85 @@ get_array(int array) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexFormat::has_data_type
+//     Function: qpGeomVertexFormat::has_column
 //       Access: Published
-//  Description: Returns true if the format has the named data type,
+//  Description: Returns true if the format has the named column,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexFormat::
-has_data_type(const InternalName *name) const {
-  return (get_data_type(name) != (qpGeomVertexDataType *)NULL);
+has_column(const InternalName *name) const {
+  return (get_column(name) != (qpGeomVertexColumn *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_num_points
+//       Access: Published
+//  Description: Returns the number of columns within the format
+//               that represent points in space.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomVertexFormat::
+get_num_points() const {
+  nassertr(_is_registered, 0);
+  return _points.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_point
+//       Access: Published
+//  Description: Returns the name of the nth point column.  This
+//               represents a point in space, which should be
+//               transformed by any spatial transform matrix.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE const InternalName *qpGeomVertexFormat::
+get_point(int n) const {
+  nassertr(_is_registered, NULL);
+  nassertr(n >= 0 && n < (int)_points.size(), NULL);
+  return _points[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_num_vectors
+//       Access: Published
+//  Description: Returns the number of columns within the format
+//               that represent directional vectors.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomVertexFormat::
+get_num_vectors() const {
+  nassertr(_is_registered, 0);
+  return _vectors.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::get_vector
+//       Access: Published
+//  Description: Returns the name of the nth vector column.  This
+//               represents a directional vector, which should be
+//               transformed by any spatial transform matrix as a
+//               vector.
+//
+//               This may only be called after the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+INLINE const InternalName *qpGeomVertexFormat::
+get_vector(int n) const {
+  nassertr(_is_registered, NULL);
+  nassertr(n >= 0 && n < (int)_vectors.size(), NULL);
+  return _vectors[n];
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexFormat::get_num_morphs
 //       Access: Published
-//  Description: Returns the number of data types within the format
+//  Description: Returns the number of columns within the format
 //               that represent morph deltas.
 //
 //               This may only be called after the format has been
@@ -152,7 +217,7 @@ get_num_morphs() const {
 //     Function: qpGeomVertexFormat::get_morph_slider
 //       Access: Published
 //  Description: Returns the slider name associated with the nth morph
-//               data type.  This is the name of the slider that will
+//               column.  This is the name of the slider that will
 //               control the morph, and should be defined within the
 //               SliderTable associated with the GeomVertexData.
 //
@@ -170,10 +235,10 @@ get_morph_slider(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexFormat::get_morph_base
 //       Access: Published
-//  Description: Returns the name of the base data type that the nth
-//               morph modifies.  This data type will also be defined
+//  Description: Returns the name of the base column that the nth
+//               morph modifies.  This column will also be defined
 //               within the format, and can be retrieved via
-//               get_array_with() and/or get_data_type().
+//               get_array_with() and/or get_column().
 //
 //               This may only be called after the format has been
 //               registered.
@@ -189,12 +254,12 @@ get_morph_base(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexFormat::get_morph_delta
 //       Access: Published
-//  Description: Returns the name of the data type that defines the
+//  Description: Returns the name of the column that defines the
 //               nth morph.  This contains the delta offsets that are
-//               to be applied to the data type defined by
-//               get_morph_base().  This data type will be defined
+//               to be applied to the column defined by
+//               get_morph_base().  This column will be defined
 //               within the format, and can be retrieved via
-//               get_array_with() and/or get_data_type().
+//               get_array_with() and/or get_column().
 //
 //               This may only be called after the format has been
 //               registered.
