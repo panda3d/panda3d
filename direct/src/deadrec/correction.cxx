@@ -25,8 +25,9 @@ NotifyCategoryDef(correction, "");
 
 Correction::Correction(LPoint3f& start, LVector3f& s_vel) : _curr_p(start),
                                                             _curr_v(s_vel) {
-  correction_cat->debug() << "construction with:" << endl << "start = "
-                          << start << endl << "vel = " << s_vel << endl;
+  if(correction_cat.is_debug())
+     correction_cat->debug() << "construction with:" << endl << "start = "
+                             << start << endl << "vel = " << s_vel << endl;
 }
 
 Correction::~Correction(void) {
@@ -138,18 +139,22 @@ void SplineCorrection::step(void) {
       _curr_p = (tmp * tmp * tmp * A) + (tmp * tmp * B) + (tmp * C) + D;
       _curr_v = (3.0f * tmp * tmp * A) + (2.0f * tmp * B) + C;
       time += ClockObject::get_global_clock()->get_dt();
-      correction_cat->spam() << "new possition = " << _curr_p << endl;
-      correction_cat->spam() << "new vel = " << _curr_v << endl;
+      if(correction_cat.is_spam()) {
+         correction_cat->spam() << "new possition = " << _curr_p << endl;
+         correction_cat->spam() << "new vel = " << _curr_v << endl;
+      }
     } else
+     if(correction_cat.is_spam())
       correction_cat->spam() << "time >= dur, holding at current pos" << endl;
   } else
-    correction_cat->spam() << "have_both is false, no point calculated"
-                           << endl;
+    if(correction_cat.is_spam())
+      correction_cat->spam() << "have_both is false, no point calculated" << endl;
 }
 
 void SplineCorrection::new_target(LPoint3f& target, LVector3f& v_target) {
   if (target == save_p) {
-    correction_cat->spam() << "new target: same point, no action" << endl;
+    if(correction_cat.is_spam())
+        correction_cat->spam() << "new target: same point, no action" << endl;
     return;
   }
   if (have_both) {
@@ -162,13 +167,15 @@ void SplineCorrection::new_target(LPoint3f& target, LVector3f& v_target) {
     B = (3.0f * (save_p - prev_p)) - (2.0f * prev_v) - save_v;
     C = prev_v;
     D = prev_p;
-    correction_cat->debug() << "new target: already had 'both'." << endl;
-    correction_cat->debug() << "target = " << target << endl;
-    correction_cat->debug() << "vel = " << v_target << endl;
-    correction_cat->debug() << "A = " << A << endl;
-    correction_cat->debug() << "B = " << B << endl;
-    correction_cat->debug() << "C = " << C << endl;
-    correction_cat->debug() << "D = " << D << endl;
+    if(correction_cat.is_debug()) {
+        correction_cat->debug() << "new target: already had 'both'." << endl;
+        correction_cat->debug() << "target = " << target << endl;
+        correction_cat->debug() << "vel = " << v_target << endl;
+        correction_cat->debug() << "A = " << A << endl;
+        correction_cat->debug() << "B = " << B << endl;
+        correction_cat->debug() << "C = " << C << endl;
+        correction_cat->debug() << "D = " << D << endl;
+    }
   } else {
     save_p = target;
     save_v = v_target;
@@ -180,19 +187,22 @@ void SplineCorrection::new_target(LPoint3f& target, LVector3f& v_target) {
     C = prev_v;
     D = prev_p;
     have_both = true;
-    correction_cat->debug() << "new target: now have 'both'." << endl;
-    correction_cat->debug() << "target = " << target << endl;
-    correction_cat->debug() << "vel = " << v_target << endl;
-    correction_cat->debug() << "A = " << A << endl;
-    correction_cat->debug() << "B = " << B << endl;
-    correction_cat->debug() << "C = " << C << endl;
-    correction_cat->debug() << "D = " << D << endl;
+    if(correction_cat.is_debug()) {
+        correction_cat->debug() << "new target: now have 'both'." << endl;
+        correction_cat->debug() << "target = " << target << endl;
+        correction_cat->debug() << "vel = " << v_target << endl;
+        correction_cat->debug() << "A = " << A << endl;
+        correction_cat->debug() << "B = " << B << endl;
+        correction_cat->debug() << "C = " << C << endl;
+        correction_cat->debug() << "D = " << D << endl;
+    }
   }
 }
 
 void SplineCorrection::force_target(LPoint3f& target, LVector3f& v_target) {
   if (target == save_p) {
-    correction_cat->debug() << "force target: same point, no action" << endl;
+    if(correction_cat.is_debug())
+       correction_cat->debug() << "force target: same point, no action" << endl;
     return;
   }
   _curr_p = prev_p = save_p = target;
