@@ -20,7 +20,7 @@
 #define __LERPFUNCTOR_H__
 
 #include "pandabase.h"
-#include <typedReferenceCount.h>
+#include "typedReferenceCount.h"
 
 class EXPCL_PANDA LerpFunctor : public TypedReferenceCount {
 public:
