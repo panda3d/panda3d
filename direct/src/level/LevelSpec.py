@@ -16,21 +16,23 @@ class LevelSpec:
     
     def __init__(self, spec=None, scenario=0):
         """spec must be passed in as a python module or a dictionary"""
+        newSpec = 0
         if type(spec) is types.ModuleType:
             self.specDict = spec.levelSpec
-        else:
+            if __debug__:
+                self.setFilename(spec.__file__)
+        elif type(spec) is types.DictType:
             # we need this for repr/eval-ing LevelSpecs
-            assert type(spec) is types.DictType
             self.specDict = spec
-
-        if __debug__:
-            newSpec = 0
-            if self.specDict == None:
+        elif spec is None:
+            if __debug__:
                 newSpec = 1
                 self.specDict = {
                     'globalEntities': {},
                     'scenarios': [[{}, 1]],
                     }
+
+        assert hasattr(self, 'specDict')
 
         # this maps an entId to the dict that holds its spec;
         # entities are either in the global dict or a scenario dict

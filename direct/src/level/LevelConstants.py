@@ -6,3 +6,5 @@ UberZoneNum = 0
 LevelMgrEntId = 10
 
 EditMgrEntId = 20
+
+ZoneEntIdStart = 100

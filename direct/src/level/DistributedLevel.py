@@ -10,6 +10,7 @@ import DirectNotifyGlobal
 import EntityCreator
 import OnscreenText
 import Task
+import LevelUtil
 
 class DistributedLevel(DistributedObject.DistributedObject,
                        Level.Level):
@@ -181,34 +182,13 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def __handleLevelMgrCreated(self):
         # as soon as the levelMgr has been created, load up the model
-        # and extract zone info
+        # and extract zone info. We need to do this before any entities
+        # get parented to the level!
         levelMgr = self.getEntity(LevelConstants.LevelMgrEntId)
         self.geom = levelMgr.geom
 
-        def findNumberedNodes(baseString, model=self.geom, self=self):
-            # finds nodes whose name follows the pattern 'baseString#'
-            # where there are no characters after #
-            # returns dictionary that maps # to node
-            potentialNodes = model.findAllMatches(
-                '**/%s*' % baseString).asList()
-            num2node = {}
-            for potentialNode in potentialNodes:
-                name = potentialNode.getName()
-                DistributedLevel.notify.debug('potential match for %s: %s' %
-                                  (baseString, name))
-                try:
-                    num = int(name[len(baseString):])
-                except:
-                    continue
-                
-                num2node[num] = potentialNode
-
-            return num2node
-
         # find the zones in the model and fix them up
-        self.zoneNum2node = findNumberedNodes('Zone')
-        # add the UberZone to the table
-        self.zoneNum2node[0] = self.geom
+        self.zoneNum2node = LevelUtil.getZoneNum2Node(self.geom)
 
         self.zoneNums = self.zoneNum2node.keys()
         self.zoneNums.sort()
@@ -250,6 +230,27 @@ class DistributedLevel(DistributedObject.DistributedObject,
         dw.setH(0)
 
         # find the doorway nodes
+        # this is going to go away soon.
+        def findNumberedNodes(baseString, model=self.geom, self=self):
+            # finds nodes whose name follows the pattern 'baseString#'
+            # where there are no characters after #
+            # returns dictionary that maps # to node
+            potentialNodes = model.findAllMatches(
+                '**/%s*' % baseString).asList()
+            num2node = {}
+            for potentialNode in potentialNodes:
+                name = potentialNode.getName()
+                DistributedLevel.notify.debug('potential match for %s: %s' %
+                                  (baseString, name))
+                try:
+                    num = int(name[len(baseString):])
+                except:
+                    continue
+                
+                num2node[num] = potentialNode
+
+            return num2node
+
         self.doorwayNum2Node = findNumberedNodes('Doorway')
 
     def announceGenerate(self):
