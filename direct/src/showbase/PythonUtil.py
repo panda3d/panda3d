@@ -6,6 +6,7 @@ import operator
 import inspect
 import os
 import sys
+import random
 
 import Verify
 
@@ -839,3 +840,23 @@ def mostDerivedLast(classList):
         #print a,b,result
         return result
     classList.sort(compare)
+
+def weightedChoice(choiceList, rng=random.random):
+    """given a list of (probability,item) pairs, chooses an item based on the
+    probabilities. rng must return 0..1"""
+    sum = 0.
+    for prob, item in choiceList:
+        sum += prob
+    rand = rng()
+    accum = rand * sum
+    for prob, item in choiceList:
+        accum -= prob
+        if accum <= 0.:
+            return item
+    # rand must be ~1., and floating-point error prevented accum from
+    # hitting 0. Return the last item.
+    return item
+
+def randFloat(a, b, rng=random.random):
+    """returns a random float in [a,b]"""
+    return lerp(a,b,rng())
