@@ -370,7 +370,7 @@ class Actor(PandaObject, NodePath):
             for partName in partNames:
                 if (animName==None):
                     animName = self.getCurrentAnim(partName)          
-                animControl = self.__getAnimControl(animName, partName)
+                animControl = self.__getAnimControl(animName, partName, lodName)
                 if (animControl != None):
                     animControl.setPlayRate(rate)
             
@@ -738,6 +738,7 @@ class Actor(PandaObject, NodePath):
         else:
             # lod was not present
             Actor.notify.warning("couldn't find lod: %s" % (lodName))
+            assert(0)
             
         return None
 
