@@ -76,7 +76,7 @@ public:
   FrameData &create_frame_data(const string &joint_name);
 
 private:
-  void mirror_table(double frame_rate, 
+  void mirror_table(XFileToEggConverter *converter,
                     EggGroup *model_node, EggTable *anim_node);
 
   typedef pmap<string, FrameData> JointData;

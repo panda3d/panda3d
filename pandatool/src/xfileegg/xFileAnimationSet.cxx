@@ -65,8 +65,7 @@ create_hierarchy(XFileToEggConverter *converter) {
   bundle->add_child(skeleton);
 
   // Fill in the rest of the hierarchy with empty tables.
-  mirror_table(converter->_frame_rate,
-               converter->get_dart_node(), skeleton);
+  mirror_table(converter, converter->get_dart_node(), skeleton);
 
   // Now populate those empty tables with the frame data.
   JointData::const_iterator ji;
@@ -140,7 +139,8 @@ create_frame_data(const string &joint_name) {
 //               record.
 ////////////////////////////////////////////////////////////////////
 void XFileAnimationSet::
-mirror_table(double frame_rate, EggGroup *model_node, EggTable *anim_node) {
+mirror_table(XFileToEggConverter *converter, 
+             EggGroup *model_node, EggTable *anim_node) {
   EggGroupNode::iterator gi;
   for (gi = model_node->begin(); gi != model_node->end(); ++gi) {
     EggNode *child = (*gi);
@@ -150,19 +150,21 @@ mirror_table(double frame_rate, EggGroup *model_node, EggTable *anim_node) {
         // When we come to a <Joint>, create a new Table for it.
         EggTable *new_table = new EggTable(group->get_name());
         anim_node->add_child(new_table);
-        EggXfmSAnim *xform = new EggXfmSAnim("xform");
+        CoordinateSystem cs = 
+          converter->get_egg_data().get_coordinate_system();
+        EggXfmSAnim *xform = new EggXfmSAnim("xform", cs);
         new_table->add_child(xform);
-        xform->set_fps(frame_rate);
+        xform->set_fps(converter->_frame_rate);
         TablePair &table_pair = _tables[group->get_name()];
         table_pair._table = xform;
         table_pair._joint = group;
 
         // Now recurse.
-        mirror_table(frame_rate, group, new_table);
+        mirror_table(converter, group, new_table);
 
       } else {
         // If we come to an ordinary <Group>, skip past it.
-        mirror_table(frame_rate, group, anim_node);
+        mirror_table(converter, group, anim_node);
       }
     }
   }

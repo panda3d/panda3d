@@ -55,11 +55,31 @@ XFileToEgg() :
   */
      &XFileToEgg::dispatch_string, &_make_char, &_char_name);
 
+  add_option
+    ("fr", "fps", 0,
+     "Specify the frame rate of the resulting animation.  The animation "
+     "tables should have one entry per frame, rather than one per "
+     "keyframe; the time component of the animation tables is ignored "
+     "and the frames are played sequentially at the specified frame rate.",
+     &XFileToEgg::dispatch_double, NULL, &_frame_rate);
+
+  redescribe_option
+    ("ui",
+     "Specify the units of the input " + _format_name + " file.");
+
+  redescribe_option
+    ("uo",
+     "Specify the units of the resulting egg file.  If both this and -ui are "
+     "specified, the vertices in the egg file will be scaled as "
+     "necessary to make the appropriate units conversion; otherwise, "
+     "the vertices will be left as they are.");
+
   redescribe_option
     ("cs",
      "Specify the coordinate system of the input " + _format_name +
      " file.  Normally, this is y-up-left.");
 
+  _frame_rate = 30.0;
   _coordinate_system = CS_yup_left;
 }
 
@@ -75,6 +95,7 @@ run() {
   XFileToEggConverter converter;
   converter.set_egg_data(&_data, false);
 
+  converter._frame_rate = _frame_rate;
   converter._make_char = _make_char;
   converter._char_name = _char_name;
 

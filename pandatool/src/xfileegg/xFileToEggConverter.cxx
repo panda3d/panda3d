@@ -957,11 +957,10 @@ set_animation_frame(const string &joint_name,
         << nvalues << " for rotation data.\n";
       return false;
     }
-    frame_entry._rot.set(values[0], -values[1], values[2], -values[3]);
-    //    frame_entry._rot.set_from_matrix(LMatrix3d::rotate_mat(-90, LVecBase3d(1, 0, 0)) * frame_entry._rot * LMatrix3d::rotate_mat(90, LVecBase3d(1, 0, 0)));
+    frame_entry._rot.set(-values[0], values[1], values[2], values[3]);
     table._flags |= XFileAnimationSet::FDF_rot;
     break;
-    
+
   case 1:
     if (nvalues != 3) {
       xfile_cat.error()

@@ -39,6 +39,7 @@ public:
 public:
   bool _make_char;
   string _char_name;
+  double _frame_rate;
 };
 
 #endif
