@@ -10,10 +10,8 @@ class LevelSpec:
     saving out modified spec data"""
     notify = DirectNotifyGlobal.directNotify.newCategory("LevelSpec")
     
-    def __init__(self, specDict, scenario=0, filename=None, entTypeReg=None):
+    def __init__(self, specDict, scenario=0):
         self.specDict = specDict
-        self.filename = filename
-        self.entTypeReg = entTypeReg
 
         # this maps an entId to the dict that holds its spec;
         # entities are either in the global dict or a scenario dict
@@ -26,44 +24,6 @@ class LevelSpec:
             self.entId2specDict.update(
                 list2dict(self.getScenarioEntIds(i),
                           value=self.privGetScenarioEntityDict(i)))
-
-        if __debug__:
-            # make sure there are no duplicate entIds
-            entIds = self.getGlobalEntIds()
-            assert uniqueElements(entIds)
-            entIds = list2dict(entIds)
-            for i in range(self.getNumScenarios()):
-                for id in self.getScenarioEntIds(i):
-                    assert not entIds.has_key(id)
-                    entIds[id] = None
-
-            if self.entTypeReg is not None:
-                # check each spec
-                allEntIds = entIds
-                for entId in allEntIds:
-                    spec = self.getEntitySpec(entId)
-
-                    assert spec.has_key('type')
-                    attribNames = entTypeReg.getAttribNames(spec['type'])
-                    attribDescs = entTypeReg.getAttribDescDict(spec['type'])
-
-                    # are there any unknown attribs in the spec?
-                    for attrib in spec.keys():
-                        if attrib not in attribNames:
-                            LevelSpec.notify.warning(
-                                "entId %s (%s): unknown attrib '%s', omitting"
-                                % (entId, spec['type'], attrib))
-                            del spec[attrib]
-
-                    # does the spec have all of its attributes?
-                    for attribName in attribNames:
-                        if not spec.has_key(attribName):
-                            default = attribDescs[attribName].getDefaultValue()
-                            LevelSpec.notify.warning(
-                                "entId %s (%s): missing attrib '%s', setting "
-                                "to default (%s)" % (entId, spec['type'],
-                                                     attribName, repr(default)))
-                            spec[attribName] = default
 
         self.setScenario(scenario)
 
@@ -122,15 +82,32 @@ class LevelSpec:
         def setLevel(self, level):
             self.level = level
 
+        def setEntityTypeReg(self, entTypeReg):
+            self.entTypeReg = entTypeReg
+            self.checkSpecIntegrity()
+
+        def hasEntityTypeReg(self):
+            return hasattr(self, 'entTypeReg')
+
+        def setFilename(self, filename):
+            self.filename = filename
+
         def setAttribChange(self, entId, attrib, value):
+            """ we're being asked to change an attribute """
+            LevelSpec.notify.debug("setAttribChange: %s, %s = '%s'" %
+                                   (entId, attrib, value))
+            assert entId in self.entId2specDict
             specDict = self.entId2specDict[entId]
+            assert specDict[entId].has_key(attrib)
             specDict[entId][attrib] = value
             # let the level know that this attribute value has
             # officially changed
             self.level.handleAttribChange(entId, attrib, value)
 
         def insertEntity(self, entId, entType, parentEntId):
+            LevelSpec.notify.debug('inserting entity %s' % entId)
             assert entId not in self.entId2specDict
+            assert self.entTypeReg is not None
             globalEnts = self.privGetGlobalEntityDict()
             self.entId2specDict[entId] = globalEnts
 
@@ -148,6 +125,7 @@ class LevelSpec:
             self.level.handleEntityInsert(entId)
             
         def removeEntity(self, entId):
+            LevelSpec.notify.debug('removing entity %s' % entId)
             assert entId in self.entId2specDict
             # notify the level
             self.level.handleEntityRemove(entId)
@@ -180,7 +158,7 @@ class LevelSpec:
                     if exists:
                         def getBackupFilename(num, filename=filename):
                             return '%s.%03i' % (filename, num)
-                        numBackups = 100
+                        numBackups = 200
                         try:
                             os.unlink(getBackupFilename(numBackups-1))
                         except OSError:
@@ -321,8 +299,50 @@ class LevelSpec:
                 (levelSpec, self.specDict)
                 )
 
+        def checkSpecIntegrity(self):
+            # make sure there are no duplicate entIds
+            entIds = self.getGlobalEntIds()
+            assert uniqueElements(entIds)
+            entIds = list2dict(entIds)
+            for i in range(self.getNumScenarios()):
+                for id in self.getScenarioEntIds(i):
+                    assert not entIds.has_key(id)
+                    entIds[id] = None
+
+            if self.entTypeReg is not None:
+                # check each spec
+                allEntIds = entIds
+                for entId in allEntIds:
+                    spec = self.getEntitySpec(entId)
+
+                    assert spec.has_key('type')
+                    entType = spec['type']
+                    attribNames = self.entTypeReg.getAttribNames(entType)
+                    attribDescs = self.entTypeReg.getAttribDescDict(entType)
+
+                    # are there any unknown attribs in the spec?
+                    for attrib in spec.keys():
+                        if attrib not in attribNames:
+                            LevelSpec.notify.warning(
+                                "entId %s (%s): unknown attrib '%s', omitting"
+                                % (entId, spec['type'], attrib))
+                            del spec[attrib]
+
+                    # does the spec have all of its attributes?
+                    for attribName in attribNames:
+                        if not spec.has_key(attribName):
+                            default = attribDescs[attribName].getDefaultValue()
+                            LevelSpec.notify.warning(
+                                "entId %s (%s): missing attrib '%s', setting "
+                                "to default (%s)" % (entId, spec['type'],
+                                                     attribName, repr(default)))
+                            spec[attribName] = default
+
         def __hash__(self):
             return hash(repr(self))
+
+        def __str__(self):
+            return 'LevelSpec'
 
         def __repr__(self):
             return 'LevelSpec(%s, scenario=%s)' % (repr(self.specDict),
