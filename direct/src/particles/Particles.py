@@ -71,6 +71,8 @@ class Particles(ParticleSystem.ParticleSystem):
 
     def cleanup(self):
 	self.disable()
+	self.clearLinearForces()
+	self.clearAngularForces()
 	self.setRenderParent(self.node)
 	self.node.removePhysical(self)
 	self.nodePath.removeNode()
@@ -189,6 +191,9 @@ class Particles(ParticleSystem.ParticleSystem):
 
     def removeForce(self, force):
 	"""removeForce(force)"""
+	if (force == None):
+	    self.notify.warning('removeForce() - force == None!')
+	    return
 	if (force.isLinear()):
 	    self.removeLinearForce(force)
 	else:

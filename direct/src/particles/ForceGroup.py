@@ -10,7 +10,7 @@ class ForceGroup(DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory('ForceGroup')
     id = 1
 
-    def __init__(self, name = None):
+    def __init__(self, name=None):
 	"""__init__(self)"""
 
 	if (name == None):
@@ -24,12 +24,10 @@ class ForceGroup(DirectObject):
         self.fEnabled = 0
 
 	self.particleEffect = None
-	
-	# Default to enabled
-	#self.enable()
 
     def cleanup(self):
-	self.disable()
+	for f in self.asList():
+	    self.removeForce(f)
 	self.nodePath.removeNode()
 	self.node = None
 	self.particleEffect = None
@@ -62,7 +60,7 @@ class ForceGroup(DirectObject):
     def removeForce(self, force):
 	"""removeForce(self, force)"""
 	self.node.removeForce(force)
-	if (self.particleEffect):
+	if (self.particleEffect != None):
 	    self.particleEffect.removeForce(force)
 
     # Get/set
