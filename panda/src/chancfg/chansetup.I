@@ -60,10 +60,7 @@ INLINE float SetupFOV::getVert(void) const {
 
 INLINE SetupItem::SetupItem(void) : _viewport(0., 1., 0., 1.) {}
 
-INLINE SetupItem::SetupItem(bool r) : _recurse(r), _viewport(0., 1., 0., 1.) {}
-
-INLINE SetupItem::SetupItem(const SetupItem& c) : _recurse(c._recurse),
-                                                  _layouts(c._layouts),
+INLINE SetupItem::SetupItem(const SetupItem& c) : _layouts(c._layouts),
                                                   _setups(c._setups),
                                                   _stereo(c._stereo),
                                                   _hw_chan(c._hw_chan),
@@ -76,7 +73,6 @@ INLINE SetupItem::SetupItem(const SetupItem& c) : _recurse(c._recurse),
 INLINE SetupItem::~SetupItem(void) {}
 
 INLINE SetupItem& SetupItem::operator=(const SetupItem& c) {
-  _recurse = c._recurse;
   _layouts = c._layouts;
   _setups = c._setups;
   _stereo = c._stereo;
@@ -88,11 +84,6 @@ INLINE SetupItem& SetupItem::operator=(const SetupItem& c) {
   return *this;
 }
 
-INLINE void SetupItem::AddRecurse(std::string& l, std::string& s) {
-  _layouts.push_back(l);
-  _setups.push_back(s);
-}
-
 INLINE void SetupItem::setState(const bool st, const bool hw, const int pvc,
                                 const ChanViewport& v, const SetupFOV& f,
                                 const Orientation& o) {
@@ -102,10 +93,6 @@ INLINE void SetupItem::setState(const bool st, const bool hw, const int pvc,
   _viewport = v;
   _fov = f;
   _orientation = o;
-}
-
-INLINE bool SetupItem::getRecurse(void) const {
-  return _recurse;
 }
 
 INLINE SetupSyms SetupItem::getLayouts(void) const {

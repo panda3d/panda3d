@@ -43,160 +43,123 @@ void SetupParseFunctor::operator()(std::string S) {
   ChanCheckScoping(S);
   ChanDescope(S);
 
-  bool recurse = ChanReadNextBool(S);
-  SetupItem s(recurse);
+  SetupItem s;
 
-  if (recurse) {
-    ChanCheckScoping(S);
-    int i = S.find_first_of(")");
-    std::string layouts = S.substr(1, i-2);
+  bool stereo = ChanReadNextBool(S);
+  //KEH
+  //bool hw_chan = ChanReadNextBool(S);
+  //int chan_num = ChanReadNextIntB(S);
+
+  ChanCheckScoping(S);
+  int i = S.find_first_of(")");
+  std::string stmp = S.substr(1, i-2);
+  S.erase(0, i+1);
+  ChanEatFrontWhite(S);
+  ChanViewport v(ChanReadNextFloat(stmp), ChanReadNextFloat(stmp),
+         ChanReadNextFloat(stmp), ChanReadNextFloat(stmp));
+  if (!stmp.empty()) {
+    // error, there shouldn't be anything left after eating the viewport
+    nout << "error, tailing text in viewport spec '" << stmp << "'" << endl;
+    stmp.erase(0, std::string::npos);
+  }
+  SetupFOV fov;
+  if (S[0] == '#') {
+    bool b = ChanReadNextBool(S);
+    if (b) {
+  // error, #t is not allowed here
+  nout << "error, cannot have #t for FOV spec" << endl;
+  b = false;
+    }
+    fov.setFOV();
+  } else if (S[0] == '(') {
+    i = S.find_first_of(")");
+    stmp = S.substr(1, i-2);
     S.erase(0, i+1);
     ChanEatFrontWhite(S);
-    ChanCheckScoping(S);
-    i = S.find_first_of(")");
-    std::string setups = S.substr(1, i-2);
-    S.erase(0, i+1);
-    if (!S.empty()) {
-      // error, there shouldn't be any more here
-      nout << "error, trailing data in recursive definition '" << S << "'"
-       << endl;
-      S.erase(0, std::string::npos);
-    }
-    std::string a, b;
-    while ((!layouts.empty())&&(!setups.empty())) {
-      a = ChanReadNextWord(layouts);
-      b = ChanReadNextWord(setups);
-      s.AddRecurse(a, b);
+    fov.setFOV(ChanReadNextFloat(stmp), ChanReadNextFloat(stmp));
+    if (!stmp.empty()) {
+  // error, there shouldn't be anything left after eating the fov
+  nout << "error, trailing text after fov spec '" << stmp << "'" << endl;
+  stmp.erase(0, std::string::npos);
     }
   } else {
-    bool stereo = ChanReadNextBool(S);
-    bool hw_chan = ChanReadNextBool(S);
-    int chan_num = ChanReadNextIntB(S);
-    ChanCheckScoping(S);
-    int i = S.find_first_of(")");
-    std::string stmp = S.substr(1, i-2);
-    S.erase(0, i+1);
-    ChanEatFrontWhite(S);
-    ChanViewport v(ChanReadNextFloat(stmp), ChanReadNextFloat(stmp),
-           ChanReadNextFloat(stmp), ChanReadNextFloat(stmp));
-    if (!stmp.empty()) {
-      // error, there shouldn't be anything left after eating the viewport
-      nout << "error, tailing text in viewport spec '" << stmp << "'" << endl;
-      stmp.erase(0, std::string::npos);
-    }
-    SetupFOV fov;
-    if (S[0] == '#') {
-      bool b = ChanReadNextBool(S);
-      if (b) {
-    // error, #t is not allowed here
-    nout << "error, cannot have #t for FOV spec" << endl;
-    b = false;
-      }
-      fov.setFOV();
-    } else if (S[0] == '(') {
-      i = S.find_first_of(")");
-      stmp = S.substr(1, i-2);
-      S.erase(0, i+1);
-      ChanEatFrontWhite(S);
-      fov.setFOV(ChanReadNextFloat(stmp), ChanReadNextFloat(stmp));
-      if (!stmp.empty()) {
-    // error, there shouldn't be anything left after eating the fov
-    nout << "error, trailing text after fov spec '" << stmp << "'" << endl;
-    stmp.erase(0, std::string::npos);
-      }
-    } else {
-      fov.setFOV(ChanReadNextFloat(S));
-    }
-    SetupItem::Orientation orie = SetupItem::Up;
-    if (!S.empty()) {
-      stmp = ChanReadNextWord(S);
-      if (stmp == "up") {
-    // nothing really to do
-    orie = SetupItem::Up;
-      } else if (stmp == "down") {
-    orie = SetupItem::Down;
-      } else if (stmp == "left") {
-    orie = SetupItem::Left;
-      } else if (stmp == "right") {
-    orie = SetupItem::Right;
-      } else {
-    // error, not a recognized orientation
-    nout << "error, invalid orientation '" << stmp << "'" << endl;
-    stmp.erase(0, std::string::npos);
-      }
-    }
-    if (!S.empty()) {
-      // error, we should have consumed all the data by now
-      nout << "error, trailing text on setup spec '" << S << "'" << endl;
-      S.erase(0, std::string::npos);
-    }
-    s.setState(stereo, hw_chan, chan_num, v, fov, orie);
+    fov.setFOV(ChanReadNextFloat(S));
   }
+  SetupItem::Orientation orie = SetupItem::Up;
+  if (!S.empty()) {
+    stmp = ChanReadNextWord(S);
+    if (stmp == "up") {
+  // nothing really to do
+  orie = SetupItem::Up;
+    } else if (stmp == "down") {
+  orie = SetupItem::Down;
+    } else if (stmp == "left") {
+  orie = SetupItem::Left;
+    } else if (stmp == "right") {
+  orie = SetupItem::Right;
+    } else {
+  // error, not a recognized orientation
+  nout << "error, invalid orientation '" << stmp << "'" << endl;
+  stmp.erase(0, std::string::npos);
+    }
+  }
+  if (!S.empty()) {
+    // error, we should have consumed all the data by now
+    nout << "error, trailing text on setup spec '" << S << "'" << endl;
+    S.erase(0, std::string::npos);
+  }
+  //KEH
+  //s.setState(stereo, hw_chan, chan_num, v, fov, orie);
+  s.setState(stereo, false, -1, v, fov, orie);
 
   if (chancfg_cat.is_debug()) {
     chancfg_cat->debug() << "parsed a setup called '" << sym << "':" << endl;
-    if (s.getRecurse()) {
-      chancfg_cat->debug() << "  is a recursive setup" << endl;
-      SetupSyms q(s.getLayouts());
-      chancfg_cat->debug() << "  has " << q.size() << " sub-layouts" << endl;
-      SetupSyms::iterator r;
-      for (r=q.begin(); r!=q.end(); ++r)
-    chancfg_cat->debug() << "    sub-layout #" << (r-q.begin()) << ": '"
-                 << *r << "'" << endl;
-      q = s.getSetups();
-      chancfg_cat->debug() << "  has " << q.size() << " sub-setups" << endl;
-      for (r=q.begin(); r!=q.end(); ++r)
-    chancfg_cat->debug() << "    sub-setups #" << (r-q.begin()) << ": '"
-                 << *r << "'" << endl;
-    } else {
-      chancfg_cat->debug() << "  is not a recursive setup" << endl;
-      chancfg_cat->debug() << "  is" << (s.getStereo()?" ":" not ")
-               << "a stereo setup" << endl;
-      chancfg_cat->debug() <<"   is" << (s.getHWChan()?" ":" not ")
-               << "a HW channel setup" << endl;
-      chancfg_cat->debug() << "  prefered HW channel number: " << s.getChan()
-               << endl;
-      ChanViewport qv(s.getViewport());
-      chancfg_cat->debug() << "  sub viewport: (" << qv.left() << ", "
-               << qv.right() << ", " << qv.bottom() << ", "
-               << qv.top() << ")" << endl;
-      SetupFOV qf(s.getFOV());
-      switch (qf.getType()) {
+    chancfg_cat->debug() << "  is" << (s.getStereo()?" ":" not ")
+             << "a stereo setup" << endl;
+    chancfg_cat->debug() <<"   is" << (s.getHWChan()?" ":" not ")
+             << "a HW channel setup" << endl;
+    chancfg_cat->debug() << "  prefered HW channel number: " << s.getChan()
+             << endl;
+    ChanViewport qv(s.getViewport());
+    chancfg_cat->debug() << "  sub viewport: (" << qv.left() << ", "
+             << qv.right() << ", " << qv.bottom() << ", "
+             << qv.top() << ")" << endl;
+    SetupFOV qf(s.getFOV());
+    switch (qf.getType()) {
       case SetupFOV::Invalid:
-    chancfg_cat->debug() << "  FOV is invalid" << endl;
-    break;
+        chancfg_cat->debug() << "  FOV is invalid" << endl;
+        break;
       case SetupFOV::Default:
-    chancfg_cat->debug() << "  FOV takes defaults" << endl;
-    break;
+        chancfg_cat->debug() << "  FOV takes defaults" << endl;
+        break;
       case SetupFOV::Horizontal:
-    chancfg_cat->debug() << "  FOV specifies only horizontal: "
-                 << qf.getHoriz() << endl;
-    break;
+        chancfg_cat->debug() << "  FOV specifies only horizontal: "
+                     << qf.getHoriz() << endl;
+        break;
       case SetupFOV::Both:
-    chancfg_cat->debug() << "  FOV: " << qf.getHoriz() << " x "
-                 << qf.getVert() << endl;
-    break;
+        chancfg_cat->debug() << "  FOV: " << qf.getHoriz() << " x "
+                     << qf.getVert() << endl;
+        break;
       default:
-    chancfg_cat->debug() << "  FOV is of an unknown type (" << qf.getType()
+        chancfg_cat->debug() << "  FOV is of an unknown type (" << qf.getType()
                  << ")" << endl;
-      }
-      switch (s.getOrientation()) {
+    }
+    switch (s.getOrientation()) {
       case SetupItem::Up:
-    chancfg_cat->debug() << "  setup is oriented Up" << endl;
-    break;
+        chancfg_cat->debug() << "  setup is oriented Up" << endl;
+        break;
       case SetupItem::Down:
-    chancfg_cat->debug() << "  setup is oriented Down" << endl;
-    break;
+        chancfg_cat->debug() << "  setup is oriented Down" << endl;
+        break;
       case SetupItem::Left:
-    chancfg_cat->debug() << "  setup is oriented Left" << endl;
-    break;
+        chancfg_cat->debug() << "  setup is oriented Left" << endl;
+        break;
       case SetupItem::Right:
-    chancfg_cat->debug() << "  setup is oriented Right" << endl;
-    break;
+        chancfg_cat->debug() << "  setup is oriented Right" << endl;
+        break;
       default:
-    chancfg_cat->debug() << "  setup has an unknown orientation ("
-                 << s.getOrientation() << ")" << endl;
-      }
+        chancfg_cat->debug() << "  setup has an unknown orientation ("
+                    << s.getOrientation() << ")" << endl;
     }
   }
   (*SetupDB)[sym] = s;

@@ -44,9 +44,10 @@ void WindowParseFunctor::operator()(std::string S) {
   ChanCheckScoping(S);
   ChanDescope(S);
 
-  bool hw_chans = ChanReadNextBool(S);
-  bool dvr = ChanReadNextBool(S);
-  int hw_chan_offset = ChanReadNextInt(S);
+  //KEH temp
+  //bool hw_chans = ChanReadNextBool(S);
+  //bool dvr = ChanReadNextBool(S);
+  //int hw_chan_offset = ChanReadNextInt(S);
   std::string layout = ChanReadNextWord(S);
   SetupSyms sv;
   PTA(int) cameraGroup;
@@ -106,6 +107,15 @@ void WindowParseFunctor::operator()(std::string S) {
   }
   bool border = ChanReadNextBool(S);
   bool cursor = ChanReadNextBool(S);
+  
+  //KEH 
+  bool hw_chans = false;
+  int hw_chan_offset = 0;
+  bool dvr = false;
+  if (!S.empty()) {
+    int hw_chan_offset = ChanReadNextInt(S);
+    hw_chans = true;
+  }
   if (!S.empty()) {
     // error, should have consumed all of the data by now
     nout << "error, trailing text in window spec '" << S << "'" << endl;

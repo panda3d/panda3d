@@ -53,8 +53,6 @@ class SetupItem {
 public:
   enum Orientation { Up, Down, Left, Right };
 private:
-  bool _recurse;
-
   SetupSyms _layouts;
   SetupSyms _setups;
 
@@ -66,18 +64,14 @@ private:
   Orientation _orientation;
 public:
   INLINE SetupItem(void);
-  INLINE SetupItem(bool);
   INLINE SetupItem(const SetupItem&);
   INLINE ~SetupItem(void);
 
   INLINE SetupItem& operator=(const SetupItem&);
 
-  INLINE void AddRecurse(std::string&, std::string&);
-
   INLINE void setState(const bool, const bool, const int, const ChanViewport&,
                        const SetupFOV&, const Orientation&);
 
-  INLINE bool getRecurse(void) const;
   INLINE SetupSyms getLayouts(void) const;
   INLINE SetupSyms getSetups(void) const;
   INLINE bool getStereo(void) const;

@@ -123,9 +123,6 @@ INLINE bool ConfigDefined(std::string sym) {
     (WindowDB->find(sym) != WindowDB->end());
 }
 
-//KEH:  Moving this up to .h file
-//typedef pvector<SetupItem> SVec;
-
 bool ChanCheckLayouts(SetupSyms& S) {
   if (S.empty())
     return false;
@@ -144,14 +141,6 @@ bool ChanCheckSetups(SetupSyms& S) {
     if (!SetupDefined(*i)) {
       chancfg_cat.error() << "no setup called '" << *i << "'" << endl;
       return false;
-    }
-    if (((*SetupDB)[*i]).getRecurse()) {
-      SetupSyms a = ((*SetupDB)[*i]).getLayouts();
-      if (!ChanCheckLayouts(a))
-    return false;
-      a = ((*SetupDB)[*i]).getSetups();
-      if (!ChanCheckSetups(a))
-    return false;
     }
   }
   return true;
@@ -228,77 +217,81 @@ void ChanConfig::chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L,
     camera[icam] = new NamedNode(nodeName.c_str());
   }
   for (j=0, k=S.begin(); j<i; ++j, ++k) {
-    ChanViewport v(ChanScaleViewport(V, L[j]));
-    if ((*k).getRecurse()) {
-      chancfg_cat->error()<<"Recursive setups no longer supported"<<endl;
-      chancfg_cat->error()<<"Skipping ..."<<endl;
-      ++k;
-    } else {
-      PT(GraphicsChannel) chan;
-      if ((*k).getHWChan() && W.getHWChans()) {
-        if ((*k).getChan() == -1) {
-          chan = win->get_channel(hw_offset);
-        } else
-         chan = win->get_channel((*k).getChan());
-  // HW channels always start with the full area of the channel
-        v = ChanViewport(0., 1., 0., 1.);
-      } else {
-        chan = win->get_channel(0);
-      }
-      ChanViewport v2(ChanScaleViewport(v, (*k).getViewport()));
-      PT(GraphicsLayer) layer = chan->make_layer();
-      PT(DisplayRegion) dr = 
-        layer->make_display_region(v2.left(), v2.right(),
-                                   v2.bottom(), v2.top());
-      if (want_cameras && camera[0] != (Node *)NULL) {
-        // now make a camera for it
-        PT(Camera) cam = new Camera;
-        dr->set_camera(cam);
-        _display_region.push_back(dr);
-        SetupFOV fov = (*k).getFOV();
-        fov = ChanResolveFOV(fov, xsize*(v2.right()-v2.left()),
-                             ysize*(v2.top()-v2.bottom()));
-        if (chancfg_cat->is_debug()) {
-          chancfg_cat->debug() << "ChanEval:: FOVhoriz = " << fov.getHoriz()
-             << "  FOVvert = " << fov.getVert() << endl;
-          chancfg_cat->debug() << "ChanEval:: xsize = " << xsize
-             << "  ysize = " << ysize << endl;
-        }
-        Frustumf frust;
-        frust.make_perspective(fov.getHoriz(), fov.getVert(), 1., 10000.);
-        cam->set_projection(PerspectiveProjection(frust));
-        if (chancfg_cat->is_debug())
-          chancfg_cat->debug() << "ChanEval:: camera hfov = "
-            << cam->get_hfov() << "  vfov = "
-            << cam->get_vfov() << endl;
-        cam->set_scene(render);
+ ChanViewport v(ChanScaleViewport(V, L[j]));
+   PT(GraphicsChannel) chan;
+   if ((*k).getHWChan() && W.getHWChans()) {
+     if ((*k).getChan() == -1) {
+       chan = win->get_channel(hw_offset);
+     } else
+       chan = win->get_channel((*k).getChan());
+       // HW channels always start with the full area of the channel
+       v = ChanViewport(0., 1., 0., 1.);
+   } else {
+     chan = win->get_channel(0);
+   }
+   ChanViewport v2(ChanScaleViewport(v, (*k).getViewport()));
+   PT(GraphicsLayer) layer = chan->make_layer();
+   PT(DisplayRegion) dr = 
+     layer->make_display_region(v2.left(), v2.right(),
+                                v2.bottom(), v2.top());
+   if (want_cameras && camera[0] != (Node *)NULL) {
+     // now make a camera for it
+     PT(Camera) cam = new Camera;
+     dr->set_camera(cam);
+     _display_region.push_back(dr);
+     SetupFOV fov = (*k).getFOV();
+     fov = ChanResolveFOV(fov, xsize*(v2.right()-v2.left()),
+                          ysize*(v2.top()-v2.bottom()));
+     if (chancfg_cat->is_debug()) {
+       chancfg_cat->debug() << "ChanEval:: FOVhoriz = " << fov.getHoriz()
+          << "  FOVvert = " << fov.getVert() << endl;
+       chancfg_cat->debug() << "ChanEval:: xsize = " << xsize
+          << "  ysize = " << ysize << endl;
+     }
 
-        // take care of the orientation
-        PT(TransformTransition) orient;
-      
-        switch ((*k).getOrientation()) {
-          case SetupItem::Up:
-            break;
-          case SetupItem::Down:
-            orient = new TransformTransition(
-              LMatrix4f::rotate_mat_normaxis(180., LVector3f::forward()));
-            break;
-          case SetupItem::Left:
-            orient = new TransformTransition(
-              LMatrix4f::rotate_mat_normaxis(90., LVector3f::forward()));
-            break;
-          case SetupItem::Right:
-            orient = new TransformTransition(
-              LMatrix4f::rotate_mat_normaxis(-90., LVector3f::forward()));
-            break;
-        }
+     // take care of the orientation
+     PT(TransformTransition) orient;
+     float hFov, vFov;
+   
+     switch ((*k).getOrientation()) {
+       case SetupItem::Up:
+         hFov = fov.getHoriz(); vFov = fov.getVert();
+         break;
+       case SetupItem::Down:
+         hFov = fov.getHoriz(); vFov = fov.getVert();
+         orient = new TransformTransition(
+           LMatrix4f::rotate_mat_normaxis(180., LVector3f::forward()));
+         break;
+       case SetupItem::Left:
+         // vertical and horizontal FOV are being switched
+         hFov = fov.getVert(); vFov = fov.getHoriz();
+         orient = new TransformTransition(
+           LMatrix4f::rotate_mat_normaxis(90., LVector3f::forward()));
+         break;
+       case SetupItem::Right:
+         // vertical and horizontal FOV are being switched
+         hFov = fov.getHoriz(); vFov = fov.getVert();
+         orient = new TransformTransition(
+           LMatrix4f::rotate_mat_normaxis(-90., LVector3f::forward()));
+         break;
+     }
 
-        RenderRelation *tocam = new RenderRelation(camera[W.getCameraGroup(j)], cam);
-        if (orient != (TransformTransition *)NULL) {
-          tocam->set_transition(orient);
-        }
-      }
-    }
+     Frustumf frust;
+     frust.make_perspective(hFov, vFov, 1., 10000.);
+     cam->set_projection(PerspectiveProjection(frust));
+     // hfov and vfov for camera are switched from what was specified
+     // if the orientation is sideways.
+     if (chancfg_cat->is_debug())
+       chancfg_cat->debug() << "ChanEval:: camera hfov = "
+         << cam->get_hfov() << "  vfov = "
+         << cam->get_vfov() << endl;
+     cam->set_scene(render);
+
+     RenderRelation *tocam = new RenderRelation(camera[W.getCameraGroup(j)], cam);
+     if (orient != (TransformTransition *)NULL) {
+       tocam->set_transition(orient);
+     }
+   }
   }
   _group_node = camera;
   return;
