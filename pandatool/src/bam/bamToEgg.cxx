@@ -521,7 +521,7 @@ get_egg_texture(Texture *tex) {
         break;
       }
 
-      switch (tex->get_wrapu()) {
+      switch (tex->get_wrap_u()) {
       case Texture::WM_clamp:
         temp.set_wrap_u(EggTexture::WM_clamp);
         break;
@@ -535,7 +535,7 @@ get_egg_texture(Texture *tex) {
         break;
       }
 
-      switch (tex->get_wrapv()) {
+      switch (tex->get_wrap_v()) {
       case Texture::WM_clamp:
         temp.set_wrap_v(EggTexture::WM_clamp);
         break;
@@ -549,66 +549,63 @@ get_egg_texture(Texture *tex) {
         break;
       }
 
-      PixelBuffer *pbuf = tex->get_ram_image();
-      if (pbuf != (PixelBuffer *)NULL) {
-        switch (pbuf->get_format()) {
-        case PixelBuffer::F_red:
-          temp.set_format(EggTexture::F_red);
-          break;
-        case PixelBuffer::F_green:
-          temp.set_format(EggTexture::F_green);
-          break;
-        case PixelBuffer::F_blue:
-          temp.set_format(EggTexture::F_blue);
-          break;
-        case PixelBuffer::F_alpha:
-          temp.set_format(EggTexture::F_alpha);
-          break;
-        case PixelBuffer::F_rgb:
-          temp.set_format(EggTexture::F_rgb);
-          break;
-        case PixelBuffer::F_rgb5:
-          temp.set_format(EggTexture::F_rgb5);
-          break;
-        case PixelBuffer::F_rgb8:
-          temp.set_format(EggTexture::F_rgb8);
-          break;
-        case PixelBuffer::F_rgb12:
-          temp.set_format(EggTexture::F_rgb12);
-          break;
-        case PixelBuffer::F_rgb332:
-          temp.set_format(EggTexture::F_rgb332);
-          break;
-        case PixelBuffer::F_rgba:
-          temp.set_format(EggTexture::F_rgba);
-          break;
-        case PixelBuffer::F_rgbm:
-          temp.set_format(EggTexture::F_rgbm);
-          break;
-        case PixelBuffer::F_rgba4:
-          temp.set_format(EggTexture::F_rgba4);
-          break;
-        case PixelBuffer::F_rgba5:
-          temp.set_format(EggTexture::F_rgba5);
-          break;
-        case PixelBuffer::F_rgba8:
-          temp.set_format(EggTexture::F_rgba8);
-          break;
-        case PixelBuffer::F_rgba12:
-          temp.set_format(EggTexture::F_rgba12);
-          break;
-        case PixelBuffer::F_luminance:
-          temp.set_format(EggTexture::F_luminance);
-          break;
-        case PixelBuffer::F_luminance_alpha:
-          temp.set_format(EggTexture::F_luminance_alpha);
-          break;
-        case PixelBuffer::F_luminance_alphamask:
-          temp.set_format(EggTexture::F_luminance_alphamask);
-          break;
-        default:
-          break;
-        }
+      switch (tex->get_format()) {
+      case Texture::F_red:
+        temp.set_format(EggTexture::F_red);
+        break;
+      case Texture::F_green:
+        temp.set_format(EggTexture::F_green);
+        break;
+      case Texture::F_blue:
+        temp.set_format(EggTexture::F_blue);
+        break;
+      case Texture::F_alpha:
+        temp.set_format(EggTexture::F_alpha);
+        break;
+      case Texture::F_rgb:
+        temp.set_format(EggTexture::F_rgb);
+        break;
+      case Texture::F_rgb5:
+        temp.set_format(EggTexture::F_rgb5);
+        break;
+      case Texture::F_rgb8:
+        temp.set_format(EggTexture::F_rgb8);
+        break;
+      case Texture::F_rgb12:
+        temp.set_format(EggTexture::F_rgb12);
+        break;
+      case Texture::F_rgb332:
+        temp.set_format(EggTexture::F_rgb332);
+        break;
+      case Texture::F_rgba:
+        temp.set_format(EggTexture::F_rgba);
+        break;
+      case Texture::F_rgbm:
+        temp.set_format(EggTexture::F_rgbm);
+        break;
+      case Texture::F_rgba4:
+        temp.set_format(EggTexture::F_rgba4);
+        break;
+      case Texture::F_rgba5:
+        temp.set_format(EggTexture::F_rgba5);
+        break;
+      case Texture::F_rgba8:
+        temp.set_format(EggTexture::F_rgba8);
+        break;
+      case Texture::F_rgba12:
+        temp.set_format(EggTexture::F_rgba12);
+        break;
+      case Texture::F_luminance:
+        temp.set_format(EggTexture::F_luminance);
+        break;
+      case Texture::F_luminance_alpha:
+        temp.set_format(EggTexture::F_luminance_alpha);
+        break;
+      case Texture::F_luminance_alphamask:
+        temp.set_format(EggTexture::F_luminance_alphamask);
+        break;
+      default:
+        break;
       }
 
       return _textures.create_unique_texture(temp, ~EggTexture::E_tref_name);
