@@ -284,6 +284,7 @@ class ParticlePanel(AppShell):
             zSpinPage, 'Z Spin Factory',
             'Initial Angle Spread',
             'Spread of the initial angle',
+            fRollover = 1,
             command = self.setFactoryZSpinInitialAngleSpread)
         self.createAngleDial(zSpinPage, 'Z Spin Factory', 'Final Angle',
                              'Final angle in degrees',
@@ -293,6 +294,7 @@ class ParticlePanel(AppShell):
             zSpinPage, 'Z Spin Factory',
             'Final Angle Spread',
             'Spread of the final angle',
+            fRollover = 1,
             command = self.setFactoryZSpinFinalAngleSpread)
         # Oriented page #
         orientedPage = self.factoryNotebook.add('OrientedParticleFactory')
