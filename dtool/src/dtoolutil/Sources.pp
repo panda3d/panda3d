@@ -8,7 +8,8 @@
     executionEnvironment.h filename.I filename.cxx filename.h		\
     load_dso.cxx load_dso.h dSearchPath.I dSearchPath.cxx		\
     dSearchPath.h pfstream.h vector_string.cxx vector_string.h	        \
-    gnu_getopt.c gnu_getopt.h gnu_getopt1.c pfstreamBuf.h pfstreamBuf.cxx
+    gnu_getopt.c gnu_getopt.h gnu_getopt1.c pfstreamBuf.h pfstreamBuf.cxx \
+    pfstream.cxx
 
   #define INSTALL_HEADERS \
     executionEnvironment.I executionEnvironment.h filename.I	\

@@ -6,12 +6,12 @@
 #include "pystub.h"
 
 extern "C" {
-  EXPCL_DTOOL int PyArg_ParseTuple(...);
-  EXPCL_DTOOL int Py_BuildValue(...);
-  EXPCL_DTOOL int Py_InitModule4(...);
-  EXPCL_DTOOL int PyObject_IsTrue(...);
-  EXPCL_DTOOL int PyErr_SetString(...);
-  EXPCL_DTOOL extern void *PyExc_AssertionError;
+  EXPCL_DTOOLCONFIG int PyArg_ParseTuple(...);
+  EXPCL_DTOOLCONFIG int Py_BuildValue(...);
+  EXPCL_DTOOLCONFIG int Py_InitModule4(...);
+  EXPCL_DTOOLCONFIG int PyObject_IsTrue(...);
+  EXPCL_DTOOLCONFIG int PyErr_SetString(...);
+  EXPCL_DTOOLCONFIG extern void *PyExc_AssertionError;
 };
 
 int

@@ -16,7 +16,7 @@
 
 #include "notifyCategoryProxy.h"
 
-NotifyCategoryDecl(dconfig, EXPCL_DTOOL, EXPTP_DTOOL);
-NotifyCategoryDecl(microconfig, EXPCL_DTOOL, EXPTP_DTOOL);
+NotifyCategoryDecl(dconfig, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);
+NotifyCategoryDecl(microconfig, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);
 
 #endif

@@ -1,6 +1,7 @@
 #define DIRECTORY_IF_GL yes
 
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolutil:c dtoolbase:c dtool:m
+#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
+                   dtoolutil:c dtoolbase:c dtool:m
 #define USE_GL yes
 
 #begin lib_target

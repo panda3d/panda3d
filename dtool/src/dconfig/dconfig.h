@@ -38,15 +38,15 @@ namespace Config {
 
 // Call these functions to get stats on how Config is spending its
 // time.
-EXPCL_DTOOL INLINE double get_total_time_config_init();
-EXPCL_DTOOL INLINE double get_total_time_external_init();
-EXPCL_DTOOL INLINE double get_total_num_get();
+EXPCL_DTOOLCONFIG INLINE double get_total_time_config_init();
+EXPCL_DTOOLCONFIG INLINE double get_total_time_external_init();
+EXPCL_DTOOLCONFIG INLINE double get_total_num_get();
 
 // These globals are intended for internal bookkeeping by Config to
 // compute the above functions' return values.
-EXPCL_DTOOL extern clock_t total_time_config_init;
-EXPCL_DTOOL extern clock_t total_time_external_init;
-EXPCL_DTOOL extern int total_num_get;
+EXPCL_DTOOLCONFIG extern clock_t total_time_config_init;
+EXPCL_DTOOLCONFIG extern clock_t total_time_external_init;
+EXPCL_DTOOLCONFIG extern int total_num_get;
 
 template <class GetConfig>
 class Config {

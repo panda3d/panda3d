@@ -12,7 +12,7 @@
 #define COMPONENT_LIBS \
     ribgsg ribdisplay
 #define LOCAL_LIBS gsgbase display express
-#define OTHER_LIBS dtool
+#define OTHER_LIBS dtoolconfig dtool
 
 #begin metalib_target
   #define TARGET pandarib

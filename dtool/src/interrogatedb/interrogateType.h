@@ -18,7 +18,7 @@ class IndexRemapper;
 // 	 Class : InterrogateType
 // Description : An internal representation of a type.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOL InterrogateType : public InterrogateComponent {
+class EXPCL_DTOOLCONFIG InterrogateType : public InterrogateComponent {
 public:
   INLINE InterrogateType(InterrogateModuleDef *def = NULL);
   INLINE InterrogateType(const InterrogateType &copy);

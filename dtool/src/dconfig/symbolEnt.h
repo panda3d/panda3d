@@ -14,7 +14,7 @@
 
 namespace Config {
 
-class EXPCL_DTOOL SymbolEnt {
+class EXPCL_DTOOLCONFIG SymbolEnt {
    public:
       enum SymbolEntSrc { ConfigFile, Environment, CommandEnv, Commandline,
 			  Other, Invalid };
@@ -44,7 +44,7 @@ class EXPCL_DTOOL SymbolEnt {
       INLINE bool State(void) const;
 };
 
-EXPORT_TEMPLATE_CLASS(EXPCL_DTOOL, EXPTP_DTOOL, std::vector<SymbolEnt>);
+EXPORT_TEMPLATE_CLASS(EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG, std::vector<SymbolEnt>);
 typedef std::vector<SymbolEnt> vector_SymbolEnt;
 
 #include "symbolEnt.I"

@@ -5,15 +5,14 @@
 // under Windows).
 
 #define DIR_TYPE metalib
-#define BUILDING_DLL BUILDING_PANDAPHYSICS
+#define BUILDING_DLL BUILDING_DTOOLCONFIG
 
-#define COMPONENT_LIBS \
-    physics particlesystem
-#define LOCAL_LIBS linmath putil express
-#define OTHER_LIBS dtoolconfig dtool
+#define COMPONENT_LIBS interrogatedb dconfig
+#define OTHER_LIBS dtool:m
 
 #begin metalib_target
-  #define TARGET pandaphysics
+  #define TARGET dtoolconfig
 
-  #define SOURCES pandaphysics.cxx
+  #define SOURCES dtoolconfig.cxx
+  #define IF_PYTHON_SOURCES pydtool.cxx
 #end metalib_target

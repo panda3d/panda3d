@@ -29,7 +29,7 @@
 //               disabled, so that error messages may be squelched or
 //               respected according to the wishes of the user.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOL Notify {
+class EXPCL_DTOOLCONFIG Notify {
 PUBLISHED:
   Notify();
   ~Notify();

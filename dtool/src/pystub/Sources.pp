@@ -1,4 +1,4 @@
-#define BUILDING_DLL BUILDING_DTOOL
+#define BUILDING_DLL BUILDING_DTOOLCONFIG
 #define LOCAL_LIBS dtoolbase
 
 #begin lib_target

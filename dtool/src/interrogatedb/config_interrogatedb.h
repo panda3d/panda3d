@@ -10,7 +10,7 @@
 #include <notifyCategoryProxy.h>
 #include <dSearchPath.h>
 
-NotifyCategoryDecl(interrogatedb, EXPCL_DTOOL, EXPTP_DTOOL);
+NotifyCategoryDecl(interrogatedb, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);
 
 const DSearchPath &get_interrogatedb_path();
 

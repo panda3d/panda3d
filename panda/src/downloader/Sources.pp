@@ -1,5 +1,6 @@
 #define LOCAL_LIBS event ipc express pandabase
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolutil:c dtoolbase:c dtool:m
+#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
+                   dtoolutil:c dtoolbase:c dtool:m
 #define USE_ZLIB yes
 #define USE_IPC yes
 

@@ -10,7 +10,7 @@
 #define COMPONENT_LIBS \
    directbase dcparse showbase deadrec
 
-#define OTHER_LIBS panda pandaexpress dtool
+#define OTHER_LIBS panda pandaexpress dtoolconfig dtool
 
 #begin metalib_target
   #define TARGET direct

@@ -22,7 +22,7 @@
 //               created within a package if a finer grain of control
 //               is required.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOL NotifyCategory {
+class EXPCL_DTOOLCONFIG NotifyCategory {
 private:
   NotifyCategory(const string &fullname, const string &basename, 
 		 NotifyCategory *parent);

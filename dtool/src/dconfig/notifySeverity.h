@@ -20,6 +20,6 @@ enum NotifySeverity {
 };
 END_PUBLISH
 
-EXPCL_DTOOL ostream &operator << (ostream &out, NotifySeverity severity);
+EXPCL_DTOOLCONFIG ostream &operator << (ostream &out, NotifySeverity severity);
 
 #endif

@@ -19,7 +19,7 @@
     audio gui pandabase 
 
 #define LOCAL_LIBS downloader event ipc express pandabase
-#define OTHER_LIBS dtool
+#define OTHER_LIBS dtoolconfig dtool
 
 #begin metalib_target
   #define TARGET panda

@@ -26,7 +26,7 @@
 // force the .so to be linked in--some OS'es try to be smart about not
 // pulling in shared libraries whose symbols aren't referenced
 // anywhere.
-EXPCL_DTOOL void pystub();
+EXPCL_DTOOLCONFIG void pystub();
 
 
 #endif

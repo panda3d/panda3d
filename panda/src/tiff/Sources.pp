@@ -1,4 +1,4 @@
-#define OTHER_LIBS dtool
+#define OTHER_LIBS dtoolconfig dtool
 #define LOCAL_LIBS pandabase
 
 #begin lib_target

@@ -1,4 +1,4 @@
-#define OTHER_LIBS dtool
+#define OTHER_LIBS dtoolconfig dtool
 #define DIRECTORY_IF_AUDIO yes
 #define DIRECTORY_IF_IPC yes
 // #define USE_MIKMOD yes

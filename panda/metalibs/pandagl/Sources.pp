@@ -14,7 +14,7 @@
     sgidisplay sgiglxdisplay sgiglutdisplay
 
 #define LOCAL_LIBS gsgbase display express
-#define OTHER_LIBS dtool
+#define OTHER_LIBS dtoolconfig dtool
 
 #begin metalib_target
   #define TARGET pandagl

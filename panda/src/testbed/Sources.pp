@@ -1,4 +1,5 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolutil:c dtoolbase:c dtool:m pystub
+#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
+                   dtoolutil:c dtoolbase:c dtool:m pystub
 #define LOCAL_LIBS \
     framework putil collide loader sgmanip chan text chancfg cull \
     pnmimage pnmimagetypes event effects shader graph gobj display \

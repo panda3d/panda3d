@@ -26,7 +26,7 @@ extern "C" {
 // database filename (*.in) be read in.  This makes the interrogate
 // data available, but doesn't allow matching the database information
 // up with any compiled-in function wrappers or anything.
-EXPCL_DTOOL void interrogate_request_database(const char *database_filename);
+EXPCL_DTOOLCONFIG void interrogate_request_database(const char *database_filename);
 
 
 
@@ -59,7 +59,7 @@ typedef struct {
 // This requests that the given module be loaded and made available.
 // This includes all of the function pointers and/or unique names that
 // might be compiled in.
-EXPCL_DTOOL void interrogate_request_module(InterrogateModuleDef *def);
+EXPCL_DTOOLCONFIG void interrogate_request_module(InterrogateModuleDef *def);
 
 
 #ifdef __cplusplus

@@ -9,7 +9,7 @@
 #include <dtoolbase.h>
 #include "dconfig.h"
 
-ConfigureDecl(config_notify, EXPCL_DTOOL, EXPTP_DTOOL);
+ConfigureDecl(config_notify, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);
 
 bool get_assert_abort();
 

@@ -7,11 +7,10 @@
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_DTOOL
 
-#define COMPONENT_LIBS interrogatedb dconfig dtoolutil dtoolbase
+#define COMPONENT_LIBS dtoolutil dtoolbase
 
 #begin metalib_target
   #define TARGET dtool
 
   #define SOURCES dtool.cxx
-  #define IF_PYTHON_SOURCES pydtool.cxx
 #end metalib_target

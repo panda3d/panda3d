@@ -11,7 +11,7 @@
     egg2sg egg builder
 
 #define LOCAL_LIBS putil express
-#define OTHER_LIBS dtool
+#define OTHER_LIBS dtoolconfig dtool
 
 #begin metalib_target
   #define TARGET pandaegg

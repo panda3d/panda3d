@@ -1,4 +1,4 @@
-#define OTHER_LIBS dtool
+#define OTHER_LIBS dtoolconfig dtool
 
 #define BUILDING_DLL BUILDING_SHADER
 

@@ -18,7 +18,7 @@ class IndexRemapper;
 // 	 Class : InterrogateFunctionWrapper
 // Description : An internal representation of a function.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOL InterrogateFunctionWrapper : public InterrogateComponent {
+class EXPCL_DTOOLCONFIG InterrogateFunctionWrapper : public InterrogateComponent {
 public:
   INLINE InterrogateFunctionWrapper(InterrogateModuleDef *def = NULL);
   INLINE InterrogateFunctionWrapper(const InterrogateFunctionWrapper &copy);

@@ -9,7 +9,7 @@
 #define USE_NET yes
 
 #define COMPONENT_LIBS downloader event ipc express pandabase
-#define OTHER_LIBS dtool
+#define OTHER_LIBS dtoolconfig dtool
 
 #begin metalib_target
   #define TARGET pandaexpress

@@ -17,7 +17,7 @@
 
 namespace Config {
 
-class EXPCL_DTOOL ConfigTable {
+class EXPCL_DTOOLCONFIG ConfigTable {
    private:
       static ConfigTable* _instance;
    public:

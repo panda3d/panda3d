@@ -1,4 +1,5 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolutil:c dtoolbase:c dtool:m pystub
+#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
+                   dtoolutil:c dtoolbase:c dtool:m pystub
 #define LOCAL_LIBS downloader express event ipc
 #define USE_IPC yes
 #define DIRECTORY_IF_IPC yes

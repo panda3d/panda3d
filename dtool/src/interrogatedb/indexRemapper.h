@@ -21,7 +21,7 @@
 //               only reason it exists is because Microsoft can't
 //               export STL map outside of the DLL.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOL IndexRemapper {
+class EXPCL_DTOOLCONFIG IndexRemapper {
 public:
   IndexRemapper();
   ~IndexRemapper();
@@ -37,6 +37,3 @@ private:
 };
 
 #endif
-
-
-

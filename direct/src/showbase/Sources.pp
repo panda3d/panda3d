@@ -3,7 +3,7 @@
   #define LOCAL_LIBS \
     directbase
   #define OTHER_LIBS \
-    linmath:c putil:c express:c panda:m pandaexpress:m dtool
+    linmath:c putil:c express:c panda:m pandaexpress:m dtoolconfig dtool
 
   #define SOURCES \
     showBase.cxx showBase.h
