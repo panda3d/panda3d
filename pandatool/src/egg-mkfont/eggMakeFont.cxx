@@ -151,8 +151,7 @@ EggMakeFont() : EggWriter(true, false) {
     ("nr", "", 0,
      "Don't actually reduce the images after applying the scale factor, but "
      "leave them at their inflated sizes.  Presumably you will reduce "
-     "them later, for instance with egg-palettize.  This has no effect "
-     "unless -nopal is specified.",
+     "them later, for instance with egg-palettize.",
      &EggMakeFont::dispatch_none, &_no_reduce);
 
   add_option
