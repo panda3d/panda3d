@@ -1380,7 +1380,7 @@ fix_path_lengths(const CData *cdata) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 r_list_descendants(ostream &out, int indent_level) const {
-  write(out, indent_level);
+  indent(out, indent_level) << *this << "\n";
 
   CDReader cdata(_cycler);
   Down::const_iterator di;

@@ -32,9 +32,84 @@
 #include "typedObject.h"
 
 class qpNodePathCollection;
+class qpFindApproxLevel;
+class qpFindApproxPath;
 class Texture;
 class Material;
 class Fog;
+
+//
+// A NodePath is the fundamental unit of high-level interaction with
+// the scene graph.  It encapsulates the complete path down to a node
+// from some other node, usually the root of the scene graph.  This is
+// used to resolve ambiguities associated with instancing.
+//
+// NodePath also contains a number of handy high-level methods for
+// common scene-graph manipulations, such as reparenting, and common
+// state changes, such as repositioning.
+//
+// There are also a number of NodePath methods for finding nodes deep
+// within the tree by name or by type.  These take a path string,
+// which at its simplest consists of a series of node names separated
+// by slashes, like a directory pathname.
+//
+// Each component of the path string may optionally consist of one of
+// the following special names, instead of a node name:
+//
+//   *          -- matches exactly one node, with any name.
+//   **         -- matches any sequence of zero or more nodes.
+//   +typename  -- matches any node that is or derives from the given type.
+//   -typename  -- matches any node that is the given type exactly.
+//
+// Furthermore, a node name may itself contain standard filename
+// globbing characters, like *, ?, and [a-z], that will be accepted as
+// a partial match.  (In fact, the '*' special name may be seen as
+// just a special case of this.)  The globbing characters may not be
+// used with the typename matches.
+//
+// The special characters "@@", appearing at the beginning of a node
+// name, indicate a stashed node.  Normally, stashed nodes are not
+// returned by a find (but see the special flags, below), but a
+// stashed node may be found if it is explicitly named with its
+// leading @@ characters.  By extension, "@@*" may be used to identify
+// any stashed node.
+//
+// Examples:
+//
+// "room//graph" will look for a node named "graph", which is a child
+// of an unnamed node, which is a child of a node named "room", which
+// is a child of the starting path.
+//
+// "**/red*" will look for any node anywhere in the tree (below the
+// starting path) with a name that begins with "red".
+//
+// "**/+PartBundleNode/**/head" will look for a node named "head",
+// somewhere below a PartBundleNode anywhere in the tree.
+//
+//
+// The search is always potentially ambiguous, even if the special
+// wildcard operators are not used, because there may be multiple
+// nodes in the tree with the same name.  In general, in the case of
+// an ambiguity, the shortest path is preferred; when a method (such
+// as extend_by) must choose only only one of several possible paths,
+// it will choose the shortest available; on the other hand, when a
+// method (such as find_all_matches) is to return all of the matching
+// paths, it will sort them so that the shortest paths appear first in
+// the output.
+//
+//
+// Special flags.  The entire string may optionally be followed by the
+// ";" character, followed by one or more of the following special
+// control flags, with no intervening spaces or punctuation:
+//
+//    -h    Do not return hidden nodes.
+//    +h    Do return hidden nodes.
+//    -s    Do not return stashed nodes unless explicitly referenced with @@.
+//    +s    Return stashed nodes even without any explicit @@ characters.
+//
+// The default flags are +h-s.
+//
+
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NodePath
@@ -71,6 +146,7 @@ PUBLISHED:
   INLINE qpNodePath(const string &top_node_name);
   INLINE qpNodePath(PandaNode *top_node);
   INLINE qpNodePath(const qpNodePath &copy);
+  INLINE qpNodePath(const qpNodePath &parent, PandaNode *child_node);
   INLINE void operator = (const qpNodePath &copy);
 
   INLINE static qpNodePath not_found();
@@ -98,12 +174,9 @@ PUBLISHED:
   INLINE bool has_parent() const;
   INLINE qpNodePath get_parent() const;
 
-  /*
-  INLINE qpNodePath find(const string &path) const;
-
-  qpNodePathCollection
-  find_all_matches(const string &path) const;
-  */
+  qpNodePath find(const string &path) const;
+  qpNodePathCollection find_all_matches(const string &path) const;
+  qpNodePathCollection find_all_paths_to(PandaNode *node) const;
 
   // Methods that actually move nodes around in the scene graph.  The
   // optional "sort" parameter can be used to force a particular
@@ -405,8 +478,19 @@ private:
   CPT(TransformState) r_get_partial_transform(qpNodePathComponent *comp, int n) const;
   void r_output(ostream &out, qpNodePathComponent *comp) const;
 
+  void find_matches(qpNodePathCollection &result,
+                    const string &approx_path_str,
+                    int max_matches) const;
+  void find_matches(qpNodePathCollection &result,
+                    qpFindApproxPath &approx_path,
+                    int max_matches) const;
+  void r_find_matches(qpNodePathCollection &result,
+                      const qpFindApproxLevel &level,
+                      int max_matches, int num_levels_remaining) const;
+
   PT(qpNodePathComponent) _head;
   ErrorType _error_type;
+  static int _max_search_depth;
 
 public:
   static TypeHandle get_class_type() {

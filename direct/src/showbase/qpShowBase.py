@@ -314,8 +314,6 @@ class ShowBase:
         per application.
         """
 
-        print 'setup mouse'
-        
         # We create both a MouseAndKeyboard object and a MouseWatcher object
         # for the window.  The MouseAndKeyboard generates mouse events and
         # mouse button/keyboard events; the MouseWatcher passes them through
@@ -341,7 +339,12 @@ class ShowBase:
         self.drive = self.dataUnused.attachNewNode(DriveInterface('drive'))
         self.mouse2cam = self.dataUnused.attachNewNode(Transform2SG('mouse2cam'))
         self.mouse2cam.node().setNode(self.camera.node())
-        self.useDrive()
+
+        # The default is trackball mode, which is more convenient for
+        # ad-hoc development in Python using ShowBase.  Applications
+        # can expclitly call base.useDrive() if they prefer a drive
+        # interface.
+        self.useTrackball()
 
         # A ButtonThrower to generate events from the mouse and
         # keyboard buttons as they are pressed.
@@ -386,8 +389,7 @@ class ShowBase:
         # one.
         for i in range(chanConfig.getNumGroups()):
             camera = self.camera.attachNewNode(chanConfig.getGroupNode(i))
-            #cam = camera.find('**/+Camera')
-            cam = camera.getChild(0)
+            cam = camera.find('**/+Camera')
             lens = cam.node().getLens()
 
             # Enforce our expected aspect ratio, overriding whatever

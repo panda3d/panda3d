@@ -244,6 +244,7 @@ reconnect() {
   int num_parents = get_num_parents();
   _data_connections.clear();
   // Look for each input among one of the parents.
+  int num_datanode_parents = 0;
 
   Wires::const_iterator wi;
   for (wi = _input_wires.begin(); wi != _input_wires.end(); ++wi) {
@@ -255,6 +256,7 @@ reconnect() {
       PandaNode *parent_node = get_parent(i);
       if (parent_node->is_of_type(qpDataNode::get_class_type())) {
         qpDataNode *data_node = DCAST(qpDataNode, parent_node);
+        num_datanode_parents++;
         Wires::const_iterator pi;
         pi = data_node->_output_wires.find(name);
         if (pi != data_node->_output_wires.end()) {
@@ -282,7 +284,8 @@ reconnect() {
     }
   }
             
-  if (_data_connections.empty() && get_num_inputs() != 0 && num_parents != 0) {
+  if (_data_connections.empty() && get_num_inputs() != 0 && 
+      num_datanode_parents != 0) {
     dgraph_cat.warning()
       << "No data connected to " << *this << "\n";
   }

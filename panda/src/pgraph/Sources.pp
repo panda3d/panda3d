@@ -27,6 +27,9 @@
     depthTestAttrib.h depthTestAttrib.I \
     depthWriteAttrib.h depthWriteAttrib.I \
     drawCullHandler.h drawCullHandler.I \
+    qpfindApproxLevel.I qpfindApproxLevel.h \
+    qpfindApproxLevelEntry.I qpfindApproxLevelEntry.h \
+    qpfindApproxPath.I qpfindApproxPath.h \
     qpgeomNode.h qpgeomNode.I \
     qplensNode.h qplensNode.I \
     qplodNode.h qplodNode.I \
@@ -67,6 +70,9 @@
     depthTestAttrib.cxx \
     depthWriteAttrib.cxx \
     drawCullHandler.cxx \
+    qpfindApproxLevel.cxx \
+    qpfindApproxLevelEntry.cxx \
+    qpfindApproxPath.cxx \
     qpgeomNode.cxx \
     qplensNode.cxx \
     qplodNode.cxx \
@@ -128,6 +134,11 @@
     textureAttrib.h textureAttrib.I \
     transformState.h transformState.I \
     transparencyAttrib.h transparencyAttrib.I
+
+// No need to install these.
+//    qpfindApproxLevel.I qpfindApproxLevel.h \
+//    qpfindApproxLevelEntry.I qpfindApproxLevelEntry.h \
+//    qpfindApproxPath.I qpfindApproxPath.h \
 
   #define IGATESCAN all
 

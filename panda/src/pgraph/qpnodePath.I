@@ -50,10 +50,12 @@ qpNodePath(const string &top_node_name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::Constructor
 //       Access: Published
-//  Description: This constructs an empty qpNodePath with a single node.
-//
-//               If the Node pointer is NULL, this quietly creates an
-//               empty qpNodePath.
+//  Description: This constructs a NodePath for the indicated node.
+//               If the node does not have any parents, this creates a
+//               single NodePath; otherwise, it automatically finds
+//               the path from the node to the root.  If the node has
+//               multiple paths to the root, one path is chosen
+//               arbitrarily and a warning message is printed.
 ////////////////////////////////////////////////////////////////////
 INLINE qpNodePath::
 qpNodePath(PandaNode *top_node) :
@@ -61,6 +63,28 @@ qpNodePath(PandaNode *top_node) :
 {
   if (top_node != (PandaNode *)NULL) {
     _head = top_node->get_generic_component();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::Constructor
+//       Access: Published
+//  Description: Constructs a NodePath with the indicated parent
+//               NodePath and child node; the child node must be a
+
+//               stashed or unstashed child of the parent.
+////////////////////////////////////////////////////////////////////
+INLINE qpNodePath::
+qpNodePath(const qpNodePath &parent, PandaNode *child) :
+  _error_type(ET_fail)
+{
+  nassertv(!parent.is_empty());
+  nassertv(child != (PandaNode *)NULL);
+  _head = PandaNode::get_component(parent._head, child);
+  nassertv(_head != (qpNodePathComponent *)NULL);
+
+  if (_head != (qpNodePathComponent *)NULL) {
+    _error_type = ET_ok;
   }
 }
 

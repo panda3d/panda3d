@@ -18,10 +18,10 @@
 
 #include "qpnodePath.h"
 #include "qpnodePathCollection.h"
-#include "node.h"
-#include "namedNode.h"
+#include "qpfindApproxPath.h"
+#include "qpfindApproxLevelEntry.h"
+#include "qpfindApproxLevel.h"
 #include "config_pgraph.h"
-#include "plist.h"
 #include "colorAttrib.h"
 #include "cullBinAttrib.h"
 #include "textureAttrib.h"
@@ -32,7 +32,11 @@
 #include "materialPool.h"
 #include "look_at.h"
 #include "compose_matrix.h"
+#include "plist.h"
 
+// stack seems to overflow on Intel C++ at 7000.  If we need more than 
+// 7000, need to increase stack size.
+int qpNodePath::_max_search_depth = 7000; 
 TypeHandle qpNodePath::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -122,6 +126,65 @@ get_children() const {
   }
 
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qoNodePath::find
+//       Access: Published
+//  Description: Searches for a node below the referenced node that
+//               matches the indicated string.  Returns the shortest
+//               match found, if any, or an empty NodePath if no match
+//               can be found.
+////////////////////////////////////////////////////////////////////
+qpNodePath qpNodePath::
+find(const string &path) const {
+  nassertr(!is_empty(), fail());
+
+  qpNodePathCollection col;
+  find_matches(col, path, 1);
+
+  if (col.is_empty()) {
+    return qpNodePath::not_found();
+  }
+
+  return col.get_path(0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::find_all_matches
+//       Access: Published
+//  Description: Returns the complete set of all NodePaths that begin
+//               with this NodePath and can be extended by
+//               path.  The shortest paths will be listed
+//               first.
+////////////////////////////////////////////////////////////////////
+qpNodePathCollection qpNodePath::
+find_all_matches(const string &path) const {
+  qpNodePathCollection col;
+  nassertr(!is_empty(), col);
+  nassertr(verify_complete(), col);
+  find_matches(col, path, -1);
+  return col;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::find_all_paths_to
+//       Access: Published
+//  Description: Returns the set of all NodePaths that extend from
+//               this NodePath down to the indicated node.  The
+//               shortest paths will be listed first.
+////////////////////////////////////////////////////////////////////
+qpNodePathCollection qpNodePath::
+find_all_paths_to(PandaNode *node) const {
+  qpNodePathCollection col;
+  nassertr(!is_empty(), col);
+  nassertr(verify_complete(), col);
+  nassertr(node != (PandaNode *)NULL, col);
+  qpFindApproxPath approx_path;
+  approx_path.add_match_many(0);
+  approx_path.add_match_pointer(node, 0);
+  find_matches(col, approx_path, -1);
+  return col;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -258,9 +321,11 @@ attach_new_node(PandaNode *node, int sort) const {
 void qpNodePath::
 remove_node() {
   nassertv(_error_type != ET_not_found);
-  if (is_empty()) {
-    // If we have no arcs (maybe we were already removed), quietly do
-    // nothing except to ensure the qpNodePath is clear.
+  if (is_empty() || is_singleton()) {
+    // If we have no parents, remove_node() is just a do-nothing
+    // operation; if we have no nodes, maybe we were already removed.
+    // In either case, quietly do nothing except to ensure the
+    // qpNodePath is clear.
     (*this) = qpNodePath::removed();
     return;
   }
@@ -2303,7 +2368,101 @@ r_output(ostream &out, qpNodePathComponent *comp) const {
   if (node->has_name()) {
     out << node->get_name();
   } else {
-    out << "+" << node->get_type();
+    out << "-" << node->get_type();
   }
   //  out << "[" << comp->get_length() << "]";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::find_matches
+//       Access: Private
+//  Description: Finds up to max_matches matches against the given
+//               path string from this node and deeper.  The
+//               max_matches count indicates the maximum number of
+//               matches to return, or -1 not to limit the number
+//               returned.
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+find_matches(qpNodePathCollection &result, const string &path,
+             int max_matches) const {
+  if (is_empty()) {
+    pgraph_cat.warning()
+      << "Attempt to extend an empty qpNodePath by '" << path
+      << "'.\n";
+    return;
+  }
+  qpFindApproxPath approx_path;
+  if (approx_path.add_string(path)) {
+    find_matches(result, approx_path, max_matches);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::find_matches
+//       Access: Private
+//  Description: Finds up to max_matches matches against the given
+//               approx_path from this node and deeper.  The
+//               max_matches count indicates the maximum number of
+//               matches to return, or -1 not to limit the number
+//               returned.
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+find_matches(qpNodePathCollection &result, qpFindApproxPath &approx_path,
+             int max_matches) const {
+  if (is_empty()) {
+    pgraph_cat.warning()
+      << "Attempt to extend an empty qpNodePath by: " << approx_path << ".\n";
+    return;
+  }
+  qpFindApproxLevelEntry start(*this, approx_path);
+  qpFindApproxLevel level;
+  level.add_entry(start);
+  r_find_matches(result, level, max_matches, _max_search_depth);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::r_find_matches
+//       Access: Private
+//  Description: The recursive implementation of find_matches.
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+r_find_matches(qpNodePathCollection &result,
+               const qpFindApproxLevel &level,
+               int max_matches, int num_levels_remaining) const {
+  // Go on to the next level.  If we exceeded the requested maximum
+  // depth, stop.
+  if (num_levels_remaining <= 0) {
+    return;
+  }
+  num_levels_remaining--;
+
+  qpFindApproxLevel next_level;
+  bool okflag = true;
+
+  // For each node in the current level, build up the set of possible
+  // matches in the next level.
+  qpFindApproxLevel::Vec::const_iterator li;
+  for (li = level._v.begin(); li != level._v.end() && okflag; ++li) {
+    const qpFindApproxLevelEntry &entry = (*li);
+
+    if (entry.is_solution()) {
+      // Does this entry already represent a solution?
+      result.add_path(entry._node_path);
+    } else {
+      entry.consider_node(result, next_level, max_matches);
+    }
+
+    if (max_matches > 0 && result.get_num_paths() >= max_matches) {
+      // Really, we just want to return here.  But returning from
+      // within the conditional within the for loop seems to sometimes
+      // cause a compiler fault in GCC.  We'll use a semaphore
+      // variable instead.
+      okflag = false;
+    }
+  }
+
+  // Now recurse on the next level.
+  if (okflag) {
+    r_find_matches(result, next_level, max_matches, num_levels_remaining);
+  }
 }
