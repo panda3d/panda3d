@@ -120,6 +120,12 @@
 // Studio code.
 #define INTERROGATE_C_INTERFACE
 
+// Do you even want to build interrogate at all?  This is the program
+// that reads our C++ source files and generates one of the above
+// interfaces.  If you won't be building the interfaces, you don't
+// need the program.
+#defer HAVE_INTERROGATE $[or $[INTERROGATE_PYTHON_INTERFACE],$[INTERROGATE_C_INTERFACE]]
+
 // What additional options should be passed to interrogate when
 // generating either of the above two interfaces?  Generally, you
 // probably don't want to mess with this.

@@ -1,3 +1,5 @@
+#define DIRECTORY_IF_INTERROGATE yes
+
 #define LOCAL_LIBS dtoolutil dtoolbase
 #define YACC_PREFIX cppyy
 

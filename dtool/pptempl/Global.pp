@@ -237,6 +237,7 @@
      $[or $[not $[DIRECTORY_IF_IPC]],$[HAVE_IPC]], \
      $[or $[not $[DIRECTORY_IF_NET]],$[HAVE_NET]], \
      $[or $[not $[DIRECTORY_IF_AUDIO]],$[HAVE_AUDIO]], \
+     $[or $[not $[DIRECTORY_IF_INTERROGATE]],$[HAVE_INTERROGATE]], \
       1 ]
 
 // This variable, when evaluated in the scope of a particular target,

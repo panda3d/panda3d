@@ -1,3 +1,5 @@
+#define DIRECTORY_IF_INTERROGATE yes
+
 #define LOCAL_LIBS cppParser pystub interrogatedb dconfig dtoolutil dtoolbase
 
 #begin bin_target
