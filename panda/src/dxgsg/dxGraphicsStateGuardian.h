@@ -241,8 +241,6 @@ protected:
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);
 
-  void bind_texture(TextureContext *tc);
-
   // for storage of the flexible vertex format
   char *_pCurFvfBufPtr,*_pFvfBufBasePtr;
   INLINE void add_to_FVFBuf(void *data,  size_t bytes) ;

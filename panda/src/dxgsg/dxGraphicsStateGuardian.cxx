@@ -3980,34 +3980,37 @@ apply_texture(TextureContext *tc) {
 
     int dirty = dtc->get_dirty_flags();
 
-    if( _pCurTexContext == dtc && dirty == 0) {
-        return;  // tex already set (and possible problem in state-sorting?)
-    }
+    if (dirty) {
+      // If the texture image has changed, or if its use of mipmaps has
+      // changed, we need to re-create the image.  Ignore other types of 
+      // changes, which arent significant for dx
 
-    // If the texture image has changed, or if its use of mipmaps has
-    // changed, we need to re-create the image.
-    if ((dirty & (Texture::DF_image | Texture::DF_mipmap)) != 0) {
-      // If this is *only* because of a mipmap change, issue a
-      // warning--it is likely that this change is the result of an
-      // error or oversight.
-      if ((dirty & Texture::DF_image) == 0) {
-        dxgsg_cat.warning()
-          << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
+      if((dirty & (Texture::DF_image | Texture::DF_mipmap)) != 0) {
+          // If this is *only* because of a mipmap change, issue a
+          // warning--it is likely that this change is the result of an
+          // error or oversight.
+          if ((dirty & Texture::DF_image) == 0) {
+            dxgsg_cat.warning()
+              << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
+          }
+    
+          dtc->DeleteTexture();
+          if (dtc->CreateTexture(_d3dDevice,_cNumTexPixFmts,_pTexPixFmts) == NULL) {
+            // Oops, we can't re-create the texture for some reason.
+            dxgsg_cat.error()
+              << "Unable to re-create texture " << *dtc->_texture << endl;
+    
+            release_texture(dtc);
+            enable_texturing(false);
+            return;
+          }
       }
-
-      dtc->DeleteTexture();
-      if (dtc->CreateTexture(_d3dDevice,_cNumTexPixFmts,_pTexPixFmts) == NULL) {
-        // Oops, we can't re-create the texture for some reason.
-        dxgsg_cat.error()
-          << "Unable to re-create texture " << *dtc->_texture << endl;
-
-        release_texture(dtc);
-        enable_texturing(false);
-        return;
-      }
+      dtc->clear_dirty_flags();
+    } else {
+       if(_pCurTexContext == dtc) {
+          return;  // tex already set (and possible problem in state-sorting?)
+       }
     }
-
-    dtc->clear_dirty_flags();
 
     Texture *tex = tc->_texture;
     Texture::WrapMode wrapU,wrapV;
@@ -4022,16 +4025,6 @@ apply_texture(TextureContext *tc) {
         _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSV,get_texture_wrap_mode(wrapV));
         _CurTexWrapModeV = wrapV;
     }
-
-/*
-#ifdef _DEBUG
-    Texture::WrapMode wrapval;
-    _d3dDevice->GetTextureStageState(0,D3DTSS_ADDRESSU,(DWORD*)&wrapval);
-    assert(get_texture_wrap_mode(wrapU) == wrapval);
-    _d3dDevice->GetTextureStageState(0,D3DTSS_ADDRESSV,(DWORD*)&wrapval);
-    assert(get_texture_wrap_mode(wrapV) == wrapval);
-#endif
-*/
 
     uint aniso_degree=tex->get_anisotropic_degree();
     Texture::FilterType ft=tex->get_magfilter();
