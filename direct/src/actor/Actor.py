@@ -92,8 +92,12 @@ class Actor(PandaObject, NodePath):
 
             # create base hierarchy
             self.gotName = 0
-            self.assign(hidden.attachNewNode('actor'))
-            self.setGeomNode(self.attachNewNode('actorGeom'))
+            root = ModelNode('actor')
+            root.setPreserveTransform(1)
+            # temporary support for old Panda
+            #self.assign(NodePath(root))
+            self.assign(hidden.attachNewNode(root))
+            self.setGeomNode(self.attachNewNode(ModelNode('actorGeom')))
             self.__hasLOD = 0
             
             # load models
@@ -181,6 +185,8 @@ class Actor(PandaObject, NodePath):
 
             # copy the scene graph elements of other
             otherCopy = other.copyTo(hidden)
+            # temporarily commented out for old Panda
+            #otherCopy.detachNode()
             # assign these elements to ourselve
             self.gotName = other.gotName
             self.assign(otherCopy)
