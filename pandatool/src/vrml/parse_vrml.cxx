@@ -38,7 +38,6 @@ extern int vrmlyyparse();
 extern void vrmlyyResetLineNumber();
 extern int vrmlyydebug;
 extern int vrmlyy_flex_debug;
-extern FILE *vrmlyyin;
 
 extern VrmlScene *parsed_scene;
 

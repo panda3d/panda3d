@@ -45,7 +45,9 @@
 #include "vrmlNode.h"
 #include "notify.h"
 #include "plist.h"
+
 #include <stack>
+#include <stdio.h>  // for sprintf()
 
 //#define YYDEBUG 1
 

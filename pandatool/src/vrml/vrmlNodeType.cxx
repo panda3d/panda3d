@@ -18,6 +18,9 @@
 #include "notify.h"
 #include "indent.h"
 
+#include <stdio.h>  // for sprintf()
+
+
 //
 // Static list of node types.
 //
