@@ -56,6 +56,7 @@ PUBLISHED:
   INLINE float get_max_velocity() const;
 
 protected:
+  float set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries);
   virtual bool handle_entries();
   virtual void apply_linear_force(ColliderDef &def, const LVector3f &force);
 

@@ -188,6 +188,11 @@ write(ostream &out, int indent_level) const {
   if (!_into_node_path.is_empty()) {
     indent(out, indent_level + 2)
       << "into " << _into_node_path;
+
+    out << " [";
+    _into_node_path.node()->list_tags(out, ", ");
+    out << "]";
+
     const ClipPlaneAttrib *cpa = get_into_clip_planes();
     if (cpa != (ClipPlaneAttrib *)NULL) {
       out << " (clipped)";

@@ -51,6 +51,66 @@ CollisionHandlerGravity::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerGravity::set_highest_collision
+//       Access: Protected
+//  Description: 
+//               
+//               
+//
+//               
+//               
+//               
+////////////////////////////////////////////////////////////////////
+float CollisionHandlerGravity::
+set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries) {
+  // Get the maximum height for all collisions with this node.
+  bool got_max = false;
+  float max_height = 0.0f;
+
+  CollisionEntry* highest;
+  _outer_space = entries.empty();
+  Entries::const_iterator ei;
+  for (ei = entries.begin(); ei != entries.end(); ++ei) {
+    CollisionEntry *entry = (*ei);
+    nassertr(entry != (CollisionEntry *)NULL, 0.0f);
+    nassertr(from_node_path == entry->get_from_node_path(), 0.0f);
+
+    if (entry->has_surface_point()) {
+      LPoint3f point = entry->get_surface_point(target_node_path);
+      if (collide_cat.is_debug()) {
+        collide_cat.debug()
+          << "Intersection point detected at " << point << "\n";
+      }
+
+      float height = point[2];
+      if (!got_max || height > max_height) {
+        got_max = true;
+        max_height = height;
+        highest = entry;
+      }
+    }
+  }
+
+  #if 0
+    cout<<"\ncolliding with:\n";
+    for (Colliding::const_iterator i = _current_colliding.begin(); i != _current_colliding.end(); ++i) {
+      (**i).write(cout, 2);
+    }
+    cout<<"\nhighest:\n";
+    highest->write(cout, 2);
+    cout<<endl;
+  #endif
+
+  // We only collide with things we are impacting with.
+  // Remove the collisions:
+  _current_colliding.clear();
+  // Add only the one that we're impacting with:
+  add_entry(highest);
+  
+  return max_height;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerGravity::handle_entries
 //       Access: Protected, Virtual
 //  Description: Called by the parent class after all collisions have
@@ -64,18 +124,6 @@ CollisionHandlerGravity::
 bool CollisionHandlerGravity::
 handle_entries() {
   bool okflag = true;
-  _outer_space = true;
-
-  if (0) {
-    cout << endl;
-    cerr
-      << "CollisionHandlerGravity.handle_entries {\n"
-      << "_from_entries has " << _from_entries.size()
-      << "_colliders has " << _colliders.size()
-      << "current_colliding has " << _current_colliding.size()
-      << " entries, last_colliding has " << _last_colliding.size()
-      << "\n}" << endl;
-  }
 
   FromEntries::const_iterator fi;
   for (fi = _from_entries.begin(); fi != _from_entries.end(); ++fi) {
@@ -94,96 +142,59 @@ handle_entries() {
       okflag = false;
     } else {
       ColliderDef &def = (*ci).second;
-      {
-        // Get the maximum height for all collisions with this node.
-        bool got_max = false;
-        float max_height = 0.0f;
-        
-        CollisionEntry* highest;
-        if (!entries.empty()) {
-          _outer_space = false;
-        }
-        Entries::const_iterator ei;
-        for (ei = entries.begin(); ei != entries.end(); ++ei) {
-          CollisionEntry *entry = (*ei);
-          nassertr(entry != (CollisionEntry *)NULL, false);
-          nassertr(from_node_path == entry->get_from_node_path(), false);
-          
-          if (entry->has_surface_point()) {
-            LPoint3f point = entry->get_surface_point(def._target);
-            if (collide_cat.is_debug()) {
-              collide_cat.debug()
-                << "Intersection point detected at " << point << "\n";
-            }
-            
-            float height = point[2];
-            if (!got_max || height > max_height) {
-              got_max = true;
-              max_height = height;
-              highest = entry;
-            }
-          }
-        }
-        
-        // Now set our height accordingly.
-        float adjust = max_height + _offset;
-        if (_current_velocity > 0.0f || !IS_THRESHOLD_ZERO(adjust, 0.001)) {
-          if (collide_cat.is_debug()) {
-            collide_cat.debug()
-              << "Adjusting height by " << adjust << "\n";
-          }
-          
-          if (_current_velocity > 0.0f || adjust < -0.001f) {
-            // ...we have a vertical thrust,
-            // ...or the node is above the floor, so it is airborne.
-            float dt = ClockObject::get_global_clock()->get_dt();
-            // The sign in this equation is reversed from normal.  This is
-            // because _current_velocity is a scaler and the equation normally
-            // has a vector.  I suppose the sign of _gravity could have been
-            // reversed, but I think it makes the get_*() set_*()
-            // more intuitive to do it this way.
-            float gravity_adjust = _current_velocity * dt - 0.5 * _gravity * dt * dt;
-            if (adjust > 0.0f) {
-              // ...the node is under the floor, so it has landed.
-              // Keep the adjust to bring us up to the ground and
-              // then add the gravity_adjust to get us airborne:
-              adjust += max(0.0f, gravity_adjust);
-            } else {
-              // ...the node is above the floor, so it is airborne.
-              adjust = max(adjust, gravity_adjust);
-            }
-            _current_velocity -= _gravity * dt;
-            // Record the airborne height in case someone else needs it: 
-            _airborne_height = -max_height + adjust;
-          }
-          
-          // ...we are airborne.
-          // We only collide with things we are impacting with.
-          // Remove the collisions:
-          _current_colliding.clear();
+      float max_height = set_highest_collision(def._target, from_node_path, entries);
 
-          if (_airborne_height < 0.001f && _current_velocity < 0.001f) {
+      // Now set our height accordingly.
+      float adjust = max_height + _offset;
+      if (_current_velocity > 0.0f || !IS_THRESHOLD_ZERO(adjust, 0.001)) {
+        if (collide_cat.is_debug()) {
+          collide_cat.debug()
+            << "Adjusting height by " << adjust << "\n";
+        }
+
+        if (_current_velocity > 0.0f || adjust < -0.001f) {
+          // ...we have a vertical thrust,
+          // ...or the node is above the floor, so it is airborne.
+          float dt = ClockObject::get_global_clock()->get_dt();
+          // Fyi, the sign of _gravity is reversed. I think it makes the get_*() set_*()
+          // more intuitive to do it this way.
+          float gravity_adjust = _current_velocity * dt + 0.5 * -_gravity * dt * dt;
+          if (adjust > 0.0f) {
             // ...the node is under the floor, so it has landed.
-            _impact_velocity = _current_velocity;
-            // These values are used by is_on_ground().
-            _current_velocity = _airborne_height = 0.0f;
-            // Add only the one that we're impacting with:
-            add_entry(highest);
+            // Keep the adjust to bring us up to the ground and
+            // then add the gravity_adjust to get us airborne:
+            adjust += max(0.0f, gravity_adjust);
+          } else {
+            // ...the node is above the floor, so it is airborne.
+            adjust = max(adjust, gravity_adjust);
           }
+          _current_velocity -= _gravity * dt;
+          // Record the airborne height in case someone else needs it: 
+          _airborne_height = -max_height + adjust;
+        }
 
-          CPT(TransformState) trans = def._target.get_transform();
-          LVecBase3f pos = trans->get_pos();
-          pos[2] += adjust;
-          def._target.set_transform(trans->set_pos(pos));
-          def.updated_transform();
-
-          apply_linear_force(def, LVector3f(0.0f, 0.0f, adjust));
-        } else {
+        if (_airborne_height < 0.001f && _current_velocity < 0.001f) {
+          // ...the node is under the floor, so it has landed.
+          _impact_velocity = _current_velocity;
+          // These values are used by is_on_ground().
           _current_velocity = _airborne_height = 0.0f;
-          if (collide_cat.is_spam()) {
-            collide_cat.spam()
-              << "Leaving height unchanged.\n";
-          }
+        } else {
+          // ...we're airborne.
+          _current_colliding.clear();
+        }
+
+        CPT(TransformState) trans = def._target.get_transform();
+        LVecBase3f pos = trans->get_pos();
+        pos[2] += adjust;
+        def._target.set_transform(trans->set_pos(pos));
+        def.updated_transform();
+
+        apply_linear_force(def, LVector3f(0.0f, 0.0f, adjust));
+      } else {
+        _current_velocity = _airborne_height = 0.0f;
+        if (collide_cat.is_spam()) {
+          collide_cat.spam()
+            << "Leaving height unchanged.\n";
         }
       }
     }
@@ -191,7 +202,6 @@ handle_entries() {
 
   return okflag;
 }
-
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerGravity::apply_linear_force
 //       Access: Protected, Virtual
