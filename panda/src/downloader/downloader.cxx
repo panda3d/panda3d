@@ -423,6 +423,8 @@ cleanup(void) {
   _dest_stream.close();
   _total_bytes_written = _current_status->_total_bytes_written;
   delete _current_status;
+  // We must set this to NULL otherwise there is a bad pointer floating around
+  _current_status = NULL;
   _initiated = false;
 }
 
@@ -902,6 +904,7 @@ write_to_disk(DownloadStatus *status) {
         << status->_bytes_in_buffer << " to disk" << endl;
 
     _dest_stream.write(status->_start, status->_bytes_in_buffer);
+    _dest_stream.flush();
     status->_total_bytes_written += status->_bytes_in_buffer;
   }
 
@@ -981,7 +984,12 @@ DownloadStatus(char *buffer, int first_byte, int last_byte,
   _first_byte = first_byte;
   _last_byte = last_byte;
   _total_bytes = total_bytes;
-  _total_bytes_written = 0;
+  // Initialize the total bytes written to include all
+  // the bytes from previous partial downloads. This will
+  // ensure that when somebody calls get_bytes_written they
+  // will get the total size of the file, not just the number
+  // of bytes for this partial download
+  _total_bytes_written = first_byte;
   _partial_content = partial_content;
   reset();
 }
