@@ -30,6 +30,36 @@ def indent(stream, numIndents, str):
     # To match emacs, instead of a tab character we will use 4 spaces
     stream.write('    ' * numIndents + str)
 
+def traceFunctionCall(frame):
+    """
+    return a string that shows the call frame with calling arguments.
+    e.g.
+    foo(x=234, y=135)
+    """
+    f = frame
+    co = f.f_code
+    dict = f.f_locals
+    n = co.co_argcount
+    if co.co_flags & 4: n = n+1
+    if co.co_flags & 8: n = n+1
+    r=f.f_code.co_name+'('
+    for i in range(n):
+        name = co.co_varnames[i]
+        if name=='self':
+            continue
+        if i:
+            r+=', '
+        r+=name
+        r+='='
+        if dict.has_key(name):
+            v=str(dict[name])
+            if len(v)>200:
+                r+="<too big for debug>"
+            else:
+                r+=str(dict[name])
+        else: r+="*** undefined ***"
+    return r+')'
+
 def apropos(obj, *args):
     """
     Obsolete, use pdir
