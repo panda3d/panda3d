@@ -188,6 +188,18 @@ get_textures(EggPalettize *prog) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SourceEgg::add_group
+//       Access: Public
+//  Description: Adds the indicated group to the set of groups known
+//               to be required for the egg file.  Typically this is
+//               done from the .pi file.
+////////////////////////////////////////////////////////////////////
+void SourceEgg::
+add_group(PaletteGroup *group) {
+  _groups.insert(group);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SourceEgg::require_groups
 //       Access: Public
 //  Description: Ensures that each texture in the egg file is packed
@@ -195,6 +207,7 @@ get_textures(EggPalettize *prog) {
 ////////////////////////////////////////////////////////////////////
 void SourceEgg::
 require_groups(PaletteGroup *preferred, const PaletteGroups &groups) {
+  _groups = groups;
   TexRefs::iterator ti;
   for (ti = _texrefs.begin(); ti != _texrefs.end(); ++ti) {
     (*ti)->require_groups(preferred, groups);
@@ -209,13 +222,18 @@ require_groups(PaletteGroup *preferred, const PaletteGroups &groups) {
 ////////////////////////////////////////////////////////////////////
 void SourceEgg::
 all_textures_assigned() {
+  PaletteGroup *default_group;
+
+  if (_groups.empty()) {
+    default_group = _attrib_file->get_default_group();
+    _groups.insert(default_group);
+  } else {
+    default_group = *(_groups.begin());
+  }
+
   TexRefs::iterator ti;
   for (ti = _texrefs.begin(); ti != _texrefs.end(); ++ti) {
-    TextureEggRef *texref = (*ti);
-    if (texref->_packing == (TexturePacking *)NULL) {
-      texref->_packing = 
-	texref->_texture->add_to_group(_attrib_file->get_default_group());
-    }
+    (*ti)->require_groups(default_group, _groups);
   }
 }
 
@@ -384,7 +402,13 @@ set_matched_anything(bool matched_anything) {
 ////////////////////////////////////////////////////////////////////
 void SourceEgg::
 write_pi(ostream &out) const {
-  out << "egg " << get_egg_filename() << "\n";
+  out << "egg " << get_egg_filename() << " in";
+  PaletteGroups::const_iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    out << " " << (*gi)->get_name();
+  }
+  out << "\n";
+
   TexRefs::const_iterator ti;
   for (ti = _texrefs.begin(); ti != _texrefs.end(); ++ti) {
     out << "  " << (*ti)->_packing->get_texture()->get_name()

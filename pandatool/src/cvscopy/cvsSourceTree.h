@@ -63,7 +63,6 @@ private:
 
   static string get_actual_fullpath(const string &path);
   static string get_start_fullpath();
-  static string get_cwd();
 
 private:
   string _path;

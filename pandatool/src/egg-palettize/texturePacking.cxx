@@ -474,6 +474,7 @@ Filename TexturePacking::
 get_new_filename() const {
   Filename dirname = _group->get_full_dirname(_attrib_file);
   Filename new_filename(dirname, _texture->get_name());
+  new_filename.standardize();
   return new_filename;
 }
 
@@ -484,7 +485,9 @@ get_new_filename() const {
 ////////////////////////////////////////////////////////////////////
 Filename TexturePacking::
 get_old_filename() const {
-  return _texture->_filename;
+  Filename old_filename = _texture->_filename;
+  old_filename.standardize();
+  return old_filename;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -52,7 +52,9 @@ get_name() const {
 }
   
 void PTexture::
-add_filename(const Filename &filename) {
+add_filename(Filename filename) {
+  filename.make_absolute();
+
   if (!filename.exists()) {
     // Store the filename, even though it doesn't exist.
     if (!_got_filename) {

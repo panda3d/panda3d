@@ -282,13 +282,32 @@ add_ancestors(PaletteGroups &groups) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PaletteGroup::write
+//     Function: PaletteGroup::write_pi
 //       Access: Public
-//  Description: Writes out a .pi file description of the palette
-//               group and all of its nested Palette images.
+//  Description: Writes out a .pi file description of the group.
 ////////////////////////////////////////////////////////////////////
 void PaletteGroup::
-write(ostream &out) const {
+write_pi(ostream &out) const {
+  if (_dirname.empty() && _palettes.empty()) {
+    // No real reason to write this group out.
+    return;
+  }
+
+  out << "group " << get_name();
+  if (!_dirname.empty()) {
+    out << " dir " << _dirname;
+  }
+  out << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::write_palettes
+//       Access: Public
+//  Description: Writes out a .pi file description of all of the
+//               individual Palette images.
+////////////////////////////////////////////////////////////////////
+void PaletteGroup::
+write_palettes_pi(ostream &out) const {
   Palettes::const_iterator pi;
   for (pi = _palettes.begin(); pi != _palettes.end(); ++pi) {
     out << "\n";

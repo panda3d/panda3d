@@ -34,7 +34,7 @@ public:
 
   Filename get_name() const;
   
-  void add_filename(const Filename &filename);
+  void add_filename(Filename filename);
 
   bool get_size(int &xsize, int &ysize, int &zsize);
   void set_size(int xsize, int ysize, int zsize);

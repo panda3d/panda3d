@@ -48,7 +48,7 @@ get_name() const {
 }
 
 bool AttribFile::
-grab_lock() {
+open_and_lock(bool lock) {
   if (!_txa_filename.exists()) {
     nout << "Attributes file " << _txa_filename << " does not exist.\n";
   }
@@ -65,12 +65,14 @@ grab_lock() {
   fl.l_start = 0;
   fl.l_len = 0;
 
-  if (fcntl(_txa_fd, F_SETLK, &fl) < 0) {
-    nout << "Waiting for lock on " << _txa_filename << "\n";
-    while (fcntl(_txa_fd, F_SETLKW, &fl) < 0) {
-      if (errno != EINTR) {
-	perror(_txa_filename.c_str());
-	return false;
+  if (lock) {
+    if (fcntl(_txa_fd, F_SETLK, &fl) < 0) {
+      nout << "Waiting for lock on " << _txa_filename << "\n";
+      while (fcntl(_txa_fd, F_SETLKW, &fl) < 0) {
+	if (errno != EINTR) {
+	  perror(_txa_filename.c_str());
+	  return false;
+	}
       }
     }
   }
@@ -81,7 +83,7 @@ grab_lock() {
 }
 
 bool AttribFile::
-release_lock() {
+close_and_unlock() {
   // Closing the fstream will close the fd, and thus release all the
   // file locks.
   _txa_fstrm.close();
@@ -747,6 +749,9 @@ read_pi(istream &infile, bool force_redo_all) {
     } else if (words[0] == "egg") {
       okflag = parse_egg(words, infile, line, line_num, force_redo_all);
 
+    } else if (words[0] == "group") {
+      okflag = parse_group(words, infile, line, line_num);
+
     } else if (words[0] == "palette") {
       okflag = parse_palette(words, infile, line, line_num);
 
@@ -821,9 +826,13 @@ write_pi(ostream &out) const {
     any_surprises = any_surprises || !egg->matched_anything();
   }
 
+  out << "\n";
   Groups::const_iterator gi;
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-    (*gi).second->write(out);
+    (*gi).second->write_pi(out);
+  }
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    (*gi).second->write_palettes_pi(out);
   }
 
   out << "\n";
@@ -1028,12 +1037,19 @@ parse_pathname(const vector<string> &words, istream &infile,
 bool AttribFile::
 parse_egg(const vector<string> &words, istream &infile, 
 	  string &line, int &line_num, bool force_redo_all) {
-  if (words.size() != 2) {
+  if (words.size() < 2) {
     nout << "Egg filename expected.\n";
     return false;
   }
   
   SourceEgg *egg = get_egg(words[1]);
+
+  if (words.size() > 2 && words[2] == "in") {
+    // Get the group names.
+    for (int i = 3; i < (int)words.size(); i++) {
+      egg->add_group(get_group(words[i]));
+    }
+  }
 
   getline(infile, line);
   line = trim_right(line);
@@ -1092,6 +1108,32 @@ parse_egg(const vector<string> &words, istream &infile,
   return true;
 }
   
+
+bool AttribFile::
+parse_group(const vector<string> &words, istream &infile, 
+	    string &line, int &line_num) {
+  if (words.size() == 2) {
+    // Just a group name by itself; ignore it.
+    return true;
+  }
+
+  if (words.size() != 4) {
+    nout << "Group dirname expected.\n";
+    return false;
+  }
+
+  if (!(words[2] == "dir")) {
+    nout << "Expected keyword 'dir'\n";
+    return false;
+  }
+  PaletteGroup *group = get_group(words[1]);
+
+  group->set_dirname(words[3]);
+
+  getline(infile, line);
+  line_num++;
+  return true;
+}
 
 bool AttribFile::
 parse_palette(const vector<string> &words, istream &infile, 

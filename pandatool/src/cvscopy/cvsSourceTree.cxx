@@ -7,6 +7,7 @@
 #include "cvsSourceDirectory.h"
 
 #include <filename.h>
+#include <executionEnvironment.h>
 #include <notify.h>
 
 #include <algorithm>
@@ -491,7 +492,7 @@ get_actual_fullpath(const string &path) {
     return string();
   }
 
-  string cwd = get_cwd();
+  string cwd = ExecutionEnvironment::get_cwd();
   restore_cwd();
 
   return cwd;
@@ -507,37 +508,8 @@ get_actual_fullpath(const string &path) {
 string CVSSourceTree::
 get_start_fullpath() {
   if (!_got_start_fullpath) {
-    _start_fullpath = get_cwd();
+    _start_fullpath = ExecutionEnvironment::get_cwd();
     _got_start_fullpath = true;
   }
   return _start_fullpath;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CVSSourceTree::get_cwd
-//       Access: Private, Static
-//  Description: Calls the system getcwd(), automatically allocating a
-//               large enough string.
-////////////////////////////////////////////////////////////////////
-string CVSSourceTree::
-get_cwd() {
-  static size_t bufsize = 1024;
-  static char *buffer = NULL;
-
-  if (buffer == (char *)NULL) {
-    buffer = new char[bufsize];
-  }
-
-  while (getcwd(buffer, bufsize) == (char *)NULL) {
-    if (errno != ERANGE) {
-      perror("getcwd");
-      return string();
-    }
-    delete[] buffer;
-    bufsize = bufsize * 2;
-    buffer = new char[bufsize];
-    nassertr(buffer != (char *)NULL, string());
-  }
-
-  return string(buffer);
 }

@@ -31,8 +31,8 @@ public:
 
   string get_name() const;
 
-  bool grab_lock();
-  bool release_lock();
+  bool open_and_lock(bool lock);
+  bool close_and_unlock();
 
   bool read(bool force_redo_all);
   bool write();
@@ -94,21 +94,23 @@ private:
   bool write_pi(ostream &outfile) const;
 
   bool parse_params(const vector<string> &words, istream &infile, 
-		       string &line, int &line_num);
+		    string &line, int &line_num);
   bool parse_packing(const vector<string> &words, istream &infile, 
-			string &line, int &line_num);
+		     string &line, int &line_num);
   bool parse_texture(const vector<string> &words, istream &infile, 
-			string &line, int &line_num);
+		     string &line, int &line_num);
   bool parse_pathname(const vector<string> &words, istream &infile, 
-			 string &line, int &line_num);
+		      string &line, int &line_num);
   bool parse_egg(const vector<string> &words, istream &infile, 
-		    string &line, int &line_num, bool force_redo_all);
+		 string &line, int &line_num, bool force_redo_all);
+  bool parse_group(const vector<string> &words, istream &infile, 
+		   string &line, int &line_num);
   bool parse_palette(const vector<string> &words, istream &infile, 
-			string &line, int &line_num);
+		     string &line, int &line_num);
   bool parse_unplaced(const vector<string> &words, istream &infile, 
-			 string &line, int &line_num);
+		      string &line, int &line_num);
   bool parse_surprises(const vector<string> &words, istream &infile, 
-			  string &line, int &line_num);
+		       string &line, int &line_num);
 
   bool _optimal;
   bool _txa_needs_rewrite;

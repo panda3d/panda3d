@@ -562,9 +562,9 @@ run() {
       af.set_default_group(group);
     }
 
-    if (!_dont_lock_pi && !af.grab_lock()) {
-      // Failing to grab the write lock on the attribute file is a
-      // fatal error.
+    if (!af.open_and_lock(!_dont_lock_pi)) {
+      // Failing to open, or failing to grab the write lock, on the
+      // attribute file is a fatal error.
       exit(1);
     }
 
@@ -640,7 +640,7 @@ run() {
       }
     }
 
-    okflag = af.release_lock() && okflag;
+    okflag = af.close_and_unlock() && okflag;
   }
 
   if (_statistics_only) {

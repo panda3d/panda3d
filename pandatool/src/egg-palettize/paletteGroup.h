@@ -69,7 +69,8 @@ public:
   static void complete_groups(PaletteGroups &groups);
   void add_ancestors(PaletteGroups &groups);
 
-  void write(ostream &out) const;
+  void write_pi(ostream &out) const;
+  void write_palettes_pi(ostream &out) const;
 
 private:
   typedef vector<PaletteGroup *> Parents;

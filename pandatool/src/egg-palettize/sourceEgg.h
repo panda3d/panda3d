@@ -28,6 +28,8 @@ public:
   TextureEggRef *add_texture(PTexture *texture, TexturePacking *packing,
 			     bool repeats, bool alpha);
   void get_textures(EggPalettize *prog);
+
+  void add_group(PaletteGroup *group);
   void require_groups(PaletteGroup *preferred, const PaletteGroups &groups);
   void all_textures_assigned();
 
@@ -35,7 +37,7 @@ public:
   void update_trefs();
 
   bool needs_rebuild(bool force_redo_all, 
-			bool eggs_include_images) const;
+		     bool eggs_include_images) const;
 
   bool matched_anything() const;
   void set_matched_anything(bool matched_anything);
@@ -53,6 +55,8 @@ private:
 
   AttribFile *_attrib_file;
   bool _matched_anything;
+
+  PaletteGroups _groups;
 
 public:
   static TypeHandle get_class_type() {
