@@ -549,6 +549,15 @@ download(const string &file_name, Filename file_dest,
 	  downloader_cat.error()
 	    << "Downloader::download() - receive timed out after: " 
 	    << downloader_timeout_retries << " retries" << endl;
+	  if (bytes > 0) {
+	    status._bytes_in_buffer += bytes;
+   	    status._next_in += bytes;
+	    if (write_to_disk(status) == false) {
+	      downloader_cat.error()
+		<< "Downloader::download() - write to disk failed after "
+		<< "timeout!" << endl;
+	    }
+	  }
           PT_Event timeout_event = new Event(status._event_name);
           timeout_event->add_parameter(EventParameter((int)status._id));
           timeout_event->add_parameter(
