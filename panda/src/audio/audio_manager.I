@@ -96,6 +96,14 @@ INLINE bool AudioManager::get_loop(AudioSound* sound) {
 //               in the universe and it constructs itself.
 ////////////////////////////////////////////////////////////////////
 INLINE AudioManager::AudioManager(void) {
+  audio_cat->debug() << "**** audio_sfx_active = "
+		     << (audio_sfx_active?"true":"false") << endl;
+  audio_cat->debug() << "**** audio_music_active = "
+		     << (audio_music_active?"true":"false") << endl;
+  audio_cat->debug() << "**** audio_master_sfx_volume = "
+		     << audio_master_sfx_volume << endl;
+  audio_cat->debug() << "**** audio_master_music_volume = "
+		     << audio_master_music_volume << endl;
   _sfx_active = _hard_sfx_active = audio_sfx_active;
   _music_active = _hard_music_active = audio_music_active;
   _master_sfx_volume = audio_master_sfx_volume;
@@ -118,6 +126,7 @@ INLINE void AudioManager::set_master_sfx_volume(float v) {
 //  Description: set the overall volume of music
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::set_master_music_volume(float v) {
+  get_ptr();
   AudioManager::_master_music_volume = v;
   AudioManager::_master_volume_change = true;
 }
@@ -128,6 +137,7 @@ INLINE void AudioManager::set_master_music_volume(float v) {
 //  Description: return the overall volume of SFX
 ////////////////////////////////////////////////////////////////////
 INLINE float AudioManager::get_master_sfx_volume(void) {
+  get_ptr();
   return AudioManager::_master_sfx_volume;
 }
 
@@ -137,6 +147,7 @@ INLINE float AudioManager::get_master_sfx_volume(void) {
 //  Description: return the overall volume of music
 ////////////////////////////////////////////////////////////////////
 INLINE float AudioManager::get_master_music_volume(void) {
+  get_ptr();
   return AudioManager::_master_music_volume;
 }
 
@@ -146,6 +157,7 @@ INLINE float AudioManager::get_master_music_volume(void) {
 //  Description: turn on/off all audio
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::set_all_sound_active(bool f) {
+  get_ptr();
   audio_is_active = f;
 }
 
@@ -155,6 +167,7 @@ INLINE void AudioManager::set_all_sound_active(bool f) {
 //  Description: turn on/off all audio
 ////////////////////////////////////////////////////////////////////
 INLINE bool AudioManager::get_all_sound_active(void) {
+  get_ptr();
   return audio_is_active;
 }
 
@@ -164,6 +177,7 @@ INLINE bool AudioManager::get_all_sound_active(void) {
 //  Description: turn on/off SFX
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::set_sfx_active(bool f) {
+  get_ptr();
   if (f) {
     if (AudioManager::_hard_sfx_active) {
       AudioManager::_sfx_active = f;
@@ -181,6 +195,7 @@ INLINE void AudioManager::set_sfx_active(bool f) {
 //  Description: turn on/off music
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::set_music_active(bool f) {
+  get_ptr();
   if (f) {
     if (AudioManager::_hard_music_active) {
       AudioManager::_music_active = f;
@@ -198,6 +213,7 @@ INLINE void AudioManager::set_music_active(bool f) {
 //  Description: return the state of SFX playing
 ////////////////////////////////////////////////////////////////////
 INLINE bool AudioManager::get_sfx_active(void) {
+  get_ptr();
   return AudioManager::_sfx_active;
 }
 
@@ -207,6 +223,7 @@ INLINE bool AudioManager::get_sfx_active(void) {
 //  Description: return the state of music playing
 ////////////////////////////////////////////////////////////////////
 INLINE bool AudioManager::get_music_active(void) {
+  get_ptr();
   return AudioManager::_music_active;
 }
 
@@ -216,6 +233,7 @@ INLINE bool AudioManager::get_music_active(void) {
 //  Description: set the hardware availability state for SFX
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::set_hard_sfx_active(bool f) {
+  get_ptr();
   AudioManager::_hard_sfx_active = f;
   if (!f)
     AudioManager::_sfx_active = f;
@@ -227,6 +245,7 @@ INLINE void AudioManager::set_hard_sfx_active(bool f) {
 //  Description: set the hardware availability state for music
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::set_hard_music_active(bool f) {
+  get_ptr();
   AudioManager::_hard_music_active = f;
   if (!f)
     AudioManager::_music_active = f;
