@@ -848,7 +848,7 @@ dx_init(HCURSOR hMouseCursor) {
     // must check (scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) (yes on GF2/Radeon85, no on TNT)
     scrn.pD3DDevice->SetRenderState(D3DRS_BLENDOP,D3DBLENDOP_ADD);
 
-    hr = CreateDX8Cursor(scrn.pD3DDevice,hMouseCursor,true);
+    hr = CreateDX8Cursor(scrn.pD3DDevice,hMouseCursor,dx_show_cursor_watermark);
     if(FAILED(hr))
         dxgsg_cat.error() << "CreateDX8Cursor failed!\n";
 
@@ -5254,7 +5254,8 @@ end_decal(GeomNode *base_geom) {
             // properly.
 
             // need to save the state we change on the stack, since we could get called
-            // recursively by the draw() method
+            // recursively by the draw() method, and the draw method could change any of
+            // the state below
             D3DBLEND saved_blend_source_func = _blend_source_func;
             D3DBLEND saved_blend_dest_func = _blend_dest_func;
             UINT saved_colorwritemask = _color_writemask;
@@ -5271,7 +5272,6 @@ end_decal(GeomNode *base_geom) {
                 enable_blend(true);
                 call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
             } else {  
-                // note: not saving current colorwriteenable val, assumes this is always all 1's.  bugbug is this OK?
                 set_color_writemask(0x0);
             }
 

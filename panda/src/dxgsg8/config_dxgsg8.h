@@ -30,6 +30,7 @@ extern bool dx_sync_video;
 extern bool dx_cull_traversal;
 extern bool dx_show_fps_meter;
 extern bool dx_no_vertex_fog;
+extern bool dx_show_cursor_watermark;
 extern bool dx_full_screen_antialiasing;
 extern float dx_fps_meter_update_interval;
 extern bool dx_auto_normalize_lighting;

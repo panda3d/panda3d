@@ -91,7 +91,7 @@ protected:
   void config_window(wdxGraphicsWindowGroup *pParentGroup);
   void finish_window_setup(void);
   bool search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevinfo);
-  bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DFORMAT *pBestFmt,bool bWantStencil);
+  bool FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE &TestDisplayMode,D3DFORMAT *pBestFmt,bool bWantStencil) const;
   void setup_colormap(void);
   INLINE void track_mouse_leaving(HWND hwnd);
 

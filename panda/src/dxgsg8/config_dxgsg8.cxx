@@ -51,6 +51,15 @@ bool dx_cull_traversal = config_dxgsg.GetBool("dx-cull-traversal", true);
 // if true, if card only supports per-vertex fog, it will be treated as no-HW fog capability
 bool dx_no_vertex_fog = config_dxgsg.GetBool("dx-no-vertex-fog", false);
 
+// if true, overwrite cursor bitmap tip with "D3D" to distinguish it from GDI cursor 
+bool dx_show_cursor_watermark = config_dxgsg.GetBool("dx-show-cursor-watermark", 
+#ifdef _DEBUG
+    true
+#else
+    false
+#endif
+    );
+
 // if true, triangle filter will be used to generate mipmap levels instead of default box filter
 bool dx_use_triangle_mipgen_filter = config_dxgsg.GetBool("dx-use-triangle-mipgen-filter", false);
 
