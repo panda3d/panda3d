@@ -1007,11 +1007,18 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
     DWORD dwOrigHeight = (DWORD)pbuf->get_ysize();
 
     // Get the device caps so we can check if the device has any constraints
-    // when using textures
+    // when using textures.  Could we use the
     D3DDEVICEDESC7 devDesc;
     if(FAILED( pd3dDevice->GetCaps( &devDesc ) )) {
         goto error_exit;
     }
+
+    // s3 virge drivers sometimes give crap values for these
+    if(devDesc.dwMaxTextureWidth==0)
+       devDesc.dwMaxTextureWidth=256;
+
+    if(devDesc.dwMaxTextureHeight==0)
+       devDesc.dwMaxTextureHeight=256;
 
     // Setup the new surface desc for the texture. Note how we are using the
     // texture manage attribute, so Direct3D does alot of dirty work for us
@@ -1056,21 +1063,21 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 
     if(!ISPOW2(ddsd.dwWidth) || !ISPOW2(ddsd.dwHeight)) {
         dxgsg_cat.error() << "ERROR: texture dimensions are not a power of 2 for " << _tex->get_name() << "!!!!! \n";
-#ifdef _DEBUG
-        exit(1);  // want to catch badtexsize errors
-#else
-        goto error_exit;
-#endif
+        #ifdef _DEBUG
+          exit(1);  // want to catch badtexsize errors
+        #else
+          goto error_exit;
+        #endif
     }
 
     bool bShrinkOriginal;
-
     bShrinkOriginal=false;
+
     if((dwOrigWidth>devDesc.dwMaxTextureWidth)||(dwOrigHeight>devDesc.dwMaxTextureHeight)) {
-#ifdef _DEBUG
-        dxgsg_cat.error() << "WARNING: " <<_tex->get_name() << ": Image size exceeds max texture dimensions of (" << devDesc.dwMaxTextureWidth << "," << devDesc.dwMaxTextureHeight << ") !!\n"
-        << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<<  devDesc.dwMaxTextureWidth << "," << devDesc.dwMaxTextureHeight << ") !\n";
-#endif
+        #ifdef _DEBUG
+           dxgsg_cat.error() << "WARNING: " <<_tex->get_name() << ": Image size exceeds max texture dimensions of (" << devDesc.dwMaxTextureWidth << "," << devDesc.dwMaxTextureHeight << ") !!\n"
+           << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<<  devDesc.dwMaxTextureWidth << "," << devDesc.dwMaxTextureHeight << ") !\n";
+        #endif
 
         if(dwOrigWidth>devDesc.dwMaxTextureWidth)
             ddsd.dwWidth=devDesc.dwMaxTextureWidth;
@@ -1404,15 +1411,16 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
                     }
                 }
 
-             // find compatible 16bpp fmt, just look for any 565, then 0555
+                // find compatible 16bpp fmt, just look for any 565, then 0555
                 DWORD dwMasks[2] = {0xF800, 0x7C00};
+                ConversionType ConvType[2] = {ConvLum8to16_0565,ConvLum8to16_0555};
 
                 for(DWORD modenum=0;modenum<2;modenum++)
                     for(i=0,pCurPixFmt=&pTexPixFmts[0];i<cNumTexPixFmts;i++,pCurPixFmt++) {
                         if((pCurPixFmt->dwRGBBitCount==16) && (pCurPixFmt->dwFlags & DDPF_RGB)
                            && (!(pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS))
                            && (pCurPixFmt->dwRBitMask==dwMasks[modenum])) {
-                            ConvNeeded=ConvLum8to16_0565;
+                            ConvNeeded=ConvType[modenum];
                             goto found_matching_format;
                         }
                     }
