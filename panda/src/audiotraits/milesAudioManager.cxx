@@ -27,11 +27,15 @@
 #include "config_express.h"
 #include "virtualFileSystem.h"
 #include "nullAudioSound.h"
+
 #include <algorithm>
 
 int MilesAudioManager::_active_managers = 0;
 HDLSFILEID MilesAudioManager::_dls_field = NULL;
-bool bMilesShutdownCalled = false;
+
+namespace {
+  bool miles_shutdown_called = false;
+}
 
 PT(AudioManager) Create_AudioManager() {
   audio_debug("Create_AudioManager() Miles.");
@@ -39,10 +43,10 @@ PT(AudioManager) Create_AudioManager() {
 }
 
 void CustomMilesShutdown() {
-  if (bMilesShutdownCalled) {
+  if (miles_shutdown_called) {
     return;
   }
-  bMilesShutdownCalled = true;
+  miles_shutdown_called = true;
 
   if (MilesAudioManager::_dls_field!=NULL) {
     HDLSDEVICE dls= NULL;
@@ -198,7 +202,7 @@ MilesAudioManager::
     }
     audio_debug("  AIL_quick_shutdown()");
     AIL_quick_shutdown();
-    bMilesShutdownCalled = true;
+    miles_shutdown_called = true;
   }
 }
 

@@ -24,6 +24,11 @@ namespace {
   static const string blank="";
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: 
+//       Access: 
+//  Description: All of these functions are just stubs.
+////////////////////////////////////////////////////////////////////
 NullAudioSound::NullAudioSound() {
   // Intentionally blank.
 }
