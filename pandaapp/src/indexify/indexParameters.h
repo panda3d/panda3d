@@ -23,6 +23,7 @@
 
 #include "filename.h"
 #include "dSearchPath.h"
+#include "pnmImage.h"
 
 // Some of these constants may be modified by command-line parameters
 // from the user.
