@@ -172,25 +172,25 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         else:
             # Middle sphere:
             self.avatarRadius = avatarRadius
-            self.cSphere = CollisionSphere(0.0, -5.0, 0.0, avatarRadius)
-            cSphereNode = CollisionNode('SP.cSphereNode')
-            cSphereNode.addSolid(self.cSphere)
-            self.cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
+            #self.cSphere = CollisionSphere(0.0, -5.0, 0.0, avatarRadius)
+            #cSphereNode = CollisionNode('SP.cSphereNode')
+            #cSphereNode.addSolid(self.cSphere)
+            #self.cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
             self.cSphereBitMask = bitmask
 
-        cSphereNode.setFromCollideMask(self.cSphereBitMask)
-        cSphereNode.setIntoCollideMask(BitMask32.allOff())
+        #cSphereNode.setFromCollideMask(self.cSphereBitMask)
+        #cSphereNode.setIntoCollideMask(BitMask32.allOff())
 
         # set up collision mechanism
         self.pusher = PhysicsCollisionHandler()
         self.pusher.setInPattern("enter%in")
         self.pusher.setOutPattern("exit%in")
 
-        self.pusher.addCollider(self.cSphereNodePath, self.avatarNodePath)
+        #self.pusher.addCollider(self.cSphereNodePath, self.avatarNodePath)
 
         if 1:
             # Front sphere:
-            self.cBowSphere = CollisionSphere(0.0, 20.0, 0.0, avatarRadius)
+            self.cBowSphere = CollisionSphere(0.0, 30.0, 0.0, avatarRadius)
             cBowSphereNode = CollisionNode('SP.cBowSphereNode')
             cBowSphereNode.addSolid(self.cBowSphere)
             self.cBowSphereNodePath = self.avatarNodePath.attachNewNode(cBowSphereNode)
@@ -350,7 +350,6 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         """
         assert(self.debugPrint("initializeCollisions()"))
         self.cTrav = collisionTraverser
-        self.floorOffset = floorOffset = 7.0
         self.avatarRadius = avatarRadius
         self.floorOffset = floorOffset
         self.reach = reach
@@ -441,7 +440,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         if self.collisionsActive != active:
             self.collisionsActive = active
             if active:
-                self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
+                #self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
                 self.cTrav.addCollider(self.cBowSphereNodePath, self.pusher)
                 self.cTrav.addCollider(self.cSternSphereNodePath, self.pusher)
                 if self.useHeightRay:
@@ -450,7 +449,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
                     else:
                         self.cTrav.addCollider(self.cRayNodePath, self.cRayQueue)
             else:
-                self.cTrav.removeCollider(self.cSphereNodePath)
+                #self.cTrav.removeCollider(self.cSphereNodePath)
                 self.cTrav.removeCollider(self.cBowSphereNodePath)
                 self.cTrav.removeCollider(self.cSternSphereNodePath)
                 if self.useHeightRay:
