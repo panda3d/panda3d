@@ -298,3 +298,13 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         
         return self.panelName
 
+
+    def setPos(self, x, y, z):
+        """setPos(self, x, y, x)
+        """
+        NodePath.setPos(self, x, y, z)
+        for button in self.panelButtons:
+            button.unmanage()
+            button.manage(self)
+
+
