@@ -172,9 +172,10 @@ set_auto_vertical_scale() {
 
   float max_value = 0.0;
 
+  int frame_number = -1;
   for (int x = 0; x <= _xsize; x++) {
     float time = pixel_to_timestamp(x);
-    int frame_number =
+    frame_number =
       thread_data->get_frame_number_at_time(time, frame_number);
 
     if (thread_data->has_frame(frame_number)) {
