@@ -284,6 +284,10 @@ public:
   static PStatCollector _frustum_cull_transforms_pcollector;
   static PStatCollector _set_state_pcollector;
   static PStatCollector _draw_primitive_pcollector;
+  static PStatCollector _transform_states_pcollector;
+  static PStatCollector _transform_states_unused_pcollector;
+  static PStatCollector _render_states_pcollector;
+  static PStatCollector _render_states_unused_pcollector;
 
 private:
   class LightInfo {

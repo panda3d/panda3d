@@ -169,6 +169,10 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "Memory usage",                     { 0.5, 1.0, 0.5 },  "MB", 64, 1048576 },
   { 1, "Memory usage:C++",                 { 0.2, 0.2, 1.0 } },
   { 1, "Memory usage:Interpreter",         { 0.8, 0.2, 0.5 } },
+  { 1, "TransformStates",                  { 1.0, 0.5, 0.5 },  "", 5000 },
+  { 1, "TransformStates:Unused",           { 0.2, 0.2, 0.2 } },
+  { 1, "RenderStates",                     { 0.5, 0.5, 1.0 },  "", 1000 },
+  { 1, "RenderStates:Unused",              { 0.2, 0.2, 0.2 } },
   { 0, NULL }
 };
 

@@ -622,18 +622,104 @@ get_max_priority() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::get_cache_size
+//     Function: RenderState::get_num_states
 //       Access: Published, Static
 //  Description: Returns the total number of unique RenderState
 //               objects allocated in the world.  This will go up and
 //               down during normal operations.
 ////////////////////////////////////////////////////////////////////
 int RenderState::
-get_cache_size() {
+get_num_states() {
   if (_states == (States *)NULL) {
     return 0;
   }
   return _states->size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_num_unused_states
+//       Access: Published, Static
+//  Description: Returns the total number of RenderState objects that
+//               have been allocated but have no references outside of
+//               the internal RenderState map.
+////////////////////////////////////////////////////////////////////
+int RenderState::
+get_num_unused_states() {
+  if (_states == (States *)NULL) {
+    return 0;
+  }
+
+  int num_unused = 0;
+
+  // First, we need to count the number of times each RenderState
+  // object is recorded in the cache.
+  typedef pmap<const RenderState *, int> StateCount;
+  StateCount state_count;
+
+  States::iterator si;
+  for (si = _states->begin(); si != _states->end(); ++si) {
+    const RenderState *state = (*si);
+
+    CompositionCache::const_iterator ci;
+    for (ci = state->_composition_cache.begin();
+         ci != state->_composition_cache.end();
+         ++ci) {
+      const RenderState *result = (*ci).second._result;
+      if (result != (const RenderState *)NULL) {
+        // Here's a RenderState that's recorded in the cache.
+        // Count it.
+        pair<StateCount::iterator, bool> ir =
+          state_count.insert(StateCount::value_type(result, 1));
+        if (!ir.second) {
+          // If the above insert operation fails, then it's already in
+          // the cache; increment its value.
+          (*(ir.first)).second++;
+        }
+      }
+    }
+    for (ci = state->_invert_composition_cache.begin();
+         ci != state->_invert_composition_cache.end();
+         ++ci) {
+      const RenderState *result = (*ci).second._result;
+      if (result != (const RenderState *)NULL) {
+        pair<StateCount::iterator, bool> ir =
+          state_count.insert(StateCount::value_type(result, 1));
+        if (!ir.second) {
+          (*(ir.first)).second++;
+        }
+      }
+    }
+
+    // Finally, check the self_compose field, which might be reference
+    // counted too.
+    if (state->_self_compose != (const RenderState *)NULL &&
+        state->_self_compose != state) {
+      const RenderState *result = state->_self_compose;
+      if (result != (const RenderState *)NULL) {
+        pair<StateCount::iterator, bool> ir =
+          state_count.insert(StateCount::value_type(result, 1));
+        if (!ir.second) {
+          (*(ir.first)).second++;
+        }
+      }
+    }
+
+  }
+
+  // Now that we have the appearance count of each RenderState
+  // object, we can tell which ones are unreferenced outside of the
+  // RenderState cache, by comparing these to the reference counts.
+  StateCount::iterator sci;
+  for (sci = state_count.begin(); sci != state_count.end(); ++sci) {
+    const RenderState *state = (*sci).first;
+    int count = (*sci).second;
+    nassertr(count <= state->get_ref_count(), num_unused);
+    if (count == state->get_ref_count()) {
+      num_unused++;
+    }
+  }
+
+  return num_unused;
 }
 
 ////////////////////////////////////////////////////////////////////

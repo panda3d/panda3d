@@ -38,10 +38,7 @@ extern const bool pipe_spec_is_remote;
 extern const bool compare_state_by_pointer;
 extern const bool cull_sorting;
 extern const bool view_frustum_cull;
-
-extern const float gsg_clear_r;
-extern const float gsg_clear_g;
-extern const float gsg_clear_b;
+extern const bool pstats_unused_states;
 
 extern Config::ConfigTable::Symbol::iterator pipe_modules_begin(void);
 extern Config::ConfigTable::Symbol::iterator pipe_modules_end(void);

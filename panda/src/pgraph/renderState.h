@@ -95,7 +95,8 @@ PUBLISHED:
 
   static int get_max_priority();
 
-  static int get_cache_size();
+  static int get_num_states();
+  static int get_num_unused_states();
   static int clear_cache();
 
 public:

@@ -66,6 +66,10 @@ PStatCollector GraphicsStateGuardian::_frustum_cull_transforms_pcollector("Cull 
 
 PStatCollector GraphicsStateGuardian::_set_state_pcollector("Draw:Set state");
 PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive");
+PStatCollector GraphicsStateGuardian::_transform_states_pcollector("TransformStates");
+PStatCollector GraphicsStateGuardian::_transform_states_unused_pcollector("TransformStates:Unused");
+PStatCollector GraphicsStateGuardian::_render_states_pcollector("RenderStates");
+PStatCollector GraphicsStateGuardian::_render_states_unused_pcollector("RenderStates:Unused");
 
 #endif
 
@@ -134,10 +138,10 @@ reset() {
   _transform = TransformState::make_identity();
 
   _buffer_mask = 0;
-  _color_clear_value.set(gsg_clear_r, gsg_clear_g, gsg_clear_b, 0.0);
-  _depth_clear_value = 1.0;
-  _stencil_clear_value = 0.0;
-  _accum_clear_value.set(0.0, 0.0, 0.0, 0.0);
+  _color_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
+  _depth_clear_value = 1.0f;
+  _stencil_clear_value = 0.0f;
+  _accum_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
   _clear_buffer_type = RenderBuffer::T_back | RenderBuffer::T_depth;
   _normals_enabled = false;
 
@@ -1357,29 +1361,38 @@ close_gsg() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 init_frame_pstats() {
-  _current_textures.clear();
-  _current_geoms.clear();
-  _current_geom_nodes.clear();
-  _active_texusage_pcollector.clear_level();
-  _active_geom_pcollector.clear_level();
-  _active_geom_node_pcollector.clear_level();
-
-  // Also clear out our other counters while we're here.
-  _vertices_tristrip_pcollector.clear_level();
-  _vertices_trifan_pcollector.clear_level();
-  _vertices_tri_pcollector.clear_level();
-  _vertices_other_pcollector.clear_level();
-
-  _state_changes_pcollector.clear_level();
-  _transform_state_pcollector.clear_level();
-  _texture_state_pcollector.clear_level();
-
-  _nodes_pcollector.clear_level();
-  _geom_nodes_pcollector.clear_level();
-
-  // Not to mention the view-frustum-cull counters.
-  _frustum_cull_volumes_pcollector.clear_level();
-  _frustum_cull_transforms_pcollector.clear_level();
+  if (PStatClient::is_connected()) {
+    _current_textures.clear();
+    _current_geoms.clear();
+    _current_geom_nodes.clear();
+    _active_texusage_pcollector.clear_level();
+    _active_geom_pcollector.clear_level();
+    _active_geom_node_pcollector.clear_level();
+    
+    // Also clear out our other counters while we're here.
+    _vertices_tristrip_pcollector.clear_level();
+    _vertices_trifan_pcollector.clear_level();
+    _vertices_tri_pcollector.clear_level();
+    _vertices_other_pcollector.clear_level();
+    
+    _state_changes_pcollector.clear_level();
+    _transform_state_pcollector.clear_level();
+    _texture_state_pcollector.clear_level();
+    
+    _nodes_pcollector.clear_level();
+    _geom_nodes_pcollector.clear_level();
+    
+    // Not to mention the view-frustum-cull counters.
+    _frustum_cull_volumes_pcollector.clear_level();
+    _frustum_cull_transforms_pcollector.clear_level();
+    
+    _transform_states_pcollector.set_level(TransformState::get_num_states());
+    _render_states_pcollector.set_level(RenderState::get_num_states());
+    if (pstats_unused_states) {
+      _transform_states_unused_pcollector.set_level(TransformState::get_num_unused_states());
+      _render_states_unused_pcollector.set_level(RenderState::get_num_unused_states());
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

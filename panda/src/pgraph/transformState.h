@@ -115,7 +115,8 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
 
-  static int get_cache_size();
+  static int get_num_states();
+  static int get_num_unused_states();
   static int clear_cache();
 
 private:

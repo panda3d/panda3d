@@ -68,9 +68,10 @@ const bool cull_sorting = config_display.GetBool("cull-sorting", true);
 // (primarily useful for debugging).
 const bool view_frustum_cull = config_display.GetBool("view-frustum-cull", true);
 
-const float gsg_clear_r = config_display.GetFloat("gsg-clear-r", 0.0);
-const float gsg_clear_g = config_display.GetFloat("gsg-clear-g", 0.0);
-const float gsg_clear_b = config_display.GetFloat("gsg-clear-b", 0.0);
+// Set this true to show the number of unused states in the pstats
+// graph for TransformState and RenderState counts.  This adds a bit
+// of per-frame overhead to count these things up.
+const bool pstats_unused_states = config_display.GetBool("pstats-unused-states", false);
 
 
 Config::ConfigTable::Symbol::iterator pipe_modules_begin(void) {
