@@ -2,6 +2,8 @@
 
 from ShowBase import *
 
+CollisionHandlerRayStart = 4000.0 # This is a hack, it may be better to use a line instead of a ray.
+
 # Create the showbase instance
 ShowBase()
 
