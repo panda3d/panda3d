@@ -419,6 +419,7 @@ get_global_ptr() {
   if (_global_ptr == (MemoryUsage *)NULL) {
     _global_ptr = new MemoryUsage;
   }
+
   return _global_ptr;
 }
 
@@ -437,7 +438,6 @@ ns_record_pointer(ReferenceCount *ptr) {
     _recursion_protect = true;
     pair<Table::iterator, bool> insert_result =
       _table.insert(Table::value_type((void *)ptr, MemoryInfo()));
-    _recursion_protect = false;
     
     // This shouldn't fail.
     assert(insert_result.first != _table.end());
@@ -451,7 +451,7 @@ ns_record_pointer(ReferenceCount *ptr) {
     // We shouldn't already have a ReferenceCount pointer.
     if ((info._flags & MemoryInfo::F_got_ref) != 0) {
       express_cat.error()
-        << "Pointer " << (void *)ptr << " recorded twice!\n";
+        << "ReferenceCount pointer " << (void *)ptr << " recorded twice!\n";
     }
 
     info._void_ptr = (void *)ptr;
@@ -461,6 +461,11 @@ ns_record_pointer(ReferenceCount *ptr) {
     info._time = TrueClock::get_ptr()->get_long_time();
     info._freeze_index = _freeze_index;
     info._flags |= (MemoryInfo::F_reconsider_dynamic_type | MemoryInfo::F_got_ref);
+
+    // We close the recursion_protect flag all the way down here, so
+    // that we also protect ourselves against a possible recursive
+    // call in TrueClock::get_ptr().
+    _recursion_protect = false;
   }
 }
 
@@ -603,7 +608,6 @@ ns_record_void_pointer(void *ptr, size_t size) {
     _recursion_protect = true;
     pair<Table::iterator, bool> insert_result =
       _table.insert(Table::value_type((void *)ptr, MemoryInfo()));
-    _recursion_protect = false;
 
     assert(insert_result.first != _table.end());
 
@@ -616,7 +620,7 @@ ns_record_void_pointer(void *ptr, size_t size) {
     // We shouldn't already have a void pointer.
     if ((info._flags & MemoryInfo::F_got_void) != 0) {
       express_cat.error()
-        << "Pointer " << (void *)ptr << " recorded twice!\n";
+        << "Void pointer " << (void *)ptr << " recorded twice!\n";
     }
 
     if (info._freeze_index == _freeze_index) {
@@ -631,6 +635,11 @@ ns_record_void_pointer(void *ptr, size_t size) {
     info._time = TrueClock::get_ptr()->get_long_time();
     info._freeze_index = _freeze_index;
     info._flags |= (MemoryInfo::F_got_void | MemoryInfo::F_size_known);
+
+    // We close the recursion_protect flag all the way down here, so
+    // that we also protect ourselves against a possible recursive
+    // call in TrueClock::get_ptr().
+    _recursion_protect = false;
   }
 }
 

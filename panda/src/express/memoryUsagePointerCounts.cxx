@@ -48,7 +48,7 @@ output(ostream &out) const {
   if (_unknown_size_count < _count) {
     out << ", ";
     output_bytes(out, _size);
-    out << ", ";
+    out << ", avg ";
     output_bytes(out, _size / (_count - _unknown_size_count));
     out << " each";
       
