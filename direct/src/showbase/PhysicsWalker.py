@@ -148,7 +148,6 @@ class PhysicsWalker(DirectObject.DirectObject):
         else: # useCollisionHandlerQueue
             self.cRayQueue = CollisionHandlerQueue()
             self.cTrav.addCollider(self.cRayNodePath, self.cRayQueue)
-        self.cRayNodePath.show()
 
     def determineHeight(self):
         """
@@ -550,7 +549,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             else:
                 # ...the avatar is very close to the ground (close enough to be
                 # considered on the ground).
-                if self.isAirborne:
+                if self.isAirborne and physObject.getVelocity().getZ() <= 0.0:
                     # ...the avatar has landed.
                     contactLength = contact.length()
                     if contactLength>self.__hardLandingForce:
@@ -565,9 +564,14 @@ class PhysicsWalker(DirectObject.DirectObject):
                     #print "jump"
                     #self.__jumpButton=0
                     messenger.send("jumpStart")
-                    jumpVec=Vec3(contact+Vec3.up())
-                    #jumpVec=Vec3(rotAvatarToPhys.xform(jumpVec))
-                    jumpVec.normalize()
+                    if 0:
+                        # ...jump away from walls and with with the slope normal.
+                        jumpVec=Vec3(contact+Vec3.up())
+                        #jumpVec=Vec3(rotAvatarToPhys.xform(jumpVec))
+                        jumpVec.normalize()
+                    else:
+                        # ...jump straight up, even if next to a wall.
+                        jumpVec=Vec3.up()
                     jumpVec*=self.avatarControlJumpForce
                     physObject.addImpulse(Vec3(jumpVec))
                     self.isAirborne = 1 # Avoid double impulse before fully airborne.

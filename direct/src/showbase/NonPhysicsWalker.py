@@ -121,19 +121,20 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         del self.pusher
         del self.lifter
 
-    def collisionsOff(self):
-        assert(self.debugPrint("collisionsOff"))
-        self.cTrav.removeCollider(self.cSphereNodePath)
-        self.cTrav.removeCollider(self.cRayNodePath)
+    def setCollisionsActive(self, active = 1):
+        assert(self.debugPrint("setCollisionsActive(active%s)"%(active,)))
+        if self.collisionsActive != active:
+            self.collisionsActive = active
+            if active:
+                self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
+                self.cTrav.addCollider(self.cRayNodePath, self.lifter)
+            else:
+                self.cTrav.removeCollider(self.cSphereNodePath)
+                self.cTrav.removeCollider(self.cRayNodePath)
 
-        # Now that we have disabled collisions, make one more pass
-        # right now to ensure we aren't standing in a wall.
-        self.oneTimeCollide()
-
-    def collisionsOn(self):
-        assert(self.debugPrint("collisionsOn"))
-        self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
-        self.cTrav.addCollider(self.cRayNodePath, self.lifter)
+                # Now that we have disabled collisions, make one more pass
+                # right now to ensure we aren't standing in a wall.
+                self.oneTimeCollide()
 
     def oneTimeCollide(self):
         """
