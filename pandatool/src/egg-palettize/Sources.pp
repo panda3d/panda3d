@@ -1,5 +1,5 @@
-#begin noinst_bin_target
-  #define TARGET egg-palettize
+#begin bin_target
+  #define TARGET egg-palettize-new
   #define LOCAL_LIBS \
     eggbase progbase
   #define OTHER_LIBS \
@@ -19,5 +19,5 @@
 
   #define INSTALL_HEADERS
 
-#end noinst_bin_target
+#end bin_target
 
