@@ -50,3 +50,13 @@ void StitchImageOutputter::
 add_screen(StitchScreen *screen) {
   _screen->add_screen(screen);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImageOutputter::set_eyepoint
+//       Access: Public, Virtual
+//  Description: Sets the eye point to the indicated coordinate frame,
+//               if it makes sense to this kind of outputter.
+////////////////////////////////////////////////////////////////////
+void StitchImageOutputter::
+set_eyepoint(const LMatrix4d &) {
+}

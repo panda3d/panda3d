@@ -84,6 +84,7 @@ public:
   double get_grid_alpha(int xv, int yv);
 
   const LVecBase2d &get_size_pixels() const;
+  void set_size_pixels(const LVecBase2d &size_pixels);
   LVecBase2d get_size_mm() const;
 
   LVector3d extrude(const LPoint2d &point_uv) const;

@@ -321,6 +321,8 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
     return KW_INPUT_IMAGE;
   } else if (cmp_nocase_uh(str, "output_image") == 0) {
     return KW_OUTPUT_IMAGE;
+  } else if (cmp_nocase_uh(str, "eyepoint") == 0) {
+    return KW_EYEPOINT;
   } else if (cmp_nocase_uh(str, "perspective") == 0) {
     return KW_PERSPECTIVE;
   } else if (cmp_nocase_uh(str, "fisheye") == 0) {

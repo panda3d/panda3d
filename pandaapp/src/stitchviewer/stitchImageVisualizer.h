@@ -44,6 +44,8 @@ public:
   virtual void add_output_image(StitchImage *image);
   virtual void add_stitcher(Stitcher *stitcher);
 
+  virtual void set_eyepoint(const LMatrix4d &mat);
+
   virtual void execute();
 
 protected:
@@ -77,6 +79,8 @@ protected:
 
   typedef vector<Image> Images;
   Images _images;
+
+  LMatrix4f _eyepoint_inv;
 
   PT(GraphicsPipe) _main_pipe;
   PT(GraphicsWindow) _main_win;

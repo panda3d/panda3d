@@ -53,6 +53,8 @@ public:
   virtual void add_stitcher(Stitcher *stitcher)=0;
   void add_screen(StitchScreen *screen);
 
+  virtual void set_eyepoint(const LMatrix4d &mat);
+
   virtual void execute()=0;
 
 protected:

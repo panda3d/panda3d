@@ -329,6 +329,25 @@ get_size_pixels() const {
   return _size_pixels;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImage::set_size_pixels
+//       Access: Public
+//  Description: Redefines the image to be the indicated size in
+//               pixels, without changing its size in mm.
+//
+//               This may only be called before open_output_file() has
+//               been called.
+////////////////////////////////////////////////////////////////////
+void StitchImage::
+set_size_pixels(const LVecBase2d &size_pixels) {
+  assert(_data == (PNMImage *)NULL);
+  
+  _size_pixels = size_pixels;
+  _orig_size_pixels = _size_pixels;
+  _pixels_per_mm.set((_size_pixels[0] - 1.0) / _size_mm[0],
+                     (_size_pixels[1] - 1.0) / _size_mm[1]);
+}
+
 LVecBase2d StitchImage::
 get_size_mm() const {
   return _size_mm;

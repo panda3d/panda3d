@@ -26,6 +26,7 @@
 StitchImageRasterizer::
 StitchImageRasterizer() {
   _filter_factor = 1.0;
+  _got_output_size = false;
 }
 
 
@@ -36,8 +37,16 @@ add_input_image(StitchImage *image) {
 
 void StitchImageRasterizer::
 add_output_image(StitchImage *image) {
-  image->set_output_scale_factor(_filter_factor);
-  _output_images.push_back(image);
+  if (has_output_name(image->get_name())) {
+    if (_got_output_size) {
+      image->set_size_pixels(LPoint2d(_output_xsize, _output_ysize));
+    }
+    image->set_output_scale_factor(_filter_factor);
+    _output_images.push_back(image);
+
+  } else {
+    cerr << "Ignoring output image " << image->get_name() << "\n";
+  }
 }
 
 void StitchImageRasterizer::
@@ -88,6 +97,64 @@ execute() {
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImageRasterizer::add_output_name
+//       Access: Public
+//  Description: Adds the indicated name to the set of output image
+//               names that will be generated.  If no names are added,
+//               all output images will be generated.
+////////////////////////////////////////////////////////////////////
+void StitchImageRasterizer::
+add_output_name(const string &name) {
+  _output_names.insert(name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImageRasterizer::has_output_name
+//       Access: Public
+//  Description: Returns true if the indicated output image name is
+//               one that should be generated.  This will be true if
+//               this name has been added via add_output_name(), or if
+//               no names at all have been added.
+////////////////////////////////////////////////////////////////////
+bool StitchImageRasterizer::
+has_output_name(const string &name) const {
+  if (_output_names.empty()) {
+    // If no names have been added, all names are good.
+    return true;
+  }
+
+  // Otherwise, the name is good only if it is on the list.
+  return (_output_names.count(name) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImageRasterizer::set_filter_factor
+//       Access: Public
+//  Description: Sets the factor by which the output images will be
+//               scaled internally in each dimension while generating
+//               them.  They will be reduced again to their original
+//               size for writing the images out.  This provides a
+//               simple kind of pixel filtering.
+////////////////////////////////////////////////////////////////////
+void StitchImageRasterizer::
+set_filter_factor(double filter_factor) {
+  _filter_factor = filter_factor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImageRasterizer::set_output_size
+//       Access: Public
+//  Description: Overrides the image size each output image specifies
+//               with the indicated size.
+////////////////////////////////////////////////////////////////////
+void StitchImageRasterizer::
+set_output_size(int xsize, int ysize) {
+  _output_xsize = xsize;
+  _output_ysize = ysize;
+  _got_output_size = true;
 }
 
 void StitchImageRasterizer::

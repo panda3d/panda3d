@@ -37,6 +37,7 @@ stitch_init_parser(istream &in, const string &filename,
 %token KW_LENS
 %token KW_INPUT_IMAGE
 %token KW_OUTPUT_IMAGE
+%token KW_EYEPOINT
 %token KW_PERSPECTIVE
 %token KW_FISHEYE
 %token KW_CYLINDRICAL
@@ -140,6 +141,11 @@ group_command:
         | KW_OUTPUT_IMAGE optional_name
 {
   $$ = new StitchCommand(parent, StitchCommand::C_output_image);
+  $$->set_name($2);
+}
+        | KW_EYEPOINT optional_name
+{
+  $$ = new StitchCommand(parent, StitchCommand::C_eyepoint);
   $$->set_name($2);
 }
         | KW_STITCH optional_name

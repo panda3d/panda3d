@@ -28,8 +28,9 @@
 #include "stitchFlatScreen.h"
 #include "stitcher.h"
 
-#include <indent.h>
-#include <pnmImage.h>
+#include "compose_matrix.h"
+#include "indent.h"
+#include "pnmImage.h"
 
 ostream &
 operator << (ostream &out, StitchCommand::Command c) {
@@ -52,6 +53,10 @@ operator << (ostream &out, StitchCommand::Command c) {
 
   case StitchCommand::C_output_image:
     return out << "output_image";
+    break;
+
+  case StitchCommand::C_eyepoint:
+    return out << "eyepoint";
     break;
 
   case StitchCommand::C_perspective:
@@ -356,6 +361,9 @@ process(StitchImageOutputter &outputter, Stitcher *stitcher,
   } else if (_command == C_output_image) {
     StitchImage *image = create_image();
     outputter.add_output_image(image);
+
+  } else if (_command == C_eyepoint) {
+    set_eyepoint(outputter);
 
   } else if (_command == C_stitch) {
     Stitcher *new_stitcher = new Stitcher;
@@ -710,6 +718,38 @@ create_image() {
   }
 
   return image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StitchCommand::set_eyepoint
+//       Access: Protected
+//  Description: Sets the eyepoint on the outputter according to the
+//               eyepoint entry in the command file.
+////////////////////////////////////////////////////////////////////
+void StitchCommand::
+set_eyepoint(StitchImageOutputter &outputter) {
+  LVecBase3d hpr(0.0, 0.0, 0.0);
+  LPoint3d pos(0.0, 0.0, 0.0);
+
+  Commands::const_iterator ci;
+  for (ci = _nested.begin(); ci != _nested.end(); ++ci) {
+    switch ((*ci)->_command) {
+    case C_hpr:
+      hpr = (*ci)->get_point3d();
+      break;
+
+    case C_pos:
+      pos = (*ci)->get_point3d();
+      break;
+
+    default:
+      break;
+    }
+  }
+
+  LMatrix4d mat;
+  compose_matrix(mat, LVecBase3d(1.0, 1.0, 1.0), hpr, pos);
+  outputter.set_eyepoint(mat);
 }
 
 

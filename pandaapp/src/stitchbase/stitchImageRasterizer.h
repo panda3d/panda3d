@@ -21,7 +21,9 @@
 
 #include "stitchImageOutputter.h"
 
-#include <luse.h>
+#include "pvector.h"
+#include "pset.h"
+#include "luse.h"
 
 class Stitcher;
 class StitchImage;
@@ -36,26 +38,38 @@ public:
 
   virtual void execute();
 
-  double _filter_factor;
+  void add_output_name(const string &name);
+  bool has_output_name(const string &name) const;
 
-protected:
+  void set_filter_factor(double filter_factor);
+  void set_output_size(int xsize, int ysize);
+
+private:
   void draw_points(StitchImage *output, StitchImage *input,
                    const Colord &color, double radius);
   void draw_points(StitchImage *output, Stitcher *input,
                    const Colord &color, double radius);
   void draw_image(StitchImage *output, StitchImage *input);
 
-  typedef vector<StitchImage *> Images;
-  Images _input_images;
-  Images _output_images;
-
-  typedef vector<Stitcher *> Stitchers;
-  Stitchers _stitchers;
-
-protected:
   void draw_spot(StitchImage *output,
                  const LPoint2d pixel_center, const Colord &color,
                  double radius);
+
+  typedef pvector<StitchImage *> Images;
+  Images _input_images;
+  Images _output_images;
+
+  typedef pvector<Stitcher *> Stitchers;
+  Stitchers _stitchers;
+
+  typedef pset<string> Names;
+  Names _output_names;
+
+  double _filter_factor;
+
+  int _output_xsize;
+  int _output_ysize;
+  bool _got_output_size;
 };
 
 #endif

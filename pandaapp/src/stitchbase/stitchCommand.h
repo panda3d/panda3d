@@ -41,6 +41,7 @@ public:
     C_lens,
     C_input_image,
     C_output_image,
+    C_eyepoint,
     C_perspective,
     C_fisheye,
     C_cylindrical,
@@ -123,6 +124,7 @@ private:
   LVecBase2d find_parameter(Command command, const LVecBase2d &dflt);
 
   StitchImage *create_image();
+  void set_eyepoint(StitchImageOutputter &outputter);
   PT(StitchScreen) create_screen();
 
 

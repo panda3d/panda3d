@@ -19,9 +19,10 @@
 #ifndef STITCHIMAGEPROGRAM_H
 #define STITCHIMAGEPROGRAM_H
 
-#include <pandatoolbase.h>
+#include "pandaappbase.h"
 
 #include "stitchCommandReader.h"
+#include "stitchImageRasterizer.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : StitchImageProgram
@@ -35,8 +36,16 @@ public:
 
   void run();
 
+protected:
+  static bool dispatch_output_name(ProgramBase *self, const string &opt,
+                                   const string &arg, void *);
+
 private:
   double _filter_factor;
+  bool _got_output_size;
+  int _output_size[2];
+
+  StitchImageRasterizer _outputter;
 };
 
 #endif

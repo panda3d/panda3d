@@ -115,6 +115,7 @@ operator = (const Image &copy) {
 
 StitchImageVisualizer::
 StitchImageVisualizer() :
+  _eyepoint_inv(LMatrix4f::ident_mat()),
   _event_handler(EventQueue::get_global_event_queue())
 {
   _event_handler.add_hook("q", static_handle_event);
@@ -138,6 +139,17 @@ add_output_image(StitchImage *) {
 
 void StitchImageVisualizer::
 add_stitcher(Stitcher *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImageVisualizer::set_eyepoint
+//       Access: Public, Virtual
+//  Description: Sets the eye point to the indicated coordinate frame,
+//               if it makes sense to this kind of outputter.
+////////////////////////////////////////////////////////////////////
+void StitchImageVisualizer::
+set_eyepoint(const LMatrix4d &mat) {
+  _eyepoint_inv.invert_from(LCAST(float, mat));
 }
 
 void StitchImageVisualizer::
@@ -215,6 +227,7 @@ setup() {
 
   // Create a trackball to handle the mouse input.
   _trackball = new Trackball("trackball");
+  _trackball->set_mat(_eyepoint_inv);
 
   new DataRelation(_mak, _trackball);
 
@@ -376,5 +389,9 @@ handle_event(CPT(Event) event) {
 
   } else if (name == "z") {
     _trackball->reset();
+    _trackball->set_mat(_eyepoint_inv);
   }
 }
+
+
+

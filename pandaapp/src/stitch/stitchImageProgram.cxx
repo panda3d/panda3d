@@ -46,6 +46,19 @@ StitchImageProgram() {
      "results.",
      &StitchImageProgram::dispatch_double, NULL, &_filter_factor);
 
+  add_option
+    ("n", "name", 0,
+     "Generates only the named output image.  This may be repeated to "
+     "generate multiple images in one run.  If omitted, all output images "
+     "in the file are generated.",
+     &StitchImageProgram::dispatch_output_name);
+
+  add_option
+    ("s", "xsize,ysize", 0,
+     "Generates the output image(s) at the specified size, rather than the "
+     "size specified within the .st file.",
+     &StitchImageProgram::dispatch_int_pair, &_got_output_size, &_output_size);
+
   _filter_factor = 1.0;
 }
 
@@ -56,9 +69,24 @@ StitchImageProgram() {
 ////////////////////////////////////////////////////////////////////
 void StitchImageProgram::
 run() {
-  StitchImageRasterizer outputter;
-  outputter._filter_factor = _filter_factor;
-  _command_file.process(outputter);
+  if (_got_output_size) {
+    _outputter.set_output_size(_output_size[0], _output_size[1]);
+  }
+  _outputter.set_filter_factor(_filter_factor);
+  _command_file.process(_outputter);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StitchImageProgram::dispatch_output_name
+//       Access: Protected, Static
+//  Description: Dispatch function for an output image name.
+////////////////////////////////////////////////////////////////////
+bool StitchImageProgram::
+dispatch_output_name(ProgramBase *self, const string &opt,
+                     const string &arg, void *) {
+  StitchImageProgram *prog = (StitchImageProgram *)self;
+  prog->_outputter.add_output_name(arg);
+  return true;
 }
 
 
