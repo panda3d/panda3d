@@ -271,6 +271,7 @@ set_window_handle(HWND hwnd) {
 
   // Determine the initial open status of the IME.
   _ime_open = false;
+  _ime_active = false;
   HIMC hIMC = ImmGetContext(hwnd);
   if (hIMC != 0) {
     _ime_open = (ImmGetOpenStatus(hIMC) != 0);
@@ -350,6 +351,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         HIMC hIMC = ImmGetContext(hwnd);
         nassertr(hIMC != 0, 0);
         _ime_open = (ImmGetOpenStatus(hIMC) != 0);
+        if (!_ime_open) {
+          _ime_active = false;  // Sanity enforcement.
+        }
         ImmReleaseContext(hwnd, hIMC);
       }
       break;
@@ -359,12 +363,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       // explicit DX support for overlay windows now, so we'll be able
       // to see the IME window.
       _dxgsg->support_overlay_window(true);
+      _ime_active = true;
       break;
 
     case WM_IME_ENDCOMPOSITION:
       // Turn off the support for overlay windows, since we're done
       // with the IME window for now and it just slows things down.
       _dxgsg->support_overlay_window(false);
+      _ime_active = false;
       break;
 
     case WM_IME_COMPOSITION:
@@ -960,7 +966,7 @@ void wdxGraphicsWindow::reactivate_window(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsWindow::wdxGraphicsWindow(GraphicsPipe* pipe) : GraphicsWindow(pipe) {
-   _ime_open = false;
+   _ime_active = false;
    _pParentWindowGroup=NULL;
    _pParentWindowGroup=new wdxGraphicsWindowGroup(this);
 }
@@ -2657,15 +2663,25 @@ TypeHandle wdxGraphicsWindow::get_type(void) const {
 ////////////////////////////////////////////////////////////////////
 ButtonHandle wdxGraphicsWindow::
 lookup_key(WPARAM wparam) const {
+    // First, check for a few buttons that we filter out when the IME
+    // window is open.
+    if (!_ime_active) {
+      switch(wparam) {
+      case VK_BACK: return KeyboardButton::backspace();
+      case VK_DELETE: return KeyboardButton::del();
+      case VK_ESCAPE: return KeyboardButton::escape();
+      case VK_SPACE: return KeyboardButton::space();
+      case VK_UP: return KeyboardButton::up();
+      case VK_DOWN: return KeyboardButton::down();
+      case VK_LEFT: return KeyboardButton::left();
+      case VK_RIGHT: return KeyboardButton::right();
+      }
+    }
+
+    // Now check for the rest of the buttons, including the ones that
+    // we allow through even when the IME window is open.
     switch(wparam) {
-        case VK_BACK: return KeyboardButton::backspace();
         case VK_TAB: return KeyboardButton::tab();
-        case VK_ESCAPE: return KeyboardButton::escape();
-        case VK_SPACE: return KeyboardButton::space();
-        case VK_UP: return KeyboardButton::up();
-        case VK_DOWN: return KeyboardButton::down();
-        case VK_LEFT: return KeyboardButton::left();
-        case VK_RIGHT: return KeyboardButton::right();
         case VK_PRIOR: return KeyboardButton::page_up();
         case VK_NEXT: return KeyboardButton::page_down();
         case VK_HOME: return KeyboardButton::home();
@@ -2683,7 +2699,6 @@ lookup_key(WPARAM wparam) const {
         case VK_F11: return KeyboardButton::f11();
         case VK_F12: return KeyboardButton::f12();
         case VK_INSERT: return KeyboardButton::insert();
-        case VK_DELETE: return KeyboardButton::del();
         case VK_CAPITAL: return KeyboardButton::caps_lock();
         case VK_NUMLOCK: return KeyboardButton::num_lock();
         case VK_SCROLL: return KeyboardButton::scroll_lock();
