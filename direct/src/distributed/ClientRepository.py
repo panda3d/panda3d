@@ -318,11 +318,18 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         if base.config.GetBool('server-heartbeat-info', 1):
             ClientRepository.notify.info("Server heartbeat.")
 
+    def handleSystemMessage(self, di):
+        # Got a system message from the server.
+        message = di.getString()
+        ClientRepository.notify.info('Message from server: %s' % (message))
+
     def handleUnexpectedMsgType(self, msgType, di):
         if msgType == CLIENT_GO_GET_LOST:
             self.handleGoGetLost(di)
         elif msgType == CLIENT_HEARTBEAT:
             self.handleServerHeartbeat(di)
+        elif msgType == CLIENT_SYSTEM_MESSAGE:
+            self.handleSystemMessage(di)
         else:
             currentLoginState = self.loginFSM.getCurrentState()
             if currentLoginState:

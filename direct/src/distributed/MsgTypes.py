@@ -61,6 +61,11 @@ CLIENT_SET_WISHNAME_RESP =                   71
 CLIENT_SET_WISHNAME_CLEAR =                  72
 CLIENT_SET_SECURITY =                        73
 
+CLIENT_GET_AVATARS_RESP2 =                   75
+CLIENT_CREATE_AVATAR2 =                      76
+CLIENT_SYSTEM_MESSAGE =                      78
+CLIENT_SET_AVTYPE =                          80
+
 # These messages are ignored when the client is headed to the quiet zone
 QUIET_ZONE_IGNORED_LIST = [
 
