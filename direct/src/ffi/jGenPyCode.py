@@ -9,33 +9,74 @@
 # can be located appropriately.
 #
 #    PYTHONPATH
-#    PANDAROOT
 #    PATH
+#    LD_LIBRARY_PATH
 #
 ##############################################################
 
 import sys,os;
 
-if (os.environ.has_key("PANDAROOT")==0):
-  print "jGenPyCode was not invoked correctly"
-  sys.exit(1)
+##############################################################
+#
+# Locate the 'direct' tree and the 'pandac' tree.
+#
+##############################################################
 
-pandaroot = os.environ["PANDAROOT"]
-if (os.path.isdir(os.path.join(pandaroot,"direct","src"))):
-  directsrc=os.path.join(pandaroot,"direct","src")
-elif (os.path.isdir(os.path.join(os.path.dirname(pandaroot),"direct","src"))):
-  directsrc=os.path.join(os.path.dirname(pandaroot),"direct","src")
-else:
-  print "jGenPyCode cannot locate the 'direct' tree"
-  sys.exit(1)
+DIRECT=None
+PANDAC=None
+for dir in sys.path:
+    if (DIRECT is None):
+        if os.path.exist(os.path.join(dir,"direct")):
+            DIRECT=os.path.join(dir,"direct")
+    if (PANDAC is None):
+        if (os.path.exist(os.path.join(dir,"pandac"))):
+            PANDAC=os.path.join(dir,"pandac")
+
+if (DIRECT is None):
+    sys.exit("Could not locate the 'direct' python modules")
+if (PANDAC is None):
+    sys.exit("Could not locate the 'pandac' python modules")
+
+##############################################################
+#
+# Locate direct/src/extensions. 
+# 
+# It could be inside the direct tree.  It may be underneath
+# a 'src' subdirectory.  Or, the direct tree may actually be
+# a stub that points to the source tree.
+#
+##############################################################
+
+EXTENSIONS=None
+
+if (EXTENSIONS is None):
+  if os.path.isdir(os.path.join(DIRECT,"src","extensions")):
+    EXTENSIONS=os.path.join(DIRECT,"src","extensions")
+
+if (EXTENSIONS is None):
+  if os.path.isdir(os.path.join(DIRECT,"extensions")):
+    EXTENSIONS=os.path.join(DIRECT,"extensions")
+
+if (EXTENSIONS is None):
+  if os.path.isdir(os.path.join(DIRECT,"..","..","direct","src","extensions")):
+    EXTENSIONS=os.path.join(DIRECT,"..","..","direct","src","extensions")
+
+if (EXTENSIONS is None):
+  sys.exit("Could not locate direct/src/extensions")
+
+##############################################################
+#
+# Call genpycode with default paths.
+#
+##############################################################
 
 from direct.ffi import DoGenPyCode
 from direct.ffi import FFIConstants
-DoGenPyCode.outputDir = os.path.join(pandaroot,"lib","pandac")
-DoGenPyCode.extensionsDir = os.path.join(directsrc,"extensions")
+DoGenPyCode.outputDir = PANDAC
+DoGenPyCode.extensionsDir = EXTENSIONS
 DoGenPyCode.interrogateLib = r'libdtoolconfig'
 DoGenPyCode.codeLibs = ['libpandaexpress','libpanda','libpandaphysics','libpandafx','libdirect']
-DoGenPyCode.etcPath = [os.path.join(pandaroot,"etc")]
+DoGenPyCode.etcPath = [os.path.join(PANDAC,"input")]
 
 #print "outputDir = ",DoGenPyCode.outputDir
 #print "extensionsDir = ",DoGenPyCode.extensionsDir

@@ -6,7 +6,6 @@
 //
 //    PYTHONPATH
 //    PATH
-//    PANDAROOT
 //
 // Note that 'genpycode' is just a slight variant of 'ppython':
 //
@@ -69,11 +68,15 @@ int main(int argc, char **argv)
   fnlen -= srclen; fnbuf[fnlen] = 0;
   
   // Fetch the command line and trim the first word.
-  
-  char *args = GetCommandLine();
-  char *firstspace = strchr(args,' ');
-  if (firstspace) args = firstspace+1;
-  else args="";
+
+  char *cmdline = GetCommandLine();
+  char *args = cmdline;
+  bool inquote = false;
+  while (*args && ((*args != ' ')||(inquote))) {
+    if (*args == '"') inquote = !inquote;
+    args++;
+  }
+  while (*args==' ') args++;
 
   // Calculate MODCMD
   
@@ -88,7 +91,7 @@ int main(int argc, char **argv)
     }
   } else sprintf(modcmd,"python %s",args);
   
-  // Set the PANDAROOT, PYTHONPATH and PATH
+  // Set the PYTHONPATH and PATH
   
   char *pp = getenv("PYTHONPATH");
   if (pp) sprintf(ppbuf,"PYTHONPATH=%s;%s\\bin;%s\\lib;%s",fnbuf,fnbuf,fnbuf,pp);
@@ -98,8 +101,6 @@ int main(int argc, char **argv)
   if (path) sprintf(pabuf,"PATH=%s\\bin;%s",fnbuf,path);
   else      sprintf(pabuf,"PATH=%s\\bin",fnbuf);
   putenv(pabuf);
-  sprintf(prbuf,"PANDAROOT=%s",fnbuf);
-  putenv(prbuf);
   
   // Append LINK_TARGET to the file name.
   
@@ -192,7 +193,7 @@ int main(int argc, char **argv)
     }
   }
   
-  // Set the PANDAROOT, PYTHONPATH and PATH
+  // Set the PYTHONPATH and PATH
   
   char *pp = getenv("PYTHONPATH");
   if (pp) sprintf(ppbuf,"PYTHONPATH=%s:%s/lib:%s",fnbuf,fnbuf,pp);
@@ -202,8 +203,6 @@ int main(int argc, char **argv)
   if (path) sprintf(pabuf,"PATH=%s/bin;%s",fnbuf,path);
   else      sprintf(pabuf,"PATH=%s/bin",fnbuf);
   putenv(pabuf);
-  sprintf(prbuf,"PANDAROOT=%s",fnbuf);
-  putenv(prbuf);
   
   // Calculate MODARGV
   modargc=0;
