@@ -209,6 +209,8 @@ protected:
   bool _color_transform_enabled;
   bool _alpha_transform_enabled;
 
+  D3DDEVICEDESC7    _D3DDevDesc;
+
   void set_clipper(RECT cliprect);
 
   INLINE void set_pack_alignment(int alignment);

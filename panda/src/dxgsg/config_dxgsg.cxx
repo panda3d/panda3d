@@ -21,7 +21,7 @@ bool dx_show_transforms = config_dxgsg.GetBool("dx-show-transforms", false);
 bool dx_full_screen = config_dxgsg.GetBool("dx-full-screen", false);
 
 // Configure this true to glHint the textures into the cheapest
-// possible mode.
+// possible mode.  (this does nothing in dx currently)
 bool dx_cheap_textures = config_dxgsg.GetBool("dx-cheap-textures", false);
 
 // Configure this true to perform a cull traversal over the geometry
@@ -29,6 +29,18 @@ bool dx_cheap_textures = config_dxgsg.GetBool("dx-cheap-textures", false);
 // for state-sorting, z-sorting, and binning.
 bool dx_cull_traversal = config_dxgsg.GetBool("dx-cull-traversal", true);
 
+bool dx_ignore_mipmaps = config_dxgsg.GetBool("dx-ignore-mipmaps", false);
+float dx_global_miplevel_bias = config_dxgsg.GetFloat("dx-global-miplevel-bias", 0.0);
+
+#ifdef _DEBUG
+bool dx_debug_view_mipmaps = config_dxgsg.GetBool("dx-debug-view-mipmaps", false);
+bool dx_force_16bpptextures = config_dxgsg.GetBool("dx-force-16bpptextures", false);
+bool dx_mipmap_everything = config_dxgsg.GetBool("dx-mipmap-everything", false);
+bool dx_force_anisotropic_filtering = config_dxgsg.GetBool("dx-force-anisotropic-filtering", false);
+
+#endif
+
+// note:  offset currently disabled since it wasnt working properly
 DXDecalType dx_decal_type = GDT_offset;
 
 static DXDecalType

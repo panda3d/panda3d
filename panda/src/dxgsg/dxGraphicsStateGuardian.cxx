@@ -151,9 +151,9 @@ reset() {
 
   // All implementations have the following buffers. (?)
   _buffer_mask = (RenderBuffer::T_color |
-		  RenderBuffer::T_depth |
-		  RenderBuffer::T_stencil |
-		  RenderBuffer::T_accum );
+          RenderBuffer::T_depth |
+          RenderBuffer::T_stencil |
+          RenderBuffer::T_accum );
 
   // WBD  for now, let's assume a back buffer too);
   _buffer_mask |= RenderBuffer::T_back;
@@ -279,7 +279,7 @@ reset() {
     dxgsg_cat.info()
       << "Setting glHint() for fastest textures.\n";
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-	}
+    }
 
 
 #else
@@ -350,13 +350,13 @@ HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param )
 //               set up.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-init_dx(  LPDIRECTDRAW7		context,
-		  LPDIRECTDRAWSURFACE7  pri,
-		  LPDIRECTDRAWSURFACE7  back,
-		  LPDIRECTDRAWSURFACE7  zbuf,
-		  LPDIRECT3D7          pD3D,
-		  LPDIRECT3DDEVICE7    pDevice,
-		  RECT viewrect)
+init_dx(  LPDIRECTDRAW7     context,
+          LPDIRECTDRAWSURFACE7  pri,
+          LPDIRECTDRAWSURFACE7  back,
+          LPDIRECTDRAWSURFACE7  zbuf,
+          LPDIRECT3D7          pD3D,
+          LPDIRECT3DDEVICE7    pDevice,
+          RECT viewrect)
 {
   _pDD = context;
   _pri = pri;
@@ -375,14 +375,18 @@ init_dx(  LPDIRECTDRAW7		context,
       dxgsg_cat.error() << "EnumTextureFormats failed!!\n";
   }
 
-  D3DDEVICEDESC7 D3DDevDesc;
-
-  if(FAILED(hr = pDevice->GetCaps(&D3DDevDesc))) {
-    dxgsg_cat.fatal() << "GetCaps failed on Device\n";
+  if(FAILED(hr = pDevice->GetCaps(&_D3DDevDesc))) {
+    dxgsg_cat.fatal() << "GetCaps failed on D3D Device\n";
     exit(1);
   }
 
-  if((dx_decal_type==GDT_offset) && !(D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBIAS)) {
+  DX_DECLARE_CLEAN(DDCAPS,ddCaps);
+  if(FAILED(hr = _pDD->GetCaps(&ddCaps,NULL))) {
+    dxgsg_cat.fatal() << "GetCaps failed on DDraw\n";
+    exit(1);
+  }
+
+  if((dx_decal_type==GDT_offset) && !(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBIAS)) {
 #ifdef _DEBUG
       // dx7 doesnt support PLANEMASK renderstate
       #if(DIRECT3D_VERSION < 0x700)
@@ -410,14 +414,14 @@ init_dx(  LPDIRECTDRAW7		context,
      #endif
 #endif
 
-  if((dx_decal_type==GDT_mask) && !(D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKPLANES)) {
+  if((dx_decal_type==GDT_mask) && !(_D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKPLANES)) {
 #ifdef _DEBUG
           dxgsg_cat.error() << "No hardware support for colorwrite disabling, switching to dx-decal-type 'mask' to 'blend'\n";
 #endif
           dx_decal_type = GDT_blend;
   }
 
-  if(((dx_decal_type==GDT_blend)||(dx_decal_type==GDT_mask)) && !(D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKZ)) {
+  if(((dx_decal_type==GDT_blend)||(dx_decal_type==GDT_mask)) && !(_D3DDevDesc.dpcTriCaps.dwMiscCaps & D3DPMISCCAPS_MASKZ)) {
          dxgsg_cat.error() << "dx-decal-type mask impossible to implement, no hardware support for Z-masking, decals will not appear correctly\n";
   }
 
@@ -428,32 +432,35 @@ init_dx(  LPDIRECTDRAW7		context,
 #define REQUIRED_BLENDCAPS (D3DPBLENDCAPS_ZERO|D3DPBLENDCAPS_ONE|  /*D3DPBLENDCAPS_SRCCOLOR|D3DPBLENDCAPS_INVSRCCOLOR| */ \
                             D3DPBLENDCAPS_SRCALPHA|D3DPBLENDCAPS_INVSRCALPHA /* | D3DPBLENDCAPS_DESTALPHA|D3DPBLENDCAPS_INVDESTALPHA|D3DPBLENDCAPS_DESTCOLOR|D3DPBLENDCAPS_INVDESTCOLOR*/)
 
-  if(((D3DDevDesc.dpcTriCaps.dwSrcBlendCaps & REQUIRED_BLENDCAPS)!=REQUIRED_BLENDCAPS) ||
-     ((D3DDevDesc.dpcTriCaps.dwDestBlendCaps & REQUIRED_BLENDCAPS)!=REQUIRED_BLENDCAPS)) {
-         dxgsg_cat.error() << "device is missing alpha blending capabilities, blending may not work correctly: SrcBlendCaps: 0x"<< (void*) D3DDevDesc.dpcTriCaps.dwSrcBlendCaps << "  DestBlendCaps: "<< (void*) D3DDevDesc.dpcTriCaps.dwDestBlendCaps << endl;
+  if(((_D3DDevDesc.dpcTriCaps.dwSrcBlendCaps & REQUIRED_BLENDCAPS)!=REQUIRED_BLENDCAPS) ||
+     ((_D3DDevDesc.dpcTriCaps.dwDestBlendCaps & REQUIRED_BLENDCAPS)!=REQUIRED_BLENDCAPS)) {
+         dxgsg_cat.error() << "device is missing alpha blending capabilities, blending may not work correctly: SrcBlendCaps: 0x"<< (void*) _D3DDevDesc.dpcTriCaps.dwSrcBlendCaps << "  DestBlendCaps: "<< (void*) _D3DDevDesc.dpcTriCaps.dwDestBlendCaps << endl;
   }
 
-  if(!(D3DDevDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_TRANSPARENCY)) {
-         dxgsg_cat.error() << "device is missing texture transparency capability, transparency may not work correctly!  TextureCaps: 0x"<< (void*) D3DDevDesc.dpcTriCaps.dwTextureCaps << endl;
+  if(!(_D3DDevDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_TRANSPARENCY)) {
+         dxgsg_cat.error() << "device is missing texture transparency capability, transparency may not work correctly!  TextureCaps: 0x"<< (void*) _D3DDevDesc.dpcTriCaps.dwTextureCaps << endl;
   }
 
   // just require trilinear.  if it can do that, it can probably do all the lesser point-sampling variations too
 #define REQUIRED_TEXFILTERCAPS (D3DPTFILTERCAPS_MAGFLINEAR |  D3DPTFILTERCAPS_MINFLINEAR | D3DPTFILTERCAPS_LINEAR)
-  if((D3DDevDesc.dpcTriCaps.dwTextureFilterCaps & REQUIRED_TEXFILTERCAPS)!=REQUIRED_TEXFILTERCAPS) {
-         dxgsg_cat.error() << "device is missing texture bilinear filtering capability, textures may appear blocky!  TextureFilterCaps: 0x"<< (void*) D3DDevDesc.dpcTriCaps.dwTextureFilterCaps << endl;
+  if((_D3DDevDesc.dpcTriCaps.dwTextureFilterCaps & REQUIRED_TEXFILTERCAPS)!=REQUIRED_TEXFILTERCAPS) {
+         dxgsg_cat.error() << "device is missing texture bilinear filtering capability, textures may appear blocky!  TextureFilterCaps: 0x"<< (void*) _D3DDevDesc.dpcTriCaps.dwTextureFilterCaps << endl;
   }
-
 #define REQUIRED_MIPMAP_TEXFILTERCAPS (D3DPTFILTERCAPS_MIPFLINEAR | D3DPTFILTERCAPS_LINEARMIPLINEAR)
-  if((D3DDevDesc.dpcTriCaps.dwTextureFilterCaps & REQUIRED_MIPMAP_TEXFILTERCAPS)!=REQUIRED_MIPMAP_TEXFILTERCAPS) {
-         dxgsg_cat.error() << "device is missing tri-linear mipmap filtering capability, texture mipmaps may not supported! TextureFilterCaps: 0x"<< (void*) D3DDevDesc.dpcTriCaps.dwTextureFilterCaps << endl;
+
+  if(!(ddCaps.ddsCaps.dwCaps & DDSCAPS_MIPMAP)) {
+          dxgsg_cat.debug() << "device does not have mipmap texturing filtering capability!   TextureFilterCaps: 0x"<< (void*) _D3DDevDesc.dpcTriCaps.dwTextureFilterCaps << endl;
+          dx_ignore_mipmaps = TRUE;
+  } else if((_D3DDevDesc.dpcTriCaps.dwTextureFilterCaps & REQUIRED_MIPMAP_TEXFILTERCAPS)!=REQUIRED_MIPMAP_TEXFILTERCAPS) {
+          dxgsg_cat.debug() << "device is missing tri-linear mipmap filtering capability, texture mipmaps may not supported! TextureFilterCaps: 0x"<< (void*) _D3DDevDesc.dpcTriCaps.dwTextureFilterCaps << endl;
   }
 
 #define REQUIRED_TEXBLENDCAPS (D3DTEXOPCAPS_MODULATE | D3DTEXOPCAPS_SELECTARG1 | D3DTEXOPCAPS_SELECTARG2)
-  if((D3DDevDesc.dwTextureOpCaps & REQUIRED_TEXBLENDCAPS)!=REQUIRED_TEXBLENDCAPS) {
-         dxgsg_cat.error() << "device is missing some required texture blending capabilities, texture blending may not work properly! TextureOpCaps: 0x"<< (void*) D3DDevDesc.dwTextureOpCaps << endl;
+  if((_D3DDevDesc.dwTextureOpCaps & REQUIRED_TEXBLENDCAPS)!=REQUIRED_TEXBLENDCAPS) {
+         dxgsg_cat.error() << "device is missing some required texture blending capabilities, texture blending may not work properly! TextureOpCaps: 0x"<< (void*) _D3DDevDesc.dwTextureOpCaps << endl;
   }
 
-  SetRect(&clip_rect, 0,0,0,0);		// no clip rect set
+  SetRect(&clip_rect, 0,0,0,0);     // no clip rect set
 
   _d3dDevice->SetRenderState(D3DRENDERSTATE_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
 
@@ -474,7 +481,7 @@ init_dx(  LPDIRECTDRAW7		context,
   enable_line_smooth(false);
   enable_multisample(true);
 
-  _max_lights = 16;		// assume for now.  This is totally arbitrary
+  _max_lights = 16;     // assume for now.  This is totally arbitrary
   _available_light_ids = PTA(Light*)(_max_lights);
   _light_enabled = new bool[_max_lights];
   _cur_light_enabled = new bool[_max_lights];
@@ -495,7 +502,7 @@ init_dx(  LPDIRECTDRAW7		context,
   }
 
   // initial clip rect
-  SetRect(&clip_rect, 0,0,0,0);		// no clip rect set
+  SetRect(&clip_rect, 0,0,0,0);     // no clip rect set
 
   // Make sure the GL state matches all of our initial attribute
   // states.
@@ -513,6 +520,13 @@ init_dx(  LPDIRECTDRAW7		context,
   _CurTexBlendMode = TextureApplyProperty::M_modulate;
   _d3dDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);  // disables texturing
   ta->issue(this); // no curtextcontext, this does nothing.  dx should already be properly inited above anyway
+
+#ifdef _DEBUG
+  if((_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_MIPMAPLODBIAS) &&
+     (dx_global_miplevel_bias!=0.0)) {
+     _d3dDevice->SetTextureStageState(0, D3DTSS_MIPMAPLODBIAS, *((LPDWORD) (&dx_global_miplevel_bias)) );
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -532,22 +546,22 @@ clear(const RenderBuffer &buffer) {
   int   flags = 0;
 
   if (buffer_type & RenderBuffer::T_depth)
-	  flags |= 	D3DCLEAR_ZBUFFER;
-  if (buffer_type & RenderBuffer::T_back)		//set appropriate flags
-	  flags |= 	D3DCLEAR_TARGET;
+      flags |=  D3DCLEAR_ZBUFFER;
+  if (buffer_type & RenderBuffer::T_back)       //set appropriate flags
+      flags |=  D3DCLEAR_TARGET;
   if (buffer_type & RenderBuffer::T_stencil)
-	  flags |= 	D3DCLEAR_STENCIL;
+      flags |=  D3DCLEAR_STENCIL;
 
   D3DCOLOR  clear_colr = D3DRGBA(_color_clear_value[0],_color_clear_value[1],
-	  _color_clear_value[2], /*1.0*/_color_clear_value[3]);
+      _color_clear_value[2], /*1.0*/_color_clear_value[3]);
 
   HRESULT  hr = _d3dDevice->Clear(0, NULL, flags, clear_colr,
-				(D3DVALUE) _depth_clear_value, (DWORD)_stencil_clear_value);
+                (D3DVALUE) _depth_clear_value, (DWORD)_stencil_clear_value);
   if (hr != DD_OK)
-	  dxgsg_cat.error()
-			<< "dxGSG::clear_buffer failed:  Clear returned " << ConvD3DErrorToString(hr) << endl;
+      dxgsg_cat.error()
+            << "dxGSG::clear_buffer failed:  Clear returned " << ConvD3DErrorToString(hr) << endl;
   /*  The following line will cause the background to always clear to a medium red
-  _color_clear_value[0] = .5;			
+  _color_clear_value[0] = .5;           
   /*  The following lines will cause the background color to cycle from black to red.
   _color_clear_value[0] += .001;
    if (_color_clear_value[0] > 1.0) _color_clear_value[0] = 0.0;
@@ -581,15 +595,15 @@ enable_light(int light, bool val)
 {
   if ( _light_enabled[light] != val )
     {
-	_light_enabled[light] = val;
+    _light_enabled[light] = val;
     HRESULT res = _d3dDevice->LightEnable( light, val  );
 
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug()
-	    << "LightEnable(" << light << "=" << val << ")" << endl;
+        << "LightEnable(" << light << "=" << val << ")" << endl;
 #endif
 
-	return (res == DD_OK);
+    return (res == DD_OK);
     }
   return TRUE;
 }
@@ -600,7 +614,7 @@ enable_light(int light, bool val)
 //     Function: DXGraphicsStateGuardian::prepare_display_region
 //       Access: Public, Virtual
 //  Description: Prepare a display region for rendering (set up
-//		 scissor region and viewport)
+//       scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 prepare_display_region() {
@@ -621,15 +635,15 @@ prepare_display_region() {
     call_glScissor( x, y, width, height );    
     call_glViewport( x, y, width, height );
 #else 
-	if ( _scissor_x != x || _scissor_y != y ||
-			_scissor_width != width || _scissor_height != height )
-	    {
-		_scissor_x = x; _scissor_y = y;
-		_scissor_width = width; _scissor_height = height;
-		RECT cliprect;
+    if ( _scissor_x != x || _scissor_y != y ||
+            _scissor_width != width || _scissor_height != height )
+        {
+        _scissor_x = x; _scissor_y = y;
+        _scissor_width = width; _scissor_height = height;
+        RECT cliprect;
         SetRect(&cliprect, x, y, x+width, y+height );
-		set_clipper(cliprect);
-		}
+        set_clipper(cliprect);
+        }
 #endif   //WBD_GL_MODE
 */
   }
@@ -643,44 +657,44 @@ prepare_display_region() {
 //  Description: Useless in DX at the present time
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::set_clipper(RECT cliprect) {
-	LPDIRECTDRAWCLIPPER Clipper;
-	HRESULT result;
-	
-	// For windowed mode, the clip region is associated with the window,
-	// and DirectX does not allow you to create clip regions.
-	if (dx_full_screen) return; 
+    LPDIRECTDRAWCLIPPER Clipper;
+    HRESULT result;
+    
+    // For windowed mode, the clip region is associated with the window,
+    // and DirectX does not allow you to create clip regions.
+    if (dx_full_screen) return; 
 
-	/* The cliprect we receive is normalized so that (0,0) means the upper left of
-	   the client portion of the window.
-		At least, I think that's true, and the following code assumes that.
-		So we must adjust the clip region by offsetting it to the origin of the 
-		view rectangle.
-	*/
-	clip_rect = cliprect;		// store the normalized clip rect
-	cliprect.left += _view_rect.left;
-	cliprect.right += _view_rect.left;
-	cliprect.top += _view_rect.top;
-	cliprect.bottom += _view_rect.top;
-	RGNDATA *rgn_data = (RGNDATA *)malloc(sizeof(RGNDATAHEADER) + sizeof(RECT));
+    /* The cliprect we receive is normalized so that (0,0) means the upper left of
+       the client portion of the window.
+        At least, I think that's true, and the following code assumes that.
+        So we must adjust the clip region by offsetting it to the origin of the 
+        view rectangle.
+    */
+    clip_rect = cliprect;       // store the normalized clip rect
+    cliprect.left += _view_rect.left;
+    cliprect.right += _view_rect.left;
+    cliprect.top += _view_rect.top;
+    cliprect.bottom += _view_rect.top;
+    RGNDATA *rgn_data = (RGNDATA *)malloc(sizeof(RGNDATAHEADER) + sizeof(RECT));
     HRGN hrgn = CreateRectRgn(cliprect.left, cliprect.top, cliprect.right, cliprect.bottom);
     GetRegionData(hrgn, sizeof(RGNDATAHEADER) + sizeof(RECT), rgn_data);
 
-	if (_pri->GetClipper(&Clipper) != DD_OK)
-		{
-		result = _pDD->CreateClipper(0, &Clipper, NULL);
-		result = Clipper->SetClipList(rgn_data, 0);
-		result = _pri->SetClipper(Clipper);
-		}
-	else {
-		result = Clipper->SetClipList(rgn_data, 0 );
-		if (result == DDERR_CLIPPERISUSINGHWND)
-			{
-			result = _pri->SetClipper(NULL);
-			result = _pDD->CreateClipper(0, &Clipper, NULL);
-			result = Clipper->SetClipList(rgn_data, 0 ) ;
-			result = _pri->SetClipper(Clipper);
-			}
-		}
+    if (_pri->GetClipper(&Clipper) != DD_OK)
+        {
+        result = _pDD->CreateClipper(0, &Clipper, NULL);
+        result = Clipper->SetClipList(rgn_data, 0);
+        result = _pri->SetClipper(Clipper);
+        }
+    else {
+        result = Clipper->SetClipList(rgn_data, 0 );
+        if (result == DDERR_CLIPPERISUSINGHWND)
+            {
+            result = _pri->SetClipper(NULL);
+            result = _pDD->CreateClipper(0, &Clipper, NULL);
+            result = Clipper->SetClipList(rgn_data, 0 ) ;
+            result = _pri->SetClipper(Clipper);
+            }
+        }
 
 }
 
@@ -722,39 +736,39 @@ render_frame(const AllAttributesWrapper &initial_state) {
   // Now render each of our layers in order.
   int max_channel_index = _win->get_max_channel_index();
   for (int c = 0; c < max_channel_index; c++) 
-	{
+    {
     if (_win->is_channel_defined(c)) 
-		{
-		GraphicsChannel *chan = _win->get_channel(c);
-		if (chan->is_active()) 
-			{
-			int num_layers = chan->get_num_layers();
-			for (int l = 0; l < num_layers; l++) 
-				{
-				GraphicsLayer *layer = chan->get_layer(l);
-				if (layer->is_active()) 
-					{
-				    int num_drs = layer->get_num_drs();
-				    for (int d = 0; d < num_drs; d++) 
-						{
-						DisplayRegion *dr = layer->get_dr(d);
-						Camera *cam = dr->get_camera();
-			    
-				  // For each display region, render from the camera's view.
-						if (dr->is_active() && cam != (Camera *)NULL && 
-						  cam->is_active() && cam->get_scene() != (Node *)NULL) 
-							{
-						 	DisplayRegionStack old_dr = push_display_region(dr);
-						 	prepare_display_region();
-						 	render_scene(cam->get_scene(), cam, initial_state);
-						 	pop_display_region(old_dr);
-							}
-						}
-					}		//		if (layer->is_active()) 
-				}
-		    }		//		if (chan->is_active()) 
-		}
-	}	//  for (int c = 0; c < max_channel_index; c++) 
+        {
+        GraphicsChannel *chan = _win->get_channel(c);
+        if (chan->is_active()) 
+            {
+            int num_layers = chan->get_num_layers();
+            for (int l = 0; l < num_layers; l++) 
+                {
+                GraphicsLayer *layer = chan->get_layer(l);
+                if (layer->is_active()) 
+                    {
+                    int num_drs = layer->get_num_drs();
+                    for (int d = 0; d < num_drs; d++) 
+                        {
+                        DisplayRegion *dr = layer->get_dr(d);
+                        Camera *cam = dr->get_camera();
+                
+                  // For each display region, render from the camera's view.
+                        if (dr->is_active() && cam != (Camera *)NULL && 
+                          cam->is_active() && cam->get_scene() != (Node *)NULL) 
+                            {
+                            DisplayRegionStack old_dr = push_display_region(dr);
+                            prepare_display_region();
+                            render_scene(cam->get_scene(), cam, initial_state);
+                            pop_display_region(old_dr);
+                            }
+                        }
+                    }       //      if (layer->is_active()) 
+                }
+            }       //      if (chan->is_active()) 
+        }
+    }   //  for (int c = 0; c < max_channel_index; c++) 
 
   // Now we're done with the frame processing.  Clean up.
 
@@ -763,10 +777,10 @@ render_frame(const AllAttributesWrapper &initial_state) {
   // their parameters or positions have changed between frames.
   
   for (int i = 0; i < _max_lights; i++) 
-	{
-	enable_light(i, false);
-	_available_light_ids[i] = NULL;
-	}
+    {
+    enable_light(i, false);
+    _available_light_ids[i] = NULL;
+    }
 
   // Also force the lighting state to unlit, so that issue_light()
   // will be guaranteed to be called next frame even if we have the
@@ -803,7 +817,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 render_scene(Node *root, const ProjectionNode *projnode,
-	     const AllAttributesWrapper &initial_state) {
+         const AllAttributesWrapper &initial_state) {
 #ifdef GSG_VERBOSE
   _pass_number = 0;
   dxgsg_cat.debug()
@@ -813,7 +827,7 @@ render_scene(Node *root, const ProjectionNode *projnode,
   _current_root_node = root;
 
   render_subgraph(_render_traverser, root, projnode, initial_state,
-		  AllTransitionsWrapper());
+          AllTransitionsWrapper());
 
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug()
@@ -832,30 +846,29 @@ render_scene(Node *root, const ProjectionNode *projnode,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser,
-		Node *subgraph, const ProjectionNode *projnode,
-		const AllAttributesWrapper &initial_state,
-		const AllTransitionsWrapper &net_trans) {
+        Node *subgraph, const ProjectionNode *projnode,
+        const AllAttributesWrapper &initial_state,
+        const AllTransitionsWrapper &net_trans) {
   activate();
   const ProjectionNode *old_projection_node = _current_projection_node;
   _current_projection_node = projnode;
   LMatrix4f old_projection_mat = _current_projection_mat;
 
-  // The projection matrix must always be right-handed Y-up, even if
-  // our coordinate system of choice is otherwise, because certain GL
-  // calls (specifically glTexGen(GL_SPHERE_MAP)) assume this kind of
-  // a coordinate system.  Sigh.  In order to implement a Z-up
-  // coordinate system, we'll store the Z-up conversion in the
-  // modelview matrix.
+  // d3d is left-handed coord system
   LMatrix4f projection_mat = 
     projnode->get_projection()->get_projection_mat(CS_yup_left);
+
+  #if 0
+     dxgsg_cat.spam() << "cur projection matrix: " << projection_mat <<"\n";
+  #endif
 
   _current_projection_mat = projection_mat;
   _projection_mat_stack_count++;
 
   // We load the projection matrix directly.
   HRESULT res = 
-	 _d3dDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
-					(LPD3DMATRIX) _current_projection_mat.get_data());
+     _d3dDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
+                    (LPD3DMATRIX) _current_projection_mat.get_data());
 
   // We infer the modelview matrix by doing a wrt on the projection
   // node.
@@ -889,9 +902,9 @@ render_subgraph(RenderTraverser *traverser,
   // levels in the projection matrix stack, so we'd better do it in
   // the CPU.
   if (_projection_mat_stack_count > 0) 
-	  _d3dDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
-				(LPD3DMATRIX) _current_projection_mat.get_data());
-	  
+      _d3dDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
+                (LPD3DMATRIX) _current_projection_mat.get_data());
+      
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -904,8 +917,8 @@ render_subgraph(RenderTraverser *traverser,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser, Node *subgraph, 
-		const AllAttributesWrapper &initial_state,
-		const AllTransitionsWrapper &net_trans) {
+        const AllAttributesWrapper &initial_state,
+        const AllTransitionsWrapper &net_trans) {
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug()
     << "begin subgraph (pass " << ++_pass_number 
@@ -947,10 +960,10 @@ draw_point(const GeomPoint *geom) {
   Geom::ColorIterator ci = geom->make_color_iterator();
 
   GeomIssuer issuer(geom, this,
-		    issue_vertex_gl,
-		    issue_normal_gl,
-		    issue_texcoord_gl,
-		    issue_color_gl);
+            issue_vertex_gl,
+            issue_normal_gl,
+            issue_texcoord_gl,
+            issue_color_gl);
 
   // Points don't make a distinction between flat and smooth shading.
   // We'll leave the shade model alone.
@@ -974,7 +987,7 @@ draw_point(const GeomPoint *geom) {
   }
 
   glEnd();
-#else		  // The DX Way
+#else         // The DX Way
   int nPrims = geom->get_num_prims();
 
   perVertex = 0;
@@ -990,16 +1003,16 @@ draw_point(const GeomPoint *geom) {
 
   nassertv(_fvf_buf == NULL);    // make sure the storage pointer is clean.
   nassertv(nPrims * vertex_size < VERT_BUFFER_SIZE);
-  _fvf_buf = _sav_fvf;			// _fvf_buf changes,  sav_fvf doesn't
+  _fvf_buf = _sav_fvf;          // _fvf_buf changes,  sav_fvf doesn't
 
-	// iterate through the point
+    // iterate through the point
   draw_prim_inner_loop2(nPrims, geom, perPrim);
 
   _d3dDevice->DrawPrimitive(D3DPT_POINTLIST, p_flags, _sav_fvf, nPrims, NULL);
 
   _fvf_buf = NULL;
 
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1060,7 +1073,7 @@ draw_line(const GeomLine* geom) {
   }
 
   glEnd();
-#else		 // the DX way
+#else        // the DX way
 
   int nPrims = geom->get_num_prims();
 
@@ -1080,33 +1093,33 @@ draw_line(const GeomLine* geom) {
 //  nassertv(nPrims * 2 * vertex_size < VERT_BUFFER_SIZE);
   
   if (nPrims * 2 * vertex_size > VERT_BUFFER_SIZE)
-	  {
-	  _fvf_buf = _tmp_fvf = new char[nPrims * 2 * vertex_size];
-	  }
-  else  _fvf_buf = _sav_fvf;			// _fvf_buf changes,  sav_fvf doesn't
+      {
+      _fvf_buf = _tmp_fvf = new char[nPrims * 2 * vertex_size];
+      }
+  else  _fvf_buf = _sav_fvf;            // _fvf_buf changes,  sav_fvf doesn't
   
   for (int i = 0; i < nPrims; i++) 
-	{
-	if (perPrim & PerColor)
-		{
-	    p_color = geom->get_next_color(ci);		// set primitive color if there is one.
-	    p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-	    }
-	if (perPrim & PerNormal)
-		 p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
-	draw_prim_inner_loop(2, geom);
-	}
+    {
+    if (perPrim & PerColor)
+        {
+        p_color = geom->get_next_color(ci);     // set primitive color if there is one.
+        p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+        }
+    if (perPrim & PerNormal)
+         p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
+    draw_prim_inner_loop(2, geom);
+    }
 
   if (_tmp_fvf == NULL)
-	  _d3dDevice->DrawPrimitive(D3DPT_LINELIST, p_flags, _sav_fvf, nPrims*2, NULL);
+      _d3dDevice->DrawPrimitive(D3DPT_LINELIST, p_flags, _sav_fvf, nPrims*2, NULL);
   else {
-	  _d3dDevice->DrawPrimitive(D3DPT_LINELIST, p_flags, _tmp_fvf, nPrims*2, NULL);
-	  delete [] _tmp_fvf;
-	  }
+      _d3dDevice->DrawPrimitive(D3DPT_LINELIST, p_flags, _tmp_fvf, nPrims*2, NULL);
+      delete [] _tmp_fvf;
+      }
 
   _fvf_buf = NULL;
 
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1202,30 +1215,30 @@ draw_linestrip(const GeomLinestrip* geom) {
   size_t vertex_size = draw_prim_setup(geom);
 
   for (int i = 0; i < nPrims; i++) 
-	{
-	if (perPrim & PerColor)
-		{
-	    p_color = geom->get_next_color(ci);		// set primitive color if there is one.
-	    p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-	    }
+    {
+    if (perPrim & PerColor)
+        {
+        p_color = geom->get_next_color(ci);     // set primitive color if there is one.
+        p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+        }
 
     int nVerts = *(plen++);
     nassertv(nVerts >= 2);
 
-	nassertv(_fvf_buf == NULL);    // make sure the storage pointer is clean.
+    nassertv(_fvf_buf == NULL);    // make sure the storage pointer is clean.
     nassertv(nVerts * vertex_size < VERT_BUFFER_SIZE);
-//	void *sav_fvf = new char[nVerts * vertex_size];  // allocate storage for vertex info.
-	_fvf_buf = _sav_fvf;			// _fvf_buf changes,  sav_fvf doesn't
-	
-	draw_prim_inner_loop2(nVerts, geom, perComp);
+//  void *sav_fvf = new char[nVerts * vertex_size];  // allocate storage for vertex info.
+    _fvf_buf = _sav_fvf;            // _fvf_buf changes,  sav_fvf doesn't
+    
+    draw_prim_inner_loop2(nVerts, geom, perComp);
 
-	_d3dDevice->DrawPrimitive(D3DPT_LINESTRIP,  p_flags, _sav_fvf, nVerts, NULL);
+    _d3dDevice->DrawPrimitive(D3DPT_LINESTRIP,  p_flags, _sav_fvf, nVerts, NULL);
 
-	_fvf_buf = NULL;
-	}
+    _fvf_buf = NULL;
+    }
 
 
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1273,10 +1286,10 @@ draw_polygon(const GeomPolygon *geom) {
 
 
   GeomIssuer issuer(geom, this,
-		    issue_vertex_gl,
-		    issue_normal_gl,
-		    issue_texcoord_gl,
-		    issue_color_gl);
+            issue_vertex_gl,
+            issue_normal_gl,
+            issue_texcoord_gl,
+            issue_color_gl);
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
@@ -1312,7 +1325,7 @@ draw_polygon(const GeomPolygon *geom) {
     }
     glEnd();
   }
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 }
 
 
@@ -1336,41 +1349,41 @@ draw_prim_setup(const Geom *geom)
   p_flags = 0;
   size_t  vertex_size = 0;
   if (geom->get_binding(G_COLOR) != G_OFF || _issued_color_enabled)
-	  {  p_flags |= D3DFVF_DIFFUSE;   vertex_size += sizeof(D3DCOLOR);  }
+      {  p_flags |= D3DFVF_DIFFUSE;   vertex_size += sizeof(D3DCOLOR);  }
   if (geom->get_binding(G_COORD) != G_OFF)
-	  {  p_flags |= D3DFVF_XYZ;   vertex_size += sizeof(D3DVALUE) * 3;  }
+      {  p_flags |= D3DFVF_XYZ;   vertex_size += sizeof(D3DVALUE) * 3;  }
   if (geom->get_binding(G_NORMAL) != G_OFF)
-	  {  p_flags |= D3DFVF_NORMAL;  vertex_size += sizeof(D3DVALUE) * 3;  }
+      {  p_flags |= D3DFVF_NORMAL;  vertex_size += sizeof(D3DVALUE) * 3;  }
   if (geom->get_binding(G_TEXCOORD) != G_OFF)
-	  {  p_flags |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0);
-		 vertex_size += sizeof(float) * 2;
-	  }
+      {  p_flags |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0);
+         vertex_size += sizeof(float) * 2;
+      }
 
 
   if (geom->get_binding(G_COLOR) == G_OVERALL)
-	  {
-	  p_color = geom->get_next_color(ci);		// set overall color if there is one
-  	  p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-	  }
+      {
+      p_color = geom->get_next_color(ci);       // set overall color if there is one
+      p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+      }
 
   if (geom->get_binding(G_NORMAL) == G_OVERALL)
-		 p_normal = geom->get_next_normal(ni);    // set overall normal if there is one
+         p_normal = geom->get_next_normal(ni);    // set overall normal if there is one
 
   if (_issued_color_enabled)
-	  {
-	  p_colr = _issued_color;		// set primitive color if there is one.
-	  perVertex &= ~PerColor;
-	  perPrim &= ~PerColor;
-	  perComp &= ~PerColor;
-	  }
+      {
+      p_colr = _issued_color;       // set primitive color if there is one.
+      perVertex &= ~PerColor;
+      perPrim &= ~PerColor;
+      perComp &= ~PerColor;
+      }
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
   if (perVertex & ((wants_colors() ? PerColor : 0) | 
-		   (wants_normals() ? PerNormal : 0)))
-		  _d3dDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, D3DSHADE_GOURAUD);
+           (wants_normals() ? PerNormal : 0)))
+          _d3dDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, D3DSHADE_GOURAUD);
   else
-		  _d3dDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, D3DSHADE_FLAT);
+          _d3dDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, D3DSHADE_FLAT);
 
   return vertex_size;
 }
@@ -1384,65 +1397,65 @@ draw_prim_setup(const Geom *geom)
 void DXGraphicsStateGuardian::
 draw_prim_inner_loop(int loops, const Geom *geom) 
 {
-	while (--loops >= 0)
-		{
-		switch(perVertex)
-			{
-			case 3:
-				p_normal = geom->get_next_normal(ni);
-			case 1:
-				p_vertex = geom->get_next_vertex(vi);
-				break;
-			case 5:
-				p_vertex = geom->get_next_vertex(vi);
-			case 4:
-				p_color = geom->get_next_color(ci);
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-				break;
-			case 7:
-				p_vertex = geom->get_next_vertex(vi);
-			case 6:
-				p_color = geom->get_next_color(ci);
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-			case 2:
-				p_normal = geom->get_next_normal(ni);
-				break;
-			case 9:
-				p_vertex = geom->get_next_vertex(vi);
-			case 8:
-				p_texcoord = geom->get_next_texcoord(ti);
-				break;
-			case 11:
-				p_vertex = geom->get_next_vertex(vi);
-			case 10:
-				p_normal = geom->get_next_normal(ni);
-				p_texcoord = geom->get_next_texcoord(ti);
-				break;
-			case 13:
-				p_vertex = geom->get_next_vertex(vi);
-			case 12:
-				p_color = geom->get_next_color(ci);
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-				p_texcoord = geom->get_next_texcoord(ti);
-				break;
-			case 15:
-				p_vertex = geom->get_next_vertex(vi);
-			case 14:
-				p_normal = geom->get_next_normal(ni);
-				p_color = geom->get_next_color(ci);
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-				p_texcoord = geom->get_next_texcoord(ti);
-				break;
-			}
-		if (p_flags & D3DFVF_XYZ)
-			add_to_FVF((void *)&p_vertex, sizeof(D3DVECTOR));
-		if (p_flags & D3DFVF_NORMAL)
-			add_to_FVF((void *)&p_normal, sizeof(D3DVECTOR));
-		if (p_flags & D3DFVF_DIFFUSE)
-			add_to_FVF((void *)&p_colr, sizeof(D3DCOLOR));
-		if (p_flags & D3DFVF_TEXCOUNT_MASK)
-			add_to_FVF((void *)&p_texcoord, sizeof(TexCoordf));
-		}
+    while (--loops >= 0)
+        {
+        switch(perVertex)
+            {
+            case 3:
+                p_normal = geom->get_next_normal(ni);
+            case 1:
+                p_vertex = geom->get_next_vertex(vi);
+                break;
+            case 5:
+                p_vertex = geom->get_next_vertex(vi);
+            case 4:
+                p_color = geom->get_next_color(ci);
+                p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+                break;
+            case 7:
+                p_vertex = geom->get_next_vertex(vi);
+            case 6:
+                p_color = geom->get_next_color(ci);
+                p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+            case 2:
+                p_normal = geom->get_next_normal(ni);
+                break;
+            case 9:
+                p_vertex = geom->get_next_vertex(vi);
+            case 8:
+                p_texcoord = geom->get_next_texcoord(ti);
+                break;
+            case 11:
+                p_vertex = geom->get_next_vertex(vi);
+            case 10:
+                p_normal = geom->get_next_normal(ni);
+                p_texcoord = geom->get_next_texcoord(ti);
+                break;
+            case 13:
+                p_vertex = geom->get_next_vertex(vi);
+            case 12:
+                p_color = geom->get_next_color(ci);
+                p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+                p_texcoord = geom->get_next_texcoord(ti);
+                break;
+            case 15:
+                p_vertex = geom->get_next_vertex(vi);
+            case 14:
+                p_normal = geom->get_next_normal(ni);
+                p_color = geom->get_next_color(ci);
+                p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+                p_texcoord = geom->get_next_texcoord(ti);
+                break;
+            }
+        if (p_flags & D3DFVF_XYZ)
+            add_to_FVF((void *)&p_vertex, sizeof(D3DVECTOR));
+        if (p_flags & D3DFVF_NORMAL)
+            add_to_FVF((void *)&p_normal, sizeof(D3DVECTOR));
+        if (p_flags & D3DFVF_DIFFUSE)
+            add_to_FVF((void *)&p_colr, sizeof(D3DCOLOR));
+        if (p_flags & D3DFVF_TEXCOUNT_MASK)
+            add_to_FVF((void *)&p_texcoord, sizeof(TexCoordf));
+        }
 }
 
 
@@ -1456,73 +1469,73 @@ draw_prim_inner_loop(int loops, const Geom *geom)
 void DXGraphicsStateGuardian::
 draw_prim_inner_loop2(int loops, const Geom *geom, short& per ) 
 {
-	while (--loops >= 0)
-		{
-		if (per & PerColor)
-		  {
-		  p_color = geom->get_next_color(ci);		// set overall color if there is one
-		  p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-		  }
-		if (per & PerNormal)
-			p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
+    while (--loops >= 0)
+        {
+        if (per & PerColor)
+          {
+          p_color = geom->get_next_color(ci);       // set overall color if there is one
+          p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+          }
+        if (per & PerNormal)
+            p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
 
-		switch(perVertex)
-			{
-			case 3:
-				p_normal = geom->get_next_normal(ni);
-			case 1:
-				p_vertex = geom->get_next_vertex(vi);
-				break;
-			case 5:
-				p_vertex = geom->get_next_vertex(vi);
-			case 4:
-				p_color = geom->get_next_color(ci);
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-				break;
-			case 7:
-				p_vertex = geom->get_next_vertex(vi);
-			case 6:
-				p_color = geom->get_next_color(ci);
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-			case 2:
-				p_normal = geom->get_next_normal(ni);
-				break;
-			case 9:
-				p_vertex = geom->get_next_vertex(vi);
-			case 8:
-				p_texcoord = geom->get_next_texcoord(ti);
-				break;
-			case 11:
-				p_vertex = geom->get_next_vertex(vi);
-			case 10:
-				p_normal = geom->get_next_normal(ni);
-				p_texcoord = geom->get_next_texcoord(ti);
-				break;
-			case 13:
-				p_vertex = geom->get_next_vertex(vi);
-			case 12:
-				p_color = geom->get_next_color(ci);
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-				p_texcoord = geom->get_next_texcoord(ti);
-				break;
-			case 15:
-				p_vertex = geom->get_next_vertex(vi);
-			case 14:
-				p_normal = geom->get_next_normal(ni);
-				p_color = geom->get_next_color(ci);
-				p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-				p_texcoord = geom->get_next_texcoord(ti);
-				break;
-			}
-		if (p_flags & D3DFVF_XYZ)
-			add_to_FVF((void *)&p_vertex, sizeof(D3DVECTOR));
-		if (p_flags & D3DFVF_NORMAL)
-			add_to_FVF((void *)&p_normal, sizeof(D3DVECTOR));
-		if (p_flags & D3DFVF_DIFFUSE)
-			add_to_FVF((void *)&p_colr, sizeof(D3DCOLOR));
-		if (p_flags & D3DFVF_TEXCOUNT_MASK)
-			add_to_FVF((void *)&p_texcoord, sizeof(TexCoordf));
-		}
+        switch(perVertex)
+            {
+            case 3:
+                p_normal = geom->get_next_normal(ni);
+            case 1:
+                p_vertex = geom->get_next_vertex(vi);
+                break;
+            case 5:
+                p_vertex = geom->get_next_vertex(vi);
+            case 4:
+                p_color = geom->get_next_color(ci);
+                p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+                break;
+            case 7:
+                p_vertex = geom->get_next_vertex(vi);
+            case 6:
+                p_color = geom->get_next_color(ci);
+                p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+            case 2:
+                p_normal = geom->get_next_normal(ni);
+                break;
+            case 9:
+                p_vertex = geom->get_next_vertex(vi);
+            case 8:
+                p_texcoord = geom->get_next_texcoord(ti);
+                break;
+            case 11:
+                p_vertex = geom->get_next_vertex(vi);
+            case 10:
+                p_normal = geom->get_next_normal(ni);
+                p_texcoord = geom->get_next_texcoord(ti);
+                break;
+            case 13:
+                p_vertex = geom->get_next_vertex(vi);
+            case 12:
+                p_color = geom->get_next_color(ci);
+                p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+                p_texcoord = geom->get_next_texcoord(ti);
+                break;
+            case 15:
+                p_vertex = geom->get_next_vertex(vi);
+            case 14:
+                p_normal = geom->get_next_normal(ni);
+                p_color = geom->get_next_color(ci);
+                p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+                p_texcoord = geom->get_next_texcoord(ti);
+                break;
+            }
+        if (p_flags & D3DFVF_XYZ)
+            add_to_FVF((void *)&p_vertex, sizeof(D3DVECTOR));
+        if (p_flags & D3DFVF_NORMAL)
+            add_to_FVF((void *)&p_normal, sizeof(D3DVECTOR));
+        if (p_flags & D3DFVF_DIFFUSE)
+            add_to_FVF((void *)&p_colr, sizeof(D3DCOLOR));
+        if (p_flags & D3DFVF_TEXCOUNT_MASK)
+            add_to_FVF((void *)&p_texcoord, sizeof(TexCoordf));
+        }
 }
 
 
@@ -1534,8 +1547,8 @@ draw_prim_inner_loop2(int loops, const Geom *geom, short& per )
 INLINE void DXGraphicsStateGuardian::
 add_to_FVF(void *data,  size_t bytes) 
 {
-	memcpy(_fvf_buf, data, bytes);
-	_fvf_buf = (char *)_fvf_buf + bytes;
+    memcpy(_fvf_buf, data, bytes);
+    _fvf_buf = (char *)_fvf_buf + bytes;
 
 }
 
@@ -1555,8 +1568,8 @@ draw_tri(const GeomTri *geom) {
 
 #ifdef _DEBUG
  if(_pCurTexContext!=NULL) {
-     dxgsg_cat.spam() << "Cur active DX texture: " << _pCurTexContext->_tex->get_name() << "\n";
-    } 
+//    dxgsg_cat.spam() << "Cur active DX texture: " << _pCurTexContext->_tex->get_name() << "\n";
+  } 
 #endif
 
 #ifdef WBD_GL_MODE
@@ -1629,29 +1642,29 @@ draw_tri(const GeomTri *geom) {
 
   nassertv(_fvf_buf == NULL);    // make sure the storage pointer is clean.
   nassertv(nPrims * 3 * vertex_size < VERT_BUFFER_SIZE);
-  _fvf_buf = _sav_fvf;			// _fvf_buf changes,  sav_fvf doesn't
+  _fvf_buf = _sav_fvf;          // _fvf_buf changes,  sav_fvf doesn't
 
-	// iterate through the triangle primitive
+    // iterate through the triangle primitive
 
   for (int i = 0; i < nPrims; i++) 
-	{
-	if (perPrim & PerColor)
-		{
-	    p_color = geom->get_next_color(ci);		// set primitive color if there is one.
-	    p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-	    }
+    {
+    if (perPrim & PerColor)
+        {
+        p_color = geom->get_next_color(ci);     // set primitive color if there is one.
+        p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+        }
 
-	if (perPrim & PerNormal)
-		 p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
+    if (perPrim & PerNormal)
+         p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
 
-	draw_prim_inner_loop(3, geom);
-	}
+    draw_prim_inner_loop(3, geom);
+    }
 
   _d3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST,  p_flags, _sav_fvf, nPrims*3, NULL);
 
   _fvf_buf = NULL;
 
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1675,10 +1688,10 @@ draw_quad(const GeomQuad *geom) {
   Geom::ColorIterator ci = geom->make_color_iterator();
 
   GeomIssuer issuer(geom, this,
-		    issue_vertex_gl,
-		    issue_normal_gl,
-		    issue_texcoord_gl,
-		    issue_color_gl);
+            issue_vertex_gl,
+            issue_normal_gl,
+            issue_texcoord_gl,
+            issue_color_gl);
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
@@ -1710,7 +1723,7 @@ draw_quad(const GeomQuad *geom) {
   }
 
   glEnd();
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1720,7 +1733,7 @@ draw_quad(const GeomQuad *geom) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_tristrip(const GeomTristrip *geom) {
-	activate();
+    activate();
 
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug() << "draw_tristrip()" << endl;
@@ -1738,10 +1751,10 @@ draw_tristrip(const GeomTristrip *geom) {
 
 
   GeomIssuer issuer(geom, this,
-		    issue_vertex_gl,
-		    issue_normal_gl,
-		    issue_texcoord_gl,
-		    issue_color_gl);
+            issue_vertex_gl,
+            issue_normal_gl,
+            issue_texcoord_gl,
+            issue_color_gl);
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
@@ -1798,7 +1811,7 @@ draw_tristrip(const GeomTristrip *geom) {
 
   draw_multitri(geom, D3DPT_TRIANGLESTRIP);
 
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1882,9 +1895,9 @@ draw_trifan(const GeomTrifan *geom) {
   }
 #else      // the DX way
 
-	draw_multitri(geom, D3DPT_TRIANGLEFAN);
+    draw_multitri(geom, D3DPT_TRIANGLEFAN);
 
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 }
 
 
@@ -1920,41 +1933,41 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE tri_id)
   // iterate through the triangle primitives
 
   for (int i = 0; i < nPrims; i++) 
-	{
-	if (perPrim & PerColor)
-		{
-	    p_color = geom->get_next_color(ci);		// set primitive color if there is one.
-	    p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-	    }
+    {
+    if (perPrim & PerColor)
+        {
+        p_color = geom->get_next_color(ci);     // set primitive color if there is one.
+        p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+        }
 
-	if (perPrim & PerNormal)
-		 p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
+    if (perPrim & PerNormal)
+         p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
 
     int nVerts = *(plen++);
     nassertv(nVerts >= 3);
 
-	nassertv(_fvf_buf == NULL);    // make sure the storage pointer is clean.
+    nassertv(_fvf_buf == NULL);    // make sure the storage pointer is clean.
     nassertv(nVerts * vertex_size < VERT_BUFFER_SIZE);
-	_fvf_buf = _sav_fvf;			// _fvf_buf changes,  sav_fvf doesn't
-	
-	if (perComp & PerColor)
-	  {
-	  p_color = geom->get_next_color(ci);		// set overall color if there is one
-	  p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
-	  }
-	if (perComp & PerNormal)
-		p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
+    _fvf_buf = _sav_fvf;            // _fvf_buf changes,  sav_fvf doesn't
+    
+    if (perComp & PerColor)
+      {
+      p_color = geom->get_next_color(ci);       // set overall color if there is one
+      p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
+      }
+    if (perComp & PerNormal)
+        p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
 
-	// Store first triangle
-	draw_prim_inner_loop(3, geom);
+    // Store first triangle
+    draw_prim_inner_loop(3, geom);
 
-	// Store remaining vertices
-	draw_prim_inner_loop2(nVerts-3, geom, perComp);
+    // Store remaining vertices
+    draw_prim_inner_loop2(nVerts-3, geom, perComp);
 
-	_d3dDevice->DrawPrimitive(tri_id,  p_flags, _sav_fvf, nVerts, NULL);
+    _d3dDevice->DrawPrimitive(tri_id,  p_flags, _sav_fvf, nVerts, NULL);
 
-	_fvf_buf = NULL;
-	}
+    _fvf_buf = NULL;
+    }
 }
 
 
@@ -2030,7 +2043,7 @@ draw_sphere(const GeomSphere *geom) {
   }
 
   gluDeleteQuadric(sph);
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 }
 
 
@@ -2101,7 +2114,7 @@ prepare_texture(Texture *tex) {
       delete gtc;
       return NULL;
   }
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 
   bool inserted = mark_prepared_texture(gtc);
 
@@ -2154,7 +2167,7 @@ release_texture(TextureContext *tc) {
   gtc->_index = 0;
 #else
   gtc->DeleteTexture();
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
   bool erased = unmark_prepared_texture(gtc);
 
   // If this assertion fails, a texture was released that hadn't been
@@ -2183,7 +2196,7 @@ static int binary_log_cap(const int x) {
 //     Function: DXGraphicsStateGuardian::copy_texture
 //       Access: Public, Virtual
 //  Description: Copy the pixel region indicated by the display
-//		 region from the framebuffer into texture memory
+//       region from the framebuffer into texture memory
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 copy_texture(TextureContext *tc, const DisplayRegion *dr) {
@@ -2220,10 +2233,10 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 //#ifdef WBD_GL_MODE
   bind_texture(tc);
   glCopyTexImage2D( GL_TEXTURE_2D, tex->get_level(), 
-		    get_internal_image_format(pb->get_format()),
-		    pb->get_xorg(), pb->get_yorg(),
-		    pb->get_xsize(), pb->get_ysize(), pb->get_border() );
-#endif				// WBD_GL_MODE
+            get_internal_image_format(pb->get_format()),
+            pb->get_xorg(), pb->get_yorg(),
+            pb->get_xsize(), pb->get_ysize(), pb->get_border() );
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2274,17 +2287,17 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   taa->set_mode(TextureApplyProperty::M_decal);
 
   state.set_attribute(LightTransition::get_class_type(), 
-		      new LightAttribute);
+              new LightAttribute);
   state.set_attribute(ColorMaskTransition::get_class_type(),
-		      new ColorMaskAttribute);
+              new ColorMaskAttribute);
   state.set_attribute(RenderModeTransition::get_class_type(),
-		      new RenderModeAttribute);
+              new RenderModeAttribute);
   state.set_attribute(TexMatrixTransition::get_class_type(),
-		      new TexMatrixAttribute);
+              new TexMatrixAttribute);
   state.set_attribute(TransformTransition::get_class_type(),
-		      new TransformAttribute);
+              new TransformAttribute);
   state.set_attribute(ColorBlendTransition::get_class_type(),
-		      new ColorBlendAttribute);
+              new ColorBlendAttribute);
   state.set_attribute(CullFaceTransition::get_class_type(), cfa);
   state.set_attribute(DepthTestTransition::get_class_type(), dta);
   state.set_attribute(DepthWriteTransition::get_class_type(), dwa);
@@ -2323,7 +2336,7 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   glPopMatrix();
 
   pop_display_region(old_dr);
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 
 }
 
@@ -2375,7 +2388,7 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb, 
-			const DisplayRegion *dr) {
+            const DisplayRegion *dr) {
   nassertv(tc != NULL && pb != NULL && dr != NULL);
   activate();
 
@@ -2418,7 +2431,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   // NOTE: reading the depth buffer is *much* slower than reading the
   // color buffer
   state.set_attribute(TextureTransition::get_class_type(), 
-		      new TextureAttribute);
+              new TextureAttribute);
   set_state(state, false);
 
   int xo, yo, w, h;
@@ -2459,13 +2472,13 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 #endif
 
   glReadPixels( pb->get_xorg() + xo, pb->get_yorg() + yo, 
-		pb->get_xsize(), pb->get_ysize(), 
-		get_external_image_format(pb->get_format()),
-		get_image_type(pb->get_image_type()),
-		pb->_image.p() );
+        pb->get_xsize(), pb->get_ysize(), 
+        get_external_image_format(pb->get_format()),
+        get_image_type(pb->get_image_type()),
+        pb->_image.p() );
 
   nassertv(!pb->_image.empty());
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2475,7 +2488,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr, 
-		  const RenderBuffer &rb) {
+          const RenderBuffer &rb) {
   activate();
   set_read_buffer(rb);
   copy_pixel_buffer(pb, dr);
@@ -2488,7 +2501,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-		  const NodeAttributes& na) {
+          const NodeAttributes& na) {
 
   dxgsg_cat.fatal() << "DXGSG draw_pixel_buffer unimplemented!!!";
   return;
@@ -2503,15 +2516,15 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 
   NodeAttributes state(na);
   state.set_attribute(LightTransition::get_class_type(), 
-		      new LightAttribute);
+              new LightAttribute);
   state.set_attribute(TextureTransition::get_class_type(), 
-		      new TextureAttribute);
+              new TextureAttribute);
   state.set_attribute(TransformTransition::get_class_type(), 
-		      new TransformAttribute);
+              new TransformAttribute);
   state.set_attribute(ColorBlendTransition::get_class_type(), 
-		      new ColorBlendAttribute);
+              new ColorBlendAttribute);
   state.set_attribute(StencilTransition::get_class_type(), 
-		      new StencilAttribute);
+              new StencilAttribute);
 
 
   switch (pb->get_format()) {
@@ -2600,15 +2613,15 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 
   glRasterPos2i( pb->get_xorg(), pb->get_yorg() );
   glDrawPixels( pb->get_xsize(), pb->get_ysize(), 
-		get_external_image_format(pb->get_format()),
-		get_image_type(pb->get_image_type()),
-		pb->_image.p() );
+        get_external_image_format(pb->get_format()),
+        get_image_type(pb->get_image_type()),
+        pb->_image.p() );
  
   glMatrixMode( GL_PROJECTION );
   glPopMatrix();
 
   pop_display_region(old_dr);
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2631,13 +2644,13 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::apply_material( Material* material )
 {
-	D3DMATERIAL7 cur_material;
-  	cur_material.dcvDiffuse = *(D3DCOLORVALUE *)(material->get_diffuse().get_data());
-  	cur_material.dcvAmbient = *(D3DCOLORVALUE *)(material->get_ambient().get_data());
-  	cur_material.dcvSpecular = *(D3DCOLORVALUE *)(material->get_specular().get_data());
-  	cur_material.dcvEmissive = *(D3DCOLORVALUE *)(material->get_emission().get_data());
-	cur_material.dvPower   =  material->get_shininess();
-	_d3dDevice->SetMaterial(&cur_material);
+    D3DMATERIAL7 cur_material;
+    cur_material.dcvDiffuse = *(D3DCOLORVALUE *)(material->get_diffuse().get_data());
+    cur_material.dcvAmbient = *(D3DCOLORVALUE *)(material->get_ambient().get_data());
+    cur_material.dcvSpecular = *(D3DCOLORVALUE *)(material->get_specular().get_data());
+    cur_material.dcvEmissive = *(D3DCOLORVALUE *)(material->get_emission().get_data());
+    cur_material.dvPower   =  material->get_shininess();
+    _d3dDevice->SetMaterial(&cur_material);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2648,37 +2661,37 @@ void DXGraphicsStateGuardian::apply_material( Material* material )
 void DXGraphicsStateGuardian::
 apply_fog(Fog *fog) {
   _d3dDevice->SetRenderState(D3DRENDERSTATE_FOGTABLEMODE, 
-							get_fog_mode_type(fog->get_mode()));
+                            get_fog_mode_type(fog->get_mode()));
   _d3dDevice->SetRenderState(D3DRENDERSTATE_FOGVERTEXMODE, 
-							get_fog_mode_type(fog->get_mode()));
+                            get_fog_mode_type(fog->get_mode()));
 
   switch(fog->get_mode()) 
-	{
+    {
     case Fog::M_linear:
-		{
-   	    float fog_start = fog->get_start();	  
-	    float fog_end = fog->get_end();	  
-   	    _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGSTART, 
-			  *((LPDWORD) (&fog_start)) );
-   	    _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGEND, 
-			  *((LPDWORD) (&fog_end)) );
-		}
+        {
+        float fog_start = fog->get_start();   
+        float fog_end = fog->get_end();   
+        _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGSTART, 
+              *((LPDWORD) (&fog_start)) );
+        _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGEND, 
+              *((LPDWORD) (&fog_end)) );
+        }
         break;
     case Fog::M_exponential:
     case Fog::M_super_exponential:
-		{
-	    float fog_density = fog->get_density();	  
-   	    _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGDENSITY, 
-			  *((LPDWORD) (&fog_density)) );
-		}
+        {
+        float fog_density = fog->get_density();   
+        _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGDENSITY, 
+              *((LPDWORD) (&fog_density)) );
+        }
         break;
     case Fog::M_spline:
         break;
-	}
+    }
   
   Colorf  fog_colr = fog->get_color();
   _d3dDevice->SetRenderState(D3DRENDERSTATE_FOGCOLOR, 
-					D3DRGBA(fog_colr[0], fog_colr[1], fog_colr[2], 0.0));
+                    D3DRGBA(fog_colr[0], fog_colr[1], fog_colr[2], 0.0));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2704,7 +2717,7 @@ void DXGraphicsStateGuardian::apply_light( PointLight* light )
     glPushMatrix();
 
     glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_left)
-		  .get_data());
+          .get_data());
 
     GLenum id = get_light_id( _cur_light_id );
     Colorf black(0, 0, 0, 1);
@@ -2741,28 +2754,28 @@ void DXGraphicsStateGuardian::apply_light( PointLight* light )
 #endif
 
 #else 
-	D3DCOLORVALUE black;
-	black.r = black.g = black.b = black.a = 0.0f;
-	D3DLIGHT7  alight;
-	alight.dltType =  D3DLIGHT_POINT;
-	alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
-	alight.dcvAmbient  =  black	;
-	alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
+    D3DCOLORVALUE black;
+    black.r = black.g = black.b = black.a = 0.0f;
+    D3DLIGHT7  alight;
+    alight.dltType =  D3DLIGHT_POINT;
+    alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
+    alight.dcvAmbient  =  black ;
+    alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
 
     // Position needs to specify x, y, z, and w
     // w == 1 implies non-infinite position
-	alight.dvPosition = *(D3DVECTOR *)(get_rel_pos( light, _current_root_node ).get_data());
+    alight.dvPosition = *(D3DVECTOR *)(get_rel_pos( light, _current_root_node ).get_data());
 
-	alight.dvRange =  D3DLIGHT_RANGE_MAX;
-	alight.dvFalloff =  1.0f;
+    alight.dvRange =  D3DLIGHT_RANGE_MAX;
+    alight.dvFalloff =  1.0f;
 
-	alight.dvAttenuation0 = (D3DVALUE)light->get_constant_attenuation();
-	alight.dvAttenuation1 = (D3DVALUE)light->get_linear_attenuation();
-	alight.dvAttenuation2 = (D3DVALUE)light->get_quadratic_attenuation();
+    alight.dvAttenuation0 = (D3DVALUE)light->get_constant_attenuation();
+    alight.dvAttenuation1 = (D3DVALUE)light->get_linear_attenuation();
+    alight.dvAttenuation2 = (D3DVALUE)light->get_quadratic_attenuation();
 
-	HRESULT res = _d3dDevice->SetLight(_cur_light_id, &alight);
+    HRESULT res = _d3dDevice->SetLight(_cur_light_id, &alight);
 
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2787,7 +2800,7 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light )
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_left)
-		  .get_data());
+          .get_data());
 
     GLenum id = get_light_id( _cur_light_id );
     Colorf black(0, 0, 0, 1);
@@ -2798,7 +2811,7 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light )
     // Position needs to specify x, y, z, and w 
     // w == 0 implies light is at infinity
     LPoint3f dir = get_rel_forward( light, _current_root_node, 
-				_coordinate_system );
+                _coordinate_system );
     LPoint4f pos( -dir[0], -dir[1], -dir[2], 0 );
     glLightfv( id, GL_POSITION, pos.get_data() );
 
@@ -2821,33 +2834,33 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light )
   dxgsg_cat.debug()
     << "glPopMatrix()" << endl;
 #endif
-#else			// DX Directional light
-	D3DCOLORVALUE black;
-	black.r = black.g = black.b = black.a = 0.0f;
-	
-	D3DLIGHT7  alight;
-	ZeroMemory(&alight, sizeof(D3DLIGHT7));
+#else           // DX Directional light
+    D3DCOLORVALUE black;
+    black.r = black.g = black.b = black.a = 0.0f;
+    
+    D3DLIGHT7  alight;
+    ZeroMemory(&alight, sizeof(D3DLIGHT7));
 
-	alight.dltType =  D3DLIGHT_DIRECTIONAL;
-	alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
-	alight.dcvAmbient  =  black	;
-	alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
+    alight.dltType =  D3DLIGHT_DIRECTIONAL;
+    alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
+    alight.dcvAmbient  =  black ;
+    alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
 
-	alight.dvDirection = *(D3DVECTOR *)
-	          (get_rel_forward( light, _current_projection_node, CS_yup_left).get_data());
+    alight.dvDirection = *(D3DVECTOR *)
+              (get_rel_forward( light, _current_projection_node, CS_yup_left).get_data());
 
-	alight.dvRange =  D3DLIGHT_RANGE_MAX;
-	alight.dvFalloff =  1.0f;
+    alight.dvRange =  D3DLIGHT_RANGE_MAX;
+    alight.dvFalloff =  1.0f;
 
-	alight.dvAttenuation0 = 1.0f;		// constant
-	alight.dvAttenuation1 = 0.0f;		// linear
-	alight.dvAttenuation2 = 0.0f;		// quadratic
+    alight.dvAttenuation0 = 1.0f;       // constant
+    alight.dvAttenuation1 = 0.0f;       // linear
+    alight.dvAttenuation2 = 0.0f;       // quadratic
 
-	HRESULT res = _d3dDevice->SetLight(_cur_light_id, &alight);
+    HRESULT res = _d3dDevice->SetLight(_cur_light_id, &alight);
 //    _d3dDevice->LightEnable( _cur_light_id, TRUE );
 //    _d3dDevice->SetRenderState( D3DRENDERSTATE_LIGHTING, TRUE );
-						  
-#endif				// WBD_GL_MODE
+                          
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2872,7 +2885,7 @@ void DXGraphicsStateGuardian::apply_light( Spotlight* light )
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_left)
-		  .get_data());
+          .get_data());
 
     GLenum id = get_light_id( _cur_light_id );
     Colorf black(0, 0, 0, 1);
@@ -2887,53 +2900,53 @@ void DXGraphicsStateGuardian::apply_light( Spotlight* light )
     glLightfv( id, GL_POSITION, fpos.get_data() );
 
     glLightfv( id, GL_SPOT_DIRECTION, 
-		get_rel_forward( light, _current_projection_node,
-			     _coordinate_system ).get_data() );
+        get_rel_forward( light, _current_projection_node,
+                 _coordinate_system ).get_data() );
     glLightf( id, GL_SPOT_EXPONENT, light->get_exponent() );
     glLightf( id, GL_SPOT_CUTOFF, 
-		light->get_cutoff_angle() );
+        light->get_cutoff_angle() );
     glLightf( id, GL_CONSTANT_ATTENUATION, 
-		light->get_constant_attenuation() );
+        light->get_constant_attenuation() );
     glLightf( id, GL_LINEAR_ATTENUATION, 
-		light->get_linear_attenuation() );
+        light->get_linear_attenuation() );
     glLightf( id, GL_QUADRATIC_ATTENUATION, 
-		light->get_quadratic_attenuation() );
+        light->get_quadratic_attenuation() );
 
     glPopMatrix();
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug()
     << "glPopMatrix()" << endl;
 #endif
-#else		// DX Spotlight
-	D3DCOLORVALUE black;
-	black.r = black.g = black.b = black.a = 0.0f;
-	
-	D3DLIGHT7  alight;
-	ZeroMemory(&alight, sizeof(D3DLIGHT7));
+#else       // DX Spotlight
+    D3DCOLORVALUE black;
+    black.r = black.g = black.b = black.a = 0.0f;
+    
+    D3DLIGHT7  alight;
+    ZeroMemory(&alight, sizeof(D3DLIGHT7));
 
-	alight.dltType =  D3DLIGHT_SPOT;
-	alight.dcvAmbient  =  black	;
-	alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
-	alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
+    alight.dltType =  D3DLIGHT_SPOT;
+    alight.dcvAmbient  =  black ;
+    alight.dcvDiffuse  = *(D3DCOLORVALUE *)(light->get_color().get_data());
+    alight.dcvSpecular = *(D3DCOLORVALUE *)(light->get_specular().get_data());
 
-	alight.dvPosition = *(D3DVECTOR *)
-		(get_rel_pos( light, _current_root_node ).get_data());
+    alight.dvPosition = *(D3DVECTOR *)
+        (get_rel_pos( light, _current_root_node ).get_data());
 
-	alight.dvDirection = *(D3DVECTOR *)
-		(get_rel_forward( light, _current_root_node, _coordinate_system).get_data()); 
+    alight.dvDirection = *(D3DVECTOR *)
+        (get_rel_forward( light, _current_root_node, _coordinate_system).get_data()); 
 
-	alight.dvRange =  D3DLIGHT_RANGE_MAX;
-	alight.dvFalloff =  1.0f;
-	alight.dvTheta =  0.0f;
-	alight.dvPhi =  light->get_cutoff_angle();
+    alight.dvRange =  D3DLIGHT_RANGE_MAX;
+    alight.dvFalloff =  1.0f;
+    alight.dvTheta =  0.0f;
+    alight.dvPhi =  light->get_cutoff_angle();
 
-	alight.dvAttenuation0 = (D3DVALUE)light->get_constant_attenuation(); // constant
-	alight.dvAttenuation1 = (D3DVALUE)light->get_linear_attenuation();   // linear
-	alight.dvAttenuation2 = (D3DVALUE)light->get_quadratic_attenuation();// quadratic
+    alight.dvAttenuation0 = (D3DVALUE)light->get_constant_attenuation(); // constant
+    alight.dvAttenuation1 = (D3DVALUE)light->get_linear_attenuation();   // linear
+    alight.dvAttenuation2 = (D3DVALUE)light->get_quadratic_attenuation();// quadratic
 
-	HRESULT res = _d3dDevice->SetLight(_cur_light_id, &alight);
+    HRESULT res = _d3dDevice->SetLight(_cur_light_id, &alight);
 
-#endif				// WBD_GL_MODE 
+#endif              // WBD_GL_MODE 
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2962,23 +2975,23 @@ issue_transform(const TransformAttribute *attrib) {
     enable_lighting(false);
     enable_texturing(false);
 
-	typedef struct {
-	  D3DVALUE x,y,z;	// position
-	  D3DVALUE nx,ny,nz; // normal
-	  D3DCOLOR  diff;	// diffuse color
-		}		 VERTFORMAT;
+    typedef struct {
+      D3DVALUE x,y,z;   // position
+      D3DVALUE nx,ny,nz; // normal
+      D3DCOLOR  diff;   // diffuse color
+        }        VERTFORMAT;
 
-	VERTFORMAT vert_buf[] = {
-	  {0.0, 0.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(1.0, 0.0, 0.0, 1.0)},    // red
-	  {3.0, 0.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(1.0, 0.0, 0.0, 1.0)},    // red
-	  {0.0, 0.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(0.0, 1.0, 0.0, 1.0)},    // grn
-	  {0.0, 3.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(0.0, 1.0, 0.0, 1.0)},    // grn
-	  {0.0, 0.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(0.0, 0.0, 1.0, 1.0)},    // blu
-	  {0.0, 0.0, 3.0,  0.0, -1.0, 0.0,  D3DRGBA(0.0, 0.0, 1.0, 1.0)},    // blu
-	  };
+    VERTFORMAT vert_buf[] = {
+      {0.0, 0.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(1.0, 0.0, 0.0, 1.0)},    // red
+      {3.0, 0.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(1.0, 0.0, 0.0, 1.0)},    // red
+      {0.0, 0.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(0.0, 1.0, 0.0, 1.0)},    // grn
+      {0.0, 3.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(0.0, 1.0, 0.0, 1.0)},    // grn
+      {0.0, 0.0, 0.0,  0.0, -1.0, 0.0,  D3DRGBA(0.0, 0.0, 1.0, 1.0)},    // blu
+      {0.0, 0.0, 3.0,  0.0, -1.0, 0.0,  D3DRGBA(0.0, 0.0, 1.0, 1.0)},    // blu
+      };
 
-	_d3dDevice->DrawPrimitive(D3DPT_LINELIST, D3DFVF_DIFFUSE | D3DFVF_XYZ | D3DFVF_NORMAL,
-		  vert_buf, 6, NULL);
+    _d3dDevice->DrawPrimitive(D3DPT_LINELIST, D3DFVF_DIFFUSE | D3DFVF_XYZ | D3DFVF_NORMAL,
+          vert_buf, 6, NULL);
 
     enable_lighting(lighting_was_enabled);
     enable_texturing(texturing_was_enabled);
@@ -2986,7 +2999,7 @@ issue_transform(const TransformAttribute *attrib) {
 #endif
 
   _d3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD/*VIEW*/,
-						(LPD3DMATRIX) attrib->get_matrix().get_data());
+                        (LPD3DMATRIX) attrib->get_matrix().get_data());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3009,8 +3022,8 @@ issue_tex_matrix(const TexMatrixAttribute *attrib) {
   glLoadMatrixf(attrib->get_matrix().get_data());
 #else
   _d3dDevice->SetTransform( D3DTRANSFORMSTATE_TEXTURE0,
-			(LPD3DMATRIX)attrib->get_matrix().get_data());
-#endif				// WBD_GL_MODE
+            (LPD3DMATRIX)attrib->get_matrix().get_data());
+#endif              // WBD_GL_MODE
 }
 
 
@@ -3023,11 +3036,11 @@ void DXGraphicsStateGuardian::
 issue_color(const ColorAttribute *attrib) {
   activate();
   if (attrib->is_on()&& attrib->is_real()) 
-	 {
-	 _issued_color_enabled = true;
+     {
+     _issued_color_enabled = true;
      Colorf c = attrib->get_color();
-	 _issued_color = D3DRGBA(c[0], c[1], c[2], c[3]);
-	 }
+     _issued_color = D3DRGBA(c[0], c[1], c[2], c[3]);
+     }
   else _issued_color_enabled = false;
 }
 
@@ -3104,7 +3117,7 @@ issue_tex_gen(const TexGenAttribute *attrib) {
       << "Unknown texgen mode " << (int)mode << endl;
     break;
   }
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3154,20 +3167,20 @@ issue_render_mode(const RenderModeAttribute *attrib) {
 
 
   switch(mode)
-	  {
-	  case RenderModeProperty::M_filled:
-		  _d3dDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_SOLID);
-		  break;
+      {
+      case RenderModeProperty::M_filled:
+          _d3dDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_SOLID);
+          break;
 
-	  case RenderModeProperty::M_wireframe:
-		  _d3dDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_WIREFRAME);
+      case RenderModeProperty::M_wireframe:
+          _d3dDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_WIREFRAME);
 //    call_glLineWidth(attrib->get_line_width());
-		  break;
+          break;
 
-	  default:
-		  dxgsg_cat.error()
-		      << "Unknown render mode " << (int)mode << endl;
-	  }
+      default:
+          dxgsg_cat.error()
+              << "Unknown render mode " << (int)mode << endl;
+      }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3208,22 +3221,22 @@ void DXGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
     // Check to see if this light has already been bound to an id
     for (i = 0; i < _max_lights; i++) {
       if (_available_light_ids[i] == light) {
-	// Light has already been bound to an id, we only need
-	// to enable the light, not apply it
-	_cur_light_id = -2;
-	if (enable_light(i, true))	_cur_light_enabled[i] = true;
-	break;
+    // Light has already been bound to an id, we only need
+    // to enable the light, not apply it
+    _cur_light_id = -2;
+    if (enable_light(i, true))  _cur_light_enabled[i] = true;
+    break;
       }
     }
     
     // See if there are any unbound light ids 
     if (_cur_light_id == -1) {
       for (i = 0; i < _max_lights; i++) {
-	if (_available_light_ids[i] == NULL) {
-	  _available_light_ids[i] = light;
-	  _cur_light_id = i;
-	  break;
-	}
+    if (_available_light_ids[i] == NULL) {
+      _available_light_ids[i] = light;
+      _cur_light_id = i;
+      break;
+    }
       }
     } 
     
@@ -3231,11 +3244,11 @@ void DXGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
     // a currently unused but previously bound id 
     if (_cur_light_id == -1) {
       for (i = 0; i < _max_lights; i++) {
-	if (attrib->is_off(_available_light_ids[i])) {
-	  _available_light_ids[i] = light;
-	  _cur_light_id = i;
-	  break;
-	} 
+    if (attrib->is_off(_available_light_ids[i])) {
+      _available_light_ids[i] = light;
+      _cur_light_id = i;
+      break;
+    } 
       }
     }
 
@@ -3246,7 +3259,7 @@ void DXGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
       light->apply(this);
     } else if (_cur_light_id == -1) {
       dxgsg_cat.error()
-	<< "issue_light() - failed to bind light to id" << endl;
+    << "issue_light() - failed to bind light to id" << endl;
     }
   }
 
@@ -3276,14 +3289,14 @@ void DXGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
 void DXGraphicsStateGuardian::
 reset_ambient() 
 {
-	_lmodel_ambient += 2.0f;
+    _lmodel_ambient += 2.0f;
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_color_blend		  //
-//       Access: Public, Virtual								  //
-//  Description:												  //
+//     Function: DXGraphicsStateGuardian::issue_color_blend       //
+//       Access: Public, Virtual                                  //
+//  Description:                                                  //
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_color_blend(const ColorBlendAttribute *attrib) {
@@ -3296,19 +3309,19 @@ issue_color_blend(const ColorBlendAttribute *attrib) {
     break;
   case ColorBlendProperty::M_multiply:
     enable_blend(true);
-	call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ZERO);
+    call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ZERO);
     break;
   case ColorBlendProperty::M_add:
     enable_blend(true);
-	call_dxBlendFunc(D3DBLEND_ONE, D3DBLEND_ONE);
+    call_dxBlendFunc(D3DBLEND_ONE, D3DBLEND_ONE);
     break;
   case ColorBlendProperty::M_multiply_add:
     enable_blend(true);
-	call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ONE);
+    call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ONE);
     break;
   case ColorBlendProperty::M_alpha:
     enable_blend(true);
-	call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
+    call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
     break;
   default:
   dxgsg_cat.error()
@@ -3454,15 +3467,15 @@ issue_depth_test(const DepthTestAttribute *attrib) {
   DepthTestProperty::Mode mode = attrib->get_mode();
 
   if (mode == DepthTestProperty::M_none) 
-	{
+    {
     _depth_test_enabled = false;
- 	_d3dDevice->SetRenderState(D3DRENDERSTATE_ZENABLE, D3DZB_FALSE);
-	}
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_ZENABLE, D3DZB_FALSE);
+    }
   else {
     _depth_test_enabled = true;
- 	_d3dDevice->SetRenderState(D3DRENDERSTATE_ZENABLE, D3DZB_TRUE);
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC, get_depth_func_type(mode));
-	}
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_ZENABLE, D3DZB_TRUE);
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_ZFUNC, get_depth_func_type(mode));
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3491,10 +3504,10 @@ issue_stencil(const StencilAttribute *attrib) {
 
   } else {
     enable_stencil_test(true);
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILFUNC, get_stencil_func_type(mode));
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILPASS, get_stencil_action_type(attrib->get_action()));
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILFAIL, get_stencil_action_type(attrib->get_action()));
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILZFAIL, get_stencil_action_type(attrib->get_action()));
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILFUNC, get_stencil_func_type(mode));
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILPASS, get_stencil_action_type(attrib->get_action()));
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILFAIL, get_stencil_action_type(attrib->get_action()));
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILZFAIL, get_stencil_action_type(attrib->get_action()));
   }
 }
 
@@ -3511,17 +3524,17 @@ issue_cull_face(const CullFaceAttribute *attrib) {
 
   switch (mode) {
   case CullFaceProperty::M_cull_none:
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
     break;
   case CullFaceProperty::M_cull_clockwise:
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CW);
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CW);
     break;
   case CullFaceProperty::M_cull_counter_clockwise:
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
     break;
   case CullFaceProperty::M_cull_all:
     dxgsg_cat.warning() << "M_cull_all is invalid for DX GSG renderer, using CULL_CCW \n";
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
     break;
   default:
     dxgsg_cat.error()
@@ -3558,23 +3571,23 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
     // Check to see if this clip plane has already been bound to an id
     for (i = 0; i < _max_clip_planes; i++) {
       if (_available_clip_plane_ids[i] == plane_node) {
-	// Clip plane has already been bound to an id, we only need
-	// to enable the clip plane, not apply it
-	_cur_clip_plane_id = -2;
-	enable_clip_plane(i, true);
-	_cur_clip_plane_enabled[i] = true;
-	break;
+    // Clip plane has already been bound to an id, we only need
+    // to enable the clip plane, not apply it
+    _cur_clip_plane_id = -2;
+    enable_clip_plane(i, true);
+    _cur_clip_plane_enabled[i] = true;
+    break;
       }
     }
 
     // See if there are any unbound clip plane ids
     if (_cur_clip_plane_id == -1) {
       for (i = 0; i < _max_clip_planes; i++) {
-	if (_available_clip_plane_ids[i] == NULL) {
-	  _available_clip_plane_ids[i] = plane_node;
-	  _cur_clip_plane_id = i;
-	  break;
-	}
+    if (_available_clip_plane_ids[i] == NULL) {
+      _available_clip_plane_ids[i] = plane_node;
+      _cur_clip_plane_id = i;
+      break;
+    }
       }
     }
     
@@ -3582,11 +3595,11 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
     // a currently unused but previously bound id
     if (_cur_clip_plane_id == -1) {
       for (i = 0; i < _max_clip_planes; i++) {
-	if (attrib->is_off(_available_clip_plane_ids[i])) {
-	  _available_clip_plane_ids[i] = plane_node;
-	  _cur_clip_plane_id = i;
-	  break;
-	}
+    if (attrib->is_off(_available_clip_plane_ids[i])) {
+      _available_clip_plane_ids[i] = plane_node;
+      _cur_clip_plane_id = i;
+      break;
+    }
       }
     }
     
@@ -3595,16 +3608,16 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
       _cur_clip_plane_enabled[_cur_clip_plane_id] = true;
       const Planef clip_plane = plane_node->get_plane();
 
-	  D3DVALUE equation[4];
+      D3DVALUE equation[4];
       equation[0] = clip_plane._a;
       equation[1] = clip_plane._b;
       equation[2] = clip_plane._c;
       equation[3] = clip_plane._d;
-	  _d3dDevice->SetClipPlane(_cur_clip_plane_id, equation);
+      _d3dDevice->SetClipPlane(_cur_clip_plane_id, equation);
 
     } else if (_cur_clip_plane_id == -1) {
       dxgsg_cat.error()
-	<< "issue_clip_plane() - failed to bind clip plane to id" << endl;
+    << "issue_clip_plane() - failed to bind clip plane to id" << endl;
     }
   }
 
@@ -3648,7 +3661,7 @@ issue_transparency(const TransparencyAttribute *attrib )
     enable_blend(true);
     enable_alpha_test(false);
     call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
-	break;
+    break;
   case TransparencyProperty::M_multisample:
     enable_multisample_alpha_one(true);
     enable_multisample_alpha_mask(true);
@@ -3751,23 +3764,23 @@ begin_decal(GeomNode *base_geom) {
 #define POLYGON_OFFSET_MULTIPLIER 2
     // Just draw the base geometry normally.
     base_geom->draw(this);
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
   } else 
 #endif  
   {
     if (_decal_level > 1) 
-	      base_geom->draw(this);  // If we're already decaling, just draw the geometry.
+          base_geom->draw(this);  // If we're already decaling, just draw the geometry.
     else {
       // First turn off writing the depth buffer to render the base geometry.
-	  _d3dDevice->GetRenderState(D3DRENDERSTATE_ZWRITEENABLE, (unsigned long *)&_depth_write_enabled);  //save cur val
-	  _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+      _d3dDevice->GetRenderState(D3DRENDERSTATE_ZWRITEENABLE, (unsigned long *)&_depth_write_enabled);  //save cur val
+      _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
       
       // Now render the base geometry.
       base_geom->draw(this);
       
       // Render all of the decal geometry, too.  We'll keep the depth
       // buffer write off during this.
-	  }
+      }
   }
 }
 
@@ -3788,7 +3801,7 @@ end_decal(GeomNode *base_geom) {
 #ifndef DISABLE_POLYGON_OFFSET_DECALING
   if (dx_decal_type == GDT_offset) {
     // Restore the Zbias offset.
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
   } else
 #endif  
   {  // for GDT_mask
@@ -3802,17 +3815,17 @@ end_decal(GeomNode *base_geom) {
       D3DBLEND old_blend_dest_func = _blend_dest_func;
 
       // Enable the writing to the depth buffer.
-	  _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+      _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
 
       // Disable the writing to the color buffer, however we have to
       // do this.  (I don't think this is possible in DX without blending.)
       if (dx_decal_type == GDT_blend) {
-			// Expensive.
-			enable_blend(true);
-			call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
+            // Expensive.
+            enable_blend(true);
+            call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
       }
   #if(DIRECT3D_VERSION < 0x700)
- 	  else {  // dx7 doesn't support planemask rstate
+      else {  // dx7 doesn't support planemask rstate
         // note: not saving current planemask val, assumes this is always all 1's.  should be ok
         _d3dDevice->SetRenderState(D3DRENDERSTATE_PLANEMASK,0x0);  // note PLANEMASK is supposedly obsolete for DX7
       }
@@ -3820,7 +3833,7 @@ end_decal(GeomNode *base_geom) {
 
       // No need to have texturing on for this.
       enable_texturing(false);
-	
+    
       base_geom->draw(this);
     
       // Finally, restore the depth write and color mask states to the
@@ -3828,23 +3841,23 @@ end_decal(GeomNode *base_geom) {
 /*
       DepthWriteAttribute *depth_write;
       if (get_attribute_into(depth_write, _state,
-			     DepthWriteTransition::get_class_type())) 
-			issue_depth_write(depth_write);
+                 DepthWriteTransition::get_class_type())) 
+            issue_depth_write(depth_write);
 
      ColorMaskAttribute *color_mask;
-	if (get_attribute_into(color_mask, _state,
-			       ColorMaskTransition::get_class_type())) {
-	  issue_color_mask(color_mask);
-	} else {
+    if (get_attribute_into(color_mask, _state,
+                   ColorMaskTransition::get_class_type())) {
+      issue_color_mask(color_mask);
+    } else {
 
-	  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	}            
+      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    }            
 */            
 
        if (dx_decal_type == GDT_blend) {
-    	  enable_blend(was_blend);
-    	  if (was_blend)
-    			call_dxBlendFunc(old_blend_source_func, old_blend_dest_func);
+          enable_blend(was_blend);
+          if (was_blend)
+                call_dxBlendFunc(old_blend_source_func, old_blend_dest_func);
        } 
   #if(DIRECT3D_VERSION < 0x700)           
          else {
@@ -3853,7 +3866,7 @@ end_decal(GeomNode *base_geom) {
   #endif
 
        enable_texturing(was_textured);
-   	  _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, _depth_write_enabled); 
+      _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, _depth_write_enabled); 
     }
   }
 }
@@ -3927,7 +3940,7 @@ set_draw_buffer(const RenderBuffer &rb) {
   default:
     call_glDrawBuffer(GL_FRONT_AND_BACK);
   }
-#endif				// WBD_GL_MODE
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3980,7 +3993,7 @@ set_read_buffer(const RenderBuffer &rb) {
   default:
     call_glReadBuffer(GL_FRONT_AND_BACK);
   }
-#endif	// WBD_GL_MODE
+#endif  // WBD_GL_MODE
 }
 
 
@@ -3994,13 +4007,19 @@ void DXGraphicsStateGuardian::
 specify_texture(Texture *tex) {
 
   _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSU,
-				  get_texture_wrap_mode(tex->get_wrapu()));
+                  get_texture_wrap_mode(tex->get_wrapu()));
   _d3dDevice->SetTextureStageState(0,D3DTSS_ADDRESSV,
-				  get_texture_wrap_mode(tex->get_wrapv()));
+                  get_texture_wrap_mode(tex->get_wrapv()));
+
+  int aniso_degree=tex->get_anisotropic_degree();
 
   Texture::FilterType ft=tex->get_magfilter();
 
-  switch(ft) {
+  if(aniso_degree>1) {
+       _d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_ANISOTROPIC );
+       _d3dDevice->SetTextureStageState(0, D3DTSS_MAXANISOTROPY,aniso_degree);
+  } else
+   switch(ft) {
       case Texture::FT_nearest:
           _d3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTFG_POINT);
           break;
@@ -4010,36 +4029,48 @@ specify_texture(Texture *tex) {
       default:
           dxgsg_cat.error() << "MipMap filter type setting for texture magfilter makes no sense,  texture: " << tex->get_name() << "\n";       
           break;
-  }
+   }
   
   ft=tex->get_minfilter();
 
+  D3DTEXTUREMIPFILTER mipfilter = D3DTFP_LINEAR;
+  D3DTEXTUREMINFILTER minfilter = D3DTFN_LINEAR;
+
   switch(ft) {
       case Texture::FT_nearest:
-          _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_POINT);
-          _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_NONE);
+          minfilter = D3DTFN_POINT;
+          mipfilter = D3DTFP_NONE;
           break;
       case Texture::FT_linear:
-          _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-          _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_NONE);
+          minfilter = D3DTFN_LINEAR;
+          mipfilter = D3DTFP_NONE;
           break;
       case Texture::FT_nearest_mipmap_nearest:
-          _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_POINT);
-          _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_POINT);
+          minfilter = D3DTFN_POINT;
+          mipfilter = D3DTFP_POINT;
           break;
       case Texture::FT_linear_mipmap_nearest:
-          _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-          _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_POINT);
+          minfilter = D3DTFN_LINEAR;
+          mipfilter = D3DTFP_POINT;
           break;
       case Texture::FT_nearest_mipmap_linear:
-          _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_POINT);
-          _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
+          minfilter = D3DTFN_POINT;
+          mipfilter = D3DTFP_LINEAR;
           break;
       case Texture::FT_linear_mipmap_linear:
-          _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTFN_LINEAR);
-          _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTFP_LINEAR);
+          minfilter = D3DTFN_LINEAR;
+          mipfilter = D3DTFP_LINEAR;
           break;
+      default:
+         dxgsg_cat.error() << "Unknown tex filter type for tex: " << tex->get_name() << "  filter: "<<(DWORD)ft<<"\n";
   }
+
+  if(aniso_degree>1) {
+      minfilter=D3DTFN_ANISOTROPIC;
+  }
+
+  _d3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, minfilter);
+  _d3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, mipfilter);
 }
 
 
@@ -4054,7 +4085,9 @@ apply_texture_immediate(DXTextureContext *tc) {
     // bugbug:  does this handle the case of untextured geometry? 
     //          we dont see this bug cause we never mix textured/untextured
 
-	_d3dDevice->SetTexture(0, tc->_surface );
+//    if(tc->_surface->IsLost(
+
+    _d3dDevice->SetTexture(0, tc->_surface );
 #if 0
     if(tc!=NULL) {
        dxgsg_cat.spam() << "Setting active DX texture: " << tc->_tex->get_name() << "\n";
@@ -4246,14 +4279,14 @@ free_pointers() {
 ////////////////////////////////////////////////////////////////////
 PT(SavedFrameBuffer) DXGraphicsStateGuardian::
 save_frame_buffer(const RenderBuffer &buffer,
-		  CPT(DisplayRegion) dr) {
+          CPT(DisplayRegion) dr) {
   DXSavedFrameBuffer *sfb = new DXSavedFrameBuffer(buffer, dr);
 
   if (buffer._buffer_type & RenderBuffer::T_depth) {
     // Save the depth buffer.
     sfb->_depth = 
       new PixelBuffer(PixelBuffer::depth_buffer(dr->get_pixel_width(),
-						dr->get_pixel_height()));
+                        dr->get_pixel_height()));
     copy_pixel_buffer(sfb->_depth, dr, buffer);
   }
 
@@ -4279,7 +4312,7 @@ restore_frame_buffer(SavedFrameBuffer *frame_buffer) {
       (sfb->_buffer._buffer_type & RenderBuffer::T_back) != 0) {
     // Restore the color buffer.
     draw_texture(sfb->_back_rgba->prepare(this),
-		 sfb->_display_region, sfb->_buffer);
+         sfb->_display_region, sfb->_buffer);
   }
 
   if (sfb->_depth != (PixelBuffer *)NULL &&
@@ -4315,163 +4348,8 @@ TypeHandle DXGraphicsStateGuardian::get_class_type(void) {
 void DXGraphicsStateGuardian::init_type(void) {
   GraphicsStateGuardian::init_type();
   register_type(_type_handle, "DXGraphicsStateGuardian",
-		GraphicsStateGuardian::get_class_type());
+        GraphicsStateGuardian::get_class_type());
 }
-
-
-
-#ifdef WBD_GL_MODE
-
-
-/* All of the following routines return GL-specific constants based
-   on Panda defined constants.  For DX, just use 
-   the Panda defined constants to decide what to do.
-
-	get_image_type(PixelBuffer::Type type) {
-	get_external_image_format(PixelBuffer::Format format) {
-	get_internal_image_format(PixelBuffer::Format format) {
-	get_texture_apply_mode_type( TextureApplyProperty::Mode am ) const
-*/
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::get_image_type
-//       Access: Protected
-//  Description: Maps from the PixelBuffer's internal Type symbols
-//               to GL's.
-////////////////////////////////////////////////////////////////////
-GLenum DXGraphicsStateGuardian::
-get_image_type(PixelBuffer::Type type) {
-  switch (type) {
-  case PixelBuffer::T_unsigned_byte:
-    return GL_UNSIGNED_BYTE;
-  case PixelBuffer::T_unsigned_short:
-    return GL_UNSIGNED_SHORT;
-#ifdef GL_UNSIGNED_BYTE_3_3_2_EXT
-  case PixelBuffer::T_unsigned_byte_332:
-    return GL_UNSIGNED_BYTE_3_3_2_EXT;
-#endif
-  case PixelBuffer::T_float:
-    return GL_FLOAT;
-  }
-  dxgsg_cat.error() << "Invalid PixelBuffer::Type value!\n";
-  return GL_UNSIGNED_BYTE;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::get_external_image_format
-//       Access: Protected
-//  Description: Maps from the PixelBuffer's Format symbols
-//               to GL's.
-////////////////////////////////////////////////////////////////////
-GLenum DXGraphicsStateGuardian::
-get_external_image_format(PixelBuffer::Format format) {
-  switch (format) {
-  case PixelBuffer::F_color_index:
-    return GL_COLOR_INDEX;
-  case PixelBuffer::F_stencil_index:
-    return GL_STENCIL_INDEX;
-  case PixelBuffer::F_depth_component:
-    return GL_DEPTH_COMPONENT;
-  case PixelBuffer::F_red:
-    return GL_RED;
-  case PixelBuffer::F_green:
-    return GL_GREEN;
-  case PixelBuffer::F_blue:
-    return GL_BLUE;
-  case PixelBuffer::F_alpha:
-    return GL_ALPHA;
-  case PixelBuffer::F_rgb:
-  case PixelBuffer::F_rgb5:
-  case PixelBuffer::F_rgb8:
-  case PixelBuffer::F_rgb12:
-  case PixelBuffer::F_rgb332:
-    return GL_RGB;
-  case PixelBuffer::F_rgba:
-  case PixelBuffer::F_rgba4:
-  case PixelBuffer::F_rgba8:
-  case PixelBuffer::F_rgba12:
-    return GL_RGBA;
-  case PixelBuffer::F_luminance:
-    return GL_LUMINANCE;
-  case PixelBuffer::F_luminance_alpha:
-    return GL_LUMINANCE_ALPHA;
-  }
-  dxgsg_cat.error()
-    << "Invalid PixelBuffer::Format value in get_external_image_format(): "
-    << (int)format << "\n";
-  return GL_RGB;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::get_internal_image_format
-//       Access: Protected
-//  Description: Maps from the PixelBuffer's Format symbols to a
-//               suitable internal format for GL textures.
-////////////////////////////////////////////////////////////////////
-GLenum DXGraphicsStateGuardian::
-get_internal_image_format(PixelBuffer::Format format) {
-  switch (format) {
-  case PixelBuffer::F_rgba:
-    return GL_RGBA;
-  case PixelBuffer::F_rgba4:
-    return GL_RGBA4;
-  case PixelBuffer::F_rgba8:
-    return GL_RGBA8;
-  case PixelBuffer::F_rgba12:
-    return GL_RGBA12;
-
-  case PixelBuffer::F_rgb:
-    return GL_RGB;
-  case PixelBuffer::F_rgb5:
-  case PixelBuffer::F_rgb8:
-    return GL_RGB8;
-  case PixelBuffer::F_rgb12:
-    return GL_RGB12;
-  case PixelBuffer::F_rgb332:
-    return GL_R3_G3_B2;
-
-  case PixelBuffer::F_luminance_alpha:
-    return GL_LUMINANCE_ALPHA;
-
-  case PixelBuffer::F_alpha:
-    return GL_ALPHA;
-
-  case PixelBuffer::F_red:
-  case PixelBuffer::F_green:
-  case PixelBuffer::F_blue:
-  case PixelBuffer::F_luminance:
-    return GL_LUMINANCE;
-  }
-
-  dxgsg_cat.error()
-    << "Invalid image format in get_internal_image_format(): "
-    << (int)format << "\n";
-  return GL_RGB;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::get_texture_apply_mode_type
-//       Access: Protected
-//  Description: Maps from the texture environment's mode types
-//		 to the corresponding OpenGL ids
-////////////////////////////////////////////////////////////////////
-GLint DXGraphicsStateGuardian::
-get_texture_apply_mode_type( TextureApplyProperty::Mode am ) const
-{
-    switch( am )
-    {
-	case TextureApplyProperty::M_modulate: return GL_MODULATE;
-	case TextureApplyProperty::M_decal: return GL_DECAL;
- 	case TextureApplyProperty::M_blend: return GL_BLEND;
-	case TextureApplyProperty::M_replace: return GL_REPLACE;
-	case TextureApplyProperty::M_add: return GL_ADD;
-    }
-    dxgsg_cat.error()
-      << "Invalid TextureApplyProperty::Mode value" << endl;
-    return GL_MODULATE;
-}
-#endif	// WBD_GL_MODE
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: dx_cleanup
@@ -4480,29 +4358,29 @@ get_texture_apply_mode_type( TextureApplyProperty::Mode am ) const
 void DXGraphicsStateGuardian::
 dx_cleanup() {
 
-	release_all_textures();
+    release_all_textures();
 
     // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.
     if( _d3dDevice!=NULL ) {
         if( 0 < _d3dDevice->Release() ) {
-			  dxgsg_cat.error() << "DXGraphicsStateGuardian::destructor - d3dDevice reference count > 0" << endl;
+              dxgsg_cat.error() << "DXGraphicsStateGuardian::destructor - d3dDevice reference count > 0" << endl;
         } 
-        _d3dDevice = NULL;	// clear the pointer in the Gsg
+        _d3dDevice = NULL;  // clear the pointer in the Gsg
     }
 
-	// Release the DDraw and D3D objects used by the app
+    // Release the DDraw and D3D objects used by the app
     RELEASE(_zbuf);
     RELEASE(_back);
     RELEASE(_pri);
 
     RELEASE(_d3d);
 
-	// Do a safe check for releasing DDRAW. RefCount should be zero.
+    // Do a safe check for releasing DDRAW. RefCount should be zero.
     if( _pDD!=NULL ) {
-		int val;
+        int val;
         if( 0 < (val = _pDD->Release()) ) {
-			  dxgsg_cat.error()
-		      << "DXGraphicsStateGuardian::destructor - context reference count = " << val << endl;
+              dxgsg_cat.error()
+              << "DXGraphicsStateGuardian::destructor - context reference count = " << val << endl;
         }
         _pDD  = NULL;
     }
@@ -4524,17 +4402,17 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow)
     DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd_back);
     DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd_zbuf);
 
-	_back->GetSurfaceDesc(&ddsd_back);
-	_zbuf->GetSurfaceDesc(&ddsd_zbuf);
-	
+    _back->GetSurfaceDesc(&ddsd_back);
+    _zbuf->GetSurfaceDesc(&ddsd_zbuf);
+    
 #if 0
      DWORD refcnt;
      refcnt = _zbuf->Release();  _zbuf = NULL;
-		  dxgsg_cat.error() << "zbuf refcnt= "<<refcnt <<endl;
+          dxgsg_cat.error() << "zbuf refcnt= "<<refcnt <<endl;
      refcnt = _back->Release();  _back = NULL;
-		  dxgsg_cat.error() << "back refcnt= "<<refcnt <<endl;
+          dxgsg_cat.error() << "back refcnt= "<<refcnt <<endl;
      refcnt = _pri->Release();  _pri = NULL;
-		  dxgsg_cat.error() << "pri refcnt= "<<refcnt <<endl;
+          dxgsg_cat.error() << "pri refcnt= "<<refcnt <<endl;
 #endif
 
      RELEASE(_zbuf);
@@ -4587,40 +4465,41 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow)
      PRINTVIDMEM(_pDD,&ddsd_back.ddsCaps,"resize backbuffer surf");
     
      if(FAILED(hr = _pDD->CreateSurface( &ddsd_back, &_back, NULL ))) {
-    	  dxgsg_cat.fatal() << "DXGraphicsStateGuardian::resize() - CreateSurface failed for backbuffer : result = " << ConvD3DErrorToString(hr) << endl;
-    	  exit(1);
+          dxgsg_cat.fatal() << "DXGraphicsStateGuardian::resize() - CreateSurface failed for backbuffer : result = " << ConvD3DErrorToString(hr) << endl;
+          exit(1);
      }
     
      PRINTVIDMEM(_pDD,&ddsd_back.ddsCaps,"resize zbuffer surf");
     
      // Recreate and attach a z-buffer. 
      if(FAILED(hr = _pDD->CreateSurface( &ddsd_zbuf, &_zbuf, NULL ))) {
-    	  dxgsg_cat.fatal() << "DXGraphicsStateGuardian::resize() - CreateSurface failed for Z buffer: result = " << ConvD3DErrorToString(hr) << endl;
-    	  exit(1);
+          dxgsg_cat.fatal() << "DXGraphicsStateGuardian::resize() - CreateSurface failed for Z buffer: result = " << ConvD3DErrorToString(hr) << endl;
+          exit(1);
      }
 
-	// Attach the z-buffer to the back buffer.
+    // Attach the z-buffer to the back buffer.
     if( (hr = _back->AddAttachedSurface( _zbuf ) ) != DD_OK) {
-	  dxgsg_cat.fatal()
+      dxgsg_cat.fatal()
       << "DXGraphicsStateGuardian::resize() - AddAttachedSurface failed : result = " << ConvD3DErrorToString(hr) << endl;
-	  exit(1);
+      exit(1);
     }
 
     if( (hr = _d3dDevice->SetRenderTarget(_back,0x0) ) != DD_OK) {
-	  dxgsg_cat.fatal()
+      dxgsg_cat.fatal()
       << "DXGraphicsStateGuardian::resize() - SetRenderTarget failed : result = " << ConvD3DErrorToString(hr) << endl;
-	  exit(1);
+      exit(1);
     }
 
     // Create the viewport
-	D3DVIEWPORT7 vp = { 0, 0, renderWid, renderHt, 0.0f, 1.0f };
+    D3DVIEWPORT7 vp = { 0, 0, renderWid, renderHt, 0.0f, 1.0f };
     hr = _d3dDevice->SetViewport( &vp );
     if (hr != DD_OK) {
-	  dxgsg_cat.fatal()
+      dxgsg_cat.fatal()
       << "DXGraphicsStateGuardian::config() - SetViewport failed : result = " << ConvD3DErrorToString(hr) << endl;
-	  exit(1);
+      exit(1);
     }
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: show_frame 
@@ -4631,8 +4510,8 @@ void DXGraphicsStateGuardian::show_frame(void) {
 
     PStatTimer timer(_win->_swap_pcollector);  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
 
-	if (_pri!=NULL) {	
-	    if( dx_full_screen ) {
+    if (_pri!=NULL) {   
+        if( dx_full_screen ) {
 
             HRESULT hr = _pri->Flip( NULL, DDFLIP_WAIT );  // bugbug:  dont we want triple buffering instead of wasting time waiting for vsync?
             if (hr == DDERR_SURFACELOST) {
@@ -4648,18 +4527,18 @@ void DXGraphicsStateGuardian::show_frame(void) {
                return;
             }
 
-			if (hr != DD_OK) {
-			      dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Flip failed : " << ConvD3DErrorToString(hr) << endl;
+            if (hr != DD_OK) {
+                  dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Flip failed : " << ConvD3DErrorToString(hr) << endl;
                   exit(1);
             }
-		
+        
         } else {
             DX_DECLARE_CLEAN(DDBLTFX, bltfx);
 
             bltfx.dwDDFX |= DDBLTFX_NOTEARING;
-		    HRESULT hr = _pri->Blt( &_view_rect, _back,  NULL, DDBLT_DDFX | DDBLT_WAIT, &bltfx );
+            HRESULT hr = _pri->Blt( &_view_rect, _back,  NULL, DDBLT_DDFX | DDBLT_WAIT, &bltfx );
             if(hr!=DD_OK) {
-    			if (hr == DDERR_SURFACELOST) {
+                if (hr == DDERR_SURFACELOST) {
                   // Check/restore the primary surface
                    if(( _pri!=NULL ) && _pri->IsLost())
                          _pri->Restore();
@@ -4671,19 +4550,19 @@ void DXGraphicsStateGuardian::show_frame(void) {
                         _zbuf->Restore();
                    return;
                 } else {
-    			      dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Blt failed : " << ConvD3DErrorToString(hr) << endl;
+                      dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Blt failed : " << ConvD3DErrorToString(hr) << endl;
                       exit(1);
                 }
             }
-
-            // right now, we want sync to v-blank  (time from now up to vblank is wasted)
-            // worry about triple-buffering l8r
+            // right now, we force sync to v-blank  (time from now up to vblank is wasted)
+            // this keeps calling processes from trying to render more frames than the refresh
+            // rate since (as implemented right now) they expect this call to block
             hr =  _pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
-			if (hr != DD_OK) {
-			      dxgsg_cat.error() << "DXGraphicsStateGuardian::WaitForVerticalBlank() failed : " << ConvD3DErrorToString(hr) << endl;
+            if (hr != DD_OK) {
+                  dxgsg_cat.error() << "DXGraphicsStateGuardian::WaitForVerticalBlank() failed : " << ConvD3DErrorToString(hr) << endl;
                   exit(1);
             }            
-		}
+        }
     }
 }
 
@@ -4695,14 +4574,14 @@ void DXGraphicsStateGuardian::show_frame(void) {
 void DXGraphicsStateGuardian::adjust_view_rect(int x, int y)
 {
   if (_view_rect.left != x || _view_rect.top != y)
-	{
-	_view_rect.right = x + _view_rect.right - _view_rect.left;
-	_view_rect.left = x;
-	_view_rect.bottom = y + _view_rect.bottom - _view_rect.top;
-	_view_rect.top = y;
+    {
+    _view_rect.right = x + _view_rect.right - _view_rect.left;
+    _view_rect.left = x;
+    _view_rect.bottom = y + _view_rect.bottom - _view_rect.top;
+    _view_rect.top = y;
 
-//	set_clipper(clip_rect);
-	}
+//  set_clipper(clip_rect);
+    }
 }
 
 

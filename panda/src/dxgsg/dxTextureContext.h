@@ -21,7 +21,7 @@
 #define MAX_DX_TEXPIXFMTS 20    // should be enough for any card
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : DXTextureContext
+//   Class : DXTextureContext
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXTextureContext : public TextureContext {
@@ -32,11 +32,12 @@ public:
   LPDIRECTDRAWSURFACE7  _surface;
   Texture *_tex;            // ptr to parent, primarily for access to namestr
 
-  LPDIRECTDRAWSURFACE7 CreateTexture( HDC hdc, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT pTexPixFmts);
+  LPDIRECTDRAWSURFACE7 CreateTexture( HDC PrimaryDC, LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT pTexPixFmts);
+       
   void DeleteTexture();
 
 protected:
-	unsigned int get_bits_per_pixel(PixelBuffer::Format format, int *alphbits);
+    unsigned int get_bits_per_pixel(PixelBuffer::Format format, int *alphbits);
 
 public:
   static TypeHandle get_class_type() {
@@ -45,7 +46,7 @@ public:
   static void init_type() {
     TextureContext::init_type();
     register_type(_type_handle, "DXTextureContext",
- 		  TextureContext::get_class_type());
+          TextureContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
