@@ -57,6 +57,7 @@ HWND_PANDAWIN_MAP hwnd_pandawin_map;
 wglGraphicsWindow *global_wglwinptr=NULL;  // need this for temporary windproc
 
 typedef enum {Software, MCD, ICD} OGLDriverType;
+static char *OGLDrvStrings[3] = {"Software","MCD","ICD"};
 
 LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,LPARAM lparam);
 extern char *ConvDDErrorToString(const HRESULT &error);
@@ -81,11 +82,6 @@ void PrintErrorMessage(DWORD msgID) {
 void wglGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
 
   _exiting_window = true;  // needed before DestroyWindow call
-
-  if(_visual!=NULL) {
-      free(_visual);
-      _visual = NULL;
-  }
 
   // several GL drivers (voodoo,ATI, not nvidia) crash if we call these wgl deletion routines from
   // an atexit() fn.  Possible that GL has already unloaded itself.  So we just wont call them for now
@@ -289,7 +285,6 @@ void wglGraphicsWindow::config(void) {
     _mouse_passive_motion_enabled = false;
     _mouse_entry_enabled = false;
     _entry_state = -1;
-    _visual = NULL;
     _context = NULL;
     _hdc = NULL;
     _window_inactive = false;
@@ -326,7 +321,13 @@ void wglGraphicsWindow::config(void) {
         exit(1);
     }
 
-    DWORD window_style = WS_POPUP | WS_SYSMENU;  // for CreateWindow
+//  from MSDN:    
+//  An OpenGL window has its own pixel format. Because of this, only device contexts retrieved 
+//  for the client area of an OpenGL window are allowed to draw into the window. As a result, an 
+//  OpenGL window should be created with the WS_CLIPCHILDREN and WS_CLIPSIBLINGS styles. Additionally, 
+//  the window class attribute should not include the CS_PARENTDC style.
+
+    DWORD window_style = WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;  // for CreateWindow
 
     // rect now contains the coords for the entire window, not the client
     if (_props._fullscreen) {
@@ -458,27 +459,27 @@ void wglGraphicsWindow::config(void) {
   _hdc = GetDC(_mwindow);
 
   // Configure the framebuffer according to parameters specified in _props
-  // Initializes _visual
+  // Initializes _pixelformat
   int pfnum=choose_visual();
 
   if(gl_forced_pixfmt!=0) {
     if(wgldisplay_cat.is_debug())
-      wgldisplay_cat.debug() << "overriding pixfmt choice algorithm with gl-force-pixfmt\n";
+      wgldisplay_cat.debug() << "overriding pixfmt choice algorithm (" << pfnum << ") with gl-force-pixfmt("<<gl_forced_pixfmt<< ")\n";
     pfnum=gl_forced_pixfmt;
   }
 
-  //  int pfnum=ChoosePixelFormat(_hdc, _visual);
+  //  int pfnum=ChoosePixelFormat(_hdc, _pixelformat);
   if(wgldisplay_cat.is_debug())
      wgldisplay_cat.debug() << "config() - picking pixfmt #"<< pfnum <<endl;
 
-  if (!SetPixelFormat(_hdc, pfnum, _visual)) {
+  if (!SetPixelFormat(_hdc, pfnum, &_pixelformat)) {
     wgldisplay_cat.fatal()
       << "config() - SetPixelFormat("<< pfnum << ") failed after window create" << endl;
     exit(1);
   }
 
   // Initializes _colormap
-  setup_colormap();
+//  setup_colormap();
 
   _context = wglCreateContext(_hdc);
   if (!_context) {
@@ -564,11 +565,10 @@ void wglGraphicsWindow::config(void) {
   if(wgldisplay_cat.is_debug()) {
       const GLubyte *vendorname=glGetString(GL_VENDOR);
       if(vendorname!=NULL) {
-          if(strncmp((const char *)vendorname,"Microsoft",9)==0) {
-              wgldisplay_cat.debug() << " GL VendorID: " <<   glGetString(GL_VENDOR) << " (Software Rendering)" << endl;
-          } else {
-              wgldisplay_cat.debug() << " GL VendorID: " <<   glGetString(GL_VENDOR) << endl;
-          }
+              wgldisplay_cat.debug() << endl
+                                     << " GL_VENDOR: " <<   glGetString(GL_VENDOR) << endl
+                                     << " GL_RENDERER: " <<   glGetString(GL_RENDERER) << endl
+                                     << " GL_VERSION: " <<   glGetString(GL_VERSION) << endl;
       } else {
          wgldisplay_cat.info() << " glGetString(GL_VENDOR) returns NULL!!!\n";
       }
@@ -596,179 +596,37 @@ wglGraphicsWindow(GraphicsPipe* pipe, const
   config();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: try_for_visual
-//  Description: This is a static function that attempts to get the
-//               requested visual, if it is available.  It's just a
-//               wrapper around glXChooseVisual().  It returns the
-//               visual information if possible, or NULL if it is not.
-////////////////////////////////////////////////////////////////////
-PIXELFORMATDESCRIPTOR* wglGraphicsWindow::
-try_for_visual(wglGraphicsPipe *pipe, int mask,
-           int want_depth_bits, int want_color_bits) {
-  static const int max_attrib_list = 32;
-  int attrib_list[max_attrib_list];
-  int n=0;
-
-  wgldisplay_cat.debug()
-    << "Trying for visual with: RGB(" << want_color_bits << ")";
-
-  int want_color_component_bits;
-  if (mask & W_ALPHA) {
-    want_color_component_bits = max(want_color_bits / 4, 1);
-  } else {
-    want_color_component_bits = max(want_color_bits / 3, 1);
-  }
-
-  attrib_list[n++] = GLX_RGBA;
-  attrib_list[n++] = GLX_RED_SIZE;
-  attrib_list[n++] = want_color_component_bits;
-  attrib_list[n++] = GLX_GREEN_SIZE;
-  attrib_list[n++] = want_color_component_bits;
-  attrib_list[n++] = GLX_BLUE_SIZE;
-  attrib_list[n++] = want_color_component_bits;
-
-  if (mask & W_ALPHA) {
-    wgldisplay_cat.debug(false) << " ALPHA";
-    attrib_list[n++] = GLX_ALPHA_SIZE;
-    attrib_list[n++] = want_color_component_bits;
-  }
-  if (mask & W_DOUBLE) {
-    wgldisplay_cat.debug(false) << " DOUBLEBUFFER";
-    attrib_list[n++] = GLX_DOUBLEBUFFER;
-  }
-  if (mask & W_STEREO) {
-    wgldisplay_cat.debug(false) << " STEREO";
-    attrib_list[n++] = GLX_STEREO;
-  }
-  if (mask & W_DEPTH) {
-    wgldisplay_cat.debug(false) << " DEPTH(" << want_depth_bits << ")";
-    attrib_list[n++] = GLX_DEPTH_SIZE;
-    attrib_list[n++] = want_depth_bits;
-  }
-  if (mask & W_STENCIL) {
-    wgldisplay_cat.debug(false) << " STENCIL";
-    attrib_list[n++] = GLX_STENCIL_SIZE;
-    attrib_list[n++] = 1;
-  }
-  if (mask & W_ACCUM) {
-    wgldisplay_cat.debug(false) << " ACCUM";
-    attrib_list[n++] = GLX_ACCUM_RED_SIZE;
-    attrib_list[n++] = want_color_component_bits;
-    attrib_list[n++] = GLX_ACCUM_GREEN_SIZE;
-    attrib_list[n++] = want_color_component_bits;
-    attrib_list[n++] = GLX_ACCUM_BLUE_SIZE;
-    attrib_list[n++] = want_color_component_bits;
-    if (mask & W_ALPHA) {
-      attrib_list[n++] = GLX_ACCUM_ALPHA_SIZE;
-      attrib_list[n++] = want_color_component_bits;
-    }
-  }
-
-  // Terminate the list
-  nassertr(n < max_attrib_list, NULL);
-  attrib_list[n] = 0L;
-
-  PIXELFORMATDESCRIPTOR pfd;
-  PIXELFORMATDESCRIPTOR *match = NULL;
-  bool stereo = false;
-
-  memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
-  pfd.nSize = (sizeof(PIXELFORMATDESCRIPTOR));
-  pfd.nVersion = 1;
-
-  // Defaults
-  pfd.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;
-  pfd.iPixelType = PFD_TYPE_COLORINDEX;
-  pfd.cColorBits = 32;
-  pfd.cDepthBits = 0;
-
-  int *p = attrib_list;
-  while (*p) {
-    switch (*p) {
-      case GLX_USE_GL:
-    pfd.dwFlags |= PFD_SUPPORT_OPENGL;
-    break;
-      case GLX_LEVEL:
-    pfd.bReserved = *(++p);
-    break;
-      case GLX_RGBA:
-    pfd.iPixelType = PFD_TYPE_RGBA;
-    break;
-      case GLX_DOUBLEBUFFER:
-    pfd.dwFlags |= PFD_DOUBLEBUFFER;
-    break;
-      case GLX_STEREO:
-    stereo = true;
-    pfd.dwFlags |= PFD_STEREO;
-    break;
-      case GLX_AUX_BUFFERS:
-    pfd.cAuxBuffers = *(++p);
-    break;
-      case GLX_RED_SIZE:
-    pfd.cRedBits = 8; // Try to get the maximum
-    ++p;
-    break;
-      case GLX_GREEN_SIZE:
-    pfd.cGreenBits = 8; // Try to get the maximum
-    ++p;
-    break;
-      case GLX_BLUE_SIZE:
-    pfd.cBlueBits = 8; // Try to get the maximum
-    ++p;
-    break;
-      case GLX_ALPHA_SIZE:
-    pfd.cAlphaBits = 8; // Try to get the maximum
-    ++p;
-    break;
-      case GLX_DEPTH_SIZE:
-    pfd.cDepthBits = 32; // Try to get the maximum
-    ++p;
-    break;
-      case GLX_STENCIL_SIZE:
-    pfd.cStencilBits = *(++p);
-    break;
-      case GLX_ACCUM_RED_SIZE:
-      case GLX_ACCUM_GREEN_SIZE:
-      case GLX_ACCUM_BLUE_SIZE:
-      case GLX_ACCUM_ALPHA_SIZE:
-    // Only cAccumBits is used for requesting accum buffer
-    pfd.cAccumBits = 1;
-    ++p;
-    break;
-    }
-    ++p;
-  }
-
-  int pf = ChoosePixelFormat(_hdc, &pfd);
-  if (pf > 0) {
-    match = (PIXELFORMATDESCRIPTOR *)malloc(sizeof(PIXELFORMATDESCRIPTOR));
-    DescribePixelFormat(_hdc, pf, sizeof(PIXELFORMATDESCRIPTOR), match);
-
-    // ChoosePixelFormat is dumb about stereo
-    if (stereo) {
-      if (!(match->dwFlags & PFD_STEREO)) {
-    wgldisplay_cat.info()
-      << "try_for_visual() - request for stereo failed" << endl;
-      }
-    }
-  }
-
-  return match;
-}
-
 #ifdef _DEBUG
 void PrintPFD(PIXELFORMATDESCRIPTOR *pfd,char *msg) {
 
-  wgldisplay_cat.spam() << msg << endl
+  OGLDriverType drvtype;
+  if((pfd->dwFlags & PFD_GENERIC_ACCELERATED) && (pfd->dwFlags & PFD_GENERIC_FORMAT))
+      drvtype=MCD;
+   else if(!(pfd->dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd->dwFlags & PFD_GENERIC_FORMAT))
+      drvtype=ICD;
+   else {
+     drvtype=Software;
+   }  
+
+#define PrintFlag(FLG) ((pfd->dwFlags &  PFD_##FLG) ? (" PFD_" #FLG "|") : "")
+  wgldisplay_cat.spam() << "================================\n";
+
+  wgldisplay_cat.spam() << msg << ", " << OGLDrvStrings[drvtype] << " driver\n"
                          << "PFD flags: 0x" << (void*)pfd->dwFlags << " (" <<
-            ((pfd->dwFlags &  PFD_GENERIC_ACCELERATED) ? " PFD_GENERIC_ACCELERATED |" : "") <<
-            ((pfd->dwFlags &  PFD_GENERIC_FORMAT) ? " PFD_GENERIC_FORMAT |" : "") <<
-            ((pfd->dwFlags &  PFD_DOUBLEBUFFER) ? " PFD_DOUBLEBUFFER |" : "") <<
-            ((pfd->dwFlags &  PFD_DRAW_TO_WINDOW) ? " PFD_DRAW_TO_WINDOW |" : "") <<
-            ((pfd->dwFlags &  PFD_SUPPORT_OPENGL) ? " PFD_SUPPORT_OPENGL |" : "") <<
-            ((pfd->dwFlags & PFD_SWAP_EXCHANGE) ? " PFD_SWAP_EXCHANGE |" : "") <<
-            ((pfd->dwFlags & PFD_SWAP_COPY) ? " PFD_SWAP_COPY |" : "") << ")\n"
+                        PrintFlag(GENERIC_ACCELERATED) <<      
+                        PrintFlag(GENERIC_FORMAT) <<      
+                        PrintFlag(DOUBLEBUFFER) <<      
+                        PrintFlag(SUPPORT_OPENGL) <<
+                        PrintFlag(SUPPORT_GDI) <<      
+                        PrintFlag(STEREO) <<
+                        PrintFlag(DRAW_TO_WINDOW) <<      
+                        PrintFlag(DRAW_TO_BITMAP) <<      
+                        PrintFlag(SWAP_EXCHANGE) <<      
+                        PrintFlag(SWAP_COPY) <<      
+                        PrintFlag(SWAP_LAYER_BUFFERS) <<      
+                        PrintFlag(NEED_PALETTE) <<      
+                        PrintFlag(NEED_SYSTEM_PALETTE) <<      
+                        PrintFlag(SUPPORT_DIRECTDRAW) << ")\n"
                          << "PFD iPixelType: " << ((pfd->iPixelType==PFD_TYPE_RGBA) ? "PFD_TYPE_RGBA":"PFD_TYPE_COLORINDEX") << endl
                          << "PFD cColorBits: " << (DWORD)pfd->cColorBits << "  R: " << (DWORD)pfd->cRedBits <<" G: " << (DWORD)pfd->cGreenBits <<" B: " << (DWORD)pfd->cBlueBits << endl
                          << "PFD cAlphaBits: " << (DWORD)pfd->cAlphaBits << "  DepthBits: " << (DWORD)pfd->cDepthBits <<" StencilBits: " << (DWORD)pfd->cStencilBits <<" AccumBits: " << (DWORD)pfd->cAccumBits << endl;
@@ -808,11 +666,32 @@ int wglGraphicsWindow::choose_visual(void) {
 
   int MaxPixFmtNum=DescribePixelFormat(_hdc, 1, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
   int cur_bpp=GetDeviceCaps(_hdc,BITSPIXEL);
-  int i;
+  int pfnum;
 
-  for(i=1;i<=MaxPixFmtNum;i++) {
-      DescribePixelFormat(_hdc, i, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+#ifdef _DEBUG
+  if(wgldisplay_cat.is_debug()) {  
+    for(pfnum=1;pfnum<=MaxPixFmtNum;pfnum++) {
+      DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
 
+      if((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
+          drvtype=MCD;
+       else if(!(pfd.dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd.dwFlags & PFD_GENERIC_FORMAT))
+          drvtype=ICD;
+       else {
+         drvtype=Software;
+         continue;  // skipping all SW fmts
+       }
+ 
+       // use wglinfo.exe instead
+       char msg[200];
+       sprintf(msg,"GL PixelFormat[%d]",pfnum);
+       PrintPFD(&pfd,msg);
+    }
+  }
+#endif
+
+  for(pfnum=1;pfnum<=MaxPixFmtNum;pfnum++) {
+      DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
 
       if((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
           drvtype=MCD;
@@ -828,13 +707,6 @@ int wglGraphicsWindow::choose_visual(void) {
 
       if((pfd.iPixelType == PFD_TYPE_COLORINDEX) && !(mask & W_INDEX))
           continue;
-
-#if 0
-    // use wglinfo.exe instead
-    char msg[200];
-    sprintf(msg,"\nGL PixelFormat[%d]",i);
-    PrintPFD(&pfd,msg);
-#endif
 
        DWORD dwReqFlags=(PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW);
 
@@ -864,6 +736,7 @@ int wglGraphicsWindow::choose_visual(void) {
            continue;
        if((mask & W_STENCIL) && (pfd.cStencilBits==0))
            continue;
+
        if((pfd.dwFlags & dwReqFlags)!=dwReqFlags)
            continue;
 
@@ -880,7 +753,7 @@ int wglGraphicsWindow::choose_visual(void) {
        break;
   }
 
-  if(i>MaxPixFmtNum) {
+  if(pfnum>MaxPixFmtNum) {
       wgldisplay_cat.error() << "ERROR: couldn't find HW-accelerated OpenGL pixfmt appropriate for this desktop!!\n";
       wgldisplay_cat.error() << "make sure OpenGL driver is installed, and try reducing the screen size\n";
       if(cur_bpp>16)
@@ -888,20 +761,15 @@ int wglGraphicsWindow::choose_visual(void) {
       exit(1);
   }
 
-  _visual = (PIXELFORMATDESCRIPTOR*)malloc(sizeof(PIXELFORMATDESCRIPTOR));
-  if(_visual==NULL) {
-      wgldisplay_cat.error() << "couldnt alloc mem for PIXELFORMATDESCRIPTOR\n";
-      exit(1);
-  }
-
   #ifdef _DEBUG
     char msg[200];
-    sprintf(msg,"Selected GL PixelFormat is #%d",i);
+    sprintf(msg,"Selected GL PixelFormat is #%d",pfnum);
     PrintPFD(&pfd,msg);
   #endif
 
-  *_visual = pfd;
-  return i;
+  memcpy(&_pixelformat,&pfd,sizeof(PIXELFORMATDESCRIPTOR));
+
+  return pfnum;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1704,6 +1572,8 @@ wglGraphicsWindow::lookup_key(WPARAM wparam) const {
   return ButtonHandle::none();
 }
 
+#if 0
+// old fns
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_config
@@ -1782,6 +1652,166 @@ get_config(PIXELFORMATDESCRIPTOR *visual, int attrib, int *value) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: try_for_visual
+//  Description: This is a static function that attempts to get the
+//               requested visual, if it is available.  It's just a
+//               wrapper around glXChooseVisual().  It returns the
+//               visual information if possible, or NULL if it is not.
+////////////////////////////////////////////////////////////////////
+PIXELFORMATDESCRIPTOR* wglGraphicsWindow::
+try_for_visual(wglGraphicsPipe *pipe, int mask,
+           int want_depth_bits, int want_color_bits) {
+  static const int max_attrib_list = 32;
+  int attrib_list[max_attrib_list];
+  int n=0;
+
+  wgldisplay_cat.debug()
+    << "Trying for visual with: RGB(" << want_color_bits << ")";
+
+  int want_color_component_bits;
+  if (mask & W_ALPHA) {
+    want_color_component_bits = max(want_color_bits / 4, 1);
+  } else {
+    want_color_component_bits = max(want_color_bits / 3, 1);
+  }
+
+  attrib_list[n++] = GLX_RGBA;
+  attrib_list[n++] = GLX_RED_SIZE;
+  attrib_list[n++] = want_color_component_bits;
+  attrib_list[n++] = GLX_GREEN_SIZE;
+  attrib_list[n++] = want_color_component_bits;
+  attrib_list[n++] = GLX_BLUE_SIZE;
+  attrib_list[n++] = want_color_component_bits;
+
+  if (mask & W_ALPHA) {
+    wgldisplay_cat.debug(false) << " ALPHA";
+    attrib_list[n++] = GLX_ALPHA_SIZE;
+    attrib_list[n++] = want_color_component_bits;
+  }
+  if (mask & W_DOUBLE) {
+    wgldisplay_cat.debug(false) << " DOUBLEBUFFER";
+    attrib_list[n++] = GLX_DOUBLEBUFFER;
+  }
+  if (mask & W_STEREO) {
+    wgldisplay_cat.debug(false) << " STEREO";
+    attrib_list[n++] = GLX_STEREO;
+  }
+  if (mask & W_DEPTH) {
+    wgldisplay_cat.debug(false) << " DEPTH(" << want_depth_bits << ")";
+    attrib_list[n++] = GLX_DEPTH_SIZE;
+    attrib_list[n++] = want_depth_bits;
+  }
+  if (mask & W_STENCIL) {
+    wgldisplay_cat.debug(false) << " STENCIL";
+    attrib_list[n++] = GLX_STENCIL_SIZE;
+    attrib_list[n++] = 1;
+  }
+  if (mask & W_ACCUM) {
+    wgldisplay_cat.debug(false) << " ACCUM";
+    attrib_list[n++] = GLX_ACCUM_RED_SIZE;
+    attrib_list[n++] = want_color_component_bits;
+    attrib_list[n++] = GLX_ACCUM_GREEN_SIZE;
+    attrib_list[n++] = want_color_component_bits;
+    attrib_list[n++] = GLX_ACCUM_BLUE_SIZE;
+    attrib_list[n++] = want_color_component_bits;
+    if (mask & W_ALPHA) {
+      attrib_list[n++] = GLX_ACCUM_ALPHA_SIZE;
+      attrib_list[n++] = want_color_component_bits;
+    }
+  }
+
+  // Terminate the list
+  nassertr(n < max_attrib_list, NULL);
+  attrib_list[n] = 0L;
+
+  PIXELFORMATDESCRIPTOR pfd;
+  PIXELFORMATDESCRIPTOR *match = NULL;
+  bool stereo = false;
+
+  memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
+  pfd.nSize = (sizeof(PIXELFORMATDESCRIPTOR));
+  pfd.nVersion = 1;
+
+  // Defaults
+  pfd.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;
+  pfd.iPixelType = PFD_TYPE_COLORINDEX;
+  pfd.cColorBits = 32;
+  pfd.cDepthBits = 0;
+
+  int *p = attrib_list;
+  while (*p) {
+    switch (*p) {
+      case GLX_USE_GL:
+    pfd.dwFlags |= PFD_SUPPORT_OPENGL;
+    break;
+      case GLX_LEVEL:
+    pfd.bReserved = *(++p);
+    break;
+      case GLX_RGBA:
+    pfd.iPixelType = PFD_TYPE_RGBA;
+    break;
+      case GLX_DOUBLEBUFFER:
+    pfd.dwFlags |= PFD_DOUBLEBUFFER;
+    break;
+      case GLX_STEREO:
+    stereo = true;
+    pfd.dwFlags |= PFD_STEREO;
+    break;
+      case GLX_AUX_BUFFERS:
+    pfd.cAuxBuffers = *(++p);
+    break;
+      case GLX_RED_SIZE:
+    pfd.cRedBits = 8; // Try to get the maximum
+    ++p;
+    break;
+      case GLX_GREEN_SIZE:
+    pfd.cGreenBits = 8; // Try to get the maximum
+    ++p;
+    break;
+      case GLX_BLUE_SIZE:
+    pfd.cBlueBits = 8; // Try to get the maximum
+    ++p;
+    break;
+      case GLX_ALPHA_SIZE:
+    pfd.cAlphaBits = 8; // Try to get the maximum
+    ++p;
+    break;
+      case GLX_DEPTH_SIZE:
+    pfd.cDepthBits = 32; // Try to get the maximum
+    ++p;
+    break;
+      case GLX_STENCIL_SIZE:
+    pfd.cStencilBits = *(++p);
+    break;
+      case GLX_ACCUM_RED_SIZE:
+      case GLX_ACCUM_GREEN_SIZE:
+      case GLX_ACCUM_BLUE_SIZE:
+      case GLX_ACCUM_ALPHA_SIZE:
+    // Only cAccumBits is used for requesting accum buffer
+    pfd.cAccumBits = 1;
+    ++p;
+    break;
+    }
+    ++p;
+  }
+
+  int pf = ChoosePixelFormat(_hdc, &pfd);
+  if (pf > 0) {
+    DescribePixelFormat(_hdc, pf, sizeof(PIXELFORMATDESCRIPTOR), &_pixelformat);
+
+    // ChoosePixelFormat is dumb about stereo
+    if (stereo) {
+      if (!(_pixelformat->dwFlags & PFD_STEREO)) {
+          wgldisplay_cat.info() << "try_for_visual() - request for stereo failed" << endl;
+      }
+    }
+  }
+
+  return match;
+}
+
+#endif
 
 extern char *ConvDDErrorToString(const HRESULT &error) {
     switch(error) {

@@ -33,6 +33,7 @@
 ////////////////////////////////////////////////////////////////////
 class wglGraphicsPipe;
 
+#if 0
 #define GLX_USE_GL              1       /* support GLX rendering */
 #define GLX_BUFFER_SIZE         2       /* depth of the color buffer */
 #define GLX_LEVEL               3       /* level in plane stacking */
@@ -50,7 +51,7 @@ class wglGraphicsPipe;
 #define GLX_ACCUM_GREEN_SIZE    15      /* number of green accum bits */
 #define GLX_ACCUM_BLUE_SIZE     16      /* number of blue accum bits */
 #define GLX_ACCUM_ALPHA_SIZE    17      /* number of alpha accum bits */
-
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //       Class : wglGraphicsWindow
@@ -88,10 +89,10 @@ public:
   void handle_keyrelease( ButtonHandle key );
 
 protected:
-  PIXELFORMATDESCRIPTOR* try_for_visual(wglGraphicsPipe *pipe,
-                              int mask, int want_depth_bits = 1, int want_color_bits = 1);
+//  PIXELFORMATDESCRIPTOR* try_for_visual(wglGraphicsPipe *pipe,
+//                              int mask, int want_depth_bits = 1, int want_color_bits = 1);
+//  static void get_config(PIXELFORMATDESCRIPTOR* visual, int attrib, int *value);
   int choose_visual(void);
-  static void get_config(PIXELFORMATDESCRIPTOR* visual, int attrib, int *value);
   virtual void config( void );
   void setup_colormap(void);
 
@@ -109,7 +110,7 @@ public:
 private:
   HGLRC             _context;
   HDC               _hdc;
-  PIXELFORMATDESCRIPTOR*    _visual;
+  PIXELFORMATDESCRIPTOR  _pixelformat;
   HPALETTE          _colormap;
   HCURSOR           _hMouseCursor;
   HWND              _hOldForegroundWindow;
