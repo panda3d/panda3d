@@ -4,13 +4,41 @@
     of the SpriteParticleRenderer class
     """
 
-    # Initialize class variable for source file and node for node path textures
+    # Initialize class variables for texture, source file and node for texture and
+    # node path textures to None.  These will be initialized to a hardcoded default
+    # or whatever the user specifies in his/her Configrc variable the first time they
+    # are accessed
     # Will use instance copy of this in functions below
-    # For now hardcode in a toontown model
-    sourceFileName = 'phase_3.5/models/props/suit-particles'
-    sourceNodeName = '**/fire'
+    sourceTextureName = None
+    sourceFileName = None
+    sourceNodeName = None
+
+    def getSourceTextureName(self):
+        if self.sourceTextureName == None:
+            SpriteParticleRenderer.sourceTextureName = base.config.GetString(
+                'particle-sprite-texture', 'phase_3/maps/eyes.jpg')
+        # Return instance copy of class variable
+        return self.sourceTextureName
+
+    def setSourceTextureName(self, name):
+        # Set instance copy of class variable
+        self.sourceTextureName = name
+
+    def setTextureFromFile(self, fileName = None):
+        if fileName == None:
+            fileName = self.getSourceTextureName()
+        else:
+            self.setSourceTextureName(fileName)
+        t = loader.loadTexture(fileName)
+        if (t != None):
+            self.setTexture(t)
+        else:
+            print "Couldn't find rendererSpriteTexture file: %s" % fileName
 
     def getSourceFileName(self):
+        if self.sourceFileName == None:
+            SpriteParticleRenderer.sourceFileName = base.config.GetString(
+                'particle-sprite-model', 'phase_3.5/models/props/suit-particles')
         # Return instance copy of class variable
         return self.sourceFileName
 
@@ -19,6 +47,9 @@
         self.sourceFileName = name
 
     def getSourceNodeName(self):
+        if self.sourceNodeName == None:
+            SpriteParticleRenderer.sourceNodeName = base.config.GetString(
+                'particle-sprite-node', '**/fire')
         # Return instance copy of class variable
         return self.sourceNodeName
 
