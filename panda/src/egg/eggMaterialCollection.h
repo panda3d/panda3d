@@ -50,8 +50,8 @@ public:
   void clear();
 
   int extract_materials(EggGroupNode *node);
-  int insert_materials(EggGroupNode *node);
-  int insert_materials(EggGroupNode *node, EggGroupNode::iterator position);
+  EggGroupNode::iterator insert_materials(EggGroupNode *node);
+  EggGroupNode::iterator insert_materials(EggGroupNode *node, EggGroupNode::iterator position);
 
   int find_used_materials(EggNode *node);
   void remove_unused_materials(EggNode *node);

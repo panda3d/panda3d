@@ -50,8 +50,8 @@ public:
   void clear();
 
   int extract_textures(EggGroupNode *node);
-  int insert_textures(EggGroupNode *node);
-  int insert_textures(EggGroupNode *node, EggGroupNode::iterator position);
+  EggGroupNode::iterator insert_textures(EggGroupNode *node);
+  EggGroupNode::iterator insert_textures(EggGroupNode *node, EggGroupNode::iterator position);
 
   int find_used_textures(EggNode *node);
   void remove_unused_textures(EggNode *node);

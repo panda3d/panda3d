@@ -75,7 +75,9 @@ uniquify(EggNode *node) {
 
     EggGroupNode::iterator ci;
     for (ci = group->begin(); ci != group->end(); ++ci) {
-      uniquify(*ci);
+      EggNode *child = (*ci);
+      nassertv(child != (EggNode *)NULL);
+      uniquify(child);
     }
   }
 }

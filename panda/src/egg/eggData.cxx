@@ -296,15 +296,6 @@ pre_write() {
   textures.uniquify_trefs();
   textures.sort_by_tref();
 
-  // Now put them all back at the head of the file, after any initial
-  // comment records.
-  iterator ci = begin();
-  while (ci != end() && (*ci)->is_of_type(EggComment::get_class_type())) {
-    ++ci;
-  }
-
-  textures.insert_textures(this, ci);
-
   // Do the same thing with the materials.
   EggMaterialCollection materials;
   materials.extract_materials(this);
@@ -312,6 +303,14 @@ pre_write() {
   materials.collapse_equivalent_materials(~0, this);
   materials.uniquify_mrefs();
   materials.sort_by_mref();
+
+  // Now put them all back at the head of the file, after any initial
+  // comment records.
+  iterator ci = begin();
+  while (ci != end() && (*ci)->is_of_type(EggComment::get_class_type())) {
+    ++ci;
+  }
+  textures.insert_textures(this, ci);
   materials.insert_materials(this, ci);
 
   // Also make sure that the vertex pools are uniquely named.  This

@@ -961,6 +961,7 @@ r_resolve_externals(const DSearchPath &searchpath,
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
 prepare_add_child(EggNode *node) {
+  nassertv(node != (EggNode *)NULL);
   // Make sure the node is not already a child of some other group.
   nassertv(node->get_parent() == NULL);
   nassertv(node->get_depth() == 0);
@@ -983,6 +984,7 @@ prepare_add_child(EggNode *node) {
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
 prepare_remove_child(EggNode *node) {
+  nassertv(node != (EggNode *)NULL);
   // Make sure the node is in fact a child of this group.
   nassertv(node->get_parent() == this);
   nassertv(node->get_depth() == get_depth() + 1);

@@ -76,10 +76,10 @@ extract_materials(EggGroupNode *node) {
 //       Access: Public
 //  Description: Adds a series of EggMaterial nodes to the beginning of
 //               the indicated node to reflect each of the materials in
-//               the collection.  Returns the number of material nodes
-//               added.
+//               the collection.  Returns an iterator representing the
+//               first position after the newly inserted materials.
 ////////////////////////////////////////////////////////////////////
-int EggMaterialCollection::
+EggGroupNode::iterator EggMaterialCollection::
 insert_materials(EggGroupNode *node) {
   return insert_materials(node, node->begin());
 }
@@ -89,19 +89,20 @@ insert_materials(EggGroupNode *node) {
 //       Access: Public
 //  Description: Adds a series of EggMaterial nodes to the beginning of
 //               the indicated node to reflect each of the materials in
-//               the collection.  Returns the number of material nodes
-//               added.
+//               the collection.  Returns an iterator representing the
+//               first position after the newly inserted materials.
 ////////////////////////////////////////////////////////////////////
-int EggMaterialCollection::
+EggGroupNode::iterator EggMaterialCollection::
 insert_materials(EggGroupNode *node, EggGroupNode::iterator position) {
   OrderedMaterials::iterator oti;
   for (oti = _ordered_materials.begin(); 
        oti != _ordered_materials.end(); 
        ++oti) {
-    node->insert(position, (*oti).p());
+    EggMaterial *material = (*oti);
+    position = node->insert(position, material);
   }
 
-  return size();
+  return position;
 }
 
 ////////////////////////////////////////////////////////////////////

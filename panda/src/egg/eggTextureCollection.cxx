@@ -76,10 +76,10 @@ extract_textures(EggGroupNode *node) {
 //       Access: Public
 //  Description: Adds a series of EggTexture nodes to the beginning of
 //               the indicated node to reflect each of the textures in
-//               the collection.  Returns the number of texture nodes
-//               added.
+//               the collection.  Returns an iterator representing the
+//               first position after the newly inserted textures.
 ////////////////////////////////////////////////////////////////////
-int EggTextureCollection::
+EggGroupNode::iterator EggTextureCollection::
 insert_textures(EggGroupNode *node) {
   return insert_textures(node, node->begin());
 }
@@ -89,19 +89,20 @@ insert_textures(EggGroupNode *node) {
 //       Access: Public
 //  Description: Adds a series of EggTexture nodes to the beginning of
 //               the indicated node to reflect each of the textures in
-//               the collection.  Returns the number of texture nodes
-//               added.
+//               the collection.  Returns an iterator representing the
+//               first position after the newly inserted textures.
 ////////////////////////////////////////////////////////////////////
-int EggTextureCollection::
+EggGroupNode::iterator EggTextureCollection::
 insert_textures(EggGroupNode *node, EggGroupNode::iterator position) {
   OrderedTextures::iterator oti;
   for (oti = _ordered_textures.begin(); 
        oti != _ordered_textures.end(); 
        ++oti) {
-    node->insert(position, (*oti).p());
+    EggTexture *texture = (*oti);
+    position = node->insert(position, texture);
   }
 
-  return size();
+  return position;
 }
 
 ////////////////////////////////////////////////////////////////////
