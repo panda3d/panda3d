@@ -27,6 +27,7 @@ class LevelMgr(Entity):
                                                   'lawbot':'l',
                                                   'bossbot':'c'}}),
         ('modelFilename', '', 'const'),
+        ('ouchMultiplier', 1, 'int', {'min':1}),
         )
 
 class EditMgr(Entity):
