@@ -10,7 +10,7 @@
   #define OPT1FLAGS /GZ 
 
   // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
-  #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
+  #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[patsubst %.obj,%.pdb,$[notdir $[target]]]]"  
   #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS]
   #define RELEASEFLAGS /MD
   #define WARNING_LEVEL_FLAG /W3  
@@ -82,7 +82,7 @@
   #define WARNING_LEVEL_FLAG /W3   // WL
 
   // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
-  #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
+  #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[patsubst %.obj,%.pdb,$[notdir $[target]]]]"  
   #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS]
   #define RELEASEFLAGS /MD
   
@@ -112,7 +112,7 @@
   #define COMMONFLAGS /DHAVE_DINKUM /Gi- /Qwd985 /Qvc7 /G6 
   
   // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
-  #defer DEBUGPDBFLAGS /Zi /Qinline_debug_info /Fd"$[osfilename $[target:%.obj=%.pdb]]" 
+  #defer DEBUGPDBFLAGS /Zi /Qinline_debug_info /Fd"$[osfilename $[patsubst %.obj,%.pdb,$[notdir $[target]]]]"  
   // Oy- needed for MS debugger
   #defer DEBUGFLAGS /Oy- /MDd $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS] 
   #define RELEASEFLAGS /MD
@@ -154,7 +154,7 @@
   #define COMMONFLAGS
   #define OPTFLAGS /O2 /Ogity /G6
   #define OPT1FLAGS /GZ   
-  #defer DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+  #defer DEBUGPDBFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[patsubst %.obj,%.pdb,$[notdir $[target]]]]"  
   #define RELEASEFLAGS /MD
   #define EXTRA_LIBPATH
   #define EXTRA_INCPATH
@@ -176,7 +176,7 @@
   #define COMMONFLAGS
   #define OPTFLAGS /O2 /Ogity /G6
   #define OPT1FLAGS /GZ   
-  #defer DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+  #defer DEBUGPDBFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[patsubst %.obj,%.pdb,$[notdir $[target]]]]"  
   #define RELEASEFLAGS /MD
   #define EXTRA_LIBPATH
   #define EXTRA_INCPATH

@@ -48,6 +48,11 @@
     #define active_component_libs $[active_component_libs]
     #define active_libs $[active_libs]
     #define get_sources $[get_sources]
+    #define get_igatescan $[get_igatescan]
+    #define get_igateoutput $[get_igateoutput]
+    #define get_igatedb $[get_igatedb]
+    #define get_igatemscan $[get_igatemscan]
+    #define get_igatemout $[get_igatemout]
 
     // Report a warning for nonexisting dependencies.
     #define nonexisting $[unmapped all_libs,$[LOCAL_LIBS]]
@@ -62,6 +67,12 @@
     #define cxx_sources $[filter-out %_src.cxx,$[filter %.cxx,$[get_sources]]]
     #define yxx_sources $[filter %.yxx,$[get_sources]]
     #define lxx_sources $[filter %.lxx,$[get_sources]]
+
+    // Define what the object files are.
+    #foreach file $[c_sources] $[cxx_sources] $[yxx_sources] $[lxx_sources]
+      #define $[file]_obj $[patsubst %.c %.cxx %.yxx %.lxx,$[st_dir]/$[TARGET]_%.obj,$[file]]
+    #end file
+
     #if $[USE_SINGLE_COMPOSITE_SOURCEFILE]
       #if $[> $[words $[cxx_sources]], 1]
         // If we have multiple C++ files, put them together into one
@@ -70,6 +81,7 @@
         #set composite_list $[composite_list] $[composite_file]
         #define $[composite_file]_sources $[cxx_sources]
         #push 1 $[composite_file]_sources
+        #define $[composite_file]_obj $[st_dir]/$[TARGET]_composite.obj
         #set cxx_sources $[composite_file]
       #endif
       #if $[> $[words $[c_sources]], 1]
@@ -79,19 +91,36 @@
         #set composite_list $[composite_list] $[composite_file]
         #define $[composite_file]_sources $[c_sources]
         #push 1 $[composite_file]_sources
+        #define $[composite_file]_obj $[st_dir]/$[TARGET]_composite_c.obj
         #set c_sources $[composite_file]
       #endif
     #endif
 
-    // Add the bison- and flex-generated .cxx files to the compile
-    // list, too.  These never get added to composite files, though,
-    // mainly because they tend to be very large files themselves.
+    // Add the bison- and flex-generated .cxx files, as well as the
+    // interrogate-generated files, to the compile list, too.  These
+    // never get added to composite files, though, mainly because they
+    // tend to be very large files themselves.
     #foreach source_file $[yxx_sources] $[lxx_sources]
       #define generated_file $[patsubst %.yxx %.lxx,%.cxx,$[source_file]]
+      #define $[generated_file]_obj $[patsubst %.yxx %.lxx,$[st_dir]/$[TARGET]_%.obj,$[source_file]]
       #define $[generated_file]_sources $[source_file]
       #set cxx_sources $[cxx_sources] $[generated_file]
     #end source_file
-    #define compile_sources $[c_sources] $[cxx_sources] $[yxx_sources] $[lxx_sources]
+    #if $[get_igateoutput]
+      #define generated_file $[get_igateoutput]
+      #define $[generated_file]_obj $[get_igateoutput:%.cxx=%.obj]
+      #define $[generated_file]_sources $[get_igatescan]
+      #set cxx_sources $[cxx_sources] $[generated_file]
+    #endif
+    #if $[get_igatemout]
+      #define generated_file $[get_igatemout]
+      #define $[generated_file]_obj $[get_igatemout:%.cxx=%.obj]
+      #define $[generated_file]_sources none
+      #set cxx_sources $[cxx_sources] $[generated_file]
+    #endif
+
+    #define compile_sources $[c_sources] $[cxx_sources]
+
   #end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
 
   // Allow the user to define additional EXTRA_DEPENDS targets in each

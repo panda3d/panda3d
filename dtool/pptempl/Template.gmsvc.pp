@@ -23,19 +23,9 @@
 // $DTOOL/pptempl/Depends.pp, once for each Sources.pp file
 // Template.gmsvc.pp (this file), once for each Sources.pp file
 
-#defun decygwin frompat,topat,path
-  #foreach file $[path]
-    #if $[isfullpath $[file]]
-      $[patsubstw $[frompat],$[topat],$[cygpath_w $[file]]]
-    #else
-      $[patsubstw $[frompat],$[topat],$[osfilename $[file]]]
-    #endif
-  #end file
-#end decygwin
-
 #if $[ne $[DTOOL],]
 #define dtool_ver_dir_cyg $[DTOOL]/src/dtoolbase
-#define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
+#define dtool_ver_dir $[osfilename $[dtool_ver_dir_cyg]]
 #endif
 
 //////////////////////////////////////////////////////////////////////
@@ -57,7 +47,7 @@
       // This library is on a metalib, so we can't build it, but we
       // should build all the obj's that go into it.
       #set deferred_objs $[deferred_objs] \
-        $[patsubst %.c %.cxx,$[so_dir]/%.obj,%,,$[c_sources] $[cxx_sources] $[get_igateoutput]]
+        $[patsubst %,$[%_obj],$[compile_sources]]
     #endif
   #end lib_target
   
@@ -67,7 +57,7 @@
   // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
   // list of binaries that are to be built only when specifically asked
   // for.
-  #define lib_targets $[patsubst %,$[so_dir]/lib%$[dllext].$[dlllib],$[active_target(metalib_target noinst_lib_target)] $[real_lib_targets]]
+  #define lib_targets $[patsubst %,$[st_dir]/lib%$[dllext].$[dlllib],$[active_target(metalib_target noinst_lib_target)] $[real_lib_targets]]
   #define static_lib_targets $[active_target(static_lib_target ss_lib_target):%=$[st_dir]/lib%$[dllext].lib]
   #define bin_targets \
       $[active_target(bin_target noinst_bin_target):%=$[st_dir]/%.exe] \
@@ -126,7 +116,7 @@
 
 // $[complete_lpath] is rather like $[complete_ipath]: the list of
 // directories (from within this tree) we should add to our -L list.
-#defer complete_lpath $[static_libs $[RELDIR:%=%/$[st_dir]],$[actual_local_libs]] $[dynamic_libs $[RELDIR:%=%/$[so_dir]],$[actual_local_libs]]
+#defer complete_lpath $[static_libs $[RELDIR:%=%/$[st_dir]],$[actual_local_libs]] $[dynamic_libs $[RELDIR:%=%/$[st_dir]],$[actual_local_libs]]
 
 // $[lpath] is like $[target_ipath]: it's the list of directories we
 // should add to our -L list, from the context of a particular target.
@@ -137,7 +127,7 @@
 
 // This is the set of files we might copy into *.prebuilt, if we have
 // bison and flex (or copy from *.prebuilt if we don't have them).
-#define bison_prebuilt $[patsubst %.yxx,%.h,$[yxx_st_sources]] $[patsubst %.yxx,%.cxx,$[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_st_sources]]
+#define bison_prebuilt $[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_st_sources]]
 
 // Pre-compiled headers are one way to speed the compilation of many
 // C++ source files that include similar headers, but it turns out a
@@ -187,21 +177,20 @@ all : $[all_targets]
 // The 'test' rule makes all the test_bin_targets.
 test : $[test_bin_targets]
 
-// We implement 'clean' simply by removing the odirs, since all of our
-// generated output ends up in one or the other of these.  Effective.
-// It does assume that the odirs are not '.', however.
 clean :
 #if $[st_sources]
-$[TAB] rm -rf $[st_dir]
+$[TAB] rm -f $[st_dir]/*
 #endif
 $[TAB] rm -f *.pyc *.pyo // Also scrub out old generated Python code.
                          
-// 'cleanall' is not much more thorough than 'clean': At the moment,
-// it also cleans up the bison and flex output, as well as the
-// dependency cache file.
+// 'cleanall' is intended to undo all the effects of running ppremake
+// and building.  It removes everything except the Makefile.
 cleanall : clean
+#if $[st_sources]
+$[TAB] rm -rf $[st_dir]
+#endif
 #if $[yxx_st_sources] $[lxx_st_sources]
-$[TAB] rm -f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_st_sources] $[lxx_st_sources]]
+$[TAB] rm -f $[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_st_sources]]
 #endif
 #if $[ne $[DEPENDENCY_CACHE_FILENAME],]
 $[TAB] rm -f $[DEPENDENCY_CACHE_FILENAME]
@@ -214,16 +203,16 @@ clean-igate :
 #forscopes metalib_target lib_target ss_lib_target
   #define igatedb $[get_igatedb]
   #define igateoutput $[get_igateoutput]
-  #define igatemscan $[components $[get_igatedb:%=$[RELDIR]/$[so_dir]/%],$[active_component_libs]]
-  #define igatemout $[if $[igatemscan],lib$[TARGET]_module.cxx]
+  #define igatemscan $[get_igatemscan]
+  #define igatemout $[get_igatemout]
   #if $[igatedb]
-$[TAB] rm -f $[so_dir]/$[igatedb]
+$[TAB] rm -f $[igatedb]
   #endif
   #if $[igateoutput]
-$[TAB] rm -f $[so_dir]/$[igateoutput] $[igateoutput:%.cxx=$[so_dir]/%.obj]
+$[TAB] rm -f $[igateoutput] $[$[igateoutput]_obj]
   #endif
   #if $[igatemout]
-$[TAB] rm -f $[so_dir]/$[igatemout] $[igatemout:%.cxx=$[so_dir]/%.obj]
+$[TAB] rm -f $[igatemout] $[$[igatemout]_obj]
   #endif
 #end metalib_target lib_target ss_lib_target
 
@@ -293,25 +282,15 @@ $[TAB] @test -d $[directory] || echo mkdir -p $[directory]
 $[TAB] @test -d $[directory] || mkdir -p $[directory]
 #end directory
 
-// We need to make the .obj files depend on the $[so_dir] and
-// $[st_dir] directories, to guarantee that the directories are built
-// before the .obj files are generated, but we cannot depend on the
-// directories directly or we get screwed up by the modification
-// times.  So we put this phony timestamp file in each directory.
-#foreach directory $[sort \
-    $[if $[st_sources],$[st_dir]] \
-    ]
-$[directory]/stamp :
-$[TAB] @test -d $[directory] || echo mkdir -p $[directory]
-$[TAB] @test -d $[directory] || mkdir -p $[directory]
-$[TAB] @touch $[directory]/stamp
-#end directory
-
+// We need to ensure that $[st_dir] exists.  Trying to make the
+// makefiles do this automatically just causes problems with
+// multiprocess builds.
+#mkdir $[st_dir]
 
 // Now it's time to start generating the rules to make our actual
 // targets.
 
-igate : $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[so_dir]/%]
+igate : $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[st_dir]/%]
 
 
 /////////////////////////////////////////////////////////////////////
@@ -353,29 +332,29 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[so_dir]/%]
 // component libraries.  If it is nonempty, then we do need to
 // generate a module, and $[igatemout] is the name of the .cxx file
 // that interrogate will produce to make this module.
-#define igatemscan $[components $[get_igatedb:%=$[RELDIR]/$[so_dir]/%],$[active_component_libs]]
-#define igatemout $[if $[igatemscan],lib$[TARGET]_module.cxx]
+#define igatemscan $[get_igatemscan]
+#define igatemout $[get_igatemout]
 
 #if $[build_it]
   // Now output the rule to actually link the library from all of its
   // various .obj files.
 
   #define sources \
-   $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[compile_sources] $[igateoutput] $[igatemout]]] \
-   $[components $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[RELDIR]/$[so_dir]/%.obj,%,,$[compile_sources] $[get_igateoutput]]],$[active_component_libs]]
-   
+   $[patsubst %,$[%_obj],$[compile_sources]] \
+   $[components $[patsubst %,$[RELDIR]/$[%_obj],$[compile_sources]],$[active_component_libs]]
+
   #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[sources]
-  #define target $[so_dir]/lib$[TARGET]$[dllext].$[dlllib]
+  #define target $[st_dir]/lib$[TARGET]$[dllext].$[dlllib]
   #define sources $($[varname])
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
   #define mybasename $[basename $[notdir $[target]]]  
-  #define tmpdirname_cyg $[directory]/$[mybasename]
-  #define tmpdirname_win $[directory]\$[mybasename]
+  #define tmpdirname_cyg $[install_lib_dir]/$[mybasename]
+  #define tmpdirname_win $[osfilename $[directory]]
   
 // not parallel (requires gmake 3.79) because of link.exe conflicts in TMP dir (see audiotraits dir)
 #if $[GENERATE_BUILDDATE]
-.NOTPARALLEL $[target] : $[sources] $[so_dir]/stamp $[dtool_ver_dir_cyg]/version.rc $[dtool_ver_dir_cyg]/$[DLLBASEADDRFILENAME]
+.NOTPARALLEL $[target] : $[sources] $[dtool_ver_dir_cyg]/version.rc $[dtool_ver_dir_cyg]/$[DLLBASEADDRFILENAME]
 // first generate builddate for rc compiler using compiler preprocessor
 $[TAB]  mkdir -p $[tmpdirname_cyg]  // this dir-creation-stuff is leftover from trying to resolve parallel link difficulties
  #define VER_RESOURCE "$[tmpdirname_win]\$[mybasename].res"
@@ -387,7 +366,7 @@ $[TAB] $[SHARED_LIB_C++] $[VER_RESOURCE]
 $[TAB] $[SHARED_LIB_C] $[VER_RESOURCE]
   #endif
 #else
-.NOTPARALLEL $[target] : $[sources] $[so_dir]/stamp $[dtool_ver_dir_cyg]/$[DLLBASEADDRFILENAME]
+.NOTPARALLEL $[target] : $[sources] $[dtool_ver_dir_cyg]/$[DLLBASEADDRFILENAME]
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[SHARED_LIB_C++]
   #else  
@@ -396,10 +375,10 @@ $[TAB] $[SHARED_LIB_C]
 #endif
 
 #if $[build_dlls]
-$[so_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].dll
+$[st_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].dll
 #endif
 #if $[build_pdbs]
-$[so_dir]/lib$[TARGET]$[dllext].pdb : $[so_dir]/lib$[TARGET]$[dllext].dll
+$[st_dir]/lib$[TARGET]$[dllext].pdb : $[st_dir]/lib$[TARGET]$[dllext].dll
 #endif
 
 #endif
@@ -426,22 +405,22 @@ $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
 #if $[build_dlls]
-$[install_lib_dir]/lib$[TARGET]$[dllext].dll : $[so_dir]/lib$[TARGET]$[dllext].dll $[so_dir]/stamp
+$[install_lib_dir]/lib$[TARGET]$[dllext].dll : $[st_dir]/lib$[TARGET]$[dllext].dll
 #define local lib$[TARGET]$[dllext].dll
 #define dest $[install_lib_dir]
-$[TAB] cp -f $[so_dir]/$[local] $[dest]
+$[TAB] cp -f $[st_dir]/$[local] $[dest]
 #endif
 
-$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].lib $[so_dir]/stamp
+$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].lib
 #define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
-$[TAB] cp -f $[so_dir]/$[local] $[dest]
+$[TAB] cp -f $[st_dir]/$[local] $[dest]
 
 #if $[and $[build_dlls],$[build_pdbs]]
-$[install_lib_dir]/lib$[TARGET]$[dllext].pdb : $[so_dir]/lib$[TARGET]$[dllext].pdb $[so_dir]/stamp
+$[install_lib_dir]/lib$[TARGET]$[dllext].pdb : $[st_dir]/lib$[TARGET]$[dllext].pdb
 #define local lib$[TARGET]$[dllext].pdb
 #define dest $[install_lib_dir]
-$[TAB] cp -f $[so_dir]/$[local] $[dest]
+$[TAB] cp -f $[st_dir]/$[local] $[dest]
 #endif
 
 #if $[igatescan]
@@ -457,26 +436,21 @@ $[TAB] cp -f $[so_dir]/$[local] $[dest]
   #define igatemod $[TARGET]
 #endif
 
-$[install_igatedb_dir]/$[igatedb] : $[so_dir]/$[igatedb] $[so_dir]/stamp
+$[install_igatedb_dir]/$[igatedb] : $[st_dir]/$[igatedb]
 #define local $[igatedb]
 #define dest $[install_igatedb_dir]
-$[TAB] cp -f $[so_dir]/$[local] $[dest]
+$[TAB] cp -f $[st_dir]/$[local] $[dest]
 
 // We have to split this out as a separate rule to properly support
 // parallel make.
-$[so_dir]/$[igatedb] : $[so_dir]/$[igateoutput]
+$[igatedb] : $[igateoutput]
 
 lib$[TARGET]_igatescan = $[igatescan]
-$[so_dir]/$[igateoutput] : $[sort $[patsubst %.h,%.h,%.I,%.I,%.T,%.T,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]] $[so_dir]/stamp
-$[TAB] $[INTERROGATE] -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
+$[igateoutput] : $[sort $[patsubst %.h,%.h,%.I,%.I,%.T,%.T,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]]
+$[TAB] $[INTERROGATE] -od $[igatedb] -oc $[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
 
-#define target $[igateoutput:%.cxx=$[so_dir]/%.obj]
-#define source $[so_dir]/$[igateoutput]
-#define ipath . $[target_ipath]
-#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
-$[target] : $[source] $[so_dir]/stamp
-$[TAB] $[COMPILE_C++]
-#endif  // $[igatescan]
+#endif  // igatescan
+
 
 #if $[igatemout]
 // And finally, some additional rules to build the interrogate module
@@ -487,19 +461,13 @@ $[TAB] $[COMPILE_C++]
 #define igatemod $[TARGET]
 
 lib$[TARGET]_igatemscan = $[igatemscan]
-#define target $[so_dir]/$[igatemout]
+#define target $[igatemout]
 #define sources $(lib$[TARGET]_igatemscan)
 
-$[target] : $[sources] $[so_dir]/stamp
+$[target] : $[sources]
 $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[igatelib]" $[interrogate_module_options] $[sources]
 
-#define target $[igatemout:%.cxx=$[so_dir]/%.obj]
-#define source $[so_dir]/$[igatemout]
-#define ipath . $[target_ipath]
-#define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
-$[target] : $[source] $[so_dir]/stamp
-$[TAB] $[COMPILE_C++]
-#endif  // $[igatescan]
+#endif  // igatemout
 
 #end metalib_target lib_target
 
@@ -516,10 +484,10 @@ $[TAB] $[COMPILE_C++]
 
 #forscopes noinst_lib_target
 #define varname $[subst -,_,lib$[TARGET]_so]
-$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[compile_sources]]]
-#define target $[so_dir]/lib$[TARGET]$[dllext].$[dlllib]
+$[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
+#define target $[st_dir]/lib$[TARGET]$[dllext].$[dlllib]
 #define sources $($[varname])
-$[target] : $[sources] $[so_dir]/stamp
+$[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[SHARED_LIB_C++]
 #else
@@ -527,10 +495,10 @@ $[TAB] $[SHARED_LIB_C]
 #endif
 
 #if $[build_dlls]
-$[so_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].dll
+$[st_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].dll
 #endif
 #if $[build_pdbs]
-$[so_dir]/lib$[TARGET]$[dllext].pdb : $[so_dir]/lib$[TARGET]$[dllext].dll
+$[st_dir]/lib$[TARGET]$[dllext].pdb : $[st_dir]/lib$[TARGET]$[dllext].dll
 #endif
 
 #end noinst_lib_target
@@ -545,10 +513,10 @@ $[so_dir]/lib$[TARGET]$[dllext].pdb : $[so_dir]/lib$[TARGET]$[dllext].dll
 
 #forscopes static_lib_target ss_lib_target
 #define varname $[subst -,_,lib$[TARGET]_a]
-$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[compile_sources]]]
+$[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[st_dir]/lib$[TARGET]$[dllext].lib
 #define sources $($[varname])
-$[target] : $[sources] $[st_dir]/stamp
+$[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[STATIC_LIB_C++]
 #else
@@ -569,7 +537,7 @@ uninstall-lib$[TARGET] :
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].lib $[st_dir]/stamp
+$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].lib
 #define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
 $[TAB] cp -f $[st_dir]/$[local] $[dest]
@@ -585,12 +553,12 @@ $[TAB] cp -f $[st_dir]/$[local] $[dest]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes sed_bin_target
-$[TARGET] : $[st_dir]/$[TARGET] $[st_dir]/stamp
+$[TARGET] : $[st_dir]/$[TARGET]
 
 #define target $[st_dir]/$[TARGET]
 #define source $[SOURCE]
 #define script $[COMMAND]
-$[target] : $[source] $[st_dir]/stamp
+$[target] : $[source]
 $[TAB] $[SED]
 $[TAB] chmod +x $[target]
 
@@ -606,7 +574,7 @@ $[TAB] rm -f $[sort $[installed_files]]
 
 #define local $[TARGET]
 #define dest $[install_bin_dir]
-$[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET] $[st_dir]/stamp
+$[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 $[TAB] cp -f $[st_dir]/$[local] $[dest]
 
 #end sed_bin_target
@@ -618,14 +586,14 @@ $[TAB] cp -f $[st_dir]/$[local] $[dest]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes bin_target
-$[TARGET] : $[st_dir]/$[TARGET].exe $[st_dir]/stamp
+$[TARGET] : $[st_dir]/$[TARGET].exe
 
 #define varname $[subst -,_,bin_$[TARGET]]
-$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[compile_sources]]]
+$[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[st_dir]/$[TARGET].exe
 #define sources $($[varname])
 #define ld $[get_ld]
-$[target] : $[sources] $[st_dir]/stamp
+$[target] : $[sources]
 #if $[ld]
   // If there's a custom linker defined for the target, we have to use it.
 $[TAB] $[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
@@ -639,7 +607,7 @@ $[TAB] $[LINK_BIN_C]
 #endif
 
 #if $[build_pdbs]
-$[st_dir]/$[TARGET].pdb : $[st_dir]/$[TARGET].exe $[st_dir]/stamp
+$[st_dir]/$[TARGET].pdb : $[st_dir]/$[TARGET].exe
 #endif
 
 #define installed_files \
@@ -657,13 +625,13 @@ uninstall-$[TARGET] :
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
-$[install_bin_dir]/$[TARGET].exe : $[st_dir]/$[TARGET].exe $[st_dir]/stamp
+$[install_bin_dir]/$[TARGET].exe : $[st_dir]/$[TARGET].exe
 #define local $[TARGET].exe
 #define dest $[install_bin_dir]
 $[TAB] cp -f $[st_dir]/$[local] $[dest]
 
 #if $[build_pdbs]
-$[install_bin_dir]/$[TARGET].pdb : $[st_dir]/$[TARGET].pdb $[st_dir]/stamp
+$[install_bin_dir]/$[TARGET].pdb : $[st_dir]/$[TARGET].pdb
 #define local $[TARGET].pdb
 #define dest $[install_bin_dir]
 $[TAB] cp -f $[st_dir]/$[local] $[dest]
@@ -679,13 +647,13 @@ $[TAB] cp -f $[st_dir]/$[local] $[dest]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_bin_target test_bin_target
-$[TARGET] : $[st_dir]/$[TARGET].exe $[st_dir]/stamp
+$[TARGET] : $[st_dir]/$[TARGET].exe
 
 #define varname $[subst -,_,bin_$[TARGET]]
-$[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[compile_sources]]]
+$[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[st_dir]/$[TARGET].exe
 #define sources $($[varname])
-$[target] : $[sources] $[st_dir]/stamp
+$[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[LINK_BIN_C++]
 #else
@@ -704,24 +672,23 @@ $[TAB] $[LINK_BIN_C]
 #foreach file $[sort $[yxx_st_sources]]
 #define target $[patsubst %.yxx,%.cxx,$[file]]
 #define target_header $[patsubst %.yxx,%.h,$[file]]
+#define target_prebuilt $[target].prebuilt
+#define target_header_prebuilt $[target_header].prebuilt
 #if $[HAVE_BISON]
-#define source $[file]
-$[target] : $[source]
-$[TAB] $[BISON] $[YFLAGS] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[source]
+$[target] : $[file]
+$[TAB] $[BISON] $[YFLAGS] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[file]
 $[TAB] mv y.tab.c $[target]
-$[TAB] mv y.tab.h $[patsubst %.yxx,%.h,$[source]]
+$[TAB] mv y.tab.h $[target_header]
 $[target_header] : $[target]
-$[target].prebuilt : $[target]
-$[TAB] cp $[target] $[target].prebuilt
-$[target_header].prebuilt : $[target_header]
-$[TAB] cp $[target_header] $[target_header].prebuilt
+$[target_prebuilt] : $[target]
+$[TAB] cp $[target] $[target_prebuilt]
+$[target_header_prebuilt] : $[target_header]
+$[TAB] cp $[target_header] $[target_header_prebuilt]
 #else // HAVE_BISON
-#define source $[target].prebuilt
-$[target] : $[source]
-$[TAB] cp $[source] $[target]
-#define source $[target_header].prebuilt
-$[target_header] : $[source]
-$[TAB] cp $[source] $[target_header]
+$[target] : $[target_prebuilt]
+$[TAB] cp $[target_prebuilt] $[target]
+$[target_header] : $[target_header_prebuilt]
+$[TAB] cp $[target_header_prebuilt] $[target_header]
 #endif // HAVE_BISON
 
 #end file
@@ -729,20 +696,20 @@ $[TAB] cp $[source] $[target_header]
 // Rules to generate a C++ file from a Flex input file.
 #foreach file $[sort $[lxx_st_sources]]
 #define target $[patsubst %.lxx,%.cxx,$[file]]
+#define target_prebuilt $[target].prebuilt
 #if $[HAVE_BISON]
 #define source $[file]
-$[target] : $[source]
-$[TAB] $[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[source]
+$[target] : $[file]
+$[TAB] $[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[file]
 #define source lex.yy.c
 #define script /#include <unistd.h>/d
 $[TAB] $[SED]
-$[TAB] rm $[source]
-$[target].prebuilt : $[target]
-$[TAB] cp $[target] $[target].prebuilt
+$[TAB] rm lex.yy.c
+$[target_prebuilt] : $[target]
+$[TAB] cp $[target] $[target_prebuilt]
 #else // HAVE_BISON
-#define source $[target].prebuilt
-$[target] : $[source]
-$[TAB] cp $[source] $[target]
+$[target] : $[target_prebuilt]
+$[TAB] cp $[target_prebuilt] $[target]
 #endif // HAVE_BISON
 
 #end file
@@ -757,11 +724,17 @@ $[TAB] cp $[source] $[target]
 
 // Rules to compile ordinary C files.
 #foreach file $[sort $[c_sources]]
-#define target $[patsubst %.c,$[st_dir]/%.obj,$[file]]
+#define target $[$[file]_obj]
 #define source $[file]
 #define ipath $[target_ipath]
 #define flags $[cflags] $[building_var:%=/D%]
-$[target] : $[source] $[dependencies $[source]] $[st_dir]/stamp
+#if $[ne $[file], $[notdir $file]]
+  // If the source file is not in the current directory, tack on "."
+  // to the ipath.
+  #set ipath $[ipath] .
+#endif
+
+$[target] : $[source] $[get_depends $[source]]
 $[TAB] $[COMPILE_C]
 
 #end file
@@ -769,20 +742,19 @@ $[TAB] $[COMPILE_C]
 // Rules to compile C++ files.
 
 #foreach file $[sort $[cxx_sources]]
-#define target $[patsubst %.cxx,$[st_dir]/%.obj,$[file]]
+#define target $[$[file]_obj]
 #define source $[file]
 #define ipath $[target_ipath]
-#if $[$[source]_sources]
-#define depends $[dependencies $[$[source]_sources]]
-#else
-#define depends $[dependencies $[source]]
-#endif
-
 #define flags $[c++flags] $[building_var:%=/D%]
+#if $[ne $[file], $[notdir $file]]
+  // If the source file is not in the current directory, tack on "."
+  // to the ipath.
+  #set ipath $[ipath] .
+#endif
 
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
-$[target] : $[source] $[depends] $[yxx_sources:%.yxx=%.h] $[st_dir]/stamp
+$[target] : $[source] $[get_depends $[source]] $[yxx_sources:%.yxx=%.h]
 $[TAB] $[COMPILE_C++]
 
 #end file

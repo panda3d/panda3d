@@ -13,8 +13,8 @@
 // files.
 
 // Check the version of ppremake in use.
-#if $[< $[PPREMAKE_VERSION],1.1]
-  #error You need at least ppremake version 1.1 to process this tree.
+#if $[< $[PPREMAKE_VERSION],1.11]
+  #error You need at least ppremake version 1.11 to process this tree.
 #endif
 
 // What is the name and version of this source tree?
