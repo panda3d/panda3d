@@ -225,7 +225,7 @@ open_window() {
   // need to do twice to override any minimized flags in StartProcessInfo
   ShowWindow(_hWnd, SW_SHOWNORMAL);
   ShowWindow(_hWnd, SW_SHOWNORMAL);
-  
+
   if (!SetForegroundWindow(_hWnd)) {
     windisplay_cat.warning()
       << "SetForegroundWindow() failed!\n";
@@ -978,8 +978,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             // GetKeyboardState logic, below.  The above check filters out
             // this case (while testing GetFocus() instead of
             // GetForegroundWindow() doesn't).
-            if(windisplay_cat.is_debug())
-                windisplay_cat.debug() << "Ignoring non-foreground WM_SETFOCUS\n";
+            windisplay_cat.info()
+              << "Ignoring non-foreground WM_SETFOCUS\n";
             break;
           }
     
@@ -997,10 +997,17 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 // This key has changed state.
                 if ((new_keyboard_state[i] & 0x80) != 0) {
                   // The key is now held down.
-                  // cerr << "key is down: " << lookup_key(i) << "\n";
+                  if (windisplay_cat.is_debug()) {
+                    windisplay_cat.debug()
+                      << "key is down: " << lookup_key(i) << "\n";
+                  }
                   handle_keyresume(lookup_key(i));
                 } else {
                   // The key is now released.
+                  if (windisplay_cat.is_debug()) {
+                    windisplay_cat.debug()
+                      << "key is up: " << lookup_key(i) << "\n";
+                  }
                   handle_keyrelease(lookup_key(i));
                 }
               }
