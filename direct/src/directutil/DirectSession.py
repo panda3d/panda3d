@@ -2,6 +2,7 @@ from PandaObject import *
 from DirectCameraControl import *
 from DirectManipulation import *
 from DirectSelection import *
+from DirectGrid import *
 from DirectGeometry import *
 import OnscreenText
 
@@ -20,6 +21,8 @@ class DirectSession(PandaObject):
         self.cameraControl = DirectCameraControl(self)
         self.manipulationControl = DirectManipulationControl(self)
         self.useObjectHandles()
+        self.grid = DirectGrid(self)
+        self.grid.disable()
 
         # Initialize the collection of selected nodePaths
         self.selected = SelectedNodePaths(self)
@@ -72,10 +75,9 @@ class DirectSession(PandaObject):
             self.cameraControl.updateCoa(coa)
 
             # Adjust widgets size
-            self.widget.setScale(dnp.getRadius())
-            # This is the additional scaling factor used to grow and
-            # shrink the widget
-            self.widget.setScalingFactor(1.0)
+            # This uses the additional scaling factor used to grow and
+            # shrink the widget            
+            self.widget.setScalingFactor(dnp.getRadius())
 
             # Spawn task to have object handles follow the selected object
             taskMgr.removeTasksNamed('followSelectedNodePath')

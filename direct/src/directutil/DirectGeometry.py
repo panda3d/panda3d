@@ -42,6 +42,9 @@ class LineNodePath(NodePath):
     def setColor( self, *_args ):
         apply( self.lineSegs.setColor, _args )
 
+    def setVertex( self, *_args):
+        apply( self.lineSegs.setVertex, _args )
+
     def setVertexColor( self, vertex, *_args ):
         apply( self.lineSegs.setVertexColor, (vertex,) + _args )
 
@@ -51,8 +54,8 @@ class LineNodePath(NodePath):
     def getNumVertices( self ):
         return self.lineSegs.getNumVertices()
 
-    def getVertex( self ):
-        return self.lineSegs.getVertex()
+    def getVertex( self, index ):
+        return self.lineSegs.getVertex(index)
 
     def getVertexColor( self ):
         return self.lineSegs.getVertexColor()

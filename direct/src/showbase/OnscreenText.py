@@ -15,7 +15,7 @@ class OnscreenText(PandaObject, NodePath):
         NodePath.__init__(self)
 
         # make a text node
-        textNode = TextNode()
+        self.textNode = textNode = TextNode()
         textNode.setBillboard(0)
         textNode.setTextColor(0.0, 0.0, 0.0, 1.0)
         textNode.setCardColor(1.0, 1.0, 1.0, 1.0)
@@ -51,3 +51,6 @@ class OnscreenText(PandaObject, NodePath):
         """
         # render2d has x across and z up
         self.setPos(x, 0.0, y)
+
+    def setColor(self, color):
+        self.textNode.setCardColor(color[0],color[1],color[2],color[3])

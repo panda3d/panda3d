@@ -143,7 +143,7 @@ class DirectCameraControl(PandaObject):
     def centerCamNow(self, chan):
         self.centerCamIn(chan, 0.)
 
-    def centerCamIn(self, chan,t):
+    def centerCamIn(self, chan, t):
         # Chan is a display region context
 	taskMgr.removeTasksNamed('manipulateCamera')
         markerToCam = self.coaMarker.getPos( chan.camera )
