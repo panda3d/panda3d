@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # This is just a helper script to generatePythonCode to cover
 # the three or four cases we use all the time
