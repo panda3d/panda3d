@@ -117,8 +117,9 @@ class ClusterClient(DirectObject.DirectObject):
         # Execute remotely
         if serverNum is not None:
             self.serverList[serverNum].sendCommandString(commandString)
-        for server in self.serverList:
-            server.sendCommandString(commandString)
+        else:
+            for server in self.serverList:
+                server.sendCommandString(commandString)
         if fLocally:
             # Execute locally
             exec( commandString, __builtins__ )
