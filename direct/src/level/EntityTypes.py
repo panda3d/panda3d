@@ -222,7 +222,12 @@ class Stomper(Nodepath):
     attribs = (
         ('headScale', Vec3(1,1,1), 'scale'),
         ('motion', 3, 'choice',
-         {'choiceSet':['linear','sinus','half sinus','slow fast']}),
+         {'choiceSet':['linear','sinus','half sinus','slow fast'],
+          'valueDict':{'linear':0,
+                       'sinus':1,
+                       'half sinus':2,
+                       'slow fast':3}
+          }),
         ('period', 2., 'float'),
         ('phaseShift', 0., 'float', {'min':0, 'max':1}),
         ('range', 6, 'float'),
@@ -239,7 +244,12 @@ class StomperPair(Nodepath):
     attribs = (
         ('headScale', Vec3(1,1,1), 'scale'),
         ('motion', 3, 'choice',
-         {'choiceSet':['linear','sinus','half sinus','slow fast']}),
+         {'choiceSet':['linear','sinus','half sinus','slow fast'],
+          'valueDict':{'linear':0,
+                       'sinus':1,
+                       'half sinus':2,
+                       'slow fast':3}
+          }),
         ('period', 2., 'float'),
         ('phaseShift', 0., {'min':0, 'max':1}),
         ('range', 6, 'float'),
