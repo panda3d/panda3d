@@ -400,7 +400,8 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         At multiple inheritance nodes, copy all the parent methods into
         this class and call them after upcasting us to that class
         """
-        if (len(self.parentTypes) >= 2):
+        if (len(self.parentTypes) >= 2 or \
+            (len(self.parentTypes) == 1 and self.hasMethodNamed('upcastTo' + self.parentTypes[0].foreignTypeName))):
             indent(file, nesting+1, '\n')
             indent(file, nesting+1, '##################################################\n')
             indent(file, nesting+1, '#  Upcast inherited instance method wrappers     #\n')
