@@ -26,6 +26,7 @@
 #include "luse.h"
 #include "pointerTo.h"
 #include "renderState.h"
+#include "qpgeomNode.h"
 
 #include "nodeRelation.h"
 #include "node.h"
@@ -38,7 +39,6 @@ class qpCollisionEntry;
 class CollisionSphere;
 class Node;
 class GeomNode;
-class qpGeomNode;
 class CollisionNode;
 class qpCollisionNode;
 
