@@ -405,6 +405,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # listen for camera-ray/floor collision events
         def handleCameraRayFloorCollision(collEntry, self=self):
             name = collEntry.getIntoNode().getName()
+            print 'camera floor ray collided with: %s' % name
             prefixLen = len(DistributedLevel.FloorCollPrefix)
             if (name[:prefixLen] == DistributedLevel.FloorCollPrefix):
                 try:
@@ -455,7 +456,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 self.notify.warning('got setZoneComplete for unknown zone %s' %
                                     zone)
             else:
-                print 'setZone %s complete' % self.setZonesReceived
+                self.notify.info('setZone #%s complete' % self.setZonesReceived)
                 messenger.send(self.getSetZoneCompleteEvent(
                     self.setZonesReceived))
                 self.setZonesReceived += 1
@@ -500,6 +501,12 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def lockVisibility(self, zoneNum=None, zoneId=None):
         """call this to lock the visibility to a particular zone
         pass in either network zoneId or model zoneNum
+
+        this was added for battles in the HQ factories; if you engage a suit
+        in zone A with your camera in zone B, and you don't call this func,
+        your client will remain in zone B. If there's a door between A and B,
+        and it closes, zone B might disappear, along with the suit and the
+        battle objects.
         """
         assert (zoneNum is None) or (zoneId is None)
         assert not ((zoneNum is None) and (zoneId is None))
@@ -513,9 +520,12 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def unlockVisibility(self):
         """release the visibility lock"""
         self.notify.info('unlockVisibility')
-        if hasattr(self, 'lockVizZone'):
+        if not hasattr(self, 'lockVizZone'):
+            self.notify.warning('visibility already unlocked')
+        else:
             del self.lockVizZone
             self.updateVisibility()
+            
 
     def enterZone(self, zoneNum):
         DistributedLevel.notify.info("entering zone %s" % zoneNum)
