@@ -42,7 +42,6 @@ class Task:
         self.avgDt = 0.0
         self.runningTotal = 0.0
         self.pstats = None
-        self.resumeFunc = None
 
     def getPriority(self):
         return self._priority
@@ -269,6 +268,7 @@ class TaskManager:
             TaskManager.notify = directNotify.newCategory("TaskManager")
         self.taskTimerVerbose = 0
         self.pStatsTasks = 0
+        self.resumeFunc = None
         self.fVerbose = 0
 
     def stepping(self, value):
