@@ -202,7 +202,7 @@ calc_length() const {
 //     Function: ParametricCurve::calc_length
 //       Access: Published
 //  Description: Approximates the length of the curve segment from
-//               parametric time from to time to.
+//               parametric time 'from' to time 'to'.
 ////////////////////////////////////////////////////////////////////
 float ParametricCurve::
 calc_length(float from, float to) const {

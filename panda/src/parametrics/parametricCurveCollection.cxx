@@ -311,7 +311,7 @@ get_timewarp_curve(int n) const {
 //               a new timewarp curve that maps distance along the
 //               curve to parametric time, so that the distance
 //               between any two points in parametric time is
-//               proprotional to the approximate distance of those
+//               proportional to the approximate distance of those
 //               same two points along the XYZ curve.
 //
 //               segments_per_unit represents the number of segments to
