@@ -2848,7 +2848,7 @@ class LevelStyleManager:
                 (dnaType == 'toon_landmark')):
                 dnaList = self.getCatalogCodes(dnaType)
             elif (dnaType == 'sign'):
-                dnaList = [None] + self.getCatalogCodes(dnaType)
+                dnaList = [None] + [''] + self.getCatalogCodes(dnaType)
             else:
                 dnaList = [None] + self.getCatalogCodesSuffix(dnaType, '_ur')
             # Add dnaCodes to attribute dictionary
