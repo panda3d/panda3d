@@ -103,6 +103,8 @@ FltHeader(PathReplace *path_replace) : FltBeadID(this) {
 
   _vertex_lookups_stale = false;
   _current_vertex_offset = 0;
+  _next_material_index = 1;
+  _next_pattern_index = 1;
   _got_color_palette = false;
   _got_14_material_palette = false;
   _got_eyepoint_trackplane_palette = false;
@@ -957,6 +959,17 @@ clear_materials() {
 ////////////////////////////////////////////////////////////////////
 void FltHeader::
 add_material(FltMaterial *material) {
+  if (material->_material_index < 0) {
+    // We need to make up a new material index for the material.
+    material->_material_index = _next_material_index;
+    _next_material_index++;
+
+  } else {
+    // Make sure our next generated material index will be different
+    // from any existing material indices.
+    _next_material_index = max(_next_material_index, material->_material_index + 1);
+  }
+
   _materials[material->_material_index] = material;
 }
 
@@ -1018,6 +1031,17 @@ clear_textures() {
 ////////////////////////////////////////////////////////////////////
 void FltHeader::
 add_texture(FltTexture *texture) {
+  if (texture->_pattern_index < 0) {
+    // We need to make up a new pattern index for the texture.
+    texture->_pattern_index = _next_pattern_index;
+    _next_pattern_index++;
+
+  } else {
+    // Make sure our next generated pattern index will be different
+    // from any existing texture indices.
+    _next_pattern_index = max(_next_pattern_index, texture->_pattern_index + 1);
+  }
+
   _textures[texture->_pattern_index] = texture;
 }
 

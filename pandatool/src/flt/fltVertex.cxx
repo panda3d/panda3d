@@ -31,7 +31,7 @@ TypeHandle FltVertex::_type_handle;
 FltVertex::
 FltVertex(FltHeader *header) : FltRecord(header) {
   _color_name_index = 0;
-  _flags = 0;
+  _flags = F_no_color;
   _pos.set(0.0, 0.0, 0.0);
   _normal.set(0.0, 0.0, 0.0);
   _uv.set(0.0, 0.0);
@@ -117,10 +117,10 @@ get_record_length() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltVertex::get_color
 //       Access: Public
-//  Description: If has_color() indicates true, returns the primary
-//               color of the face, as a four-component value.  In the
-//               case of a vertex, the alpha channel will always be
-//               1.0, as MultiGen does not store transparency
+//  Description: If has_color() indicates true, returns the 
+//               color of the vertex, as a four-component value.  In
+//               the case of a vertex, the alpha channel will always
+//               be 1.0, as MultiGen does not store transparency
 //               per-vertex.
 ////////////////////////////////////////////////////////////////////
 Colorf FltVertex::
@@ -134,9 +134,8 @@ get_color() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltVertex::get_rgb
 //       Access: Public
-//  Description: If has_color() indicates true, returns the primary
-//               color of the face, as a three-component value
-//               ignoring transparency.
+//  Description: If has_color() indicates true, returns the 
+//               color of the vertex, as a three-component value.
 ////////////////////////////////////////////////////////////////////
 RGBColorf FltVertex::
 get_rgb() const {
@@ -144,6 +143,18 @@ get_rgb() const {
 
   return _header->get_rgb(_color_index, (_flags & F_packed_color) != 0,
                           _packed_color);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltVertex::set_rgb
+//       Access: Public
+//  Description: Sets the color of the vertex, using the packed
+//               color convention.
+////////////////////////////////////////////////////////////////////
+void FltVertex::
+set_rgb(const RGBColorf &rgb) {
+  _packed_color.set_rgb(rgb);
+  _flags = ((_flags & ~F_no_color) | F_packed_color);
 }
 
 ////////////////////////////////////////////////////////////////////

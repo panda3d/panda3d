@@ -67,11 +67,10 @@ clear_vertices() {
 //     Function: FltVertexList::add_vertex
 //       Access: Public
 //  Description: Adds a new vertex to the end of the vertex list.
-//               Care must be taken to ensure the vertex is also added
-//               to the vertex palette.
 ////////////////////////////////////////////////////////////////////
 void FltVertexList::
 add_vertex(FltVertex *vertex) {
+  _header->add_vertex(vertex);
   _vertices.push_back(vertex);
 }
 

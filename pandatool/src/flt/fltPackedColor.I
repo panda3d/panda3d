@@ -68,9 +68,9 @@ get_rgb() const {
 INLINE void FltPackedColor::
 set_color(const Colorf &color) {
   _r = (int)floor(color[0] * 255.0);
-  _g = (int)floor(color[0] * 255.0);
-  _b = (int)floor(color[0] * 255.0);
-  _a = (int)floor(color[0] * 255.0);
+  _g = (int)floor(color[1] * 255.0);
+  _b = (int)floor(color[2] * 255.0);
+  _a = (int)floor(color[3] * 255.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -83,7 +83,7 @@ set_color(const Colorf &color) {
 INLINE void FltPackedColor::
 set_rgb(const RGBColorf &color) {
   _r = (int)floor(color[0] * 255.0);
-  _g = (int)floor(color[0] * 255.0);
-  _b = (int)floor(color[0] * 255.0);
+  _g = (int)floor(color[1] * 255.0);
+  _b = (int)floor(color[2] * 255.0);
   _a = 255;
 }

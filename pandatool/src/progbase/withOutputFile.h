@@ -45,6 +45,8 @@ public:
   Filename get_output_filename() const;
 
 protected:
+  INLINE void set_binary_output(bool binary_output);
+
   bool check_last_arg(ProgramBase::Args &args, int minimum_args);
   bool verify_output_file_safe() const;
 
@@ -60,6 +62,8 @@ private:
   ofstream _output_stream;
   ostream *_output_ptr;
 };
+
+#include "withOutputFile.I"
 
 #endif
 

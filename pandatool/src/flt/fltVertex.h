@@ -64,7 +64,9 @@ public:
 public:
   INLINE bool has_color() const;
   Colorf get_color() const;
+  INLINE void set_color(const Colorf &color);
   RGBColorf get_rgb() const;
+  void set_rgb(const RGBColorf &rgb);
 
 
 protected:

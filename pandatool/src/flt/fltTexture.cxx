@@ -32,7 +32,7 @@ TypeHandle FltTexture::_type_handle;
 ////////////////////////////////////////////////////////////////////
 FltTexture::
 FltTexture(FltHeader *header) : FltRecord(header) {
-  _pattern_index = 0;
+  _pattern_index = -1;
   _x_location = 0;
   _y_location = 0;
 

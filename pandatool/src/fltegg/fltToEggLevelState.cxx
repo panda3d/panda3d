@@ -65,7 +65,7 @@ ParentNodes() {
 //
 //               This collects together polygons that share the same
 //               billboard axis and/or transform space into the same
-//               group, rather that wastefully creating a group per
+//               group, rather than wastefully creating a group per
 //               polygon.
 ////////////////////////////////////////////////////////////////////
 EggGroupNode *FltToEggLevelState::

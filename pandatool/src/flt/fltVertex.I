@@ -30,3 +30,14 @@ has_color() const {
   return ((_flags & F_no_color) == 0 &&
           (_color_index != -1 || ((_flags & F_packed_color) != 0)));
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltVertex::set_color
+//       Access: Public
+//  Description: Sets the color of the vertex, using the packed
+//               color convention.  The alpha component is ignored.
+////////////////////////////////////////////////////////////////////
+INLINE void FltVertex::
+set_color(const Colorf &color) {
+  set_rgb(RGBColorf(color[0], color[1], color[2]));
+}

@@ -40,6 +40,22 @@ get_texture() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltGeometry::set_texture
+//       Access: Public
+//  Description: Applies the indicated texture to this face, or if the
+//               texture is NULL, clears it.
+////////////////////////////////////////////////////////////////////
+INLINE void FltGeometry::
+set_texture(FltTexture *texture) {
+  if (texture == (FltTexture *)NULL) {
+    _texture_index = -1;
+  } else {
+    _header->add_texture(texture);
+    _texture_index = texture->_pattern_index;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltGeometry::has_material
 //       Access: Public
 //  Description: Returns true if the face has a material applied, false
@@ -59,6 +75,22 @@ has_material() const {
 INLINE FltMaterial *FltGeometry::
 get_material() const {
   return _header->get_material(_material_index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltGeometry::set_material
+//       Access: Public
+//  Description: Applies the indicated material to this face, or if the
+//               material is NULL, clears it.
+////////////////////////////////////////////////////////////////////
+INLINE void FltGeometry::
+set_material(FltMaterial *material) {
+  if (material == (FltMaterial *)NULL) {
+    _material_index = -1;
+  } else {
+    _header->add_material(material);
+    _material_index = material->_material_index;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

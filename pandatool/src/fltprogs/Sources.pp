@@ -59,3 +59,18 @@
     fltToEgg.cxx fltToEgg.h
 
 #end bin_target
+
+#begin bin_target
+  #define TARGET egg2flt
+  #define LOCAL_LIBS flt eggbase progbase
+
+  #define OTHER_LIBS \
+    egg:c pandaegg:m \
+    linmath:c panda:m \
+    express:c pandaexpress:m \
+    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
+
+  #define SOURCES \
+    eggToFlt.cxx eggToFlt.h
+
+#end bin_target

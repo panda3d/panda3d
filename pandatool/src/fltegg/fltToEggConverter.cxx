@@ -526,7 +526,7 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
     }
   }
 
-  if (flt_geom->_draw_type == FltGeometry::DT_solid_no_backface) {
+  if (flt_geom->_draw_type == FltGeometry::DT_solid_no_cull) {
     // A double-sided polygon.
     egg_prim->set_bface_flag(true);
   }

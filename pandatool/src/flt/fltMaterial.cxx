@@ -29,7 +29,7 @@ TypeHandle FltMaterial::_type_handle;
 ////////////////////////////////////////////////////////////////////
 FltMaterial::
 FltMaterial(FltHeader *header) : FltRecord(header) {
-  _material_index = 0;
+  _material_index = -1;
   _flags = 0;
   _ambient.set(0.0, 0.0, 0.0);
   _diffuse.set(0.0, 0.0, 0.0);

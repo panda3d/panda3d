@@ -9,7 +9,8 @@
 
   #define SOURCES \
     programBase.I programBase.h \
-    withOutputFile.h wordWrapStream.h wordWrapStreamBuf.I \
+    withOutputFile.I withOutputFile.h \
+    wordWrapStream.h wordWrapStreamBuf.I \
     wordWrapStreamBuf.h
     
   #define INCLUDED_SOURCES \
@@ -18,7 +19,7 @@
 
   #define INSTALL_HEADERS \
     programBase.I programBase.h \
-    withOutputFile.h \
+    withOutputFile.I withOutputFile.h \
     wordWrapStream.h wordWrapStreamBuf.I \
     wordWrapStreamBuf.h
 

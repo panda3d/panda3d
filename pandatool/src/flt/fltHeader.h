@@ -279,12 +279,14 @@ private:
   bool _got_14_material_palette;
   typedef pmap<int, PT(FltMaterial)> Materials;
   Materials _materials;
+  int _next_material_index;
 
 
   // Support for the texture palette.
   AttrUpdate _auto_attr_update;
   typedef pmap<int, PT(FltTexture)> Textures;
   Textures _textures;
+  int _next_pattern_index;
 
 
   // Support for the light source palette.

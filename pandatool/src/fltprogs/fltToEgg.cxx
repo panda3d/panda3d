@@ -18,8 +18,8 @@
 
 #include "fltToEgg.h"
 
-#include <fltToEggConverter.h>
-#include <config_flt.h>
+#include "fltToEggConverter.h"
+#include "config_flt.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltToEgg::Constructor

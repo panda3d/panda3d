@@ -42,14 +42,14 @@ public:
   FltGeometry(FltHeader *header);
 
   enum DrawType {
-    DT_solid_backface      = 0,
-    DT_solid_no_backface   = 1,
+    DT_solid_cull_backface = 0,
+    DT_solid_no_cull       = 1,
     DT_wireframe           = 2,
     DT_wireframe_close     = 3,
     DT_wireframe_highlight = 4,
-    DT_omni_light          = 5,
-    DT_uni_light           = 6,
-    DT_bi_light            = 7
+    DT_omni_light          = 8,
+    DT_uni_light           = 9,
+    DT_bi_light            = 10
   };
 
   enum BillboardType {
@@ -102,13 +102,17 @@ public:
 public:
   INLINE bool has_texture() const;
   INLINE FltTexture *get_texture() const;
+  INLINE void set_texture(FltTexture *texture);
 
   INLINE bool has_material() const;
   INLINE FltMaterial *get_material() const;
+  INLINE void set_material(FltMaterial *material);
 
   INLINE bool has_color() const;
   Colorf get_color() const;
+  void set_color(const Colorf &color);
   RGBColorf get_rgb() const;
+  void set_rgb(const RGBColorf &rgb);
 
   bool has_alt_color() const;
   Colorf get_alt_color() const;

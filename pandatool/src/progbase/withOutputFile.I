@@ -1,5 +1,5 @@
-// Filename: fltToEgg.h
-// Created by:  drose (17Apr01)
+// Filename: withOutputFile.I
+// Created by:  drose (01Oct03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,30 +15,15 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
- 
-#ifndef FLTTOEGG_H
-#define FLTTOEGG_H
 
-#include "pandatoolbase.h"
-
-#include "somethingToEgg.h"
-#include "fltToEggConverter.h"
-
-#include "dSearchPath.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : FltToEgg
-// Description : A program to read a flt file and generate an egg
-//               file.
+//     Function: WithOutputFile::set_binary_output
+//       Access: Protected
+//  Description: Changes the flag specifying whether the output file
+//               is to be opened in binary mode or not.
 ////////////////////////////////////////////////////////////////////
-class FltToEgg : public SomethingToEgg {
-public:
-  FltToEgg();
-
-  void run();
-
-  bool _compose_transforms;
-};
-
-#endif
-
+INLINE void WithOutputFile::
+set_binary_output(bool binary_output) {
+  _binary_output = binary_output;
+}

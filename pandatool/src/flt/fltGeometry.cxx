@@ -33,7 +33,7 @@ FltGeometry::
 FltGeometry(FltHeader *header) : FltBeadID(header) {
   _ir_color = 0;
   _relative_priority = 0;
-  _draw_type = DT_solid_backface;
+  _draw_type = DT_solid_cull_backface;
   _texwhite = false;
   _color_name_index = 0;
   _alt_color_name_index = 0;
@@ -47,7 +47,7 @@ FltGeometry(FltHeader *header) : FltBeadID(header) {
   _transparency = 0;
   _lod_generation_control = 0;
   _line_style_index = 0;
-  _flags = 0;
+  _flags = F_no_color;
   _light_mode = LM_face_no_normal;
   _texture_mapping_index = 0;
   _color_index = 0;
@@ -95,6 +95,18 @@ get_color() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltGeometry::set_color
+//       Access: Public
+//  Description: Sets the primary color of the face, using the packed
+//               color convention.
+////////////////////////////////////////////////////////////////////
+void FltGeometry::
+set_color(const Colorf &color) {
+  set_rgb(RGBColorf(color[0], color[1], color[2]));
+  _transparency = (int)floor((1.0 - color[3]) * 65535.0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltGeometry::get_rgb
 //       Access: Public
 //  Description: Returns the primary color of the face, as a
@@ -115,6 +127,22 @@ get_rgb() const {
 
   return _header->get_rgb(_color_index, (_flags & F_packed_color) != 0,
                           _packed_color);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltGeometry::set_rgb
+//       Access: Public
+//  Description: Sets the primary color of the face, using the packed
+//               color convention; does not affect transparency.
+////////////////////////////////////////////////////////////////////
+void FltGeometry::
+set_rgb(const RGBColorf &rgb) {
+  _packed_color.set_rgb(rgb);
+  _flags = ((_flags & ~F_no_color) | F_packed_color);
+
+  // If we have a color, we can't have a material.
+  _material_index = -1;
+  _texwhite = false;
 }
 
 ////////////////////////////////////////////////////////////////////
