@@ -1,4 +1,5 @@
 from DirectFrame import *
+import UsePgraph
 
 """
 import DirectWaitBar
@@ -77,8 +78,14 @@ class DirectWaitBar(DirectFrame):
 
     def update(self, value):
         self['value'] = value
-        # finally update the window
-        base.win.renderAndUpdate()
+
+        # Render a frame out-of-sync with the igloop to update the
+        # window right now.  This allows the wait bar to be updated
+        # even though we are not normally rendering frames.
+        if UsePgraph.use:
+            base.graphicsEngine.renderFrame()
+        else:
+            base.win.renderAndUpdate()
 
     def finish(self):
         # Fill the bar in N frames
