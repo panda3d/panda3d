@@ -117,20 +117,24 @@ class Messenger:
         if self.dict.has_key(event):
             acceptorDict = self.dict[event]
             for object in acceptorDict.keys():
-                method, extraArgs, persistent = acceptorDict[object]
-                apply(method, (extraArgs + sentArgs))
-                # If this object was only accepting this event once,
-                # remove it from the dictionary
-                if not persistent:
-                    # We need to check this because the apply above might
-                    # have done an ignore.
-                    if acceptorDict.has_key(object):
-                        del acceptorDict[object]
+                # We have to make this apparently redundant check, because
+                # it is possible that one object removes its own hooks
+                # in response to a handler called by a previous object.
+                if acceptorDict.has_key(object):
+                    method, extraArgs, persistent = acceptorDict[object]
+                    apply(method, (extraArgs + sentArgs))
+                    # If this object was only accepting this event once,
+                    # remove it from the dictionary
+                    if not persistent:
+                        # We need to check this because the apply above might
+                        # have done an ignore.
+                        if acceptorDict.has_key(object):
+                            del acceptorDict[object]
                         # If this dictionary is now empty, remove the event
                         # entry from the Messenger alltogether
-                    if ((len(acceptorDict) == 0) and
-                        (self.dict.has_key(event))):
-                        del self.dict[event]
+                        if ((len(acceptorDict) == 0) and
+                            (self.dict.has_key(event))):
+                            del self.dict[event]
 
     def clear(self):
         """clear(self)

@@ -32,6 +32,12 @@ class PickList(PandaObject.PandaObject):
 	self.isClean = 0
 	return None
 
+    def owns(self, item):
+        for x in self.choiceList:
+            if (x.button == item):
+                return 1
+        return None
+
     def cleanup(self):
 	"""cleanup(self)
 	"""
@@ -75,16 +81,15 @@ class PickList(PandaObject.PandaObject):
         for choice in choiceList:
             # create a button for each choice
             button = Button.Button(choice, scale = scale, width = width,
-                                   drawOrder = drawOrder, font = font)
+                                   drawOrder = drawOrder, font = font,
+                                   event = "choose")
             choiceIndex = choiceList.index(choice)
+            button.setBehaviorEventParameter(choiceIndex)
             # set the rollover-up event
-            eventName = self.name + "-up-" + str(choiceIndex)
+            eventName = self.name + "-up"
             button.button.setUpRolloverEvent(eventName)
-            # set the rollover-down event
-            eventName = self.name + "-down-" + str(choiceIndex)
-            button.button.setDownRolloverEvent(eventName)
             # set exit event
-            eventName = self.name + "-exit-" + str(choiceIndex)
+            eventName = self.name + "-exit"
             button.button.setUpEvent(eventName)
             # keep a list of the choice buttons
             self.frame.addItem(button)
@@ -98,6 +103,8 @@ class PickList(PandaObject.PandaObject):
     def manage(self):
         self.enable()
         self.frame.manage()
+        for x in self.choiceList:
+            x.startBehavior()
 	return None
 
     def unmanage(self):
@@ -112,21 +119,10 @@ class PickList(PandaObject.PandaObject):
         # listen for keyboard events
         self.accept("up-up", self.__decrementChoice)
         self.accept("down-up", self.__incrementChoice)
-        self.accept("enter-up", self.__makeChoice, [1])
-
-        for choice in self.choiceList:
-            choiceIndex = self.choiceList.index(choice)
-            # set the rollover-up event
-            eventName = self.name + "-up-" + str(choiceIndex)
-            self.accept(eventName, self.__updateButtonChoice, [choiceIndex])
-            # set the rollover-down event
-            eventName = self.name + "-down-" + str(choiceIndex)
-            self.accept(eventName, self.__makeChoice)
-            # set exit event
-            eventName = self.name + "-exit-" + str(choiceIndex)
-            self.accept(eventName, self.__exitChoice)
-
-            
+        self.accept("enter-up", self.__makeChoice, [1, None, None])
+        self.accept(self.name + "-up", self.__updateButtonChoice)
+        self.accept(self.name + "-exit", self.__exitChoice)
+        self.accept("choose", self.__makeChoice, [0])
 
     def disable(self, button=None):
         # turn the buttons off
@@ -136,12 +132,9 @@ class PickList(PandaObject.PandaObject):
         self.ignore("up-up")
         self.ignore("down-up")
         self.ignore("enter-up")
-
-        # ignore all the buttons
-        for item in self.frame.getItems():
-       	    self.ignore(item.getGuiItem().getUpEvent())
-    	    self.ignore(item.getGuiItem().getUpRolloverEvent())
-       	    self.ignore(item.getGuiItem().getDownRolloverEvent())
+        self.ignore(self.name + "-up")
+        self.ignore(self.name + "-exit")
+        self.ignore("choose")
 
     def activate(self):
         # make sure items are active
@@ -168,41 +161,41 @@ class PickList(PandaObject.PandaObject):
     # event handlers
     def __incrementChoice(self):
         # handle the up arrow
-        if (self.choice >= 0):
-            # exit lest choice, if it exists
-            self.choiceList[self.choice].getGuiItem().exit()
-        self.choice = self.choice + 1
-        if (self.choice > len(self.choiceList) - 1):
-            self.choice = 0
+        choice = self.choice + 1
+        if (choice > len(self.choiceList) - 1):
+            choice = 0
         # enter the new choice
-        self.choiceList[self.choice].getGuiItem().enter()
-
+        self.choiceList[choice].getGuiItem().enter()
     
     def __decrementChoice(self):
         # handle the down arrow
-        if (self.choice >= 0):
-            self.choiceList[self.choice].getGuiItem().exit()        
-        self.choice = self.choice - 1
-        if (self.choice < 0):
-            self.choice = len(self.choiceList) - 1
+        choice = self.choice - 1
+        if (choice < 0):
+            choice = len(self.choiceList) - 1
         # enter this choice
-        self.choiceList[self.choice].getGuiItem().enter()
+        self.choiceList[choice].getGuiItem().enter()
 
-    def __updateButtonChoice(self, newChoice, *args):
+    def __updateButtonChoice(self, item):
         # handle the mouse rollovers
-        self.choice = newChoice
-        # make sure all the other buttons have exited
-        for choice in self.choiceList:
-            if not (self.choiceList.index(choice) == self.choice):
-                choice.getGuiItem().exit()
-	# throw event
-	messenger.send(self.name + "-rollover")
-
-    def __exitChoice(self, *args):
+        if self.owns(item):
+            if (self.choice == -1):
+                self.choice = item.getBehaviorEventParameter()
+            if (self.choice != item.getBehaviorEventParameter()):
+                self.choice = item.getBehaviorEventParameter()
+                # make sure all the other buttons have exited
+                for choice in self.choiceList:
+                    if (choice.button != item):
+                        choice.getGuiItem().exit()
+                # throw event
+                messenger.send(self.name + "-rollover")
+            
+    def __exitChoice(self, item):
         # reset choice when mouse exits a button
-        self.choice = -1
+        if self.owns(item):
+            if (self.choice == item.getBehaviorEventParameter()):
+                self.choice = -1
         
-    def __makeChoice(self, button=0, *args):
+    def __makeChoice(self, button, item, whichOne):
         # handle the enter key
         if (self.choice == -1):
             # nothing selected yet
@@ -216,13 +209,14 @@ class PickList(PandaObject.PandaObject):
                     return Task.done
                 task = Task.Task(buttonUp)
                 task.choice = self.choiceList[self.choice]
-                taskMgr.spawnTaskNamed(Task.doLater(.035, task,
+                taskMgr.spawnTaskNamed(Task.doLater(0.035, task,
                                                     "buttonUp-later"),
-                                   "doLater-buttonUp-later")
+                                       "doLater-buttonUp-later")
             else:
                 # let everyone know a choice was made                
-                messenger.send(self.eventName, [self.choice])
-                self.disable(self.choice)
+                if self.owns(item):
+                    messenger.send(self.eventName, [self.choice])
+                    self.disable(self.choice)
                 
                 
 

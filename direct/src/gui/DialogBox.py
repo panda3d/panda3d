@@ -9,7 +9,7 @@ import Button
 import StateData
 import OnscreenPanel
 
-# No buttons at aall
+# No buttons at all
 NoButtons = 0
 
 # just an OK button
@@ -83,12 +83,13 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
         if (self.style == TwoChoice):
             # create OK and CANCEL buttons
             self.makeButton("OK", pos = (-0.325, -0.25),
-                            func = self.handleOk)
+                            func = self.handleOk, event = "ok")
             self.makeButton("Cancel", pos = (0.2, -0.25),
-                            func = self.handleCancel)
+                            func = self.handleCancel, event = "cancel")
         elif (self.style == Acknowledge):
             # create a centered OK  button
-            self.makeButton("OK", pos = (0.0, -0.25), func = self.handleOk)
+            self.makeButton("OK", pos = (0.0, -0.25), func = self.handleOk,
+                            event = "ok")
         elif (self.style == NoButtons):
             # No buttons at all
             pass
@@ -114,15 +115,17 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
     def handleRollover(self):
 	return None
 
-    def handleOk(self):
+    def handleOk(self, okButton, item):
         assert(self.style != NoButtons)
-	self.doneStatus = "ok"	
-	messenger.send(self.doneEvent)
+        if (okButton == item):
+            self.doneStatus = "ok"	
+            messenger.send(self.doneEvent)
 
-    def handleCancel(self):
+    def handleCancel(self, cancelButton, item):
         assert(self.style == TwoChoice)
-        self.doneStatus = "cancel"
-	messenger.send(self.doneEvent)
+        if (cancelButton == item):
+            self.doneStatus = "cancel"
+            messenger.send(self.doneEvent)
 
     def setMessage(self, message):
         """setMessage(self, string)

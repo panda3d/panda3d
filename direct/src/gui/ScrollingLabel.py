@@ -69,8 +69,7 @@ class ScrollingLabel(PandaObject.PandaObject):
                                         label = " < ",
                                         scale = scale,
                                         drawOrder = drawOrder,
-                                        font = font)
-        self.leftButton.getGuiItem().setDownRolloverEvent(self.eventName + "-left")
+                                        font = font, event = "left-button")
         self.leftButton.getGuiItem().setUpRolloverEvent(self.eventName + "-rollover")
         self.frame.addItem(self.leftButton)
         self.frame.packItem(self.leftButton, GuiFrame.GuiFrame.UNDER,
@@ -81,9 +80,7 @@ class ScrollingLabel(PandaObject.PandaObject):
                                          label = " > ",
                                          scale = scale,
                                          drawOrder = drawOrder,
-                                         font = font)
-        self.rightButton.getGuiItem().setDownRolloverEvent(self.eventName +
-                                                           "-right")    
+                                         font = font, event = "right-button")
         self.rightButton.getGuiItem().setUpRolloverEvent(self.eventName + "-rollover")
         self.frame.addItem(self.rightButton)
         self.frame.packItem(self.rightButton, GuiFrame.GuiFrame.UNDER,
@@ -102,8 +99,8 @@ class ScrollingLabel(PandaObject.PandaObject):
 	"""cleanup(self)
 	"""
         # ignore events
-        self.ignore(self.eventName + "-left")
-        self.ignore(self.eventName + "-right")
+        self.ignore("left-button")
+        self.ignore("right-button")
 	self.ignore(self.eventName + "-rollover")
         self.setKeyFocus(0)
 
@@ -190,11 +187,14 @@ class ScrollingLabel(PandaObject.PandaObject):
         
     def manage(self):
         # listen for the scroll buttons
-        self.accept(self.eventName + "-left", self.handleLeftButton)
-        self.accept(self.eventName + "-right", self.handleRightButton)
+        self.accept("left-button", self.handleLeftButton)
+        self.accept("right-button", self.handleRightButton)
 
         self.frame.manage()
         self.setKeyFocus(0)
+
+        self.leftButton.startBehavior()
+        self.rightButton.startBehavior()
 
 	return None
 
@@ -204,8 +204,8 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.ignore("right-up")            
 
         # ignore events
-        self.ignore(self.eventName + "-left")
-        self.ignore(self.eventName + "-right")
+        self.ignore("left-button")
+        self.ignore("right-button")
 	self.ignore(self.eventName + "-rollover")
         self.setKeyFocus(0)
 
@@ -213,35 +213,37 @@ class ScrollingLabel(PandaObject.PandaObject):
 
 	return None
         
-    def handleLeftButton(self):
+    def handleLeftButton(self, item):
         # update the current item and the scroll label
-        self.item = self.item - 1
-        if (self.item < 0):
-            self.item = len(self.items) - 1
-        self.setItem(self.item)
-        messenger.send(self.eventName, [self.item])
+        if (self.leftButton.button == item):
+            self.item = self.item - 1
+            if (self.item < 0):
+                self.item = len(self.items) - 1
+            self.setItem(self.item)
+            messenger.send(self.eventName, [self.item])
 
-    def handleRightButton(self):
+    def handleRightButton(self, item):
         # update the current item and the scroll label
-        self.item = self.item + 1
-        if (self.item >= len(self.items)):
-            self.item = 0
-        self.setItem(self.item)
-        messenger.send(self.eventName, [self.item])
+        if (self.rightButton.button == item):
+            self.item = self.item + 1
+            if (self.item >= len(self.items)):
+                self.item = 0
+            self.setItem(self.item)
+            messenger.send(self.eventName, [self.item])
 
     def handleLeftArrow(self):
         # make the button toggle
         self.leftButton.getGuiItem().down()
         self.spawnButtonUpTask(self.leftButton)
         # then act like a mouse click
-        self.handleLeftButton()
+        self.handleLeftButton(self.leftButton.button)
 
     def handleRightArrow(self):
         # make the button toggle
         self.rightButton.getGuiItem().down()
         self.spawnButtonUpTask(self.rightButton)
         # then act like a mouse click
-        self.handleRightButton()
+        self.handleRightButton(self.rightButton.button)
 
     def spawnButtonUpTask(self, button):
         def buttonUp(state):

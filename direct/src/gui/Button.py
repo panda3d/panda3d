@@ -21,7 +21,8 @@ class Button(DirectObject):
                  upStyle = Label.ButtonUp,
                  litStyle = Label.ButtonLit,
                  downStyle = Label.ButtonDown,
-                 inactiveStyle = Label.ButtonInactive):
+                 inactiveStyle = Label.ButtonInactive,
+                 event = None):
         self.name = name
         self.width = width
 
@@ -96,6 +97,10 @@ class Button(DirectObject):
                                           self.lDown, self.lDown, self.lInactive)
         self.button.setDrawOrder(drawOrder)
 
+        if (event != None):
+            self.button.setBehaviorEvent(event)
+        self.event = event
+
         if align == TMALIGNLEFT:
             self.xoffset = width / 2.0 * scale
         elif align == TMALIGNRIGHT:
@@ -157,6 +162,9 @@ class Button(DirectObject):
             else:
                 self.button.manage(guiMgr, base.eventMgr.eventHandler)
 
+            if (self.event != None):
+                self.button.startBehavior()
+
             if self.inactive:
                 self.button.exit()
                 self.button.inactive()
@@ -184,6 +192,7 @@ class Button(DirectObject):
 
     def setBehaviorEvent(self, eventName):
         self.button.setBehaviorEvent(eventName)
+        self.event = eventName
 
     def setBehaviorEventParameter(self, param):
         self.button.setBehaviorEventParameter(param)

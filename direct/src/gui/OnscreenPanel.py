@@ -203,10 +203,15 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
 
         # show the buttons that are meant to be shown
         for button in self.panelButtons:
-            if button.func != None:
-                self.accept(button.getName() + '-down-rollover', button.func)
             if button.panelManage:
                 button.manage(self)
+            if button.func != None:
+                if (button.event != None):
+                    self.accept(button.event, button.func, [button.button])
+                else:
+                    self.accept(button.button.getDownRolloverEvent(),
+                                button.func, [button.button])
+                button.startBehavior()
                 
         base.mouseWatcher.node().addRegion(self.panelRegion)
         
@@ -221,7 +226,10 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
 
         # hide the shown buttons and remove all hooks
         for button in self.panelButtons:        
-            self.ignore(button.getName() + '-down-rollover')
+            if (button.event != None):
+                self.ignore(button.event)
+            else:
+                self.ignore(button.button.getDownRolloverEvent())
             if button.panelManage:
                 button.unmanage()
                 
@@ -243,7 +251,8 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
                    upStyle = Label.ButtonUp,
                    litStyle = Label.ButtonLit,
                    downStyle = Label.ButtonDown,
-                   inactiveStyle = Label.ButtonInactive):
+                   inactiveStyle = Label.ButtonInactive,
+                   event = None):
         """makeButton(self, ...)
 
         Creates a button on the panel.  The return value is the button
@@ -284,7 +293,8 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
                                upStyle = upStyle,
                                litStyle = litStyle,
                                downStyle = downStyle,
-                               inactiveStyle = inactiveStyle)
+                               inactiveStyle = inactiveStyle,
+                               event = event)
 
         self.panelButtons.append(button)
         

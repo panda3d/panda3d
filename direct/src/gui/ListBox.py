@@ -49,12 +49,19 @@ class ListBox(DirectObject):
 
 	return None
 
-    def addItem(self, item, label):
-        button = Button.Button(item, label,
-                               scale = self.scale,
-                               width = self.width,
-                               drawOrder = self.drawOrder,
-                               font = self.font)
+    def addItem(self, item, label, event = None, param = None):
+        if event:
+            button = Button.Button(item, label, scale = self.scale,
+                                   width = self.width,
+                                   drawOrder = self.drawOrder,
+                                   font = self.font, event = event)
+            button.button.setBehaviorEventParameter(param)
+        else:
+            button = Button.Button(item, label,
+                                   scale = self.scale,
+                                   width = self.width,
+                                   drawOrder = self.drawOrder,
+                                   font = self.font)
         
         self.items.append((item, button))
         self.listBox.addItem(button.button)
@@ -64,7 +71,10 @@ class ListBox(DirectObject):
             if isinstance(i, types.StringType):
                 self.addItem(i, i)
             else:
-                self.addItem(i[0], i[1])
+                if (len(i) == 3):
+                    self.addItem(i[0], i[1])
+                else:
+                    self.addItem(i[0], i[1], i[3], i[4])
 
     def cleanup(self):
         if (self.managed):
