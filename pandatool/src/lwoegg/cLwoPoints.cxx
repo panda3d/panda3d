@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CLwoPoints::add_vmap
 //       Access: Public
-//  Description: Associated the indicated VertexMap with the points
+//  Description: Associates the indicated VertexMap with the points
 //               set.  This may define such niceties as UV coordinates
 //               or per-vertex color.
 ////////////////////////////////////////////////////////////////////

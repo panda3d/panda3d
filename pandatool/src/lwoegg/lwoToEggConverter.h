@@ -12,9 +12,13 @@
 #include <eggData.h>
 #include <pointerTo.h>
 
+#include <vector>
+#include <map>
+
 class CLwoLayer;
 class CLwoPoints;
 class CLwoPolygons;
+class CLwoSurface;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : LwoToEggConverter
@@ -31,7 +35,10 @@ public:
   bool convert_lwo(const LwoHeader *lwo_header);
 
   INLINE EggGroupNode *get_egg_root() const;
+  INLINE EggData &get_egg_data();
   CLwoLayer *get_layer(int number) const;
+
+  CLwoSurface *get_surface(const string &name) const;
 
 private:
   void collect_lwo();
@@ -53,6 +60,9 @@ private:
 
   typedef vector<CLwoPolygons *> Polygons;
   Polygons _polygons;
+
+  typedef map<string, CLwoSurface *> Surfaces;
+  Surfaces _surfaces;
 
   bool _error;
 };

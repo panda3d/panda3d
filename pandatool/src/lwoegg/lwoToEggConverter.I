@@ -10,7 +10,17 @@
 //  Description: Returns a root node suitable for parenting egg
 //               structures to.
 ////////////////////////////////////////////////////////////////////
-EggGroupNode *LwoToEggConverter::
+INLINE EggGroupNode *LwoToEggConverter::
 get_egg_root() const {
   return &_egg_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LwoToEggConverter::get_egg_data
+//       Access: Public
+//  Description: Returns the EggData structure.
+////////////////////////////////////////////////////////////////////
+INLINE EggData &LwoToEggConverter::
+get_egg_data() {
+  return _egg_data;
 }

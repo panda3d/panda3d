@@ -7,12 +7,15 @@
 #include "cLwoLayer.h"
 #include "cLwoPoints.h"
 #include "cLwoPolygons.h"
+#include "cLwoSurface.h"
 
 #include <lwoHeader.h>
 #include <lwoLayer.h>
 #include <lwoPoints.h>
 #include <lwoPolygons.h>
 #include <lwoVertexMap.h>
+#include <lwoTags.h>
+#include <lwoPolygonTags.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -56,6 +59,12 @@ LwoToEggConverter::
     CLwoPolygons *polygons = (*gi);
     delete polygons;
   }
+
+  Surfaces::iterator si;
+  for (si = _surfaces.begin(); si != _surfaces.end(); ++si) {
+    CLwoSurface *surface = (*si).second;
+    delete surface;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,6 +80,8 @@ convert_lwo(const LwoHeader *lwo_header) {
   collect_lwo();
   make_egg();
   connect_egg();
+
+  _egg_data.remove_unused_vertices();
 
   return !_error;
 }
@@ -90,6 +101,22 @@ get_layer(int number) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LwoToEggConverter::get_surface
+//       Access: Public
+//  Description: Returns a pointer to the surface definition with the
+//               given name, or NULL if there is no such surface.
+////////////////////////////////////////////////////////////////////
+CLwoSurface *LwoToEggConverter::
+get_surface(const string &name) const {
+  Surfaces::const_iterator si;
+  si = _surfaces.find(name);
+  if (si != _surfaces.end()) {
+    return (*si).second;
+  }
+  return (CLwoSurface *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LwoToEggConverter::collect_lwo
 //       Access: Private
 //  Description: Walks through the chunks in the Lightwave data and
@@ -100,6 +127,8 @@ collect_lwo() {
   CLwoLayer *last_layer = (CLwoLayer *)NULL;
   CLwoPoints *last_points = (CLwoPoints *)NULL;
   CLwoPolygons *last_polygons = (CLwoPolygons *)NULL;
+
+  const LwoTags *tags = (const LwoTags *)NULL;
 
   int num_chunks = _lwo_header->get_num_chunks();
   for (int i = 0; i < num_chunks; i++) {
@@ -137,14 +166,42 @@ collect_lwo() {
 	last_points->add_vmap(lwo_vmap);
       }
 
+    } else if (chunk->is_of_type(LwoTags::get_class_type())) {
+      tags = DCAST(LwoTags, chunk);
+
     } else if (chunk->is_of_type(LwoPolygons::get_class_type())) {
       if (last_points == (CLwoPoints *)NULL) {
 	nout << "Polygon chunk encountered without a preceding points chunk.\n";
       } else {
 	const LwoPolygons *lwo_polygons = DCAST(LwoPolygons, chunk);
-	CLwoPolygons *polygons = new CLwoPolygons(this, lwo_polygons, last_points);
+	CLwoPolygons *polygons = 
+	  new CLwoPolygons(this, lwo_polygons, last_points);
 	_polygons.push_back(polygons);
 	last_polygons = polygons;
+      }
+
+    } else if (chunk->is_of_type(LwoPolygonTags::get_class_type())) {
+      if (last_polygons == (CLwoPolygons *)NULL) {
+	nout << "Polygon tags chunk encountered without a preceding polygons chunk.\n";
+      } else if (tags == (LwoTags *)NULL) {
+	nout << "Polygon tags chunk encountered without a preceding tags chunk.\n";
+      } else {
+	const LwoPolygonTags *lwo_ptags = DCAST(LwoPolygonTags, chunk);
+	last_polygons->add_ptags(lwo_ptags, tags);
+      }
+
+    } else if (chunk->is_of_type(LwoSurface::get_class_type())) {
+      if (last_layer == (CLwoLayer *)NULL) {
+	last_layer = make_generic_layer();
+      }
+
+      const LwoSurface *lwo_surface = DCAST(LwoSurface, chunk);
+      CLwoSurface *surface = new CLwoSurface(this, lwo_surface);
+
+      bool inserted = _surfaces.insert(Surfaces::value_type(surface->get_name(), surface)).second;
+      if (!inserted) {
+	nout << "Multiple surface definitions named " << surface->get_name() << "\n";
+	delete surface;
       }
     }
   }

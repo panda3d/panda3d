@@ -23,7 +23,7 @@ public:
     M_mirror   = 2,    // repeat with reflection
     M_edge     = 3     // GL-style clamping
   };
-  Mode _mode;
+  Mode _width, _height;
 
 public:
   virtual bool read_iff(IffInputFile *in, size_t stop_at);

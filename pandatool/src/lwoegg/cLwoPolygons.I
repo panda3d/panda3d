@@ -16,4 +16,6 @@ CLwoPolygons(LwoToEggConverter *converter, const LwoPolygons *polygons,
   _polygons(polygons),
   _points(points)
 {
+  _tags = (LwoTags *)NULL;
+  _surf_ptags = (LwoPolygonTags *)NULL;
 }

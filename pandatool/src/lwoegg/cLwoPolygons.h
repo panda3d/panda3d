@@ -14,6 +14,9 @@
 
 class LwoToEggConverter;
 class CLwoPoints;
+class CLwoSurface;
+class LwoTags;
+class LwoPolygonTags;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : CLwoPolygons
@@ -27,6 +30,10 @@ public:
 		      const LwoPolygons *polygons,
 		      CLwoPoints *points);
 
+  void add_ptags(const LwoPolygonTags *lwo_ptags, const LwoTags *tags);
+
+  CLwoSurface *get_surface(int polygon_index) const;
+
   void make_egg();
   void connect_egg();
 
@@ -34,6 +41,12 @@ public:
   CPT(LwoPolygons) _polygons;
   CLwoPoints *_points;
   PT(EggGroup) _egg_group;
+
+  const LwoTags *_tags;
+  typedef map<IffId, const LwoPolygonTags *> PTags;
+  PTags _ptags;
+
+  const LwoPolygonTags *_surf_ptags;
 
 private:
   void make_faces();

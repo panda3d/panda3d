@@ -135,6 +135,8 @@ void EggAttributes::
 transform(const LMatrix4d &mat) {
   if (has_normal()) {
     _normal = _normal * mat;
+    LVector3d old_normal = _normal;
+    _normal.normalize();
 
     EggMorphNormalList::iterator mi;
     for (mi = _dnormals.begin(); mi != _dnormals.end(); ++mi) {
@@ -142,8 +144,15 @@ transform(const LMatrix4d &mat) {
       // we're not changing its name, which is the only thing the set
       // cares about preserving.
       EggMorphNormal &morph = (EggMorphNormal &)(*mi);
-      
-      morph.set_offset((*mi).get_offset() * mat);
+
+      // A bit of funny business to ensure the offset normal is
+      // normalized after the transform.  This will break strange
+      // normal morphs that want to change the length of the normal,
+      // but what else can we do?
+      LVector3d offset = (*mi).get_offset() * mat;
+      LVector3d n = old_normal + offset;
+      n.normalize();
+      morph.set_offset(n - _normal);
     }
   }
 }

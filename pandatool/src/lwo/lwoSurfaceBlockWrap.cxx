@@ -24,7 +24,8 @@ bool LwoSurfaceBlockWrap::
 read_iff(IffInputFile *in, size_t stop_at) {
   LwoInputFile *lin = DCAST(LwoInputFile, in);
 
-  _mode = (Mode)lin->get_be_uint16();
+  _width = (Mode)lin->get_be_uint16();
+  _height = (Mode)lin->get_be_uint16();
 
   return true;
 }
@@ -37,5 +38,6 @@ read_iff(IffInputFile *in, size_t stop_at) {
 void LwoSurfaceBlockWrap::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
-    << get_id() << " { mode = " << (int)_mode << " }\n";
+    << get_id() << " { width = " << (int)_width 
+    << ", height = " << (int)_height << " }\n";
 }
