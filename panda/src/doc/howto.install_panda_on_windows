@@ -86,7 +86,12 @@ Step 1:
     and LIB dirs.  Building libpandadx requires this step (needs DX7 
     headers/libs)
     
-Step 2: has been deleted
+Step 2: On Win2000, install ServicePack 2 and DX 8.1
+  - run
+    v:\win2k-servicepack2.exe  
+    v:\dx8.1\DX81NTeng.exe
+    
+    or download them from http://windowsupdate.microsoft.com
 
 Step 3: Install Cygwin (v1.3.5 or above should work)
   - Install Cygwin by running V:\cygwin-1.3.5\setup.exe, and selecting 
