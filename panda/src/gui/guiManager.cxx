@@ -210,10 +210,8 @@ INLINE bool overlap(GuiRegion* a, GuiRegion* b) {
   LVector4f av = a->get_frame();
   LVector4f bv = b->get_frame();
 
-  if (in_range(av[0], bv[0], bv[1]) ||
-      in_range(av[1], bv[0], bv[1]) ||
-      in_range(av[2], bv[2], bv[3]) ||
-      in_range(av[3], bv[2], bv[3]))
+  if ((in_range(av[0], bv[0], bv[1]) || in_range(av[1], bv[0], bv[1])) &&
+      (in_range(av[2], bv[2], bv[3]) || in_range(av[3], bv[2], bv[3])))
     return true;
   return false;
 }
