@@ -286,6 +286,10 @@ center_trackball(const NodePath &object) {
     // Ensure the far plane is far enough back to see the entire object.
     float ideal_far_plane = distance + radius;
     lens->set_far(max(lens->get_default_far(), ideal_far_plane)); 
+
+    // And that the near plane is far enough forward.
+    float ideal_near_plane = distance - radius;
+    lens->set_near(min(lens->get_default_near(), ideal_near_plane)); 
   }
 
   _trackball->set_origin(center);
