@@ -55,6 +55,10 @@ public:
 template<class Type>
 class pallocator : public allocator<Type> {
 public:
+  INLINE pallocator();
+  template<class _Tp1>
+  INLINE pallocator(const pallocator<_Tp1> &other);
+
 #ifndef NDEBUG
   INLINE Type *allocate(size_t n);
   INLINE void deallocate(void *p, size_t n);
@@ -77,14 +81,6 @@ public:
   //  INLINE void deallocate(pointer p, size_type n);
   INLINE void deallocate(void *p, size_type n);
 #endif  // NDEBUG
-
-#ifdef __GNUC__
-  // Some versions of the gcc library require this structure to be
-  // declared.  I don't know what it's all about.
-  template <class _Tp1> struct rebind {
-    typedef pallocator<_Tp1> other;
-  };
-#endif
 };
 #endif  // *_STYLE_ALLOCATOR
 

@@ -36,21 +36,45 @@
 //               within the MemoryUsage class itself.
 ////////////////////////////////////////////////////////////////////
 
-#ifdef OLD_STYLE_ALLOCATOR
-// Early versions of gcc used its own kind of allocator, somewhat
-// different from the STL standard.
+#if defined(OLD_STYLE_ALLOCATOR)
+// Early versions of gcc wanted to use its own kind of allocator,
+// somewhat different from the STL standard.  Irix uses this one too.
+// It might be inherited from an early draft of the STL standard.
 
 template<class Type>
 class dallocator : public alloc {
 public:
 #ifndef NDEBUG
-  static void *allocate(size_t n);
-  static void deallocate(void *p, size_t n);
+  INLINE static Type *allocate(size_t n);
+  INLINE static void deallocate(void *p, size_t n);
 #endif  // NDEBUG
 };
 
-#else  // OLD_STYLE_ALLOCATOR
+#elif defined(GNU_STYLE_ALLOCATOR)
+// Later versions of gcc want to use a still different, nonstandard
+// definition.  Sheesh.
 
+template<class Type>
+class dallocator : public allocator<Type> {
+public:
+  INLINE dallocator();
+  template<class _Tp1>
+  INLINE dallocator(const dallocator<_Tp1> &other);
+
+#ifndef NDEBUG
+  INLINE Type *allocate(size_t n);
+  INLINE void deallocate(void *p, size_t n);
+#endif  // NDEBUG
+
+  template <class _Tp1> struct rebind {
+    typedef dallocator<_Tp1> other;
+  };
+};
+
+#else  // *_STYLE_ALLOCATOR
+
+// This is the correct allocator declaration as the current C++
+// standard defines it.
 template<class Type>
 class dallocator : public allocator<Type> {
 public:
@@ -60,7 +84,7 @@ public:
   INLINE void deallocate(void *p, size_type n);
 #endif  // NDEBUG
 };
-#endif  // OLD_STYLE_ALLOCATOR
+#endif  // *_STYLE_ALLOCATOR
 
 #include "dallocator.T"
 

@@ -34,11 +34,22 @@ deallocate(void *p, size_t) {
 
 #elif defined(GNU_STYLE_ALLOCATOR)
 
+template<class Type>
+INLINE pallocator<Type>::
+pallocator() {
+}
+
+template<class Type>
+template<class _Tp1>
+INLINE pallocator<Type>::
+pallocator(const pallocator<_Tp1> &) {
+}
+
 #ifndef NDEBUG
 template<class Type>
 INLINE Type *pallocator<Type>::
 allocate(size_t n) {
-  return (Type *)(*global_operator_new)(n);
+  return (Type *)(*global_operator_new)(n * sizeof(Type));
 }
 
 template<class Type>
