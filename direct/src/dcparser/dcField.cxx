@@ -18,8 +18,13 @@
 
 #include "dcField.h"
 #include "dcPacker.h"
+#include "dcClass.h"
 #include "hashGenerator.h"
 #include "dcmsgtypes.h"
+
+#ifdef WITHIN_PANDA
+#include "pStatTimer.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCField::Constructor
@@ -27,7 +32,38 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DCField::
-DCField(const string &name) : DCPackerInterface(name) {
+DCField()
+#ifdef WITHIN_PANDA
+  : _field_update_pcollector("DCField")
+#endif
+{
+  _number = -1;
+  _flags = 0;
+  _has_default_value = false;
+  _default_value_stale = true;
+
+  _has_nested_fields = true;
+  _num_nested_fields = 0;
+  _pack_type = PT_field;
+
+  _has_fixed_byte_size = true;
+  _fixed_byte_size = 0;
+  _has_fixed_structure = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+DCField::
+DCField(const string &name, DCClass *dclass) : 
+  DCPackerInterface(name) 
+#ifdef WITHIN_PANDA
+  ,
+  _field_update_pcollector(dclass->_class_update_pcollector, name)
+#endif
+{
   _number = -1;
   _flags = 0;
   _has_default_value = false;
@@ -479,7 +515,13 @@ receive_update(DCPacker &packer, PyObject *distobj) const {
       PyObject *func = PyObject_GetAttrString(distobj, (char *)_name.c_str());
       nassertv(func != (PyObject *)NULL);
       
-      PyObject *result = PyObject_CallObject(func, args);
+      PyObject *result;
+      {
+#ifdef WITHIN_PANDA
+        PStatTimer timer(((DCField *)this)->_field_update_pcollector);
+#endif
+        result = PyObject_CallObject(func, args);
+      }
       Py_XDECREF(result);
       Py_DECREF(func);
       Py_DECREF(args);

@@ -134,6 +134,8 @@ private:
 #ifdef HAVE_PYTHON
   PyObject *_class_def;
 #endif
+
+  friend class DCField;
 };
 
 #include "dcClass.I"

@@ -34,7 +34,7 @@ class DCParameter;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCMolecularField : public DCField {
 public:
-  DCMolecularField(const string &name);
+  DCMolecularField(const string &name, DCClass *dclass);
 
 PUBLISHED:
   virtual DCMolecularField *as_molecular_field();

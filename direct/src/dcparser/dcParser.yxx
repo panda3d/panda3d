@@ -464,7 +464,7 @@ atomic_field:
         optional_name '('
 {
   $$ = current_atomic;
-  current_atomic = new DCAtomicField($1);
+  current_atomic = new DCAtomicField($1, current_class);
 }
         parameter_list ')'
 {
@@ -1154,7 +1154,7 @@ no_server_flags:
 molecular_field:
         IDENTIFIER ':'
 {
-  current_molecular = new DCMolecularField($1);
+  current_molecular = new DCMolecularField($1, current_class);
 }
         molecular_atom_list
 {

@@ -37,7 +37,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCAtomicField : public DCField {
 public:
-  DCAtomicField(const string &name);
+  DCAtomicField(const string &name, DCClass *dclass);
   virtual ~DCAtomicField();
 
 PUBLISHED:

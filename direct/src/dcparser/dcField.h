@@ -23,11 +23,16 @@
 #include "dcPackerInterface.h"
 #include "dcPython.h"
 
+#ifdef WITHIN_PANDA
+#include "pStatCollector.h"
+#endif
+
 class DCPacker;
 class DCAtomicField;
 class DCMolecularField;
 class DCParameter;
 class DCSwitch;
+class DCClass;
 class HashGenerator;
 
 ////////////////////////////////////////////////////////////////////
@@ -37,7 +42,8 @@ class HashGenerator;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCField : public DCPackerInterface {
 public:
-  DCField(const string &name = string());
+  DCField();
+  DCField(const string &name, DCClass *dclass);
   virtual ~DCField();
 
 PUBLISHED:
@@ -127,6 +133,10 @@ private:
   int _flags;  // A bitmask union of any of the above values.
 
   string _default_value;
+
+#ifdef WITHIN_PANDA
+  PStatCollector _field_update_pcollector;
+#endif
 };
 
 #endif
