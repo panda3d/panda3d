@@ -429,7 +429,15 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         for method in parent.instanceMethods:
             if not self.hasMethodNamed(method.name):
                 # with downcast for all instance methods that are not themselves upcasts
-                method.generateInheritedMethodCode(self, parentList, file, nesting, 1) 
+                method.generateInheritedMethodCode(self, parentList, file, nesting, 1)
+
+        # Also duplicate the overloaded method dispatch functions, if
+        # we don't already have any matching methods by this name.
+        for methodSpecList in parent.overloadedInstanceMethods.values():
+            if not self.hasMethodNamed(methodSpecList[0].name):
+                treeColl = FFIOverload.FFIMethodArgumentTreeCollection(self, methodSpecList)
+                treeColl.generateCode(file, nesting)
+                
         # Copy all the parents upcast methods so we transitively pick them up
         for method in parent.upcastMethods:
             if not self.hasMethodNamed(method.name):
@@ -437,7 +445,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
                 # that would cause an infinite loop
                 method.generateInheritedMethodCode(self, parentList, file, nesting, 0) 
 
-        # Now recurse up the heirarchy until we get to a node that is itself
+        # Now recurse up the hierarchy until we get to a node that is itself
         # a multiple inheritance node and stop there because he will have already
         # copied all his parent functions in
         if recurse:
