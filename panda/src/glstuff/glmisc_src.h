@@ -30,7 +30,6 @@ extern bool CLP(show_mipmaps);
 extern bool CLP(save_mipmaps);
 extern bool CLP(auto_normalize_lighting);
 extern bool CLP(depth_offset_decals);
-extern bool CLP(supports_bgr);
 extern bool CLP(color_mask);
 
 extern EXPCL_GL void CLP(init_classes)();

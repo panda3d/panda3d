@@ -29,12 +29,14 @@
 // #define GLCAT: a Notify category, e.g. glgsg_cat
 // #define EXPCL_GL, EXPTP_GL: according to the DLL currently being compiled.
 
-// Also, be sure you include the appropriate GL.h header file to get
-// all the GL symbols declared.
+// Also, be sure you include the appropriate gl.h and glu.h header
+// files to get all the standard GL symbols declared.  GL extensions
+// are included here via glext.h.
 
 // This file is not protected from multiple inclusion; it may need to
 // be included multiple times.
 
+#include "glext.h"
 
 #include "glmisc_src.h"
 #include "glGeomNodeContext_src.h"

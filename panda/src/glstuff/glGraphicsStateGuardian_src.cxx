@@ -57,12 +57,6 @@
 
 #include <algorithm>
 
-#if !defined(GL_BGR) && defined(GL_BGR_EXT)
-// These symbols are sometimes defined as _EXT variants.
-#define GL_BGR GL_BGR_EXT
-#define GL_BGRA GL_BGRA_EXT
-#endif
-
 TypeHandle CLP(GraphicsStateGuardian)::_type_handle;
 
 #if !defined(CPPPARSER) && defined(DO_PSTATS)
@@ -429,6 +423,8 @@ reset() {
   save_extensions((const char *)glGetString(GL_EXTENSIONS));
   get_extra_extensions();
   report_extensions();
+
+  _supports_bgr = has_extension("GL_EXT_bgra");
 
   report_gl_errors();
 }
@@ -2046,14 +2042,12 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   case GL_RGBA:
     GLCAT.debug(false) << "GL_RGBA, ";
     break;
-#ifdef GL_BGR
   case GL_BGR:
     GLCAT.debug(false) << "GL_BGR, ";
     break;
   case GL_BGRA:
     GLCAT.debug(false) << "GL_BGRA, ";
     break;
-#endif  // GL_BGR
   default:
     GLCAT.debug(false) << "unknown, ";
     break;
@@ -2904,16 +2898,12 @@ compute_gl_image_size(int xsize, int ysize, int external_format, int type) {
     num_components = 2;
     break;
 
-#ifdef GL_BGR
   case GL_BGR:
-#endif
   case GL_RGB:
     num_components = 3;
     break;
 
-#ifdef GL_BGR
   case GL_BGRA:
-#endif
   case GL_RGBA:
     num_components = 4;
     break;
@@ -2970,7 +2960,7 @@ apply_texture_immediate(Texture *tex) {
   GLenum type = get_image_type(pb->get_image_type());
 
   PTA_uchar image = pb->_image;
-  if (!CLP(supports_bgr)) {
+  if (!_supports_bgr) {
     // If the GL doesn't claim to support BGR, we may have to reverse
     // the component ordering of the image.
     image = fix_component_ordering(external_format, pb);
@@ -3202,14 +3192,12 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   case GL_RGBA:
     GLCAT.debug(false) << "GL_RGBA, ";
     break;
-#ifdef GL_BGR
   case GL_BGR:
     GLCAT.debug(false) << "GL_BGR, ";
     break;
   case GL_BGRA:
     GLCAT.debug(false) << "GL_BGRA, ";
     break;
-#endif  // GL_BGR
   default:
     GLCAT.debug(false) << "unknown, ";
     break;
@@ -3386,22 +3374,14 @@ get_external_image_format(PixelBuffer::Format format) {
   case PixelBuffer::F_rgb8:
   case PixelBuffer::F_rgb12:
   case PixelBuffer::F_rgb332:
-#ifdef GL_BGR
-    return CLP(supports_bgr) ? GL_BGR : GL_RGB;
-#else
-    return GL_RGB;
-#endif  // GL_BGR
+    return _supports_bgr ? GL_BGR : GL_RGB;
   case PixelBuffer::F_rgba:
   case PixelBuffer::F_rgbm:
   case PixelBuffer::F_rgba4:
   case PixelBuffer::F_rgba5:
   case PixelBuffer::F_rgba8:
   case PixelBuffer::F_rgba12:
-#ifdef GL_BGR
-    return CLP(supports_bgr) ? GL_BGRA : GL_RGBA;
-#else
-    return GL_RGBA;
-#endif  // GL_BGR
+    return _supports_bgr ? GL_BGRA : GL_RGBA;
   case PixelBuffer::F_luminance:
     return GL_LUMINANCE;
   case PixelBuffer::F_luminance_alphamask:
@@ -4591,7 +4571,6 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
     return out << "GL_ONE_MINUS_DST_ALPHA";
   case GL_SRC_ALPHA_SATURATE:
     return out << "GL_SRC_ALPHA_SATURATE";
-  #ifdef USING_OPENGL_1_2 //[
   case GL_CONSTANT_COLOR:
     return out << "GL_CONSTANT_COLOR";
   case GL_ONE_MINUS_CONSTANT_COLOR:
@@ -4600,7 +4579,6 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
     return out << "GL_CONSTANT_ALPHA";
   case GL_ONE_MINUS_CONSTANT_ALPHA:
     return out << "GL_ONE_MINUS_CONSTANT_ALPHA";
-  #endif //]
 
     /* Render Mode */
   case GL_FEEDBACK:
@@ -5192,7 +5170,6 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
     */
 
     /* GL 1.2 texturing */
-  #ifdef USING_OPENGL_1_2 //[
   case GL_PACK_SKIP_IMAGES:
     return out << "GL_PACK_SKIP_IMAGES";
   case GL_PACK_IMAGE_HEIGHT:
@@ -5211,11 +5188,8 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
     return out << "GL_TEXTURE_WRAP_R";
   case GL_MAX_3D_TEXTURE_SIZE:
     return out << "GL_MAX_3D_TEXTURE_SIZE";
-#ifdef GL_TEXTURE_BINDING_3D
   case GL_TEXTURE_BINDING_3D:
     return out << "GL_TEXTURE_BINDING_3D";
-#endif
-  #endif //]
 
     /* Internal texture formats (GL 1.1) */
   case GL_ALPHA4:
@@ -5310,7 +5284,6 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
     return out << "GL_OUT_OF_MEMORY";
 
     /* OpenGL 1.2 */
-  #ifdef USING_OPENGL_1_2 //[
   case GL_RESCALE_NORMAL:
     return out << "GL_RESCALE_NORMAL";
   case GL_CLAMP_TO_EDGE:
@@ -5361,7 +5334,6 @@ ostream &output_gl_enum(ostream &out, GLenum v) {
     return out << "GL_TEXTURE_BASE_LEVEL";
   case GL_TEXTURE_MAX_LEVEL:
     return out << "GL_TEXTURE_MAX_LEVEL";
-  #endif //]
   }
 
   return out << (int)v;

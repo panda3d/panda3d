@@ -303,6 +303,7 @@ protected:
   int _pass_number;
 
   pset<string> _extensions;
+  bool _supports_bgr;
 
 public:
   static GraphicsStateGuardian *

@@ -62,17 +62,6 @@ bool CLP(auto_normalize_lighting) = CONFIGOBJ.GetBool("auto-normalize-lighting",
 // rendering method instead.
 bool CLP(depth_offset_decals) = CONFIGOBJ.GetBool("depth-offset-decals", false);
 
-// Configure this true to indicate the current version of GL fully
-// supports textures with B, G, R ordering; false if it only supports
-// R, G, B.  false will always work, but true might be faster if the
-// implementation supports it.
-#ifdef GL_BGR
-bool CLP(supports_bgr) = CONFIGOBJ.GetBool("gl-supports-bgr", false);
-#else
-// If it's not even defined, we can't use it.
-bool CLP(supports_bgr) = false;
-#endif  // GL_BGR
-
 // Configure this false if your GL's implementation of GLP(ColorMask)()
 // is broken (some are).  This will force the use of a (presumably)
 // more expensive blending operation instead.

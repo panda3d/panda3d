@@ -11,6 +11,7 @@
     putil linmath mathutil pnmimage
     
   #define INSTALL_HEADERS \
+     glext.h \
      glstuff_src.cxx \
      glstuff_src.h \
      glstuff_undef_src.h \
