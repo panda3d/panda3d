@@ -1983,7 +1983,7 @@ make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
         EggVertex *vtx = (*vi);
         LPoint3d pos = vtx->get_pos3() * mat;
         vpos.push_back(pos);
-        center += vtx->get_pos3();
+        center += pos;
       }
       center /= (double)num_vertices;
 
