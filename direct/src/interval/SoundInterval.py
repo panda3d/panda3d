@@ -32,10 +32,10 @@ class SoundInterval(Interval):
         if duration == 0.0:
             if self.wantSound:
                 duration = self.sound.length()
-		if (duration == 0):
-		    self.notify.warning('zero length duration!')
-	  	# MPG - hack for Miles bug
-		duration += 1.5
+                if (duration == 0):
+                    self.notify.warning('zero length duration!')
+                # MPG - hack for Miles bug
+                duration += 1.5
             else:
                 # This will screw up any intervals that base their
                 # time on the duration of this sound interval
@@ -61,7 +61,7 @@ class SoundInterval(Interval):
         # Update sound based on current time
         if (t >= self.getDuration()):
             # If end of sound reached or stop event received, stop sound
-            AudioManager.stop(self.sound)
+            self.sound.stop()
             self.ignore(self.stopEvent)
         elif (event == IVAL_INIT):
             # IVAL_INIT event, start new sound
@@ -70,10 +70,12 @@ class SoundInterval(Interval):
             if (t < 0.1):
                 t = 0.0
             # Start sound
-            AudioManager.play(self.sound, t, self.loop)
+            self.sound.setTime(t)
+            self.sound.setLoop(self.loop)
+            self.sound.play()
             # Accept event to kill sound
             self.acceptOnce(self.stopEvent,
-                        lambda s = self: AudioManager.stop(s.sound))
+                        lambda s = self: s.sound.stop())
         # Print debug information
         self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
             

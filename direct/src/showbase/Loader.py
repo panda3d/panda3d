@@ -85,10 +85,10 @@ class Loader:
         return ModelPool.loadModel(modelPath)
 
     def unloadModel(self, modelPath):
-	"""unloadModel(self, string)
-	"""
-	Loader.notify.debug("Unloading model: %s" % (modelPath))
-	ModelPool.releaseModel(modelPath)
+        """unloadModel(self, string)
+        """
+        Loader.notify.debug("Unloading model: %s" % (modelPath))
+        ModelPool.releaseModel(modelPath)
 
     # font loading funcs
     def loadFont(self, modelPath, priority = 0):
@@ -132,10 +132,10 @@ class Loader:
         return texture
 
     def unloadTexture(self, texture):
-	"""unloadTexture(self, texture)
-	"""
+        """unloadTexture(self, texture)
+        """
         Loader.notify.debug("Unloading texture: %s" % (texture) )
-	TexturePool.releaseTexture(texture)
+        TexturePool.releaseTexture(texture)
 
     # sound loading funcs
     def loadSound(self, soundPath):
@@ -145,13 +145,13 @@ class Loader:
         Loader.notify.debug("Loading sound: %s" % (soundPath) )
         if phaseChecker:
             phaseChecker(soundPath)
-        sound = AudioPool.loadSound(soundPath)
+        sound = base.effectsAudioManager.getSound(soundPath)
         return sound
 
     def unloadSound(self, sound):
-	"""unloadSound(self, sound)
-	"""
+        """unloadSound(self, sound)
+        """
         if sound:
             Loader.notify.debug("Unloading sound: %s" % (sound) )
-            AudioPool.releaseSound(sound)
+            del sound
 

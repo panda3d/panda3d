@@ -37,9 +37,10 @@ class ShowBase:
         self.wantTk = self.config.GetBool('want-tk', 0)
         self.wantAnySound = self.config.GetBool('want-sound', 1)
         if not self.wantAnySound:
-            AudioManager.setAllSoundActive(0)
-        self.wantSfx = AudioManager.getSfxActive()
-        self.wantMusic = AudioManager.getMusicActive()
+            self.effectsAudioManager.setActive(0)
+            self.musicAudioManager.setActive(0)
+        self.wantSfx = self.config.GetBool('audio-sfx-active', 1)
+        self.wantMusic = self.config.GetBool('audio-music-active', 1)
         if not (self.wantSfx or self.wantMusic):
             self.wantAnySound = None
         self.wantDIRECT = self.config.GetBool('want-directtools', 0)
@@ -275,61 +276,56 @@ class ShowBase:
 
     def createAudioManager(self):
         if self.wantAnySound:
-            AudioManager.spawnUpdate()
+            self.effectsAudioManager = AudioManager.createAudioManager()
+            self.musicAudioManager = AudioManager.createAudioManager()
 
     def loadSfx(self, name):
         if (name and base.wantSfx):
-            sound=loader.loadSound(name)
-            if sound:
-                sound.setCategory(sound.EFFECT)
+            sound=self.effectsAudioManager.getSound(name)
             return sound
 
     def loadMusic(self, name):
         if (name and base.wantMusic):
-            sound=loader.loadSound(name)
-            if sound:
-                sound.setCategory(sound.MUSIC)
+            sound=self.musicAudioManager.getSound(name)
             return sound
 
     def unloadSfx(self, sfx):
         if sfx:
-            loader.unloadSound(sfx)
+            del sfx
 
     def unloadMusic(self, music):
         if music:
-            loader.unloadSound(music)
+            del music
 
     def playSfx(self, sfx, looping = 0, interupt = 1, volume = None,
                 time = 0.):
         if (sfx and base.wantSfx):
-            if not interupt:
-                if not (sfx.status() == AudioSound.PLAYING):
-                    AudioManager.play(sfx, time, looping)
-            else:
-                AudioManager.play(sfx, time, looping)
-            if volume:
-                AudioManager.setVolume(sfx, volume)
+            if volume != None:
+                sfx.setVolume(volume)
+            if interupt or (sfx.status() != AudioSound.PLAYING):
+                sfx.setTime(time)
+                sfx.setLoop(looping)
+                sfx.play()
 
     def playMusic(self, music, looping = 0, interupt = 1, volume = None,
                   restart = None, time = 0.):
         if (music and base.wantMusic):
-            if not interupt:
-                if not (music.status() == AudioSound.PLAYING):
-                    AudioManager.play(music, time, looping)
-            else:
-                AudioManager.play(music, time, looping)
-            if volume:
-                AudioManager.setVolume(music, volume)
+            if interupt or (music.status() != AudioSound.PLAYING):
+                music.setTime(time)
+                music.setLoop(looping)
+                music.play()
+            if volume != None:
+                music.setVolume(volume)
             if restart:
                 restart[0].accept("restart-music", restart[1])
 
     def stopSfx(self, sfx):
         if (sfx and base.wantSfx):
-            AudioManager.stop(sfx)
+            sfx.stop()
 
     def stopMusic(self, music, restart = None):
         if (music and base.wantMusic):
-            AudioManager.stop(music)
+            music.stop()
             if restart:
                 restart[0].ignore("restart-music")
 
