@@ -127,8 +127,10 @@ private:
   static TypeHandle _type_handle;
 };
 
-ostream &operator << (ostream &out, TextEncoder::Encoding encoding);
-istream &operator >> (istream &in, TextEncoder::Encoding &encoding);
+EXPCL_PANDAEXPRESS ostream &
+operator << (ostream &out, TextEncoder::Encoding encoding);
+EXPCL_PANDAEXPRESS istream &
+operator >> (istream &in, TextEncoder::Encoding &encoding);
 
 #include "textEncoder.I"
 
