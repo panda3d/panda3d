@@ -1223,11 +1223,10 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
         }
       }
       }
+      // if model has key shapes, generate vertex offsets
+      if ( numShapes > 0 && make_morph )
+        node_desc->make_vertex_offsets( numShapes);
     }
-
-  // if model has key shapes, generate vertex offsets
-  if ( numShapes > 0 && make_morph )
-    node_desc->make_vertex_offsets( numShapes);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1498,11 +1497,11 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
         else 
           softegg_cat.spam() << "texname :" << node_desc->texNameArray[0] << endl;
       }
-    }
 
-  // if model has key shapes, generate vertex offsets
-  if ( numShapes > 0 && make_morph )
-    node_desc->make_vertex_offsets( numShapes);
+      // if model has key shapes, generate vertex offsets
+      if ( numShapes > 0 && make_morph )
+        node_desc->make_vertex_offsets( numShapes);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2006,7 +2005,6 @@ cleanup_soft_skin()
         // hard skin this vertex
         joint->ref_vertex( vert, 1.0f );
       }
-      /*
       else {    
         membership = joint->get_vertex_membership(vert);
         if ( membership == 0 ) {
@@ -2018,7 +2016,6 @@ cleanup_soft_skin()
           joint->ref_vertex( vert, 1.0f );
         }
       }
-      */
     }
   }
   return true;

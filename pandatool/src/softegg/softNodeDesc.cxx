@@ -122,6 +122,26 @@ set_parent(SoftNodeDesc *parent) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SoftNodeDesc::set_parent
+//       Access: Public
+//  Description: Sometimes, parent is not known at node creation
+//               As soon as it is known, set the parent
+////////////////////////////////////////////////////////////////////
+void SoftNodeDesc::
+force_set_parent(SoftNodeDesc *parent) {
+  if (_parent)
+    softegg_cat.spam() << " current parent " << _parent->get_name();
+
+  _parent = parent;
+  
+  if (_parent)
+    softegg_cat.spam() << " new parent " << _parent->get_name() << endl;
+
+  // Add ourselves to our parent.
+  _parent->_children.push_back(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SoftNodeDesc::has_model
 //       Access: Public
 //  Description: Returns true if a Soft dag path has been associated
@@ -453,7 +473,7 @@ get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global) {
 
   }
 
-  if (_parentJoint)
+  if (_parentJoint && !stec.flatten)
     softegg_cat.debug() << _parentJoint->get_name() << endl;
   else
     softegg_cat.debug() << _parentJoint << endl;

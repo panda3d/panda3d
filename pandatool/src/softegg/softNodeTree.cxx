@@ -223,7 +223,12 @@ build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database) {
   // find _parentJoint for each node
   _root->set_parentJoint(&scene, NULL);
 
-  softegg_cat.spam() << "========================================================\n";
+  /*
+  if (stec.flatten) {
+    softegg_cat.spam() << "rprprprprprprprprprprprprprprprprprprprprprprprprprprprpr\n";
+    reparent_flatten(_root);
+  }
+  */
 
   return all_ok;
 }
@@ -374,7 +379,7 @@ get_egg_group(SoftNodeDesc *node_desc) {
       egg_group->set_group_type(EggGroup::GT_joint);
     }
 
-    if (!node_desc->_parentJoint || node_desc->_parentJoint == _root) {
+    if (stec.flatten || (!node_desc->_parentJoint || node_desc->_parentJoint == _root)) {
       // The parent is the root.
       softegg_cat.spam() << "came hereeeee\n";
       _egg_root->add_child(egg_group);
@@ -420,7 +425,7 @@ get_egg_table(SoftNodeDesc *node_desc) {
     node_desc->_anim->set_fps(_fps);
     egg_table->add_child(node_desc->_anim);
     
-    if (!node_desc->_parentJoint || node_desc->_parentJoint == _root) {
+    if (stec.flatten || (!node_desc->_parentJoint || node_desc->_parentJoint == _root)) {
       //    if (!node_desc->_parent->is_joint()) {
       // The parent is not a joint; put it at the top.
       _skeleton_node->add_child(egg_table);
@@ -595,10 +600,12 @@ r_build_node(SoftNodeDesc *parent_node, const string &name) {
   if (ni != _nodes_by_name.end()) {
     softegg_cat.spam() << "  already built node " << (*ni).first;
     node_desc = (*ni).second;
-    
+
+    /*    
     if (stec.flatten)
       node_desc->set_parent(_root);
     else
+    */
       node_desc->set_parent(parent_node);
 
     return node_desc;
@@ -606,9 +613,11 @@ r_build_node(SoftNodeDesc *parent_node, const string &name) {
 
   // Otherwise, we have to create it.  Do this recursively, so we
   // create each node along the path.
+  /*
   if (stec.flatten)
     node_desc = new SoftNodeDesc(_root, name);
   else
+  */
     node_desc = new SoftNodeDesc(parent_node, name);
 
   softegg_cat.spam() << " node name : " << name << endl;
@@ -617,6 +626,31 @@ r_build_node(SoftNodeDesc *parent_node, const string &name) {
   _nodes_by_name.insert(NodesByName::value_type(name, node_desc));
 
   return node_desc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftNodeTree::reparent_flatten
+//       Access: Private
+//  Description: recursively, reparent all nodes to root
+////////////////////////////////////////////////////////////////////
+void SoftNodeTree::
+reparent_flatten(SoftNodeDesc *node) {
+  // get a copy of the current childrens
+  SoftNodeDesc::Children old_children = node->_children;
+  // clear the _children to make room for new ones
+  node->_children.clear();
+
+  if (node != _root) {
+    softegg_cat.spam() << "reparenting " << node << ":" << node->get_name();
+    node->force_set_parent(_root);
+  }
+
+  SoftNodeDesc::Children::const_iterator ci;
+  for (ci = old_children.begin(); ci != old_children.end(); ++ci) {
+    SoftNodeDesc *child = (*ci);
+    reparent_flatten(child);
+  }
+
 }
 //
 //

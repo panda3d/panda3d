@@ -53,6 +53,7 @@ public:
   ~SoftNodeDesc();
 
   void set_parent(SoftNodeDesc *parent);
+  void force_set_parent(SoftNodeDesc *parent);
   void set_model(SAA_Elem *model);
   bool has_model() const;
   SAA_Elem *get_model() const;
