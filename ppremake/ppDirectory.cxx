@@ -792,7 +792,7 @@ read_file_dependencies(const string &cache_filename) {
       }
 
       if (!okcache) {
-        if (verbose || true) {
+        if (verbose) {
           cerr << "Cache \"" << cache_pathname << "\" is stale.\n";
         }
         Dependables::iterator di;

@@ -484,7 +484,7 @@ compute_dependencies(string &circularity) {
 
   if ((_flags & (F_bad_cache | F_from_cache)) == (F_bad_cache | F_from_cache)) {
     // Our cache is suspect.  Re-read the file to flush the cache.
-    if (verbose || true) {
+    if (verbose) {
       cerr << "Dependency cache for \"" << get_fullpath() << "\" is suspect.\n";
     }
 
