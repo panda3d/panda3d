@@ -359,7 +359,6 @@ get_parent() const {
 INLINE NodePath NodePath::
 attach_new_node(const string &name, int sort) const {
   nassertr(verify_complete(), NodePath::fail());
-  nassertr_always(!is_empty(), *this);
 
   return attach_new_node(new PandaNode(name), sort);
 }
