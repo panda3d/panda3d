@@ -1002,6 +1002,8 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
   }
   egg_nurbs->set_v_knot(v_knots + 1, v_knot_array[v_knots - 1]);
 
+  LMatrix4d vertex_frame_inv = egg_group->get_vertex_frame_inv();
+
   for (i = 0; i < egg_nurbs->get_num_cvs(); i++) {
     int ui = egg_nurbs->get_u_index(i);
     int vi = egg_nurbs->get_v_index(i);
@@ -1012,7 +1014,9 @@ make_nurbs_surface(const MDagPath &dag_path, MFnNurbsSurface &surface,
       status.perror("MPoint::get");
     } else {
       EggVertex vert;
-      vert.set_pos(LPoint4d(v[0], v[1], v[2], v[3]));
+      LPoint4d p4d(v[0], v[1], v[2], v[3]);
+      p4d = p4d * vertex_frame_inv;
+      vert.set_pos(p4d);
       egg_nurbs->add_vertex(vpool->create_unique_vertex(vert));
     }
   }
@@ -1238,6 +1242,8 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
   }
   egg_curve->set_knot(knots + 1, knot_array[knots - 1]);
 
+  LMatrix4d vertex_frame_inv = egg_group->get_vertex_frame_inv();
+
   for (i = 0; i < egg_curve->get_num_cvs(); i++) {
     double v[4];
     MStatus status = cv_array[i].get(v);
@@ -1245,7 +1251,9 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
       status.perror("MPoint::get");
     } else {
       EggVertex vert;
-      vert.set_pos(LPoint4d(v[0], v[1], v[2], v[3]));
+      LPoint4d p4d(v[0], v[1], v[2], v[3]);
+      p4d = p4d * vertex_frame_inv;
+      vert.set_pos(p4d);
       egg_curve->add_vertex(vpool->create_unique_vertex(vert));
     }
   }
