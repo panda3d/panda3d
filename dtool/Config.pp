@@ -773,6 +773,11 @@
 // if ranlib is not necessary on your platform.
 #defer RANLIB ranlib $[target]
 
+// Where to put the so_locations file, used by an Irix MIPSPro
+// compiler, to generate a map of shared library memory locations.
+#defer SO_LOCATIONS $[DTOOL_INSTALL]/etc/so_locations
+
+
 // How to generate a shared C or C++ library.  $[source] and $[target]
 // as above, and $[libs] is a space-separated list of dependent
 // libraries, and $[lpath] is a space-separated list of directories in
@@ -833,7 +838,7 @@
   #defer STATIC_LIB_C++ $[CXX] -ar -o $[target] $[sources]
   #defer RANLIB
 
-  #define SHARED_FLAGS -Wl,-none -Wl,-update_registry,$[TOPDIR]/so_locations
+  #defer SHARED_FLAGS -Wl,-none -Wl,-update_registry,$[SO_LOCATIONS]
   #defer SHARED_LIB_C $[cc_ld] -shared $[SHARED_FLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
   #defer SHARED_LIB_C++ $[cxx_ld] -shared $[SHARED_FLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
 #endif

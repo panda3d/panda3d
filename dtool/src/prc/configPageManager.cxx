@@ -205,7 +205,8 @@ reload_implicit_pages() {
         vector_string::reverse_iterator fi;
         for (fi = files.rbegin(); fi != files.rend(); ++fi) {
           int file_flags = 0;
-          for (Globs::const_iterator gi = _prc_patterns.begin();
+          Globs::const_iterator gi;
+          for (gi = _prc_patterns.begin();
                gi != _prc_patterns.end();
                ++gi) {
             if ((*gi).matches(*fi)) {
@@ -213,7 +214,7 @@ reload_implicit_pages() {
               break;
             }
           }
-          for (Globs::const_iterator gi = _prc_executable_patterns.begin();
+          for (gi = _prc_executable_patterns.begin();
                gi != _prc_executable_patterns.end();
                ++gi) {
             if ((*gi).matches(*fi)) {
