@@ -22,13 +22,21 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyArg_ParseTuple(...);
   EXPCL_DTOOLCONFIG int Py_BuildValue(...);
   EXPCL_DTOOLCONFIG int PyInt_FromLong(...);
+  EXPCL_DTOOLCONFIG int PyInt_Type(...);
+  EXPCL_DTOOLCONFIG int PyLong_Type(...);
+  EXPCL_DTOOLCONFIG int PyType_IsSubtype(...);
+  EXPCL_DTOOLCONFIG int PyFloat_Type(...);
   EXPCL_DTOOLCONFIG int PyFloat_FromDouble(...);
+  EXPCL_DTOOLCONFIG int PyString_Type(...);
+  EXPCL_DTOOLCONFIG int PyUnicode_Type(...);
   EXPCL_DTOOLCONFIG int PyString_FromString(...);
   EXPCL_DTOOLCONFIG int PyString_FromStringAndSize(...);
   EXPCL_DTOOLCONFIG int Py_InitModule4(...);
   EXPCL_DTOOLCONFIG int PyObject_IsTrue(...);
+  EXPCL_DTOOLCONFIG int PyObject_Str(...);
   EXPCL_DTOOLCONFIG int PyErr_SetString(...);
   EXPCL_DTOOLCONFIG int PySequence_GetItem(...);
+  EXPCL_DTOOLCONFIG int PySequence_Tuple(...);
   EXPCL_DTOOLCONFIG int PyLong_AsUnsignedLongLong(...);
   EXPCL_DTOOLCONFIG int PyErr_Occurred(...);
   EXPCL_DTOOLCONFIG int PyObject_GetAttrString(...);
@@ -37,6 +45,8 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyString_AsString(...);
   EXPCL_DTOOLCONFIG int PySequence_Size(...);
   EXPCL_DTOOLCONFIG int PyList_New(...);
+  EXPCL_DTOOLCONFIG int PyList_AsTuple(...);
+  EXPCL_DTOOLCONFIG int PyList_Append(...);
   EXPCL_DTOOLCONFIG int PyFloat_AsDouble(...);
   EXPCL_DTOOLCONFIG int PyString_AsStringAndSize(...);
   EXPCL_DTOOLCONFIG int PyObject_CallObject(...);
@@ -65,7 +75,37 @@ PyInt_FromLong(...) {
 }
 
 int
+PyInt_Type(...) {
+  return 0;
+}
+
+int
+PyLong_Type(...) {
+  return 0;
+}
+
+int
+PyType_IsSubtype(...) {
+  return 0;
+}
+
+int
+PyFloat_Type(...) {
+  return 0;
+}
+
+int
 PyFloat_FromDouble(...) {
+  return 0;
+}
+
+int
+PyString_Type(...) {
+  return 0;
+}
+
+int
+PyUnicode_Type(...) {
   return 0;
 }
 
@@ -90,12 +130,22 @@ PyObject_IsTrue(...) {
 }
 
 int
+PyObject_Str(...) {
+  return 0;
+}
+
+int
 PyErr_SetString(...) {
   return 0;
 }
 
 int
 PySequence_GetItem(...) {
+  return 0;
+}
+
+int
+PySequence_Tuple(...) {
   return 0;
 }
 
@@ -136,6 +186,16 @@ PySequence_Size(...) {
 
 int
 PyList_New(...) {
+  return 0;
+}
+
+int
+PyList_AsTuple(...) {
+  return 0;
+}
+
+int
+PyList_Append(...) {
   return 0;
 }
 
