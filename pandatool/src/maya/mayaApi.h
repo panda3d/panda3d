@@ -30,7 +30,7 @@ class Filename;
 ////////////////////////////////////////////////////////////////////
 //       Class : MayaApi
 // Description : This class presents a wrapper around the global
-//               Maya interface.  While the reference count it held,
+//               Maya interface.  While the reference count is held,
 //               it keeps the Maya interface open, and closes the
 //               interface when the object destructs.
 ////////////////////////////////////////////////////////////////////
