@@ -476,7 +476,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 #ifdef DO_PSTATS
   // For Pstats to track our current texture memory usage, we have to
   // reset the set of current textures each frame.
-  clear_texture_record();
+  init_frame_pstats();
 
   // But since we don't get sent a new issue_texture() unless our
   // texture state has changed, we have to be sure to clear the
@@ -485,12 +485,6 @@ render_frame(const AllAttributesWrapper &initial_state) {
   NodeAttributes state;
   state.set_attribute(TextureTransition::get_class_type(), new TextureAttribute);
   set_state(state, false);
-
-  // Also clear out our vertex counters while we're here.
-  _vertices_tristrip_pcollector.set_level(0);
-  _vertices_trifan_pcollector.set_level(0);
-  _vertices_tri_pcollector.set_level(0);
-  _vertices_other_pcollector.set_level(0);
 #endif
 
   if (_clear_buffer_type != 0) {

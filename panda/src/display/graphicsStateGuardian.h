@@ -135,14 +135,14 @@ protected:
   bool unmark_prepared_texture(TextureContext *tc);
 
 #ifdef DO_PSTATS
-  // These functions are used to update the current texture memory
-  // usage record in Pstats.
+  // These functions are used to update the active texture memory
+  // usage record (and other frame-based measurements) in Pstats.
+  void init_frame_pstats();
   void add_to_texture_record(TextureContext *tc);
-  void clear_texture_record();
   set<TextureContext *> _current_textures;
 #else
+  INLINE void init_frame_pstats() { }
   INLINE void add_to_texture_record(TextureContext *) { }
-  INLINE void clear_texture_record() { }
 #endif
 
 protected:
@@ -180,6 +180,7 @@ protected:
   static PStatCollector _vertices_trifan_pcollector;
   static PStatCollector _vertices_tri_pcollector;
   static PStatCollector _vertices_other_pcollector;
+  static PStatCollector _state_changes_pcollector;
 
 private:
   typedef set<TextureContext *> Textures;

@@ -67,6 +67,8 @@ public:
   INLINE void set_level(const PStatThread &thread, float level);
   INLINE void add_level(float increment);
   INLINE void add_level(const PStatThread &thread, float increment);
+  INLINE void sub_level(float decrement);
+  INLINE void sub_level(const PStatThread &thread, float decrement);
 
 private:
   PStatClient *_client;

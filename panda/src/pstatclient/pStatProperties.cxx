@@ -46,6 +46,7 @@ struct LevelCollectorProperties {
   ColorDef color;
   const char *units;
   float suggested_scale;
+  float inv_factor;
 };
 
 static TimeCollectorProperties time_properties[] = {
@@ -64,15 +65,17 @@ static TimeCollectorProperties time_properties[] = {
 };
 
 static LevelCollectorProperties level_properties[] = {
-  { "Texture usage",                    { 1.0, 0.0, 0.0 },  "MB", 12.0 },
+  { "Texture usage",                    { 1.0, 0.0, 0.0 },  "MB", 12, 1048576 },
   { "Texture usage:Active",             { 1.0, 1.0, 0.0 } },
-  { "Texture memory",                   { 0.0, 0.0, 1.0 },  "MB", 12.0 },
+  { "Texture memory",                   { 0.0, 0.0, 1.0 },  "MB", 12, 1048576 },
   { "Texture memory:In use",            { 0.0, 1.0, 1.0 } },
-  { "Vertices",                         { 0.5, 0.2, 0.0 },  "", 10000.0 },
+  { "Vertices",                         { 0.5, 0.2, 0.0 },  "K", 10, 1000 },
   { "Vertices:Other",                   { 0.2, 0.2, 0.2 } },
   { "Vertices:Triangles",               { 0.8, 0.8, 0.8 } },
   { "Vertices:Triangle fans",           { 0.8, 0.5, 0.2 } },
   { "Vertices:Triangle strips",         { 0.2, 0.5, 0.8 } },
+  { "Nodes",                            { 0.4, 0.2, 0.5 },  "", 1000.0 },
+  { "State changes",                    { 1.0, 0.5, 0.2 },  "", 500.0 },
   { NULL }
 };
 
@@ -122,6 +125,9 @@ initialize_collector_def(PStatClient *client, PStatCollectorDef *def) {
       }
       if (lp.units != (const char *)NULL) {
         def->_level_units = lp.units;
+      }
+      if (lp.inv_factor != 0.0) {
+        def->_factor = 1.0 / lp.inv_factor;
       }
       return;
     }

@@ -24,6 +24,7 @@ PStatCollector GraphicsStateGuardian::_vertices_tristrip_pcollector("Vertices:Tr
 PStatCollector GraphicsStateGuardian::_vertices_trifan_pcollector("Vertices:Triangle fans");
 PStatCollector GraphicsStateGuardian::_vertices_tri_pcollector("Vertices:Triangles");
 PStatCollector GraphicsStateGuardian::_vertices_other_pcollector("Vertices:Other");
+PStatCollector GraphicsStateGuardian::_state_changes_pcollector("State changes");
 #endif
 
 TypeHandle GraphicsStateGuardian::_type_handle;
@@ -155,7 +156,7 @@ set_state(const NodeAttributes &new_state, bool complete) {
 	  gsg_cat.debug()
 	    << "Issuing new attrib " << *(*new_i).second << "\n";
 	}
-	
+        _state_changes_pcollector.add_level(1);	
 	(*new_i).second->issue(this);
 	
 	// And store the new value.
@@ -178,6 +179,7 @@ set_state(const NodeAttributes &new_state, bool complete) {
 	    << "Unissuing attrib " << *(*current_i).second 
 	    << " (previously set, not now)\n";
 	}
+        _state_changes_pcollector.add_level(1);	
 
 	PT(NodeAttribute) initial = (*current_i).second->make_initial();
 	initial->issue(this);
@@ -206,6 +208,7 @@ set_state(const NodeAttributes &new_state, bool complete) {
 	      << "Unissuing attrib " << *(*current_i).second 
 	      << " (previously set, now NULL)\n";
 	  }
+          _state_changes_pcollector.add_level(1);	
 
 	  // Issue the initial attribute before clearing the state.
 	  PT(NodeAttribute) initial = (*current_i).second->make_initial();
@@ -230,6 +233,7 @@ set_state(const NodeAttributes &new_state, bool complete) {
 	    gsg_cat.debug()
 	      << "Reissuing attrib " << *(*new_i).second << "\n";
 	  }
+          _state_changes_pcollector.add_level(1);	
 	  (*new_i).second->issue(this);
 
 	  // And store the new value.
@@ -255,6 +259,7 @@ set_state(const NodeAttributes &new_state, bool complete) {
 	gsg_cat.debug()
 	  << "Issuing new attrib " << *(*new_i).second << "\n";
       }
+      _state_changes_pcollector.add_level(1);	
       
       (*new_i).second->issue(this);
       
@@ -274,6 +279,7 @@ set_state(const NodeAttributes &new_state, bool complete) {
 	  << "Unissuing attrib " << *(*current_i).second 
 	  << " (previously set, end of list)\n";
       }
+      _state_changes_pcollector.add_level(1);	
       
       // If we're in the "complete state" model, that means this
       // attribute should now get the default initial value.
@@ -437,7 +443,7 @@ mark_prepared_texture(TextureContext *tc) {
   bool prepared = _prepared_textures.insert(tc).second;
 #ifdef DO_PSTATS
   if (prepared) {
-    _total_texusage_pcollector.add_level(tc->estimate_texture_memory() / 1048576.0);
+    _total_texusage_pcollector.add_level(tc->estimate_texture_memory());
   }
 #endif
   return prepared;
@@ -457,13 +463,34 @@ unmark_prepared_texture(TextureContext *tc) {
   bool removed = (_prepared_textures.erase(tc) != 0);
 #ifdef DO_PSTATS
   if (removed) {
-    _total_texusage_pcollector.add_level(-(tc->estimate_texture_memory() / 1048576.0));
+    _total_texusage_pcollector.sub_level(tc->estimate_texture_memory());
   }
 #endif
   return removed;
 }
 
 #ifdef DO_PSTATS
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::init_frame_pstats
+//       Access: Protected
+//  Description: Initializes the relevant PStats data at the beginning
+//               of the frame.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+init_frame_pstats() {
+  _current_textures.clear();
+  _active_texusage_pcollector.clear_level();
+
+  // Also clear out our other counters while we're here.
+  _vertices_tristrip_pcollector.clear_level();
+  _vertices_trifan_pcollector.clear_level();
+  _vertices_tri_pcollector.clear_level();
+  _vertices_other_pcollector.clear_level();
+
+  _state_changes_pcollector.clear_level();
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::add_to_texture_record
 //       Access: Protected
@@ -476,22 +503,8 @@ unmark_prepared_texture(TextureContext *tc) {
 void GraphicsStateGuardian::
 add_to_texture_record(TextureContext *tc) {
   if (_current_textures.insert(tc).second) {
-    _active_texusage_pcollector.add_level(tc->estimate_texture_memory() / 1048576.0);
+    _active_texusage_pcollector.add_level(tc->estimate_texture_memory());
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::clear_texture_record
-//       Access: Protected
-//  Description: Empties the texture record at the beginning of the
-//               frame, in preparation for calling
-//               add_to_texture_record() each time a texture is
-//               applied.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-clear_texture_record() {
-  _current_textures.clear();
-  _active_texusage_pcollector.set_level(0);
 }
 #endif  // DO_PSTATS
 

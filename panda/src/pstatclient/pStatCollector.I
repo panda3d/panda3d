@@ -260,4 +260,32 @@ add_level(const PStatThread &thread, float increment) {
   _client->add_level(_index, thread._index, increment);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::sub_level
+//       Access: Public
+//  Description: Subtracts the indicated decrement (which may be
+//               negative) to the level setting associated with this
+//               collector for the main thread.  If the collector did
+//               not already have a level setting for the main thread,
+//               it is initialized to 0.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+sub_level(float decrement) {
+  _client->add_level(_index, 0, -decrement);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::sub_level
+//       Access: Public
+//  Description: Subtracts the indicated decrement (which may be
+//               negative) to the level setting associated with this
+//               collector for the indicated thread.  If the collector
+//               did not already have a level setting for this thread,
+//               it is initialized to 0.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+sub_level(const PStatThread &thread, float decrement) {
+  _client->add_level(_index, thread._index, -decrement);
+}
+
 #endif  // DO_PSTATS

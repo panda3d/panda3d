@@ -21,6 +21,7 @@ PStatCollectorDef() {
   _suggested_color.set(0.0, 0.0, 0.0);
   _sort = -1;
   _suggested_scale = 0.0;
+  _factor = 1.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -37,6 +38,7 @@ PStatCollectorDef(int index, const string &name) :
   _suggested_color.set(0.0, 0.0, 0.0);
   _sort = -1;
   _suggested_scale = 0.0;
+  _factor = 1.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,6 +54,7 @@ set_parent(const PStatCollectorDef &parent) {
   _parent_index = parent._index;
   _level_units = parent._level_units;
   _suggested_scale = parent._suggested_scale;
+  _factor = parent._factor;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,6 +72,7 @@ write_datagram(Datagram &destination) const {
   destination.add_int16(_sort);
   destination.add_string(_level_units);
   destination.add_float32(_suggested_scale);
+  destination.add_float32(_factor);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,4 +89,5 @@ read_datagram(DatagramIterator &source) {
   _sort = source.get_int16();
   _level_units = source.get_string();
   _suggested_scale = source.get_float32();
+  _factor = source.get_float32();
 }

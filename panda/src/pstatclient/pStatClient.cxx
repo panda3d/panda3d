@@ -540,6 +540,7 @@ clear_level(int collector_index, int thread_index) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 set_level(int collector_index, int thread_index, float level) {
+  level *= _collectors[collector_index]._def->_factor;
   _collectors[collector_index]._per_thread[thread_index]._has_level = true;
   _collectors[collector_index]._per_thread[thread_index]._level = level;
 }
@@ -557,6 +558,7 @@ set_level(int collector_index, int thread_index, float level) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 add_level(int collector_index, int thread_index, float increment) {
+  increment *= _collectors[collector_index]._def->_factor;
   _collectors[collector_index]._per_thread[thread_index]._has_level = true;
   _collectors[collector_index]._per_thread[thread_index]._level += increment;
 }

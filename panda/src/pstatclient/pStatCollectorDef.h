@@ -35,6 +35,7 @@ public:
   int _sort;
   string _level_units;
   float _suggested_scale;
+  float _factor;
 };
 
 #endif
