@@ -115,3 +115,47 @@ class PieMenu(NodePath, PandaObject):
     def setUpdateOnlyOnChange(self,flag):
         self.fUpdateOnlyOnChange = flag
 
+
+class TextPieMenu(PieMenu):
+    def __init__(self, textList, radius = 0.5, sf = 1,
+                 action = None, fUpdateOnlyOnChange = 1):
+        numItems = len(textList)
+        # Create top level node for new menu
+        newMenu = hidden.attachNewNode('TextMenu')
+        # Compute angle per item
+        angle = deg2Rad(360.0/numItems)
+        aspectRatio = direct.dr.getWidth()/float(direct.dr.getHeight())
+        # Add items
+        for i in range (numItems):
+            # Create text node for each item
+            if (textList[i] != None):
+                tn = TextNode('TextItem')
+                tn.freeze()
+                tn.setFont(getDefaultFont())
+                tn.setTransform(Mat4.scaleMat(0.07, 0.07, 0.07 * aspectRatio))
+                tn.setTextColor(0, 0, 0, 1)
+                tn.setCardColor(1, 1, 1, 1)
+                tn.setCardAsMargin(0.1, 0.1, 0.1, 0.1)
+                tn.setText(str(textList[i]))
+                tn.thaw()
+
+                # Reposition it
+                card = tn.getCardTransformed()
+                center = (card[1] - card[0], card[3] - card[2])
+
+                node = newMenu.attachNewNode(tn)
+                node.setScale(sf)
+                node.setPos(radius * math.cos(i * angle) - center[0], 0.0,
+                            ((radius * aspectRatio * math.sin(i * angle)) -
+                            center[1]))
+        # Create and return a pie menu
+        PieMenu.__init__(self, newMenu, textList)
+        self.accept('mouse3', self.spawnPieMenuTask)
+        self.accept('mouse3-up', self.removePieMenuTask)
+    def destroy(self):
+        self.ignore('mouse3')
+        self.ignore('mouse3-up')
+        self.removeNode()
+
+
+        
