@@ -62,11 +62,7 @@ putus( n, file )
 
 #ifdef PBMPLUS_RAWBITS
 static void
-pgm_writepgmrowraw( file, grayrow, cols, maxval )
-    FILE* file;
-    gray* grayrow;
-    int cols;
-    gray maxval;
+pgm_writepgmrowraw(FILE* file,gray* grayrow,int cols,gray maxval)
     {
     register int col;
     register gray* gP;
@@ -83,11 +79,7 @@ pgm_writepgmrowraw( file, grayrow, cols, maxval )
 #endif /*PBMPLUS_RAWBITS*/
 
 static void
-pgm_writepgmrowplain( file, grayrow, cols, maxval )
-    FILE* file;
-    gray* grayrow;
-    int cols;
-    gray maxval;
+pgm_writepgmrowplain(FILE* file,gray* grayrow,int cols,gray maxval)
     {
     register int col, charcount;
     register gray* gP;

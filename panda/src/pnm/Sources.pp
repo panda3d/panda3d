@@ -2,6 +2,7 @@
                    dtoolutil:c dtoolbase:c dtool:m
 #define LOCAL_LIBS pandabase
 
+#define CFLAGS /D__STDC__
 #begin lib_target
   #define TARGET pnm
 

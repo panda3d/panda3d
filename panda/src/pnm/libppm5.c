@@ -12,6 +12,8 @@
 ** implied warranty.
 */
 
+#include <stdlib.h>
+#include <math.h>
 #include "ppm.h"
 #include "ppmdraw.h"
 
@@ -546,12 +548,11 @@ ppmd_fill_drawproc( pixels, cols, rows, maxval, x, y, clientdata )
     ++(fh->n);
     }
 
-static int yx_compare ARGS((coord* c1, coord* c2));
 static int
-yx_compare( c1, c2 )
-    coord* c1;
-    coord* c2;
-    {
+yx_compare(const void* v1,const void* v2) {
+ coord* c1 = (coord *)v1;
+ coord* c2 = (coord *)v2;
+
     if ( c1->y > c2->y )
 	return 1;
     if ( c1->y < c2->y )

@@ -10,6 +10,8 @@
 ** implied warranty.
 */
 
+#include <stdlib.h>
+#include <math.h>
 #include "ppm.h"
 
 static void canonstr ARGS((char* str));

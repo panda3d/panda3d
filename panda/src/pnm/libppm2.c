@@ -14,10 +14,13 @@
 #include "libppm.h"
 
 static void putus ARGS((unsigned short n, FILE* file));
+
 static void ppm_writeppmrowplain ARGS((FILE* file, pixel* pixelrow, int cols, pixval maxval));
+
 #ifdef PBMPLUS_RAWBITS
-static void ppm_writeppmrowraw ARGS((FILE* file, pixel* pixelrow, int cols, pixval maxval));
+static void ppm_writeppmrowraw(FILE* file, pixel* pixelrow, int cols, pixval maxval);
 #endif /* PBMPLUS_RAWBITS */
+
 #if __STDC__
 void
 ppm_writeppminit( FILE* file, int cols, int rows, pixval maxval, int forceplain )
@@ -51,9 +54,7 @@ ppm_writeppminit( file, cols, rows, maxval, forceplain )
     }
 
 static void
-putus( n, file )
-    unsigned short n;
-    FILE* file;
+putus(unsigned short n, FILE* file)
     {
     if ( n >= 10 )
 	putus( n / 10, file );
@@ -62,11 +63,7 @@ putus( n, file )
 
 #ifdef PBMPLUS_RAWBITS
 static void
-ppm_writeppmrowraw( file, pixelrow, cols, maxval )
-    FILE* file;
-    pixel* pixelrow;
-    int cols;
-    pixval maxval;
+ppm_writeppmrowraw (FILE* file,pixel* pixelrow,int cols,pixval maxval)
     {
     register int col;
     register pixel* pP;
@@ -97,11 +94,7 @@ ppm_writeppmrowraw( file, pixelrow, cols, maxval )
 #endif /*PBMPLUS_RAWBITS*/
 
 static void
-ppm_writeppmrowplain( file, pixelrow, cols, maxval )
-    FILE* file;
-    pixel* pixelrow;
-    int cols;
-    pixval maxval;
+ppm_writeppmrowplain(FILE* file,pixel* pixelrow,int cols,pixval maxval)
     {
     register int col, charcount;
     register pixel* pP;

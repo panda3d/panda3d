@@ -355,7 +355,7 @@ pm_perror( reason )
         pm_error( "%s", e );
     }
 
-#if __STDC__
+#if defined(__STDC__) || defined(WIN32_VC)
 void
 pm_message( char* format, ... )
     {
@@ -384,7 +384,7 @@ pm_message( va_alist )
     va_end( args );
     }
 
-#if __STDC__
+#if defined(__STDC__) || defined(WIN32_VC)
 void
 pm_error( char* format, ... )
     {
@@ -725,7 +725,7 @@ pm_readlittleshort( in, sP )
     return 0;
     }
 
-#if __STDC__
+#if defined(__STDC__) || defined(WIN32_VC)
 int
 pm_writelittleshort( FILE* out, short s )
 #else /*__STDC__*/
