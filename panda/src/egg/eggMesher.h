@@ -40,7 +40,7 @@ class EggMesher {
 public:
   EggMesher();
 
-  void mesh(EggGroupNode *group);
+  void mesh(EggGroupNode *group, bool flat_shaded);
 
   void write(ostream &out) const;
 
@@ -73,6 +73,7 @@ private:
   void mesh_list(Strips &strips);
   static void make_random_color(Colorf &color);
 
+  bool _flat_shaded;
   Strips _tris, _quads, _strips;
   Strips _dead, _done;
   Verts _verts;

@@ -237,9 +237,7 @@ build(EggGroupNode *unrolled_tris) {
     return count;
 
   } else {
-    EggMesherStrip new_fan;
-    new_fan._type = EggMesherStrip::PT_trifan;
-    new_fan._origin = EggMesherStrip::MO_fanpoly;
+    EggMesherStrip new_fan(EggMesherStrip::PT_trifan, EggMesherStrip::MO_fanpoly);
     new_fan._verts.push_back(_vertex);
 
     new_fan._verts.push_back(_edges.front()->_vi_a);

@@ -18,15 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE EggMesherStrip::
-EggMesherStrip() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: EggMesherStrip::Copy Constructor
 //       Access: Public
 //  Description: 
@@ -42,7 +33,8 @@ EggMesherStrip(const EggMesherStrip &copy) :
   _planar(copy._planar),
   _plane_normal(copy._plane_normal),
   _plane_offset(copy._plane_offset),
-  _row_id(copy._row_id)
+  _row_id(copy._row_id),
+  _flat_shaded(copy._flat_shaded)
 {
 }
 

@@ -56,8 +56,9 @@ public:
     MO_mate
   };
 
-  INLINE EggMesherStrip();
-  EggMesherStrip(const EggPrimitive *prim, int index, const EggVertexPool *vertex_pool);
+  EggMesherStrip(PrimType prim_type, MesherOrigin origin);
+  EggMesherStrip(const EggPrimitive *prim, int index, const EggVertexPool *vertex_pool,
+                 bool flat_shaded);
   INLINE EggMesherStrip(const EggMesherStrip &copy);
 
   PT(EggPrimitive) make_prim(const EggVertexPool *vertex_pool);
@@ -147,6 +148,7 @@ public:
   float _plane_offset;
   int _row_id, _row_distance;
   MesherOrigin _origin;
+  bool _flat_shaded;
 };
 
 INLINE ostream &

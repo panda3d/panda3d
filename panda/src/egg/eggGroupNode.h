@@ -131,10 +131,11 @@ PUBLISHED:
   void strip_normals();
 
   enum TriangulateFlags {
-    T_polygon   = 0x001,
-    T_convex    = 0x002,
-    T_composite = 0x004,
-    T_recurse   = 0x008
+    T_polygon     = 0x001,
+    T_convex      = 0x002,
+    T_composite   = 0x004,
+    T_recurse     = 0x008,
+    T_flat_shaded = 0x010,
   };
 
   int triangulate_polygons(int flags);

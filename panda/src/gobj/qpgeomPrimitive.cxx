@@ -769,19 +769,19 @@ rotate_impl() const {
 //               implement get_flat_first_vertices() and
 //               get_flat_last_vertices().
 ////////////////////////////////////////////////////////////////////
-void qpGeomPrimitive::
-do_rotate() {
+CPTA_ushort qpGeomPrimitive::
+do_rotate(qpGeomPrimitive::CDReader &cdata) {
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
       << "Rotating " << get_type() << ": " << (void *)this << "\n";
   }
 
   PStatTimer timer(_rotate_pcollector);
-  CDReader cdata(_cycler);
   CPTA_ushort rotated_vertices = rotate_impl();
 
   CDWriter cdataw(_cycler, cdata);
   cdataw->_rotated_vertices = rotated_vertices;
+  return rotated_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////

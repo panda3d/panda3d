@@ -582,7 +582,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
 
   if (egg_mesh) {
     // If we're using the mesher, mesh now.
-    egg_bin->mesh_triangles(0);
+    egg_bin->mesh_triangles(render_state->_flat_shaded ? EggGroupNode::T_flat_shaded : 0);
 
   } else {
     // If we're not using the mesher, at least triangulate any
@@ -592,7 +592,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
 
   // Now that we've meshed, apply the per-prim attributes onto the
   // vertices, so we can copy them to the GeomVertexData.
-  egg_bin->apply_last_attribute(false);
+  egg_bin->apply_first_attribute(false);
   egg_bin->post_apply_flat_attribute(false);
   vertex_pool->remove_unused_vertices();
 
@@ -2232,7 +2232,7 @@ make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim,
   }
 
   if (render_state->_flat_shaded) {
-    primitive->set_shade_model(qpGeomPrimitive::SM_flat_last_vertex);
+    primitive->set_shade_model(qpGeomPrimitive::SM_flat_first_vertex);
 
   } else if (egg_prim->get_shading() == EggPrimitive::S_overall) {
     primitive->set_shade_model(qpGeomPrimitive::SM_uniform);

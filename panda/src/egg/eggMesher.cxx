@@ -46,9 +46,17 @@ EggMesher() {
 //               children.  Removes these primitives and replaces them
 //               with (mostly) equivalent EggTriangleStrips and
 //               EggTriangleFans where possible.
+//
+//               If flat_shaded is true, then odd-length triangle
+//               strips, and triangle fans of any length, are not
+//               permitted (because these can't be rotated when
+//               required to move the colored vertex of each triangle
+//               to the first or last position).
 ////////////////////////////////////////////////////////////////////
 void EggMesher::
-mesh(EggGroupNode *group) {
+mesh(EggGroupNode *group, bool flat_shaded) {
+  _flat_shaded = flat_shaded;
+
   // Create a temporary node to hold the children of group that aren't
   // involved in the meshing, as well as the newly-generate triangle
   // strips.
@@ -204,7 +212,8 @@ add_polygon(const EggPolygon *egg_poly, EggMesherStrip::MesherOrigin origin) {
   }
 
   // Define an initial strip (probably of length 1) for the prim.
-  EggMesherStrip temp_strip(egg_poly, _strip_index++, _vertex_pool);
+  EggMesherStrip temp_strip(egg_poly, _strip_index++, _vertex_pool, 
+                            _flat_shaded);
   Strips &list = choose_strip_list(temp_strip);
   list.push_back(temp_strip);
   EggMesherStrip &strip = list.back();
@@ -267,7 +276,7 @@ add_polygon(const EggPolygon *egg_poly, EggMesherStrip::MesherOrigin origin) {
 ////////////////////////////////////////////////////////////////////
 void EggMesher::
 do_mesh() {
-  if (egg_consider_fans) {
+  if (egg_consider_fans && !_flat_shaded) {
     find_fans();
   }
 

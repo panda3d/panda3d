@@ -31,12 +31,31 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggMesherStrip::
+EggMesherStrip(PrimType prim_type, MesherOrigin origin) {
+  _origin = origin;
+  _type = prim_type;
+
+  _index = -1;
+  _row_id = 0;
+  _status = MS_alive;
+  _planar = false;
+  _flat_shaded = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMesherStrip::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+EggMesherStrip::
 EggMesherStrip(const EggPrimitive *prim, int index, 
-               const EggVertexPool *vertex_pool) {
+               const EggVertexPool *vertex_pool,
+               bool flat_shaded) {
   _index = index;
   _row_id = 0;
   _status = MS_alive;
   _origin = MO_unknown;
+  _flat_shaded = flat_shaded;
 
   _type = PT_poly; //prim.get_type();
 
@@ -430,7 +449,7 @@ mate(const EggVertexPool *vertex_pool) {
 ////////////////////////////////////////////////////////////////////
 bool EggMesherStrip::
 find_ideal_mate(EggMesherStrip *&mate, EggMesherEdge *&common_edge,
-              const EggVertexPool *vertex_pool) {
+                const EggVertexPool *vertex_pool) {
   Edges::iterator ei;
 
   mate = NULL;
@@ -442,7 +461,7 @@ find_ideal_mate(EggMesherStrip *&mate, EggMesherEdge *&common_edge,
     for (si = strips.begin(); si != strips.end(); ++si) {
       if (*si != this) {
         if (mate==NULL || pick_mate(**si, *mate, **ei, *common_edge,
-                                   vertex_pool)) {
+                                    vertex_pool)) {
           mate = *si;
           common_edge = *ei;
         }
@@ -616,6 +635,16 @@ mate_pieces(EggMesherEdge *common_edge, EggMesherStrip &front,
 bool EggMesherStrip::
 mate_strips(EggMesherEdge *common_edge, EggMesherStrip &front, 
             EggMesherStrip &back, EggMesherStrip::PrimType type) {
+  // If we're flat-shaded, we don't allow ending up with an odd-length
+  // strip.
+  if (front._flat_shaded && 
+      ((front._type != PT_tri && back._type == PT_tri) ||
+       (front._type == PT_tri && back._type != PT_tri) ||
+       (front._type == PT_tristrip && back._type == PT_tristrip &&
+        ((front._verts.size() + back._verts.size()) & 1) != 0))) {
+    return false;
+  }
+
   // If we start with a quad or tri, rotate the vertices around so we
   // start with the common edge.
   if (front._type == PT_tri || front._type == PT_quad) {

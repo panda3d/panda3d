@@ -128,7 +128,7 @@ get_flat_first_vertices() const {
   CDReader cdata(_cycler);
   if (cdata->_shade_model == SM_flat_last_vertex) {
     if (cdata->_rotated_vertices == (const ushort *)NULL) {
-      ((qpGeomPrimitive *)this)->do_rotate();
+      return ((qpGeomPrimitive *)this)->do_rotate(cdata);
     }
     return cdata->_rotated_vertices;
   } else {
@@ -157,7 +157,7 @@ get_flat_last_vertices() const {
   CDReader cdata(_cycler);
   if (cdata->_shade_model == SM_flat_first_vertex) {
     if (cdata->_rotated_vertices == (const ushort *)NULL) {
-      ((qpGeomPrimitive *)this)->do_rotate();
+      return ((qpGeomPrimitive *)this)->do_rotate(cdata);
     }
     return cdata->_rotated_vertices;
   } else {

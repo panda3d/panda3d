@@ -753,7 +753,7 @@ triangulate_polygons(int flags) {
 void EggGroupNode::
 mesh_triangles(int flags) {
   EggMesher mesher;
-  mesher.mesh(this);
+  mesher.mesh(this, (flags & T_flat_shaded) != 0);
 
   if ((flags & T_recurse) != 0) {
     EggGroupNode::iterator ci;

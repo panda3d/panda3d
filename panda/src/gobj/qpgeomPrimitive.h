@@ -171,9 +171,6 @@ protected:
   virtual CPT(qpGeomPrimitive) decompose_impl() const;
   virtual CPTA_ushort rotate_impl() const;
 
-private: 
-  void do_rotate();
-
 protected:
   static PStatCollector _rotate_pcollector;
 
@@ -228,6 +225,7 @@ private:
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
 
+  CPTA_ushort do_rotate(CDReader &cdata);
   void recompute_minmax(CDWriter &cdata);
 
 public:
