@@ -9,7 +9,6 @@ class Entity:
         ('comment', ''),
         )
 
-
 class ActiveCell(Entity):
     type = 'activeCell'
     attribs = (

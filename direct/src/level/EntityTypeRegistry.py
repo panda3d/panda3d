@@ -39,6 +39,7 @@ class EntityTypeRegistry:
 
     def getAttribNames(self, entityTypeName):
         """ returns ordered list of attribute names for entity type """
+        assert entityTypeName in self.typeName2class
         # TODO: precompute this
         attribDescs = self.typeName2class[entityTypeName]._attribDescs
         attribNames = []
@@ -48,6 +49,7 @@ class EntityTypeRegistry:
 
     def getAttribDescs(self, entityTypeName):
         """ returns dict of attribName -> attribDescriptor """
+        assert entityTypeName in self.typeName2class
         # TODO: precompute this
         attribDescs = self.typeName2class[entityTypeName]._attribDescs
         attribNames = self.getAttribNames(entityTypeName)

@@ -35,6 +35,7 @@ class Level:
 
     def __init__(self):
         self.levelSpec = None
+        self.initialized = 0
 
     def initializeLevel(self, levelId, levelSpec, scenarioIndex):
         """ subclass should call this as soon as it has located
@@ -65,7 +66,13 @@ class Level:
         self.levelSpec.setAttribChangeEventName(self.getAttribChangeEvent())
         self.accept(self.getAttribChangeEvent(), self.handleAttribChange)
 
+        self.initialized = 1
+
+    def isInitialized(self):
+        return self.initialized
+
     def destroyLevel(self):
+        self.initialized = 0
         if hasattr(self, 'createdEntities'):
             # destroy the entities in reverse order
             while len(self.createdEntities) > 0:

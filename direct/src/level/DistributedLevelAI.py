@@ -1,5 +1,6 @@
 """DistributedLevelAI.py: contains the DistributedLevelAI class"""
 
+from AIBaseGlobal import *
 from ClockDelta import *
 import DistributedObjectAI
 import Level
@@ -15,7 +16,9 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
     def __init__(self, air, zoneId):
         DistributedObjectAI.DistributedObjectAI.__init__(self, air)
         Level.Level.__init__(self)
-        self.uberZoneId = zoneId
+        # this is one of the required fields
+        self.zoneId = zoneId
+        self.hasBeenEdited = 0
 
     def generate(self, levelSpec):
         self.notify.debug('generate')
@@ -26,6 +29,12 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         self.sendUpdate('setZoneIds', [self.zoneIds])
         self.sendUpdate('setStartTimestamp', [self.startTimestamp])
         self.sendUpdate('setScenarioIndex', [self.scenarioIndex])
+
+    def getLevelZoneId(self):
+        """no entities should be generated in the level's zone; it causes
+        nasty race conditions on the client if there are entities in the
+        same zone with the level"""
+        return self.zoneId
 
     def delete(self):
         self.notify.debug('delete')
@@ -45,8 +54,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         wc = WeightedChoice.WeightedChoice(lol)
         scenarioIndex = wc.choose()[1]
 
-        Level.Level.initializeLevel(self, self.doId,
-                                    levelSpec, scenarioIndex)
+        Level.Level.initializeLevel(self, self.doId, levelSpec, scenarioIndex)
 
     def createEntityCreator(self):
         """Create the object that will be used to create Entities.
@@ -83,14 +91,17 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
             # send a copy to the client-side level obj
             self.sendUpdate('setAttribChange',
                             [entId, attribName, valueStr])
+            self.hasBeenEdited = 1
 
-        def getCurrentLevelSpec(self):
-            """returns the complete, current spec, including any edits"""
-            return self.levelSpec
+        def requestCurrentLevelSpec(self):
+            senderId = self.air.msgSender
+            spec = self.levelSpec
+            specStr = repr(spec)
 
-        """
-        def getSpecOverride(self):
-            # This is the value we'll send until someone actually edits
-            # the level
-            return repr(None)
-        """
+            import DistributedLargeBlobSenderAI
+            largeBlob = DistributedLargeBlobSenderAI.\
+                        DistributedLargeBlobSenderAI(
+                self.air, self.zoneId, senderId, specStr,
+                useDisk=simbase.config.GetBool('spec-by-disk', 0))
+            self.sendUpdateToAvatarId(senderId,
+                                      'setSpecSenderDoId', [largeBlob.doId])

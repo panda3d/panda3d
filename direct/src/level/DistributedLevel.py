@@ -51,12 +51,15 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.zonesEnteredList = []
 
     def generate(self):
-        self.notify.debug('generate')
+        DistributedLevel.notify.debug('generate')
         DistributedObject.DistributedObject.generate(self)
 
         # this dict stores entity reparents if the parent hasn't been
         # created yet
         self.parent2ChildIds = {}
+
+        # if the AI sends us a full spec, it will be put here
+        self.curSpec = None
 
         # Most (if not all) of the timed entities of levels
         # run on looping intervals that are started once based on
@@ -70,38 +73,77 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # add factory menu to SpeedChat
         toonbase.localToon.chatMgr.chatInputSpeedChat.addFactoryMenu()
 
+    # the real required fields
+    def setLevelZoneId(self, zoneId):
+        # this is the zone that the level is in; we should listen to this
+        # zone the entire time we're in here
+        self.levelZone = zoneId
+
     # "required" fields (these ought to be required fields, but
     # the AI level obj doesn't know the data values until it has been
     # generated.)
     def setZoneIds(self, zoneIds):
-        self.notify.debug('setZoneIds: %s' % zoneIds)
+        DistributedLevel.notify.debug('setZoneIds: %s' % zoneIds)
         self.zoneIds = zoneIds
 
     def setStartTimestamp(self, timestamp):
-        self.notify.debug('setStartTimestamp: %s' % timestamp)
+        DistributedLevel.notify.debug('setStartTimestamp: %s' % timestamp)
         self.startTime = globalClockDelta.networkToLocalTime(timestamp,bits=32)
 
     def setScenarioIndex(self, scenarioIndex):
         self.scenarioIndex = scenarioIndex
 
-        # ugly hack: we treat these DC fields as if they were required,
+        # ugly hack: we treat a few DC fields as if they were required,
         # and use 'levelAnnounceGenerate()' in place of regular old
         # announceGenerate(). Note that we have to call
-        # levelAnnounceGenerate() in the last 'faux-required' DC update
+        # gotAllRequired() in the last 'faux-required' DC update
         # handler. If you add another field, move this to the last one.
-        self.levelAnnounceGenerate()
+        if __debug__:
+            # if we're in debug, ask the server if it wants to send us
+            # a full spec
+            self.sendUpdate('requestCurrentLevelSpec', [])
+        else:
+            self.gotAllRequired()
 
+    if __debug__:
+        def setSpecSenderDoId(self, doId):
+            DistributedLevel.notify.debug(
+                'setSpecSenderDoId: %s' % doId)
+            blobSender = toonbase.tcr.doId2do[doId]
+
+            def setSpecBlob(specBlob, blobSender=blobSender, self=self):
+                blobSender.sendAck()
+                from LevelSpec import LevelSpec
+                self.curSpec = eval(specBlob)
+                self.gotAllRequired()
+
+            if blobSender.isComplete():
+                setSpecBlob(blobSender.getBlob())
+            else:
+                evtName = self.uniqueName('specDone')
+                blobSender.setDoneEvent(evtName)
+                self.acceptOnce(evtName, setSpecBlob)
+
+    def gotAllRequired(self):
+        self.levelAnnounceGenerate()
     def levelAnnounceGenerate(self):
         pass
 
     def initializeLevel(self, levelSpec):
         """subclass should call this as soon as it's located its level spec.
         Must be called after obj has been generated."""
-        Level.Level.initializeLevel(self, self.doId,
-                                    levelSpec, self.scenarioIndex)
+        # if the AI sent us a full spec, use it instead
+        if self.curSpec is not None:
+            levelSpec = self.curSpec
+        Level.Level.initializeLevel(self, self.doId, levelSpec,
+                                    self.scenarioIndex)
 
-        # all of the entities have been created now.
+        # all of the local entities have been created now.
+        # TODO: have any of the distributed entities been created at this point?
+
         # there should not be any pending reparents left at this point
+        # TODO: is it possible for a local entity to be parented to a
+        # distributed entity? I think so!
         assert len(self.parent2ChildIds) == 0
         # make sure the zoneNums from the model match the zoneNums from
         # the zone entities
@@ -137,7 +179,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
             num2node = {}
             for potentialNode in potentialNodes:
                 name = potentialNode.getName()
-                self.notify.debug('potential match for %s: %s' %
+                DistributedLevel.notify.debug('potential match for %s: %s' %
                                   (baseString, name))
                 try:
                     num = int(name[len(baseString):])
@@ -155,7 +197,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         self.zoneNums = self.zoneNum2node.keys()
         self.zoneNums.sort()
-        self.notify.debug('zones: %s' % self.zoneNums)
+        DistributedLevel.notify.debug('zones: %s' % self.zoneNums)
 
         # fix up the floor collisions for walkable zones *before*
         # any entities get put under the model
@@ -196,20 +238,21 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.doorwayNum2Node = findNumberedNodes('Doorway')
 
     def announceGenerate(self):
-        self.notify.debug('announceGenerate')
+        DistributedLevel.notify.debug('announceGenerate')
         DistributedObject.DistributedObject.announceGenerate(self)
 
     def disable(self):
-        self.notify.debug('disable')
+        DistributedLevel.notify.debug('disable')
 
         # geom is owned by the levelMgr
-        del self.geom
+        if hasattr(self, 'geom'):
+            del self.geom
 
         self.destroyLevel()
         DistributedObject.DistributedObject.disable(self)
         self.ignoreAll()
 
-        # NOTE: this should be moved to FactoryInterior
+        # NOTE:  this should be moved to FactoryInterior
         if self.smallTitleText:
             self.smallTitleText.cleanup()
             self.smallTitleText = None
@@ -218,11 +261,11 @@ class DistributedLevel(DistributedObject.DistributedObject,
             self.titleText = None
         self.zonesEnteredList = []
         
-        # NOTE:  this should be moved to ZoneEntity.disable
+        # NOTE: this should be moved to ZoneEntity.disable
         toonbase.localToon.chatMgr.chatInputSpeedChat.removeFactoryMenu()
 
     def delete(self):
-        self.notify.debug('delete')
+        DistributedLevel.notify.debug('delete')
         DistributedObject.DistributedObject.delete(self)
         # remove factory menu to SpeedChat
         toonbase.localToon.chatMgr.chatInputSpeedChat.removeFactoryMenu()
@@ -242,7 +285,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
             entity.reparentTo(parent.getNodePath())
         else:
             # parent hasn't been created yet; schedule the reparent
-            self.notify.debug(
+            DistributedLevel.notify.debug(
                 'entity %s requesting reparent to %s, not yet created' %
                 (entity, parentId))
 
@@ -260,7 +303,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
                     parent=self.getEntity(parentId)
                     for entId in self.parent2ChildIds[parentId]:
                         entity=self.getEntity(entId)
-                        self.notify.debug(
+                        DistributedLevel.notify.debug(
                             'performing pending reparent of %s to %s' %
                             (entity, parent))
                         entity.reparentTo(parent.getNodePath())
@@ -302,8 +345,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 try:
                     zoneNum = int(name[prefixLen:])
                 except:
-                    self.notify.debug('Invalid zone floor collision node: %s'
-                                      % name)
+                    DistributedLevel.notify.debug(
+                        'Invalid zone floor collision node: %s'
+                        % name)
                 else:
                     self.camEnterZone(zoneNum)
         self.accept('on-floor', handleCameraRayFloorCollision)
@@ -315,7 +359,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
             self.setVisibility(zoneNums)
 
     def toonEnterZone(self, zoneNum):
-        self.notify.debug('toonEnterZone%s' % zoneNum)
+        DistributedLevel.notify.debug('toonEnterZone%s' % zoneNum)
         if zoneNum != self.lastToonZone:
             self.lastToonZone = zoneNum
             print "made zone transition to %s" % zoneNum
@@ -324,11 +368,11 @@ class DistributedLevel(DistributedObject.DistributedObject,
             self.spawnTitleText()
             
     def camEnterZone(self, zoneNum):
-        self.notify.debug('camEnterZone%s' % zoneNum)
+        DistributedLevel.notify.debug('camEnterZone%s' % zoneNum)
         self.enterZone(zoneNum)
 
     def enterZone(self, zoneNum):
-        self.notify.debug("entering zone %s" % zoneNum)
+        DistributedLevel.notify.debug("entering zone %s" % zoneNum)
 
         if not DistributedLevel.WantVisibility:
             return
@@ -360,10 +404,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 else:
                     removedZoneNums.append(vz)
             # show the new, hide the old
-            self.notify.debug('showing zones %s' % addedZoneNums)
+            DistributedLevel.notify.debug('showing zones %s' % addedZoneNums)
             for az in addedZoneNums:
                 self.showZone(az)
-            self.notify.debug('hiding zones %s' % removedZoneNums)
+            DistributedLevel.notify.debug('hiding zones %s' % removedZoneNums)
             for rz in removedZoneNums:
                 self.hideZone(rz)
 
@@ -376,14 +420,15 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # accepts list of visible zone numbers
         # convert the zone numbers into their actual zoneIds
         # always include Toontown and factory uberZones
-        factoryUberZone = self.getZoneId(zoneNum=Level.Level.UberZoneNum)
-        visibleZoneIds = [ToontownGlobals.UberZone, factoryUberZone]
+        uberZone = self.getZoneId(zoneNum=Level.Level.UberZoneNum)
+        # the level itself is in the 'level zone'
+        visibleZoneIds = [ToontownGlobals.UberZone, self.levelZone, uberZone]
         for vz in vizList:
             visibleZoneIds.append(self.getZoneId(zoneNum=vz))
         assert(uniqueElements(visibleZoneIds))
-        self.notify.debug('new viz list: %s' % visibleZoneIds)
+        DistributedLevel.notify.debug('new viz list: %s' % visibleZoneIds)
 
-        toonbase.tcr.sendSetZoneMsg(factoryUberZone, visibleZoneIds)
+        toonbase.tcr.sendSetZoneMsg(self.levelZone, visibleZoneIds)
 
     if __debug__:
         # level editing stuff
@@ -455,12 +500,12 @@ class DistributedLevel(DistributedObject.DistributedObject,
             taskMgr.add(seq, "titleText")
         
     def showTitleTextTask(self, task):
-        assert(self.notify.debug("hideTitleTextTask()"))
+        assert(DistributedLevel.notify.debug("hideTitleTextTask()"))
         self.titleText.show()
         return Task.done
 
     def hideTitleTextTask(self, task):
-        assert(self.notify.debug("hideTitleTextTask()"))
+        assert(DistributedLevel.notify.debug("hideTitleTextTask()"))
         self.titleText.hide()
         return Task.done
 
@@ -472,7 +517,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         return Task.done
     
     def hideSmallTitleTextTask(self, task):
-        assert(self.notify.debug("hideTitleTextTask()"))
+        assert(DistributedLevel.notify.debug("hideTitleTextTask()"))
         self.smallTitleText.hide()
         return Task.done
             
