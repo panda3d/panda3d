@@ -220,6 +220,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # the entrancePoint entities register themselves with us
         if self.entranceId not in self.entranceId2entity:
             self.notify.warning('unknown entranceId %s' % self.entranceId)
+            base.localAvatar.reparentTo(render)
             base.localAvatar.setPosHpr(0,0,0,0,0,0)
             self.notify.warning('showing all zones')
             self.setColorZones(1)
@@ -271,6 +272,11 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.zoneNumDict = list2dict(self.zoneNums)
         DistributedLevel.notify.debug('zones from model: %s' % self.zoneNums)
 
+        # give the level a chance to muck with the model before the entities
+        # get placed
+        self.fixupLevelModel()
+        
+    def fixupLevelModel(self):
         # fix up the floor collisions for walkable zones *before*
         # any entities get put under the model
         for zoneNum,zoneNode in self.zoneNum2node.items():
