@@ -39,9 +39,9 @@ DNA_TYPES = ['wall', 'window', 'sign', 'door_double', 'door_single', 'cornice', 
              'prop', 'street']
 BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10',
                   '4_21', '3_22', '4_13_8', '3_13_9', '10',
-                  '12_8', '13_9_8'
+                  '12_8', '13_9_8', '4_10_10',  '4_10', '4_20', 
                   ]
-BUILDING_HEIGHTS = [10, 20, 25, 30]
+BUILDING_HEIGHTS = [10, 14, 20, 24, 25, 30]
 NUM_WALLS = [1,2,3]
 LANDMARK_SPECIAL_TYPES = ['', 'hq', 'gagshop', 'clotheshop']
 
@@ -1308,6 +1308,8 @@ class LevelEditor(NodePath, PandaObject):
             chance = randint(0,100)
             if buildingHeight <= 10:
                 return [buildingHeight]
+            elif buildingHeight <= 14:
+                return [4, 10]
             elif buildingHeight <= 20:
                 if chance <= 30:
                     return [20]
@@ -1315,6 +1317,11 @@ class LevelEditor(NodePath, PandaObject):
                     return [10, 10]
                 else:
                     return [12, 8]
+            elif buildingHeight <= 24:
+                if chance <= 50:
+                    return [4, 10, 10]
+                else:
+                    return [4, 20]
             elif buildingHeight <= 25:
                 if chance <= 25:
                     return [3, 22]
@@ -4032,7 +4039,7 @@ class LevelStyleManager:
         # Building types
         self.createMiscAttribute('building_type', BUILDING_TYPES)
         # Building heights
-        self.createMiscAttribute('building_height', [10,20,25,30])
+        self.createMiscAttribute('building_height', [10,14,20,24,25,30])
         # MRM: Need offset on these menus
         # Wall orientation menu
         self.createMiscAttribute('wall_orientation', ['ur','ul','dl','dr'])
@@ -4660,6 +4667,13 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             variable = self.heightMode,
             command = self.setFlatBuildingHeight)
         self.tenFootButton.pack(side = LEFT, expand = 1, fill = X)
+        self.fourteenFootButton = Radiobutton(
+            bf,
+            text = '14 ft',
+            value = 14,
+            variable = self.heightMode,
+            command = self.setFlatBuildingHeight)
+        self.fourteenFootButton.pack(side = LEFT, expand = 1, fill = X)
         self.twentyFootButton = Radiobutton(
             bf,
             text = '20 ft',
@@ -4667,6 +4681,13 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             variable = self.heightMode,
             command = self.setFlatBuildingHeight)
         self.twentyFootButton.pack(side = LEFT, expand = 1, fill = X)
+        self.twentyFourFootButton = Radiobutton(
+            bf,
+            text = '24 ft',
+            value = 24,
+            variable = self.heightMode,
+            command = self.setFlatBuildingHeight)
+        self.twentyFourFootButton.pack(side = LEFT, expand = 1, fill = X)
         self.twentyFiveFootButton = Radiobutton(
             bf,
             text = '25 ft',
