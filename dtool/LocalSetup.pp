@@ -104,9 +104,12 @@
 
 #print
 
+// We don't include the ppremake version in the first comment line of
+// the output to dtool_config.h, below, to minimize unnecessary
+// complete rebuilds due to an updated ppremake version.
 #output dtool_config.h notouch
 #format straight
-/* dtool_config.h.  Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE]. */
+/* dtool_config.h.  Generated automatically by $[PPREMAKE] from $[SOURCEFILE]. */
 
 /* Define if we have Python installed.  */
 $[cdefine HAVE_PYTHON]
