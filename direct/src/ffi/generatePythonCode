@@ -33,6 +33,10 @@ Options:
   -e dir      directory to pull extension code from       
   -i lib      interrogate library
   -O          no C++ comments or assertion statements
+  linux
+  windows-debug
+  windows-release
+  windows-publish
 """
 
 # Initialize variables

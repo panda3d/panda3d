@@ -7,7 +7,7 @@ WrapperClassMap = {}
 DowncastMap = {}
 
 # For testing, you can turn verbose and debug on
-# FFIConstants.notify.setVerbose(1)
+# FFIConstants.notify.setInfo(1)
 # FFIConstants.notify.setDebug(1)
 
 

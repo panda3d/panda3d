@@ -1,5 +1,5 @@
 from libpandaexpressModules import *
-from DirectNotify import *
+from DirectNotifyGlobal import *
 from PythonUtil import *
 import time
 import fnmatch
@@ -348,7 +348,7 @@ class TaskManager:
         for task in self.taskList:
             task.setCurrentTimeFrame(self.currentTime, self.currentFrame)
 
-            if (self.taskTimerVerbose == 0):
+            if not self.taskTimerVerbose:
                 # don't record timing info
                 ret = task(task)
             else:

@@ -69,6 +69,7 @@ class Messenger:
     def ignoreAll(self, object):
         """ ignoreAll(self, DirectObject)
         Make this object no longer respond to any events it was accepting
+        Useful for cleanup
         """
 
         Messenger.notify.debug(`object` + '\n now ignoring all events')
@@ -139,6 +140,10 @@ class Messenger:
 
         
     def replaceMethod(self, oldMethod, newFunction):
+        """
+        This is only used by Finder.py - the module that lets
+        you redefine functions with Control-c-Control-v
+        """
         import new
         for entry in self.dict.items():
             event, objectDict = entry

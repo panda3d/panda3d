@@ -17,7 +17,8 @@ class Notifier:
         else:
             self.__logger = logger
 
-        self.__verbose = 0
+        # Global default levels are initialized here
+        self.__info = 1
         self.__warning = 1
         self.__debug = 0
         self.__logging = 0
@@ -25,8 +26,8 @@ class Notifier:
     def __str__(self):
         """__str__(self)
         Print handling routine"""
-        return "%s: verbose = %d, warning = %d, debug = %d, logging = %d" % \
-               (self.__name, self.__verbose, self.__warning, self.__debug, self.__logging)
+        return "%s: info = %d, warning = %d, debug = %d, logging = %d" % \
+               (self.__name, self.__info, self.__warning, self.__debug, self.__logging)
     
         
     # error funcs
@@ -83,21 +84,21 @@ class Notifier:
     # info funcs
     def info(self, infoString):
         """info(self, string)
-        Print the given informational string, if verbose flag is on"""
-        if (self.__verbose):
+        Print the given informational string, if info flag is on"""
+        if (self.__info):
             str = ':' + self.__name + '(info): ' + infoString
             self.__log(str)
             print(str)
 
-    def getVerbose(self):
-        """getVerbose(self)
+    def getInfo(self):
+        """getInfo(self)
         Return whether the printing of info messages is on or off"""
-        return(self.__verbose)
+        return(self.__info)
 
-    def setVerbose(self, bool):
-        """setVerbose(self, int)
+    def setInfo(self, bool):
+        """setInfo(self, int)
         Enable/Disable informational message  printing"""
-        self.__verbose = bool
+        self.__info = bool
 
 
     # log funcs

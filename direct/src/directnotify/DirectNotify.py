@@ -29,19 +29,7 @@ class DirectNotify:
     def getCategory(self, categoryName):
         """getCategory(self, string)
         Return the category with given name if present, None otherwise"""
-        return(self.__categories.get(categoryName, None))
-
-    def addCategory(self, categoryName, category):
-        """addCategory(self, Notifier)
-        Add a given Notifier with given name to the category dictionary
-        and return 0 if not present, else return 0. """
-        if (self.__categories.has_key(categoryName)):
-            print "Warning: DirectNotify: category '%s' already exists" % \
-                  (categoryName)
-            return(0)
-        else:
-            self.__categories[categoryName] = category
-            return(1)
+        return (self.__categories.get(categoryName, None))
 
     def newCategory(self, categoryName, logger=None):
         """newCategory(self, string)
@@ -49,16 +37,57 @@ class DirectNotify:
         if no such category exists, else return existing category"""
         if (not self.__categories.has_key(categoryName)):
             self.__categories[categoryName] = Notifier.Notifier(categoryName, logger)
+            self.setDconfigLevel(categoryName)
         else:
             print "Warning: DirectNotify: category '%s' already exists" % \
                   (categoryName)
-        return(self.getCategory(categoryName))
+        return (self.getCategory(categoryName))
 
-           
+    def setDconfigLevel(self, categoryName):
+        """
+        Check to see if this category has a dconfig variable
+        to set the notify severity and then set that level. You cannot
+        set these until base.config is set.
+        """
 
-#global DirectNotify for public access
-directNotify = DirectNotify()
-
+        # We cannot check dconfig variables until base.config has been
+        # set. Once base.config is set in ShowBase.py, it tries to set
+        # all the levels again in case some were created before base.config
+        # was created.
+        try:
+            base.config
+        except:
+            return 0
+        
+        dconfigParam = ("notify-level-" + categoryName)
+        level = base.config.GetString(dconfigParam, "")
+        if level:
+            print ("Setting DirectNotify category: " + dconfigParam +
+                   " to severity: " + level)
+            category = self.getCategory(categoryName)
+            if level == "error":
+                category.setWarning(0)
+                category.setInfo(0)
+                category.setDebug(0)
+            elif level == "warning":
+                category.setWarning(1)
+                category.setInfo(0)
+                category.setDebug(0)
+            elif level == "info":
+                category.setWarning(1)
+                category.setInfo(1)
+                category.setDebug(0)
+            elif level == "debug":
+                category.setWarning(1)
+                category.setInfo(1)
+                category.setDebug(1)
+            else:
+                print ("DirectNotify: unknown notify level: " + str(level)
+                       + " for category: " + str(categoryName))
+            
+    def setDconfigLevels(self):
+        for categoryName in self.getCategories():
+            self.setDconfigLevel(categoryName)
 
 
 

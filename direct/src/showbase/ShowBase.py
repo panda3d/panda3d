@@ -12,16 +12,13 @@ import Task
 import EventManager
 import math
 import sys
-import LinearEulerIntegrator
-import AngularEulerIntegrator
-import ClockObject
 import Transitions
 import Loader
 import time
 import FSM
 import State
 
-globalClock = ClockObject.ClockObject.getGlobalClock()
+globalClock = ClockObject.getGlobalClock()
 
 class ShowBase:
 
@@ -39,9 +36,6 @@ class ShowBase:
         self.wantStats = self.config.GetBool('want-stats', 0)
 
         taskMgr.taskTimerVerbose = self.config.GetBool('task-timer-verbose', 0)
-
-        fsmDebug = self.config.GetBool('fsm-debug', 0)
-        FSM.FSM.notify.setDebug(fsmDebug)
 
         fsmRedefine = self.config.GetBool('fsm-redefine', 0)
         State.FsmRedefine = fsmRedefine
@@ -160,7 +154,7 @@ class ShowBase:
 
 	# Physics manager
 	self.physicsMgr = physicsMgr
-	integrator = LinearEulerIntegrator.LinearEulerIntegrator()
+	integrator = LinearEulerIntegrator()
 	self.physicsMgr.attachLinearIntegrator(integrator)
 	self.physicsMgrEnabled = 0
 	self.physicsMgrAngular = 0
@@ -178,7 +172,7 @@ class ShowBase:
 	"""addAngularIntegrator(self)"""
 	if (self.physicsMgrAngular == 0):
 	    self.physicsMgrAngular = 1
-	    integrator = AngularEulerIntegrator.AngularEulerIntegrator()
+	    integrator = AngularEulerIntegrator()
 	    self.physicsMgr.attachAngularIntegrator(integrator)
 
     def enableParticles(self):

@@ -19,3 +19,9 @@ __builtin__.taskMgr = base.taskMgr
 __builtin__.eventMgr = base.eventMgr
 __builtin__.messenger = base.messenger
 __builtin__.config = base.config
+__builtin__.directNotify = directNotify
+
+# Set direct notify categories now that we have config
+directNotify.setDconfigLevels()
+
+

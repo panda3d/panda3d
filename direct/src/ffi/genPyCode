@@ -1,0 +1,29 @@
+#! /bin/sh
+
+# This is just a helper script to generatePythonCode to cover
+# the three or four cases we use all the time
+
+if [ "$1" = "linux" ]; then
+    cd $DIRECT/bin
+    exec ppython -d generatePythonCode -v -d $DIRECT/lib/py -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect libtoontown
+    exit 1
+fi
+
+if [ "$1" = "win-debug" ]; then
+    cd $DIRECT/bin
+    exec ppython -d generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect libtoontown 
+    exit 1
+fi
+
+if [ "$1" = "win-release" ]; then
+    cd $DIRECT/bin
+    exec ppython -i generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect libtoontown
+    exit 1
+fi
+
+if [ "$1" = "win-publish" ]; then
+    # no assertions, no comments, no docstrings
+    cd $DIRECT/bin
+    exec ppython -OO generatePythonCode -O -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect libtoontown
+    exit 1
+fi
