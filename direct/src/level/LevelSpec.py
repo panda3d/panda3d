@@ -52,14 +52,6 @@ class LevelSpec:
             if newSpec:
                 # add required entities
 
-                # create an entityTypeReg before attempting entity
-                # insertions; basic EntityTypes reg is enough for our purposes
-                # here
-                import EntityTypes
-                import EntityTypeRegistry
-                etr = EntityTypeRegistry.EntityTypeRegistry(EntityTypes)
-                self.setEntityTypeReg(etr)
-
                 # UberZone
                 entId = LevelConstants.UberZoneEntId
                 self.insertEntity(entId, 'zone', None)
