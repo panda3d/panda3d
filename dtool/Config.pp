@@ -412,12 +412,16 @@
 #define COMPILE_IN_DEFAULT_FONT 1
 
 // Is Maya installed?  This matters only to programs in PANDATOOL.
+
+// Also, as of Maya 5.0 it seems the Maya library will not compile
+// properly with optimize level 4 set (we get link errors with ostream).
+
 #define MAYA_LOCATION /usr/aw/maya
 #defer MAYA_LIBS $[if $[WINDOWS_PLATFORM],Foundation.lib OpenMaya.lib OpenMayaAnim.lib,Foundation OpenMaya OpenMayaAnim]
 // Optionally define this to the value of LM_LICENSE_FILE that should
 // be set before invoking Maya.
 #define MAYA_LICENSE_FILE
-#defer HAVE_MAYA $[isdir $[MAYA_LOCATION]/include/maya]
+#defer HAVE_MAYA $[and $[<= $[OPTIMIZE], 3],$[isdir $[MAYA_LOCATION]/include/maya]]
 // Define this if your version of Maya is earlier than 5.0 (e.g. Maya 4.5).
 #define MAYA_PRE_5_0
 
