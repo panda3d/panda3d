@@ -19,7 +19,7 @@
 #ifndef FILENAME_H
 #define FILENAME_H
 
-#include "dtoolbase.h"
+#include "ppremake.h"
 
 #include "vector_string.h"
 
