@@ -34,9 +34,10 @@ of the world, see INSTALL.txt in this directory.
 *********************************************************************
 
   - Right click on Network Places, choose Map Network Drive
-  - Map Network Drive P: to \\dimbo\panda  (using your unix password)
+  - Map Network Drive P: to \\mover\vol02\dimbo\usr2\panda (using your
+    unix password)
     You also can do this from cmd.exe using 
-      > net use p: \\dimbo\panda /persistent:yes
+      > net use p: \\mover\vol02\dimbo\usr2\panda /persistent:yes
   - Select 'Reconnect drive at startup'
   - If this doesn't work, you can install the build tools from CD
   - Run 'regedit P:\tabs.reg' to enable tab-filename-completion.
@@ -317,12 +318,11 @@ of the world, see INSTALL.txt in this directory.
     It is not necessary for cygwin's /p to point to the P: drive in 
     Windows.
 
-      > net use f: "\\nufat\fat" /persistent:yes
-      > net use g: "\\nufat\bit" /persistent:yes
-      > net use h: "\\dimbo\usr2" /persistent:yes
-      > net use i: "\\nufat\big" /persistent:yes
-      > net use j: "\\nufat\for" /persistent:yes
-      > net use P: "\\dimbo\panda" /persistent:yes
+      > net use f: "\\mover\vol01\fat\usr2" /persistent:yes
+      > net use g: "\\mover\vol01\fat\bit" /persistent:yes
+      > net use h: "\\mover\vol02\dimbo\usr2" /persistent:yes
+      > net use i: "\\mover\vol01\fat\big" /persistent:yes
+      > net use p: "\\mover\vol02\dimbo\usr2\panda" /persistent:yes
 
     The "net use" commands may require you to enter a password if 
     access is denied, in which case you can add the /USER:[username] 
@@ -511,9 +511,10 @@ of the world, see INSTALL.txt in this directory.
     Make sure your CVSROOT is set to the local repository, echo $CVSROOT
     in your shell, it should return 
 
-      :pserver:$USERNAME@dimbo:/fit/cvs 
+      :pserver:<username>@mover:/cvs 
 
-    where $USERNAME is your login, check your .cshrc for the environment 
+    where <username> is your Unix login name (not necessarily your
+    Windows login name), check your .cshrc for the environment
     variable setting
 
     # Just hit return or type your unix password when prompted for a 
@@ -603,7 +604,7 @@ of the world, see INSTALL.txt in this directory.
     A good choice is OPTIMIZE 3.
 
   - Your normal, non-SourceForge CVSROOT should be set to the default:
-    > setenv CVSROOT :pserver:<your-unix-username>@dimbo:/fit/cvs
+    > setenv CVSROOT :pserver:<your-unix-username>@mover:/cvs
 
 *********************************************************************
   Step 12: (Optional) Build $DTOOL
@@ -721,7 +722,7 @@ of the world, see INSTALL.txt in this directory.
     NameMasterCastillian.txt, and NameMasterJapanese.txt
 
   - Check out dna files for server
-    Make sure $CVSROOT is pointed to local repository on dimbo
+    Make sure $CVSROOT is pointed to local repository on mover
     
     > cd ~/player
     > cvs co -l ttmodels
