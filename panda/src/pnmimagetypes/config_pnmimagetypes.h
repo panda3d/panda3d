@@ -26,6 +26,7 @@ extern const double radiance_gamma_correction;
 extern const int radiance_brightness_adjustment;
 extern const int yuv_xsize;
 extern const int yuv_ysize;
+extern const int jpeg_quality;
 
 enum IMGHeaderType {
   IHT_none,

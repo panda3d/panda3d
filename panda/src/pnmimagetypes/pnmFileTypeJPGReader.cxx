@@ -59,6 +59,15 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   _maxval = MAXJSAMPLE;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeJPG::Reader::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PNMFileTypeJPG::Reader::
+~Reader(void) {
+  jpeg_destroy_decompress(&_cinfo);
+} 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeJPG::Reader::read_data
@@ -132,11 +141,6 @@ read_data(xel *array, xelval *) {
 
   /* We can ignore the return value since suspension is not possible
    * with the stdio data source.
-
-  /* Step 8: Release JPEG decompression object */
-
-  /* This is an important step since it will release a good deal of memory. */
-  jpeg_destroy_decompress(&_cinfo);
 
   /* At this point you may want to check to see whether any corrupt-data
    * warnings occurred (test whether jerr.pub.num_warnings is nonzero).
