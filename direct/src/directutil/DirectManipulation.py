@@ -25,6 +25,7 @@ class DirectManipulationControl(PandaObject):
         self.fWidgetTop = 0
         self.fFreeManip = 1
         self.fScaling = 1
+        self.mode = None
 
     def manipulationStart(self, chan):
         # Start out in select mode
