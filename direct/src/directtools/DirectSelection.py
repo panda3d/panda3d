@@ -173,17 +173,6 @@ class SelectedNodePaths(PandaObject):
 
     def moveWrtWidgetAll(self):
         self.forEachSelectedNodePathDo(self.moveWrtWidget)
-        # Update cluster if current display is a cluster client
-        if (direct.clusterMode == 'client') and (last is not None):
-            pos = Point3(0)
-            hpr = VBase3(0)
-            scale = VBase3(1)
-            decomposeMatrix(last.getMat(), scale, hpr, pos)
-            direct.cluster.cmd(
-                'last.setPosHprScale(%f,%f,%f,%f,%f,%f,%f,%f,%f)' %
-                (pos[0], pos[1], pos[2],
-                 hpr[0], hpr[1], hpr[2],
-                 scale[0], scale[1], scale[2]))
 
     def moveWrtWidget(self, nodePath):
         nodePath.setMat(direct.widget, nodePath.mDnp2Widget)
