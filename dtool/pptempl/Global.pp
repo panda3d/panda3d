@@ -125,6 +125,13 @@
   #define gl_libs $[GL_LIBS]
 #endif
 
+#if $[HAVE_MESA]
+  #define mesa_ipath $[wildcard $[MESA_IPATH]]
+  #define mesa_lpath $[wildcard $[MESA_LPATH]]
+  #define mesa_cflags $[MESA_CFLAGS]
+  #define mesa_libs $[MESA_LIBS]
+#endif
+
 #if $[HAVE_CHROMIUM]
   #define chromium_ipath $[wildcard $[CHROMIUM_IPATH]]
   #define chromium_lpath $[wildcard $[CHROMIUM_LPATH]]

@@ -67,6 +67,10 @@ $[cdefine HAVE_ZLIB]
 /* Define if we have OpenGL installed and want to build for GL.  */
 $[cdefine HAVE_GL]
 
+/* Define if we have Mesa installed and want to build mesadisplay.  */
+$[cdefine HAVE_MESA]
+$[cdefine USE_MGL_NAMESPACE]
+
 /* Define if we want to build with SGI OpenGL extensions.  */
 $[cdefine HAVE_SGIGL]
 
