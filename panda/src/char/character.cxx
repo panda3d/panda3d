@@ -147,6 +147,21 @@ cull_callback(CullTraverser *, CullTraverserData &) {
   // the view frustum.  We may need a better way to do this
   // optimization later, to handle characters that might animate
   // themselves in front of the view frustum.
+  update_to_now();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::update_to_now
+//       Access: Public
+//  Description: Advances the character's frame to the current time,
+//               and then calls update().  This can be used by show
+//               code to force an update of the character's position
+//               to the current frame, regardless of whether the
+//               character is currently onscreen and animating.
+////////////////////////////////////////////////////////////////////
+void Character::
+update_to_now() {
   double now = ClockObject::get_global_clock()->get_frame_time();
   get_bundle()->advance_time(now);
 
@@ -155,7 +170,6 @@ cull_callback(CullTraverser *, CullTraverserData &) {
   }
 
   update();
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

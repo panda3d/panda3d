@@ -61,6 +61,7 @@ PUBLISHED:
   INLINE void write_parts(ostream &out) const;
   INLINE void write_part_values(ostream &out) const;
 
+  void update_to_now();
   void update();
 
 private:
