@@ -38,10 +38,11 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
         # NodePath's compareTo() method to compare different
         # NodePaths.  But we don't want this behavior for
         # DistributedNodes; DistributedNodes should only be compared
-        # pointerwise.  A NodePath that happens to reference the same
-        # node is still different from the DistributedNode.  Thus, we
-        # redefine __cmp__ to always return a failed comparison.
-        return 1
+        # pointerwise.
+        if self is other:
+            return 0
+        else:
+            return 1
 
     ### setParent ###
 

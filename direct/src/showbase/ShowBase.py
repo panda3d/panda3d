@@ -17,7 +17,6 @@ import Task
 import EventManager
 import math
 import sys
-import Transitions
 import Loader
 import time
 import FSM
@@ -128,9 +127,6 @@ class ShowBase:
         self.createAudioManager()
         self.createStats()
 
-        # Transition effects (fade, iris, etc)
-        self.transitions = Transitions.Transitions(self.loader)
-
         self.AppHasAudioFocus = 1
 
         __builtin__.base = self
@@ -147,6 +143,10 @@ class ShowBase:
         __builtin__.run = self.run
         __builtin__.ostream = Notify.out()
         __builtin__.directNotify = directNotify
+
+        # Transition effects (fade, iris, etc)
+        import Transitions
+        self.transitions = Transitions.Transitions(self.loader)
 
         # Tk
         if self.wantTk:

@@ -3,6 +3,7 @@ from types import *
 import string
 import FFIConstants
 import FFISpecs
+import FFITypes
 
 """
 Things that are not supported:
@@ -236,9 +237,9 @@ class FFIMethodArgumentTreeCollection:
         indent(file, nesting+1, '\n')
 
     def outputOverloadedStaticFooter(self, file, nesting):
-        indent(file, nesting+1, self.methodSpecList[0].name + ' = '
-                   + FFIConstants.staticModuleName + '.' + FFIConstants.staticModuleName
-                   + '(' + self.methodSpecList[0].name + ')\n')
+        # foo = staticmethod(foo)
+        methodName = self.methodSpecList[0].name
+        indent(file, nesting+1, methodName + ' = staticmethod(' + methodName + ')\n')
     
     def setup(self):
         for method in self.methodSpecList:
@@ -338,6 +339,16 @@ class FFIMethodArgumentTree:
         sortedKeys = self.tree.keys()
         # Sort the keys based on inheritance hierarchy, most generic classes first
         sortedKeys.sort(subclass)
+        # Import everybody we need
+        for i in range(len(sortedKeys)):
+            typeDesc = sortedKeys[i]
+            if ((typeDesc != 0) and
+                (not typeDesc.isNested) and
+                # Do not put our own module in the import list
+                (self.classTypeDesc != typeDesc) and
+                # If this is a class (not a primitive), put it on the list
+                (typeDesc.__class__ == FFITypes.ClassTypeDescriptor)):
+                indent(file, nesting+2, 'import ' + typeDesc.foreignTypeName + '\n')
         for i in range(len(sortedKeys)):
             typeDesc = sortedKeys[i]
             # See if this takes no arguments

@@ -583,8 +583,8 @@ class TaskManager:
             task.setStartTimeFrame(self.currentTime, self.currentFrame)
 
     def popupControls(self):
-        from TaskManagerPanel import *
-        return TaskManagerPanel(self)
+        import TaskManagerPanel
+        return TaskManagerPanel.TaskManagerPanel(self)
 
 
 """

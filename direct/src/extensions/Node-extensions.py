@@ -7,11 +7,12 @@
     def isHidden(self):
         """Determine if a node is hidden.  Just pick the first parent,
         since this is an ambiguous question for instanced nodes"""
-        from PandaModules import *
-        rrClass = RenderRelation.getClassType()
+        import RenderRelation
+        import PruneTransition
+        rrClass = RenderRelation.RenderRelation.getClassType()
         if self.getNumParents(rrClass) > 0:
             arc = self.getParent(rrClass, 0)
-            if arc.hasTransition(PruneTransition.getClassType()):
+            if arc.hasTransition(PruneTransition.PruneTransition.getClassType()):
                 return 1
             else:
                 return arc.getParent().isHidden()

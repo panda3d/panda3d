@@ -93,24 +93,24 @@ class DirectSession(PandaObject):
         self.radamec = None
         self.fastrak = []
         if base.config.GetBool('want-vrpn', 0):
-            from DirectDeviceManager import *
-            self.deviceManager = DirectDeviceManager()
+            import DirectDeviceManager
+            self.deviceManager = DirectDeviceManager.DirectDeviceManager()
             # Automatically create any devices specified in config file
             joybox = base.config.GetString('vrpn-joybox-device', '')
             radamec = base.config.GetString('vrpn-radamec-device', '')
             fastrak = base.config.GetString('vrpn-fastrak-device', '')
             if joybox:
-                from DirectJoybox import *
-                self.joybox = DirectJoybox(joybox)
+                import DirectJoybox
+                self.joybox = DirectJoybox.DirectJoybox(joybox)
             if radamec:
-                from DirectRadamec import *
-                self.radamec = DirectRadamec(radamec)
+                import DirectRadamec
+                self.radamec = DirectRadamec.DirectRadamec(radamec)
             if fastrak:
-                from DirectFastrak import *
+                import DirectFastrak
                 # parse string into format device:N where N is the sensor name
                 fastrak = string.split(fastrak)
                 for i in range(len(fastrak))[1:]:
-                    self.fastrak.append(DirectFastrak(fastrak[0] + ':' + fastrak[i]))
+                    self.fastrak.append(DirectFastrak.DirectFastrak(fastrak[0] + ':' + fastrak[i]))
                 
             
         self.fControl = 0

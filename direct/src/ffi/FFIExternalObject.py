@@ -1,6 +1,5 @@
 
 import FFIConstants
-import TypedObject
 
 WrapperClassMap = {}
 
@@ -20,6 +19,7 @@ DowncastMap = {}
 # The type map is used for upcasting and downcasting through
 # the panda inheritance chain
 def registerInTypeMap(pythonClass):
+    import TypedObject
     if issubclass(pythonClass, TypedObject.TypedObject):
         typeIndex = pythonClass.getClassType().getIndex()
         WrapperClassMap[typeIndex] = pythonClass

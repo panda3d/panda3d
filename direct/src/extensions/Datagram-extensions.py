@@ -1,54 +1,54 @@
 
     def putArg(self, arg, subatomicType, divisor=1):
         # Import the type numbers
-        from DCSubatomicType import *
-        if subatomicType == STInt8:
+        import DCSubatomicType
+        if subatomicType == DCSubatomicType.STInt8:
             self.addInt8(int(arg*divisor))
-        elif subatomicType == STInt16:
+        elif subatomicType == DCSubatomicType.STInt16:
             self.addInt16(int(arg*divisor))
-        elif subatomicType == STInt32:
+        elif subatomicType == DCSubatomicType.STInt32:
             self.addInt32(int(arg*divisor))
-        elif subatomicType == STInt64:
+        elif subatomicType == DCSubatomicType.STInt64:
             self.addInt64(int(arg*divisor))
-        elif subatomicType == STUint8:
+        elif subatomicType == DCSubatomicType.STUint8:
             self.addUint8(int(arg*divisor))
-        elif subatomicType == STUint16:
+        elif subatomicType == DCSubatomicType.STUint16:
             self.addUint16(int(arg*divisor))
-        elif subatomicType == STUint32:
+        elif subatomicType == DCSubatomicType.STUint32:
             self.addUint32(int(arg*divisor))
-        elif subatomicType == STUint64:
+        elif subatomicType == DCSubatomicType.STUint64:
             self.addUint64(int(arg*divisor))
-        elif subatomicType == STFloat64:
+        elif subatomicType == DCSubatomicType.STFloat64:
             self.addFloat64(arg)
-        elif subatomicType == STString:
+        elif subatomicType == DCSubatomicType.STString:
             self.addString(arg)
-        elif subatomicType == STBlob:
+        elif subatomicType == DCSubatomicType.STBlob:
             self.addString(arg)
-        elif subatomicType == STInt8array:
+        elif subatomicType == DCSubatomicType.STInt8array:
             self.addUint16(len(arg))
             for i in arg:
                 self.addInt8(int(i*divisor))
-        elif subatomicType == STInt16array:
+        elif subatomicType == DCSubatomicType.STInt16array:
             self.addUint16(len(arg) << 1)
             for i in arg:
                 self.addInt16(int(i*divisor))
-        elif subatomicType == STInt32array:
+        elif subatomicType == DCSubatomicType.STInt32array:
             self.addUint16(len(arg) << 2)
             for i in arg:
                 self.addInt32(int(i*divisor))
-        elif subatomicType == STUint8array:
+        elif subatomicType == DCSubatomicType.STUint8array:
             self.addUint16(len(arg))
             for i in arg:
                 self.addUint8(int(i*divisor))
-        elif subatomicType == STUint16array:
+        elif subatomicType == DCSubatomicType.STUint16array:
             self.addUint16(len(arg) << 1)
             for i in arg:
                 self.addUint16(int(i*divisor))
-        elif subatomicType == STUint32array:
+        elif subatomicType == DCSubatomicType.STUint32array:
             self.addUint16(len(arg) << 2)
             for i in arg:
                 self.addUint32(int(i*divisor))
-        elif subatomicType == STUint32uint8array:
+        elif subatomicType == DCSubatomicType.STUint32uint8array:
             self.addUint16(len(arg) * 5)
             for i in arg:
                 self.addUint32(int(i[0]*divisor))
@@ -56,3 +56,5 @@
         else:
             raise Exception("Error: No such type as: " + str(subatomicType))
         return None
+
+

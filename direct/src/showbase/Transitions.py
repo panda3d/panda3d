@@ -1,5 +1,6 @@
 
 from PandaModules import *
+from DirectGui import *
 import Task
 
 class Transitions:
@@ -255,7 +256,6 @@ class Transitions:
 
     def loadFade(self):
         if self.fade == None:
-            from DirectGui import *
 
             # We create a DirectFrame for the fade polygon, instead of
             # simply loading the polygon model and using it directly,

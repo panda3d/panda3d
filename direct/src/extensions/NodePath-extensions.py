@@ -84,7 +84,6 @@
 
     def remove(self):
         """Remove a node path from the scene graph"""
-        from PandaObject import *
         # Send message in case anyone needs to do something
         # before node is deleted
         messenger.send('preRemoveNodePath', [self])
@@ -112,9 +111,9 @@
             return [self]
 
     def getTightBounds(self):
-        from Point3 import Point3
-        v1 = Point3(0)
-        v2 = Point3(0)
+        import Point3
+        v1 = Point3.Point3(0)
+        v2 = Point3.Point3(0)
         self.calcTightBounds(v1,v2)
         return v1, v2
 
@@ -272,8 +271,9 @@
         # functorFunc is a function which can be called to create a functor.
         # functor creation is defered so initial state (sampled in functorFunc)
         # will be appropriate for the time the lerp is spawned
-        from TaskManagerGlobal import *
-
+        import Task
+        from TaskManagerGlobal import taskMgr
+        
         # upon death remove the functorFunc
         def lerpUponDeath(task):
             # Try to break circular references
@@ -327,8 +327,6 @@
         This lerp uses C++ to handle the stepping. Bonus is
         its more efficient, trade-off is there is less control"""
         import AutonomousLerp
-        # from ShowBaseGlobal import *
-
         # make a lerp that lives in C++ land
         functor = functorFunc()
         lerp = AutonomousLerp.AutonomousLerp(functor, time,
@@ -789,8 +787,8 @@
     def place(self):
         base.wantDIRECT = 1
         base.wantTk = 1
-        from ShowBaseGlobal import *
-        from DirectSession import *
+        #from ShowBaseGlobal import *
+        #from DirectSession import *
         import TkGlobal
         import Placer
         return Placer.place(self)
@@ -798,7 +796,7 @@
     def explore(self):
         base.wantDIRECT = 1
         base.wantTk = 1
-        from ShowBaseGlobal import *
+        #from ShowBaseGlobal import *
         import TkGlobal
         import SceneGraphExplorer
         return SceneGraphExplorer.explore(self)
@@ -806,7 +804,7 @@
     def rgbPanel(self, cb = None):
         base.wantDIRECT = 1
         base.wantTk = 1
-        from ShowBaseGlobal import *
+        #from ShowBaseGlobal import *
         import TkGlobal
         import EntryScale
         return EntryScale.rgbPanel(self, cb)
@@ -814,14 +812,14 @@
     def select(self):
         base.wantDIRECT = 1
         base.wantTk = 1
-        from ShowBaseGlobal import *
+        #from ShowBaseGlobal import *
         import TkGlobal
         direct.select(self)
 
     def deselect(self):
         base.wantDIRECT = 1
         base.wantTk = 1
-        from ShowBaseGlobal import *
+        #from ShowBaseGlobal import *
         import TkGlobal
         direct.deselect(self)
 

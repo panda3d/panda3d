@@ -13,14 +13,14 @@
         node parented within the render2d hierarchy.
 
         """
-        from PandaModules import *
+        import Point3
         
         # Get the relative transform to the node.
         mat = np.getMat(render2d)
 
         # Use this matrix to transform the corners of the region.
-        ll = mat.xformPoint(Point3(left, 0, bottom))
-        ur = mat.xformPoint(Point3(right, 0, top))
+        ll = mat.xformPoint(Point3.Point3(left, 0, bottom))
+        ur = mat.xformPoint(Point3.Point3(right, 0, top))
 
         # Set the frame to the transformed coordinates.
         self.setFrame(ll[0], ur[0], ll[2], ur[2])

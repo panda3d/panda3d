@@ -174,7 +174,7 @@ class Interval(DirectObject):
         import fpformat
         import string
         # I moved this here because Toontown does not ship Tk
-        from Tkinter import *
+        from Tkinter import Toplevel, Frame, Button
         import Pmw
         import EntryScale
         if tl == None:

@@ -595,7 +595,6 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
 
     def outputBaseImports(self, file):
         indent(file, 0, '# CMODULE [' + self.moduleName + ']\n')
-        indent(file, 0, 'import ' + FFIConstants.staticModuleName + '\n')
         # Everybody imports types for type checking
         indent(file, 0, 'import types\n')
         indent(file, 0, '\n')
@@ -610,8 +609,9 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
 
 
     def outputImportsRecursively(self, parent, file, nesting):
-        for parentType in parent.parentTypes:
-            self.outputImportsRecursively(parentType, file, nesting)
+        # Not sure why we need to import parent types...
+        #for parentType in parent.parentTypes:
+        #    self.outputImportsRecursively(parentType, file, nesting)
 
         parentTypeName = parent.foreignTypeName
         fullNestedName = parent.getFullNestedName()
@@ -622,10 +622,10 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         else:
             indent(file, nesting, 'import ' + parent.foreignTypeName + '\n')
 
-        returnTypeModules = parent.getReturnTypeModules()
-        if len(returnTypeModules):
-            for moduleName in returnTypeModules:
-                indent(file, nesting, 'import ' + moduleName + '\n')
+        #returnTypeModules = parent.getReturnTypeModules()
+        #if len(returnTypeModules):
+        #    for moduleName in returnTypeModules:
+        #        indent(file, nesting, 'import ' + moduleName + '\n')
         
 
     def outputImports(self, file, nesting):
@@ -636,10 +636,10 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         indent(file, nesting, '# and all the shadow class modules this class uses\n')
 
         # Output all of our return types
-        returnTypeModules = self.getReturnTypeModules()
-        if len(returnTypeModules):
-            for moduleName in returnTypeModules:
-                indent(file, nesting, 'import ' + moduleName + '\n')
+        #returnTypeModules = self.getReturnTypeModules()
+        #if len(returnTypeModules):
+        #    for moduleName in returnTypeModules:
+        #        indent(file, nesting, 'import ' + moduleName + '\n')
        
         for parentType in self.parentTypes:
             self.outputImportsRecursively(parentType, file, nesting)
@@ -669,22 +669,25 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         if (self.foreignTypeName == ''):
             FFIConstants.notify.warning('Class with no name')
 
-        # If this is the toplevel, we need to delay the generation of this
-        # class to avoid circular imports, so put the entire class in a function
-        # that we will call later
-        if (nesting==0):
-            indent(file, nesting, '# Delay the definition of this class until all the imports are done\n')
-            indent(file, nesting, '# Make sure we only define this class once\n')
-            indent(file, nesting, 'classDefined = 0\n')
-            indent(file, nesting, 'def generateClass_' + self.foreignTypeName + '():\n')
-            indent(file, nesting, ' if classDefined: return\n')
-            indent(file, nesting, ' global classDefined\n')
-            indent(file, nesting, ' classDefined = 1\n')
-            # Start the class definition indented a space to account for the function
-            indent(file, nesting, ' class ' + self.foreignTypeName)
-        else:
-            # Start the class definition
-            indent(file, nesting, 'class ' + self.foreignTypeName)
+        
+#          # If this is the toplevel, we need to delay the generation of this
+#          # class to avoid circular imports, so put the entire class in a function
+#          # that we will call later
+#          if (nesting==0):
+#              indent(file, nesting, '# Delay the definition of this class until all the imports are done\n')
+#              indent(file, nesting, '# Make sure we only define this class once\n')
+#              indent(file, nesting, 'classDefined = 0\n')
+#              indent(file, nesting, 'def generateClass_' + self.foreignTypeName + '():\n')
+#              indent(file, nesting, ' if classDefined: return\n')
+#              indent(file, nesting, ' global classDefined\n')
+#              indent(file, nesting, ' classDefined = 1\n')
+#              # Start the class definition indented a space to account for the function
+#              indent(file, nesting, ' class ' + self.foreignTypeName)
+#          else:
+#              # Start the class definition
+#              indent(file, nesting, 'class ' + self.foreignTypeName)
+
+        indent(file, nesting, 'class ' + self.foreignTypeName)
 
         # Everybody inherits from FFIExternalObject
         file.write('(')
@@ -726,8 +729,9 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
 
 
     def outputClassFooter(self, file):
-        indent(file, 0, " # When this class gets defined, put it in this module's namespace\n")
-        indent(file, 0, " globals()['" + self.foreignTypeName + "'] = " + self.foreignTypeName + '\n')
+        #indent(file, 0, " # When this class gets defined, put it in this module's namespace\n")
+        #indent(file, 0, " globals()['" + self.foreignTypeName + "'] = " + self.foreignTypeName + '\n')
+        pass
 
     
     def outputBaseConstructor(self, file, nesting):
@@ -800,6 +804,8 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
         class destructor with None as the only parameter to get an
         empty shadow object.
         """
+        if classTypeDesc != self:
+            indent(file, nesting, 'import ' + self.foreignTypeName + '\n')
         indent(file, nesting, 'returnObject = ')
         # Do not put Class.Class if this file is the file that defines Class
         # Also check for nested classes. They do not need the module name either

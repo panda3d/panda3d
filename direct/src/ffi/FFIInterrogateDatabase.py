@@ -141,8 +141,8 @@ def outputImportFileImports(file, typeList, CModuleName):
     file.write('\n')
 
     file.write('# Generate the classes\n')
-    for moduleName in moduleList:
-        file.write(moduleName + '.generateClass_' + moduleName + '()\n')
+    #for moduleName in moduleList:
+    #    file.write(moduleName + '.generateClass_' + moduleName + '()\n')
     file.write('\n')
         
     file.write('# Copy the classes into our own namespace\n')
@@ -158,19 +158,6 @@ def outputImportFileImports(file, typeList, CModuleName):
     file.write('\n')
 
 
-
-def generateStaticClass(codeDir):
-    """
-    Create a file that will hold the static class definition
-    """
-    file = open(os.path.join(codeDir, FFIConstants.staticModuleName + '.py'), 'w')
-    # Print the standard header
-    file.write(FFIConstants.generatedHeader)
-    file.write('class ' + FFIConstants.staticModuleName + ':\n')
-    file.write('    def __init__(self, function):\n')
-    file.write('        self.__call__ = function\n')
-    file.close()
-    return file
 
 def getTypeName(typeIndex, scoped=0):
     """
@@ -696,9 +683,6 @@ class FFIInterrogateDatabase:
 
 
     def generateCode(self, codeDir, extensionsDir):
-        FFIConstants.notify.info( 'Generating static class...')
-        generateStaticClass(codeDir)
-
         # Import all the C++ modules
         for CModuleName in FFIConstants.CodeModuleNameList:
             self.generateCodeLib(codeDir, extensionsDir, CModuleName)

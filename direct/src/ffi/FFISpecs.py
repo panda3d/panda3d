@@ -48,6 +48,13 @@ class FunctionSpecification:
                            methodArgSpec.name + ', types.FloatType) or isinstance(' +
                            methodArgSpec.name + ', types.IntType)))\n')
                 else:
+                    # Get the real return type (not derived)
+                    if ((not typeDesc.isNested) and
+                        # Do not put our own module in the import list
+                        (methodClass != typeDesc) and
+                        # If this is a class (not a primitive), put it on the list
+                        (typeDesc.__class__ == FFITypes.ClassTypeDescriptor)):
+                        indent(file, nesting, 'import ' + typeDesc.foreignTypeName + '\n')
                     indent(file, nesting, 'assert(isinstance(' +
                            methodArgSpec.name + ', ' + typeName + '))\n')
 
@@ -429,10 +436,8 @@ class MethodSpecification(FunctionSpecification):
                                               1, nesting+2)
 
     def outputStaticFooter(self, methodClass, file, nesting):
-        indent(file, nesting+1, self.getFinalName() + ' = '
-                   + FFIConstants.staticModuleName + '.' + FFIConstants.staticModuleName
-                   + '(' + self.getFinalName() + ')\n')
-        indent(file, nesting+1, '\n')        
+        indent(file, nesting+1, self.getFinalName() + ' = staticmethod(' + self.getFinalName() + ')\n')
+        indent(file, nesting+1, '\n')
 
     ##################################################
     ## Upcast Method Code Generation

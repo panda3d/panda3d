@@ -221,10 +221,11 @@ class Actor(PandaObject, NodePath):
         # compareTo() method to compare different NodePaths.  But we
         # don't want this behavior for Actors; Actors should only be
         # compared pointerwise.  A NodePath that happens to reference
-        # the same node is still different from the Actor.  Thus, we
-        # redefine __cmp__ to always return a failed comparison.
-        return 1
-
+        # the same node is still different from the Actor.
+        if self is other:
+            return 0
+        else:
+            return 1
 
     def __str__(self):
         """__str__(self)
