@@ -39,4 +39,5 @@ class DistributedEntityAI(DistributedObjectAI.DistributedObjectAI,
             self.parentEntId = parentEntId
             # switch to new zone
             newZoneId = self.getZoneEntity().getZoneId()
-            self.sendSetZone(newZoneId)
+            if newZoneId != self.zoneId:
+                self.sendSetZone(newZoneId)

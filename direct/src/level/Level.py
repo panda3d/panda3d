@@ -251,6 +251,13 @@ class Level:
         """returns the model zoneNum that corresponds to a network zoneId"""
         return self.zoneId2zoneNum[zoneId]
 
+    def getParentTokenForEntity(self, entId):
+        """returns a unique parent token for this entity"""
+        # default impl
+        # subclasses can override to allow for multiple levels present
+        # on the client simultaneously
+        return entId
+
     # these events are thrown as the level initializes itself
     # LEVEL
     def getLevelPreCreateEvent(self):
