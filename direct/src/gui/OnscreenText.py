@@ -105,7 +105,8 @@ class OnscreenText(PandaObject, NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            align = align or TextNode.ACenter
+            if align == None:
+                align = TextNode.ACenter
 
         elif style == ScreenTitle:
             scale = scale or 0.15
@@ -113,7 +114,8 @@ class OnscreenText(PandaObject, NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 1)
             frame = frame or (0, 0, 0, 0)
-            align = align or TextNode.ACenter
+            if align == None:
+                align = TextNode.ACenter
 
         elif style == ScreenPrompt:
             scale = scale or 0.1
@@ -121,7 +123,8 @@ class OnscreenText(PandaObject, NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 1)
             frame = frame or (0, 0, 0, 0)
-            align = align or TextNode.ACenter
+            if align == None:
+                align = TextNode.ACenter
 
         elif style == NameConfirm:
             scale = scale or 0.1
@@ -129,7 +132,8 @@ class OnscreenText(PandaObject, NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            align = align or TextNode.ACenter
+            if align == None:
+                align = TextNode.ACenter
 
         elif style == BlackOnWhite:
             scale = scale or 0.1
@@ -137,7 +141,8 @@ class OnscreenText(PandaObject, NodePath):
             bg = bg or (1, 1, 1, 1)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            align = align or TextNode.ACenter
+            if align == None:
+                align = TextNode.ACenter
 
         else:
             raise ValueError
@@ -220,8 +225,7 @@ class OnscreenText(PandaObject, NodePath):
         self.textNode = None
         if self.isClean == 0:
             self.isClean = 1
-            if self.hasArcs():
-                self.removeNode()
+            self.removeNode()
 
     def destroy(self):
         self.cleanup()

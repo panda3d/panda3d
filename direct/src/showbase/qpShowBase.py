@@ -618,8 +618,8 @@ class ShowBase:
         """
         self.mouse2cam.reparentTo(self.mouseInterface)
 
-    def setMouseOnArc(self, newArc):
-        self.mouse2cam.node().setArc(newArc)
+    def setMouseOnNode(self, newNode):
+        self.mouse2cam.node().setNode(newNode)
 
     def useDrive(self):
         """

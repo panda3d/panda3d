@@ -15,26 +15,16 @@
 
     def getName(self):
         """Returns the name of the bottom node if it exists, or <noname>"""
-        import NamedNode
-        # Initialize to a default value
-        name = '<noname>'
-        # Get the bottom node
         node = self.node()
-        # Is it a named node?, If so, see if it has a name
-        if issubclass(node.__class__, NamedNode.NamedNode):
-            namedNodeName = node.getName()
-            # Is it not zero length?
-            if len(namedNodeName) != 0:
-                name = namedNodeName
-        return name
+        if hasattr(node, "getName"):
+            return node.getName()
+
+        return '<noname>'
 
     def setName(self, name = '<noname>'):
-        """Returns the name of the bottom node if it exists, or <noname>"""
-        import NamedNode        
-        # Get the bottom node
+        """Sets the name of the bottom node if it can be set."""
         node = self.node()
-        # Is it a named node?, If so, see if it has a name
-        if issubclass(node.__class__, NamedNode.NamedNode):
+        if hasattr(node, "setName"):
             node.setName(name)
 
     # For iterating over children
