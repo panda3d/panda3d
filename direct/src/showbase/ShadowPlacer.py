@@ -52,7 +52,7 @@ class ShadowPlacer(DirectObject.DirectObject):
         floorOffset = 0.025
         # Set up the collison ray
         # This is a ray cast down to detect floor polygons
-        self.cRay = CollisionRay(0.0, 0.0, 4000.0, 0.0, 0.0, -1.0)
+        self.cRay = CollisionRay(0.0, 0.0, CollisionHandlerRayStart, 0.0, 0.0, -1.0)
         cRayNode = CollisionNode('shadowPlacer')
         cRayNode.addSolid(self.cRay)
         self.cRayNodePath = NodePath(cRayNode)
