@@ -95,6 +95,7 @@ PUBLISHED:
   INLINE void set_max_dt(double max_dt);
 
   void tick();
+  void sync_frame_time();
 
   INLINE static ClockObject *get_global_clock();
 

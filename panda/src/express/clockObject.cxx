@@ -137,6 +137,27 @@ tick() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::sync_frame_time
+//       Access: Published
+//  Description: Resets the frame time to the current real time.  This
+//               is similar to tick(), except that it does not advance
+//               the frame counter and does not affect dt.  This is
+//               intended to be used in the middle of a particularly
+//               long frame to compensate for the time that has
+//               already elapsed.
+//
+//               In non-real-time mode, this function has no effect
+//               (because in this mode all frames take the same length
+//               of time).
+////////////////////////////////////////////////////////////////////
+void ClockObject::
+sync_frame_time() {
+  if (_mode == M_normal) {
+    _reported_frame_time = get_real_time();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: get_time_of_day
 //  Description:
 ////////////////////////////////////////////////////////////////////
