@@ -2,6 +2,7 @@ from ShowBaseGlobal import *
 from GuiGlobals import *
 import PandaObject
 import Button
+import OnscreenText
 import types
 
 class OnscreenPanel(PandaObject.PandaObject, NodePath):
@@ -105,6 +106,7 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         self.panelFont = font
 
         self.panelButtons = []
+        self.panelText = []
 
         centerX = (rect[0] + rect[1]) / 2
         centerY = (rect[2] + rect[3]) / 2
@@ -166,14 +168,18 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         if not self.panelSetup:
             return 0
 
-        if not self.isEmpty():
-            self.removeNode()
-
         for button in self.panelButtons:
             button.cleanup()
             self.ignore(button.getName() + '-down-rollover')
 
+        for text in self.panelText:
+            text.cleanup()
+
         base.mouseWatcher.node().removeRegion(self.panelRegion)
+
+        if not self.isEmpty():
+            self.removeNode()
+
         self.panelSetup = 0
         return 1
 
@@ -230,6 +236,53 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
 
         return button
 
+    def makeText(self, text = '',
+                 style = OnscreenText.Plain,
+                 pos = (0, 0),
+                 scale = None,
+                 fg = None,
+                 bg = None,
+                 shadow = None,
+                 frame = None,
+                 align = None,
+                 wordwrap = None,
+                 drawOrder = None,
+                 font = None,
+                 parent = None):
+        """makeText(self, ...)
+
+        Creates some text on the panel.  The return value is an
+        OnscreenText object.  The position of the text is relative to
+        the panel, where (0, 0) is the direct center.
+
+        The text need not be further managed by the derived class.  It
+        will automatically be removed when cleanup() is called.
+        
+        """
+
+        if drawOrder == None:
+            drawOrder = self.panelDrawOrder + 10
+        if font == None:
+            font = self.panelFont
+        if parent == None:
+            parent = self
+
+        text = OnscreenText.OnscreenText(text,
+                                         style = style,
+                                         pos = pos,
+                                         scale = scale,
+                                         fg = fg,
+                                         bg = bg,
+                                         shadow = shadow,
+                                         frame = frame,
+                                         align = align,
+                                         wordwrap = wordwrap,
+                                         drawOrder = drawOrder,
+                                         font = font,
+                                         parent = parent)
+        
+        self.panelText.append(text)
+        return text
 
     def getUniqueName(self):
         """getUniqueName(self):

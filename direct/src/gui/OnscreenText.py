@@ -183,6 +183,7 @@ class OnscreenText(PandaObject, NodePath):
         # Maybe this will be too confusing because we *do* have to
         # explicitly remove other kinds of onscreen objects.
         self.cleanup()
+        NodePath.__del__(self) 
     
     def cleanup(self):
 	"""cleanup(self)
@@ -192,7 +193,6 @@ class OnscreenText(PandaObject, NodePath):
 	    self.isClean = 1
             if self.hasArcs():
                 self.removeNode()
-       	    NodePath.__del__(self) 
 
     def freeze(self):
         self.textNode.freeze()
