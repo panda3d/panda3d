@@ -266,7 +266,7 @@ INLINE void DCPackerInterface::
 do_pack_float64(char *buffer, double value) {
 #ifdef WORDS_BIGENDIAN
   // Reverse the byte ordering for big-endian machines.
-  char *p = (char *)value;
+  char *p = (char *)&value;
   for (size_t i = 0; i < 8; i++) {
     buffer[i] = p[7 - i];
   }

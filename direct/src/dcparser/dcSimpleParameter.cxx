@@ -1467,7 +1467,7 @@ unpack_uint(const char *data, size_t length, size_t &p, unsigned int &value,
       PN_uint64 uint_value = do_unpack_uint64(data + p);
       _uint64_range.validate(uint_value, range_error);
       value = (unsigned int)uint_value;
-      if (value != uint_value || value < 0) {
+      if (value != uint_value) {
         pack_error = true;
       }
       p += 8;
