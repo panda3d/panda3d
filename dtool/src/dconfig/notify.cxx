@@ -434,11 +434,15 @@ assert_failure(const char *expression, int line,
     // the debugger?  abort() doesn't do it.  We used to be able to
     // assert(false), but in VC++ 7 that just throws an exception, and
     // an uncaught exception just exits, without offering to open the
-    // debugger.  Guess we'll have to force a segfault.
+    // debugger.  
 
-//    int *ptr = (int *)NULL;
-//    *ptr = 1;
-      DebugBreak();
+    // DebugBreak() seems to be provided for this purpose, but it
+    // doesn't seem to work properly either, since we don't seem to
+    // get a reliable stack trace.
+
+    // Guess we'll still have to force a segfault.
+    int *ptr = (int *)NULL;
+    *ptr = 1;
 #else
     abort();
 #endif
