@@ -59,6 +59,7 @@ PGEntry(const string &name) : PGItem(name)
   _cursor_visible = true;
 
   _cursor_keys_active = true;
+  _obscure_mode = false;
 
   set_active(true);
   update_state();
@@ -82,12 +83,15 @@ PGEntry::
 PGEntry(const PGEntry &copy) :
   PGItem(copy),
   _text(copy._text),
+  _obscured_text(copy._obscured_text),
   _cursor_position(copy._cursor_position),
   _max_chars(copy._max_chars),
   _max_width(copy._max_width),
   _text_defs(copy._text_defs),
   _blink_start(copy._blink_start),
-  _blink_rate(copy._blink_rate)
+  _blink_rate(copy._blink_rate),
+  _cursor_keys_active(copy._cursor_keys_active),
+  _obscure_mode(copy._obscure_mode)
 {
   _cursor_stale = true;
   _last_text_def = (TextNode *)NULL;
@@ -103,12 +107,16 @@ void PGEntry::
 operator = (const PGEntry &copy) {
   PGItem::operator = (copy);
   _text = copy._text;
+  _obscured_text = copy._obscured_text;
   _cursor_position = copy._cursor_position;
   _max_chars = copy._max_chars;
   _max_width = copy._max_width;
   _text_defs = copy._text_defs;
   _blink_start = copy._blink_start;
   _blink_rate = copy._blink_rate;
+
+  _cursor_keys_active = copy._cursor_keys_active;
+  _obscure_mode = copy._obscure_mode;
 
   _cursor_stale = true;
   _text_geom_stale = true;
@@ -180,6 +188,9 @@ press(const MouseWatcherParameter &param, bool background) {
         } else if (button == KeyboardButton::backspace()) {
           // Backspace.  Remove the character to the left of the cursor.
           if (_cursor_position > 0) {
+            if (_obscure_mode && _obscured_text.length() == _text.length()) {
+              _obscured_text.erase(_obscured_text.begin() + _obscured_text.length() - 1);
+            }
             _text.erase(_text.begin() + _cursor_position - 1);
             _cursor_position--;
             _cursor_stale = true;
@@ -190,6 +201,9 @@ press(const MouseWatcherParameter &param, bool background) {
         } else if (button == KeyboardButton::del()) {
           // Delete.  Remove the character to the right of the cursor.
           if (_cursor_position < (int)_text.length()) {
+            if (_obscure_mode && _obscured_text.length() == _text.length()) {
+              _obscured_text.erase(_obscured_text.begin() + _obscured_text.length() - 1);
+            }
             _text.erase(_text.begin() + _cursor_position);
             _text_geom_stale = true;
             erase(param);
@@ -235,6 +249,16 @@ press(const MouseWatcherParameter &param, bool background) {
               string new_text = 
                 _text.substr(0, _cursor_position) + key +
                 _text.substr(_cursor_position);
+
+              // Get a string to measure its length.  In normal mode,
+              // we measure the text itself.  In obscure mode, we
+              // measure a string of n asterisks.
+              string measure_text;
+              if (_obscure_mode) {
+                measure_text = get_display_text() + '*';
+              } else {
+                measure_text = new_text;
+              }
               
               // Check the length.
               bool too_long = false;
@@ -243,13 +267,13 @@ press(const MouseWatcherParameter &param, bool background) {
                 if (_num_lines <= 1) {
                   // If we have only one line, we can check the length
                   // by simply measuring the width of the text.
-                  too_long = (text_node->calc_width(new_text) > _max_width);
+                  too_long = (text_node->calc_width(measure_text) > _max_width);
 
                 } else {
                   // If we have multiple lines, we have to check the
                   // length by wordwrapping it and counting up the
                   // number of lines.
-                  string ww_text = text_node->wordwrap_to(new_text, _max_width, true);
+                  string ww_text = text_node->wordwrap_to(measure_text, _max_width, true);
                   int num_lines = 1;
                   size_t last_line_start = 0;
                   for (size_t p = 0;
@@ -298,6 +322,9 @@ press(const MouseWatcherParameter &param, bool background) {
                 
               } else {
                 _text = new_text;
+                if (_obscure_mode) {
+                  _obscured_text = measure_text;
+                }
                 
                 _cursor_position++;
                 _cursor_stale = true;
@@ -458,7 +485,6 @@ setup(float width, int num_lines) {
   //  new RenderRelation(get_cursor_def(), text_node->generate());
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::set_text_def
 //       Access: Published
@@ -531,6 +557,34 @@ set_focus(bool focus) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_display_text
+//       Access: Private
+//  Description: Returns the string that should be displayed within
+//               the entry.  This is normally _text, but it may be
+//               _obscured_text.
+////////////////////////////////////////////////////////////////////
+const string &PGEntry::
+get_display_text() {
+  if (_obscure_mode) {
+    // If obscure mode is enabled, we should just display a bunch of
+    // asterisks.
+    if (_obscured_text.length() != _text.length()) {
+      _obscured_text = "";
+      string::const_iterator ti;
+      for (ti = _text.begin(); ti != _text.end(); ++ti) {
+        _obscured_text += '*';
+      }
+    }
+
+    return _obscured_text;
+
+  } else {
+    // In normal, non-obscure mode, we display the actual text.
+    return _text;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::slot_text_def
 //       Access: Private
 //  Description: Ensures there is a slot in the array for the given
@@ -555,12 +609,15 @@ update_text() {
   nassertv(node != (TextNode *)NULL);
 
   if (_text_geom_stale || node != _last_text_def) {
+    const string &display_text = get_display_text();
+
     // We need to regenerate.
     _last_text_def = node;
 
     if (_max_width > 0.0 && _num_lines > 1) {
       // Fold the text into multiple lines.
-      string ww_text = _last_text_def->wordwrap_to(_text, _max_width, true);
+      string ww_text = 
+        _last_text_def->wordwrap_to(display_text, _max_width, true);
 
       // And chop the lines up into pieces.
       _ww_lines.clear();
@@ -599,9 +656,9 @@ update_text() {
       _ww_lines.clear();
       _ww_lines.push_back(WWLine());
       WWLine &line = _ww_lines.back();
-      line._str = _text;
+      line._str = display_text;
 
-      _last_text_def->set_text(_text);
+      _last_text_def->set_text(display_text);
       line._left = _last_text_def->get_left();
     }
 

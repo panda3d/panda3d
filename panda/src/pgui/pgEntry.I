@@ -227,6 +227,39 @@ get_cursor_keys_active() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::set_obscure_mode
+//       Access: Published
+//  Description: Specifies whether obscure mode should be enabled.  In
+//               obscure mode, a string of asterisks is displayed
+//               instead of the literal text, e.g. for entering
+//               passwords.
+//
+//               In obscure mode, the width of the text is computed
+//               based on the width of the string of asterisks, not on
+//               the width of the actual text.  This has implications
+//               on the maximum length of text that may be entered if
+//               max_width is in effect.
+////////////////////////////////////////////////////////////////////
+INLINE void PGEntry:: 
+set_obscure_mode(bool flag) {
+  if (_obscure_mode != flag) {
+    _obscure_mode = flag;
+    _text_geom_stale = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_obscure_mode
+//       Access: Published
+//  Description: Specifies whether obscure mode is enabled.  See
+//               set_obscure_mode().
+////////////////////////////////////////////////////////////////////
+INLINE bool PGEntry:: 
+get_obscure_mode() const {
+  return _obscure_mode;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::get_accept_prefix
 //       Access: Published, Static
 //  Description: Returns the prefix that is used to define the accept

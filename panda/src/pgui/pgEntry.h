@@ -86,6 +86,9 @@ PUBLISHED:
   INLINE void set_cursor_keys_active(bool flag);
   INLINE bool get_cursor_keys_active() const;
 
+  INLINE void set_obscure_mode(bool flag);
+  INLINE bool get_obscure_mode() const;
+
   void set_text_def(int state, TextNode *node);
   TextNode *get_text_def(int state) const;
 
@@ -103,6 +106,7 @@ PUBLISHED:
   INLINE string get_erase_event() const;
 
 private:
+  const string &get_display_text();
   void slot_text_def(int state);
   void update_text();
   void update_cursor();
@@ -110,6 +114,7 @@ private:
   void update_state();
 
   string _text;
+  string _obscured_text;
   int _cursor_position;
   bool _cursor_stale;
   bool _cursor_visible;
@@ -152,6 +157,7 @@ private:
   double _blink_rate;
 
   bool _cursor_keys_active;
+  bool _obscure_mode;
 
 public:
   static TypeHandle get_class_type() {
