@@ -18,8 +18,9 @@ optimizeFlag=""
 ppython=ppython
 ppythonOptimizeFlag=""
 
-while getopts gtpven flag; do
+while getopts ogtpven flag; do
   case $flag in
+    o) extra_genPyCode_libs="$extra_genPyCode_libs libotp" ;;
     g) extra_genPyCode_libs="$extra_genPyCode_libs libgateway" ;;
     t) extra_genPyCode_libs="$extra_genPyCode_libs libtoontown" ;;
     p) extra_genPyCode_libs="$extra_genPyCode_libs libpirates" ;;
