@@ -43,6 +43,7 @@ BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10',
                   ]
 BUILDING_HEIGHTS = [10, 20, 25, 30]
 NUM_WALLS = [1,2,3]
+LANDMARK_SPECIAL_TYPES = ['', 'hq', 'gagshop', 'clotheshop']
 
 OBJECT_SNAP_POINTS = {
     'street_5x20': [(Vec3(5.0,0,0), Vec3(0)),
@@ -1455,7 +1456,7 @@ class LevelEditor(NodePath, PandaObject):
         self.landmarkBlock=self.landmarkBlock+1
         return str(self.landmarkBlock)
     
-    def addLandmark(self, landmarkType, hq):
+    def addLandmark(self, landmarkType, specialType):
         # Record new landmark type
         self.setCurrent('toon_landmark_texture', landmarkType)
         # And create new landmark building
@@ -1463,11 +1464,11 @@ class LevelEditor(NodePath, PandaObject):
         newDNALandmarkBuilding = DNALandmarkBuilding(
             'tb'+block+':'+landmarkType + '_DNARoot')
         newDNALandmarkBuilding.setCode(landmarkType)
-        newDNALandmarkBuilding.setHq(hq)
+        newDNALandmarkBuilding.setBuildingType(specialType)
         newDNALandmarkBuilding.setPos(VBase3(0))
         newDNALandmarkBuilding.setHpr(VBase3(0))
         # Headquarters do not have doors
-        if not hq:
+        if (specialType != 'hq'):
             newDNADoor = self.createDoor('landmark_door')
             newDNALandmarkBuilding.add(newDNADoor)
         # Now place new landmark building in the world
@@ -4685,6 +4686,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         Label(landmarkBuildingsPage, text = 'Landmark Buildings',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
 
+        """
         self.landmarkHQIntVar = IntVar()
         self.landmarkHQIntVar.set(0)
         self.landmarkHQButton = Checkbutton(
@@ -4693,6 +4695,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             variable=self.landmarkHQIntVar,
             command=self.setLandmarkHQ)
         self.landmarkHQButton.pack(side = LEFT, expand = 1, fill = X)
+        """
 
         self.addLandmarkBuildingButton = Button(
             landmarkBuildingsPage,
@@ -4718,6 +4721,23 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.landmarkBuildingSelector.selectitem(
             self.styleManager.getCatalogCode('toon_landmark',0)[14:])
         self.landmarkBuildingSelector.pack(expand = 1, fill = BOTH)
+
+        self.landmarkBuildingSpecialSelector = Pmw.ComboBox(
+            landmarkBuildingsPage,
+            dropdown = 0,
+            listheight = 100,
+            labelpos = W,
+            label_width = 12,
+            label_anchor = W,
+            label_text = 'Special type:',
+            entry_width = 30,
+            selectioncommand = self.setLandmarkSpecialType,
+            scrolledlist_items = LANDMARK_SPECIAL_TYPES
+            )
+        self.landmarkSpecialType = LANDMARK_SPECIAL_TYPES[0]
+        self.landmarkBuildingSpecialSelector.selectitem(
+            LANDMARK_SPECIAL_TYPES[0])
+        self.landmarkBuildingSpecialSelector.pack(expand = 0)
         
         # SIGNS
         Label(signPage, text = 'Signs',
@@ -5434,9 +5454,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                  baseline.setFlags(flags)
             self.levelEditor.replaceSelected()
 
-    def setLandmarkHQ(self):
+    def setLandmarkSpecialType(self, type):
+        self.landmarkSpecialType = type
         if self.levelEditor.lastLandmarkBuildingDNA:
-            self.levelEditor.lastLandmarkBuildingDNA.setHq(self.landmarkHQIntVar.get())
+            self.levelEditor.lastLandmarkBuildingDNA.setBuildingType(self.landmarkSpecialType)
     
     def setBigFirstLetter(self):
         self.adjustBaselineFlag(self.bigFirstLetterIntVar.get(), 'b')
@@ -5530,7 +5551,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.levelEditor.replaceSelected()
 
     def addLandmark(self):
-        self.levelEditor.addLandmark(self.landmarkType, self.landmarkHQIntVar.get())
+        self.levelEditor.addLandmark(self.landmarkType, self.landmarkSpecialType)
 
     def setPropType(self,name):
         self.propType = name
