@@ -34,8 +34,6 @@ static IDirectSound* musicDirectSound = NULL;
 #define MULTI_TO_WIDE(x,y) MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, y, -1, x, _MAX_PATH);
 
 static void update_win(void) {
-  if (audio_cat->is_debug())
-    audio_cat->debug() << "in update_win" << endl;
 }
 
 static void initialize(void) {
@@ -195,10 +193,11 @@ AudioTraits::PlayingClass* WinSample::get_state(void) const {
 }
 
 AudioTraits::PlayerClass* WinSample::get_player(void) const {
+  AudioTraits::PlayerClass* ret = WinSamplePlayer::get_instance();
   if (audio_cat->is_debug())
-    audio_cat->debug() << "winsample get_player returning 0x"
-		       << (void*)(WinSamplePlayer::get_instance()) << endl;
-  return WinSamplePlayer::get_instance();
+    audio_cat->debug() << "winsample get_player returning 0x" << (void*)ret
+		       << endl;
+  return ret;
 }
 
 AudioTraits::DeleteSoundFunc* WinSample::get_destroy(void) const {
@@ -544,10 +543,11 @@ AudioTraits::PlayingClass* WinMusic::get_state(void) const {
 }
 
 AudioTraits::PlayerClass* WinMusic::get_player(void) const {
+  AudioTraits::PlayerClass* ret = WinMusicPlayer::get_instance();
   if (audio_cat->is_debug())
-    audio_cat->debug() << "winmusic get_player returning 0x"
-		       << (void*)(WinMusicPlayer::get_instance()) << endl;
-  return WinMusicPlayer::get_instance();
+    audio_cat->debug() << "winmusic get_player returning 0x" << (void*)ret
+		       << endl;
+  return ret;
 }
 
 AudioTraits::DeleteSoundFunc* WinMusic::get_destroy(void) const {
@@ -707,19 +707,13 @@ void WinSamplePlaying::destroy(AudioTraits::PlayingClass* play) {
 }
 
 AudioTraits::PlayingClass::PlayingStatus WinSamplePlaying::status(void) {
-  if (audio_cat->is_debug())
-    audio_cat->debug() << "winsampleplaying status returning ";
   if (_channel) {
     DWORD dwStatus;
     _channel->GetStatus(&dwStatus);
     if (dwStatus & DSBSTATUS_PLAYING) {
-      if (audio_cat->is_debug())
-	audio_cat->debug(false) << "PLAYING" << endl;
       return AudioTraits::PlayingClass::PLAYING;
     }
   }
-  if (audio_cat->is_debug())
-    audio_cat->debug(false) << "READY" << endl;;
   return AudioTraits::PlayingClass::READY;
 }
 
@@ -727,22 +721,22 @@ BYTE* WinSamplePlaying::lock(void) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "in winsampleplaying lock" << endl;
   WinSample* s = (WinSample*)(_sound);
-  HRESULT result = _channel->Lock(0, 0, (void**)&(s->_data), &(s->_len), NULL,
+  HRESULT result = _channel->Lock(0, 0, (void**)&_data, &(s->_len), NULL,
 				  0, DSBLOCK_ENTIREBUFFER);
   if (FAILED(result)) {
     audio_cat->error() << "failed to lock buffer" << endl;
     return NULL;
   }
   if (audio_cat->is_debug())
-    audio_cat->debug() << "returning 0x" << (void*)(s->_data) << endl;
-  return (s->_data);
+    audio_cat->debug() << "returning 0x" << (void*)_data << endl;
+  return _data;
 }
 
 void WinSamplePlaying::unlock(void) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "in winsampleplaying unlock" << endl;
   WinSample* s = (WinSample*)(_sound);
-  HRESULT result = _channel->Unlock(s->_data, s->_len, NULL, 0);
+  HRESULT result = _channel->Unlock(_data, s->_len, NULL, 0);
   CHECK_RESULT(result, "failed to unlock buffer");
   if (audio_cat->is_debug())
     audio_cat->debug() << "out of winsampleplaying unlock" << endl;
@@ -770,21 +764,13 @@ void WinMusicPlaying::destroy(AudioTraits::PlayingClass* play) {
 }
 
 AudioTraits::PlayingClass::PlayingStatus WinMusicPlaying::status(void) {
-  if (audio_cat->is_debug())
-    audio_cat->debug() << "in WinMusic::status()" << endl;
   WinMusic* wm = (WinMusic*)_sound;
 
   if (wm->get_performance() && wm->get_music()) {
     if (wm->get_performance()->IsPlaying(wm->get_music(), NULL) == S_OK) {
-      if (audio_cat->is_debug())
-	audio_cat->debug() << "returning PLAYING" << endl;
       return PLAYING;
     }
-  } else
-    if (audio_cat->is_debug())
-      audio_cat->debug() << "MusicStatus no performance or music!" << endl;
-  if (audio_cat->is_debug())
-    audio_cat->debug() << "returning READY" << endl;
+  }
   return READY;
 }
 

@@ -68,6 +68,7 @@ public:
 class EXPCL_PANDA WinSamplePlaying : public AudioTraits::PlayingClass {
 private:
   LPDIRECTSOUNDBUFFER _channel;
+  BYTE* _data;
 public:
   WinSamplePlaying(AudioTraits::SoundClass*);
   ~WinSamplePlaying(void);
