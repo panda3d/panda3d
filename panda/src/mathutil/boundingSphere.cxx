@@ -396,7 +396,7 @@ contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
       // Tangent.
       t1 = t2 = -B / (2.0*A);
       return (t1 >= 0.0 && t1 <= 1.0) ? 
-	IF_possible | IF_some : IF_no_intersection;
+	         IF_possible | IF_some : IF_no_intersection;
     }
     
     if (radical < 0.0) {
@@ -404,9 +404,11 @@ contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
       return IF_no_intersection;
     }
     
+	float reciprocal_2A = 1.0f/(2.0*A);
     float sqrt_radical = sqrtf(radical);
-    t1 = ( -B - sqrt_radical ) / (2.0*A);
-    t2 = ( -B + sqrt_radical ) / (2.0*A);
+
+    t1 = ( -B - sqrt_radical ) * reciprocal_2A;
+    t2 = ( -B + sqrt_radical ) * reciprocal_2A;
     
     if (t1 >= 0.0 && t2 <= 1.0) {
       return IF_possible | IF_some | IF_all;
