@@ -67,7 +67,7 @@ if [ "$TTMODELS" ]; then
 fi
 
 if [ "$BARMODELS" ]; then
-    TTMODELS=`cygpath -w $BARMODELS`
+    BARMODELS=`cygpath -w $BARMODELS`
     export BARMODELS
 fi
 
