@@ -3,18 +3,28 @@
 #NOTE:  this script assumes you are running the Cygwin perl, which uses the
 #       Cygwin file paths (i.e. '/' corresponds to 'C:\cygwin')
 
-$WIN_INSTALLDIR="\\\\nufat\\mass\\pandabuilds\\win";
+my $WIN_INSTALLDIR="\\\\dimbo\\panda\\win";
 
-#$WIN_INSTALLDIR="\\\\cxgeorge-d01\\c\\pandabuilds\\win";
+# my $WIN_INSTALLDIR="\\\\cxgeorge-d01\\c\\win";
 
-# $DEBUG_TREECOPY = 1;
+# my $DEBUG_TREECOPY = 1;
 
-# $DEBUG_GENERATE_PYTHON_CODE_ONLY = 1;  $ENV{'PANDA_OPTIMIZE'} ='3';
+# my $DEBUG_GENERATE_PYTHON_CODE_ONLY = 1;  $ENV{'PANDA_OPTIMIZE'} ='3';
 
-$DONT_ARCHIVE_OLD_BUILDS = 0;
+my $DONT_ARCHIVE_OLD_BUILDS = 0;
 
-$BLD_DTOOL_ONLY=0;
-$DIRPATH_SEPARATOR=':';   # set to ';' for non-cygwin NT perl
+my $BLD_DTOOL_ONLY=0;
+my $DIRPATH_SEPARATOR=':';   # set to ';' for non-cygwin NT perl
+
+my @inst_dirnames=("archive","debug","install","release");
+my $ARCHIVENUM=0;
+my $DEBUGNUM=1;
+my $INSTALLNUM=2;
+my $RELEASENUM=3;
+my @inst_dirs;
+for(my $i=0;$i<=$#inst_dirnames;$i++) {
+    $inst_dirs[$i]=$WIN_INSTALLDIR."\\".$inst_dirnames[$i];
+}
 
 if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
     $ENV{'PANDA_OPTIMIZE'}='1';  # var has meaning to my special Config.pp
@@ -26,8 +36,7 @@ $ENV{'HOME'}="/home/builder";
 $ENV{'USER'}="builder";
 $ENV{'USERNAME'}=$ENV{'USER'};
 
-
-$DONT_ARCHIVE_OLD_BUILDS = (($ENV{'DONT_ARCHIVE_OLD_BUILDS'} ne "") || $DONT_ARCHIVE_OLD_BUILDS);
+my $DONT_ARCHIVE_OLD_BUILDS = (($ENV{'DONT_ARCHIVE_OLD_BUILDS'} ne "") || $DONT_ARCHIVE_OLD_BUILDS);
 
 sub logmsg() {
    my $msg = shift;
@@ -155,8 +164,12 @@ sub appendpath() {
 sub make_bsc_file() {
     &logmsg("*** Generating panda.bsc at ".&gettimestr()." ***");
     
-    &mychdir($CYGBLDROOT."/debug");
-    $outputdir=$WINBLDROOT."\\debug";
+#    &mychdir($CYGBLDROOT."/debug");
+#    $outputdir=$WINBLDROOT."\\debug";
+
+    &mychdir($CYGBLDROOT);
+    $outputdir=$WINBLDROOT;
+
     $outputname="panda.bsc";
     $outputfilepath=$outputdir."\\".$outputname;
     $cmdfilepath=$outputdir."\\makebsc.txt";
@@ -190,7 +203,8 @@ sub make_bsc_file() {
     
     &myexecstr($bscmake_str,"bscmake failed!!!", "DO_LOG","NT cmd");  
 
-    &myexecstr("copy ".$outputfilepath." ".$opt1dir, "copy of ".$outputfilepath." failed!!", "DO_LOG","NT cmd");
+    &myexecstr("copy ".$outputfilepath." ".$inst_dirs[$DEBUGNUM], "copy of ".$outputfilepath." failed!!", "DO_LOG","NT cmd");
+    unlink($cmdfilepath);
     &mychdir($CYGBLDROOT);
 }
 
@@ -232,12 +246,115 @@ sub gen_python_code() {
     &mychdir($CYGBLDROOT);
 }
 
+my $newdayarchivedirname;
+
+sub archivetree() {
+    $treenum=shift;
+
+    if(!(-e $inst_dirs[$treenum])) {
+        return;
+    }
+
+    if($newdayarchivename eq "") {
+
+        ($devicenum,$inodenum,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks)
+           = stat($inst_dirs[2]);
+        ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) 
+           = localtime($ctime);
+        $mon++;
+
+        $newdayarchivedirname=$inst_dirs[$ARCHIVENUM]."\\".($mon<10 ? "0":"").$mon."-".($mday<10 ? "0":"").$mday;
+        &mymkdir($newdayarchivedirname);
+    }
+
+    &logmsg("*** Archiving ".$inst_dirnames[$treenum]." build on install server at ".&gettimestr()." ***");
+
+    my $archdirname=$newdayarchivedirname."\\".$inst_dirnames[$treenum];
+
+    &myrename($inst_dirs[$treenum],$archdirname);
+
+    foreach my $dir1 (@dirstodolist) {    
+        # copy DLL .pdb up to lib dir so we can blow away metalibs subdir
+        # could do this is the makefiles instead
+        &myexecstr("( for /R ".$archdirname."\\".$dir1."\\metalibs %i in (lib*.pdb) do copy %i ".$archdirname."\\".$dir1."\\lib )","nomsg","DO_LOG","NT cmd");
+
+        if($dir1 eq "panda") {
+            # audio libs seem to not have a metalib dir
+            &myexecstr("( for /R ".$archdirname."\\".$dir1."\\src\audiotraits %i in (lib*.pdb) do copy %i ".$archdirname."\\".$dir1."\\lib )","nomsg","DO_LOG","NT cmd");
+        }
+
+        # NT cmd 'for' always returns 144 for some reason, impossible to detect error cond, so just dont check retval
+        # delete old objs/pdbs/etc out of archived trees (just blow away the Opt[Win32] dir)
+        # &myexecstr("( for /D /R ".$archdirname."\\".$dir1."\\src %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
+        
+        # instead blow away src,CVS,include,metalibs dirs completely
+        # doing every rd twice since samba-netapp-RAID link seems to screw up and cause some files to not be deleted the 1st time
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\src","nomsg","DO_LOG","NT cmd");
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\CVS","nomsg","DO_LOG","NT cmd");
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\include","nomsg","DO_LOG","NT cmd");
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\metalibs","nomsg","DO_LOG","NT cmd");
+
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\src","nomsg","DO_LOG","NT cmd");
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\CVS","nomsg","DO_LOG","NT cmd");
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\include","nomsg","DO_LOG","NT cmd");
+        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\metalibs","nomsg","DO_LOG","NT cmd");
+
+        # del xtra files at root of subdirs
+        &myexecstr("del /Q /F ".$archdirname."\\".$dir1."\\*","nomsg","DO_LOG","NT cmd");
+    }
+
+    # delete old browse files
+    &myexecstr("del /q ".$archdirname."\\*.bsc","nomsg","DO_LOG","NT cmd");
+
+    # could also move .pdb from metalibs to lib, then del metalibs, include, src dirs
+}
+
+sub checkoutfiles {
+    my $existing_module_str="";
+    my $nonexisting_module_str="";
+
+   &mychdir($CYGBLDROOT);
+
+    foreach my $dir1 (@dirstodolist) {
+        if(-e $dir1) {
+            $existing_module_str.=$dir1." ";
+        } else {
+            $nonexisting_module_str.=$dir1." ";
+        }
+    }
+    
+    if($existing_module_str ne "") {
+        # flaw: will bomb is any CVS subdirs are missing
+
+        &myexecstr("( for /D /R . %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
+    
+        &logmsg("*** REMOVING ALL FILES IN OLD SRC TREES ***");
+        # use cvs update to grab new copy
+        # note: instead of blowing these away, may want to rename and save them
+        # also, I could just blow everything away and check out again
+        # cant blow away if people are sitting in those dirs, so we do this instead
+        $rmcmd="find ".$existing_module_str." -path '*CVS*' -prune -or -not -name 'bldlog*' -and -not -type d -print | xargs --no-run-if-empty -n 40 rm";
+        #&myexecstr($rmcmd,"Removal of old files failed!","DO_LOG","NO_CSHRC");
+        &myexecstr($rmcmd,"Removal of old files failed!","DO_LOG","NO_PANDA_ATTACH");
+    
+        &myexecstr("cvs update -d -R ".$existing_module_str." |& egrep -v 'Updating|^\\?'",
+                   "cvs update failed!","DO_LOG","NO_PANDA_ATTACH");
+    }
+    
+    if($nonexisting_module_str ne "") {
+        &myexecstr("cvs checkout -R ".$nonexisting_module_str." |& egrep -v 'Updating|^\\?'",
+                   "cvs checkout failed!","DO_LOG","NO_PANDA_ATTACH");
+    }
+}
+
 sub buildall() {
+    $treenum=shift;
 
     # DTOOL ppremake may have already run by DTOOL 'initialize make'
     
-    $logmsg1 = shift;
-    &logmsg($logmsg1);
+    &logmsg("*** Starting ".uc($inst_dirnames[$treenum])." Build (Opt=".$ENV{'PANDA_OPTIMIZE'}.") at ".&gettimestr()." ***");
+
+    &checkoutfiles();
 
     # cant do attachment, since that often hangs on NT
     # must use non-attachment build system  (BUILD_TYPE 'gmsvc', not 'stopgap', in $PPREMAKE_CONFIG)
@@ -274,7 +391,41 @@ sub buildall() {
     &mychdir($CYGBLDROOT);  # get out of src dirs to allow them to be moved/renamed
     unlink($CYGBLDROOT."/dtool/dtool_config.h");  # fix freakish NTFS bug, this file is regenerated by ppremake anyway
 
-    &gen_python_code();  # must run AFTER toontown bld
+    if($#dirstodolist>1) {    
+       &gen_python_code();  # must run AFTER toontown bld
+    }
+
+    &mychdir($CYGBLDROOT);  # get out of src dirs to allow them to be moved/renamed
+
+    # archive old current srvr build & copy build to server, if its accessible
+    if(!(-e $WIN_INSTALLDIR)) {
+        &logmsg("ERROR: Cant access install directory!!  (Is Server down??)  ".$WIN_INSTALLDIR);
+        &logmsg("Skipping archive and copy-build-to-server steps for ".$inst_dirnames[$treenum]." build");
+        return;
+    }
+
+    if($DONT_ARCHIVE_OLD_BUILDS) {
+        &myexecstr("rd /s /q ".$inst_dirs[$treenum],"DO_LOG","NT cmd");  # dont bother checking errors here, probably just some shell has the dir cd'd to
+    } else {
+        &archivetree($treenum);
+    }
+
+    &logmsg("*** Copying ".$inst_dirnames[$treenum]." build to install server at ".&gettimestr()." ***");
+    &mymkdir($inst_dirs[$treenum]);
+
+    my $xcopy_opt_str="/E /K /C /R /Y /H ";
+
+    if($DEBUG_TREECOPY) {
+        $xcopy_opt_str.="/T";  #debug only
+    }
+
+    # hopefully there are no extra dirs underneath
+    
+    foreach my $dir1 (@dirstodolist) {        
+        &mymkdir($inst_dirs[$treenum]."\\".$dir1);
+        &myexecstr("xcopy ".$xcopy_opt_str." ".$WINBLDROOT."\\".$dir1."\\* ".$inst_dirs[$treenum]."\\".$dir1, 
+                   "xcopy of ".$inst_dirnames[$treenum]." tree failed!!", "DO_LOG","NT cmd");
+    }
 }
 
 # assumes environment already attached to TOOL/PANDA/DIRECT/TOONTOWN
@@ -359,227 +510,40 @@ if($DEBUG_GENERATE_PYTHON_CODE_ONLY) {
 }
 
 # goto 'SKIP_REMOVE';
-$existing_module_str="";
-$nonexisting_module_str="";
-foreach my $dir1 (@dirstodolist) {
-    if(-e $dir1) {
-        $existing_module_str.=$dir1." ";
-    } else {
-        $nonexisting_module_str.=$dir1." ";
-    }
-}
-
-if($existing_module_str ne "") {
-    &myexecstr("( for /D /R . %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
-
-    &logmsg("*** REMOVING ALL FILES IN OLD SRC TREES ***");
-    # use cvs update to grab new copy
-    # note: instead of blowing these away, may want to rename and save them
-    # also, I could just blow everything away and check out again
-    $rmcmd="find ".$existing_module_str." -path '*CVS*' -prune -or -not -name 'bldlog*' -and -not -type d -print | xargs --no-run-if-empty -n 40 rm";
-    #&myexecstr($rmcmd,"Removal of old files failed!","DO_LOG","NO_CSHRC");
-    &myexecstr($rmcmd,"Removal of old files failed!","DO_LOG","NO_PANDA_ATTACH");
-
-    &myexecstr("cvs update -d -R ".$existing_module_str." |& egrep -v 'Updating|^\\?'",
-               "cvs update failed!","DO_LOG","NO_PANDA_ATTACH");
-}
-
-
-if($nonexisting_module_str ne "") {
-    &myexecstr("cvs checkout -R ".$nonexisting_module_str." |& egrep -v 'Updating|^\\?'",
-               "cvs checkout failed!","DO_LOG","NO_PANDA_ATTACH");
-}
 
 SKIP_REMOVE:
 
 # this doesnt work unless you can completely remove the dirs, since cvs checkout
-# bombs if dirs exist but CVS dirs do not.  since sometimes shells will have
-# the subdirs open preventing full deletion of a project, I will use the update method 
-# above instead
-# just delete dtool, panda, etc...
-#$rmcmd= "rd /s /q ".$dirstodostr;
-#&myexecstr($rmcmd,"","DO_LOG","NT cmd");  # dont bother checking errors here, probably just some shell has the dir cd'd to
-#&myexecstr("cvs checkout -R ".$dirstodostr." |& egrep -v 'Updating|^\\?'",
-#          "cvs checkout failed!","DO_LOG","NO_PANDA_ATTACH");
+# bombs if dirs exist but CVS dirs do not. 
 
-    
-# could skip this and just ppremake dtool, but useful for interactive login environment
-#&mychdir($CYGBLDROOT."/dtool/src/build");
-#&myexecstr("./initialize make","DTOOL initialize make failed!","DO_LOG","");
-# sometimes hangs, so I wont do this
+$ENV{'PANDA_OPTIMIZE'}='2';
+&buildall($INSTALLNUM);
 
-$ENV{'USE_BROWSEINFO'}='1';   # make .sbr files
+BEFORE_DBGBUILD:
+
+$ENV{'USE_BROWSEINFO'}='1';   # make .sbr files, this is probably obsolete
 if(! $DEBUG_GENERATE_PYTHON_CODE_ONLY) {
     $ENV{'PANDA_OPTIMIZE'}='1';
 }
 
-# remove old stored debug build
-if(-e $CYGBLDROOT."/debug") {
-  &myexecstr("rd /s /q ".$WINBLDROOT."\\debug", # rd /s /q is fastest deltree method
-             "",  # if we cant delete all of tree (because someone is in a subdir), should be ok.  file open would be bad
-             "DO_LOG","NT cmd");  
-}
-
-BEFORE_DBGBUILD:
-
-&buildall("*** Starting Debug Build (Opt=".$ENV{'PANDA_OPTIMIZE'}.") at ".&gettimestr()." ***");
+&buildall($DEBUGNUM);
+&make_bsc_file();
+delete $ENV{'USE_BROWSEINFO'};  # this is probably obsolete
 
 AFTER_DBGBUILD:
 
-# tmp save debug build in "debug subdir"
-# we can only hold 1 dbg and 1 opt build in same src tree and these are used by opt2 & opt4, so 
-# move current tree to local dir until we are finished building, when we can copy it
-my $localdebugdirname=$CYGBLDROOT."/debug";
-&mymkdir($localdebugdirname);
-
-foreach my $dir1 (@dirstodolist) {
-    &myrename($CYGBLDROOT."/".$dir1,$localdebugdirname."/".$dir1);
-}
-
-# old dirs completely gone, need to re-checkout to setup for buildall
-&mychdir($CYGBLDROOT);
-&myexecstr("cvs checkout -R ".$dirstodostr." |& egrep -v 'Updating|^\\?'",
-          "cvs checkout failed!","DO_LOG","NO_PANDA_ATTACH");
-
-delete $ENV{'USE_BROWSEINFO'};
-$ENV{'PANDA_OPTIMIZE'}='2';
-&buildall("*** Starting Release Build (Opt=".$ENV{'PANDA_OPTIMIZE'}.") at ".&gettimestr()." ***");
-
-# opt2 creates .sbr files when it should not
-#foreach my $dir1 (@dirstodolist) {
-#   &mychdir($CYGBLDROOT."/".$dir1);
-#   &myexecstr("del /q /s *.sbr ".$dirstodostr,"","DO_LOG","NT cmd");
-#
-#hack:  having problems w/interrogate files being opened before they are ready, see if this helps
-#   &myexecstr("del /q /s *igate.cxx *.in ".$dirstodostr,"","DO_LOG","NT cmd");
-#}
-
 $ENV{'PANDA_OPTIMIZE'}='3';
-&buildall("*** Starting Release Build (Opt=".$ENV{'PANDA_OPTIMIZE'}.") at ".&gettimestr()." ***");
-
-# opt2 creates .sbr files when it should not
-#foreach my $dir1 (@dirstodolist) {
-#   &mychdir($CYGBLDROOT."/".$dir1);
-#   &myexecstr("del /q /s *.sbr ".$dirstodostr,"","DO_LOG","NT cmd");
-#}
-
-DBGTREECOPY:
-
-# begin tree copying
-
-if(!(-e $WIN_INSTALLDIR)) {
-    &logmsg("ERROR: Cant access install directory!!  ".$WIN_INSTALLDIR);
-    exit(1);
-}
-
-$opt1dir=$WIN_INSTALLDIR."\\debug";
-$opt2dir=$WIN_INSTALLDIR."\\install";
-$archivedir=$WIN_INSTALLDIR."\\archive";
-
-($devicenum,$inodenum,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks)
-           = stat($opt2dir);
-($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) 
-           = localtime($ctime);
-$mon++;
-
-$newdayarchivedirname=$archivedir."\\".($mon<10 ? "0":"").$mon."-".($mday<10 ? "0":"").$mday;
-
-sub archivetree() {
-    $olddirname=shift;
-    $archdirname=shift;
-
-    &mymkdir($newdayarchivedirname);
-    &myrename($olddirname,$archdirname);
-
-    foreach my $dir1 (@dirstodolist) {    
-        # copy DLL .pdb up to lib dir so we can blow away metalibs subdir
-        # could do this is the makefiles instead
-        &myexecstr("( for /R ".$archdirname."\\".$dir1."\\metalibs %i in (lib*.pdb) do copy %i ".$archdirname."\\".$dir1."\\lib )","nomsg","DO_LOG","NT cmd");
-
-        if($dir1 eq "panda") {
-            # audio libs seem to not have a metalib dir
-            &myexecstr("( for /R ".$archdirname."\\".$dir1."\\src\audiotraits %i in (lib*.pdb) do copy %i ".$archdirname."\\".$dir1."\\lib )","nomsg","DO_LOG","NT cmd");
-        }
-
-        # NT cmd 'for' always returns 144 for some reason, impossible to detect error cond, so just dont check retval
-        # delete old objs/pdbs/etc out of archived trees (just blow away the Opt[Win32] dir)
-        # &myexecstr("( for /D /R ".$archdirname."\\".$dir1."\\src %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
-        
-        # instead blow away src,CVS,include,metalibs dirs completely
-        # doing every rd twice since samba-netapp-RAID link seems to screw up and cause some files to not be deleted the 1st time
-        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\src","nomsg","DO_LOG","NT cmd");
-        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\CVS","nomsg","DO_LOG","NT cmd");
-        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\include","nomsg","DO_LOG","NT cmd");
-        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\metalibs","nomsg","DO_LOG","NT cmd");
-
-        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\src","nomsg","DO_LOG","NT cmd");
-        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\CVS","nomsg","DO_LOG","NT cmd");
-        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\include","nomsg","DO_LOG","NT cmd");
-        &myexecstr("rd /s /q ".$archdirname."\\".$dir1."\\metalibs","nomsg","DO_LOG","NT cmd");
-
-        # del xtra files at root of subdirs
-        &myexecstr("del /Q /F ".$archdirname."\\".$dir1."\\*","nomsg","DO_LOG","NT cmd");
-    }
-
-    # delete old browse files
-    &myexecstr("del /q ".$archdirname."\\*.bsc","nomsg","DO_LOG","NT cmd");
-
-    # could also move .pdb from metalibs to lib, then del metalibs, include, src dirs
-}
-
-#goto 'StartTreeCopy';  #DBG
-
-if($DONT_ARCHIVE_OLD_BUILDS) {
-   &myexecstr("rd /s /q ".$opt1dir." ".$opt2dir,"","DO_LOG","NT cmd");  # dont bother checking errors here, probably just some shell has the dir cd'd to
-
-} elsif((-e $opt1dir) || (-e $opt2dir)) {
-    &logmsg("*** Archiving old builds on install server at ".&gettimestr()." ***");
-
-    if(-e $opt1dir) {
-        &archivetree($opt1dir,$newdayarchivedirname."\\debug");
-    }
-
-    if(-e $opt2dir) {
-        &archivetree($opt2dir,$newdayarchivedirname."\\install");
-    }
-}
-
-StartTreeCopy:
-
-&logmsg("*** Copying new builds to install server at ".&gettimestr()." ***");
-
-&mymkdir($opt1dir);
-&mymkdir($opt2dir);
-
-$xcopy_opt_str="/E /K /C /R /Y /H ";
-
-if($DEBUG_TREECOPY) {
-    $xcopy_opt_str.="/T";  #debug only
-}
-
-&myexecstr("xcopy ".$xcopy_opt_str." ".$WINBLDROOT."\\debug\\* ".$opt1dir, 
-            "xcopy of debug tree failed!!", "DO_LOG","NT cmd");  
-
-foreach my $dir1 (@dirstodolist) {    
-  # cant do a single xcopy since dont want to copy local "debug" or any other subdir crap in ~/player
-   &mymkdir($opt2dir."/".$dir1);
-   &myexecstr("xcopy ".$xcopy_opt_str." ".$WINBLDROOT."\\".$dir1."\\* ".$opt2dir."\\".$dir1, 
-            "xcopy of ".$dir1." tree failed!!", "DO_LOG","NT cmd");  
-}
-
-&make_bsc_file();
+&buildall($RELEASENUM);
 
 &logmsg("*** Panda Build Log Finished at ".&gettimestr()." ***");
 
-# store log in 'install' dir
-&myexecstr("copy ".$fulllogfilename_win." ".$opt2dir, "copy of ".$fulllogfilename_win." failed!!", "","NT cmd");  
+# store log in 'debug' dir
+&myexecstr("copy ".$fulllogfilename_win." ".$inst_dirs[$DEBUGNUM], "copy of ".$fulllogfilename_win." failed!!", "","NT cmd");  
 
 exit(0);
 
 # TODO:
-# possibly auto delete or compress old archived blds
+# compress old archived blds?
 # build DLLs with version stamp set by this script
-# implement no-archive mode
 # implement build-specific opttype mode
-
 
