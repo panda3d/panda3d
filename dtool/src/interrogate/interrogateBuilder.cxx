@@ -136,6 +136,28 @@ do_command(const string &command, const string &params) {
       type = type->resolve_type(&parser, &parser);
       _forcetype.insert(type->get_local_name(&parser));
     }
+  
+  } else if (command == "renametype") {
+    // rename exports the type as the indicated name.  We strip off
+    // the last word as the new name; the new name may not contain
+    // spaces (although the original type name may).
+
+    size_t space = params.rfind(' ');
+    if (space == string::npos) {
+      nout << "No new name specified for renametype " << params << "\n";
+    } else {
+      string orig_name = params.substr(0, space);
+      string new_name = params.substr(space + 1);
+
+      CPPType *type = parser.parse_type(orig_name);
+      if (type == (CPPType *)NULL) {
+	nout << "Unknown type: renametype " << orig_name << "\n";
+      } else {
+	type = type->resolve_type(&parser, &parser);
+	_renametype[type->get_local_name(&parser)] = new_name;
+	nout << "Renaming " << *type << " to " << new_name << "\n";
+      }
+    }
 
   } else if (command == "ignoretype") {
     // ignoretype explicitly ignores the given type.
@@ -586,6 +608,26 @@ get_destructor_for(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterrogateBuilder::get_preferred_name
+//       Access: Public
+//  Description: Returns the name of the type as it should be reported
+//               to the database.  This is either the name indicated
+//               by the user via a renametype command, or the
+//               "preferred name" of the type itself (i.e. the typedef
+//               name within the C++ code), or failing that, the
+//               type's true name.
+////////////////////////////////////////////////////////////////////
+string InterrogateBuilder::
+get_preferred_name(CPPType *type) {
+  string true_name = type->get_local_name(&parser);
+  string name = in_renametype(true_name);
+  if (!name.empty()) {
+    return name;
+  }
+  return type->get_preferred_name();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterrogateBuilder::insert_param_list
 //       Access: Public
 //  Description: Inserts a list of space-separated parameters into the
@@ -619,6 +661,23 @@ insert_param_list(InterrogateBuilder::Commands &commands,
 bool InterrogateBuilder::
 in_forcetype(const string &name) const {
   return (_forcetype.count(name) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateBuilder::in_renametype
+//       Access: Private
+//  Description: If the user requested an explicit name for this type
+//               via the renametype command, returns that name;
+//               otherwise, returns the empty string.
+////////////////////////////////////////////////////////////////////
+string InterrogateBuilder::
+in_renametype(const string &name) const {
+  CommandParams::const_iterator pi;
+  pi = _renametype.find(name);
+  if (pi != _renametype.end()) {
+    return (*pi).second;
+  }
+  return string();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1294,7 +1353,7 @@ get_cast_function(CPPType *to_type, CPPType *from_type,
 
     // Make up a name for the method.
     string function_name = 
-      clean_identifier(prefix + "_to_" + to_type->get_preferred_name());
+      clean_identifier(prefix + "_to_" + get_preferred_name(to_type));
     
     // Make up a CPPFunctionType.
     CPPType *to_ptr_type = CPPType::new_type(new CPPPointerType(to_type));
@@ -1311,8 +1370,8 @@ get_cast_function(CPPType *to_type, CPPType *from_type,
     
     // Make up a name for the function.
     string function_name = 
-      clean_identifier(prefix + "_" + from_type->get_preferred_name() +
-		       "_to_" + to_type->get_preferred_name());
+      clean_identifier(prefix + "_" + get_preferred_name(from_type) +
+		       "_to_" + get_preferred_name(to_type));
     
     // Make up a CPPFunctionType.
     CPPType *from_ptr_type = CPPType::new_type(new CPPPointerType(from_type));
@@ -1690,7 +1749,7 @@ get_type(CPPType *type, bool global) {
   InterrogateType &itype =
     InterrogateDatabase::get_ptr()->update_type(index);
 
-  itype._name = type->get_preferred_name();
+  itype._name = get_preferred_name(type);
   itype._scoped_name = true_name;
   itype._true_name = true_name;
 

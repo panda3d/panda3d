@@ -51,12 +51,16 @@ public:
   static string descope(const string &name);
   FunctionIndex get_destructor_for(CPPType *type);
 
+  string get_preferred_name(CPPType *type);
+
 private:
   typedef set<string> Commands;
+  typedef map<string, string> CommandParams;
   void insert_param_list(InterrogateBuilder::Commands &commands, 
 			 const string &params);
 
   bool in_forcetype(const string &name) const;
+  string in_renametype(const string &name) const;
   bool in_ignoretype(const string &name) const;
   bool in_ignoreinvolved(const string &name) const;
   bool in_ignoreinvolved(CPPType *type) const;
@@ -145,6 +149,7 @@ private:
   IncludeFiles _include_files;
 
   Commands _forcetype;
+  CommandParams _renametype;
   Commands _ignoretype;
   Commands _ignoreinvolved;
   Commands _ignorefile;
