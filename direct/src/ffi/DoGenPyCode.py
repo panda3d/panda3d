@@ -48,7 +48,7 @@ outputDir = ''
 extensionsDir = ''
 interrogateLib = ''
 codeLibs = []
-doSqueeze = True
+doSqueeze = 1
 etcPath = []
 
 def doGetopts():
@@ -102,7 +102,7 @@ def doGetopts():
             FFIConstants.wantComments = 0
             FFIConstants.wantTypeChecking = 0
         elif (flag == '-n'):
-            doSqueeze = False
+            doSqueeze = 0
         elif (flag in ['-g', '-t', '-p', '-o']):
             FFIConstants.notify.debug("option is deprecated: %s" % (flag))
             

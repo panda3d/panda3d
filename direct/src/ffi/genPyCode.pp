@@ -150,9 +150,9 @@ for package in packages:
                     # instrument it.
                     try:
                         __import__(basename, globals(), locals())
-                        isModule = True
+                        isModule = 1
                     except:
-                        isModule = False
+                        isModule = 0
 
                     if isModule:
                         if basename not in DoGenPyCode.codeLibs:
