@@ -44,6 +44,7 @@ typedef int XIC;
   // If the system glx version is at least 1.3, then we know we have
   // GLXFBConfig and GLXPbuffer.
   #define HAVE_GLXFBCONFIG
+  #define HAVE_OFFICIAL_GLXFBCONFIG
 #endif
 
 // This must be included after we have included glgsg.h (which
@@ -61,10 +62,10 @@ typedef int XIC;
   #define glXCreateNewContext glXCreateContextWithConfigSGIX
   #define glXGetVisualFromFBConfig glXGetVisualFromFBConfigSGIX
   #define glXGetFBConfigAttrib glXGetFBConfigAttribSGIX
-  #define glXCreatePbuffer glXCreateGLXPbufferSGIX
   #define glXDestroyPbuffer glXDestroyGLXPbufferSGIX
 
   #define HAVE_GLXFBCONFIG
+  #define HAVE_SGI_GLXFBCONFIG
 #endif
 
 #endif  // CPPPARSER

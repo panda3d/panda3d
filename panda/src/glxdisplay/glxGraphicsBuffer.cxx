@@ -139,7 +139,7 @@ open_buffer() {
   int attrib_list[max_attrib_list];
   int n=0;
 
-#ifdef GLX_VERSION_1_3
+#ifdef HAVE_OFFICIAL_GLXFBCONFIG
   // The official GLX 1.3 version passes in the size in the attrib
   // list.
   attrib_list[n++] = GLX_PBUFFER_WIDTH;
@@ -153,7 +153,7 @@ open_buffer() {
                               attrib_list);
 
 #else
-  // The pre-GLX 1.3 version passed in the size in the parameter list.
+  // The SGI version passed in the size in the parameter list.
   nassertr(n < max_attrib_list, false);
   attrib_list[n] = (int)None;
   _pbuffer = glXCreateGLXPbufferSGIX(glxgsg->_display, glxgsg->_fbconfig,
