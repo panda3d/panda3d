@@ -150,6 +150,7 @@ cp --recursive built/lib     $RPM_BUILD_ROOT/usr/lib/panda3d
 cp doc/LICENSE               $RPM_BUILD_ROOT/usr/lib/panda3d/LICENSE
 cp doc/LICENSE               $RPM_BUILD_ROOT/usr/share/panda3d/LICENSE
 cp doc/LICENSE               $RPM_BUILD_ROOT/usr/include/panda3d/LICENSE
+cp doc/ReleaseNotes          $RPM_BUILD_ROOT/usr/share/panda3d/ReleaseNotes
 echo "/usr/lib/panda3d" >    $RPM_BUILD_ROOT/etc/ld.so.conf.d/panda3d.conf
 echo "/usr/share/panda3d" >  $RPM_BUILD_ROOT/usr/lib/PYTHONV/site-packages/panda3d.pth
 cp built/bin/*               $RPM_BUILD_ROOT/usr/bin/
