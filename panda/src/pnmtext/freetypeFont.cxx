@@ -47,10 +47,13 @@ FreetypeFont() {
   _font_loaded = false;
 
   _point_size = text_point_size;
+  _requested_pixels_per_unit = text_pixels_per_unit;
   _tex_pixels_per_unit = text_pixels_per_unit;
+  _requested_scale_factor = text_scale_factor;
   _scale_factor = text_scale_factor;
   _native_antialias = text_native_antialias;
 
+  _font_pixel_size = 0;
   _line_height = 1.0f;
   _space_advance = 0.25f;
 
@@ -317,42 +320,57 @@ reset_scale() {
   // The font may be rendered larger (by a factor of _scale_factor),
   // and then reduced into the texture.  Hence the difference between
   // _font_pixels_per_unit and _tex_pixels_per_unit.
+  _tex_pixels_per_unit = _requested_pixels_per_unit;
+  _scale_factor = _requested_scale_factor;
   _font_pixels_per_unit = _tex_pixels_per_unit * _scale_factor;
 
   float units_per_inch = (_points_per_inch / _points_per_unit);
   int dpi = (int)(_font_pixels_per_unit * units_per_inch);
   
+  _font_pixel_size = 0;
   int error = FT_Set_Char_Size(_face,
                                (int)(_point_size * 64), (int)(_point_size * 64),
                                dpi, dpi);
   if (error) {
     // If we were unable to set a particular char size, perhaps we
-    // have a non-scalable font.  Try to figure out the closest
-    // available size.
+    // have a non-scalable font.  Try to figure out the next larger
+    // available size, or the largest size available if nothing is
+    // larger.
     int desired_height = (int)(_font_pixels_per_unit * _point_size / _points_per_unit + 0.5f);
     int best_size = -1;
+    int largest_size = -1;
     if (_face->num_fixed_sizes > 0) {
-      best_size = 0;
-      int best_diff = abs(desired_height - _face->available_sizes[0].height);
-      for (int i = 1; i < _face->num_fixed_sizes; i++) {
-        int diff = abs(desired_height - _face->available_sizes[i].height);
-        if (diff < best_diff) {
+      largest_size = 0;
+      int best_diff = 0;
+      for (int i = 0; i < _face->num_fixed_sizes; i++) {
+        int diff = _face->available_sizes[i].height - desired_height;
+        if (diff > 0 && (best_size == -1 || diff < best_diff)) {
           best_size = i;
           best_diff = diff;
         }
+        if (_face->available_sizes[i].height > _face->available_sizes[largest_size].height) {
+          largest_size = i;
+        }
       }
     }
+    if (best_size < 0) {
+      best_size = largest_size;
+    }
+
     if (best_size >= 0) {
       int pixel_height = _face->available_sizes[best_size].height;
       int pixel_width = _face->available_sizes[best_size].width;
       error = FT_Set_Pixel_Sizes(_face, pixel_width, pixel_height);
       if (!error) {
-        pnmtext_cat.info()
-          << "Using " << pixel_height << "-pixel font for "
-          << get_name() << "\n";
-
         _font_pixels_per_unit = pixel_height * _points_per_unit / _point_size;
-        _tex_pixels_per_unit = _font_pixels_per_unit;
+        _scale_factor = _font_pixels_per_unit / _tex_pixels_per_unit;
+        _font_pixel_size = pixel_height;
+
+        if (_scale_factor < 1.0) {
+          // No point in enlarging a fixed-point font.
+          _scale_factor = 1.0;
+          _tex_pixels_per_unit = _font_pixels_per_unit;
+        }
       }
     }
   }

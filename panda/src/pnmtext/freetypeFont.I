@@ -71,7 +71,7 @@ get_point_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool FreetypeFont::
 set_pixels_per_unit(float pixels_per_unit) {
-  _tex_pixels_per_unit = pixels_per_unit;
+  _requested_pixels_per_unit = pixels_per_unit;
   return reset_scale();
 }
 
@@ -128,7 +128,7 @@ get_pixel_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool FreetypeFont::
 set_scale_factor(float scale_factor) {
-  _scale_factor = scale_factor;
+  _requested_scale_factor = scale_factor;
   return reset_scale();
 }
 
@@ -172,6 +172,24 @@ set_native_antialias(bool native_antialias) {
 INLINE bool FreetypeFont::
 get_native_antialias() const {
   return _native_antialias;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FreetypeFont::get_font_pixel_size
+//       Access: Public
+//  Description: This is used to report whether the requested pixel
+//               size is being only approximated by a fixed-pixel-size
+//               font.  This returns 0 in the normal case, in which a
+//               scalable font is used, or the fixed-pixel-size font
+//               has exactly the requested pixel size.
+//
+//               If this returns non-zero, it is the pixel size of the
+//               font that we are using to approximate our desired
+//               size.
+////////////////////////////////////////////////////////////////////
+INLINE int FreetypeFont::
+get_font_pixel_size() const {
+  return _font_pixel_size;
 }
 
 ////////////////////////////////////////////////////////////////////

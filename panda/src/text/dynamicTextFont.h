@@ -60,6 +60,11 @@ PUBLISHED:
   INLINE bool set_scale_factor(float scale_factor);
   INLINE float get_scale_factor() const;
 
+  INLINE void set_native_antialias(bool native_antialias);
+  INLINE bool get_native_antialias() const;
+
+  INLINE int get_font_pixel_size() const;
+
   INLINE float get_line_height() const;
   INLINE float get_space_advance() const;
 

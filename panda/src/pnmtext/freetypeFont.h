@@ -67,6 +67,8 @@ public:
   INLINE void set_native_antialias(bool native_antialias);
   INLINE bool get_native_antialias() const;
 
+  INLINE int get_font_pixel_size() const;
+
   INLINE float get_line_height() const;
   INLINE float get_space_advance() const;
 
@@ -84,11 +86,14 @@ private:
 
 protected:
   float _point_size;
+  float _requested_pixels_per_unit;
   float _tex_pixels_per_unit;
+  float _requested_scale_factor;
   float _scale_factor;
   bool _native_antialias;
   float _font_pixels_per_unit;
 
+  int _font_pixel_size;
   float _line_height;
   float _space_advance;
 

@@ -248,8 +248,27 @@ run() {
     }
   }
 
+  _text_maker->set_point_size(_point_size);
+  _text_maker->set_native_antialias(!_no_native_aa);
+  _text_maker->set_interior_flag(_got_interior);
+  _text_maker->set_pixels_per_unit(_pixels_per_unit);
+  _text_maker->set_scale_factor(_scale_factor);
+
+  // The text_maker may have had to adjust the pixels per unit and the
+  // scale factor according to what the font supports.
+  _pixels_per_unit = _text_maker->get_pixels_per_unit();
+  _scale_factor = _text_maker->get_scale_factor();
+
+  if (_text_maker->get_font_pixel_size() != 0) {
+    nout << "Using " << _text_maker->get_font_pixel_size() << "-pixel font.\n";
+  }
+
+  // Now we may want to tweak the scale factor so that fonts will
+  // actually be generated big.  We have to do this after we have
+  // already send the current _scale_factor through the _text_maker
+  // for validation.
   _palettize_scale_factor = _scale_factor;
-  if (_no_reduce || !_no_palettize) {
+  if (_scale_factor != 1.0 && (_no_reduce || !_no_palettize)) {
     // If _no_reduce is true (-nr was specified), we want to keep the
     // glyph textures full-sized, because the user asked for that.
 
@@ -261,6 +280,8 @@ run() {
     _poly_margin *= _scale_factor;
     _pixels_per_unit *= _scale_factor;
     _scale_factor = 1.0;
+    _text_maker->set_pixels_per_unit(_pixels_per_unit);
+    _text_maker->set_scale_factor(1.0);
   }
 
   if (_no_reduce) {
@@ -272,12 +293,6 @@ run() {
     _palettize_scale_factor = 1.0;
   }
 
-  _text_maker->set_point_size(_point_size);
-  _text_maker->set_native_antialias(!_no_native_aa);
-  _text_maker->set_interior_flag(_got_interior);
-  _text_maker->set_pixels_per_unit(_pixels_per_unit);
-  _text_maker->set_scale_factor(_scale_factor);
-  
   if (_range.is_empty()) {
     // If there's no specified range, the default is the entire ASCII
     // set.

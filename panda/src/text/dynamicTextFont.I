@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::get_name
-//       Access: Public
+//       Access: Published
 //  Description: Disambiguates the get_name() method between that
 //               inherited from TextFont and that inherited from
 //               FreetypeFont.
@@ -128,8 +128,60 @@ get_scale_factor() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_native_antialias
+//       Access: Published
+//  Description: Sets whether the Freetype library's built-in
+//               antialias mode is enabled.  There are two unrelated
+//               ways to achieve antialiasing: with Freetype's native
+//               antialias mode, and with the use of a scale_factor
+//               greater than one.  By default, both modes are
+//               enabled.
+//
+//               At low resolutions, some fonts may do better with one
+//               mode or the other.  In general, Freetype's native
+//               antialiasing will produce less blurry results, but
+//               may introduce more artifacts.
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
+set_native_antialias(bool native_antialias) {
+  // If this assertion fails, you didn't call clear() first.  RTFM.
+  nassertv(get_num_pages() == 0);
+
+  FreetypeFont::set_native_antialias(native_antialias);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_native_antialias
+//       Access: Published
+//  Description: Returns whether Freetype's built-in antialias mode is
+//               enabled.  See set_native_antialias().
+////////////////////////////////////////////////////////////////////
+INLINE bool DynamicTextFont::
+get_native_antialias() const {
+  return FreetypeFont::get_native_antialias();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_font_pixel_size
+//       Access: Published
+//  Description: This is used to report whether the requested pixel
+//               size is being only approximated by a fixed-pixel-size
+//               font.  This returns 0 in the normal case, in which a
+//               scalable font is used, or the fixed-pixel-size font
+//               has exactly the requested pixel size.
+//
+//               If this returns non-zero, it is the pixel size of the
+//               font that we are using to approximate our desired
+//               size.
+////////////////////////////////////////////////////////////////////
+INLINE int DynamicTextFont::
+get_font_pixel_size() const {
+  return FreetypeFont::get_font_pixel_size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::get_line_height
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of units high each line of text
 //               is.
 ////////////////////////////////////////////////////////////////////
@@ -140,7 +192,7 @@ get_line_height() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::get_space_advance
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of units wide a space is.
 ////////////////////////////////////////////////////////////////////
 INLINE float DynamicTextFont::
