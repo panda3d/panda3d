@@ -153,7 +153,7 @@ get_all(const NodePath &space, LPoint3f &surface_point,
     interior_point = _interior_point * mat;
   }
 
-  return true;
+  return all_ok;
 }
 
 ////////////////////////////////////////////////////////////////////
