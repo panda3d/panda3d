@@ -112,7 +112,9 @@ invert() const {
   if (_matrix.almost_equal(Matrix::ident_mat())) {
     return (MatrixTransition<Matrix> *)this;
   }
-  return make_with_matrix(::invert(_matrix));
+  Matrix inverted;
+  inverted.invert_from(_matrix);
+  return make_with_matrix(inverted);
 }
 
 ////////////////////////////////////////////////////////////////////

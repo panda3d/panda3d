@@ -55,6 +55,12 @@ bool egg_keep_texture_pathnames = config_egg2sg.GetBool("egg-keep-texture-pathna
 // actually a NurbsPPCurve object.
 bool egg_load_classic_nurbs_curves = config_egg2sg.GetBool("egg-load-classic-nurbs-curves", false);
 
+// When this is true, certain kinds of recoverable errors (not syntax
+// errors) in an egg file will be allowed and ignored when an egg file
+// is loaded.  When it is false, only perfectly pristine egg files may
+// be loaded.
+bool egg_accept_errors = config_egg2sg.GetBool("egg-accept-errors", true);
+
 CoordinateSystem egg_coordinate_system;
 
 ConfigureFn(config_egg2sg) {

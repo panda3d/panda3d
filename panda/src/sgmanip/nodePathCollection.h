@@ -41,6 +41,7 @@ PUBLISHED:
   bool is_empty() const;
   int get_num_paths() const;
   NodePath get_path(int index) const;
+  NodePath operator [] (int index) const;
 
   // Handy operations on many NodePaths at once.
   INLINE void ls() const;

@@ -493,9 +493,14 @@ strip_normals() {
 //               the scene graph and below with triangles.  Returns
 //               the total number of new triangles produced, less
 //               degenerate polygons removed.
+//
+//               If convex_also is true, both concave and convex
+//               polygons will be subdivided into triangles;
+//               otherwise, only concave polygons will be subdivided,
+//               and convex polygons will be largely unchanged.
 ////////////////////////////////////////////////////////////////////
 int EggGroupNode::
-triangulate_polygons() {
+triangulate_polygons(bool convex_also) {
   int num_produced = 0;
 
   Children children_copy = _children;
@@ -508,10 +513,10 @@ triangulate_polygons() {
 
     if (child->is_of_type(EggPolygon::get_class_type())) {
       EggPolygon *poly = DCAST(EggPolygon, child);
-      poly->triangulate_in_place();
+      poly->triangulate_in_place(convex_also);
     
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
-      num_produced += DCAST(EggGroupNode, child)->triangulate_polygons();
+      num_produced += DCAST(EggGroupNode, child)->triangulate_polygons(convex_also);
     }
   }
 

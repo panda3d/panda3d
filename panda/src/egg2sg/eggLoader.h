@@ -53,7 +53,6 @@ public:
   void reparent_decals();
   void reset_directs();
 
-
   void make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
 				 const LMatrix4d *transform = NULL);
 
@@ -100,8 +99,11 @@ private:
   void apply_collision_flags(CollisionSolid *solid, 
 			     EggGroup::CollideFlags flags);
   EggGroup *find_collision_geometry(EggGroup *egg_group);
-  CollisionPlane *create_collision_plane(EggPolygon *egg_poly);
-  CollisionPolygon *create_collision_polygon(EggPolygon *egg_poly);
+  CollisionPlane *create_collision_plane(EggPolygon *egg_poly,
+					 EggGroup *parent_group);
+  void create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly, 
+				 EggGroup *parent_group,
+				 EggGroup::CollideFlags flags);
 
   void apply_deferred_arcs(Node *root);
 
@@ -125,6 +127,7 @@ private:
 public: 
   PT_NamedNode _root;
   EggData _data;
+  bool _error;
 };
 
 

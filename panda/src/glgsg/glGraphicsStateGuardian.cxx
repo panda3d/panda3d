@@ -126,11 +126,12 @@ issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
   const GLGraphicsStateGuardian *glgsg = DCAST(GLGraphicsStateGuardian, gsg);
   const Colorf &color = geom->get_next_color(citerator);
 
-  //This is a little cheat here just for a slight bit of
-  //efficiency. We don't want/need to transform the alpha by the color
-  //matrix, so use a Vertexf (which is only 3 component) and multiply
-  //this by the matrix, that will by us 1 dot product
-  Vertexf temp(color[0], color[1], color[2]);
+  // To be truly general, we really need a 5x5 matrix to transform a
+  // 4-component color.  Rather than messing with that, we instead
+  // treat the color as a 3-component RGB, which can be transformed by
+  // the ordinary 4x4 matrix, and a separate alpha value, which can be
+  // scaled and offsetted.
+  LPoint3f temp(color[0], color[1], color[2]);
   temp = temp * glgsg->get_current_color_mat();
   float alpha = (color[3] * glgsg->get_current_alpha_scale()) + 
                  glgsg->get_current_alpha_offset();

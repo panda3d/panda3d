@@ -136,18 +136,7 @@ INLINE NodePath::
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
 operator == (const NodePath &other) const {
-  // If either is a singleton, they must both be the same singleton.
-  if (_head == (ArcComponent *)NULL ||
-      other._head == (ArcComponent *)NULL) {
-    if (_head != (ArcComponent *)NULL || 
-	other._head != (ArcComponent *)NULL ||
-	_top_node != other._top_node) {
-      return false;
-    }
-  }
-
-  // If both has at least one arc, check the list of arcs.
-  return r_equiv(_head, other._head);
+  return compare_to(other) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////

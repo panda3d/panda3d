@@ -222,6 +222,20 @@ get_path(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::operator []
+//       Access: Published
+//  Description: Returns the nth NodePath in the collection.  This is
+//               the same as get_path(), but it may be a more
+//               convenient way to access it.
+////////////////////////////////////////////////////////////////////
+NodePath NodePathCollection::
+operator [] (int index) const {
+  nassertr(index >= 0 && index < (int)_node_paths.size(), NodePath());
+
+  return NodePath(_node_paths[index]);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::ls
 //       Access: Published
 //  Description: Lists all the nodes at and below each node in the

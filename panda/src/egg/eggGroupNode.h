@@ -101,7 +101,7 @@ public:
   void recompute_polygon_normals();
   void strip_normals();
 
-  int triangulate_polygons();
+  int triangulate_polygons(bool convex_also);
 
   int remove_unused_vertices();
   int remove_invalid_primitives();

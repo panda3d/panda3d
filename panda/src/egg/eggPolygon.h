@@ -25,14 +25,14 @@ public:
   bool calculate_normal(Normald &result) const;
   INLINE bool recompute_polygon_normal();
 
-  INLINE bool triangulate_into(EggGroupNode *container) const;
-  PT(EggPolygon) triangulate_in_place();
+  INLINE bool triangulate_into(EggGroupNode *container, bool convex_also) const;
+  PT(EggPolygon) triangulate_in_place(bool convex_also);
 
   virtual void write(ostream &out, int indent_level) const;
 
 private:
   bool decomp_concave(EggGroupNode *container, int asum, int x, int y) const;
-  bool triangulate_poly(EggGroupNode *container) const;
+  bool triangulate_poly(EggGroupNode *container, bool convex_also);
 
 public:
 

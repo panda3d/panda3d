@@ -122,6 +122,7 @@ PUBLISHED:
 
   INLINE bool operator == (const NodePath &other) const;
   INLINE bool operator != (const NodePath &other) const;
+  int compare_to(const NodePath &other) const;
 
   INLINE void set_graph_type(TypeHandle graph_type);
   INLINE TypeHandle get_graph_type() const;
@@ -465,7 +466,7 @@ public:
   };
 
 private:
-  bool r_equiv(const ArcComponent *next, const ArcComponent *other) const;
+  static int r_compare_to(const ArcComponent *a, const ArcComponent *v);
   bool r_extend_by(const ArcComponent *other);
   int r_as_string(const ArcComponent *comp, string &result, 
 		  int skip_nodes) const;

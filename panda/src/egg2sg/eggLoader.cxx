@@ -99,6 +99,7 @@ EggLoader::
 EggLoader() {
   // We need to enforce whatever coordinate system the user asked for.
   _data.set_coordinate_system(egg_coordinate_system);
+  _error = false;
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -110,6 +111,7 @@ EggLoader::
 EggLoader(const EggData &data) :
   _data(data)
 {
+  _error = false;
 }
 
  
@@ -1578,7 +1580,7 @@ make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
 	CollisionPlane *csplane =
-	  create_collision_plane(DCAST(EggPolygon, *ci));
+	  create_collision_plane(DCAST(EggPolygon, *ci), egg_group);
 	if (csplane != (CollisionPlane *)NULL) {
 	  apply_collision_flags(csplane, flags);
 	  cnode->add_solid(csplane);
@@ -1604,13 +1606,8 @@ make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
-	CollisionPolygon *cspoly =
-	  create_collision_polygon(DCAST(EggPolygon, *ci));
-	if (cspoly != (CollisionPolygon *)NULL) {
-	  apply_collision_flags(cspoly, flags);
-	  cnode->add_solid(cspoly);
-	  return;
-	}
+	create_collision_polygons(cnode, DCAST(EggPolygon, *ci), 
+				  egg_group, flags);
       }
     }
   }
@@ -1630,12 +1627,8 @@ make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
-	CollisionPolygon *cspoly =
-	  create_collision_polygon(DCAST(EggPolygon, *ci));
-	if (cspoly != (CollisionPolygon *)NULL) {
-	  apply_collision_flags(cspoly, flags);
-	  cnode->add_solid(cspoly);
-	}
+	create_collision_polygons(cnode, DCAST(EggPolygon, *ci), 
+				  egg_group, flags);
       }
     }
   }
@@ -1775,8 +1768,12 @@ find_collision_geometry(EggGroup *egg_group) {
 //               EggPolygon.
 ////////////////////////////////////////////////////////////////////
 CollisionPlane *EggLoader::
-create_collision_plane(EggPolygon *egg_poly) {
+create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
   if (!egg_poly->cleanup()) {
+    egg2sg_cat.warning()
+      << "Degenerate collision plane in " << parent_group->get_name()
+      << "\n";
+    _error = true;
     return NULL;
   }
 
@@ -1809,43 +1806,67 @@ create_collision_plane(EggPolygon *egg_poly) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggLoader::create_collision_polygon
+//     Function: EggLoader::create_collision_polygons
 //       Access: Private
-//  Description: Creates a single CollisionPolygon from the indicated
-//               EggPolygon.
+//  Description: Creates one or more CollisionPolygons from the
+//               indicated EggPolygon, and adds them to the indicated
+//               CollisionNode.
 ////////////////////////////////////////////////////////////////////
-CollisionPolygon *EggLoader::
-create_collision_polygon(EggPolygon *egg_poly) {
-  if (!egg_poly->cleanup()) {
-    return NULL;
+void EggLoader::
+create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly, 
+			  EggGroup *parent_group, 
+			  EggGroup::CollideFlags flags) {
+
+  PT(EggGroup) group = new EggGroup;
+  if (!egg_poly->triangulate_into(group, false)) {
+    egg2sg_cat.warning()
+      << "Degenerate collision polygon in " << parent_group->get_name()
+      << "\n";
+    _error = true;
+    return;
   }
 
-  vector<Vertexf> vertices;
-  if (!egg_poly->empty()) {
-    EggPolygon::const_iterator vi;
-    vi = egg_poly->begin();
+  if (group->size() != 1) {
+    egg2sg_cat.warning()
+      << "Concave collision polygon in " << parent_group->get_name()
+      << "\n";
+    _error = true;
+  }
 
-    Vertexd vert = (*vi)->get_pos3();
-    vertices.push_back(LCAST(float, vert));
-    
-    Vertexd last_vert = vert;
-    ++vi;
-    while (vi != egg_poly->end()) {
-      vert = (*vi)->get_pos3();
-      if (!vert.almost_equal(last_vert)) {
-	vertices.push_back(LCAST(float, vert));
-      }
+  EggGroup::iterator ci;
+  for (ci = group->begin(); ci != group->end(); ++ci) {
+    EggPolygon *poly = DCAST(EggPolygon, *ci);
 
-      last_vert = vert;
+    vector<Vertexf> vertices;
+    if (!poly->empty()) {
+      EggPolygon::const_iterator vi;
+      vi = poly->begin();
+      
+      Vertexd vert = (*vi)->get_pos3();
+      vertices.push_back(LCAST(float, vert));
+      
+      Vertexd last_vert = vert;
       ++vi;
+      while (vi != poly->end()) {
+	vert = (*vi)->get_pos3();
+	if (!vert.almost_equal(last_vert)) {
+	  vertices.push_back(LCAST(float, vert));
+	}
+	
+	last_vert = vert;
+	++vi;
+      }
+    }
+
+    if (vertices.size() >= 3) {
+      CollisionPolygon *cspoly = 
+	new CollisionPolygon(vertices.begin(), vertices.end());
+      apply_collision_flags(cspoly, flags);
+      cnode->add_solid(cspoly);
     }
   }
-
-  if (vertices.size() < 3) {
-    return NULL;
-  }
-  return new CollisionPolygon(vertices.begin(), vertices.end());
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::apply_deferred_arcs

@@ -65,8 +65,15 @@ recompute_polygon_normal() {
 //               Returns true if the triangulation is successful, or
 //               false if there was some error (in which case the
 //               container may contain some partial triangulation).
+//
+//               If convex_also is true, both concave and convex
+//               polygons will be subdivided into triangles;
+//               otherwise, only concave polygons will be subdivided,
+//               and convex polygons will be copied unchanged into the
+//               container.
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggPolygon::
-triangulate_into(EggGroupNode *container) const {
-  return triangulate_poly(container);
+triangulate_into(EggGroupNode *container, bool convex_also) const {
+  EggPolygon *copy = new EggPolygon(*this);
+  return copy->triangulate_poly(container, convex_also);
 }

@@ -16,6 +16,12 @@ load_from_loader(EggLoader &loader) {
 
   loader.build_graph();
 
+  if (loader._error && !egg_accept_errors) {
+    egg2sg_cat.error()
+      << "Errors in egg file.\n";
+    return NULL;
+  }
+
   if (loader._root != (NamedNode *)NULL && egg_flatten) {
     SceneGraphReducer gr(RenderRelation::get_class_type());
     int num_reduced = gr.flatten(loader._root, egg_flatten_siblings);

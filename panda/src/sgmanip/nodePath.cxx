@@ -48,6 +48,27 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::compare_to
+//       Access: Public
+//  Description: Returns a number less than zero if this NodePath
+//               sorts before the indicated NodePath in an arbitrary
+//               lexicographical comparision, greater than zero if
+//               this one sorts after the other one, or zero if the
+//               two NodePaths are equivalent.
+////////////////////////////////////////////////////////////////////
+int NodePath::
+compare_to(const NodePath &other) const {
+  if (_head == (ArcComponent *)NULL && other._head == (ArcComponent *)NULL) {
+    // If both are singletons, compare the pointers.
+    return _top_node - other._top_node;
+
+  } else {
+    // Otherwise, compare the arc chains.
+    return r_compare_to(_head, other._head);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::extend_by
 //       Access: Public
 //  Description: Appends a new child node onto the bottom end of the
@@ -2430,24 +2451,29 @@ write_bounds(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::r_equiv
-//       Access: Private
-//  Description: The recursive implementation of operator ==.  Returns
-//               true if the list of arcs is equivalent, false
-//               otherwise.
+//     Function: NodePath::r_compare_to
+//       Access: Private, Static
+//  Description: The recursive implementation of compare_to().  Returns
+//               < 0 if a sorts before b, > 0 if b sorts before a, or
+//               == 0 if they are equivalent.
 ////////////////////////////////////////////////////////////////////
-bool NodePath::
-r_equiv(const ArcComponent *next, const ArcComponent *other) const {
-  if (next == (const ArcComponent *)NULL) { 
-    nassertr(other == (const ArcComponent *)NULL, false);
-    return true;
+int NodePath::
+r_compare_to(const ArcComponent *a, const ArcComponent *b) {
+  if (a == b) {
+    return 0;
+
+  } else if (a == (const ArcComponent *)NULL) {
+    return -1;
+
+  } else if (b == (const ArcComponent *)NULL) {
+    return 1;
+
+  } else if (a->_arc != b->_arc) {
+    return a->_arc - b->_arc;
+
+  } else {
+    return r_compare_to(a->_next, b->_next);
   }
-
-  nassertr(next != (const ArcComponent *)NULL, false);
-  nassertr(other != (const ArcComponent *)NULL, false);
-
-  return (next == other ||
-	  (next->_arc == other->_arc && r_equiv(next->_next, other->_next)));
 }
 
 ////////////////////////////////////////////////////////////////////

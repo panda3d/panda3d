@@ -95,18 +95,21 @@ calculate_normal(Normald &result) const {
 //               triangles to the parent group node in place of the
 //               original polygon.  Returns a pointer to the original
 //               polygon, which is likely about to be destructed.
+//
+//               If convex_also is true, both concave and convex
+//               polygons will be subdivided into triangles;
+//               otherwise, only concave polygons will be subdivided,
+//               and convex polygons will be copied unchanged into the
+//               container.
 ////////////////////////////////////////////////////////////////////
 PT(EggPolygon) EggPolygon::
-triangulate_in_place() {
+triangulate_in_place(bool convex_also) {
   EggGroupNode *parent = get_parent();
   nassertr(parent != (EggGroupNode *)NULL, this);
 
   PT(EggPolygon) save_me = this;
   parent->remove_child(this);
-
-  if (cleanup()) {
-    triangulate_into(parent);
-  }
+  triangulate_poly(parent, convex_also);
 
   return save_me;
 }
@@ -253,12 +256,15 @@ decomp_concave(EggGroupNode *container, int asum, int x, int y) const {
       } else {
 
 	// Here's a triangle to output.
-	EggPolygon *triangle = new EggPolygon(*this);
-	container->add_child(triangle);
+	PT(EggPolygon) triangle = new EggPolygon(*this);
 	triangle->clear();
 	triangle->add_vertex(get_vertex(p0->index));
 	triangle->add_vertex(get_vertex(p1->index));
 	triangle->add_vertex(get_vertex(p2->index));
+	
+	if (triangle->cleanup()) {
+	  container->add_child(triangle.p());
+	}
 	
 	p0->next = p1->next;
 	p1 = p2;
@@ -273,12 +279,15 @@ decomp_concave(EggGroupNode *container, int asum, int x, int y) const {
   }
 
   // One more triangle to output.
-  EggPolygon *triangle = new EggPolygon(*this);
-  container->add_child(triangle);
+  PT(EggPolygon) triangle = new EggPolygon(*this);
   triangle->clear();
   triangle->add_vertex(get_vertex(p0->index));
   triangle->add_vertex(get_vertex(p1->index));
   triangle->add_vertex(get_vertex(p2->index));
+
+  if (triangle->cleanup()) {
+    container->add_child(triangle.p());
+  }
 
   return true;
 }
@@ -292,18 +301,27 @@ decomp_concave(EggGroupNode *container, int asum, int x, int y) const {
 //               container up with EggPolygons that represent the
 //               triangles.  Returns true if successful, false on
 //               failure.
+//
+//               If convex_also is true, both concave and convex
+//               polygons will be subdivided into triangles;
+//               otherwise, only concave polygons will be subdivided,
+//               and convex polygons will be copied unchanged into the
+//               container.
 ////////////////////////////////////////////////////////////////////
 bool EggPolygon::
-triangulate_poly(EggGroupNode *container) const {
+triangulate_poly(EggGroupNode *container, bool convex_also) {
   LPoint3d p0, p1, as;
   double dx1, dy1, dx2, dy2, max;
   int i, flag, asum, csum, index, x, y, v0, v1, v, even;
+
+  if (!cleanup()) {
+    return false;
+  }
   
   // First see if the polygon is already a triangle
   int num_verts = size();
   if (num_verts == 3) {
-    EggPolygon *triangle = new EggPolygon(*this);
-    container->add_child(triangle);
+    container->add_child(this);
 
     return true;
 
@@ -386,8 +404,16 @@ triangulate_poly(EggGroupNode *container) const {
     csum = ((dx1 * dy2 - dx2 * dy1 >= 0.0) ? 1 : 0);
 
     if (csum ^ asum) {
+      // It's a concave polygon.  This is a little harder.
       return decomp_concave(container, flag, x, y);
     }
+  }
+
+  // It's a convex polygon.
+  if (!convex_also) {
+    container->add_child(this);
+
+    return true;
   }
 
   v0 = 0;
@@ -402,23 +428,29 @@ triangulate_poly(EggGroupNode *container) const {
    */
   for (i = 0; i < num_verts - 2; i++) {
     if (even) {
-      EggPolygon *triangle = new EggPolygon(*this);
-      container->add_child(triangle);
+      PT(EggPolygon) triangle = new EggPolygon(*this);
       triangle->clear();
       triangle->add_vertex(get_vertex(v0));
       triangle->add_vertex(get_vertex(v1));
       triangle->add_vertex(get_vertex(v));
 
+      if (triangle->cleanup()) {
+	container->add_child(triangle.p());
+      }
+
       v0 = v1;
       v1 = v;
       v = v0 + 1;
     } else {
-      EggPolygon *triangle = new EggPolygon(*this);
-      container->add_child(triangle);
+      PT(EggPolygon) triangle = new EggPolygon(*this);
       triangle->clear();
       triangle->add_vertex(get_vertex(v1));
       triangle->add_vertex(get_vertex(v0));
       triangle->add_vertex(get_vertex(v));
+
+      if (triangle->cleanup()) {
+	container->add_child(triangle.p());
+      }
 
       v0 = v1;
       v1 = v;
