@@ -9,6 +9,7 @@
 #define USE_NET yes
 
 #define COMPONENT_LIBS \
+    pgraph \
     pvrpn grutil chan chancfg pstatclient \
     char chat collide cull device \
     dgraph display gobj graph gsgbase \

@@ -100,7 +100,7 @@ RenderState::
 
       // We should never have a reflexive entry in this map.  If we
       // do, something got screwed up elsewhere.
-      nassertv(other != this);
+      nassertv(other != (const RenderState *)this);
       
       // Now we're holding a reference count to the other state, as well
       // as to the computed result (if any), so neither object will be
@@ -281,7 +281,7 @@ compose(const RenderState *other) const {
     CPT(RenderState) result = do_compose(this);
     ((RenderState *)this)->_self_compose = result;
 
-    if (result != this) {
+    if (result != (const RenderState *)this) {
       // If the result of compose(this) is something other than this,
       // explicitly increment the reference count.  We have to be sure
       // to decrement it again later, in our destructor.

@@ -19,8 +19,9 @@
     renderState.h renderState.I \
     textureAttrib.h textureAttrib.I
     
-// #define INCLUDED_SOURCES
-  #define SOURCES $[SOURCES] \
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
+//  #define SOURCES $[SOURCES] \
+  #define INCLUDED_SOURCES \
     colorAttrib.cxx \
     config_pgraph.cxx \
     cycleData.cxx \
