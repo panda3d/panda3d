@@ -19,7 +19,7 @@
 #ifndef COLLISIONHANDLERQUEUE_H
 #define COLLISIONHANDLERQUEUE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "collisionHandler.h"
 #include "collisionEntry.h"

@@ -83,4 +83,15 @@ clear_recorder() {
   set_recorder((CollisionRecorder *)NULL);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::ls
+//       Access: Published
+//  Description: Shortcut for write().  This is handy for interactive
+//               debugging.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionTraverser::
+ls() const {
+  write(nout, 0);
+}
+
 #endif  // DO_COLLISION_RECORDING
