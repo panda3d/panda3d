@@ -107,6 +107,11 @@ class Interval(DirectObject):
         # Spawn task
         taskMgr.spawnMethodNamed(self.__playTask, self.name + '-play')
 
+    def loop(self, t0=0.0, duration=0.0, scale=1.0):
+        self.accept(self.name + '-loop', self.play, extraArgs=[t0, duration, scale])
+        self.play(t0, duration, scale)
+        return
+
     def stop(self):
         """ stop()
         """
@@ -115,6 +120,8 @@ class Interval(DirectObject):
             messenger.send(stopEvent)
         # Kill task
         taskMgr.removeTasksNamed(self.name + '-play')
+        # No more looping.
+        self.ignore(self.name + '-loop')
 	return self.curr_t
 
     def isPlaying(self):
@@ -135,6 +142,7 @@ class Interval(DirectObject):
             return Task.cont
         else:
 	    self.setT(self.endTime)
+            messenger.send(self.name + "-loop")
             return Task.done
 
     def __repr__(self, indent=0):

@@ -23,7 +23,8 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
     notify = DirectNotifyGlobal.directNotify.newCategory("DialogBox")
 
     def __init__(self, message = "", doneEvent = None, style = NoButtons,
-                 font = getDefaultFont(), wordwrap = 12):
+                 font = getDefaultFont(), wordwrap = 12, okButtonText = "OK",
+                 cancelButtonText = "Cancel"):
 	"""___init___(self, Event, string="", int, model, int=12)"""
 
         # Sanity check
@@ -35,6 +36,8 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
         self.style = style
         self.font = font
         self.wordwrap = wordwrap
+        self.okButtonText = okButtonText
+        self.cancelButtonText = cancelButtonText
 
         # initialize our OnscreenPanel essence
         # NOTE: all db's have the same name so we can kill them easily
@@ -51,13 +54,19 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
 
         if (self.style == TwoChoice):
             # create OK and CANCEL buttons
-            self.makeButton("OK", pos = (-0.325, -0.25),
-                            func = self.handleOk, event = "ok")
-            self.makeButton("Cancel", pos = (0.2, -0.25),
-                            func = self.handleCancel, event = "cancel")
+            self.makeButton(self.okButtonText,
+                            pos = (-0.325, -0.25),
+                            func = self.handleOk,
+                            event = "ok")
+            self.makeButton(self.cancelButtonText,
+                            pos = (0.2, -0.25),
+                            func = self.handleCancel,
+                            event = "cancel")
         elif (self.style == Acknowledge):
             # create a centered OK  button
-            self.makeButton("OK", pos = (0.0, -0.25), func = self.handleOk,
+            self.makeButton(self.okButtonText,
+                            pos = (0.0, -0.25),
+                            func = self.handleOk,
                             event = "ok")
         elif (self.style == NoButtons):
             # No buttons at all
