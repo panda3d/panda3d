@@ -103,13 +103,14 @@
 
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[OPT1FLAGS] $[DEBUGFLAGS]
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS]
-#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGFLAGS]
+#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS]
 
 // should be OK to build debug info for all builds, although it increases size of DLL by a tiny amt
-#define FORCE_DEBUG_FLAGS 1
-
+//#define FORCE_DEBUG_FLAGS 0
 #if $[FORCE_DEBUG_FLAGS]
 // make them all link with non-debug msvc runtime dlls for this case
+
+// this doesnt work right
 #defer DEBUGFLAGS $[subst /MDd,,$[DEBUGFLAGS]]
 #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGFLAGS]
 #define LINKER_FLAGS $[LINKER_FLAGS] /debug
