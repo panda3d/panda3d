@@ -125,6 +125,7 @@ get_suggested_extension() const {
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMFileTypeYUV::
 make_reader(FILE *file, bool owns_file, const string &magic_number) {
+  init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -137,6 +138,7 @@ make_reader(FILE *file, bool owns_file, const string &magic_number) {
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMFileTypeYUV::
 make_writer(FILE *file, bool owns_file) {
+  init_pnm();
   return new Writer(this, file, owns_file);
 }
 
@@ -218,7 +220,7 @@ supports_read_row() const {
 ////////////////////////////////////////////////////////////////////
 bool PNMFileTypeYUV::Reader::
 read_row(xel *row_data, xelval *) {
-  long tmp, y, u, v, y1, r, g, b;
+  long y, u, v, y1, r, g, b;
   unsigned char *yuvptr;
   int col;
 

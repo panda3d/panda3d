@@ -277,6 +277,7 @@ matches_magic_number(const string &magic_number) const {
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMFileTypeSoftImage::
 make_reader(FILE *file, bool owns_file, const string &magic_number) {
+  init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -289,6 +290,7 @@ make_reader(FILE *file, bool owns_file, const string &magic_number) {
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMFileTypeSoftImage::
 make_writer(FILE *file, bool owns_file) {
+  init_pnm();
   return new Writer(this, file, owns_file);
 }
 
@@ -344,8 +346,8 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   _x_size = read_ushort(_file);
   _y_size = read_ushort(_file);
 
-  float ratio = read_float(_file);
-  int fields = read_ushort(_file);
+  /* float ratio = */ read_float(_file);
+  /* int fields = */ read_ushort(_file);
   read_ushort(_file);
 
   int chained, size, channel;
@@ -464,8 +466,11 @@ read_row(xel *row_data, xelval *alpha_data) {
       return false;
     }
     break;
+
+  default:
+    break;
   }
-  
+
   return true;
 }
 

@@ -1026,9 +1026,10 @@ rotate_mat(NumType angle, LVecBase3<NumType> axis,
   }
 
   // Normalize the axis.
-  NumType length = axis.dot(axis);
-  nassertr(length != 0.0, ident_mat());
-  axis /= length;
+  NumType length2 = axis.dot(axis);
+  // Cannot rotate about a zero-length axis.
+  nassertr(length2 != 0.0, ident_mat());
+  axis /= csqrt(length2);
     
   double s = sin(deg_2_rad(angle));
   double c = cos(deg_2_rad(angle));

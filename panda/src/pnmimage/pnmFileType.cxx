@@ -144,10 +144,10 @@ init_pnm() {
 
     pm_init(&argc, argv);
 
-    // Now deallocate all the stuff we just allocated.
-    for (i = 0; i < argc; i++) {
-      delete[] argv[i];
-    }
+    // We can delete the argv array itself, but we cannot free the
+    // results of the strdup() calls we just made, since the pnm
+    // library might keep pointers to it.  But this is a one-time
+    // leak.
     delete[] argv;
   }
 }

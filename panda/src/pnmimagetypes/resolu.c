@@ -1,9 +1,5 @@
 /* Copyright (c) 1991 Regents of the University of California */
 
-#ifndef lint
-static char SCCSid[] = "@(#)resolu.c 2.2 11/28/91 LBL";
-#endif
-
 /*
  * Read and write image resolutions.
  */

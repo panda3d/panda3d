@@ -199,6 +199,7 @@ matches_magic_number(const string &magic_number) const {
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMFileTypeTIFF::
 make_reader(FILE *file, bool owns_file, const string &magic_number) {
+  init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -211,6 +212,7 @@ make_reader(FILE *file, bool owns_file, const string &magic_number) {
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMFileTypeTIFF::
 make_writer(FILE *file, bool owns_file) {
+  init_pnm();
   return new Writer(this, file, owns_file);
 }
 
@@ -608,6 +610,9 @@ write_data(xel *array, xelval *alpha) {
     chv = (colorhist_vector) 0;
     grayscale = true;
     break;
+
+  default:
+    break;
   }
 
   /* Open output file. */
@@ -650,6 +655,9 @@ write_data(xel *array, xelval *alpha) {
     photometric = PHOTOMETRIC_MINISBLACK;
     i = 8 / bitspersample;
     bytesperrow = ( _x_size + i - 1 ) / i;
+    break;
+
+  default:
     break;
   }
 

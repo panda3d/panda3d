@@ -31,8 +31,11 @@ extern "C" {
  * without express or implied warranty.
  * 
  * $Log$
- * Revision 1.1  2000/10/04 01:14:42  drose
- * Initial revision
+ * Revision 1.2  2000/11/09 21:14:02  drose
+ * *** empty log message ***
+ *
+ * Revision 1.1.1.1  2000/10/04 01:14:42  drose
+ *
  *
  * Revision 1.10  1992/11/24  19:38:17  dws
  * Added code to verify that reading occurred at the correct offsets.
@@ -83,15 +86,10 @@ static void BMPreadinfoheader ARGS((FILE *fp, unsigned long *ppos,
     int *pclassv));
 static int BMPreadrgbtable ARGS((FILE *fp, unsigned long *ppos,
     unsigned short cBitCount, int classv, pixval *R, pixval *G, pixval *B));
-static int BMPreadrow ARGS((FILE *fp, unsigned long *ppos, pixel *row,
-    unsigned long cx, unsigned short cBitCount, pixval *R, pixval *G, pixval *B));
-static pixel ** BMPreadbits ARGS((FILE *fp, unsigned long *ppos,
-    unsigned long offBits, unsigned long cx, unsigned long cy,
-    unsigned short cBitCount, int classv, pixval *R, pixval *G, pixval *B));
 
 static const char *ifname = "BMP";
 static char     er_read[] = "%s: read error";
-static char     er_seek[] = "%s: seek error";
+//static char     er_seek[] = "%s: seek error";
 
 static int
 GetByte(FILE *fp)
@@ -500,7 +498,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     indexed = true;
     rc = BMPreadrgbtable(file, &pos, cBitCount, classv, R, G, B);
     
-    if (rc != BMPlenrgbtable(classv, cBitCount)) {
+    if (rc != (int)BMPlenrgbtable(classv, cBitCount)) {
       pnmimage_bmp_cat.warning()
 	<< rc << "-byte RGB table, expected "
 	<< BMPlenrgbtable(classv, cBitCount) << " bytes\n";

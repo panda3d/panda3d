@@ -1,9 +1,5 @@
 /* Copyright (c) 1994 Regents of the University of California */
 
-#ifndef lint
-static char SCCSid[] = "@(#)header.c 2.4 2/27/94 LBL";
-#endif
-
 /*
  *  header.c - routines for reading and writing information headers.
  *
@@ -42,6 +38,7 @@ newheader(char *s, register FILE *fp)		/* identifying line of information header
 }
 
 
+int 
 headidval(register char *r, register char *s)			/* get header id (return true if is id) */
 {
 	register char  *cp = HDRSTR;
@@ -54,6 +51,7 @@ headidval(register char *r, register char *s)			/* get header id (return true if
 }
 
 
+int
 isheadid(char *s)			/* check to see if line is header id */
 {
 	return(headidval(NULL, s));
@@ -82,6 +80,7 @@ printargs(int ac, char **av, register FILE *fp)		/* print arguments to a file */
 }
 
 
+int
 formatval(register char *r, register char *s)			/* get format value (return true if format) */
 {
 	register char  *cp = FMTSTR;
@@ -97,6 +96,7 @@ formatval(register char *r, register char *s)			/* get format value (return true
 }
 
 
+int
 isformat(char *s)			/* is line a format line? */
 {
 	return(formatval(NULL, s));
@@ -211,6 +211,7 @@ copymatch(char *pat, char *str)
  * if fout is not NULL.
  */
 
+int
 checkheader(FILE *fin, char *fmt, FILE *fout)
 {
 	struct check	cdat;

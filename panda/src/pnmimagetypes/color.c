@@ -1,9 +1,5 @@
 /* Copyright (c) 1991 Regents of the University of California */
 
-#ifndef lint
-static char SCCSid[] = "@(#)color.c 2.8 3/26/94 LBL";
-#endif
-
 /*
  *  color.c - routines for color calculations.
  *
@@ -48,13 +44,13 @@ tempbuffer(unsigned len)		/* get a temporary buffer */
 }
 
 
-fwritecolrs(register COLR *scanline, unsigned len, register FILE *fp)
+int fwritecolrs(register COLR *scanline, unsigned len, register FILE *fp)
 		/* write out a colr scanline */
 {
 	register int  i, j, beg, cnt;
 	int  c2;
 	
-	if (len < MINELEN | len > MAXELEN)	/* OOBs, write out flat */
+	if (len < MINELEN || len > MAXELEN)	/* OOBs, write out flat */
 		return(fwrite((char *)scanline,sizeof(COLR),len,fp) - len);
 					/* put magic header */
 	putc(2, fp);
@@ -99,13 +95,13 @@ fwritecolrs(register COLR *scanline, unsigned len, register FILE *fp)
 
 int oldreadcolrs(register COLR *scanline, int len, register FILE *fp);
 
-freadcolrs(register COLR *scanline, int len, register FILE *fp)
+int freadcolrs(register COLR *scanline, int len, register FILE *fp)
 		/* read in an encoded colr scanline */
 {
 	register int  i, j;
 	int  code, val;
 					/* determine scanline type */
-	if (len < MINELEN | len > MAXELEN)
+	if (len < MINELEN || len > MAXELEN)
 		return(oldreadcolrs(scanline, len, fp));
 	if ((i = getc(fp)) == EOF)
 		return(-1);
@@ -177,7 +173,7 @@ int oldreadcolrs(register COLR *scanline, int len, register FILE *fp)
 
 
 	/* write out a scanline */
-fwritescan(register COLOR *scanline, int len, FILE *fp)	
+int fwritescan(register COLOR *scanline, int len, FILE *fp)	
 {
 	COLR  *clrscan;
 	int  n;
@@ -199,7 +195,7 @@ fwritescan(register COLOR *scanline, int len, FILE *fp)
 }
 
 
-freadscan(register COLOR *scanline, int len, FILE *fp)
+int freadscan(register COLOR *scanline, int len, FILE *fp)
 			/* read in a scanline */
 {
 	register COLR  *clrscan;

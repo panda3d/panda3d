@@ -1,9 +1,5 @@
 /* Copyright (c) 1992 Regents of the University of California */
 
-#ifndef lint
-static char SCCSid[] = "@(#)colrops.c 2.4 10/2/92 LBL";
-#endif
-
 /*
  * Integer operations on COLR scanlines
  */
@@ -33,7 +29,7 @@ extern double	pow(double, double);
 #endif
 
 
-setcolrcor(double (*f)(double, double), double a2)
+int setcolrcor(double (*f)(double, double), double a2)
 		/* set brightness correction */
 {
 	double	mult;
@@ -53,7 +49,7 @@ setcolrcor(double (*f)(double, double), double a2)
 }
 
 
-setcolrinv(double (*f)(double, double), double a2)
+int setcolrinv(double (*f)(double, double), double a2)
 		/* set inverse brightness correction */
 {
 	double	mult;
@@ -79,7 +75,7 @@ setcolrinv(double (*f)(double, double), double a2)
 }
 
 
-setcolrgam(double g)			/* set gamma conversion */
+int setcolrgam(double g)			/* set gamma conversion */
 {
 	if (setcolrcor(pow, 1.0/g) < 0)
 		return(-1);
@@ -87,7 +83,7 @@ setcolrgam(double g)			/* set gamma conversion */
 }
 
 
-colrs_gambs(register COLR *scan, int len)
+int colrs_gambs(register COLR *scan, int len)
 		/* convert scanline of colrs to gamma bytes */
 {
 	register int	i, expo;
@@ -135,12 +131,12 @@ colrs_gambs(register COLR *scan, int len)
 }
 
 
-gambs_colrs(register COLR *scan, int len)
+int gambs_colrs(register COLR *scan, int len)
 	/* convert gamma bytes to colr scanline */
 {
 	register int	nexpo;
 
-	if (g_mant == NULL | g_nexp == NULL)
+	if (g_mant == NULL || g_nexp == NULL)
 		return(-1);
 	while (len-- > 0) {
 		nexpo = g_nexp[scan[0][RED]];

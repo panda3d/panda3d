@@ -48,7 +48,7 @@ static void * xmalloc (int bytes);
 #define MALLOC(n, type)     (type *)xmalloc((n) * sizeof(type))
 static char * compression_name (char compr);
 static void       read_bytes (FILE *ifp, int n, char *buf);
-static void read_header(FILE *ifp, Header *head, const string &magic_number);
+static bool read_header(FILE *ifp, Header *head, const string &magic_number);
 static TabEntry * read_table (FILE *ifp, int tablen);
 static void       read_channel (FILE *ifp, int xsize, int ysize, 
 				     int zsize, int bpc, TabEntry *table,
@@ -91,7 +91,9 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
 
   Header head;
 
-  ::read_header(file, &head, magic_number);
+  if (!::read_header(file, &head, magic_number)) {
+    _is_valid = false;
+  }
 
   long pixmax = (head.bpc == 1) ? MAXVAL_BYTE : MAXVAL_WORD;
   if( pixmax > PNM_MAXMAXVAL ) {
@@ -115,7 +117,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
 
   current_row = _y_size - 1;
 
-  if (pnmimage_sgi_cat.is_debug()) {
+  if (_is_valid && pnmimage_sgi_cat.is_debug()) {
     head.name[79] = '\0';  /* just to be safe */
     pnmimage_sgi_cat.debug()
       << "Read RGB image:\n"
@@ -214,9 +216,9 @@ read_row(xel *row_data, xelval *alpha_data) {
 
 
 
-static void
+static bool
 read_header(FILE *ifp, Header *head, const string &magic_number) {
-    nassertv(magic_number.size() == 4);
+    nassertr(magic_number.size() == 4, false);
     head->magic = 
       ((unsigned char)magic_number[0] << 8) |
       ((unsigned char)magic_number[1]);
@@ -233,15 +235,29 @@ read_header(FILE *ifp, Header *head, const string &magic_number) {
     head->colormap  = get_big_long(ifp);
     read_bytes(ifp, 404, head->dummy2);
 
-    if( head->magic != SGI_MAGIC )
-        pm_error("bad magic number - not an SGI image");
-    if( head->storage != 0 && head->storage != 1 )
-        pm_error("unknown compression type");
-    if( head->bpc < 1 || head->bpc > 2 )
-        pm_error("illegal precision value %d (only 1-2 allowed)", head->bpc );
-    if( head->colormap != CMAP_NORMAL )
-        pm_message("unsupported non-normal pixel data (%d)",
-		   head->colormap);
+    if (head->magic != SGI_MAGIC) {
+      pnmimage_sgi_cat.error()
+	<< "Invalid magic number: not an SGI image file.\n";
+      return false;
+    }
+
+    if (head->storage != 0 && head->storage != 1) {
+      pnmimage_sgi_cat.error()
+	<< "Unknown compression type.\n";
+      return false;
+    }
+
+    if (head->bpc < 1 || head->bpc > 2) {
+      pnmimage_sgi_cat.error()
+	<< "Illegal precision value " << head->bpc << " (only 1-2 allowed)\n";
+      return false;
+    }
+
+    if (head->colormap != CMAP_NORMAL) {
+      pnmimage_sgi_cat.error()
+	<< "Unsupported non-normal pixel data (" << head->colormap << ")\n";
+      return false;
+    }
 
     /* adjust ysize/zsize to dimension, just to be sure */
     switch( head->dimension ) {
@@ -262,14 +278,20 @@ read_header(FILE *ifp, Header *head, const string &magic_number) {
 	break;
 	
       default:
-	pm_message("%d-channel image, using only first 4 channels", head->zsize);
+	pnmimage_sgi_cat.warning()
+	  << "Using only first 4 channels of " << head->zsize
+	  << "-channel image.\n";
 	head->zsize = 4;
 	break;
       }
       break;
     default:
-      pm_error("illegal dimension value %d (only 1-3 allowed)", head->dimension);
+      pnmimage_sgi_cat.error()
+	<< "Illegal dimension value " << head->dimension 
+	<< " (only 1-3 allowed)\n";
+      return false;
     }
+    return true;
 }
 
 
