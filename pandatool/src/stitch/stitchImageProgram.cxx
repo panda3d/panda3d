@@ -20,6 +20,11 @@ StitchImageProgram() {
 
      "The images are generated internally using a CPU-based rasterization "
      "algorithm (no graphics hardware is used).");
+
+  add_option
+    ("f", "", 0, 
+     "Apply a very simple filter in an attempt to smooth the results.",
+     &StitchImageProgram::dispatch_none, &_filter_output);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -30,6 +35,7 @@ StitchImageProgram() {
 void StitchImageProgram::
 run() {
   StitchImageRasterizer outputter;
+  outputter._filter_output = _filter_output;
   _command_file.process(outputter);
 }
 

@@ -81,7 +81,7 @@ bool PStatThreadData::
 has_frame(int frame_number) const {
   int rel_frame = frame_number - _first_frame_number;
   
-  return (rel_frame >= 0 && rel_frame < _frames.size() &&
+  return (rel_frame >= 0 && rel_frame < (int)_frames.size() &&
 	  _frames[rel_frame] != (PStatFrameData *)NULL);
 }
 
@@ -96,7 +96,7 @@ has_frame(int frame_number) const {
 const PStatFrameData &PStatThreadData::
 get_frame(int frame_number) const {
   int rel_frame = frame_number - _first_frame_number;
-  if (rel_frame >= _frames.size()) {
+  if (rel_frame >= (int)_frames.size()) {
     rel_frame = _frames.size() - 1;
   }
 
@@ -108,11 +108,11 @@ get_frame(int frame_number) const {
   } else {
     // No frame data that old.  Return the oldest frame we've got.
     rel_frame = 0;
-    while (rel_frame < _frames.size() && 
+    while (rel_frame < (int)_frames.size() && 
 	   _frames[rel_frame] == (PStatFrameData *)NULL) {
       rel_frame++;
     }
-    return (rel_frame < _frames.size()) ? *_frames[rel_frame] : _null_frame;
+    return (rel_frame < (int)_frames.size()) ? *_frames[rel_frame] : _null_frame;
   }
 }
 
@@ -164,12 +164,12 @@ get_frame_at_time(double time) const {
 int PStatThreadData::
 get_frame_number_at_time(double time, int hint) const {
   hint -= _first_frame_number;
-  if (hint >= 0 && hint < _frames.size()) {
+  if (hint >= 0 && hint < (int)_frames.size()) {
     if (_frames[hint] != (PStatFrameData *)NULL &&
 	_frames[hint]->get_start() <= time) {
       // The hint might be right.  Scan forward from there.
       int i = hint + 1;
-      while (i < _frames.size() &&
+      while (i < (int)_frames.size() &&
 	     (_frames[i] == (PStatFrameData *)NULL ||
 	      _frames[i]->get_start() <= time)) {
 	if (_frames[i] != (PStatFrameData *)NULL) {
@@ -309,13 +309,13 @@ record_new_frame(int frame_number, PStatFrameData *frame_data) {
     _frames.push_back(NULL);
 
   } else {
-    while (_first_frame_number + _frames.size() <= frame_number) {
+    while (_first_frame_number + (int)_frames.size() <= frame_number) {
       _frames.push_back(NULL);
     }
   }
 
   int index = frame_number - _first_frame_number;
-  nassertv(index >= 0 && index < _frames.size());
+  nassertv(index >= 0 && index < (int)_frames.size());
 
   if (_frames[index] != (PStatFrameData *)NULL) {
     nout << "Got repeated frame data for frame " << frame_number << "\n";

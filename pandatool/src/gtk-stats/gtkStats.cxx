@@ -13,14 +13,6 @@
 
 GtkStatsMainWindow *GtkStats::_main_window = NULL;
 
-static bool user_interrupted = false;
-
-// This simple signal handler lets us know when the user has pressed
-// control-C, so we can clean up nicely.
-static void signal_handler(int) {
-  user_interrupted = true;
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: GtkStats::Constructor
 //       Access: Public

@@ -232,7 +232,7 @@ add_collector(PStatCollectorDef *def) {
   nassertv(def->_index < 1000);
 
   // Make sure we have enough slots allocated.
-  while (_collectors.size() <= def->_index) {
+  while ((int)_collectors.size() <= def->_index) {
     _collectors.push_back(NULL);
   }
 
@@ -257,7 +257,7 @@ define_thread(int thread_index, const string &name) {
   nassertv(thread_index < 1000);
 
   // Make sure we have enough slots allocated.
-  while (_threads.size() <= thread_index) {
+  while ((int)_threads.size() <= thread_index) {
     _threads.push_back(Thread());
   }
 

@@ -253,7 +253,7 @@ pack_labels() {
 
   int num_labels = get_num_labels();
 
-  while (_y_positions.size() < num_labels) {
+  while ((int)_y_positions.size() < num_labels) {
     _y_positions.push_back(0);
   }
 

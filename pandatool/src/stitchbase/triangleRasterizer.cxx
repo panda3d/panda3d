@@ -517,7 +517,6 @@ filter_pixel(RGBColord &rgb, double &alpha,
   int si = (int)(s + 0.5);
   int ti = _texture->get_y_size() - 1 - (int)(t + 0.5);
   
-  int n = 0;
   rgb.set(0.0, 0.0, 0.0);
   alpha = 0.0;
   
@@ -530,6 +529,8 @@ filter_pixel(RGBColord &rgb, double &alpha,
     return;
   }
 
+  int num_total = 0;
+  int num_visible = 0;
   for (int yr = -ri; yr <= ri; yr++) {
     int tii = ti + yr;
     for (int xr = -ri; xr <= ri; xr++) {
@@ -537,21 +538,22 @@ filter_pixel(RGBColord &rgb, double &alpha,
       if (sii >= 0 && sii < _texture->get_x_size() &&
 	  tii >= 0 && tii < _texture->get_y_size()) {
 	rgb += _texture->get_xel(sii, tii);
-	alpha += 1.0;
+	num_visible++;
       }
-      n++;
+      num_total++;
     }
   }
 
-  if (alpha != 0.0) {
-    rgb /= alpha;
+  if (num_visible != 0) {
+    rgb /= (double)num_visible;
+    alpha = 1.0;
   }
 
   // We would do this to antialias the edge of the image.  However, it
   // seems to cause problems at seams, so we won't do it.
   /*
-  if (n != 0) {
-    alpha = alpha / (double)n;
+  if (num_total != 0) {
+    alpha = (double)num_visible / (double)num_total;
   }
   */
 }

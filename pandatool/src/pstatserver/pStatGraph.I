@@ -33,7 +33,7 @@ get_num_labels() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PStatGraph::
 get_label_collector(int n) const {
-  nassertr(n >= 0 && n < _labels.size(), 0);
+  nassertr(n >= 0 && n < (int)_labels.size(), 0);
   return _labels[n];
 }
 
@@ -44,7 +44,7 @@ get_label_collector(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PStatGraph::
 get_label_name(int n) const {
-  nassertr(n >= 0 && n < _labels.size(), string());
+  nassertr(n >= 0 && n < (int)_labels.size(), string());
   return _monitor->get_client_data()->get_collector_name(_labels[n]);
 }
 
@@ -55,7 +55,7 @@ get_label_name(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE RGBColorf PStatGraph::
 get_label_color(int n) const {
-  nassertr(n >= 0 && n < _labels.size(), RGBColorf(0.0, 0.0, 0.0));
+  nassertr(n >= 0 && n < (int)_labels.size(), RGBColorf(0.0, 0.0, 0.0));
   return _monitor->get_collector_color(_labels[n]);
 }
 

@@ -280,7 +280,7 @@ handle_event(CPT(Event) event) {
 
   if (name.size() == 1 && isalpha(name[0])) {
     int index = tolower(name[0]) - 'a';
-    if (index >= 0 && index < _images.size()) {
+    if (index >= 0 && index < (int)_images.size()) {
       toggle_viz(_images[index]);
       return;
     }

@@ -228,7 +228,7 @@ init(int x_verts, int y_verts) {
 				    &_table[y][x + 1]));
     }
   }
-  assert(_triangles.size() == num_tris);
+  assert((int)_triangles.size() == num_tris);
 
   // Now create a 2-d table of TriangleTree nodes, each of which
   // points to a pair of triangles.  We'll use this to build up the

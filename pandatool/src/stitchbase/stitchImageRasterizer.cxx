@@ -12,7 +12,6 @@
 
 StitchImageRasterizer::
 StitchImageRasterizer() {
-  //_filter_output = false;
   _filter_output = true;
 }
 

@@ -475,6 +475,9 @@ make_lens() {
     case C_singularity_tolerance:
       _lens->set_singularity_tolerance((*ci)->get_number());
       break;
+
+    default:
+      break;
     }
   }
 
@@ -615,6 +618,9 @@ create_image() {
 
     case C_grid:
       image->setup_grid((int)(*ci)->_n[0], (int)(*ci)->_n[1]);
+      break;
+
+    default:
       break;
     }
   }

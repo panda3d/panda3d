@@ -21,6 +21,9 @@ public:
   StitchImageProgram();
 
   void run();
+
+private:
+  bool _filter_output;
 };
 
 #endif

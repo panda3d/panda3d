@@ -92,7 +92,7 @@ const PStatGraph::GuideBar &PStatGraph::
 get_guide_bar(int n) const {
 #ifndef NDEBUG
   static GuideBar bogus_bar(0.0, "bogus", false);
-  nassertr(n >= 0 && n < _guide_bars.size(), bogus_bar);
+  nassertr(n >= 0 && n < (int)_guide_bars.size(), bogus_bar);
 #endif
   return _guide_bars[n];
 }

@@ -14,13 +14,13 @@ StitchImage::
 StitchImage(const string &name, const string &filename,
 	    StitchLens *lens, const LVecBase2d &size_pixels,
 	    const LVecBase2d &pixels_per_mm) :
-  _filename(filename),
-  _name(name),
   _lens(lens),
   _size_pixels(size_pixels),
   _pixels_per_mm(pixels_per_mm),
   _rotate(LMatrix3d::ident_mat()),
-  _inv_rotate(LMatrix3d::ident_mat())
+  _inv_rotate(LMatrix3d::ident_mat()),
+  _filename(filename),
+  _name(name)
 {
   _size_mm.set((_size_pixels[0] - 1.0) / _pixels_per_mm[0],
 	       (_size_pixels[1] - 1.0) / _pixels_per_mm[1]);

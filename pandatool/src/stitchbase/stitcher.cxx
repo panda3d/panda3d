@@ -258,8 +258,8 @@ stitch_image(StitchImage *image) {
       best_i = 0;
       best_j = 0;
     } else {
-      for (int i = 0; i < mp.size(); i++) {
-	for (int j = 0; j < mp.size(); j++) {
+      for (int i = 0; i < (int)mp.size(); i++) {
+	for (int j = 0; j < (int)mp.size(); j++) {
 	  if (j != i) {
 	    LMatrix3d rot;
 	    double score = try_match(image, rot, mp, i, j);

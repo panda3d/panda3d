@@ -9,9 +9,9 @@
 
 TriangleMesh::
 TriangleMesh(int x_verts, int y_verts) :
+  _coords(0), _norms(0), _colors(0), _texcoords(0),
   _x_verts(x_verts),
-  _y_verts(y_verts),
-  _coords(0), _norms(0), _colors(0), _texcoords(0)
+  _y_verts(y_verts)
 {
 }
 
@@ -32,7 +32,7 @@ get_num_verts() const {
 
 GeomTristrip *TriangleMesh::
 build_mesh() const {
-  int num_verts = _x_verts * _y_verts;
+  //  int num_verts = _x_verts * _y_verts;
   int num_tstrips = (_y_verts-1);
   int tstrip_length = 2*(_x_verts-1)+2;
 
