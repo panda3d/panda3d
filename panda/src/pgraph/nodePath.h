@@ -378,6 +378,7 @@ PUBLISHED:
   void set_mat(const NodePath &other, const LMatrix4f &mat);
 
   LPoint3f get_relative_point(const NodePath &other, const LVecBase3f &point);
+  LVector3f get_relative_vector(const NodePath &other, const LVecBase3f &vec);
 
   INLINE void look_at(const NodePath &other,
                       float x, float y, float z);

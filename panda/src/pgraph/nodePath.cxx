@@ -1317,6 +1317,19 @@ get_relative_point(const NodePath &other, const LVecBase3f &point) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_relative_vector
+//       Access: Published
+//  Description: Given that the indicated vector is in the coordinate
+//               system of the other node, returns the same vector in
+//               this node's coordinate system.
+////////////////////////////////////////////////////////////////////
+LVector3f NodePath::
+get_relative_vector(const NodePath &other, const LVecBase3f &vec) {
+  LVector3f rel_vector = LVector3f(vec) * other.get_mat(*this);
+  return rel_vector;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::look_at
 //       Access: Published
 //  Description: Sets the transform on this NodePath so that it
