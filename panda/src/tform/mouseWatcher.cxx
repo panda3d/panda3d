@@ -858,32 +858,30 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
     }
 
     _has_mouse = false;
-    // If the mouse is outside the window, do nothing; let all the
-    // events continue down the pipe unmolested.
     clear_current_regions();
-    return;
-  }
 
-  // The mouse is within the window.  Get the current mouse position.
-  const EventStoreVec2 *xy;
-  DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
-  const LVecBase2f &p = xy->get_value();
-  _mouse.set(p[0], p[1]);
-
-  if (!_geometry.is_null()) {
-    // Transform the mouse pointer.
-    _geometry->set_transform(TransformState::make_pos(LVecBase3f(p[0], 0, p[1])));
-    if (!_has_mouse) {
-      // Show the mouse pointer.
-      _geometry->set_draw_mask(DrawMask::all_on());
+  } else {
+    // The mouse is within the window.  Get the current mouse position.
+    const EventStoreVec2 *xy;
+    DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
+    const LVecBase2f &p = xy->get_value();
+    _mouse.set(p[0], p[1]);
+    
+    if (!_geometry.is_null()) {
+      // Transform the mouse pointer.
+      _geometry->set_transform(TransformState::make_pos(LVecBase3f(p[0], 0, p[1])));
+      if (!_has_mouse) {
+        // Show the mouse pointer.
+        _geometry->set_draw_mask(DrawMask::all_on());
+      }
     }
+
+    _has_mouse = true;
+
+    VRegions regions;
+    get_over_regions(regions, _mouse);
+    set_current_regions(regions);
   }
-
-  _has_mouse = true;
-
-  VRegions regions;
-  get_over_regions(regions, _mouse);
-  set_current_regions(regions);
 
   _suppress_flags = 0;
   if (_preferred_region != (MouseWatcherRegion *)NULL) {
@@ -915,7 +913,8 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
     }
   }
 
-  if ((_suppress_flags & MouseWatcherRegion::SF_mouse_position) == 0) {
+  if (_has_mouse &&
+      (_suppress_flags & MouseWatcherRegion::SF_mouse_position) == 0) {
     // Transmit the mouse position.
     output.set_data(_xy_output, input.get_data(_xy_input));
     output.set_data(_pixel_xy_output, input.get_data(_pixel_xy_input));
