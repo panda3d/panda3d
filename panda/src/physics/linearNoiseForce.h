@@ -36,6 +36,7 @@ public:
   static int _random_seed;
   static void init_noise_tables(void);
 
+PUBLISHED:
   LinearNoiseForce(float a = 1.0f, bool m = false);
   LinearNoiseForce(const LinearNoiseForce &copy);
   virtual ~LinearNoiseForce(void);

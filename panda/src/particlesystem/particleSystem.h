@@ -74,8 +74,7 @@ private:
   bool _i_was_spawned_flag;
   PT(RenderRelation) _physical_node_arc;
 
-public:
-
+PUBLISHED:
   // constructor/destructor
 
   ParticleSystem(int pool_size = 0);
@@ -128,6 +127,7 @@ public:
   INLINE void render(void);
   void update(float dt);
 
+public:
   friend class ParticleSystemManager;
 };
 

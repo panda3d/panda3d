@@ -41,7 +41,7 @@ private:
   PT(LinearIntegrator) _linear_integrator;
   PT(AngularIntegrator) _angular_integrator;
 
-public:
+PUBLISHED:
   PhysicsManager(void);
   virtual ~PhysicsManager(void);
 
@@ -60,6 +60,7 @@ public:
   void remove_angular_force(AngularForce *f);
   void do_physics(float dt);
 
+public:
   friend class Physical;
 };
 

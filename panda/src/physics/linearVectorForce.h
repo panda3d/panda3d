@@ -20,7 +20,7 @@ private:
   virtual LinearForce *make_copy(void);
   virtual LVector3f get_child_vector(const PhysicsObject *po);
 
-public:
+PUBLISHED:
   LinearVectorForce(const LVector3f& vec, float a = 1.0f, bool mass = false);
   LinearVectorForce(const LinearVectorForce &copy);
   LinearVectorForce(float x = 0.0f, float y = 0.0f, float z = 0.0f, 

@@ -19,7 +19,7 @@ private:
 			       vector< PT(LinearForce) >& forces,
 			       float dt);
 
-public:
+PUBLISHED:
   LinearEulerIntegrator(void);
   virtual ~LinearEulerIntegrator(void);
 };

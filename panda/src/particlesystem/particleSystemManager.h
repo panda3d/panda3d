@@ -26,8 +26,7 @@ private:
   int _nth_frame;
   int _cur_frame;
 
-public:
-
+PUBLISHED:
   ParticleSystemManager(int every_nth_frame = 1);
 
   INLINE void set_frame_stepping(int every_nth_frame);

@@ -22,7 +22,7 @@ class EXPCL_PANDAPHYSICS ForceNode : public NamedNode {
 private:
   vector< PT(BaseForce) > _forces;
 
-public:
+PUBLISHED:
   ForceNode(const string &name = "");
   ForceNode(const ForceNode &copy);
   virtual ~ForceNode(void);

@@ -23,7 +23,7 @@ class EXPCL_PANDAPHYSICS PhysicalNode : public NamedNode {
 private:
   vector< PT(Physical) > _physicals;
 
-public:
+PUBLISHED:
   PhysicalNode(const string &name = "");
   PhysicalNode(const PhysicalNode &copy);
   virtual ~PhysicalNode(void);
