@@ -62,7 +62,13 @@ PUBLISHED:
     DL_error_network_remote_host_no_response = -54,
 
     // General local errors
-    DL_error_write = -60,
+    DL_error_write_out_of_files = -60,
+    DL_error_write_out_of_memory = -61,
+    DL_error_write_sharing_violation = -62,
+    DL_error_write_disk_full = -63,
+    DL_error_write_disk_not_found = -64,
+    DL_error_write_disk_sector_not_found = -65,
+    DL_error_write_disk_fault = -66,
 
     // HTTP errors
     DL_error_http_server_timeout = -70,
@@ -126,6 +132,7 @@ private:
   char *handle_socket_error(void) const;
 
   int get_network_error(void) const;
+  int get_write_error(void) const;
 
 private:
   bool _connected;

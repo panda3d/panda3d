@@ -324,7 +324,7 @@ initiate(const string &file_name, Filename file_dest,
     downloader_cat.error()
       << "Downloader::initiate() - Error opening file: " << file_dest
       << " for writing: " << strerror(errno) << endl;
-    return DL_error_write;
+    return get_write_error();
   }
 
   // Send an HTTP request for the file to the server
@@ -807,7 +807,7 @@ handle_socket_error(void) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Downloader::error_gethostbyname
+//     Function: Downloader::get_network_error
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -844,6 +844,44 @@ get_network_error(void) const {
       return DL_error_network_remote_host_not_found;
     case 11002:
       return DL_error_network_remote_host_no_response;
+    default:
+      return DL_error_abort;
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::get_write_error
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+int Downloader::
+get_write_error(void) const {
+#ifndef WIN32
+  return DL_error_abort;
+#else
+  switch (errno) {
+    case 4:
+    case 18:
+      return DL_error_write_out_of_files;
+    case 8:
+    case 14:
+      return DL_error_write_out_of_memory;
+    case 20:
+      return DL_error_write_disk_not_found;
+    case 25:
+    case 27:
+      return DL_error_write_disk_sector_not_found;
+    case 29:
+    case 30:
+    case 31:
+      return DL_error_write_disk_fault;
+    case 32:
+    case 33:
+    case 36:
+      return DL_error_write_sharing_violation;
+    case 39:
+      return DL_error_write_disk_full;
     default:
       return DL_error_abort;
   }
