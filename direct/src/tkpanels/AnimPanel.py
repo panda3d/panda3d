@@ -1,6 +1,7 @@
 "DIRECT Animation Control Panel"
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
+from AppShell import *
 from Tkinter import *
 from tkSimpleDialog import askfloat
 import Pmw
@@ -10,32 +11,35 @@ import math
 FRAMES = 0
 SECONDS = 1
 
-class AnimPanel(Pmw.MegaToplevel):
-    def __init__(self, parent = None, **kw):
+class AnimPanel(AppShell):
+    # Override class variables
+    appname = 'Anim Panel'
+    frameWidth  = 675
+    frameHeight = 250
+    usecommandarea = 0
+    usestatusarea  = 0
 
+    def __init__(self, parent = None, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
-            ('title',               'Anim Panel',       None),
+            ('title',               self.appname,       None),
             ('actorList',           (),                 None),
             ('Actor_label_width',   12,                 None),
             )
         self.defineoptions(kw, optiondefs)
 
+        self.frameHeight = 60 + (50 * len(self['actorList']))
         # Initialize the superclass
-        Pmw.MegaToplevel.__init__(self, parent)
+        AppShell.__init__(self)
 
-        # Handle to the toplevels hull
-        hull = self.component('hull')
+        # Execute option callbacks
+        self.initialiseoptions(AnimPanel)
 
-        # A handy little help balloon
-        balloon = self.balloon = Pmw.Balloon()
-        # Start with balloon help disabled
-        self.balloon.configure(state = 'none')
+    def createInterface(self):
+        # Handle to the toplevels interior
+        interior = self.interior()
+        menuBar = self.menuBar
 
-        menuFrame = Frame(hull, relief = GROOVE, bd = 2)
-        
-        menuBar = Pmw.MenuBar(menuFrame, hotkeys = 1, balloon = balloon)
-        menuBar.pack(side = LEFT, expand = 1, fill = X)
         menuBar.addmenu('AnimPanel', 'Anim Panel Operations')
         # Actor control status
         menuBar.addcascademenu('AnimPanel', 'Control Status',
@@ -62,24 +66,9 @@ class AnimPanel(Pmw.MegaToplevel):
                             'Reset Actor controls',
                             label = 'Reset all',
                             command = self.resetAll)
-        # Exit panel
-        menuBar.addmenuitem('AnimPanel', 'command',
-                            'Exit Anim Panel',
-                            label = 'Exit',
-                            command = self.destroy)
-        
-        menuBar.addmenu('Help', 'Anim Panel Help Operations')
-        self.toggleBalloonVar = IntVar()
-        self.toggleBalloonVar.set(0)
-        menuBar.addmenuitem('Help', 'checkbutton',
-                            'Toggle balloon help',
-                            label = 'Balloon Help',
-                            variable = self.toggleBalloonVar,
-                            command = self.toggleBalloon)
-        menuFrame.pack(fill = X)
 
         # Create a frame to hold all the actor controls
-        actorFrame = Frame(hull)
+        actorFrame = Frame(interior)
 
         # Create a control for each actor
         index = 0
@@ -96,7 +85,7 @@ class AnimPanel(Pmw.MegaToplevel):
         actorFrame.pack(expand = 1, fill = BOTH)
 
         # Create a frame to hold the playback controls
-        controlFrame = Frame(hull)
+        controlFrame = Frame(interior)
         self.playPauseVar = IntVar()
         self.playPauseVar.set(0)
         self.playPauseButton = self.createcomponent(
@@ -125,9 +114,6 @@ class AnimPanel(Pmw.MegaToplevel):
         self.loopButton.pack(side = LEFT, expand = 1, fill = X)
 
         controlFrame.pack(fill = X)
-
-        # Execute option callbacks
-        self.initialiseoptions(AnimPanel)
 
     def getActorControlAt(self, index):
         return self.actorControlList[index]
@@ -313,7 +299,8 @@ class ActorControl(Pmw.MegaWidget):
         self.updateDisplay()
 
     def setOffset(self):
-        newOffset = askfloat(title = self['text'],
+        newOffset = askfloat(parent = self.interior(),
+                             title = self['text'],
                              prompt = 'Start offset (seconds):')
         if newOffset:
             self.offset = newOffset
