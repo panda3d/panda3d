@@ -45,7 +45,6 @@ class SoundInterval(Interval):
 	    if (self.prevt < 0.0):
 	    	AudioManager.play(self.sound)
 	    else:
-		#AudioManager.play(self.sound, t)
-		AudioManager.play(self.sound)
+		AudioManager.play(self.sound, t)
 	    if (self.loop):
 		AudioManager.setLoop(self.sound, 1)
