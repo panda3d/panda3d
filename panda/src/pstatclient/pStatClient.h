@@ -105,7 +105,9 @@ private:
 
   bool is_active(int collector_index, int thread_index) const;
 
+  void start(int collector_index, int thread_index);
   void start(int collector_index, int thread_index, float as_of);
+  void stop(int collector_index, int thread_index);
   void stop(int collector_index, int thread_index, float as_of);
 
   void clear_level(int collector_index, int thread_index);

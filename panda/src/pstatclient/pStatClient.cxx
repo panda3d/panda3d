@@ -549,7 +549,31 @@ is_active(int collector_index, int thread_index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::start_collector
+//     Function: PStatClient::start
+//       Access: Private
+//  Description: Marks the indicated collector index as started.
+//               Normally you would not use this interface directly;
+//               instead, call PStatCollector::start().
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+start(int collector_index, int thread_index) {
+  nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
+  nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
+
+  if (_collectors[collector_index]._def->_is_active &&
+      _threads[thread_index]._is_active) {
+    if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
+      // This collector wasn't already started in this thread; record
+      // a new data point.
+      _threads[thread_index]._frame_data.add_start(collector_index, 
+                                                   _clock.get_real_time());
+    }
+    _collectors[collector_index]._per_thread[thread_index]._nested_count++;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::start
 //       Access: Private
 //  Description: Marks the indicated collector index as started.
 //               Normally you would not use this interface directly;
@@ -572,7 +596,40 @@ start(int collector_index, int thread_index, float as_of) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::start_collector
+//     Function: PStatClient::stop
+//       Access: Private
+//  Description: Marks the indicated collector index as stopped.
+//               Normally you would not use this interface directly;
+//               instead, call PStatCollector::stop().
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+stop(int collector_index, int thread_index) {
+  nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
+  nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
+
+  if (_collectors[collector_index]._def->_is_active &&
+      _threads[thread_index]._is_active) {
+    if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
+      pstats_cat.warning()
+        << "Collector " << get_collector_fullname(collector_index)
+        << " was already stopped in thread " << get_thread_name(thread_index)
+        << "!\n";
+      return;
+    }
+
+    _collectors[collector_index]._per_thread[thread_index]._nested_count--;
+
+    if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
+      // This collector has now been completely stopped; record a new
+      // data point.
+      _threads[thread_index]._frame_data.add_stop(collector_index,
+                                                  _clock.get_real_time());
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::stop
 //       Access: Private
 //  Description: Marks the indicated collector index as stopped.
 //               Normally you would not use this interface directly;

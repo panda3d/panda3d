@@ -145,7 +145,7 @@ is_active() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 start() {
-  _client->start(_index, 0, _client->_clock.get_real_time());
+  _client->start(_index, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ start() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 stop() {
-  _client->stop(_index, 0, _client->_clock.get_real_time());
+  _client->stop(_index, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,7 +241,7 @@ is_active(const PStatThread &thread) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 start(const PStatThread &thread) {
-  _client->start(_index, thread._index, _client->_clock.get_real_time());
+  _client->start(_index, thread._index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -265,7 +265,7 @@ start(const PStatThread &thread, float as_of) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 stop(const PStatThread &thread) {
-  _client->stop(_index, thread._index, _client->_clock.get_real_time());
+  _client->stop(_index, thread._index);
 }
 
 ////////////////////////////////////////////////////////////////////
