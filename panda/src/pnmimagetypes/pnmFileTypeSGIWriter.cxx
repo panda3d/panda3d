@@ -23,9 +23,8 @@
 #include "pnmImage.h"
 #include "pnmWriter.h"
 
-// Much code in this file originally came from from Netpbm,
-// specifically pnmtosgi.c.  It has since been fairly heavily
-// modified.
+// Much code in this file originally came from Netpbm, specifically
+// pnmtosgi.c.  It has since been fairly heavily modified.
 
 /* pnmtosgi.c - convert portable anymap to SGI image
 **
