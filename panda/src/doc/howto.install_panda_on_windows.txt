@@ -118,8 +118,9 @@ Step 3: Install Cygwin (v1.3.5 or above should work)
   - Latest version currently is 1.5.7-1 (Jan 31 2004)
   - As of 1.3.11, cygwin seems stable enough to install from the internet, 
     go to http://cygwin.com and click on the "install cygwin now" link.  
-    The most reliable download server is http://mirrors.rcn.net.  Make 
-    sure that the following packages are selected for installation:
+    The most reliable download server is http://mirrors.rcn.net. Another server is 
+    http://sigunix.cwrv.edu. Make sure that the following packages are selected 
+    for installation:
   - Devel packages such as :  CVS, make, flex
   - under Interpreters : gawk, perl (see note below)
   - under Shells : ash, bash, sh-utils, tcsh
@@ -139,6 +140,7 @@ Step 3: Install Cygwin (v1.3.5 or above should work)
     Doc, Text, Games) that you can skip if you like.
   - Create a desktop shortcut or Start Menu item for c:\cygwin\bin\tcsh.exe 
     and use it in the future.
+  - Remove X-windows packages to make download smaller.
 
     Known Problems with tcsh:
       tcsh v6.09.00: (cygwin 1.0)   
@@ -176,6 +178,11 @@ Step 3.5: Set up the Cygwin environment:
     steps below automatically, from the tcsh prompt do:
     > cd P:/win/install/wintools/etc
     > source setup_env.csh
+
+  CAUTION: setup_env.csh: 
+  Some of the drives may need to be mapped manually from windows. If you have a 
+  cdrom or some other drive mapped to the following drives, you need to unmount
+  those and map to some other drives.
 
   These are the steps setup_env.csh performs (so you don't have to):
   - Make the following directories (don't worry if they already exist)
@@ -352,7 +359,8 @@ Step 5: Copy files needed by attach scripts
   To setup a new user in panda environment files:
   - If you are setting up a new user, edit the *.vspec files in 
     /usr/local/etc to add the new username and path to the player
-    tree (starting with dtool.vspec, panda.vspec, direct.vspec, toontown.vspec).
+    tree (starting with dtool.vspec, panda.vspec, direct.vspec, otp.vspec,
+    toontown.vspec)
   - (Optional) Update default values in vspec files. Edit appropriate *.vspec 
     files to specify which trees you wish to use as a default (e.g. install, 
     personal, or release)
@@ -365,6 +373,7 @@ Step 6: Grab the cvs trees
   - Grab from local repository
     # Just hit return or type your unix password when prompted for a password
     > cvs login
+    > cvs co otp
     > cvs co toontown (only if local toontown will be built)
 
   - Now choose either A (commit) or B (anonymous) access:
@@ -374,13 +383,13 @@ Step 6: Grab the cvs trees
         Try to use the same username used your cygwin setup.
         Tell somebody like David Rose, Dave Schuyler, or Mark Mine to add your 
           new sourceforge username to the list of Panda3D developers.
-      2. setup ssh and access through the corporate firewall to cvs.panda3d.sourceforge.net
+      2. setup ssh and access through the corporate firewall to cvs.sourceforge.net
         - copy the setup from /p/win/install/wintools/etc/ssh_config to your ~/.ssh/config
         - You may also need to copy the config file to /etc/ssh_config
         - If you have not generated a key before on another machine, generate a dsa key now with:
           > ssh-keygen -t dsa
         (If you have generated this key before, copy the id_dsa and id_dsa.pub 
-          from ~/.ssh/config on your other machine.)
+          from ~/.ssh/config on your other machine. Just press enter if prompted for filename)
         If the above does not put a file in ~/.ssh/config, check that your 
           /etc/passwd file has an entry for your username and that it points 
           to the correct home directory for you.
@@ -389,7 +398,7 @@ Step 6: Grab the cvs trees
       3. type this at the shell or/and put it into your .cshrc
           > setenv CVS_RSH /bin/ssh
       4. check out these trees in ~/player (only if a local version will be built) with:
-          > setenv SFROOT :ext:<your-sourceforge-username>@cvs.panda3d.sourceforge.net:/cvsroot/panda3d
+          > setenv SFROOT :ext:<your-sourceforge-username>@cvs.sourceforge.net:/cvsroot/panda3d
     B. anonymous CVS (read-only access) from SourceForge
         > setenv SFROOT :pserver:anonymous@nit:/cvsroot/panda3d
 
@@ -397,6 +406,7 @@ Step 6: Grab the cvs trees
       > cvs -d $SFROOT co dtool (only if local dtool will be built)
       > cvs -d $SFROOT co panda (only if local panda will be built)
       > cvs -d $SFROOT co direct (only if local direct will be built)
+      > cvs -d $SFROOT co otp (only if local otp will be built)
 
     - Choose which optimize level you want. This is set in Config.pp in
       your $HOME directory.  Look for #define OPTIMIZE and follow
@@ -445,7 +455,16 @@ Step 9: Build $DIRECT
   > ppremake
   > make install
 
-Step 10: Install Emacs   
+Step 10: Build $OTP
+  > cta dtool personal  
+  > cta panda personal
+  > cta direct personal
+  > cta otp personal
+  > cd $OTP
+  > ppremake
+  > make install
+
+Step 11: Install Emacs   
   We use GNU emacs (21.2 currently) by default, other versions of emacs 
     may also work.  Note: unlike xemacs.exe compiled for cygwin, this 
     emacs does not use Cygwin paths, so "/" represents the real root 
@@ -470,25 +489,28 @@ Step 10: Install Emacs
   - add "C:\emacs-21.2\bin" to the end of the path (semicolon separated)
   - click ok - ok - ok to exit (you must exit for the change to take effect)
 
-Step 11: Build $TOONTOWN
+Step 12: Build $TOONTOWN
   > cta dtool personal  
   > cta panda personal
   > cta direct personal
+  > cta otp personal
   > cta toontown personal
   > cd $TOONTOWN
   > ppremake
   > make install
   Exit the shell and create a new one
 
-Step 12: Generate Python Code
+Step 13: Generate Python Code
   > cd $DIRECT/bin
   > genPyCode win-debug (if you have built using OPTIMIZE = 1 or 2)
   > genPyCode win-release (if you have built using OPTIMIZE = 3 or 4)
   > genPyCode win-publish (for publishes)
 
-Step 13: set up a local server (optional)
+Step 14: set up a local server (optional)
   - mkdir /c/toonsrv
   - unzip /p/toontown_server/dev_NOTAG_*.zip to /c/toonsrv
+  - copy zlib1.dll if not there from /p/toontown_server
+  - chmod 777 everything in /c/toonsrv directory
   - run /c/toonsrv/INSTALLALL.BAT to install toon servers as local NT-type services
   - /c/toonsrv/STARTALL.BAT to start the servers and /c/toonsrv/STOPALL.BAT to stop them
 
