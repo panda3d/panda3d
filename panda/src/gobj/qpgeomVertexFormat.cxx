@@ -84,6 +84,7 @@ qpGeomVertexFormat::
   if (is_registered()) {
     get_registry()->unregister_format(this);
   }
+
   nassertv(_mungers.empty());
 }
 

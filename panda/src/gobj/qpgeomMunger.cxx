@@ -66,12 +66,16 @@ remove_format(const qpGeomVertexFormat *format) {
   fi = _formats.find(format);
   nassertv(fi != _formats.end());
 
-  CPT(qpGeomVertexFormat) derived_format = (*fi).second;
+  // We can't save this in a CPT, because it might be the same pointer
+  // as format, which might be in the middle of its destructor.
+  // Putting it in a CPT would bump up its reference count again, and
+  // end up calling the destructor twice.
+  const qpGeomVertexFormat *derived_format = (*fi).second;
   _formats.erase(fi);
 
   // We need to unref the derived format, if we reffed it earlier.
   if (derived_format != format) {
-    derived_format->unref();
+    unref_delete(derived_format);
   }
 }
 
@@ -141,6 +145,7 @@ do_munge_format(const qpGeomVertexFormat *format) {
   {
     qpGeomVertexFormat *f = (qpGeomVertexFormat *)format;
     MutexHolder holder(f->_cache_lock);
+    nassertr(f->is_registered(), NULL);
     inserted = f->_mungers.insert(this).second;
     nassertr(inserted, NULL);
   }
