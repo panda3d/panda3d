@@ -65,15 +65,20 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
 
         The parameters are as follows:
 
-          rect: the left, right, bottom, top of the panel on the
+          rect: the (left, right, bottom, top) of the panel on the
               screen.  This is in aspect2d coordinates.  The panel
               will be set up in its own coordinate system so that (0,
               0) is the center of the panel.
 
-          bg: the r, g, b, a background color of the panel.
+          bg: the (r, g, b, a) background color of the panel.
 
           geom: the model to use as the background panel geometry.
               Normally you can safely let this default.
+
+          geomRect: the (left, right, bottom, top) rectangle around
+              the background panel geometry as it is modeled.  This is
+              used to compute how the panel should be scaled to make
+              it fit the rectangle specified by rect, above.
 
           drawOrder: the drawing order of this panel with respect to
               all other things in the 'fixed' bin within render2d.
@@ -300,11 +305,16 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
 
 
     def setPos(self, x, y, z):
-        """setPos(self, x, y, x)
+        """setPos(self, x, y, z)
+
+        Repositions the panel onscreen, taking all of the panel's
+        managed buttons along with it.
+        
         """
         NodePath.setPos(self, x, y, z)
         for button in self.panelButtons:
-            button.unmanage()
-            button.manage(self)
+            if button.managed:
+                button.unmanage()
+                button.manage(self)
 
 

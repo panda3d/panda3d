@@ -53,18 +53,18 @@ class OnscreenText(PandaObject, NodePath):
               or it may be a 2-tuple of floats, specifying a different
               x, y scale.
 
-          fg: the r, g, b, a foreground color of the text.  This is
+          fg: the (r, g, b, a) foreground color of the text.  This is
               normally a 4-tuple of floats or ints.
 
-          bg: the r, g, b, a background color of the text.  If the
+          bg: the (r, g, b, a) background color of the text.  If the
               fourth value, a, is nonzero, a card is created to place
               behind the text and set to the given color.
 
-          shadow: the r, g, b, a color of the shadow behind the text.
+          shadow: the (r, g, b, a) color of the shadow behind the text.
               If the fourth value, a, is nonzero, a little drop shadow
               is created and placed behind the text.
 
-          frame: the r, g, b, a color of the frame drawn around the
+          frame: the (r, g, b, a) color of the frame drawn around the
               text.  If the fourth value, a, is nonzero, a frame is
               created around the text.
 

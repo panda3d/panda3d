@@ -125,20 +125,6 @@ class Button(DirectObject):
         self.lDown.setWidth(width)
         self.lInactive.setWidth(width)
 
-##     def freeze(self):
-##         self.lUp.freeze()
-##         self.lLit.freeze()
-##         self.lDown.freeze()
-##         self.lInactive.freeze()
-##         self.button.freeze()
-
-##     def thaw(self):
-##         self.lUp.thaw()
-##         self.lLit.thaw()
-##         self.lDown.thaw()
-##         self.lInactive.thaw()
-##         self.button.thaw()
-
     def manage(self, nodepath = aspect2d):
         if nodepath:
             self.button.manage(guiMgr, base.eventMgr.eventHandler,
