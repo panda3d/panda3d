@@ -834,7 +834,7 @@ issue_light(const LightAttrib *attrib) {
 void GraphicsStateGuardian::
 issue_color_write(const ColorWriteAttrib *attrib) {
   _color_write_mode = attrib->get_mode();
-  set_blend_mode(_color_write_mode, _color_blend_mode, _transparency_mode);
+  set_blend_mode();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -845,7 +845,7 @@ issue_color_write(const ColorWriteAttrib *attrib) {
 void GraphicsStateGuardian::
 issue_transparency(const TransparencyAttrib *attrib) {
   _transparency_mode = attrib->get_mode();
-  set_blend_mode(_color_write_mode, _color_blend_mode, _transparency_mode);
+  set_blend_mode();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -857,7 +857,7 @@ void GraphicsStateGuardian::
 issue_color_blend(const ColorBlendAttrib *attrib) {
   _color_blend = attrib;
   _color_blend_mode = attrib->get_mode();
-  set_blend_mode(_color_write_mode, _color_blend_mode, _transparency_mode);
+  set_blend_mode();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1184,14 +1184,13 @@ end_bind_clip_planes() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_blend_mode
 //       Access: Protected, Virtual
-//  Description: Called after any of these three blending states have
-//               changed; this function is responsible for setting the
-//               appropriate color blending mode based on the given
-//               properties.
+//  Description: Called after any of the things that might change
+//               blending state have changed, this function is
+//               responsible for setting the appropriate color
+//               blending mode based on the current properties.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-set_blend_mode(ColorWriteAttrib::Mode, ColorBlendAttrib::Mode,
-               TransparencyAttrib::Mode) {
+set_blend_mode() {
 }
 
 ////////////////////////////////////////////////////////////////////

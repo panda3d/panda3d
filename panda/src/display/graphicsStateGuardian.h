@@ -191,9 +191,7 @@ protected:
   virtual void bind_clip_plane(PlaneNode *plane, int pane_id);
   virtual void end_bind_clip_planes();
 
-  virtual void set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
-                              ColorBlendAttrib::Mode color_blend_mode,
-                              TransparencyAttrib::Mode transparency_mode);
+  virtual void set_blend_mode();
 
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
                                                  CPT(DisplayRegion) dr)=0;

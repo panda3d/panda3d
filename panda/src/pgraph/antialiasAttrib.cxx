@@ -31,20 +31,36 @@ TypeHandle AntialiasAttrib::_type_handle;
 //       Access: Published, Static
 //  Description: Constructs a new AntialiasAttrib object.
 //
-//               The mode should be either M_none, M_best, or a union
+//               The mode should be either M_none, M_auto, or a union
 //               of any or all of M_point, M_line, M_polygon, and
-//               M_multisample.
+//               M_multisample.  Also, in addition to the above
+//               choices, it may include either of M_better of
+//               M_faster to specify a performance/quality tradeoff
+//               hint.
 //
 //               If M_none is specified, no antialiasing is performed.  
 //
-//               If M_best is specified, M_multisample is selected if
+//               If M_multisample is specified, it means to use the
+//               special framebuffer multisample bits for
+//               antialiasing, if it is available.  If so, the
+//               M_point, M_line, and M_polygon modes are ignored.
+//               This advanced antialiasing mode is only available on
+//               certain graphics hardware.  If it is not available,
+//               the M_multisample bit is ignored (and the other modes
+//               may be used instead, if specified).
+//
+//               M_point, M_line, and/or M_polygon specify
+//               per-primitive smoothing.  When enabled, M_point and
+//               M_line may force transparency on.  M_polygon requires
+//               a frame buffer that includes an alpha channel, and it
+//               works best if the primitives are sorted
+//               front-to-back.
+//
+//               If M_auto is specified, M_multisample is selected if
 //               it is available, otherwise M_polygon is selected,
 //               unless drawing lines or points, in which case M_line
 //               or M_point is selected (these two generally produce
 //               better results than M_multisample)
-//
-//               In the explicit form, it enables all of the specified
-//               multisample modes.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) AntialiasAttrib::
 make(unsigned short mode) {
@@ -74,14 +90,17 @@ issue(GraphicsStateGuardianBase *gsg) const {
 void AntialiasAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
-  if (_mode == M_none) {
+  
+  int type = get_mode_type();
+  char sep = ' ';
+
+  if (type == M_none) {
     out << " none";
 
-  } else if (_mode == M_best) {
-    out << " best";
+  } else if (type == M_auto) {
+    out << " auto";
 
   } else {
-    char sep = ' ';
     if ((_mode & M_point) != 0) {
       out << sep << "point";
       sep = '|';
@@ -94,10 +113,19 @@ output(ostream &out) const {
       out << sep << "polygon";
       sep = '|';
     }
-    if ((_mode & M_best) != 0) {
+    if ((_mode & M_auto) != 0) {
       out << sep << "best";
       sep = '|';
     }
+  }
+
+  if ((_mode & M_faster) != 0) {
+    out << sep << "faster";
+    sep = '|';
+  }
+  if ((_mode & M_better) != 0) {
+    out << sep << "better";
+    sep = '|';
   }
 }
 
@@ -147,17 +175,32 @@ CPT(RenderAttrib) AntialiasAttrib::
 compose_impl(const RenderAttrib *other) const {
   const AntialiasAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
-  if (ta->get_mode() == M_none || ta->get_mode() == M_best ||
-      get_mode() == M_none || get_mode() == M_best) {
-    // These two special modes don't combine: if one of these modes is
+
+  unsigned short mode_type;
+  unsigned short mode_quality;
+
+  if (ta->get_mode_type() == M_none || ta->get_mode_type() == M_auto ||
+      get_mode_type() == M_auto) {
+    // These two special types don't combine: if one of these modes is
     // involved, the lower attrib wins.
-    return ta;
+    mode_type = ta->get_mode_type();
+
+  } else {
+    // Otherwise, the both modes reflect an explicit setting.  In that
+    // case, these modes combine in the sensible way, as a union of
+    // bits.
+    mode_type = get_mode_type() | ta->get_mode_type();
   }
 
-  // Otherwise, both attribs reflect an explicit setting.  In that
-  // case, these modes combine in the sensible way, as a union of
-  // bits.
-  return make(get_mode() | ta->get_mode());
+  if (ta->get_mode_quality() != 0) {
+    // If any quality is specified on the lower attrib, it wins.
+    mode_quality = ta->get_mode_quality();
+  } else {
+    // Otherwise, the upper quality wins.
+    mode_quality = get_mode_quality();
+  }
+
+  return make(mode_type | mode_quality);
 }
 
 ////////////////////////////////////////////////////////////////////

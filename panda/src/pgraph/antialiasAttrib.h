@@ -38,7 +38,13 @@ PUBLISHED:
     M_line        = 0x0002,
     M_polygon     = 0x0004,
     M_multisample = 0x0008,
-    M_best        = 0x001f,
+    M_auto        = 0x001f,
+    M_type_mask   = 0x001f,
+
+    // Extra add-on bits for performance/quality hints.
+    M_faster      = 0x0020,
+    M_better      = 0x0040,
+    M_dont_care   = 0x0060,
   };
 
 private:
@@ -48,6 +54,8 @@ PUBLISHED:
   static CPT(RenderAttrib) make(unsigned short mode);
 
   INLINE unsigned short get_mode() const;
+  INLINE unsigned short get_mode_type() const;
+  INLINE unsigned short get_mode_quality() const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;

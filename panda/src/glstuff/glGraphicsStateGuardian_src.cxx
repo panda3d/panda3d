@@ -450,14 +450,12 @@ reset() {
 
   // Set up all the enabled/disabled flags to GL's known initial
   // values: everything off.
-  _multisample_enabled = false;
+  _multisample_mode = 0;
   _line_smooth_enabled = false;
   _point_smooth_enabled = false;
   _polygon_smooth_enabled = false;
   _scissor_enabled = false;
   _stencil_test_enabled = false;
-  _multisample_alpha_one_enabled = false;
-  _multisample_alpha_mask_enabled = false;
   _blend_enabled = false;
   _depth_test_enabled = false;
   _fog_enabled = false;
@@ -498,7 +496,7 @@ reset() {
   _needs_tex_mat = false;
   _current_tex_gen = DCAST(TexGenAttrib, TexGenAttrib::make());
   _needs_tex_gen = false;
-  _antialias_mode = AntialiasAttrib::M_none;
+  _auto_antialias_mode = false;
   _render_mode = RenderModeAttrib::M_filled;
 
   report_my_gl_errors();
@@ -2571,21 +2569,52 @@ issue_render_mode(const RenderModeAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 issue_antialias(const AntialiasAttrib *attrib) {
-  _antialias_mode = attrib->get_mode();
-
-  if (_antialias_mode == AntialiasAttrib::M_best) {
+  if (attrib->get_mode_type() == AntialiasAttrib::M_auto) {
     // In this special mode, we must enable antialiasing on a
     // case-by-case basis, because we enable it differently for
     // polygons and for points and lines.
+    _auto_antialias_mode = true;
 
   } else {
     // Otherwise, explicitly enable or disable according to the bits
-    // that are set.
-    enable_line_smooth((_antialias_mode & AntialiasAttrib::M_line) != 0);
-    enable_point_smooth((_antialias_mode & AntialiasAttrib::M_point) != 0);
-    enable_polygon_smooth((_antialias_mode & AntialiasAttrib::M_polygon) != 0);
-    enable_multisample((_antialias_mode & AntialiasAttrib::M_multisample) != 0);
+    // that are set.  But if multisample is requested and supported,
+    // don't use the other bits at all (they will be ignored by GL
+    // anyway).
+    _auto_antialias_mode = false;
+    unsigned short mode = attrib->get_mode();
+
+    if (_supports_multisample &&
+        (mode & AntialiasAttrib::M_multisample) != 0) {
+      enable_multisample_antialias(true);
+
+    } else {
+      enable_multisample_antialias(false);
+      enable_line_smooth((mode & AntialiasAttrib::M_line) != 0);
+      enable_point_smooth((mode & AntialiasAttrib::M_point) != 0);
+      enable_polygon_smooth((mode & AntialiasAttrib::M_polygon) != 0);
+    }
   }
+
+  switch (attrib->get_mode_quality()) {
+  case AntialiasAttrib::M_faster:
+    GLP(Hint)(GL_LINE_SMOOTH_HINT, GL_FASTEST);
+    GLP(Hint)(GL_POINT_SMOOTH_HINT, GL_FASTEST);
+    GLP(Hint)(GL_POLYGON_SMOOTH_HINT, GL_FASTEST);
+    break;
+
+  case AntialiasAttrib::M_better:
+    GLP(Hint)(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    GLP(Hint)(GL_POINT_SMOOTH_HINT, GL_NICEST);
+    GLP(Hint)(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+    break;
+
+  default:
+    GLP(Hint)(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+    GLP(Hint)(GL_POINT_SMOOTH_HINT, GL_DONT_CARE);
+    GLP(Hint)(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
+    break;
+  }
+
   report_my_gl_errors();
 }
 
@@ -4404,34 +4433,32 @@ end_bind_clip_planes() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::set_blend_mode
 //       Access: Protected, Virtual
-//  Description: Called after any of these three blending states have
-//               changed; this function is responsible for setting the
-//               appropriate color blending mode based on the given
-//               properties.
+//  Description: Called after any of the things that might change
+//               blending state have changed, this function is
+//               responsible for setting the appropriate color
+//               blending mode based on the current properties.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
-               ColorBlendAttrib::Mode color_blend_mode,
-               TransparencyAttrib::Mode transparency_mode) {
+set_blend_mode() {
   // If color_write_mode is off, we disable writing to the color using
   // blending.  This case is only used if we can't use GLP(ColorMask) to
   // disable the color writing for some reason (usually a driver
   // problem).
-  if (color_write_mode == ColorWriteAttrib::M_off) {
+  if (_color_write_mode == ColorWriteAttrib::M_off) {
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);
     _glBlendEquation(GL_FUNC_ADD);
     GLP(BlendFunc)(GL_ZERO, GL_ONE);
-    return;
+   return;
   }
 
   // Is there a color blend set?
-  if (color_blend_mode != ColorBlendAttrib::M_none) {
+  if (_color_blend_mode != ColorBlendAttrib::M_none) {
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     enable_blend(true);
-    _glBlendEquation(get_blend_equation_type(color_blend_mode));
+    _glBlendEquation(get_blend_equation_type(_color_blend_mode));
     GLP(BlendFunc)(get_blend_func(_color_blend->get_operand_a()),
                    get_blend_func(_color_blend->get_operand_b()));
     Colorf c = _color_blend->get_color();
@@ -4440,7 +4467,7 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
   }
 
   // No color blend; is there a transparency set?
-  switch (transparency_mode) {
+  switch (_transparency_mode) {
   case TransparencyAttrib::M_none:
   case TransparencyAttrib::M_binary:
     break;
@@ -4468,8 +4495,33 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     
   default:
     GLCAT.error()
-      << "invalid transparency mode " << (int)transparency_mode << endl;
+      << "invalid transparency mode " << (int)_transparency_mode << endl;
     break;
+  }
+
+  if (_line_smooth_enabled || _point_smooth_enabled) {
+    // If we have either of these turned on, we also need to have
+    // blend mode enabled in order to see it.
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(true);
+    _glBlendEquation(GL_FUNC_ADD);
+    GLP(BlendFunc)(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    return;
+  }
+
+  if (_polygon_smooth_enabled && 
+      (get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) != 0) {
+    // For polygon smoothing, we need this special kind of blending,
+    // but this only works if we have an alpha channel in the frame
+    // buffer.  We should also sort the polygons front-to-back, but
+    // that's the application's problem.
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(true);
+    _glBlendEquation(GL_FUNC_ADD);
+    GLP(BlendFunc)(GL_SRC_ALPHA_SATURATE, GL_ONE);
+    return;
   }
 
   // Nothing's set, so disable blending.

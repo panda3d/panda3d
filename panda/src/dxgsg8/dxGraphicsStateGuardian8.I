@@ -183,7 +183,7 @@ set_color_writemask(UINT color_writemask) {
     } else {
         // blending can only handle on/off
         assert((color_writemask==0x0)||(color_writemask==0xFFFFFFFF));
-        set_blend_mode(_color_write_mode, _color_blend_mode, _transparency_mode);        
+        set_blend_mode();
     }
   }
 }

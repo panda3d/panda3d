@@ -178,9 +178,7 @@ protected:
   virtual void bind_clip_plane(PlaneNode *plane, int plane_id);
   virtual void end_bind_clip_planes();
 
-  virtual void set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
-                              ColorBlendAttrib::Mode color_blend_mode,
-                              TransparencyAttrib::Mode transparency_mode);
+  virtual void set_blend_mode();
 
   virtual void finish_modify_state();
 
@@ -189,7 +187,9 @@ protected:
                                                  CPT(DisplayRegion) dr);
   virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer);
 
-  INLINE void enable_multisample(bool val);
+  INLINE void enable_multisample_antialias(bool val);
+  INLINE void enable_multisample_alpha_one(bool val);
+  INLINE void enable_multisample_alpha_mask(bool val);
   INLINE void enable_line_smooth(bool val);
   INLINE void enable_point_smooth(bool val);
   INLINE void enable_polygon_smooth(bool val);
@@ -199,8 +199,6 @@ protected:
 
   INLINE void enable_scissor(bool val);
   INLINE void enable_stencil_test(bool val);
-  INLINE void enable_multisample_alpha_one(bool val);
-  INLINE void enable_multisample_alpha_mask(bool val);
   INLINE void enable_blend(bool val);
   INLINE void enable_depth_test(bool val);
   INLINE void enable_fog(bool val);
@@ -249,14 +247,18 @@ protected:
   void save_mipmap_images(Texture *tex);
 #endif
 
-  bool _multisample_enabled;
+  enum MultisampleMode {
+    MM_antialias  = 0x0001,
+    MM_alpha_one  = 0x0002,
+    MM_alpha_mask = 0x0004,
+  };
+
+  int _multisample_mode;
   bool _line_smooth_enabled;
   bool _point_smooth_enabled;
   bool _polygon_smooth_enabled;
   bool _scissor_enabled;
   bool _stencil_test_enabled;
-  bool _multisample_alpha_one_enabled;
-  bool _multisample_alpha_mask_enabled;
   bool _blend_enabled;
   bool _depth_test_enabled;
   bool _fog_enabled;
@@ -278,7 +280,7 @@ protected:
   bool _needs_tex_mat;
   CPT(TexGenAttrib) _current_tex_gen;
   bool _needs_tex_gen;
-  unsigned short _antialias_mode;
+  bool _auto_antialias_mode;
   RenderModeAttrib::Mode _render_mode;
 
   CPT(DisplayRegion) _actual_display_region;

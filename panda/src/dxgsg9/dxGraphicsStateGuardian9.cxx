@@ -3912,17 +3912,15 @@ issue_color_write(const ColorWriteAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::set_blend_mode
 //       Access: Protected, Virtual
-//  Description: Called after any of these three blending states have
-//               changed; this function is responsible for setting the
-//               appropriate color blending mode based on the given
-//               properties.
+//  Description: Called after any of the things that might change
+//               blending state have changed, this function is
+//               responsible for setting the appropriate color
+//               blending mode based on the current properties.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
-               ColorBlendAttrib::Mode color_blend_mode,
-               TransparencyAttrib::Mode transparency_mode) {
+set_blend_mode() {
 
-  if((color_write_mode == ColorWriteAttrib::M_off) && !_pScrn->bCanDirectDisableColorWrites) {
+  if((_color_write_mode == ColorWriteAttrib::M_off) && !_pScrn->bCanDirectDisableColorWrites) {
     // need !_pScrn->bCanDirectDisableColorWrites guard because other issue_colorblend,issue_transp
     // will come this way, and they should ignore the colorwriteattrib value since it's been
     // handled separately in set_color_writemask
@@ -3933,10 +3931,10 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
   }
 
   // Is there a color blend set?
-  if (color_blend_mode != ColorBlendAttrib::M_none) {
+  if (_color_blend_mode != ColorBlendAttrib::M_none) {
     enable_blend(true);
 
-    switch (color_blend_mode) {
+    switch (_color_blend_mode) {
     case ColorBlendAttrib::M_add:
       _pD3DDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
       break;
@@ -3964,7 +3962,7 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
   }
 
   // No color blend; is there a transparency set?
-  switch (transparency_mode) {
+  switch (_transparency_mode) {
   case TransparencyAttrib::M_none:
   case TransparencyAttrib::M_binary:
     break;
@@ -3980,7 +3978,7 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
 
   default:
     dxgsg9_cat.error()
-      << "invalid transparency mode " << (int)transparency_mode << endl;
+      << "invalid transparency mode " << (int)_transparency_mode << endl;
     break;
   }
 

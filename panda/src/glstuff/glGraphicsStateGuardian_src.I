@@ -83,20 +83,82 @@ report_my_errors(int line, const char *source_file) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_multisample
-//       Access:
-//  Description:
+//     Function: CLP(GraphicsStateGuardian)::enable_multisample_antialias
+//       Access: Protected
+//  Description: Specifies whether multisample should be enabled for
+//               antialiasing purposes.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
-enable_multisample(bool val) {
-  if (_multisample_enabled != val && _supports_multisample) {
-    _multisample_enabled = val;
-    if (val) {
-      GLP(Enable)(GL_MULTISAMPLE);
-    } else {
-      if (!_multisample_alpha_one_enabled && !_multisample_alpha_mask_enabled) {
+enable_multisample_antialias(bool val) {
+  if (_supports_multisample) {
+    if ((_multisample_mode & MM_antialias) != 0 && !val) {
+      // Turn off antialias multisample.
+      _multisample_mode &= ~MM_antialias;
+      if (_multisample_mode == 0) {
         GLP(Disable)(GL_MULTISAMPLE);
       }
+    } else if ((_multisample_mode & MM_antialias) == 0 && val) {
+      // Turn on antialias multisample.
+      if (_multisample_mode == 0) {
+        GLP(Enable)(GL_MULTISAMPLE);
+      }
+      _multisample_mode |= MM_antialias;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::enable_multisample_alpha_one
+//       Access: Protected
+//  Description: Specifies whether multisample should be enabled for
+//               transparency purposes, using the sample_alpha_to_one
+//               mode.
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+enable_multisample_alpha_one(bool val) {
+  if (_supports_multisample) {
+    if ((_multisample_mode & MM_antialias) != 0 && !val) {
+      // Turn off sample_alpha_to_one multisample.
+      _multisample_mode &= ~MM_antialias;
+      GLP(Disable)(GL_SAMPLE_ALPHA_TO_ONE);
+      if (_multisample_mode == 0) {
+        GLP(Disable)(GL_MULTISAMPLE);
+      }
+    } else if ((_multisample_mode & MM_antialias) == 0 && val) {
+      // Turn on sample_alpha_to_one multisample.
+      if (_multisample_mode == 0) {
+        GLP(Enable)(GL_MULTISAMPLE);
+      }
+      GLP(Enable)(GL_SAMPLE_ALPHA_TO_ONE);
+      _multisample_mode |= MM_antialias;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::enable_multisample_alpha_mask
+//       Access: Protected
+//  Description: Specifies whether multisample should be enabled for
+//               transparency purposes, using the sample_alpha_to_mask
+//               mode.
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+enable_multisample_alpha_mask(bool val) {
+  if (_supports_multisample) {
+    if ((_multisample_mode & MM_antialias) != 0 && !val) {
+      // Turn off sample_alpha_to_mask multisample.
+      _multisample_mode &= ~MM_antialias;
+      GLP(Disable)(GL_SAMPLE_ALPHA_TO_COVERAGE);
+      if (_multisample_mode == 0) {
+        GLP(Disable)(GL_MULTISAMPLE);
+      }
+    } else if ((_multisample_mode & MM_antialias) == 0 && val) {
+      // Turn on sample_alpha_to_mask multisample.
+      if (_multisample_mode == 0) {
+        GLP(Enable)(GL_MULTISAMPLE);
+      }
+      GLP(Enable)(GL_SAMPLE_ALPHA_TO_COVERAGE);
+      _multisample_mode |= MM_antialias;
     }
   }
 }
@@ -157,15 +219,16 @@ enable_polygon_smooth(bool val) {
 //       Access: Protected
 //  Description: Sets the appropriate antialiasing modes to render a
 //               series of line primitives, according to
-//               _antialias_mode.
+//               _auto_antialias_mode.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 setup_antialias_line() {
-  if (_antialias_mode == (unsigned short)AntialiasAttrib::M_best) {
+  if (_auto_antialias_mode) {
     // Lines supposedly look better using line smoothing, even if we
     // have multisample available.
-    enable_multisample(false);
+    enable_multisample_antialias(false);
     enable_line_smooth(true);
+    set_blend_mode();
   }
 }
 
@@ -174,15 +237,16 @@ setup_antialias_line() {
 //       Access: Protected
 //  Description: Sets the appropriate antialiasing modes to render a
 //               series of point primitives, according to
-//               _antialias_mode.
+//               _auto_antialias_mode.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 setup_antialias_point() {
-  if (_antialias_mode == (unsigned short)AntialiasAttrib::M_best) {
+  if (_auto_antialias_mode) {
     // Points supposedly look better using point smoothing, even if we
     // have multisample available.
-    enable_multisample(false);
+    enable_multisample_antialias(false);
     enable_point_smooth(true);
+    set_blend_mode();
   }
 }
 
@@ -191,30 +255,34 @@ setup_antialias_point() {
 //       Access: Protected
 //  Description: Sets the appropriate antialiasing modes to render a
 //               series of point primitives, according to
-//               _antialias_mode.
+//               _auto_antialias_mode.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 setup_antialias_polygon() {
-  if (_antialias_mode == (unsigned short)AntialiasAttrib::M_best) {
+  if (_auto_antialias_mode) {
     switch (_render_mode) {
     case RenderModeAttrib::M_wireframe:
       // In wireframe mode, we're really drawing lines.
-      enable_multisample(false);
+      enable_multisample_antialias(false);
       enable_line_smooth(true);
       break;
 
     case RenderModeAttrib::M_point:
       // In point mode, we're drawing points.
-      enable_multisample(false);
+      enable_multisample_antialias(false);
       enable_point_smooth(true);
       break;
 
     default:
       // For polygons, multisample is best if it's available, otherwise
       // polygon smoothing will do.
-      enable_multisample(true);
-      enable_polygon_smooth(true);
+      if (_supports_multisample) {
+        enable_multisample_antialias(true);
+      } else {
+        enable_polygon_smooth(true);
+      }
     }
+    set_blend_mode();
   }
 }
 
@@ -258,50 +326,6 @@ enable_scissor(bool val)
         else
             GLP(Disable)( GL_SCISSOR_TEST );
     }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_multisample_alpha_one
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CLP(GraphicsStateGuardian)::
-enable_multisample_alpha_one(bool val) {
-  if (_supports_multisample) {
-    if (_multisample_alpha_one_enabled != val) {
-      _multisample_alpha_one_enabled = val;
-      if (val) {
-        GLP(Enable)(GL_SAMPLE_ALPHA_TO_ONE);
-        GLP(Enable)(GL_MULTISAMPLE);
-      } else {
-        GLP(Disable)(GL_SAMPLE_ALPHA_TO_ONE);
-        if (!_multisample_enabled) {
-          GLP(Disable)(GL_MULTISAMPLE);
-        }
-      }
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_multisample_alpha_mask
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CLP(GraphicsStateGuardian)::
-enable_multisample_alpha_mask(bool val) {
-  if (_multisample_alpha_mask_enabled != val) {
-    _multisample_alpha_mask_enabled = val;
-    if (val) {
-      GLP(Enable)(GL_SAMPLE_ALPHA_TO_COVERAGE);
-      GLP(Enable)(GL_MULTISAMPLE);
-    } else {
-      GLP(Disable)(GL_SAMPLE_ALPHA_TO_COVERAGE);
-      if (!_multisample_enabled) {
-        GLP(Disable)(GL_MULTISAMPLE);
-      }
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

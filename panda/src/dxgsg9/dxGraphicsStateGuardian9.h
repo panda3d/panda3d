@@ -156,9 +156,7 @@ protected:
   virtual void enable_clip_plane(int plane_id, bool enable);
   virtual void bind_clip_plane(PlaneNode *plane, int plane_id);
 
-  virtual void set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
-                              ColorBlendAttrib::Mode color_blend_mode,
-                              TransparencyAttrib::Mode transparency_mode);
+  virtual void set_blend_mode();
 
   void free_nondx_resources();            // free local internal buffers
   void free_d3d_device(void);
