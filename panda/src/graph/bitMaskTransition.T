@@ -210,6 +210,20 @@ internal_compare_to(const NodeTransition *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BitMaskTransition::internal_generate_hash
+//       Access: Protected, Virtual
+//  Description: Should be overridden by particular NodeTransitions to
+//               generate a hash value uniquifying this particular
+//               transition.
+////////////////////////////////////////////////////////////////////
+template<class MaskType>
+void BitMaskTransition<MaskType>::
+internal_generate_hash(GraphHashGenerator &hash) const {
+  _and.generate_hash(hash);
+  _or.generate_hash(hash);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BitMaskTransition::make_with_masks
 //       Access: Protected, Virtual
 //  Description: This function creates a new BitMaskTransition of the

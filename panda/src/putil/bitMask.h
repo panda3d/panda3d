@@ -12,6 +12,8 @@
 #include "typedObject.h"
 #include "indent.h"
 
+#include <checksumHashGenerator.h>
+
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BitMask
@@ -81,6 +83,9 @@ PUBLISHED:
   INLINE void operator ^= (const BitMask<WordType, num_bits> &other);
   INLINE void operator <<= (int shift);
   INLINE void operator >>= (int shift);
+
+public:
+  INLINE void generate_hash(ChecksumHashGenerator &hash) const;
 
 private:
   WordType _word;

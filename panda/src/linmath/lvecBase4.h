@@ -11,6 +11,8 @@
 #include <notify.h>
 #include <datagram.h>
 #include <datagramIterator.h>
+#include <checksumHashGenerator.h>
+
 #include "cmath.h"
 #include "nearly_zero.h"
 

@@ -8,6 +8,8 @@
 
 #include <pandabase.h>
 
+#include "graphHashGenerator.h"
+
 #include <typedWritableReferenceCount.h>
 
 class Node;
@@ -41,6 +43,8 @@ protected:
   INLINE_GRAPH void operator = (const NodeTransition &copy);
 
 public:
+  typedef GraphHashGenerator HashGenerator;
+
   INLINE_GRAPH bool operator == (const NodeTransition &other) const;
   INLINE_GRAPH bool operator != (const NodeTransition &other) const;
   INLINE_GRAPH bool operator < (const NodeTransition &other) const;
@@ -49,6 +53,7 @@ public:
   INLINE_GRAPH bool operator >= (const NodeTransition &other) const;
 
   INLINE_GRAPH int compare_to(const NodeTransition &other) const;
+  INLINE_GRAPH void generate_hash(GraphHashGenerator &hash) const;
 
 PUBLISHED:
   INLINE_GRAPH void set_priority(int priority);
@@ -75,6 +80,7 @@ public:
 
 protected:
   virtual int internal_compare_to(const NodeTransition *other) const=0;
+  virtual void internal_generate_hash(GraphHashGenerator &hash) const;
 
   // And this is the internal function we'll call whenever our value
   // changes.

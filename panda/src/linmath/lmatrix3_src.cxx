@@ -62,6 +62,94 @@ almost_equal(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
 	  IS_THRESHOLD_EQUAL((*this)(2, 2), other(2, 2), threshold));
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix3)::
+output(ostream &out) const {
+  out << "[ " 
+      << MAYBE_ZERO(_m.m._00) << " "
+      << MAYBE_ZERO(_m.m._01) << " " 
+      << MAYBE_ZERO(_m.m._02)
+      << " ] [ "
+      << MAYBE_ZERO(_m.m._10) << " "
+      << MAYBE_ZERO(_m.m._11) << " " 
+      << MAYBE_ZERO(_m.m._12)
+      << " ] [ "
+      << MAYBE_ZERO(_m.m._20) << " "
+      << MAYBE_ZERO(_m.m._21) << " " 
+      << MAYBE_ZERO(_m.m._22)
+      << " ]";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::write
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix3)::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) 
+    << MAYBE_ZERO(_m.m._00) << " "
+    << MAYBE_ZERO(_m.m._01) << " " 
+    << MAYBE_ZERO(_m.m._02)
+    << "\n";
+  indent(out, indent_level)
+    << MAYBE_ZERO(_m.m._10) << " "
+    << MAYBE_ZERO(_m.m._11) << " " 
+    << MAYBE_ZERO(_m.m._12)
+    << "\n";
+  indent(out, indent_level)
+    << MAYBE_ZERO(_m.m._20) << " "
+    << MAYBE_ZERO(_m.m._21) << " " 
+    << MAYBE_ZERO(_m.m._22)
+    << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::generate_hash
+//       Access: Public
+//  Description: Adds the vector to the indicated hash generator.
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix3)::
+generate_hash(ChecksumHashGenerator &hash, FLOATTYPE threshold) const {
+  for(int i = 0; i < 3; i++) {
+    for(int j = 0; j < 3; j++) {
+      hash.add_fp(get_cell(i,j), threshold);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::write_datagram
+//  Description: Writes the matrix to the datagram
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix3)::
+write_datagram(Datagram &destination) const {
+  for(int i = 0; i < 3; i++) {
+    for(int j = 0; j < 3; j++) {
+      destination.add_float32(get_cell(i,j));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::read_datagram
+//  Description: Reads itself out of the datagram
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix3)::
+read_datagram(DatagramIterator &scan) {
+  for(int i = 0; i < 3; i++) {
+    for(int j = 0; j < 3; j++) {
+      set_cell(i, j, scan.get_float32());
+    }
+  }
+}
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::init_type
 //       Access: Public, Static
@@ -76,37 +164,3 @@ init_type() {
     register_type(_type_handle, name);
   }
 }
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::write_datagram
-//  Description: Writes the matrix to the datagram
-////////////////////////////////////////////////////////////////////
-void FLOATNAME(LMatrix3)::
-write_datagram(Datagram &destination) const
-{
-  for(int i = 0; i < 3; i++)
-  {
-    for(int j = 0; j < 3; j++)
-    {
-      destination.add_float32(get_cell(i,j));
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::read_datagram
-//  Description: Reads itself out of the datagram
-////////////////////////////////////////////////////////////////////
-void FLOATNAME(LMatrix3)::
-read_datagram(DatagramIterator &scan) 
-{
-  for(int i = 0; i < 3; i++)
-  {
-    for(int j = 0; j < 3; j++)
-    {
-      set_cell(i, j, scan.get_float32());
-    }
-  }
-}
-

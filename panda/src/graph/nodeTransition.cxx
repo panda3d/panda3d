@@ -73,6 +73,17 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeTransition::internal_generate_hash
+//       Access: Protected, Virtual
+//  Description: Should be overridden by particular NodeTransitions to
+//               generate a hash value uniquifying this particular
+//               transition.
+////////////////////////////////////////////////////////////////////
+void NodeTransition::
+internal_generate_hash(GraphHashGenerator &) const {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::state_changed
 //       Access: Protected
 //  Description: This should be called by any internal method (like

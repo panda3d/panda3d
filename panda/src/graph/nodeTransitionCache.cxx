@@ -85,6 +85,19 @@ compare_to(const NodeTransitionCache &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeTransitionCache::generate_hash
+//       Access: Public
+//  Description: Adds the transitions to the indicated hash generator.
+////////////////////////////////////////////////////////////////////
+void NodeTransitionCache::
+generate_hash(GraphHashGenerator &hash) const {
+  Cache::const_iterator ci;
+  for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
+    (*ci).second.generate_hash(hash);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCache::is_empty
 //       Access: Public
 //  Description: Returns true if there are no Transitions stored in

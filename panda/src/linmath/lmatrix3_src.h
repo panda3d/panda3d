@@ -21,13 +21,13 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (const FLOATNAME(LMatrix3) &other);
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LMatrix3)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
-			     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
-			     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
+				     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
+				     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
 
   void fill(FLOATTYPE fill_value);
   INLINE_LINMATH void set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
-		  FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
-		  FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
+			  FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
+			  FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
 
   INLINE_LINMATH void set_row(int row, const FLOATNAME(LVecBase3) &v);
   INLINE_LINMATH void set_col(int col, const FLOATNAME(LVecBase3) &v);
@@ -108,23 +108,32 @@ PUBLISHED:
   // The following named constructors return 3x3 matrices suitable for
   // affine transforms in 2-d coordinate space.
 
-  static INLINE_LINMATH FLOATNAME(LMatrix3) translate_mat(const FLOATNAME(LVecBase2) &trans);
-  static INLINE_LINMATH FLOATNAME(LMatrix3) translate_mat(FLOATTYPE tx, FLOATTYPE ty);
-  static INLINE_LINMATH FLOATNAME(LMatrix3) rotate_mat(FLOATTYPE angle);
-  static INLINE_LINMATH FLOATNAME(LMatrix3) scale_mat(const FLOATNAME(LVecBase2) &scale);
-  static INLINE_LINMATH FLOATNAME(LMatrix3) scale_mat(FLOATTYPE sx, FLOATTYPE sy);
+  static INLINE_LINMATH FLOATNAME(LMatrix3)
+    translate_mat(const FLOATNAME(LVecBase2) &trans);
+  static INLINE_LINMATH FLOATNAME(LMatrix3)
+    translate_mat(FLOATTYPE tx, FLOATTYPE ty);
+  static INLINE_LINMATH FLOATNAME(LMatrix3)
+    rotate_mat(FLOATTYPE angle);
+  static INLINE_LINMATH FLOATNAME(LMatrix3)
+    scale_mat(const FLOATNAME(LVecBase2) &scale);
+  static INLINE_LINMATH FLOATNAME(LMatrix3) 
+    scale_mat(FLOATTYPE sx, FLOATTYPE sy);
 
   // The following named constructors return 3x3 matrices suitable for
   // scale/rotate transforms in 3-d coordinate space.
-  static INLINE_LINMATH FLOATNAME(LMatrix3) rotate_mat(FLOATTYPE angle,
-				      FLOATNAME(LVecBase3) axis,
-				      CoordinateSystem cs = CS_default);
-  static INLINE_LINMATH FLOATNAME(LMatrix3) rotate_mat_normaxis(FLOATTYPE angle,
-				      const FLOATNAME(LVecBase3) &axis,
-				      CoordinateSystem cs = CS_default);
-
-  static INLINE_LINMATH FLOATNAME(LMatrix3) scale_mat(const FLOATNAME(LVecBase3) &scale);
-  static INLINE_LINMATH FLOATNAME(LMatrix3) scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz);
+  static INLINE_LINMATH FLOATNAME(LMatrix3) 
+    rotate_mat(FLOATTYPE angle,
+	       FLOATNAME(LVecBase3) axis,
+	       CoordinateSystem cs = CS_default);
+  static INLINE_LINMATH FLOATNAME(LMatrix3)
+    rotate_mat_normaxis(FLOATTYPE angle,
+			const FLOATNAME(LVecBase3) &axis,
+			CoordinateSystem cs = CS_default);
+  
+  static INLINE_LINMATH FLOATNAME(LMatrix3)
+    scale_mat(const FLOATNAME(LVecBase3) &scale);
+  static INLINE_LINMATH FLOATNAME(LMatrix3)
+    scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz);
 
   // We don't have a scale_mat() that takes a single uniform scale
   // parameter, because it would be ambiguous whether we mean a 2-d or
@@ -135,11 +144,14 @@ PUBLISHED:
 
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LMatrix3) &other) const;
   
-  INLINE_LINMATH void output(ostream &out) const;
-  INLINE_LINMATH void write(ostream &out, int indent_level = 0) const;
+  void output(ostream &out) const;
+  void write(ostream &out, int indent_level = 0) const;
 
 public:
+  INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hash) const;
+  void generate_hash(ChecksumHashGenerator &hash, FLOATTYPE threshold) const;
 
+public:
   union {
         struct {
 	   FLOATTYPE  _00, _01, _02;

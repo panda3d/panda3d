@@ -940,17 +940,6 @@ transpose_in_place() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::transpose
-//  Description: Transposes the given matrix and returns it.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix4)
-transpose(const FLOATNAME(LMatrix4) &a) {
-  FLOATNAME(LMatrix4) result;
-  result.transpose_from(a);
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::invert_from
 //       Access: Public
 //  Description: Computes the inverse of the other matrix, and stores
@@ -1069,18 +1058,6 @@ INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 invert_in_place() {
   FLOATNAME(LMatrix4) temp = (*this);
   return invert_from(temp);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::invert
-//  Description: Inverts the given matrix and returns it.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix4)
-invert(const FLOATNAME(LMatrix4) &a) {
-  FLOATNAME(LMatrix4) result;
-  bool nonsingular = result.invert_from(a);
-  nassertr(nonsingular, FLOATNAME(LMatrix4)::ident_mat());
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1340,67 +1317,36 @@ almost_equal(const FLOATNAME(LMatrix4) &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::output
+//     Function: LMatrix4::generate_hash
 //       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-
-INLINE_LINMATH void FLOATNAME(LMatrix4)::
-output(ostream &out) const {
-  out << "[ " 
-      << MAYBE_ZERO(_m.m._00) << " "
-      << MAYBE_ZERO(_m.m._01) << " " 
-      << MAYBE_ZERO(_m.m._02) << " "
-      << MAYBE_ZERO(_m.m._03)
-      << " ] [ "
-      << MAYBE_ZERO(_m.m._10) << " "
-      << MAYBE_ZERO(_m.m._11) << " " 
-      << MAYBE_ZERO(_m.m._12) << " "
-      << MAYBE_ZERO(_m.m._13)
-      << " ] [ "
-      << MAYBE_ZERO(_m.m._20) << " "
-      << MAYBE_ZERO(_m.m._21) << " " 
-      << MAYBE_ZERO(_m.m._22) << " "
-      << MAYBE_ZERO(_m.m._23)
-      << " ] [ "
-      << MAYBE_ZERO(_m.m._30) << " "
-      << MAYBE_ZERO(_m.m._31) << " " 
-      << MAYBE_ZERO(_m.m._32) << " "
-      << MAYBE_ZERO(_m.m._33)
-      << " ]";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::write
-//       Access: Public
-//  Description: 
+//  Description: Adds the vector to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
-write(ostream &out, int indent_level) const {
-  indent(out, indent_level)
-    << MAYBE_ZERO(_m.m._00) << " "
-    << MAYBE_ZERO(_m.m._01) << " " 
-    << MAYBE_ZERO(_m.m._02) << " "
-    << MAYBE_ZERO(_m.m._03)
-    << "\n";
-  indent(out, indent_level)
-    << MAYBE_ZERO(_m.m._10) << " "
-    << MAYBE_ZERO(_m.m._11) << " " 
-    << MAYBE_ZERO(_m.m._12) << " "
-    << MAYBE_ZERO(_m.m._13)
-    << "\n";
-  indent(out, indent_level)
-    << MAYBE_ZERO(_m.m._20) << " "
-    << MAYBE_ZERO(_m.m._21) << " " 
-    << MAYBE_ZERO(_m.m._22) << " "
-    << MAYBE_ZERO(_m.m._23)
-    << "\n";
-  indent(out, indent_level)
-    << MAYBE_ZERO(_m.m._30) << " "
-    << MAYBE_ZERO(_m.m._31) << " " 
-    << MAYBE_ZERO(_m.m._32) << " "
-    << MAYBE_ZERO(_m.m._33)
-    << "\n";
+generate_hash(ChecksumHashGenerator &hash) const {
+  generate_hash(hash, NEARLY_ZERO(FLOATTYPE));
 }
 
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: transpose
+//  Description: Transposes the given matrix and returns it.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix4)
+transpose(const FLOATNAME(LMatrix4) &a) {
+  FLOATNAME(LMatrix4) result;
+  result.transpose_from(a);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: invert
+//  Description: Inverts the given matrix and returns it.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix4)
+invert(const FLOATNAME(LMatrix4) &a) {
+  FLOATNAME(LMatrix4) result;
+  bool nonsingular = result.invert_from(a);
+  nassertr(nonsingular, FLOATNAME(LMatrix4)::ident_mat());
+  return result;
+}

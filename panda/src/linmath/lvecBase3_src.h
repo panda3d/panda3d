@@ -64,7 +64,7 @@ PUBLISHED:
 
   INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase3) &other) const;
   INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase3) &other,
-		        FLOATTYPE threshold) const;
+				FLOATTYPE threshold) const;
 
   INLINE_LINMATH FLOATNAME(LVecBase3) operator - () const;
 
@@ -89,6 +89,11 @@ PUBLISHED:
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase3) &other) const;
 
   INLINE_LINMATH void output(ostream &out) const;
+
+public:
+  INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hash) const;
+  INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hash,
+				    FLOATTYPE threshold) const;
 
 public:
   union {

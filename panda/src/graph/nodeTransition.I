@@ -130,6 +130,17 @@ compare_to(const NodeTransition &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeTransition::generate_hash
+//       Access: Public
+//  Description: Adds the transition to the indicated hash generator.
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH void NodeTransition::
+generate_hash(GraphHashGenerator &hash) const {
+  hash.add_int(get_handle().get_index());
+  internal_generate_hash(hash);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::set_priority
 //       Access: Public
 //  Description: Changes the priority associated with this transition.

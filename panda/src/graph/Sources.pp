@@ -15,7 +15,8 @@
     bitMask32Transition.h bitMaskAttribute.T bitMaskAttribute.h \
     bitMaskTransition.T bitMaskTransition.h boundedObject.I \
     boundedObject.N boundedObject.cxx boundedObject.h config_graph.cxx \
-    config_graph.h dftraverser.T dftraverser.h graphReducer.cxx \
+    config_graph.h dftraverser.T dftraverser.h \
+    graphHashGenerator.h graphReducer.cxx \
     graphReducer.h immediateAttribute.cxx immediateAttribute.h \
     immediateTransition.I immediateTransition.cxx \
     immediateTransition.h lmatrix4fTransition.cxx \
@@ -65,7 +66,8 @@
     arcChain.h bitMask32Transition.h bitMaskAttribute.T \
     bitMaskAttribute.h bitMaskTransition.T bitMaskTransition.h \
     boundedObject.I boundedObject.h config_graph.h dftraverser.T \
-    dftraverser.h graphReducer.h immediateAttribute.h \
+    dftraverser.h graphHashGenerator.h \
+    graphReducer.h immediateAttribute.h \
     immediateTransition.I immediateTransition.h lmatrix4fTransition.h \
     matrixAttribute.T matrixAttribute.h matrixTransition.T \
     matrixTransition.h multiAttribute.T multiAttribute.h \

@@ -10,6 +10,8 @@
 
   #define SOURCES							\
     bigEndian.h buffer.I buffer.cxx buffer.h	\
+    checksumHashGenerator.I checksumHashGenerator.cxx \
+    checksumHashGenerator.h \
     circBuffer.I circBuffer.h clockObject.I clockObject.cxx		\
     clockObject.h config_express.cxx config_express.h datagram.I	\
     datagram.cxx datagram.h datagramGenerator.I datagramGenerator.cxx	\
@@ -19,6 +21,7 @@
     datagramOutputFile.I datagramOutputFile.h datagramOutputFile.cxx	\
     datagramSink.I datagramSink.cxx datagramSink.h			\
     get_config_path.cxx get_config_path.h				\
+    hashGeneratorBase.I hashGeneratorBase.cxx hashGeneratorBase.h \
     hashVal.I hashVal.cxx hashVal.h \
     indent.I indent.cxx indent.h \
     littleEndian.h memoryUsage.I memoryUsage.cxx	\
@@ -42,13 +45,16 @@
     patchfile.I patchfile.cxx patchfile.h
 
   #define INSTALL_HEADERS						\
-    bigEndian.h buffer.I buffer.h circBuffer.I		\
+    bigEndian.h buffer.I buffer.h \
+    checksumHashGenerator.I checksumHashGenerator.h \
+    circBuffer.I		\
     circBuffer.h clockObject.I clockObject.h config_express.h		\
     datagram.I datagram.h datagramInputFile.I datagramInputFile.h	\
     datagramIterator.I datagramIterator.h \
     datagramOutputFile.I datagramOutputFile.h	\
     datagramSink.I datagramSink.h datagramGenerator.I			\
     datagramGenerator.h get_config_path.h				\
+    hashGeneratorBase.I hashGeneratorBase.h \
     hashVal.I hashVal.h \
     indent.I indent.h littleEndian.h			\
     memoryUsage.I memoryUsage.h memoryUsagePointers.I			\

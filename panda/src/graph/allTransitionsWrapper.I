@@ -226,6 +226,18 @@ compare_to(const AllTransitionsWrapper &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::generate_hash
+//       Access: Public
+//  Description: Adds the transitions to the indicated hash generator.
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH void AllTransitionsWrapper::
+generate_hash(GraphHashGenerator &hash) const {
+  if (_cache != (NodeTransitionCache *)NULL) {
+    _cache->generate_hash(hash);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::make_identity
 //       Access: Public
 //  Description: Resets the wrapper to the empty set.

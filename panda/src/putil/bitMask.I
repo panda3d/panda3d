@@ -524,6 +524,17 @@ operator >>= (int shift) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BitMask::generate_hash
+//       Access: Public
+//  Description: Adds the bitmask to the indicated hash generator.
+////////////////////////////////////////////////////////////////////
+template<class WordType, int num_bits>
+INLINE void BitMask<WordType, num_bits>::
+generate_hash(ChecksumHashGenerator &hash) const {
+  hash.add_int(_word);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BitMask::init_type
 //       Access: Public
 //  Description: 

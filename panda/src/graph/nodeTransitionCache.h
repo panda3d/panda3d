@@ -9,6 +9,7 @@
 #include <pandabase.h>
 
 #include "nodeTransitionCacheEntry.h"
+#include "graphHashGenerator.h"
 
 #include <referenceCount.h>
 
@@ -22,12 +23,15 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NodeTransitionCache : public ReferenceCount {
 public:
+  typedef GraphHashGenerator HashGenerator;
+
   NodeTransitionCache();
   NodeTransitionCache(const NodeTransitions &nt);
   ~NodeTransitionCache();
 
   bool is_identity() const;
   int compare_to(const NodeTransitionCache &other) const;
+  void generate_hash(GraphHashGenerator &hash) const;
 
   bool is_empty() const;
   PT(NodeTransition) set_transition(TypeHandle handle, NodeTransition *trans);

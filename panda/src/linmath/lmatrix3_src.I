@@ -68,8 +68,8 @@ operator = (FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3):: 
 FLOATNAME(LMatrix3)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
-	 FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
-	 FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22) {
+		    FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
+		    FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22) {
   _m.m._00 = e00;
   _m.m._01 = e01;
   _m.m._02 = e02;
@@ -471,6 +471,143 @@ mult_cel(const FLOATNAME(LMatrix3) &other, int row, int col) const {
     return get_row(row).dot(other.get_col(col));
 }
 
+
+#define MATRIX3_PRODUCT(res, a, b)                   \
+res._m.m._00 = a._m.m._00*b._m.m._00 + a._m.m._01*b._m.m._10 + a._m.m._02*b._m.m._20;   \
+res._m.m._01 = a._m.m._00*b._m.m._01 + a._m.m._01*b._m.m._11 + a._m.m._02*b._m.m._21;   \
+res._m.m._02 = a._m.m._00*b._m.m._02 + a._m.m._01*b._m.m._12 + a._m.m._02*b._m.m._22;   \
+res._m.m._10 = a._m.m._10*b._m.m._00 + a._m.m._11*b._m.m._10 + a._m.m._12*b._m.m._20;   \
+res._m.m._11 = a._m.m._10*b._m.m._01 + a._m.m._11*b._m.m._11 + a._m.m._12*b._m.m._21;   \
+res._m.m._12 = a._m.m._10*b._m.m._02 + a._m.m._11*b._m.m._12 + a._m.m._12*b._m.m._22;   \
+res._m.m._20 = a._m.m._20*b._m.m._00 + a._m.m._21*b._m.m._10 + a._m.m._22*b._m.m._20;   \
+res._m.m._21 = a._m.m._20*b._m.m._01 + a._m.m._21*b._m.m._11 + a._m.m._22*b._m.m._21;   \
+res._m.m._22 = a._m.m._20*b._m.m._02 + a._m.m._21*b._m.m._12 + a._m.m._22*b._m.m._22;
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::matrix * matrix
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+operator * (const FLOATNAME(LMatrix3) &other) const {
+	FLOATNAME(LMatrix3) t;
+
+	MATRIX3_PRODUCT(t,(*this),other);
+/*
+typedef union {
+        struct {
+            FLOATTYPE     _m.m._11, _m.m._12, _m.m._13;
+            FLOATTYPE     _m.m._21, _m.m._22, _m.m._23;
+            FLOATTYPE     _m.m._31, _m.m._32, _m.m._33;
+        };
+
+		FLOATTYPE m[3][3];
+    } MYMATRIX3;
+
+	FLOATNAME(LMatrix3) t;
+
+	MYMATRIX3 *result_ptr=(MYMATRIX3 *)t.get_m.data();
+	MYMATRIX3 *mat1_ptr=(MYMATRIX3 *)this->get_m.data();
+	MYMATRIX3 *mat2_ptr=(MYMATRIX3 *)other.get_m.data();
+
+	MATRIX3_PRODUCT(result_ptr,mat1_ptr,mat2_ptr);
+*/
+/*
+  t(0, 0) = mult_cel(other, 0, 0);
+  t(0, 1) = mult_cel(other, 0, 1);
+  t(0, 2) = mult_cel(other, 0, 2);
+
+  t(1, 0) = mult_cel(other, 1, 0);
+  t(1, 1) = mult_cel(other, 1, 1);
+  t(1, 2) = mult_cel(other, 1, 2);
+
+  t(2, 0) = mult_cel(other, 2, 0);
+  t(2, 1) = mult_cel(other, 2, 1);
+  t(2, 2) = mult_cel(other, 2, 2);
+*/
+  return t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::matrix * scalar
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+operator * (FLOATTYPE scalar) const {
+  FLOATNAME(LMatrix3) t;
+
+  t._m.m._00 = _m.m._00 * scalar;
+  t._m.m._01 = _m.m._01 * scalar;
+  t._m.m._02 = _m.m._02 * scalar;
+
+  t._m.m._10 = _m.m._10 * scalar;
+  t._m.m._11 = _m.m._11 * scalar;
+  t._m.m._12 = _m.m._12 * scalar;
+
+  t._m.m._20 = _m.m._20 * scalar;
+  t._m.m._21 = _m.m._21 * scalar;
+  t._m.m._22 = _m.m._22 * scalar;
+
+  return t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::matrix / scalar
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+operator / (FLOATTYPE scalar) const {
+  FLOATTYPE recip_scalar = 1.0/scalar;
+  return (*this) * recip_scalar;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::matrix += matrix
+//       Access: Public
+//  Description: Performs a memberwise addition between two matrices.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
+operator += (const FLOATNAME(LMatrix3) &other) {
+  _m.m._00 += other._m.m._00;
+  _m.m._01 += other._m.m._01;
+  _m.m._02 += other._m.m._02;
+
+  _m.m._10 += other._m.m._10;
+  _m.m._11 += other._m.m._11;
+  _m.m._12 += other._m.m._12;
+
+  _m.m._20 += other._m.m._20;
+  _m.m._21 += other._m.m._21;
+  _m.m._22 += other._m.m._22;
+
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::matrix -= matrix
+//       Access: Public
+//  Description: Performs a memberwise subtraction between two matrices.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
+operator -= (const FLOATNAME(LMatrix3) &other) {
+  _m.m._00 -= other._m.m._00;
+  _m.m._01 -= other._m.m._01;
+  _m.m._02 -= other._m.m._02;
+
+  _m.m._10 -= other._m.m._10;
+  _m.m._11 -= other._m.m._11;
+  _m.m._12 -= other._m.m._12;
+
+  _m.m._20 -= other._m.m._20;
+  _m.m._21 -= other._m.m._21;
+  _m.m._22 -= other._m.m._22;
+
+  return *this;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::matrix *= matrix
 //       Access: Public
@@ -565,19 +702,6 @@ transpose_in_place() {
   SWAP__(_m.m._02,_m.m._20);
   SWAP__(_m.m._12,_m.m._21);
   #undef SWAP__
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::transpose
-//  Description: Transposes the given matrix and returns it.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix3)
-transpose(const FLOATNAME(LMatrix3) &a) {
-
-  FLOATNAME(LMatrix3) result;
-  result.transpose_from(a);
-  return result;
 }
 
 // Matrix inversion code from Numerical Recipes in C.
@@ -677,18 +801,6 @@ invert_in_place() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::invert
-//  Description: Inverts the given matrix and returns it.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix3)
-invert(const FLOATNAME(LMatrix3) &a) {
-  FLOATNAME(LMatrix3) result;
-  bool nonsingular = result.invert_from(a);
-  nassertr(nonsingular, FLOATNAME(LMatrix3)::ident_mat());
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::translate_mat
 //       Access: Public, Static
 //  Description: Returns a matrix that applies the indicated
@@ -781,24 +893,15 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
   FLOATTYPE axis_2 = axis._v.v._2;
 
   // Normalize the axis.  
+  FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
+#ifdef _DEBUG
+  nassertr(length_sq != 0.0, ident_mat());
+#endif
+  FLOATTYPE recip_length = 1.0/csqrt(length_sq);
   
-/*
-  // hack check for prenormalization, only works for simple unit vecs, 
-  // which is what we usually pass in anyway. screws up if you happen to
-  // pass in something like (.5,.5,0).  need to add flag parameter so caller
-  // can request normalization if needed
-  if((cabs(axis_0)+cabs(axis_1)+cabs(axis_2)) != 1.0) {
-*/  
-	  FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
-	  #ifdef _DEBUG
-	      nassertr(length_sq != 0.0, ident_mat());
-   	  #endif
-	  FLOATTYPE recip_length = 1.0/csqrt(length_sq);
-
-	  axis_0 *= recip_length;
-	  axis_1 *= recip_length;
-	  axis_2 *= recip_length;  
-//  }
+  axis_0 *= recip_length;
+  axis_1 *= recip_length;
+  axis_2 *= recip_length;  
 
   FLOATTYPE angle_rad=deg_2_rad(angle);
   FLOATTYPE s,c;
@@ -949,184 +1052,35 @@ almost_equal(const FLOATNAME(LMatrix3) &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::output
+//     Function: LMatrix3::generate_hash
 //       Access: Public
-//  Description: 
+//  Description: Adds the vector to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LMatrix3)::
-output(ostream &out) const {
-  out << "[ " 
-      << MAYBE_ZERO(_m.m._00) << " "
-      << MAYBE_ZERO(_m.m._01) << " " 
-      << MAYBE_ZERO(_m.m._02)
-      << " ] [ "
-      << MAYBE_ZERO(_m.m._10) << " "
-      << MAYBE_ZERO(_m.m._11) << " " 
-      << MAYBE_ZERO(_m.m._12)
-      << " ] [ "
-      << MAYBE_ZERO(_m.m._20) << " "
-      << MAYBE_ZERO(_m.m._21) << " " 
-      << MAYBE_ZERO(_m.m._22)
-      << " ]";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::write
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void FLOATNAME(LMatrix3)::
-write(ostream &out, int indent_level) const {
-  indent(out, indent_level) 
-    << MAYBE_ZERO(_m.m._00) << " "
-    << MAYBE_ZERO(_m.m._01) << " " 
-    << MAYBE_ZERO(_m.m._02)
-    << "\n";
-  indent(out, indent_level)
-    << MAYBE_ZERO(_m.m._10) << " "
-    << MAYBE_ZERO(_m.m._11) << " " 
-    << MAYBE_ZERO(_m.m._12)
-    << "\n";
-  indent(out, indent_level)
-    << MAYBE_ZERO(_m.m._20) << " "
-    << MAYBE_ZERO(_m.m._21) << " " 
-    << MAYBE_ZERO(_m.m._22)
-    << "\n";
+generate_hash(ChecksumHashGenerator &hash) const {
+  generate_hash(hash, NEARLY_ZERO(FLOATTYPE));
 }
 
 
-#define MATRIX3_PRODUCT(res, a, b)                   \
-res._m.m._00 = a._m.m._00*b._m.m._00 + a._m.m._01*b._m.m._10 + a._m.m._02*b._m.m._20;   \
-res._m.m._01 = a._m.m._00*b._m.m._01 + a._m.m._01*b._m.m._11 + a._m.m._02*b._m.m._21;   \
-res._m.m._02 = a._m.m._00*b._m.m._02 + a._m.m._01*b._m.m._12 + a._m.m._02*b._m.m._22;   \
-res._m.m._10 = a._m.m._10*b._m.m._00 + a._m.m._11*b._m.m._10 + a._m.m._12*b._m.m._20;   \
-res._m.m._11 = a._m.m._10*b._m.m._01 + a._m.m._11*b._m.m._11 + a._m.m._12*b._m.m._21;   \
-res._m.m._12 = a._m.m._10*b._m.m._02 + a._m.m._11*b._m.m._12 + a._m.m._12*b._m.m._22;   \
-res._m.m._20 = a._m.m._20*b._m.m._00 + a._m.m._21*b._m.m._10 + a._m.m._22*b._m.m._20;   \
-res._m.m._21 = a._m.m._20*b._m.m._01 + a._m.m._21*b._m.m._11 + a._m.m._22*b._m.m._21;   \
-res._m.m._22 = a._m.m._20*b._m.m._02 + a._m.m._21*b._m.m._12 + a._m.m._22*b._m.m._22;
-
-
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::matrix * matrix
-//       Access: Public
-//  Description: 
+//     Function: transpose
+//  Description: Transposes the given matrix and returns it.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-operator * (const FLOATNAME(LMatrix3) &other) const {
-	FLOATNAME(LMatrix3) t;
-
-	MATRIX3_PRODUCT(t,(*this),other);
-/*
-typedef union {
-        struct {
-            FLOATTYPE     _m.m._11, _m.m._12, _m.m._13;
-            FLOATTYPE     _m.m._21, _m.m._22, _m.m._23;
-            FLOATTYPE     _m.m._31, _m.m._32, _m.m._33;
-        };
-
-		FLOATTYPE m[3][3];
-    } MYMATRIX3;
-
-	FLOATNAME(LMatrix3) t;
-
-	MYMATRIX3 *result_ptr=(MYMATRIX3 *)t.get_m.data();
-	MYMATRIX3 *mat1_ptr=(MYMATRIX3 *)this->get_m.data();
-	MYMATRIX3 *mat2_ptr=(MYMATRIX3 *)other.get_m.data();
-
-	MATRIX3_PRODUCT(result_ptr,mat1_ptr,mat2_ptr);
-*/
-/*
-  t(0, 0) = mult_cel(other, 0, 0);
-  t(0, 1) = mult_cel(other, 0, 1);
-  t(0, 2) = mult_cel(other, 0, 2);
-
-  t(1, 0) = mult_cel(other, 1, 0);
-  t(1, 1) = mult_cel(other, 1, 1);
-  t(1, 2) = mult_cel(other, 1, 2);
-
-  t(2, 0) = mult_cel(other, 2, 0);
-  t(2, 1) = mult_cel(other, 2, 1);
-  t(2, 2) = mult_cel(other, 2, 2);
-*/
-  return t;
+INLINE_LINMATH FLOATNAME(LMatrix3)
+transpose(const FLOATNAME(LMatrix3) &a) {
+  FLOATNAME(LMatrix3) result;
+  result.transpose_from(a);
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::matrix * scalar
-//       Access: Public
-//  Description: 
+//     Function: invert
+//  Description: Inverts the given matrix and returns it.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-operator * (FLOATTYPE scalar) const {
-  FLOATNAME(LMatrix3) t;
-
-  t._m.m._00 = _m.m._00 * scalar;
-  t._m.m._01 = _m.m._01 * scalar;
-  t._m.m._02 = _m.m._02 * scalar;
-
-  t._m.m._10 = _m.m._10 * scalar;
-  t._m.m._11 = _m.m._11 * scalar;
-  t._m.m._12 = _m.m._12 * scalar;
-
-  t._m.m._20 = _m.m._20 * scalar;
-  t._m.m._21 = _m.m._21 * scalar;
-  t._m.m._22 = _m.m._22 * scalar;
-
-  return t;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::matrix / scalar
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-operator / (FLOATTYPE scalar) const {
-  FLOATTYPE recip_scalar = 1.0/scalar;
-  return (*this) * recip_scalar;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::matrix += matrix
-//       Access: Public
-//  Description: Performs a memberwise addition between two matrices.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
-operator += (const FLOATNAME(LMatrix3) &other) {
-  _m.m._00 += other._m.m._00;
-  _m.m._01 += other._m.m._01;
-  _m.m._02 += other._m.m._02;
-
-  _m.m._10 += other._m.m._10;
-  _m.m._11 += other._m.m._11;
-  _m.m._12 += other._m.m._12;
-
-  _m.m._20 += other._m.m._20;
-  _m.m._21 += other._m.m._21;
-  _m.m._22 += other._m.m._22;
-
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3::matrix -= matrix
-//       Access: Public
-//  Description: Performs a memberwise subtraction between two matrices.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
-operator -= (const FLOATNAME(LMatrix3) &other) {
-  _m.m._00 -= other._m.m._00;
-  _m.m._01 -= other._m.m._01;
-  _m.m._02 -= other._m.m._02;
-
-  _m.m._10 -= other._m.m._10;
-  _m.m._11 -= other._m.m._11;
-  _m.m._12 -= other._m.m._12;
-
-  _m.m._20 -= other._m.m._20;
-  _m.m._21 -= other._m.m._21;
-  _m.m._22 -= other._m.m._22;
-
-  return *this;
+INLINE_LINMATH FLOATNAME(LMatrix3)
+invert(const FLOATNAME(LMatrix3) &a) {
+  FLOATNAME(LMatrix3) result;
+  bool nonsingular = result.invert_from(a);
+  nassertr(nonsingular, FLOATNAME(LMatrix3)::ident_mat());
+  return result;
 }

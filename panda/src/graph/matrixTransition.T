@@ -192,6 +192,19 @@ internal_compare_to(const NodeTransition *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MatrixTransition::internal_generate_hash
+//       Access: Protected, Virtual
+//  Description: Should be overridden by particular NodeTransitions to
+//               generate a hash value uniquifying this particular
+//               transition.
+////////////////////////////////////////////////////////////////////
+template<class Matrix>
+void MatrixTransition<Matrix>::
+internal_generate_hash(GraphHashGenerator &hash) const {
+  _matrix.generate_hash(hash, 0.00001);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MatrixTransition::make_with_matrix
 //       Access: Protected, Virtual
 //  Description: This function creates a new MatrixTransition of the

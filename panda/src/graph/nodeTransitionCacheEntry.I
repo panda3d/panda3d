@@ -77,6 +77,18 @@ compare_to(const NodeTransitionCacheEntry &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeTransitionCacheEntry::generate_hash
+//       Access: Public
+//  Description: Adds the transition to the indicated hash generator.
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH void NodeTransitionCacheEntry::
+generate_hash(GraphHashGenerator &hash) const {
+  if (_trans != (NodeTransition *)NULL) {
+    _trans->generate_hash(hash);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCacheEntry::clear
 //       Access: Public
 //  Description: Reinitializes the cache entry to its original state.

@@ -24,6 +24,7 @@
 #include "nodeTransition.h"
 #include "nodeTransitionCache.h"
 #include "config_graph.h"
+#include "graphHashGenerator.h"
 
 #include <pointerTo.h>
 
@@ -43,6 +44,7 @@ class EXPCL_PANDA AllTransitionsWrapper {
 public:
   typedef AllTransitionsWrapper TransitionWrapper;
   typedef AllAttributesWrapper AttributeWrapper;
+  typedef GraphHashGenerator HashGenerator;
 
   INLINE_GRAPH AllTransitionsWrapper();
   INLINE_GRAPH AllTransitionsWrapper(const AllTransitionsWrapper &copy);
@@ -66,6 +68,7 @@ public:
 
   INLINE_GRAPH bool is_identity() const;
   INLINE_GRAPH int compare_to(const AllTransitionsWrapper &other) const;
+  INLINE_GRAPH void generate_hash(GraphHashGenerator &hash) const;
 
   INLINE_GRAPH void make_identity();
   INLINE_GRAPH void extract_from(const NodeRelation *arc);
@@ -82,8 +85,8 @@ public:
   INLINE_GRAPH void set_computed_verified(UpdateSeq now);
 
   INLINE_GRAPH void cached_compose(const AllTransitionsWrapper &cache, 
-			     const AllTransitionsWrapper &value,
-			     UpdateSeq now);
+				   const AllTransitionsWrapper &value,
+				   UpdateSeq now);
 
 public:
   // STL-like definitions to allow read-only traversal of the

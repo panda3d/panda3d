@@ -506,6 +506,27 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVecBase2::generate_hash
+//       Access: Public
+//  Description: Adds the vector to the indicated hash generator.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVecBase2)::
+generate_hash(ChecksumHashGenerator &hash) const {
+  generate_hash(hash, NEARLY_ZERO(FLOATTYPE));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase2::generate_hash
+//       Access: Public
+//  Description: Adds the vector to the indicated hash generator.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVecBase2)::
+generate_hash(ChecksumHashGenerator &hash, FLOATTYPE threshold) const {
+  hash.add_fp(_v.v._0, threshold);
+  hash.add_fp(_v.v._1, threshold);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::write_datagram
 //       Access: Public
 //  Description: Function to write itself into a datagram

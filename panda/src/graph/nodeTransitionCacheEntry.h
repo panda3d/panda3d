@@ -10,6 +10,7 @@
 
 #include "nodeTransition.h"
 #include "config_graph.h"
+#include "graphHashGenerator.h"
 
 #include <updateSeq.h>
 #include <pointerTo.h>
@@ -22,12 +23,15 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NodeTransitionCacheEntry {
 public:
+  typedef GraphHashGenerator HashGenerator;
+
   INLINE_GRAPH NodeTransitionCacheEntry(NodeTransition *trans = NULL);
   INLINE_GRAPH NodeTransitionCacheEntry(const NodeTransitionCacheEntry &copy);
   INLINE_GRAPH void operator = (const NodeTransitionCacheEntry &copy);
 
   INLINE_GRAPH bool is_identity() const;
   INLINE_GRAPH int compare_to(const NodeTransitionCacheEntry &other) const;
+  INLINE_GRAPH void generate_hash(GraphHashGenerator &hash) const;
 
   INLINE_GRAPH void clear();
 

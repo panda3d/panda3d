@@ -88,6 +88,25 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::compare_to
+//       Access: Public
+//  Description: Sorts matrices lexicographically, componentwise.
+//               Returns a number less than 0 if this matrix sorts
+//               before the other one, greater than zero if it sorts
+//               after, 0 if they are equivalent (within the indicated
+//               tolerance).
+////////////////////////////////////////////////////////////////////
+int FLOATNAME(LMatrix4)::
+compare_to(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
+  for (int i = 0; i < 16; i++) {
+    if (!IS_THRESHOLD_EQUAL(_m.data[i], other._m.data[i], threshold)) {
+      return (_m.data[i] < other._m.data[i]) ? -1 : 1;
+    }
+  }
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::almost_equal
 //       Access: Public
 //  Description: Returns true if two matrices are memberwise equal
@@ -113,6 +132,84 @@ almost_equal(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
 	  IS_THRESHOLD_EQUAL((*this)(3, 3), other(3, 3), threshold));
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix4)::
+output(ostream &out) const {
+  out << "[ " 
+      << MAYBE_ZERO(_m.m._00) << " "
+      << MAYBE_ZERO(_m.m._01) << " " 
+      << MAYBE_ZERO(_m.m._02) << " "
+      << MAYBE_ZERO(_m.m._03)
+      << " ] [ "
+      << MAYBE_ZERO(_m.m._10) << " "
+      << MAYBE_ZERO(_m.m._11) << " " 
+      << MAYBE_ZERO(_m.m._12) << " "
+      << MAYBE_ZERO(_m.m._13)
+      << " ] [ "
+      << MAYBE_ZERO(_m.m._20) << " "
+      << MAYBE_ZERO(_m.m._21) << " " 
+      << MAYBE_ZERO(_m.m._22) << " "
+      << MAYBE_ZERO(_m.m._23)
+      << " ] [ "
+      << MAYBE_ZERO(_m.m._30) << " "
+      << MAYBE_ZERO(_m.m._31) << " " 
+      << MAYBE_ZERO(_m.m._32) << " "
+      << MAYBE_ZERO(_m.m._33)
+      << " ]";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::write
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix4)::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level)
+    << MAYBE_ZERO(_m.m._00) << " "
+    << MAYBE_ZERO(_m.m._01) << " " 
+    << MAYBE_ZERO(_m.m._02) << " "
+    << MAYBE_ZERO(_m.m._03)
+    << "\n";
+  indent(out, indent_level)
+    << MAYBE_ZERO(_m.m._10) << " "
+    << MAYBE_ZERO(_m.m._11) << " " 
+    << MAYBE_ZERO(_m.m._12) << " "
+    << MAYBE_ZERO(_m.m._13)
+    << "\n";
+  indent(out, indent_level)
+    << MAYBE_ZERO(_m.m._20) << " "
+    << MAYBE_ZERO(_m.m._21) << " " 
+    << MAYBE_ZERO(_m.m._22) << " "
+    << MAYBE_ZERO(_m.m._23)
+    << "\n";
+  indent(out, indent_level)
+    << MAYBE_ZERO(_m.m._30) << " "
+    << MAYBE_ZERO(_m.m._31) << " " 
+    << MAYBE_ZERO(_m.m._32) << " "
+    << MAYBE_ZERO(_m.m._33)
+    << "\n";
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::generate_hash
+//       Access: Public
+//  Description: Adds the vector to the indicated hash generator.
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix4)::
+generate_hash(ChecksumHashGenerator &hash, FLOATTYPE threshold) const {
+  for(int i = 0; i < 4; i++) {
+    for(int j = 0; j < 4; j++) {
+      hash.add_fp(get_cell(i,j), threshold);
+    }
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::decompose_mat
@@ -223,6 +320,33 @@ back_sub_mat(int index[4], FLOATNAME(LMatrix4) &inv, int row) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::write_datagram
+//  Description: Writes the matrix to the datagram
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix4)::
+write_datagram(Datagram &destination) const {
+  for(int i = 0; i < 4; i++) {
+    for(int j = 0; j < 4; j++) {
+      destination.add_float32(get_cell(i,j));
+    }
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::read_datagram
+//  Description: Reads itself out of the datagram
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix4)::
+read_datagram(DatagramIterator &scan) {
+  for(int i = 0; i < 4; i++) {
+    for(int j = 0; j < 4; j++) {
+      set_cell(i, j, scan.get_float32());
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::init_type
 //       Access: Public, Static
 //  Description: 
@@ -235,57 +359,4 @@ init_type() {
     name += FLOATTOKEN;
     register_type(_type_handle, name);
   }
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::write_datagram
-//  Description: Writes the matrix to the datagram
-////////////////////////////////////////////////////////////////////
-void FLOATNAME(LMatrix4)::
-write_datagram(Datagram &destination) const
-{
-  for(int i = 0; i < 4; i++)
-  {
-    for(int j = 0; j < 4; j++)
-    {
-      destination.add_float32(get_cell(i,j));
-    }
-  }
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::read_datagram
-//  Description: Reads itself out of the datagram
-////////////////////////////////////////////////////////////////////
-void FLOATNAME(LMatrix4)::
-read_datagram(DatagramIterator &scan) 
-{
-  for(int i = 0; i < 4; i++)
-  {
-    for(int j = 0; j < 4; j++)
-    {
-      set_cell(i, j, scan.get_float32());
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::compare_to
-//       Access: Public
-//  Description: Sorts matrices lexicographically, componentwise.
-//               Returns a number less than 0 if this matrix sorts
-//               before the other one, greater than zero if it sorts
-//               after, 0 if they are equivalent (within the indicated
-//               tolerance).
-////////////////////////////////////////////////////////////////////
-int FLOATNAME(LMatrix4)::
-compare_to(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
-  for (int i = 0; i < 16; i++) {
-    if (!IS_THRESHOLD_EQUAL(_m.data[i], other._m.data[i], threshold)) {
-      return (_m.data[i] < other._m.data[i]) ? -1 : 1;
-    }
-  }
-  return 0;
 }

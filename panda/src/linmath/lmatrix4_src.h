@@ -19,10 +19,10 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (FLOATTYPE fill_value);
 
   INLINE_LINMATH FLOATNAME(LMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
-			     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
-			     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
-			     FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
-
+				     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
+				     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
+				     FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
+  
   // Construct a 4x4 matrix given a 3x3 rotation matrix and an optional
   // translation component.
   INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3);
@@ -103,33 +103,43 @@ PUBLISHED:
   INLINE_LINMATH bool invert_in_place();
 
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &ident_mat();
-  INLINE_LINMATH static FLOATNAME(LMatrix4) translate_mat(const FLOATNAME(LVecBase3) &trans);
-  INLINE_LINMATH static FLOATNAME(LMatrix4) translate_mat(FLOATTYPE tx, FLOATTYPE ty, FLOATTYPE tz);
-  INLINE_LINMATH static FLOATNAME(LMatrix4) rotate_mat(FLOATTYPE angle,
-				      FLOATNAME(LVecBase3) axis,
-				      CoordinateSystem cs = CS_default);
-  INLINE_LINMATH static FLOATNAME(LMatrix4) rotate_mat_normaxis(FLOATTYPE angle,
-				      const FLOATNAME(LVecBase3) &axis,
-				      CoordinateSystem cs = CS_default);
-  INLINE_LINMATH static FLOATNAME(LMatrix4) scale_mat(const FLOATNAME(LVecBase3) &scale);
-  INLINE_LINMATH static FLOATNAME(LMatrix4) scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz);
-  INLINE_LINMATH static FLOATNAME(LMatrix4) scale_mat(FLOATTYPE scale);
+  INLINE_LINMATH static FLOATNAME(LMatrix4) 
+    translate_mat(const FLOATNAME(LVecBase3) &trans);
+  INLINE_LINMATH static FLOATNAME(LMatrix4)
+    translate_mat(FLOATTYPE tx, FLOATTYPE ty, FLOATTYPE tz);
+  INLINE_LINMATH static FLOATNAME(LMatrix4)
+    rotate_mat(FLOATTYPE angle,
+	       FLOATNAME(LVecBase3) axis,
+	       CoordinateSystem cs = CS_default);
+  INLINE_LINMATH static FLOATNAME(LMatrix4) 
+    rotate_mat_normaxis(FLOATTYPE angle,
+			const FLOATNAME(LVecBase3) &axis,
+			CoordinateSystem cs = CS_default);
+  INLINE_LINMATH static FLOATNAME(LMatrix4)
+    scale_mat(const FLOATNAME(LVecBase3) &scale);
+  INLINE_LINMATH static FLOATNAME(LMatrix4)
+    scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz);
+  INLINE_LINMATH static FLOATNAME(LMatrix4)
+    scale_mat(FLOATTYPE scale);
 
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &y_to_z_up_mat();
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &z_to_y_up_mat();
 
   static FLOATNAME(LMatrix4) convert_mat(CoordinateSystem from,
-				       CoordinateSystem to);
+					 CoordinateSystem to);
 
   bool almost_equal(const FLOATNAME(LMatrix4) &other, 
 		    FLOATTYPE threshold) const;
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LMatrix4) &other) const;
   
-  INLINE_LINMATH void output(ostream &out) const;
-  INLINE_LINMATH void write(ostream &out, int indent_level = 0) const;
+  void output(ostream &out) const;
+  void write(ostream &out, int indent_level = 0) const;
 
 public:
+  INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hash) const;
+  void generate_hash(ChecksumHashGenerator &hash, FLOATTYPE scale) const;
 
+public:
   union {
         struct {
 	   FLOATTYPE  _00, _01, _02, _03;

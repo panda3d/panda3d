@@ -1,0 +1,6 @@
+// Filename: hashGeneratorBase.cxx
+// Created by:  drose (14May01)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "hashGeneratorBase.h"
