@@ -127,20 +127,25 @@ class ControlManager:
         else:
             print "Unkown controls:", name
 
+    def delete(self):
+        assert self.notify.debugCall(id(self))
+        self.disable()
+        #self.monitorTask.remove()
+
     def setSpeeds(self, forwardSpeed, jumpForce,
             reverseSpeed, rotateSpeed):
         assert self.notify.debugCall(id(self))
         for controls in self.controls.values():
             controls.setWalkSpeed(
                 forwardSpeed, jumpForce, reverseSpeed, rotateSpeed)
-
-    def delete(self):
-        assert self.notify.debugCall(id(self))
-        self.disable()
-        #self.monitorTask.remove()
     
     def getSpeeds(self):
         return self.currentControls.getSpeeds()
+
+    def setTag(self, key, value):
+        assert self.notify.debugCall(id(self))
+        for controls in self.controls.values():
+            controls.setTag(key, value)
 
     def deleteCollisions(self):
         assert self.notify.debugCall(id(self))

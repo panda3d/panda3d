@@ -279,8 +279,13 @@ class GravityWalker(DirectObject.DirectObject):
         self.pusherFloor = handler
         self.cFloorSphereNodePath = cSphereNodePath
 
+    def setWallBitMask(self, bitMask):
+        self.wallBitmask = bitMask
+
+    def setFloorBitMask(self, bitMask):
+        self.floorBitmask = bitMask
+
     def initializeCollisions(self, collisionTraverser, avatarNodePath,
-            wallBitmask, floorBitmask,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
         """
         floorOffset is how high the avatar can reach.  I.e. if the avatar
@@ -297,13 +302,16 @@ class GravityWalker(DirectObject.DirectObject):
         
         self.cTrav = collisionTraverser
 
-        self.setupRay(floorBitmask, floorOffset, reach )
-        self.setupWallSphere(wallBitmask, avatarRadius)
-        self.setupEventSphere(wallBitmask, avatarRadius)
+        self.setupRay(self.floorBitmask, floorOffset, reach )
+        self.setupWallSphere(self.wallBitmask, avatarRadius)
+        self.setupEventSphere(self.wallBitmask, avatarRadius)
         if self.wantFloorSphere:
-            self.setupFloorSphere(floorBitmask, avatarRadius)
+            self.setupFloorSphere(self.floorBitmask, avatarRadius)
 
         self.setCollisionsActive(1)
+
+    def setTag(self, key, value):
+        self.cEventSphereNodePath.setTag(key, value)
 
     def setAirborneHeightFunc(self, unused_parameter):
         assert self.notify.debugStateCall(self)

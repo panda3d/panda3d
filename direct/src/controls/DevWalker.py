@@ -53,6 +53,12 @@ class DevWalker(DirectObject.DirectObject):
         if avatar is not None:
             pass # setup the avatar
 
+    def setWallBitMask(self, bitMask):
+        pass
+    
+    def setFloorBitMask(self, bitMask):
+        pass
+
     def initializeCollisions(self, collisionTraverser, avatarNodePath, 
             wallCollideMask, floorCollideMask,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
@@ -65,6 +71,9 @@ class DevWalker(DirectObject.DirectObject):
         pass
 
     def deleteCollisions(self):
+        pass
+
+    def setTag(self, key, value):
         pass
 
     def setCollisionsActive(self, active = 1):

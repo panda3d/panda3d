@@ -52,8 +52,16 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         if avatar is not None:
             pass # setup the avatar
 
+    def setAirborneHeightFunc(self, getAirborneHeight):
+        self.getAirborneHeight = getAirborneHeight
+
+    def setWallBitMask(self, bitMask):
+        self.cSphereBitMask = bitMask
+
+    def setFloorBitMask(self, bitMask):
+        self.cRayBitMask = bitMask
+
     def initializeCollisions(self, collisionTraverser, avatarNodePath,
-            wallCollideMask, floorCollideMask,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
         """
         Set up the avatar for collisions
@@ -69,7 +77,6 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         cSphereNode = CollisionNode('NPW.cSphereNode')
         cSphereNode.addSolid(self.cSphere)
         self.cSphereNodePath = avatarNodePath.attachNewNode(cSphereNode)
-        self.cSphereBitMask = wallCollideMask
 
         cSphereNode.setFromCollideMask(self.cSphereBitMask)
         cSphereNode.setIntoCollideMask(BitMask32.allOff())
@@ -84,7 +91,6 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         cRayNode = CollisionNode('NPW.cRayNode')
         cRayNode.addSolid(self.cRay)
         self.cRayNodePath = avatarNodePath.attachNewNode(cRayNode)
-        self.cRayBitMask = floorCollideMask
         cRayNode.setFromCollideMask(self.cRayBitMask)
         cRayNode.setIntoCollideMask(BitMask32.allOff())
 
@@ -112,9 +118,6 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         # activate the collider with the traverser and pusher
         self.setCollisionsActive(1)
 
-    def setAirborneHeightFunc(self, getAirborneHeight):
-        self.getAirborneHeight = getAirborneHeight
-
     def deleteCollisions(self):
         del self.cTrav
 
@@ -128,6 +131,9 @@ class NonPhysicsWalker(DirectObject.DirectObject):
 
         del self.pusher
         del self.lifter
+
+    def setTag(self, key, value):
+        self.cSphereNodePath.setTag(key, value)
 
     def setCollisionsActive(self, active = 1):
         assert(self.debugPrint("setCollisionsActive(active%s)"%(active,)))

@@ -337,19 +337,20 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
         self.setCollisionsActive(1)
 
+    def setWallBitMask(self, bitMask):
+        self.wallBitmask = bitMask
+
+    def setFloorBitMask(self, bitMask):
+        self.floorBitmask = bitMask
+
     def initializeCollisions(self, collisionTraverser,
-            wallBitmask, floorBitmask,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
         """
         Set up the avatar collisions
         """
         assert(self.debugPrint("initializeCollisions()"))
-        
-        
         self.cTrav = collisionTraverser
         self.floorOffset = floorOffset = 7.0
-        self.wallBitmask = wallBitmask
-        self.floorBitmask = floorBitmask
         self.avatarRadius = avatarRadius
         self.floorOffset = floorOffset
         self.reach = reach
@@ -371,6 +372,11 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             del self.pusher
         
         self.getAirborneHeight = None
+
+    def setTag(self, key, value):
+        if not hasattr(self, "collisionTags"):
+            self.collisionTags = {}
+        self.collisionTags[key] = value
 
     def setAirborneHeightFunc(self, getAirborneHeight):
         self.getAirborneHeight = getAirborneHeight
