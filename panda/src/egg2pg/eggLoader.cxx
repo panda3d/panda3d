@@ -2096,6 +2096,7 @@ make_vertex_data(const EggRenderState *render_state,
     EggVertex::const_uv_iterator uvi;
     for (uvi = vertex->uv_begin(); uvi != vertex->uv_end(); ++uvi) {
       EggVertexUV *egg_uv = (*uvi);
+      TexCoordd orig_uv = egg_uv->get_uv();
       TexCoordd uv = egg_uv->get_uv();
 
       string name = egg_uv->get_name();
@@ -2119,7 +2120,13 @@ make_vertex_data(const EggRenderState *render_state,
         CPT(InternalName) delta_name = 
           InternalName::get_morph(iname, morph.get_name());
         gvw.set_data_type(delta_name);
-        gvw.add_data2f(LCAST(float, morph.get_offset()));
+        TexCoordd duv = morph.get_offset();
+        if (buv != render_state->_bake_in_uvs.end()) {
+          TexCoordd new_uv = orig_uv + duv;
+          duv = (new_uv * (*buv).second->get_transform()) - uv;
+        }
+        
+        gvw.add_data2f(LCAST(float, duv));
       }
     }
 
