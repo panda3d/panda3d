@@ -53,7 +53,7 @@ PGItem(const string &name) : NamedNode(name)
   _frame.set(0, 0, 0, 0);
   _region = new PGMouseWatcherRegion(this);
   _state = 0;
-  _flags = F_active;
+  _flags = 0;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -38,6 +38,8 @@ PGButton(const string &name) : PGItem(name)
 {
   _button_down = false;
   _click_buttons.insert(MouseButton::one());
+
+  set_active(true);
 }
 
 ////////////////////////////////////////////////////////////////////

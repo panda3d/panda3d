@@ -60,6 +60,7 @@ PGEntry(const string &name) : PGItem(name)
 
   _cursor_keys_active = true;
 
+  set_active(true);
   update_state();
 }
 
