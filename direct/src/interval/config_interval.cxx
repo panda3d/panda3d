@@ -24,6 +24,7 @@
 #include "cMetaInterval.h"
 #include "showInterval.h"
 #include "hideInterval.h"
+#include "waitInterval.h"
 
 #include "dconfig.h"
 
@@ -65,5 +66,6 @@ init_libinterval() {
   CMetaInterval::init_type();
   ShowInterval::init_type();
   HideInterval::init_type();
+  WaitInterval::init_type();
 }
 
