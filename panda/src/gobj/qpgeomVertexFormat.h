@@ -81,6 +81,8 @@ PUBLISHED:
   int get_array_with(const InternalName *name) const;
   const qpGeomVertexDataType *get_data_type(const InternalName *name) const;
 
+  void remove_data_type(const InternalName *name);
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
   void write_with_data(ostream &out, int indent_level, 

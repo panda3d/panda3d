@@ -94,6 +94,9 @@ qpGeomVertexFormat::
 //  Description: Returns a modifiable pointer to the indicated array.
 //               This means duplicating it if it is shared or
 //               registered.
+//
+//               This may not be called once the format has been
+//               registered.
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayFormat *qpGeomVertexFormat::
 modify_array(int array) {
@@ -112,6 +115,9 @@ modify_array(int array) {
 //     Function: qpGeomVertexFormat::set_array
 //       Access: Published
 //  Description: Replaces the definition of the indicated array.
+//
+//               This may not be called once the format has been
+//               registered.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexFormat::
 set_array(int array, qpGeomVertexArrayFormat *format) {
@@ -124,6 +130,9 @@ set_array(int array, qpGeomVertexArrayFormat *format) {
 //     Function: qpGeomVertexFormat::remove_array
 //       Access: Published
 //  Description: Removes the nth array from the format.
+//
+//               This may not be called once the format has been
+//               registered.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexFormat::
 remove_array(int array) {
@@ -140,6 +149,9 @@ remove_array(int array) {
 //               arrays included within this vertex format definition.
 //               The return value is the index number of the new
 //               array.
+//
+//               This may not be called once the format has been
+//               registered.
 ////////////////////////////////////////////////////////////////////
 int qpGeomVertexFormat::
 add_array(qpGeomVertexArrayFormat *array_format) {
@@ -155,6 +167,9 @@ add_array(qpGeomVertexArrayFormat *array_format) {
 //       Access: Published
 //  Description: Removes all of the array definitions from the format
 //               and starts over.
+//
+//               This may not be called once the format has been
+//               registered.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexFormat::
 clear_arrays() {
@@ -276,6 +291,53 @@ get_data_type(const InternalName *name) const {
     return _arrays[array_index]->get_data_type(data_type_index);
   }
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::remove_data_type
+//       Access: Published
+//  Description: Removes the named data type from the format, from
+//               whichever array it exists in.  If there are other
+//               data types remaining in the array, the array is left
+//               with a gap where the data type used to be; if this
+//               was the only data type in the array, the array is
+//               removed.
+//
+//               This may not be called once the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexFormat::
+remove_data_type(const InternalName *name) {
+  nassertv(!_is_registered);
+
+  // Since the format's not registered, it doesn't yet have an index
+  // of data types--so we have to search all of the arrays, one at a
+  // time, until we find it.
+  for (int array = 0; array < (int)_arrays.size(); ++array) {
+    qpGeomVertexArrayFormat *array_format = _arrays[array];
+
+    if (array_format->get_data_type(name) != (qpGeomVertexDataType *)NULL) {
+      // Here's the array with the named data type!
+      if (array_format->is_registered() ||
+          array_format->get_ref_count() > 1) {
+        // Get a safe-to-modify copy of the array format.
+        _arrays[array] = new qpGeomVertexArrayFormat(*array_format);
+        array_format = _arrays[array];
+      }
+
+      array_format->remove_data_type(name);
+
+      // Are there any data types remaining in the array?
+      if (array_format->get_num_data_types() == 0) {
+        // Remove the whole array.
+        remove_array(array);
+      }
+      return;
+    }
+  }
+
+  // It appears that data type wasn't part of the format anyway.  No
+  // problem; quietly return.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -402,8 +464,7 @@ do_register() {
   nassertv(_data_types_by_name.empty());
   nassertv(_mungers.empty());
 
-  int array = 0;
-  for (array = 0; array < (int)_arrays.size(); ++array) {
+  for (int array = 0; array < (int)_arrays.size(); ++array) {
     const qpGeomVertexArrayFormat *array_format = _arrays[array];
     if (!array_format->is_registered()) {
       ((qpGeomVertexArrayFormat *)array_format)->do_register();
