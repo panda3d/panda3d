@@ -69,8 +69,7 @@ def activateSmoothing(smoothing, prediction):
 
 
 class DistributedSmoothNode(DistributedNode.DistributedNode,
-                            DistributedSmoothNodeBase.\
-                            DistributedSmoothNodeBase):
+                            DistributedSmoothNodeBase.DistributedSmoothNodeBase):
     """DistributedSmoothNode class:
 
     This specializes DistributedNode to add functionality to smooth
