@@ -181,7 +181,8 @@ class DistributedObject(PandaObject):
         except:
             self.DistributedObject_deleted = 1
             self.cr = None
-
+            self.dclass = None
+            
     def generate(self):
         """
         Inheritors should redefine this to take appropriate action on generate

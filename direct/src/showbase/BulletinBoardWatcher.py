@@ -25,6 +25,8 @@ class BulletinBoardWatcher(DirectObject.DirectObject):
 
     def destroy(self):
         self.ignoreAll()
+        del self.callback
+        del self.waitingOn
 
     def isDone(self):
         return len(self.waitingOn) == 0
