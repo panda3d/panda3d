@@ -66,6 +66,8 @@ public:
   virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc);
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
 
+  INLINE bool draw_display_list(GeomContext *gc);
+
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);

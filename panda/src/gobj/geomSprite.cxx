@@ -83,6 +83,21 @@ draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomSprite::is_dynamic
+//       Access: Public, Virtual
+//  Description: Returns true if the Geom has any dynamic properties
+//               that are expected to change from one frame to the
+//               next, or false if the Geom is largely static.  For
+//               now, this is the same thing as asking whether its
+//               vertices are indexed.
+////////////////////////////////////////////////////////////////////
+bool GeomSprite::
+is_dynamic() const {
+  // Sprites are always dynamic.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomSprite::write_datagram
 //       Access: Public
 //  Description: Function to write the important information in

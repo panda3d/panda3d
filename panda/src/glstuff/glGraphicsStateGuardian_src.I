@@ -18,6 +18,30 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::draw_display_list
+//       Access: Public
+//  Description: If the GeomContext is non-NULL and contains a valid
+//               display list, uses it to draw the geometry if
+//               appropriate, and returns true.  If the display list
+//               is absent or cannot be used for some reason, does
+//               nothing and returns false.
+////////////////////////////////////////////////////////////////////
+INLINE bool CLP(GraphicsStateGuardian)::
+draw_display_list(GeomContext *gc) {
+  if (gc != (GeomContext *)NULL && _vertex_colors_enabled) {
+    _draw_primitive_pcollector.start();
+    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+    GLP(CallList)(ggc->_index);
+#ifdef DO_PSTATS
+    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
+#endif
+    _draw_primitive_pcollector.stop();
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::report_errors
 //       Access: Public, Static
 //  Description: Checks for any outstanding error codes and outputs

@@ -43,6 +43,8 @@ public:
   virtual Geom *explode() const {
     return new GeomSprite(*this); }
 
+  virtual bool is_dynamic() const;
+
   static float get_frustum_top() { return 1.0f; }
   static float get_frustum_bottom() { return -1.0f; }
   static float get_frustum_left() { return -1.0f; }

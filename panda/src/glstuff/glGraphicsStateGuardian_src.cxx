@@ -652,14 +652,7 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
   GLCAT.spam() << "draw_point()" << endl;
 #endif
 
-  if (gc != (GeomContext *)NULL) {
-    _draw_primitive_pcollector.start();
-    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    GLP(CallList)(ggc->_index);
-#ifdef DO_PSTATS
-    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
-#endif
-    _draw_primitive_pcollector.stop();
+  if (draw_display_list(gc)) {
     return;
   }
 
@@ -725,14 +718,7 @@ draw_line(GeomLine *geom, GeomContext *gc) {
   GLCAT.spam() << "draw_line()" << endl;
 #endif
 
-  if (gc != (GeomContext *)NULL) {
-    _draw_primitive_pcollector.start();
-    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    GLP(CallList)(ggc->_index);
-#ifdef DO_PSTATS
-    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
-#endif
-    _draw_primitive_pcollector.stop();
+  if (draw_display_list(gc)) {
     return;
   }
 
@@ -808,14 +794,7 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *gc) {
   GLCAT.spam() << "draw_linestrip()" << endl;
 #endif
 
-  if (gc != (GeomContext *)NULL) {
-    _draw_primitive_pcollector.start();
-    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    GLP(CallList)(ggc->_index);
-#ifdef DO_PSTATS
-    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
-#endif
-    _draw_primitive_pcollector.stop();
+  if (draw_display_list(gc)) {
     return;
   }
 
@@ -1190,14 +1169,7 @@ draw_polygon(GeomPolygon *geom, GeomContext *gc) {
   GLCAT.spam() << "draw_polygon()" << endl;
 #endif
 
-  if (gc != (GeomContext *)NULL) {
-    _draw_primitive_pcollector.start();
-    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    GLP(CallList)(ggc->_index);
-#ifdef DO_PSTATS
-    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
-#endif
-    _draw_primitive_pcollector.stop();
+  if (draw_display_list(gc)) {
     return;
   }
 
@@ -1280,14 +1252,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
   GLCAT.spam() << "draw_tri()" << endl;
 #endif
 
-  if (gc != (GeomContext *)NULL) {
-    _draw_primitive_pcollector.start();
-    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    GLP(CallList)(ggc->_index);
-#ifdef DO_PSTATS
-    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
-#endif
-    _draw_primitive_pcollector.stop();
+  if (draw_display_list(gc)) {
     return;
   }
 
@@ -1367,14 +1332,7 @@ draw_quad(GeomQuad *geom, GeomContext *gc) {
   GLCAT.spam() << "draw_quad()" << endl;
 #endif
 
-  if (gc != (GeomContext *)NULL) {
-    _draw_primitive_pcollector.start();
-    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    GLP(CallList)(ggc->_index);
-#ifdef DO_PSTATS
-    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
-#endif
-    _draw_primitive_pcollector.stop();
+  if (draw_display_list(gc)) {
     return;
   }
 
@@ -1452,14 +1410,7 @@ draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
   GLCAT.spam() << "draw_tristrip()" << endl;
 #endif
 
-  if (gc != (GeomContext *)NULL) {
-    _draw_primitive_pcollector.start();
-    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    GLP(CallList)(ggc->_index);
-#ifdef DO_PSTATS
-    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
-#endif
-    _draw_primitive_pcollector.stop();
+  if (draw_display_list(gc)) {
     return;
   }
 
@@ -1560,14 +1511,7 @@ draw_trifan(GeomTrifan *geom, GeomContext *gc) {
   GLCAT.spam() << "draw_trifan()" << endl;
 #endif
 
-  if (gc != (GeomContext *)NULL) {
-    _draw_primitive_pcollector.start();
-    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    GLP(CallList)(ggc->_index);
-#ifdef DO_PSTATS
-    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
-#endif
-    _draw_primitive_pcollector.stop();
+  if (draw_display_list(gc)) {
     return;
   }
 
@@ -1668,14 +1612,7 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
   GLCAT.spam() << "draw_sphere()" << endl;
 #endif
 
-  if (gc != (GeomContext *)NULL) {
-    _draw_primitive_pcollector.start();
-    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    GLP(CallList)(ggc->_index);
-#ifdef DO_PSTATS
-    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
-#endif
-    _draw_primitive_pcollector.stop();
+  if (draw_display_list(gc)) {
     return;
   }
 
@@ -1841,6 +1778,20 @@ release_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 GeomContext *CLP(GraphicsStateGuardian)::
 prepare_geom(Geom *geom) {
+  if (!_vertex_colors_enabled) {
+    // We can't build a display list (or play back a display list) if
+    // its color is overridden with a scene graph color.  Maybe if we
+    // take advantage of the OpenGL color matrix we can do this, but
+    // for now we'll just ignore it.
+    return NULL;
+  }
+
+  if (geom->is_dynamic()) {
+    // If the Geom is dynamic in some way, we shouldn't try to
+    // display-list it.
+    return NULL;
+  }
+
   CLP(GeomContext) *ggc = new CLP(GeomContext)(geom);
   ggc->_index = GLP(GenLists)(1);
   if (GLCAT.is_debug()) {
@@ -1854,16 +1805,12 @@ prepare_geom(Geom *geom) {
     return NULL;
   }
 
-  /*
   // We need to temporarily force normals and UV's on, so the display
   // list will have them built in.
   bool old_normals_enabled = _normals_enabled;
   bool old_texturing_enabled = _texturing_enabled;
-  bool old_vertex_colors_enabled = _vertex_colors_enabled;
   _normals_enabled = true;
   _texturing_enabled = true;
-  _vertex_colors_enabled = true;
-  */
 
 #ifdef DO_PSTATS
   // Count up the number of vertices we're about to render, by
@@ -1891,11 +1838,8 @@ prepare_geom(Geom *geom) {
   ggc->_num_verts = (int)(num_verts + 0.5);
 #endif
 
-  /*
   _normals_enabled = old_normals_enabled;
   _texturing_enabled = old_texturing_enabled;
-  _vertex_colors_enabled = old_vertex_colors_enabled;
-  */
 
   report_my_gl_errors();
   return ggc;
