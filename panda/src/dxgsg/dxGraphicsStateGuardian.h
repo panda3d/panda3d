@@ -365,6 +365,12 @@ protected:
 
   int _pass_number;
 
+  // vars for frames/sec meter
+  DWORD _start_time;
+  DWORD _start_frame_count;
+  DWORD _cur_frame_count;
+  float _current_fps;
+
 public:
   static GraphicsStateGuardian*
   make_DXGraphicsStateGuardian(const FactoryParams &params);

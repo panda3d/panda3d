@@ -269,6 +269,10 @@ init_dx(  LPDIRECTDRAW7     context,
 	_view_rect = viewrect;
 	HRESULT hr;
 
+    _start_time = 0.0;
+    _start_frame_count = _cur_frame_count = 0;
+	_current_fps = 0.0;
+
 	_pTexPixFmts = new DDPIXELFORMAT[MAX_DX_TEXPIXFMTS];
 
 	assert(_pTexPixFmts!=NULL);
@@ -705,7 +709,39 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
 	_d3dDevice->EndScene();
 
+	if(dx_show_fps_meter) {
+
+		 DWORD now = timeGetTime();  // this is win32 fn
+
+		 float time_delta = (now - _start_time)/1000.0;
+
+		 if(time_delta > dx_fps_meter_update_interval) {
+			 // didnt use global clock object, it wasnt working properly when I tried,
+			 // its probably slower due to cache faults, and I can easily track all the
+			 // info I need in dxgsg
+			 DWORD num_frames = _cur_frame_count - _start_frame_count;
+
+			 _current_fps = num_frames / time_delta;
+			 _start_time = now;
+			 _start_frame_count = _cur_frame_count;
+		 }
+
+		 HDC hDC;
+
+		 if(SUCCEEDED(_back->GetDC(&hDC))) {
+			 char fps_msg[20];
+			 sprintf(fps_msg, "%7.02f fps", _current_fps);
+			 SetTextColor(hDC, RGB(255,255,0) );
+			 SetBkMode(hDC, TRANSPARENT );
+             TextOutA(hDC, (_view_rect.right-_view_rect.left)-85, 0, fps_msg, strlen(fps_msg));
+             _back->ReleaseDC(hDC);
+		 }
+
+		 _cur_frame_count++;  // only used by fps meter right now
+	}
+
 	_win->end_frame();  
+
 	show_frame();
 
 #ifdef PRINT_TEXSTATS
@@ -1720,9 +1756,11 @@ draw_sprite(const GeomSprite *geom) {
 		vertex_size+=sizeof(D3DCOLOR);
 	}
 
-	nassertv(_pCurFvfBufPtr == NULL);	 // make sure the storage pointer is clean.
-	nassertv(nprims * 4 * vertex_size < VERT_BUFFER_SIZE);
-	nassertv(nprims * 6 < D3DMAXNUMVERTICES );
+	#ifdef _DEBUG
+  	 nassertv(_pCurFvfBufPtr == NULL);	 // make sure the storage pointer is clean.
+     nassertv(nprims * 4 * vertex_size < VERT_BUFFER_SIZE);
+	 nassertv(nprims * 6 < D3DMAXNUMVERTICES );
+	#endif
 
 	_pCurFvfBufPtr = _pFvfBufBasePtr;		   // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
 	const float TexCrdSets[4][2] = {{0.0,0.0},{1.0,0.0},{0.0,1.0},{1.0,1.0}};
@@ -3665,20 +3703,26 @@ void DXGraphicsStateGuardian::apply_material( const Material* material ) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 apply_fog(Fog *fog) {
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_FOGTABLEMODE, 
-							   get_fog_mode_type(fog->get_mode()));
-	_d3dDevice->SetRenderState(D3DRENDERSTATE_FOGVERTEXMODE, 
-							   get_fog_mode_type(fog->get_mode()));
+      // need to re-examine this fog stuff
 
-	switch (fog->get_mode()) {
+	Fog::Mode panda_fogmode = fog->get_mode();
+	D3DFOGMODE d3dfogmode = get_fog_mode_type(panda_fogmode);
+
+	if(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_FOGTABLE ) {
+  	   _d3dDevice->SetRenderState(D3DRENDERSTATE_FOGTABLEMODE, d3dfogmode);
+	} else if(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_FOGVERTEX ) {
+	  _d3dDevice->SetRenderState(D3DRENDERSTATE_FOGVERTEXMODE, d3dfogmode);
+	}
+
+	switch (panda_fogmode) {
 		case Fog::M_linear:
 			{
 				float fog_start = fog->get_start();   
 				float fog_end = fog->get_end();   
 				_d3dDevice->SetRenderState( D3DRENDERSTATE_FOGSTART, 
-											*((LPDWORD) (&fog_start)) );
+							*((LPDWORD) (&fog_start)) );
 				_d3dDevice->SetRenderState( D3DRENDERSTATE_FOGEND, 
-											*((LPDWORD) (&fog_end)) );
+							*((LPDWORD) (&fog_end)) );
 			}
 			break;
 		case Fog::M_exponential:
@@ -3686,7 +3730,7 @@ apply_fog(Fog *fog) {
 			{
 				float fog_density = fog->get_density();   
 				_d3dDevice->SetRenderState( D3DRENDERSTATE_FOGDENSITY, 
-											*((LPDWORD) (&fog_density)) );
+							*((LPDWORD) (&fog_density)) );
 			}
 			break;
 		case Fog::M_spline:
@@ -3695,7 +3739,7 @@ apply_fog(Fog *fog) {
 
 	Colorf  fog_colr = fog->get_color();
 	_d3dDevice->SetRenderState(D3DRENDERSTATE_FOGCOLOR, 
-							   D3DRGBA(fog_colr[0], fog_colr[1], fog_colr[2], 0.0));
+				   D3DRGBA(fog_colr[0], fog_colr[1], fog_colr[2], 0.0));
 }
 
 ////////////////////////////////////////////////////////////////////
