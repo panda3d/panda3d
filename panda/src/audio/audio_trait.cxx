@@ -6,25 +6,34 @@
 #include "audio_trait.h"
 #include "config_audio.h"
 
-AudioTraits::SampleClass::~SampleClass(void) {
+AudioTraits::SoundClass::~SoundClass(void) {
 }
 
-float AudioTraits::SampleClass::length(void) {
-  audio_cat->error() << "In abstract SampleClass::length!" << endl;
-  return 0.;
+float AudioTraits::SoundClass::length(void) const {
+  audio_cat->error() << "In abstract SoundClass::length!" << endl;
+  return -1.;
 }
 
-AudioTraits::SampleClass::SampleStatus AudioTraits::SampleClass::status(void) {
-  audio_cat->error() << "In abstract SampleClass::status!" << endl;
-  return READY;
+AudioTraits::PlayingClass* AudioTraits::SoundClass::get_state(void) const {
+  audio_cat->error() << "In abstract SoundClass::get_state!" << endl;
+  return (AudioTraits::PlayingClass*)0L;
 }
 
-AudioTraits::MusicClass::~MusicClass(void) {
+AudioTraits::PlayerClass* AudioTraits::SoundClass::get_player(void) const {
+  audio_cat->error() << "In abstract SoundClass::get_player!" << endl;
+  return (AudioTraits::PlayerClass*)0L;
 }
 
-AudioTraits::MusicClass::MusicStatus AudioTraits::MusicClass::status(void) {
-  audio_cat->error() << "In abstract MusicClass::status!" << endl;
-  return READY;
+AudioTraits::DeleteSoundFunc*
+AudioTraits::SoundClass::get_destroy(void) const {
+  audio_cat->error() << "In abstract SoundClass::get_destroy!" << endl;
+  return (AudioTraits::DeleteSoundFunc*)0L;
+}
+
+AudioTraits::DeletePlayingFunc*
+AudioTraits::SoundClass::get_delstate(void) const {
+  audio_cat->error() << "In abstract SoundClass::get_delstate!" << endl;
+  return (AudioTraits::DeletePlayingFunc*)0L;
 }
 
 AudioTraits::PlayingClass::~PlayingClass(void) {
@@ -39,19 +48,11 @@ AudioTraits::PlayingClass::status(void) {
 AudioTraits::PlayerClass::~PlayerClass(void) {
 }
 
-void AudioTraits::PlayerClass::play_sample(AudioTraits::SampleClass*) {
-  audio_cat->error() << "In abstract PlayerClass::play_sample!" << endl;
+void AudioTraits::PlayerClass::play_sound(AudioTraits::SoundClass*,
+					  AudioTraits::PlayingClass*) {
+  audio_cat->error() << "In abstract PlayerClass::play_sound!" << endl;
 }
 
-void AudioTraits::PlayerClass::play_music(AudioTraits::MusicClass*) {
-  audio_cat->error() << "In abstract PlayerClass::play_music!" << endl;
-}
-
-void AudioTraits::PlayerClass::set_volume(AudioTraits::SampleClass*, int) {
-  audio_cat->error() << "In abstract PlayerClass::set_volume (sample)!"
-		     << endl;
-}
-
-void AudioTraits::PlayerClass::set_volume(AudioTraits::MusicClass*, int) {
-  audio_cat->error() << "In abstract PlayerClass::set_volume (music)!" << endl;
+void AudioTraits::PlayerClass::set_volume(AudioTraits::PlayingClass*, int) {
+  audio_cat->error() << "In abstract PlayerClass::set_volume!" << endl;
 }

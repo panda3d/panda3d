@@ -62,6 +62,15 @@ INLINE AudioTraits::MusicClass* AudioMusic::get_music(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AudioMusic::get_playing
+//       Access: Protected
+//  Description: return the trait playing class for this music
+////////////////////////////////////////////////////////////////////
+INLINE AudioTraits::PlayingClass* AudioMusic::get_playing(void) {
+  return _state;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AudioMusic::equality operator
 //       Access: Public
 //  Description: test to see if two musics are the same

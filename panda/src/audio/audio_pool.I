@@ -4,131 +4,67 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::has_sample
+//     Function: AudioPool::has_sound
 //       Access: Public, Static
-//  Description: Returns true if the sample has ever been loaded,
+//  Description: Returns true if the sound has ever been loaded,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE bool AudioPool::has_sample(const string& filename) {
-  return get_ptr()->ns_has_sample(filename);
+INLINE bool AudioPool::has_sound(const string& filename) {
+  return get_ptr()->ns_has_sound(filename);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::verify_sample
+//     Function: AudioPool::verify_sound
 //       Access: Public, Static
-//  Description: Loads the given filename up into a sample, if it has
+//  Description: Loads the given filename up into a sound, if it has
 //               not already been loaded, and returns true to indicate
 //               success, or false to indicate failure.  If this
 //               returns true, it is guaranteed that a subsequent call
-//               to load_sample() with the same sample name will
-//               return a valid AudioSample pointer.
+//               to load_sound() with the same sound name will
+//               return a valid AudioSound pointer.
 ////////////////////////////////////////////////////////////////////
-INLINE bool AudioPool::verify_sample(const string& filename) {
-  return load_sample(filename) != (AudioSample*)0L;
+INLINE bool AudioPool::verify_sound(const string& filename) {
+  return load_sound(filename) != (AudioSound*)0L;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::load_sample
+//     Function: AudioPool::load_sound
 //       Access: Public, Static
-//  Description: Loads the given filename up into a sample, if it has
-//               not already been loaded, and returns the new sample.
-//               If a sample with the same filename was previously
-//               loaded, returns that one instead.  If the sample
+//  Description: Loads the given filename up into a sound, if it has
+//               not already been loaded, and returns the new sound.
+//               If a sound with the same filename was previously
+//               loaded, returns that one instead.  If the sound
 //               file cannot be found, returns NULL.
 ////////////////////////////////////////////////////////////////////
-INLINE AudioSample* AudioPool::load_sample(const string& filename) {
-  return get_ptr()->ns_load_sample(filename);
+INLINE AudioSound* AudioPool::load_sound(const string& filename) {
+  return get_ptr()->ns_load_sound(filename);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::release_sample
+//     Function: AudioPool::release_sound
 //       Access: Public, Static
-//  Description: Removes the indicated sample from the pool,
-//               indicating it will never be loaded again; the sample
+//  Description: Removes the indicated sound from the pool,
+//               indicating it will never be loaded again; the sound
 //               may then be freed.  If this function is never called,
-//               a reference count will be maintained on every sample
-//               ever loaded, and samples will never be freed.
+//               a reference count will be maintained on every sound
+//               ever loaded, and sounds will never be freed.
 //
-//               The sample's name should not have been changed
+//               The sound's name should not have been changed
 //               during its lifetime, or this function may fail to
 //               locate it in the pool.
 ////////////////////////////////////////////////////////////////////
-INLINE void AudioPool::release_sample(AudioSample* sample) {
-  get_ptr()->ns_release_sample(sample);
+INLINE void AudioPool::release_sound(AudioSound* sound) {
+  get_ptr()->ns_release_sound(sound);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::release_all_samples
+//     Function: AudioPool::release_all_sounds
 //       Access: Public, Static
-//  Description: Releases all samples in the pool and restores the
+//  Description: Releases all sounds in the pool and restores the
 //               pool to the empty state.
 ////////////////////////////////////////////////////////////////////
-INLINE void AudioPool::release_all_samples(void) {
-  get_ptr()->ns_release_all_samples();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::has_music
-//       Access: Public, Static
-//  Description: Returns true if the music has ever been loaded,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool AudioPool::has_music(const string& filename) {
-  return get_ptr()->ns_has_music(filename);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::verify_music
-//       Access: Public, Static
-//  Description: Loads the given filename up into a music, if it has
-//               not already been loaded, and returns true to indicate
-//               success, or false to indicate failure.  If this
-//               returns true, it is guaranteed that a subsequent call
-//               to load_music() with the same music name will
-//               return a valid AudioMusic pointer.
-////////////////////////////////////////////////////////////////////
-INLINE bool AudioPool::verify_music(const string& filename) {
-  return load_music(filename) != (AudioMusic*)0L;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::load_music
-//       Access: Public, Static
-//  Description: Loads the given filename up into a music, if it has
-//               not already been loaded, and returns the new music.
-//               If a music with the same filename was previously
-//               loaded, returns that one instead.  If the music
-//               file cannot be found, returns NULL.
-////////////////////////////////////////////////////////////////////
-INLINE AudioMusic* AudioPool::load_music(const string& filename) {
-  return get_ptr()->ns_load_music(filename);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::release_music
-//       Access: Public, Static
-//  Description: Removes the indicated music from the pool,
-//               indicating it will never be loaded again; the music
-//               may then be freed.  If this function is never called,
-//               a reference count will be maintained on every music
-//               ever loaded, and music will never be freed.
-//
-//               The music's name should not have been changed
-//               during its lifetime, or this function may fail to
-//               locate it in the pool.
-////////////////////////////////////////////////////////////////////
-INLINE void AudioPool::release_music(AudioMusic* music) {
-  get_ptr()->ns_release_music(music);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::release_all_music
-//       Access: Public, Static
-//  Description: Releases all music in the pool and restores the
-//               pool to the empty state.
-////////////////////////////////////////////////////////////////////
-INLINE void AudioPool::release_all_music(void) {
-  get_ptr()->ns_release_all_music();
+INLINE void AudioPool::release_all_sounds(void) {
+  get_ptr()->ns_release_all_sounds();
 }
 
 ////////////////////////////////////////////////////////////////////

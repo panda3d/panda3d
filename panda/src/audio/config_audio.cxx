@@ -4,8 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_audio.h"
-#include "audio_sample.h"
-#include "audio_music.h"
+#include "audio_sound.h"
 #include <dconfig.h>
 #include <filename.h>
 #include <load_dso.h>
@@ -24,8 +23,7 @@ int audio_auto_update_delay = config_audio.GetInt("audio-auto-update-delay",
 						  100000);
 
 ConfigureFn(config_audio) {
-  AudioSample::init_type();
-  AudioMusic::init_type();
+  AudioSound::init_type();
 
   Config::ConfigTable::Symbol mode;
   config_audio.GetAll("audio-mode-flag", mode);

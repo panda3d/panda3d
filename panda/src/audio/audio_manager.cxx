@@ -66,21 +66,12 @@ AudioManager* AudioManager::get_ptr(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::ns_play (AudioSample)
+//     Function: AudioManager::ns_play (AudioSound)
 //       Access: Private
-//  Description: get the player off the sample, and start it playing
+//  Description: get the player off the sound, and start it playing
 ////////////////////////////////////////////////////////////////////
-void AudioManager::ns_play(AudioSample* sample) {
-  sample->get_player()->play_sample(sample->get_sample());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::ns_play (AudioMusic)
-//       Access: Private
-//  Description: get the player off the music, and start it playing
-////////////////////////////////////////////////////////////////////
-void AudioManager::ns_play(AudioMusic* music) {
-  music->get_player()->play_music(music->get_music());
+void AudioManager::ns_play(AudioSound* sound) {
+  sound->get_player()->play_sound(sound->get_sound(), sound->get_state());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -100,21 +91,12 @@ void* AudioManager::spawned_update(void* data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::ns_set_volume (AudioSample)
+//     Function: AudioManager::ns_set_volume (AudioSound)
 //       Access: Private
-//  Description: get the player off the sample, and set volume on it
+//  Description: get the player off the sound, and set volume on it
 ////////////////////////////////////////////////////////////////////
-void AudioManager::ns_set_volume(AudioSample* sample, int v) {
-  sample->get_player()->set_volume(sample->get_sample(), v);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::ns_set_volume (AudioMusic)
-//       Access: Private
-//  Description: get the player off the music, and set volume on it
-////////////////////////////////////////////////////////////////////
-void AudioManager::ns_set_volume(AudioMusic* music, int v) {
-  music->get_player()->set_volume(music->get_music(), v);
+void AudioManager::ns_set_volume(AudioSound* sound, int v) {
+  sound->get_player()->set_volume(sound->get_state(), v);
 }
 
 ////////////////////////////////////////////////////////////////////

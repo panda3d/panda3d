@@ -62,6 +62,15 @@ INLINE AudioTraits::SampleClass* AudioSample::get_sample(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AudioSample::get_playing
+//       Access: Protected
+//  Description: return the trait playing class for this sample
+////////////////////////////////////////////////////////////////////
+INLINE AudioTraits::PlayingClass* AudioSample::get_playing(void) {
+  return _state;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AudioSample::equality operator
 //       Access: Public
 //  Description: test to see if two samples are the same

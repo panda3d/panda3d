@@ -28,6 +28,7 @@ protected:
 
   INLINE AudioTraits::PlayerClass* get_player(void);
   INLINE AudioTraits::SampleClass* get_sample(void);
+  INLINE AudioTraits::PlayingClass* get_playing(void);
 
   friend class AudioPool;
   friend class AudioManager;

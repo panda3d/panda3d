@@ -7,8 +7,7 @@
 #define __AUDIO_H__
 
 #include "audio_trait.h"
-#include "audio_sample.h"
-#include "audio_music.h"
+#include "audio_sound.h"
 #include "audio_manager.h"
 #include "audio_pool.h"
 

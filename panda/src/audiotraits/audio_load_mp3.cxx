@@ -432,92 +432,46 @@ static void read_file(Filename filename, unsigned char** buf,
 
 #include "audio_mikmod_traits.h"
 
-void AudioDestroyMp3(AudioTraits::SampleClass* sample) {
-  delete sample;
-}
-
-void AudioLoadMp3(AudioTraits::SampleClass** sample,
-		  AudioTraits::PlayingClass** state,
-		  AudioTraits::PlayerClass** player,
-		  AudioTraits::DeleteSampleFunc** destroy, Filename) {
+AudioTraits::SoundClass* AudioLoadMp3(Filename) {
   audio_cat->warning() << "Mikmod doesn't support reading mp3 data yet"
 		       << endl;
-  *sample = (AudioTraits::SampleClass*)0L;
-  *state = (AudioTraits::PlayingClass*)0L;
-  *player = (AudioTraits::PlayerClass*)0L;
-  *destroy = AudioDestroyMp3;
+  return (AudioTraits::SoundClass*)0L;
 }
 
 #elif defined(AUDIO_USE_WIN32)
 
 #include "audio_win_traits.h"
 
-void EXPCL_MISC AudioDestroyMp3(AudioTraits::SampleClass* sample) {
-  delete sample;
-}
-
-void AudioLoadMp3(AudioTraits::SampleClass** sample,
-		  AudioTraits::PlayingClass** state,
-		  AudioTraits::PlayerClass** player,
-		  AudioTraits::DeleteSampleFunc** destroy, Filename filename) {
+EXPCL_MISC AudioTraits::SoundClass* AudioLoadMp3(Filename filename) {
   unsigned char* buf;
   unsigned long len;
   read_file(filename, &buf, len);
   if (buf != (unsigned char*)0L) {
-    *sample = WinSample::load_raw(buf, len);
-    *state = ((WinSample*)(*sample))->get_state();
-    *player = WinPlayer::get_instance();
-  } else {
-    *sample = (AudioTraits::SampleClass*)0L;
-    *state = (AudioTraits::PlayingClass*)0L;
-    *player = (AudioTraits::PlayerClass*)0L;
+    return WinSample::load_raw(buf, len);
   }
-  *destroy = AudioDestroyMp3;
+  return (AudioTraits::SampleClass*)0L;
 }
 
 #elif defined(AUDIO_USE_LINUX)
 
 #include "audio_linux_traits.h"
 
-void AudioDestroyMp3(AudioTraits::SampleClass* sample) {
-  delete sample;
-}
-
-void AudioLoadMp3(AudioTraits::SampleClass** sample,
-		  AudioTraits::PlayingClass** state,
-		  AudioTraits::PlayerClass** player,
-		  AudioTraits::DeleteSampleFunc** destroy, Filename filename) {
+AudioTraits::SoundClass* AudioLoadMp3(Filename filename) {
   unsigned char* buf;
   unsigned long len;
   read_file(filename, &buf, len);
   if (buf != (unsigned char*)0L) {
-    *sample = LinuxSample::load_raw(buf, len);
-    *state = ((LinuxSample*)(*sample))->get_state();
-    *player = LinuxPlayer::get_instance();
-  } else {
-    *sample = (AudioTraits::SampleClass*)0L;
-    *state = (AudioTraits::PlayingClass*)0L;
-    *player = (AudioTraits::PlayerClass*)0L;
+    return LinuxSample::load_raw(buf, len);
   }
-  *destroy = AudioDestroyMp3;
+  return (AudioTraits::SoundClass*)0L;
 }
 
 #elif defined(AUDIO_USE_NULL)
 
 #include "audio_null_traits.h"
 
-void AudioDestroyMp3(AudioTraits::SampleClass* sample) {
-  delete sample;
-}
-
-void AudioLoadMp3(AudioTraits::SampleClass** sample,
-		  AudioTraits::PlayingClass** state,
-		  AudioTraits::PlayerClass** player,
-		  AudioTraits::DeleteSampleFunc** destroy, Filename) {
-  *sample = (AudioTraits::SampleClass*)0L;
-  *state = (AudioTraits::PlayingClass*)0L;
-  *player = (AudioTraits::PlayerClass*)0L;
-  *destroy = AudioDestroyMp3;
+AudioTraits::SoundClass* AudioLoadMp3(Filename) {
+  return new NullSound();
 }
 
 #else
@@ -527,5 +481,5 @@ void AudioLoadMp3(AudioTraits::SampleClass** sample,
 #endif
 
 ConfigureFn(audio_load_mp3) {
-  AudioPool::register_sample_loader("mp3", AudioLoadMp3);
+  AudioPool::register_sound_loader("mp3", AudioLoadMp3);
 }

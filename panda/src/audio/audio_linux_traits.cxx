@@ -249,75 +249,127 @@ static void initialize(void) {
 LinuxSample::~LinuxSample(void) {
 }
 
-float LinuxSample::length(void) {
-  return (_data->get_size()) / (audio_mix_freq * sample_size * 2.);
+float LinuxSample::length(void) const {
+  return _size / (audio_mix_freq * sample_size * 2.);
 }
 
-AudioTraits::SampleClass::SampleStatus LinuxSample::status(void) {
-  BufferSet::iterator i = buffers.find(_data);
-  if (i != buffers.end())
-    return AudioTraits::SampleClass::PLAYING;
-  return AudioTraits::SampleClass::READY;
+AudioTraits::PlayingClass* LinuxSample::get_state(void) const {
+  return new LinuxSamplePlaying((LinuxSample*)this);
 }
 
-LinuxPlaying* LinuxSample::get_state(void) {
-  return new LinuxPlaying();
+AudioTraits::PlayerClass* LinuxSample::get_player(void) const {
+  return LinuxSamplePlayer::get_instance();
 }
 
-void LinuxSample::destroy(AudioTraits::SampleClass* sample) {
-  delete sample;
+AudioTraits::DeleteSoundFunc* LinuxSample::get_destroy(void) const {
+  return LinuxSample::destroy;
+}
+
+AudioTraits::DeletePlayingFunc* LinuxSample::get_delstate(void) const {
+  return LinuxSamplePlaying::destroy;
+}
+
+void LinuxSample::destroy(AudioTraits::SoundClass* sound) {
+  delete sound;
 }
 
 LinuxSample* LinuxSample::load_raw(byte* data, unsigned long size) {
-  LinuxSample* ret = new LinuxSample(new Buffer(data, size));
+  LinuxSample* ret = new LinuxSample(data, size);
   return ret;
 }
 
 LinuxMusic::~LinuxMusic(void) {
 }
 
-AudioTraits::MusicClass::MusicStatus LinuxMusic::status(void) {
-  return AudioTraits::MusicClass::READY;
+float LinuxMusic::length(void) const {
+  return -1.;
 }
 
-LinuxPlaying* LinuxMusic::get_state(void) {
-  return new LinuxPlaying();
+AudioTraits::PlayingClass* LinuxMusic::get_state(void) const {
+  return new LinuxMusicPlaying((LinuxMusic*)this);
 }
 
-void LinuxMusic::destroy(AudioTraits::MusicClass* music) {
+AudioTraits::PlayerClass* LinuxMusic::get_player(void) const {
+  return LinuxMusicPlayer::get_instance();
+}
+
+AudioTraits::DeleteSoundFunc* LinuxMusic::get_destroy(void) const {
+  return LinuxMusic::destroy;
+}
+
+AudioTraits::DeletePlayingFunc* LinuxMusic::get_delstate(void) const {
+  return LinuxMusicPlaying::destroy;
+}
+
+void LinuxMusic::destroy(AudioTraits::SoundClass* music) {
   delete music;
 }
 
-LinuxPlaying::~LinuxPlaying(void) {
+LinuxSamplePlaying::~LinuxSamplePlaying(void) {
 }
 
-AudioTraits::PlayingClass::PlayingStatus LinuxPlaying::status(void) {
+AudioTraits::PlayingClass::PlayingStatus LinuxSamplePlaying::status(void) {
+  LinuxSample* s = (LinuxSample*)_sound;
+  BufferSet::iterator i = buffers.find(_buff);
+  if (i != buffers.end())
+    return AudioTraits::PlayingClass::PLAYING;
+  return AudioTraits::PlayingClass::READY;
+}
+
+void LinuxSamplePlaying::destroy(AudioTraits::PlayingClass* state) {
+  delete state;
+}
+
+LinuxMusicPlaying::~LinuxMusicPlaying(void) {
+}
+
+AudioTraits::PlayingClass::PlayingStatus LinuxMusicPlaying::status(void) {
   return AudioTraits::PlayingClass::BAD;
 }
 
-LinuxPlayer* LinuxPlayer::_global_instance = (LinuxPlayer*)0L;
-
-LinuxPlayer::~LinuxPlayer(void) {
+void LinuxMusicPlaying::destroy(AudioTraits::PlayingClass* state) {
+  delete state;
 }
 
-void LinuxPlayer::play_sample(AudioTraits::SampleClass* sample) {
+LinuxSamplePlayer* LinuxSamplePlayer::_global_instance =
+   (LinuxSamplePlayer*)0L;
+
+LinuxSamplePlayer::~LinuxSamplePlayer(void) {
+}
+
+void LinuxSamplePlayer::play_sound(AudioTraits::SoundClass*,
+				   AudioTraits::PlayingClass* playing) {
   initialize();
-  LinuxSample* lsample = (LinuxSample*)sample;
-  buffers.insert(lsample->get_data());
+  LinuxSamplePlaying* lplaying = (LinuxSamplePlaying*)playing;
+  buffers.insert(lplaying->get_data());
 }
 
-void LinuxPlayer::play_music(AudioTraits::MusicClass*) {
+void LinuxSamplePlayer::set_volume(AudioTraits::PlayingClass*, int) {
 }
 
-void LinuxPlayer::set_volume(AudioTraits::SampleClass*, int) {
+LinuxSamplePlayer* LinuxSamplePlayer::get_instance(void) {
+  if (_global_instance == (LinuxSamplePlayer*)0L)
+    _global_instance = new LinuxSamplePlayer();
+  return _global_instance;
 }
 
-void LinuxPlayer::set_volume(AudioTraits::MusicClass*, int) {
+LinuxMusicPlayer* LinuxMusicPlayer::_global_instance =
+   (LinuxMusicPlayer*)0L;
+
+LinuxMusicPlayer::~LinuxMusicPlayer(void) {
 }
 
-LinuxPlayer* LinuxPlayer::get_instance(void) {
-  if (_global_instance == (LinuxPlayer*)0L)
-    _global_instance = new LinuxPlayer();
+void LinuxMusicPlayer::play_sound(AudioTraits::SoundClass*,
+				  AudioTraits::PlayingClass*) {
+  initialize();
+}
+
+void LinuxMusicPlayer::set_volume(AudioTraits::PlayingClass*, int) {
+}
+
+LinuxMusicPlayer* LinuxMusicPlayer::get_instance(void) {
+  if (_global_instance == (LinuxMusicPlayer*)0L)
+    _global_instance = new LinuxMusicPlayer();
   return _global_instance;
 }
 

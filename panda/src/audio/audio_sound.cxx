@@ -32,7 +32,7 @@ float AudioSound::length(void) const {
 //       Access: Public
 //  Description: return the current play status of this sound
 ////////////////////////////////////////////////////////////////////
-AudioSound::SoundStatus AudioSound::status(void) {
+AudioSound::SoundStatus AudioSound::status(void) const {
   AudioTraits::PlayingClass::PlayingStatus stat = _state->status();
   switch (stat) {
   case AudioTraits::PlayingClass::BAD:

@@ -13,29 +13,26 @@
 
 class NullPlaying;
 
-class EXPCL_PANDA NullSample : public AudioTraits::SampleClass {
+class EXPCL_PANDA NullSound : public AudioTraits::SoundClass {
 public:
-  INLINE NullSample(void);
-  virtual ~NullSample(void);
+  INLINE NullSound(void);
+  virtual ~NullSound(void);
 
-  virtual float length(void);
-  virtual AudioTraits::SampleClass::SampleStatus status(void);
-};
-
-class EXPCL_PANDA NullMusic : public AudioTraits::MusicClass {
-public:
-  INLINE NullMusic(void);
-  virtual ~NullMusic(void);
-
-  virtual AudioTraits::MusicClass::MusicStatus status(void);
+  virtual float length(void) const;
+  virtual AudioTraits::PlayingClass* get_state(void) const;
+  virtual AudioTraits::PlayerClass* get_player(void) const;
+  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
+  virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
+  static void destroy(AudioTraits::SoundClass*);
 };
 
 class EXPCL_PANDA NullPlaying : public AudioTraits::PlayingClass {
 public:
-  INLINE NullPlaying(void);
+  INLINE NullPlaying(AudioTraits::SoundClass*);
   virtual ~NullPlaying(void);
 
   virtual AudioTraits::PlayingClass::PlayingStatus status(void);
+  static void destroy(AudioTraits::PlayingClass*);
 };
 
 class EXPCL_PANDA NullPlayer : public AudioTraits::PlayerClass {
@@ -43,10 +40,9 @@ public:
   INLINE NullPlayer(void);
   virtual ~NullPlayer(void);
 
-  virtual void play_sample(AudioTraits::SampleClass*);
-  virtual void play_music(AudioTraits::MusicClass*);
-  virtual void set_volume(AudioTraits::SampleClass*, int);
-  virtual void set_volume(AudioTraits::MusicClass*, int);
+  virtual void play_sound(AudioTraits::SoundClass*,
+			  AudioTraits::PlayingClass*);
+  virtual void set_volume(AudioTraits::PlayingClass*, int);
 };
 
 #include "audio_null_traits.I"

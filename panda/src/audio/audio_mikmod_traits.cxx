@@ -124,25 +124,33 @@ static void initialize(void) {
   have_initialized = true;
 }
 
-MikModSample::MikModSample(SAMPLE* sample) : _sample(sample), _voice(-1) {
+MikModSample::MikModSample(SAMPLE* sample) : _sample(sample) {
 }
 
 MikModSample::~MikModSample(void) {
   Sample_Free(_sample);
 }
 
-float MikModSample::length(void) {
+float MikModSample::length(void) const {
   float len = _sample->length;
   float speed = _sample->speed;
   return len / speed;
 }
 
-AudioTraits::SampleClass::SampleStatus MikModSample::status(void) {
-  if (_voice == -1)
-    return READY;
-  if (Voice_Stopped(_voice))
-    return PLAYING;
-  return READY;
+AudioTraits::PlayingClass* MikModSample::get_state(void) const {
+  return new MikModSamplePlaying((MikModSample*)this);
+}
+
+AudioTraits::PlayerClass* MikModSample::get_player(void) const {
+  return MikModSamplePlayer::get_instance();
+}
+
+AudioTraits::DeleteSoundFunc* MikModSample::get_destroy(void) const {
+  return MikModSample::destroy;
+}
+
+AudioTraits::DeletePlayingFunc* MikModSample::get_delstate(void) const {
+  return MikModSamplePlaying::destroy;
 }
 
 MikModSample* MikModSample::load_wav(Filename filename) {
@@ -156,20 +164,8 @@ MikModSample* MikModSample::load_wav(Filename filename) {
   return new MikModSample(sample);
 }
 
-MikModPlaying* MikModSample::get_state(void) {
-  return new MikModPlaying();
-}
-
-void MikModSample::destroy(AudioTraits::SampleClass* sample) {
+void MikModSample::destroy(AudioTraits::SoundClass* sample) {
   delete sample;
-}
-
-void MikModSample::set_voice(int v) {
-  _voice = v;
-}
-
-int MikModSample::get_voice(void) {
-  return _voice;
 }
 
 SAMPLE* MikModSample::get_sample(void) {
@@ -186,8 +182,28 @@ MikModMusic::MikModMusic(void) {
 MikModMusic::~MikModMusic(void) {
 }
 
-AudioTraits::MusicClass::MusicStatus MikModMusic::status(void) {
-  return READY;
+float MikModMusic::length(void) const {
+  return -1.;
+}
+
+AudioTraits::PlayingClass* MikModMusic::get_state(void) const {
+  return new MikModMusicPlaying((MikModMusic*)this);
+}
+
+AudioTraits::PlayerClass* MikModMusic::get_player(void) const {
+  return MikModFmsynthPlayer::get_instance();
+}
+
+AudioTraits::DeleteSoundFunc* MikModMusic::get_destroy(void) const {
+  return MikModMusic::destroy;
+}
+
+AudioTraits::DeletePlayingFunc* MikModMusic::get_delstate(void) const {
+  return MikModMusicPlaying::destroy;
+}
+
+void MikModMusic::destroy(AudioTraits::SoundClass* music) {
+  delete music;
 }
 
 MikModMidi::MikModMidi(void) {
@@ -201,26 +217,81 @@ MikModMidi* MikModMidi::load_midi(Filename) {
   return new MikModMidi();
 }
 
-MikModPlaying* MikModMidi::get_state(void) {
-  return new MikModPlaying();
+float MikModMidi::length(void) const {
+  return -1.;
 }
 
-void MikModMidi::destroy(AudioTraits::MusicClass* music) {
+AudioTraits::PlayingClass* MikModMidi::get_state(void) const {
+  return new MikModMidiPlaying((MikModMidi*)this);
+}
+
+AudioTraits::PlayerClass* MikModMidi::get_player(void) const {
+  return MikModMidiPlayer::get_instance();
+}
+
+AudioTraits::DeleteSoundFunc* MikModMidi::get_destroy(void) const {
+  return MikModMidi::destroy;
+}
+
+AudioTraits::DeletePlayingFunc* MikModMidi::get_delstate(void) const {
+  return MikModMidiPlaying::destroy;
+}
+
+void MikModMidi::destroy(AudioTraits::SoundClass* music) {
   delete music;
 }
 
-AudioTraits::MusicClass::MusicStatus MikModMidi::status(void) {
-  return READY;
+MikModSamplePlaying::MikModSamplePlaying(AudioTraits::SoundClass* s)
+  : AudioTraits::PlayingClass(s) {
 }
 
-MikModPlaying::MikModPlaying(void) : AudioTraits::PlayingClass() {
+MikModSamplePlaying::~MikModSamplePlaying(void) {
 }
 
-MikModPlaying::~MikModPlaying(void) {
-}
-
-AudioTraits::PlayingClass::PlayingStatus MikModPlaying::status(void) {
+AudioTraits::PlayingClass::PlayingStatus MikModSamplePlaying::status(void) {
   return AudioTraits::PlayingClass::BAD;
+}
+
+void MikModSamplePlaying::set_voice(int v) {
+  _voice = v;
+}
+
+int MikModSamplePlaying::get_voice(void) const {
+  return _voice;
+}
+
+void MikModSamplePlaying::destroy(AudioTraits::PlayingClass* play) {
+  delete play;
+}
+
+MikModMusicPlaying::MikModMusicPlaying(AudioTraits::SoundClass* s)
+  : AudioTraits::PlayingClass(s) {
+}
+
+MikModMusicPlaying::~MikModMusicPlaying(void) {
+}
+
+AudioTraits::PlayingClass::PlayingStatus MikModMusicPlaying::status(void) {
+  return AudioTraits::PlayingClass::BAD;
+}
+
+void MikModMusicPlaying::destroy(AudioTraits::PlayingClass* play) {
+  delete play;
+}
+
+MikModMidiPlaying::MikModMidiPlaying(AudioTraits::SoundClass* s)
+  : AudioTraits::PlayingClass(s) {
+}
+
+MikModMidiPlaying::~MikModMidiPlaying(void) {
+}
+
+AudioTraits::PlayingClass::PlayingStatus MikModMidiPlaying::status(void) {
+  return AudioTraits::PlayingClass::BAD;
+}
+
+void MikModMidiPlaying::destroy(AudioTraits::PlayingClass* play) {
+  delete play;
 }
 
 MikModSamplePlayer* MikModSamplePlayer::_global_instance =
@@ -232,7 +303,8 @@ MikModSamplePlayer::MikModSamplePlayer(void) : AudioTraits::PlayerClass() {
 MikModSamplePlayer::~MikModSamplePlayer(void) {
 }
 
-void MikModSamplePlayer::play_sample(AudioTraits::SampleClass* sample) {
+void MikModSamplePlayer::play_sound(AudioTraits::SoundClass* sample,
+				    AudioTraits::PlayingClass* playing) {
   if (!have_initialized)
     initialize();
   if (!MikMod_Active()) {
@@ -243,28 +315,19 @@ void MikModSamplePlayer::play_sample(AudioTraits::SampleClass* sample) {
   }
   // cast to the correct type
   MikModSample* msample = (MikModSample*)sample;
+  MikModSamplePlaying* mplay = (MikModSamplePlaying*)playing;
   // fire it off
-  msample->set_voice(Sample_Play(msample->get_sample(), 0, 0));
-  Voice_SetFrequency(msample->get_voice(), msample->get_freq());
-  if (Voice_GetFrequency(msample->get_voice()) != msample->get_freq())
+  mplay->set_voice(Sample_Play(msample->get_sample(), 0, 0));
+  Voice_SetFrequency(mplay->get_voice(), msample->get_freq());
+  if (Voice_GetFrequency(mplay->get_voice()) != msample->get_freq())
     audio_cat->error() << "setting freq did not stick!" << endl;
-  Voice_SetPanning(msample->get_voice(), 127);
+  Voice_SetPanning(mplay->get_voice(), 127);
 }
 
-void MikModSamplePlayer::play_music(AudioTraits::MusicClass*) {
-  audio_cat->error() << "trying to play music with a MikModSamplePlayer"
-		     << endl;
-}
-
-void MikModSamplePlayer::set_volume(AudioTraits::SampleClass* sample, int v) {
+void MikModSamplePlayer::set_volume(AudioTraits::PlayingClass* state, int v) {
   initialize();
-  MikModSample* msample = (MikModSample*)sample;
-  Voice_SetVolume(msample->get_voice(), v);
-}
-
-void MikModSamplePlayer::set_volume(AudioTraits::MusicClass*, int) {
-  audio_cat->error()
-    << "trying to set volume on music withe a MikModSamplePlayer" << endl;
+  MikModSamplePlaying* mplay = (MikModSamplePlaying*)state;
+  Voice_SetVolume(mplay->get_voice(), v);
 }
 
 MikModSamplePlayer* MikModSamplePlayer::get_instance(void) {
@@ -273,26 +336,30 @@ MikModSamplePlayer* MikModSamplePlayer::get_instance(void) {
   return _global_instance;
 }
 
+MikModFmsynthPlayer* MikModFmsynthPlayer::_global_instance =
+  (MikModFmsynthPlayer*)0L;
+
 MikModFmsynthPlayer::MikModFmsynthPlayer(void) {
 }
 
 MikModFmsynthPlayer::~MikModFmsynthPlayer(void) {
 }
 
-void MikModFmsynthPlayer::play_sample(AudioTraits::SampleClass*) {
+void MikModFmsynthPlayer::play_sound(AudioTraits::SoundClass*,
+				     AudioTraits::PlayingClass*) {
   audio_cat->error() << "trying to play a sample with a MikModFmsynthPlayer"
 		     << endl;
 }
 
-void MikModFmsynthPlayer::play_music(AudioTraits::MusicClass* music) {
-}
-
-void MikModFmsynthPlayer::set_volume(AudioTraits::SampleClass*, int) {
+void MikModFmsynthPlayer::set_volume(AudioTraits::PlayingClass*, int) {
   audio_cat->error()
     << "trying to set volume on a sample with a MikModFmsynthPlayer" << endl;
 }
 
-void MikModFmsynthPlayer::set_volume(AudioTraits::MusicClass*, int) {
+MikModFmsynthPlayer* MikModFmsynthPlayer::get_instance(void) {
+  if (_global_instance == (MikModFmsynthPlayer*)0L)
+    _global_instance = new MikModFmsynthPlayer();
+  return _global_instance;
 }
 
 MikModMidiPlayer* MikModMidiPlayer::_global_instance = (MikModMidiPlayer*)0L;
@@ -303,20 +370,15 @@ MikModMidiPlayer::MikModMidiPlayer(void) {
 MikModMidiPlayer::~MikModMidiPlayer(void) {
 }
 
-void MikModMidiPlayer::play_sample(AudioTraits::SampleClass*) {
+void MikModMidiPlayer::play_sound(AudioTraits::SoundClass*,
+				  AudioTraits::PlayingClass*) {
   audio_cat->error() << "trying to play a sample with a MikModMidiPlayer"
 		     << endl;
 }
 
-void MikModMidiPlayer::play_music(AudioTraits::MusicClass* music) {
-}
-
-void MikModMidiPlayer::set_volume(AudioTraits::SampleClass*, int) {
+void MikModMidiPlayer::set_volume(AudioTraits::PlayingClass*, int) {
   audio_cat->error()
     << "trying to set volume on a sample with a MikModMidiPlayer" << endl;
-}
-
-void MikModMidiPlayer::set_volume(AudioTraits::MusicClass*, int) {
 }
 
 MikModMidiPlayer* MikModMidiPlayer::get_instance(void) {

@@ -21,7 +21,7 @@ private:
   AudioTraits::DeletePlayingFunc *_delstate;
 protected:
   INLINE AudioSound(AudioTraits::SoundClass*, AudioTraits::PlayingClass*,
-		    AudioTraits::PlayerClass*, AUdioTraits::DeletePlayingFunc*,
+		    AudioTraits::PlayerClass*, AudioTraits::DeletePlayingFunc*,
 		    const string&);
   INLINE AudioSound(const AudioSound&);
   INLINE AudioSound& operator=(const AudioSound&);
@@ -61,5 +61,7 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#include "audio_sound.I"
 
 #endif /* __AUDIO_SOUND_H__ */

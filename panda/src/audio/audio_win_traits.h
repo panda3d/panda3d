@@ -16,77 +16,107 @@
 #include <dsound.h>
 #include <dmusici.h>
 
-class WinPlaying;
+class WinSamplePlaying;
 
-class EXPCL_PANDA WinSample : public AudioTraits::SampleClass {
-private:
-  LPDIRECTSOUNDBUFFER _channel;
+class EXPCL_PANDA WinSample : public AudioTraits::SoundClass {
+public:
   BYTE* _data;
   DWORD _len;
+  WAVEFORMATEX _info;
 public:
   INLINE WinSample(void);
   virtual ~WinSample(void);
 
-  virtual float length(void);
-  virtual AudioTraits::SampleClass::SampleStatus status(void);
+  virtual float length(void) const;
+  virtual AudioTraits::PlayingClass* get_state(void) const;
+  virtual AudioTraits::PlayerClass* get_player(void) const;
+  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
+  virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
 public:
-  // these are used by the laoders
-  BYTE* lock(void);
-  void  unlock(void);
   static WinSample* load_wav(Filename);
   static WinSample* load_raw(unsigned char*, unsigned long);
-  virtual WinPlaying* get_state(void);
-  static void destroy(AudioTraits::SampleClass*);
-  // these are used by the player
-  INLINE LPDIRECTSOUNDBUFFER get_channel(void);
+  static void destroy(AudioTraits::SoundClass*);
 };
 
-class EXPCL_PANDA WinMusic : public AudioTraits::MusicClass {
+class EXPCL_PANDA WinMusic : public AudioTraits::SoundClass {
 private:
   IDirectMusicPerformance* _performance;
   IDirectMusicSegment* _music;
   IDirectSoundBuffer* _buffer;
   IDirectMusicPort* _synth;
-  BYTE* _data;
-  DWORD _len;
+  //  BYTE* _data;
+  //  DWORD _len;
 
   void init(void);
 public:
   INLINE WinMusic(void);
   virtual ~WinMusic(void);
 
-  virtual AudioTraits::MusicClass::MusicStatus status(void);
+  virtual float length(void) const;
+  virtual AudioTraits::PlayingClass* get_state(void) const;
+  virtual AudioTraits::PlayerClass* get_player(void) const;
+  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
+  virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
   // these are used by the loaders
   static WinMusic* load_midi(Filename);
-  virtual WinPlaying* get_state(void);
-  static void destroy(AudioTraits::MusicClass*);
   // these are used by the players
   INLINE IDirectMusicPerformance* get_performance(void);
   INLINE IDirectMusicSegment* get_music(void);
 };
 
-class EXPCL_PANDA WinPlaying : public AudioTraits::PlayingClass {
+class EXPCL_PANDA WinSamplePlaying : public AudioTraits::PlayingClass {
+private:
+  LPDIRECTSOUNDBUFFER _channel;
 public:
-  INLINE WinPlaying(void);
-  ~WinPlaying(void);
+  WinSamplePlaying(AudioTraits::SoundClass*);
+  ~WinSamplePlaying(void);
 
   virtual AudioTraits::PlayingClass::PlayingStatus status(void);
+  static void destroy(AudioTraits::PlayingClass*);
+  // these are used by the laoders
+  BYTE* lock(void);
+  void  unlock(void);
+  // these are used by the player
+  INLINE LPDIRECTSOUNDBUFFER get_channel(void);
 };
 
-class EXPCL_PANDA WinPlayer : public AudioTraits::PlayerClass {
+class EXPCL_PANDA WinMusicPlaying : public AudioTraits::PlayingClass {
 public:
-  INLINE WinPlayer(void);
-  virtual ~WinPlayer(void);
+  WinMusicPlaying(AudioTraits::SourceClass*);
+  ~WinMusicPlaying(void);
 
-  virtual void play_sample(AudioTraits::SampleClass*);
-  virtual void play_music(AudioTraits::MusicClass*);
-  virtual void set_volume(AudioTraits::SampleClass*, int);
-  virtual void set_volume(AudioTraits::MusicClass*, int);
+  virtual AudioTraits::PlayingClass::PlayingStatus status(void);
+  static void destroy(AudioTraits::PlayingClass*);
+};
+
+class EXPCL_PANDA WinSamplePlayer : public AudioTraits::PlayerClass {
+public:
+  INLINE WinSamplePlayer(void);
+  virtual ~WinSamplePlayer(void);
+
+  virtual void play_sound(AudioTraits::SoundClass*,
+			  AudioTraits::PlayingClass*);
+  virtual void set_volume(AudioTraits::PlayingClass*, int);
 public:
   // used by the readers
-  static WinPlayer* get_instance(void);
+  static WinSamplePlayer* get_instance(void);
 private:
-  static WinPlayer* _global_instance;
+  static WinSamplePlayer* _global_instance;
+};
+
+class EXPCL_PANDA WinMusicPlayer : public AudioTraits::PlayerClass {
+public:
+  INLINE WinMusicPlayer(void);
+  virtual ~WinMusicPlayer(void);
+
+  virtual void play_sound(AudioTraits::SoundClass*,
+			  AudioTraits::PlayingClass*);
+  virtual void set_volume(AudioTraits::PlayingClass*, int);
+public:
+  // used by the readers
+  static WinMusicPlayer* get_instance(void);
+private:
+  static WinMusicPlayer* _global_instance;
 };
 
 #include "audio_win_traits.I"

@@ -4,21 +4,12 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::play (AudioSample)
+//     Function: AudioManager::play (AudioSound)
 //       Access: Public, Static
-//  Description: Play an audio sample
+//  Description: Play some audio
 ////////////////////////////////////////////////////////////////////
-INLINE void AudioManager::play(AudioSample* sample) {
-  get_ptr()->ns_play(sample);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::play (AudioMusic)
-//       Access: Public, Static
-//  Description: Play an audio music instance
-////////////////////////////////////////////////////////////////////
-INLINE void AudioManager::play(AudioMusic* music) {
-  get_ptr()->ns_play(music);
+INLINE void AudioManager::play(AudioSound* sound) {
+  get_ptr()->ns_play(sound);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,21 +42,12 @@ INLINE void AudioManager::shutdown(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::set_volume (sample)
+//     Function: AudioManager::set_volume (sound)
 //       Access: Public, Static
-//  Description: set the volume on a sample
+//  Description: set the volume on a sound instance
 ////////////////////////////////////////////////////////////////////
-INLINE void AudioManager::set_volume(AudioSample* sample, int v) {
-  get_ptr()->ns_set_volume(sample, v);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::set_volume (music)
-//       Access: Public, Static
-//  Description: set the volume on music
-////////////////////////////////////////////////////////////////////
-INLINE void AudioManager::set_volume(AudioMusic* music, int v) {
-  get_ptr()->ns_set_volume(music, v);
+INLINE void AudioManager::set_volume(AudioSound* sound, int v) {
+  get_ptr()->ns_set_volume(sound, v);
 }
 
 ////////////////////////////////////////////////////////////////////

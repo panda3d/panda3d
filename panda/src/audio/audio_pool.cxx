@@ -8,29 +8,17 @@
 #include <config_util.h>
 
 AudioPool* AudioPool::_global_ptr = (AudioPool*)0L;
-typedef map<string, AudioPool::SampleLoadFunc*> SampleLoaders;
-SampleLoaders* _sample_loaders = (SampleLoaders*)0L;
-typedef map<string, AudioPool::MusicLoadFunc*> MusicLoaders;
-MusicLoaders* _music_loaders = (MusicLoaders*)0L;
+typedef map<string, AudioPool::SoundLoadFunc*> SoundLoaders;
+SoundLoaders* _sound_loaders = (SoundLoaders*)0L;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: check_sample_loaders
+//     Function: check_sound_loaders
 //       Access: Static
-//  Description: ensure that the sample loaders map has been initialized
+//  Description: ensure that the sound loaders map has been initialized
 ////////////////////////////////////////////////////////////////////
-static void check_sample_loaders(void) {
-  if (_sample_loaders == (SampleLoaders*)0L)
-    _sample_loaders = new SampleLoaders;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: check_music_loaders
-//       Access: Static
-//  Description: ensure that the music loaders map has been initialized
-////////////////////////////////////////////////////////////////////
-static void check_music_loaders(void) {
-  if (_music_loaders == (MusicLoaders*)0L)
-    _music_loaders = new MusicLoaders;
+static void check_sound_loaders(void) {
+  if (_sound_loaders == (SoundLoaders*)0L)
+    _sound_loaders = new SoundLoaders;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,211 +34,108 @@ AudioPool* AudioPool::get_ptr(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::ns_has_sample
+//     Function: AudioPool::ns_has_sound
 //       Access: Private
-//  Description: The nonstatic implementation of has_sample().
+//  Description: The nonstatic implementation of has_sound().
 ////////////////////////////////////////////////////////////////////
-bool AudioPool::ns_has_sample(Filename filename) {
+bool AudioPool::ns_has_sound(Filename filename) {
   filename.resolve_filename(get_sound_path());
 
-  SampleMap::const_iterator si;
-  si = _samples.find(filename);
-  if (si != _samples.end()) {
-    // this sample was previously loaded
+  SoundMap::const_iterator si;
+  si = _sounds.find(filename);
+  if (si != _sounds.end()) {
+    // this sound was previously loaded
     return true;
   }
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::ns_load_sample
+//     Function: AudioPool::ns_load_sound
 //       Access: Private
-//  Description: The nonstatic implementation of load_sample().
+//  Description: The nonstatic implementation of load_sound().
 ////////////////////////////////////////////////////////////////////
-AudioSample* AudioPool::ns_load_sample(Filename filename) {
+AudioSound* AudioPool::ns_load_sound(Filename filename) {
   filename.resolve_filename(get_sound_path());
 
-  SampleMap::const_iterator si;
-  si = _samples.find(filename);
-  if (si != _samples.end()) {
-    // this sample was previously loaded
-    return (*si).second;
+  SoundMap::const_iterator si;
+  si = _sounds.find(filename);
+  if (si != _sounds.end()) {
+    // this sound was previously loaded
+    AudioTraits::SoundClass* sc = (*si).second;
+    return new AudioSound(sc, sc->get_state(), sc->get_player(),
+			  sc->get_delstate(), filename);
   }
   if (!filename.exists()) {
     audio_cat.info() << "'" << filename << "' does not exist" << endl;
-    return (AudioSample*)0L;
+    return (AudioSound*)0L;
   }
-  audio_cat.info() << "Loading sample " << filename << endl;
-  AudioTraits::SampleClass* sample = (AudioTraits::SampleClass*)0L;
-  AudioTraits::PlayingClass* state = (AudioTraits::PlayingClass*)0L;
-  AudioTraits::PlayerClass* player = (AudioTraits::PlayerClass*)0L;
-  AudioTraits::DeleteSampleFunc* destroy = (AudioTraits::DeleteSampleFunc*)0L;
+  audio_cat.info() << "Loading sound " << filename << endl;
   string ext = filename.get_extension();
-  SampleLoaders::const_iterator sli;
-  check_sample_loaders();
-  sli = _sample_loaders->find(ext);
-  if (sli == _sample_loaders->end()) {
+  SoundLoaders::const_iterator sli;
+  check_sound_loaders();
+  sli = _sound_loaders->find(ext);
+  if (sli == _sound_loaders->end()) {
     audio_cat->error() << "no loader available for audio type '" << ext
 		       << "'" << endl;
-    return (AudioSample*)0L;
+    return (AudioSound*)0L;
   }
-  (*((*sli).second))(&sample, &state, &player, &destroy, filename);
-  if ((sample == (AudioTraits::SampleClass*)0L) ||
-      (state == (AudioTraits::PlayingClass*)0L) ||
-      (player == (AudioTraits::PlayerClass*)0L) ||
-      (destroy == (AudioTraits::DeleteSampleFunc*)0L)) {
+  AudioTraits::SoundClass* sound = (*((*sli).second))(filename);
+  if (sound == (AudioTraits::SoundClass*)0L) {
     audio_cat->error() << "could not load '" << filename << "'" << endl;
-    return (AudioSample*)0L;
+    return (AudioSound*)0L;
   }
-  PT(AudioSample) the_sample = new AudioSample(sample, state, player, destroy,
-					       filename);
-  _samples[filename] = the_sample;
-  return the_sample;
+  PT(AudioSound) the_sound = new AudioSound(sound, sound->get_state(),
+					    sound->get_player(),
+					    sound->get_delstate(), filename);
+  _sounds[filename] = sound;
+  return the_sound;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::ns_release_sample
+//     Function: AudioPool::ns_release_sound
 //       Access: Private
-//  Description: The nonstatic implementation of release_sample().
+//  Description: The nonstatic implementation of release_sound().
 ////////////////////////////////////////////////////////////////////
-void AudioPool::ns_release_sample(AudioSample* sample) {
-  string filename = sample->get_name();
-  SampleMap::iterator si;
-  si = _samples.find(filename);
-  if (si != _samples.end() && (*si).second == sample) {
-    _samples.erase(si);
+void AudioPool::ns_release_sound(AudioSound* sound) {
+  string filename = sound->get_name();
+  SoundMap::iterator si;
+  si = _sounds.find(filename);
+  if (si != _sounds.end() && (*si).second == sound->get_sound()) {
+    AudioTraits::SoundClass* sc = (*si).second;
+    (*(sc->get_destroy()))(sc);
+    _sounds.erase(si);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::ns_release_all_samples
+//     Function: AudioPool::ns_release_all_sounds
 //       Access: Private
-//  Description: The nonstatic implementation of release_all_samples().
+//  Description: The nonstatic implementation of release_all_sounds().
 ////////////////////////////////////////////////////////////////////
-void AudioPool::ns_release_all_samples(void) {
-  _samples.clear();
+void AudioPool::ns_release_all_sounds(void) {
+  for (SoundMap::iterator i=_sounds.begin(); i!=_sounds.end(); ++i) {
+    AudioTraits::SoundClass* sc = (*i).second;
+    (*(sc->get_destroy()))(sc);
+  }
+  _sounds.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::register_sample_loader
+//     Function: AudioPool::register_sound_loader
 //       Access: Public, static
 //  Description: A static function to register a function for loading
-//               audio samples.
+//               audio sounds.
 ////////////////////////////////////////////////////////////////////
-void AudioPool::register_sample_loader(const string& ext,
-				       AudioPool::SampleLoadFunc* func) {
-  SampleLoaders::const_iterator sli;
-  check_sample_loaders();
-  sli = _sample_loaders->find(ext);
-  if (sli != _sample_loaders->end()) {
+void AudioPool::register_sound_loader(const string& ext,
+				       AudioPool::SoundLoadFunc* func) {
+  SoundLoaders::const_iterator sli;
+  check_sound_loaders();
+  sli = _sound_loaders->find(ext);
+  if (sli != _sound_loaders->end()) {
     audio_cat->warning() << "attempted to register a loader for audio type '"
 			 << ext << "' more then once." << endl;
     return;
   }
-  (*_sample_loaders)[ext] = func;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::ns_has_music
-//       Access: Private
-//  Description: The nonstatic implementation of has_music().
-////////////////////////////////////////////////////////////////////
-bool AudioPool::ns_has_music(Filename filename) {
-  filename.resolve_filename(get_sound_path());
-
-  MusicMap::const_iterator si;
-  si = _music.find(filename);
-  if (si != _music.end()) {
-    // this music was previously loaded
-    return true;
-  }
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::ns_load_music
-//       Access: Private
-//  Description: The nonstatic implementation of load_music().
-////////////////////////////////////////////////////////////////////
-AudioMusic* AudioPool::ns_load_music(Filename filename) {
-  filename.resolve_filename(get_sound_path());
-
-  MusicMap::const_iterator si;
-  si = _music.find(filename);
-  if (si != _music.end()) {
-    // this sample was previously loaded
-    return (*si).second;
-  }
-  if (!filename.exists()) {
-    audio_cat.info() << "'" << filename << "' does not exist" << endl;
-    return (AudioMusic*)0L;
-  }
-  audio_cat.info() << "Loading music " << filename << "\n";
-  AudioTraits::MusicClass* music = (AudioTraits::MusicClass*)0L;
-  AudioTraits::PlayingClass* state = (AudioTraits::PlayingClass*)0L;
-  AudioTraits::PlayerClass* player = (AudioTraits::PlayerClass*)0L;
-  AudioTraits::DeleteMusicFunc* destroy = (AudioTraits::DeleteMusicFunc*)0L;
-  string ext = filename.get_extension();
-  MusicLoaders::const_iterator sli;
-  check_music_loaders();
-  sli = _music_loaders->find(ext);
-  if (sli == _music_loaders->end()) {
-    audio_cat->error() << "no loader available for audio type '" << ext
-		       << "'" << endl;
-    return (AudioMusic*)0L;
-  }
-  (*((*sli).second))(&music, &state, &player, &destroy, filename);
-  if ((music == (AudioTraits::MusicClass*)0L) ||
-      (state == (AudioTraits::PlayingClass*)0L) ||
-      (player == (AudioTraits::PlayerClass*)0L) ||
-      (destroy == (AudioTraits::DeleteMusicFunc*)0L)) {
-    audio_cat->error() << "could not load '" << filename << "'" << endl;
-    return (AudioMusic*)0L;
-  }
-  PT(AudioMusic) the_music = new AudioMusic(music, state, player, destroy,
-					    filename);
-  _music[filename] = the_music;
-  return the_music;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::ns_release_music
-//       Access: Private
-//  Description: The nonstatic implementation of release_music().
-////////////////////////////////////////////////////////////////////
-void AudioPool::ns_release_music(AudioMusic* music) {
-  string filename = music->get_name();
-  MusicMap::iterator si;
-  si = _music.find(filename);
-  if (si != _music.end() && (*si).second == music) {
-    _music.erase(si);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::ns_release_all_music
-//       Access: Private
-//  Description: The nonstatic implementation of release_all_music().
-////////////////////////////////////////////////////////////////////
-void AudioPool::ns_release_all_music(void) {
-  _music.clear();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioPool::register_music_loader
-//       Access: Public, static
-//  Description: A static function to register a function for loading
-//               audio music.
-////////////////////////////////////////////////////////////////////
-void AudioPool::register_music_loader(const string& ext,
-				      AudioPool::MusicLoadFunc* func) {
-  MusicLoaders::const_iterator sli;
-  check_music_loaders();
-  sli = _music_loaders->find(ext);
-  if (sli != _music_loaders->end()) {
-    audio_cat->warning() << "attempted to register a loader for audio type '"
-			 << ext << "' more then once." << endl;
-    return;
-  }
-  (*_music_loaders)[ext] = func;
+  (*_sound_loaders)[ext] = func;
 }

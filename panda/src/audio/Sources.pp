@@ -1,5 +1,6 @@
 #define OTHER_LIBS dtool
 #define DIRECTORY_IF_AUDIO yes
+// #define USE_MIKMOD yes
 
 #begin lib_target
   #define USE_AUDIO yes
@@ -10,21 +11,20 @@
 
   #define SOURCES \
     audio_manager.I audio_manager.cxx audio_manager.h audio_midi.cxx \
-    audio_midi.h audio_music.I audio_music.cxx audio_music.h \
-    audio_pool.I audio_pool.cxx audio_pool.h audio_sample.I \
-    audio_sample.cxx audio_sample.h audio_trait.cxx audio_trait.h \
+    audio_midi.h audio_pool.I audio_pool.cxx audio_pool.h \
+    audio_trait.cxx audio_trait.h \
     config_audio.cxx config_audio.h audio_mikmod_traits.cxx \
     audio_mikmod_traits.h audio_win_traits.I audio_win_traits.cxx \
     audio_win_traits.h audio_null_traits.I audio_null_traits.cxx \
     audio_null_traits.h audio_linux_traits.I audio_linux_traits.cxx \
-    audio_linux_traits.h
+    audio_linux_traits.h audio_sound.h audio_sound.I audio_sound.cxx
 
   #define INSTALL_HEADERS \
-    audio.h audio_manager.h audio_music.h audio_pool.I audio_pool.h \
-    audio_sample.I audio_sample.h audio_trait.h audio_mikmod_traits.h \
+    audio.h audio_manager.h Audio_Pool.I audio_pool.h \
+    audio_trait.h audio_mikmod_traits.h \
     audio_win_traits.I audio_win_traits.h audio_null_traits.I \
     audio_null_traits.h audio_linux_traits.I audio_linux_traits.h \
-    audio_music.I config_audio.h audio_manager.I
+    audio_music.I config_audio.h audio_manager.I audio_sound.h audio_sound.I
 
   #define IGATESCAN audio.h
 

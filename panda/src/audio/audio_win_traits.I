@@ -3,18 +3,13 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-INLINE WinSample::WinSample(void) : AudioTraits::SampleClass(), _channel(NULL),
-				    _data(NULL), _len(0) {
+INLINE WinSample::WinSample(void) : AudioTraits::SoundClass(), _data(NULL),
+				    _len(0) {
 }
 
-INLINE LPDIRECTSOUNDBUFFER WinSample::get_channel(void) {
-  return _channel;
-}
-
-INLINE WinMusic::WinMusic(void) : AudioTraits::MusicClass(),
+INLINE WinMusic::WinMusic(void) : AudioTraits::SoundClass(),
 				  _performance(NULL), _music(NULL),
-				  _buffer(NULL), _synth(NULL), _data(NULL),
-				  _len(0) {
+			          _buffer(NULL), _synth(NULL) {
   init();
 }
 
@@ -26,8 +21,12 @@ INLINE IDirectMusicSegment* WinMusic::get_music(void) {
   return _music;
 }
 
-INLINE WinPlaying::WinPlaying(void) : AudioTraits::PlayingClass() {
+INLINE LPDIRECTSOUNDBUFFER WinSamplePlaying::get_channel(void) {
+  return _channel;
 }
 
-INLINE WinPlayer::WinPlayer(void) : AudioTraits::PlayerClass() {
+INLINE WinSamplePlayer::WinSamplePlayer(void) : AudioTraits::PlayerClass() {
+}
+
+INLINE WinMusicPlayer::WinMusicPlayer(void) : AudioTraits::PlayerClass() {
 }

@@ -15,30 +15,30 @@ main(int argc, char* argv[]) {
   //     audio_cat->fatal() << "could not locate 'test.wav'" << endl;
   //     exit(-1);
   //   }
-  if (! AudioPool::verify_sample("test.mp3")) {
+  if (! AudioPool::verify_sound("test.mp3")) {
     audio_cat->fatal() << "could not locate 'test.mp3'" << endl;
     exit(-1);
   }
   //   AudioSample* sample = AudioPool::load_sample("test.wav");
-  AudioSample* sample = AudioPool::load_sample("test.mp3");
-  audio_cat->info() << "test.wav is " << sample->length() << "sec long"
+  AudioSound* sample = AudioPool::load_sound("test.mp3");
+  audio_cat->info() << "test.wav is " << sample->length() << " sec long"
 		     << endl;
   audio_cat->info() << "Playing test.wav" << endl;
   AudioManager::play(sample);
-  while (sample->status() == AudioSample::PLAYING) {
+  while (sample->status() == AudioSound::PLAYING) {
     AudioManager::update();
     ipc_traits::sleep(0, 1000000);
   }
 
   //   AudioMidi foo("test.midi");
-  if (! AudioPool::verify_music("test.midi")) {
+  if (! AudioPool::verify_sound("test.midi")) {
     audio_cat->fatal() << "could not locate 'test.midi'" << endl;
     exit(-1);
   }
-  AudioMusic* music = AudioPool::load_music("test.midi");
+  AudioSound* music = AudioPool::load_sound("test.midi");
   audio_cat->info() << "Playing test.midi" << endl;
   AudioManager::play(music);
-  while (music->status() == AudioMusic::PLAYING) {
+  while (music->status() == AudioSound::PLAYING) {
     AudioManager::update();
     ipc_traits::sleep(0, 1000000);
   }

@@ -14,60 +14,26 @@ Configure(audio_load_midi);
 
 #include "audio_mikmod_traits.h"
 
-void AudioDestroyMidi(AudioTraits::MusicClass* music) {
-  MikModMidi::destroy(music);
-}
-
-void AudioLoadMidi(AudioTraits::MusicClass** music,
-		   AudioTraits::PlayingClass** state,
-		   AudioTraits::PlayerClass** player,
-		   AudioTraits::DeleteMusicFunc** destroy, Filename filename) {
-  *music = MikModMidi::load_midi(filename);
-  if (*music == (AudioTraits::MusicClass*)0L)
-    return;
-  *state = ((MikModMidi*)(*music))->get_state();
-  *player = MikModMidiPlayer::get_instance();
-  *destroy = AudioDestroyMidi;
+AudioTraits::SoundClass* AudioLoadMidi(Filename filename) {
+  return MikModMidi::load_midi(filename);
 }
 
 #elif defined(AUDIO_USE_WIN32)
 
 #include "audio_win_traits.h"
 
-void EXPCL_MISC AudioDestroyMidi(AudioTraits::MusicClass* music) {
-  WinMusic::destroy(music);
-}
-
-void AudioLoadMidi(AudioTraits::MusicClass** music,
-		   AudioTraits::PlayingClass** state,
-		   AudioTraits::PlayerClass** player,
-		   AudioTraits::DeleteMusicFunc** destroy, Filename filename) {
-  *music = WinMusic::load_midi(filename);
-  if (*music == (AudioTraits::MusicClass*)0L)
-    return;
-  *state = ((WinMusic*)(*music))->get_state();
-  *player = WinPlayer::get_instance();
-  *destroy = AudioDestroyMidi;
+EXPCL_MISC AudioTraits::SoundClass* AudioLoadMidi(Filename filename) {
+  return WinMusic::load_midi(filename);
 }
 
 #elif defined(AUDIO_USE_LINUX)
 
 #include "audio_linux_traits.h"
 
-void AudioDestroyMidi(AudioTraits::MusicClass* music) {
-  LinuxMusic::destroy(music);
-}
-
-void AudioLoadMidi(AudioTraits::MusicClass** music,
-		   AudioTraits::PlayingClass** state,
-		   AudioTraits::PlayerClass** player,
-		   AudioTraits::DeleteMusicFunc** destroy, Filename) {
+AudioTraits::SoundClass* AudioLoadMidi(Filename) {
   audio_cat->warning() << "linux doesn't support reading midi data yet"
 		       << endl;
-  *music = (AudioTraits::MusicClass*)0L;
-  *state = (AudioTraits::PlayingClass*)0L;
-  *player = (AudioTraits::PlayerClass*)0L;
-  *destroy = AudioDestroyMidi;
+  return (AudioTraits::SoundClass*)0L;
 }
 
 #elif defined(AUDIO_USE_NULL)
@@ -75,18 +41,8 @@ void AudioLoadMidi(AudioTraits::MusicClass** music,
 // Null driver
 #include "audio_null_traits.h"
 
-void AudioDestroyMidi(AudioTraits::MusicClass* music) {
-  delete music;
-}
-
-void AudioLoadMidi(AudioTraits::MusicClass** music,
-		   AudioTraits::PlayingClass** state,
-		   AudioTraits::PlayerClass** player,
-		   AudioTraits::DeleteMusicFunc** destroy, Filename) {
-  *music = new NullMusic();
-  *state = new NullPlaying();
-  *player = new NullPlayer();
-  *destroy = AudioDestroyMidi;
+AudioTraits::SoundClass* AudioLoadMidi(Filename) {
+  return new NullSound();
 }
 
 #else /* AUDIO_USE_NULL */
@@ -96,6 +52,6 @@ void AudioLoadMidi(AudioTraits::MusicClass** music,
 #endif /* AUDIO_USE_NULL */
 
 ConfigureFn(audio_load_midi) {
-  AudioPool::register_music_loader("midi", AudioLoadMidi);
-  AudioPool::register_music_loader("mid", AudioLoadMidi);
+  AudioPool::register_sound_loader("midi", AudioLoadMidi);
+  AudioPool::register_sound_loader("mid", AudioLoadMidi);
 }

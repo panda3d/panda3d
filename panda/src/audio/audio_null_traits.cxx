@@ -24,28 +24,33 @@ static void initialize(void) {
   have_initialized = true;
 }
 
-NullSample::~NullSample(void) {
+NullSound::~NullSound(void) {
 }
 
-float NullSample::length(void) {
+float NullSound::length(void) const {
   if (audio_cat->is_debug())
     audio_cat->debug() << "in sample length in Null audio driver" << endl;
-  return 0.;
+  return -1.;
 }
 
-AudioTraits::SampleClass::SampleStatus NullSample::status(void) {
-  if (audio_cat->is_debug())
-    audio_cat->debug() << "in sample status in Null audio driver" << endl;
-  return AudioTraits::SampleClass::READY;
+AudioTraits::PlayingClass* NullSound::get_state(void) const {
+  return new NullPlaying((NullSound*)this);
 }
 
-NullMusic::~NullMusic(void) {
+AudioTraits::PlayerClass* NullSound::get_player(void) const {
+  return new NullPlayer();
 }
 
-AudioTraits::MusicClass::MusicStatus NullMusic::status(void) {
-  if (audio_cat->is_debug())
-    audio_cat->debug() << "in music status in Null audio driver" << endl;
-  return READY;
+AudioTraits::DeleteSoundFunc* NullSound::get_destroy(void) const {
+  return NullSound::destroy;
+}
+
+AudioTraits::DeletePlayingFunc* NullSound::get_delstate(void) const {
+  return NullPlaying::destroy;
+}
+
+void NullSound::destroy(AudioTraits::SoundClass* sound) {
+  delete sound;
 }
 
 NullPlaying::~NullPlaying(void) {
@@ -57,28 +62,23 @@ AudioTraits::PlayingClass::PlayingStatus NullPlaying::status(void) {
   return BAD;
 }
 
+void NullPlaying::destroy(AudioTraits::PlayingClass* play) {
+  delete play;
+}
+
 NullPlayer::~NullPlayer(void) {
 }
 
-void NullPlayer::play_sample(AudioTraits::SampleClass*) {
+void NullPlayer::play_sound(AudioTraits::SoundClass*,
+			    AudioTraits::PlayingClass*) {
   if (audio_cat->is_debug())
-    audio_cat->debug() << "in play sample in Null audio driver" << endl;
+    audio_cat->debug() << "in play sound in Null audio driver" << endl;
 }
 
-void NullPlayer::play_music(AudioTraits::MusicClass*) {
+void NullPlayer::set_volume(AudioTraits::PlayingClass*, int) {
   if (audio_cat->is_debug())
-    audio_cat->debug() << "in play music in Null audio driver" << endl;
-}
-
-void NullPlayer::set_volume(AudioTraits::SampleClass*, int) {
-  if (audio_cat->is_debug())
-    audio_cat->debug() << "in set volume (sample) in Null audio driver"
+    audio_cat->debug() << "in set volume in Null audio driver"
 		       << endl;
-}
-
-void NullPlayer::set_volume(AudioTraits::MusicClass*, int) {
-  if (audio_cat->is_debug())
-    audio_cat->debug() << "in set volume (music) in Null audio driver" << endl;
 }
 
 #endif /* AUDIO_USE_NULL */

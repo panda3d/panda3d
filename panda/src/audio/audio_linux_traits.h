@@ -57,60 +57,92 @@ public:
   }
 };
 
-class LinuxPlaying;
+class LinuxSamplePlaying;
 
-class EXPCL_PANDA LinuxSample : public AudioTraits::SampleClass {
+class EXPCL_PANDA LinuxSample : public AudioTraits::SoundClass {
 private:
-  Buffer* _data;
+  byte* _data;
+  unsigned long _size;
 public:
-  INLINE LinuxSample(Buffer*);
+  INLINE LinuxSample(byte*, unsigned long);
   virtual ~LinuxSample(void);
 
-  virtual float length(void);
-  virtual AudioTraits::SampleClass::SampleStatus status(void);
-
+  virtual float length(void) const;
+  virtual AudioTraits::PlayingClass* get_state(void) const;
+  virtual AudioTraits::PlayerClass* get_player(void) const;
+  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
+  virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
+  static void destroy(AudioTraits::SoundClass*);
 public:
   // used by the loader
   static LinuxSample* load_raw(byte*, unsigned long);
-  virtual LinuxPlaying* get_state(void);
-  static void destroy(AudioTraits::SampleClass*);
   // used by the players
-  INLINE Buffer* get_data(void);
+  INLINE byte* get_data(void) const;
+  INLINE unsigned long get_size(void) const;
 };
 
-class EXPCL_PANDA LinuxMusic : public AudioTraits::MusicClass {
+class EXPCL_PANDA LinuxMusic : public AudioTraits::SoundClass {
 public:
   INLINE LinuxMusic(void);
   virtual ~LinuxMusic(void);
 
-  virtual AudioTraits::MusicClass::MusicStatus status(void);
-public:
-  virtual LinuxPlaying* get_state(void);
-  static void destroy(AudioTraits::MusicClass*);
+  virtual float length(void) const;
+  virtual AudioTraits::PlayingClass* get_state(void) const;
+  virtual AudioTraits::PlayerClass* get_player(void) const;
+  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
+  virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
+  static void destroy(AudioTraits::SoundClass*);
 };
 
-class EXPCL_PANDA LinuxPlaying : public AudioTraits::PlayingClass {
+class EXPCL_PANDA LinuxSamplePlaying : public AudioTraits::PlayingClass {
+  Buffer* _buff;
 public:
-  INLINE LinuxPlaying(void);
-  virtual ~LinuxPlaying(void);
+  INLINE LinuxSamplePlaying(AudioTraits::SoundClass*);
+  virtual ~LinuxSamplePlaying(void);
 
   virtual AudioTraits::PlayingClass::PlayingStatus status(void);
+public:
+  INLINE Buffer* get_data(void);
+  static void destroy(AudioTraits::PlayingClass*);
 };
 
-class EXPCL_PANDA LinuxPlayer : public AudioTraits::PlayerClass {
+class EXPCL_PANDA LinuxMusicPlaying : public AudioTraits::PlayingClass {
 public:
-  INLINE LinuxPlayer(void);
-  virtual ~LinuxPlayer(void);
+  INLINE LinuxMusicPlaying(AudioTraits::SoundClass*);
+  virtual ~LinuxMusicPlaying(void);
 
-  virtual void play_sample(AudioTraits::SampleClass*);
-  virtual void play_music(AudioTraits::MusicClass*);
-  virtual void set_volume(AudioTraits::SampleClass*, int);
-  virtual void set_volume(AudioTraits::MusicClass*, int);
+  virtual AudioTraits::PlayingClass::PlayingStatus status(void);
+  static void destroy(AudioTraits::PlayingClass*);
+};
+
+class EXPCL_PANDA LinuxSamplePlayer : public AudioTraits::PlayerClass {
+public:
+  INLINE LinuxSamplePlayer(void);
+  virtual ~LinuxSamplePlayer(void);
+
+  virtual void play_sound(AudioTraits::SoundClass*,
+			  AudioTraits::PlayingClass*);
+  virtual void set_volume(AudioTraits::PlayingClass*, int);
 public:
   // used by the readers
-  static LinuxPlayer* get_instance(void);
+  static LinuxSamplePlayer* get_instance(void);
 private:
-  static LinuxPlayer* _global_instance;
+  static LinuxSamplePlayer* _global_instance;
+};
+
+class EXPCL_PANDA LinuxMusicPlayer : public AudioTraits::PlayerClass {
+public:
+  INLINE LinuxMusicPlayer(void);
+  virtual ~LinuxMusicPlayer(void);
+
+  virtual void play_sound(AudioTraits::SoundClass*,
+			  AudioTraits::PlayingClass*);
+  virtual void set_volume(AudioTraits::PlayingClass*, int);
+public:
+  // used by the readers
+  static LinuxMusicPlayer* get_instance(void);
+private:
+  static LinuxMusicPlayer* _global_instance;
 };
 
 #include "audio_linux_traits.I"

@@ -10,34 +10,29 @@
 
 class EXPCL_PANDA AudioTraits {
 public:
-  class SampleClass;
-  class MusicClass;
+  class SoundClass;
+  class PlayingClass;
+  class PlayerClass;
 
-  typedef void DeleteSampleFunc(SampleClass*);
-  typedef void DeleteMusicFunc(MusicClass*);
+  typedef void DeleteSoundFunc(SoundClass*);
+  typedef void DeletePlayingFunc(PlayingClass*);
 
-  class EXPCL_PANDA SampleClass {
+  class EXPCL_PANDA SoundClass {
   public:
-    SampleClass(void) {}
-    virtual ~SampleClass(void);
+    SoundClass(void) {}
+    virtual ~SoundClass(void);
 
-    enum SampleStatus { BAD, READY, PLAYING } ;
-
-    virtual float length(void) = 0;
-    virtual SampleStatus status(void) = 0;
-  };
-  class EXPCL_PANDA MusicClass {
-  public:
-    MusicClass(void) {}
-    virtual ~MusicClass(void);
-
-    enum MusicStatus { BAD, READY, PLAYING } ;
-
-    virtual MusicStatus status(void) = 0;
+    virtual float length(void) const = 0;
+    virtual PlayingClass* get_state(void) const = 0;
+    virtual PlayerClass* get_player(void) const = 0;
+    virtual DeleteSoundFunc* get_destroy(void) const = 0;
+    virtual DeletePlayingFunc* get_delstate(void) const = 0;
   };
   class EXPCL_PANDA PlayingClass {
+  protected:
+    SoundClass* _sound;
   public:
-    PlayingClass(void) {}
+    PlayingClass(SoundClass* s) : _sound(s) {}
     virtual ~PlayingClass(void);
 
     enum PlayingStatus { BAD, READY, PLAYING } ;
@@ -49,10 +44,8 @@ public:
     PlayerClass(void) {}
     virtual ~PlayerClass(void);
 
-    virtual void play_sample(SampleClass*) = 0;
-    virtual void play_music(MusicClass*) = 0;
-    virtual void set_volume(SampleClass*, int) = 0;
-    virtual void set_volume(MusicClass*, int) = 0;
+    virtual void play_sound(SoundClass*, PlayingClass*) = 0;
+    virtual void set_volume(PlayingClass*, int) = 0;
   };
 };
 

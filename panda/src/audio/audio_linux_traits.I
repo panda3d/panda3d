@@ -3,19 +3,39 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-INLINE LinuxSample::LinuxSample(Buffer* b) : AudioTraits::SampleClass(),
-					     _data(b) {
+INLINE LinuxSample::LinuxSample(byte* b, unsigned long s)
+  : AudioTraits::SoundClass(), _data(b), _size(s) {
 }
 
-INLINE Buffer* LinuxSample::get_data(void) {
+INLINE byte* LinuxSample::get_data(void) const {
   return _data;
 }
 
-INLINE LinuxMusic::LinuxMusic(void) : AudioTraits::MusicClass() {
+INLINE unsigned long LinuxSample::get_size(void) const {
+  return _size;
 }
 
-INLINE LinuxPlaying::LinuxPlaying(void) : AudioTraits::PlayingClass() {
+INLINE LinuxMusic::LinuxMusic(void) : AudioTraits::SoundClass() {
 }
 
-INLINE LinuxPlayer::LinuxPlayer(void) : AudioTraits::PlayerClass() {
+INLINE LinuxSamplePlaying::LinuxSamplePlaying(AudioTraits::SoundClass* s)
+  : AudioTraits::PlayingClass(s), _buff((Buffer*)0L) {
+  LinuxSample* smpl = (LinuxSample*)s;
+  _buff = new Buffer(smpl->get_data(), smpl->get_size());
+}
+
+INLINE Buffer* LinuxSamplePlaying::get_data(void) {
+  return _buff;
+}
+
+INLINE LinuxMusicPlaying::LinuxMusicPlaying(AudioTraits::SoundClass* s)
+  : AudioTraits::PlayingClass(s) {
+}
+
+INLINE LinuxSamplePlayer::LinuxSamplePlayer(void)
+  : AudioTraits::PlayerClass() {
+}
+
+INLINE LinuxMusicPlayer::LinuxMusicPlayer(void)
+  : AudioTraits::PlayerClass() {
 }
