@@ -103,6 +103,7 @@ get_lcs() const {
   if (_oriented) {
     m=m*_orientation;
   }
+  nassertr(!m.is_nan(), m);
   return m;
 }
 

@@ -262,6 +262,7 @@ make_invalid() {
 CPT(TransformState) TransformState::
 make_pos_hpr_scale_shear(const LVecBase3f &pos, const LVecBase3f &hpr, 
                          const LVecBase3f &scale, const LVecBase3f &shear) {
+  nassertr(!(pos.is_nan() || hpr.is_nan() || scale.is_nan() || shear.is_nan()) , make_invalid());
   // Make a special-case check for the identity transform.
   if (pos == LVecBase3f(0.0f, 0.0f, 0.0f) &&
       hpr == LVecBase3f(0.0f, 0.0f, 0.0f) &&
@@ -289,6 +290,7 @@ make_pos_hpr_scale_shear(const LVecBase3f &pos, const LVecBase3f &hpr,
 CPT(TransformState) TransformState::
 make_pos_quat_scale_shear(const LVecBase3f &pos, const LQuaternionf &quat, 
                           const LVecBase3f &scale, const LVecBase3f &shear) {
+  nassertr(!(pos.is_nan() || quat.is_nan() || scale.is_nan() || shear.is_nan()) , make_invalid());
   // Make a special-case check for the identity transform.
   if (pos == LVecBase3f(0.0f, 0.0f, 0.0f) &&
       quat == LQuaternionf::ident_quat() &&
@@ -315,6 +317,7 @@ make_pos_quat_scale_shear(const LVecBase3f &pos, const LQuaternionf &quat,
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 make_mat(const LMatrix4f &mat) {
+  nassertr(!mat.is_nan(), make_invalid());
   // Make a special-case check for the identity matrix.
   if (mat == LMatrix4f::ident_mat()) {
     return make_identity();
@@ -335,6 +338,7 @@ make_mat(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 set_pos(const LVecBase3f &pos) const {
+  nassertr(!pos.is_nan(), this);
   nassertr(!is_invalid(), this);
   if (is_identity() || components_given()) {
     // If we started with a componentwise transform, we keep it that
@@ -362,6 +366,7 @@ set_pos(const LVecBase3f &pos) const {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 set_hpr(const LVecBase3f &hpr) const {
+  nassertr(!hpr.is_nan(), this);
   nassertr(!is_invalid(), this);
   //  nassertr(has_components(), this);
   return make_pos_hpr_scale_shear(get_pos(), hpr, get_scale(), get_shear());
@@ -376,6 +381,7 @@ set_hpr(const LVecBase3f &hpr) const {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 set_quat(const LQuaternionf &quat) const {
+  nassertr(!quat.is_nan(), this);
   nassertr(!is_invalid(), this);
   //  nassertr(has_components(), this);
   return make_pos_quat_scale_shear(get_pos(), quat, get_scale(), get_shear());
@@ -390,6 +396,7 @@ set_quat(const LQuaternionf &quat) const {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 set_scale(const LVecBase3f &scale) const {
+  nassertr(!scale.is_nan(), this);
   nassertr(!is_invalid(), this);
   //  nassertr(has_components(), this);
   if (quat_given()) {
@@ -408,6 +415,7 @@ set_scale(const LVecBase3f &scale) const {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 set_shear(const LVecBase3f &shear) const {
+  nassertr(!shear.is_nan(), this);
   nassertr(!is_invalid(), this);
   //  nassertr(has_components(), this);
   if (quat_given()) {

@@ -32,7 +32,8 @@ set_mass(float m) {
 // Description : Vector position assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-set_position(const LPoint3f& pos) {
+set_position(const LPoint3f &pos) {
+  nassertv(!pos.is_nan());
   _position = pos;
 }
 
@@ -43,6 +44,7 @@ set_position(const LPoint3f& pos) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_position(float x, float y, float z) {
+  nassertv(!LPoint3f(x, y, z).is_nan());
   _position.set(x, y, z);
 }
 
@@ -55,6 +57,7 @@ set_position(float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 reset_position(const LPoint3f &pos) {
+  nassertv(!pos.is_nan());
   _position = pos;
   _last_position = pos;
   _velocity.set(0.0f, 0.0f, 0.0f);
@@ -68,6 +71,7 @@ reset_position(const LPoint3f &pos) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 reset_orientation(const LOrientationf &orientation) {
+  nassertv(!orientation.is_nan());
   _orientation = orientation;
   _rotation.set(0.0f, 0.0f, 0.0f);
 }
@@ -78,7 +82,7 @@ reset_orientation(const LOrientationf &orientation) {
 // Description : Last position assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-set_last_position(const LPoint3f& pos) {
+set_last_position(const LPoint3f &pos) {
   _last_position = pos;
 }
 
@@ -88,7 +92,8 @@ set_last_position(const LPoint3f& pos) {
 // Description : Vector velocity assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-set_velocity(const LVector3f& vel) {
+set_velocity(const LVector3f &vel) {
+  nassertv(!vel.is_nan());
   _velocity = vel;
 }
 
@@ -99,6 +104,7 @@ set_velocity(const LVector3f& vel) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_velocity(float x, float y, float z) {
+  nassertv(!LVector3f(x, y, z).is_nan());
   _velocity.set(x, y, z);
 }
 
@@ -213,6 +219,7 @@ get_terminal_velocity() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_orientation(const LOrientationf &orientation) {
+  nassertv(!orientation.is_nan());
   _orientation = orientation;
 }
 
@@ -223,6 +230,7 @@ set_orientation(const LOrientationf &orientation) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_rotation(const LVector3f &rotation) {
+  nassertv(!rotation.is_nan());
   _rotation = rotation;
 }
 
