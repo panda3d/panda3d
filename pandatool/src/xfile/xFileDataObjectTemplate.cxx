@@ -31,7 +31,7 @@ TypeHandle XFileDataObjectTemplate::_type_handle;
 XFileDataObjectTemplate::
 XFileDataObjectTemplate(XFile *x_file, const string &name,
                         XFileTemplate *xtemplate) :
-  XFileNode(x_file, name),
+  XFileDataNode(x_file, name),
   _template(xtemplate)
 {
 }
@@ -175,22 +175,43 @@ write_text(ostream &out, int indent_level) const {
 void XFileDataObjectTemplate::
 write_data(ostream &out, int indent_level, const char *separator) const {
   if (!_nested_elements.empty()) {
-    if (_nested_elements.front()->is_complex_object()) {
-      // If we have a complex nested structure, output one per line.
-      for (size_t i = 0; i < _nested_elements.size() - 1; i++) {
-        _nested_elements[i]->write_data(out, indent_level, ";");
+    bool indented = false;
+    for (size_t i = 0; i < _nested_elements.size() - 1; i++) {
+      XFileDataObject *object = _nested_elements[i];
+      if (object->is_complex_object()) {
+        // If we have a "complex" nested object, output it on its own
+        // line.
+        if (indented) {
+          out << "\n";
+          indented = false;
+        }
+        object->write_data(out, indent_level, ";");
+
+      } else {
+        // Otherwise, output them all on the same line.
+        if (!indented) {
+          indent(out, indent_level);
+          indented = true;
+        }
+        out << *object << "; ";
+      }
+    }
+
+    // The last object is the set is different, because it gets
+    // separator appended to it, and it always gets a newline.
+    XFileDataObject *object = _nested_elements.back();
+    if (object->is_complex_object()) {
+      if (indented) {
+        out << "\n";
       }
       string combined_separator = string(";") + string(separator);
-      _nested_elements.back()->write_data(out, indent_level, 
-                                          combined_separator.c_str());
+      object->write_data(out, indent_level, combined_separator.c_str());
 
     } else {
-      // Otherwise, output them all on the same line.
-      indent(out, indent_level);
-      for (size_t i = 0; i < _nested_elements.size() - 1; i++) {
-        out << *_nested_elements[i] << "; ";
+      if (!indented) {
+        indent(out, indent_level);
       }
-      out << *_nested_elements.back() << ";" << separator << "\n";
+      out << *object << ";" << separator << "\n";
     }
   }
 }

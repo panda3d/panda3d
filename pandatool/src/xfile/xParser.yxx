@@ -17,6 +17,7 @@
 #include "xFileDataDef.h"
 #include "xFileArrayDef.h"
 #include "xFileDataObjectTemplate.h"
+#include "xFileDataNodeReference.h"
 #include "pointerTo.h"
 #include "dcast.h"
 
@@ -364,6 +365,7 @@ data_part:
         TOKEN_OBRACE data_reference TOKEN_CBRACE
 {
   // nested references should be added as children too.
+  current_node->add_child($2);
 }
 	| object
 {
@@ -417,7 +419,7 @@ data_reference:
     yyerror("Unknown data_object: " + $1);
   }
 
-  $$ = data_object;
+  $$ = new XFileDataNodeReference(data_object);
 }
 	| name class_id
 {
@@ -431,7 +433,7 @@ data_reference:
     }
   }
 
-  $$ = data_object;
+  $$ = new XFileDataNodeReference(data_object);
 }
         ;
 

@@ -1,5 +1,5 @@
-// Filename: xFileDataObjectTemplate.h
-// Created by:  drose (03Oct04)
+// Filename: xFileDataNodeReference.h
+// Created by:  drose (08Oct04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,44 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef XFILEDATAOBJECTTEMPLATE_H
-#define XFILEDATAOBJECTTEMPLATE_H
+#ifndef XFILEDATANODEREFERENCE_H
+#define XFILEDATANODEREFERENCE_H
 
 #include "pandatoolbase.h"
-#include "xFileDataNode.h"
-#include "xFileTemplate.h"
-#include "xFileParseData.h"
+#include "xFileDataObjectTemplate.h"
 #include "pointerTo.h"
-#include "pta_int.h"
-#include "pta_double.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : XFileDataObjectTemplate
-// Description : A data element that represents a combination of
-//               multiple data elements as defined by a template.  The
-//               individual data elements of the template may be
-//               obtained by walking through the children of this
-//               object.
+//       Class : XFileDataNodeReference
+// Description : This is a nested reference to a template object,
+//               declared via { ObjectName } in the X File.
 ////////////////////////////////////////////////////////////////////
-class XFileDataObjectTemplate : public XFileDataNode {
+class XFileDataNodeReference : public XFileDataNode {
 public:
-  XFileDataObjectTemplate(XFile *x_file, const string &name,
-                          XFileTemplate *xtemplate);
+  XFileDataNodeReference(XFileDataObjectTemplate *object);
 
   INLINE XFileTemplate *get_template() const;
+  INLINE XFileDataObjectTemplate *get_object() const;
 
   virtual bool is_complex_object() const;
 
-  void add_parse_double(PTA_double double_list);
-  void add_parse_int(PTA_int int_list);
-  void add_parse_string(const string &str);
-  bool finalize_parse_data();
-
-  virtual bool add_element(XFileDataObject *element);
-
   virtual void write_text(ostream &out, int indent_level) const;
-  virtual void write_data(ostream &out, int indent_level,
-                          const char *separator) const;
 
 protected:
   virtual int get_num_elements() const;
@@ -61,12 +45,7 @@ protected:
   virtual const XFileDataObject *get_element(const string &name) const;
 
 private:
-  PT(XFileTemplate) _template;
-
-  XFileParseDataList _parse_data_list;
-  
-  typedef pvector< PT(XFileDataObject) > NestedElements;
-  NestedElements _nested_elements;
+  PT(XFileDataObjectTemplate) _object;
 
 public:
   static TypeHandle get_class_type() {
@@ -74,7 +53,7 @@ public:
   }
   static void init_type() {
     XFileDataNode::init_type();
-    register_type(_type_handle, "XFileDataObjectTemplate",
+    register_type(_type_handle, "XFileDataNodeReference",
                   XFileDataNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -86,7 +65,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "xFileDataObjectTemplate.I"
+#include "xFileDataNodeReference.I"
 
 #endif
   

@@ -51,6 +51,7 @@
 #include "xFileDataDef.h"
 #include "xFileArrayDef.h"
 #include "xFileDataObjectTemplate.h"
+#include "xFileDataNodeReference.h"
 #include "pointerTo.h"
 #include "dcast.h"
 
@@ -165,13 +166,13 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,   105,   107,   108,   111,   111,   126,   128,   131,   133,
-     136,   141,   144,   146,   149,   151,   152,   155,   163,   167,
-     180,   185,   189,   193,   197,   201,   205,   209,   213,   217,
-     221,   227,   233,   245,   247,   250,   254,   259,   270,   274,
-     279,   289,   304,   308,   313,   316,   320,   325,   328,   332,
-     332,   358,   360,   363,   368,   372,   378,   384,   390,   395,
-     399,   403,   407,   409,   412,   422,   438
+       0,   106,   108,   109,   112,   112,   127,   129,   132,   134,
+     137,   142,   145,   147,   150,   152,   153,   156,   164,   168,
+     181,   186,   190,   194,   198,   202,   206,   210,   214,   218,
+     222,   228,   234,   246,   248,   251,   255,   260,   271,   275,
+     280,   290,   305,   309,   314,   317,   321,   326,   329,   333,
+     333,   359,   361,   364,   370,   374,   380,   386,   392,   397,
+     401,   405,   409,   411,   414,   424,   440
 };
 #endif
 
@@ -1015,7 +1016,7 @@ yyreduce:
   switch (yyn) {
 
 case 4:
-#line 113 "xParser.yxx"
+#line 114 "xParser.yxx"
 {
   yyval.u.node = current_node;
   XFileTemplate *templ = new XFileTemplate(x_file, yyvsp[-2].str, yyvsp[0].guid);
@@ -1024,27 +1025,27 @@ case 4:
 }
     break;
 case 5:
-#line 120 "xParser.yxx"
+#line 121 "xParser.yxx"
 {
   yyval.u.node = current_node;
   current_node = yyvsp[-2].u.node;
 }
     break;
 case 10:
-#line 138 "xParser.yxx"
+#line 139 "xParser.yxx"
 {
   DCAST(XFileTemplate, current_node)->set_open(true);
 }
     break;
 case 17:
-#line 157 "xParser.yxx"
+#line 158 "xParser.yxx"
 {
   current_data_def = new XFileDataDef(x_file, yyvsp[-1].str, yyvsp[-2].u.primitive_type);
   current_node->add_child(current_data_def);
 }
     break;
 case 19:
-#line 169 "xParser.yxx"
+#line 170 "xParser.yxx"
 {
   XFileTemplate *xtemplate = x_file->find_template(yyvsp[-2].str);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -1056,80 +1057,80 @@ case 19:
 }
     break;
 case 20:
-#line 182 "xParser.yxx"
+#line 183 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_word;
 }
     break;
 case 21:
-#line 186 "xParser.yxx"
+#line 187 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_dword;
 }
     break;
 case 22:
-#line 190 "xParser.yxx"
+#line 191 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_float;
 }
     break;
 case 23:
-#line 194 "xParser.yxx"
+#line 195 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_double;
 }
     break;
 case 24:
-#line 198 "xParser.yxx"
+#line 199 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_char;
 }
     break;
 case 25:
-#line 202 "xParser.yxx"
+#line 203 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_uchar;
 }
     break;
 case 26:
-#line 206 "xParser.yxx"
+#line 207 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_sword;
 }
     break;
 case 27:
-#line 210 "xParser.yxx"
+#line 211 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_sdword;
 }
     break;
 case 28:
-#line 214 "xParser.yxx"
+#line 215 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_string;
 }
     break;
 case 29:
-#line 218 "xParser.yxx"
+#line 219 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_unicode;
 }
     break;
 case 30:
-#line 222 "xParser.yxx"
+#line 223 "xParser.yxx"
 {
   yyval.u.primitive_type = XFileDataDef::T_cstring;
 }
     break;
 case 31:
-#line 229 "xParser.yxx"
+#line 230 "xParser.yxx"
 {
   current_data_def = new XFileDataDef(x_file, yyvsp[0].str, yyvsp[-1].u.primitive_type);
   current_node->add_child(current_data_def);
 }
     break;
 case 32:
-#line 234 "xParser.yxx"
+#line 235 "xParser.yxx"
 {
   XFileTemplate *xtemplate = x_file->find_template(yyvsp[-1].str);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -1141,13 +1142,13 @@ case 32:
 }
     break;
 case 36:
-#line 256 "xParser.yxx"
+#line 257 "xParser.yxx"
 {
   current_data_def->add_array_def(XFileArrayDef(yyvsp[0].u.number));
 }
     break;
 case 37:
-#line 260 "xParser.yxx"
+#line 261 "xParser.yxx"
 {
   XFileNode *data_def = current_node->find_child(yyvsp[0].str);
   if (data_def == (XFileNode *)NULL) {
@@ -1158,17 +1159,17 @@ case 37:
 }
     break;
 case 38:
-#line 272 "xParser.yxx"
+#line 273 "xParser.yxx"
 {
 }
     break;
 case 39:
-#line 275 "xParser.yxx"
+#line 276 "xParser.yxx"
 {
 }
     break;
 case 40:
-#line 281 "xParser.yxx"
+#line 282 "xParser.yxx"
 {
   XFileTemplate *xtemplate = x_file->find_template(yyvsp[0].str);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -1179,7 +1180,7 @@ case 40:
 }
     break;
 case 41:
-#line 290 "xParser.yxx"
+#line 291 "xParser.yxx"
 {
   XFileTemplate *xtemplate = x_file->find_template(yyvsp[0].guid);
   if (xtemplate == (XFileTemplate *)NULL) {
@@ -1194,19 +1195,19 @@ case 41:
 }
     break;
 case 43:
-#line 310 "xParser.yxx"
+#line 311 "xParser.yxx"
 {
   yyval.str = string();
 }
     break;
 case 46:
-#line 322 "xParser.yxx"
+#line 323 "xParser.yxx"
 {
   yyval.guid = WindowsGuid();
 }
     break;
 case 49:
-#line 334 "xParser.yxx"
+#line 335 "xParser.yxx"
 {
   XFileTemplate *xtemplate = x_file->find_template(yyvsp[-2].str);
   yyval.u.node = current_node;
@@ -1222,7 +1223,7 @@ case 49:
 }
     break;
 case 50:
-#line 348 "xParser.yxx"
+#line 349 "xParser.yxx"
 {
   XFileDataObjectTemplate *current_template = 
     DCAST(XFileDataObjectTemplate, current_node);
@@ -1233,19 +1234,20 @@ case 50:
 }
     break;
 case 53:
-#line 365 "xParser.yxx"
+#line 366 "xParser.yxx"
 {
   // nested references should be added as children too.
+  current_node->add_child(yyvsp[-1].u.node);
 }
     break;
 case 54:
-#line 369 "xParser.yxx"
+#line 371 "xParser.yxx"
 {
   // nested objects are just quietly added as children.
 }
     break;
 case 55:
-#line 373 "xParser.yxx"
+#line 375 "xParser.yxx"
 {
   XFileDataObjectTemplate *current_template = 
     DCAST(XFileDataObjectTemplate, current_node);
@@ -1253,7 +1255,7 @@ case 55:
 }
     break;
 case 56:
-#line 379 "xParser.yxx"
+#line 381 "xParser.yxx"
 {
   XFileDataObjectTemplate *current_template = 
     DCAST(XFileDataObjectTemplate, current_node);
@@ -1261,7 +1263,7 @@ case 56:
 }
     break;
 case 57:
-#line 385 "xParser.yxx"
+#line 387 "xParser.yxx"
 {
   XFileDataObjectTemplate *current_template = 
     DCAST(XFileDataObjectTemplate, current_node);
@@ -1269,23 +1271,23 @@ case 57:
 }
     break;
 case 58:
-#line 391 "xParser.yxx"
+#line 393 "xParser.yxx"
 {
 }
     break;
 case 64:
-#line 414 "xParser.yxx"
+#line 416 "xParser.yxx"
 {
   XFileDataObjectTemplate *data_object = x_file->find_data_object(yyvsp[0].str);
   if (data_object == (XFileDataObject *)NULL) {
     yyerror("Unknown data_object: " + yyvsp[0].str);
   }
 
-  yyval.u.node = data_object;
+  yyval.u.node = new XFileDataNodeReference(data_object);
 }
     break;
 case 65:
-#line 423 "xParser.yxx"
+#line 425 "xParser.yxx"
 {
   XFileDataObjectTemplate *data_object = x_file->find_data_object(yyvsp[0].guid);
   if (data_object == (XFileDataObject *)NULL) {
@@ -1297,7 +1299,7 @@ case 65:
     }
   }
 
-  yyval.u.node = data_object;
+  yyval.u.node = new XFileDataNodeReference(data_object);
 }
     break;
 }
@@ -1533,4 +1535,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 440 "xParser.yxx"
+#line 442 "xParser.yxx"

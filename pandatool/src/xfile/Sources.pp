@@ -24,6 +24,8 @@
      xFileDataObjectDouble.cxx xFileDataObjectDouble.I xFileDataObjectDouble.h \
      xFileDataObjectInteger.cxx xFileDataObjectInteger.I xFileDataObjectInteger.h \
      xFileDataObjectTemplate.cxx xFileDataObjectTemplate.I xFileDataObjectTemplate.h \
+     xFileDataNode.cxx xFileDataNode.I xFileDataNode.h \
+     xFileDataNodeReference.cxx xFileDataNodeReference.I xFileDataNodeReference.h \
      xFileNode.cxx xFileNode.I xFileNode.h \
      xFileParseData.cxx xFileParseData.I xFileParseData.h \
      xFileTemplate.cxx xFileTemplate.I xFileTemplate.h
