@@ -1,8 +1,10 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-				   
-// need to modify global scope
-#set NOT_INTEL_BUILDABLE true				   
+
+#if $[eq $[USE_COMPILER], INTEL]
+#define USE_COMPILER MSVC
+#include $[DTOOL]/pptempl/compilerSettings.pp
+#endif
 
 #begin lib_target
   #define TARGET collide

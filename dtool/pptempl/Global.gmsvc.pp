@@ -75,47 +75,7 @@
   #define dlllib dll
 #endif
 
-#if $[and $[eq $[USE_COMPILER], INTEL], $[eq $[NOT_INTEL_BUILDABLE], true]]
-#define USE_COMPILER MSVC
-#endif
-
-#if $[eq $[USE_COMPILER], MSVC]
-  #define COMPILER cl
-  #define LINKER link
-  #define LIBBER lib
-  #define COMMONFLAGS /Gi-
-  #define OPTFLAGS /O2 /Ob1 /G6
-  #defer DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
-  #define RELEASEFLAGS /MD
-  
-// in case we have mixed intel/msvc build
-  #define EXTRA_LIBPATH /ia32/lib
-  #define EXTRA_INCPATH /ia32/include    
-#elif $[eq $[USE_COMPILER], BOUNDS]
-  #define COMPILER nmcl
-  #define LINKER nmlink
-  #define LIBBER lib
-  #define COMMONFLAGS
-  #define OPTFLAGS /O2 /Ogity /G6
-  #defer DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
-  #define RELEASEFLAGS /MD
-  #define EXTRA_LIBPATH
-  #define EXTRA_INCPATH
-#elif $[eq $[USE_COMPILER], INTEL]
-  #define COMPILER icl
-  #define LINKER xilink
-  #define LIBBER xilib
-  #define COMMONFLAGS /Gi- /Qwd985
-//  #define OPTFLAGS /O3 /G6 /Qvc6 /Qipo /QaxW /Qvec_report1 
-  #define OPTFLAGS /O3 /G6 /Qvc6 /Qip
-  #define DEBUGFLAGS /MDd /Zi /Qinline_debug_info
-  #define RELEASEFLAGS /MD
-  // We assume the Intel compiler installation dir is mounted as /ia32.
-  #define EXTRA_LIBPATH /ia32/lib
-  #define EXTRA_INCPATH /ia32/include  
-#else
-  #error Invalid value specified for USE_COMPILER.
-#endif
+#include $[DTOOL]/pptempl/compilerSettings.pp
 
 #if $[CHECK_SYNTAX_ONLY]
 #define END_CFLAGS $[END_CFLAGS] /Zs 
