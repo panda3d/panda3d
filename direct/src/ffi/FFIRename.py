@@ -47,6 +47,16 @@ methodRenameDictionary = {
     }
     
 classRenameDictionary = {
+    # These are temporary until the C Nametag class is fully written and can
+    # replace the Python Nametag class.
+    'Nametag'             : 'CNametag',
+    'Nametag2d'           : 'CNametag2d',
+    'Nametag3d'           : 'CNametag3d',
+    'NametagFloat'        : 'CNametagFloat',
+    'NametagWhisper'      : 'CNametagWhisper',
+    'NametagCell'         : 'CNametagCell',
+    'NametagCellManager'  : 'CNametagCellManager',
+    
     'Loader'                    : 'PandaLoader',
     'String'                    : 'CString',
     'LMatrix4f'                 : 'Mat4',
