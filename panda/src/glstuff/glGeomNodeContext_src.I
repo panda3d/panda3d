@@ -1,4 +1,4 @@
-// Filename: glGeomNodeContext.I
+// Filename: glGeomNodeContext_src.I
 // Created by:  drose (12Jun01)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,12 +18,12 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGeomNodeContext::Constructor
+//     Function: CLP(GeomNodeContext)::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE GLGeomNodeContext::
-GLGeomNodeContext(GeomNode *node) :
+INLINE CLP(GeomNodeContext)::
+CLP(GeomNodeContext)(GeomNode *node) :
   GeomNodeContext(node)
 {
   _index = 0;

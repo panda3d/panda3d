@@ -24,7 +24,7 @@
 #include "graphicsPipe.h"
 #include "keyboardButton.h"
 #include "mouseButton.h"
-#include "glGraphicsStateGuardian.h"
+#include "glgsg.h"
 #include "clockObject.h"
 
 #include <errno.h>

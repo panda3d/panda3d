@@ -1,4 +1,4 @@
-// Filename: config_mesadisplay.h
+// Filename: glstuff_src.cxx
 // Created by:  drose (09Feb04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,16 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_MESADISPLAY_H
-#define CONFIG_MESADISPLAY_H
+// This .cxx file includes all of the gl-related .cxx files in this
+// directory.  It works just like glstuff_src.h; see the comments in
+// that file for an explanation for what you're supposed to declare in
+// order to include this file.
 
-#include "pandabase.h"
-#include "notifyCategoryProxy.h"
-#include "dconfig.h"
+#include "glmisc_src.cxx"
+#include "glGeomNodeContext_src.cxx"
+#include "glTextureContext_src.cxx"
+#include "glSavedFrameBuffer_src.cxx"
+#include "glGraphicsStateGuardian_src.cxx"
 
-ConfigureDecl(config_mesadisplay, EXPCL_PANDAMESA, EXPTP_PANDAMESA);
-NotifyCategoryDecl(mesadisplay, EXPCL_PANDAMESA, EXPTP_PANDAMESA);
-
-extern EXPCL_PANDAMESA void init_libmesadisplay();
-
-#endif

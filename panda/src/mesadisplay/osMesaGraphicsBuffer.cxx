@@ -1,4 +1,4 @@
-// Filename: mesaGraphicsBuffer.cxx
+// Filename: osMesaGraphicsBuffer.cxx
 // Created by:  drose (09Feb04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,20 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "mesaGraphicsBuffer.h"
+#include "osMesaGraphicsBuffer.h"
 #include "config_mesadisplay.h"
-#include "mesaGraphicsPipe.h"
-#include "mesaGraphicsStateGuardian.h"
+#include "osMesaGraphicsPipe.h"
+#include "osMesaGraphicsStateGuardian.h"
 
-TypeHandle MesaGraphicsBuffer::_type_handle;
+TypeHandle OsMesaGraphicsBuffer::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MesaGraphicsBuffer::Constructor
+//     Function: OsMesaGraphicsBuffer::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-MesaGraphicsBuffer::
-MesaGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+OsMesaGraphicsBuffer::
+OsMesaGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
                    int x_size, int y_size, bool want_texture) :
   GraphicsBuffer(pipe, gsg, x_size, y_size, want_texture) 
 {
@@ -37,24 +37,24 @@ MesaGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MesaGraphicsBuffer::Destructor
+//     Function: OsMesaGraphicsBuffer::Destructor
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-MesaGraphicsBuffer::
-~MesaGraphicsBuffer() {
+OsMesaGraphicsBuffer::
+~OsMesaGraphicsBuffer() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MesaGraphicsBuffer::make_current
+//     Function: OsMesaGraphicsBuffer::make_current
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
 //               during begin_frame() to ensure the graphics context
 //               is ready for drawing.
 ////////////////////////////////////////////////////////////////////
-void MesaGraphicsBuffer::
+void OsMesaGraphicsBuffer::
 make_current() {
-  MesaGraphicsStateGuardian *mesagsg;
+  OSMesaGraphicsStateGuardian *mesagsg;
   DCAST_INTO_V(mesagsg, _gsg);
   OSMesaMakeCurrent(mesagsg->_context, _image.p(), _type,
                     _x_size, _y_size);
@@ -63,7 +63,7 @@ make_current() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MesaGraphicsBuffer::begin_flip
+//     Function: OsMesaGraphicsBuffer::begin_flip
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
 //               after end_frame() has been called on all windows, to
@@ -76,7 +76,7 @@ make_current() {
 //               end_flip(), to make it easier to flip all of the
 //               windows at the same time.
 ////////////////////////////////////////////////////////////////////
-void MesaGraphicsBuffer::
+void OsMesaGraphicsBuffer::
 begin_flip() {
   if (has_texture()) {
     // Use glCopyTexImage2D to copy the framebuffer to the texture.
@@ -89,25 +89,25 @@ begin_flip() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MesaGraphicsBuffer::close_buffer
+//     Function: OsMesaGraphicsBuffer::close_buffer
 //       Access: Protected, Virtual
 //  Description: Closes the buffer right now.  Called from the window
 //               thread.
 ////////////////////////////////////////////////////////////////////
-void MesaGraphicsBuffer::
+void OsMesaGraphicsBuffer::
 close_buffer() {
   _image.clear();
   _is_valid = false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MesaGraphicsBuffer::open_buffer
+//     Function: OsMesaGraphicsBuffer::open_buffer
 //       Access: Protected, Virtual
 //  Description: Opens the buffer right now.  Called from the window
 //               thread.  Returns true if the buffer is successfully
 //               opened, or false if there was a problem.
 ////////////////////////////////////////////////////////////////////
-bool MesaGraphicsBuffer::
+bool OsMesaGraphicsBuffer::
 open_buffer() {
   _image = PTA_uchar::empty_array(_x_size * _y_size * 4);
   _is_valid = true;

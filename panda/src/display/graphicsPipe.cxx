@@ -112,7 +112,7 @@ get_hw_channel(GraphicsOutput *, int) {
 PT(GraphicsDevice) GraphicsPipe::
 make_device(void *scrn) {
   display_cat.error() 
-    << "Error: make_device() unimplemented by graphicsPipe!\n";
+    << "make_device() unimplemented by " << get_type() << "\n";
   return NULL;
 }
 
@@ -125,8 +125,8 @@ make_device(void *scrn) {
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsStateGuardian) GraphicsPipe::
 make_gsg(const FrameBufferProperties &properties) {
-  // shouldnt this method really be pure virtual?  it's an error for a pipe to not implement it
-  display_cat.error() << "Error: make_gsg() unimplemented by graphicsPipe!\n";
+  display_cat.error()
+    << "make_gsg() unimplemented by " << get_type() << "\n";
   return NULL;
 }
 
@@ -155,6 +155,8 @@ close_gsg(GraphicsStateGuardian *gsg) {
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsWindow) GraphicsPipe::
 make_window(GraphicsStateGuardian *) {
+  display_cat.error()
+    << get_type() << " cannot create onscreen windows.\n";
   return NULL;
 }
 
@@ -165,5 +167,7 @@ make_window(GraphicsStateGuardian *) {
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsBuffer) GraphicsPipe::
 make_buffer(GraphicsStateGuardian *, int, int, bool) {
+  display_cat.error()
+    << get_type() << " cannot create offscreen buffers.\n";
   return NULL;
 }

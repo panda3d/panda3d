@@ -124,6 +124,14 @@
   #define EXPTP_PANDAGLUT extern
 #endif
 
+#ifdef BUILDING_PANDAMESA
+  #define EXPCL_PANDAMESA __declspec(dllexport)
+  #define EXPTP_PANDAMESA
+#else
+  #define EXPCL_PANDAMESA __declspec(dllimport)
+  #define EXPTP_PANDAMESA extern
+#endif
+
 #ifdef BUILDING_PANDAPHYSICS
   #define EXPCL_PANDAPHYSICS __declspec(dllexport)
   #define EXPTP_PANDAPHYSICS
@@ -193,6 +201,9 @@
 
 #define EXPCL_PANDAGLUT
 #define EXPTP_PANDAGLUT
+
+#define EXPCL_PANDAMESA
+#define EXPTP_PANDAMESA
 
 #define EXPCL_PANDAPHYSICS
 #define EXPTP_PANDAPHYSICS

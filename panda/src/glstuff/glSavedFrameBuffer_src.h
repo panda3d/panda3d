@@ -1,5 +1,5 @@
-// Filename: mesaGraphicsBuffer.h
-// Created by:  drose (09Feb04)
+// Filename: glSavedFrameBuffer_src.h
+// Created by:  drose (06Oct99)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,47 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MESAGRAPHICSBUFFER_H
-#define MESAGRAPHICSBUFFER_H
-
 #include "pandabase.h"
 
-#include "mesaGraphicsPipe.h"
-#include "graphicsBuffer.h"
+#include "savedFrameBuffer.h"
+#include "texture.h"
+#include "textureContext.h"
+#include "pixelBuffer.h"
+
 
 ////////////////////////////////////////////////////////////////////
-//       Class : MesaGraphicsBuffer
-// Description : An offscreen buffer using direct calls to Mesa.  This
-//               is the only kind of graphics output supported by
-//               osmesa.h.
+//       Class : GLSavedFrameBuffer
+// Description :
 ////////////////////////////////////////////////////////////////////
-class MesaGraphicsBuffer : public GraphicsBuffer {
+class EXPCL_GL CLP(SavedFrameBuffer) : public SavedFrameBuffer {
 public:
-  MesaGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                    int x_size, int y_size, bool want_texture);
+  INLINE CLP(SavedFrameBuffer)(const RenderBuffer &buffer,
+                            CPT(DisplayRegion) dr);
+  INLINE ~CLP(SavedFrameBuffer)();
 
-  virtual ~MesaGraphicsBuffer();
-
-  virtual void make_current();
-
-  virtual void begin_flip();
-
-protected:
-  virtual void close_buffer();
-  virtual bool open_buffer();
-
-private:
-  GLenum _type;
-  PTA_uchar _image;
+  PT(Texture) _back_rgba;
+  PT(PixelBuffer) _depth;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    GraphicsBuffer::init_type();
-    register_type(_type_handle, "MesaGraphicsBuffer",
-                  GraphicsBuffer::get_class_type());
+    SavedFrameBuffer::init_type();
+    register_type(_type_handle, CLASSPREFIX_QUOTED "SavedFrameBuffer",
+                  SavedFrameBuffer::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -67,6 +55,5 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "mesaGraphicsBuffer.I"
+#include "glSavedFrameBuffer_src.I"
 
-#endif

@@ -1,4 +1,4 @@
-// Filename: mesaGraphicsBuffer.I
+// Filename: osMesaGraphicsPipe.I
 // Created by:  drose (09Feb04)
 //
 ////////////////////////////////////////////////////////////////////

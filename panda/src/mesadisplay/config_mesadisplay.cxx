@@ -17,13 +17,14 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_mesadisplay.h"
-#include "mesaGraphicsBuffer.h"
-#include "mesaGraphicsPipe.h"
-#include "mesaGraphicsStateGuardian.h"
+#include "osMesaGraphicsBuffer.h"
+#include "osMesaGraphicsPipe.h"
+#include "osMesaGraphicsStateGuardian.h"
 #include "graphicsPipeSelection.h"
 #include "dconfig.h"
+#include "mesagsg.h"
 
-Configure(config_mesadisplay);
+ConfigureDef(config_mesadisplay);
 NotifyCategoryDef(mesadisplay, "display");
 
 ConfigureFn(config_mesadisplay) {
@@ -46,12 +47,13 @@ init_libmesadisplay() {
   }
   initialized = true;
 
-  MesaGraphicsBuffer::init_type();
-  MesaGraphicsPipe::init_type();
-  MesaGraphicsStateGuardian::init_type();
+  OsMesaGraphicsBuffer::init_type();
+  OsMesaGraphicsPipe::init_type();
+  OSMesaGraphicsStateGuardian::init_type();
 
-  cerr << "Adding MesaGraphicsPipe\n";
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
-  selection->add_pipe_type(MesaGraphicsPipe::get_class_type(),
-                           MesaGraphicsPipe::pipe_constructor);
+  selection->add_pipe_type(OsMesaGraphicsPipe::get_class_type(),
+                           OsMesaGraphicsPipe::pipe_constructor);
+
+  Mesainit_classes();
 }

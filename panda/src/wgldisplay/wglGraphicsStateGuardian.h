@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 #include "wglExtensions.h"
-#include "glGraphicsStateGuardian.h"
+#include "glgsg.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : wglGraphicsStateGuardian

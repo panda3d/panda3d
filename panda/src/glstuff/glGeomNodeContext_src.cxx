@@ -1,5 +1,5 @@
-// Filename: glTextureContext.I
-// Created by:  drose (07Oct99)
+// Filename: glGeomNodeContext_src.cxx
+// Created by:  drose (12Jun01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,16 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLTextureContext::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE GLTextureContext::
-GLTextureContext(Texture *tex) :
-  TextureContext(tex)
-{
-  _index = 0;
-  _priority = 0.5; // For keeping resident in texture memory
-}
+TypeHandle CLP(GeomNodeContext)::_type_handle;

@@ -1,4 +1,4 @@
-// Filename: glTextureContext.h
+// Filename: glTextureContext_src.h
 // Created by:  drose (07Oct99)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,28 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef GLTEXTURECONTEXT_H
-#define GLTEXTURECONTEXT_H
-
 #include "pandabase.h"
-
-#ifdef WIN32_VC
-// Must include windows.h before gl.h on NT
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef WIN32_LEAN_AND_MEAN
-#endif
-
-#include <GL/gl.h>
-#include <textureContext.h>
+#include "textureContext.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GLTextureContext
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAGL GLTextureContext : public TextureContext {
+class EXPCL_GL CLP(TextureContext) : public TextureContext {
 public:
-  INLINE GLTextureContext(Texture *tex);
+  INLINE CLP(TextureContext)(Texture *tex);
 
   // This is the GL "name" of the texture object.
   GLuint _index;
@@ -51,7 +39,7 @@ public:
   }
   static void init_type() {
     TextureContext::init_type();
-    register_type(_type_handle, "GLTextureContext",
+    register_type(_type_handle, CLASSPREFIX_QUOTED "TextureContext",
                   TextureContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -63,7 +51,5 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "glTextureContext.I"
-
-#endif
+#include "glTextureContext_src.I"
 

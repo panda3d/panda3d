@@ -1,4 +1,4 @@
-// Filename: config_mesadisplay.h
+// Filename: glpure.cxx
 // Created by:  drose (09Feb04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,16 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_MESADISPLAY_H
-#define CONFIG_MESADISPLAY_H
-
 #include "pandabase.h"
-#include "notifyCategoryProxy.h"
-#include "dconfig.h"
 
-ConfigureDecl(config_mesadisplay, EXPCL_PANDAMESA, EXPTP_PANDAMESA);
-NotifyCategoryDecl(mesadisplay, EXPCL_PANDAMESA, EXPTP_PANDAMESA);
+// This is the one file in this directory which is actually compiled.
+// It exists just so we can have some symbols and make the compiler
+// happy.
 
-extern EXPCL_PANDAMESA void init_libmesadisplay();
+int glpure;
 
-#endif

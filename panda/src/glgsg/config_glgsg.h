@@ -21,22 +21,10 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "dconfig.h"
 
+ConfigureDecl(config_glgsg, EXPCL_PANDAGL, EXPTP_PANDAGL);
 NotifyCategoryDecl(glgsg, EXPCL_PANDAGL, EXPTP_PANDAGL);
-
-extern bool gl_cheap_textures;
-extern bool gl_always_decal_textures;
-extern bool gl_ignore_clamp;
-extern bool gl_ignore_filters;
-extern bool gl_ignore_mipmaps;
-extern bool gl_force_mipmaps;
-extern bool gl_show_mipmaps;
-extern bool gl_save_mipmaps;
-extern bool gl_auto_normalize_lighting;
-extern bool gl_depth_offset_decals;
-extern bool gl_supports_bgr;
-extern bool gl_color_mask;
-
 
 extern EXPCL_PANDAGL void init_libglgsg();
 

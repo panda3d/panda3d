@@ -1,4 +1,4 @@
-// Filename: glGraphicsStateGuardian.cxx
+// Filename: glGraphicsStateGuardian_src.cxx
 // Created by:  drose (02Feb99)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,12 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "glGraphicsStateGuardian.h"
-#include "glSavedFrameBuffer.h"
-#include "glTextureContext.h"
-#include "glGeomNodeContext.h"
-#include "config_glgsg.h"
-
 #include "config_util.h"
 #include "displayRegion.h"
 #include "renderBuffer.h"
@@ -35,7 +29,6 @@
 #include "pointLight.h"
 #include "spotlight.h"
 #include "planeNode.h"
-#include "GL/glu.h"
 #include "textureAttrib.h"
 #include "lightAttrib.h"
 #include "cullFaceAttrib.h"
@@ -62,62 +55,54 @@
 
 #include <algorithm>
 
-#if 0
-#define glGenTextures glGenTexturesEXT
-#define glPrioritizeTextures glPrioritizeTexturesEXT
-#define glBindTexture glBindTextureEXT
-#define glCopyTexImage2D glCopyTexImage2DEXT
-#define glDeleteTextures glDeleteTexturesEXT
-#endif
-
 #if !defined(GL_BGR) && defined(GL_BGR_EXT)
 // These symbols are sometimes defined as _EXT variants.
 #define GL_BGR GL_BGR_EXT
 #define GL_BGRA GL_BGRA_EXT
 #endif
 
-TypeHandle GLGraphicsStateGuardian::_type_handle;
+TypeHandle CLP(GraphicsStateGuardian)::_type_handle;
 
 #if !defined(CPPPARSER) && defined(DO_PSTATS)
-PStatCollector GLGraphicsStateGuardian::_vertices_display_list_pcollector("Vertices:Display lists");
+PStatCollector CLP(GraphicsStateGuardian)::_vertices_display_list_pcollector("Vertices:Display lists");
 #endif
 
 static void
 issue_vertex_gl(const Geom *geom, Geom::VertexIterator &viterator, 
                 GraphicsStateGuardianBase *) {
   const Vertexf &vertex = geom->get_next_vertex(viterator);
-  // glgsg_cat.spam() << "Issuing vertex " << vertex << "\n";
-  glVertex3fv(vertex.get_data());
+  // GLCAT.spam() << "Issuing vertex " << vertex << "\n";
+  GLP(Vertex3fv)(vertex.get_data());
 }
 
 static void
 issue_normal_gl(const Geom *geom, Geom::NormalIterator &niterator, 
                 GraphicsStateGuardianBase *) {
   const Normalf &normal = geom->get_next_normal(niterator);
-  // glgsg_cat.spam() << "Issuing normal " << normal << "\n";
-  glNormal3fv(normal.get_data());
+  // GLCAT.spam() << "Issuing normal " << normal << "\n";
+  GLP(Normal3fv)(normal.get_data());
 }
 
 static void
 issue_texcoord_gl(const Geom *geom, Geom::TexCoordIterator &tciterator, 
                 GraphicsStateGuardianBase *) {
   const TexCoordf &texcoord = geom->get_next_texcoord(tciterator);
-  //  glgsg_cat.spam() << "Issuing texcoord " << texcoord << "\n";
-  glTexCoord2fv(texcoord.get_data());
+  //  GLCAT.spam() << "Issuing texcoord " << texcoord << "\n";
+  GLP(TexCoord2fv)(texcoord.get_data());
 }
 
 static void
 issue_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
                GraphicsStateGuardianBase *) {
   const Colorf &color = geom->get_next_color(citerator);
-  //  glgsg_cat.spam() << "Issuing color " << color << "\n";
-  glColor4fv(color.get_data());
+  //  GLCAT.spam() << "Issuing color " << color << "\n";
+  GLP(Color4fv)(color.get_data());
 }
 
 static void
 issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
                            GraphicsStateGuardianBase *gsg) {
-  const GLGraphicsStateGuardian *glgsg = DCAST(GLGraphicsStateGuardian, gsg);
+  const CLP(GraphicsStateGuardian) *glgsg = DCAST(CLP(GraphicsStateGuardian), gsg);
   const Colorf &color = geom->get_next_color(citerator);
   glgsg->issue_transformed_color(color);
 }
@@ -250,33 +235,33 @@ fix_component_ordering(GLenum external_format, PixelBuffer *pb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::Constructor
+//     Function: CLP(GraphicsStateGuardian)::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-GLGraphicsStateGuardian::
-GLGraphicsStateGuardian(const FrameBufferProperties &properties) :
+CLP(GraphicsStateGuardian)::
+CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties) :
   GraphicsStateGuardian(properties) 
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::Destructor
+//     Function: CLP(GraphicsStateGuardian)::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-GLGraphicsStateGuardian::
-~GLGraphicsStateGuardian() {
+CLP(GraphicsStateGuardian)::
+~CLP(GraphicsStateGuardian)() {
   close_gsg();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::reset
+//     Function: CLP(GraphicsStateGuardian)::reset
 //       Access: Public, Virtual
 //  Description: Resets all internal state as if the gsg were newly
 //               created.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 reset() {
   free_pointers();
   GraphicsStateGuardian::reset();
@@ -295,7 +280,7 @@ reset() {
   // and disallowing writes to T_back, we need to set T_front on
   // operations that might have had T_back set otherwise.
   GLboolean has_back;
-  glGetBooleanv(GL_DOUBLEBUFFER, &has_back);
+  GLP(GetBooleanv)(GL_DOUBLEBUFFER, &has_back);
   if (!has_back) {
     _buffer_mask &= ~RenderBuffer::T_back;
   }
@@ -307,13 +292,13 @@ reset() {
 
   // Check to see if we have stereo (and therefore a right buffer).
   GLboolean has_stereo;
-  glGetBooleanv(GL_STEREO, &has_stereo);
+  GLP(GetBooleanv)(GL_STEREO, &has_stereo);
   if (!has_stereo) {
     _buffer_mask &= ~RenderBuffer::T_right;
   }
 #endif
 
-  // Set up our clear values to invalid values, so the glClear* calls
+  // Set up our clear values to invalid values, so the GLP(Clear)* calls
   // will be made initially.
   _clear_color_red = -1.0f;
   _clear_color_green = -1.0f;
@@ -330,7 +315,7 @@ reset() {
   _draw_buffer_mode = (has_back) ? GL_BACK : GL_FRONT;
   _read_buffer_mode = (has_back) ? GL_BACK : GL_FRONT;
   _shade_model_mode = GL_SMOOTH;
-  glFrontFace(GL_CCW);
+  GLP(FrontFace)(GL_CCW);
 
   _scissor_x = 0;
   _scissor_y = 0;
@@ -375,7 +360,7 @@ reset() {
   _decal_level = 0;
 
   // Dither is on by default in GL; let's turn it off
-  glDisable(GL_DITHER);
+  GLP(Disable)(GL_DITHER);
   _dithering_enabled = false;
 
   // Antialiasing.
@@ -383,18 +368,18 @@ reset() {
   enable_multisample(true);
 
   // Should we normalize lighting normals?
-  if (gl_auto_normalize_lighting) {
-    glEnable(GL_NORMALIZE);
+  if (CLP(auto_normalize_lighting)) {
+    GLP(Enable)(GL_NORMALIZE);
   }
 
   // Count the max number of lights
   GLint max_lights;
-  glGetIntegerv(GL_MAX_LIGHTS, &max_lights);
+  GLP(GetIntegerv)(GL_MAX_LIGHTS, &max_lights);
   _max_lights = max_lights;
 
   // Count the max number of clipping planes
   GLint max_clip_planes;
-  glGetIntegerv(GL_MAX_CLIP_PLANES, &max_clip_planes);
+  GLP(GetIntegerv)(GL_MAX_CLIP_PLANES, &max_clip_planes);
   _max_clip_planes = max_clip_planes;
 
   _current_projection_mat = LMatrix4f::ident_mat();
@@ -415,34 +400,34 @@ reset() {
   Material empty;
   apply_material(&empty);
 
-  if (gl_cheap_textures) {
-    glgsg_cat.info()
-      << "Setting glHint() for fastest textures.\n";
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+  if (CLP(cheap_textures)) {
+    GLCAT.info()
+      << "Setting GLP(Hint)() for fastest textures.\n";
+    GLP(Hint)(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
   }
 
   // use per-vertex fog if per-pixel fog requires SW renderer
-  glHint(GL_FOG_HINT,GL_DONT_CARE);
+  GLP(Hint)(GL_FOG_HINT,GL_DONT_CARE);
 
   GLint iRedBits;
-  glGetIntegerv(GL_RED_BITS,&iRedBits);
+  GLP(GetIntegerv)(GL_RED_BITS,&iRedBits);
   if(iRedBits<24) {
-    glEnable(GL_DITHER);
+    GLP(Enable)(GL_DITHER);
     _dithering_enabled = true;
-    if(glgsg_cat.is_debug())
-        glgsg_cat.debug() << "frame buffer depth < 8bits channel, enabling dithering\n";
+    if(GLCAT.is_debug())
+        GLCAT.debug() << "frame buffer depth < 8bits channel, enabling dithering\n";
   }
   report_gl_errors();
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::clear
+//     Function: CLP(GraphicsStateGuardian)::clear
 //       Access: Public, Virtual
 //  Description: Clears all of the indicated buffers to their assigned
 //               colors.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 do_clear(const RenderBuffer &buffer) {
   //  DO_PSTATS_STUFF(PStatTimer timer(_win->_clear_pcollector);)
   nassertv(buffer._gsg == this);
@@ -486,38 +471,38 @@ do_clear(const RenderBuffer &buffer) {
   }
 
 #ifdef GSG_VERBOSE
-  glgsg_cat.spam() << "glClear(";
+  GLCAT.spam() << "glClear(";
   if (mask & GL_COLOR_BUFFER_BIT) {
-    glgsg_cat.spam(false) << "GL_COLOR_BUFFER_BIT|";
+    GLCAT.spam(false) << "GL_COLOR_BUFFER_BIT|";
   }
   if (mask & GL_DEPTH_BUFFER_BIT) {
-    glgsg_cat.spam(false) << "GL_DEPTH_BUFFER_BIT|";
+    GLCAT.spam(false) << "GL_DEPTH_BUFFER_BIT|";
   }
   if (mask & GL_STENCIL_BUFFER_BIT) {
-    glgsg_cat.spam(false) << "GL_STENCIL_BUFFER_BIT|";
+    GLCAT.spam(false) << "GL_STENCIL_BUFFER_BIT|";
   }
   if (mask & GL_ACCUM_BUFFER_BIT) {
-    glgsg_cat.spam(false) << "GL_ACCUM_BUFFER_BIT|";
+    GLCAT.spam(false) << "GL_ACCUM_BUFFER_BIT|";
   }
-  glgsg_cat.spam(false) << ")" << endl;
+  GLCAT.spam(false) << ")" << endl;
 #endif
 
   modify_state(state);
 
-  glClear(mask);
+  GLP(Clear)(mask);
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::prepare_display_region
+//     Function: CLP(GraphicsStateGuardian)::prepare_display_region
 //       Access: Public, Virtual
 //  Description: Prepare a display region for rendering (set up
 //       scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 prepare_display_region() {
   if (_current_display_region == (DisplayRegion*)0L) {
-    glgsg_cat.error()
+    GLCAT.error()
       << "Invalid NULL display region in prepare_display_region()\n";
     enable_scissor(false);
 
@@ -539,7 +524,7 @@ prepare_display_region() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::prepare_lens
+//     Function: CLP(GraphicsStateGuardian)::prepare_lens
 //       Access: Public, Virtual
 //  Description: Makes the current lens (whichever lens was most
 //               recently specified with push_lens()) active, so that
@@ -551,7 +536,7 @@ prepare_display_region() {
 //               The return value is true if the lens is acceptable,
 //               false if it is not.
 ////////////////////////////////////////////////////////////////////
-bool GLGraphicsStateGuardian::
+bool CLP(GraphicsStateGuardian)::
 prepare_lens() {
   if (_current_lens == (Lens *)NULL) {
     return false;
@@ -575,11 +560,11 @@ prepare_lens() {
     projection_mat;
 
 #ifdef GSG_VERBOSE
-  glgsg_cat.spam()
+  GLCAT.spam()
     << "glMatrixMode(GL_PROJECTION): " << new_projection_mat << endl;
 #endif
-  glMatrixMode(GL_PROJECTION);
-  glLoadMatrixf(new_projection_mat.get_data());
+  GLP(MatrixMode)(GL_PROJECTION);
+  GLP(LoadMatrixf)(new_projection_mat.get_data());
   report_gl_errors();
 
   return true;
@@ -598,7 +583,7 @@ prepare_lens() {
 //               case nothing will be drawn and end_frame() will not
 //               be called).
 ////////////////////////////////////////////////////////////////////
-bool GLGraphicsStateGuardian::
+bool CLP(GraphicsStateGuardian)::
 begin_frame() {
   if (!GraphicsStateGuardian::begin_frame()) {
     return false;
@@ -609,27 +594,27 @@ begin_frame() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::end_frame
+//     Function: CLP(GraphicsStateGuardian)::end_frame
 //       Access: Public, Virtual
 //  Description: Called after each frame is rendered, to allow the
 //               GSG a chance to do any internal cleanup after
 //               rendering the frame, and before the window flips.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 end_frame() {
   GraphicsStateGuardian::end_frame();
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_point
+//     Function: CLP(GraphicsStateGuardian)::draw_point
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_point(GeomPoint *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.spam() << "draw_point()" << endl;
+  GLCAT.spam() << "draw_point()" << endl;
 #endif
 #ifdef DO_PSTATS
   PStatTimer timer(_draw_primitive_pcollector);
@@ -663,7 +648,7 @@ draw_point(GeomPoint *geom, GeomContext *) {
   issuer.issue_color(G_OVERALL, ci);
   issuer.issue_normal(G_OVERALL, ni);
 
-  glBegin(GL_POINTS);
+  GLP(Begin)(GL_POINTS);
 
   for (int i = 0; i < nprims; i++) {
     // Draw per primitive
@@ -677,19 +662,19 @@ draw_point(GeomPoint *geom, GeomContext *) {
     issuer.issue_vertex(G_PER_VERTEX, vi);
   }
 
-  glEnd();
+  GLP(End)();
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_line
+//     Function: CLP(GraphicsStateGuardian)::draw_line
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_line(GeomLine *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.spam() << "draw_line()" << endl;
+  GLCAT.spam() << "draw_line()" << endl;
 #endif
 #ifdef DO_PSTATS
   PStatTimer timer(_draw_primitive_pcollector);
@@ -732,7 +717,7 @@ draw_line(GeomLine *geom, GeomContext *) {
   issuer.issue_color(G_OVERALL, ci);
   issuer.issue_normal(G_OVERALL, ni);
 
-  glBegin(GL_LINES);
+  GLP(Begin)(GL_LINES);
 
   for (int i = 0; i < nprims; i++) {
     // Draw per primitive
@@ -748,19 +733,19 @@ draw_line(GeomLine *geom, GeomContext *) {
     }
   }
 
-  glEnd();
+  GLP(End)();
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_linestrip
+//     Function: CLP(GraphicsStateGuardian)::draw_linestrip
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_linestrip(GeomLinestrip *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.spam() << "draw_linestrip()" << endl;
+  GLCAT.spam() << "draw_linestrip()" << endl;
 #endif
 
 #ifdef DO_PSTATS
@@ -815,7 +800,7 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
     int num_verts = *(plen++);
     nassertv(num_verts >= 2);
 
-    glBegin(GL_LINE_STRIP);
+    GLP(Begin)(GL_LINE_STRIP);
 
     // Per-component attributes for the first line segment?
     issuer.issue_color(G_PER_COMPONENT, ci);
@@ -843,14 +828,14 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
       issuer.issue_texcoord(G_PER_VERTEX, ti);
       issuer.issue_vertex(G_PER_VERTEX, vi);
     }
-    glEnd();
+    GLP(End)();
   }
   report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_sprite
+//     Function: CLP(GraphicsStateGuardian)::draw_sprite
 //       Access: Public, Virtual
 //  Description: CSN, 7/11/00
 ////////////////////////////////////////////////////////////////////
@@ -875,7 +860,7 @@ struct draw_sprite_vertex_less {
     return v0._v[2] < v1._v[2]; }
 };
 
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_sprite(GeomSprite *geom, GeomContext *) {
   // this is a little bit of a mess, but it's ok.  Here's the deal:
   // we want to draw, and draw quickly, an arbitrarily large number
@@ -890,7 +875,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   // by hand and apply the inverse frustum to the transformed point.
   // For some cracked out reason, this actually works.
 #ifdef GSG_VERBOSE
-  glgsg_cat.spam() << "draw_sprite()" << endl;
+  GLCAT.spam() << "draw_sprite()" << endl;
 #endif
 
   // get the array traversal set up.
@@ -931,8 +916,8 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   // ratio built in.
 
   // load up our own matrices
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
+  GLP(MatrixMode)(GL_MODELVIEW);
+  GLP(LoadIdentity)();
 
   // precomputation stuff
   float tex_left = geom->get_ll_uv()[0];
@@ -1046,13 +1031,13 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
          draw_sprite_vertex_less());
 
      if (_dithering_enabled)
-         glDisable(GL_DITHER);
+         GLP(Disable)(GL_DITHER);
   }
 
   Vertexf ul, ur, ll, lr;
 
   if (color_overall)
-    glColor4fv(geom->get_next_color(ci).get_data());
+    GLP(Color4fv)(geom->get_next_color(ci).get_data());
 
   ////////////////////////////////////////////////////////////////////////////
   // INNER LOOP PART 2 STARTS HERE
@@ -1100,23 +1085,23 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 
     // set the color
     if (color_overall == false)
-      glColor4fv(cur_image._c.get_data());
+      GLP(Color4fv)(cur_image._c.get_data());
 
     // draw each one as a 2-element tri-strip
-    glBegin(GL_TRIANGLE_STRIP);
-    glNormal3f(0.0f, 0.0f, 1.0f);
-    glTexCoord2f(tex_left, tex_bottom);  glVertex3fv(ll.get_data());
-    glTexCoord2f(tex_right, tex_bottom); glVertex3fv(lr.get_data());
-    glTexCoord2f(tex_left, tex_top);     glVertex3fv(ul.get_data());
-    glTexCoord2f(tex_right, tex_top);    glVertex3fv(ur.get_data());
-    glEnd();
+    GLP(Begin)(GL_TRIANGLE_STRIP);
+    GLP(Normal3f)(0.0f, 0.0f, 1.0f);
+    GLP(TexCoord2f)(tex_left, tex_bottom);  GLP(Vertex3fv)(ll.get_data());
+    GLP(TexCoord2f)(tex_right, tex_bottom); GLP(Vertex3fv)(lr.get_data());
+    GLP(TexCoord2f)(tex_left, tex_top);     GLP(Vertex3fv)(ul.get_data());
+    GLP(TexCoord2f)(tex_right, tex_top);    GLP(Vertex3fv)(ur.get_data());
+    GLP(End)();
   }
 
   // restore the matrices
-  glLoadMatrixf(modelview_mat.get_data());
+  GLP(LoadMatrixf)(modelview_mat.get_data());
 
   if(alpha && _dithering_enabled)
-     glEnable(GL_DITHER);
+     GLP(Enable)(GL_DITHER);
 
   report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
@@ -1124,14 +1109,14 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_polygon
+//     Function: CLP(GraphicsStateGuardian)::draw_polygon
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_polygon(GeomPolygon *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.spam() << "draw_polygon()" << endl;
+  GLCAT.spam() << "draw_polygon()" << endl;
 #endif
 
 #ifdef DO_PSTATS
@@ -1185,7 +1170,7 @@ draw_polygon(GeomPolygon *geom, GeomContext *) {
     int num_verts = *(plen++);
     nassertv(num_verts >= 3);
 
-    glBegin(GL_POLYGON);
+    GLP(Begin)(GL_POLYGON);
 
     // Draw the vertices.
     int v;
@@ -1196,21 +1181,21 @@ draw_polygon(GeomPolygon *geom, GeomContext *) {
       issuer.issue_texcoord(G_PER_VERTEX, ti);
       issuer.issue_vertex(G_PER_VERTEX, vi);
     }
-    glEnd();
+    GLP(End)();
   }
   report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_tri
+//     Function: CLP(GraphicsStateGuardian)::draw_tri
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_tri(GeomTri *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.spam() << "draw_tri()" << endl;
+  GLCAT.spam() << "draw_tri()" << endl;
 #endif
 
 #ifdef DO_PSTATS
@@ -1255,7 +1240,7 @@ draw_tri(GeomTri *geom, GeomContext *) {
   issuer.issue_color(G_OVERALL, ci);
   issuer.issue_normal(G_OVERALL, ni);
 
-  glBegin(GL_TRIANGLES);
+  GLP(Begin)(GL_TRIANGLES);
 
   for (int i = 0; i < nprims; i++) {
     // Draw per primitive
@@ -1271,7 +1256,7 @@ draw_tri(GeomTri *geom, GeomContext *) {
     }
   }
 
-  glEnd();
+  GLP(End)();
   report_gl_errors();
 #ifdef DO_PSTATS
   _draw_primitive_pcollector.stop();
@@ -1279,14 +1264,14 @@ draw_tri(GeomTri *geom, GeomContext *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_quad
+//     Function: CLP(GraphicsStateGuardian)::draw_quad
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_quad(GeomQuad *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.spam() << "draw_quad()" << endl;
+  GLCAT.spam() << "draw_quad()" << endl;
 #endif
 
 #ifdef DO_PSTATS
@@ -1331,7 +1316,7 @@ draw_quad(GeomQuad *geom, GeomContext *) {
   issuer.issue_color(G_OVERALL, ci);
   issuer.issue_normal(G_OVERALL, ni);
 
-  glBegin(GL_QUADS);
+  GLP(Begin)(GL_QUADS);
 
   for (int i = 0; i < nprims; i++) {
     // Draw per primitive
@@ -1347,20 +1332,20 @@ draw_quad(GeomQuad *geom, GeomContext *) {
     }
   }
 
-  glEnd();
+  GLP(End)();
   report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_tristrip
+//     Function: CLP(GraphicsStateGuardian)::draw_tristrip
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_tristrip(GeomTristrip *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.spam() << "draw_tristrip()" << endl;
+  GLCAT.spam() << "draw_tristrip()" << endl;
 #endif
 
 #ifdef DO_PSTATS
@@ -1414,7 +1399,7 @@ draw_tristrip(GeomTristrip *geom, GeomContext *) {
     int num_verts = *(plen++);
     nassertv(num_verts >= 3);
 
-    glBegin(GL_TRIANGLE_STRIP);
+    GLP(Begin)(GL_TRIANGLE_STRIP);
 
     // Per-component attributes for the first triangle?
     issuer.issue_color(G_PER_COMPONENT, ci);
@@ -1442,21 +1427,21 @@ draw_tristrip(GeomTristrip *geom, GeomContext *) {
       issuer.issue_texcoord(G_PER_VERTEX, ti);
       issuer.issue_vertex(G_PER_VERTEX, vi);
     }
-    glEnd();
+    GLP(End)();
   }
   report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_trifan
+//     Function: CLP(GraphicsStateGuardian)::draw_trifan
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_trifan(GeomTrifan *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.spam() << "draw_trifan()" << endl;
+  GLCAT.spam() << "draw_trifan()" << endl;
 #endif
 
 #ifdef DO_PSTATS
@@ -1510,7 +1495,7 @@ draw_trifan(GeomTrifan *geom, GeomContext *) {
     int num_verts = *(plen++);
     nassertv(num_verts >= 3);
 
-    glBegin(GL_TRIANGLE_FAN);
+    GLP(Begin)(GL_TRIANGLE_FAN);
 
     // Per-component attributes for the first triangle?
     issuer.issue_color(G_PER_COMPONENT, ci);
@@ -1538,7 +1523,7 @@ draw_trifan(GeomTrifan *geom, GeomContext *) {
       issuer.issue_texcoord(G_PER_VERTEX, ti);
       issuer.issue_vertex(G_PER_VERTEX, vi);
     }
-    glEnd();
+    GLP(End)();
   }
   report_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
@@ -1546,14 +1531,14 @@ draw_trifan(GeomTrifan *geom, GeomContext *) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_sphere
+//     Function: CLP(GraphicsStateGuardian)::draw_sphere
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_sphere(GeomSphere *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.spam() << "draw_sphere()" << endl;
+  GLCAT.spam() << "draw_sphere()" << endl;
 #endif
 
 #ifdef DO_PSTATS
@@ -1615,15 +1600,15 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
     // Since gluSphere doesn't have a center parameter, we have to use
     // a matrix transform.
 
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glMultMatrixf(LMatrix4f::translate_mat(center).get_data());
+    GLP(MatrixMode)(GL_MODELVIEW);
+    GLP(PushMatrix)();
+    GLP(MultMatrixf)(LMatrix4f::translate_mat(center).get_data());
 
     // Now render the sphere using GLU calls.
     gluSphere(sph, r, 16, 10);
 
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
+    GLP(MatrixMode)(GL_MODELVIEW);
+    GLP(PopMatrix)();
   }
 
   gluDeleteQuadric(sph);
@@ -1632,7 +1617,7 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::prepare_texture
+//     Function: CLP(GraphicsStateGuardian)::prepare_texture
 //       Access: Public, Virtual
 //  Description: Creates a new retained-mode representation of the
 //               given texture, and returns a newly-allocated
@@ -1641,13 +1626,13 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
 //               call release_texture() with this same pointer (which
 //               will also delete the pointer).
 ////////////////////////////////////////////////////////////////////
-TextureContext *GLGraphicsStateGuardian::
+TextureContext *CLP(GraphicsStateGuardian)::
 prepare_texture(Texture *tex) {
-  GLTextureContext *gtc = new GLTextureContext(tex);
-  glGenTextures(1, &gtc->_index);
+  CLP(TextureContext) *gtc = new CLP(TextureContext)(tex);
+  GLP(GenTextures)(1, &gtc->_index);
 
   bind_texture(gtc);
-  glPrioritizeTextures(1, &gtc->_index, &gtc->_priority);
+  GLP(PrioritizeTextures)(1, &gtc->_index, &gtc->_priority);
   specify_texture(tex);
   apply_texture_immediate(tex);
 
@@ -1663,12 +1648,12 @@ prepare_texture(Texture *tex) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_texture
+//     Function: CLP(GraphicsStateGuardian)::apply_texture
 //       Access: Public, Virtual
 //  Description: Makes the texture the currently available texture for
 //               rendering.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 apply_texture(TextureContext *tc) {
   add_to_texture_record(tc);
   bind_texture(tc);
@@ -1689,20 +1674,20 @@ apply_texture(TextureContext *tc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::release_texture
+//     Function: CLP(GraphicsStateGuardian)::release_texture
 //       Access: Public, Virtual
 //  Description: Frees the GL resources previously allocated for the
 //               texture.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 release_texture(TextureContext *tc) {
-  GLTextureContext *gtc = DCAST(GLTextureContext, tc);
+  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
   Texture *tex = tc->_texture;
 
   if (!_closing_gsg) {
     // Don't bother to delete the GL texture if we're about to destroy
     // the context anyway.
-    glDeleteTextures(1, &gtc->_index);
+    GLP(DeleteTextures)(1, &gtc->_index);
   }
   gtc->_index = 0;
 
@@ -1721,7 +1706,7 @@ release_texture(TextureContext *tc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::prepare_geom_node
+//     Function: CLP(GraphicsStateGuardian)::prepare_geom_node
 //       Access: Public, Virtual
 //  Description: Prepares the indicated GeomNode for retained-mode
 //               rendering.  If this function returns non-NULL, the
@@ -1729,7 +1714,7 @@ release_texture(TextureContext *tc) {
 //               to draw_geom_node(), which is expected to draw the
 //               contents of the node.
 ////////////////////////////////////////////////////////////////////
-GeomNodeContext *GLGraphicsStateGuardian::
+GeomNodeContext *CLP(GraphicsStateGuardian)::
 prepare_geom_node(GeomNode *node) {
 #if 0  // temporarily disabled until we bring to new scene graph
 
@@ -1749,10 +1734,10 @@ prepare_geom_node(GeomNode *node) {
   }
 
   // Ok, we've got something; use it.
-  GLGeomNodeContext *ggnc = new GLGeomNodeContext(node);
-  ggnc->_index = glGenLists(1);
+  CLP(GeomNodeContext) *ggnc = new CLP(GeomNodeContext)(node);
+  ggnc->_index = GLP(GenLists)(1);
   if (ggnc->_index == 0) {
-    glgsg_cat.error()
+    GLCAT.error()
       << "Ran out of display list indices.\n";
     delete ggnc;
     return (GeomNodeContext *)NULL;
@@ -1779,7 +1764,7 @@ prepare_geom_node(GeomNode *node) {
 #endif
 
   // Now define the display list.
-  glNewList(ggnc->_index, GL_COMPILE);
+  GLP(NewList)(ggnc->_index, GL_COMPILE);
   for (i = 0; i < num_geoms; i++) {
     dDrawable *geom = node->get_geom(i);
     if (geom->is_dynamic()) {
@@ -1792,7 +1777,7 @@ prepare_geom_node(GeomNode *node) {
       geom->draw(this);
     }
   }
-  glEndList();
+  GLP(EndList)();
 
 #ifdef DO_PSTATS
   float num_verts_after = 
@@ -1821,12 +1806,12 @@ prepare_geom_node(GeomNode *node) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_geom_node
+//     Function: CLP(GraphicsStateGuardian)::draw_geom_node
 //       Access: Public, Virtual
 //  Description: Draws a GeomNode previously indicated by a call to
 //               prepare_geom_node().
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_geom_node(GeomNode *node, const RenderState *state,
                GeomNodeContext *gnc) {
 #if 0  // temporarily disabled until we bring to new scene graph
@@ -1841,8 +1826,8 @@ draw_geom_node(GeomNode *node, const RenderState *state,
   } else {
     // We do have a saved context; use it.
     add_to_geom_node_record(gnc);
-    GLGeomNodeContext *ggnc = DCAST(GLGeomNodeContext, gnc);
-    glCallList(ggnc->_index);
+    CLP(GeomNodeContext) *ggnc = DCAST(CLP(GeomNodeContext), gnc);
+    GLP(CallList)(ggnc->_index);
 
 #ifdef DO_PSTATS 
     PStatTimer timer(_draw_primitive_pcollector);
@@ -1859,18 +1844,18 @@ draw_geom_node(GeomNode *node, const RenderState *state,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::release_geom_node
+//     Function: CLP(GraphicsStateGuardian)::release_geom_node
 //       Access: Public, Virtual
 //  Description: Frees the resources previously allocated via a call
 //               to prepare_geom_node(), including deleting the
 //               GeomNodeContext itself, if necessary.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 release_geom_node(GeomNodeContext *gnc) {
 #if 0  // temporarily disabled until we bring to new scene graph
   if (gnc != (GeomNodeContext *)NULL) {
-    GLGeomNodeContext *ggnc = DCAST(GLGeomNodeContext, gnc);
-    glDeleteLists(ggnc->_index, 1);
+    CLP(GeomNodeContext) *ggnc = DCAST(CLP(GeomNodeContext), gnc);
+    GLP(DeleteLists)(ggnc->_index, 1);
 
     bool erased = unmark_prepared_geom_node(ggnc);
 
@@ -1900,12 +1885,12 @@ static int binary_log_cap(const int x) {
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::copy_texture
+//     Function: CLP(GraphicsStateGuardian)::copy_texture
 //       Access: Public, Virtual
 //  Description: Copy the pixel region indicated by the display
 //               region from the framebuffer into texture memory
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 copy_texture(TextureContext *tc, const DisplayRegion *dr) {
   nassertv(tc != NULL && dr != NULL);
   Texture *tex = tc->_texture;
@@ -1938,7 +1923,7 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 
   bind_texture(tc);
 
-  glCopyTexImage2D(GL_TEXTURE_2D, 0,
+  GLP(CopyTexImage2D)(GL_TEXTURE_2D, 0,
                    get_internal_image_format(pb->get_format()),
                    xo, yo, w, h, pb->get_border());
 
@@ -1947,22 +1932,22 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::copy_texture
+//     Function: CLP(GraphicsStateGuardian)::copy_texture
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 copy_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb) {
   set_read_buffer(rb);
   copy_texture(tc, dr);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::texture_to_pixel_buffer
+//     Function: CLP(GraphicsStateGuardian)::texture_to_pixel_buffer
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
   // This code is now invalidated by the new design; perhaps the
   // interface is not needed anyway.
@@ -1987,11 +1972,11 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::texture_to_pixel_buffer
+//     Function: CLP(GraphicsStateGuardian)::texture_to_pixel_buffer
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
                         const DisplayRegion *dr) {
   nassertv(tc != NULL && pb != NULL && dr != NULL);
@@ -2013,17 +1998,17 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::copy_pixel_buffer
+//     Function: CLP(GraphicsStateGuardian)::copy_pixel_buffer
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool GLGraphicsStateGuardian::
+bool CLP(GraphicsStateGuardian)::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   nassertr(pb != NULL && dr != NULL, false);
   set_pack_alignment(1);
 
   // Bug fix for RE, RE2, and VTX - need to disable texturing in order
-  // for glReadPixels() to work
+  // for GLP(ReadPixels)() to work
   // NOTE: reading the depth buffer is *much* slower than reading the
   // color buffer
   modify_state(get_untextured_state());
@@ -2034,51 +2019,51 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   GLenum external_format = get_external_image_format(pb->get_format());
 
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug()
+  GLCAT.debug()
     << "glReadPixels(" << pb->get_xorg() << ", " << pb->get_yorg()
     << ", " << pb->get_xsize() << ", " << pb->get_ysize()
     << ", ";
   switch (external_format) {
   case GL_DEPTH_COMPONENT:
-    glgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, ";
+    GLCAT.debug(false) << "GL_DEPTH_COMPONENT, ";
     break;
   case GL_RGB:
-    glgsg_cat.debug(false) << "GL_RGB, ";
+    GLCAT.debug(false) << "GL_RGB, ";
     break;
   case GL_RGBA:
-    glgsg_cat.debug(false) << "GL_RGBA, ";
+    GLCAT.debug(false) << "GL_RGBA, ";
     break;
 #ifdef GL_BGR
   case GL_BGR:
-    glgsg_cat.debug(false) << "GL_BGR, ";
+    GLCAT.debug(false) << "GL_BGR, ";
     break;
   case GL_BGRA:
-    glgsg_cat.debug(false) << "GL_BGRA, ";
+    GLCAT.debug(false) << "GL_BGRA, ";
     break;
 #endif  // GL_BGR
   default:
-    glgsg_cat.debug(false) << "unknown, ";
+    GLCAT.debug(false) << "unknown, ";
     break;
   }
   switch (get_image_type(pb->get_image_type())) {
   case GL_UNSIGNED_BYTE:
-    glgsg_cat.debug(false) << "GL_UNSIGNED_BYTE, ";
+    GLCAT.debug(false) << "GL_UNSIGNED_BYTE, ";
     break;
   case GL_FLOAT:
-    glgsg_cat.debug(false) << "GL_FLOAT, ";
+    GLCAT.debug(false) << "GL_FLOAT, ";
     break;
   default:
-    glgsg_cat.debug(false) << "unknown, ";
+    GLCAT.debug(false) << "unknown, ";
     break;
   }
-  glgsg_cat.debug(false)
+  GLCAT.debug(false)
     << (void *)pb->_image.p() << ")" << endl;
 #endif
 
   // pixelbuffer "origin" represents upper left screen point at which
   // pixelbuffer should be drawn using draw_pixel_buffer
   nassertr(!pb->_image.empty(), false);
-  glReadPixels(pb->get_xorg() + xo, pb->get_yorg() + yo,
+  GLP(ReadPixels)(pb->get_xorg() + xo, pb->get_yorg() + yo,
                pb->get_xsize(), pb->get_ysize(),
                external_format,
                get_image_type(pb->get_image_type()),
@@ -2093,11 +2078,11 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::copy_pixel_buffer
+//     Function: CLP(GraphicsStateGuardian)::copy_pixel_buffer
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool GLGraphicsStateGuardian::
+bool CLP(GraphicsStateGuardian)::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                   const RenderBuffer &rb) {
   set_read_buffer(rb);
@@ -2105,43 +2090,43 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_material
+//     Function: CLP(GraphicsStateGuardian)::apply_material
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::apply_material(const Material *material) {
+void CLP(GraphicsStateGuardian)::apply_material(const Material *material) {
   GLenum face = material->get_twoside() ? GL_FRONT_AND_BACK : GL_FRONT;
 
-  glMaterialfv(face, GL_SPECULAR, material->get_specular().get_data());
-  glMaterialfv(face, GL_EMISSION, material->get_emission().get_data());
-  glMaterialf(face, GL_SHININESS, material->get_shininess());
+  GLP(Materialfv)(face, GL_SPECULAR, material->get_specular().get_data());
+  GLP(Materialfv)(face, GL_EMISSION, material->get_emission().get_data());
+  GLP(Materialf)(face, GL_SHININESS, material->get_shininess());
 
   if (material->has_ambient() && material->has_diffuse()) {
     // The material has both an ambient and diffuse specified.  This
     // means we do not need glMaterialColor().
-    glDisable(GL_COLOR_MATERIAL);
-    glMaterialfv(face, GL_AMBIENT, material->get_ambient().get_data());
-    glMaterialfv(face, GL_DIFFUSE, material->get_diffuse().get_data());
+    GLP(Disable)(GL_COLOR_MATERIAL);
+    GLP(Materialfv)(face, GL_AMBIENT, material->get_ambient().get_data());
+    GLP(Materialfv)(face, GL_DIFFUSE, material->get_diffuse().get_data());
 
   } else if (material->has_ambient()) {
     // The material specifies an ambient, but not a diffuse component.
     // The diffuse component comes from the object's color.
-    glMaterialfv(face, GL_AMBIENT, material->get_ambient().get_data());
-    glColorMaterial(face, GL_DIFFUSE);
-    glEnable(GL_COLOR_MATERIAL);
+    GLP(Materialfv)(face, GL_AMBIENT, material->get_ambient().get_data());
+    GLP(ColorMaterial)(face, GL_DIFFUSE);
+    GLP(Enable)(GL_COLOR_MATERIAL);
 
   } else if (material->has_diffuse()) {
     // The material specifies a diffuse, but not an ambient component.
     // The ambient component comes from the object's color.
-    glMaterialfv(face, GL_DIFFUSE, material->get_diffuse().get_data());
-    glColorMaterial(face, GL_AMBIENT);
-    glEnable(GL_COLOR_MATERIAL);
+    GLP(Materialfv)(face, GL_DIFFUSE, material->get_diffuse().get_data());
+    GLP(ColorMaterial)(face, GL_AMBIENT);
+    GLP(Enable)(GL_COLOR_MATERIAL);
 
   } else {
     // The material specifies neither a diffuse nor an ambient
     // component.  Both components come from the object's color.
-    glColorMaterial(face, GL_AMBIENT_AND_DIFFUSE);
-    glEnable(GL_COLOR_MATERIAL);
+    GLP(ColorMaterial)(face, GL_AMBIENT_AND_DIFFUSE);
+    GLP(Enable)(GL_COLOR_MATERIAL);
   }
 
   call_glLightModelLocal(material->get_local());
@@ -2150,11 +2135,11 @@ void GLGraphicsStateGuardian::apply_material(const Material *material) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_fog
+//     Function: CLP(GraphicsStateGuardian)::apply_fog
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 apply_fog(Fog *fog) {
   Fog::Mode fmode = fog->get_mode();
   call_glFogMode(get_fog_mode_type(fmode));
@@ -2175,42 +2160,42 @@ apply_fog(Fog *fog) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_transform
+//     Function: CLP(GraphicsStateGuardian)::issue_transform
 //       Access: Public, Virtual
 //  Description: Sends the indicated transform matrix to the graphics
 //               API to be applied to future vertices.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 issue_transform(const TransformState *transform) {
 #ifdef GSG_VERBOSE
-  glgsg_cat.spam()
+  GLCAT.spam()
     << "glLoadMatrix(GL_MODELVIEW): " << transform->get_mat() << endl;
 #endif
   DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
-  glMatrixMode(GL_MODELVIEW);
-  glLoadMatrixf(transform->get_mat().get_data());
+  GLP(MatrixMode)(GL_MODELVIEW);
+  GLP(LoadMatrixf)(transform->get_mat().get_data());
 
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_tex_matrix
+//     Function: CLP(GraphicsStateGuardian)::issue_tex_matrix
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 issue_tex_matrix(const TexMatrixAttrib *attrib) {
-  glMatrixMode(GL_TEXTURE);
-  glLoadMatrixf(attrib->get_mat().get_data());
+  GLP(MatrixMode)(GL_TEXTURE);
+  GLP(LoadMatrixf)(attrib->get_mat().get_data());
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_texture
+//     Function: CLP(GraphicsStateGuardian)::issue_texture
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 issue_texture(const TextureAttrib *attrib) {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
   if (attrib->is_off()) {
@@ -2225,11 +2210,11 @@ issue_texture(const TextureAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_material
+//     Function: CLP(GraphicsStateGuardian)::issue_material
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 issue_material(const MaterialAttrib *attrib) {
   const Material *material = attrib->get_material();
   if (material != (const Material *)NULL) {
@@ -2243,11 +2228,11 @@ issue_material(const MaterialAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_render_mode
+//     Function: CLP(GraphicsStateGuardian)::issue_render_mode
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 issue_render_mode(const RenderModeAttrib *attrib) {
   RenderModeAttrib::Mode mode = attrib->get_mode();
 
@@ -2262,47 +2247,47 @@ issue_render_mode(const RenderModeAttrib *attrib) {
     break;
 
   default:
-    glgsg_cat.error()
+    GLCAT.error()
       << "Unknown render mode " << (int)mode << endl;
   }
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_texture_apply
+//     Function: CLP(GraphicsStateGuardian)::issue_texture_apply
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 issue_texture_apply(const TextureApplyAttrib *attrib) {
   GLint glmode = get_texture_apply_mode_type(attrib->get_mode());
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);
+  GLP(TexEnvi)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_color_write
+//     Function: CLP(GraphicsStateGuardian)::issue_color_write
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 issue_color_write(const ColorWriteAttrib *attrib) {
   // If we did not override this function, the default implementation
   // would achieve turning off color writes by changing the blend mode
   // in set_blend_mode().  However, since GL does support an easy way
   // to disable writes to the color buffer, we can take advantage of
   // it here.
-  if (gl_color_mask) {
+  if (CLP(color_mask)) {
     ColorWriteAttrib::Mode mode = attrib->get_mode();
     if (mode == ColorWriteAttrib::M_off) {
-      glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+      GLP(ColorMask)(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     } else {
-      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     }
     report_gl_errors();
 
   } else {
-    // Some implementations don't seem to handle glColorMask() very
+    // Some implementations don't seem to handle GLP(ColorMask)() very
     // robustly, however, so we provide this fallback.
     GraphicsStateGuardian::issue_color_write(attrib);
   }
@@ -2312,28 +2297,28 @@ issue_color_write(const ColorWriteAttrib *attrib) {
 #define PANDA_TO_GL_COMPAREFUNC(PANDACMPFUNC) (PANDACMPFUNC-1 +0x200)
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_depth_test
+//     Function: CLP(GraphicsStateGuardian)::issue_depth_test
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 issue_depth_test(const DepthTestAttrib *attrib) {
   DepthTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == DepthTestAttrib::M_none) {
     enable_depth_test(false);
   } else {
     enable_depth_test(true);
-    glDepthFunc(PANDA_TO_GL_COMPAREFUNC(mode));
+    GLP(DepthFunc)(PANDA_TO_GL_COMPAREFUNC(mode));
   }
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_alpha_test
+//     Function: CLP(GraphicsStateGuardian)::issue_alpha_test
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 issue_alpha_test(const AlphaTestAttrib *attrib) {
   AlphaTestAttrib::PandaCompareFunc mode = attrib->get_mode();
   if (mode == AlphaTestAttrib::M_none) {
@@ -2346,44 +2331,44 @@ issue_alpha_test(const AlphaTestAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_depth_write
+//     Function: CLP(GraphicsStateGuardian)::issue_depth_write
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 issue_depth_write(const DepthWriteAttrib *attrib) {
   DepthWriteAttrib::Mode mode = attrib->get_mode();
   if (mode == DepthWriteAttrib::M_off) {
-    glDepthMask(GL_FALSE);
+    GLP(DepthMask)(GL_FALSE);
   } else {
-    glDepthMask(GL_TRUE);
+    GLP(DepthMask)(GL_TRUE);
   }
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_cull_face
+//     Function: CLP(GraphicsStateGuardian)::issue_cull_face
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 issue_cull_face(const CullFaceAttrib *attrib) {
   CullFaceAttrib::Mode mode = attrib->get_effective_mode();
 
   switch (mode) {
   case CullFaceAttrib::M_cull_none:
-    glDisable(GL_CULL_FACE);
+    GLP(Disable)(GL_CULL_FACE);
     break;
   case CullFaceAttrib::M_cull_clockwise:
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    GLP(Enable)(GL_CULL_FACE);
+    GLP(CullFace)(GL_BACK);
     break;
   case CullFaceAttrib::M_cull_counter_clockwise:
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
+    GLP(Enable)(GL_CULL_FACE);
+    GLP(CullFace)(GL_FRONT);
     break;
   default:
-    glgsg_cat.error()
+    GLCAT.error()
       << "invalid cull face mode " << (int)mode << endl;
     break;
   }
@@ -2391,11 +2376,11 @@ issue_cull_face(const CullFaceAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_fog
+//     Function: CLP(GraphicsStateGuardian)::issue_fog
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 issue_fog(const FogAttrib *attrib) {
   if (!attrib->is_off()) {
     enable_fog(true);
@@ -2409,18 +2394,18 @@ issue_fog(const FogAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_depth_offset
+//     Function: CLP(GraphicsStateGuardian)::issue_depth_offset
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 issue_depth_offset(const DepthOffsetAttrib *attrib) {
   int offset = attrib->get_offset();
 
   if (offset != 0) {
     // The relationship between these two parameters is a little
     // unclear and poorly explained in the GL man pages.
-    glPolygonOffset((GLfloat) -offset, (GLfloat) -offset);
+    GLP(PolygonOffset)((GLfloat) -offset, (GLfloat) -offset);
     enable_polygon_offset(true);
 
   } else {
@@ -2431,20 +2416,20 @@ issue_depth_offset(const DepthOffsetAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::bind_light
+//     Function: CLP(GraphicsStateGuardian)::bind_light
 //       Access: Public, Virtual
 //  Description: Called the first time a particular light has been
 //               bound to a given id within a frame, this should set
 //               up the associated hardware light with the light's
 //               properties.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 bind_light(PointLight *light, int light_id) {
   GLenum id = get_light_id(light_id);
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
-  glLightfv(id, GL_AMBIENT, black.get_data());
-  glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-  glLightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
+  GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
+  GLP(Lightfv)(id, GL_DIFFUSE, light->get_color().get_data());
+  GLP(Lightfv)(id, GL_SPECULAR, light->get_specular_color().get_data());
 
   // Position needs to specify x, y, z, and w
   // w == 1 implies non-infinite position
@@ -2453,39 +2438,39 @@ bind_light(PointLight *light, int light_id) {
   LPoint3f pos = light->get_point() * light_mat;
 
   LPoint4f fpos(pos[0], pos[1], pos[2], 1.0f);
-  glLightfv(id, GL_POSITION, fpos.get_data());
+  GLP(Lightfv)(id, GL_POSITION, fpos.get_data());
 
   // GL_SPOT_DIRECTION is not significant when cutoff == 180
 
   // Exponent == 0 implies uniform light distribution
-  glLightf(id, GL_SPOT_EXPONENT, 0.0f);
+  GLP(Lightf)(id, GL_SPOT_EXPONENT, 0.0f);
 
   // Cutoff == 180 means uniform point light source
-  glLightf(id, GL_SPOT_CUTOFF, 180.0f);
+  GLP(Lightf)(id, GL_SPOT_CUTOFF, 180.0f);
 
   const LVecBase3f &att = light->get_attenuation();
-  glLightf(id, GL_CONSTANT_ATTENUATION, att[0]);
-  glLightf(id, GL_LINEAR_ATTENUATION, att[1]);
-  glLightf(id, GL_QUADRATIC_ATTENUATION, att[2]);
+  GLP(Lightf)(id, GL_CONSTANT_ATTENUATION, att[0]);
+  GLP(Lightf)(id, GL_LINEAR_ATTENUATION, att[1]);
+  GLP(Lightf)(id, GL_QUADRATIC_ATTENUATION, att[2]);
 
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::bind_light
+//     Function: CLP(GraphicsStateGuardian)::bind_light
 //       Access: Public, Virtual
 //  Description: Called the first time a particular light has been
 //               bound to a given id within a frame, this should set
 //               up the associated hardware light with the light's
 //               properties.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 bind_light(DirectionalLight *light, int light_id) {
   GLenum id = get_light_id( light_id );
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
-  glLightfv(id, GL_AMBIENT, black.get_data());
-  glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-  glLightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
+  GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
+  GLP(Lightfv)(id, GL_DIFFUSE, light->get_color().get_data());
+  GLP(Lightfv)(id, GL_SPECULAR, light->get_specular_color().get_data());
 
   // Position needs to specify x, y, z, and w.
   // w == 0 implies light is at infinity
@@ -2493,44 +2478,44 @@ bind_light(DirectionalLight *light, int light_id) {
   const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_scene_root());
   LVector3f dir = light->get_direction() * light_mat;
   LPoint4f fdir(-dir[0], -dir[1], -dir[2], 0);
-  glLightfv(id, GL_POSITION, fdir.get_data());
+  GLP(Lightfv)(id, GL_POSITION, fdir.get_data());
 
   // GL_SPOT_DIRECTION is not significant when cutoff == 180
   // In this case, position x, y, z specifies direction
 
   // Exponent == 0 implies uniform light distribution
-  glLightf(id, GL_SPOT_EXPONENT, 0.0f);
+  GLP(Lightf)(id, GL_SPOT_EXPONENT, 0.0f);
 
   // Cutoff == 180 means uniform point light source
-  glLightf(id, GL_SPOT_CUTOFF, 180.0f);
+  GLP(Lightf)(id, GL_SPOT_CUTOFF, 180.0f);
 
   // Default attenuation values (only spotlight and point light can
   // modify these)
-  glLightf(id, GL_CONSTANT_ATTENUATION, 1.0f);
-  glLightf(id, GL_LINEAR_ATTENUATION, 0.0f);
-  glLightf(id, GL_QUADRATIC_ATTENUATION, 0.0f);
+  GLP(Lightf)(id, GL_CONSTANT_ATTENUATION, 1.0f);
+  GLP(Lightf)(id, GL_LINEAR_ATTENUATION, 0.0f);
+  GLP(Lightf)(id, GL_QUADRATIC_ATTENUATION, 0.0f);
 
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::bind_light
+//     Function: CLP(GraphicsStateGuardian)::bind_light
 //       Access: Public, Virtual
 //  Description: Called the first time a particular light has been
 //               bound to a given id within a frame, this should set
 //               up the associated hardware light with the light's
 //               properties.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 bind_light(Spotlight *light, int light_id) {
   Lens *lens = light->get_lens();
   nassertv(lens != (Lens *)NULL);
 
   GLenum id = get_light_id(light_id);
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
-  glLightfv(id, GL_AMBIENT, black.get_data());
-  glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
-  glLightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
+  GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
+  GLP(Lightfv)(id, GL_DIFFUSE, light->get_color().get_data());
+  GLP(Lightfv)(id, GL_SPECULAR, light->get_specular_color().get_data());
 
   // Position needs to specify x, y, z, and w
   // w == 1 implies non-infinite position
@@ -2540,55 +2525,55 @@ bind_light(Spotlight *light, int light_id) {
   LVector3f dir = lens->get_view_vector() * light_mat;
 
   LPoint4f fpos(pos[0], pos[1], pos[2], 1.0f);
-  glLightfv(id, GL_POSITION, fpos.get_data());
-  glLightfv(id, GL_SPOT_DIRECTION, dir.get_data());
+  GLP(Lightfv)(id, GL_POSITION, fpos.get_data());
+  GLP(Lightfv)(id, GL_SPOT_DIRECTION, dir.get_data());
 
-  glLightf(id, GL_SPOT_EXPONENT, light->get_exponent());
-  glLightf(id, GL_SPOT_CUTOFF, lens->get_hfov());
+  GLP(Lightf)(id, GL_SPOT_EXPONENT, light->get_exponent());
+  GLP(Lightf)(id, GL_SPOT_CUTOFF, lens->get_hfov());
 
   const LVecBase3f &att = light->get_attenuation();
-  glLightf(id, GL_CONSTANT_ATTENUATION, att[0]);
-  glLightf(id, GL_LINEAR_ATTENUATION, att[1]);
-  glLightf(id, GL_QUADRATIC_ATTENUATION, att[2]);
+  GLP(Lightf)(id, GL_CONSTANT_ATTENUATION, att[0]);
+  GLP(Lightf)(id, GL_LINEAR_ATTENUATION, att[1]);
+  GLP(Lightf)(id, GL_QUADRATIC_ATTENUATION, att[2]);
 
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::wants_normals
+//     Function: CLP(GraphicsStateGuardian)::wants_normals
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool GLGraphicsStateGuardian::
+bool CLP(GraphicsStateGuardian)::
 wants_normals() const {
   return (_lighting_enabled || _normals_enabled);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::wants_texcoords
+//     Function: CLP(GraphicsStateGuardian)::wants_texcoords
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool GLGraphicsStateGuardian::
+bool CLP(GraphicsStateGuardian)::
 wants_texcoords() const {
   return _texturing_enabled;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::depth_offset_decals
+//     Function: CLP(GraphicsStateGuardian)::depth_offset_decals
 //       Access: Public, Virtual
 //  Description: Returns true if this GSG can implement decals using a
 //               DepthOffsetAttrib, or false if that is unreliable
 //               and the three-step rendering process should be used
 //               instead.
 ////////////////////////////////////////////////////////////////////
-bool GLGraphicsStateGuardian::
+bool CLP(GraphicsStateGuardian)::
 depth_offset_decals() {
-  return gl_depth_offset_decals;
+  return CLP(depth_offset_decals);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_internal_coordinate_system
+//     Function: CLP(GraphicsStateGuardian)::get_internal_coordinate_system
 //       Access: Public, Virtual
 //  Description: Should be overridden by derived classes to return the
 //               coordinate system used internally by the GSG, if any
@@ -2600,22 +2585,22 @@ depth_offset_decals() {
 //               GraphicsEngine will automatically convert all
 //               transforms into the indicated coordinate system.
 ////////////////////////////////////////////////////////////////////
-CoordinateSystem GLGraphicsStateGuardian::
+CoordinateSystem CLP(GraphicsStateGuardian)::
 get_internal_coordinate_system() const {
   return CS_yup_right;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::compute_distance_to
+//     Function: CLP(GraphicsStateGuardian)::compute_distance_to
 //       Access: Public, Virtual
 //  Description: This function may only be called during a render
 //               traversal; it will compute the distance to the
 //               indicated point, assumed to be in modelview
 //               coordinates, from the camera plane.
 ////////////////////////////////////////////////////////////////////
-float GLGraphicsStateGuardian::
+float CLP(GraphicsStateGuardian)::
 compute_distance_to(const LPoint3f &point) const {
-  // In the case of a GLGraphicsStateGuardian, we know that the
+  // In the case of a CLP(GraphicsStateGuardian), we know that the
   // modelview matrix already includes the relative transform from the
   // camera, as well as a to-y-up conversion.  Thus, the distance to
   // the camera plane is simply the -z distance.
@@ -2630,7 +2615,7 @@ compute_distance_to(const LPoint3f &point) const {
 //               Don't call this function; use report_errors()
 //               instead.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 report_errors_loop(int line, const char *source_file, GLenum error_code) {
 #ifndef NDEBUG
   static const int max_gl_errors_reported = 20;
@@ -2638,29 +2623,29 @@ report_errors_loop(int line, const char *source_file, GLenum error_code) {
   while ((count < max_gl_errors_reported) && (error_code != GL_NO_ERROR)) {
     const GLubyte *error_string = gluErrorString(error_code);
     if (error_string != (const GLubyte *)NULL) {
-      glgsg_cat.error()
+      GLCAT.error()
         << "at " << line << " of " << source_file << ": " 
         << error_string << "\n";
     } else {
-      glgsg_cat.error()
+      GLCAT.error()
         << "at " << line << " of " << source_file << ": " 
         << "GL error " << (int)error_code << "\n";
     }
-    error_code = glGetError();
+    error_code = GLP(GetError)();
     count++;
   }
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::set_draw_buffer
+//     Function: CLP(GraphicsStateGuardian)::set_draw_buffer
 //       Access: Protected
-//  Description: Sets up the glDrawBuffer to render into the buffer
+//  Description: Sets up the GLP(DrawBuffer) to render into the buffer
 //               indicated by the RenderBuffer object.  This only sets
 //               up the color bits; it does not affect the depth,
 //               stencil, accum layers.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 set_draw_buffer(const RenderBuffer &rb) {
   switch (rb._buffer_type & RenderBuffer::T_color) {
   case RenderBuffer::T_front:
@@ -2702,14 +2687,14 @@ set_draw_buffer(const RenderBuffer &rb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::set_read_buffer
+//     Function: CLP(GraphicsStateGuardian)::set_read_buffer
 //       Access: Protected
-//  Description: Sets up the glReadBuffer to render into the buffer
+//  Description: Sets up the GLP(ReadBuffer) to render into the buffer
 //               indicated by the RenderBuffer object.  This only sets
 //               up the color bits; it does not affect the depth,
 //               stencil, accum layers.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 set_read_buffer(const RenderBuffer &rb) {
   switch (rb._buffer_type & RenderBuffer::T_color) {
   case RenderBuffer::T_front:
@@ -2752,45 +2737,45 @@ set_read_buffer(const RenderBuffer &rb) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::bind_texture
+//     Function: CLP(GraphicsStateGuardian)::bind_texture
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 bind_texture(TextureContext *tc) {
-  GLTextureContext *gtc = DCAST(GLTextureContext, tc);
+  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
 #ifdef GSG_VERBOSE
   Texture *tex = tc->_texture;
-  glgsg_cat.spam()
+  GLCAT.spam()
     << "glBindTexture(): " << tex->get_name() << "(" << (int)gtc->_index
     << ")" << endl;
 #endif
-  glBindTexture(GL_TEXTURE_2D, gtc->_index);
+  GLP(BindTexture)(GL_TEXTURE_2D, gtc->_index);
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::specify_texture
+//     Function: CLP(GraphicsStateGuardian)::specify_texture
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 specify_texture(Texture *tex) {
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
                   get_texture_wrap_mode(tex->get_wrapu()));
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
                   get_texture_wrap_mode(tex->get_wrapv()));
 
-  if (gl_force_mipmaps) {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+  if (CLP(force_mipmaps)) {
+    GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                     GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   } else {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+    GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                     get_texture_filter_type(tex->get_minfilter()));
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+    GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
                     get_texture_filter_type(tex->get_magfilter()));
   }
   report_gl_errors();
@@ -2865,7 +2850,7 @@ compute_gl_image_size(int xsize, int ysize, int external_format, int type) {
 #endif  // NDEBUG
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::apply_texture_immediate
+//     Function: CLP(GraphicsStateGuardian)::apply_texture_immediate
 //       Access: Protected
 //  Description: Sends the texture image to GL.  This can be used to
 //               render a texture in immediate mode, or as part of the
@@ -2874,7 +2859,7 @@ compute_gl_image_size(int xsize, int ysize, int external_format, int type) {
 //               The return value is true if successful, or false if
 //               the texture has no image.
 ////////////////////////////////////////////////////////////////////
-bool GLGraphicsStateGuardian::
+bool CLP(GraphicsStateGuardian)::
 apply_texture_immediate(Texture *tex) {
   PixelBuffer *pb = tex->get_ram_image();
   if (pb == (PixelBuffer *)NULL) {
@@ -2889,7 +2874,7 @@ apply_texture_immediate(Texture *tex) {
   GLenum type = get_image_type(pb->get_image_type());
 
   PTA_uchar image = pb->_image;
-  if (!gl_supports_bgr) {
+  if (!CLP(supports_bgr)) {
     // If the GL doesn't claim to support BGR, we may have to reverse
     // the component ordering of the image.
     image = fix_component_ordering(external_format, pb);
@@ -2904,7 +2889,7 @@ apply_texture_immediate(Texture *tex) {
   set_unpack_alignment(1);
 
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug()
+  GLCAT.debug()
     << "glTexImage2D(GL_TEXTURE_2D, "
     << (int)internal_format << ", "
     << xsize << ", " << ysize << ", "
@@ -2912,10 +2897,10 @@ apply_texture_immediate(Texture *tex) {
     << (int)type << ", " << tex->get_name() << ")\n";
 #endif
 
-  if (!gl_ignore_mipmaps || gl_force_mipmaps) {
-    if (tex->uses_mipmaps() || gl_force_mipmaps) {
+  if (!CLP(ignore_mipmaps) || CLP(force_mipmaps)) {
+    if (tex->uses_mipmaps() || CLP(force_mipmaps)) {
 #ifndef NDEBUG
-      if (gl_show_mipmaps) {
+      if (CLP(show_mipmaps)) {
         build_phony_mipmaps(tex);
       } else 
 #endif
@@ -2924,7 +2909,7 @@ apply_texture_immediate(Texture *tex) {
                             xsize, ysize,
                             external_format, type, image);
 #ifndef NDEBUG
-          if (gl_save_mipmaps) {
+          if (CLP(save_mipmaps)) {
             save_mipmap_images(tex);
           }
 #endif
@@ -2936,16 +2921,16 @@ apply_texture_immediate(Texture *tex) {
   }
 
   nassertr(!pb->_image.empty(), false);
-  glTexImage2D(GL_TEXTURE_2D, 0, internal_format,
+  GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
                xsize, ysize, pb->get_border(),
                external_format, type, image);
 
   //report_gl_errors();
   // want to give explict error for texture creation failure
-  GLenum error_code = glGetError();
+  GLenum error_code = GLP(GetError)();
   if(error_code != GL_NO_ERROR) {
     const GLubyte *error_string = gluErrorString(error_code);
-    glgsg_cat.error() << "GL texture creation failed for " << tex->get_name() << 
+    GLCAT.error() << "GL texture creation failed for " << tex->get_name() << 
                         ((error_string != (const GLubyte *)NULL) ? " : " : "") << endl;
   }
 
@@ -2953,12 +2938,12 @@ apply_texture_immediate(Texture *tex) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_texture
+//     Function: CLP(GraphicsStateGuardian)::draw_texture
 //       Access: Protected
 //  Description: Copies the texture image directly onto the frame
 //               buffer within the indicated display region.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   nassertv(tc != NULL && dr != NULL);
   Texture *tex = tc->_texture;
@@ -2993,9 +2978,9 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   // viewport to the range [0..1] in both dimensions.  Then, when we
   // create a unit square polygon below, it will exactly fill the
   // viewport (and thus exactly fill the display region).
-  glMatrixMode(GL_PROJECTION);
-  glPushMatrix();
-  glLoadIdentity();
+  GLP(MatrixMode)(GL_PROJECTION);
+  GLP(PushMatrix)();
+  GLP(LoadIdentity)();
   gluOrtho2D(0, 1, 0, 1);
 
   float txl, txr, tyt, tyb;
@@ -3014,25 +2999,25 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
 
   // This two-triangle strip is actually a quad.  But it's usually
   // better to render quads as tristrips anyway.
-  glBegin(GL_TRIANGLE_STRIP);
-  glTexCoord2f(txl, tyb);   glVertex2i(0, 0);
-  glTexCoord2f(txr, tyb);   glVertex2i(1, 0);
-  glTexCoord2f(txl, tyt);   glVertex2i(0, 1);
-  glTexCoord2f(txr, tyt);   glVertex2i(1, 1);
-  glEnd();
+  GLP(Begin)(GL_TRIANGLE_STRIP);
+  GLP(TexCoord2f)(txl, tyb);   GLP(Vertex2i)(0, 0);
+  GLP(TexCoord2f)(txr, tyb);   GLP(Vertex2i)(1, 0);
+  GLP(TexCoord2f)(txl, tyt);   GLP(Vertex2i)(0, 1);
+  GLP(TexCoord2f)(txr, tyt);   GLP(Vertex2i)(1, 1);
+  GLP(End)();
 
-  glMatrixMode(GL_PROJECTION);
-  glPopMatrix();
+  GLP(MatrixMode)(GL_PROJECTION);
+  GLP(PopMatrix)();
 
   pop_display_region(old_dr);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_texture
+//     Function: CLP(GraphicsStateGuardian)::draw_texture
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_texture(TextureContext *tc, const DisplayRegion *dr, 
              const RenderBuffer &rb) {
   set_draw_buffer(rb);
@@ -3040,12 +3025,12 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_pixel_buffer
+//     Function: CLP(GraphicsStateGuardian)::draw_pixel_buffer
 //       Access: Protected
 //  Description: Copies the indicated pixel buffer into the frame
 //               buffer in the given display region.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   // This code is now invalidated by the new design; perhaps the
   // interface is not needed anyway.
@@ -3092,7 +3077,7 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
     break;
 
   default:
-    glgsg_cat.error()
+    GLCAT.error()
       << "draw_pixel_buffer(): unknown buffer format" << endl;
   }
   set_transform(TransformState::make_identity());
@@ -3101,61 +3086,61 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
   WindowProperties props = _win->get_properties();
 
-  glMatrixMode( GL_PROJECTION );
-  glPushMatrix();
-  glLoadIdentity();
+  GLP(MatrixMode)( GL_PROJECTION );
+  GLP(PushMatrix)();
+  GLP(LoadIdentity)();
   gluOrtho2D(0, props.get_x_size(),
              0, props.get_y_size());
 
 #ifdef GSG_VERBOSE
-  glgsg_cat.debug()
+  GLCAT.debug()
     << "glDrawPixels(" << pb->get_xsize() << ", " << pb->get_ysize()
     << ", ";
   switch (get_external_image_format(pb->get_format())) {
   case GL_DEPTH_COMPONENT:
-    glgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, ";
+    GLCAT.debug(false) << "GL_DEPTH_COMPONENT, ";
     break;
   case GL_RGB:
-    glgsg_cat.debug(false) << "GL_RGB, ";
+    GLCAT.debug(false) << "GL_RGB, ";
     break;
   case GL_RGBA:
-    glgsg_cat.debug(false) << "GL_RGBA, ";
+    GLCAT.debug(false) << "GL_RGBA, ";
     break;
 #ifdef GL_BGR
   case GL_BGR:
-    glgsg_cat.debug(false) << "GL_BGR, ";
+    GLCAT.debug(false) << "GL_BGR, ";
     break;
   case GL_BGRA:
-    glgsg_cat.debug(false) << "GL_BGRA, ";
+    GLCAT.debug(false) << "GL_BGRA, ";
     break;
 #endif  // GL_BGR
   default:
-    glgsg_cat.debug(false) << "unknown, ";
+    GLCAT.debug(false) << "unknown, ";
     break;
   }
   switch (get_image_type(pb->get_image_type())) {
   case GL_UNSIGNED_BYTE:
-    glgsg_cat.debug(false) << "GL_UNSIGNED_BYTE, ";
+    GLCAT.debug(false) << "GL_UNSIGNED_BYTE, ";
     break;
   case GL_FLOAT:
-    glgsg_cat.debug(false) << "GL_FLOAT, ";
+    GLCAT.debug(false) << "GL_FLOAT, ";
     break;
   default:
-    glgsg_cat.debug(false) << "unknown, ";
+    GLCAT.debug(false) << "unknown, ";
     break;
   }
-  glgsg_cat.debug(false)
+  GLCAT.debug(false)
     << (void *)pb->_image.p() << ")" << endl;
 #endif
 
-  glRasterPos2i( pb->get_xorg(), pb->get_yorg() );
-  glDrawPixels( pb->get_xsize(), pb->get_ysize(),
+  GLP(RasterPos2i)( pb->get_xorg(), pb->get_yorg() );
+  GLP(DrawPixels)( pb->get_xsize(), pb->get_ysize(),
                 get_external_image_format(pb->get_format()),
                 get_image_type(pb->get_image_type()),
                 pb->_image.p() );
 
-  glMatrixMode( GL_PROJECTION );
-  glPopMatrix();
+  GLP(MatrixMode)( GL_PROJECTION );
+  GLP(PopMatrix)();
 
   pop_display_region(old_dr);
   report_gl_errors();
@@ -3163,11 +3148,11 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_pixel_buffer
+//     Function: CLP(GraphicsStateGuardian)::draw_pixel_buffer
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                   const RenderBuffer &rb) {
   set_draw_buffer(rb);
@@ -3175,14 +3160,14 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_texture_wrap_mode
+//     Function: CLP(GraphicsStateGuardian)::get_texture_wrap_mode
 //       Access: Protected
 //  Description: Maps from the Texture's internal wrap mode symbols to
 //               GL's.
 ////////////////////////////////////////////////////////////////////
-GLenum GLGraphicsStateGuardian::
+GLenum CLP(GraphicsStateGuardian)::
 get_texture_wrap_mode(Texture::WrapMode wm) {
-  if (gl_ignore_clamp) {
+  if (CLP(ignore_clamp)) {
     return GL_REPEAT;
   }
   switch (wm) {
@@ -3200,22 +3185,22 @@ get_texture_wrap_mode(Texture::WrapMode wm) {
   case Texture::WM_invalid:
     break;
   }
-  glgsg_cat.error() << "Invalid Texture::WrapMode value!\n";
+  GLCAT.error() << "Invalid Texture::WrapMode value!\n";
   return GL_CLAMP;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_texture_filter_type
+//     Function: CLP(GraphicsStateGuardian)::get_texture_filter_type
 //       Access: Protected
 //  Description: Maps from the Texture's internal filter type symbols
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
-GLenum GLGraphicsStateGuardian::
+GLenum CLP(GraphicsStateGuardian)::
 get_texture_filter_type(Texture::FilterType ft) {
-  if (gl_ignore_filters) {
+  if (CLP(ignore_filters)) {
     return GL_NEAREST;
 
-  } else if (gl_ignore_mipmaps) {
+  } else if (CLP(ignore_mipmaps)) {
     switch (ft) {
     case Texture::FT_nearest_mipmap_nearest:
     case Texture::FT_nearest:
@@ -3247,17 +3232,17 @@ get_texture_filter_type(Texture::FilterType ft) {
       break;
     }
   }
-  glgsg_cat.error() << "Invalid Texture::FilterType value!\n";
+  GLCAT.error() << "Invalid Texture::FilterType value!\n";
   return GL_NEAREST;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_image_type
+//     Function: CLP(GraphicsStateGuardian)::get_image_type
 //       Access: Protected
 //  Description: Maps from the PixelBuffer's internal Type symbols
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
-GLenum GLGraphicsStateGuardian::
+GLenum CLP(GraphicsStateGuardian)::
 get_image_type(PixelBuffer::Type type) {
   switch (type) {
   case PixelBuffer::T_unsigned_byte:
@@ -3272,18 +3257,18 @@ get_image_type(PixelBuffer::Type type) {
     return GL_FLOAT;
 
   default:
-    glgsg_cat.error() << "Invalid PixelBuffer::Type value!\n";
+    GLCAT.error() << "Invalid PixelBuffer::Type value!\n";
     return GL_UNSIGNED_BYTE;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_external_image_format
+//     Function: CLP(GraphicsStateGuardian)::get_external_image_format
 //       Access: Protected
 //  Description: Maps from the PixelBuffer's Format symbols
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
-GLenum GLGraphicsStateGuardian::
+GLenum CLP(GraphicsStateGuardian)::
 get_external_image_format(PixelBuffer::Format format) {
   switch (format) {
   case PixelBuffer::F_color_index:
@@ -3306,7 +3291,7 @@ get_external_image_format(PixelBuffer::Format format) {
   case PixelBuffer::F_rgb12:
   case PixelBuffer::F_rgb332:
 #ifdef GL_BGR
-    return gl_supports_bgr ? GL_BGR : GL_RGB;
+    return CLP(supports_bgr) ? GL_BGR : GL_RGB;
 #else
     return GL_RGB;
 #endif  // GL_BGR
@@ -3317,7 +3302,7 @@ get_external_image_format(PixelBuffer::Format format) {
   case PixelBuffer::F_rgba8:
   case PixelBuffer::F_rgba12:
 #ifdef GL_BGR
-    return gl_supports_bgr ? GL_BGRA : GL_RGBA;
+    return CLP(supports_bgr) ? GL_BGRA : GL_RGBA;
 #else
     return GL_RGBA;
 #endif  // GL_BGR
@@ -3327,19 +3312,19 @@ get_external_image_format(PixelBuffer::Format format) {
   case PixelBuffer::F_luminance_alpha:
     return GL_LUMINANCE_ALPHA;
   }
-  glgsg_cat.error()
+  GLCAT.error()
     << "Invalid PixelBuffer::Format value in get_external_image_format(): "
     << (int)format << "\n";
   return GL_RGB;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_internal_image_format
+//     Function: CLP(GraphicsStateGuardian)::get_internal_image_format
 //       Access: Protected
 //  Description: Maps from the PixelBuffer's Format symbols to a
 //               suitable internal format for GL textures.
 ////////////////////////////////////////////////////////////////////
-GLenum GLGraphicsStateGuardian::
+GLenum CLP(GraphicsStateGuardian)::
 get_internal_image_format(PixelBuffer::Format format) {
   switch (format) {
   case PixelBuffer::F_rgba:
@@ -3378,7 +3363,7 @@ get_internal_image_format(PixelBuffer::Format format) {
     return GL_LUMINANCE_ALPHA;
 
   default:
-    glgsg_cat.error()
+    GLCAT.error()
       << "Invalid image format in get_internal_image_format(): "
       << (int)format << "\n";
     return GL_RGB;
@@ -3386,14 +3371,14 @@ get_internal_image_format(PixelBuffer::Format format) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_texture_apply_mode_type
+//     Function: CLP(GraphicsStateGuardian)::get_texture_apply_mode_type
 //       Access: Protected
 //  Description: Maps from the texture environment's mode types
 //       to the corresponding OpenGL ids
 ////////////////////////////////////////////////////////////////////
-GLint GLGraphicsStateGuardian::
+GLint CLP(GraphicsStateGuardian)::
 get_texture_apply_mode_type(TextureApplyAttrib::Mode am) const {
-  if (gl_always_decal_textures) {
+  if (CLP(always_decal_textures)) {
     return GL_DECAL;
   }
   switch (am) {
@@ -3403,17 +3388,17 @@ get_texture_apply_mode_type(TextureApplyAttrib::Mode am) const {
   case TextureApplyAttrib::M_replace: return GL_REPLACE;
   case TextureApplyAttrib::M_add: return GL_ADD;
   }
-  glgsg_cat.error()
+  GLCAT.error()
     << "Invalid TextureApplyAttrib::Mode value" << endl;
   return GL_MODULATE;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_fog_mode_type
+//     Function: CLP(GraphicsStateGuardian)::get_fog_mode_type
 //       Access: Protected
 //  Description: Maps from the fog types to gl version
 ////////////////////////////////////////////////////////////////////
-GLenum GLGraphicsStateGuardian::
+GLenum CLP(GraphicsStateGuardian)::
 get_fog_mode_type(Fog::Mode m) const {
   switch(m) {
   case Fog::M_linear: return GL_LINEAR;
@@ -3426,69 +3411,69 @@ get_fog_mode_type(Fog::Mode m) const {
     */
 
   default:
-    glgsg_cat.error() << "Invalid Fog::Mode value" << endl;
+    GLCAT.error() << "Invalid Fog::Mode value" << endl;
     return GL_EXP;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::print_gfx_visual
+//     Function: CLP(GraphicsStateGuardian)::print_gfx_visual
 //       Access: Public
 //  Description: Prints a description of the current visual selected.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 print_gfx_visual() {
   GLint i;
   GLboolean j;
   cout << "Graphics Visual Info (# bits of each):" << endl;
 
   cout << "RGBA: ";
-  glGetIntegerv( GL_RED_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_GREEN_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_BLUE_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_ALPHA_BITS, &i ); cout << i << endl;
+  GLP(GetIntegerv)( GL_RED_BITS, &i ); cout << i << " ";
+  GLP(GetIntegerv)( GL_GREEN_BITS, &i ); cout << i << " ";
+  GLP(GetIntegerv)( GL_BLUE_BITS, &i ); cout << i << " ";
+  GLP(GetIntegerv)( GL_ALPHA_BITS, &i ); cout << i << endl;
 
   cout << "Accum RGBA: ";
-  glGetIntegerv( GL_ACCUM_RED_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_ACCUM_GREEN_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_ACCUM_BLUE_BITS, &i ); cout << i << " ";
-  glGetIntegerv( GL_ACCUM_ALPHA_BITS, &i ); cout << i << endl;
+  GLP(GetIntegerv)( GL_ACCUM_RED_BITS, &i ); cout << i << " ";
+  GLP(GetIntegerv)( GL_ACCUM_GREEN_BITS, &i ); cout << i << " ";
+  GLP(GetIntegerv)( GL_ACCUM_BLUE_BITS, &i ); cout << i << " ";
+  GLP(GetIntegerv)( GL_ACCUM_ALPHA_BITS, &i ); cout << i << endl;
 
-  glGetIntegerv( GL_INDEX_BITS, &i ); cout << "Color Index: " << i << endl;
+  GLP(GetIntegerv)( GL_INDEX_BITS, &i ); cout << "Color Index: " << i << endl;
 
-  glGetIntegerv( GL_DEPTH_BITS, &i ); cout << "Depth: " << i << endl;
-  glGetIntegerv( GL_ALPHA_BITS, &i ); cout << "Alpha: " << i << endl;
-  glGetIntegerv( GL_STENCIL_BITS, &i ); cout << "Stencil: " << i << endl;
+  GLP(GetIntegerv)( GL_DEPTH_BITS, &i ); cout << "Depth: " << i << endl;
+  GLP(GetIntegerv)( GL_ALPHA_BITS, &i ); cout << "Alpha: " << i << endl;
+  GLP(GetIntegerv)( GL_STENCIL_BITS, &i ); cout << "Stencil: " << i << endl;
 
-  glGetBooleanv( GL_DOUBLEBUFFER, &j ); cout << "DoubleBuffer? "
+  GLP(GetBooleanv)( GL_DOUBLEBUFFER, &j ); cout << "DoubleBuffer? "
                                              << (int)j << endl;
 
-  glGetBooleanv( GL_STEREO, &j ); cout << "Stereo? " << (int)j << endl;
+  GLP(GetBooleanv)( GL_STEREO, &j ); cout << "Stereo? " << (int)j << endl;
 
 #ifdef GL_MULTISAMPLE_SGIS
-  glGetBooleanv( GL_MULTISAMPLE_SGIS, &j ); cout << "Multisample? "
+  GLP(GetBooleanv)( GL_MULTISAMPLE_SGIS, &j ); cout << "Multisample? "
                                                  << (int)j << endl;
 #endif
 #ifdef GL_SAMPLES_SGIS
-  glGetIntegerv( GL_SAMPLES_SGIS, &i ); cout << "Samples: " << i << endl;
+  GLP(GetIntegerv)( GL_SAMPLES_SGIS, &i ); cout << "Samples: " << i << endl;
 #endif
 
-  glGetBooleanv( GL_BLEND, &j ); cout << "Blend? " << (int)j << endl;
-  glGetBooleanv( GL_POINT_SMOOTH, &j ); cout << "Point Smooth? "
+  GLP(GetBooleanv)( GL_BLEND, &j ); cout << "Blend? " << (int)j << endl;
+  GLP(GetBooleanv)( GL_POINT_SMOOTH, &j ); cout << "Point Smooth? "
                                              << (int)j << endl;
-  glGetBooleanv( GL_LINE_SMOOTH, &j ); cout << "Line Smooth? "
+  GLP(GetBooleanv)( GL_LINE_SMOOTH, &j ); cout << "Line Smooth? "
                                             << (int)j << endl;
 
-  glGetIntegerv( GL_AUX_BUFFERS, &i ); cout << "Aux Buffers: " << i << endl;
+  GLP(GetIntegerv)( GL_AUX_BUFFERS, &i ); cout << "Aux Buffers: " << i << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_transformed_color
+//     Function: CLP(GraphicsStateGuardian)::issue_transformed_color
 //       Access: Public
 //  Description: Transform the color by the current color matrix, and
 //               calls the appropriate glColor function.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 issue_transformed_color(const Colorf &color) const {
   Colorf transformed
     ((color[0] * _current_color_scale[0]) + _current_color_offset[0],
@@ -3496,11 +3481,11 @@ issue_transformed_color(const Colorf &color) const {
      (color[2] * _current_color_scale[2]) + _current_color_offset[2],
      (color[3] * _current_color_scale[3]) + _current_color_offset[3]);
 
-  glColor4fv(transformed.get_data());
+  GLP(Color4fv)(transformed.get_data());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::slot_new_light
+//     Function: CLP(GraphicsStateGuardian)::slot_new_light
 //       Access: Protected, Virtual
 //  Description: This will be called by the base class before a
 //               particular light id will be used for the first time.
@@ -3512,59 +3497,59 @@ issue_transformed_color(const Colorf &color) const {
 //               The return value should be true if the additional
 //               light is supported, or false if it is not.
 ////////////////////////////////////////////////////////////////////
-bool GLGraphicsStateGuardian::
+bool CLP(GraphicsStateGuardian)::
 slot_new_light(int light_id) {
   return (light_id < _max_lights);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_lighting
+//     Function: CLP(GraphicsStateGuardian)::enable_lighting
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               enable or disable the use of lighting overall.  This
 //               is called by issue_light() according to whether any
 //               lights are in use or not.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 enable_lighting(bool enable) {
   if (enable) {
-    glEnable(GL_LIGHTING);
+    GLP(Enable)(GL_LIGHTING);
   } else {
-    glDisable(GL_LIGHTING);
+    GLP(Disable)(GL_LIGHTING);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::set_ambient_light
+//     Function: CLP(GraphicsStateGuardian)::set_ambient_light
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               indicate the color of the ambient light that should
 //               be in effect.  This is called by issue_light() after
 //               all other lights have been enabled or disabled.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 set_ambient_light(const Colorf &color) {
-  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, color.get_data());
+  GLP(LightModelfv)(GL_LIGHT_MODEL_AMBIENT, color.get_data());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_light
+//     Function: CLP(GraphicsStateGuardian)::enable_light
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               enable the indicated light id.  A specific Light will
 //               already have been bound to this id via bind_light().
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 enable_light(int light_id, bool enable) {
   if (enable) {
-    glEnable(get_light_id(light_id));
+    GLP(Enable)(get_light_id(light_id));
   } else {
-    glDisable(get_light_id(light_id));
+    GLP(Disable)(get_light_id(light_id));
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::begin_bind_lights
+//     Function: CLP(GraphicsStateGuardian)::begin_bind_lights
 //       Access: Protected, Virtual
 //  Description: Called immediately before bind_light() is called,
 //               this is intended to provide the derived class a hook
@@ -3575,7 +3560,7 @@ enable_light(int light_id, bool enable) {
 //               then one or more bind_light() calls, then
 //               end_bind_lights().
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 begin_bind_lights() {
   // We need to temporarily load a new matrix so we can define the
   // light in a known coordinate system.  We pick the transform of the
@@ -3584,13 +3569,13 @@ begin_bind_lights() {
   // instead of relative to the root, by composing with the matrix
   // computed by _transform->invert_compose(render_transform).  But I
   // think loading a completely new matrix is simpler.)
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glLoadMatrixf(_scene_setup->get_render_transform()->get_mat().get_data());
+  GLP(MatrixMode)(GL_MODELVIEW);
+  GLP(PushMatrix)();
+  GLP(LoadMatrixf)(_scene_setup->get_render_transform()->get_mat().get_data());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::end_bind_lights
+//     Function: CLP(GraphicsStateGuardian)::end_bind_lights
 //       Access: Protected, Virtual
 //  Description: Called after before bind_light() has been called one
 //               or more times (but before any geometry is issued or
@@ -3598,14 +3583,14 @@ begin_bind_lights() {
 //               clean up any temporary changes to the state that may
 //               have been made by begin_bind_lights().
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 end_bind_lights() {
-  glMatrixMode(GL_MODELVIEW);
-  glPopMatrix();
+  GLP(MatrixMode)(GL_MODELVIEW);
+  GLP(PopMatrix)();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::slot_new_clip_plane
+//     Function: CLP(GraphicsStateGuardian)::slot_new_clip_plane
 //       Access: Protected, Virtual
 //  Description: This will be called by the base class before a
 //               particular clip plane id will be used for the first
@@ -3618,30 +3603,30 @@ end_bind_lights() {
 //               The return value should be true if the additional
 //               plane is supported, or false if it is not.
 ////////////////////////////////////////////////////////////////////
-bool GLGraphicsStateGuardian::
+bool CLP(GraphicsStateGuardian)::
 slot_new_clip_plane(int plane_id) {
   return (plane_id < _max_clip_planes);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::enable_clip_plane
+//     Function: CLP(GraphicsStateGuardian)::enable_clip_plane
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
 //               enable the indicated clip_plane id.  A specific
 //               PlaneNode will already have been bound to this id via
 //               bind_clip_plane().
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 enable_clip_plane(int plane_id, bool enable) {
   if (enable) {
-    glEnable(get_clip_plane_id(plane_id));
+    GLP(Enable)(get_clip_plane_id(plane_id));
   } else {
-    glDisable(get_clip_plane_id(plane_id));
+    GLP(Disable)(get_clip_plane_id(plane_id));
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::begin_bind_clip_planes
+//     Function: CLP(GraphicsStateGuardian)::begin_bind_clip_planes
 //       Access: Protected, Virtual
 //  Description: Called immediately before bind_clip_plane() is called,
 //               this is intended to provide the derived class a hook
@@ -3652,7 +3637,7 @@ enable_clip_plane(int plane_id, bool enable) {
 //               then one or more bind_clip_plane() calls, then
 //               end_bind_clip_planes().
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 begin_bind_clip_planes() {
   // We need to temporarily load a new matrix so we can define the
   // clip_plane in a known coordinate system.  We pick the transform of the
@@ -3661,20 +3646,20 @@ begin_bind_clip_planes() {
   // instead of relative to the root, by composing with the matrix
   // computed by _transform->invert_compose(render_transform).  But I
   // think loading a completely new matrix is simpler.)
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glLoadMatrixf(_scene_setup->get_render_transform()->get_mat().get_data());
+  GLP(MatrixMode)(GL_MODELVIEW);
+  GLP(PushMatrix)();
+  GLP(LoadMatrixf)(_scene_setup->get_render_transform()->get_mat().get_data());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::bind_clip_plane
+//     Function: CLP(GraphicsStateGuardian)::bind_clip_plane
 //       Access: Protected, Virtual
 //  Description: Called the first time a particular clip_plane has been
 //               bound to a given id within a frame, this should set
 //               up the associated hardware clip_plane with the clip_plane's
 //               properties.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 bind_clip_plane(PlaneNode *plane, int plane_id) {
   GLenum id = get_clip_plane_id(plane_id);
 
@@ -3683,13 +3668,13 @@ bind_clip_plane(PlaneNode *plane, int plane_id) {
   Planef xformed_plane = plane->get_plane() * plane_mat;
 
   Planed double_plane(LCAST(double, xformed_plane));
-  glClipPlane(id, double_plane.get_data());
+  GLP(ClipPlane)(id, double_plane.get_data());
 
   report_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::end_bind_clip_planes
+//     Function: CLP(GraphicsStateGuardian)::end_bind_clip_planes
 //       Access: Protected, Virtual
 //  Description: Called after before bind_clip_plane() has been called one
 //               or more times (but before any geometry is issued or
@@ -3697,26 +3682,26 @@ bind_clip_plane(PlaneNode *plane, int plane_id) {
 //               clean up any temporary changes to the state that may
 //               have been made by begin_bind_clip_planes().
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 end_bind_clip_planes() {
-  glMatrixMode(GL_MODELVIEW);
-  glPopMatrix();
+  GLP(MatrixMode)(GL_MODELVIEW);
+  GLP(PopMatrix)();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::set_blend_mode
+//     Function: CLP(GraphicsStateGuardian)::set_blend_mode
 //       Access: Protected, Virtual
 //  Description: Called after any of these three blending states have
 //               changed; this function is responsible for setting the
 //               appropriate color blending mode based on the given
 //               properties.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
                ColorBlendAttrib::Mode color_blend_mode,
                TransparencyAttrib::Mode transparency_mode) {
   // If color_write_mode is off, we disable writing to the color using
-  // blending.  This case is only used if we can't use glColorMask to
+  // blending.  This case is only used if we can't use GLP(ColorMask) to
   // disable the color writing for some reason (usually a driver
   // problem).
   if (color_write_mode == ColorWriteAttrib::M_off) {
@@ -3754,7 +3739,7 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     return;
 
   default:
-    glgsg_cat.error()
+    GLCAT.error()
       << "Unknown color blend mode " << (int)color_blend_mode << endl;
     break;
   }
@@ -3794,7 +3779,7 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
         return;
     
       default:
-        glgsg_cat.error()
+        GLCAT.error()
           << "invalid transparency mode " << (int)transparency_mode << endl;
         break;
   }
@@ -3806,17 +3791,17 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::free_pointers
+//     Function: CLP(GraphicsStateGuardian)::free_pointers
 //       Access: Protected, Virtual
 //  Description: Frees some memory that was explicitly allocated
 //               within the glgsg.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 free_pointers() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::save_frame_buffer
+//     Function: CLP(GraphicsStateGuardian)::save_frame_buffer
 //       Access: Public
 //  Description: Saves the indicated planes of the frame buffer
 //               (within the indicated display region) and returns it
@@ -3825,10 +3810,10 @@ free_pointers() {
 //               function for push_frame_buffer() and
 //               pop_frame_buffer().
 ////////////////////////////////////////////////////////////////////
-PT(SavedFrameBuffer) GLGraphicsStateGuardian::
+PT(SavedFrameBuffer) CLP(GraphicsStateGuardian)::
 save_frame_buffer(const RenderBuffer &buffer,
                   CPT(DisplayRegion) dr) {
-  GLSavedFrameBuffer *sfb = new GLSavedFrameBuffer(buffer, dr);
+  CLP(SavedFrameBuffer) *sfb = new CLP(SavedFrameBuffer)(buffer, dr);
 
   if (buffer._buffer_type & RenderBuffer::T_depth) {
     // Save the depth buffer.
@@ -3848,13 +3833,13 @@ save_frame_buffer(const RenderBuffer &buffer,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::restore_frame_buffer
+//     Function: CLP(GraphicsStateGuardian)::restore_frame_buffer
 //       Access: Public
 //  Description: Restores the frame buffer that was previously saved.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 restore_frame_buffer(SavedFrameBuffer *frame_buffer) {
-  GLSavedFrameBuffer *sfb = DCAST(GLSavedFrameBuffer, frame_buffer);
+  CLP(SavedFrameBuffer) *sfb = DCAST(CLP(SavedFrameBuffer), frame_buffer);
 
   if (sfb->_back_rgba != (Texture *)NULL &&
       (sfb->_buffer._buffer_type & RenderBuffer::T_back) != 0) {
@@ -3871,12 +3856,12 @@ restore_frame_buffer(SavedFrameBuffer *frame_buffer) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_untextured_state
+//     Function: CLP(GraphicsStateGuardian)::get_untextured_state
 //       Access: Protected, Static
 //  Description: Returns a RenderState object that represents
 //               texturing off.
 ////////////////////////////////////////////////////////////////////
-CPT(RenderState) GLGraphicsStateGuardian::
+CPT(RenderState) CLP(GraphicsStateGuardian)::
 get_untextured_state() {
   static CPT(RenderState) state;
   if (state == (RenderState *)NULL) {
@@ -3887,23 +3872,23 @@ get_untextured_state() {
 
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::build_phony_mipmaps
+//     Function: CLP(GraphicsStateGuardian)::build_phony_mipmaps
 //       Access: Protected
 //  Description: Generates a series of colored mipmap levels to aid in
 //               visualizing the mipmap levels as the hardware applies
 //               them.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 build_phony_mipmaps(Texture *tex) {
   PixelBuffer *pb = tex->_pbuffer;
   int xsize = pb->get_xsize();
   int ysize = pb->get_ysize();
 
-  glgsg_cat.info()
+  GLCAT.info()
     << "Building phony mipmap levels for " << tex->get_name() << "\n";
   int level = 0;
   while (xsize > 0 && ysize > 0) {
-    glgsg_cat.info(false)
+    GLCAT.info(false)
       << "  level " << level << " is " << xsize << " by " << ysize << "\n";
     build_phony_mipmap_level(level, xsize, ysize);
 
@@ -3913,7 +3898,7 @@ build_phony_mipmaps(Texture *tex) {
   }
 
   while (xsize > 0) {
-    glgsg_cat.info(false)
+    GLCAT.info(false)
       << "  level " << level << " is " << xsize << " by 1\n";
     build_phony_mipmap_level(level, xsize, 1);
 
@@ -3922,7 +3907,7 @@ build_phony_mipmaps(Texture *tex) {
   }
 
   while (ysize > 0) {
-    glgsg_cat.info(false)
+    GLCAT.info(false)
       << "  level " << level << " is 1 by " << ysize << "\n";
     build_phony_mipmap_level(level, 1, ysize);
 
@@ -3932,11 +3917,11 @@ build_phony_mipmaps(Texture *tex) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::build_phony_mipmap_level
+//     Function: CLP(GraphicsStateGuardian)::build_phony_mipmap_level
 //       Access: Protected
 //  Description: Generates a single colored mipmap level.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 build_phony_mipmap_level(int level, int xsize, int ysize) {
   static const int num_levels = 10;
   static const char *level_filenames[num_levels] = {
@@ -3978,7 +3963,7 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
     image_sized.quick_filter_from(image_source);
 
   } else {
-    glgsg_cat.info(false)
+    GLCAT.info(false)
       << "    " << filename << " cannot be read, making solid color mipmap.\n";
     image_sized.fill(level_colors[level][0],
                      level_colors[level][1],
@@ -3992,7 +3977,7 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
   GLenum external_format = get_external_image_format(pb->get_format());
   GLenum type = get_image_type(pb->get_image_type());
 
-  glTexImage2D(GL_TEXTURE_2D, level, internal_format,
+  GLP(TexImage2D)(GL_TEXTURE_2D, level, internal_format,
                pb->get_xsize(), pb->get_ysize(), pb->get_border(),
                external_format, type, pb->_image );
 
@@ -4000,13 +3985,13 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::save_mipmap_images
+//     Function: CLP(GraphicsStateGuardian)::save_mipmap_images
 //       Access: Protected
 //  Description: Saves out each mipmap level of the indicated texture
 //               (which must also be the currently active texture in
 //               the GL state) as a separate image file to disk.
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 save_mipmap_images(Texture *tex) {
   Filename filename = tex->get_name();
   string name;
@@ -4039,7 +4024,7 @@ save_mipmap_images(Texture *tex) {
       new PixelBuffer(xsize, ysize, pb->get_num_components(),
                       pb->get_component_width(), pb->get_image_type(),
                       pb->get_format());
-    glGetTexImage(GL_TEXTURE_2D, mipmap_level, external_format, 
+    GLP(GetTexImage)(GL_TEXTURE_2D, mipmap_level, external_format, 
                   type, mpb->_image);
     Filename mipmap_filename = name + "_" + format_string(mipmap_level) + ".rgb";
     nout << "Writing mipmap level " << mipmap_level
@@ -4054,42 +4039,42 @@ save_mipmap_images(Texture *tex) {
 }
 #endif  // NDEBUG
 
-TypeHandle GLGraphicsStateGuardian::get_type(void) const {
+TypeHandle CLP(GraphicsStateGuardian)::get_type(void) const {
   return get_class_type();
 }
 
-TypeHandle GLGraphicsStateGuardian::get_class_type(void) {
+TypeHandle CLP(GraphicsStateGuardian)::get_class_type(void) {
   return _type_handle;
 }
 
-void GLGraphicsStateGuardian::init_type(void) {
+void CLP(GraphicsStateGuardian)::init_type(void) {
   GraphicsStateGuardian::init_type();
-  register_type(_type_handle, "GLGraphicsStateGuardian",
+  register_type(_type_handle, CLASSPREFIX_QUOTED "GraphicsStateGuardian",
                 GraphicsStateGuardian::get_class_type());
 }
 
 
 #ifdef GSG_VERBOSE
 
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 dump_state(void)
 {
-  if (glgsg_cat.is_debug())
+  if (GLCAT.is_debug())
     {
-      ostream &dump = glgsg_cat.debug(false);
-      glgsg_cat.debug() << "Dumping GL State" << endl;
+      ostream &dump = GLCAT.debug(false);
+      GLCAT.debug() << "Dumping GL State" << endl;
 
-      dump << "\t\t" << "GL_LINE_SMOOTH " << _line_smooth_enabled << " " << (bool)glIsEnabled(GL_LINE_SMOOTH) << "\n";
-      dump << "\t\t" << "GL_POINT_SMOOTH " << _point_smooth_enabled << " " << (bool)glIsEnabled(GL_POINT_SMOOTH) << "\n";
-      dump << "\t\t" << "GL_LIGHTING " << _lighting_enabled << " " << (bool)glIsEnabled(GL_LIGHTING) << "\n";
-      dump << "\t\t" << "GL_SCISSOR_TEST " << _scissor_enabled << " " << (bool)glIsEnabled(GL_SCISSOR_TEST) << "\n";
-      dump << "\t\t" << "GL_TEXTURE_2D " << _texturing_enabled << " " << (bool)glIsEnabled(GL_TEXTURE_2D) << "\n";
-      dump << "\t\t" << "GL_STENCIL_TEST " << " " << (bool)glIsEnabled(GL_STENCIL_TEST) << "\n";
-      dump << "\t\t" << "GL_BLEND " << _blend_enabled << " " << (bool)glIsEnabled(GL_BLEND) << "\n";
-      dump << "\t\t" << "GL_DEPTH_TEST " << _depth_test_enabled << " " << (bool)glIsEnabled(GL_DEPTH_TEST) << "\n";
-      dump << "\t\t" << "GL_FOG " << _fog_enabled << " " << (bool)glIsEnabled(GL_FOG) << "\n";
-      dump << "\t\t" << "GL_ALPHA_TEST " << _alpha_test_enabled << " " << (bool)glIsEnabled(GL_ALPHA_TEST) << "\n";
-      dump << "\t\t" << "GL_POLYGON_OFFSET_FILL " << _polygon_offset_enabled << " " << (bool)glIsEnabled(GL_POLYGON_OFFSET_FILL) << "\n";
+      dump << "\t\t" << "GL_LINE_SMOOTH " << _line_smooth_enabled << " " << (bool)GLP(IsEnabled)(GL_LINE_SMOOTH) << "\n";
+      dump << "\t\t" << "GL_POINT_SMOOTH " << _point_smooth_enabled << " " << (bool)GLP(IsEnabled)(GL_POINT_SMOOTH) << "\n";
+      dump << "\t\t" << "GL_LIGHTING " << _lighting_enabled << " " << (bool)GLP(IsEnabled)(GL_LIGHTING) << "\n";
+      dump << "\t\t" << "GL_SCISSOR_TEST " << _scissor_enabled << " " << (bool)GLP(IsEnabled)(GL_SCISSOR_TEST) << "\n";
+      dump << "\t\t" << "GL_TEXTURE_2D " << _texturing_enabled << " " << (bool)GLP(IsEnabled)(GL_TEXTURE_2D) << "\n";
+      dump << "\t\t" << "GL_STENCIL_TEST " << " " << (bool)GLP(IsEnabled)(GL_STENCIL_TEST) << "\n";
+      dump << "\t\t" << "GL_BLEND " << _blend_enabled << " " << (bool)GLP(IsEnabled)(GL_BLEND) << "\n";
+      dump << "\t\t" << "GL_DEPTH_TEST " << _depth_test_enabled << " " << (bool)GLP(IsEnabled)(GL_DEPTH_TEST) << "\n";
+      dump << "\t\t" << "GL_FOG " << _fog_enabled << " " << (bool)GLP(IsEnabled)(GL_FOG) << "\n";
+      dump << "\t\t" << "GL_ALPHA_TEST " << _alpha_test_enabled << " " << (bool)GLP(IsEnabled)(GL_ALPHA_TEST) << "\n";
+      dump << "\t\t" << "GL_POLYGON_OFFSET_FILL " << _polygon_offset_enabled << " " << (bool)GLP(IsEnabled)(GL_POLYGON_OFFSET_FILL) << "\n";
 
       dump << endl;
     }
@@ -4098,7 +4083,7 @@ dump_state(void)
 #else  // GSG_VERBOSE
 
 // This function does nothing unless GSG_VERBOSE is compiled in.
-void GLGraphicsStateGuardian::
+void CLP(GraphicsStateGuardian)::
 dump_state(void)
 {
 }

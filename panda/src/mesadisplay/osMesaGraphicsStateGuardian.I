@@ -1,5 +1,5 @@
-// Filename: glxGraphicsStateGuardian.I
-// Created by:  drose (27Jan03)
+// Filename: osMesaGraphicsStateGuardian.I
+// Created by:  drose (09Feb04)
 //
 ////////////////////////////////////////////////////////////////////
 //

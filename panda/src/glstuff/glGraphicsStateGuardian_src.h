@@ -1,4 +1,4 @@
-// Filename: glGraphicsStateGuardian.h
+// Filename: glGraphicsStateGuardian_src.h
 // Created by:  drose (02Feb99)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,11 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef GLGRAPHICSSTATEGUARDIAN_H
-#define GLGRAPHICSSTATEGUARDIAN_H
-
-//#define GSG_VERBOSE 1
-
 #include "pandabase.h"
 
 #include "graphicsStateGuardian.h"
@@ -33,27 +28,10 @@
 #include "textureApplyAttrib.h"
 #include "pointerToArray.h"
 #include "fog.h"
-
-#ifdef WIN32_VC
-// Must include windows.h before gl.h on NT
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef WIN32_LEAN_AND_MEAN
-#endif
-
-#include <GL/gl.h>
-
+#include "graphicsWindow.h"
 
 class PlaneNode;
 class Light;
-
-#if !defined(WIN32) && defined(GSG_VERBOSE)
-ostream &output_gl_enum(ostream &out, GLenum v);
-INLINE ostream &operator << (ostream &out, GLenum v) {
-  return output_gl_enum(out, v);
-}
-#endif
-
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GLGraphicsStateGuardian
@@ -61,10 +39,10 @@ INLINE ostream &operator << (ostream &out, GLenum v) {
 //               into OpenGL contexts.  There should be no GL calls
 //               outside of this object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAGL GLGraphicsStateGuardian : public GraphicsStateGuardian {
+class EXPCL_GL CLP(GraphicsStateGuardian) : public GraphicsStateGuardian {
 public:
-  GLGraphicsStateGuardian(const FrameBufferProperties &properties);
-  virtual ~GLGraphicsStateGuardian();
+  CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties);
+  virtual ~CLP(GraphicsStateGuardian)();
 
   virtual void reset();
 
@@ -332,22 +310,4 @@ private:
   static TypeHandle _type_handle;
 };
 
-#ifdef DO_PSTATS
-#define DO_PSTATS_STUFF(XX) XX;
-#else
-#define DO_PSTATS_STUFF(XX)
-#endif
-
-#define ISPOW2(X) (((X) & ((X)-1))==0)
-
-#ifndef NDEBUG
-#define report_gl_errors() \
-  GLGraphicsStateGuardian::report_errors(__LINE__, __FILE__)
-#else
-#define report_gl_errors()
-#endif
-
-#include "glGraphicsStateGuardian.I"
-
-#endif
-
+#include "glGraphicsStateGuardian_src.I"

@@ -1,5 +1,5 @@
-// Filename: glxGraphicsStateGuardian.h
-// Created by:  drose (27Jan03)
+// Filename: osMesaGraphicsBuffer.h
+// Created by:  drose (09Feb04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,36 +16,47 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef GLXGRAPHICSSTATEGUARDIAN_H
-#define GLXGRAPHICSSTATEGUARDIAN_H
+#ifndef OSMESAGRAPHICSBUFFER_H
+#define OSMESAGRAPHICSBUFFER_H
 
 #include "pandabase.h"
 
-#include "glgsg.h"
-#include "glxGraphicsPipe.h"
+#include "osMesaGraphicsPipe.h"
+#include "graphicsBuffer.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : glxGraphicsStateGuardian
-// Description : A tiny specialization on GLGraphicsStateGuardian to
-//               add some glx-specific information.
+//       Class : OsMesaGraphicsBuffer
+// Description : An offscreen buffer using direct calls to Mesa.  This
+//               is the only kind of graphics output supported by
+//               osmesa.h.
 ////////////////////////////////////////////////////////////////////
-class glxGraphicsStateGuardian : public GLGraphicsStateGuardian {
+class EXPCL_PANDAMESA OsMesaGraphicsBuffer : public GraphicsBuffer {
 public:
-  glxGraphicsStateGuardian(const FrameBufferProperties &properties);
-  virtual ~glxGraphicsStateGuardian();
+  OsMesaGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+                    int x_size, int y_size, bool want_texture);
 
-  GLXContext _context;
-  GLXFBConfig _fbconfig;
-  Display *_display;
+  virtual ~OsMesaGraphicsBuffer();
+
+  virtual void make_current();
+
+  virtual void begin_flip();
+
+protected:
+  virtual void close_buffer();
+  virtual bool open_buffer();
+
+private:
+  GLenum _type;
+  PTA_uchar _image;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    GLGraphicsStateGuardian::init_type();
-    register_type(_type_handle, "glxGraphicsStateGuardian",
-                  GLGraphicsStateGuardian::get_class_type());
+    GraphicsBuffer::init_type();
+    register_type(_type_handle, "OsMesaGraphicsBuffer",
+                  GraphicsBuffer::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -56,6 +67,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "glxGraphicsStateGuardian.I"
+#include "osMesaGraphicsBuffer.I"
 
 #endif

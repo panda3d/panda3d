@@ -1,4 +1,4 @@
-// Filename: mesaGraphicsPipe.h
+// Filename: osMesaGraphicsPipe.h
 // Created by:  drose (09Feb04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MESAGRAPHICSPIPE_H
-#define MESAGRAPHICSPIPE_H
+#ifndef OSMESAGRAPHICSPIPE_H
+#define OSMESAGRAPHICSPIPE_H
 
 #include "pandabase.h"
 #include "graphicsWindow.h"
@@ -28,7 +28,7 @@
 class FrameBufferProperties;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : MesaGraphicsPipe
+//       Class : OsMesaGraphicsPipe
 // Description : This graphics pipe represents the interface for
 //               rendering with direct calls to the Mesa open-source
 //               software-only implementation of OpenGL.
@@ -38,10 +38,10 @@ class FrameBufferProperties;
 //               buffers without having any X server or other
 //               operating system infrastructure in place.
 ////////////////////////////////////////////////////////////////////
-class MesaGraphicsPipe : public GraphicsPipe {
+class EXPCL_PANDAMESA OsMesaGraphicsPipe : public GraphicsPipe {
 public:
-  MesaGraphicsPipe();
-  virtual ~MesaGraphicsPipe();
+  OsMesaGraphicsPipe();
+  virtual ~OsMesaGraphicsPipe();
 
   virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
@@ -59,7 +59,7 @@ public:
   }
   static void init_type() {
     GraphicsPipe::init_type();
-    register_type(_type_handle, "MesaGraphicsPipe",
+    register_type(_type_handle, "OsMesaGraphicsPipe",
                   GraphicsPipe::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -71,6 +71,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "mesaGraphicsPipe.I"
+#include "osMesaGraphicsPipe.I"
 
 #endif

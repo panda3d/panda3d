@@ -1,22 +1,25 @@
 #define BUILD_DIRECTORY $[HAVE_MESA]
+#define BUILDING_DLL BUILDING_PANDAMESA
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define USE_PACKAGES gl mesa
+#define USE_PACKAGES mesa
 
 #begin lib_target
   #define TARGET mesadisplay
   #define LOCAL_LIBS \
-    glgsg
+    glstuff gsgmisc gsgbase gobj display \
+    putil linmath mathutil pnmimage
 
   #define SOURCES \
     config_mesadisplay.cxx config_mesadisplay.h \
-    mesaGraphicsBuffer.I mesaGraphicsBuffer.cxx mesaGraphicsBuffer.h \
-    mesaGraphicsPipe.I mesaGraphicsPipe.cxx mesaGraphicsPipe.h \
-    mesaGraphicsStateGuardian.h mesaGraphicsStateGuardian.cxx \
-    mesaGraphicsStateGuardian.I
+    mesagsg.h mesagsg.cxx \
+    osMesaGraphicsBuffer.I osMesaGraphicsBuffer.cxx osMesaGraphicsBuffer.h \
+    osMesaGraphicsPipe.I osMesaGraphicsPipe.cxx osMesaGraphicsPipe.h \
+    osMesaGraphicsStateGuardian.h osMesaGraphicsStateGuardian.cxx \
+    osMesaGraphicsStateGuardian.I
 
-  #define IGATESCAN mesaGraphicsPipe.h
+  #define IGATESCAN osMesaGraphicsPipe.h
 
 #end lib_target
 

@@ -1,4 +1,4 @@
-// Filename: config_mesadisplay.h
+// Filename: mesagsg.cxx
 // Created by:  drose (09Feb04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,16 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_MESADISPLAY_H
-#define CONFIG_MESADISPLAY_H
+// This is the actual .cxx file to include if you want to pick up
+// any or all of the header files in this directory as compiled to use
+// the Mesa library.
 
-#include "pandabase.h"
-#include "notifyCategoryProxy.h"
-#include "dconfig.h"
-
-ConfigureDecl(config_mesadisplay, EXPCL_PANDAMESA, EXPTP_PANDAMESA);
-NotifyCategoryDecl(mesadisplay, EXPCL_PANDAMESA, EXPTP_PANDAMESA);
-
-extern EXPCL_PANDAMESA void init_libmesadisplay();
-
-#endif
+#include "mesagsg.h"
+#include "glstuff_src.cxx"

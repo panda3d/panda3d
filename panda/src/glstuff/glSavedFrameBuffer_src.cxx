@@ -16,6 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "glSavedFrameBuffer.h"
-
-TypeHandle GLSavedFrameBuffer::_type_handle;
+TypeHandle CLP(SavedFrameBuffer)::_type_handle;

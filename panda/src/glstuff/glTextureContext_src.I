@@ -1,5 +1,5 @@
-// Filename: glSavedFrameBuffer.I
-// Created by:  drose (06Oct99)
+// Filename: glTextureContext_src.I
+// Created by:  drose (07Oct99)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,22 +18,14 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLSavedFrameBuffer::Constructor
+//     Function: CLP(TextureContext)::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE GLSavedFrameBuffer::
-GLSavedFrameBuffer(const RenderBuffer &buffer, CPT(DisplayRegion) dr) :
-  SavedFrameBuffer(buffer, dr)
+INLINE CLP(TextureContext)::
+CLP(TextureContext)(Texture *tex) :
+  TextureContext(tex)
 {
+  _index = 0;
+  _priority = 0.5; // For keeping resident in texture memory
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLSavedFrameBuffer::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE GLSavedFrameBuffer::
-~GLSavedFrameBuffer() {
-}
-

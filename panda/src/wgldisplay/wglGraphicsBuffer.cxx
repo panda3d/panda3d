@@ -19,7 +19,7 @@
 #include "wglGraphicsBuffer.h"
 #include "config_wgldisplay.h"
 #include "wglGraphicsPipe.h"
-#include "glGraphicsStateGuardian.h"
+#include "glgsg.h"
 #include "frameBufferProperties.h"
 
 #include <wingdi.h>

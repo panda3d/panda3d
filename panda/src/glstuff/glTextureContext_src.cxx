@@ -1,5 +1,5 @@
-// Filename: glGeomNodeContext.cxx
-// Created by:  drose (12Jun01)
+// Filename: glTextureContext.cxx
+// Created by:  drose (07Oct99)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,6 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "glGeomNodeContext.h"
-
-TypeHandle GLGeomNodeContext::_type_handle;
+TypeHandle CLP(TextureContext)::_type_handle;

@@ -1,5 +1,5 @@
-// Filename: mesaGraphicsPipe.cxx
-// Created by:  mike (09Jan97)
+// Filename: osMesaGraphicsPipe.cxx
+// Created by:  drose (09Feb04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,37 +16,37 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "mesaGraphicsPipe.h"
-#include "mesaGraphicsBuffer.h"
-#include "mesaGraphicsStateGuardian.h"
+#include "osMesaGraphicsPipe.h"
+#include "osMesaGraphicsBuffer.h"
+#include "osMesaGraphicsStateGuardian.h"
 #include "config_mesadisplay.h"
 #include "frameBufferProperties.h"
 #include "mutexHolder.h"
 
-TypeHandle MesaGraphicsPipe::_type_handle;
+TypeHandle OsMesaGraphicsPipe::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MesaGraphicsPipe::Constructor
+//     Function: OsMesaGraphicsPipe::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-MesaGraphicsPipe::
-MesaGraphicsPipe() {
+OsMesaGraphicsPipe::
+OsMesaGraphicsPipe() {
   _supported_types = OT_buffer | OT_texture_buffer;
   _is_valid = true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MesaGraphicsPipe::Destructor
+//     Function: OsMesaGraphicsPipe::Destructor
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-MesaGraphicsPipe::
-~MesaGraphicsPipe() {
+OsMesaGraphicsPipe::
+~OsMesaGraphicsPipe() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MesaGraphicsPipe::get_interface_name
+//     Function: OsMesaGraphicsPipe::get_interface_name
 //       Access: Published, Virtual
 //  Description: Returns the name of the rendering interface
 //               associated with this GraphicsPipe.  This is used to
@@ -55,41 +55,41 @@ MesaGraphicsPipe::
 //               particular platform, so the name should be meaningful
 //               and unique for a given platform.
 ////////////////////////////////////////////////////////////////////
-string MesaGraphicsPipe::
+string OsMesaGraphicsPipe::
 get_interface_name() const {
   return "Offscreen Mesa";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MesaGraphicsPipe::pipe_constructor
+//     Function: OsMesaGraphicsPipe::pipe_constructor
 //       Access: Public, Static
 //  Description: This function is passed to the GraphicsPipeSelection
 //               object to allow the user to make a default
-//               MesaGraphicsPipe.
+//               OsMesaGraphicsPipe.
 ////////////////////////////////////////////////////////////////////
-PT(GraphicsPipe) MesaGraphicsPipe::
+PT(GraphicsPipe) OsMesaGraphicsPipe::
 pipe_constructor() {
-  return new MesaGraphicsPipe;
+  return new OsMesaGraphicsPipe;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MesaGraphicsPipe::make_gsg
+//     Function: OsMesaGraphicsPipe::make_gsg
 //       Access: Protected, Virtual
 //  Description: Creates a new GSG to use the pipe (but no windows
 //               have been created yet for the GSG).  This method will
 //               be called in the draw thread for the GSG.
 ////////////////////////////////////////////////////////////////////
-PT(GraphicsStateGuardian) MesaGraphicsPipe::
+PT(GraphicsStateGuardian) OsMesaGraphicsPipe::
 make_gsg(const FrameBufferProperties &properties) {
-  return new MesaGraphicsStateGuardian(properties);
+  return new OSMesaGraphicsStateGuardian(properties);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MesaGraphicsPipe::make_buffer
+//     Function: OsMesaGraphicsPipe::make_buffer
 //       Access: Protected, Virtual
 //  Description: Creates a new offscreen buffer on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
-PT(GraphicsBuffer) MesaGraphicsPipe::
+PT(GraphicsBuffer) OsMesaGraphicsPipe::
 make_buffer(GraphicsStateGuardian *gsg, int x_size, int y_size, bool want_texture) {
-  return new MesaGraphicsBuffer(this, gsg, x_size, y_size, want_texture);
+  return new OsMesaGraphicsBuffer(this, gsg, x_size, y_size, want_texture);
 }

@@ -22,7 +22,7 @@
 #include "glxGraphicsPipe.h"
 
 #include "graphicsPipe.h"
-#include "glGraphicsStateGuardian.h"
+#include "glgsg.h"
 
 TypeHandle glxGraphicsBuffer::_type_handle;
 

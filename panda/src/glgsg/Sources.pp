@@ -7,25 +7,15 @@
 #begin lib_target
   #define TARGET glgsg
   #define LOCAL_LIBS \
-    gsgmisc gsgbase gobj display \
+    glstuff gsgmisc gsgbase gobj display \
     putil linmath mathutil pnmimage
     
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
-
   #define SOURCES \
-     glGraphicsStateGuardian.cxx \
-     config_glgsg.h glGraphicsStateGuardian.I \
-     glGraphicsStateGuardian.h glSavedFrameBuffer.I \
-     glSavedFrameBuffer.h glTextureContext.I glext.h \
-     glGeomNodeContext.I glGeomNodeContext.h  glTextureContext.h
-
-  #define INCLUDED_SOURCES \
-     config_glgsg.cxx glSavedFrameBuffer.cxx \
-     glGeomNodeContext.cxx glTextureContext.cxx 
-
+    config_glgsg.h config_glgsg.cxx \
+    glgsg.h glgsg.cxx
 
   #define INSTALL_HEADERS \
-    config_glgsg.h glGraphicsStateGuardian.I glGraphicsStateGuardian.h
+    config_glgsg.h glgsg.h
 
 #end lib_target
 

@@ -1,5 +1,5 @@
-// Filename: glSavedFrameBuffer.h
-// Created by:  drose (06Oct99)
+// Filename: osMesaGraphicsStateGuardian.h
+// Created by:  drose (09Feb04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,38 +16,34 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef GLSAVEDFRAMEBUFFER_H
-#define GLSAVEDFRAMEBUFFER_H
+#ifndef OSMESAGRAPHICSSTATEGUARDIAN_H
+#define OSMESAGRAPHICSSTATEGUARDIAN_H
 
 #include "pandabase.h"
+#include "mesagsg.h"
 
-#include <savedFrameBuffer.h>
-#include <texture.h>
-#include <textureContext.h>
-#include <pixelBuffer.h>
-
+#include <GL/osmesa.h>
 
 ////////////////////////////////////////////////////////////////////
-//       Class : GLSavedFrameBuffer
-// Description :
+//       Class : OSMesaGraphicsStateGuardian
+// Description : A tiny specialization on MesaGraphicsStateGuardian to
+//               add a reference to the OSMesaContext.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAGL GLSavedFrameBuffer : public SavedFrameBuffer {
+class EXPCL_PANDAMESA OSMesaGraphicsStateGuardian : public MesaGraphicsStateGuardian {
 public:
-  INLINE GLSavedFrameBuffer(const RenderBuffer &buffer,
-                            CPT(DisplayRegion) dr);
-  INLINE ~GLSavedFrameBuffer();
+  OSMesaGraphicsStateGuardian(const FrameBufferProperties &properties);
+  virtual ~OSMesaGraphicsStateGuardian();
 
-  PT(Texture) _back_rgba;
-  PT(PixelBuffer) _depth;
+  OSMesaContext _context;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    SavedFrameBuffer::init_type();
-    register_type(_type_handle, "GLSavedFrameBuffer",
-                  SavedFrameBuffer::get_class_type());
+    MesaGraphicsStateGuardian::init_type();
+    register_type(_type_handle, "OSMesaGraphicsStateGuardian",
+                  MesaGraphicsStateGuardian::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -58,7 +54,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "glSavedFrameBuffer.I"
+#include "osMesaGraphicsStateGuardian.I"
 
 #endif
-

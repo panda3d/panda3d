@@ -1,4 +1,4 @@
-// Filename: mesaGraphicsStateGuardian.cxx
+// Filename: osMesaGraphicsStateGuardian.cxx
 // Created by:  drose (09Feb04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,29 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "mesaGraphicsStateGuardian.h"
+#include "osMesaGraphicsStateGuardian.h"
 
-TypeHandle MesaGraphicsStateGuardian::_type_handle;
+TypeHandle OSMesaGraphicsStateGuardian::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MesaGraphicsStateGuardian::Constructor
+//     Function: OSMesaGraphicsStateGuardian::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-MesaGraphicsStateGuardian::
-MesaGraphicsStateGuardian(const FrameBufferProperties &properties) : 
-  GLGraphicsStateGuardian(properties)
+OSMesaGraphicsStateGuardian::
+OSMesaGraphicsStateGuardian(const FrameBufferProperties &properties) : 
+  MesaGraphicsStateGuardian(properties)
 {
   _context = OSMesaCreateContext(OSMESA_RGBA, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MesaGraphicsStateGuardian::Destructor
+//     Function: OSMesaGraphicsStateGuardian::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-MesaGraphicsStateGuardian::
-~MesaGraphicsStateGuardian() {
+OSMesaGraphicsStateGuardian::
+~OSMesaGraphicsStateGuardian() {
   if (_context != (OSMesaContext)NULL) {
     OSMesaDestroyContext(_context);
     _context = (OSMesaContext)NULL;

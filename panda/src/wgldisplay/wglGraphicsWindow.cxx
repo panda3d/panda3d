@@ -20,7 +20,7 @@
 #include "config_wgldisplay.h"
 #include "config_windisplay.h"
 #include "wglGraphicsPipe.h"
-#include "glGraphicsStateGuardian.h"
+#include "glgsg.h"
 
 #include <wingdi.h>
 #include <ddraw.h>

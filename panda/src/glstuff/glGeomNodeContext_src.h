@@ -1,5 +1,5 @@
-// Filename: mesaGraphicsStateGuardian.h
-// Created by:  drose (09Feb04)
+// Filename: glGeomNodeContext_src.h
+// Created by:  drose (12Jun01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,34 +16,40 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MESAGRAPHICSSTATEGUARDIAN_H
-#define MESAGRAPHICSSTATEGUARDIAN_H
-
 #include "pandabase.h"
-
-#include "glGraphicsStateGuardian.h"
-#include "mesaGraphicsPipe.h"
+#include "geomNodeContext.h"
+#include "geomNode.h"
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : MesaGraphicsStateGuardian
-// Description : A tiny specialization on GLGraphicsStateGuardian to
-//               add some Mesa-specific information.
+//       Class : GLGeomNodeContext
+// Description :
 ////////////////////////////////////////////////////////////////////
-class MesaGraphicsStateGuardian : public GLGraphicsStateGuardian {
+class EXPCL_GL CLP(GeomNodeContext) : public GeomNodeContext {
 public:
-  MesaGraphicsStateGuardian(const FrameBufferProperties &properties);
-  virtual ~MesaGraphicsStateGuardian();
+  INLINE CLP(GeomNodeContext)(GeomNode *node);
 
-  OSMesaContext _context;
+  // The GL display list index that draws the contents of this
+  // GeomNode.
+  GLuint _index;
+
+  // A list of the dynamic Geoms within the GeomNode; these aren't
+  // part of the above display list.
+  typedef pvector< PT(Geom) > Geoms;
+  Geoms _dynamic_geoms;
+
+  // The number of vertices represented by the display list.  This is
+  // strictly for the benefit of PStats reporting.
+  DO_PSTATS_STUFF(int _num_verts;)
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    GLGraphicsStateGuardian::init_type();
-    register_type(_type_handle, "MesaGraphicsStateGuardian",
-                  GLGraphicsStateGuardian::get_class_type());
+    GeomNodeContext::init_type();
+    register_type(_type_handle, CLASSPREFIX_QUOTED "GeomNodeContext",
+                  GeomNodeContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -54,6 +60,4 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "mesaGraphicsStateGuardian.I"
-
-#endif
+#include "glGeomNodeContext_src.I"

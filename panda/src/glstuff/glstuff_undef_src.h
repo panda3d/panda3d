@@ -1,5 +1,5 @@
-// Filename: glTextureContext.cxx
-// Created by:  drose (07Oct99)
+// Filename: glstuff_undef_src.h
+// Created by:  drose (09Feb04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,6 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "glTextureContext.h"
+// This header file #undefs all the stuff you had to #define to
+// include glstuff_src.h or glstuff_src.cxx.
 
-TypeHandle GLTextureContext::_type_handle;
+#undef GLP
+#undef CLP
+#undef CLASSPREFIX_QUOTED
+#undef CONFIGOBJ
+#undef GLCAT
+#undef EXPCL
+#undef EXPTP
+
