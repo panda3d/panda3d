@@ -1102,6 +1102,19 @@ class LevelEditor(NodePath, PandaObject):
         # Use the toontown color set
         self.useToontownCentralColors()
 
+    def recreateColorMenus(self):
+        currentMode = self.editMode
+        self.createColorMenus()
+        # Reset to current mode
+        if self.editMode == 'ToontownCentral':
+            self.useToontownCentralColors()
+        elif self.editMode == 'DonaldsDock':
+            self.useDonaldsDockColors()
+        elif self.editMode == 'MinniesMelodyLand':
+            self.useMinniesMelodyLandColors()
+        elif self.editMode == 'TheBurrrgh':
+            self.useTheBurrrghColors()
+
     def createCorniceMenu(self):
 	# Get the currently available window options	
 	numItems = len(self.getCorniceTextures())
@@ -1519,6 +1532,12 @@ class LevelEditor(NodePath, PandaObject):
 	self.pieMenuDictionary['propTypesMenu'] = (
             PieMenu(self.direct,self.createPropTypesMenu(),
                     self.updatePropNum))
+        # Create several different style menus
+        self.createStyleMenus()
+	# Create several differnt color palette menus
+	self.createColorMenus()
+
+    def createStyleMenus(self):
 	self.pieMenuDictionary['toontownCentralStyleMenu'] = (
             PieMenu(self.direct,self.createStyleMenuWith(
             self.attributeDictionary['toontownCentralStyleDictionary']),
@@ -1537,8 +1556,13 @@ class LevelEditor(NodePath, PandaObject):
                     self.updateWallStyleNum))
 	self.pieMenuDictionary['styleMenu'] = (
             self.pieMenuDictionary['toontownCentralStyleMenu'])
-	# Create several differnt color palette menus
-	self.createColorMenus()
+        
+    def recreateStyleMenus(self):
+        editMode = self.editMode
+        self.initializeStyleDictionary()
+        self.createStyleMenus()
+	self.styleDictionary = (
+            self.attributeDictionary[self.editMode + 'StyleDictionary'])
 
     def initializeStyleDictionary(self):
         # Create a dictionary for toontownCentral
@@ -3020,6 +3044,10 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                             'Save DNA File',
                             label = 'Save DNA',
                             command = self.levelEditor.outputDNADefaultFile)
+        menuBar.addmenuitem('Level Editor', 'command',
+                            'Reload Color Palettes',
+                            label = 'Reload Colors',
+                            command = self.levelEditor.recreateColorMenus)
         menuBar.addmenuitem('Level Editor', 'command',
                             'Exit Level Editor Panel',
                             label = 'Exit',
