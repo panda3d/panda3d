@@ -3,8 +3,16 @@
 import DirectNotifyGlobal
 from PythonUtil import list2dict, uniqueElements
 import string
+import LevelConstants
 if __debug__:
     import os
+
+if __debug__:
+    def makeNewSpec(filename, modelPath, ):
+        spec = LevelSpec()
+        spec.doSetAttrib(LevelConstants.LevelMgrEntId,
+                         'modelFilename', modelPath)
+        spec.saveToDisk(filename, makeBackup=0)
 
 class LevelSpec:
     """contains spec data for a level, is responsible for handing the data
@@ -12,8 +20,17 @@ class LevelSpec:
     saving out modified spec data"""
     notify = DirectNotifyGlobal.directNotify.newCategory("LevelSpec")
     
-    def __init__(self, specDict, scenario=0):
+    def __init__(self, specDict=None, scenario=0):
         self.specDict = specDict
+
+        if __debug__:
+            newSpec = 0
+            if self.specDict == None:
+                newSpec = 1
+                self.specDict = {
+                    'globalEntities': {},
+                    'scenarios': [[{}, 1]],
+                    }
 
         # this maps an entId to the dict that holds its spec;
         # entities are either in the global dict or a scenario dict
@@ -29,6 +46,33 @@ class LevelSpec:
 
         self.setScenario(scenario)
 
+        if __debug__:
+            if newSpec:
+                # add required entities
+
+                # create an entityTypeReg before attempting entity
+                # insertions; basic EntityTypes reg is enough for our purposes
+                # here
+                import EntityTypes
+                import EntityTypeRegistry
+                etr = EntityTypeRegistry.EntityTypeRegistry(EntityTypes)
+                self.setEntityTypeReg(etr)
+
+                # UberZone
+                entId = LevelConstants.UberZoneEntId
+                self.insertEntity(entId, 'zone', None)
+                self.doSetAttrib(entId, 'modelZoneNum',
+                                 LevelConstants.UberZoneNum)
+                self.doSetAttrib(entId, 'name', 'UberZone')
+                # LevelMgr
+                entId = LevelConstants.LevelMgrEntId
+                self.insertEntity(entId, 'levelMgr', None)
+                self.doSetAttrib(entId, 'name', 'LevelMgr')
+                # EditMgr
+                entId = LevelConstants.EditMgrEntId
+                self.insertEntity(entId, 'editMgr', None)
+                self.doSetAttrib(entId, 'name', 'EditMgr')
+                                       
     def getNumScenarios(self):
         return len(self.specDict['scenarios'])
 
@@ -84,6 +128,9 @@ class LevelSpec:
         def setLevel(self, level):
             self.level = level
 
+        def hasLevel(self):
+            return hasattr(self, 'level')
+
         def setEntityTypeReg(self, entTypeReg):
             self.entTypeReg = entTypeReg
             self.checkSpecIntegrity()
@@ -94,20 +141,25 @@ class LevelSpec:
         def setFilename(self, filename):
             self.filename = filename
 
-        def setAttribChange(self, entId, attrib, value, username):
-            """ we're being asked to change an attribute """
-            LevelSpec.notify.info("setAttribChange(%s): %s, %s = '%s'" %
-                                  (username, entId, attrib, repr(value)))
+        def doSetAttrib(self, entId, attrib, value):
+            """ do the dirty work of changing an attrib value """
             assert entId in self.entId2specDict
             specDict = self.entId2specDict[entId]
             assert specDict[entId].has_key(attrib)
             specDict[entId][attrib] = value
-            # let the level know that this attribute value has
-            # officially changed
-            self.level.handleAttribChange(entId, attrib, value, username)
+
+        def setAttribChange(self, entId, attrib, value, username):
+            """ we're being asked to change an attribute """
+            LevelSpec.notify.info("setAttribChange(%s): %s, %s = '%s'" %
+                                  (username, entId, attrib, repr(value)))
+            self.doSetAttrib(entId, attrib, value)
+            if self.hasLevel():
+                # let the level know that this attribute value has
+                # officially changed
+                self.level.handleAttribChange(entId, attrib, value, username)
 
         def insertEntity(self, entId, entType, parentEntId):
-            LevelSpec.notify.info('inserting entity %s' % entId)
+            LevelSpec.notify.info('inserting entity %s (%s)' % (entId, entType))
             assert entId not in self.entId2specDict
             assert self.entTypeReg is not None
             globalEnts = self.privGetGlobalEntityDict()
@@ -124,14 +176,18 @@ class LevelSpec:
             if 'parentEntId' in spec:
                 spec['parentEntId'] = parentEntId
 
-            # notify the level
-            self.level.handleEntityInsert(entId)
+            if self.hasLevel():
+                # notify the level
+                self.level.handleEntityInsert(entId)
             
         def removeEntity(self, entId):
             LevelSpec.notify.info('removing entity %s' % entId)
             assert entId in self.entId2specDict
-            # notify the level
-            self.level.handleEntityRemove(entId)
+
+            if self.hasLevel():
+                # notify the level
+                self.level.handleEntityRemove(entId)
+
             # remove the entity's spec
             dict = self.entId2specDict[entId]
             del dict[entId]
@@ -162,6 +218,7 @@ class LevelSpec:
                     LevelSpec.notify.warning(
                         'error during backup: %s' % str(e))
 
+            LevelSpec.notify.info("writing to '%s'" % filename)
             self.privRemoveFile(filename)
             self.privSaveToDisk(filename)
 

@@ -5,6 +5,7 @@ from PythonUtil import Functor, sameElements, list2dict, uniqueElements
 import ToontownGlobals
 import DistributedObject
 import Level
+import LevelConstants
 import DirectNotifyGlobal
 import EntityCreator
 import OnscreenText
@@ -363,7 +364,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # if no viz, listen to all the zones
         if not DistributedLevel.WantVisibility:
             zoneNums = list(self.zoneNums)
-            zoneNums.remove(Level.Level.uberZoneNum)
+            zoneNums.remove(LevelConstants.UberZoneNum)
             self.setVisibility(zoneNums)
 
     def toonEnterZone(self, zoneNum):
@@ -428,7 +429,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # accepts list of visible zone numbers
         # convert the zone numbers into their actual zoneIds
         # always include Toontown and factory uberZones
-        uberZone = self.getZoneId(zoneNum=Level.Level.UberZoneNum)
+        uberZone = self.getZoneId(zoneNum=LevelConstants.UberZoneNum)
         # the level itself is in the 'level zone'
         visibleZoneIds = [ToontownGlobals.UberZone, self.levelZone, uberZone]
         for vz in vizList:

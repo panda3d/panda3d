@@ -1,7 +1,7 @@
 """ZoneEntityBase module: contains the ZoneEntityBase class"""
 
 import Entity
-import Level
+import LevelConstants
 
 class ZoneEntityBase(Entity.Entity):
     def __init__(self, level, entId):
@@ -13,7 +13,7 @@ class ZoneEntityBase(Entity.Entity):
         Entity.Entity.destroy(self)
 
     def isUberZone(self):
-        return self.entId == Level.Level.UberZoneEntId
+        return self.entId == LevelConstants.UberZoneEntId
 
     def setZoneId(self, zoneId):
         """set the network zoneId that this zone entity corresponds to"""
