@@ -30,3 +30,5 @@ typedef long DWORD;
 union LARGE_INTEGER {
   __int64 QuadPart;
 };
+
+#endif
