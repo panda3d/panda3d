@@ -19,6 +19,7 @@ class Button(DirectObject):
                  bottom = None,
                  top = None):
         self.name = name
+        self.width = width
         # if no label given, use the button name
         if (label == None):
             label = self.name
@@ -30,6 +31,11 @@ class Button(DirectObject):
 
             self.l1 = Label.textLabel(self.label, Label.ButtonUp,
                                       scale, width, drawOrder, font)
+
+            if width == None:
+                width = self.l1.getWidth() / scale
+                self.width = width
+            
             self.l2 = Label.textLabel(self.label, Label.ButtonLit,
                                       scale, width, drawOrder, font)
             self.l3 = Label.textLabel(self.label, Label.ButtonDown,
@@ -50,6 +56,10 @@ class Button(DirectObject):
                 self.l1 = Label.modelLabel(label, 1, 1,
                                            scale = scale,
                                            drawOrder = drawOrder)
+
+            if width == None:
+                width = self.l1.getWidth() / scale
+                self.width = width
             
             self.l2 = self.l1
             self.l3 = self.l1
@@ -57,6 +67,8 @@ class Button(DirectObject):
         else:
             # label provided, use it for all labels
             self.l1 = self.l2 = self.l3 = label
+            if width == None:
+                width = self.l1.getWidth()
 
         self.button = GuiButton.GuiButton(self.name, self.l1, self.l2,
                                           self.l3, self.l3, self.l1)
@@ -87,8 +99,7 @@ class Button(DirectObject):
         return self.button
 
     def getWidth(self):
-        # assume all labels have the same width
-        return self.l1.getWidth()
+        return self.width
     
     def setWidth(self, width):
         self.l1.setWidth(width)
