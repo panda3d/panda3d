@@ -70,11 +70,12 @@ create_toplevel_window(HINSTANCE application) {
 
   DWORD window_style = WS_POPUP | WS_SYSMENU | WS_ICONIC;
 
-  char window_name[128];
-  sprintf(window_name, "PStats %d", pstats_port);
+  ostringstream strm;
+  strm << "PStats " << pstats_port;
+  string window_name = strm.str();
 
   HWND toplevel_window = 
-    CreateWindow(toplevel_class_name, window_name, window_style,
+    CreateWindow(toplevel_class_name, window_name.c_str(), window_style,
                  CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
                  NULL, NULL, application, 0);
   if (!toplevel_window) {
