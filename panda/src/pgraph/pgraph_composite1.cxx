@@ -1,0 +1,6 @@
+#include "colorAttrib.cxx"
+#include "config_pgraph.cxx"
+#include "cycleData.cxx"
+#include "cycleDataReader.cxx"
+#include "cycleDataWriter.cxx"
+#include "pandaNode.cxx"
