@@ -63,7 +63,7 @@ class DirectEntry(DirectFrame):
             # The PGEntry which will use the TextNode to generate geometry
             text = '',
             # PGEntry assumes left alignment
-            align = TMALIGNLEFT,
+            align = TextNode.ALeft,
             font = font,
             scale = 1,
             # Don't get rid of the text node

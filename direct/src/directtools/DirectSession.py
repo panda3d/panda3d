@@ -65,7 +65,7 @@ class DirectSession(PandaObject):
 
         self.selectedNPReadout = OnscreenText.OnscreenText(
             pos = (-1.0, -0.9), bg=Vec4(1,1,1,1),
-            scale = 0.05, align = TMALIGNLEFT,
+            scale = 0.05, align = TextNode.ALeft,
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.selectedNPReadout)
@@ -73,7 +73,7 @@ class DirectSession(PandaObject):
 
         self.activeParentReadout = OnscreenText.OnscreenText(
             pos = (-1.0, -0.975), bg=Vec4(1,1,1,1),
-            scale = 0.05, align = TMALIGNLEFT,
+            scale = 0.05, align = TextNode.ALeft,
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.activeParentReadout)
@@ -81,7 +81,7 @@ class DirectSession(PandaObject):
 
         self.directMessageReadout = OnscreenText.OnscreenText(
             pos = (-1.0, 0.9), bg=Vec4(1,1,1,1),
-            scale = 0.05, align = TMALIGNLEFT,
+            scale = 0.05, align = TextNode.ALeft,
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.directMessageReadout)

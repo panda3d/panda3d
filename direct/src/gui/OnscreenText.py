@@ -70,7 +70,7 @@ class OnscreenText(PandaObject, NodePath):
               text.  If the fourth value, a, is nonzero, a frame is
               created around the text.
 
-          align: one of TMALIGNLEFT, TMALIGNRIGHT, or TMALIGNCENTER.
+          align: one of TextNode.ALeft, TextNode.ARight, or TextNode.ACenter.
 
           wordwrap: either the width to wordwrap the text at, or None
               to specify no automatic word wrapping.
@@ -105,7 +105,7 @@ class OnscreenText(PandaObject, NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            align = align or TMALIGNCENTER
+            align = align or TextNode.ACenter
 
         elif style == ScreenTitle:
             scale = scale or 0.15
@@ -113,7 +113,7 @@ class OnscreenText(PandaObject, NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 1)
             frame = frame or (0, 0, 0, 0)
-            align = align or TMALIGNCENTER
+            align = align or TextNode.ACenter
 
         elif style == ScreenPrompt:
             scale = scale or 0.1
@@ -121,7 +121,7 @@ class OnscreenText(PandaObject, NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 1)
             frame = frame or (0, 0, 0, 0)
-            align = align or TMALIGNCENTER
+            align = align or TextNode.ACenter
 
         elif style == NameConfirm:
             scale = scale or 0.1
@@ -129,7 +129,7 @@ class OnscreenText(PandaObject, NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            align = align or TMALIGNCENTER
+            align = align or TextNode.ACenter
 
         elif style == BlackOnWhite:
             scale = scale or 0.1
@@ -137,7 +137,7 @@ class OnscreenText(PandaObject, NodePath):
             bg = bg or (1, 1, 1, 1)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            align = align or TMALIGNCENTER
+            align = align or TextNode.ACenter
 
         else:
             raise ValueError

@@ -86,7 +86,7 @@ class DirectDialog(DirectFrame):
             ('pos',               (0, 0.1, 0),   None),
             ('pad',               (0.1, 0.1),    None),
             ('text',              '',            None),
-            ('text_align',        TMALIGNLEFT,   None),
+            ('text_align',        TextNode.ALeft,   None),
             ('text_scale',        0.06,          None),
             ('image',  getDefaultDialogGeom(),   None),
             ('relief',            None,          None),
