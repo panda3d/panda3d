@@ -27,6 +27,7 @@
 EggToX::
 EggToX() : EggToSomething("DirectX", ".x", true, false) {
   add_texture_options();
+  add_delod_options(0.0);
 
   set_program_description
     ("This program reads an Egg file and outputs an equivalent, "
@@ -64,7 +65,7 @@ run() {
     exit(1);
   }
 
-  if (!copy_textures()) {
+  if (!do_reader_options()) {
     exit(1);
   }
 

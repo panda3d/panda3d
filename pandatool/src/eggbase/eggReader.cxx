@@ -121,7 +121,7 @@ add_delod_options(double default_delod) {
        "Eliminate LOD's by choosing the level that would be appropriate for "
        "a camera at the indicated fixed distance from each LOD.  "
        "Use -delod -1 to keep all the LOD's as they are.  The default value "
-       "is " + format_string(default_delod),
+       "is " + format_string(default_delod) + ".",
        &EggReader::dispatch_double, NULL, &_delod);
   }
 }
