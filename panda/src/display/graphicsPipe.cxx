@@ -19,10 +19,11 @@
 #include "graphicsPipe.h"
 #include "config_display.h"
 
-#include <algorithm>
+#include "load_dso.h"
+#include "filename.h"
+#include "pset.h"
 
-#include <load_dso.h>
-#include <filename.h>
+#include <algorithm>
 
 // Static variables
 ////////////////////////////////////////////////////////////////////
@@ -340,24 +341,34 @@ get_factory() {
 void GraphicsPipe::resolve_modules(void) {
   Config::ConfigTable::Symbol::iterator i;
 
+  // Build up a set of the modules we've already loaded as we go, so
+  // we don't attempt to load a given module more than once.
+  pset<string> already_loaded;
+
   for (i=pipe_modules_begin(); i!=pipe_modules_end(); ++i) {
-    Filename dlname = Filename::dso_filename("lib" + (*i).Val() + ".so");
-    display_cat.info()
-      << "loading display module: " << dlname.to_os_specific() << endl;
-    void *tmp = load_dso(dlname);
-    if (tmp == (void*)0L) {
+    string name = (*i).Val();
+    if (already_loaded.insert(name).second) {
+      Filename dlname = Filename::dso_filename("lib" + name + ".so");
       display_cat.info()
-        << "Unable to load: " << load_dso_error() << endl;
+        << "loading display module: " << dlname.to_os_specific() << endl;
+      void *tmp = load_dso(dlname);
+      if (tmp == (void*)0L) {
+        display_cat.info()
+          << "Unable to load: " << load_dso_error() << endl;
+      }
     }
   }
   for (i=gsg_modules_begin(); i!=gsg_modules_end(); ++i) {
-    Filename dlname = Filename::dso_filename("lib" + (*i).Val() + ".so");
-    display_cat.info()
-      << "loading GSG module: " << dlname.to_os_specific() << endl;
-    void *tmp = load_dso(dlname);
-    if (tmp == (void*)0L) {
+    string name = (*i).Val();
+    if (already_loaded.insert(name).second) {
+      Filename dlname = Filename::dso_filename("lib" + name + ".so");
       display_cat.info()
-        << "Unable to load: " << load_dso_error() << endl;
+        << "loading GSG module: " << dlname.to_os_specific() << endl;
+      void *tmp = load_dso(dlname);
+      if (tmp == (void*)0L) {
+        display_cat.info()
+          << "Unable to load: " << load_dso_error() << endl;
+      }
     }
   }
 
