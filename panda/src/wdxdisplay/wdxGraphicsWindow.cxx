@@ -1266,8 +1266,7 @@ dx_setup() {
 
         // Create the primary surface
         if(FAILED( hr = pDD->CreateSurface( &ddsd, &pPrimaryDDSurf, NULL ) )) {
-            wdxdisplay_cat.fatal()
-            << "CreateFullscreenBuffers() - CreateSurface failed for primary surface: result = " << ConvD3DErrorToString(hr) << endl;
+            wdxdisplay_cat.fatal() << "CreateSurface failed for primary surface: result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
 
@@ -1278,22 +1277,19 @@ dx_setup() {
         hr = pPrimaryDDSurf->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx);
 
         if(FAILED( hr )) {
-            wdxdisplay_cat.fatal()
-            << "Blt to Black of Primary Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
+            wdxdisplay_cat.fatal() << "Blt to Black of Primary Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
 
         // Get the backbuffer, which was created along with the primary.
         DDSCAPS2 ddscaps = { DDSCAPS_BACKBUFFER, 0, 0, 0};
         if(FAILED( hr = pPrimaryDDSurf->GetAttachedSurface( &ddscaps, &pBackDDSurf ) )) {
-            wdxdisplay_cat.fatal()
-            << "CreateFullscreenBuffers() - Can't get the backbuffer: result = " << ConvD3DErrorToString(hr) << endl;
+            wdxdisplay_cat.fatal() << "Can't get the backbuffer: result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
 
         if(FAILED( hr = pBackDDSurf->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx))) {
-            wdxdisplay_cat.fatal()
-            << "Blt to Black of Back Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
+            wdxdisplay_cat.fatal() << "Blt to Black of Back Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
 
@@ -1313,8 +1309,7 @@ dx_setup() {
             exit(1);
         }
         if(SurfaceDesc.ddpfPixelFormat.dwRGBBitCount <= 8) {
-            wdxdisplay_cat.fatal()
-            << "config() - Can't run windowed in an 8-bit or less display mode" << endl;
+            wdxdisplay_cat.fatal() << "Can't run windowed in an 8-bit or less display mode" << endl;
             exit(1);
         }
 
@@ -1330,8 +1325,7 @@ dx_setup() {
 //         SCL_FPUFlag = DDSCL_FPUPRESERVE;  // tell d3d to preserve the fpu state across calls.  this hurts perf, but is good for dbgging
 
         if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FPUFlag | DDSCL_NORMAL))) {
-            wdxdisplay_cat.fatal()
-            << "config() - SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
+            wdxdisplay_cat.fatal() << "SetCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
         // Get the dimensions of the viewport and screen bounds
@@ -1504,23 +1498,43 @@ dx_setup() {
                 assert(pz16!=NULL);
                 ddsd.ddpfPixelFormat = *pz16;
             } else {
-                assert(pz24!=NULL);
-                ddsd.ddpfPixelFormat = *pz24;  //take the no-stencil version of the 32-bit Zbuf
+                if(dx_force_16bpp_zbuffer) {
+                    wdxdisplay_cat.fatal() << "'dx-force-16bpp-zbuffer #t' requires a 16bpp desktop on nvidia cards\n";
+                    exit(1);
+                }
+                // take the smaller of 24 or 32.  (already assured to match stencil capability)
+                if(pz24!=NULL)
+                    ddsd.ddpfPixelFormat = *pz24; 
+                  else ddsd.ddpfPixelFormat = *pz32; 
             }
         } else {
-            // pick the highest res zbuffer format avail.  Note: this is choosing to waste vid-memory
-            // and possibly perf for more accuracy, less z-fighting at long distance (std 16bpp would 
-            // be smaller// maybe faster)
+            if(dx_force_16bpp_zbuffer) {
+                if(pz16==NULL) {
+                    wdxdisplay_cat.fatal() << "'dx-force-16bpp-zbuffer #t', but no 16bpp zbuf fmts available on this card\n";
+                    exit(1);
+                }
 
-            if(pz32!=NULL) {
-                ddsd.ddpfPixelFormat = *pz32;
-            } else if(pz24!=NULL) {
-                ddsd.ddpfPixelFormat = *pz24;
-            } else if(pz16!=NULL) {
+                wdxdisplay_cat.debug() << "forcing use of 16bpp Z-Buffer\n";
                 ddsd.ddpfPixelFormat = *pz16;
             } else {
-                wdxdisplay_cat.fatal() << "could not find a valid zbuffer format!\n";
-                exit(1);
+                // pick the highest res zbuffer format avail.  Note: this is choosing to waste vid-memory
+                // and possibly perf for more accuracy, less z-fighting at long distance (std 16bpp would 
+                // be smaller// maybe faster)
+                // order of preference 24: (should be enough), 32: probably means 24 of Z, then 16
+
+                if(bWantStencil && (pz32!=NULL)) {
+                    // dont want to select 16/8 z/stencil over 24/8 z/stenc
+                    ddsd.ddpfPixelFormat = *pz32;
+                } else {
+                    if(pz24!=NULL) {
+                        ddsd.ddpfPixelFormat = *pz24;
+                    } else if(pz32!=NULL) {
+                        ddsd.ddpfPixelFormat = *pz32;
+                    } else {
+                        assert(pz16!=NULL);
+                        ddsd.ddpfPixelFormat = *pz16;
+                    }
+                }
             }
         }
 
