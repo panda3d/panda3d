@@ -28,6 +28,7 @@
 #include "clockObject.h"
 #include "pStatTimer.h"
 #include "pStatClient.h"
+#include "pStatCollector.h"
 #include "mutexHolder.h"
 #include "string_utils.h"
 
@@ -95,9 +96,11 @@ GraphicsEngine(Pipeline *pipeline) :
 ////////////////////////////////////////////////////////////////////
 GraphicsEngine::
 ~GraphicsEngine() {
+#ifdef DO_PSTATS
   if (_app_pcollector.is_started()) {
     _app_pcollector.stop();
   }
+#endif
 
   remove_all_windows();
 }
@@ -428,9 +431,11 @@ void GraphicsEngine::
 render_frame() {
   // Anything that happens outside of GraphicsEngine::render_frame()
   // is deemed to be App.
+#ifdef DO_PSTATS
   if (_app_pcollector.is_started()) {
     _app_pcollector.stop();
   }
+#endif
 
   // We hold the GraphicsEngine mutex while we wait for all of the
   // threads.  Doing this puts us at risk for deadlock if any of the
