@@ -517,30 +517,35 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
   // Now we're done with the frame processing.  Clean up.
 
-  // Let's turn off all the lights we had on, and clear the light
-  // cache--to force the lights to be reissued next frame, in case
-  // their parameters or positions have changed between frames.
-  
-  for (int i = 0; i < _max_lights; i++) {
-    if (_light_enabled[i]) {
-      enable_light(i, false);
-    }
-    _available_light_ids[i] = NULL;
+  if(_lighting_enabled) {
+	  // Let's turn off all the lights we had on, and clear the light
+	  // cache--to force the lights to be reissued next frame, in case
+	  // their parameters or positions have changed between frames.
+
+	  for (int i = 0; i < _max_lights; i++) {
+		if (_light_enabled[i]) {
+		  enable_light(i, false);
+		}
+		_available_light_ids[i] = NULL;
+	  }
+
+	  // Also force the lighting state to unlit, so that issue_light()
+	  // will be guaranteed to be called next frame even if we have the
+	  // same set of light pointers we had this frame.
+	  NodeAttributes state;
+	  state.set_attribute(LightTransition::get_class_type(), new LightAttribute);
+	  set_state(state, false);
+
+	  // All this work to undo the lighting state each frame doesn't seem
+	  // ideal--there may be a better way.  Maybe if the lights were just
+	  // more aware of whether their parameters or positions have changed
+	  // at all?
   }
 
-  // Also force the lighting state to unlit, so that issue_light()
-  // will be guaranteed to be called next frame even if we have the
-  // same set of light pointers we had this frame.
-  NodeAttributes state;
-  state.set_attribute(LightTransition::get_class_type(), new LightAttribute);
-  set_state(state, false);
-
-  // All this work to undo the lighting state each frame doesn't seem
-  // ideal--there may be a better way.  Maybe if the lights were just
-  // more aware of whether their parameters or positions have changed
-  // at all?
-
+#ifndef NDEBUG
   report_errors();
+#endif
+
   _win->end_frame();
 
 #ifdef GSG_VERBOSE
