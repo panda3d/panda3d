@@ -119,6 +119,7 @@ write_line(const string &line) {
     }
 
     cerr << "Unsupported write format: " << (int)_format << "\n";
+    errors_occurred = true;
     return false;
   }
 }
@@ -314,6 +315,7 @@ read_file(Filename filename) {
 
   if (!filename.open_read(in)) {
     cerr << "Unable to open " << filename << ".\n";
+    errors_occurred = true;
     return false;
   }
   if (verbose) {
@@ -345,6 +347,7 @@ read_stream(istream &in, const string &filename) {
   if (!read_stream(in)) {
     if (!in.eof()) {
       cerr << "Error reading " << filename << ".\n";
+      errors_occurred = true;
     }
     return false;
   }
@@ -484,6 +487,7 @@ end_read() {
 
   if (_if_nesting != (IfNesting *)NULL) {
     cerr << "Unclosed if\n";
+    errors_occurred = true;
     _if_nesting = (IfNesting *)NULL;
     okflag = false;
   }
@@ -492,38 +496,46 @@ end_read() {
     switch (_block_nesting->_state) {
     case BS_begin:
       cerr << "Unclosed begin " << _block_nesting->_name << "\n";
+      errors_occurred = true;
       break;
 
     case BS_while:
     case BS_nested_while:
       cerr << "Unclosed while " << _block_nesting->_name << "\n";
+      errors_occurred = true;
       break;
 
     case BS_forscopes:
     case BS_nested_forscopes:
       cerr << "Unclosed forscopes " << _block_nesting->_name << "\n";
+      errors_occurred = true;
       break;
 
     case BS_foreach:
     case BS_nested_foreach:
       cerr << "Unclosed foreach " << _block_nesting->_name << "\n";
+      errors_occurred = true;
       break;
 
     case BS_formap:
     case BS_nested_formap:
       cerr << "Unclosed formap " << _block_nesting->_name << "\n";
+      errors_occurred = true;
       break;
 
     case BS_defsub:
       cerr << "Unclosed defsub " << _block_nesting->_name << "\n";
+      errors_occurred = true;
       break;
 
     case BS_defun:
       cerr << "Unclosed defun " << _block_nesting->_name << "\n";
+      errors_occurred = true;
       break;
 
     case BS_output:
       cerr << "Unclosed output " << _block_nesting->_name << "\n";
+      errors_occurred = true;
       break;
     }
     _block_nesting = (BlockNesting *)NULL;
@@ -682,6 +694,7 @@ handle_command(const string &line) {
   }
    
   cerr << "Invalid command: " << COMMAND_PREFIX << _command << "\n";
+  errors_occurred = true;
   return false;
 }
 
@@ -734,10 +747,12 @@ bool PPCommandFile::
 handle_elif_command() {
   if (_if_nesting == (IfNesting *)NULL) {
     cerr << "elif encountered without if.\n";
+    errors_occurred = true;
     return false;
   }
   if (_if_nesting->_state == IS_else) {
     cerr << "elif encountered after else.\n";
+    errors_occurred = true;
     return false;
   }
   if (_if_nesting->_state == IS_on || _if_nesting->_state == IS_done) {
@@ -772,10 +787,12 @@ bool PPCommandFile::
 handle_else_command() {
   if (_if_nesting == (IfNesting *)NULL) {
     cerr << "else encountered without if.\n";
+    errors_occurred = true;
     return false;
   }
   if (_if_nesting->_state == IS_else) {
     cerr << "else encountered after else.\n";
+    errors_occurred = true;
     return false;
   }
   if (_if_nesting->_state == IS_on || _if_nesting->_state == IS_done) {
@@ -797,6 +814,7 @@ bool PPCommandFile::
 handle_endif_command() {
   if (_if_nesting == (IfNesting *)NULL) {
     cerr << "endif encountered without if.\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -806,8 +824,10 @@ handle_endif_command() {
   if (nest->_block != _block_nesting) {
     if (nest->_block != (BlockNesting *)NULL) {
       cerr << "If block not closed within scoping block " << nest->_block->_name << ".\n";
+      errors_occurred = true;
     } else {
       cerr << "If block not closed within scoping block " << _block_nesting->_name << ".\n";
+      errors_occurred = true;
     }
     return false;
   }
@@ -833,6 +853,7 @@ handle_begin_command() {
   if (contains_whitespace(name)) {
     cerr << "Attempt to define scope named \"" << name 
          << "\".\nScope names may not contain whitespace.\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -840,6 +861,7 @@ handle_begin_command() {
     cerr << "Attempt to define scope named \"" << name 
          << "\".\nScope names may not contain the '"
          << SCOPE_DIRNAME_SEPARATOR << "' character.\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -890,6 +912,7 @@ handle_for_command() {
 
   if (name.empty()) {
     cerr << "#for without varname\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -899,6 +922,7 @@ handle_for_command() {
   if (words.size() != 2 && words.size() != 3) {
     cerr << "Invalid numeric range: '" << _params.substr(p) 
          << "' for #for " << name << "\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -957,6 +981,7 @@ handle_foreach_command() {
 
   if (words.empty()) {
     cerr << "#foreach requires at least one parameter.\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -996,6 +1021,7 @@ handle_formap_command() {
 
   if (words.size() != 2) {
     cerr << "#formap requires exactly two parameters.\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -1042,6 +1068,7 @@ handle_defsub_command(bool is_defsub) {
 
   if (subroutine_name.empty()) {
     cerr << command << " requires at least one parameter.\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -1053,6 +1080,7 @@ handle_defsub_command(bool is_defsub) {
     if (!is_valid_formal(*fi)) {
       cerr << command << " " << subroutine_name
            << ": invalid formal parameter name '" << (*fi) << "'\n";
+      errors_occurred = true;
       return false;
     }
   }
@@ -1060,6 +1088,7 @@ handle_defsub_command(bool is_defsub) {
   if (_in_for) {
     cerr << command << " may not appear within another block scoping command like\n"
          << "#forscopes, #foreach, #formap, #defsub, or #defun.\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -1092,6 +1121,7 @@ handle_output_command() {
 
   if (name.empty()) {
     cerr << "#output command requires one parameter.\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -1107,6 +1137,7 @@ handle_output_command() {
       nest->_flags |= OF_notouch;
     } else {
       cerr << "Invalid output flag: " << words[i] << "\n";
+      errors_occurred = true;
     }
   }
 
@@ -1116,6 +1147,7 @@ handle_output_command() {
     Filename filename = trim_blanks(_scope->expand_string(nest->_name));
     if (filename.empty()) {
       cerr << "Attempt to output to empty filename\n";
+      errors_occurred = true;
       return false;
     }
     
@@ -1144,6 +1176,7 @@ bool PPCommandFile::
 handle_end_command() {
   if (_block_nesting == (BlockNesting *)NULL) {
     cerr << "Unmatched end " << _params << ".\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -1157,6 +1190,7 @@ handle_end_command() {
   if (name != _block_nesting->_name) {
     cerr << "end " << name << " encountered where end "
          << _block_nesting->_name << " expected.\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -1165,6 +1199,7 @@ handle_end_command() {
 
   if (nest->_if != _if_nesting) {
     cerr << "If block not closed within scoping block " << name << ".\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -1226,6 +1261,7 @@ handle_end_command() {
     if (!_in_for) {
       if (!nest->_output) {
         cerr << "Error while writing " << nest->_params << "\n";
+        errors_occurred = true;
         return false;
       }
 
@@ -1274,6 +1310,7 @@ handle_format_command() {
 
   } else {
     cerr << "Ignoring invalid write format: " << _params << "\n";
+    errors_occurred = true;
   }
 
   return true;
@@ -1389,12 +1426,14 @@ handle_call_command() {
 
   if (subroutine_name.empty()) {
     cerr << "#call requires at least one parameter.\n";
+    errors_occurred = true;
     return false;
   }
 
   const PPSubroutine *sub = PPSubroutine::get_sub(subroutine_name);
   if (sub == (const PPSubroutine *)NULL) {
     cerr << "Attempt to call undefined subroutine " << subroutine_name << "\n";
+    errors_occurred = true;
   }
 
   PPScope *old_scope = _scope;
@@ -1429,6 +1468,7 @@ handle_error_command() {
   
   if (!message.empty()) {
     cerr << message << "\n";
+    errors_occurred = true;
   }
   return false;
 }
@@ -1457,6 +1497,7 @@ handle_mkdir_command() {
     if (!filename.make_dir()) {
       if (!dirname.is_directory()) {
         cerr << "Unable to create directory " << dirname << "\n";
+        errors_occurred = true;
       }
     }
   }
@@ -1500,8 +1541,8 @@ handle_defer_command() {
   def = _scope->expand_self_reference(def, varname);
   _scope->define_variable(varname, def);
 
-  if (verbose>=2) {
-    cerr<<"#defer "<<varname<<" = "<<_params.substr(p)<<endl;
+  if (verbose >= 2) {
+    cerr << "#defer " << varname << " = " << _params.substr(p) << endl;
   }
   return true;
 }
@@ -1533,7 +1574,8 @@ handle_define_command() {
   _scope->define_variable(varname, def);
 
   if (verbose>=2) {
-    cerr<<"#define "<<varname<<" = "<<_params.substr(p)<<"\n          \""<<def<<"\""<<endl;
+    cerr << "#define " << varname << " = " << _params.substr(p)
+         << "\n          \"" << def << "\"" <<endl;
   }
   return true;
 }
@@ -1572,6 +1614,7 @@ handle_set_command() {
 
   if (!_scope->set_variable(varname, def)) {
     cerr << "Attempt to set undefined variable " << varname << "\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -1651,6 +1694,7 @@ handle_push_command() {
   if (n == param || levels < 0) {
     // Invalid integer.
     cerr << "#push with invalid level count: " << levels_str << "\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -1693,6 +1737,7 @@ include_file(Filename filename) {
   ifstream in;
   if (!filename.open_read(in)) {
     cerr << "Unable to open include file " << filename << ".\n";
+    errors_occurred = true;
     return false;
   }
   if (verbose) {
@@ -1712,6 +1757,7 @@ include_file(Filename filename) {
 
   if (!in.eof()) {
     cerr << "Error reading " << filename << ".\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -1751,6 +1797,7 @@ replay_while(const string &name) {
 
   if (saved_block != _block_nesting || saved_if != _if_nesting) {
     cerr << "Misplaced #end or #endif.\n";
+    errors_occurred = true;
     okflag = false;
   }
 
@@ -1789,12 +1836,14 @@ replay_for(const string &name, const vector<string> &words) {
     range[i] = strtol(param, &n, 10);
     if (n == param) {
       cerr << "Invalid integer in #for: " << param << "\n";
+      errors_occurred = true;
       return false;
     }
   }
 
   if (range[2] == 0) {
     cerr << "Step by zero in #for " << name << "\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -1824,6 +1873,7 @@ replay_for(const string &name, const vector<string> &words) {
 
   if (saved_block != _block_nesting || saved_if != _if_nesting) {
     cerr << "Misplaced #end or #endif.\n";
+    errors_occurred = true;
     okflag = false;
   }
 
@@ -1883,6 +1933,7 @@ replay_forscopes(const string &name) {
 
   if (saved_block != _block_nesting || saved_if != _if_nesting) {
     cerr << "Misplaced #end or #endif.\n";
+    errors_occurred = true;
     okflag = false;
   }
 
@@ -1924,6 +1975,7 @@ replay_foreach(const string &varname, const vector<string> &words) {
 
   if (saved_block != _block_nesting || saved_if != _if_nesting) {
     cerr << "Misplaced #end or #endif.\n";
+    errors_occurred = true;
     okflag = false;
   }
 
@@ -1955,6 +2007,7 @@ replay_formap(const string &varname, const string &mapvar) {
   if (&def == &PPScope::_null_map_def) {
     cerr << "Undefined map variable: #formap " << varname << " " 
          << mapvar << "\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -1979,6 +2032,7 @@ replay_formap(const string &varname, const string &mapvar) {
 
   if (saved_block != _block_nesting || saved_if != _if_nesting) {
     cerr << "Misplaced #end or #endif.\n";
+    errors_occurred = true;
     okflag = false;
   }
 
@@ -2036,6 +2090,7 @@ compare_output(const string &new_contents, Filename filename,
       ofstream out_b;
       if (!temp_filename.open_write(out_b)) {
         cerr << "Unable to open temporary file " << filename << " for writing.\n";
+        errors_occurred = true;
         return false;
       }
       
@@ -2044,6 +2099,7 @@ compare_output(const string &new_contents, Filename filename,
       bool diff_ok = true;
       if (!out_b) {
         cerr << "Unable to write to temporary file " << filename << "\n";
+        errors_occurred = true;
         diff_ok = true;
       }
       out_b.close();
@@ -2052,6 +2108,7 @@ compare_output(const string &new_contents, Filename filename,
       int sys_result = system(command.c_str());
       if (sys_result < 0) {
         cerr << "Unable to invoke diff\n";
+        errors_occurred = true;
         diff_ok = false;
       }
       out_b.close();
@@ -2069,6 +2126,7 @@ compare_output(const string &new_contents, Filename filename,
         if (exists) {
           if (!filename.unlink()) {
             cerr << "Unable to remove old " << filename << "\n";
+            errors_occurred = true;
             return false;
           }
         }
@@ -2076,6 +2134,7 @@ compare_output(const string &new_contents, Filename filename,
         ofstream out_b;
         if (!filename.open_write(out_b)) {
           cerr << "Unable to open file " << filename << " for writing.\n";
+          errors_occurred = true;
           return false;
         }
         
@@ -2083,6 +2142,7 @@ compare_output(const string &new_contents, Filename filename,
         
         if (!out_b) {
           cerr << "Unable to write to file " << filename << "\n";
+          errors_occurred = true;
           return false;
         }
         out_b.close();

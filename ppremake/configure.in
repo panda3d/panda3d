@@ -5,7 +5,7 @@ dnl ****************  UPDATE VERSION NUMBER HERE  ****************
 dnl **         Also be sure to change the version number        **
 dnl **                at the end of config_msvc.h.              **
 dnl ****************                              ****************
-AM_INIT_AUTOMAKE(ppremake, 1.15)
+AM_INIT_AUTOMAKE(ppremake, 1.16)
 dnl ****************  UPDATE VERSION NUMBER HERE  ****************
 
 AM_CONFIG_HEADER(config.h)

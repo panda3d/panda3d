@@ -356,14 +356,13 @@ expand_defined(const string &params) {
 
   if (tokens.size() != 1) {
     cerr << "error: defined requires one parameter.\n";
+    errors_occurred = true;
     return string();
   }
 
   string varname = tokens[0];
   string falsestr;
   string truestr = "1";
-
-  cerr << "defined arg is: '" << varname << "'" << endl;
 
   // Is it a user-defined function?
   const PPSubroutine *sub = PPSubroutine::get_func(varname);
@@ -375,8 +374,6 @@ expand_defined(const string &params) {
       return truestr;
     }
   }      
-
-  cerr << "zzz 3111\n";
 
   string result;
 
@@ -392,15 +389,11 @@ expand_defined(const string &params) {
     }
   }
 
-  cerr << "zzz 4111\n";
-
   // If the variable isn't defined, we check the environment.
   const char *env = getenv(varname.c_str());
   if (env != (const char *)NULL) {
     return truestr;
   }
-
-  cerr << "zzz 5111\n";
 
   // It's not defined anywhere, so it's implicitly empty.
   return falsestr;
@@ -687,6 +680,7 @@ tokenize_numeric_pair(const string &str, double &a, double &b) {
   if (words.size() != 2) {
     cerr << words.size() << " parameters supplied when two were expected:\n"
          << str << "\n";
+    errors_occurred = true;
     return false;
   }
 
@@ -1194,6 +1188,7 @@ r_expand_variable(const string &str, size_t &vp,
            << VARIABLE_PATSUBST << PATTERN_WILDCARD << ".c"
            << VARIABLE_PATSUBST_DELIM << PATTERN_WILDCARD << ".o"
            << VARIABLE_CLOSE_BRACE << ".\n";
+      errors_occurred = true;
     } else {
       PPFilenamePattern from(tokens[0]);
       PPFilenamePattern to(tokens[1]);
@@ -1201,6 +1196,7 @@ r_expand_variable(const string &str, size_t &vp,
       if (!from.has_wildcard() || !to.has_wildcard()) {
         cerr << "The two parameters of inline patsubst must both include "
              << PATTERN_WILDCARD << ".\n";
+        errors_occurred = true;
         return string();
       }
     
@@ -1433,6 +1429,7 @@ expand_libtest(const string &params) {
 
   if (tokens.size() != 2) {
     cerr << "libtest requires two parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -1595,6 +1592,7 @@ string PPScope::
 expand_shell(const string &params) {
 #ifdef WIN32_VC
   cerr << "$[shell] is not presently supported on Win32 without Cygwin.\n";
+  errors_occurred = true;
   string output;
 
 #else  // WIN32_VC
@@ -1762,6 +1760,7 @@ expand_substr(const string &params) {
 
   if (tokens.size() != 3) {
     cerr << "substr requires three parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -1922,6 +1921,7 @@ expand_makeguid(const string &params) {
 
   if (expansion.size() == 0) {
     cerr << "makeguid requires an argument.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -1990,6 +1990,7 @@ expand_word(const string &params) {
 
   if (tokens.size() != 2) {
     cerr << "word requires two parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -2021,6 +2022,7 @@ expand_wordlist(const string &params) {
 
   if (tokens.size() != 3) {
     cerr << "wordlist requires three parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -2106,11 +2108,13 @@ expand_patsubst(const string &params, bool separate_words) {
 
   if (tokens.size() < 3) {
     cerr << "patsubst requires at least three parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
   if ((tokens.size() % 2) != 1) {
     cerr << "patsubst requires an odd number of parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -2142,6 +2146,7 @@ expand_patsubst(const string &params, bool separate_words) {
       if (!pattern.has_wildcard()) {
         cerr << "All the \"from\" parameters of patsubst must include "
              << PATTERN_WILDCARD << ".\n";
+        errors_occurred = true;
         return string();
       }
       from.back().push_back(pattern);
@@ -2191,6 +2196,7 @@ expand_filter(const string &params) {
 
   if (tokens.size() != 2) {
     cerr << "filter requires two parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -2247,6 +2253,7 @@ expand_filter_out(const string &params) {
 
   if (tokens.size() != 2) {
     cerr << "filter-out requires two parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -2303,11 +2310,13 @@ expand_subst(const string &params) {
 
   if (tokens.size() < 3) {
     cerr << "subst requires at least three parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
   if ((tokens.size() % 2) != 1) {
     cerr << "subst requires an odd number of parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -2346,6 +2355,7 @@ expand_findstring(const string &params) {
 
   if (tokens.size() != 2) {
     cerr << "findstring requires two parameters.\n";
+    errors_occurred = true;
     return string();
   }
   string str = tokens.back();
@@ -2372,11 +2382,13 @@ expand_wordsubst(const string &params) {
 
   if (tokens.size() < 3) {
     cerr << "subst requires at least three parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
   if ((tokens.size() % 2) != 1) {
     cerr << "subst requires an odd number of parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -2413,6 +2425,7 @@ expand_join(const string &params) {
 
   if (tokens.size() != 2) {
     cerr << "join requires two parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -2535,6 +2548,7 @@ expand_if(const string &params) {
   }
 
   cerr << "if requires two or three parameters.\n";
+  errors_occurred = true;
   return string();
 }
 
@@ -2552,6 +2566,7 @@ expand_eq(const string &params) {
 
   if (tokens.size() != 2) {
     cerr << "eq requires two parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -2577,6 +2592,7 @@ expand_ne(const string &params) {
 
   if (tokens.size() != 2) {
     cerr << "ne requires two parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -2797,6 +2813,7 @@ expand_divide(const string &params) {
   if (tokens.size() != 2) {
     cerr << tokens.size() << " parameters supplied when two were expected:\n"
          << params << "\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -2819,6 +2836,7 @@ expand_modulo(const string &params) {
   if (tokens.size() != 2) {
     cerr << tokens.size() << " parameters supplied when two were expected:\n"
          << params << "\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -2840,6 +2858,7 @@ expand_not(const string &params) {
 
   if (tokens.size() != 1) {
     cerr << "not requires one parameter.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -2974,6 +2993,7 @@ expand_closure(const string &params) {
 
   if (tokens.size() != 2 && tokens.size() != 3) {
     cerr << "closure requires two or three parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -3060,6 +3080,7 @@ expand_unmapped(const string &params) {
 
   if (tokens.size() != 2) {
     cerr << "unmapped requires two parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -3147,6 +3168,7 @@ expand_foreach(const string &params) {
 
   if (tokens.size() != 3) {
     cerr << "foreach requires three parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -3184,6 +3206,7 @@ expand_forscopes(const string &params) {
 
   if (tokens.size() != 2) {
     cerr << "forscopes requires two parameters.\n";
+    errors_occurred = true;
     return string();
   }
 
@@ -3289,6 +3312,7 @@ expand_map_variable(const string &varname, const string &params) {
   if (tokens.size() != 2) {
     cerr << "map variable expansions require two parameters: $["
          << varname << " " << params << "]\n";
+    errors_occurred = true;
     return string();
   }
 

@@ -35,6 +35,8 @@ bool verbose_dry_run = false;
 int verbose = 0;
 int debug_expansions = 0;
 
+bool errors_occurred = false;
+
 DebugExpand debug_expand;
 
 class DebugExpandReport {
@@ -474,6 +476,12 @@ main(int argc, char *argv[]) {
     cerr << "\n";
   }
 
-  cerr << "No errors.\n";
-  return (0);
+  if (errors_occurred) {
+    cerr << "Errors occurred during processing.\n";
+    return (1);
+
+  } else {
+    cerr << "No errors.\n";
+    return (0);
+  }
 }

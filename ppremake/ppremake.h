@@ -95,6 +95,10 @@ extern bool verbose_dry_run;
 extern int verbose; // 0..9 to set verbose level.  0 == off.
 extern int debug_expansions;
 
+/* This is set true internally if an error occurred while processing
+   any of the scripts. */
+extern bool errors_occurred;
+
 /* This structure tracks the number of expansions that are performed
    on a particular string, and the different values it produces, only
    if debug_expansions (above) is set true by command-line parameter
