@@ -3,6 +3,68 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: describe_ambiguous_wrt
+//  Description: Writes an error message to wrt_cat describing an
+//               attempt to compute an ambiguous wrt() without
+//               specifying enough arcs to resolve the ambiguity.
+////////////////////////////////////////////////////////////////////
+template<class InputIterator>
+void
+describe_ambiguous_wrt(const Node *node,
+		       InputIterator arc_list_begin, 
+		       InputIterator arc_list_end,
+		       const UpRelationPointers &urp) {
+  if (wrt_cat.is_warning()) {
+    wrt_cat.warning()
+      << *node << " has " << urp.size() << " parents; wrt() ambiguous.\n"
+      << "  parents are: ";
+    UpRelationPointers::const_iterator urpi;
+    urpi = urp.begin();
+    wrt_cat.warning(false) << *(*urpi)->get_parent();
+    urpi++;
+    while (urpi != urp.end()) {  
+      wrt_cat.warning(false) << ", " << *(*urpi)->get_parent();
+      urpi++;
+    }
+    wrt_cat.warning(false) << "\n";
+    
+    // Show the chain of arcs specified.
+    if (arc_list_begin == arc_list_end) {
+      wrt_cat.warning(false)
+	<< "  no arcs specified.\n";
+    } else {
+      wrt_cat.warning(false)
+	<< "  arcs specified:\n";
+      InputIterator ri = arc_list_begin;
+      wrt_cat.warning(false)
+	<< "    " << *(*ri)->get_parent() << "/"
+	<< *(*ri)->get_child();
+      
+      InputIterator ri_last = ri;
+      ++ri;
+      while (ri != arc_list_end) {
+	if ((*ri)->get_parent() == (*ri_last)->get_child()) {
+	  wrt_cat.warning(false)
+	    << "/" << *(*ri)->get_child();
+	} else {
+	  wrt_cat.warning(false)
+	    << "\n    " << *(*ri)->get_parent() << "/"
+	    << *(*ri)->get_child();
+	}
+	++ri;
+      } 
+      wrt_cat.warning(false) << "\n";
+    }
+  }
+  if (ambiguous_wrt_abort) {
+    abort();
+  }
+}
+#endif
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: get_cached_net_transition
 //  Description: Returns the net transition from the root of the
@@ -212,23 +274,7 @@ get_cached_net_transition(const Node *node,
 #ifndef NDEBUG
       // No, it wasn't mentioned.  Issue a warning and use the first
       // one.
-      if (wrt_cat.is_warning()) {
-	wrt_cat.warning()
-	  << *node << " has " << urp.size() << " parents; wrt() ambiguous.\n"
-	  << "  parents are: ";
-	UpRelationPointers::const_iterator urpi;
-	urpi = urp.begin();
-	wrt_cat.warning(false) << *(*urpi)->get_parent();
-	urpi++;
-	while (urpi != urp.end()) {  
-	  wrt_cat.warning(false) << ", " << *(*urpi)->get_parent();
-	  urpi++;
-	}
-	wrt_cat.warning(false) << "\n";
-      }
-      if (ambiguous_wrt_abort) {
-	abort();
-      }
+      describe_ambiguous_wrt(node, arc_list_begin, arc_list_end, urp);
 #endif
       parent_arc = *(urp.begin());
     }
@@ -332,23 +378,7 @@ get_uncached_net_transition(const Node *node,
 #ifndef NDEBUG
       // No, it wasn't mentioned.  Issue a warning and use the first
       // one. 
-      if (wrt_cat.is_warning()) {
-	wrt_cat.warning()
-	  << *node << " has " << urp.size() << " parents; wrt() ambiguous.\n"
-	  << "  parents are:";
-	UpRelationPointers::const_iterator urpi;
-	urpi = urp.begin();
-	wrt_cat.warning(false) << *(*urpi)->get_parent();
-	urpi++;
-	while (urpi != urp.end()) {  
-	  wrt_cat.warning(false) << ", " << *(*urpi)->get_parent();
-	  urpi++;
-	}
-	wrt_cat.warning(false) << "\n";
-      }
-      if (ambiguous_wrt_abort) {
-	abort();
-      }
+      describe_ambiguous_wrt(node, arc_list_begin, arc_list_end, urp);
 #endif
       parent_arc = *(urp.begin());
     }

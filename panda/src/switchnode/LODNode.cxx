@@ -81,8 +81,8 @@ sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans,
   LPoint3f LOD_pos;
 
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
-  wrt(this, camera, trav->begin(), trav->end(),
-      ntw, RenderRelation::get_class_type());
+  wrt(this, trav->begin(), trav->end(),
+      camera, ntw, RenderRelation::get_class_type());
   const TransformTransition *tt;
   if (get_transition_into(tt, ntw)) {
     LOD_pos = _lod._center * tt->get_matrix();

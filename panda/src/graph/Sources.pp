@@ -49,7 +49,7 @@
     pt_NamedNode.cxx pt_NamedNode.h pt_Node.N pt_Node.cxx pt_Node.h \
     setTransitionHelpers.I setTransitionHelpers.h \
     traverserVisitor.I traverserVisitor.h \
-    vector_PT_Node.cxx vector_PT_Node.h wrt.I wrt.h
+    vector_PT_Node.cxx vector_PT_Node.h wrt.I wrt.h wrt.cxx
 
   #define INSTALL_HEADERS \
     allAttributesWrapper.I allAttributesWrapper.h \
