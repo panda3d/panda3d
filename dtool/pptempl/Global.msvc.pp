@@ -113,7 +113,11 @@
 #endif
 
 #if $[PREPROCESSOR_OUTPUT]
-#defer $[COMMONFLAGS] /E
+#define COMMONFLAGS $[COMMONFLAGS] /E 
+#endif 
+
+#if $[GEN_ASSEMBLY]
+#define COMMONFLAGS $[COMMONFLAGS] /FAs 
 #endif 
 
 #defer CDEFINES_OPT1 _DEBUG $[dlink_all_static]
