@@ -1459,21 +1459,47 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           return 0;       
     }
 
+    case WM_SYSKEYUP:
+    case WM_SYSKEYDOWN:
     case WM_SYSCHAR:
     case WM_CHAR:
-      return 0;
+        break;
 
-    case WM_SYSKEYDOWN:
     case WM_KEYDOWN: {
         POINT point;
-      // make_current();  what does OGL have to do with input?
+
         GetCursorPos(&point);
         ScreenToClient(hwnd, &point);
-        handle_keypress(lookup_key(wparam), point.x, point.y);
-        break;
-      }
 
-    case WM_SYSKEYUP:
+        // handle Cntrl-V paste from clipboard
+        if(!((wparam=='V') && (GetKeyState(VK_CONTROL) < 0))) {
+           handle_keypress(lookup_key(wparam), point.x, point.y);
+        } else {
+            HGLOBAL   hglb; 
+            char    *lptstr; 
+        
+            if (!IsClipboardFormatAvailable(CF_TEXT)) 
+               return 0; 
+        
+            if (!OpenClipboard(NULL)) 
+               return 0; 
+         
+            hglb = GetClipboardData(CF_TEXT); 
+            if (hglb!=NULL) {
+                lptstr = (char *) GlobalLock(hglb); 
+                if(lptstr != NULL)  {
+                    char *pChar;
+                    for(pChar=lptstr;*pChar!=NULL;pChar++) {
+                       handle_keypress(KeyboardButton::ascii_key((uchar)*pChar), point.x, point.y);
+                    }
+                    GlobalUnlock(hglb); 
+                } 
+            }
+            CloseClipboard(); 
+        }
+        return 0;
+    }
+
     case WM_KEYUP: {
         // dont need x,y for this
         handle_keyrelease(lookup_key(wparam));

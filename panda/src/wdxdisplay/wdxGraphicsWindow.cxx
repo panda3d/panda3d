@@ -298,19 +298,47 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             return 0;
         }
 
+        case WM_SYSKEYUP:
+        case WM_SYSKEYDOWN:
         case WM_SYSCHAR:
         case WM_CHAR:
-            return 0;
-        case WM_SYSKEYDOWN:
+            break;
+
         case WM_KEYDOWN: {
             POINT point;
 
             GetCursorPos(&point);
             ScreenToClient(hwnd, &point);
-            handle_keypress(lookup_key(wparam), point.x, point.y);
+
+            // handle Cntrl-V paste from clipboard
+            if(!((wparam=='V') && (GetKeyState(VK_CONTROL) < 0))) {
+               handle_keypress(lookup_key(wparam), point.x, point.y);
+            } else {
+                HGLOBAL   hglb; 
+                char    *lptstr; 
+            
+                if (!IsClipboardFormatAvailable(CF_TEXT)) 
+                   return 0; 
+            
+                if (!OpenClipboard(NULL)) 
+                   return 0; 
+             
+                hglb = GetClipboardData(CF_TEXT); 
+                if (hglb!=NULL) {
+                    lptstr = (char *) GlobalLock(hglb); 
+                    if(lptstr != NULL)  {
+                        char *pChar;
+                        for(pChar=lptstr;*pChar!=NULL;pChar++) {
+                           handle_keypress(KeyboardButton::ascii_key((uchar)*pChar), point.x, point.y);
+                        }
+                        GlobalUnlock(hglb); 
+                    } 
+                }
+                CloseClipboard(); 
+            }
             return 0;
         }
-        case WM_SYSKEYUP:
+
         case WM_KEYUP: {
             POINT point;
 
@@ -1555,6 +1583,16 @@ void wdxGraphicsWindow::handle_mouse_entry(int state,HCURSOR hCursor) {
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow::
 handle_keypress(ButtonHandle key, int x, int y) {
+/*
+    if(key.has_ascii_equivalent()) {
+        wdxdisplay_cat.spam() << key.get_ascii_equivalent() << endl;
+
+        short d1 = GetKeyState(VK_CONTROL);
+        short d2 = GetKeyState(VK_SHIFT);
+        wdxdisplay_cat.spam().flags(ios::hex | ios::uppercase );
+        wdxdisplay_cat.spam()  << " Control: " << ((d1 < 0)? "down" : "up") << "  Shift: " << ((d2 < 0)? "down" : "up") << endl;
+    }
+*/
     _input_devices[0].set_pointer_in_window(x, y);
     if(key != ButtonHandle::none()) {
         _input_devices[0].button_down(key);
