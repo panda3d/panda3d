@@ -722,6 +722,10 @@ class PhysicsWalker(DirectObject.DirectObject):
             onScreenDebug.add("highMark", "% 10.4f"%(self.highMark,))
             onScreenDebug.add("contact", contact.pPrintValues())
 
+    def getVelocity(self):
+        physObject=self.actorNode.getPhysicsObject()
+        return physObject.getVelocity()
+
     def enableAvatarControls(self):
         """
         Activate the arrow keys, etc.

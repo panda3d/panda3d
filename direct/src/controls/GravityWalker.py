@@ -583,6 +583,9 @@ class GravityWalker(DirectObject.DirectObject):
         self.lifter.setVelocity(0.0)
         self.priorParent=Vec3.zero()
 
+    def getVelocity(self):
+        return self.vel
+
     def enableAvatarControls(self):
         """
         Activate the arrow keys, etc.

@@ -912,6 +912,9 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             onScreenDebug.add("highMark", "% 10.4f"%(self.highMark,))
             onScreenDebug.add("contact", contact.pPrintValues())
 
+    def getVelocity(self):
+        return self.__vel
+
     def enableAvatarControls(self):
         """
         Activate the arrow keys, etc.
