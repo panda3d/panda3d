@@ -140,7 +140,7 @@ void GuiFrame::add_item(GuiItem* item) {
   }
 }
 
-void GuiFrame::pack_item(GuiItem* item, Packing rel, GuiItem* to) {
+void GuiFrame::pack_item(GuiItem* item, Packing rel, GuiItem* to, float gap) {
   Boxes::iterator box = find_box(item);
   if (box == _items.end()) {
     gui_cat->warning() << "tried to pack an item we don't have yet" << endl;
@@ -152,8 +152,18 @@ void GuiFrame::pack_item(GuiItem* item, Packing rel, GuiItem* to) {
       << "tried to pack an item relative to something we don't have" << endl;
     return;
   }
-  (*box).add_link(Connection(rel, to));
+  (*box).add_link(Connection(rel, to, gap));
   this->recompute_frame();
+}
+
+void GuiFrame::clear_packing(GuiItem* item) {
+  Boxes::iterator box = find_box(item);
+  (*box).erase_all_links();
+}
+
+void GuiFrame::clear_all_packing(void) {
+  for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
+    (*i).erase_all_links();
 }
 
 void GuiFrame::manage(GuiManager* mgr, EventHandler& eh) {

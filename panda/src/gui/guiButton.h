@@ -30,6 +30,8 @@ private:
   void switch_state(States);
   virtual void recompute_frame(void);
 public:
+  GuiButton(const string&, GuiLabel*, GuiLabel*);
+  GuiButton(const string&, GuiLabel*, GuiLabel*, GuiLabel*);
   GuiButton(const string&, GuiLabel*, GuiLabel*, GuiLabel*, GuiLabel*,
 	    GuiLabel*);
   virtual ~GuiButton(void);

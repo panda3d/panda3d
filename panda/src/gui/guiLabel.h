@@ -32,6 +32,10 @@ private:
   Colorf _foreground;
   bool _have_background;
   Colorf _background;
+  bool _have_width;
+  float _width;
+  bool _have_height;
+  float _height;
 
   INLINE Node* get_geometry(void) const;
   INLINE void set_arc(RenderRelation*);
@@ -49,6 +53,11 @@ public:
   static GuiLabel* make_simple_text_label(const string&, Node*);
 
   void get_extents(float&, float&, float&, float&);
+  float get_width(void);
+  float get_height(void);
+
+  INLINE void set_width(float);
+  INLINE void set_height(float);
 
   INLINE void set_scale(float);
   INLINE void set_pos(float, float, float);

@@ -10,7 +10,9 @@ INLINE GuiLabel::GuiLabel(void) : _type(GuiLabel::NONE),
 				  _pos(0., 0., 0.),
 				  _foreground(1., 1., 1., 1.),
 				  _have_background(false),
-				  _background(0., 0., 0., 0.) {
+				  _background(0., 0., 0., 0.),
+				  _have_width(false), _width(0.),
+				  _have_height(false), _height(0.) {
 }
 
 INLINE Node* GuiLabel::get_geometry(void) const {
@@ -23,6 +25,28 @@ INLINE void GuiLabel::set_arc(RenderRelation* r) {
 
 INLINE RenderRelation* GuiLabel::get_arc(void) const {
   return _arc;
+}
+
+INLINE void GuiLabel::set_width(float f) {
+  if (f <= 0.) {
+    _have_width = false;
+    _width = 0.;
+  } else {
+    _have_width = true;
+    _width = f;
+  }
+  this->set_properties();
+}
+
+INLINE void GuiLabel::set_height(float f) {
+  if (f <= 0.) {
+    _have_height = false;
+    _height = 0.;
+  } else {
+    _have_height = true;
+    _height = f;
+  }
+  this->set_properties();
 }
 
 INLINE void GuiLabel::set_scale(float f) {

@@ -45,7 +45,25 @@ void GuiLabel::set_properties(void) {
 	  gui_cat->debug() << "cleared card" << endl;
       } else {
 	n->set_card_color(_background);
-	n->set_card_as_margin(0., 0., 0., 0.);
+	if (_have_width || _have_height) {
+	  LVecBase4f v = n->get_card_actual();
+	  float w = v[1] - v[0];
+	  float h = v[3] - v[2];
+	  if (_have_width) {
+	    w = _width - w;
+	    w *= 0.5;
+	    v[1] += w;
+	    v[0] -= w;
+	  }
+	  if (_have_height) {
+	    h = _height - h;
+	    h *= 0.5;
+	    v[3] += h;
+	    v[2] -= h;
+	  }
+	  n->set_card_actual(v[0], v[1], v[2], v[3]);
+	} else
+	  n->set_card_as_margin(0., 0., 0., 0.);
 	if (gui_cat->is_debug()) {
 	  gui_cat->debug() << "set card color" << endl;
 	  if (n->has_card())
@@ -191,6 +209,18 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
     l = b = 0.;
     r = t = 1.;
   }
+}
+
+float GuiLabel::get_width(void) {
+  float l, r, b, t;
+  this->get_extents(l, r, b, t);
+  return (r - l);
+}
+
+float GuiLabel::get_height(void) {
+  float l, r, b, t;
+  this->get_extents(l, r, b, t);
+  return (t - b);
 }
 
 void GuiLabel::set_foreground_color(const Colorf& color) {

@@ -162,6 +162,39 @@ void GuiButton::recompute_frame(void) {
   _rgn->set_region(_left, _right, _bottom, _top);
 }
 
+GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down)
+  : GuiItem(name), _up(up), _up_rollover((GuiLabel*)0L), _down(down),
+    _down_rollover((GuiLabel*)0L), _inactive((GuiLabel*)0L),
+    _up_event(name + "-up"), _up_rollover_event(""),
+    _down_event(name +"-down"), _down_rollover_event(""),
+    _inactive_event(""), _state(GuiButton::NONE) {
+  GetExtents(up, down, _up_rollover, _down_rollover, _inactive, _left, _right,
+	     _bottom, _top);
+  _rgn = new GuiRegion("button-" + name, _left, _right, _bottom, _top, true);
+  buttons["gui-in-button-" + name] = this;
+  buttons["gui-out-button-" + name] = this;
+  buttons["gui-button-" + name + "-mouse1"] = this;
+  buttons["gui-button-" + name + "-mouse2"] = this;
+  buttons["gui-button-" + name + "-mouse3"] = this;
+}
+
+GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down,
+		     GuiLabel* inactive)
+  : GuiItem(name), _up(up), _up_rollover((GuiLabel*)0L), _down(down),
+    _down_rollover((GuiLabel*)0L), _inactive(inactive),
+    _up_event(name + "-up"), _up_rollover_event(""),
+    _down_event(name +"-down"), _down_rollover_event(""),
+    _inactive_event(name + "-inactive"), _state(GuiButton::NONE) {
+  GetExtents(up, down, _up_rollover, _down_rollover, inactive, _left, _right,
+	     _bottom, _top);
+  _rgn = new GuiRegion("button-" + name, _left, _right, _bottom, _top, true);
+  buttons["gui-in-button-" + name] = this;
+  buttons["gui-out-button-" + name] = this;
+  buttons["gui-button-" + name + "-mouse1"] = this;
+  buttons["gui-button-" + name + "-mouse2"] = this;
+  buttons["gui-button-" + name + "-mouse3"] = this;
+}
+
 GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
 		     GuiLabel* down, GuiLabel* down_roll, GuiLabel* inactive)
   : GuiItem(name), _up(up), _up_rollover(up_roll), _down(down),
