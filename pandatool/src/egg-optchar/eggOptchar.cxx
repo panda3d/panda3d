@@ -60,7 +60,13 @@ EggOptchar() {
      &EggOptchar::dispatch_none, &_list_hierarchy);
 
   add_option
-    ("lp", "", 0,
+    ("lsv", "", 0,
+     "List the joint hierarchy along with an indication of the properties "
+     "each joint.",
+     &EggOptchar::dispatch_none, &_list_hierarchy_v);
+
+  add_option
+    ("lsp", "", 0,
      "List the existing joint hierarchy as a series of -p joint,parent "
      "commands, suitable for pasting into an egg-optchar command line.",
      &EggOptchar::dispatch_none, &_list_hierarchy_p);
@@ -121,7 +127,7 @@ run() {
   // before we even analyze the joints.  This is because reparenting
   // the joints may change their properties.
   if (apply_user_reparents()) {
-    cerr << "Reparenting hierarchy.\n";
+    nout << "Reparenting hierarchy.\n";
     // So we'll have to call do_reparent() twice.  It seems wasteful,
     // but it really is necessary, and it's not that bad.
     do_reparent();
@@ -141,12 +147,12 @@ run() {
     analyze_sliders(char_data);
   }
 
-  if (_list_hierarchy) {
+  if (_list_hierarchy || _list_hierarchy_v) {
     for (ci = 0; ci < num_characters; ci++) {
       EggCharacterData *char_data = _collection->get_character(ci);
       nout << "Character: " << char_data->get_name() << "\n";
-      list_joints(char_data->get_root_joint(), 0);
-      list_scalars(char_data);
+      list_joints(char_data->get_root_joint(), 0, _list_hierarchy_v);
+      list_scalars(char_data, _list_hierarchy_v);
       nout << char_data->get_num_joints() << " joints.\n";
     }
 
@@ -193,7 +199,7 @@ run() {
 ////////////////////////////////////////////////////////////////////
 bool EggOptchar::
 handle_args(ProgramBase::Args &args) {
-  if (_list_hierarchy) {
+  if (_list_hierarchy || _list_hierarchy_v || _list_hierarchy_p) {
     _read_only = true;
   }
 
@@ -718,7 +724,7 @@ analyze_sliders(EggCharacterData *char_data) {
 //  Description: Outputs a list of the joint hierarchy.
 ////////////////////////////////////////////////////////////////////
 void EggOptchar::
-list_joints(EggJointData *joint_data, int indent_level) {
+list_joints(EggJointData *joint_data, int indent_level, bool verbose) {
   // Don't list the root joint, which is artificially created when the
   // character is loaded.  Instead, list each child as it is
   // encountered.
@@ -726,9 +732,9 @@ list_joints(EggJointData *joint_data, int indent_level) {
   int num_children = joint_data->get_num_children();
   for (int i = 0; i < num_children; i++) {
     EggJointData *child_data = joint_data->get_child(i);
-    describe_component(child_data, indent_level);
+    describe_component(child_data, indent_level, verbose);
 
-    list_joints(child_data, indent_level + 2);
+    list_joints(child_data, indent_level + 2, verbose);
   }
 }
 
@@ -761,11 +767,11 @@ list_joints_p(EggJointData *joint_data) {
 //  Description: Outputs a list of the scalars.
 ////////////////////////////////////////////////////////////////////
 void EggOptchar::
-list_scalars(EggCharacterData *char_data) {
+list_scalars(EggCharacterData *char_data, bool verbose) {
   int num_sliders = char_data->get_num_sliders();
   for (int si = 0; si < num_sliders; si++) {
     EggSliderData *slider_data = char_data->get_slider(si);
-    describe_component(slider_data, 0);
+    describe_component(slider_data, 0, verbose);
   }
 }
 
@@ -775,21 +781,24 @@ list_scalars(EggCharacterData *char_data) {
 //  Description: Describes one particular slider or joint.
 ////////////////////////////////////////////////////////////////////
 void EggOptchar::
-describe_component(EggComponentData *comp_data, int indent_level) {
+describe_component(EggComponentData *comp_data, int indent_level,
+                   bool verbose) {
   // We use cout instead of nout so the user can easily redirect this
   // to a file.
   indent(cout, indent_level)
     << comp_data->get_name();
-  
-  EggOptcharUserData *user_data = 
-    DCAST(EggOptcharUserData, comp_data->get_user_data());
-  if (user_data->is_identity()) {
-    cout << " (identity)";
-  } else if (user_data->is_static()) {
-    cout << " (static)";
-  }
-  if (user_data->is_empty()) {
-    cout << " (empty)";
+
+  if (verbose) {
+    EggOptcharUserData *user_data = 
+      DCAST(EggOptcharUserData, comp_data->get_user_data());
+    if (user_data->is_identity()) {
+      cout << " (identity)";
+    } else if (user_data->is_static()) {
+      cout << " (static)";
+    }
+    if (user_data->is_empty()) {
+      cout << " (empty)";
+    }
   }
   cout << "\n";
 }

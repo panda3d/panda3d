@@ -63,10 +63,11 @@ private:
   bool zero_channels();
   void analyze_joints(EggJointData *joint_data);
   void analyze_sliders(EggCharacterData *char_data);
-  void list_joints(EggJointData *joint_data, int indent_level);
+  void list_joints(EggJointData *joint_data, int indent_level, bool verbose);
   void list_joints_p(EggJointData *joint_data);
-  void list_scalars(EggCharacterData *char_data);
-  void describe_component(EggComponentData *comp_data, int indent_level);
+  void list_scalars(EggCharacterData *char_data, bool verbose);
+  void describe_component(EggComponentData *comp_data, int indent_level,
+                          bool verbose);
   void do_reparent();
 
   void quantize_vertices();
@@ -74,6 +75,7 @@ private:
   void quantize_vertex(EggVertex *egg_vertex);
 
   bool _list_hierarchy;
+  bool _list_hierarchy_v;
   bool _list_hierarchy_p;
   bool _keep_all;
 
