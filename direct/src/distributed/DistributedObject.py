@@ -345,6 +345,8 @@ class DistributedObject(PandaObject):
             # The store must run first so we know the old location
             #self.cr.storeObjectLocation(self.doId, parentId, zoneId)
             self.__location = (parentId, zoneId)
+            #if parentId != None and zoneId != None:
+            #    base.cr.sendSetLocation(self.doId, parentId, zoneId)
             
         def getLocation(self):
             return self.__location
