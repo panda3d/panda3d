@@ -146,6 +146,10 @@ class FourState:
     
     def exitState0(self):
         assert(self.debugPrint("exit0()"))
+        # It's important for FourStates to broadcast their state
+        # when they are generated on the client. Before I put this in,
+        # if a door was generated and went directly to an 'open' state,
+        # it would not broadcast its state until it closed.
         self.changedOnState(0)
     
     ##### state 1 #####
