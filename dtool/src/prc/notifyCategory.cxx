@@ -27,10 +27,6 @@
 
 time_t NotifyCategory::_server_delta = 0;
 
-static ConfigVariableBool notify_timestamp
-("notify-timestamp", false,
- "Set true to output the date & time with each notify message.");
-
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::Constructor
 //       Access: Private
@@ -93,7 +89,7 @@ ostream &NotifyCategory::
 out(NotifySeverity severity, bool prefix) const {
   if (is_on(severity)) {
     if (prefix) {
-      if (notify_timestamp) {
+      if (get_notify_timestamp()) {
         // Format a timestamp to include as a prefix as well.
         time_t now = time(NULL) + _server_delta;
         struct tm *ptm = localtime(&now);
@@ -169,4 +165,24 @@ get_config_name() const {
   }
 
   return config_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NotifyCategory::get_notify_timestamp
+//       Access: Private, Static
+//  Description: Returns the value of the notify-timestamp
+//               ConfigVariable.  This is defined using a method
+//               accessor rather than a static ConfigVariableBool, to
+//               protect against the variable needing to be accessed
+//               at static init time.
+////////////////////////////////////////////////////////////////////
+bool NotifyCategory::
+get_notify_timestamp() {
+  static ConfigVariableBool *notify_timestamp = NULL;
+  if (notify_timestamp == (ConfigVariableBool *)NULL) {
+    notify_timestamp = new ConfigVariableBool
+      ("notify-timestamp", false,
+       "Set true to output the date & time with each notify message.");
+  }
+  return *notify_timestamp;
 }

@@ -80,6 +80,7 @@ PUBLISHED:
 
 private:
   string get_config_name() const;
+  static bool get_notify_timestamp();
 
   string _fullname;
   string _basename;
