@@ -15,7 +15,7 @@ from direct.showbase import DirectObject
 from PyDatagram import PyDatagram
 #from PyDatagramIterator import PyDatagramIterator
 
-WantInterestPrintout = base.config.GetInt("want-interest-printout", 0)
+WantInterestPrintout = 0
 
 class DoInterestManager(DirectObject.DirectObject):
     """
