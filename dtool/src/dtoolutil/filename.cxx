@@ -1349,14 +1349,20 @@ open_append(ofstream &stream) const {
 //               false otherwise.  This requires the setting of the
 //               set_text()/set_binary() flags to open the file
 //               appropriately as indicated; it is an error to call
-//               open_read() without first calling one of set_text()
-//               or set_binary().
+//               open_read_write() without first calling one of
+//               set_text() or set_binary().
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 open_read_write(fstream &stream) const {
   assert(is_text() || is_binary());
 
-  ios_openmode open_mode = ios::in | ios::out;
+  ios_openmode open_mode = ios::out | ios::in;
+
+  // Since ios::in also seems to imply ios::nocreate (!), we must
+  // guarantee the file already exists before we try to open it.
+  if (!exists()) {
+    touch();
+  }
 
 #ifdef HAVE_IOS_BINARY
   // For some reason, some systems (like Irix) don't define
