@@ -68,6 +68,7 @@ private:
   double _poly_margin;
   int _tex_margin;
   double _scale_factor;
+  bool _no_reduce;
   bool _no_native_aa;
 
   Filename _input_font_filename;

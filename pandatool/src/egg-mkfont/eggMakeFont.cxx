@@ -117,13 +117,13 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_double, NULL, &_point_size);
 
   add_option
-    ("bp", "n", 0,
+    ("pm", "n", 0,
      "The number of extra pixels around a single character in the "
      "generated polygon.  This may be a floating-point number.",
      &EggMakeFont::dispatch_double, NULL, &_poly_margin);
 
   add_option
-    ("bt", "n", 0,
+    ("tm", "n", 0,
      "The number of extra pixels around each character in the texture map.  "
      "This may only be an integer.",
      &EggMakeFont::dispatch_int, NULL, &_tex_margin);
@@ -137,6 +137,13 @@ EggMakeFont() : EggWriter(true, false) {
      "may be automatically adjusted as necessary to scale the closest-"
      "matching font to the desired pixel size.",
      &EggMakeFont::dispatch_double, NULL, &_scale_factor);
+
+  add_option
+    ("nr", "", 0,
+     "Don't actually reduce the images after applying the scale factor, but "
+     "leave them at their inflated sizes.  Presumably you will reduce "
+     "them later, for instance with egg-palettize.",
+     &EggMakeFont::dispatch_none, &_no_reduce);
 
   add_option
     ("noaa", "", 0,
@@ -200,12 +207,20 @@ run() {
   if (!_text_maker->is_valid()) {
     exit(1);
   }
+
+  if (_no_reduce) {
+    _tex_margin *= _scale_factor;
+    _poly_margin *= _scale_factor;
+    _pixels_per_unit *= _scale_factor;
+    _scale_factor = 1.0;
+  }
+
   _text_maker->set_point_size(_point_size);
-  _text_maker->set_scale_factor(_scale_factor);
   _text_maker->set_native_antialias(!_no_native_aa && !_got_interior);
   _text_maker->set_interior_flag(_got_interior);
   _text_maker->set_pixels_per_unit(_pixels_per_unit);
-
+  _text_maker->set_scale_factor(_scale_factor);
+  
   if (_range.is_empty()) {
     // If there's no specified range, the default is the entire ASCII
     // set.
@@ -222,11 +237,6 @@ run() {
   bool needs_color = (_fg[0] != _fg[1] || _fg[1] != _fg[2] ||
                       _bg[0] != _bg[1] || _bg[1] != _bg[2] ||
                       _interior[0] != _interior[1] || _interior[1] != _interior[2]);
-  cerr << "needs_alpha = " << needs_alpha << "\n"
-       << "needs_color = " << needs_color << "\n"
-       << "fg = " << _fg << "\n"
-       << "bg = " << _bg << "\n"
-       << "interior = " << _interior << "\n";
 
   if (needs_alpha) {
     if (needs_color) {
