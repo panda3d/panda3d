@@ -28,6 +28,8 @@
 #include <eggVertex.h>
 #include <eggVertexPool.h>
 #include <eggTexture.h>
+#include <pt_EggTexture.h>
+#include <pt_EggVertex.h>
 #include <pointerTo.h>
 
 class FltRecord;
@@ -68,7 +70,7 @@ public:
 private:
   void cleanup();
 
-  typedef vector< PT(EggVertex) > EggVertices;
+  typedef vector< PT_EggVertex > EggVertices;
 
   void convert_record(const FltRecord *flt_record, FltToEggLevelState &state);
   void dispatch_record(const FltRecord *flt_record, FltToEggLevelState &state);
@@ -93,8 +95,8 @@ private:
   bool parse_comment(const string &comment, const string &name,
                      EggNode *egg_node);
 
-  PT(EggVertex) make_egg_vertex(const FltVertex *flt_vertex);
-  PT(EggTexture) make_egg_texture(const FltTexture *flt_texture);
+  PT_EggVertex make_egg_vertex(const FltVertex *flt_vertex);
+  PT_EggTexture make_egg_texture(const FltTexture *flt_texture);
 
   CPT(FltHeader) _flt_header;
 

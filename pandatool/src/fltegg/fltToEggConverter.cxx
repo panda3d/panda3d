@@ -372,7 +372,7 @@ convert_face(const FltFace *flt_face, FltToEggLevelState &state) {
   }
 
   // Collect the vertices for this primitive.
-  vector< PT(EggVertex) > vertices;
+  vector< PT_EggVertex > vertices;
 
   const FltVertexList *vlist = (FltVertexList *)NULL;
   int num_children = flt_face->get_num_children();
@@ -712,9 +712,9 @@ parse_comment(const string &comment, const string &name,
 //               The vertex is not automatically added to the vertex
 //               pool.
 ////////////////////////////////////////////////////////////////////
-PT(EggVertex) FltToEggConverter::
+PT_EggVertex FltToEggConverter::
 make_egg_vertex(const FltVertex *flt_vertex) {
-  PT(EggVertex) egg_vertex = new EggVertex;
+  PT_EggVertex egg_vertex = new EggVertex;
   egg_vertex->set_pos(flt_vertex->_pos);
 
   if (flt_vertex->_has_normal) {
@@ -739,7 +739,7 @@ make_egg_vertex(const FltVertex *flt_vertex) {
 //               or returns a pointer to one previously made for the
 //               same FltTexture.
 ////////////////////////////////////////////////////////////////////
-PT(EggTexture) FltToEggConverter::
+PT_EggTexture FltToEggConverter::
 make_egg_texture(const FltTexture *flt_texture) {
   Textures::const_iterator ti;
   ti = _textures.find(flt_texture);
@@ -754,7 +754,7 @@ make_egg_texture(const FltTexture *flt_texture) {
     convert_texture_path(flt_texture->_filename,
                          _flt_header->get_texture_path());
 
-  PT(EggTexture) egg_texture = new EggTexture(tref_name, filename);
+  PT_EggTexture egg_texture = new EggTexture(tref_name, filename);
 
   _textures.insert(Textures::value_type(flt_texture, egg_texture));
 
