@@ -32,6 +32,7 @@ CVSCopy() {
   _model_dirname = ".";
   _key_filename = "Sources.pp";
   _cvs_binary = "cvs";
+  _user_aborted = false;
   _model_dir = (CVSSourceDirectory *)NULL;
   _map_dir = (CVSSourceDirectory *)NULL;
 
@@ -146,14 +147,50 @@ import(const Filename &source, void *extra_data,
     nout << "Copying " << basename << " to " << dir->get_path() << "\n";
 
     if (!copy_file(source, dest, dir, extra_data, new_file)) {
-      return (CVSSourceDirectory *)NULL;
-    }
-    if (new_file) {
-      cvs_add(dest);
+      if (!continue_after_error()) {
+        return (CVSSourceDirectory *)NULL;
+      }
+    } else {
+      if (new_file) {
+        cvs_add(dest);
+      }
     }
   }
 
   return dir;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CVSCopy::continue_after_error
+//       Access: Public
+//  Description: Prompts the user (unless -f was specified) if he
+//               wants to continue the copy operation after some error
+//               has occurred.  Returns true to continue, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool CVSCopy::
+continue_after_error() {
+  if (_force) {
+    return true;
+  }
+  if (_user_aborted) {
+    return false;
+  }
+
+  while (true) {
+    string result = prompt("Error occurred during copy!  Continue (y/n)? ");
+    nassertr(!result.empty(), false);
+    if (result.size() == 1) {
+      if (tolower(result[0]) == 'y') {
+        return true;
+      } else if (tolower(result[0]) == 'n') {
+        _user_aborted = true;
+        return false;
+      }
+    }
+
+    nout << "*** Invalid response: " << result << "\n\n";
+  }
 }
 
 
@@ -466,4 +503,36 @@ scan_for_root(const string &dirname) {
   }
 
   return scan_for_root(dirname + "/..");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CVSCopy::prompt
+//       Access: Private
+//  Description: Issues a prompt to the user and waits for a typed
+//               response.  Returns the response (which will not be
+//               empty).
+////////////////////////////////////////////////////////////////////
+string CVSCopy::
+prompt(const string &message) {
+  nout << flush;
+  while (true) {
+    cerr << message << flush;
+    string response;
+    getline(cin, response);
+
+    // Remove leading and trailing whitespace.
+    size_t p = 0;
+    while (p < response.length() && isspace(response[p])) {
+      p++;
+    }
+
+    size_t q = response.length();
+    while (q > p && isspace(response[q - 1])) {
+      q--;
+    }
+
+    if (q > p) {
+      return response.substr(p, q - p);
+    }
+  }
 }

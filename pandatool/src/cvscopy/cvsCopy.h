@@ -19,12 +19,12 @@
 #ifndef CVSCOPY_H
 #define CVSCOPY_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "cvsSourceTree.h"
 
-#include <programBase.h>
-#include <filename.h>
+#include "programBase.h"
+#include "filename.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CVSCopy
@@ -40,6 +40,8 @@ public:
   CVSSourceDirectory *
   import(const Filename &source, void *extra_data,
          CVSSourceDirectory *suggested_dir);
+
+  bool continue_after_error();
 
 protected:
   virtual bool handle_args(Args &args);
@@ -63,6 +65,7 @@ protected:
 private:
   bool scan_hierarchy();
   bool scan_for_root(const string &dirname);
+  string prompt(const string &message);
 
 protected:
   bool _force;
@@ -76,6 +79,7 @@ protected:
   Filename _key_filename;
   bool _no_cvs;
   string _cvs_binary;
+  bool _user_aborted;
 
   typedef vector_string SourceFiles;
   SourceFiles _source_files;
