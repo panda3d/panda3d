@@ -128,7 +128,7 @@ public:
   INLINE bool operator == (const ArcChain &other) const;
   INLINE bool operator != (const ArcChain &other) const;
   INLINE bool operator < (const ArcChain &other) const;
-  int compare_to(const ArcChain &other) const;
+  INLINE int compare_to(const ArcChain &other) const;
 
   INLINE void output(ostream &out) const;
 
