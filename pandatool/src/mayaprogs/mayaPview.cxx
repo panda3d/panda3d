@@ -20,6 +20,7 @@
 #include "mayaToEggConverter.h"
 #include "eggData.h"
 #include "load_egg_file.h"
+#include "config_util.h"
 
 // We must define this to prevent Maya from doubly-declaring its
 // MApiVersion string in this file as well as in libmayaegg.
@@ -28,6 +29,7 @@
 #include "pre_maya_include.h"
 #include <maya/MString.h>
 #include <maya/MFnPlugin.h>
+#include <maya/MFileIO.h>
 #include "post_maya_include.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -100,7 +102,25 @@ convert(const NodePath &parent) {
 
   // We always want polygon output since we want to be able to see the
   // results.
-  converter._polygon_output = true;
+
+  // Actually, for now we'll leave this false, because the nurbs
+  // tesselation code in MayaToEggConverter is destructive to the
+  // original nurbs.
+  //  converter._polygon_output = true;
+  converter._polygon_output = false;
+
+  PathReplace *path_replace = converter.get_path_replace();
+
+  // Accept relative pathnames in the Maya file.
+  Filename source_file = 
+    Filename::from_os_specific(MFileIO::currentFile().asChar());
+  string source_dir = source_file.get_dirname();
+  if (!source_dir.empty()) {
+    path_replace->_path.append_directory(source_dir);
+  }
+
+  // Also search along the model path.
+  path_replace->_path.append_path(get_model_path());
 
   EggData egg_data;
   converter.set_egg_data(&egg_data, false);
