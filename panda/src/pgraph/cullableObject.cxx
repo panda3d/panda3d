@@ -19,6 +19,8 @@
 #include "cullableObject.h"
 
 
+CullableObject *CullableObject::_deleted_chain = (CullableObject *)NULL;
+int CullableObject::_num_ever_allocated = 0;
 TypeHandle CullableObject::_type_handle;
 
 ////////////////////////////////////////////////////////////////////

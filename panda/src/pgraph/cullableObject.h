@@ -43,11 +43,6 @@ public:
                         qpGeomNode *geom_node, int i,
                         CullableObject *next = NULL);
 
-  // We will allocate and destroy hundreds or thousands of these a
-  // frame during the normal course of rendering.  As an optimization,
-  // then, we should consider implementing operator new and delete
-  // here to minimize this overhead.  Should be simple.
-
 private:
   INLINE CullableObject(const CullableObject &copy);
   INLINE void operator = (const CullableObject &copy);
@@ -55,12 +50,26 @@ private:
 public:
   ~CullableObject();
 
+  // We will allocate and destroy hundreds or thousands of these a
+  // frame during the normal course of rendering.  As an optimization,
+  // then, we implement operator new and delete here to minimize this
+  // overhead.
+  INLINE void *operator new(size_t size);
+  INLINE void operator delete(void *ptr);
   void output(ostream &out) const;
-  
+
+PUBLISHED:
+  INLINE static int get_num_ever_allocated();
+
+public:
   PT(Geom) _geom;
   CPT(RenderState) _state;
   CPT(TransformState) _transform;
   CullableObject *_next;
+
+private:
+  static CullableObject *_deleted_chain;
+  static int _num_ever_allocated;
 
 public:
   static TypeHandle get_class_type() {
