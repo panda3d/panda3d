@@ -25,6 +25,7 @@ class IntervalManager(CIntervalManager):
             CIntervalManager.__init__(self)
 
         self.ivals = []
+        self.removedIvals = {}
 
     def addInterval(self, interval):
         index = self.addCInterval(interval, 1)
@@ -53,20 +54,24 @@ class IntervalManager(CIntervalManager):
         # on the still-running intervals.
         index = self.getNextRemoval()
         while index >= 0:
-            if self.ivals[index]:
-                self.ivals[index].privPostEvent()
+            # We have to clear the interval first before we call
+            # privPostEvent() on it, because the interval might itself
+            # try to add a new interval.
+            ival = self.ivals[index]
             self.ivals[index] = None
+            ival.privPostEvent()
             index = self.getNextRemoval()
 
         index = self.getNextEvent()
         while index >= 0:
-            if self.ivals[index]:
-                self.ivals[index].privPostEvent()
+            self.ivals[index].privPostEvent()
             index = self.getNextEvent()
+
         
     def __storeInterval(self, interval, index):
         while index >= len(self.ivals):
             self.ivals.append(None)
+        assert(self.ivals[index] == None)
         self.ivals[index] = interval
 
     def __repr__(self):
