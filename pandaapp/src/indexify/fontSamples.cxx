@@ -24,6 +24,10 @@
 
 #include <stdio.h>
 
+#ifdef WIN32_VC
+#define snprintf _snprintf
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: FontSamples::Constructor
 //       Access: Public
@@ -166,7 +170,8 @@ post_command_line() {
     }
     
     if (_name_text_maker == (PNMTextMaker *)NULL) {
-      _name_text_maker = new PNMTextMaker(default_font, default_font_size, 0);
+      _name_text_maker = new PNMTextMaker((const char *)default_font, 
+                                          default_font_size, 0);
       if (!_name_text_maker->is_valid()) {
 	nout << "Unable to open default font.\n";
 	delete _name_text_maker;

@@ -3,8 +3,9 @@
 
   #define TARGET indexify
   #define OTHER_LIBS \
-    progbase \
-    pnmimage:c pnmimagetypes:c panda:m \
+    progbase pandatoolbase \
+    pnmimage:c pnmimagetypes:c panda:m pandaexpress:m \
+    dtool:m dtoolconfig:m \
     pystub
 
   #define SOURCES \
@@ -25,8 +26,9 @@
 
   #define TARGET font-samples
   #define OTHER_LIBS \
-    progbase \
-    pnmimage:c pnmimagetypes:c panda:m \
+    progbase pandatoolbase \
+    pnmimage:c pnmimagetypes:c panda:m pandaexpress:m \
+    dtool:m dtoolconfig:m \
     pystub
 
   #define SOURCES \

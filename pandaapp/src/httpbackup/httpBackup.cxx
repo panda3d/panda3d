@@ -240,7 +240,8 @@ post_command_line() {
 bool HTTPBackup::
 dispatch_url(const string &opt, const string &arg, void *var) {
   URLSpec *up = (URLSpec *)var;
-  (*up) = URLSpec(arg);
+  URLSpec new_url(arg);
+  (*up) = new_url;
   return true;
 }
 

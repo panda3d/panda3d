@@ -91,6 +91,7 @@ stitch_init_parser(istream &in, const string &filename,
 
 stitch_file:
         commands
+        ;
 
 commands:
         empty
@@ -333,7 +334,7 @@ points_list:
 length:
         NUMBER length_units
 {
-  $$ = $1 * $2
+  $$ = $1 * $2;
 }
         | NUMBER_FEET
 {

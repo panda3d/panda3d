@@ -6,9 +6,10 @@
   #define USE_PACKAGES ssl
 
   #define OTHER_LIBS \
-    progbase \
+    progbase pandatoolbase \
     express:c downloader:c pandaexpress:m \
-    panda:m
+    panda:m dtool:m dtoolconfig:m \
+    pystub
 
   #define SOURCES \
     backupCatalog.I backupCatalog.cxx backupCatalog.h \

@@ -3,7 +3,7 @@
   #define LOCAL_LIBS \
     stitchbase
   #define OTHER_LIBS \
-    progbase converter \
+    progbase pandatoolbase converter \
     pnmimage:c mathutil:c linmath:c putil:c panda:m \
     express:c pandabase:c pandaexpress:m \
     dtoolutil:c dconfig:c dtoolbase:c dtoolconfig:m dtool:m \
@@ -21,7 +21,7 @@
   #define LOCAL_LIBS \
     stitchbase
   #define OTHER_LIBS \
-    progbase converter \
+    progbase pandatoolbase converter \
     pnmimagetypes:c pnmimage:c linmath:c putil:c panda:m \
     express:c pandabase:c pandaexpress:m \
     dtoolutil:c dconfig:c dtoolbase:c dtoolconfig:m dtool:m \

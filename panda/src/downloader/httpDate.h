@@ -21,6 +21,8 @@
 
 #include "pandabase.h"
 
+#include <time.h>
+
 ////////////////////////////////////////////////////////////////////
 //       Class : HTTPDate
 // Description : A container for an HTTP-legal time/date indication.
@@ -46,6 +48,7 @@ PUBLISHED:
   INLINE bool operator == (const HTTPDate &other) const;
   INLINE bool operator != (const HTTPDate &other) const;
   INLINE bool operator < (const HTTPDate &other) const;
+  INLINE bool operator > (const HTTPDate &other) const;
   INLINE int compare_to(const HTTPDate &other) const;
 
   INLINE void operator += (int seconds);

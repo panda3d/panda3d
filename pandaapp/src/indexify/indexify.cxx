@@ -376,7 +376,8 @@ post_command_line() {
     }
     
     if (_text_maker == (PNMTextMaker *)NULL) {
-      _text_maker = new PNMTextMaker(default_font, default_font_size, 0);
+      _text_maker = new PNMTextMaker((const char *)default_font, 
+                                     default_font_size, 0);
       if (!_text_maker->is_valid()) {
 	nout << "Unable to open default font.\n";
 	delete _text_maker;
@@ -405,7 +406,7 @@ post_command_line() {
 	  nout << "Unable to write to " << icon_filename << "\n";
 	  exit(1);
 	}
-	output.write(default_left_icon, default_left_icon_size);
+	output.write((const char *)default_left_icon, default_left_icon_size);
       }
     }
     if (next_icon.empty()) {
@@ -421,7 +422,7 @@ post_command_line() {
 	  nout << "Unable to write to " << icon_filename << "\n";
 	  exit(1);
 	}
-	output.write(default_right_icon, default_right_icon_size);
+	output.write((const char *)default_right_icon, default_right_icon_size);
       }
     }
     if (up_icon.empty()) {
@@ -437,7 +438,7 @@ post_command_line() {
 	  nout << "Unable to write to " << icon_filename << "\n";
 	  exit(1);
 	}
-	output.write(default_up_icon, default_up_icon_size);
+	output.write((const char *)default_up_icon, default_up_icon_size);
       }
     }
   }

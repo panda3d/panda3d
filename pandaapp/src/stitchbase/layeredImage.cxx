@@ -728,7 +728,7 @@ xcf_save_tile(const LayeredImage::TileManager &tm, int level, int tile) {
         array[i++] = tm._data->get_red_val(x, y);
         array[i++] = tm._data->get_green_val(x, y);
         array[i++] = tm._data->get_blue_val(x, y);
-        array[i++] = 255;
+        array[i++] = -1;
       }
     }
     assert(i == size);

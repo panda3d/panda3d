@@ -19,7 +19,7 @@
 #ifndef DEFAULT_FONT_H
 #define DEFAULT_FONT_H
 
-extern const char default_font[];
+extern const unsigned char default_font[];
 extern const int default_font_size;
 
 #endif

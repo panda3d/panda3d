@@ -118,6 +118,16 @@ operator < (const HTTPDate &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPDate::Operator >
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPDate::
+operator > (const HTTPDate &other) const {
+  return _time > other._time;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPDate::compare_to
 //       Access: Published
 //  Description: Returns a number less than zero if this HTTPDate
