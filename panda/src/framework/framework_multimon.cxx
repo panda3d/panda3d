@@ -583,7 +583,7 @@ void event_grave(CPT_Event) {
 
   p.copy(gsg, dr, rb);
   ostringstream s;
-  s << "frame" << ClockObject::get_global_clock()->get_frame_count() << ".pnm";
+  s << "frame" << ClockObject::get_global_clock()->get_frame_count() << ".bmp";
   Filename filename = s.str();
   p.write(filename);
 
