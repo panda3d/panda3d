@@ -6,5 +6,9 @@ if test "$LD_LIBRARY_PATH" = ""; then
 else
   LD_LIBRARY_PATH=$MAYA_LOCATION/lib:$LD_LIBRARY_PATH
 fi
+if test "zzz" != ""; then
+  LM_LICENSE_FILE="zzz"
+  export LM_LICENSE_FILE
+fi
 export LD_LIBRARY_PATH
 exec `dirname $0`/yyy_bin $*

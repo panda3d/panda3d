@@ -17,7 +17,7 @@
   #define TARGET maya2egg
 
   #define SOURCE mayapath_script
-  #define COMMAND s:xxx:$[MAYA_LOCATION]:g;s:yyy:$[TARGET]:g;
+  #define COMMAND s:xxx:$[MAYA_LOCATION]:g;s:yyy:$[TARGET]:g;s:zzz:$[MAYA_LICENSE_FILE]:g;
 
 #end sed_bin_target
 
@@ -25,7 +25,7 @@
   #define TARGET mayacopy
 
   #define SOURCE mayapath_script
-  #define COMMAND s:xxx:$[MAYA_LOCATION]:g;s:yyy:$[TARGET]:g;
+  #define COMMAND s:xxx:$[MAYA_LOCATION]:g;s:yyy:$[TARGET]:g;s:zzz:$[MAYA_LICENSE_FILE]:g;
 
 #end sed_bin_target
 
