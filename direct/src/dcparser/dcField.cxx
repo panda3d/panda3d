@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcField.h"
+#include "hashGenerator.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCField::get_number
@@ -58,4 +59,19 @@ as_molecular_field() {
 ////////////////////////////////////////////////////////////////////
 DCField::
 ~DCField() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::generate_hash
+//       Access: Public, Virtual
+//  Description: Accumulates the properties of this field into the
+//               hash.
+////////////////////////////////////////////////////////////////////
+void DCField::
+generate_hash(HashGenerator &hash) const {
+  // It shouldn't be necessary to explicitly add _number to the
+  // hash--this is computed based on the relative position of this
+  // field with the other fields, so adding it explicitly will be
+  // redundant.  However, the field name is significant.
+  hash.add_string(_name);
 }

@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcClass.h"
+#include "hashGenerator.h"
 #include "dcindent.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -162,9 +163,9 @@ DCClass() {
 ////////////////////////////////////////////////////////////////////
 DCClass::
 ~DCClass() {
-  Fields::iterator ai;
-  for (ai = _fields.begin(); ai != _fields.end(); ++ai) {
-    delete (*ai);
+  Fields::iterator fi;
+  for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
+    delete (*fi);
   }
 }
 
@@ -190,12 +191,35 @@ write(ostream &out, int indent_level) const {
   }
   out << " {  // index " << _number << "\n";
 
-  Fields::const_iterator ai;
-  for (ai = _fields.begin(); ai != _fields.end(); ++ai) {
-    (*ai)->write(out, indent_level + 2);
+  Fields::const_iterator fi;
+  for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
+    (*fi)->write(out, indent_level + 2);
   }
 
   indent(out, indent_level) << "};\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::generate_hash
+//       Access: Public, Virtual
+//  Description: Accumulates the properties of this class into the
+//               hash.
+////////////////////////////////////////////////////////////////////
+void DCClass::
+generate_hash(HashGenerator &hash) const {
+  hash.add_string(_name);
+
+  hash.add_int(_parents.size());
+  Parents::const_iterator pi;
+  for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
+    hash.add_int((*pi)->get_number());
+  }
+
+  hash.add_int(_fields.size());
+  Fields::const_iterator fi;
+  for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
+    (*fi)->generate_hash(hash);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

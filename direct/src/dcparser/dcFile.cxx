@@ -6,6 +6,7 @@
 #include "dcFile.h"
 #include "dcParserDefs.h"
 #include "dcLexerDefs.h"
+#include "hashGenerator.h"
 
 #ifdef WITHIN_PANDA
 #include <filename.h>
@@ -14,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCFile::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 DCFile::
@@ -23,7 +24,7 @@ DCFile() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCFile::Destructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 DCFile::
@@ -36,7 +37,7 @@ DCFile::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCFile::read
-//       Access: Public
+//       Access: Published
 //  Description: Opens and reads the indicated .dc file by name.  The
 //               distributed classes defined in the file will be
 //               appended to the set of distributed classes already
@@ -67,7 +68,7 @@ read(Filename filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCFile::read
-//       Access: Public
+//       Access: Published
 //  Description: Parses the already-opened input stream for
 //               distributed class descriptions.  The filename
 //               parameter is optional and is only used when reporting
@@ -92,7 +93,7 @@ read(istream &in, const string &filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCFile::write
-//       Access: Public
+//       Access: Published
 //  Description: Opens the indicated filename for output and writes a
 //               parseable description of all the known distributed
 //               classes to the file.
@@ -120,7 +121,7 @@ write(Filename filename) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCFile::write
-//       Access: Public
+//       Access: Published
 //  Description: Writes a parseable description of all the known
 //               distributed classes to the file.  The filename
 //               parameter is optional and is only used when reporting
@@ -147,7 +148,7 @@ write(ostream &out, const string &filename) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCFile::get_num_classes
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of classes read from the .dc
 //               file(s).
 ////////////////////////////////////////////////////////////////////
@@ -158,7 +159,7 @@ get_num_classes() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCFile::get_class
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth class read from the .dc file(s).
 ////////////////////////////////////////////////////////////////////
 DCClass *DCFile::
@@ -169,7 +170,7 @@ get_class(int n) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCFile::get_class_by_name
-//       Access: Public
+//       Access: Published
 //  Description: Returns the class that has the indicated name, or
 //               NULL if there is no such class.
 ////////////////////////////////////////////////////////////////////
@@ -182,6 +183,37 @@ get_class_by_name(const string &name) {
   }
 
   return (DCClass *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::get_hash
+//       Access: Published
+//  Description: Returns a 32-bit hash index associated with this
+//               file.  This number is guaranteed to be consistent if
+//               the contents of the file have not changed, and it is
+//               very likely to be different if the contents of the
+//               file do change.
+////////////////////////////////////////////////////////////////////
+long DCFile::
+get_hash() const {
+  HashGenerator hash;
+  generate_hash(hash);
+  return hash.get_hash();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::generate_hash
+//       Access: Public, Virtual
+//  Description: Accumulates the properties of this file into the
+//               hash.
+////////////////////////////////////////////////////////////////////
+void DCFile::
+generate_hash(HashGenerator &hash) const {
+  hash.add_int(_classes.size());
+  Classes::const_iterator ci;
+  for (ci = _classes.begin(); ci != _classes.end(); ++ci) {
+    (*ci)->generate_hash(hash);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

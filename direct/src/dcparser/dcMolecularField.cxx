@@ -5,6 +5,7 @@
 
 #include "dcMolecularField.h"
 #include "dcAtomicField.h"
+#include "hashGenerator.h"
 #include "dcindent.h"
 
 
@@ -79,3 +80,20 @@ write(ostream &out, int indent_level) const {
   out << ";  // field " << _number << "\n";
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCMolecularField::generate_hash
+//       Access: Public, Virtual
+//  Description: Accumulates the properties of this field into the
+//               hash.
+////////////////////////////////////////////////////////////////////
+void DCMolecularField::
+generate_hash(HashGenerator &hash) const {
+  DCField::generate_hash(hash);
+
+  hash.add_int(_fields.size());
+  Fields::const_iterator fi;
+  for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
+    (*fi)->generate_hash(hash);
+  }
+}

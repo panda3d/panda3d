@@ -12,6 +12,8 @@
 #include <vector>
 #include <map>
 
+class HashGenerator;
+
 ////////////////////////////////////////////////////////////////////
 // 	 Class : DCFile
 // Description : Represents the complete list of Distributed Class
@@ -33,7 +35,10 @@ PUBLISHED:
 
   DCClass *get_class_by_name(const string &name);
 
+  long get_hash() const;
+
 public:
+  void generate_hash(HashGenerator &hash) const;
   bool add_class(DCClass *dclass);
 
 public:

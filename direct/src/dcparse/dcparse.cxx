@@ -26,5 +26,8 @@ main(int argc, char *argv[]) {
     return (1);
   }
 
+  long hash = file.get_hash();
+  cout << "File hash is " << hash << "\n";
+
   return (0);
 }

@@ -30,6 +30,7 @@ PUBLISHED:
 public:
   DCMolecularField();
   virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void generate_hash(HashGenerator &hash) const;
 
 public:
   // These members define the primary interface to the molecular field

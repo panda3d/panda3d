@@ -12,6 +12,8 @@
 #include <vector>
 #include <map>
 
+class HashGenerator;
+
 ////////////////////////////////////////////////////////////////////
 // 	 Class : DCClass
 // Description : Defines a particular DistributedClass as read from an
@@ -37,6 +39,8 @@ public:
   ~DCClass();
 
   void write(ostream &out, int indent_level = 0) const;
+  void generate_hash(HashGenerator &hash) const;
+
   bool add_field(DCField *field);
 
 public:
