@@ -48,23 +48,3 @@ INLINE Window glxGraphicsPipe::
 get_root() const {
   return _root;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPipe::get_display_width
-//       Access: Public
-//  Description: Returns the width of the entire display.
-////////////////////////////////////////////////////////////////////
-INLINE int glxGraphicsPipe::
-get_display_width() const {
-  return _display_width;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPipe::get_display_height
-//       Access: Public
-//  Description: Returns the height of the entire display.
-////////////////////////////////////////////////////////////////////
-INLINE int glxGraphicsPipe::
-get_display_height() const {
-  return _display_height;
-}

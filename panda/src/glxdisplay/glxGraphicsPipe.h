@@ -49,19 +49,14 @@ public:
   INLINE Display *get_display() const;
   INLINE int get_screen() const;
   INLINE Window get_root() const;
-  INLINE int get_display_width() const;
-  INLINE int get_display_height() const;
 
 protected:
   virtual PT(GraphicsWindow) make_window();
 
 private:
-  bool _is_valid;
   Display *_display;
   int _screen;
   Window _root;
-  int _display_width;
-  int _display_height;
 
 
 public:

@@ -41,11 +41,10 @@ glxGraphicsPipe(const string &display) {
   }
 
   _is_valid = false;
+  _supports_fullscreen = false;
   _display = NULL;
   _screen = 0;
   _root = (Window)NULL;
-  _display_width = 0;
-  _display_height = 0;
 
   _display = XOpenDisplay(display_spec.c_str());
   if (!_display) {
@@ -118,5 +117,6 @@ make_window() {
   if (!_is_valid) {
     return NULL;
   }
+
   return new glxGraphicsWindow(this);
 }

@@ -34,3 +34,47 @@ INLINE bool GraphicsPipe::
 is_valid() const {
   return _is_valid;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::supports_fullscreen
+//       Access: Published
+//  Description: Returns false if this pipe is known to not support
+//               any creation of fullscreen windows.  If this returns
+//               false, any attempt to create a window with the
+//               fullscreen property set will certainly fail.
+//
+//               Returns true when the pipe will probably support
+//               fullscreen windows.  This is not, however, a
+//               guarantee that an attempt to create a fullscreen
+//               window will not fail.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsPipe::
+supports_fullscreen() const {
+  return _supports_fullscreen;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::get_display_width
+//       Access: Public
+//  Description: Returns the width of the entire display, if it is
+//               known.  This may return 0.  This is not a guarantee
+//               that windows (particularly fullscreen windows) may
+//               not be created larger than this width, but it is
+//               intended to provide a hint to the application.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsPipe::
+get_display_width() const {
+  return _display_width;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::get_display_height
+//       Access: Public
+//  Description: Returns the height of the entire display, if it is
+//               known.  This may return 0.  See the caveats for
+//               get_display_width().
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsPipe::
+get_display_height() const {
+  return _display_height;
+}

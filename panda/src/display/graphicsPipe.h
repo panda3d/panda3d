@@ -60,6 +60,11 @@ PUBLISHED:
   PT(GraphicsWindow) get_window(int n) const;
 
   INLINE bool is_valid() const;
+  INLINE bool supports_fullscreen() const;
+
+  INLINE int get_display_width() const;
+  INLINE int get_display_height() const;
+
   virtual string get_interface_name() const=0;
 
 public:
@@ -81,6 +86,9 @@ protected:
   Mutex _lock;
 
   bool _is_valid;
+  bool _supports_fullscreen;
+  int _display_width;
+  int _display_height;
 
 public:
   static TypeHandle get_class_type() {

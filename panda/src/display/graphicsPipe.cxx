@@ -32,6 +32,13 @@ GraphicsPipe() {
   // Initially, we assume the GraphicsPipe is valid.  A derived class
   // should set this to false if it determines otherwise.
   _is_valid = true;
+
+  // Similarly, we initially assume the pipe will support fullscreen
+  // windows.  A derived class can choose to inform us otherwise.
+  _supports_fullscreen = true;
+
+  _display_width = 0;
+  _display_height = 0;
 }
 
 ////////////////////////////////////////////////////////////////////

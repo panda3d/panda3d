@@ -314,6 +314,11 @@ close_window() {
 ////////////////////////////////////////////////////////////////////
 bool glxGraphicsWindow::
 open_window() {
+  if (_properties.get_fullscreen()) {
+    // We don't support fullscreen windows.
+    return false;
+  }
+
   if (!_properties.has_origin()) {
     _properties.set_origin(0, 0);
   }
