@@ -89,16 +89,3 @@ class StateData(DirectObject):
         """getDoneStatus(self)
         """
         return self.doneStatus
-
-
-            
-        
-
-    
-
-
-
-
-
-
-
