@@ -57,8 +57,8 @@ class FSM(DirectObject):
             str = ("FSM " + self.getName() + ' not in any state')
         return str
 
-    def enterInitialState(self):
-        self.__enter(self.__initialState)
+    def enterInitialState(self, argList=[]):
+        self.__enter(self.__initialState, argList)
         return None
         
     # Jesse decided that simpler was better with the __str__ function
