@@ -130,6 +130,9 @@ class ScrollingLabel(PandaObject.PandaObject):
     def setEventName(self, eventName):
         self.eventName = eventName
 
+    def getPos(self):
+        return self.frame.getPos()
+    
     def setPos(self, x, y):
         self.frame.setPos(x, y)
         self.frame.recompute()

@@ -29,7 +29,10 @@ class Frame(DirectObject):
     # accessing
     def getName(self):
         return self.name
-    
+
+    def getPos(self):
+        return self.frame.getPos()
+
     def setPos(self, x, y):
         v3 = Vec3.Vec3(x, 0., y)
         self.frame.setPos(v3)

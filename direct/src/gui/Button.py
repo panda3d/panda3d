@@ -99,7 +99,10 @@ class Button(DirectObject):
     def unmanage(self):
         self.button.unmanage()
         self.managed = 0
-        
+
+    def getPos(self):
+        return self.button.getPos()
+    
     def setPos(self, x, y, node = None):
         if node == None:
             v3 = Vec3(x, 0., y)

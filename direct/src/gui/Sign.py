@@ -50,6 +50,9 @@ class Sign(DirectObject):
     def getGuiItem(self):
         return self.sign
 
+    def getPos(self):
+        self.label.getPos()
+        
     def setPos(self, x, y):
         self.label.setPos(x, 0, y)
         
