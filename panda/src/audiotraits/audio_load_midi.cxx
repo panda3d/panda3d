@@ -36,7 +36,7 @@ void AudioLoadMidi(AudioTraits::MusicClass** music,
 
 #include "audio_win_traits.h"
 
-void AudioDestroyMidi(AudioTraits::MusicClass* music) {
+void EXPCL_MISC AudioDestroyMidi(AudioTraits::MusicClass* music) {
   WinMusic::destroy(music);
 }
 

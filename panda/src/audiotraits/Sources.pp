@@ -5,7 +5,7 @@
   #define TARGET audio_load_midi
   #define BUILDING_DLL BUILDING_MISC
   #define LOCAL_LIBS \
-    audio
+    audio express
 
   #define SOURCES \
     audio_load_midi.cxx
@@ -16,7 +16,7 @@
   #define TARGET audio_load_wav
   #define BUILDING_DLL BUILDING_MISC
   #define LOCAL_LIBS \
-    audio
+    audio express
 
   #define SOURCES \
     audio_load_wav.cxx
@@ -28,7 +28,7 @@
   #define BUILDING_DLL BUILDING_MISC
   #define USE_SOXST yes
   #define LOCAL_LIBS \
-    audio
+    audio express
 
   #define SOURCES \
     audio_load_st.cxx

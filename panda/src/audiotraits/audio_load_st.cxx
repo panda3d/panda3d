@@ -403,7 +403,7 @@ void AudioLoadSt(AudioTraits::SampleClass** sample,
 
 #include "audio_win_traits.h"
 
-void AudioDestroySt(AudioTraits::SampleClass* sample) {
+void EXPCL_MISC AudioDestroySt(AudioTraits::SampleClass* sample) {
   WinSample::destroy(sample);
 }
 

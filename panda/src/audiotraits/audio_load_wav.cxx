@@ -37,7 +37,7 @@ void AudioLoadWav(AudioTraits::SampleClass** sample,
 
 #include "audio_win_traits.h"
 
-void AudioDestroyWav(AudioTraits::SampleClass* sample) {
+void EXPCL_MISC AudioDestroyWav(AudioTraits::SampleClass* sample) {
   WinSample::destroy(sample);
 }
 
