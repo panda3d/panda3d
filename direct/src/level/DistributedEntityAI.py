@@ -8,6 +8,9 @@ class DistributedEntityAI(DistributedObjectAI.DistributedObjectAI,
         'DistributedEntityAI')
 
     def __init__(self, level, entId):
+        ###
+        ### THIS IS WHERE AI-SIDE DISTRIBUTED ENTITIES GET THEIR ATTRIBUTES SET
+        ###
         DistributedObjectAI.DistributedObjectAI.__init__(self, level.air)
         self.levelDoId = level.doId
         Entity.Entity.__init__(self, level, entId)

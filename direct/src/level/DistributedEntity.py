@@ -28,6 +28,10 @@ class DistributedEntity(DistributedObject.DistributedObject, Entity.Entity):
         self.entId = entId
 
     def announceGenerate(self):
+        ###
+        ### THIS IS WHERE CLIENT-SIDE DISTRIBUTED ENTITIES GET THEIR
+        ### ATTRIBUTES SET
+        ###
         DistributedEntity.notify.debug('announceGenerate (%s)' % self.entId)
 
         # ask our level obj for our spec data

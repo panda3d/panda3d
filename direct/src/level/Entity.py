@@ -14,6 +14,9 @@ class Entity(DirectObject):
         self.initializeEntity(level, entId)
 
     def initializeEntity(self, level, entId):
+        ###
+        ### THIS IS WHERE ENTITIES GET THEIR ATTRIBUTES SET
+        ###
         """Distributed entities on the client don't know their level or
         entId values until they've been generated, so they call this
         after they've been generated. At that point, the entity is good
