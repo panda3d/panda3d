@@ -175,7 +175,7 @@
 (defun auto-newheader ()
   "Automatically generate header for specfic file types"
 
-  (let ((inslist '("\\.c++$" "\\.c$" "\\.I$" "\\.h$" "\\.hh$" "\\.ss$" "\\.sal$" "\\.stk$"))
+  (let ((inslist '("\\.cxx$" "\\.c++$" "\\.c$" "\\.I$" "\\.h$" "\\.hh$" "\\.ss$" "\\.sal$" "\\.stk$"))
         (name (file-name-sans-versions buffer-file-name))
 	(insert-file nil))
     
