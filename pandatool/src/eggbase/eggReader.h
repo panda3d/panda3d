@@ -21,7 +21,7 @@
 
 #include "pandatoolbase.h"
 
-#include "eggBase.h"
+#include "eggSingleBase.h"
 #include "filename.h"
 
 class PNMFileType;
@@ -31,7 +31,7 @@ class PNMFileType;
 // Description : This is the base class for a program that reads egg
 //               files, but doesn't write an egg file.
 ////////////////////////////////////////////////////////////////////
-class EggReader : virtual public EggBase {
+class EggReader : virtual public EggSingleBase {
 public:
   EggReader();
 

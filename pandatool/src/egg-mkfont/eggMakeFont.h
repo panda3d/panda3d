@@ -19,13 +19,13 @@
 #ifndef EGGMAKEFONT_H
 #define EGGMAKEFONT_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "charLayout.h"
 
-#include <eggWriter.h>
-#include <luse.h>
-#include <pnmImage.h>
+#include "eggWriter.h"
+#include "luse.h"
+#include "pnmImage.h"
 
 class CharPlacement;
 class CharBitmap;

@@ -189,6 +189,7 @@ get_output_filename(const Filename &source_filename) const {
 void EggMultiFilter::
 write_eggs() {
   nassertv(!_read_only);
+  post_process_egg_files();
   Eggs::iterator ei;
   for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
     EggData *data = (*ei);

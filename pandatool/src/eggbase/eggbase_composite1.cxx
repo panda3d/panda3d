@@ -6,6 +6,7 @@
 #include "eggMultiFilter.cxx"
 #include "eggReader.cxx"
 #include "eggWriter.cxx"
+#include "eggSingleBase.cxx"
 #include "eggToSomething.cxx"
 #include "somethingToEgg.cxx"
 

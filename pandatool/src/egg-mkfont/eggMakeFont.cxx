@@ -21,13 +21,13 @@
 #include "charPlacement.h"
 #include "pkFontFile.h"
 
-#include <string_utils.h>
-#include <eggGroup.h>
-#include <eggTexture.h>
-#include <eggVertexPool.h>
-#include <eggPolygon.h>
-#include <eggPoint.h>
-#include <pointerTo.h>
+#include "string_utils.h"
+#include "eggGroup.h"
+#include "eggTexture.h"
+#include "eggVertexPool.h"
+#include "eggPolygon.h"
+#include "eggPoint.h"
+#include "pointerTo.h"
 
 #include <math.h>
 
@@ -220,7 +220,7 @@ handle_args(ProgramBase::Args &args) {
 ////////////////////////////////////////////////////////////////////
 bool EggMakeFont::
 dispatch_dimensions(ProgramBase *self, const string &opt, const string &arg, void *) {
-  EggBase *base = (EggBase *)self;
+  EggSingleBase *base = (EggSingleBase *)self;
   EggMakeFont *me = (EggMakeFont *)base->as_writer();
   return me->ns_dispatch_dimensions(opt, arg);
 }

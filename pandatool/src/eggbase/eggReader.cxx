@@ -136,7 +136,7 @@ add_delod_options(double default_delod) {
 //               This is intended to work around the C++ limitation
 //               that prevents downcasts past virtual inheritance.
 //               Since both EggReader and EggWriter inherit virtually
-//               from EggBase, we need functions like this to downcast
+//               from EggSingleBase, we need functions like this to downcast
 //               to the appropriate pointer.
 ////////////////////////////////////////////////////////////////////
 EggReader *EggReader::
@@ -211,7 +211,7 @@ handle_args(ProgramBase::Args &args) {
 ////////////////////////////////////////////////////////////////////
 bool EggReader::
 post_command_line() {
-  return EggBase::post_command_line();
+  return EggSingleBase::post_command_line();
 }
 
 ////////////////////////////////////////////////////////////////////

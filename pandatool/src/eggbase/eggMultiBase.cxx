@@ -31,53 +31,77 @@
 EggMultiBase::
 EggMultiBase() {
   add_option
-    ("cs", "coordinate-system", 80,
-     "Specify the coordinate system to operate in.  This may be one of "
-     "'y-up', 'z-up', 'y-up-left', or 'z-up-left'.",
-     &EggMultiBase::dispatch_coordinate_system,
-     &_got_coordinate_system, &_coordinate_system);
-
-  add_option
     ("f", "", 80,
      "Force complete loading: load up the egg file along with all of its "
      "external references.",
      &EggMultiBase::dispatch_none, &_force_complete);
-
-  _coordinate_system = CS_yup_right;
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: EggMultiBase::append_command_comment
-//       Access: Protected
-//  Description: Inserts a comment into the beginning of the indicated
-//               egg file corresponding to the command line that
-//               invoked this program.
+//     Function: EggMultiBase::post_process_egg_files
+//       Access: Public
+//  Description: Performs any processing of the egg file(s) that is
+//               appropriate before writing them out.  This includes any
+//               normal adjustments the user requested via -np, etc.
 //
-//               Normally this function is called automatically when
-//               appropriate by EggWriter, and it's not necessary to
-//               call it explicitly.
+//               Normally, you should not need to call this function
+//               directly; write_egg_files() calls it for you.  You
+//               should call this only if you do not use
+//               write_egg_files() to write out the resulting egg
+//               files.
 ////////////////////////////////////////////////////////////////////
 void EggMultiBase::
-append_command_comment(EggData &data) {
-  append_command_comment(data, get_exec_command());
+post_process_egg_files() {
+  if (_eggs.empty()) {
+    return;
+  }
+
+  Eggs::iterator ei;
+  if (_got_transform) {
+    nout << "Applying transform matrix:\n";
+    _transform.write(nout, 2);
+    LVecBase3d scale, hpr, translate;
+    if (decompose_matrix(_transform, scale, hpr, translate,
+                         _eggs[0]->get_coordinate_system())) {
+      nout << "(scale " << scale << ", hpr " << hpr << ", translate "
+           << translate << ")\n";
+    }
+    for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
+      (*ei)->transform(_transform);
+    }
+  }
+
+  switch (_normals_mode) {
+  case NM_strip:
+    nout << "Stripping normals.\n";
+    for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
+      (*ei)->strip_normals();
+      (*ei)->remove_unused_vertices();
+    }
+    break;
+
+  case NM_polygon:
+    nout << "Recomputing polygon normals.\n";
+    for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
+      (*ei)->recompute_polygon_normals();
+      (*ei)->remove_unused_vertices();
+    }
+    break;
+
+  case NM_vertex:
+    nout << "Recomputing vertex normals.\n";
+    for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
+      (*ei)->recompute_vertex_normals(_normals_threshold);
+      (*ei)->remove_unused_vertices();
+    }
+    break;
+
+  case NM_preserve:
+    // Do nothing.
+    break;
+  }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMultiBase::append_command_comment
-//       Access: Protected, Static
-//  Description: Inserts a comment into the beginning of the indicated
-//               egg file corresponding to the command line that
-//               invoked this program.
-//
-//               Normally this function is called automatically when
-//               appropriate by EggWriter, and it's not necessary to
-//               call it explicitly.
-////////////////////////////////////////////////////////////////////
-void EggMultiBase::
-append_command_comment(EggData &data, const string &comment) {
-  data.insert(data.begin(), new EggComment("", comment));
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMultiBase::read_egg

@@ -1,5 +1,5 @@
-// Filename: eggWriter.h
-// Created by:  drose (14Feb00)
+// Filename: eggSingleBase.h
+// Created by:  drose (21Jul03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,37 +16,42 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef EGGWRITER_H
-#define EGGWRITER_H
+#ifndef EGGSINGLEBASE_H
+#define EGGSINGLEBASE_H
 
 #include "pandatoolbase.h"
-#include "eggSingleBase.h"
-#include "withOutputFile.h"
 
-#include "filename.h"
-#include "luse.h"
+#include "eggBase.h"
+#include "coordinateSystem.h"
+#include "eggData.h"
+
+class EggReader;
+class EggWriter;
+class EggNode;
+class PathReplace;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : EggWriter
-// Description : This is the base class for a program that generates
-//               an egg file output, but doesn't read any for input.
+//       Class : EggSingleBase
+// Description : This specialization of EggBase is intended for
+//               programs that read and/or write a single egg file.
+//               (See EggMultiBase for programs that operate on
+//               multiple egg files at once.)
+//
+//               This is just a base class; see EggReader, EggWriter,
+//               or EggFilter according to your particular I/O needs.
 ////////////////////////////////////////////////////////////////////
-class EggWriter : virtual public EggSingleBase, public WithOutputFile {
+class EggSingleBase : public EggBase {
 public:
-  EggWriter(bool allow_last_param = false, bool allow_stdout = true);
+  EggSingleBase();
 
+  virtual EggReader *as_reader();
   virtual EggWriter *as_writer();
 
-  virtual void post_process_egg_file();
-  void write_egg_file();
-
 protected:
-  virtual bool handle_args(Args &args);
   virtual bool post_command_line();
 
-private:
-  ofstream _output_stream;
-  ostream *_output_ptr;
+protected:
+  EggData _data;
 };
 
 #endif
