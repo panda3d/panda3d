@@ -15,7 +15,6 @@
 #include <geom.h>
 #include <geomprimitives.h>
 #include <renderRelation.h>
-#include <billboardTransition.h>
 #include <notify.h>
 #include <sceneGraphReducer.h>
 #include <geomBinTransition.h>
@@ -230,10 +229,6 @@ generate() {
     _transform;
 
   root_arc->set_transition(new TransformTransition(mat));
-
-  if (get_billboard()) {
-    root_arc->set_transition(new BillboardTransition(BillboardTransition::axis(_coordinate_system)));
-  }
 
   string text = _text;
   if (has_wordwrap()) {

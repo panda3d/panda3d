@@ -131,9 +131,6 @@ PUBLISHED:
   INLINE int set_draw_order(int draw_order);
   INLINE int get_draw_order() const;
 
-  INLINE void set_billboard(bool billboard);
-  INLINE bool get_billboard() const;
-
   INLINE void set_transform(const LMatrix4f &transform);
   INLINE LMatrix4f get_transform() const;
 
@@ -207,7 +204,6 @@ private:
     F_frame_corners    =  0x0100,
     F_card_transp      =  0x0200,
     F_has_card_border  =  0x0400,
-    F_billboard        =  0x0800,
   };
 
   int _flags;

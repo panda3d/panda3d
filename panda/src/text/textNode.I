@@ -887,33 +887,6 @@ get_draw_order() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_billboard
-//       Access: Published
-//  Description: Sets the flag indicating whether the text should be
-//               generated as a billboard object or not.  If this is
-//               true, the text will automatically billboard.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_billboard(bool billboard) { 
-  if (billboard) {
-    _flags |= F_billboard;
-  } else {
-    _flags &= ~F_billboard;
-  }
-  rebuild(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_billboard
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE bool TextNode::
-get_billboard() const {
-  return (_flags & F_billboard) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_transform
 //       Access: Published
 //  Description: Sets an additional transform that is applied to the
