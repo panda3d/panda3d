@@ -1162,21 +1162,6 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           n3d = n3d * vertex_frame_inv;
           vert.set_normal(n3d);
           
-          // check to see if material is present
-          float r,g,b,a;
-          SAA_elementIsValid( &scene, &node_desc->materials[idx/3], &valid );
-          // material present - get the color 
-          if ( valid ) {
-            SAA_materialGetDiffuse( &scene, &node_desc->materials[idx/3], &r, &g, &b );
-            SAA_materialGetTransparency( &scene, &node_desc->materials[idx/3], &a );
-            vert.set_color(Colorf(r, g, b, 1.0f - a));
-            softegg_cat.spam() << "color r = " << r << " g = " << g << " b = " << b << " a = " << 1.0f - a << "\n";
-          }
-          else {     // no material - default to white
-            vert.set_color(Colorf(1.0, 1.0, 1.0, 1.0));
-            softegg_cat.spam() << "default color\n";
-          }
-          
           // if texture present set the texture coordinates
           if (node_desc->textures) {
             float u, v;
@@ -1194,6 +1179,21 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           vert.set_external_index(indices[i]);
           egg_poly->add_vertex(vpool->create_unique_vertex(vert));
 
+          // check to see if material is present
+          float r,g,b,a;
+          SAA_elementIsValid( &scene, &node_desc->materials[idx], &valid );
+          // material present - get the color 
+          if ( valid ) {
+            SAA_materialGetDiffuse( &scene, &node_desc->materials[idx], &r, &g, &b );
+            SAA_materialGetTransparency( &scene, &node_desc->materials[idx], &a );
+            egg_poly->set_color(Colorf(r, g, b, 1.0f - a));
+            softegg_cat.spam() << "color r = " << r << " g = " << g << " b = " << b << " a = " << 1.0f - a << "\n";
+          }
+          else {     // no material - default to white
+            egg_poly->set_color(Colorf(1.0, 1.0, 1.0, 1.0));
+            softegg_cat.spam() << "default color\n";
+          }
+          
           /*
           // keep a one to one copy in this node's vpool
           EggVertex *t_vert = new EggVertex(vert);
