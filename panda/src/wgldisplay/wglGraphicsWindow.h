@@ -40,6 +40,7 @@ public:
 
 protected:
   virtual bool open_window();
+  virtual void close_window();
 
 private:
   int choose_pfnum() const;

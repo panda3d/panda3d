@@ -86,8 +86,10 @@ make_gsg() {
 void wglGraphicsWindow::
 release_gsg() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
+    wglMakeCurrent(_hdc, _context);
     GraphicsWindow::release_gsg();
     wglDeleteContext(_context);
+    wglMakeCurrent(_hdc, NULL);
     _context = (HGLRC)0;
   }
 }
@@ -178,6 +180,19 @@ open_window() {
   // Initializes _colormap
   setup_colormap();
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsWindow::close_window
+//       Access: Protected, Virtual
+//  Description: Closes the window right now.  Called from the window
+//               thread.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsWindow::
+close_window() {
+  ReleaseDC(_mwindow, _hdc);
+  _hdc = (HDC)0;
+  WinGraphicsWindow::close_window();
 }
 
 ////////////////////////////////////////////////////////////////////
