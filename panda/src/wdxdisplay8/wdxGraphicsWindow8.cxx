@@ -1508,11 +1508,11 @@ void wdxGraphicsWindow::finish_window_setup(void) {
     // move windows to top of zorder
     HWND hWin = _dxgsg->scrn.hWnd;
 
-    SetWindowPos(hWin, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
     // call twice to override STARTUPINFO value, which may be set to hidden initially (by emacs for instance)
     ShowWindow(hWin, SW_SHOWNORMAL);
     ShowWindow(hWin, SW_SHOWNORMAL);
     //  UpdateWindow( _mwindow );
+    SetWindowPos(hWin, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
 }
 
 // this handles external programmatic requests for resizing (usually fullscrn resize)
@@ -2107,6 +2107,14 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
         *pSuggestedPixFmt = D3DFMT_X1R5G5B5;
 }
 
+bool is_badvidmem_card(D3DADAPTER_IDENTIFIER8 *pDevID) {
+  // dont trust Intel cards since they often use regular memory as vidmem
+  if(pDevID->VendorId==0x00008086)
+      return true;
+
+   return false;
+}
+
 // returns true if successful
 bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevInfo) {
     DWORD dwRenderWidth  = _props._xsize;
@@ -2195,7 +2203,7 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
         bool bCouldntFindValidZBuf;
         if(!_dxgsg->scrn.bIsLowVidMemCard) {
             if(dx_pick_best_screenres) {
-              if(_dxgsg->scrn.MaxAvailVidMem == UNKNOWN_VIDMEM_SIZE) {
+              if((_dxgsg->scrn.MaxAvailVidMem == UNKNOWN_VIDMEM_SIZE) || is_badvidmem_card(&_dxgsg->scrn.DXDeviceID)) {
                     wdxdisplay_cat.info() << "pick_best_screenres: defaulted 800x600 based on no reliable vidmem size\n";
                     dwRenderWidth=800;  dwRenderHeight=600;
               } else {

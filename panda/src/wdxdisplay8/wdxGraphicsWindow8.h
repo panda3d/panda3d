@@ -187,6 +187,7 @@ public:
 
 extern void set_global_parameters(void);
 extern void restore_global_parameters(void);
+extern bool is_badvidmem_card(D3DADAPTER_IDENTIFIER8 *pDevID);
 
 
 #endif
