@@ -156,6 +156,17 @@ $[TAB]@test -d $[directory] || mkdir -p $[directory]
 $[TAB]@touch $[directory]/stamp
 #end directory
 
+// Decompressing compressed files.
+#forscopes gz
+  #foreach gz $[SOURCES]
+    #define target $[gz:%.gz=%]
+    #define source $[gz]
+$[target] : $[source]
+$[TAB]rm -f $[target]
+$[TAB]gunzip $[GUNZIP_OPTS] < $[source] > $[target]
+
+  #end gz
+#end gz
 
 // Egg file generation from Flt files.
 #forscopes flt_egg
