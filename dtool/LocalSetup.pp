@@ -61,6 +61,9 @@ $[cdefine HAVE_SGIGL]
 /* Define if we have GLX installed and want to build for GLX.  */
 $[cdefine HAVE_GLX]
 
+/* Define if we have Windows-GL installed and want to build for Wgl.  */
+$[cdefine HAVE_WGL]
+
 /* Define if we have Glut installed and want to build for Glut.  */
 $[cdefine HAVE_GLUT]
 
