@@ -68,7 +68,7 @@ class ClockDelta(DirectObject.DirectObject):
 
     ### Primary interface functions ###
 
-    def networkToLocalTime(self, networkTime, now = None):
+    def networkToLocalTime(self, networkTime, now = None, bits = 16):
         """networkToLocalTime(self, int networkTime)
 
         Converts the indicated networkTime to the corresponding
@@ -89,18 +89,33 @@ class ClockDelta(DirectObject.DirectObject):
         # The signed difference between these is the number of units
         # of NetworkTimePrecision by which the network time differs
         # from 'now'.
-        diff = self.__signExtend(networkTime - ntime)
+        if bits == 16:
+            diff = self.__signExtend(networkTime - ntime)
+
+        else:
+            # Assume the bits is either 16 or 32.  If it's 32, no need
+            # to sign-extend.  32 bits gives us about 227 days of
+            # continuous timestamp.
+            
+            diff = networkTime - ntime
         
         return now + float(diff) / NetworkTimePrecision
 
-    def localToNetworkTime(self, localTime):
+    def localToNetworkTime(self, localTime, bits = 16):
         """localToNetworkTime(self, float localTime)
 
         Converts the indicated localTime to the corresponding
         networkTime value.
         """
         ntime = int(math.floor((localTime - self.delta) * NetworkTimePrecision + 0.5))
-        return self.__signExtend(ntime)
+        if bits == 16:
+            return self.__signExtend(ntime)
+
+        else:
+            # Assume the bits is either 16 or 32.  If it's 32, no need
+            # to sign-extend.  32 bits gives us about 227 days of
+            # continuous timestamp.
+            return ntime
 
 
     ### Convenience functions ###
