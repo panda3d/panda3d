@@ -34,6 +34,7 @@ class IntervalManager(CIntervalManager):
         index = self.findCInterval(interval.getName())
         if index >= 0:
             self.removeCInterval(index)
+            self.ivals[index] = None
             return 1
         return 0
 
