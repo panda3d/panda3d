@@ -104,7 +104,14 @@ MilesSound::~MilesSound() {
 }
 
 float MilesSound::length() const {
-  float length=float(AIL_quick_ms_length(_audio))/1000.0;
+  float length=0;
+  if (AIL_quick_status(_audio)!=QSTAT_PLAYING) {
+    AIL_quick_play(_audio, 1);
+    length=float(AIL_quick_ms_length(_audio))/1000.0;
+    AIL_quick_halt(_audio);
+  } else {
+    length=float(AIL_quick_ms_length(_audio))/1000.0;
+  }
   audio_debug("MilesSound::length returning "<<length);
   return length;
 }
