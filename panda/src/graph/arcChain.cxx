@@ -14,19 +14,32 @@
 ////////////////////////////////////////////////////////////////////
 void ArcChain::ArcComponent::
 operator = (const ArcComponent &copy) {
-  _next = copy._next;
+  // We have to be careful with the reference counts here,
+  // particularly since we might be changing the pointer type from arc
+  // pointer to node pointer, or vice-versa, with this assignment.
 
-  if (has_arc()) {
-    // Ref the new one before unreffing the old one, so we don't
-    // accidentally delete in the interim.
+  // First, ref the new pointer once, so we don't accidentally delete
+  // in the interim.
+  if (copy.has_arc()) {
     copy._p._arc->ref();
     copy._p._arc->ref_parent();
-    _p._arc->unref_parent();
-    unref_delete(_p._arc);
-    _p._arc = copy._p._arc;
   } else {
     copy._p._node->ref();
+  }
+
+  // Now unref the old pointer.
+  if (has_arc()) {
+    _p._arc->unref_parent();
+    unref_delete(_p._arc);
+  } else {
     unref_delete(_p._node);
+  }
+
+  // Now reassign the pointers.
+  _next = copy._next;
+  if (has_arc()) {
+    _p._arc = copy._p._arc;
+  } else {
     _p._node = copy._p._node;
   }
 }
