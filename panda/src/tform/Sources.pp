@@ -26,6 +26,7 @@
   #define INSTALL_HEADERS \
     buttonThrower.h dataValve.I dataValve.h \
     driveInterface.I driveInterface.h mouseWatcher.I mouseWatcher.h \
+    mouseWatcherGroup.h \
     mouseWatcherParameter.I mouseWatcherParameter.h \
     mouseWatcherRegion.I mouseWatcherRegion.h \
     planarSlider.h trackball.h transform2sg.h
