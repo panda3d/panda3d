@@ -54,12 +54,19 @@ SubStreamBuf() {
   // buffer.
   _unused = 0;
 
-#ifndef WIN32_VC
-  // These lines, which are essential on Irix and Linux, seem to be
-  // unnecessary and not understood on Windows.
+
+#ifdef WIN32_VC
+  // In spite of the claims of the MSDN Library to the contrary,
+  // Windows doesn't seem to provide an allocate() function, so we'll
+  // do it by hand.
+  char *buf = new char[4096];
+  char *ebuf = buf + 4096;
+  setg(buf, ebuf, ebuf);
+
+#else
   allocate();
   setg(base(), ebuf(), ebuf());
-#endif /* WIN32_VC */
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -208,15 +215,6 @@ sync() {
 ////////////////////////////////////////////////////////////////////
 int SubStreamBuf::
 underflow() {
-  if ((eback() == (char *)NULL) || (gptr() == (char *)NULL) ||
-      (egptr() == (char *)NULL)) {
-    // No buffer; allocate a new one.  Rumor has it this is only
-    // possible in Win32.
-    char *buf = new char[4096];
-    char *ebuf = buf + 4096;
-    setg(buf, ebuf, ebuf);
-  }
-
   // Sometimes underflow() is called even if the buffer is not empty.
   if (gptr() >= egptr()) {
     if (_end != (streampos)0 && _cur >= _end) {
