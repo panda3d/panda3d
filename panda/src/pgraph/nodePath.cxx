@@ -893,12 +893,9 @@ look_at(const LPoint3f &point, const LVector3f &up) {
 
   LPoint3f pos = get_pos();
 
-  LMatrix3f mat;
-  ::look_at(mat, point - pos, up);
-  LVecBase3f scale, hpr;
-  decompose_matrix(mat, scale, hpr);
- 
-  set_hpr(hpr);
+  LQuaternionf quat;
+  ::look_at(quat, point - pos, up);
+  set_quat(quat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -914,12 +911,9 @@ heads_up(const LPoint3f &point, const LVector3f &up) {
 
   LPoint3f pos = get_pos();
 
-  LMatrix3f mat;
-  ::heads_up(mat, point - pos, up);
-  LVecBase3f scale, hpr;
-  decompose_matrix(mat, scale, hpr);
- 
-  set_hpr(hpr);
+  LQuaternionf quat;
+  ::heads_up(quat, point - pos, up);
+  set_quat(quat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1346,12 +1340,9 @@ look_at(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
 
   LPoint3f pos = get_pos();
 
-  LMatrix3f mat;
-  ::look_at(mat, rel_point - pos, up);
-  LVecBase3f scale, hpr;
-  decompose_matrix(mat, scale, hpr);
- 
-  set_hpr(hpr);
+  LQuaternionf quat;
+  ::look_at(quat, rel_point - pos, up);
+  set_quat(quat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1370,12 +1361,9 @@ heads_up(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
 
   LPoint3f pos = get_pos();
 
-  LMatrix3f mat;
-  ::heads_up(mat, rel_point - pos, up);
-  LVecBase3f scale, hpr;
-  decompose_matrix(mat, scale, hpr);
- 
-  set_hpr(hpr);
+  LQuaternionf quat;
+  ::heads_up(quat, rel_point - pos, up);
+  set_quat(quat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2295,8 +2283,6 @@ get_depth_write() const {
 //  Description: Performs a billboard-type rotate to the indicated
 //               camera node, one time only, and leaves the object
 //               rotated.  This is similar in principle to heads_up().
-//               However, it does lose both translate and scale
-//               components of the matrix.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 do_billboard_axis(const NodePath &camera, float offset) {
@@ -2308,8 +2294,9 @@ do_billboard_axis(const NodePath &camera, float offset) {
   LVector3f up = LVector3f::up();
   LVector3f rel_pos = -rel_mat.get_row3(3);
 
-  LMatrix4f mat;
-  ::heads_up(mat, rel_pos, up);
+  LQuaternionf quat;
+  ::heads_up(quat, rel_pos, up);
+  set_quat(quat);
 
   // Also slide the geometry towards the camera according to the
   // offset factor.
@@ -2317,10 +2304,8 @@ do_billboard_axis(const NodePath &camera, float offset) {
     LVector3f translate = rel_mat.get_row3(3);
     translate.normalize();
     translate *= offset;
-    mat.set_row(3, translate);
+    set_pos(translate);
   }
-
-  set_mat(mat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2342,8 +2327,9 @@ do_billboard_point_eye(const NodePath &camera, float offset) {
   LVector3f up = LVector3f::up() * rel_mat;
   LVector3f rel_pos = LVector3f::forward() * rel_mat;
 
-  LMatrix4f mat;
-  ::look_at(mat, rel_pos, up);
+  LQuaternionf quat;
+  ::look_at(quat, rel_pos, up);
+  set_quat(quat);
 
   // Also slide the geometry towards the camera according to the
   // offset factor.
@@ -2351,10 +2337,8 @@ do_billboard_point_eye(const NodePath &camera, float offset) {
     LVector3f translate = rel_mat.get_row3(3);
     translate.normalize();
     translate *= offset;
-    mat.set_row(3, translate);
+    set_pos(translate);
   }
-
-  set_mat(mat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2374,8 +2358,9 @@ do_billboard_point_world(const NodePath &camera, float offset) {
   LVector3f up = LVector3f::up();
   LVector3f rel_pos = -rel_mat.get_row3(3);
 
-  LMatrix4f mat;
-  ::look_at(mat, rel_pos, up);
+  LQuaternionf quat;
+  ::look_at(quat, rel_pos, up);
+  set_quat(quat);
 
   // Also slide the geometry towards the camera according to the
   // offset factor.
@@ -2383,10 +2368,8 @@ do_billboard_point_world(const NodePath &camera, float offset) {
     LVector3f translate = rel_mat.get_row3(3);
     translate.normalize();
     translate *= offset;
-    mat.set_row(3, translate);
+    set_pos(translate);
   }
-
-  set_mat(mat);
 }
 
 ////////////////////////////////////////////////////////////////////
