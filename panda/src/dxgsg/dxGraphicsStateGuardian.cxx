@@ -3,10 +3,10 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+#include <pandabase.h>
 #include "dxSavedFrameBuffer.h"
 #include "config_dxgsg.h"
 #include "dxGraphicsStateGuardian.h"
-#include <pStatTimer.h>
 #include <directRenderTraverser.h>
 #include <cullTraverser.h>
 #include <displayRegion.h>
@@ -66,7 +66,9 @@
 #include <stencilTransition.h>
 #include <throw_event.h>
 
-#include <pandabase.h>
+#ifdef DO_PSTATS
+#include <pStatTimer.h>
+#endif
 
 #define DISABLE_POLYGON_OFFSET_DECALING
 // currently doesnt work well enough in toontown models for us to use
@@ -1200,7 +1202,7 @@ draw_point(const GeomPoint *geom) {
 			// Geom nodes store floats for colors, drawprim requires ARGB dwords
 			// BUGBUG: eventually this hack every-frame all-colors conversion needs 
 			// to be done only once as part of a vertex buffer
-
+			
 			if(_color_transform_enabled || _alpha_transform_enabled) {
 				for (int i=0;i<nPrims;i++) {
 					D3DCOLOR RGBA_color;
@@ -2005,14 +2007,15 @@ draw_tri(const GeomTri *geom) {
 
 		D3DSHADEMODE NeededShadeMode = D3DSHADE_FLAT;
 
-		DWORD dwVertsPerPrim=geom->get_num_vertices_per_prim();
-
+		const DWORD dwVertsPerPrim=3;
+	
 		if ((NormalBinding != G_OFF) && wants_normals()) {
 
 			dps_data.normal.lpvData = (VOID*)norms;
 			dps_data.normal.dwStride = sizeof(D3DVECTOR);
 
 #ifdef _DEBUG
+			nassertv(geom->get_num_vertices_per_prim()==3);
 			nassertv( nPrims*dwVertsPerPrim*sizeof(D3DVECTOR) <= D3DMAXNUMVERTICES*sizeof(WORD)); 
 			if (NormalBinding==G_PER_VERTEX)
 				nassertv(norms.size()>=nPrims*dwVertsPerPrim);
@@ -2437,7 +2440,7 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 			cTotalVerts+= pLengthArr[i];
 		}
 
-		DWORD cNumMoreVertsthanTris=geom->get_num_more_vertices_than_components();
+		const DWORD cNumMoreVertsthanTris=2;
 
 		if((NormalBinding != G_OFF) && wants_normals()) {
 
@@ -2445,6 +2448,7 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 			dps_data.normal.dwStride = sizeof(D3DVECTOR);
 
 #ifdef _DEBUG
+			nassertv(geom->get_num_more_vertices_than_components()==2);
 			nassertv(NormalBinding!=G_PER_COMPONENT); // makes no sense, unimplementable for strips since normals always shared across tris
 			nassertv( cTotalVerts*sizeof(D3DVECTOR) <= D3DMAXNUMVERTICES*sizeof(WORD)); 
 			if(NormalBinding==G_PER_VERTEX)
@@ -5387,7 +5391,9 @@ HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void) {
 //       Description:   Repaint primary buffer from back buffer  (windowed mode only)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::show_frame(void) {
+#ifdef DO_PSTATS
 	PStatTimer timer(_win->_swap_pcollector);  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
+#endif
 
 	if(_pri==NULL)
 		return;

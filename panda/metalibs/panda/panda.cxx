@@ -9,7 +9,9 @@
 #include <config_display.h>
 #include <config_graph.h>
 #include <config_pnmimagetypes.h>
+#ifdef DO_PSTATS
 #include <config_pstats.h>
+#endif
 #include <config_sgraph.h>
 
 #ifdef LINK_IN_GL
@@ -38,7 +40,9 @@ init_libpanda() {
   init_libdisplay();
   init_libgraph();
   init_libpnmimagetypes();
+#ifdef DO_PSTATS
   init_libpstatclient();
+#endif
   init_libsgraph();
 
 #ifdef LINK_IN_GL

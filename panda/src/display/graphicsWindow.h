@@ -24,7 +24,10 @@
 #include <buttonEvent.h>
 #include <iterator_types.h>
 #include <factory.h>
+
+#ifdef DO_PSTATS
 #include <pStatCollector.h>
+#endif
 
 #include <string>
 #include <vector>
@@ -155,11 +158,13 @@ public:
   virtual void begin_frame();
   virtual void end_frame();
 
-  // Statistics
-  static PStatCollector _app_pcollector;
-  static PStatCollector _show_code_pcollector;
-  static PStatCollector _swap_pcollector;  // dxgsg needs access so this is public
-  static PStatCollector _make_current_pcollector;
+  #ifdef DO_PSTATS
+    // Statistics
+    static PStatCollector _app_pcollector;
+    static PStatCollector _show_code_pcollector;
+    static PStatCollector _swap_pcollector;  // dxgsg needs access so this is public
+    static PStatCollector _make_current_pcollector;
+  #endif
  
 protected:
   void make_gsg();

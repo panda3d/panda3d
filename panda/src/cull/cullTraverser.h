@@ -16,7 +16,10 @@
 #include <traverserVisitor.h>
 #include <nullTransitionWrapper.h>
 #include <nullAttributeWrapper.h>
+
+#ifdef DO_PSTATS
 #include <pStatCollector.h>
+#endif
 
 #include <list>
 #include <set>
@@ -119,10 +122,12 @@ private:
   UpdateSeq _now;
 
 public:
-  // Statistics
-  static PStatCollector _cull_pcollector;
-  static PStatCollector _draw_pcollector;
-
+  #ifdef DO_PSTATS
+	  // Statistics
+	  static PStatCollector _cull_pcollector;
+	  static PStatCollector _draw_pcollector;
+  #endif
+  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

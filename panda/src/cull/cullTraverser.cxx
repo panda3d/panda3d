@@ -22,17 +22,18 @@
 #include <indent.h>
 #include <config_sgraphutil.h>  // for implicit_app_traversal
 #include <config_sgattrib.h>    // for support_decals
-#include <pStatTimer.h>
 #include <string_utils.h>
 
 TypeHandle CullTraverser::_type_handle;
+
+#ifdef DO_PSTATS
+#include <pStatTimer.h>
 
 PStatCollector CullTraverser::_cull_pcollector =
   PStatCollector("Cull", RGBColorf(0,1,0), 10);
 PStatCollector CullTraverser::_draw_pcollector =
   PStatCollector("Draw", RGBColorf(1,0,0), 20);
-
-
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::Constructor
@@ -172,8 +173,10 @@ void CullTraverser::
 traverse(Node *root, 
 	 const AllAttributesWrapper &initial_state,
 	 const AllTransitionsWrapper &net_trans) {
+#ifdef DO_PSTATS
   // Statistics
   PStatTimer timer(_cull_pcollector);
+#endif
 
   if (cull_cat.is_debug()) {
     cull_cat.debug()

@@ -2,9 +2,11 @@
                    dtoolutil:c dtoolbase:c dtool:m
 
 #begin lib_target
-  #define TARGET pstatclient
   #define LOCAL_LIBS \
     net linmath putil express
+
+#if $[or $[<= $[OPTIMIZE],3], $[ne $[DO_PSTATS],]]
+  #define TARGET pstatclient
 
   #define SOURCES \
     config_pstats.cxx config_pstats.h pStatClient.I pStatClient.cxx \
@@ -22,6 +24,12 @@
     pStatTimer.I pStatTimer.h
 
   #define IGATESCAN all
+#else
+  #define TARGET
+  #define SOURCES
+  #define INSTALL_HEADERS  
+  #define IGATESCAN
+#endif  
 
 #end lib_target
 

@@ -11,7 +11,10 @@
 #include <transformTransition.h>
 #include <transformAttribute.h>
 #include <geometricBoundingVolume.h>
+
+#ifdef DO_PSTATS
 #include <pStatTimer.h>
+#endif
 
 TypeHandle GeomBinBackToFront::_type_handle;
 
@@ -135,7 +138,9 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
 ////////////////////////////////////////////////////////////////////
 void GeomBinBackToFront::
 draw(CullTraverser *trav) {
+#ifdef DO_PSTATS
   PStatTimer timer(CullTraverser::_draw_pcollector);
+#endif
   if (cull_cat.is_spam()) {
     cull_cat.spam() 
       << "GeomBinBackToFront drawing " << _node_entries.size() << " entries.\n";

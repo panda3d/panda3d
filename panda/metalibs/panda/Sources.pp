@@ -9,7 +9,7 @@
 #define USE_NET yes
 
 #define COMPONENT_LIBS \
-    pvrpn pstatclient grutil chan chancfg \
+    pvrpn grutil chan chancfg $[if $[or $[<= $[OPTIMIZE],3], $[ne $[DO_PSTATS],]], pstatclient] \
     char chat collide cull device \
     dgraph display gobj graph gsgbase \
     gsgmisc light linmath mathutil net \
@@ -17,6 +17,9 @@
     pnmimagetypes pnmimage sgattrib sgmanip sgraph sgraphutil \
     switchnode text tform tiff lerp loader putil effects \
     audio gui pandabase 
+
+
+
 
 #define LOCAL_LIBS downloader event ipc express pandabase
 #define OTHER_LIBS dtoolconfig dtool

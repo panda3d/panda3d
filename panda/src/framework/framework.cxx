@@ -410,7 +410,7 @@ void event_esc(CPT_Event) {
   rib_pipe = NULL;
   rib_win = NULL;
 
-#ifdef HAVE_NET
+#if defined(HAVE_NET) && defined(DO_PSTATS)
   if (PStatClient::get_global_pstats()->is_connected()) {
     framework_cat.info() << "Disconnecting from stats host" << endl;
     PStatClient::get_global_pstats()->disconnect();
@@ -438,7 +438,9 @@ void event_f(CPT_Event) {
 }
 
 void event_S(CPT_Event) {
-#ifdef HAVE_NET
+#ifndef DO_PSTATS
+  framework_cat.error() << "demo not compiled with PStats support." << endl;
+#elif defined(HAVE_NET)
   framework_cat.info() << "Connecting to stats host" << endl;
   PStatClient::get_global_pstats()->connect();
 #else
@@ -447,7 +449,9 @@ void event_S(CPT_Event) {
 }
 
 void event_A(CPT_Event) {
-#ifdef HAVE_NET
+#ifndef DO_PSTATS
+  framework_cat.error() << "demo not compiled with PStats support." << endl;
+#elif defined(HAVE_NET)
   if (PStatClient::get_global_pstats()->is_connected()) {
     framework_cat.info() << "Disconnecting from stats host" << endl;
     PStatClient::get_global_pstats()->disconnect();

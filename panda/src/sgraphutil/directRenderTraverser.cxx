@@ -23,12 +23,15 @@
 #include <nodeTransitionWrapper.h>
 #include <decalTransition.h>
 #include <decalAttribute.h>
-#include <pStatTimer.h>
 #include <config_sgattrib.h>   // for support_decals
 
 TypeHandle DirectRenderTraverser::_type_handle;
+
+#ifdef DO_PSTATS
+#include <pStatTimer.h>
 PStatCollector DirectRenderTraverser::_draw_pcollector =
   PStatCollector("Draw", RGBColorf(1,0,0), 20);
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DirectRenderTraverser::Constructor
@@ -63,8 +66,10 @@ void DirectRenderTraverser::
 traverse(Node *root, 
 	 const AllAttributesWrapper &initial_state,
 	 const AllTransitionsWrapper &net_trans) {
+#ifdef DO_PSTATS
   // Statistics
   PStatTimer timer(_draw_pcollector);
+#endif
 
   AllAttributesWrapper render_state;
   render_state.apply_from(initial_state, net_trans);

@@ -9,7 +9,10 @@
 #include <indent.h>
 #include <nodeAttributes.h>
 #include <graphicsStateGuardian.h>
+
+#ifdef DO_PSTATS
 #include <pStatTimer.h>
+#endif
 
 TypeHandle GeomBinUnsorted::_type_handle;
 
@@ -66,7 +69,9 @@ record_current_state(GraphicsStateGuardian *, CullState *cs, int,
 ////////////////////////////////////////////////////////////////////
 void GeomBinUnsorted::
 draw(CullTraverser *trav) {
+#ifdef DO_PSTATS
   PStatTimer timer(CullTraverser::_draw_pcollector);
+#endif
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
   if (cull_cat.is_spam()) {

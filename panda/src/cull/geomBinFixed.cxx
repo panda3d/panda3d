@@ -12,7 +12,10 @@
 #include <transformAttribute.h>
 #include <geometricBoundingVolume.h>
 #include <directRenderTraverser.h>
+
+#ifdef DO_PSTATS
 #include <pStatTimer.h>
+#endif
 
 TypeHandle GeomBinFixed::_type_handle;
 
@@ -64,7 +67,9 @@ record_current_state(GraphicsStateGuardian *, CullState *cs,
 ////////////////////////////////////////////////////////////////////
 void GeomBinFixed::
 draw(CullTraverser *trav) {
+#ifdef DO_PSTATS
   PStatTimer timer(CullTraverser::_draw_pcollector);
+#endif
   NodeEntries::iterator nei;
   for (nei = _node_entries.begin(); nei != _node_entries.end(); ++nei) {
     (*nei).draw(trav);

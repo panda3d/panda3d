@@ -3,17 +3,19 @@
 ////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////
+
 #include "wglGraphicsWindow.h"
 #include "wglGraphicsPipe.h"
 #include "config_wgldisplay.h"
-
 #include <keyboardButton.h>
 #include <mouseButton.h>
 #include <glGraphicsStateGuardian.h>
-#include <pStatTimer.h>
-
 #include <errno.h>
 #include <time.h>
+
+#ifdef DO_PSTATS
+#include <pStatTimer.h>
+#endif
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -846,7 +848,9 @@ void wglGraphicsWindow::setup_colormap(void) {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::end_frame(void) {
   {
+#ifdef DO_PSTATS
     PStatTimer timer(_swap_pcollector);
+#endif
     SwapBuffers(_hdc);
   }
   GraphicsWindow::end_frame();
@@ -994,8 +998,10 @@ supports_update() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::update(void) {
+#ifdef DO_PSTATS
   _show_code_pcollector.stop();
   PStatClient::main_tick();
+#endif
 
   if (_change_mask)
     handle_changes();
@@ -1008,8 +1014,9 @@ void wglGraphicsWindow::update(void) {
     idle_wait();
   else
     process_events();
-
+#ifdef DO_PSTATS
   _show_code_pcollector.start();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1045,7 +1052,9 @@ void wglGraphicsWindow::enable_mouse_passive_motion(bool val) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::make_current(void) {
+#ifdef DO_PSTATS
   PStatTimer timer(_make_current_pcollector);
+#endif
   HGLRC current_context = wglGetCurrentContext();
   HDC current_dc = wglGetCurrentDC();
   if (current_context != _context || current_dc != _hdc)

@@ -24,6 +24,7 @@ TypeHandle GraphicsWindow::WindowPipe::_type_handle;
 
 GraphicsWindow::WindowFactory *GraphicsWindow::_factory = NULL;
 
+#ifdef DO_PSTATS
 PStatCollector GraphicsWindow::_app_pcollector =
   PStatCollector("App", RGBColorf(0,1,1));
 PStatCollector GraphicsWindow::_show_code_pcollector =
@@ -32,7 +33,7 @@ PStatCollector GraphicsWindow::_swap_pcollector =
   PStatCollector("Draw:Swap Buffers", RGBColorf(0.5,1,0.8));
 PStatCollector GraphicsWindow::_make_current_pcollector =
   PStatCollector("Draw:Make Current", RGBColorf(1,0.6,0.3));
-
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::Properties::Constructor

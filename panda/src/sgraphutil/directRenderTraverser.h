@@ -17,8 +17,11 @@
 #include <allAttributesWrapper.h>
 #include <geometricBoundingVolume.h>
 #include <lmatrix.h>
-#include <pStatCollector.h>
 #include <pointerTo.h>
+
+#ifdef DO_PSTATS
+#include <pStatCollector.h>
+#endif
 
 class Node;
 class GraphicsStateGuardian;
@@ -60,9 +63,10 @@ public:
 		    const DirectRenderLevelState &level_state);
 
 private:
-  // Statistics
-  static PStatCollector _draw_pcollector;
-  
+  #ifdef DO_PSTATS
+    // Statistics
+    static PStatCollector _draw_pcollector;
+  #endif
 
 public:
   static TypeHandle get_class_type() {
