@@ -108,7 +108,9 @@ reload_implicit_pages() {
     ConfigDeclaration::extract_words(prc_dir_envvars, prc_dir_envvar_list);
     for (size_t i = 0; i < prc_dir_envvar_list.size(); i++) {
       string prc_dir = ExecutionEnvironment::get_environment_variable(prc_dir_envvar_list[i]);
-      _search_path.append_directory(Filename::from_os_specific(prc_dir));
+      if (!prc_dir.empty()) {
+        _search_path.append_directory(Filename::from_os_specific(prc_dir));
+      }
     }
   }
 
@@ -122,7 +124,9 @@ reload_implicit_pages() {
     ConfigDeclaration::extract_words(prc_path_envvars, prc_path_envvar_list);
     for (size_t i = 0; i < prc_path_envvar_list.size(); i++) {
       string prc_path = ExecutionEnvironment::get_environment_variable(prc_path_envvar_list[i]);
-      _search_path.append_path(prc_path);
+      if (!prc_path.empty()) {
+        _search_path.append_path(prc_path);
+      }
     }
   }
 
