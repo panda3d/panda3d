@@ -1,6 +1,9 @@
 #define OTHER_LIBS dtoolconfig dtool
 #define DIRECTORY_IF_AUDIO yes
 
+// Do we use the Miles sound interface instead of the default DirectSound-based interface
+#define USE_RAD_MSS yes
+
 #begin lib_target
   #define TARGET audio
   #define LOCAL_LIBS putil
