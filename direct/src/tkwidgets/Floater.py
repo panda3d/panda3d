@@ -17,6 +17,8 @@ class Floater(Pmw.MegaWidget):
             ('initialValue',        0.0,        Pmw.INITOPT),
             ('resolution',          None,       None),
             ('command',             None,       None),
+            ('commandData',         [],         None),
+            ('callbackData',        [],       None),
             ('maxVelocity',         100.0,      None),
             ('min',                 None,       self._updateValidate),
             ('max',                 None,       self._updateValidate),
@@ -125,6 +127,7 @@ class Floater(Pmw.MegaWidget):
 
     def _startFloaterTask(self,event):
         self._fFloaterTask = 1
+        apply(self.onPress,self['callbackData'])
         self._floaterTask()
 
     def _floaterTask(self):
@@ -137,6 +140,7 @@ class Floater(Pmw.MegaWidget):
         self._fFloaterTask = 0
         self.velocity = 0.0
         self.scale.set(0.0)
+        apply(self.onRelease, self['callbackData'])
 
     def _floaterKeyCommand(self, event):
         if self.velocity != 0.0:
@@ -178,10 +182,18 @@ class Floater(Pmw.MegaWidget):
         
         # execute command
         if fCommand & (self['command'] is not None):
-            self['command']( newVal )
+            apply(self['command'], [newVal] + self['commandData'])
 
     def reset(self):
         self.set(self['initialValue'])
+
+    def onPress(self, *args):
+        """ User redefinable callback executed on button press """
+        pass
+
+    def onRelease(self, *args):
+        """ User redefinable callback executed on button release """
+        pass
 
 class FloaterGroup(Pmw.MegaToplevel):
     def __init__(self, parent = None, **kw):

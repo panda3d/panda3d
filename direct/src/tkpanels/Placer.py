@@ -7,13 +7,16 @@ import Pmw
 import Dial
 import Floater
 
+ZERO_VEC = Vec3(0)
+UNIT_VEC = Vec3(1)
+
 class Placer(Pmw.MegaToplevel):
     def __init__(self, parent = None, **kw):
 
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title',       'Placer Panel',     None),
-            ('nodePath',    None,               None),
+            ('nodePath',    camera,               None),
             )
         self.defineoptions(kw, optiondefs)
 
@@ -21,17 +24,28 @@ class Placer(Pmw.MegaToplevel):
         Pmw.MegaToplevel.__init__(self, parent)
 
         # Initialize state
-        self.hotPt = render.attachNewNode(NamedNode('hotPt'))
+        self.tempCS = render.attachNewNode(NamedNode('placerTempCS'))
+        self.refCS = self.tempCS
+        self.undoList = []
+        self.redoList = []
+        
         # Dictionary keeping track of all node paths manipulated so far
         self.nodePathDict = {}
         self.nodePathDict['camera'] = camera
-        self.nodePathDict['hot point'] = self.hotPt
-        self.nodePathNames = ['selected', 'hot point', 'camera']
+        self.nodePathNames = ['selected', 'camera']
+
+        self.refNodePathDict = {}
+        self.refNodePathDict['render'] = render
+        self.refNodePathDict['camera'] = camera
+        self.refNodePathNames = ['self', 'render', 'camera', 'selected']
 
         # Get initial state
         self.initPos = Vec3(0)
         self.initHpr = Vec3(0)
         self.initScale = Vec3(1)
+
+        # Init movement mode
+        self.movementMode = 'Absolute'
 
         # Create panel
         # Handle to the toplevels hull
@@ -47,45 +61,23 @@ class Placer(Pmw.MegaToplevel):
         menuBar = Pmw.MenuBar(menuFrame, hotkeys = 1, balloon = balloon)
         menuBar.pack(side = LEFT, expand = 1, fill = X)
         menuBar.addmenu('Placer', 'Placer Panel Operations')
-        menuBar.addcascademenu('Placer', 'Axis',
-                               'Control axis visibility',
-                               tearoff = 1)
-        self.axisViz = StringVar()
-        self.axisViz.set('Show Axis')
-        menuBar.component('Axis-menu').add_radiobutton(
-            label = 'Show Axis',
-            variable = self.axisViz,
-            value = 'Show Axis',
-            command = lambda s = self: s._updateAxisViz())
-        menuBar.component('Axis-menu').add_radiobutton(
-            label = 'Hide Axis',
-            variable = self.axisViz,
-            value = 'Hide Axis',
-            command = lambda s = self: s._updateAxisViz())
-        menuBar.component('Axis-menu').add_radiobutton(
-            label = 'Auto Axis',
-            variable = self.axisViz,
-            value = 'Auto Axis',
-            command = lambda s = self: s._updateAxisViz())
-                                                           
         menuBar.addmenuitem('Placer', 'command',
                             'Exit Placer Panel',
                             label = 'Exit',
                             command = self.destroy)
-        menuBar.addmenu('NodePath', 'Node Path Operations')
-        menuBar.addmenuitem('NodePath', 'command',
+        menuBar.addmenuitem('Placer', 'command',
                             'Undo Pos/Hpr/Scale',
-                            label = 'Undo All',
-                            command = self._undoAll)
-        menuBar.addmenuitem('NodePath', 'command',
+                            label = 'Undo',
+                            command = self.undo)
+        menuBar.addmenuitem('Placer', 'command',
                             'Redo Pos/Hpr/Scale',
-                            label = 'Redo All',
-                            command = self._redoAll)
-        menuBar.addmenuitem('NodePath', 'command',
+                            label = 'Redo',
+                            command = self.redo)
+        menuBar.addmenuitem('Placer', 'command',
                             'Reset Node Path',
                             label = 'Reset All',
-                            command = self._resetAll)
-        menuBar.addmenuitem('NodePath', 'command',
+                            command = self.resetAll)
+        menuBar.addmenuitem('Placer', 'command',
                             'Print Node Path Info',
                             label = 'Print Info',
                             command = self.printNodePathInfo)
@@ -100,10 +92,8 @@ class Placer(Pmw.MegaToplevel):
                             command = self.toggleBalloon)
 
         self.nodePathMenu = Pmw.ComboBox(
-            menuFrame,
-            labelpos = W,
-            label_text = 'Node Path:',
-            entry_width = 12,
+            menuFrame, labelpos = W, label_text = 'Node Path:',
+            entry_width = 20,
             selectioncommand = self.selectNodePathNamed,
             scrolledlist_items = self.nodePathNames)
         self.nodePathMenu.selectitem('selected')
@@ -113,26 +103,20 @@ class Placer(Pmw.MegaToplevel):
             self.nodePathMenuEntry.configure('background')[3])
         self.nodePathMenu.pack(side = 'left', expand = 0)
 
-        mode = StringVar()
-        mode.set('Absolute')
         modeMenu = Pmw.OptionMenu(menuFrame,
-                                  menubutton_textvariable=mode,
-                                  items = ('Drive', 'Orbit',
-                                           'Absolute', 'Relative'),
-                                  command = self._updateDialLabels,
+                                  items = ('Absolute', 'Relative To:'),
+                                  command = self.setMovementMode,
                                   menubutton_width = 8)
         modeMenu.pack(side = 'left', expand = 0)
         
-        self.wrtMenu = Pmw.ComboBox(menuFrame,
-                               labelpos = W,
-                               label_text = 'WRT:',
-                               entry_width = 12,
-                               selectioncommand = self.selectWrtNodePathNamed,
-                               scrolledlist_items = ('render',
-                                                     'selected',
-                                                     'camera'))
-        self.wrtMenu.selectitem('render')
-        self.wrtMenu.pack(side = 'left', expand = 0)
+        self.refNodePathMenu = Pmw.ComboBox(
+            menuFrame, entry_width = 16,
+            selectioncommand = self.selectRefNodePathNamed,
+            scrolledlist_items = self.refNodePathNames)
+        self.refNodePathMenu.selectitem('self')
+        self.refNodePathMenuEntry = (
+            self.refNodePathMenu.component('entryfield_entry'))
+        self.refNodePathMenu.pack(side = 'left', expand = 0)
 
         # The master frame for the dials
 	dialFrame = Frame(hull)
@@ -147,37 +131,48 @@ class Placer(Pmw.MegaToplevel):
                              ring_relief = 'raised')
 	posMenubutton = posGroup.component('tag')
 	posMenu = Menu(posMenubutton)
-	posMenu.add_command(label = 'Undo', command = self._undoPos)
-	posMenu.add_command(label = 'Redo', command = self._redoPos)
-	posMenu.add_command(label = 'Set to zero', command = self._zeroPos)
-	posMenu.add_command(label = 'Restore initial', command = self._resetPos)
+	posMenu.add_command(label = 'Set to zero', command = self.zeroPos)
+	posMenu.add_command(label = 'Reset initial',
+                            command = self.resetPos)
 	posMenubutton['menu'] = posMenu
-	posGroup.pack(side='left',fill = 'both', expand = 1)
+	posGroup.pack(side='left', fill = 'both', expand = 1)
         posInterior = posGroup.interior()
 
         # Create the dials
 	self.posX = self.createcomponent('posX', (), None,
                                          Floater.Floater, (posInterior,),
                                          text = 'X',
-                                         initialValue = self.initPos[0],
+                                         initialValue = 0.0,
                                          label_foreground = 'Red')
-        self.posX['command'] = self.setX
+        self.posX['command'] = self.xform
+        self.posX['commandData'] = ['x']
+        self.posX['callbackData'] = ['x']
+        self.posX.onPress = self.xformStart
+        self.posX.onRelease = self.xformStop
         self.posX.pack(expand=1,fill='x')
         
 	self.posY = self.createcomponent('posY', (), None,
                                          Floater.Floater, (posInterior,),
                                          text = 'Y',
-                                         initialValue = self.initPos[1],
+                                         initialValue = 0.0,
                                          label_foreground = '#00A000')
-        self.posY['command'] = self.setY
+        self.posY['command'] = self.xform
+        self.posY['commandData'] = ['y']
+        self.posY['callbackData'] = ['y']
+        self.posY.onPress = self.xformStart
+        self.posY.onRelease = self.xformStop
         self.posY.pack(expand=1,fill='x')
         
 	self.posZ = self.createcomponent('posZ', (), None,
                                          Floater.Floater, (posInterior,),
                                          text = 'Z',
-                                         initialValue = self.initPos[2],
+                                         initialValue = 0.0,
                                          label_foreground = 'Blue')
-        self.posZ['command'] = self.setZ
+        self.posZ['command'] = self.xform
+        self.posZ['commandData'] = ['z']
+        self.posZ['callbackData'] = ['z']
+        self.posZ.onPress = self.xformStart
+        self.posZ.onRelease = self.xformStop
         self.posZ.pack(expand=1,fill='x')
 
 	# Create and pack the Hpr Controls
@@ -189,10 +184,8 @@ class Placer(Pmw.MegaToplevel):
                              ring_relief = 'raised')
 	hprMenubutton = hprGroup.component('tag')
 	hprMenu = Menu(hprMenubutton)
-	hprMenu.add_command(label = 'Undo', command = self._undoHpr)
-	hprMenu.add_command(label = 'Redo', command = self._redoHpr)
-	hprMenu.add_command(label = 'Set to zero', command = self._zeroHpr)
-	hprMenu.add_command(label = 'Restore initial', command = self._resetHpr)
+	hprMenu.add_command(label = 'Set to zero', command = self.zeroHpr)
+	hprMenu.add_command(label = 'Reset initial', command = self.resetHpr)
 	hprMenubutton['menu'] = hprMenu
 	hprGroup.pack(side='left',fill = 'both', expand = 1)
         hprInterior = hprGroup.interior()
@@ -202,27 +195,39 @@ class Placer(Pmw.MegaToplevel):
                                          Dial.Dial, (hprInterior,),
                                          text = 'H', fRollover = 0,
                                          max = 360.0, numTicks = 12,
-                                         initialValue = self.initHpr[0],
+                                         initialValue = 0.0,
                                          label_foreground = 'blue')
-        self.hprH['command'] = self.setH
+        self.hprH['command'] = self.xform
+        self.hprH['commandData'] = ['h']
+        self.hprH['callbackData'] = ['h']
+        self.hprH.onPress = self.xformStart
+        self.hprH.onRelease = self.xformStop
         self.hprH.pack(expand=1,fill='x')
         
 	self.hprP = self.createcomponent('hprP', (), None,
                                          Dial.Dial, (hprInterior,),
                                          text = 'P', fRollover = 0,
                                          max = 360.0, numTicks = 12,
-                                         initialValue = self.initHpr[1],
+                                         initialValue = 0.0,
                                          label_foreground = 'red')
-        self.hprP['command'] = self.setP
+        self.hprP['command'] = self.xform
+        self.hprP['commandData'] = ['p']
+        self.hprP['callbackData'] = ['p']
+        self.hprP.onPress = self.xformStart
+        self.hprP.onRelease = self.xformStop
         self.hprP.pack(expand=1,fill='x')
         
 	self.hprR = self.createcomponent('hprR', (), None,
                                          Dial.Dial, (hprInterior,),
                                          text = 'R', fRollover = 0,
                                          max = 360.0, numTicks = 12,
-                                         initialValue = self.initHpr[2],
+                                         initialValue = 0.0,
                                          label_foreground = '#00A000')
-        self.hprR['command'] = self.setR
+        self.hprR['command'] = self.xform
+        self.hprR['commandData'] = ['r']
+        self.hprR['callbackData'] = ['r']
+        self.hprR.onPress = self.xformStart
+        self.hprR.onRelease = self.xformStop
         self.hprR.pack(expand=1,fill='x')
 
         # Create and pack the Scale Controls
@@ -246,12 +251,10 @@ class Placer(Pmw.MegaToplevel):
                                       variable = self.scalingMode)
 	
 	# First level scaling menu
-	scaleMenu.add_command(label = 'Undo', command = self._undoScale)
-	scaleMenu.add_command(label = 'Redo', command = self._redoScale)
 	scaleMenu.add_command(label = 'Set to unity',
-                              command = self._unitScale)
-	scaleMenu.add_command(label = 'Restore initial',
-                              command = self._resetScale)
+                              command = self.unitScale)
+	scaleMenu.add_command(label = 'Reset initial',
+                              command = self.resetScale)
         scaleMenu.add_cascade(label = 'Scaling mode...',
                               menu = scaleModeMenu)
 	scaleMenubutton['menu'] = scaleMenu
@@ -262,80 +265,86 @@ class Placer(Pmw.MegaToplevel):
 	self.scaleX = self.createcomponent('scaleX', (), None,
                                            Dial.Dial, (scaleInterior,),
                                            text = 'X Scale',
-                                           initialValue = self.initScale[0],
+                                           initialValue = 1.0,
                                            label_foreground = 'Red')
-        self.scaleX['command'] = self.setSx
+        self.scaleX['command'] = self.xform
+        self.scaleX['commandData'] = ['sx']
+        self.scaleX['callbackData'] = ['sx']
+        self.scaleX.onPress = self.xformStart
+        self.scaleX.onRelease = self.xformStop
         self.scaleX.pack(expand=1,fill='x')
         
 	self.scaleY = self.createcomponent('scaleY', (), None,
                                            Dial.Dial, (scaleInterior,),
                                            text = 'Y Scale',
-                                           initialValue = self.initScale[1],
+                                           initialValue = 1.0,
                                            label_foreground = '#00A000')
-        self.scaleY['command'] = self.setSy
+        self.scaleY['command'] = self.xform
+        self.scaleY['commandData'] = ['sy']
+        self.scaleY['callbackData'] = ['sy']
+        self.scaleY.onPress = self.xformStart
+        self.scaleY.onRelease = self.xformStop
         self.scaleY.pack(expand=1,fill='x')
         
 	self.scaleZ = self.createcomponent('scaleZ', (), None,
                                            Dial.Dial, (scaleInterior,),
                                            text = 'Z Scale',
-                                           initialValue = self.initScale[2],
+                                           initialValue = 1.0,
                                            label_foreground = 'Blue')
-        self.scaleZ['command'] = self.setSz
+        self.scaleZ['command'] = self.xform
+        self.scaleZ['commandData'] = ['sz']
+        self.scaleZ['callbackData'] = ['sz']
+        self.scaleZ.onPress = self.xformStart
+        self.scaleZ.onRelease = self.xformStop
         self.scaleZ.pack(expand=1,fill='x')
 
         # Make sure appropriate labels are showing
-        self._updateDialLabels('Absolute')
-
-        # Initialize the widgets
-        self._initAll()
+        self.setMovementMode('Absolute')
+        # Set up placer for inital node path
+        self.selectNodePathNamed('init')
 
         # Make sure input variables processed 
         self.initialiseoptions(Placer)
 
-    def setX(self, val):
-        self['nodePath'].setX(val)
-    def setY(self, val):
-        self['nodePath'].setY(val)
-    def setZ(self, val):
-        self['nodePath'].setZ(val)
+    def setMovementMode(self, movementMode):
+        # Set prefix
+        namePrefix = ''
+        self.movementMode = movementMode
+        if (movementMode == 'Drive'):
+            namePrefix = 'Drive delta '
+        elif (movementMode == 'Orbit'):
+            namePrefix = 'Orbit '
+        elif (movementMode == 'Absolute'):
+            namePrefix = 'Absolute '
+        elif (movementMode == 'Relative To:'):
+            namePrefix = 'Relative '
+        # Enable/disable wrt menu
+        if(movementMode == 'Relative To:'):
+            self.refNodePathMenu.configure(entry_foreground = 'Black')
+            self.refNodePathMenu.configure(entry_background = 'SystemWindow')
+        else:
+            self.refNodePathMenu.configure(entry_foreground = 'gray50')
+            self.refNodePathMenu.configure(entry_background = '#E0E0E0')
+        # Update pos widgets
+        self.posX['text'] = namePrefix + 'X'
+        self.posY['text'] = namePrefix + 'Y'
+        self.posZ['text'] = namePrefix + 'Z'
+        # Update hpr widgets
+        if (movementMode == 'Orbit'):
+            namePrefix = 'Orbit delta '
+        self.hprH['text'] = namePrefix + 'H'
+        self.hprP['text'] = namePrefix + 'P'
+        self.hprR['text'] = namePrefix + 'R'
+        # Update temp cs and initialize widgets
+        self.updatePlacer()
 
-    def setH(self, val):
-        self['nodePath'].setH(val)
-    def setP(self, val):
-        self['nodePath'].setP(val)
-    def setR(self, val):
-        self['nodePath'].setR(val)
-
-    def setSx(self, val):
-        self['nodePath'].setSx(val)
-    def setSy(self, val):
-        self['nodePath'].setSy(val)
-    def setSz(self, val):
-        self['nodePath'].setSz(val)
-
-    def addNodePath(self, nodePath):
-        # Get node path's name
-        name = nodePath.getName()
-        # Generate a unique name for the dict
-        dictName = name + '-' + `nodePath.id().this`
-        if not self.nodePathDict.has_key(dictName):
-            # Update combo box to include new item
-            self.nodePathNames.append(dictName)
-            listbox = self.nodePathMenu.component('scrolledlist')
-            listbox.setlist(self.nodePathNames)
-            # Add new item to dictionary
-            self.nodePathDict[dictName] = nodePath
-        self.nodePathMenu.selectitem(dictName)
-
-    def manip(self, nodePath):
-        self['nodePath'] = nodePath
-        # Record initial value and initialize the widgets
-        self._initAll()
-        
     def selectNodePathNamed(self, name):
-        print 'Selected Node Path: ' + name
         nodePath = None
-        if name == 'selected':
+        if name == 'init':
+            nodePath = self['nodePath']
+            # Add Combo box entry for the initial node path
+            self.addNodePath(nodePath)
+        elif name == 'selected':
             nodePath = direct.selected.last
             # Add Combo box entry for this selected object
             self.addNodePath(nodePath)
@@ -356,138 +365,238 @@ class Placer(Pmw.MegaToplevel):
                     # Clear bogus entry from listbox
                     listbox = self.nodePathMenu.component('scrolledlist')
                     listbox.setlist(self.nodePathNames)
-        if nodePath:
-            self.manip(nodePath)
+        # Update active node path
+        self.setActiveNodePath(nodePath)
+
+    def setActiveNodePath(self, nodePath):
+        self['nodePath'] = nodePath
+        if self['nodePath']:
             self.nodePathMenuEntry.configure(
                 background = self.nodePathMenuBG)
+            # Record initial position
+            self.updateResetValues(self['nodePath'])
+            # Record initial value and initialize the widgets
+            self.updatePlacer()
         else:
             # Flash entry
             self.nodePathMenuEntry.configure(background = 'Pink')
 
-    def selectWrtNodePathNamed(self, name):
-        print 'Selected Wrt Node Path: ' + name
+    def selectRefNodePathNamed(self, name):
+        nodePath = None
+        if name == 'self':
+            nodePath = self.tempCS
+        elif name == 'selected':
+            nodePath = direct.selected.last
+            # Add Combo box entry for this selected object
+            self.addRefNodePath(nodePath)
+        else:
+            nodePath = self.refNodePathDict.get(name, None)
+            if (nodePath == None):
+                # See if this evaluates into a node path
+                try:
+                    nodePath = eval(name)
+                    if isinstance(nodePath, NodePath):
+                        self.addRefNodePath(nodePath)
+                    else:
+                        # Good eval but not a node path, give up
+                        nodePath = None
+                except:
+                    # Bogus eval
+                    nodePath = None
+                    # Clear bogus entry from listbox
+                    listbox = self.refNodePathMenu.component('scrolledlist')
+                    listbox.setlist(self.refNodePathNames)
+        # Update ref node path accordingly
+        self.setReferenceNodePath(nodePath)
 
-    def printNodePathInfo(self):
-        print 'Print Node Path info here'
+    def setReferenceNodePath(self, nodePath):
+        self.refCS = nodePath
+        if self.refCS:
+            self.refNodePathMenuEntry.configure(
+                background = self.nodePathMenuBG)
+            # Update placer to reflect new state
+            self.updatePlacer()
+        else:
+            # Flash entry
+            self.refNodePathMenuEntry.configure(background = 'Pink')
+        
+    def addNodePath(self, nodePath):
+        self.addNodePathToDict(nodePath, self.nodePathNames,
+                               self.nodePathMenu, self.nodePathDict)
 
-    def _updateAxisViz(self):
-        self.updateAxisViz(self.axisViz.get())
+    def addRefNodePath(self, nodePath):
+        self.addNodePathToDict(nodePath, self.refNodePathNames,
+                               self.refNodePathMenu, self.refNodePathDict)
 
-    def updateAxisViz(self, mode):
-        print mode
+    def addNodePathToDict(self, nodePath, names, menu, dict):
+        if not nodePath:
+            return
+        # Get node path's name
+        name = nodePath.getName()
+        if((name == 'render') | (name == 'camera')):
+            dictName = name
+        else:
+            # Generate a unique name for the dict
+            dictName = name + '-' + `nodePath.id().this`
+        if not dict.has_key(dictName):
+            # Update combo box to include new item
+            names.append(dictName)
+            listbox = menu.component('scrolledlist')
+            listbox.setlist(names)
+            # Add new item to dictionary
+            dict[dictName] = nodePath
+        menu.selectitem(dictName)
 
-    def _undoPos(self):
-        print 'undo pos'
+    def updatePlacer(self):
+        pos = Vec3(0)
+        hpr = Vec3(0)
+        scale = Vec3(1)
+        np = self['nodePath']
+        if (np != None) & isinstance(np, NodePath):
+            # Update temp CS
+            self.tempCS.setPosHpr(self['nodePath'], 0,0,0,0,0,0)
+            # Update widgets
+            if self.movementMode == 'Absolute':
+                pos.assign(np.getPos())
+                hpr.assign(np.getHpr())
+                scale.assign(np.getScale())
+            elif self.refCS:
+                pos.assign(np.getPos(self.refCS))
+                hpr.assign(np.getHpr(self.refCS))
+                scale.assign(np.getScale(self.refCS))
+        self.updatePosWidgets(pos)
+        self.updateHprWidgets(hpr)
+        self.updateScaleWidgets(scale)
 
-    def _redoPos(self):
-        print 'redo pos'
+    def xform(self, value, axis):
+        if self.movementMode == 'Absolute':
+            self.xformAbsolute(value, axis)
+        elif self.movementMode == 'Relative To:':
+            self.xformRelative(value, axis)
+    
+    def xformStart(self, data):
+        # Record undo point
+        self.pushUndo()
+        # Record initial scale
+        # Update placer to reflect new state
+        self.updatePlacer()
+        
+    def xformStop(self, data):
+        # Update placer to reflect new state
+        self.updatePlacer()
 
-    def _initPos(self, pos):
+    def xformAbsolute(self, value, axis):
+        nodePath = self['nodePath']
+        if nodePath != None:
+            if axis == 'x':
+                nodePath.setX(value)
+            elif axis == 'y':
+                nodePath.setY(value)
+            elif axis == 'z':
+                nodePath.setZ(value)
+            elif axis == 'h':
+                nodePath.setH(value)
+            elif axis == 'p':
+                nodePath.setP(value)
+            elif axis == 'r':
+                nodePath.setR(value)
+                
+    def xformRelative(self, value, axis):
+        nodePath = self['nodePath']
+        if (nodePath != None) & (self.refCS != None):
+            if axis == 'x':
+                nodePath.setX(self.refCS, value)
+            elif axis == 'y':
+                nodePath.setY(self.refCS, value)
+            elif axis == 'z':
+                nodePath.setZ(self.refCS, value)
+            elif axis == 'h':
+                nodePath.setH(self.refCS, value)
+            elif axis == 'p':
+                nodePath.setP(self.refCS, value)
+            elif axis == 'r':
+                nodePath.setR(self.refCS, value)
+
+    def updatePosWidgets(self, pos):
         self.posX.set(pos[0])
         self.posY.set(pos[1])
         self.posZ.set(pos[2])
 
-    def _resetPos(self):
-        self._initPos(self.initPos)
-
-    def _zeroPos(self):
-        self.posX.set(0.0)
-        self.posY.set(0.0)
-        self.posZ.set(0.0)
-
-    def _undoHpr(self):
-        print 'undo hpr'
-
-    def _redoHpr(self):
-        print 'redo hpr'
-
-    def _initHpr(self, hpr):
+    def updateHprWidgets(self, hpr):
         self.hprH.set(hpr[0])
         self.hprP.set(hpr[1])
         self.hprR.set(hpr[2])
 
-    def _resetHpr(self):
-        self._initHpr(self.initHpr)
-
-    def _zeroHpr(self):
-        self.hprH.set(0.0)
-        self.hprP.set(0.0)
-        self.hprR.set(0.0)
-
-    def _initScale(self, scale):
+    def updateScaleWidgets(self, scale):
         self.scaleX.set(scale[0])
         self.scaleY.set(scale[1])
         self.scaleZ.set(scale[2])
 
-    def _resetScale(self):
-        self._initScale(self.initScale)
+    def zeroPos(self):
+        self.updatePosWidgets(ZERO_VEC)
 
-    def _undoScale(self):
-        print 'undo scale'
+    def zeroHpr(self):
+        self.updateHprWidgets(ZERO_VEC)
 
-    def _redoScale(self):
-        print 'redo scale'
+    def unitScale(self):
+        self.updateScaleWidgets(UNIT_VEC)
 
-    def _unitScale(self):
-        self.scaleX.set(1.0)
-        self.scaleY.set(1.0)
-        self.scaleZ.set(1.0)
+    def updateResetValues(self, nodePath):
+        self.initPos.assign(nodePath.getPos())
+        self.initHpr.assign(nodePath.getHpr())
+        self.initScale.assign(nodePath.getScale())
 
-    def _undoAll(self):
-        self._undoPos()
-        self._undoHpr()
-        self._undoScale()
+    def resetAll(self):
+        self.resetPos()
+        self.resetHpr()
+        self.resetScale()
 
-    def _redoAll(self):
-        self._redoPos()
-        self._redoHpr()
-        self._redoScale()
+    def resetPos(self):
+        self.updatePosWidgets(self.initPos)
 
-    def _initAll(self):
-        if self['nodePath']:
-            np = self['nodePath']
-            if isinstance(np, NodePath):
-                self.initPos.assign(np.getPos())
-                self.initHpr.assign(np.getHpr())
-                self.initScale.assign(np.getScale())
-        self._initPos(self.initPos)
-        self._initHpr(self.initHpr)
-        self._initScale(self.initScale)
+    def resetHpr(self):
+        self.updateHprWidgets(self.initHpr)
 
-    def _resetAll(self):
-        self._resetPos()
-        self._resetHpr()
-        self._resetScale()
+    def resetScale(self):
+        self.updateScaleWidgets(self.initScale)
 
-    def _updateDialLabels(self, movementMode):
-        namePrefix = ''
-        self.movementMode = movementMode
-        if (movementMode == 'Drive'):
-            namePrefix = 'Drive delta '
-        elif (movementMode == 'Orbit'):
-            namePrefix = 'Orbit '
-        elif (movementMode == 'Absolute'):
-            namePrefix = 'Absolute '
-        elif (movementMode == 'Relative'):
-            namePrefix = 'Relative '
+    def pushUndo(self):
+        nodePath = self['nodePath']
+        if nodePath != None:
+            print 'here'
+            pos = nodePath.getPos()
+            hpr = nodePath.getHpr()
+            scale = nodePath.getScale()
+            self.undoList.append([nodePath, pos,hpr,scale])
 
-        if(movementMode == 'Relative'):
-            self.wrtMenu.configure(entry_foreground = 'Black')
-            self.wrtMenu.configure(entry_background = 'SystemWindow')
-        else:
-            self.wrtMenu.configure(entry_foreground = 'gray50')
-            self.wrtMenu.configure(entry_background = '#E0E0E0')
+    def undo(self):
+        if self.undoList:
+            # Get last item off of redo list
+            pose = self.undoList[-1]
+            # Tack it onto the end of the redo list
+            self.redoList.append(pose)
+            # Strip it off of the undo list
+            self.undoList = self.undoList[:-1]
+            self.selectNodePathNamed(pose[0].getName())
+            self.updatePosWidgets(pose[1])
+            self.updateHprWidgets(pose[2])
+            self.updateScaleWidgets(pose[3])
 
-        self.posX['text'] = namePrefix + 'X'
-        self.posY['text'] = namePrefix + 'Y'
-        self.posZ['text'] = namePrefix + 'Z'
+    def redo(self):
+        if self.redoList:
+            # Pull off last redo list item
+            pose = self.redoList[-1]
+            # Tack it onto the start of undo list
+            self.undoList.append(pose)
+            # Strip it off of redo list
+            self.redoList = self.redoList[:-1]
+            self.selectNodePathNamed(pose[0].getName())
+            self.updatePosWidgets(pose[1])
+            self.updateHprWidgets(pose[2])
+            self.updateScaleWidgets(pose[3])
 
-        if (movementMode == 'Orbit'):
-            namePrefix = 'Orbit delta '
-
-        self.hprH['text'] = namePrefix + 'H'
-        self.hprP['text'] = namePrefix + 'P'
-        self.hprR['text'] = namePrefix + 'R'
+    def printNodePathInfo(self):
+        print 'Print Node Path info here'
 
     def toggleBalloon(self):
         if self.toggleBalloonVar.get():

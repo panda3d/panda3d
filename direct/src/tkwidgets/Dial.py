@@ -37,6 +37,8 @@ class Dial(Pmw.MegaWidget):
             # Do values rollover (i.e. accumulate) with multiple revolutions
             ('fRollover',       1,              None),
             ('command',         None,           None),
+            ('commandData',     [],             None),
+            ('callbackData',    [],           None),
             ('text',           'Dial Widget',   self.updateLabel),
             ('numTicks',        10,             self.createTicks),
             ('numDigits',       2,              self.updateEntryFormat),
@@ -145,6 +147,7 @@ class Dial(Pmw.MegaWidget):
         self._canvas.tag_bind('dial', '<ButtonPress-1>', self.mouseDown)
         self._canvas.tag_bind('dial', '<B1-Motion>', self.mouseMotion)
         self._canvas.tag_bind('dial', '<Shift-B1-Motion>', self.shiftMouseMotion)
+        self._canvas.tag_bind('dial', '<ButtonRelease-1>', self.mouseUp)
         self._canvas.tag_bind('sfMarker', '<Enter>', self.highlightSFMarker)
         self._canvas.tag_bind('sfMarker', '<Leave>', self.restoreSFMarker)
         self._canvas.tag_bind('velocityKnob', '<Enter>', self.highlightKnob)
@@ -191,8 +194,12 @@ class Dial(Pmw.MegaWidget):
                                      tags = ('ticks','dial'))
 
     def mouseDown(self,event):
+        apply(self.onPress, self['callbackData'])
         self.lastAngle = dialAngle = self.computeDialAngle(event)
         self.computeValueFromAngle(dialAngle)
+
+    def mouseUp(self,event):
+        apply(self.onRelease, self['callbackData'])
 
     def shiftMouseMotion(self,event):
         self.mouseMotion(event, 1)
@@ -242,7 +249,7 @@ class Dial(Pmw.MegaWidget):
         else:
             self.updateIndicator(value)
         if self['command']:
-            self['command'](value)
+            apply(self['command'], [value] + self['commandData'])
 
     def updateIndicator(self, value):
         # compute new indicator angle
@@ -330,6 +337,7 @@ class Dial(Pmw.MegaWidget):
         self.setScaleFactorExp(max(-MAX_EXP, self.exp - 1), 0)
 
     def knobMouseDown(self,event):
+        apply(self.onPress, self['callbackData'])
         self.lasty = self._canvas.canvasy(event.y)
         self.updateIndicatorRadians(0.0)
         self.velocityTask = self.after(100, self.computeVelocity)
@@ -347,6 +355,7 @@ class Dial(Pmw.MegaWidget):
         self.after_cancel(self.velocityTask)
         # reset indicator
         self.updateIndicator(self.value)
+        apply(self.onRelease, self['callbackData'])
 
     def computeVelocity(self):
         if self.lasty < 0:
@@ -430,6 +439,14 @@ class Dial(Pmw.MegaWidget):
         self.set(self['initialValue'])
         # Should we do this?
         self.setScaleFactorExp(0, showText = 0)
+
+    def onPress(self, *args):
+        """ User redefinable callback executed on button press """
+        pass
+
+    def onRelease(self, *args):
+        """ User redefinable callback executed on button release """
+        pass
 
 class AngleDial(Dial):
     def __init__(self, parent = None, **kw):
