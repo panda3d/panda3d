@@ -17,6 +17,9 @@
 
 
 #if $[HAVE_DX]
+  // USE_DX ensures DirectX dirs are on include&link lines
+  #define USE_DX yes
+  
   #begin static_lib_target
     #define TARGET framework_multimon
     #define LOCAL_LIBS \
