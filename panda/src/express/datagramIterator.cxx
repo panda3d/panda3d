@@ -466,6 +466,7 @@ get_fixed_string(size_t size) {
 ////////////////////////////////////////////////////////////////////
 void DatagramIterator::
 skip_bytes(size_t size) {
+  nassertv((int)size >= 0);
   nassertv(_current_index + size <= _datagram.get_length());
   _current_index += size;
 }
@@ -478,6 +479,7 @@ skip_bytes(size_t size) {
 ////////////////////////////////////////////////////////////////////
 string DatagramIterator::
 extract_bytes(size_t size) {
+  nassertr((int)size >= 0, "");
   nassertr(_current_index + size <= _datagram.get_length(), "");
   int start = _current_index;
 
@@ -515,4 +517,15 @@ get_remaining_size() const {
 const Datagram &DatagramIterator::
 get_datagram() const {
   return _datagram;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramIterator::get_current_index
+//       Access: Public
+//  Description: Returns the current position within the datagram of the
+//               next piece of data to extract.
+////////////////////////////////////////////////////////////////////
+size_t DatagramIterator::
+get_current_index() const {
+  return _current_index;
 }

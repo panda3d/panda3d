@@ -308,6 +308,7 @@ add_fixed_string(const string &str, size_t size) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
 pad_bytes(size_t size) {
+  nassertv((int)size >= 0);
   _message += string(size, '\0');
 }
 
@@ -319,6 +320,7 @@ pad_bytes(size_t size) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
 append_data(const void *data, size_t size) {
+  nassertv((int)size >= 0);
   _message += string((const char *)data, size);
 }
 

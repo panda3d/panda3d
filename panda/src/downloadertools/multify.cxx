@@ -6,6 +6,9 @@
 #endif
 #include <multifile.h>
 #include <filename.h>
+#ifndef OLD_WAY
+  #include <extractor.h>
+#endif
 
 int
 main(int argc, char *argv[]) {
@@ -70,8 +73,14 @@ main(int argc, char *argv[]) {
     if (mfile.write(dest_file) == false)
       cerr << "Failed to write: " << dest_file << endl;
   } else {
+#ifdef OLD_WAY
     mfile.read(dest_file);
     mfile.extract_all(rel_path);
+#else
+    Extractor extor;
+    extor.set_frequency(0);
+    extor.extract(dest_file, rel_path);
+#endif
   }
 
   return 1;

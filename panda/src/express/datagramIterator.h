@@ -53,6 +53,7 @@ public:
   int get_remaining_size() const;
 
   const Datagram &get_datagram() const;
+  size_t get_current_index() const;
  
 private:
   const Datagram &_datagram;

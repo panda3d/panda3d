@@ -71,6 +71,7 @@ init(PT(Buffer) buffer) {
   _frequency = extractor_frequency;
   _token_board = new ExtractorTokenBoard;
   _buffer = buffer;
+  _threads_enabled = false;
 }
 
 ////////////////////////////////////////////////////////////////////

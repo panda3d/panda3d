@@ -82,6 +82,8 @@ parse_header_length(char *&start, int &size) {
   int bytes_so_far = _datagram.get_length();
   if (bytes_so_far + size < _header_length_buf_length) {
     _datagram.append_data(start, size);
+    start += size;
+    size = 0;
     return false;
   }
 
@@ -89,12 +91,17 @@ parse_header_length(char *&start, int &size) {
   nassertr((int)_datagram.get_length() == _header_length_buf_length, false);
 
   // Advance start and adjust size
-  start += _header_length_buf_length;
+  nassertr(_header_length_buf_length >= bytes_so_far, false);
+  start += (_header_length_buf_length - bytes_so_far);
   nassertr(size >= _header_length_buf_length, false);
-  size -= _header_length_buf_length;
+  size -= (_header_length_buf_length - bytes_so_far);
 
   DatagramIterator di(_datagram);
   _header_length = di.get_int32(); 
+
+  express_cat.debug()
+    << "Multifile::Memfile::parse_header_length() - header length: "
+    << _header_length << endl;
 
   nassertr(_header_length > _header_length_buf_length + (int)sizeof(_buffer_length), false);
 
@@ -140,6 +147,12 @@ parse_header(char *&start, int& size) {
     _name = di.extract_bytes(_header_length - _header_length_buf_length -
 			     sizeof(_buffer_length));
     _buffer_length = di.get_int32();
+    nassertr(_buffer_length >= 0, false);
+
+    express_cat.debug()
+      << "Multifile::Memfile::parse_header() - Got a header for mem "
+      << "file: " << _name << " header length: " << _header_length
+      << " buffer length: " << _buffer_length << endl;
 
     // Advance start pointer to the end of the header
     start += tsize;
@@ -291,6 +304,9 @@ write(char *&start, int &size, const Filename &rel_path) {
     Filename name = rel_path.get_fullpath() + _name.get_fullpath();
     name.set_binary();
     name.make_dir();
+    express_cat.debug()
+      << "Multifile::Memfile::write() - Opening mem file: " << name
+      << " for writing" << endl;
     if ((_file_open = name.open_write(_write_stream)) == false) {
       express_cat.error()
         << "Multfile::Memfile::write() - Couldn't open file: "
@@ -303,6 +319,7 @@ write(char *&start, int &size, const Filename &rel_path) {
   // Don't write more than the buffer length
   bool done = false;
   int tsize = size;
+  nassertr(_buffer_length >= _bytes_written, false);
   int missing_bytes = _buffer_length - _bytes_written;
   if (size >= missing_bytes) {
     tsize = missing_bytes;
@@ -312,10 +329,14 @@ write(char *&start, int &size, const Filename &rel_path) {
   _write_stream.write(start, tsize);
   start += tsize;
   _bytes_written += tsize;
+  nassertr(size >= tsize, false);
   size -= tsize;
 
-  if (done == true)
+  if (done == true) {
     _write_stream.close();
+    express_cat.debug()
+      << "Multifile::Memfile::write() - Closing mem file" << endl;
+  }
 
   return done;
 }
@@ -406,6 +427,11 @@ parse_header(char *&start, int &size) {
       return false;
     }
     _num_mfiles = di.get_int32();
+    if (_num_mfiles <= 0) {
+      express_cat.debug()
+	<< "Multifile::parse_header() - No memfiles in multifile"
+	<< endl;
+    }
 
     // Advance start pointer to the end of the header
     start += tsize;
