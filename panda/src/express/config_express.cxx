@@ -91,12 +91,14 @@ config_express.GetString("encryption-algorithm", "bf-cbc");
 // This defines the key length, in bits, for the selected encryption
 // algorithm.  Some algorithms have a variable key length.  Specifying
 // a value of 0 here means to use the default key length for the
-// algorithm as defined by OpenSSL.
+// algorithm as defined by OpenSSL.  This value is used only to
+// control encryption; the correct key length will automatically be
+// selected on decryption.
 const int encryption_key_length =
 config_express.GetInt("encryption-key-length", 0);
 
-// This defines the number of times the password is hashed to generate
-// a key when encrypting.  Its purpose is to make it computationally
+// This defines the number of times a password is hashed to generate a
+// key when encrypting.  Its purpose is to make it computationally
 // more expensive for an attacker to search the key space
 // exhaustively.  This should be a multiple of 1,000 and should not
 // exceed about 65 million; the value 0 indicates just one application
