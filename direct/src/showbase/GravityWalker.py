@@ -74,6 +74,7 @@ class GravityWalker(DirectObject.DirectObject):
             del self.doLaterTask
         #DirectObject.DirectObject.delete(self)
     
+    """
     def spawnTest(self):
         assert(self.debugPrint("\n\nspawnTest()\n"))
         if not self.wantDebugIndicator:
@@ -156,6 +157,7 @@ class GravityWalker(DirectObject.DirectObject):
             name='platformIval%s' % fakeId,
             )
         self.moveIval.loop()
+    """
 
     def setWalkSpeed(self, forward, jump, reverse, rotate):
         assert(self.debugPrint("setWalkSpeed()"))
@@ -169,9 +171,12 @@ class GravityWalker(DirectObject.DirectObject):
         return (self.speed, self.rotationSpeed)
 
     def setupRay(self, bitmask, floorOffset):
-        # This is a ray cast from your head down to detect floor polygons
-        # A toon is about 4.0 feet high, so start it there
-        cRay = CollisionRay(0.0, 0.0, 4.0, 0.0, 0.0, -1.0)
+        # This is a ray cast from your head down to detect floor polygons.
+        # This ray start is arbitrarily high in the air.  Feel free to use
+        # a higher or lower value depending on whether you want an avatar
+        # that is outside of the world to step up to the floor when they
+        # get under valid floor:
+        cRay = CollisionRay(0.0, 0.0, 400000.0, 0.0, 0.0, -1.0)
         cRayNode = CollisionNode('GW.cRayNode')
         cRayNode.addSolid(cRay)
         self.cRayNodePath = self.avatarNodePath.attachNewNode(cRayNode)
@@ -270,6 +275,11 @@ class GravityWalker(DirectObject.DirectObject):
             wallBitmask, floorBitmask, 
             avatarRadius = 1.4, floorOffset = 1.0):
         """
+        floorOffset is how high the avatar can reach.  I.e. if the avatar
+            walks under a ledge that is <= floorOffset above the ground (a
+            double floor situation), the avatar will step up on to the
+            ledge (instantly).
+        
         Set up the avatar collisions
         """
         assert(self.debugPrint("initializeCollisions()"))
@@ -278,11 +288,8 @@ class GravityWalker(DirectObject.DirectObject):
         self.avatarNodePath = avatarNodePath
         
         self.cTrav = collisionTraverser
-        # Changing this from zero may cause the avatar
-        # to float on the ground rather than landing properly:
-        self.floorOffset = 0.0
 
-        self.setupRay(floorBitmask, self.floorOffset)
+        self.setupRay(floorBitmask, floorOffset)
         self.setupWallSphere(wallBitmask, avatarRadius)
         self.setupEventSphere(wallBitmask, avatarRadius)
         if self.wantFloorSphere:
@@ -535,8 +542,8 @@ class GravityWalker(DirectObject.DirectObject):
         assert(self.debugPrint("enableAvatarControls()"))
         assert self.collisionsActive
 
-        if __debug__:
-            self.accept("control-f3", self.spawnTest) #*#
+        #*#if __debug__:
+        #*#    self.accept("control-f3", self.spawnTest) #*#
 
         # remove any old
         if self.controlsTask:
@@ -549,8 +556,8 @@ class GravityWalker(DirectObject.DirectObject):
         if self.fixCliffTask:
             self.fixCliffTask.remove()
         # spawn the new task
-        taskName = "AvatarControls-FixCliff%s"%(id(self),)
-        self.fixCliffTask = taskMgr.add(self.FixCliff, taskName, 31)
+        #*#taskName = "AvatarControls-FixCliff%s"%(id(self),)
+        #*#self.fixCliffTask = taskMgr.add(self.FixCliff, taskName, 31)
 
         self.isAirborne = 0
         self.mayJump = 1
