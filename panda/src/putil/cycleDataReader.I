@@ -113,7 +113,7 @@ take_pointer() {
   const CycleDataType *pointer = _pointer;
   _pointer = (CycleDataType *)NULL;
   _write_pointer = (CycleDataType *)NULL;
-  nassertr(_pointer != (const CycleDataType *)NULL, _cycler.cheat());
+  nassertr(pointer != (const CycleDataType *)NULL, _cycler.cheat());
   return pointer;
 }
 
