@@ -77,6 +77,17 @@
     geomLinestrip.h geomPoint.h geomPolygon.h geomQuad.h geomSphere.h \
     geomSprite.I geomSprite.h geomTri.h geomTrifan.h geomTristrip.h \
     geomprimitives.h \
+    qpgeom.h qpgeom.I \
+    qpgeomMunger.h qpgeomMunger.I \
+    qpgeomPrimitive.h qpgeomPrimitive.I \
+    qpgeomTriangles.h \
+    qpgeomTristrips.h \
+    qpgeomTrifans.h \
+    qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
+    qpgeomVertexData.h qpgeomVertexData.I \
+    qpgeomVertexDataType.h qpgeomVertexDataType.I \
+    qpgeomVertexFormat.h qpgeomVertexFormat.I \
+    qpgeomVertexIterator.h qpgeomVertexIterator.I \
     internalName.I internalName.h \
     material.I material.h \
     materialPool.I materialPool.h matrixLens.I matrixLens.h \
