@@ -63,7 +63,7 @@ UniqueIdAllocator(U32 min, U32 max)
   for (U32 i=0; i<_size; ++i) {
     _table[i]=i+1;
   }
-  _table[_size-1]=-1;
+  _table[_size-1]=IndexEnd;
   _next_free=0;
   _last_free=_size-1;
   _free=_size;
@@ -86,18 +86,19 @@ UniqueIdAllocator::
 //       Access: 
 //  Description: Receive an id between _min and _max (that were passed
 //               to the constructor).
-//               -1 is returned if no ids are available.
+//               IndexEnd is returned if no ids are available.
 ////////////////////////////////////////////////////////////////////
 U32 UniqueIdAllocator::
 allocate() {
-  if (_next_free==-1) {
+  if (_next_free==IndexEnd) {
     // ...all ids allocated.
     uniqueIdAllocator_warning("allocate Error: no more free ids.");
-    return -1;
+    return IndexEnd;
   }
   U32 id=_min+_next_free;
   _next_free=_table[_next_free];
-  nassertr(_table[id-_min]=-2, -1); // this assignment is debug only.
+  // This assert will not fire because it is assigning not comparing.  This is intentional.
+  nassertr(_table[id-_min]=IndexAllocated, IndexEnd); // this assignment is debug only.
   --_free;
   uniqueIdAllocator_debug("allocate() returning "<<id);
   return id;
@@ -116,10 +117,10 @@ free(U32 index) {
   nassertv(index>=_min); // Attempt to free out-of-range id.
   nassertv(index<=_max); // Attempt to free out-of-range id.
   index=index-_min; // Convert to _table index.
-  nassertv(_table[index]==-2); // Attempt to free non-allocated id.
-  _table[index]=-1; // Mark this element as the end of the list.
+  nassertv(_table[index]==IndexAllocated); // Attempt to free non-allocated id.
+  _table[index]=IndexEnd; // Mark this element as the end of the list.
   _table[_last_free]=index;
-  if (_next_free==-1) {
+  if (_next_free==IndexEnd) {
     // ...the free list was empty.
     _next_free=index;
   }

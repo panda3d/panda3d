@@ -36,6 +36,10 @@ typedef unsigned long U32;
 //               plus a few bytes of management data.  e.g. 10,000
 //               ID numbers will use 40KB.
 //
+//               Also be advised that ID -1 and -2 are used internally by
+//               the allocator.  If allocate returns IndexEnd (-1) then
+//               the allocator is out of free ID numbers.
+//
 //               There are other implementations that can better leverage
 //               runs of used or unused IDs or use bit arrays for the
 //               IDs.  But, it takes extra work to track the age of
@@ -52,7 +56,11 @@ PUBLISHED:
   float percent_used() const;
   void output(ostream& os, bool verbose=false) const;
 
+public:
+  static const U32 IndexEnd=(U32)-1;
+
 protected:
+  static const U32 IndexAllocated=(U32)-2;
   U32* _table;
   U32 _min;
   U32 _max;
