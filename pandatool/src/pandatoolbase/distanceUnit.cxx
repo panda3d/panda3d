@@ -207,5 +207,6 @@ static double unit_scale(DistanceUnit unit) {
 //               convert from units of "from" to "to".
 ////////////////////////////////////////////////////////////////////
 double convert_units(DistanceUnit from, DistanceUnit to) {
-  return unit_scale(to) / unit_scale(from);
+  return unit_scale(from) / unit_scale(to);
 }
+
