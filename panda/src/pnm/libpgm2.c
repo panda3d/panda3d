@@ -101,7 +101,7 @@ pgm_writepgmrowplain(FILE* file,gray* grayrow,int cols,gray maxval)
         if ( *gP > maxval )
             pm_error( "value out of bounds (%u > %u)", *gP, maxval );
 #endif /*DEBUG*/
-//        putus( (unsigned long) *gP, file );
+/*        putus( (unsigned long) *gP, file ); */
         putus( (unsigned short) *gP, file );
         charcount += 3;
         }
