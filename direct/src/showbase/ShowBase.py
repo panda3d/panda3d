@@ -1162,8 +1162,8 @@ class ShowBase(DirectObject.DirectObject):
             return Task.cont
 
     def __windowEvent(self, win):
-        properties = win.getProperties()
         if win == self.win:
+            properties = win.getProperties()
             self.notify.info("Got window event: %s" % (repr(properties)))
             if not properties.getOpen():
                 # If the user closes the main window, we should exit.
