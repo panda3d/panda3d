@@ -12,3 +12,15 @@ class AccountAI(DistributedObjectAI.DistributedObjectAI):
     def setPirate(self, slot, avatarId):
         self.pirateAvatars[slot] = avatarId
         self.sendUpdate('pirateAvatars', self.pirateAvatars)
+
+    def getPirate(self, slot):
+        return self.pirateAvatars[slot]
+
+    def getSlotLimit(self):
+        return 6
+
+    def may(self, perm):
+        """
+        Ask whether the account has permission to <string>.
+        """
+        return 1
