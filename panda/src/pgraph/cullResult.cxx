@@ -192,6 +192,7 @@ get_binary_state() {
   static CPT(RenderState) state = NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_equal, 1.0f),
+                              TransparencyAttrib::make(TransparencyAttrib::M_none),
                               RenderState::get_max_priority());
   }
   return state;
@@ -208,6 +209,7 @@ get_dual_transparent_state() {
   static CPT(RenderState) state = NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_less, 1.0f),
+                              TransparencyAttrib::make(TransparencyAttrib::M_alpha),
                               RenderState::get_max_priority());
   }
   return state;
