@@ -30,6 +30,13 @@ class Entity(DirectObject):
         return 'ent%s(%s)' % (self.entId, self.level.getEntityType(self.entId))
     
     def destroy(self):
+        """This is called when the level wants this entity to go away.
+        Once this is called, the Entity should be considered defunct.
+        NOTE: distributed entities are still valid distributed objects
+        after this is called, but they are no longer valid entities.
+        Distributed entities ought to be disabled and/or deleted shortly
+        after this is called.
+        """
         Entity.notify.debug('Entity.destroy() %s' % self.entId)
         # client-side distributed entities might be doing this after
         # the level has been been destroyed...?
@@ -38,6 +45,7 @@ class Entity(DirectObject):
         else:
             Entity.notify.warning('Entity %s destroyed after level??' %
                                   self.entId)
+        self.ignoreAll()
         del self.level
         del self.entId
         
