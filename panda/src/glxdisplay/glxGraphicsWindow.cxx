@@ -14,9 +14,7 @@
 #include <keyboardButton.h>
 #include <mouseButton.h>
 #include <glGraphicsStateGuardian.h>
-#ifdef DO_PSTAT
 #include <pStatTimer.h>
-#endif /* DO_PSTAT */
 #include <clockObject.h>
 
 #include <errno.h>
@@ -664,9 +662,7 @@ void glxGraphicsWindow::end_frame( void )
   }
 
   {
-#ifdef DO_PSTAT
     PStatTimer timer(_swap_pcollector);
-#endif /* DO_PSTAT */
     glXSwapBuffers(_display, _xwindow);
   }
 
@@ -1279,10 +1275,9 @@ supports_update() const {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::update(void)
 {
-#ifdef DO_PSTAT
   _show_code_pcollector.stop();
+
   PStatClient::main_tick();
-#endif /* DO_PSTAT */
 
   if (_change_mask)
     handle_changes();
@@ -1296,9 +1291,8 @@ void glxGraphicsWindow::update(void)
     idle_wait();
   else
     process_events();
-#ifdef DO_PSTAT
+
   _show_code_pcollector.start();
-#endif /* DO_PSTAT */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1386,9 +1380,7 @@ void glxGraphicsWindow::enable_mouse_entry(bool val)
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::make_current(void) {
-#ifdef DO_PSTAT
   PStatTimer timer(_make_current_pcollector);
-#endif /* DO_PSTAT */
   glXMakeCurrent(_display, _xwindow, _context);
 }
 
