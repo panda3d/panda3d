@@ -313,7 +313,7 @@ do_get(const string &key, const string &name, int &data_type, string &data) {
   }
 
   if (error != ERROR_SUCCESS) {
-    express_cat.info()
+    express_cat.debug()
       << "Unable to get registry value " << name 
       << ": " << format_message(error) << "\n";
     okflag = false;
