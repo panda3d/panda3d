@@ -101,7 +101,6 @@ from_dag_path(const MDagPath &dag_path, MayaToEggConverter *converter) {
       status.perror("MFnDagNode constructor");
     } else {
       name = dag_node.name().asChar();
-      cerr << "node " << name << "\n";
     }
 
     if (_dag_path->hasFn(MFn::kJoint) || converter->force_joint(name)) {
