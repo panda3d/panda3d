@@ -116,14 +116,15 @@ class Messenger:
         return (not self.isAccepting(event, object))
 
     def send(self, event, sentArgs=[]):
-        """ send(self, string, [arg1, arg2,...])
+        """
+        event is usually a string.
+        sentArgs is a list of any data that you want passed along to the
+            handlers listening to this event.
+        
         Send this event, optionally passing in arguments
         """
         if Messenger.notify.getDebug() and not self.quieting.get(event):
             Messenger.notify.debug('sent event: ' + event + ' sentArgs: ' + `sentArgs`)
-        acceptorDict = self.dict.get(event)
-        if not acceptorDict:
-            return
         if __debug__:
             foundWatch=0
             if self.isWatching:
@@ -131,6 +132,12 @@ class Messenger:
                     if str(event).find(i) >= 0:
                         foundWatch=1
                         break
+        acceptorDict = self.dict.get(event)
+        if not acceptorDict:
+            if __debug__:
+                if foundWatch:
+                    print "Messenger: \"%s\" was sent, but no function in Python listened."%(event,)
+            return
         for object in acceptorDict.keys():
             # We have to make this apparently redundant check, because
             # it is possible that one object removes its own hooks
@@ -156,8 +163,7 @@ class Messenger:
 
                 if __debug__:
                     if foundWatch:
-                        foundWatch=2
-                        print "Message: \"%s\" --> %s%s"%(
+                        print "Messenger: \"%s\" --> %s%s"%(
                             event,
                             self.__methodRepr(method),
                             tuple(extraArgs + sentArgs))
@@ -167,9 +173,6 @@ class Messenger:
                 # method itself might call accept() or acceptOnce()
                 # again.
                 apply(method, (extraArgs + sentArgs))
-        if __debug__:
-            if foundWatch == 1:
-                print "Message: \"%s\" was sent, but no one listened."%(event,)
 
     def clear(self):
         """
