@@ -1,7 +1,7 @@
 """EntityCreatorAI module: contains the EntityCreatorAI class"""
 
 import EntityCreatorBase
-import LogicGateAI
+import LogicGate
 import EditMgrAI
 import LevelMgrAI
 import ZoneEntityAI
@@ -49,7 +49,7 @@ class EntityCreatorAI(EntityCreatorBase.EntityCreatorBase):
             'entityGroup': nothing,
             'entrancePoint': nothing,
             'levelMgr': Functor(cLE, LevelMgrAI.LevelMgrAI),
-            'logicGate': Functor(cLE, LogicGateAI.LogicGateAI),
+            'logicGate': Functor(cLE, LogicGate.LogicGate),
             'model' : nothing,
             'nodepath': nothing,
             'path': nothing,
