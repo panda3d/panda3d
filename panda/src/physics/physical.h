@@ -55,10 +55,6 @@ PUBLISHED:
   INLINE PhysicalNode *get_physical_node(void) const;
   INLINE PhysicsObject *get_phys_body(void) const;
 
-  INLINE const vector< PT(PhysicsObject) > &get_object_vector(void) const;
-  INLINE const vector< PT(LinearForce) > &get_linear_forces(void) const;
-  INLINE const vector< PT(AngularForce) > &get_angular_forces(void) const;
-
   INLINE void clear_linear_forces(void);
   INLINE void clear_angular_forces(void);
   INLINE void clear_physics_objects(void);
@@ -68,7 +64,16 @@ PUBLISHED:
   INLINE void remove_linear_force(LinearForce *f);
   INLINE void remove_angular_force(AngularForce *f);
 
+  INLINE int get_num_linear_forces(void) const;
+  INLINE PT(LinearForce) get_linear_force(int index) const;
+  INLINE int get_num_angular_forces(void) const;
+  INLINE PT(AngularForce) get_angular_force(int index) const;
+
 public:
+  INLINE const vector< PT(PhysicsObject) > &get_object_vector(void) const;
+  INLINE const vector< PT(LinearForce) > &get_linear_forces(void) const;
+  INLINE const vector< PT(AngularForce) > &get_angular_forces(void) const;
+
   friend class PhysicsManager;
   friend class PhysicalNode;
 

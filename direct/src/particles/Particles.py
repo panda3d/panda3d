@@ -53,6 +53,10 @@ class Particles(ParticleSystem.ParticleSystem):
 	self.setRenderParent(self.node)
 	self.node.addPhysical(self)
 
+	# Set up a force node
+	self.forceNode = ForceNode(self.name + '-force')
+	self.forceNodePath = hidden.attachNewNode(self.forceNode)
+
 	self.factory = None 
 	self.factoryType = "undefined"
 	self.setFactory("PointParticleFactory")
@@ -160,6 +164,22 @@ class Particles(ParticleSystem.ParticleSystem):
 	    return None
 	ParticleSystem.ParticleSystem.setEmitter(self, self.emitter)
 
+    def addForce(self, force):
+	"""addForce(force)"""
+	if (force.isLinear()):
+	    self.addLinearForce(force)
+	else:
+	    self.addAngularForce(force)
+	self.forceNode.addForce(force)
+
+    def removeForce(self, force):
+	"""removeForce(force)"""
+	if (force.isLinear()):
+	    self.removeLinearForce(force)
+	else:
+	    self.removeAngularForce(force)
+	self.forceNode.removeForce(force)
+
     ## Getters ##
     def getName(self):
         """getName()"""
@@ -215,7 +235,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	elif (alphaMode == 
 	   	BaseParticleRenderer.BaseParticleRenderer.PRALPHAUSER):
 	    aMode = "PRALPHAUSER"
-	file.write(targ + '.renderer.setAlphaMode(BaseParticleRenderer.BaseParticleRenderer.' + aMode + ')\n')
+	file.write(targ + '.renderer.setAlphaMode(BaseParticleRenderer.' + aMode + ')\n')
 	file.write(targ + '.renderer.setUserAlpha(%.2f)\n' % self.renderer.getUserAlpha())
 	if (self.rendererType == "Point"):
 	    file.write('# Point parameters\n')
@@ -232,7 +252,7 @@ class Particles(ParticleSystem.ParticleSystem):
 		bType = "PPBLENDLIFE"	
 	    elif (blendType == PointParticleRenderer.PointParticleRenderer.PPBLENDVEL):
 		bType = "PPBLENDVEL"	
-	    file.write(targ + '.renderer.setBlendType(PointParticleRenderer.PointParticleRenderer.' + bType + ')\n')
+	    file.write(targ + '.renderer.setBlendType(PointParticleRenderer.' + bType + ')\n')
 	    blendMethod = self.renderer.getBlendMethod()
 	    bMethod = "PPNOBLEND"
 	    if (blendMethod == BaseParticleRenderer.BaseParticleRenderer.PPNOBLEND):
@@ -241,7 +261,7 @@ class Particles(ParticleSystem.ParticleSystem):
 		bMethod = "PPBLENDLINEAR"
 	    elif (blendMethod == BaseParticleRenderer.BaseParticleRenderer.PPBLENDCUBIC):
 		bMethod = "PPBLENDCUBIC"
-	    file.write(targ + '.renderer.setBlendMethod(BaseParticleRenderer.BaseParticleRenderer.' + bMethod + ')\n')
+	    file.write(targ + '.renderer.setBlendMethod(BaseParticleRenderer.' + bMethod + ')\n')
 	elif (self.rendererType == "LineParticleRenderer"):
 	    file.write('# Line parameters\n')
 	    sColor = self.renderer.getHeadColor()
@@ -264,7 +284,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	    lScale = "SPNOSCALE"
 	    if (lifeScale == SparkleParticleRenderer.SparkleParticleRenderer.SPSCALE):
 		lScale = "SPSCALE"
-	    file.write(targ + '.renderer.setLifeScale(SparkleParticleRenderer.SparkleParticleRenderer.' + lScale + ')\n')
+	    file.write(targ + '.renderer.setLifeScale(SparkleParticleRenderer.' + lScale + ')\n')
 	elif (self.rendererType == "SpriteParticleRenderer"):
 	    file.write('# Sprite parameters\n')
 	    tex = self.renderer.getTexture()
@@ -287,7 +307,7 @@ class Particles(ParticleSystem.ParticleSystem):
 		bMethod = "PPBLENDLINEAR"
 	    elif (blendMethod == BaseParticleRenderer.BaseParticleRenderer.PPBLENDCUBIC):
 		bMethod = "PPBLENDCUBIC"
-	    file.write(targ + '.renderer.setAlphaBlendMethod(BaseParticleRenderer.BaseParticleRenderer.' + bMethod + ')\n')
+	    file.write(targ + '.renderer.setAlphaBlendMethod(BaseParticleRenderer.' + bMethod + ')\n')
 	    file.write(targ + '.renderer.setAlphaDisable(%d)\n' % self.renderer.getAlphaDisable())
 
 	file.write('# Emitter parameters\n')
@@ -299,7 +319,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	    eType = "ETRADIATE"
 	elif (emissionType == BaseParticleEmitter.BaseParticleEmitter.ETCUSTOM):
 	    eType = "ETCUSTOM"
-	file.write(targ + '.emitter.setEmissionType(BaseParticleEmitter.BaseParticleEmitter.' + eType + ')\n')
+	file.write(targ + '.emitter.setEmissionType(BaseParticleEmitter.' + eType + ')\n')
 	file.write(targ + '.emitter.setAmplitude(%.4f)\n' % self.emitter.getAmplitude())
 	file.write(targ + '.emitter.setAmplitudeSpread(%.4f)\n' % self.emitter.getAmplitudeSpread())
 	oForce = self.emitter.getOffsetForce()
@@ -354,3 +374,41 @@ class Particles(ParticleSystem.ParticleSystem):
 	elif (self.emitterType == "TangentRingEmitter"):
 	    file.write('# Tangent Ring parameters\n')
 	    file.write(targ + '.emitter.setRadius(%.4f)\n' % self.emitter.getRadius())
+
+	file.write('# Local Forces\n')
+	for i in range(self.getNumLinearForces()):
+	    f = self.getLinearForce(i)
+            fname = 'force%d' % i
+            if isinstance(f, LinearForce):
+                amplitude = f.getAmplitude()
+                massDependent = f.getMassDependent()
+                if isinstance(f, LinearCylinderVortexForce):
+                    file.write(fname + ' = LinearCylinderVortexForce(%.4f, %.4f, %.4f, %.4f, %d)\n' % (f.getRadius(), f.getLength(), f.getCoef(), amplitude, massDependent))
+                elif isinstance(f, LinearDistanceForce):
+                    radius = f.getRadius()
+                    falloffType = f.getFalloffType()
+                    ftype = 'FTONEOVERR'
+                    if (falloffType == LinearDistanceForce.LinearDistanceForce.FTONEOVERR):
+                        ftype = 'FTONEOVERR'
+                    elif (falloffType == LinearDistanceForce.LinearDistanceForce.FTONEOVERRSQUARED):
+                        ftype = 'FTONEOVERRSQUARED'
+                    elif (falloffType == LinearDistanceForce.LinearDistanceForce.FTONEOVERRCUBED):
+                        ftype = 'FTONEOVERRCUBED'
+                    forceCenter = f.getForceCenter()
+                    if isinstance(f, LinearSinkForce):
+                        file.write(fname + ' = LinearSinkForce(Vec3(%.4f, %.4f, %.4f), LinearDistanceForce.%s, %.4f, %.4f, %d)\n' % (forceCenter[0], forceCenter[1], forceCenter[2], ftype, radius, amplitude, massDependent))
+                    elif isinstance(f, LinearSourceForce):
+                        file.write(fname + ' = LinearSourceForce(Vec3(%.4f, %.4f, %.4f), LinearDistanceForce.%s, %.4f, %.4f, %d)\n' % (forceCenter[0], forceCenter[1], forceCenter[2], ftype, radius, amplitude, massDependent))
+                elif isinstance(f, LinearFrictionForce):
+                    file.write(fname + ' = LinearFrictionForce(%.4f, %.4f, %d)\n' % (f.getCoef(), amplitude, massDependent))
+                elif isinstance(f, LinearJitterForce):
+                    file.write(fname + ' = LinearJitterForce(%.4f, %d)\n' % (amplitude, massDependent))
+                elif isinstance(f, LinearNoiseForce):
+                    file.write(fname + ' = LinearNoiseForce(%.4f, %d)\n' % (amplitude, massDependent))
+                elif isinstance(f, LinearVectorForce):
+                    vec = f.getVector()
+                    file.write(fname + ' = LinearVectorForce(Vec3(%.4f, %.4f, %.4f), %.4f, %d)\n' % (vec[0], vec[1], vec[2], amplitude, massDependent))
+            file.write(fname + '.setActive(%d)\n' % f.getActive())
+            file.write(targ + '.addForce(%s)\n' % fname)
+	for i in range(self.getNumAngularForces()):
+	    f = self.getAngularForce(i)

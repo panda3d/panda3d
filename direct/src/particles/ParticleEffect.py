@@ -50,6 +50,7 @@ class ParticleEffect(NodePath):
     def addParticles(self, particles):
 	"""addParticles(particles)"""
 	particles.nodePath.reparentTo(self)
+	particles.forceNodePath.reparentTo(self)
 	self.particlesDict[particles.getName()] = particles
 
     def getParticlesList(self):
