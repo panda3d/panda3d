@@ -42,7 +42,7 @@ Code Overview:
     foo.defineoptions()
       fooParent()
          fooParent.optiondefs = {}
-         fooParent.definoptions()
+         fooParent.defineoptions()
 
 3)  addoptions is called.  This combines options specified as keywords to
     the widget constructor (stored in self._constuctorKeywords)
