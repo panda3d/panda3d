@@ -38,6 +38,11 @@ class FSM(DirectObject):
         # We do not enter the initial state to separate
         # construction from activation
         self.__currentState = None
+
+        # We set this while we are modifying the state.  No one else
+        # should recursively attempt to modify the state while we are
+        # doing this.
+        self.__internalStateInFlux = 0
         return None
 
     # I know this isn't how __repr__ is supposed to be used, but it
@@ -58,8 +63,15 @@ class FSM(DirectObject):
         return str
 
     def enterInitialState(self, argList=[]):
+        assert(not self.__internalStateInFlux)
+        if self.__currentState == self.__initialState:
+            return
+        
+        assert(self.__currentState == None)
+        self.__internalStateInFlux = 1
         self.__enter(self.__initialState, argList)
-        return None
+        assert(not self.__internalStateInFlux)
+        return
 
     # Jesse decided that simpler was better with the __str__ function
     def __str_not__(self):
@@ -132,6 +144,7 @@ class FSM(DirectObject):
     def __exitCurrent(self, argList):
         """__exitCurrent(self)
         Exit the current state"""
+        assert(self.__internalStateInFlux)
         if FSM.notify.getDebug():
             FSM.notify.debug("[%s]: exiting %s" % (self.__name,
                                                    self.__currentState.getName()))
@@ -147,6 +160,7 @@ class FSM(DirectObject):
     def __enter(self, aState, argList=[]):
         """__enter(self, State)
         Enter a given state, if it exists"""
+        assert(self.__internalStateInFlux)
         if (aState in self.__states):
             if FSM.notify.getDebug():
                 FSM.notify.debug("[%s]: entering %s" % (self.__name,
@@ -158,15 +172,25 @@ class FSM(DirectObject):
             if self.inspecting:
                 messenger.send(self.getName() + '_' +
                                aState.getName() + '_entered')
+
+            # Once we begin entering the new state, we're allow to
+            # recursively request a transition to another state.
+            # Indicate this by marking our internal state no longer in
+            # flux.
+            self.__internalStateInFlux = 0
             aState.enter(argList)
         else:
             FSM.notify.error("[%s]: enter: no such state" % (self.__name))
+            self.__internalStateInFlux = 0
 
     def __transition(self, aState, enterArgList=[], exitArgList=[]):
         """__transition(self, State, enterArgList, exitArgList)
         Exit currentState and enter given one"""
+        assert(not self.__internalStateInFlux)
+        self.__internalStateInFlux = 1
         self.__exitCurrent(exitArgList)
         self.__enter(aState, enterArgList)
+        assert(not self.__internalStateInFlux)
 
     def request(self, aStateName, enterArgList=[], exitArgList=[]):
         """request(self, string)
@@ -174,6 +198,7 @@ class FSM(DirectObject):
         Return true is transition exists to given state,
         false otherwise.
         """
+        assert(not self.__internalStateInFlux)
 
         if not self.__currentState:
             # Make this a warning for now
@@ -231,42 +256,43 @@ class FSM(DirectObject):
 
 
     def conditional_request(self, aStateName, enterArgList=[], exitArgList=[]):
-           """request(self, string)
-           Attempt transition from currentState to given one, if it exists.
-           Return true is transition exists to given state,
-           false otherwise.  It is NOT an error/warning to attempt a cond_request
-           if the transition doesnt exist.  This lets people be sloppy about
-           FSM transitions, letting the same fn be used for different states
-           that may not have the same out transitions.
-           """
+        """request(self, string)
+        Attempt transition from currentState to given one, if it exists.
+        Return true is transition exists to given state,
+        false otherwise.  It is NOT an error/warning to attempt a cond_request
+        if the transition doesnt exist.  This lets people be sloppy about
+        FSM transitions, letting the same fn be used for different states
+        that may not have the same out transitions.
+        """
+        
+        assert(not self.__internalStateInFlux)
+        if not self.__currentState:
+            # Make this a warning for now
+            FSM.notify.warning("[%s]: request: never entered initial state" %
+                               (self.__name))
+            self.__currentState = self.__initialState
 
-           if not self.__currentState:
-               # Make this a warning for now
-               FSM.notify.warning("[%s]: request: never entered initial state" %
-                                  (self.__name))
-               self.__currentState = self.__initialState
+        if isinstance(aStateName, types.StringType):
+            aState = self.getStateNamed(aStateName)
+        else:
+            # Allow the caller to pass in a state in itself, not just
+            # the name of a state.
+            aState = aStateName
+            aStateName = aState.getName()
 
-           if isinstance(aStateName, types.StringType):
-               aState = self.getStateNamed(aStateName)
-           else:
-               # Allow the caller to pass in a state in itself, not just
-               # the name of a state.
-               aState = aStateName
-               aStateName = aState.getName()
-
-           if aState == None:
-               FSM.notify.error("[%s]: request: %s, no such state" %
+        if aState == None:
+            FSM.notify.error("[%s]: request: %s, no such state" %
                                 (self.__name, aStateName))
 
-           fulltransitionnameset = self.__currentState.getTransitions()
-           fulltransitionnameset.extend([self.__currentState.getName(),self.__finalState.getName()])
-
-           if (aStateName in fulltransitionnameset):
-               return self.request(aStateName, enterArgList, exitArgList)
-           else:
-               FSM.notify.debug("[%s]: condition_request: %s, transition doesnt exist" %
-                                (self.__name, aStateName))
-               return 0
+        fulltransitionnameset = self.__currentState.getTransitions()
+        fulltransitionnameset.extend([self.__currentState.getName(),self.__finalState.getName()])
+        
+        if (aStateName in fulltransitionnameset):
+            return self.request(aStateName, enterArgList, exitArgList)
+        else:
+            FSM.notify.debug("[%s]: condition_request: %s, transition doesnt exist" %
+                             (self.__name, aStateName))
+            return 0
 
     def view(self):
         import FSMInspector
