@@ -36,9 +36,9 @@ class RelatedObjectMgr(DirectObject.DirectObject):
         self.pendingObjects = {}
 
     def destroy(self):
+        self.abortAllRequests()
         del self.cr
         del self.pendingObjects
-        self.ignoreAll()
 
     def requestObjects(self, doIdList, allCallback = None, eachCallback = None,
                        timeout = None, timeoutCallback = None):
@@ -147,6 +147,27 @@ class RelatedObjectMgr(DirectObject.DirectObject):
             if doLaterName:
                 taskMgr.remove(doLaterName)
             self.__removePending(tuple, doIdsPending)
+
+    def abortAllRequests(self):
+        """
+        Call this method to abruptly abort all pending requests, but
+        leave the RelatedObjectMgr in a state for accepting more
+        requests.
+        """
+
+        # Stop listening for all events.
+        self.ignoreAll()
+
+        # Iterate through all the pendingObjects and stop any pending
+        # tasks.
+        for pendingList in self.pendingObjects.values():
+            for tuple in pendingList:
+                allCallback, eachCallback, timeoutCallback, doIdsPending, doIdList, doLaterName = tuple
+                if doLaterName:
+                    taskMgr.remove(doLaterName)
+
+        self.pendingObjects = {}
+        
 
     def __timeoutExpired(self, tuple):
         allCallback, eachCallback, timeoutCallback, doIdsPending, doIdList, doLaterName = tuple
