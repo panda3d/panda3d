@@ -90,10 +90,10 @@ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(const string &type_name = "EventStoreValue") {
+  static void init_type(const string &type_name = "UndefinedEventStoreValue") {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, type_name,
-                  TypedReferenceCount::get_class_type());
+    _type_handle = register_dynamic_type
+      (type_name, TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
