@@ -137,7 +137,13 @@ wordwrap_to(const string &text, float wordwrap_width,
   size_t p = 0;
 
   // Preserve any initial whitespace and newlines.
+  float initial_width = 0.0;
   while (p < text.length() && isspace(text[p])) {
+    if (text[p] == '\n') {
+      initial_width = 0.0;
+    } else {
+      initial_width += calc_width(text[p]);
+    }
     output_text += text[p];
     p++;
   }
@@ -153,7 +159,7 @@ wordwrap_to(const string &text, float wordwrap_width,
     bool any_spaces = false;
     bool overflow = false;
 
-    float width = 0.0;
+    float width = initial_width;
     while (q < text.length() && text[q] != '\n') {
       if (isspace(text[q])) {
         any_spaces = true;
@@ -191,7 +197,8 @@ wordwrap_to(const string &text, float wordwrap_width,
 
     if (next_start == p) {
       // No characters got in at all.  This could only happen if the
-      // wordwrap width is narrower than a single character.
+      // wordwrap width is narrower than a single character, or if we
+      // have a substantial number of leading spaces in a line.
       q++;
       next_start++;
       while (next_start < text.length() && isblank(text[next_start])) {
@@ -220,7 +227,13 @@ wordwrap_to(const string &text, float wordwrap_width,
     p = next_start;
 
     // Preserve any initial whitespace and newlines.
+    initial_width = 0.0;
     while (p < text.length() && isspace(text[p])) {
+      if (text[p] == '\n') {
+        initial_width = 0.0;
+      } else {
+        initial_width += calc_width(text[p]);
+      }
       output_text += text[p];
       p++;
     }
