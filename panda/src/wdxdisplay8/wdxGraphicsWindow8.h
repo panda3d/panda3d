@@ -163,7 +163,7 @@ public:
     // dont publish variable length one, since FFI wont support it
     wdxGraphicsWindowGroup(GraphicsPipe *pipe,int num_windows,GraphicsWindow::Properties *WinPropArray);
     ~wdxGraphicsWindowGroup();
-    void SetCoopLevelsAndDisplayModes(void);
+//    void SetCoopLevelsAndDisplayModes(void);
 public:
     void CreateWindows(void);
     void make_windows(GraphicsPipe *,int num_windows,GraphicsWindow::Properties *pWinPropArray);

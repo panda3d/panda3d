@@ -61,15 +61,15 @@ typedef struct {
       bool              bIsLowVidMemCard;
       bool              bIsTNLDevice;
       ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
-      ushort            CardIDNum;  // its posn in DisplayArray, for dbgprint purposes
-      DDDEVICEIDENTIFIER2 DXDeviceID;
-//      D3DDEVICEDESC8    D3DDevDesc;
+      ushort            CardIDNum;  // adapter ID
       DWORD             dwSupportedScreenDepthsMask;
       D3DCAPS8          d3dcaps;
       D3DDISPLAYMODE    DisplayMode;
+      D3DPRESENT_PARAMETERS PresParams;  // not redundant with DisplayMode since width/height must be 0 for windowed mode
 #ifdef USE_TEXFMTVEC
       DDPixelFormatVec  TexPixFmts;
 #endif
+      D3DADAPTER_IDENTIFIER8 DXDeviceID;
 } DXScreenData;
 // typedef vector<DXScreenData> ScreenDataVector;
 
