@@ -152,20 +152,22 @@ class DistributedObjectAI(DirectObject.DirectObject):
         def setLocation(self, parentId, zoneId):
             oldParentId = self.parentId
             oldZoneId = self.zoneId
-            self.zoneId = zoneId
-            self.parentId = parentId
-            self.air.changeDOZoneInTables(self, zoneId, oldZoneId)
-            messenger.send(self.getZoneChangeEvent(), [zoneId, oldZoneId])
-            # if we are not going into the quiet zone, send a 'logical' zone
-            # change message
-            if zoneId != DistributedObjectAI.QuietZone:
-                lastLogicalZone = oldZoneId
-                if oldZoneId == DistributedObjectAI.QuietZone:
-                    lastLogicalZone = self.lastNonQuietZone
-                self.handleLogicalZoneChange(zoneId, lastLogicalZone)
-                self.lastNonQuietZone = zoneId
-            # self.air.storeObjectLocation(self.doId, parentId, zoneId)
-            self.__location = (parentId, zoneId)
+            if ((oldParentId != parentId) or
+                (oldZoneId != zoneId)):
+                self.zoneId = zoneId
+                self.parentId = parentId
+                self.air.changeDOZoneInTables(self, zoneId, oldZoneId)
+                messenger.send(self.getZoneChangeEvent(), [zoneId, oldZoneId])
+                # if we are not going into the quiet zone, send a 'logical' zone
+                # change message
+                if zoneId != DistributedObjectAI.QuietZone:
+                    lastLogicalZone = oldZoneId
+                    if oldZoneId == DistributedObjectAI.QuietZone:
+                        lastLogicalZone = self.lastNonQuietZone
+                    self.handleLogicalZoneChange(zoneId, lastLogicalZone)
+                    self.lastNonQuietZone = zoneId
+                # self.air.storeObjectLocation(self.doId, parentId, zoneId)
+                self.__location = (parentId, zoneId)
 
         def getLocation(self):
             return self.__location
