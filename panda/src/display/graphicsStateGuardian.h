@@ -157,6 +157,8 @@ public:
   // coordinate space differently.
   virtual float compute_distance_to(const LPoint3f &point) const=0;
 
+  INLINE void clear_cached_state(void) { _state.clear(); };  
+
 protected:
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
                                                  CPT(DisplayRegion) dr)=0;
