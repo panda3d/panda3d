@@ -1,4 +1,5 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolutil:c dtoolbase:c dtool:m
+#define USE_JPEG yes
 
 #begin lib_target
   #define TARGET pnmimagetypes
@@ -16,6 +17,9 @@
     pnmFileTypeSoftImage.h pnmFileTypeTIFF.cxx pnmFileTypeTIFF.h \
     pnmFileTypeYUV.cxx pnmFileTypeYUV.h \
     color.c colrops.c resolu.c header.c
+
+  #define IF_JPEG_SOURCES \
+    pnmFileTypeJPG.cxx pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx
 
 #end lib_target
 

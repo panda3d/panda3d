@@ -18,6 +18,7 @@ NotifyCategoryDecl(pnmimage_yuv, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_img, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_soft, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_bmp, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(pnmimage_jpg, EXPCL_PANDA, EXPTP_PANDA);
 
 extern int sgi_storage_type;
 extern const string sgi_imagename;

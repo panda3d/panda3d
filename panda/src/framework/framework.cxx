@@ -1067,7 +1067,7 @@ int framework_main(int argc, char *argv[]) {
     RenderRelation *arc = new RenderRelation(root, geomnode, 10);
     first_arc = arc;
 
-    Texture *tex = TexturePool::load_texture("rock-floor.rgb");
+    Texture *tex = TexturePool::load_texture("rock-floor.jpg");
     if (tex != (Texture *)NULL) {
       tex->set_minfilter(Texture::FT_linear);
       tex->set_magfilter(Texture::FT_linear);

@@ -13,6 +13,9 @@
 #include "pnmFileTypeIMG.h"
 #include "pnmFileTypeSoftImage.h"
 #include "pnmFileTypeBMP.h"
+#ifdef HAVE_JPEG
+  #include "pnmFileTypeJPG.h"
+#endif
 #include "sgi.h"
 
 #include <config_pnmimage.h>
@@ -30,6 +33,7 @@ NotifyCategoryDef(pnmimage_yuv, pnmimage_cat);
 NotifyCategoryDef(pnmimage_img, pnmimage_cat);
 NotifyCategoryDef(pnmimage_soft, pnmimage_cat);
 NotifyCategoryDef(pnmimage_bmp, pnmimage_cat);
+NotifyCategoryDef(pnmimage_jpg, pnmimage_cat);
 
 int sgi_storage_type = STORAGE_RLE;
 const string sgi_imagename = config_pnmimagetypes.GetString("sgi-imagename", "");
@@ -61,6 +65,9 @@ ConfigureFn(config_pnmimagetypes) {
   PNMFileTypeIMG::init_type();
   PNMFileTypeSoftImage::init_type();
   PNMFileTypeBMP::init_type();
+#ifdef HAVE_JPEG
+  PNMFileTypeJPG::init_type();
+#endif
 
   string sgi_storage_type_str = 
     config_pnmimagetypes.GetString("sgi-storage-type", "rle");
@@ -97,4 +104,7 @@ ConfigureFn(config_pnmimagetypes) {
   tr->register_type(new PNMFileTypeIMG);
   tr->register_type(new PNMFileTypeSoftImage);
   tr->register_type(new PNMFileTypeBMP);
+#ifdef HAVE_JPEG
+  tr->register_type(new PNMFileTypeJPG);
+#endif
 }
