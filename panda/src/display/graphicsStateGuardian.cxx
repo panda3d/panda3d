@@ -20,11 +20,13 @@
 #include "graphicsStateGuardian.h"
 #include "config_display.h"
 #include "textureContext.h"
-#include <algorithm>
-
-#include <clockObject.h>
-#include <geomNode.h>
 #include "renderBuffer.h"
+
+#include "clockObject.h"
+#include "geomNode.h"
+#include "pStatTimer.h"
+
+#include <algorithm>
 
 #ifndef CPPPARSER
 PStatCollector GraphicsStateGuardian::_total_texusage_pcollector("Texture usage");
@@ -49,6 +51,8 @@ PStatCollector GraphicsStateGuardian::_nodes_pcollector("Nodes");
 PStatCollector GraphicsStateGuardian::_geom_nodes_pcollector("Nodes:GeomNodes");
 PStatCollector GraphicsStateGuardian::_frustum_cull_volumes_pcollector("Cull volumes");
 PStatCollector GraphicsStateGuardian::_frustum_cull_transforms_pcollector("Cull volumes:Transforms");
+
+static PStatCollector _set_state_pcollector("Draw:Set state");
 
 #endif
 
@@ -141,6 +145,8 @@ reset() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 set_state(const NodeAttributes &new_state, bool complete) {
+  PStatTimer timer(_set_state_pcollector);
+
   if (gsg_cat.is_debug()) {
     gsg_cat.debug() << "\n";
     gsg_cat.debug()
