@@ -79,6 +79,9 @@
   #define COMPILER icl
   #define LINKER xilink
   #define LIBBER xilib
+  
+  #define CDEFINES_OPT4 UNKNOWN_ALLOCATOR  
+  
   #define COMMONFLAGS /Gi- /Qwd985
 //  #define OPTFLAGS /O3 /G6 /Qvc6 /Qipo /QaxW /Qvec_report1 
   #define OPTFLAGS /O3 /G6 /Qvc6 /Qip /QIfist
