@@ -744,8 +744,10 @@ p_read_object() {
 
     // Just some sanity checks
     if (object == (TypedWritable *)NULL) {
-      bam_cat.info()
-        << "Unable to create an object of type " << type << endl;
+      if (bam_cat.is_debug()) {
+        bam_cat.debug()
+          << "Unable to create an object of type " << type << endl;
+      }
 
     } else if (object->get_type() != type) {
       if (_new_types.find(type) != _new_types.end()) {
