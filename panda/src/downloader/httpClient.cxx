@@ -365,32 +365,35 @@ clear_proxy() {
 ////////////////////////////////////////////////////////////////////
 void HTTPClient::
 add_proxy(const string &scheme, const URLSpec &proxy) {
-  URLSpec proxy_url(proxy);
+  if (!proxy.empty()) {
+    URLSpec proxy_url(proxy);
 
-  // The scheme is always converted to lowercase.
-  string lc_scheme;
-  lc_scheme.reserve(scheme.length());
-  for (string::const_iterator si = scheme.begin(); si != scheme.end(); ++si) {
-    lc_scheme += tolower(*si);
+    // The scheme is always converted to lowercase.
+    string lc_scheme;
+    lc_scheme.reserve(scheme.length());
+    string::const_iterator si;
+    for (si = scheme.begin(); si != scheme.end(); ++si) {
+      lc_scheme += tolower(*si);
+    }
+    
+    // Remove the trailing colon, if there is one.
+    if (!lc_scheme.empty() && lc_scheme[lc_scheme.length() - 1] == ':') {
+      lc_scheme = lc_scheme.substr(0, lc_scheme.length() - 1);
+    }
+    
+    if (lc_scheme == "socks") {
+      // Scheme "socks" implies we talk to the proxy via the "socks"
+      // scheme, no matter what scheme the user actually specified.
+      proxy_url.set_scheme("socks");
+      
+    } else if (!proxy_url.has_scheme()) {
+      // Otherwise, if the user didn't specify a scheme to talk to the
+      // proxy, the default is "http".
+      proxy_url.set_scheme("http");
+    }
+    
+    _proxies_by_scheme[lc_scheme].push_back(proxy_url);
   }
-
-  // Remove the trailing colon, if there is one.
-  if (!lc_scheme.empty() && lc_scheme[lc_scheme.length() - 1] == ':') {
-    lc_scheme = lc_scheme.substr(0, lc_scheme.length() - 1);
-  }
-
-  if (lc_scheme == "socks") {
-    // Scheme "socks" implies we talk to the proxy via the "socks"
-    // scheme, no matter what scheme the user actually specified.
-    proxy_url.set_scheme("socks");
-
-  } else if (!proxy_url.has_scheme()) {
-    // Otherwise, if the user didn't specify a scheme to talk to the
-    // proxy, the default is "http".
-    proxy_url.set_scheme("http");
-  }
-
-  _proxies_by_scheme[lc_scheme].push_back(proxy_url);
 }
 
 ////////////////////////////////////////////////////////////////////
