@@ -357,6 +357,9 @@ class ValuatorGroup(Pmw.MegaWidget):
             ('side',            TOP,                    INITOPT),
             # A list of initial values, one for each valuator
             ('value',           DEFAULT_VALUE,          INITOPT),
+            ('min',             None,                   INITOPT),
+            ('max',             None,                   INITOPT),
+            ('resolution',      None,                   INITOPT),
             ('numDigits',       2,                      self._setNumDigits),
             # A tuple of labels, one for each valuator
             ('labels',          DEFAULT_LABELS,         self._updateLabels),
@@ -395,6 +398,8 @@ class ValuatorGroup(Pmw.MegaWidget):
             f = self.createcomponent(
                 'valuator%d' % index, (), 'valuator', valuatorType,
                 (interior,), value = self._value[index],
+                min = self['min'], max = self['max'],
+                resolution = self['resolution'],
                 text = self['labels'][index],
                 command = lambda val, i = index: self._valuatorSetAt(i, val),
                 preCallback = self._preCallback,
@@ -485,6 +490,9 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
             ('title',           'Valuator Group',       None),
             # A list of initial values, one for each floater
             ('value',           DEFAULT_VALUE,          INITOPT),
+            ('min',             None,                   INITOPT),
+            ('max',             None,                   INITOPT),
+            ('resolution',      None,                   INITOPT),
             # A tuple of labels, one for each floater
             ('labels',          DEFAULT_LABELS,         self._updateLabels),
             ('numDigits',       2,                      self._setNumDigits),
@@ -547,6 +555,9 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
             type = self['type'],
             dim = self['dim'],
             value = self['value'],
+            min = self['min'],
+            max = self['max'],
+            resolution = self['resolution'],
             labels = self['labels'],
             command = self['command'])
         self.valuatorGroup.pack(expand = 1, fill = X)
