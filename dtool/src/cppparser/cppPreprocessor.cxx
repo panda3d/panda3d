@@ -662,19 +662,13 @@ push_string(const string &input, bool lock_position) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CPPPreprocessor::parse_expr
+//     Function: CPPPreprocessor::expand_manifests
 //       Access: Protected
 //  Description: Given a string, expand all manifests within the
-//               string and evaluate it as an expression.  Returns
-//               NULL if the string is not a valid expression.
-//
-//               This is an internal support function for
-//               CPPPreprocessor; however, there is a public variant
-//               of this function defined for CPPParser.
+//               string and return the new string.
 ////////////////////////////////////////////////////////////////////
-CPPExpression *CPPPreprocessor::
-parse_expr(const string &input_expr, CPPScope *current_scope,
-           CPPScope *global_scope) {
+string CPPPreprocessor::
+expand_manifests(const string &input_expr) {
   // Get a copy of the expression string we can modify.
   string expr = input_expr;
 
@@ -720,6 +714,25 @@ parse_expr(const string &input_expr, CPPScope *current_scope,
     // through the string and look again--we might have a manifest
     // that expands to another manifest.
   } while (manifest_found);
+
+  return expr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::parse_expr
+//       Access: Protected
+//  Description: Given a string, expand all manifests within the
+//               string and evaluate it as an expression.  Returns
+//               NULL if the string is not a valid expression.
+//
+//               This is an internal support function for
+//               CPPPreprocessor; however, there is a public variant
+//               of this function defined for CPPParser.
+////////////////////////////////////////////////////////////////////
+CPPExpression *CPPPreprocessor::
+parse_expr(const string &input_expr, CPPScope *current_scope,
+           CPPScope *global_scope) {
+  string expr = expand_manifests(input_expr);
 
   CPPExpressionParser ep(current_scope, global_scope);
   ep._verbose = 0;
@@ -1314,9 +1327,21 @@ handle_include_directive(const string &args, int first_line,
   Filename filename_as_referenced;
   bool angle_quotes = false;
 
-  if (!args.empty()) {
-    if (args[0] == '"' && args[args.size() - 1] == '"') {
-      filename = args.substr(1, args.size() - 2);
+  string expr = args;
+
+  // The filename to include might actually be hidden within a
+  // manifest definition.  Wow.  FreeType depends on this.
+
+  // Just to play things safe, since our manifest-expansion logic
+  // might not filter out quotes and angle brackets properly, we'll
+  // only expand manifests if we don't begin with a quote or bracket.
+  if (!expr.empty() && (expr[0] != '"' && expr[0] != '<')) {
+    expr = expand_manifests(expr);
+  }
+
+  if (!expr.empty()) {
+    if (expr[0] == '"' && expr[expr.size() - 1] == '"') {
+      filename = expr.substr(1, expr.size() - 2);
       okflag = true;
 
       if (_files.size() == 1) {
@@ -1325,8 +1350,8 @@ handle_include_directive(const string &args, int first_line,
         // included files.
         _quote_includes.insert(filename);
       }
-    } else if (args[0] == '<' && args[args.size() - 1] == '>') {
-      filename = args.substr(1, args.size() - 2);
+    } else if (expr[0] == '<' && expr[expr.size() - 1] == '>') {
+      filename = expr.substr(1, expr.size() - 2);
       angle_quotes = true;
       okflag = true;
 
