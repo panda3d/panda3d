@@ -47,6 +47,8 @@ PUBLISHED:
   int get_array_size() const;
 
 public:
+  virtual DCParameter *append_array_specification(const DCUnsignedIntRange &size);
+
   virtual int calc_num_nested_fields(size_t length_bytes) const;
   virtual DCPackerInterface *get_nested_field(int n) const;
   virtual bool validate_num_nested_fields(int num_nested_fields) const;

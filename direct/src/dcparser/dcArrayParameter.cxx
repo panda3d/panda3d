@@ -155,6 +155,22 @@ get_array_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCArrayParameter::append_array_specification
+//       Access: Public, Virtual
+//  Description: Returns the type represented by this_type[size].  
+//
+//               In the case of a DCArrayParameter, this means it
+//               modifies the current type to append the array
+//               specification on the innermost type, and returns this
+//               same pointer again.
+////////////////////////////////////////////////////////////////////
+DCParameter *DCArrayParameter::
+append_array_specification(const DCUnsignedIntRange &size) {
+  _element_type = _element_type->append_array_specification(size);
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCArrayParameter::calc_num_nested_fields
 //       Access: Public, Virtual
 //  Description: This flavor of get_num_nested_fields is used during
@@ -223,7 +239,7 @@ output_instance(ostream &out, bool brief, const string &prename,
     strm << "]";
     
     _element_type->output_instance(out, brief, prename, name, 
-                                   strm.str() + postname);
+                                   postname + strm.str());
   }
 }
 

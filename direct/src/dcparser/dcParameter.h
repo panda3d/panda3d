@@ -21,6 +21,7 @@
 
 #include "dcbase.h"
 #include "dcField.h"
+#include "dcNumericRange.h"
 
 class DCSimpleParameter;
 class DCClassParameter;
@@ -65,6 +66,7 @@ PUBLISHED:
 
 public:
   void set_typedef(const DCTypedef *dtypedef);
+  virtual DCParameter *append_array_specification(const DCUnsignedIntRange &size);
 
   virtual void output(ostream &out, bool brief) const;
   virtual void write(ostream &out, bool brief, int indent_level) const;

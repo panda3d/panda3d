@@ -17,10 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcParameter.h"
+#include "dcArrayParameter.h"
 #include "hashGenerator.h"
 #include "dcindent.h"
 #include "dcTypedef.h"
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCParameter::Constructor
@@ -178,6 +178,19 @@ get_typedef() const {
 void DCParameter::
 set_typedef(const DCTypedef *dtypedef) {
   _typedef = dtypedef;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCParameter::append_array_specification
+//       Access: Public, Virtual
+//  Description: Returns the type represented by this_type[size].  
+//
+//               In the case of a generic DCParameter, this means it
+//               returns a DCArrayParameter wrapped around this type.
+////////////////////////////////////////////////////////////////////
+DCParameter *DCParameter::
+append_array_specification(const DCUnsignedIntRange &size) {
+  return new DCArrayParameter(this, size);
 }
 
 ////////////////////////////////////////////////////////////////////

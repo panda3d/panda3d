@@ -810,7 +810,7 @@ type_definition:
   if ($1 == (DCParameter *)NULL) {
     $$ = NULL;
   } else {
-    $$ = new DCArrayParameter($1, uint_range);
+    $$ = $1->append_array_specification(uint_range);
   }
 }
 	;
@@ -853,7 +853,7 @@ parameter_definition:
 }
 	| parameter_definition '[' uint_range ']'
 {
-  $$ = new DCArrayParameter($1, uint_range);
+  $$ = $1->append_array_specification(uint_range);
 }
 	;
 
