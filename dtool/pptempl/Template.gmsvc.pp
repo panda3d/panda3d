@@ -128,7 +128,7 @@
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
 
-#defer target_ipath $[TOPDIR] $[sort $[complete_ipath]] $[other_trees:%=%/include] $[get_ipath]
+#defer target_ipath $[TOPDIR] $[sort $[complete_ipath]] $[other_trees_include] $[get_ipath]
 
 // These are the complete set of extra flags the compiler requires.
 #defer cflags $[get_cflags] $[CFLAGS] $[CFLAGS_OPT$[OPTIMIZE]]
@@ -140,7 +140,7 @@
 
 // $[lpath] is like $[target_ipath]: it's the list of directories we
 // should add to our -L list, from the context of a particular target.
-#defer lpath $[sort $[complete_lpath]] $[other_trees:%=%/lib] $[get_lpath]
+#defer lpath $[sort $[complete_lpath]] $[other_trees_lib] $[get_lpath]
 
 // $[libs] is the set of libraries we will link with.
 #defer libs $[unique $[actual_local_libs:%=%$[dllext]] $[patsubst %:c,,%:m %,%$[dllext],$[OTHER_LIBS]] $[get_libs]]

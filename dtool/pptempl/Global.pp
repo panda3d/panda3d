@@ -555,18 +555,26 @@
 #endif
 
 #define other_trees
+#define other_trees_lib
+#define other_trees_include
 #foreach tree $[NEEDS_TREES]
   #define tree_install $[$[upcase $[tree]]_INSTALL]
   #if $[eq $[tree_install],]
 Warning: Variable $[upcase $[tree]]_INSTALL is not set!
   #else
     #set other_trees $[other_trees] $[tree_install]
+    #set other_trees_lib $[other_trees_lib] $[tree_install]/lib
+    #set other_trees_include $[other_trees_include] $[tree_install]/include
   #endif
 #end tree
 
 #define install_lib_dir $[or $[INSTALL_LIB_DIR],$[install_dir]/lib]
-#define install_bin_dir $[or $[INSTALL_BIN_DIR],$[install_dir]/bin]
+#define other_trees_lib $[or $[INSTALL_LIB_DIR],$[other_trees_lib]]
+
 #define install_headers_dir $[or $[INSTALL_HEADERS_DIR],$[install_dir]/include]
+#define other_trees_include $[or $[INSTALL_HEADERS_DIR],$[other_trees_include]]
+
+#define install_bin_dir $[or $[INSTALL_BIN_DIR],$[install_dir]/bin]
 #define install_data_dir $[or $[INSTALL_DATA_DIR],$[install_dir]/shared]
 #define install_igatedb_dir $[or $[INSTALL_IGATEDB_DIR],$[install_dir]/etc]
 #define install_config_dir $[or $[INSTALL_CONFIG_DIR],$[install_dir]/etc]
