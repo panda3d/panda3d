@@ -13,7 +13,8 @@ UNIT_VEC = Vec3(1)
 ZERO_POINT = Point3(0)
 
 class LineNodePath(NodePath):
-    def __init__(self, parent = None, **kw):
+    def __init__(self, parent = None, name = None,
+                 thickness = 1.0, colorVec = VBase4(1)):
 
         # Initialize the superclass
         NodePath.__init__(self)
@@ -25,12 +26,14 @@ class LineNodePath(NodePath):
         # the resulting node path
         self.lineNode = GeomNode()
         self.assign(parent.attachNewNode( self.lineNode ))
+        if name:
+            self.setName(name)
 
         # Create a lineSegs object to hold the line
         ls = self.lineSegs = LineSegs()
         # Initialize the lineSegs parameters
-        ls.setThickness( kw.get('thickness', 1.0) )
-        ls.setColor( kw.get('colorVec', VBase4(1.0)) )
+        ls.setThickness(thickness)
+        ls.setColor(colorVec)
 
     def moveTo( self, *_args ):
         apply( self.lineSegs.moveTo, _args )
@@ -95,7 +98,15 @@ class LineNodePath(NodePath):
         self.drawTo(Point3(ev + Point3(a1x, a1y, z)))
         self.moveTo(ev)
         self.drawTo(Point3(ev + Point3(a2x, a2y, z)))
-        
+
+    def drawLines(self, lineList):
+        """
+        Given a list of lists of points, draw a separate line for each list
+        """
+        for pointList in lineList:
+            apply(self.moveTo, pointList[0])
+            for point in pointList[1:]:
+                apply(self.drawTo, point)
 
 ##
 ## Given a point in space, and a direction, find the point of intersection

@@ -432,7 +432,7 @@ class SelectionRay:
             # Don't pick hidden nodes
             if node.isHidden():
                 pass
-            elif fIgnoreCamera and (camera in nodePath.getAncestry()):
+            elif fIgnoreCamera and (direct.camera in nodePath.getAncestry()):
                 # This avoids things parented to a camera.  Good idea?
                 pass
             # Can pick unpickable, use the first visible node

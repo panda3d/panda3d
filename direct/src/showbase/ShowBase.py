@@ -152,6 +152,11 @@ class ShowBase:
         self.mak = self.dataRoot.attachNewNode(MouseAndKeyboard(self.win, 0, 'mak'))
         self.mouseWatcherNode = MouseWatcher('mouseWatcher')
         self.mouseWatcher = self.mak.attachNewNode(self.mouseWatcherNode)
+        mb = self.mouseWatcherNode.getModifierButtons()
+        mb.addButton(KeyboardButton.shift())
+        mb.addButton(KeyboardButton.control())
+        mb.addButton(KeyboardButton.alt())
+        self.mouseWatcherNode.setModifierButtons(mb)
 
         # We also create a DataValve object above the trackball/drive
         # interface, which will allow us to switch some of the mouse
@@ -240,7 +245,18 @@ class ShowBase:
 
         if self.oldexitfunc:
             self.oldexitfunc()
-        
+
+    def getAlt(self):
+        return base.mouseWatcherNode.getModifierButtons().isDown(
+            KeyboardButton.alt())
+
+    def getShift(self):
+        return base.mouseWatcherNode.getModifierButtons().isDown(
+            KeyboardButton.shift())
+
+    def getControl(self):
+        return base.mouseWatcherNode.getModifierButtons().isDown(
+            KeyboardButton.control())
 
     def addAngularIntegrator(self):
         """addAngularIntegrator(self)"""

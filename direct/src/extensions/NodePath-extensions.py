@@ -53,8 +53,10 @@
         """Toggles visibility of a nodePath"""
         if self.isHidden():
             self.show()
+            return 1
         else:
             self.hide()
+            return 0
             
     def showSiblings(self):
         """Show all the siblings of a node path"""
@@ -109,6 +111,13 @@
             return ancestry
         else:
             return [self]
+
+    def getTightBounds(self):
+        from PandaObject import *
+        v1 = Point3(0)
+        v2 = Point3(0)
+        self.calcTightBounds(v1,v2)
+        return v1, v2
 
     def pprintPos(self, other = None, sd = 2):
         """ Pretty print a node path's pos """

@@ -40,6 +40,7 @@ class OnscreenGeom(PandaObject, NodePath):
         """
         # We ARE a node path.  Initially, we're an empty node path.
         NodePath.__init__(self)
+        self.parent = parent
         # Assign geometry
         self.sort = sort
         if isinstance(geom, NodePath):
@@ -81,10 +82,10 @@ class OnscreenGeom(PandaObject, NodePath):
         self.removeNode()
         # Assign geometry
         if isinstance(geom, NodePath):
-            self.assign(geom.copyTo(parent))
+            self.assign(geom.copyTo(self.parent))
         elif type(geom) == type(''):
             self.assign(loader.loadModelCopy(geom))
-            self.reparentTo(parent)
+            self.reparentTo(self.parent)
 
     def getGeom(self):
         return self

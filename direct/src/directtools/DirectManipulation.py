@@ -87,7 +87,12 @@ class DirectManipulationControl(PandaObject):
         # depending on flag.....
         if self.mode == 'select':
             # Check for object under mouse
-            node, hitPt, hitPtDist = direct.iRay.pickGeom()
+            if direct.fControl:
+                node, hitPt, hitPtDist = direct.iRay.pickGeom(
+                    fIgnoreCamera = 0)
+            else:
+                node, hitPt, hitPtDist = direct.iRay.pickGeom(
+                    fIgnoreCamera = 1)
             if node:
                 # Record hit point information
                 self.hitPt.assign(hitPt)

@@ -95,7 +95,8 @@ class DirectCameraControl(PandaObject):
             # Allow intersection with unpickable objects
             # And then spawn task to determine mouse mode
             node, hitPt, hitPtDist = direct.iRay.pickGeom(
-                fIntersectUnpickable = 1, fIgnoreCamera = 1)
+                fIntersectUnpickable = 1,
+                fIgnoreCamera = 1 - base.getControl())
             self.computeCOA(node, hitPt, hitPtDist)
             # Record reference point
             self.coaMarkerRef.iPosHprScale(direct.iRay.collisionRef)
@@ -290,7 +291,7 @@ class DirectCameraControl(PandaObject):
             # Filter out object's under camera
             node = entry.getIntoNode()
             nodePath = render.findPathDownTo(node)
-            if camera not in nodePath.getAncestry():
+            if direct.camera not in nodePath.getAncestry():
                 # Compute hit point
                 # KEH: use current display region ray
                 # hitPt = direct.iRay.parentToHitPt(entry)
@@ -398,7 +399,7 @@ class DirectCameraControl(PandaObject):
         # Record undo point
         direct.pushUndo([direct.camera])
         # Transform camera z axis to render space
-        mCam2Render = camera.getMat(render)
+        mCam2Render = direct.camera.getMat(render)
         zAxis = Vec3(mCam2Render.xformVec(Z_AXIS))
         zAxis.normalize()
         # Compute rotation angle needed to upright cam

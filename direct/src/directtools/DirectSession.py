@@ -42,6 +42,7 @@ class DirectSession(PandaObject):
         self.iRayList = map(lambda x: x.iRay, self.drList)
         self.dr = self.drList[0]
         self.camera = base.cameraList[0]
+        self.trueCamera = self.camera
         self.iRay = self.dr.iRay
 
         self.cameraControl = DirectCameraControl()
@@ -157,7 +158,7 @@ class DirectSession(PandaObject):
                           'shift', 'shift-up', 'alt', 'alt-up',
                           'page_up', 'page_down', 
                           '[', '{', ']', '}',
-                          'A', 'b', 'l', 'L', 'p', 'r', 'R', 's',
+                          'A', 'b', 'l', 'L', 'o', 'p', 'r', 'R', 's',
                           't', 'v', 'w']
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'mouse2', 'mouse2-up',
@@ -223,6 +224,72 @@ class DirectSession(PandaObject):
         self.disableActionEvents()
         # But let mouse events pass through
         self.enableMouseEvents()
+
+    def oobe(self):
+        # If oobeMode was never set, set it to false and create the
+        # structures we need to implement OOBE.
+        try:
+            self.oobeMode
+        except:
+            self.oobeMode = 0
+
+            self.oobeCamera = hidden.attachNewNode('oobeCamera')
+
+            self.oobeVis = loader.loadModelOnce('models/misc/camera')
+            if self.oobeVis:
+                self.oobeVis.arc().setFinal(1)
+
+        if self.oobeMode:
+            # Position a target point to lerp the oobe camera to
+            direct.cameraControl.camManipRef.iPosHpr(self.trueCamera)
+            t = self.oobeCamera.lerpPosHpr(
+                Point3(0), Vec3(0), 2.0,
+                other = direct.cameraControl.camManipRef,
+                task = 'manipulateCamera',
+                blendType = 'easeInOut')
+            # When move is done, switch to oobe mode
+            t.uponDeath = self.endOOBE
+        else:
+            # Place camera marker at true camera location
+            self.oobeVis.reparentTo(self.trueCamera)
+            # Remove any transformation on the models arc
+            self.oobeVis.clearMat()
+            # Make oobeCamera be a sibling of wherever camera is now.
+            cameraParent = NodePath(self.camera)
+            cameraParent.shorten(1)
+            # Prepare oobe camera
+            self.oobeCamera.reparentTo(cameraParent)
+            self.oobeCamera.iPosHpr(self.trueCamera)
+            # Put camera under new oobe camera
+            base.cam.reparentTo(self.oobeCamera)
+            # Position a target point to lerp the oobe camera to
+            direct.cameraControl.camManipRef.setPos(
+                self.trueCamera, Vec3(-2,-20, 5))
+            direct.cameraControl.camManipRef.lookAt(self.trueCamera)
+            t = self.oobeCamera.lerpPosHpr(
+                Point3(0), Vec3(0), 2.0,
+                other = direct.cameraControl.camManipRef,
+                task = 'manipulateCamera',
+                blendType = 'easeInOut')
+            # When move is done, switch to oobe mode
+            t.uponDeath = self.beginOOBE
+
+    def beginOOBE(self, state):
+        # Make sure we've reached our final destination
+        self.oobeCamera.iPosHpr(direct.cameraControl.camManipRef)
+        direct.camera = self.oobeCamera
+        self.oobeMode = 1
+
+    def endOOBE(self, state):
+        # Make sure we've reached our final destination
+        self.oobeCamera.iPosHpr(self.trueCamera)
+        # Disable OOBE mode.
+        base.cam.reparentTo(self.trueCamera)
+        direct.camera = self.trueCamera
+        # Get rid of ancillary node paths
+        self.oobeVis.reparentTo(hidden)
+        self.oobeCamera.reparentTo(hidden)
+        self.oobeMode = 0
 
     def destroy(self):
         self.disable()
@@ -297,6 +364,8 @@ class DirectSession(PandaObject):
             self.lights.toggle()
         elif input == 'L':
             self.cameraControl.toggleCOALock()
+        elif input == 'o':
+            self.oobe()
         elif input == 'p':
             if self.selected.last:
                 self.setActiveParent(self.selected.last)

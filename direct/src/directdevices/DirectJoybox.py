@@ -40,9 +40,7 @@ class DirectJoybox(PandaObject):
         # Get buttons and analogs
         self.device = device
         self.analogs = direct.deviceManager.createAnalogs(self.device)
-        print 'NUM ANALOGS', len(self.analogs)
         self.buttons = direct.deviceManager.createButtons(self.device)
-        print 'NUM BUTTONS', len(self.buttons)
         self.aList = [0,0,0,0,0,0,0,0]
         self.bList = [0,0,0,0,0,0,0,0]
         # For joybox fly mode

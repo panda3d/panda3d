@@ -611,7 +611,7 @@ class DirectGuiBase(PandaObject.PandaObject):
         del(self._hookDict)
         del(self.__componentInfo)
 
-    def bind(self, event, command):
+    def bind(self, event, command, extraArgs = []):
         """
         Bind the command (which should expect one arg) to the specified
         event (such as ENTER, EXIT, B1PRESS, B1CLICK, etc.)
@@ -619,7 +619,7 @@ class DirectGuiBase(PandaObject.PandaObject):
         """
         # Need to tack on gui item specific id
         gEvent = event + self.guiId
-        self.accept(gEvent, command)
+        self.accept(gEvent, command, extraArgs = extraArgs)
         # Keep track of all events you're accepting
         self._hookDict[gEvent] = command
         
@@ -679,13 +679,17 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             ('borderWidth',    (.1,.1),      self.setBorderWidth),
             ('frameSize',      None,         self.setFrameSize),
             ('frameColor',     (.8,.8,.8,1), self.setFrameColor),
-            ('pad',            (0,0),    self.resetFrameSize),
+            ('pad',            (0,0),        self.resetFrameSize),
             # Override button id (beware! your name may not be unique!)
             ('guiId',          None,         INITOPT),
             # Initial pos/scale of the widget
             ('pos',            None,         INITOPT),
             ('scale',          None,         INITOPT),
             ('color',          None,         INITOPT),
+            # Do events pass through this widget?
+            ('suppressMouse',  1,            INITOPT),
+            ('suppressKeys',   0,            INITOPT),
+            ('enableEdit',     1,            INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -740,8 +744,17 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.ur = Point3(0)
 
         # Is drag and drop enabled?
-        if self.guiEdit:
+        if self['enableEdit'] and self.guiEdit:
             self.enableEdit()
+
+        # Set up event handling
+        suppressFlags = 0
+        if self['suppressMouse']:
+            suppressFlags |= MouseWatcherRegion.SFMouseButton
+            suppressFlags |= MouseWatcherRegion.SFMousePosition
+        if self['suppressKeys']:
+            suppressFlags |= MouseWatcherRegion.SFOtherButton
+        self.guiItem.setSuppressFlags(suppressFlags)
 
         # Bind destroy hook
         self.bind(DESTROY, self.destroy)
@@ -759,17 +772,19 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.bind(B2PRESS, self.editStart)
         self.bind(B2RELEASE, self.editStop)
         self.bind(PRINT, self.printConfig)
-        mb = base.mouseWatcherNode.getModifierButtons()
-        mb.addButton(KeyboardButton.control())
-        base.mouseWatcherNode.setModifierButtons(mb)
+        # Can we move this to showbase
+        # Certainly we don't need to do this for every button!
+        #mb = base.mouseWatcherNode.getModifierButtons()
+        #mb.addButton(KeyboardButton.control())
+        #base.mouseWatcherNode.setModifierButtons(mb)
 
     def disableEdit(self):
         self.unbind(B2PRESS)
         self.unbind(B2RELEASE)
         self.unbind(PRINT)
-        mb = base.mouseWatcherNode.getModifierButtons()
-        mb.removeButton(KeyboardButton.control())
-        base.mouseWatcherNode.setModifierButtons(mb)
+        #mb = base.mouseWatcherNode.getModifierButtons()
+        #mb.removeButton(KeyboardButton.control())
+        #base.mouseWatcherNode.setModifierButtons(mb)
         
     def editStart(self, event):
         taskMgr.removeTasksNamed('guiEditTask')
