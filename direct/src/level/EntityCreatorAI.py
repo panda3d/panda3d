@@ -46,9 +46,9 @@ class EntityCreatorAI(EntityCreatorBase.EntityCreatorBase):
             'editMgr': Functor(cLE, EditMgrAI.EditMgrAI),
             'levelMgr': Functor(cLE, LevelMgrAI.LevelMgrAI),
             'logicGate': Functor(cLE, LogicGateAI.LogicGateAI),
+            'model' : nothing,
             'nodepath': nothing,
             'zone': Functor(cLE, ZoneEntityAI.ZoneEntityAI),
-            'modelMockup' : nothing,
             })
 
     def doCreateEntity(self, ctor, entId):

@@ -29,7 +29,7 @@ class EntityCreator(EntityCreatorBase.EntityCreatorBase):
             'editMgr': EditMgr.EditMgr,
             'levelMgr': LevelMgr.LevelMgr,
             'logicGate': nothing,
-            'modelMockup' : ModelEntity.ModelEntity,
+            'model' : ModelEntity.ModelEntity,
             'nodepath': BasicEntities.NodePathEntity,
             'zone': ZoneEntity.ZoneEntity,
             })
