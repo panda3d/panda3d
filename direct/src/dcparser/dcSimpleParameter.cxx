@@ -640,23 +640,35 @@ pack_int(DCPackData &pack_data, int value,
 
   case ST_char:
   case ST_uint8:
+    if (int_value < 0) {
+      range_error = true;
+    }
     _uint_range.validate((unsigned int)int_value, range_error);
     validate_uint_limits((unsigned int)int_value, 8, range_error);
     do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)int_value);
     break;
 
   case ST_uint16:
+    if (int_value < 0) {
+      range_error = true;
+    }
     _uint_range.validate((unsigned int)int_value, range_error);
     validate_uint_limits((unsigned int)int_value, 16, range_error);
     do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)int_value);
     break;
 
   case ST_uint32:
+    if (int_value < 0) {
+      range_error = true;
+    }
     _uint_range.validate((unsigned int)int_value, range_error);
     do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)int_value);
     break;
 
   case ST_uint64:
+    if (int_value < 0) {
+      range_error = true;
+    }
     _uint64_range.validate((unsigned int)int_value, range_error);
     do_pack_uint64(pack_data.get_write_pointer(8), (unsigned int)int_value);
     break;
@@ -684,23 +696,35 @@ pack_uint(DCPackData &pack_data, unsigned int value,
 
   switch (_type) {
   case ST_int8:
+    if ((int)int_value < 0) {
+      range_error = true;
+    }
     _int_range.validate((int)int_value, range_error);
     validate_int_limits((int)int_value, 8, range_error);
     do_pack_int8(pack_data.get_write_pointer(1), (int)int_value);
     break;
 
   case ST_int16:
+    if ((int)int_value < 0) {
+      range_error = true;
+    }
     _int_range.validate((int)int_value, range_error);
     validate_int_limits((int)int_value, 16, range_error);
     do_pack_int16(pack_data.get_write_pointer(2), (int)int_value);
     break;
 
   case ST_int32:
+    if ((int)int_value < 0) {
+      range_error = true;
+    }
     _int_range.validate((int)int_value, range_error);
     do_pack_int32(pack_data.get_write_pointer(4), (int)int_value);
     break;
 
   case ST_int64:
+    if ((int)int_value < 0) {
+      range_error = true;
+    }
     _int64_range.validate((int)int_value, range_error);
     do_pack_int64(pack_data.get_write_pointer(8), (int)int_value);
     break;
@@ -775,24 +799,36 @@ pack_int64(DCPackData &pack_data, PN_int64 value,
 
   case ST_char:
   case ST_uint8:
+    if (int_value < 0) {
+      range_error = true;
+    }
     _uint_range.validate((unsigned int)(PN_uint64)int_value, range_error);
     validate_uint64_limits((PN_uint64)int_value, 8, range_error);
     do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)(PN_uint64)int_value);
     break;
 
   case ST_uint16:
+    if (int_value < 0) {
+      range_error = true;
+    }
     _uint_range.validate((unsigned int)(PN_uint64)int_value, range_error);
     validate_uint64_limits((PN_uint64)int_value, 16, range_error);
     do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)(PN_uint64)int_value);
     break;
 
   case ST_uint32:
+    if (int_value < 0) {
+      range_error = true;
+    }
     _uint_range.validate((unsigned int)(PN_uint64)int_value, range_error);
     validate_uint64_limits((PN_uint64)int_value, 32, range_error);
     do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)(PN_uint64)int_value);
     break;
 
   case ST_uint64:
+    if (int_value < 0) {
+      range_error = true;
+    }
     _uint64_range.validate((PN_uint64)int_value, range_error);
     do_pack_uint64(pack_data.get_write_pointer(8), (PN_uint64)int_value);
     break;
@@ -820,24 +856,36 @@ pack_uint64(DCPackData &pack_data, PN_uint64 value,
 
   switch (_type) {
   case ST_int8:
+    if ((PN_int64)int_value < 0) {
+      range_error = true;
+    }
     _int_range.validate((int)(PN_int64)int_value, range_error);
     validate_int64_limits((PN_int64)int_value, 8, range_error);
     do_pack_int8(pack_data.get_write_pointer(1), (int)(PN_int64)int_value);
     break;
 
   case ST_int16:
+    if ((PN_int64)int_value < 0) {
+      range_error = true;
+    }
     _int_range.validate((int)(PN_int64)int_value, range_error);
     validate_int64_limits((PN_int64)int_value, 16, range_error);
     do_pack_int16(pack_data.get_write_pointer(2), (int)(PN_int64)int_value);
     break;
 
   case ST_int32:
+    if ((PN_int64)int_value < 0) {
+      range_error = true;
+    }
     _int_range.validate((int)(PN_int64)int_value, range_error);
     validate_int64_limits((PN_int64)int_value, 32, range_error);
     do_pack_int32(pack_data.get_write_pointer(4), (int)(PN_int64)int_value);
     break;
 
   case ST_int64:
+    if ((PN_int64)int_value < 0) {
+      range_error = true;
+    }
     _int64_range.validate((PN_int64)int_value, range_error);
     do_pack_int64(pack_data.get_write_pointer(8), (PN_int64)int_value);
     break;
