@@ -16,7 +16,7 @@ import string
 
 
 class LevelEditor(NodePath, PandaObject):
-    def __init__(self,direct):
+    def __init__(self,direct,parent = None):
         # Initialize superclass
         NodePath.__init__(self)
         self.assign(hidden.attachNewNode( NamedNode('LevelEditor')))
@@ -119,7 +119,7 @@ class LevelEditor(NodePath, PandaObject):
 	# Default is to use the toontown central color palette
 	self.editToontownCentral()
 
-        self.panel = LevelEditorPanel(self)
+        self.panel = LevelEditorPanel(self, parent)
 
 	self.enable()
 
@@ -373,7 +373,6 @@ class LevelEditor(NodePath, PandaObject):
 	self.grid.ignore('insert')
         self.ignore('selectedNodePath')
 	self.ignore('preRemoveNodePath')
-	#self.ignore('preSelectNodePath')
         self.ignore('toggleMapViz')
 	self.ignore('reparentNodePath')
 	self.ignore('createNewLevelGroup')
@@ -460,8 +459,9 @@ class LevelEditor(NodePath, PandaObject):
 	self.accept('createNewLevelGroup', self.createNewLevelGroup)
 	self.accept('setNodePathName', self.setNodePathName)
         self.accept('manipulateObjectCleanup', self.updateSelectedPose)
-        self.accept('SGESelectNodePath', self.selectNodePath)
-	self.accept('SGEFlashNodePath', self.preSelectNodePath)
+        #self.accept('SGESelectNodePath', self.selectNodePath)
+        self.accept('SGESelectNodePath', self.flashNodePath)
+	self.accept('SGEFlashNodePath', self.flashNodePath)
         self.accept('SGEIsolateNodePath', self.isolateNodePath)
         self.accept('SGEToggle VizNodePath', self.toggleNodePathViz)
         self.accept('SGESet ParentNodePath', self.setGroupParent)
@@ -796,28 +796,31 @@ class LevelEditor(NodePath, PandaObject):
         if self.activeMenu:
             self.activeMenu.removePieMenuTask()
 
-    def preSelectNodePath(self, aNodePath):
-	taskMgr.removeTasksNamed('preselectNodePath')
-        t = Task.Task(self.preSelectNodePathTask)
+    def flashNodePath(self, aNodePath):
+	taskMgr.removeTasksNamed('flashNodePath')
+        t = Task.Task(self.flashNodePathTask)
         t.aNodePath = aNodePath
         t.initState = t.hidden = aNodePath.isHidden()
-        t.count = 0
+        t.flashCount = 0
+        t.frameCount = 0
         t.uponDeath = self.preSelectDone
-        taskMgr.spawnTaskNamed(t, 'preselectNodePath')
+        taskMgr.spawnTaskNamed(t, 'flashNodePath')
 
-    def preSelectNodePathTask(self, state):
+    def flashNodePathTask(self, state):
         aNodePath = state.aNodePath
 	initState = state.initState
         hidden = state.hidden
-        count = state.count
-        if (state.count < 21):
-            if (state.count % 5) == 0:
+        flashCount = state.flashCount
+        frameCount = state.frameCount
+        if (flashCount < 4):
+            if (frameCount % 3) == 0:
                 if hidden:
                     aNodePath.show()
                 else:
                     aNodePath.hide()
                 state.hidden = not state.hidden
-            state.count = count + 1
+                state.flashCount = flashCount + 1
+            state.frameCount = frameCount + 1
             return Task.cont
         else:
             return Task.done
@@ -923,7 +926,12 @@ class LevelEditor(NodePath, PandaObject):
             self.levelMap.reparentTo(hidden)
 
     def toggleNodePathViz(self, aNodePath):
-        pass
+        # First kill the flashing task
+        taskMgr.removeTasksNamed('flashNodePath')
+        if aNodePath.isHidden():
+            aNodePath.show()
+        else:
+            aNodePath.hide()
 
     def setXyzSnap(self, flag):
         self.grid.setXyzSnap(flag)
@@ -2203,7 +2211,7 @@ class LevelEditor(NodePath, PandaObject):
             self.loadDNAFromFile(dnaFilename)
 
     def saveToSpecifiedDNAFile(self):
-        path = os.path.expandvars('$DIRECT\\etc\\')
+        path = os.path.join(os.path.expandvars('$DIRECT'), 'etc')
         if not os.path.isdir(path):
             print 'LevelEditor Warning: Invalid DNA save directory!'
             print 'Using: C:\\'
@@ -2273,7 +2281,8 @@ class LevelEditor(NodePath, PandaObject):
 	self.createNewLevelGroup()
 
     def outputDNADefaultFile(self):
-        file = os.path.expandvars('$DIRECT\\etc\\' + self.dnaOutputFile)
+        file = os.path.join(os.path.expandvars('$DIRECT'),'etc',
+                            self.dnaOutputFile)
         self.outputDNA(file)
         
     def outputDNA(self,filename):

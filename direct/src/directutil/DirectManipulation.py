@@ -29,31 +29,17 @@ class DirectManipulationControl(PandaObject):
     def manipulationStart(self, chan):
         # Start out in select mode
         self.mode = 'select'
-        
         # Check for a widget hit point
         numEntries = self.direct.iRay.pickWidget(
             render,chan.mouseX,chan.mouseY)
         # Did we hit a widget?
         if(numEntries):
             # Yes!
-            
-            # Find the closest hit point if multiple hits
-            # Start off with first point
+            # Entry 0 is the closest hit point if multiple hits
             minPt = 0
             # Find hit point in camera's space
             self.hitPt = self.direct.iRay.camToHitPt(minPt)
             self.hitPtDist = Vec3(self.hitPt - ZERO_POINT).length()
-            # Check other intersection points, sorting them
-            # TBD: Use TBS C++ function to do this
-            if numEntries > 1:
-                for i in range(1,numEntries):
-                    hitPt = self.direct.iRay.camToHitPt(i)
-                    dist = Vec3(hitPt - ZERO_POINT).length()
-                    if (dist < self.hitPtDist):
-                        self.hitPtDist = dist
-                        self.hitPt = hitPt
-                        minPt = i
-
             # Get the associated collision queue object
             entry = self.direct.iRay.cq.getEntry(minPt)
             # Extract the node
@@ -63,7 +49,6 @@ class DirectManipulationControl(PandaObject):
         else:
             # Nope, off the widget, no constraint
             self.constraint = None
-
         # Check to see if we are moving the object
         # We are moving the object if we either wait long enough
         """
@@ -73,7 +58,6 @@ class DirectManipulationControl(PandaObject):
                          'manip-switch-to-move'),
             'manip-move-wait')
         """
-        
         # Or if we move far enough
         self.moveDir = None
         watchMouseTask = Task.Task(self.watchMouseTask)
@@ -108,45 +92,31 @@ class DirectManipulationControl(PandaObject):
             # Check for object under mouse
             numEntries = self.direct.iRay.pickGeom(
                 render,self.chan.mouseX,self.chan.mouseY)
-            # Filter out widgets from entry list
-            indexList = []
+            # Pick out the closest object that isn't a widget
+            index = -1
             for i in range(0,numEntries):
                 entry = self.direct.iRay.cq.getEntry(i)
                 node = entry.getIntoNode()
                 if node.isHidden():
                     pass
                 # Is it a named node?, If so, see if it has a name
-                if issubclass(node.__class__, NamedNode):
+                elif issubclass(node.__class__, NamedNode):
                     name = node.getName()
-                    if name not in VISIBLE_DISCS:
-                        indexList.append(i)
+                    if name in VISIBLE_DISCS:
+                        pass
+                    else:
+                        index = i
+                        break
                 else:
-                    # Not one of the widgets, use it
-                    indexList.append(i)
+                    # Not hidden and not one of the widgets, use it
+                    index = i
             # Did we hit an object?
-            if(indexList):
+            if(index >= 0):
                 # Yes!
-                # Find the closest hit point if multiple hits
-                # Start off with first point
-                minPt = indexList[0]
                 # Find hit point in camera's space
-                self.hitPt = self.direct.iRay.camToHitPt(minPt)
+                self.hitPt = self.direct.iRay.camToHitPt(index)
                 self.hitPtDist = Vec3(self.hitPt - ZERO_POINT).length()
-                # Check other intersection points, sorting them
-                # TBD: Use TBS C++ function to do this
-                if len(indexList) > 1:
-                    for i in range(1,len(indexList)):
-                        entryNum = indexList[i]
-                        hitPt = self.direct.iRay.camToHitPt(entryNum)
-                        dist = Vec3(hitPt - ZERO_POINT).length()
-                        if (dist < self.hitPtDist):
-                            self.hitPtDist = dist
-                            self.hitPt = hitPt
-                            minPt = entryNum
-                # Get the associated collision queue object
-                entry = self.direct.iRay.cq.getEntry(minPt)
-                # Extract the node
-                node = entry.getIntoNode()
+                # Find the node path from the node found above
                 nodePath = render.findPathDownTo(node)
                 # Select it
                 self.direct.select(nodePath)

@@ -353,6 +353,7 @@ class SelectionRay:
         self.ray.setProjection( base.cam.node(), mouseX, mouseY )
         self.ct.traverse( targetNodePath.node() )
         self.numEntries = self.cq.getNumEntries()
+        self.cq.sortEntries()
         return self.numEntries
 
     def collideWithGeom(self):
