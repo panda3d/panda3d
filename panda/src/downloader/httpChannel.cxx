@@ -1222,6 +1222,7 @@ run_socks_proxy_connect_reply() {
     case 0x03:
     case 0x04:
     case 0x05:
+    case 0x06:
       // These generally mean the same thing: the SOCKS proxy tried,
       // but couldn't reach the host.
       _status_entry._status_code = SC_socks_no_connection;
