@@ -51,6 +51,9 @@ public:
   PaletteGroup *get_parent(int n) const;
   void add_parent(PaletteGroup *parent);
 
+  const string &get_dirname() const;
+  void set_dirname(const string &dirname);
+
   bool pack_texture(TexturePacking *packing, AttribFile *attrib_file);
   bool generate_palette_images();
   void optimal_resize();
@@ -72,6 +75,8 @@ private:
 
   typedef vector<Palette *> Palettes;
   Palettes _palettes;
+
+  string _dirname;
 };
 
 

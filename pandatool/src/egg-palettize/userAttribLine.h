@@ -29,7 +29,7 @@ class SourceEgg;
 //   # Comment
 //   :margin msize
 //   :palette xsize ysize 
-//   :group groupname with groupname [groupname ...]
+//   :group groupname [dir dirname] [with groupname [groupname ...]]
 //   texturename xsize ysize msize
 //   texturename [texturename ...] : xsize ysize [msize] [omit]
 //   texturename [texturename ...] : scale% [msize] [omit]
@@ -77,6 +77,8 @@ private:
   int _xsize, _ysize;
   double _scale_pct;
   int _msize;
+  string _dirname;
+  bool _got_dirname;
   bool _omit;
   bool _is_old_style;
   bool _was_used;

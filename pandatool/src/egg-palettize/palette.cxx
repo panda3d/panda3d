@@ -331,8 +331,10 @@ finalize_palette() {
     char index_str[128];
     sprintf(index_str, "%03d", _index);
     _basename = _group->get_name() + "-palette." + index_str + ".rgb";
+
+    Filename dirname(_attrib_file->_map_dirname, _group->get_dirname());
     _filename = _basename;
-    _filename.set_dirname(_attrib_file->_map_dirname);
+    _filename.set_dirname(dirname.get_fullpath());
   } else {
     _basename = _filename.get_basename();
   }

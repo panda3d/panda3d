@@ -25,6 +25,8 @@ UserAttribLine(const string &cline, AttribFile *af) : _attrib_file(af) {
   // matches that line.
   _was_used = true;
 
+  _got_dirname = false;
+
   string line = cline;
 
   // First, strip off the comment.
@@ -108,9 +110,15 @@ write(ostream &out) const {
     break;
 
   case LT_group_relate:
-    out << ":group " << _names[0] << " with";
-    for (i = 1; i < (int)_names.size(); i++) {
-      out << " " << _names[i];
+    out << ":group " << _names[0];
+    if (!_got_dirname) {
+      out << " dir " << _dirname;
+    }
+    if (!_names.empty()) {
+      out << " with";
+      for (i = 1; i < (int)_names.size(); i++) {
+	out << " " << _names[i];
+      }
     }
     out << "\n";
     break;
@@ -333,14 +341,34 @@ keyword_line(const string &line) {
 
   } else if (words[0] == ":group") {
     _line_type = LT_group_relate;
-    if (words.size() < 4 || !(words[2] == "with")) {
-      nout << "Expected :group groupname with groupname [groupname ...].\n";
+    if (words.size() < 2) {
+      nout << "Expected :group name.\n";
       return false;
     }
+
     PaletteGroup *group = _attrib_file->get_group(words[1]);
 
-    for (int i = 3; i < (int)words.size(); i++) {
-      group->add_parent(_attrib_file->get_group(words[i]));
+    int kw = 2;
+    while (kw < (int)words.size()) {
+      if (words[kw] == "with") {
+	kw++;
+	
+	while (kw < (int)words.size()) {
+	  group->add_parent(_attrib_file->get_group(words[kw]));
+	  kw++;
+	}
+
+      } else if (words[kw] == "dir") {
+	kw++;
+	_got_dirname = true;
+	_dirname = words[kw];
+	group->set_dirname(_dirname);
+	kw++;
+
+      } else {
+	nout << "Invalid keyword: " << words[kw] << "\n";
+	return false;
+      }
     }
 
   } else {

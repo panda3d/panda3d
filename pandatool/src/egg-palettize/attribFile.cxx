@@ -529,13 +529,14 @@ transfer_unplaced_images(bool force_redo_all) {
       // maybe it's already there and hasn't changed recently.
       if (force_redo_all || packing->needs_refresh()) {
 	// Nope, needs to be updated.
-	okflag = texture->transfer() && okflag;
+	okflag = packing->transfer() && okflag;
       }
     } else {
       if (_aggressively_clean_mapdir && texture->is_unused()) {
-	if (texture->get_filename().exists()) {
-	  nout << "Deleting " << texture->get_filename() << "\n";
-	  texture->get_filename().unlink();
+	Filename new_filename = packing->get_new_filename();
+	if (new_filename.exists()) {
+	  nout << "Deleting " << new_filename << "\n";
+	  new_filename.unlink();
 	}
       }
     }

@@ -9,6 +9,8 @@
 #include "palette.h"
 #include "pTexture.h"
 
+#include <pnmImage.h>
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePacking::Constructor
@@ -460,4 +462,106 @@ write_unplaced(ostream &out) const {
     }
     out << "\n";
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePacking::get_new_filename
+//       Access: Public
+//  Description: Returns the filename to which this texture will be
+//               copied, assuming it is not placed on a palette.
+////////////////////////////////////////////////////////////////////
+Filename TexturePacking::
+get_new_filename() const {
+  Filename dirname(_attrib_file->_map_dirname, _group->get_dirname());
+  Filename new_filename(dirname, _texture->get_name());
+  return new_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePacking::transfer
+//       Access: Public
+//  Description: Copies an unpalettized image to the install
+//               directory, if it is not already there.  The
+//               particular directory it is installed into may depend
+//               on the PaletteGroup to which it has been added.
+//               Returns true if successful, false if there is an
+//               error.
+////////////////////////////////////////////////////////////////////
+bool TexturePacking::
+transfer() {
+  bool okflag = true;
+
+  Filename old_filename = _texture->_filename;
+  Filename new_filename = get_new_filename();
+  if (new_filename == old_filename) {
+    nout << "*** Texture " << _texture->get_name()
+	 << " is already in the map directory!\n"
+	 << "    Cannot modify texture in place!\n";
+    return false;
+  }
+
+  int nx, ny;
+  if (!_texture->get_req(nx, ny)) {
+    nout << "Unknown size for image " << _texture->get_name() << "\n";
+    nx = 16;
+    ny = 16;
+  }
+
+  if (_attrib_file->_force_power_2) {
+    int newx = to_power_2(nx);
+    int newy = to_power_2(ny);
+    if (newx != nx || newy != ny) {
+      nx = newx;
+      ny = newy;
+    }
+  }
+ 
+  PNMImage *image = _texture->read_image();
+  if (image == NULL) {
+    nout << "*** Unable to read " << _texture->get_name() << "\n";
+    okflag = false;
+
+    // Create a solid red texture for images we can't read.
+    image = new PNMImage(nx, ny);
+    image->fill(1.0, 0.0, 0.0);
+
+  } else {
+    // Should we scale it?
+    if (nx != image->get_x_size() && ny != image->get_y_size()) {
+      nout << "Resizing " << new_filename << " to " 
+	   << nx << " " << ny << "\n";
+      PNMImage *new_image =
+	new PNMImage(nx, ny, image->get_color_type());
+      new_image->gaussian_filter_from(0.5, *image);
+      delete image;
+      image = new_image;
+      
+    } else {
+      nout << "Copying " << new_filename
+	   << " (size " << nx << " " << ny << ")\n";
+    }
+  }
+    
+  if (!image->write(new_filename)) {
+    nout << "Error in writing.\n";
+    okflag = false;
+  }
+  delete image;
+
+  return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePacking::to_power_2
+//       Access: Public, Static
+//  Description: Returns the largest power of 2 less than or equal to
+//               value.
+////////////////////////////////////////////////////////////////////
+int TexturePacking::
+to_power_2(int value) {
+  int x = 1;
+  while ((x << 1) <= value) {
+    x = (x << 1);
+  }
+  return x;
 }

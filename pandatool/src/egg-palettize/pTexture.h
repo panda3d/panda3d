@@ -67,8 +67,6 @@ public:
   void write_size(ostream &out);
   void write_pathname(ostream &out) const;
 
-  bool transfer();
-
   PNMImage *read_image();
 
   typedef set<TextureEggRef *> Eggs;
@@ -79,7 +77,6 @@ private:
   void read_header();
   bool read_image_header(const Filename &filename, 
 			 int &xsize, int &ysize, int &zsize);
-  static int to_power_2(int value);
 
   Filename _name;
 

@@ -384,68 +384,6 @@ write_pathname(ostream &out) const {
   }
 }
 
-bool PTexture::
-transfer() {
-  bool okflag = true;
-
-  Filename new_filename = get_filename();
-  if (new_filename == _filename) {
-    nout << "*** PTexture " << _name << " is already in the map directory!\n"
-	 << "    Cannot modify texture in place!\n";
-    return false;
-  }
-
-  int nx, ny;
-  if (!get_req(nx, ny)) {
-    nout << "Unknown size for image " << _name << "\n";
-    nx = 16;
-    ny = 16;
-  }
-
-  if (_attrib_file->_force_power_2) {
-    int newx = to_power_2(nx);
-    int newy = to_power_2(ny);
-    if (newx != nx || newy != ny) {
-      nx = newx;
-      ny = newy;
-    }
-  }
- 
-  PNMImage *image = read_image();
-  if (image == NULL) {
-    nout << "*** Unable to read " << _name << "\n";
-    okflag = false;
-
-    // Create a solid red texture for images we can't read.
-    image = new PNMImage(nx, ny);
-    image->fill(1.0, 0.0, 0.0);
-
-  } else {
-    // Should we scale it?
-    if (nx != image->get_x_size() && ny != image->get_y_size()) {
-      nout << "Resizing " << new_filename << " to " 
-	   << nx << " " << ny << "\n";
-      PNMImage *new_image =
-	new PNMImage(nx, ny, image->get_color_type());
-      new_image->gaussian_filter_from(0.5, *image);
-      delete image;
-      image = new_image;
-      
-    } else {
-      nout << "Copying " << new_filename
-	   << " (size " << nx << " " << ny << ")\n";
-    }
-  }
-    
-  if (!image->write(new_filename)) {
-    nout << "Error in writing.\n";
-    okflag = false;
-  }
-  delete image;
-
-  return okflag;
-}
-
 PNMImage *PTexture::
 read_image() {
   if (!_got_filename || !_file_exists) {
@@ -503,13 +441,4 @@ read_image_header(const Filename &filename, int &xsize, int &ysize,
   ysize = header.get_y_size();
   zsize = header.get_num_channels();
   return true;
-}
-
-int PTexture::
-to_power_2(int value) {
-  int x = 1;
-  while ((x << 1) <= value) {
-    x = (x << 1);
-  }
-  return x;
 }

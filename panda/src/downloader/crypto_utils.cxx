@@ -32,7 +32,7 @@ md5_a_file(const Filename &name, HashVal &ret) {
   ostringstream os;
   MD5 md5;
 
-  string fs = name.get_fullpath();
+  string fs = name.to_os_specific();
   FileSource f(fs.c_str(), true, new HashFilter(md5, new FileSink(os)));
 
   istringstream is(os.str());

@@ -60,7 +60,12 @@ public:
 
   void write_unplaced(ostream &out) const;
 
+  Filename get_new_filename() const;
+  bool transfer();
+
 private:
+  static int to_power_2(int value);
+
   AttribFile *_attrib_file;
   PTexture *_texture;
   PaletteGroup *_group;

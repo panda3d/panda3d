@@ -68,6 +68,28 @@ add_parent(PaletteGroup *parent) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::get_dirname
+//       Access: Public
+//  Description: Returns the directory name to which palettes and
+//               textures associated with this group will be written.
+////////////////////////////////////////////////////////////////////
+const string &PaletteGroup::
+get_dirname() const {
+  return _dirname;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::set_dirname
+//       Access: Public
+//  Description: Sets the directory name to which palettes and
+//               textures associated with this group will be written.
+////////////////////////////////////////////////////////////////////
+void PaletteGroup::
+set_dirname(const string &dirname) {
+  _dirname = dirname;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PaletteGroup::pack_texture
 //       Access: Public
 //  Description: Adds the texture to some suitable palette image
