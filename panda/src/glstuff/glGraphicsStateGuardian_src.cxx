@@ -309,8 +309,6 @@ reset() {
   _clear_accum_alpha = -1.0f;
 
   // Set up the specific state values to GL's known initial values.
-  _draw_buffer_mode = (has_back) ? GL_BACK : GL_FRONT;
-  _read_buffer_mode = (has_back) ? GL_BACK : GL_FRONT;
   _shade_model_mode = GL_SMOOTH;
   GLP(FrontFace)(GL_CCW);
 
@@ -2755,39 +2753,39 @@ void CLP(GraphicsStateGuardian)::
 set_draw_buffer(const RenderBuffer &rb) {
   switch (rb._buffer_type & RenderBuffer::T_color) {
   case RenderBuffer::T_front:
-    call_glDrawBuffer(GL_FRONT);
+    GLP(DrawBuffer)(GL_FRONT);
     break;
 
   case RenderBuffer::T_back:
-    call_glDrawBuffer(GL_BACK);
+    GLP(DrawBuffer)(GL_BACK);
     break;
 
   case RenderBuffer::T_right:
-    call_glDrawBuffer(GL_RIGHT);
+    GLP(DrawBuffer)(GL_RIGHT);
     break;
 
   case RenderBuffer::T_left:
-    call_glDrawBuffer(GL_LEFT);
+    GLP(DrawBuffer)(GL_LEFT);
     break;
 
   case RenderBuffer::T_front_right:
-    call_glDrawBuffer(GL_FRONT_RIGHT);
+    GLP(DrawBuffer)(GL_FRONT_RIGHT);
     break;
 
   case RenderBuffer::T_front_left:
-    call_glDrawBuffer(GL_FRONT_LEFT);
+    GLP(DrawBuffer)(GL_FRONT_LEFT);
     break;
 
   case RenderBuffer::T_back_right:
-    call_glDrawBuffer(GL_BACK_RIGHT);
+    GLP(DrawBuffer)(GL_BACK_RIGHT);
     break;
 
   case RenderBuffer::T_back_left:
-    call_glDrawBuffer(GL_BACK_LEFT);
+    GLP(DrawBuffer)(GL_BACK_LEFT);
     break;
 
   default:
-    call_glDrawBuffer(GL_FRONT_AND_BACK);
+    GLP(DrawBuffer)(GL_FRONT_AND_BACK);
   }
   report_my_gl_errors();
 }
@@ -2804,39 +2802,39 @@ void CLP(GraphicsStateGuardian)::
 set_read_buffer(const RenderBuffer &rb) {
   switch (rb._buffer_type & RenderBuffer::T_color) {
   case RenderBuffer::T_front:
-    call_glReadBuffer(GL_FRONT);
+    GLP(ReadBuffer)(GL_FRONT);
     break;
 
   case RenderBuffer::T_back:
-    call_glReadBuffer(GL_BACK);
+    GLP(ReadBuffer)(GL_BACK);
     break;
 
   case RenderBuffer::T_right:
-    call_glReadBuffer(GL_RIGHT);
+    GLP(ReadBuffer)(GL_RIGHT);
     break;
 
   case RenderBuffer::T_left:
-    call_glReadBuffer(GL_LEFT);
+    GLP(ReadBuffer)(GL_LEFT);
     break;
 
   case RenderBuffer::T_front_right:
-    call_glReadBuffer(GL_FRONT_RIGHT);
+    GLP(ReadBuffer)(GL_FRONT_RIGHT);
     break;
 
   case RenderBuffer::T_front_left:
-    call_glReadBuffer(GL_FRONT_LEFT);
+    GLP(ReadBuffer)(GL_FRONT_LEFT);
     break;
 
   case RenderBuffer::T_back_right:
-    call_glReadBuffer(GL_BACK_RIGHT);
+    GLP(ReadBuffer)(GL_BACK_RIGHT);
     break;
 
   case RenderBuffer::T_back_left:
-    call_glReadBuffer(GL_BACK_LEFT);
+    GLP(ReadBuffer)(GL_BACK_LEFT);
     break;
 
   default:
-    call_glReadBuffer(GL_FRONT_AND_BACK);
+    GLP(ReadBuffer)(GL_FRONT_AND_BACK);
   }
   report_my_gl_errors();
 }

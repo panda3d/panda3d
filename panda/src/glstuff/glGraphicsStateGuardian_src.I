@@ -129,65 +129,6 @@ call_glClearAccum(GLclampf red, GLclampf green, GLclampf blue,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::call_glDrawBuffer
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CLP(GraphicsStateGuardian)::
-call_glDrawBuffer(GLenum mode) {
-  if (mode != _draw_buffer_mode) {
-#ifdef GSG_VERBOSE
-    GLCAT.spam() << "glDrawBuffer(";
-    switch (mode) {
-    case GL_FRONT:
-      GLCAT.spam(false) << "GL_FRONT)";
-      break;
-    case GL_BACK:
-      GLCAT.spam(false) << "GL_BACK)";
-      break;
-    case GL_RIGHT:
-      GLCAT.spam(false) << "GL_RIGHT)";
-      break;
-    case GL_LEFT:
-      GLCAT.spam(false) << "GL_LEFT)";
-      break;
-    case GL_FRONT_RIGHT:
-      GLCAT.spam(false) << "GL_FRONT_RIGHT)";
-      break;
-    case GL_FRONT_LEFT:
-      GLCAT.spam(false) << "GL_FRONT_LEFT)";
-      break;
-    case GL_BACK_RIGHT:
-      GLCAT.spam(false) << "GL_BACK_RIGHT)";
-      break;
-    case GL_BACK_LEFT:
-      GLCAT.spam(false) << "GL_BACK_LEFT)";
-      break;
-    case GL_FRONT_AND_BACK:
-      GLCAT.spam(false) << "GL_FRONT_AND_BACK)";
-      break;
-    }
-    GLCAT.spam(false) << endl;
-#endif
-    GLP(DrawBuffer)(mode);
-    _draw_buffer_mode = mode;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::call_glReadBuffer
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CLP(GraphicsStateGuardian)::
-call_glReadBuffer(GLenum mode) {
-  if (mode != _read_buffer_mode) {
-    GLP(ReadBuffer)(mode);
-    _read_buffer_mode = mode;
-  }
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::call_glShadeModel

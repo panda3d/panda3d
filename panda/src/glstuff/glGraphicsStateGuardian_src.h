@@ -166,8 +166,6 @@ protected:
   INLINE void call_glClearStencil(GLint s);
   INLINE void call_glClearAccum(GLclampf red, GLclampf green, GLclampf blue,
                                 GLclampf alpha);
-  INLINE void call_glDrawBuffer(GLenum mode);
-  INLINE void call_glReadBuffer(GLenum mode);
   INLINE void call_glShadeModel(GLenum mode);
   INLINE void call_glBlendFunc(GLenum sfunc, GLenum dfunc);
   INLINE void call_glCullFace(GLenum mode);
@@ -246,8 +244,6 @@ protected:
   GLint _clear_stencil;
   GLclampf _clear_accum_red, _clear_accum_green, _clear_accum_blue,
     _clear_accum_alpha;
-  GLenum _draw_buffer_mode;
-  GLenum _read_buffer_mode;
   GLenum _shade_model_mode;
   GLint _scissor_x;
   GLint _scissor_y;
