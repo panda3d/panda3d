@@ -50,6 +50,18 @@ get_root() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::get_im
+//       Access: Public
+//  Description: Returns the input method opened for the pipe, or NULL
+//               if the input method could not be opened for some
+//               reason.
+////////////////////////////////////////////////////////////////////
+INLINE XIM glxGraphicsPipe::
+get_im() const {
+  return _im;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsPipe::get_wm_delete_window
 //       Access: Public
 //  Description: Returns the X atom that represents WM_DELETE_WINDOW
@@ -61,13 +73,15 @@ get_wm_delete_window() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPipe::get_im
+//     Function: glxGraphicsPipe::get_hidden_cursor
 //       Access: Public
-//  Description: Returns the input method opened for the pipe, or NULL
-//               if the input method could not be opened for some
-//               reason.
+//  Description: Returns an invisible Cursor suitable for assigning to
+//               windows that have the cursor_hidden property set.
 ////////////////////////////////////////////////////////////////////
-INLINE XIM glxGraphicsPipe::
-get_im() const {
-  return _im;
+INLINE Cursor glxGraphicsPipe::
+get_hidden_cursor() {
+  if (_hidden_cursor == None) {
+    make_hidden_cursor();
+  }
+  return _hidden_cursor;
 }

@@ -56,6 +56,7 @@ glxGraphicsPipe(const string &display) {
   _screen = 0;
   _root = (Window)NULL;
   _im = (XIM)NULL;
+  _hidden_cursor = None;
 
   install_error_handlers();
 
@@ -118,6 +119,7 @@ glxGraphicsPipe(const string &display) {
 ////////////////////////////////////////////////////////////////////
 glxGraphicsPipe::
 ~glxGraphicsPipe() {
+  release_hidden_cursor();
   if (_im) {
     XCloseIM(_im);
   }
@@ -572,6 +574,44 @@ try_for_fbconfig(int framebuffer_mode,
   XFree(configs);
 
   return fbconfig;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::make_hidden_cursor
+//       Access: Private
+//  Description: Called once to make an invisible Cursor for return
+//               from get_hidden_cursor().
+////////////////////////////////////////////////////////////////////
+void glxGraphicsPipe::
+make_hidden_cursor() {
+  nassertv(_hidden_cursor == None);
+
+  unsigned int x_size, y_size;
+  XQueryBestCursor(_display, _root, 1, 1, &x_size, &y_size);
+  cerr << "best size is " << x_size << " x " << y_size << "\n";
+
+  Pixmap empty = XCreatePixmap(_display, _root, x_size, y_size, 1);
+
+  XColor black;
+  memset(&black, 0, sizeof(black));
+
+  _hidden_cursor = XCreatePixmapCursor(_display, empty, empty, 
+                                       &black, &black, x_size, y_size);
+  XFreePixmap(_display, empty);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::release_hidden_cursor
+//       Access: Private
+//  Description: Called once to release the invisible cursor created
+//               by make_hidden_cursor().
+////////////////////////////////////////////////////////////////////
+void glxGraphicsPipe::
+release_hidden_cursor() {
+  if (_hidden_cursor != None) {
+    XFreeCursor(_display, _hidden_cursor);
+    _hidden_cursor = None;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

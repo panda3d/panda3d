@@ -34,6 +34,7 @@ typedef int XVisualInfo;
 typedef int GLXFBConfig;
 typedef int GLXPbuffer;
 typedef int Atom;
+typedef int Cursor;
 typedef int XIM;
 typedef int XIC;
 #else
@@ -77,6 +78,8 @@ public:
 
   INLINE Atom get_wm_delete_window() const;
 
+  INLINE Cursor get_hidden_cursor();
+
 protected:
   virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties,
                                              GraphicsStateGuardian *share_with);
@@ -90,6 +93,8 @@ private:
   GLXFBConfig choose_fbconfig(FrameBufferProperties &properties) const;
   GLXFBConfig try_for_fbconfig(int framebuffer_mode,
                                int want_depth_bits, int want_color_bits) const;
+  void make_hidden_cursor();
+  void release_hidden_cursor();
 
   static void install_error_handlers();
   static int error_handler(Display *display, XErrorEvent *error);
@@ -102,6 +107,7 @@ private:
 
   Atom _wm_protocols;
   Atom _wm_delete_window;
+  Cursor _hidden_cursor;
 
   typedef int ErrorHandlerFunc(Display *, XErrorEvent *);
   typedef int IOErrorHandlerFunc(Display *);

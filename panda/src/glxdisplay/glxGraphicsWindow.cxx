@@ -407,6 +407,9 @@ set_properties_now(WindowProperties &properties) {
   // The window is already open; we are limited to what we can change
   // on the fly.
 
+  glxGraphicsPipe *glx_pipe;
+  DCAST_INTO_V(glx_pipe, _pipe);
+
   // The window title may be changed by issuing another hint request.
   // Assume this will be honored.
   if (properties.has_title()) {
@@ -442,6 +445,16 @@ set_properties_now(WindowProperties &properties) {
 
     // Don't draw anything until this is done reconfiguring.
     _awaiting_configure = true;
+  }
+
+  // We hide the cursor by setting it to an invisible pixmap.
+  if (properties.has_cursor_hidden()) {
+    if (properties.get_cursor_hidden()) {
+      XDefineCursor(_display, _xwindow, glx_pipe->get_hidden_cursor());
+    } else {
+      XDefineCursor(_display, _xwindow, None);
+    }
+    properties.clear_cursor_hidden();
   }
 }
 
@@ -555,6 +568,10 @@ open_window() {
   if (_ic == (XIC)NULL) {
     glxdisplay_cat.warning()
       << "Couldn't create input context.\n";
+  }
+
+  if (_properties.get_cursor_hidden()) {
+    XDefineCursor(_display, _xwindow, glx_pipe->get_hidden_cursor());
   }
 
   XMapWindow(_display, _xwindow);
