@@ -425,8 +425,6 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  parser._system_include_path.append_directory("/usr/include");
-
   output_code_filename.set_text();
   output_data_filename.set_text();
   output_data_basename = output_data_filename.get_basename();

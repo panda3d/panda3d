@@ -1193,6 +1193,11 @@ instance_identifier:
   $$ = $1;
   $$->add_array_modifier($3);
 }
+        | instance_identifier ':' INTEGER
+{
+  // bitfield definition.  We ignore the bitfield for now.
+  $$ = $1;
+}
         | '(' instance_identifier ')'
 {
   $$ = $2;
