@@ -885,19 +885,18 @@
             
     def place(self):
         base.startTk()
-        #base.startDirect()
+        base.startDirect()
         import Placer
         return Placer.place(self)
 
     def explore(self):
         base.startTk()
-        #base.startDirect()
+        base.startDirect()
         import SceneGraphExplorer
         return SceneGraphExplorer.explore(self)
 
     def rgbPanel(self, cb = None):
         base.startTk()
-        #base.startDirect()
         import Slider
         return Slider.rgbPanel(self, cb)
 
