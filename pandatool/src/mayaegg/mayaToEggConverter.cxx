@@ -842,13 +842,13 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
 
   case TT_model:
     if (!egg_group->get_model_flag() &&
-        !egg_group->get_dcs_flag()) {
+        egg_group->get_dcs_type() == EggGroup::DC_none) {
       return;
     }
     break;
 
-  case TT_dcs:
-    if (!egg_group->get_dcs_flag()) {
+  case TT_dcs: 
+    if (egg_group->get_dcs_type() == EggGroup::DC_none) {
       return;
     }
     break;
@@ -1555,7 +1555,7 @@ make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
   // Presumably, the locator's position has some meaning to the
   // end-user, so we will implicitly tag it with the DCS flag so it
   // won't get flattened out.
-  egg_group->set_dcs_flag(true);
+  egg_group->set_dcs_type(EggGroup::DC_net);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1746,7 +1746,7 @@ r_get_egg_group(const string &name, const MDagPath &dag_path,
     // case, so we can test for these flags later.
     if (egg_group->has_object_type("dcs")) {
       egg_group->remove_object_type("dcs");
-      egg_group->set_dcs_flag(true);
+      egg_group->set_dcs_type(EggGroup::DC_default);
     }
     if (egg_group->has_object_type("model")) {
       egg_group->remove_object_type("model");
