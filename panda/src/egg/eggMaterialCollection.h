@@ -30,7 +30,7 @@ class EXPCL_PANDAEGG EggMaterialCollection {
   // EggMaterialCollection as an STL container.
 
 private:
-  typedef map<PT(EggMaterial), int> Materials;
+  typedef map<PT_EggMaterial, int> Materials;
   typedef vector_PT_EggMaterial OrderedMaterials;
 
 public:
@@ -38,7 +38,7 @@ public:
   typedef iterator const_iterator;
   typedef OrderedMaterials::size_type size_type;
 
-  typedef map<PT(EggMaterial),  PT(EggMaterial) > MaterialReplacement;
+  typedef map<PT_EggMaterial,  PT_EggMaterial > MaterialReplacement;
 
   // Here begins the actual public interface to EggMaterialCollection.
 

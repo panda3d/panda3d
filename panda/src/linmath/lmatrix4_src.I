@@ -1205,7 +1205,7 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
 //               Assumes axis has been prenormalized.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
-rotate_mat_normaxis(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
+rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
 	   CoordinateSystem cs) {
 
   if (cs == CS_default) {

@@ -851,7 +851,7 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
 //               Assumes axis has been normalized.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-rotate_mat_normaxis(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
+rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
 	   CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = default_coordinate_system;

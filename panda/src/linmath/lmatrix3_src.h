@@ -120,7 +120,7 @@ PUBLISHED:
 				      FLOATNAME(LVecBase3) axis,
 				      CoordinateSystem cs = CS_default);
   static INLINE_LINMATH FLOATNAME(LMatrix3) rotate_mat_normaxis(FLOATTYPE angle,
-				      FLOATNAME(LVecBase3) axis,
+				      const FLOATNAME(LVecBase3) &axis,
 				      CoordinateSystem cs = CS_default);
 
   static INLINE_LINMATH FLOATNAME(LMatrix3) scale_mat(const FLOATNAME(LVecBase3) &scale);
