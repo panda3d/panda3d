@@ -517,7 +517,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
   // Now we're done with the frame processing.  Clean up.
 
-  if (_lighting_enabled) {
+  if (_lighting_enabled_this_frame) {
 
     // Let's turn off all the lights we had on, and clear the light
     // cache--to force the lights to be reissued next frame, in case
