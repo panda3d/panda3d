@@ -759,7 +759,7 @@ class Actor(PandaObject, NodePath):
         name(defaults to "modelRoot") and an lod name(defaults to "lodRoot").
         If copy is set to 0, do a lodModelOnce instead of a loadModelCopy.
         """
-        Actor.notify.info("in loadModel: %s , part: %s, lod: %s, copy: %s" % \
+        Actor.notify.warning("in loadModel: %s , part: %s, lod: %s, copy: %s" % \
             (modelPath, partName, lodName, copy))
 
         # load the model and extract its part bundle
@@ -767,6 +767,10 @@ class Actor(PandaObject, NodePath):
             model = loader.loadModelCopy(modelPath)
         else:
             model = loader.loadModelOnce(modelPath)
+
+        if (model == None):
+            print "model = None!!!"
+            
         bundle = NodePath(model, "**/+PartBundleNode")
         if (bundle.isEmpty()):
             Actor.notify.warning("%s is not a character!" % (modelPath))
