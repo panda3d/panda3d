@@ -406,7 +406,7 @@ else:
 
 def packageInfo():
     print """
-    See panda3d/doc/INSTALL-PP for more detailed information.
+  See panda3d/doc/INSTALL-PP for more detailed information.
 
   3D modeling an painting packages:
     MAX5      3D Studio Max version 5
@@ -488,8 +488,8 @@ def packageInfo():
     VRPN      Virtual Reality Peripheral Network
               "http://www.cs.unc.edu/Research/vrpn/"
               A controller/peripheral input library.
-  """
-  sys.exit(1)
+"""
+    sys.exit(1)
 
 ########################################################################
 ##
@@ -521,7 +521,8 @@ def usage(problem):
     print "  --lzma            (use lzma compression when building installer)"
     print ""
     for pkg in PACKAGES:
-        print "  --use-"+pkg.lower()+"         "[len(pkg.lower()):]+"  --no-"+pkg.lower()+"         "[len(pkg.lower()):]+"(enable/disable use of "+pkg+")"
+        p = pkg.lower()
+        print "  --use-%-9s   --no-%-9s (enable/disable use of %s)"%(p, p, pkg)
     print ""
     print "  --nothing         (disable every third-party lib)"
     print "  --everything      (enable every third-party lib)"
@@ -1132,15 +1133,10 @@ def CopyTree(dstdir,srcdir):
     oscmd(cmd)
     updatefiledate(dstdir)
 
-########################################################################
-##
-## CompileBison
-##
-## Generate a CXX file from a source YXX file.
-##
-########################################################################
-
 def CompileBison(pre,dstc,dsth,src):
+    """
+    Generate a CXX file from a source YXX file.
+    """
     (base, fn) = os.path.split(src)
     dstc=base+"/"+dstc
     dsth=base+"/"+dsth
@@ -1159,15 +1155,10 @@ def CompileBison(pre,dstc,dsth,src):
         updatefiledate(dstc)
         updatefiledate(dsth)
 
-########################################################################
-##
-## CompileFlex
-##
-## Generate a CXX file from a source LXX file.
-##
-########################################################################
-
 def CompileFlex(pre,dst,src,dashi):
+    """
+    Generate a CXX file from a source LXX file.
+    """
     last = src.rfind("/")
     fn = src[last+1:]
     dst = PREFIX+"/tmp/"+dst
