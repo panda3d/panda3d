@@ -247,7 +247,7 @@ extract_texture(MayaShaderColorDef &color_def, CVSSourceDirectory *dir) {
       // Update the texture reference to point to the new texture
       // filename, relative to the maya file.
       Filename new_filename = dir->get_rel_to(texture_dir) + "/" +
-        texture_filename.get_basename();
+        filter_filename(texture_filename.get_basename());
       color_def.reset_maya_texture(new_filename);
     }
   }
