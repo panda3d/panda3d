@@ -306,7 +306,7 @@ protected:
 
   // Cur Texture State
   TextureApplyAttrib::Mode _CurTexBlendMode;
-  Texture::FilterType _CurTexMagFilter,_CurTexMinFilter;
+  D3DTEXTUREFILTERTYPE _CurTexMagFilter,_CurTexMinFilter,_CurTexMipFilter;
   DWORD _CurTexAnisoDegree;
   Texture::WrapMode _CurTexWrapModeU,_CurTexWrapModeV;
   LMatrix4f _current_projection_mat;

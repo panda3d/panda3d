@@ -797,7 +797,7 @@ dx_init(HCURSOR hMouseCursor) {
     scrn.pD3DDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);  // disables texturing
 
     // Init more Texture State
-    _CurTexMagFilter=_CurTexMinFilter=Texture::FT_nearest;
+    _CurTexMagFilter=_CurTexMinFilter=D3DTEXF_NONE;
     _CurTexWrapModeU=_CurTexWrapModeV=Texture::WM_clamp;
     _CurTexAnisoDegree=1;
 
@@ -3135,23 +3135,27 @@ apply_texture(TextureContext *tc) {
     uint aniso_degree=tex->get_anisotropic_degree();
     Texture::FilterType ft=tex->get_magfilter();
 
-    if (aniso_degree<=1) {
-        if (_CurTexMagFilter!=ft) {
+    if(_CurTexAnisoDegree != aniso_degree) {
+        scrn.pD3DDevice->SetTextureStageState(0,D3DTSS_MAXANISOTROPY,aniso_degree);
+        _CurTexAnisoDegree = aniso_degree;
+    }
 
-            _CurTexMagFilter = ft;
-            scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER,(ft==Texture::FT_nearest)? D3DTEXF_POINT : D3DTEXF_LINEAR);
-#ifdef _DEBUG
-            if((ft!=Texture::FT_linear)&&(ft!=Texture::FT_nearest)) {
-                dxgsg_cat.error() << "MipMap filter type setting for texture magfilter makes no sense,  texture: " << tex->get_name() << "\n";
-            }
-#endif
+    D3DTEXTUREFILTERTYPE newMagFilter;
+    if (aniso_degree<=1) {
+        newMagFilter=((ft!=Texture::FT_nearest) ? D3DTEXF_LINEAR : D3DTEXF_POINT);
+
+        #ifdef _DEBUG
+        if((ft!=Texture::FT_linear)&&(ft!=Texture::FT_nearest)) {
+             dxgsg_cat.error() << "MipMap filter type setting for texture magfilter makes no sense,  texture: " << tex->get_name() << "\n";
         }
+        #endif
     } else {
-        if (aniso_degree!=_CurTexAnisoDegree) {
-            _CurTexAnisoDegree = aniso_degree;
-            scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTEXF_ANISOTROPIC );
-            scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MAXANISOTROPY,aniso_degree);
-        }
+        newMagFilter=D3DTEXF_ANISOTROPIC;
+    }
+
+    if(_CurTexMagFilter!=newMagFilter) {
+        _CurTexMagFilter=newMagFilter;
+        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, newMagFilter);
     }
 
 #ifdef _DEBUG
@@ -3170,35 +3174,39 @@ apply_texture(TextureContext *tc) {
 
     ft=tex->get_minfilter();
 
-    if ((ft!=_CurTexMinFilter)||(aniso_degree!=_CurTexAnisoDegree)) {
-
 #ifdef _DEBUG
-        if(ft > Texture::FT_linear_mipmap_linear) {
+    if(ft > Texture::FT_linear_mipmap_linear) {
                 dxgsg_cat.error() << "Unknown tex filter type for tex: " << tex->get_name() << "  filter: "<<(DWORD)ft<<"\n";
                 return;
-        }
+    }
 #endif
 
-        D3DTEXTUREFILTERTYPE minfilter = PandaToD3DMinType[(DWORD)ft];
-        D3DTEXTUREFILTERTYPE mipfilter = PandaToD3DMipType[(DWORD)ft];
+    D3DTEXTUREFILTERTYPE newMipFilter = PandaToD3DMipType[(DWORD)ft];
 
-        #ifndef NDEBUG
-            extern char *PandaFilterNameStrs[];
-            if((!(dtc->_bHasMipMaps))&&(mipfilter!=D3DTEXF_NONE)) {
-                dxgsg_cat.error() << "Trying to set mipmap filtering for texture with no generated mipmaps!! texname[" << tex->get_name() << "], filter("<<PandaFilterNameStrs[ft]<<")\n";
-                mipfilter=D3DTEXF_NONE;
-            }
-        #endif
+    #ifndef NDEBUG
+      // sanity check
+    extern char *PandaFilterNameStrs[];
+    if((!(dtc->_bHasMipMaps))&&(mipfilter!=D3DTEXF_NONE)) {
+        dxgsg_cat.error() << "Trying to set mipmap filtering for texture with no generated mipmaps!! texname[" << tex->get_name() << "], filter("<<PandaFilterNameStrs[ft]<<")\n";
+        newMipFilter=D3DTEXF_NONE;
+    }
+    #endif
 
-        if (aniso_degree>1) {
-            minfilter=D3DTEXF_ANISOTROPIC;
-        }
 
-        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, minfilter);
-        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, mipfilter);
+    D3DTEXTUREFILTERTYPE newMinFilter = PandaToD3DMinType[(DWORD)ft];
 
-        _CurTexMinFilter = ft;
-        _CurTexAnisoDegree = aniso_degree;
+    if(aniso_degree>=2) {
+        newMinFilter=D3DTEXF_ANISOTROPIC;
+    }
+    
+    if(newMinFilter!=_CurTexMinFilter) {
+        _CurTexMinFilter = newMinFilter;
+        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MINFILTER, newMinFilter);
+    }
+
+    if(newMipFilter!=_CurTexMipFilter) {
+        _CurTexMipFilter = newMipFilter;
+        scrn.pD3DDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, newMipFilter);
     }
 
     // bugbug:  does this handle the case of untextured geometry?
