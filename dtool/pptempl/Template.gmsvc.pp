@@ -97,6 +97,12 @@
 #defer complete_local_libs $[unique $[closure all_libs,$[active_libs]]]
 #defer actual_local_libs $[get_metalibs $[TARGET],$[complete_local_libs]]
 
+// $[static_lib_dependencies] is the set of libraries we will link
+// with that happen to be static libs.  We will introduce dependency
+// rules for these.  (We don't need dependency rules for dynamic libs,
+// since these don't get burned in at build time.)
+#defer static_lib_dependencies $[all_libs $[if $[lib_is_static],$[RELDIR:%=%/$[ODIR]/lib$[TARGET]$[dllext].lib]],$[complete_local_libs]]
+
 // And $[complete_ipath] is the list of directories (from within this
 // tree) we should add to our -I list.  It's basically just one for
 // each directory named in the $[complete_local_libs], above, plus
@@ -346,7 +352,7 @@ $[varname] = $[sources]
 
 // not parallel (requires gmake 3.79) because of link.exe conflicts in TMP dir (see audiotraits dir)
 #if $[GENERATE_BUILDDATE]
-.NOTPARALLEL $[target] : $[sources] $[dtool_ver_dir_cyg]/version.rc $[dtool_ver_dir_cyg]/$[DLLBASEADDRFILENAME]
+.NOTPARALLEL $[target] : $[sources] $[static_lib_dependencies] $[dtool_ver_dir_cyg]/version.rc $[dtool_ver_dir_cyg]/$[DLLBASEADDRFILENAME]
 // first generate builddate for rc compiler using compiler preprocessor
 $[TAB]  mkdir -p $[tmpdirname_cyg]  // this dir-creation-stuff is leftover from trying to resolve parallel link difficulties
  #define VER_RESOURCE "$[tmpdirname_win]\$[mybasename].res"
@@ -479,7 +485,7 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[ODIR]/lib$[TARGET]$[dllext].$[dlllib]
 #define sources $($[varname])
-$[target] : $[sources]
+$[target] : $[sources] $[static_lib_dependencies]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[SHARED_LIB_C++]
 #else
@@ -585,7 +591,7 @@ $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[ODIR]/$[TARGET].exe
 #define sources $($[varname])
 #define ld $[get_ld]
-$[target] : $[sources]
+$[target] : $[sources] $[static_lib_dependencies]
 #if $[ld]
   // If there's a custom linker defined for the target, we have to use it.
 $[TAB] $[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
@@ -656,7 +662,7 @@ $[TARGET] : $[ODIR]/$[TARGET].exe
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[ODIR]/$[TARGET].exe
 #define sources $($[varname])
-$[target] : $[sources]
+$[target] : $[sources] $[static_lib_dependencies]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[LINK_BIN_C++]
 #else
