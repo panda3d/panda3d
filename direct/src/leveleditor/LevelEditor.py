@@ -3293,8 +3293,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             gridFrame, labelpos = W,
             label_text = 'Selected:', entry_width = 14,
             selectioncommand = self.selectSignBaseline,
-            history = 0,
-            scrolledlist_items = [''])
+            history = 0, # unique = 0,
+            scrolledlist_items = ['<the sign>'])
         self.baselineMenu.selectitem(self.currentBaselineIndex)
         self.baselineMenu.grid(row=0, column=0, columnspan=3)
 
@@ -3584,7 +3584,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.levelEditor.setCurrent('toon_landmark_texture', self.landmarkType)
 
     def signPanelSync(self):
-        self.baselineMenu.delete(0, END)
+        self.baselineMenu.delete(1, END)
         sign=self.findSignFromDNARoot()
         if not sign:
             return
@@ -3614,23 +3614,31 @@ class LevelEditorPanel(Pmw.MegaToplevel):
     def selectSignBaseline(self, val):
         if not self.currentSignDNA:
             return
-        self.currentBaselineIndex=int((self.baselineMenu.curselection())[0])
-        target=DNAGetChild(self.currentSignDNA, DNA_SIGN_BASELINE, self.currentBaselineIndex)
-        if target:
-            # Temporarily undefine DNATarget (this will speed 
-            # up setting the values, because the callbacks won't
-            # call self.levelEditor.replaceSelected() with each
-            # setting):
-            self.levelEditor.DNATarget=None
+        # Temporarily undefine DNATarget (this will speed 
+        # up setting the values, because the callbacks won't
+        # call self.levelEditor.replaceSelected() with each
+        # setting):
+        self.levelEditor.DNATarget=None
+        self.currentBaselineDNA=None
+        target=None
+        index=self.currentBaselineIndex=int((self.baselineMenu.curselection())[0])
+        if (index==0):
             self.currentBaselineDNA=None
-            # Update panel info:
-            self.baselineString.set(DNAGetBaselineString(target))
-            self.fontMenu.selectitem(target.getCode())
-            self.addCurveFloater.set(target.getWidth())
-            self.addKernFloater.set(target.getKern())
-            self.addWiggleFloater.set(target.getWiggle())
-            self.addStumbleFloater.set(target.getStumble())
-            self.addStompFloater.set(target.getStomp())
+            target=self.currentSignDNA
+        else:
+            target=DNAGetChild(self.currentSignDNA, DNA_SIGN_BASELINE, index-1)
+            if target:
+                # Update panel info:
+                self.baselineString.set(DNAGetBaselineString(target))
+                self.fontMenu.selectitem(target.getCode())
+                self.addCurveFloater.set(target.getWidth())
+                self.addKernFloater.set(target.getKern())
+                self.addWiggleFloater.set(target.getWiggle())
+                self.addStumbleFloater.set(target.getStumble())
+                self.addStompFloater.set(target.getStomp())
+
+                self.currentBaselineDNA=target
+        if target:
             pos=target.getPos()
             self.addXFloater.set(pos[0])
             self.addZFloater.set(pos[2])
@@ -3639,7 +3647,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.addScaleZFloater.set(scale[2])
             hpr=target.getHpr()
             self.addRollFloater.set(hpr[2])
-        self.currentBaselineDNA=self.levelEditor.DNATarget=target
+
+            self.levelEditor.DNATarget=target
     
     def signBaselineTrace(self, a, b, mode):
         #print self, a, b, mode, self.baselineString.get()
