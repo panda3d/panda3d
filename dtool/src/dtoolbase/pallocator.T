@@ -43,8 +43,9 @@ allocate(pallocator<Type>::size_type n, allocator<void>::const_pointer) {
 
 template<class Type>
 INLINE void pallocator<Type>::
-deallocate(pallocator<Type>::pointer p, allocator<Type>::size_type) {
-  (*global_operator_delete)(p);
+//deallocate(pallocator<Type>::pointer p, allocator<Type>::size_type) {
+deallocate(void *p, allocator<Type>::size_type) {
+  (*global_operator_delete)((void *)p);
 }
 #endif  // NDEBUG
 

@@ -55,7 +55,8 @@ class pallocator : public allocator<Type> {
 public:
 #ifndef NDEBUG
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
-  INLINE void deallocate(pointer p, size_type n);
+  //  INLINE void deallocate(pointer p, size_type n);
+  INLINE void deallocate(void *p, size_type n);
 #endif  // NDEBUG
 };
 #endif  // GCC_STYLE_ALLOCATOR

@@ -32,11 +32,11 @@
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare = less<Key> >
-class pmap : public map<Key, Value, Compare, pallocator<pair<Key, Value> > > {
+class pmap : public map<Key, Value, Compare, pallocator<Value> > {
 public:
-  pmap() : map<Key, Value, Compare, pallocator<pair<Key, Value> > >() { }
-  pmap(const pmap<Key, Value, Compare> &copy) : map<Key, Value, Compare, pallocator<pair<Key, Value> > >(copy) { }
-  pmap(const Compare &comp) : map<Key, Compare, pallocator<Key> >(comp) { }
+  pmap() : map<Key, Value, Compare, pallocator<Value> >() { }
+  pmap(const pmap<Key, Value, Compare> &copy) : map<Key, Value, Compare, pallocator<Value> >(copy) { }
+  pmap(const Compare &comp) : map<Key, Value, Compare, pallocator<Value> >(comp) { }
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -47,11 +47,11 @@ public:
 //               memory.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare = less<Key> >
-class pmultimap : public multimap<Key, Value, Compare, pallocator<pair<Key, Value> > > {
+class pmultimap : public multimap<Key, Value, Compare, pallocator<Value> > {
 public:
-  pmultimap() : multimap<Key, Value, Compare, pallocator<pair<Key, Value> > >() { }
-  pmultimap(const pmultimap<Key, Value, Compare> &copy) : multimap<Key, Value, Compare, pallocator<pair<Key, Value> > >(copy) { }
-  pmultimap(const Compare &comp) : multimap<Key, Compare, pallocator<Key> >(comp) { }
+  pmultimap() : multimap<Key, Value, Compare, pallocator<Value> >() { }
+  pmultimap(const pmultimap<Key, Value, Compare> &copy) : multimap<Key, Value, Compare, pallocator<Value> >(copy) { }
+  pmultimap(const Compare &comp) : multimap<Key, Value, Compare, pallocator<Value> >(comp) { }
 };
 
 #endif
