@@ -109,7 +109,8 @@ class Interval(DirectObject):
         taskMgr.spawnMethodNamed(self.__playTask, self.name + '-play')
 
     def loop(self, t0=0.0, duration=0.0, scale=1.0):
-        self.accept(self.name + '-loop', self.play, extraArgs=[t0, duration, scale])
+        self.accept(self.name + '-loop', self.play,
+                    extraArgs=[t0, duration, scale])
         self.play(t0, duration, scale)
         return
 

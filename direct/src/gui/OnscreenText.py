@@ -188,10 +188,12 @@ class OnscreenText(PandaObject, NodePath):
 
         if not text:
             # If we don't have any text, assume we'll be changing it later.
-            mayChange = 1
+            self.mayChange = 1
+        else:
+            self.mayChange = mayChange
 
         # Ok, now update the node.
-        if mayChange:
+        if self.mayChange:
             # If we might change the text later, we have to keep the
             # TextNode around.
             textNode.thaw()
@@ -234,6 +236,12 @@ class OnscreenText(PandaObject, NodePath):
 
     def getText(self):
         return self.textNode.getText()
+
+    def setX(self, x):
+        self.setPos(x, self.pos[1])
+
+    def setY(self, y):
+        self.setPos(self.pos[0], y)
         
     def setPos(self, x, y):
         """setPos(self, float, float)
@@ -306,3 +314,37 @@ class OnscreenText(PandaObject, NodePath):
             # Otherwise, remove the frame.
             self.textNode.clearFrame()
         self.textNode.thaw()
+
+    def configure(self, option=None, **kw):
+        # These is for compatability with DirectGui functions
+        if not self.mayChange:
+            print 'OnscreenText.configure: mayChange == 0'
+            return
+        # Freeze text node prior to making changes
+        self.freeze()
+	for option, value in kw.items():
+            # Use option string to access setter function
+            try:
+                setter = eval('self.set' +
+                              string.upper(option[0]) + option[1:])
+                if setter == self.setPos:
+                    setter(value[0], value[1])
+                else:
+                    setter(value)
+            except AttributeError:
+                print 'OnscreenText.configure: invalid option:', option
+        self.thaw()
+
+    # Allow index style references
+    def __setitem__(self, key, value):
+        apply(self.configure, (), {key: value})
+        
+    def cget(self, option):
+	# Get current configuration setting.
+        # This is for compatability with DirectGui functions
+        getter = eval('self.get' + string.upper(option[0]) + option[1:])
+        return getter()
+
+    # Allow index style refererences
+    __getitem__ = cget
+    
