@@ -1192,6 +1192,8 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
 
             GraphicsWindow::Properties *props = &_windows[devnum]->_props;
 
+            wdxdisplay_cat.info() << "opening " << props->_xsize << "x" << props->_ysize << " fullscreen window\n";
+
             HWND hWin = CreateWindow(WDX_WINDOWCLASSNAME, props->_title.c_str(),
                                       window_style, minfo.rcMonitor.left, minfo.rcMonitor.top,
                                       props->_xsize,props->_ysize,
@@ -1232,10 +1234,14 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
             win_rect.bottom -= win_rect.top; win_rect.top = 0;
         }
 
+        UINT xsize = win_rect.right-win_rect.left;
+        UINT ysize = win_rect.bottom-win_rect.top;
+
+        wdxdisplay_cat.info() << "opening " << xsize << "x" << ysize << " regular window\n";
+
         _hParentWindow =
             CreateWindow(WDX_WINDOWCLASSNAME, props->_title.c_str(),
-                         window_style, win_rect.left, win_rect.top, win_rect.right-win_rect.left,
-                         win_rect.bottom-win_rect.top,
+                         window_style, win_rect.left, win_rect.top, xsize,ysize,
                          NULL, NULL, hProgramInstance, 0);
         _windows[0]->set_window_handle(_hParentWindow);
     }
