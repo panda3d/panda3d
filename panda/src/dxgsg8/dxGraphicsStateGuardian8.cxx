@@ -3163,11 +3163,14 @@ void DXGraphicsStateGuardian8::
 issue_tex_matrix(const TexMatrixAttrib *attrib) {
   const LMatrix4f &m = attrib->get_mat();
 
-  // This is ugly.  Need to make this a simple boolean test instead of
-  // a matrix compare.
-  if (m == LMatrix4f::ident_mat()) {
+  if (!attrib->has_stage(TextureStage::get_default())) {
     _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, 
                                       D3DTTFF_DISABLE);
+    // For some reason, "disabling" texture coordinate transforms
+    // doesn't seem to be sufficient.  We'll load an identity matrix
+    // to underscore the point.
+    _pD3DDevice->SetTransform(D3DTS_TEXTURE0, &matIdentity);
+
   } else {
     // We have to reorder the elements of the matrix for some reason.
     LMatrix4f dm(m(0, 0), m(0, 1), m(0, 3), 0.0f,
