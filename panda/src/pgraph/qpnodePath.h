@@ -522,6 +522,8 @@ private:
                           const GlobPattern &glob) const;
   void r_find_all_textures(PandaNode *node, const RenderState *state,
                            Textures &textures) const;
+  void r_prepare_scene(PandaNode *node, const RenderState *state,
+                       GraphicsStateGuardianBase *gsg, bool do_retained_mode);
 
   PT(qpNodePathComponent) _head;
   ErrorType _error_type;

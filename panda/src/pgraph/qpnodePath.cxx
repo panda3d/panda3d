@@ -43,6 +43,7 @@
 #include "qpsceneGraphReducer.h"
 #include "textureCollection.h"
 #include "globPattern.h"
+#include "config_gobj.h"
 
 // stack seems to overflow on Intel C++ at 7000.  If we need more than 
 // 7000, need to increase stack size.
@@ -2322,7 +2323,9 @@ void qpNodePath::
 prepare_scene(GraphicsStateGuardianBase *gsg, bool force_retained_mode) {
   nassertv_always(!is_empty());
 
-  // **** do something.
+  CPT(RenderState) net_state = get_net_state();
+  r_prepare_scene(node(), net_state, gsg, 
+                  retained_mode || force_retained_mode);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2957,5 +2960,48 @@ r_find_all_textures(PandaNode *node, const RenderState *state,
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
     r_find_all_textures(cr.get_child(i), next_state, textures);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::r_prepare_scene
+//       Access: Private
+//  Description: The recursive implementation of prepare_scene.
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+r_prepare_scene(PandaNode *node, const RenderState *state,
+                GraphicsStateGuardianBase *gsg, bool do_retained_mode) {
+  if (node->is_geom_node()) {
+    qpGeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    /* 
+       Not implemented yet in pgraph.  Maybe we don't need this anyway.
+    if (do_retained_mode) {
+      gnode->prepare(gsg);
+    }
+    */
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(RenderState) geom_state = state->compose(gnode->get_geom_state(i));
+      const RenderAttrib *attrib = 
+        geom_state->get_attrib(TextureAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        const TextureAttrib *ta;
+        DCAST_INTO_V(ta, attrib);
+        Texture *texture = ta->get_texture();
+        if (texture != (Texture *)NULL) {
+          texture->prepare(gsg);
+        }
+      }
+    }
+  }
+
+  int num_children = node->get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = node->get_child(i);
+    CPT(RenderState) child_state = state->compose(child->get_state());
+    r_prepare_scene(child, child_state, gsg, do_retained_mode);
   }
 }
