@@ -77,6 +77,10 @@ calculate_normal(Normald &result, CoordinateSystem cs) const {
   float max_normal_length;
   bool got_max_normal = false;
 
+  LVector3d max_normal_mc;
+  float max_normal_length_mc;
+  bool got_max_normal_mc = false;
+
   for (index = 0; index < num_vertices; index++) {
     LPoint3d v0 = get_vertex(index)->get_pos3();
     LPoint3d v1 = get_vertex((index + 1) % num_vertices)->get_pos3();
@@ -86,8 +90,9 @@ calculate_normal(Normald &result, CoordinateSystem cs) const {
     double d1 = (v1 - centroid).length_squared();
     double d2 = (v2 - centroid).length_squared();
     
-    if (d1 > d0 && d1 > d2) {
-      // Ok, we have three vertices.  Do they determine a plane?
+    if (d1 >= d0 && d1 >= d2) {
+      // The center vertex is no closer to the centroid than the outer
+      // vertices.  This can't be a concave angle.
       LVector3d a = v1 - v0;
       LVector3d b = v2 - v0;
       LVector3d normal = a.cross(b);
@@ -98,7 +103,32 @@ calculate_normal(Normald &result, CoordinateSystem cs) const {
         max_normal_length = normal_length;
         got_max_normal = true;
       }
+    } else {
+      // In this case, the center vertex is closer to the centroid
+      // than the outer vertices.  This might be a concave angle, in
+      // which case we should not consider this vertex, but some
+      // convex polygons have the property in which the center vertex
+      // is always closer to the centroid, so if we don't find any
+      // other vertices, we have to consider this one.
+      LVector3d a = v1 - v0;
+      LVector3d b = v2 - v0;
+      LVector3d normal = a.cross(b);
+      float normal_length = normal.length();
+      
+      if (!got_max_normal_mc || normal_length > max_normal_length_mc) {
+        max_normal_mc = normal;
+        max_normal_length_mc = normal_length;
+        got_max_normal_mc = true;
+      }
     }
+  }
+
+  if (!got_max_normal) {
+    // If none of our vertices were worth considering, take the best
+    // of the maybe-concave ones.
+    got_max_normal = got_max_normal_mc;
+    max_normal = max_normal_mc;
+    max_normal_length = max_normal_length_mc;
   }
 
   if (got_max_normal) {
