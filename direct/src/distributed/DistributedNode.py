@@ -59,6 +59,24 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
         taskMgr.removeTasksNamed(taskName)
         return self.deadReckoningFlag
 
+    ### setParent ###
+
+    def b_setParent(self, parentString):
+        self.setParent(parentString)
+        self.d_setParent(parentString)
+        return None
+
+    def d_setParent(self, parentString):
+        self.sendUpdate("setParent", [parentString])
+        return None
+
+    def setParent(self, parentString):
+        print "setting parent of %s to %s" % (self.getName(), parentString)
+        assert(self.cr.name2nodePath.has_key(parentString))
+        parent = self.cr.name2nodePath[parentString]
+        self.wrtReparentTo(parent)
+        return None
+
     ###### set pos and hpr functions #######
 
     # setX provided by NodePath

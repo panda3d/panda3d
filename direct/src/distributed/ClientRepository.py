@@ -32,6 +32,7 @@ class ClientRepository(DirectObject.DirectObject):
         readResult = self.dcFile.read(fname)
         if not readResult:
             self.notify.error("Could not read dcfile: " + dcFileName)
+        self.hashVal = self.dcFile.getHash()
         return self.parseDcClasses(self.dcFile)
 
     def parseDcClasses(self, dcFile):
