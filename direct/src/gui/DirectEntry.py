@@ -31,6 +31,7 @@ class DirectEntry(DirectFrame):
             ('numLines',        5,                self.setup),
             ('focus',           0,                self.setFocus),
             ('cursorKeys',      0,                self.setCursorKeysActive),
+            ('obscured',        0,                self.setObscureMode),
             ('backgroundFocus', 0,                self.setBackgroundFocus),
             # Text used for the PGEntry text node
             # NOTE: This overrides the DirectFrame text option
@@ -94,6 +95,13 @@ class DirectEntry(DirectFrame):
 
     def setCursorKeysActive(self):
         PGEntry.setCursorKeysActive(self.guiItem, self['cursorKeys'])
+
+    def setObscureMode(self):
+        # Temporary try..except to support old Pandas.
+        try:
+            PGEntry.setObscureMode(self.guiItem, self['obscured'])
+        except:
+            pass
 
     def setBackgroundFocus(self):
         PGEntry.setBackgroundFocus(self.guiItem, self['backgroundFocus'])
