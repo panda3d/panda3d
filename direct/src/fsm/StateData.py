@@ -7,10 +7,11 @@ class StateData(DirectObject):
 
     """StateData class: """
 
-    def __init__(self, doneEvent)
+    def __init__(self, doneEvent):
         """__init__(self, Event)
         """
 	self.doneEvent = doneEvent
+	self.isLoaded = 0
 
     def enter(self):
         """enter(self)"""

@@ -1,27 +1,25 @@
 import string
 import OnscreenText
 import Button
+import StateData
 
 from DirectObject import *
-from StateData import *
 
-class ForceAcknowledge(StateData):
+class ForceAcknowledge(StateData.StateData):
 
     def __init__(self, doneEvent, message):
-	"""___init___(self, Event, string)"""
-	self.isLoaded = 0
-	self.doneEvent = doneEvent
-	self.message = message
+	"""___init___(self, Event)"""
+	StateData.__init__(doneEvent)
 	self.soundRollover = None
 	self.soundOk = None
 
-    def enter(self):
-	"""enter(self)"""
+    def enter(self, message):
+	"""enter(self, string)"""
 	if self.isLoaded == 0:
 	    self.load()
 
 	if self.text:
-	    self.text.setText(self.message)
+	    self.text.setText(message)
 	    self.text.reparentTo(render2d)
 
 	if self.okButton:
@@ -68,5 +66,5 @@ class ForceAcknowledge(StateData):
     def __handleRollover(self):
 	return None
 
-    def __handleOk
+    def __handleOk(self):
 	messenger.send(self.doneEvent, [0])
