@@ -227,7 +227,7 @@ draw_lines()
 //               for now. More functionalities coming up
 ////////////////////////////////////////////////////////////////////
 void PortalClipper::
-prepare_portal(NodePath &node_path)
+prepare_portal(const NodePath &node_path)
 {
   SegmentList segs;
 
@@ -290,7 +290,7 @@ prepare_portal(NodePath &node_path)
 //               and form the new planes of the reduced view frustum
 ////////////////////////////////////////////////////////////////////
 void PortalClipper::
-clip_portal(NodePath &node_path)
+clip_portal(const NodePath &node_path)
 {
   int num_planes = _hex_frustum->get_num_planes();
 
@@ -331,7 +331,7 @@ clip_portal(NodePath &node_path)
 //               fill in the new frustum. Return true if success
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) PortalClipper::
-get_reduced_frustum(NodePath &node_path)
+get_reduced_frustum(const NodePath &node_path)
 {
   int num_planes = 6;
   LPoint3f intersect_points[4];
