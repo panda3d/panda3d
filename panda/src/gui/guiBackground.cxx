@@ -14,6 +14,10 @@ void GuiBackground::recompute_frame(void) {
   GuiItem::recompute_frame();
 }
 
+void GuiBackground::set_priority(GuiLabel* l, const GuiItem::Priority p) {
+  _bg->set_priority(l, ((p==P_Low)?GuiLabel::P_LOWER:GuiLabel::P_HIGHER));
+}
+
 GuiBackground::GuiBackground(const string& name, GuiItem* item)
   : GuiItem(name), _item(item) {
   _bg = GuiLabel::make_simple_card_label();
@@ -70,6 +74,12 @@ void GuiBackground::set_pos(const LVector3f& p) {
   _item->set_pos(p);
   GuiItem::set_pos(p);
   recompute_frame();
+}
+
+void GuiBackground::set_priority(GuiItem* it, const GuiItem::Priority p) {
+  _item->set_priority(it, p);
+  it->set_priority(_bg, ((p==P_Low)?P_High:P_Low));
+  GuiItem::set_priority(it, p);
 }
 
 void GuiBackground::output(ostream& os) const {

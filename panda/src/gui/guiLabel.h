@@ -21,8 +21,12 @@
 class GuiManager;
 
 class EXPCL_PANDA GuiLabel : public TypedReferenceCount {
+PUBLISHED:
+  enum PriorityType { P_NONE, P_LOWER, P_HIGHER };
 private:
+  typedef map<GuiLabel*, PriorityType> PriorityMap;
   enum LabelType { NONE, SIMPLE_TEXTURE, SIMPLE_TEXT, SIMPLE_CARD };
+
   LabelType _type;
   PT_Node _geom;
   RenderRelation* _arc;
@@ -40,6 +44,9 @@ private:
   bool _have_height;
   float _height;
   float _depth;
+
+  PriorityMap _priorities;
+  int _hard_pri;
 
   INLINE Node* get_geometry(void) const;
   INLINE void set_arc(RenderRelation*);
@@ -89,6 +96,10 @@ PUBLISHED:
   void set_text(const string&);
 
   INLINE void recompute(void);
+
+  // used for the priority system
+  bool operator<(const GuiLabel&) const;
+  INLINE void set_priority(GuiLabel*, const PriorityType);
 
 public:
   // type interface

@@ -14,7 +14,7 @@ INLINE GuiLabel::GuiLabel(void) : _type(GuiLabel::NONE),
 				  _background(0., 0., 0., 0.),
 				  _have_width(false), _width(0.),
 				  _have_height(false), _height(0.),
-				  _depth(0.) {
+				  _depth(0.), _hard_pri(0) {
 }
 
 INLINE Node* GuiLabel::get_geometry(void) const {
@@ -105,4 +105,8 @@ INLINE Colorf GuiLabel::get_background_color(void) const {
 
 INLINE void GuiLabel::recompute(void) {
   this->recompute_transform();
+}
+
+INLINE void GuiLabel::set_priority(GuiLabel* l, const PriorityType t) {
+  this->_priorities[l] = t;
 }

@@ -36,7 +36,8 @@ PUBLISHED:
 
   virtual void set_scale(float) = 0;
   virtual void set_pos(const LVector3f&) = 0;
-  INLINE void set_priority(const Priority);
+  virtual void set_priority(GuiLabel*, const Priority) = 0;
+  virtual void set_priority(GuiItem*, const Priority) = 0;
 
   INLINE float get_scale(void) const;
   INLINE LVector3f get_pos(void) const;

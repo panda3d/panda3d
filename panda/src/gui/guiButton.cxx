@@ -237,6 +237,21 @@ void GuiButton::recompute_frame(void) {
   _rgn->set_region(_left, _right, _bottom, _top);
 }
 
+void GuiButton::set_priority(GuiLabel* l, GuiItem::Priority p) {
+  _up->set_priority(l, ((p==P_Low)?GuiLabel::P_LOWER:GuiLabel::P_HIGHER));
+  _down->set_priority(l, ((p==P_Low)?GuiLabel::P_LOWER:GuiLabel::P_HIGHER));
+  if (_up_rollover != (GuiLabel*)0L)
+    _up_rollover->set_priority(l, ((p==P_Low)?GuiLabel::P_LOWER:
+				   GuiLabel::P_HIGHER));
+  if (_down_rollover != (GuiLabel*)0L)
+    _down_rollover->set_priority(l, ((p==P_Low)?GuiLabel::P_LOWER:
+				     GuiLabel::P_HIGHER));
+  if (_inactive != (GuiLabel*)0L)
+    _inactive->set_priority(l, ((p==P_Low)?GuiLabel::P_LOWER:
+				GuiLabel::P_HIGHER));
+  GuiItem::set_priority(l, p);
+}
+
 void GuiButton::behavior_up(CPT_Event, void* data) {
   GuiButton* button = (GuiButton*)data;
   gui_cat->debug() << "behavior_up (0x" << data << ")" << endl;
@@ -475,6 +490,18 @@ void GuiButton::reset_behavior(void) {
   this->start_behavior();
   _eh->remove_hook(_up_event, GuiButton::behavior_up, (void*)this);
   _eh->remove_hook(_up_rollover_event, GuiButton::behavior_up, (void*)this);
+}
+
+void GuiButton::set_priority(GuiItem* i, const GuiItem::Priority p) {
+  i->set_priority(_up, ((p==P_Low)?P_High:P_Low));
+  i->set_priority(_down, ((p==P_Low)?P_High:P_Low));
+  if (_up_rollover != (GuiLabel*)0L)
+    i->set_priority(_up_rollover, ((p==P_Low)?P_High:P_Low));
+  if (_down_rollover != (GuiLabel*)0L)
+    i->set_priority(_down_rollover, ((p==P_Low)?P_High:P_Low));
+  if (_inactive != (GuiLabel*)0L)
+    i->set_priority(_inactive, ((p==P_Low)?P_High:P_Low));
+  GuiBehavior::set_priority(i, p);
 }
 
 void GuiButton::output(ostream& os) const {

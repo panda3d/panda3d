@@ -210,6 +210,9 @@ void GuiFrame::recompute_frame(void) {
   thaw();
 }
 
+void GuiFrame::set_priority(GuiLabel*, const GuiItem::Priority) {
+}
+
 GuiFrame::GuiFrame(const string& name) : GuiItem(name), _align_to_left(false),
 					 _align_to_right(false),
 					 _align_to_top(false),
@@ -341,6 +344,15 @@ void GuiFrame::set_pos(const LVector3f& p) {
     (*i).get_item()->set_pos(p);
   GuiItem::set_pos(p);
   //  this->recompute_frame();
+}
+
+void GuiFrame::set_priority(GuiItem* it, const GuiItem::Priority p) {
+  Boxes::iterator i;
+
+  for (i=_items.begin(); i!=_items.end(); ++i) {
+    GuiItem* here = (*i).get_item();
+    here->set_priority(it, p);
+  }
 }
 
 void GuiFrame::output(ostream& os) const {

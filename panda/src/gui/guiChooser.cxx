@@ -25,6 +25,9 @@ void GuiChooser::ChooseFunctor::doit(GuiBehavior* b) {
 void GuiChooser::recompute_frame(void) {
 }
 
+void GuiChooser::set_priority(GuiLabel*, GuiItem::Priority) {
+}
+
 GuiChooser::GuiChooser(const string& name, GuiButton* prev, GuiButton* next)
   : GuiBehavior(name), _curr(-1), _loop(false), _prev_button(prev),
     _next_button(next), _prev_functor((GuiChooser::ChooseFunctor*)0L),
@@ -223,6 +226,13 @@ void GuiChooser::reset_behavior(void) {
     _prev_button->reset_behavior();
   if (_next_functor != (GuiChooser::ChooseFunctor*)0L)
     _next_button->reset_behavior();
+}
+
+void GuiChooser::set_priority(GuiItem* it, const GuiItem::Priority p) {
+  for (ItemVector::iterator i=_items.begin(); i!=_items.end(); ++i)
+    (*i)->set_priority(it, p);
+  _prev_button->set_priority(it, p);
+  _next_button->set_priority(it, p);
 }
 
 void GuiChooser::output(ostream& os) const {

@@ -125,6 +125,9 @@ void GuiListBox::visible_patching(void) {
     this->reset_behavior();
 }
 
+void GuiListBox::set_priority(GuiLabel* l, const GuiItem::Priority p) {
+}
+
 GuiListBox::GuiListBox(const string& name, int N, GuiItem* up, GuiItem* down)
   : GuiBehavior(name), _arrow_top(false), _arrow_bottom(false), _up_arrow(up),
     _down_arrow(down), _n_visible(N),
@@ -428,6 +431,35 @@ void GuiListBox::reset_behavior(void) {
     down->start_behavior();
     down->set_behavior_event(ev + "-scroll-down");
   }
+}
+
+void GuiListBox::set_priority(GuiItem* it, const GuiItem::Priority p) {
+  ItemVector::iterator i;
+  ItemDeque::iterator j;
+
+  for (i=_top_stack.begin(); i!=_top_stack.end(); ++i) {
+    if (*i == _up_arrow)
+      continue;
+    if (*i == _down_arrow)
+      continue;
+    (*i)->set_priority(it, p);
+  }
+  for (i=_visible.begin(); i!=_visible.end(); ++i) {
+    if (*i == _up_arrow)
+      continue;
+    if (*i == _down_arrow)
+      continue;
+    (*i)->set_priority(it, p);
+  }
+  for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j) {
+    if (*j == _up_arrow)
+      continue;
+    if (*j == _down_arrow)
+      continue;
+    (*j)->set_priority(it, p);
+  }
+  _up_arrow->set_priority(it, p);
+  _down_arrow->set_priority(it, p);
 }
 
 void GuiListBox::output(ostream& os) const {

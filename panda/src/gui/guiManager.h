@@ -25,12 +25,19 @@ private:
   RegionSet _regions;
   typedef set<GuiLabel*> LabelSet;
   LabelSet _labels;
+  class SortComp {
+  public:
+    inline bool operator()(GuiLabel* a, GuiLabel* b) const {
+      return (*a) < (*b);
+    }
+  };
+  typedef set<GuiLabel*, SortComp> SortSet;
+  SortSet _sorts;
 
   Node* _root;
   MouseWatcher* _watcher;
 
   INLINE GuiManager(MouseWatcher*, Node*);
-
 PUBLISHED:
   static GuiManager* get_ptr(GraphicsWindow*, MouseAndKeyboard*, Node *root2d);
 
@@ -39,6 +46,8 @@ PUBLISHED:
 
   void remove_region(GuiRegion*);
   void remove_label(GuiLabel*);
+
+  void recompute_priorities(void);
 };
 
 #include "guiManager.I"

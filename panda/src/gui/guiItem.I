@@ -6,23 +6,6 @@
 INLINE GuiItem::GuiItem(void) : Namable("fubar"), _left(-1.), _right(1.),
 				_bottom(-1.), _top(1.), _pri(P_Normal) {}
 
-INLINE void GuiItem::set_priority(const GuiItem::Priority p) {
-  _pri = p;
-  float r = _pos.dot(LVector3f::rfu(1., 0., 0.));
-  float u = _pos.dot(LVector3f::rfu(0., 0., 1.));
-  switch (_pri) {
-  case P_Low:
-    this->set_pos(LVector3f::rfu(r, 0.5, u));
-    break;
-  case P_Normal:
-    this->set_pos(LVector3f::rfu(r, 0., u));
-    break;
-  case P_High:
-    this->set_pos(LVector3f::rfu(r, -0.5, u));
-    break;
-  }
-}
-
 INLINE float GuiItem::get_scale(void) const {
   return _scale;
 }

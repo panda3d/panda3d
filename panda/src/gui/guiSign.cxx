@@ -14,6 +14,11 @@ void GuiSign::recompute_frame(void) {
   _sign->get_extents(_left, _right, _bottom, _top);
 }
 
+void GuiSign::set_priority(GuiLabel* l, const GuiItem::Priority p) {
+  _sign->set_priority(l, ((p==P_Low)?GuiLabel::P_LOWER:GuiLabel::P_HIGHER));
+  GuiItem::set_priority(l, p);
+}
+
 GuiSign::GuiSign(const string& name, GuiLabel* sign)
   : GuiItem(name), _sign(sign), _sign_scale(sign->get_scale()) {
   _sign->get_extents(_left, _right, _bottom, _top);
@@ -60,6 +65,11 @@ void GuiSign::set_pos(const LVector3f& p) {
   _sign->set_pos(p);
   GuiItem::set_pos(p);
   recompute_frame();
+}
+
+void GuiSign::set_priority(GuiItem* i, const GuiItem::Priority p) {
+  i->set_priority(_sign, ((p==P_Low)?P_High:P_Low));
+  GuiItem::set_priority(i, p);
 }
 
 void GuiSign::output(ostream& os) const {

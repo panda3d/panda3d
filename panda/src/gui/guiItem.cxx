@@ -11,6 +11,9 @@ void GuiItem::recompute_frame(void) {
   test_ref_count_integrity();
 }
 
+void GuiItem::set_priority(GuiLabel*, const GuiItem::Priority) {
+}
+
 GuiItem::GuiItem(const string& name) : Namable(name), _added_hooks(false),
 				       _scale(1.), _left(-1.), _right(1.),
 				       _bottom(-1.), _top(1.),
@@ -49,6 +52,11 @@ void GuiItem::set_scale(float f) {
 
 void GuiItem::set_pos(const LVector3f& p) {
   _pos = p;
+}
+
+void GuiItem::set_priority(GuiItem* i, const GuiItem::Priority p) {
+  if (_mgr != (GuiManager*)0L)
+    _mgr->recompute_priorities();
 }
 
 void GuiItem::output(ostream& os) const {

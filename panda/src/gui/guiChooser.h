@@ -57,6 +57,8 @@ PUBLISHED:
 
   virtual void set_scale(float);
   virtual void set_pos(const LVector3f&);
+  virtual void set_priority(GuiLabel*, const Priority);
+  virtual void set_priority(GuiItem*, const Priority);
 
   virtual void start_behavior(void);
   virtual void stop_behavior(void);

@@ -176,3 +176,16 @@ void GuiManager::remove_label(GuiLabel* label) {
     _labels.erase(li);
   }
 }
+
+#include <geomBinTransition.h>
+
+void GuiManager::recompute_priorities(void) {
+  _sorts.clear();
+  for (LabelSet::iterator i=_labels.begin(); i!=_labels.end(); ++i)
+    _sorts.insert(*i);
+  int p=0;
+  for (SortSet::iterator j=_sorts.begin(); j!=_sorts.end(); ++j, ++p) {
+    (*j)->_hard_pri = p;
+    (*j)->get_arc()->set_transition(new GeomBinTransition("fixed", p));
+  }
+}

@@ -67,6 +67,12 @@ void GuiRollover::recompute_frame(void) {
   _rgn->set_region(_left, _right, _bottom, _top);
 }
 
+void GuiRollover::set_priority(GuiLabel* l, const GuiItem::Priority p) {
+  _off->set_priority(l, ((p==P_Low)?GuiLabel::P_LOWER:GuiLabel::P_HIGHER));
+  _on->set_priority(l, ((p==P_Low)?GuiLabel::P_LOWER:GuiLabel::P_HIGHER));
+  GuiItem::set_priority(l, p);
+}
+
 GuiRollover::GuiRollover(const string& name, GuiLabel* off, GuiLabel* on)
   : GuiItem(name), _off(off), _on(on), _off_scale(off->get_scale()),
     _on_scale(on->get_scale()), _state(false) {
@@ -136,6 +142,12 @@ void GuiRollover::set_pos(const LVector3f& p) {
   _off->set_pos(p);
   GuiItem::set_pos(p);
   recompute_frame();
+}
+
+void GuiRollover::set_priority(GuiItem* i, const GuiItem::Priority p) {
+  i->set_priority(_off, ((p==P_Low)?P_High:P_Low));
+  i->set_priority(_on, ((p==P_Low)?P_High:P_Low));
+  GuiItem::set_priority(i, p);
 }
 
 void GuiRollover::output(ostream& os) const {
