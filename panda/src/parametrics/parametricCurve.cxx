@@ -835,34 +835,35 @@ bool ParametricCurve::
 r_find_t(float target_length, float &found_t,
          float t1, float t2,
          const LPoint3f &p1, const LPoint3f &p2) const {
-  static const float t_tolerance = 0.00001f;
+  static const float t_tolerance = 0.001f;
 
-  parametrics_cat.debug()
-    << "target_length " << target_length << " t1 " << t1 << " t2 " << t2 << "\n";
+  if (parametrics_cat.is_spam()) {
+    parametrics_cat.spam()
+      << "target_length " << target_length << " t1 " << t1 << " t2 " << t2 << "\n";
+  }
 
+  // Is the target point close to the near endpoint
   if (target_length < t_tolerance) {
-    // Stop recursing--we've just walked off the limit for
-    // representing smaller values of t.
     found_t = t1;
     return true;
   } 
 
-  // Compute distance between two endpoints
+  // No, compute distance between two endpoints
   float point_dist;
   point_dist = (p2 - p1).length();
 
-  // Is point past endpoint?
+  // Is the target point past the far endpoint?
   if (point_dist < target_length) {
     return false;
   }
    
-  // Is point close to far endpoint?
+  // Is the target point close to far endpoint?
   if ( (point_dist - target_length ) < t_tolerance ) {
     found_t = t2;
     return true;
   }
 
-  // Nope, subdivide and continue
+  // No, subdivide and continue
   float tmid;
   LPoint3f pmid;
   float left;
