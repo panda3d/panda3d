@@ -708,14 +708,8 @@ do_character(int flag_byte) {
     if (_dyn_f == 14) {
       // A bitmapped character: this character has the actual w x h
       // bits stored directly in the pk file.  This kind of character
-      // is quite rare, and the code is therefore untested.
-      if (h > 0 && w > 0) {
-        nout
-          << "\nA rare bitmapped character encountered!  You are now running\n"
-          << "untested code.  If this works, change this line in the program\n"
-          << "to indicate that the code is actually tested!\n\n";
-      }
-
+      // is quite rare, but it's come up at least once, so the code
+      // has been seen to work.
       unsigned int bit = 0;
       unsigned int byte = 0;
       for (unsigned int y = 0; y < h; y++) {
