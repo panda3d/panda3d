@@ -72,7 +72,6 @@ using namespace std;
   exptp template class expcl classname;
 #else
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
-#define INLINE inline
 #endif
 
 // We define the macro PUBLISHED to mark C++ methods that are to be

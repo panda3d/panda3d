@@ -70,8 +70,9 @@ public:
     _owns_str = false;
   }
   string str() {
+    int length = pcount();
     char *s = strstream::str();
-    string result(s);
+    string result(s, length);
     if (_owns_str) {
       delete[] s;
     }
