@@ -129,59 +129,6 @@ static bool bTexStatsRetrievalImpossible=false;
 
 //#define Colorf_to_D3DCOLOR(out_color) (MY_D3DRGBA((out_color)[0], (out_color)[1], (out_color)[2], (out_color)[3]))
 
-INLINE DWORD
-Colorf_to_D3DCOLOR(const Colorf &cColorf) {
-// MS VC defines _M_IX86 for x86.  gcc should define _X86_
-#if defined(_M_IX86) || defined(_X86_)
-    DWORD d3dcolor,tempcolorval=255;
-
-    // note the default FPU rounding mode will give 255*0.5f=0x80, not 0x7F as VC would force it to by resetting rounding mode
-    // dont think this makes much difference
-
-    __asm {
-        push ebx   ; want to save this in case this fn is inlined
-        push ecx
-        mov ecx, cColorf
-        fild tempcolorval
-        fld DWORD PTR [ecx]
-        fmul ST(0),ST(1)
-        fistp tempcolorval  ; no way to store directly to int register
-        mov eax, tempcolorval
-        shl eax, 16
-
-        fld DWORD PTR [ecx+4]  ;grn
-        fmul ST(0),ST(1)
-        fistp tempcolorval
-        mov ebx,tempcolorval
-        shl ebx, 8
-        or eax,ebx
-
-        fld DWORD PTR [ecx+8]  ;blue
-        fmul ST(0),ST(1)
-        fistp tempcolorval
-        or eax,tempcolorval
-
-        fld DWORD PTR [ecx+12] ;alpha
-        fmul ST(0),ST(1)
-        fistp tempcolorval
-        ; simulate pop 255.0 off FP stack w/o store, mark top as empty and increment stk ptr
-        ffree ST(0)
-        fincstp
-        mov ebx,tempcolorval
-        shl ebx, 24
-        or eax,ebx
-        mov d3dcolor,eax
-        pop ecx
-        pop ebx
-    }
-
-   //   dxgsg9_cat.debug() << (void*)d3dcolor << endl;
-   return d3dcolor;
-#else //!_X86_
-   return MY_D3DRGBA(cColorf[0], cColorf[1], cColorf[2], cColorf[3]);
-#endif //!_X86_
-}
-
 void DXGraphicsStateGuardian9::
 set_color_clear_value(const Colorf& value) {
   _color_clear_value = value;
@@ -1118,26 +1065,6 @@ void DXGraphicsStateGuardian9::set_clipper(RECT cliprect) {
 }
 #endif
 
-#if defined(_DEBUG) || defined(COUNT_DRAWPRIMS)
-typedef enum {DrawPrim,DrawIndexedPrim} DP_Type;
-static const char *DP_Type_Strs[3] = {"DrawPrimitive","DrawIndexedPrimitive"};
-
-void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,IDirect3DDevice9 *pD3DDevice,DWORD nVerts,DWORD nTris) {
-        if(FAILED(hr)) {
-            // loss of exclusive mode is not a real DrawPrim problem, ignore it
-            HRESULT testcooplvl_hr = pD3DDevice->TestCooperativeLevel();
-            if((testcooplvl_hr != D3DERR_DEVICELOST)||(testcooplvl_hr != D3DERR_DEVICENOTRESET)) {
-                dxgsg9_cat.fatal() << DP_Type_Strs[dptype] << "() failed: result = " << D3DERRORSTRING(hr);
-                exit(1);
-            }
-        }
-
-        CountDPs(nVerts,nTris);
-}
-#else
-#define TestDrawPrimFailure(a,b,c,nVerts,nTris) CountDPs(nVerts,nTris);
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::report_texmgr_stats
 //       Access: Protected
@@ -1283,17 +1210,6 @@ report_texmgr_stats() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::add_to_FVFBuf
-//       Access: Private
-//  Description: This adds data to the flexible vertex format
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian9::
-add_to_FVFBuf(void *data,  size_t bytes) {
-    memcpy(_pCurFvfBufPtr, data, bytes);
-    _pCurFvfBufPtr += bytes;
-}
-
 // generates slightly fewer instrs
 #define add_DWORD_to_FVFBuf(data) { *((DWORD *)_pCurFvfBufPtr) = (DWORD) data;  _pCurFvfBufPtr += sizeof(DWORD);}
 
@@ -1301,16 +1217,6 @@ typedef enum {
     FlatVerts,IndexedVerts,MixedFmtVerts
 } GeomVertFormat;
 
-
-INLINE void DXGraphicsStateGuardian9::
-transform_color(Colorf &InColor,D3DCOLOR &OutRGBAColor) {
-  Colorf transformed
-    ((InColor[0] * _current_color_scale[0]) + _current_color_offset[0],
-     (InColor[1] * _current_color_scale[1]) + _current_color_offset[1],
-     (InColor[2] * _current_color_scale[2]) + _current_color_offset[2],
-     (InColor[3] * _current_color_scale[3]) + _current_color_offset[3]);
-  OutRGBAColor = Colorf_to_D3DCOLOR(transformed);
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::draw_prim_setup
@@ -3527,24 +3433,6 @@ void DXGraphicsStateGuardian9::SetTextureBlendMode(TextureApplyAttrib::Mode TexB
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::enable_texturing
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian9::
-enable_texturing(bool val) {
-  _texturing_enabled = val;
-  
-  if (!val) {
-    _pD3DDevice->SetTextureStageState(0,D3DTSS_COLOROP,D3DTOP_DISABLE);
-
-  } else {
-    nassertv(_pCurTexContext!=NULL);
-    SetTextureBlendMode(_CurTexBlendMode,true);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::issue_transform
 //       Access: Public, Virtual
 //  Description: Sends the indicated transform matrix to the graphics
@@ -3596,6 +3484,57 @@ issue_tex_matrix(const TexMatrixAttrib *attrib) {
     _pD3DDevice->SetTransform(D3DTS_TEXTURE0, (D3DMATRIX *)dm.get_data());
     _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, 
                                       D3DTTFF_COUNT2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::issue_tex_gen
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian9::
+issue_tex_gen(const TexGenAttrib *attrib) {
+  /*
+   * Automatically generate texture coordinates for stage 0.
+   * Use the wrap mode from the texture coordinate set at index 1.
+   */
+  DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
+  if (attrib->is_off()) {
+
+    //enable_texturing(false);
+    // reset the texcoordindex lookup to 0
+    //_pD3DDevice->SetTransform(D3DTS_TEXTURE0, (D3DMATRIX *)dm.get_data());
+    _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, 0);
+    _pD3DDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0);
+
+  } else if (attrib->get_mode() == TexGenAttrib::M_spherical) {
+
+#if 0
+    // best reflection on a sphere is achieved by camera space normals in directx
+    _pD3DDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX,
+                                       D3DTSS_TCI_CAMERASPACENORMAL);
+    // We have set up the texture matrix to scale and translate the
+    // texture coordinates to get from camera space (-1, +1) to
+    // texture space (0,1)
+    LMatrix4f dm(0.5f, 0.0f, 0.0f, 0.0f,
+                 0.0f, 0.5f, 0.0f, 0.0f,
+                 0.0f, 0.0f, 1.0f, 0.0f,
+                 0.5f, 0.5f, 0.0f, 1.0f);
+#else
+    // since this is a reflection map, we want the camera space
+    // reflection vector. A close approximation of the asin(theta)/pi
+    // + 0.5 is achieved by the following matrix
+    _pD3DDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX,
+                                       D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
+    LMatrix4f dm(0.33f, 0.0f, 0.0f, 0.0f,
+                 0.0f, 0.33f, 0.0f, 0.0f,
+                 0.0f, 0.0f, 1.0f, 0.0f,
+                 0.5f, 0.5f, 0.0f, 1.0f);
+#endif
+    _pD3DDevice->SetTransform(D3DTS_TEXTURE0, (D3DMATRIX *)dm.get_data());
+    _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, 
+                                          D3DTTFF_COUNT2);
+    //_pD3DDevice->SetRenderState(D3DRS_LOCALVIEWER, false);
   }
 }
 
@@ -4069,17 +4008,6 @@ end_frame() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::wants_texcoords
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE bool DXGraphicsStateGuardian9::
-wants_texcoords() const {
-    return _texturing_enabled;
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::depth_offset_decals
 //       Access: Public, Virtual
 //  Description: Returns true if this GSG can implement decals using a
@@ -4109,25 +4037,6 @@ depth_offset_decals() {
 CoordinateSystem DXGraphicsStateGuardian9::
 get_internal_coordinate_system() const {
   return CS_yup_left;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::compute_distance_to
-//       Access: Public, Virtual
-//  Description: This function may only be called during a render
-//               traversal; it will compute the distance to the
-//               indicated point, assumed to be in modelview
-//               coordinates, from the camera plane.
-////////////////////////////////////////////////////////////////////
-INLINE float DXGraphicsStateGuardian9::
-compute_distance_to(const LPoint3f &point) const {
-    // In the case of a DXGraphicsStateGuardian9, we know that the
-    // modelview matrix already includes the relative transform from the
-    // camera, as well as a to-y-up conversion.  Thus, the distance to
-    // the camera plane is simply the +z distance.  (negative of gl compute_distance_to,
-    // since d3d uses left-hand coords)
-
-    return point[2];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4202,39 +4111,6 @@ set_read_buffer(const RenderBuffer &rb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_texture_wrap_mode
-//       Access: Protected
-//  Description: Maps from the Texture's internal wrap mode symbols to
-//               GL's.
-////////////////////////////////////////////////////////////////////
-INLINE D3DTEXTUREADDRESS DXGraphicsStateGuardian9::
-get_texture_wrap_mode(Texture::WrapMode wm) const {
-  static D3DTEXTUREADDRESS PandaTexWrapMode_to_D3DTexWrapMode[Texture::WM_invalid] = {
-    D3DTADDRESS_CLAMP,D3DTADDRESS_WRAP,D3DTADDRESS_MIRROR,D3DTADDRESS_MIRRORONCE,D3DTADDRESS_BORDER};
-
-    return PandaTexWrapMode_to_D3DTexWrapMode[wm];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::get_fog_mode_type
-//       Access: Protected
-//  Description: Maps from the fog types to gl version
-////////////////////////////////////////////////////////////////////
-INLINE D3DFOGMODE DXGraphicsStateGuardian9::
-get_fog_mode_type(Fog::Mode m) const {
-  switch (m) {
-  case Fog::M_linear:
-    return D3DFOG_LINEAR;
-  case Fog::M_exponential:
-    return D3DFOG_EXP;
-  case Fog::M_exponential_squared:
-    return D3DFOG_EXP2;
-  }
-  dxgsg9_cat.error() << "Invalid Fog::Mode value" << endl;
-  return D3DFOG_EXP;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::enable_lighting
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
@@ -4295,28 +4171,6 @@ enable_light(int light_id, bool enable) {
 bool DXGraphicsStateGuardian9::
 slot_new_clip_plane(int plane_id) {
   return (plane_id < D3DMAXUSERCLIPPLANES);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::enable_clip_plane
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               enable the indicated clip_plane id.  A specific
-//               PlaneNode will already have been bound to this id via
-//               bind_clip_plane().
-////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian9::
-enable_clip_plane(int plane_id, bool enable) {
-  assert(plane_id < D3DMAXUSERCLIPPLANES);
-
-  DWORD bitflag = ((DWORD)1 << plane_id);
-  if (enable) {
-    _clip_plane_bits |= bitflag;
-  } else {
-    _clip_plane_bits &= ~bitflag;
-  }
-
-  _pD3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, _clip_plane_bits);
 }
 
 ////////////////////////////////////////////////////////////////////

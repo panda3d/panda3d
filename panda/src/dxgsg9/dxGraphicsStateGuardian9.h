@@ -29,6 +29,7 @@
 #include "graphicsStateGuardian.h"
 #include "geomprimitives.h"
 #include "texture.h"
+#include "texGenAttrib.h"
 #include "pixelBuffer.h"
 #include "displayRegion.h"
 #include "material.h"
@@ -113,6 +114,7 @@ public:
 
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
+  virtual void issue_tex_gen(const TexGenAttrib *attrib);
   virtual void issue_texture(const TextureAttrib *attrib);
   virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_render_mode(const RenderModeAttrib *attrib);

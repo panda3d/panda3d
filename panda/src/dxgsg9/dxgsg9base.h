@@ -156,7 +156,7 @@ typedef enum {
     A8_FLAG =           FLG(8),
     A8R3G3B2_FLAG =     FLG(9),
     X4R4G4B4_FLAG =     FLG(10),
-    A2B10G10R10_FLAG =  FLG(11),
+    A2R10G10B10_FLAG =  FLG(11),
     G16R16_FLAG =       FLG(12),
     A8P8_FLAG =         FLG(13),
     P8_FLAG =           FLG(14),

@@ -529,9 +529,19 @@ search_for_valid_displaymode(DXScreenData &scrn,
                              bool bVerboseMode) {
   // Use this list of format modes when trying to find a valid graphics
   // format for the card.  Formats are scanned in the order listed.
+  /*
+    Format      Back buffer      Display 
+    A2R10G10B10  x               x (full-screen mode only) 
+    A8R8G8B8     x  
+    X8R8G8B8     x               x 
+    A1R5G5B5     x  
+    X1R5G5B5     x               x 
+    R5G6B5       x               x 
+   */
+
   static D3DFORMAT valid_formats[] = {
     D3DFMT_X8R8G8B8,
-    D3DFMT_A2B10G10R10, 
+    D3DFMT_A2R10G10B10, 
     D3DFMT_R5G6B5,
     D3DFMT_X1R5G5B5, 
   };
@@ -745,8 +755,8 @@ search_for_valid_displaymode(DXScreenData &scrn,
       case D3DFMT_X8R8G8B8:
         *pSupportedScreenDepthsMask |= X8R8G8B8_FLAG;
         break;
-      case D3DFMT_A2B10G10R10:
-        *pSupportedScreenDepthsMask |= A2B10G10R10_FLAG;
+      case D3DFMT_A2R10G10B10:
+        *pSupportedScreenDepthsMask |= A2R10G10B10_FLAG;
         break;
       case D3DFMT_R5G6B5:
         *pSupportedScreenDepthsMask |= R5G6B5_FLAG;
@@ -883,7 +893,7 @@ void Init_D3DFORMAT_map(void) {
     INSERT_ELEM(A8);
     INSERT_ELEM(A8R3G3B2);
     INSERT_ELEM(X4R4G4B4);
-    INSERT_ELEM(A2B10G10R10);
+    INSERT_ELEM(A2R10G10B10);
     INSERT_ELEM(G16R16);
     INSERT_ELEM(A8P8);
     INSERT_ELEM(P8);
@@ -924,7 +934,7 @@ const char *D3DFormatStr(D3DFORMAT fmt) {
     CASESTR(D3DFMT_A8);
     CASESTR(D3DFMT_A8R3G3B2);
     CASESTR(D3DFMT_X4R4G4B4);
-    CASESTR(D3DFMT_A2B10G10R10);
+    CASESTR(D3DFMT_A2R10G10B10);
     CASESTR(D3DFMT_G16R16);
     CASESTR(D3DFMT_A8P8);
     CASESTR(D3DFMT_P8);

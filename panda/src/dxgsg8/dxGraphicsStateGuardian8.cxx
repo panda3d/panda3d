@@ -1264,6 +1264,7 @@ draw_prim_setup(const Geom *geom) {
   
   vi = geom->make_vertex_iterator();
   DWORD newFVFflags = D3DFVF_XYZ;
+
   size_t vertex_size = sizeof(float) * 3;
   
   GeomBindType ColorBinding=geom->get_binding(G_COLOR);
@@ -1324,7 +1325,9 @@ draw_prim_setup(const Geom *geom) {
     //////
 
     ti = geom->make_texcoord_iterator();
+
     newFVFflags |= (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
+
     vertex_size += sizeof(float) * 2;
   }
   
@@ -2940,7 +2943,7 @@ apply_texture(TextureContext *tc) {
   Texture::WrapMode wrapU,wrapV;
   wrapU=tex->get_wrapu();
   wrapV=tex->get_wrapv();
-  
+
   if (wrapU!=_CurTexWrapModeU) {
     _pD3DDevice->SetTextureStageState(0,D3DTSS_ADDRESSU,get_texture_wrap_mode(wrapU));
     _CurTexWrapModeU = wrapU;
@@ -3012,7 +3015,7 @@ apply_texture(TextureContext *tc) {
   
   
   D3DTEXTUREFILTERTYPE newMinFilter = PandaToD3DMinType[(DWORD)ft];
-  
+
   if(aniso_degree>=2) {
     newMinFilter=D3DTEXF_ANISOTROPIC;
   }
@@ -3503,24 +3506,32 @@ issue_tex_gen(const TexGenAttrib *attrib) {
 
   } else if (attrib->get_mode() == TexGenAttrib::M_spherical) {
 
+#if 0
+    // best reflection on a sphere is achieved by camera space normals in directx
+    _pD3DDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX,
+                                       D3DTSS_TCI_CAMERASPACENORMAL);
     // We have set up the texture matrix to scale and translate the
     // texture coordinates to get from camera space (-1, +1) to
     // texture space (0,1)
     LMatrix4f dm(0.5f, 0.0f, 0.0f, 0.0f,
                  0.0f, 0.5f, 0.0f, 0.0f,
-                 0.0f, 0.0f, 0.0f, 0.0f,
-                 0.5f, 0.5f, 0.0f, 0.0f);
-    _pD3DDevice->SetTransform(D3DTS_TEXTURE0, (D3DMATRIX *)dm.get_data());
-    _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, 
-                                      D3DTTFF_COUNT2);
-#if 0
-    _pD3DDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX,
-                                       D3DTSS_TCI_CAMERASPACENORMAL);
+                 0.0f, 0.0f, 1.0f, 0.0f,
+                 0.5f, 0.5f, 0.0f, 1.0f);
 #else
-    _pD3DDevice->SetRenderState(D3DRS_LOCALVIEWER, TRUE);
+    // since this is a reflection map, we want the camera space
+    // reflection vector. A close approximation of the asin(theta)/pi
+    // + 0.5 is achieved by the following matrix
     _pD3DDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX,
                                        D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
+    LMatrix4f dm(0.33f, 0.0f, 0.0f, 0.0f,
+                 0.0f, 0.33f, 0.0f, 0.0f,
+                 0.0f, 0.0f, 1.0f, 0.0f,
+                 0.5f, 0.5f, 0.0f, 1.0f);
 #endif
+    _pD3DDevice->SetTransform(D3DTS_TEXTURE0, (D3DMATRIX *)dm.get_data());
+    _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, 
+                                          D3DTTFF_COUNT2);
+    //_pD3DDevice->SetRenderState(D3DRS_LOCALVIEWER, false);
   }
 }
 

@@ -278,6 +278,8 @@ set_vertex_format(DWORD NewFvfType) {
   if (_CurFVFType != NewFvfType) {
     _CurFVFType = NewFvfType;
 
+    //    dxgsg8_cat.info() << "current fvf " << _CurFVFType << endl;
+
     HRESULT hr = _pD3DDevice->SetVertexShader(NewFvfType);
  #ifndef NDEBUG
     if(FAILED(hr)) {
@@ -527,10 +529,26 @@ compute_distance_to(const LPoint3f &point) const {
 ////////////////////////////////////////////////////////////////////
 INLINE D3DTEXTUREADDRESS DXGraphicsStateGuardian8::
 get_texture_wrap_mode(Texture::WrapMode wm) const {
+#if 0
   static D3DTEXTUREADDRESS PandaTexWrapMode_to_D3DTexWrapMode[Texture::WM_invalid] = {
     D3DTADDRESS_CLAMP,D3DTADDRESS_WRAP,D3DTADDRESS_MIRROR,D3DTADDRESS_MIRRORONCE,D3DTADDRESS_BORDER};
 
     return PandaTexWrapMode_to_D3DTexWrapMode[wm];
+#endif
+  switch (wm) {
+  case Texture::WM_clamp:
+    return D3DTADDRESS_CLAMP;
+  case Texture::WM_repeat:
+    return D3DTADDRESS_WRAP;
+  case Texture::WM_mirror:
+    return D3DTADDRESS_MIRROR;
+  case Texture::WM_mirror_once:
+    return D3DTADDRESS_MIRRORONCE;
+  case Texture::WM_border_color:
+    return D3DTADDRESS_BORDER;
+  }
+  dxgsg8_cat.error() << "Invalid Texture::Mode value" << endl;
+  return D3DTADDRESS_WRAP;
 }
 
 ////////////////////////////////////////////////////////////////////

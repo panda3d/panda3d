@@ -527,7 +527,6 @@ search_for_valid_displaymode(DXScreenData &scrn,
   //    if (_dxgsg->scrn.bIsLowVidMemCard)
   //        nassertv((RequestedX_Size==640)&&(RequestedY_Size==480));
 #endif
-
   *pSuggestedPixFmt = D3DFMT_UNKNOWN;
   *pSupportedScreenDepthsMask = 0x0;
   *pCouldntFindAnyValidZBuf = false;
@@ -570,7 +569,8 @@ search_for_valid_displaymode(DXScreenData &scrn,
         (dispmode.Height!=RequestedY_Size)) {
       if (bVerboseMode) {
         wdxdisplay8_cat.info()
-          << "Mode dimension found " << dispmode.Width << "x" << dispmode.Height
+          << "Mode dimension " << dispmode.Width << "x" << dispmode.Height
+          << " and format " << dispmode.Format
           << ": continuing onto next mode\n";
       }
       continue;
@@ -715,6 +715,11 @@ search_for_valid_displaymode(DXScreenData &scrn,
         << "Validated Mode (" << RequestedX_Size << "x" 
         << RequestedY_Size << "," << D3DFormatStr(dispmode.Format) << endl;
 
+  /*
+    // dx8 valid display modes for render targets.
+    D3DFMT_X1R5G5B5, D3DFMT_R5G6B5, D3DFMT_X8R8G8B8, and D3DFMT_A8R8G8B8
+  */
+
     switch (dispmode.Format) {
     case D3DFMT_X1R5G5B5:
       *pSupportedScreenDepthsMask |= X1R5G5B5_FLAG;
@@ -722,15 +727,15 @@ search_for_valid_displaymode(DXScreenData &scrn,
     case D3DFMT_X8R8G8B8:
       *pSupportedScreenDepthsMask |= X8R8G8B8_FLAG;
       break;
-    case D3DFMT_R8G8B8:
-      *pSupportedScreenDepthsMask |= R8G8B8_FLAG;
+    case D3DFMT_A8R8G8B8:
+      *pSupportedScreenDepthsMask |= A8R8G8B8_FLAG;
       break;
     case D3DFMT_R5G6B5:
       *pSupportedScreenDepthsMask |= R5G6B5_FLAG;
       break;
     default:
       // Render target formats should be only D3DFMT_X1R5G5B5,
-      // D3DFMT_R5G6B5, D3DFMT_X8R8G8B8 (or R8G8B8?)
+      // D3DFMT_R5G6B5, D3DFMT_X8R8G8B8 and D3DFMT_A8R8G8B8
       wdxdisplay8_cat.error()
         << "unrecognized supported fmt "<< D3DFormatStr(dispmode.Format)
         << " returned by EnumAdapterDisplayModes!\n";
@@ -741,8 +746,8 @@ search_for_valid_displaymode(DXScreenData &scrn,
   // memory & speed reasons on some older cards in particular
   if (*pSupportedScreenDepthsMask & X8R8G8B8_FLAG) {
     *pSuggestedPixFmt = D3DFMT_X8R8G8B8;
-  } else if (*pSupportedScreenDepthsMask & R8G8B8_FLAG) {
-    *pSuggestedPixFmt = D3DFMT_R8G8B8;
+  } else if (*pSupportedScreenDepthsMask & A8R8G8B8_FLAG) {
+    *pSuggestedPixFmt = D3DFMT_A8R8G8B8;
   } else if (*pSupportedScreenDepthsMask & R5G6B5_FLAG) {
     *pSuggestedPixFmt = D3DFMT_R5G6B5;
   } else if (*pSupportedScreenDepthsMask & X1R5G5B5_FLAG) {
