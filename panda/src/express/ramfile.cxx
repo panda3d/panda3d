@@ -19,6 +19,24 @@
 #include "ramfile.h"
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Ramfile::read
+//       Access: Published
+//  Description: Extracts and returns the indicated number of
+//               characters from the current data pointer, and
+//               advances the data pointer.  If the data pointer
+//               exceeds the end of the buffer, returns empty string.
+//
+//               The interface here is intentionally designed to be
+//               similar to that for Python's file.read() function.
+////////////////////////////////////////////////////////////////////
+string Ramfile::
+read(size_t length) {
+  size_t orig_pos = _pos;
+  _pos = min(_pos + length, _data.length());
+  return _data.substr(orig_pos, length);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Ramfile::readline
 //       Access: Published
 //  Description: Assumes the stream represents a text file, and
@@ -27,7 +45,7 @@
 //               of file is reached.
 //
 //               The interface here is intentionally designed to be
-//               similar to that for Python's File.readline()
+//               similar to that for Python's file.readline()
 //               function.
 ////////////////////////////////////////////////////////////////////
 string Ramfile::

@@ -25,3 +25,37 @@ INLINE Ramfile::
 Ramfile() {
   _pos = 0;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Ramfile::seek
+//       Access: Published
+//  Description: Moves the data pointer to the indicated byte
+//               position.  It is not an error to move the pointer
+//               past the end of data.
+////////////////////////////////////////////////////////////////////
+INLINE void Ramfile::
+seek(size_t pos) {
+  _pos = pos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Ramfile::tell
+//       Access: Published
+//  Description: Returns the current data pointer position as a byte
+//               offset from the beginning of the stream.
+////////////////////////////////////////////////////////////////////
+INLINE size_t Ramfile::
+tell() const {
+  return _pos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Ramfile::get_data
+//       Access: Published
+//  Description: Returns the entire buffer contents as a string,
+//               regardless of the current data pointer.
+////////////////////////////////////////////////////////////////////
+INLINE const string &Ramfile::
+get_data() const {
+  return _data;
+}

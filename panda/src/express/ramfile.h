@@ -32,7 +32,12 @@ class EXPCL_PANDAEXPRESS Ramfile {
 PUBLISHED:
   INLINE Ramfile();
 
+  INLINE void seek(size_t pos);
+  INLINE size_t tell() const;
+  string read(size_t length);
   string readline();
+
+  INLINE const string &get_data() const;
 
 public:
   size_t _pos;
