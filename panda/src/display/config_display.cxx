@@ -25,6 +25,7 @@
 #include "noninteractiveGraphicsPipe.h"
 #include "graphicsWindow.h"
 #include "graphicsChannel.h"
+#include "graphicsLayer.h"
 #include "hardwareChannel.h"
 #include "textureContext.h"
 #include "geomNodeContext.h"
@@ -133,6 +134,7 @@ init_libdisplay() {
   GraphicsWindow::WindowProps::init_type();
   GraphicsWindow::WindowPipe::init_type();
   GraphicsChannel::init_type();
+  GraphicsLayer::init_type();
   HardwareChannel::init_type();
   TextureContext::init_type();
   GeomNodeContext::init_type();
