@@ -43,6 +43,7 @@ INLINE GraphicsWindow::Properties::Properties(const Properties &InitProp) {
     _mask=InitProp._mask;
     _want_depth_bits=InitProp._want_depth_bits;
     _want_color_bits=InitProp._want_color_bits;
+    _bCursorIsVisible=InitProp._bCursorIsVisible;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,6 +107,18 @@ INLINE void GraphicsWindow::Properties::
 set_fullscreen(bool fullscreen) {
   _fullscreen = fullscreen;
 }
+
+/*
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::Properties::set_cursor_visible
+//       Access: Published
+//  Description: Specifies if mouse cursor is visible
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindow::Properties::
+set_cursor_visible(bool IsVisible) {
+  _bCursorIsVisible=IsVisible;   // note: gsg should override to implement
+}
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::Properties::set_mask

@@ -93,6 +93,7 @@ PUBLISHED:
     string _title;
     bool _border;
     bool _fullscreen;
+    bool _bCursorIsVisible;
     uint _mask;
     int _want_depth_bits;
     int _want_color_bits;
@@ -134,6 +135,10 @@ PUBLISHED:
 
   INLINE void set_sync(const bool);
   INLINE bool get_sync() const;
+
+  // since this requires gsg modification, dont worry about implementing it yet
+  // since init control is good enough
+  // virtual void set_cursor_visible(bool bIsVisible);  // should be overridden by gsg to implement
 
   // resize the window to the given size
   virtual void resize(unsigned int xsize,unsigned int ysize);  

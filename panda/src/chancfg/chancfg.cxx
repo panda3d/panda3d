@@ -389,7 +389,7 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, Node *render,
 
   bool border = !chanconfig.GetBool("no-border", !W.getBorder());
   bool fullscreen = chanconfig.GetBool("fullscreen", false);
-  //  bool cursor = chanconfig.GetBool("cursor-visible", W.getCursor());
+  bool use_cursor = chanconfig.GetBool("cursor-visible", W.getCursor());
   int want_depth_bits = chanconfig.GetInt("want-depth-bits", 1);
   int want_color_bits = chanconfig.GetInt("want-color-bits", 1);
 
@@ -412,6 +412,7 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, Node *render,
   props._fullscreen = fullscreen;
   props._want_depth_bits = want_depth_bits;
   props._want_color_bits = want_color_bits;
+  props._bCursorIsVisible = use_cursor;
 
   // stereo prep?
   // DVR prep?
