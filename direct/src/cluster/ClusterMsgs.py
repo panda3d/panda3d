@@ -154,7 +154,7 @@ class ClusterMsgHandler:
                            (x,y,z,h,p,r)))
         return (x,y,z,h,p,r)
 
-    def makeSelectedMovementDatagram(self,xyz,hpr):
+    def makeSelectedMovementDatagram(self,xyz,hpr,scale):
         datagram = Datagram.Datagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
@@ -165,6 +165,9 @@ class ClusterMsgHandler:
         datagram.addFloat32(hpr[0])
         datagram.addFloat32(hpr[1])
         datagram.addFloat32(hpr[2])
+        datagram.addFloat32(scale[0])
+        datagram.addFloat32(scale[1])
+        datagram.addFloat32(scale[2])
         return datagram
 
     def parseSelectedMovementDatagram(self, dgi):
@@ -174,9 +177,12 @@ class ClusterMsgHandler:
         h=dgi.getFloat32()
         p=dgi.getFloat32()
         r=dgi.getFloat32()
-        self.notify.debug('  new position=%f %f %f  %f %f %f' %
-                          (x,y,z,h,p,r))
-        return (x,y,z,h,p,r)
+        sx=dgi.getFloat32()
+        sy=dgi.getFloat32()
+        sz=dgi.getFloat32()
+        self.notify.debug('  new position=%f %f %f  %f %f %f %f %f %f' %
+                          (x,y,z,h,p,r,sx,sy,sz))
+        return (x,y,z,h,p,r,sx,sy,sz)
 
     def makeCommandStringDatagram(self, commandString):
         datagram = Datagram.Datagram()

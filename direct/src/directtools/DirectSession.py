@@ -173,6 +173,7 @@ class DirectSession(PandaObject):
             self.cluster = ClusterServer(base.cameraList[0], base.camList[0])
         else:
             self.cluster = DummyClusterClient()
+        __builtin__.cluster = self.cluster
             
     def enable(self):
         # Make sure old tasks are shut down

@@ -83,7 +83,7 @@ class ClusterClient(DirectObject.DirectObject):
             scale = VBase3(1)
             decomposeMatrix(last.getMat(), scale, hpr, xyz)
             for server in self.serverList:
-                server.sendMoveSelected(xyz,hpr)
+                server.sendMoveSelected(xyz,hpr,scale)
         return Task.cont
 
     def getNodePathFindCmd(self, nodePath):
@@ -206,13 +206,15 @@ class DisplayConnection:
         datagram = self.msgHandler.makeCamMovementDatagram(xyz, hpr)
         self.cw.send(datagram, self.tcpConn)
 
-    def sendMoveSelected(self,xyz,hpr):
+    def sendMoveSelected(self,xyz,hpr,scale):
         ClusterClient.notify.debug("send move selected...")
-        ClusterClient.notify.debug("packet %d xyz,hpr=%f %f %f %f %f %f" %
-                                   (self.msgHandler.packetNumber,
-                                    xyz[0],xyz[1],xyz[2],
-                                    hpr[0],hpr[1],hpr[2]))
-        datagram = self.msgHandler.makeSelectedMovementDatagram(xyz, hpr)
+        ClusterClient.notify.debug(
+            "packet %d xyz,hpr=%f %f %f %f %f %f %f %f %f" %
+            (self.msgHandler.packetNumber,
+             xyz[0],xyz[1],xyz[2],
+             hpr[0],hpr[1],hpr[2],
+             scale[0],scale[1],scale[2]))
+        datagram = self.msgHandler.makeSelectedMovementDatagram(xyz, hpr,scale)
         self.cw.send(datagram, self.tcpConn)
 
     # the following should only be called by a synchronized cluster manger

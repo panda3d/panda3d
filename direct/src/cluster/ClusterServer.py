@@ -193,9 +193,10 @@ class ClusterServer(DirectObject.DirectObject):
 
     def handleSelectedMovement(self,dgi):
         """ Update cameraJig position to reflect latest position """
-        (x,y,z,h,p,r) = self.msgHandler.parseSelectedMovementDatagram(dgi)
+        (x,y,z,h,p,r,sx,sy,sz) = self.msgHandler.parseSelectedMovementDatagram(
+            dgi)
         if last:
-            last.setPosHpr(x,y,z,h,p,r)
+            last.setPosHprScale(x,y,z,h,p,r,sx,sy,sz)
 
     def handleCommandString(self, dgi):
         """ Handle arbitrary command string from client """
