@@ -204,3 +204,9 @@ class DirectScrolledList(DirectFrame):
         self.recordMaxHeight()
         self.scrollTo(self.index)
         
+    def getSelectedIndex(self):
+        return self.index
+
+    def getSelectedText(self):
+        return self['items'][self.index]['text']
+    
