@@ -1654,6 +1654,10 @@ reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
          bool as_stashed) {
   nassertr(child != (NodePathComponent *)NULL, false);
 
+  // Keep a reference count to the new parent, since detaching the
+  // child might lose the count.
+  PT(NodePathComponent) keep_parent = new_parent;
+
   if (!child->is_top_node()) {
     detach(child);
   }
