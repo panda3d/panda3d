@@ -109,7 +109,6 @@ child_integrate(Physical *physical,
 
       // tally it into the accum vector, applying the inertial tensor.
       accum_vec += f;
-      cerr<<"global accum_vec"<<accum_vec<<"\n";
     }
 
     // local forces
@@ -130,7 +129,6 @@ child_integrate(Physical *physical,
 
       // tally it into the accum vectors
       accum_vec += f;
-      cerr<<"local accum_vec"<<accum_vec<<"\n";
     }
     assert(index == matrices.size());
 
@@ -138,12 +136,10 @@ child_integrate(Physical *physical,
     // this matrix represents how much force the object 'wants' applied to it
     // in any direction, among other things.
     accum_vec =  accum_vec * current_object->get_inertial_tensor();
-    cerr<<"tensor applied accum_vec"<<accum_vec<<"\n";
 
     // derive this into the angular velocity vector.
     LVector3f rot_vec = current_object->get_rotation();
     rot_vec += accum_vec * dt;
-    cerr<<"accum_vec * dt"<<(accum_vec * dt)<<"\n";
 
     // here's the trick.  we've been accumulating these forces as vectors
     // and treating them as vectors, but now we're going to treat them as pure
