@@ -52,8 +52,11 @@ TextNode::
 TextNode(const string &name) : PandaNode(name) {
   _encoding = _default_encoding;
   _slant = 0.0f;
-
-  _flags = 0;
+  
+  // Initially, since the text string is empty, we know that both
+  // _text and _wtext accurately reflect the empty state; so we "got"
+  // both of them.
+  _flags = (F_got_text | F_got_wtext);
   _align = A_left;
   _wordwrap_width = 1.0f;
 
@@ -213,7 +216,7 @@ write(ostream &out, int indent_level) const {
     << "in coordinate system " << _coordinate_system << "\n";
 
   indent(out, indent_level + 2)
-    << "\ntext is " << _text << "\n";
+    << "\ntext is " << get_text() << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -227,7 +230,7 @@ PT(PandaNode) TextNode::
 generate() {
   if (text_cat.is_debug()) {
     text_cat.debug()
-      << "Rebuilding " << *this << " with '" << _text << "'\n";
+      << "Rebuilding " << *this << " with '" << get_text() << "'\n";
   }
 
   // The strategy here will be to assemble together a bunch of
@@ -247,9 +250,9 @@ generate() {
   _num_rows = 0;
 
   // Now build a new sub-tree for all the text components.
-  PT(PandaNode) root = new PandaNode(_text);
+  PT(PandaNode) root = new PandaNode(get_text());
 
-  if (_text.empty() || _font.is_null()) {
+  if (!has_text() || _font.is_null()) {
     return root;
   }
 
@@ -262,7 +265,7 @@ generate() {
 
   root->set_transform(TransformState::make_mat(mat));
 
-  wstring wtext = _wtext;
+  wstring wtext = get_wtext();
   if (has_wordwrap()) {
     wtext = _font->wordwrap_to(wtext, _wordwrap_width, false);
   }
@@ -474,8 +477,7 @@ xform(const LMatrix4f &mat) {
 //     Function: TextNode::decode_text_impl
 //       Access: Private
 //  Description: Decodes the eight-bit stream from the indicated
-//               decoder, storing the decoded unicode characters in
-//               _wtext.
+//               decoder, returning the decoded wide-char string.
 ////////////////////////////////////////////////////////////////////
 wstring TextNode::
 decode_text_impl(StringDecoder &decoder) const {
@@ -629,11 +631,11 @@ do_measure() {
   _lr3d.set(0.0f, 0.0f, 0.0f);
   _num_rows = 0;
 
-  if (_text.empty() || _font.is_null()) {
+  if (!has_text() || _font.is_null()) {
     return;
   }
 
-  wstring wtext = _wtext;
+  wstring wtext = get_wtext();
   if (has_wordwrap()) {
     wtext = _font->wordwrap_to(wtext, _wordwrap_width, false);
   }

@@ -124,6 +124,9 @@ get_font() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_encoding(TextNode::Encoding encoding) {
+  // Force the previously-set strings to be encoded or decoded now.
+  get_text();
+  get_wtext();
   _encoding = encoding;
 }
 
@@ -1031,7 +1034,7 @@ get_coordinate_system() const {
 INLINE void TextNode::
 set_text(const string &text) {
   _text = text;
-  _wtext = decode_text(text);
+  _flags = (_flags | F_got_text) & ~F_got_wtext;
   rebuild(true);
 }
 
@@ -1042,7 +1045,9 @@ set_text(const string &text) {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 clear_text() {
-  _text = "";
+  _text = string();
+  _wtext = wstring();
+  _flags |= (F_got_text | F_got_wtext);
   rebuild(true);
 }
 
@@ -1053,7 +1058,11 @@ clear_text() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
 has_text() const {
-  return !_text.empty();
+  if (_flags & F_got_wtext) {
+    return !_wtext.empty();
+  } else {
+    return !_text.empty();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1063,14 +1072,73 @@ has_text() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string TextNode::
 get_text() const {
+  if ((_flags & F_got_text) == 0) {
+    ((TextNode *)this)->_text = encode_wtext(_wtext);
+    ((TextNode *)this)->_flags |= F_got_text;
+  }
   return _text;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::append_text
+//       Access: Published
+//  Description: Appends the indicates string to the end of the stored
+//               text.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+append_text(const string &text) {
+  _text = get_text() + text;
+  _flags = (_flags | F_got_text) & ~F_got_wtext;
+  rebuild(true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::append_char
+//       Access: Published
+//  Description: Appends a single character to the end of the stored
+//               text.  This may be a wide character, up to 16 bits in
+//               Unicode.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+append_char(int character) {
+  _wtext = get_wtext() + wstring(1, (wchar_t)character);
+  _flags = (_flags | F_got_wtext) & ~F_got_text;
+  rebuild(true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_num_chars
+//       Access: Published
+//  Description: Returns the number of characters in the stored text.
+//               This is a count of wide characters, after the string
+//               has been decoded according to set_encoding().
+////////////////////////////////////////////////////////////////////
+INLINE int TextNode::
+get_num_chars() const {
+  return get_wtext().length();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_char
+//       Access: Published
+//  Description: Returns the Unicode value of the nth character in the
+//               stored text.  This may be a wide character (greater
+//               than 255), after the string has been decoded
+//               according to set_encoding().
+////////////////////////////////////////////////////////////////////
+INLINE int TextNode::
+get_char(int index) const {
+  get_wtext();
+  nassertr(index >= 0 && index < (int)_wtext.length(), 0);
+  return _wtext[index];
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::calc_width
 //       Access: Published
 //  Description: Returns the width of a single character of the font,
-//               or 0.0 if the character is not known.
+//               or 0.0 if the character is not known.  This may be a
+//               wide character (greater than 255).
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
 calc_width(int character) const {
@@ -1250,7 +1318,7 @@ get_num_rows() const {
 INLINE void TextNode::
 set_wtext(const wstring &wtext) {
   _wtext = wtext;
-  _text = encode_wtext(wtext);
+  _flags = (_flags | F_got_wtext) & ~F_got_text;
   rebuild(true);
 }
 
@@ -1262,12 +1330,29 @@ set_wtext(const wstring &wtext) {
 ////////////////////////////////////////////////////////////////////
 INLINE const wstring &TextNode::
 get_wtext() const {
+  if ((_flags & F_got_wtext) == 0) {
+    ((TextNode *)this)->_wtext = decode_text(_text);
+    ((TextNode *)this)->_flags |= F_got_wtext;
+  }
   return _wtext;
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::append_wtext
+//       Access: Public
+//  Description: Appends the indicates string to the end of the stored
+//               wide-character text.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+append_wtext(const wstring &wtext) {
+  _wtext = get_wtext() + wtext;
+  _flags = (_flags | F_got_wtext) & ~F_got_text;
+  rebuild(true);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::calc_width
-//       Access: Published
+//       Access: Public
 //  Description: Returns the width of a line of text of arbitrary
 //               characters.  The line should not include the newline
 //               character.
@@ -1280,7 +1365,7 @@ calc_width(const wstring &line) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::wordwrap_to
-//       Access: Published
+//       Access: Public
 //  Description: Inserts newlines into the given text at the
 //               appropriate places in order to make each line be the
 //               longest possible line that is not longer than

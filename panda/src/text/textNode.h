@@ -176,6 +176,10 @@ PUBLISHED:
   INLINE void clear_text();
   INLINE bool has_text() const;
   INLINE string get_text() const;
+  INLINE void append_text(const string &text);
+  INLINE void append_char(int character);
+  INLINE int get_num_chars() const;
+  INLINE int get_char(int index) const;
 
   INLINE float calc_width(int character) const;
   INLINE float calc_width(const string &line) const;
@@ -207,6 +211,7 @@ public:
   // Direct support for wide-character strings.
   INLINE void set_wtext(const wstring &wtext);
   INLINE const wstring &get_wtext() const;
+  INLINE void append_wtext(const wstring &text);
 
   INLINE float calc_width(const wstring &line) const;
   INLINE wstring wordwrap_to(const wstring &wtext, float wordwrap_width,
@@ -264,6 +269,8 @@ private:
     F_card_transp      =  0x0200,
     F_has_card_border  =  0x0400,
     F_expand_amp       =  0x0800,
+    F_got_text         =  0x1000,
+    F_got_wtext        =  0x2000,
   };
 
   int _flags;
