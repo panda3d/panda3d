@@ -22,7 +22,7 @@ class Frame:
         del(self.frame)
         
     def __str__(self):
-        return "Frame: %s = %s" % self.name, self.items
+        return "Frame: %s = %s" % (self.name, self.items)
 
     # accessing
     def getName(self):
@@ -52,6 +52,9 @@ class Frame:
 
     def recompute(self):
         self.frame.recompute()
+
+    def clearAllPacking(self):
+        self.frame.clearAllPacking()
         
     # content functions
     def addItem(self, item):
@@ -68,18 +71,23 @@ class Frame:
     def printItems(self):
         print "frame items: %s" % (self.items)
         
-    def packItem(self, itemNum, relation, otherItemNum):
-        self.frame.packItem(self.items[itemNum].getGuiItem(), relation,
-                            self.items[otherItemNum].getGuiItem(), self.offset)
-
+    def packItem(self, item, relation, otherItem):
+        if (item in self.items) and (otherItem in self.items):
+            self.frame.packItem(item.getGuiItem(), relation,
+                                otherItem.getGuiItem(), self.offset)
+        else:
+            print "warning: tried to pack item that aren't in frame"
+            
     # convenience functions
     def makeVertical(self):
         # remove any previous packing
         self.frame.clearAllPacking()
         # make each item (except first) align under the last
-        for itemNum in range(1, len(self.items)):
-            self.packItem(itemNum, GuiFrame.GuiFrame.UNDER, itemNum - 1)
-            self.packItem(itemNum, GuiFrame.GuiFrame.ALIGNLEFT, itemNum - 1)
+        for itemNum in range(1, len(self.items)):            
+            self.packItem(self.items[itemNum], GuiFrame.GuiFrame.UNDER,
+                          self.items[itemNum - 1])
+            self.packItem(self.items[itemNum], GuiFrame.GuiFrame.ALIGNLEFT,
+                          self.items[itemNum - 1])
         self.frame.recompute()
             
     def makeHorizontal(self):
@@ -87,8 +95,10 @@ class Frame:
         self.frame.clearAllPacking()
         # make each item (except first) align right of the last
         for itemNum in range(1, len(self.items)):
-            self.packItem(itemNum, GuiFrame.GuiFrame.RIGHT, itemNum - 1)
-            self.packItem(itemNum, GuiFrame.GuiFrame.ALIGNABOVE, itemNum - 1)
+            self.packItem(self.items[itemNum], GuiFrame.GuiFrame.RIGHT,
+                          self.items[itemNum - 1])
+            self.packItem(self.items[itemNum], GuiFrame.GuiFrame.ALIGNABOVE,
+                          self.items[itemNum - 1])
         self.frame.recompute()
             
     def makeWideAsWidest(self):

@@ -126,8 +126,6 @@ class PickList(PandaObject.PandaObject):
         for choice in self.choiceList:
             if not (self.choiceList.index(choice) == self.choice):
                 choice.getGuiItem().exit()
-	# throw a rollover event
-	messenger.send(self.name + "-rollover")
 
     def __exitChoice(self):
         # reset choice when mouse exits a button
@@ -148,10 +146,11 @@ class PickList(PandaObject.PandaObject):
                 task = Task.Task(buttonUp)
                 task.choice = self.choiceList[self.choice]
                 taskMgr.spawnTaskNamed(Task.doLater(.035, task,
-                                                    "buttonUp-Later"),
+                                                    "buttonUp-later"),
                                    "doLater-buttonUp-later")
             # let everyone know a choice was made                
             messenger.send(self.eventName, [self.choice])
+
 
 
 

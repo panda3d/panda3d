@@ -19,21 +19,21 @@ class ScrollingLabel(PandaObject.PandaObject):
         self.frame.setOffset(0.015)
         self.item = 0
         self.items = []
-        
-        # display the name of the scrolling label
+        self.keyFocus = 1
+
+        # create the new title
         label = GuiLabel.GuiLabel.makeSimpleTextLabel(self.name, font)
         label.setForegroundColor(1., 0., 0., 1.)
         label.setBackgroundColor(1., 1., 1., 0.)
-        name = Sign.Sign(self.name, label)
-        self.frame.addItem(name)
+        self.title = Sign.Sign(self.name, label)
+        self.frame.addItem(self.title)
         
         # create a sign for each item in itemList
         for item in itemList:
-            #thisLabel = GuiLabel.GuiLabel.makeSimpleTextLabel(item, font)
-            #thisLabel.setForegroundColor(0., 0., 0., 1.)
-            #thisLabel.setBackgroundColor(1., 1., 1., 1.)
-            #thisSign = Sign.Sign(item, thisLabel)
-            thisSign = Button.Button(item)
+            thisLabel = GuiLabel.GuiLabel.makeSimpleTextLabel(item, font)
+            thisLabel.setForegroundColor(0., 0., 0., 1.)
+            thisLabel.setBackgroundColor(1., 1., 1., 1.)
+            thisSign = Sign.Sign(item, thisLabel)
             self.items.append(thisSign)
             # add each item temporarily
             self.frame.addItem(thisSign)
@@ -46,24 +46,34 @@ class ScrollingLabel(PandaObject.PandaObject):
             self.frame.removeItem(self.items[itemNum])
 
         # pack the first label under the name 
-        self.frame.packItem(1, GuiFrame.GuiFrame.UNDER, 0)
+        self.frame.packItem(self.items[self.item], GuiFrame.GuiFrame.UNDER,
+                            self.title)
+        self.frame.packItem(self.items[self.item], GuiFrame.GuiFrame.ALIGNLEFT,
+                            self.title)
 
         # create the scroll buttons
-        leftButton = Button.Button(self.name + "-left", " < ")
-        leftButton.getGuiItem().setDownRolloverEvent(self.name + "-left")
-        self.frame.addItem(leftButton)
-        self.frame.packItem(2, GuiFrame.GuiFrame.UNDER ,0)
-        self.frame.packItem(2, GuiFrame.GuiFrame.LEFT ,0)        
-        rightButton = Button.Button(self.name + "-right", " > ")
-        rightButton.getGuiItem().setDownRolloverEvent(self.name + "-right")    
-        self.frame.addItem(rightButton)
-        self.frame.packItem(3, GuiFrame.GuiFrame.UNDER ,0)
-        self.frame.packItem(3, GuiFrame.GuiFrame.RIGHT ,0)        
+        self.leftButton = Button.Button(self.name + "-left", " < ")
+        self.leftButton.getGuiItem().setDownRolloverEvent(self.name + "-left")
+        self.frame.addItem(self.leftButton)
+        self.frame.packItem(self.leftButton, GuiFrame.GuiFrame.UNDER,
+                            self.title)
+        self.frame.packItem(self.leftButton, GuiFrame.GuiFrame.LEFT,
+                            self.title)        
+        self.rightButton = Button.Button(self.name + "-right", " > ")
+        self.rightButton.getGuiItem().setDownRolloverEvent(self.name +
+                                                           "-right")    
+        self.frame.addItem(self.rightButton)
+        self.frame.packItem(self.rightButton, GuiFrame.GuiFrame.UNDER,
+                            self.title)
+        self.frame.packItem(self.rightButton, GuiFrame.GuiFrame.RIGHT,
+                            self.title)        
 
         # listen for the scroll buttons
         self.accept(self.name + "-left", self.handleLeftButton)
         self.accept(self.name + "-right", self.handleRightButton)
-
+        # listen for keyboard hits
+        self.setKeyFocus(1)
+        
         # refresh the frame
         self.frame.recompute()
 
@@ -77,14 +87,25 @@ class ScrollingLabel(PandaObject.PandaObject):
         # ignore events
         self.ignore(self.name + "-left")
         self.ignore(self.name + "-right")
-
+        self.setKeyFocus(0)
+        
     # accessing
-    def getName(self):
+    def getTitle(self):
         return self.name
 
+    def setTitle(self, name):
+        self.name = name
+        self.title.setText(name)
+        self.frame.recompute()
+        
     def getItem(self):
-        return self.item
+        return self.items[self.item]
 
+    def setItem(self, item):
+        self.frame.removeItem(self.items[self.item])
+        self.item = item
+        self.addItem()
+        
     def getEventName(self):
         return self.eventName
 
@@ -93,12 +114,30 @@ class ScrollingLabel(PandaObject.PandaObject):
 
     def setPos(self, x, y):
         self.frame.setPos(x, y)
+        self.frame.recompute()
 
     def setScale(self, scale):
         self.frame.setScale(scale)
+        self.frame.recompute()
 
+    def getKeyFocus(self):
+        return self.keyFocus
 
+    def setKeyFocus(self, focus):
+        self.keyFocus = focus
+        if (focus == 1):
+            # listen for keyboard hits
+            self.accept("left-up", self.handleLeftArrow)
+            self.accept("right-up", self.handleRightArrow)
+        else:
+            # ignore keyboard hits
+            self.ignore("left-up")
+            self.ignore("right-up")
+        
     # actions
+    def recompute(self):
+        self.frame.recompute()
+        
     def manage(self):
         self.frame.manage()
 
@@ -121,12 +160,38 @@ class ScrollingLabel(PandaObject.PandaObject):
             self.item = 0
         self.addItem()
 
+    def handleLeftArrow(self):
+        # make the button toggle
+        self.leftButton.getGuiItem().down()
+        self.spawnButtonUpTask(self.leftButton)
+        # then act like a mouse click
+        self.handleLeftButton()
+
+    def handleRightArrow(self):
+        # make the button toggle
+        self.rightButton.getGuiItem().down()
+        self.spawnButtonUpTask(self.rightButton)
+        # then act like a mouse click
+        self.handleRightButton()
+
+    def spawnButtonUpTask(self, button):
+        def buttonUp(state):
+            state.button.getGuiItem().up()
+            return Task.done
+        task = Task.Task(buttonUp)
+        task.button = button
+        taskMgr.spawnTaskNamed(Task.doLater(.035, task, "buttonUp-later"),
+                               "doLater-buttonUp-later")
+    
     def addItem(self):
         self.frame.addItem(self.items[self.item])
-        self.frame.packItem(3, GuiFrame.GuiFrame.UNDER, 0)
+        self.frame.packItem(self.items[self.item], GuiFrame.GuiFrame.UNDER,
+                            self.title)
+        self.frame.packItem(self.items[self.item], GuiFrame.GuiFrame.ALIGNLEFT,
+                            self.title)
         self.items[self.item].manage()
         self.frame.recompute()
-        messenger.send(self.eventName + str(self.item))
+        messenger.send(self.eventName, [self.item])
 
     
 

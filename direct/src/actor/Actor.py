@@ -751,16 +751,22 @@ class Actor(PandaObject, NodePath):
         return None
 
             
-    def loadModel(self, modelPath, partName="modelRoot", lodName="lodRoot"):
-        """loadModel(self, string, string="modelRoot", string="base")
+    def loadModel(self, modelPath, partName="modelRoot", lodName="lodRoot",
+                  copy = 1):
+        """loadModel(self, string, string="modelRoot", string="lodRoot",
+        bool = 0)
         Actor model loader. Takes a model name (ie file path), a part
         name(defaults to "modelRoot") and an lod name(defaults to "lodRoot").
+        If copy is set to 0, do a lodModelOnce instead of a loadModelCopy.
         """
-        Actor.notify.info("in loadModel: %s , part: %s, lod: %s" % \
-            (modelPath, partName, lodName))
+        Actor.notify.info("in loadModel: %s , part: %s, lod: %s, copy: %s" % \
+            (modelPath, partName, lodName, copy))
 
         # load the model and extract its part bundle
-        model = loader.loadModelCopy(modelPath)
+        if (copy):
+            model = loader.loadModelCopy(modelPath)
+        else:
+            model = loader.loadModelOnce(modelPath)
         bundle = NodePath(model, "**/+PartBundleNode")
         if (bundle.isEmpty()):
             Actor.notify.warning("%s is not a character!" % (modelPath))
