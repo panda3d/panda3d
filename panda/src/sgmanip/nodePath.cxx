@@ -975,22 +975,29 @@ attach_new_node(Node *dnode, int sort) const {
 //               later, you should probably use reparent_to() and put
 //               it under a holding node instead.
 //
-//               It is an error to call this method on a NodePath that
-//               refers to just a single node, with no arcs.
-//
 //               After the node is removed, the NodePath will have
 //               been cleared.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 remove_node() {
-  nassertv(verify_connectivity());
-  nassertv_always(has_arcs());
+  if (!has_arcs() || !arc()->is_attached()) {
+    // If we have no arcs (maybe we were already removed), or if the
+    // bottom arc has been disconnected (maybe a parent was removed),
+    // quietly do nothing except to ensure the NodePath is clear.
+    clear();
+    return;
+  }
 
   PT_NodeRelation darc = arc();
+  PT_Node dnode = node();
+
+  // First, disconnect the arc from the scene graph.  This will orphan
+  // our bottom node.
+  remove_arc(darc);
 
   // Set the chain to stop here, so that any NodePaths sharing this
   // one will now begin at this "deleted" node.
-  (*_head) = ArcComponent(_head->get_node());
+  (*_head) = ArcComponent(dnode);
 
   // Now remove our own chain reference.  If there were no other
   // sharing NodePaths, this will also delete the complete chain,
@@ -1001,9 +1008,7 @@ remove_node() {
   // from being actually destructed (although it has been removed from
   // the scene graph), and they will now believe they are rooted at
   // that destructed node, cut off from the rest of the world.
-
   clear();
-  remove_arc(darc);
 }
 
 ////////////////////////////////////////////////////////////////////
