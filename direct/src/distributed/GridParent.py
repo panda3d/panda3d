@@ -35,15 +35,16 @@ class GridParent:
         # Remove the gridNodes
         self.cellOrigin.removeNode()
                 
-    def setGridParent(self, grid, zoneId):
-        # If the avatar has a parent, preserve his absolute position.  Otherwise
-        # if he has no parent, assume this is the first time he's been parented
-        # to anything, and don't wrtReparent, just do a regular reparent.
-        firstParent = 0
-        if self.av.getParent().isEmpty():
-            firstParent = 1
+    def setGridParent(self, grid, zoneId, teleport=0):
+        # If teleport=0, preserve the avatar's absolute position.  If teleport=1
+        # the avatars previous world position is invalid, so don't wrtReparent,
+        # just do a regular reparent, and let the cellOrigin give us our new position
 
-        if not firstParent:
+        # Also, if the avatar has no parent, then force teleport=1
+        if self.av.getParent().isEmpty():
+            teleport = 1
+
+        if not teleport:
             # Stick the avatar under hidden while we move the cellOrigin into
             # position so we do not lose the avatars absolute position.
             self.av.wrtReparentTo(hidden)
@@ -63,7 +64,7 @@ class GridParent:
         self.cellOrigin.setPos(*cellPos)
 
         # Reparent our avatar to this node
-        if not firstParent:
+        if not teleport:
             self.av.wrtReparentTo(self.cellOrigin)
         else:
             self.av.reparentTo(self.cellOrigin)

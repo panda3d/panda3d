@@ -23,7 +23,7 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
             self.removeNode()
         DistributedObjectAI.DistributedObjectAI.delete(self)
 
-    def setLocation(self, parentId, zoneId):
+    def setLocation(self, parentId, zoneId, teleport=0):
         # Redefine DistributedObject setLocation, so that when
         # location is set to the ocean grid, we can update our parenting
         # under gridParent
