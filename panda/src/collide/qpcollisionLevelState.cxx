@@ -29,6 +29,7 @@ void qpCollisionLevelState::
 clear() {
   _colliders.clear();
   _local_bounds.clear();
+  _parent_bounds.clear();
   _current = 0;
   _colliders_with_geom = 0;
 }
@@ -71,6 +72,7 @@ prepare_collider(const ColliderDef &def) {
   if (def._node->get_collide_geom()) {
     _colliders_with_geom |= get_mask(index);
   }
+  _parent_bounds = _local_bounds;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,6 +87,16 @@ prepare_collider(const ColliderDef &def) {
 ////////////////////////////////////////////////////////////////////
 bool qpCollisionLevelState::
 any_in_bounds() {
+#ifndef NDEBUG
+  int indent_level = 0;
+  if (collide_cat.is_spam()) {
+    indent_level = _node_path.get_num_nodes() * 2;
+    collide_cat.spam();
+    indent(collide_cat.spam(false), indent_level)
+      << "Considering " << _node_path.get_node_path() << "\n";
+  }
+#endif  // NDEBUG
+
   const BoundingVolume &node_bv = node()->get_bound();
   if (node_bv.is_of_type(GeometricBoundingVolume::get_class_type())) {
     const GeometricBoundingVolume *node_gbv;
@@ -108,6 +120,15 @@ any_in_bounds() {
             get_local_bound(c);
           if (col_gbv != (GeometricBoundingVolume *)NULL) {
             is_in = (node_gbv->contains(col_gbv) != 0);
+
+#ifndef NDEBUG
+            if (collide_cat.is_spam()) {
+              collide_cat.spam();
+              indent(collide_cat.spam(false), indent_level)
+                << "Comparing " << c << ": " << *col_gbv
+                << " to " << *node_gbv << ", is_in = " << is_in << "\n";
+            }
+#endif  // NDEBUG
           }
         }
 
@@ -120,6 +141,22 @@ any_in_bounds() {
     }
   }
 
+#ifndef NDEBUG
+  if (collide_cat.is_spam()) {
+    int num_active_colliders = 0;
+    int num_colliders = get_num_colliders();
+    for (int c = 0; c < num_colliders; c++) {
+      if (has_collider(c)) {
+        num_active_colliders++;
+      }
+    }
+
+    collide_cat.spam();
+    indent(collide_cat.spam(false), indent_level)
+      << _node_path.get_node_path() << " has " << num_active_colliders
+      << " interested colliders.\n";
+  }
+#endif  // NDEBUG
   return has_any_collider();
 }
 
@@ -131,6 +168,11 @@ any_in_bounds() {
 ////////////////////////////////////////////////////////////////////
 void qpCollisionLevelState::
 apply_transform() {
+  // The "parent" bounds list remembers the bounds list of the
+  // previous node.
+  _parent_bounds = _local_bounds;
+
+  // Recompute the bounds list of this node (if we have a transform).
   const TransformState *node_transform = node()->get_transform();
   if (!node_transform->is_identity()) {
     CPT(TransformState) inv_transform = 

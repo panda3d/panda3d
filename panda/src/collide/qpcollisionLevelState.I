@@ -191,7 +191,9 @@ get_inv_space(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpCollisionLevelState::get_local_bound
 //       Access: Public
-//  Description:
+//  Description: Returns the bounding volume of the indicated
+//               collider, transformed into the current node's
+//               transform space.
 ////////////////////////////////////////////////////////////////////
 INLINE const GeometricBoundingVolume *qpCollisionLevelState::
 get_local_bound(int n) const {
@@ -205,6 +207,27 @@ get_local_bound(int n) const {
 
   // But it can figure out this equivalent line.
   return *(_local_bounds + n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCollisionLevelState::get_parent_bound
+//       Access: Public
+//  Description: Returns the bounding volume of the indicated
+//               collider, transformed into the previous node's
+//               transform space, but not transformed by the current
+//               node's transform.  This is appropriate for testing
+//               against the bounding volume of the current node
+//               (which does not have its own transform applied to
+//               it).
+////////////////////////////////////////////////////////////////////
+INLINE const GeometricBoundingVolume *qpCollisionLevelState::
+get_parent_bound(int n) const {
+  nassertr(n >= 0 && n < (int)_colliders.size(), NULL);
+  nassertr(has_collider(n), NULL);
+  nassertr(n >= 0 && n < (int)_parent_bounds.size(), NULL);
+
+  // But it can figure out this equivalent line.
+  return *(_parent_bounds + n);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -75,10 +75,16 @@ public:
   INLINE const LMatrix4f &get_space(int n) const;
   INLINE const LMatrix4f &get_inv_space(int n) const;
   INLINE const GeometricBoundingVolume *get_local_bound(int n) const;
+  INLINE const GeometricBoundingVolume *get_parent_bound(int n) const;
 
   INLINE void omit_collider(int n);
 
-  //private:
+private:
+  // ColliderMask here is a locally-defined value that simply serves
+  // to keep track of the colliders that are still interested in the
+  // current node.  Don't confuse it with CollideMask, which is a set
+  // of user-defined bits that specify which CollisionSolids may
+  // possibly intersect with each other.
   typedef int ColliderMask;
 
   INLINE ColliderMask get_mask(int n) const;
@@ -92,6 +98,7 @@ public:
 
   typedef PTA(CPT(GeometricBoundingVolume)) BoundingVolumes;
   BoundingVolumes _local_bounds;
+  BoundingVolumes _parent_bounds;
 };
 
 #include "qpcollisionLevelState.I"

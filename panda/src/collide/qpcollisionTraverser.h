@@ -62,9 +62,11 @@ private:
   void r_traverse(qpCollisionLevelState &level_state);
 
   void compare_collider_to_node(qpCollisionEntry &entry,
+                                const GeometricBoundingVolume *from_parent_gbv,
                                 const GeometricBoundingVolume *from_node_gbv,
                                 const GeometricBoundingVolume *into_node_gbv);
   void compare_collider_to_geom_node(qpCollisionEntry &entry,
+                                     const GeometricBoundingVolume *from_parent_gbv,
                                      const GeometricBoundingVolume *from_node_gbv,
                                      const GeometricBoundingVolume *into_node_gbv);
   void compare_collider_to_solid(qpCollisionEntry &entry,

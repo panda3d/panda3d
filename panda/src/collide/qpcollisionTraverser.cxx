@@ -380,15 +380,22 @@ r_traverse(qpCollisionLevelState &level_state) {
           entry._inv_wrt_space =
             entry._into_space * level_state.get_inv_space(c);
 
-          const GeometricBoundingVolume *col_gbv =
-            level_state.get_local_bound(c);
-
-          compare_collider_to_node(entry, col_gbv, node_gbv);
+          compare_collider_to_node(entry, 
+                                   level_state.get_parent_bound(c),
+                                   level_state.get_local_bound(c),
+                                   node_gbv);
         }
       }
     }
 
   } else if (node->is_geom_node() && level_state.has_any_collide_geom()) {
+#ifndef NDEBUG
+    if (collide_cat.is_spam()) {
+      collide_cat.spam()
+        << "Reached " << *node << "\n";
+    }
+#endif
+    
     qpGeomNode *gnode;
     DCAST_INTO_V(gnode, node);
     const BoundingVolume &node_bv = gnode->get_bound();
@@ -417,10 +424,10 @@ r_traverse(qpCollisionLevelState &level_state) {
         entry._inv_wrt_space =
           entry._into_space * level_state.get_inv_space(c);
 
-        const GeometricBoundingVolume *col_gbv =
-          level_state.get_local_bound(c);
-
-        compare_collider_to_geom_node(entry, col_gbv, node_gbv);
+        compare_collider_to_geom_node(entry, 
+                                      level_state.get_parent_bound(c),
+                                      level_state.get_local_bound(c),
+                                      node_gbv);
       }
     }
   }
@@ -439,12 +446,13 @@ r_traverse(qpCollisionLevelState &level_state) {
 ////////////////////////////////////////////////////////////////////
 void qpCollisionTraverser::
 compare_collider_to_node(qpCollisionEntry &entry,
+                         const GeometricBoundingVolume *from_parent_gbv,
                          const GeometricBoundingVolume *from_node_gbv,
                          const GeometricBoundingVolume *into_node_gbv) {
   bool within_node_bounds = true;
-  if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
+  if (from_parent_gbv != (GeometricBoundingVolume *)NULL &&
       into_node_gbv != (GeometricBoundingVolume *)NULL) {
-    within_node_bounds = (into_node_gbv->contains(from_node_gbv) != 0);
+    within_node_bounds = (into_node_gbv->contains(from_parent_gbv) != 0);
   }
 
   if (within_node_bounds) {
@@ -479,12 +487,13 @@ compare_collider_to_node(qpCollisionEntry &entry,
 ////////////////////////////////////////////////////////////////////
 void qpCollisionTraverser::
 compare_collider_to_geom_node(qpCollisionEntry &entry,
+                              const GeometricBoundingVolume *from_parent_gbv,
                               const GeometricBoundingVolume *from_node_gbv,
                               const GeometricBoundingVolume *into_node_gbv) {
   bool within_node_bounds = true;
-  if (from_node_gbv != (GeometricBoundingVolume *)NULL &&
+  if (from_parent_gbv != (GeometricBoundingVolume *)NULL &&
       into_node_gbv != (GeometricBoundingVolume *)NULL) {
-    within_node_bounds = (into_node_gbv->contains(from_node_gbv) != 0);
+    within_node_bounds = (into_node_gbv->contains(from_parent_gbv) != 0);
   }
 
   if (within_node_bounds) {
