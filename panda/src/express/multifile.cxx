@@ -762,10 +762,17 @@ open_read_subfile(int index) {
                    subfile->_data_start + (streampos)subfile->_data_length); 
   
   if ((subfile->_flags & SF_compressed) != 0) {
+#ifndef HAVE_ZLIB
+    express_cat.error()
+      << "zlib not compiled in; cannot read compressed multifiles.\n";
+    delete stream;
+    return NULL;
+#else  // HAVE_ZLIB
     // Oops, the subfile is compressed.  So actually, return an
     // IDecompressStream that wraps around the ISubStream.
     IDecompressStream *wrapper = new IDecompressStream(stream, true);
     stream = wrapper;
+#endif  // HAVE_ZLIB
   }
 
   if (stream->fail()) {
@@ -998,8 +1005,14 @@ string Multifile::
 add_new_subfile(const string &subfile_name, Subfile *subfile,
                 int compression_level) {
   if (compression_level != 0) {
+#ifndef HAVE_ZLIB
+    express_cat.warning()
+      << "zlib not compiled in; cannot generated compressed multifiles.\n";
+    compression_level = 0;
+#else  // HAVE_ZLIB
     subfile->_flags |= SF_compressed;
     subfile->_compression_level = compression_level;
+#endif  // HAVE_ZLIB
   }
 
   if (_next_index != (streampos)0) {
@@ -1369,6 +1382,11 @@ write_data(ostream &write, istream *read, streampos fpos) {
   } else {
     // We do have source data.  Copy it in, and also measure its
     // length.
+#ifndef HAVE_ZLIB
+    // Without ZLIB, we can't support compression.  The flag had
+    // better not be set.
+    nassertr((_flags & SF_compressed) == 0, fpos);
+#else  // HAVE_ZLIB
     if ((_flags & SF_compressed) != 0) {
       // Write it compressed.
       streampos write_start = write.tellp();
@@ -1383,17 +1401,19 @@ write_data(ostream &write, istream *read, streampos fpos) {
       zstream.close();
       streampos write_end = write.tellp();
       _data_length = (size_t)(write_end - write_start);
-    } else {
-      // Write it uncompressed.
-      _uncompressed_length = 0;
-      int byte = source->get();
-      while (!source->eof() && !source->fail()) {
-        _uncompressed_length++;
-        write.put(byte);
-        byte = source->get();
+    } else
+#endif  // HAVE_ZLIB
+      {
+        // Write it uncompressed.
+        _uncompressed_length = 0;
+        int byte = source->get();
+        while (!source->eof() && !source->fail()) {
+          _uncompressed_length++;
+          write.put(byte);
+          byte = source->get();
+        }
+        _data_length = _uncompressed_length;
       }
-      _data_length = _uncompressed_length;
-    }
   }
 
   // We can't set _data_start until down here, after we have read the
