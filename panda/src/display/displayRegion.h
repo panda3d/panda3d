@@ -23,6 +23,8 @@
 #include "referenceCount.h"
 #include "camera.h"
 #include "nodeChain.h"
+#include "cullResult.h"
+#include "pointerTo.h"
 
 #include "plist.h"
 
@@ -108,7 +110,13 @@ protected:
 
   bool _active;
 
+  // This is used to cache the culling result from last frame's
+  // drawing into this display region.  It should only be accessed or
+  // modified by the GraphicsEngine, during the cull traversal.
+  PT(CullResult) _cull_result;
+
   friend class GraphicsLayer;
+  friend class GraphicsEngine;
 };
 
 INLINE ostream &operator << (ostream &out, const DisplayRegion &dr);

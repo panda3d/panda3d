@@ -22,6 +22,8 @@
 #include "qpcamera.h"
 #include "colorAttrib.h"
 #include "cullFaceAttrib.h"
+#include "cullBin.h"
+#include "cullBinUnsorted.h"
 #include "qpgeomNode.h"
 #include "qplensNode.h"
 #include "nodeChain.h"
@@ -35,7 +37,7 @@
 
 #include "dconfig.h"
 
-Configure(config_pgraph);
+ConfigureDef(config_pgraph);
 NotifyCategoryDef(pgraph, "");
 
 ConfigureFn(config_pgraph) {
@@ -63,6 +65,8 @@ init_libpgraph() {
   qpCamera::init_type();
   ColorAttrib::init_type();
   CullFaceAttrib::init_type();
+  CullBin::init_type();
+  CullBinUnsorted::init_type();
   qpGeomNode::init_type();
   qpLensNode::init_type();
   NodeChain::init_type();

@@ -18,6 +18,8 @@
 
 #include "renderState.h"
 #include "billboardAttrib.h"
+#include "cullBinManager.h"
+#include "config_pgraph.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "datagramIterator.h"
@@ -667,6 +669,20 @@ issue_delta_set(const RenderState *other,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::bin_removed
+//       Access: Public, Static
+//  Description: Intended to be called by
+//               CullBinManager::remove_bin(), this informs all the
+//               RenderStates in the world to remove the indicated
+//               bin_index from their cache if it has been cached.
+////////////////////////////////////////////////////////////////////
+void RenderState::
+bin_removed(int bin_index) {
+  // Do something here.
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::return_new
 //       Access: Private, Static
 //  Description: This function is used to share a common RenderState
@@ -839,6 +855,33 @@ determine_billboard() {
     _billboard = DCAST(BillboardAttrib, attrib);
   }
   _flags |= F_checked_billboard;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_bin_index
+//       Access: Private
+//  Description: This is the private implementation of
+//               get_bin_index().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_bin_index() {
+  string bin_name = "opaque";
+
+  /*
+  const RenderAttrib *attrib = get_attrib(CullBinAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const CullBinAttrib *bin_attrib = DCAST(CullBinAttrib, attrib);
+  }
+  */
+
+  CullBinManager *bin_manager = CullBinManager::get_global_ptr();
+  _bin_index = bin_manager->find_bin(bin_name);
+  if (_bin_index == -1) {
+    pgraph_cat.warning()
+      << "No bin named " << bin_name << "; creating default bin.\n";
+    _bin_index = bin_manager->add_bin(bin_name, CullBinManager::BT_unsorted, 0);
+  }
+  _flags |= F_checked_bin_index;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
-// Filename: cullHandler.cxx
-// Created by:  drose (23Feb02)
+// Filename: binCullHandler.cxx
+// Created by:  drose (28Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,34 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "cullHandler.h"
-#include "geom.h"
-#include "transformState.h"
-#include "renderState.h"
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullHandler::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-CullHandler::
-~CullHandler()
-{
-}
+#include "binCullHandler.h"
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullHandler::record_geom
+//     Function: BinCullHandler::record_geom
 //       Access: Public, Virtual
 //  Description: This callback function is intended to be overridden
 //               by a derived class.  This is called as each Geom is
 //               discovered by the CullTraverser.
-//
-//               This default method simply outputs a message to cerr;
-//               it's not intended to be used except for debugging.
 ////////////////////////////////////////////////////////////////////
-void CullHandler::
+void BinCullHandler::
 record_geom(Geom *geom, const TransformState *transform,
             const RenderState *state) {
-  cerr << *geom << " " << *transform << " " << *state << "\n";
+  _cull_result->add_geom(geom, transform, state);
 }

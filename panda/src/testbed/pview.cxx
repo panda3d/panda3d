@@ -183,7 +183,7 @@ make_default_geometry(PandaNode *parent) {
   if (tex != (Texture *)NULL) {
     tex->set_minfilter(Texture::FT_linear);
     tex->set_magfilter(Texture::FT_linear);
-    state->add_attrib(TextureAttrib::make(tex));
+    state = state->add_attrib(TextureAttrib::make(tex));
   }
   
   qpGeomNode *geomnode = new qpGeomNode("tri");

@@ -1,5 +1,5 @@
-// Filename: config_pgraph.h
-// Created by:  drose (21Feb02)
+// Filename: binCullHandler.I
+// Created by:  drose (28Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,16 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_PGRAPH_H
-#define CONFIG_PGRAPH_H
 
-#include "pandabase.h"
-#include "notifyCategoryProxy.h"
-#include "dconfig.h"
-
-ConfigureDecl(config_pgraph, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(pgraph, EXPCL_PANDA, EXPTP_PANDA);
-
-extern EXPCL_PANDA void init_libpgraph();
-
-#endif
+////////////////////////////////////////////////////////////////////
+//     Function: BinCullHandler::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE BinCullHandler::
+BinCullHandler(CullResult *cull_result) :
+  _cull_result(cull_result)
+{
+}

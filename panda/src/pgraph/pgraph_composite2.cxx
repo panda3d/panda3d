@@ -1,3 +1,8 @@
+#include "cycleData.cxx"
+#include "cycleDataReader.cxx"
+#include "cycleDataWriter.cxx"
+#include "qpgeomNode.cxx"
+#include "qplensNode.cxx"
 #include "nodeChain.cxx"
 #include "nodeChainComponent.cxx"
 #include "pandaNode.cxx"

@@ -103,6 +103,9 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
 
+  virtual void set_state_and_transform(const RenderState *state,
+                                       const TransformState *transform);
+
   virtual void clear(const RenderBuffer &buffer)=0;
   virtual void clear(const RenderBuffer &buffer, const DisplayRegion* region)=0;
   virtual void clear_framebuffer();

@@ -1,5 +1,5 @@
-// Filename: cullHandler.h
-// Created by:  drose (23Feb02)
+// Filename: binCullHandler.h
+// Created by:  drose (28Feb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,32 +16,36 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CULLHANDLER_H
-#define CULLHANDLER_H
+#ifndef BINCULLHANDLER_H
+#define BINCULLHANDLER_H
 
 #include "pandabase.h"
-
-class Geom;
-class TransformState;
-class RenderState;
+#include "cullHandler.h"
+#include "cullResult.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : CullHandler
-// Description : This defines the abstract interface for an object
-//               that receives Geoms identified by the CullTraverser.
-//               By itself, it's not a particularly useful class; to
-//               use it, derive from it and redefine record_geom().
+//       Class : BinCullHandler
+// Description : This CullHandler sends all of the geoms it receives
+//               into a CullResult object, for binning (and later
+//               drawing).  This is the kind of CullHandler to use for
+//               most normal rendering needs.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullHandler {
+class EXPCL_PANDA BinCullHandler : public CullHandler {
 public:
-  virtual ~CullHandler();
+  INLINE BinCullHandler(CullResult *cull_result);
 
   //  virtual void begin_decal();
   virtual void record_geom(Geom *geom, const TransformState *transform,
                            const RenderState *state);
   //  virtual void push_decal();
   //  virtual void pop_decal();
+
+private:
+  PT(CullResult) _cull_result;
 };
+
+#include "binCullHandler.I"
 
 #endif
 

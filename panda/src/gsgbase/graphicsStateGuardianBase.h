@@ -47,6 +47,8 @@ class GeomSphere;
 class TextureContext;
 class Texture;
 class PixelBuffer;
+class RenderState;
+class TransformState;
 
 class Material;
 class Fog;
@@ -129,15 +131,9 @@ public:
   virtual bool wants_texcoords(void) const=0;
   virtual bool wants_colors(void) const=0;
 
-
-  // Defined here are some internal interface functions for the
-  // GraphicsStateGuardian.  These are here to support
-  // double-dispatching from Geoms and NodeTransitions, and are
-  // intended to be invoked only directly by the appropriate Geom and
-  // NodeTransition types.  They're public only because it would be too
-  // inconvenient to declare each of those types to be friends of this
-  // class.
-
+  // These are some general interface functions; they're defined here
+  // mainly to make it easy to call these from code in some directory
+  // that display depends on.
   virtual TextureContext *prepare_texture(Texture *tex)=0;
   virtual void apply_texture(TextureContext *tc)=0;
   virtual void release_texture(TextureContext *tc)=0;
@@ -148,6 +144,17 @@ public:
 
   virtual GeomContext *prepare_geom(Geom *geom)=0;
   virtual void release_geom(GeomContext *gc)=0;
+
+  virtual void set_state_and_transform(const RenderState *state,
+                                       const TransformState *transform)=0;
+
+  // Defined here are some internal interface functions for the
+  // GraphicsStateGuardian.  These are here to support
+  // double-dispatching from Geoms and NodeTransitions, and are
+  // intended to be invoked only directly by the appropriate Geom and
+  // NodeTransition types.  They're public only because it would be too
+  // inconvenient to declare each of those types to be friends of this
+  // class.
 
   virtual void draw_point(GeomPoint *geom, GeomContext *gc)=0;
   virtual void draw_line(GeomLine *geom, GeomContext *gc)=0;

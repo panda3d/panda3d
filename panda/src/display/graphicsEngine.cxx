@@ -19,6 +19,8 @@
 #include "graphicsEngine.h"
 #include "pipeline.h"
 #include "drawCullHandler.h"
+#include "binCullHandler.h"
+#include "cullResult.h"
 #include "qpcullTraverser.h"
 #include "clockObject.h"
 
@@ -77,7 +79,8 @@ remove_window(GraphicsWindow *window) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 render_frame() {
-  cull_and_draw_together();
+  //  cull_and_draw_together();
+  cull_bin_draw();
 
   // **** This doesn't belong here; it really belongs in the Pipeline,
   // but here it is for now.
@@ -178,5 +181,112 @@ cull_and_draw_together(GraphicsWindow *win, DisplayRegion *dr) {
   
   trav.traverse(scene.node());
   
+  gsg->pop_display_region(old_dr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::cull_bin_draw
+//       Access: Private
+//  Description: An implementation of render_frame() that renders the
+//               frame with a BinCullHandler, to cull into bins and
+//               then draw the bins.  This is the normal method.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+cull_bin_draw() {
+  Windows::iterator wi;
+  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
+    GraphicsWindow *win = (*wi);
+    win->clear();
+
+    int num_display_regions = win->get_num_display_regions();
+    for (int i = 0; i < num_display_regions; i++) {
+      DisplayRegion *dr = win->get_display_region(i);
+      cull_bin_draw(win, dr);
+    }
+    win->flip();
+    win->process_events();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::cull_bin_draw
+//       Access: Private
+//  Description: An implementation of render_frame() that renders the
+//               frame with a BinCullHandler, to cull into bins and
+//               then draw the bins.  This is the normal method.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+cull_bin_draw(GraphicsWindow *win, DisplayRegion *dr) {
+  const NodeChain &camera = dr->get_qpcamera();
+  if (camera.is_empty()) {
+    // No camera, no draw.
+    return;
+  }
+
+  qpCamera *camera_node;
+  DCAST_INTO_V(camera_node, camera.node());
+
+  if (!camera_node->is_active()) {
+    // Camera inactive, no draw.
+    return;
+  }
+
+  Lens *lens = camera_node->get_lens();
+  if (lens == (Lens *)NULL) {
+    // No lens, no draw.
+    return;
+  }
+
+  NodeChain scene = camera_node->get_scene();
+  if (scene.is_empty()) {
+    // No scene, no draw.
+    return;
+  }
+
+  GraphicsStateGuardian *gsg = win->get_gsg();
+  nassertv(gsg != (GraphicsStateGuardian *)NULL);
+
+  if (!gsg->set_lens(lens)) {
+    // The lens is inappropriate somehow.
+    display_cat.error()
+      << gsg->get_type() << " cannot render with " << lens->get_type()
+      << "\n";
+    return;
+  }
+
+  PT(CullResult) cull_result = dr->_cull_result;
+  if (cull_result == (CullResult *)NULL) {
+    cull_result = new CullResult(gsg);
+  }
+
+  BinCullHandler cull_handler(cull_result);
+  qpCullTraverser trav;
+  trav.set_cull_handler(&cull_handler);
+
+  // The world transform is computed from the camera's position; we
+  // then might need to adjust it into the GSG's internal coordinate
+  // system.
+  trav.set_camera_transform(scene.get_rel_transform(camera));
+
+  CPT(TransformState) render_transform = camera.get_rel_transform(scene);
+  CoordinateSystem external_cs = gsg->get_coordinate_system();
+  CoordinateSystem internal_cs = gsg->get_internal_coordinate_system();
+  if (internal_cs != CS_default && internal_cs != external_cs) {
+    CPT(TransformState) cs_transform = 
+      TransformState::make_mat(LMatrix4f::convert_mat(external_cs, internal_cs));
+    render_transform = cs_transform->compose(render_transform);
+  }
+  trav.set_render_transform(render_transform);
+  
+  trav.traverse(scene.node());
+  cull_result->finish_cull();
+
+  // Save the results for next frame.
+  dr->_cull_result = cull_result->make_next();
+
+  // Now draw.
+  DisplayRegionStack old_dr = gsg->push_display_region(dr);
+  gsg->prepare_display_region();
+  cull_result->draw();
   gsg->pop_display_region(old_dr);
 }

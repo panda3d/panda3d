@@ -167,3 +167,22 @@ get_billboard() const {
   }
   return _billboard;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_bin_index
+//       Access: Public
+//  Description: Returns the bin index indicated by the CullBinAttrib
+//               transition, if any, associated by this state (or the
+//               default bin index if there is no CullBinAttrib).  As
+//               in get_billboard(), above, this function is provided
+//               as an optimization.
+////////////////////////////////////////////////////////////////////
+INLINE int RenderState::
+get_bin_index() const {
+  if ((_flags & F_checked_bin_index) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal bin_index cache.
+    ((RenderState *)this)->determine_bin_index();
+  }
+  return _bin_index;
+}

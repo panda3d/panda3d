@@ -54,6 +54,9 @@ private:
   void cull_and_draw_together();
   void cull_and_draw_together(GraphicsWindow *win, DisplayRegion *dr);
 
+  void cull_bin_draw();
+  void cull_bin_draw(GraphicsWindow *win, DisplayRegion *dr);
+
   Pipeline *_pipeline;
 
   typedef pset<PT(GraphicsWindow)> Windows;

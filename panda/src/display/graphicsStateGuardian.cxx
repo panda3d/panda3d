@@ -777,6 +777,19 @@ release_geom(GeomContext *) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_state_and_transform
+//       Access: Public, Virtual
+//  Description: Simultaneously resets the render state and the
+//               transform state.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+set_state_and_transform(const RenderState *state,
+                        const TransformState *transform) {
+  set_state(state);
+  set_transform(transform);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::clear_framebuffer
 //       Access: Public, Virtual
 //  Description: Erases the contents of the framebuffer, according to

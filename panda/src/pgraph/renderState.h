@@ -88,17 +88,21 @@ PUBLISHED:
 
 public:
   INLINE const BillboardAttrib *get_billboard() const;
+  INLINE int get_bin_index() const;
 
   CPT(RenderState) issue_delta_modify(const RenderState *other, 
                                       GraphicsStateGuardianBase *gsg) const;
   CPT(RenderState) issue_delta_set(const RenderState *other, 
                                    GraphicsStateGuardianBase *gsg) const;
 
+  static void bin_removed(int bin_index);
+
 private:
   static CPT(RenderState) return_new(RenderState *state);
   CPT(RenderState) do_compose(const RenderState *other) const;
   CPT(RenderState) do_invert_compose(const RenderState *other) const;
   void determine_billboard();
+  void determine_bin_index();
 
 private:
   typedef pset<const RenderState *, IndirectLess<RenderState> > States;
@@ -154,8 +158,13 @@ private:
   // We cache the pointer to the BillboardAttrib stored in the state,
   // if there is one.
   const BillboardAttrib *_billboard;
+  
+  // We also cache the index to the associated GeomBin.
+  int _bin_index;
+
   enum Flags {
     F_checked_billboard    = 0x0001,
+    F_checked_bin_index    = 0x0002,
   };
   short _flags;
 

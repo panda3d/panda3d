@@ -7,11 +7,16 @@
   
   #define SOURCES \
     billboardAttrib.h billboardAttrib.I \
+    binCullHandler.h binCullHandler.I \
     qpcamera.h qpcamera.I \
     colorAttrib.h colorAttrib.I \
     config_pgraph.h \
+    cullBin.h cullBin.I \
+    cullBinManager.h cullBinManager.I \
+    cullBinUnsorted.h cullBinUnsorted.I \
     cullFaceAttrib.h cullFaceAttrib.I \
     cullHandler.h \
+    cullResult.h \
     qpcullTraverser.h qpcullTraverser.I \
     cycleData.h cycleData.I \
     cycleDataReader.h cycleDataReader.I \
@@ -32,11 +37,16 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
   #define INCLUDED_SOURCES \
     billboardAttrib.cxx \
+    binCullHandler.cxx \
     qpcamera.cxx \
     colorAttrib.cxx \
     config_pgraph.cxx \
+    cullBin.cxx \
+    cullBinManager.cxx \
+    cullBinUnsorted.cxx \
     cullFaceAttrib.cxx \
     cullHandler.cxx \
+    cullResult.cxx \
     qpcullTraverser.cxx \
     cycleData.cxx \
     cycleDataReader.cxx \
@@ -62,11 +72,16 @@
 
   #define INSTALL_HEADERS \
     billboardAttrib.h billboardAttrib.I \
+    binCullHandler.h binCullHandler.I \
     qpcamera.h qpcamera.I \
     colorAttrib.h colorAttrib.I \
     config_pgraph.h \
+    cullBin.h cullBin.I \
+    cullBinManager.h cullBinManager.I \
+    cullBinUnsorted.h cullBinUnsorted.I \
     cullFaceAttrib.h cullFaceAttrib.I \
     cullHandler.h \
+    cullResult.h \
     qpcullTraverser.h qpcullTraverser.I \
     cycleData.h cycleData.I \
     cycleDataReader.h cycleDataReader.I \
