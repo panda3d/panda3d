@@ -139,6 +139,11 @@ run() {
       do_reparent();
     }
 
+    // We currently do not implement optimizing morph sliders.  Need
+    // to add this at some point; it's quite easy.  Identity and empty
+    // morph sliders can simply be removed, while static sliders need
+    // to be applied to the vertices and then removed.
+
     write_eggs();
   }
 }
