@@ -58,6 +58,8 @@ PUBLISHED:
   INLINE bool is_down(int index) const;
   INLINE bool is_any_down() const;
 
+  string get_prefix() const;
+
   void output(ostream &out) const;
   void write(ostream &out) const;
 

@@ -17,11 +17,14 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pgButton.h"
+#include "pgMouseWatcherParameter.h"
+
 #include "throw_event.h"
 #include "renderRelation.h"
 #include "colorTransition.h"
 #include "transformTransition.h"
 #include "mouseButton.h"
+#include "mouseWatcherParameter.h"
 
 TypeHandle PGButton::_type_handle;
 
@@ -34,6 +37,7 @@ PGButton::
 PGButton(const string &name) : PGItem(name)
 {
   _button_down = false;
+  _click_buttons.insert(MouseButton::one());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,11 +91,11 @@ make_copy() const {
 //               mouse enters the region.
 ////////////////////////////////////////////////////////////////////
 void PGButton::
-enter() {
+enter(const MouseWatcherParameter &param) {
   if (get_active()) {
     set_state(_button_down ? S_depressed : S_rollover);
   }
-  PGItem::enter();
+  PGItem::enter(param);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -101,70 +105,68 @@ enter() {
 //               mouse exits the region.
 ////////////////////////////////////////////////////////////////////
 void PGButton::
-exit() {
+exit(const MouseWatcherParameter &param) {
   if (get_active()) {
     set_state(S_ready);
   }
-  PGItem::exit();
+  PGItem::exit(param);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGButton::button_down
+//     Function: PGButton::press
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever a
 //               mouse or keyboard button is depressed while the mouse
 //               is within the region.
 ////////////////////////////////////////////////////////////////////
 void PGButton::
-button_down(ButtonHandle button, float x, float y) {
-  if (button == MouseButton::one() ||
-      button == MouseButton::two() ||
-      button == MouseButton::three()) {
+press(const MouseWatcherParameter &param) {
+  if (has_click_button(param.get_button())) {
     if (get_active()) {
       _button_down = true;
       set_state(S_depressed);
     }
   }
-  PGItem::button_down(button, x, y);
+  PGItem::press(param);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGButton::button_up
+//     Function: PGButton::release
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever a
 //               mouse or keyboard button previously depressed with
-//               button_down() is release.  The bool is_within flag is
+//               press() is release.  The bool is_within flag is
 //               true if the button was released while the mouse was
 //               still within the region, or false if it was released
 //               outside the region.
 ////////////////////////////////////////////////////////////////////
 void PGButton::
-button_up(ButtonHandle button, float x, float y, bool is_within) {
-  if (button == MouseButton::one() ||
-      button == MouseButton::two() ||
-      button == MouseButton::three()) {
+release(const MouseWatcherParameter &param) {
+  if (has_click_button(param.get_button())) {
     _button_down = false;
     if (get_active()) {
-      if (is_within) {
-        set_state(S_rollover);
-        click();
-      } else {
+      if (param.is_outside()) {
         set_state(S_ready);
+      } else {
+        set_state(S_rollover);
+        click(param);
       }
     }
   }
-  PGItem::button_up(button, x, y, is_within);
+  PGItem::release(param);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PGButton::click
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
-//               button is clicked normally.
+//               button is clicked down-and-up by the user normally.
 ////////////////////////////////////////////////////////////////////
 void PGButton::
-click() {
-  throw_event(get_click_event());
+click(const MouseWatcherParameter &param) {
+  PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
+  throw_event(get_click_event(param.get_button()), 
+              EventParameter(ep));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -236,4 +238,43 @@ setup(const ArcChain &ready, const ArcChain &depressed,
   instance_to_state_def(S_depressed, depressed);
   instance_to_state_def(S_rollover, rollover);
   instance_to_state_def(S_inactive, inactive);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGButton::add_click_button
+//       Access: Published
+//  Description: Adds the indicated button to the set of buttons that
+//               can effectively "click" the PGButton.  Normally, this
+//               is just MouseButton::one().  Returns true if the
+//               button was added, or false if it was already there.
+////////////////////////////////////////////////////////////////////
+bool PGButton::
+add_click_button(const ButtonHandle &button) {
+  return _click_buttons.insert(button).second;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGButton::remove_click_button
+//       Access: Published
+//  Description: Removes the indicated button from the set of buttons
+//               that can effectively "click" the PGButton.  Normally,
+//               this is just MouseButton::one().  Returns true if the
+//               button was removed, or false if it was not in the
+//               set.
+////////////////////////////////////////////////////////////////////
+bool PGButton::
+remove_click_button(const ButtonHandle &button) {
+  return (_click_buttons.erase(button) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGButton::has_click_button
+//       Access: Published
+//  Description: Returns true if the indicated button is on the set of
+//               buttons that can effectively "click" the PGButton.
+//               Normally, this is just MouseButton::one().
+////////////////////////////////////////////////////////////////////
+bool PGButton::
+has_click_button(const ButtonHandle &button) {
+  return (_click_buttons.count(button) != 0);
 }

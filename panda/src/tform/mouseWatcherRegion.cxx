@@ -50,7 +50,7 @@ write(ostream &out, int indent_level) const {
 //               mouse enters the region.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherRegion::
-enter() {
+enter(const MouseWatcherParameter &) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,30 +60,27 @@ enter() {
 //               mouse exits the region.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherRegion::
-exit() {
+exit(const MouseWatcherParameter &) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcherRegion::button_down
+//     Function: MouseWatcherRegion::press
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever a
 //               mouse or keyboard button is depressed while the mouse
 //               is within the region.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherRegion::
-button_down(ButtonHandle, float, float) {
+press(const MouseWatcherParameter &) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcherRegion::button_up
+//     Function: MouseWatcherRegion::release
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever a
 //               mouse or keyboard button previously depressed with
-//               button_down() is release.  The bool is_within flag is
-//               true if the button was released while the mouse was
-//               still within the region, or false if it was released
-//               outside the region.
+//               press() is released.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherRegion::
-button_up(ButtonHandle, float, float, bool) {
+release(const MouseWatcherParameter &) {
 }

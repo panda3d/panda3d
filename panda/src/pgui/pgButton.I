@@ -73,6 +73,6 @@ set_active(bool active) {
 //               button is clicked normally.
 ////////////////////////////////////////////////////////////////////
 INLINE string PGButton::
-get_click_event() const {
-  return "click-" + get_id();
+get_click_event(const ButtonHandle &button) const {
+  return "click-" + button.get_name() + "-" + get_id();
 }

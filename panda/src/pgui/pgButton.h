@@ -23,6 +23,7 @@
 
 #include "pgItem.h"
 #include "arcChain.h"
+#include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PGButton
@@ -42,12 +43,12 @@ public:
 
   virtual Node *make_copy() const;
 
-  virtual void enter();
-  virtual void exit();
-  virtual void button_down(ButtonHandle button, float x, float y);
-  virtual void button_up(ButtonHandle button, float x, float y, bool is_within);
+  virtual void enter(const MouseWatcherParameter &param);
+  virtual void exit(const MouseWatcherParameter &param);
+  virtual void press(const MouseWatcherParameter &param);
+  virtual void release(const MouseWatcherParameter &param);
 
-  virtual void click();
+  virtual void click(const MouseWatcherParameter &param);
 
 PUBLISHED:
   enum State {
@@ -67,9 +68,16 @@ PUBLISHED:
 
   INLINE void set_active(bool active);
 
-  INLINE string get_click_event() const;
+  bool add_click_button(const ButtonHandle &button);
+  bool remove_click_button(const ButtonHandle &button);
+  bool has_click_button(const ButtonHandle &button);
+
+  INLINE string get_click_event(const ButtonHandle &button) const;
 
 private:
+  typedef pset<ButtonHandle> Buttons;
+  Buttons _click_buttons;
+
   bool _button_down;
 
 public:

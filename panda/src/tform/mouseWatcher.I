@@ -300,3 +300,26 @@ INLINE EventHandler *MouseWatcher::
 get_extra_handler(void) const {
   return _eh;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::set_modifier_buttons
+//       Access: Public
+//  Description: Sets the buttons that should be monitored as modifier
+//               buttons for generating events to the
+//               MouseWatcherRegions.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+set_modifier_buttons(const ModifierButtons &mods) {
+  _mods = mods;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::get_modifier_buttons
+//       Access: Published
+//  Description: Returns the set of buttons that are being monitored
+//               as modifier buttons, as well as their current state.
+////////////////////////////////////////////////////////////////////
+INLINE const ModifierButtons &MouseWatcher::
+get_modifier_buttons() const {
+  return _mods;
+}

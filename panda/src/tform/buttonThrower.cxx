@@ -132,15 +132,7 @@ transmit_data(NodeAttributes &data) {
         if (!_mods.button_down(be._button)) {
           // We only prepend modifier names on the button-down events,
           // and only for buttons which are not themselves modifiers.
-          string prepend;
-
-          for (int i = 0; i < _mods.get_num_buttons(); i++) {
-            ButtonHandle modifier = _mods.get_button(i);
-            if (_mods.is_down(modifier)) {
-              prepend += modifier.get_name() + "-";
-            }
-          }
-          event_name = prepend + event_name;
+          event_name = _mods.get_prefix() + event_name;
         }
 
       } else {

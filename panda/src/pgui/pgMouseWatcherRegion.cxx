@@ -55,9 +55,9 @@ PGMouseWatcherRegion::
 //               mouse enters the region.
 ////////////////////////////////////////////////////////////////////
 void PGMouseWatcherRegion::
-enter() {
+enter(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
-    _item->enter();
+    _item->enter(param);
   }
 }
 
@@ -68,39 +68,36 @@ enter() {
 //               mouse exits the region.
 ////////////////////////////////////////////////////////////////////
 void PGMouseWatcherRegion::
-exit() {
+exit(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
-    _item->exit();
+    _item->exit(param);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherRegion::button_down
+//     Function: PGMouseWatcherRegion::press
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever a
 //               mouse or keyboard button is depressed while the mouse
 //               is within the region.
 ////////////////////////////////////////////////////////////////////
 void PGMouseWatcherRegion::
-button_down(ButtonHandle button, float x, float y) {
+press(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
-    _item->button_down(button, x, y);
+    _item->press(param);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherRegion::button_up
+//     Function: PGMouseWatcherRegion::release
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever a
 //               mouse or keyboard button previously depressed with
-//               button_down() is release.  The bool is_within flag is
-//               true if the button was released while the mouse was
-//               still within the region, or false if it was released
-//               outside the region.
+//               press() is released.
 ////////////////////////////////////////////////////////////////////
 void PGMouseWatcherRegion::
-button_up(ButtonHandle button, float x, float y, bool is_within) {
+release(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
-    _item->button_up(button, x, y, is_within);
+    _item->release(param);
   }
 }

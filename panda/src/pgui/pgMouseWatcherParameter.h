@@ -1,4 +1,4 @@
-// Filename: pgButtonEvent.h
+// Filename: pgMouseWatcherParameter.h
 // Created by:  drose (05Jul01)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,40 +16,31 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PGBUTTONEVENT_H
-#define PGBUTTONEVENT_H
+#ifndef PGMOUSEWATCHERPARAMETER_H
+#define PGMOUSEWATCHERPARAMETER_H
 
 #include "pandabase.h"
 
+#include "mouseWatcherParameter.h"
 #include "typedReferenceCount.h"
-#include "buttonHandle.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : PGButtonEvent
-// Description : This is sent along as a parameter to a button_down or
-//               button_up event for an item to indicate which button
-//               was involved, and what the current mouse position
-//               was.
+//       Class : PGMouseWatcherParameter
+// Description : This specialization on MouseWatcherParameter allows
+//               us to tag on additional elements to events for the
+//               gui system, and also inherits from
+//               TypedReferenceCount so we can attach this thing to an
+//               event.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGButtonEvent : public TypedReferenceCount {
+class EXPCL_PANDA PGMouseWatcherParameter : public MouseWatcherParameter, public TypedReferenceCount {
 public:
-  INLINE PGButtonEvent();
-  INLINE PGButtonEvent(ButtonHandle button, float mouse_x, float mouse_y);
-  virtual ~PGButtonEvent();
+  INLINE PGMouseWatcherParameter();
+  INLINE PGMouseWatcherParameter(const MouseWatcherParameter &copy);
+  INLINE void operator = (const MouseWatcherParameter &copy);
+  virtual ~PGMouseWatcherParameter();
 
 PUBLISHED:
-  INLINE ButtonHandle get_button() const;
-  INLINE string get_button_name() const;
-
-  INLINE float get_mouse_x() const;
-  INLINE float get_mouse_y() const;
-
   void output(ostream &out) const;
-
-public:
-  ButtonHandle _button;
-  float _mouse_x;
-  float _mouse_y;
 
 public:
   static TypeHandle get_class_type() {
@@ -57,7 +48,7 @@ public:
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, "PGButtonEvent",
+    register_type(_type_handle, "PGMouseWatcherParameter",
                   TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -69,8 +60,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const PGButtonEvent &event);
-
-#include "pgButtonEvent.I"
+#include "pgMouseWatcherParameter.I"
 
 #endif

@@ -1,4 +1,4 @@
-// Filename: pgButtonEvent.cxx
+// Filename: pgMouseWatcherParameter.cxx
 // Created by:  drose (05Jul01)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,25 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "pgButtonEvent.h"
+#include "pgMouseWatcherParameter.h"
 
-TypeHandle PGButtonEvent::_type_handle;
+TypeHandle PGMouseWatcherParameter::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGButtonEvent::Destructor
+//     Function: PGMouseWatcherParameter::Destructor
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-PGButtonEvent::
-~PGButtonEvent() {
+PGMouseWatcherParameter::
+~PGMouseWatcherParameter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGButtonEvent::output
+//     Function: PGMouseWatcherParameter::output
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void PGButtonEvent::
+void PGMouseWatcherParameter::
 output(ostream &out) const {
-  out << _button << " at (" << _mouse_x << ", " << _mouse_y << ")";
+  MouseWatcherParameter::output(out);
 }

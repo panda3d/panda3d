@@ -24,14 +24,16 @@
 #include "mouseWatcherRegion.h"
 #include "mouseWatcherGroup.h"
 
-#include <dataNode.h>
-#include <vec3DataTransition.h>
-#include <vec3DataAttribute.h>
-#include <luse.h>
-#include <nodeRelation.h>
-#include <pointerTo.h>
-#include <eventHandler.h>
-#include <pt_NodeRelation.h>
+#include "dataNode.h"
+#include "vec3DataTransition.h"
+#include "vec3DataAttribute.h"
+#include "luse.h"
+#include "nodeRelation.h"
+#include "pointerTo.h"
+#include "eventHandler.h"
+#include "pt_NodeRelation.h"
+#include "modifierButtons.h"
+#include "buttonHandle.h"
 
 #include "pset.h"
 
@@ -93,6 +95,9 @@ PUBLISHED:
   INLINE void set_extra_handler(EventHandler *eh);
   INLINE EventHandler *get_extra_handler(void) const;
 
+  INLINE void set_modifier_buttons(const ModifierButtons &mods);
+  INLINE const ModifierButtons &get_modifier_buttons() const;
+
 public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -104,7 +109,7 @@ private:
   void set_current_region(MouseWatcherRegion *region);
   void throw_event_pattern(const string &pattern,
                            const MouseWatcherRegion *region,
-                           const string &button_name = string());
+                           const ButtonHandle &button);
 
   typedef pset< PT(MouseWatcherGroup) > Groups;
   Groups _groups;
@@ -124,6 +129,8 @@ private:
   PT_NodeRelation _geometry;
 
   EventHandler* _eh;
+
+  ModifierButtons _mods;
 
 ////////////////////////////////////////////////////////////////////
 // From parent class DataNode

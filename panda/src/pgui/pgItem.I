@@ -186,39 +186,29 @@ get_exit_event() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGItem::get_button_down_event
+//     Function: PGItem::get_press_event
 //       Access: Published
 //  Description: Returns the event name that will be thrown when the
-//               item is active and a mouse or keyboard button is
-//               depressed while the mouse is within the frame.
-//
-//               This event will be thrown with one parameter, which
-//               will be the PGButtonEvent for the button that
-//               generated the event.
+//               item is active and the indicated mouse or keyboard
+//               button is depressed while the mouse is within the
+//               frame.
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
-get_button_down_event() const {
-  return "bdown-" + get_id();
+get_press_event(const ButtonHandle &button) const {
+  return "press-" + button.get_name() + "-" + get_id();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGItem::get_button_up_event
+//     Function: PGItem::get_release_event
 //       Access: Published
 //  Description: Returns the event name that will be thrown when the
-//               item is active and a mouse or keyboard button,
-//               formerly clicked down is within the frame, is
-//               released.
-//
-//               This event will be thrown with two parameters, the
-//               first of which will be the PGButtonEvent for the
-//               button that generated the event, and the second of
-//               which will be a boolean flag indicating true if the
-//               mouse was within the frame while the button was
+//               item is active and the indicated mouse or keyboard
+//               button, formerly clicked down is within the frame, is
 //               released.
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
-get_button_up_event() const {
-  return "bup-" + get_id();
+get_release_event(const ButtonHandle &button) const {
+  return "release-" + button.get_name() + "-" + get_id();
 }
 
 ////////////////////////////////////////////////////////////////////

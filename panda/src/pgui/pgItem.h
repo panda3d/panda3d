@@ -33,6 +33,7 @@
 #include "textNode.h"
 
 class ArcChain;
+class MouseWatcherParameter;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PGItem
@@ -63,10 +64,10 @@ public:
   void activate_region(const LMatrix4f &transform, int sort);
   INLINE PGMouseWatcherRegion *get_region() const;
 
-  virtual void enter();
-  virtual void exit();
-  virtual void button_down(ButtonHandle button, float x, float y);
-  virtual void button_up(ButtonHandle button, float x, float y, bool is_within);
+  virtual void enter(const MouseWatcherParameter &param);
+  virtual void exit(const MouseWatcherParameter &param);
+  virtual void press(const MouseWatcherParameter &param);
+  virtual void release(const MouseWatcherParameter &param);
 
 PUBLISHED:
   INLINE void set_frame(float left, float right, float bottom, float top);
@@ -93,8 +94,8 @@ PUBLISHED:
   INLINE const string &get_id() const;
   INLINE string get_enter_event() const;
   INLINE string get_exit_event() const;
-  INLINE string get_button_down_event() const;
-  INLINE string get_button_up_event() const;
+  INLINE string get_press_event(const ButtonHandle &button) const;
+  INLINE string get_release_event(const ButtonHandle &button) const;
 
   static TextNode *get_text_node();
   INLINE static void set_text_node(TextNode *node);

@@ -19,12 +19,15 @@
 #ifndef MOUSEWATCHERREGION_H
 #define MOUSEWATCHERREGION_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <namable.h>
-#include <typedReferenceCount.h>
-#include <luse.h>
-#include <buttonHandle.h>
+#include "namable.h"
+#include "typedReferenceCount.h"
+#include "luse.h"
+#include "buttonHandle.h"
+#include "modifierButtons.h"
+
+class MouseWatcherParameter;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MouseWatcherRegion
@@ -57,10 +60,10 @@ PUBLISHED:
 public:
   INLINE bool operator < (const MouseWatcherRegion &other) const;
 
-  virtual void enter();
-  virtual void exit();
-  virtual void button_down(ButtonHandle button, float x, float y);
-  virtual void button_up(ButtonHandle button, float x, float y, bool is_within);
+  virtual void enter(const MouseWatcherParameter &param);
+  virtual void exit(const MouseWatcherParameter &param);
+  virtual void press(const MouseWatcherParameter &param);
+  virtual void release(const MouseWatcherParameter &param);
 
 private:
   LVecBase4f _frame;
@@ -69,6 +72,8 @@ private:
 
   bool _active;
   bool _suppress_below;
+
+  ModifierButtons _mods;
 
 public:
   static TypeHandle get_class_type() {

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pgItem.h"
-#include "pgButtonEvent.h"
+#include "pgMouseWatcherParameter.h"
 
 #include "namedNode.h"
 #include "throw_event.h"
@@ -174,8 +174,10 @@ activate_region(const LMatrix4f &transform, int sort) {
 //               mouse enters the region.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-enter() {
-  throw_event(get_enter_event());
+enter(const MouseWatcherParameter &param) {
+  PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
+  throw_event(get_enter_event(),
+              EventParameter(ep));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,40 +187,38 @@ enter() {
 //               mouse exits the region.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-exit() {
-  throw_event(get_exit_event());
+exit(const MouseWatcherParameter &param) {
+  PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
+  throw_event(get_exit_event(),
+              EventParameter(ep));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGItem::button_down
+//     Function: PGItem::press
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever a
 //               mouse or keyboard button is depressed while the mouse
 //               is within the region.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-button_down(ButtonHandle button, float x, float y) {
-  PGButtonEvent *be = new PGButtonEvent(button, x, y);
-  throw_event(get_button_down_event(), 
-              EventParameter(be));
+press(const MouseWatcherParameter &param) {
+  PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
+  throw_event(get_press_event(param.get_button()), 
+              EventParameter(ep));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGItem::button_up
+//     Function: PGItem::release
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever a
 //               mouse or keyboard button previously depressed with
-//               button_down() is release.  The bool is_within flag is
-//               true if the button was released while the mouse was
-//               still within the region, or false if it was released
-//               outside the region.
+//               press() is released
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-button_up(ButtonHandle button, float x, float y, bool is_within) {
-  PGButtonEvent *be = new PGButtonEvent(button, x, y);
-  throw_event(get_button_up_event(), 
-              EventParameter(be),
-              EventParameter(is_within));
+release(const MouseWatcherParameter &param) {
+  PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
+  throw_event(get_release_event(param.get_button()), 
+              EventParameter(ep));
 }
 
 ////////////////////////////////////////////////////////////////////

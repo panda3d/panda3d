@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::Copy Assignment Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void ModifierButtons::
@@ -30,7 +30,7 @@ operator = (const ModifierButtons &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::Equality Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ModifierButtons::
@@ -41,7 +41,7 @@ operator == (const ModifierButtons &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::Inequality Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ModifierButtons::
@@ -51,7 +51,7 @@ operator != (const ModifierButtons &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::Ordering Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ModifierButtons::
@@ -64,7 +64,7 @@ operator < (const ModifierButtons &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::get_num_buttons
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of buttons that the
 //               ModifierButtons object is monitoring (e.g. the number
 //               of buttons passed to add_button()).
@@ -76,7 +76,7 @@ get_num_buttons() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::get_button
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth button that the ModifierButtons
 //               object is monitoring (the nth button passed to
 //               add_button()).  This must be in the range 0 <= index
@@ -90,7 +90,7 @@ get_button(int index) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::add_event
-//       Access: Public
+//       Access: Published
 //  Description: Calls button_down() or button_up(), as appropriate,
 //               according to the indicated ButtonEvent.
 ////////////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ add_event(const ButtonEvent &event) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::all_buttons_up
-//       Access: Public
+//       Access: Published
 //  Description: Marks all monitored buttons as being in the "up"
 //               state.
 ////////////////////////////////////////////////////////////////////
@@ -116,7 +116,7 @@ all_buttons_up() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::is_down
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the indicated button is known to be
 //               down, or false if it is known to be up.
 ////////////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ is_down(int index) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::is_any_down
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if any of the tracked button are known
 //               to be down, or false if all of them are up.
 ////////////////////////////////////////////////////////////////////

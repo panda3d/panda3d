@@ -18,17 +18,18 @@
 
 #include "mouseWatcher.h"
 #include "config_tform.h"
+#include "mouseWatcherParameter.h"
 
-#include <mouse.h>
-#include <mouseData.h>
-#include <buttonEventDataTransition.h>
-#include <buttonEventDataAttribute.h>
-#include <keyboardButton.h>
-#include <mouseButton.h>
-#include <throw_event.h>
-#include <eventParameter.h>
-#include <pruneTransition.h>
-#include <transformTransition.h>
+#include "mouse.h"
+#include "mouseData.h"
+#include "buttonEventDataTransition.h"
+#include "buttonEventDataAttribute.h"
+#include "keyboardButton.h"
+#include "mouseButton.h"
+#include "throw_event.h"
+#include "eventParameter.h"
+#include "pruneTransition.h"
+#include "transformTransition.h"
 
 TypeHandle MouseWatcher::_type_handle;
 
@@ -227,14 +228,18 @@ set_current_region(MouseWatcherRegion *region) {
   }
 #endif
   if (region != _current_region) {
+    MouseWatcherParameter param;
+    param.set_modifier_buttons(_mods);
+    param.set_mouse(_mouse);
+
     if (_current_region != (MouseWatcherRegion *)NULL) {
-      _current_region->exit();
-      throw_event_pattern(_leave_pattern, _current_region);
+      _current_region->exit(param);
+      throw_event_pattern(_leave_pattern, _current_region, ButtonHandle::none());
     }
     _current_region = region;
     if (_current_region != (MouseWatcherRegion *)NULL) {
-      _current_region->enter();
-      throw_event_pattern(_enter_pattern, _current_region);
+      _current_region->enter(param);
+      throw_event_pattern(_enter_pattern, _current_region, ButtonHandle::none());
     }
   }
 }
@@ -247,7 +252,7 @@ set_current_region(MouseWatcherRegion *region) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
-                    const string &button_name) {
+                    const ButtonHandle &button) {
   if (pattern.empty()) {
     return;
   }
@@ -257,6 +262,16 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
   }
 #endif
 
+  string button_name;
+  if (button != ButtonHandle::none()) {
+    if (!_mods.has_button(button)) {
+      // We only prepend modifier names for buttons which are not
+      // themselves modifiers.
+      button_name = _mods.get_prefix();
+    }
+    button_name += button.get_name();
+  }
+
   string event;
   for (size_t p = 0; p < pattern.size(); ++p) {
     if (pattern[p] == '%') {
@@ -264,11 +279,11 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
       p++;
       if (cmd == "r") {
         if (region != (MouseWatcherRegion *)NULL) {
-          event += region->get_name();
+          event += button_name;
         }
 
       } else if (cmd == "b") {
-        event += button_name;
+        event += button.get_name();
 
       } else {
         tform_cat.error()
@@ -349,6 +364,12 @@ transmit_data(NodeAttributes &data) {
     ButtonEventDataAttribute::const_iterator bi;
     for (bi = b->begin(); bi != b->end(); ++bi) {
       const ButtonEvent &be = (*bi);
+      _mods.add_event(be);
+
+      MouseWatcherParameter param;
+      param.set_button(be._button);
+      param.set_modifier_buttons(_mods);
+      param.set_mouse(_mouse);
 
       if (!be._down) {
         // Button up.  Send the up event associated with the region we
@@ -358,10 +379,11 @@ transmit_data(NodeAttributes &data) {
         // more than one button goes down together, we won't detect
         // both of the button-up events properly.
         if (_button_down_region != (MouseWatcherRegion *)NULL) {
-          bool is_within = (_current_region == _button_down_region);
-          _button_down_region->button_up(be._button, get_mouse_x(), get_mouse_y(), is_within);
+          param.set_outside(_current_region != _button_down_region);
+
+          _button_down_region->release(param);
           throw_event_pattern(_button_up_pattern, _button_down_region,
-                              be._button.get_name());
+                              be._button);
         }
         _button_down = false;
 
@@ -373,9 +395,9 @@ transmit_data(NodeAttributes &data) {
         }
         _button_down = true;
         if (_button_down_region != (MouseWatcherRegion *)NULL) {
-          _button_down_region->button_down(be._button, get_mouse_x(), get_mouse_y());
+          _button_down_region->press(param);
           throw_event_pattern(_button_down_pattern, _button_down_region,
-                              be._button.get_name());
+                              be._button);
         }
       }
     }

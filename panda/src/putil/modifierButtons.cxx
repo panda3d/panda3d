@@ -22,7 +22,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ModifierButtons::
@@ -34,7 +34,7 @@ ModifierButtons() :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ModifierButtons::
@@ -46,7 +46,7 @@ ModifierButtons(const ModifierButtons &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ModifierButtons::
@@ -55,7 +55,7 @@ ModifierButtons::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::add_button
-//       Access: Public
+//       Access: Published
 //  Description: Adds the indicated button to the set of buttons that
 //               will be monitored for upness and downness.  Returns
 //               true if the button was added, false if it was already
@@ -86,7 +86,7 @@ add_button(ButtonHandle button) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::has_button
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the indicated button is in the set of
 //               buttons being monitored, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -104,7 +104,7 @@ has_button(ButtonHandle button) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::remove_button
-//       Access: Public
+//       Access: Published
 //  Description: Removes the indicated button from the set of buttons
 //               being monitored.  Returns true if the button was
 //               removed, false if it was not being monitored in the
@@ -137,7 +137,7 @@ remove_button(ButtonHandle button) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::button_down
-//       Access: Public
+//       Access: Published
 //  Description: Records that a particular button has been pressed.
 //               If the given button is one of the buttons that is
 //               currently being monitored, this will update the
@@ -159,7 +159,7 @@ button_down(ButtonHandle button) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::button_up
-//       Access: Public
+//       Access: Published
 //  Description: Records that a particular button has been released.
 //               If the given button is one of the buttons that is
 //               currently being monitored, this will update the
@@ -181,7 +181,7 @@ button_up(ButtonHandle button) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::is_down
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the indicated button is known to be
 //               down, or false if it is known to be up or if it is
 //               not in the set of buttons being tracked.
@@ -198,8 +198,28 @@ is_down(ButtonHandle button) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModifierButtons::get_prefix
+//       Access: Published
+//  Description: Returns a string which can be used to prefix any
+//               button name or event name with the unique set of
+//               modifier buttons currently being held.
+////////////////////////////////////////////////////////////////////
+string ModifierButtons::
+get_prefix() const {
+  string prefix;
+  for (int i = 0; i < (int)_button_list.size(); i++) {
+    if ((_state & ((BitmaskType)1 << i)) != 0) {
+      prefix += _button_list[i].get_name();
+      prefix += '-';
+    }
+  }
+
+  return prefix;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::output
-//       Access: Public
+//       Access: Published
 //  Description: Writes a one-line summary of the buttons known to be
 //               down.
 ////////////////////////////////////////////////////////////////////
@@ -216,7 +236,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModifierButtons::write
-//       Access: Public
+//       Access: Published
 //  Description: Writes a multi-line summary including all of the
 //               buttons being monitored and which ones are known to
 //               be down.
