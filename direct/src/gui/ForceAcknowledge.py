@@ -54,8 +54,8 @@ class ForceAcknowledge(StateData.StateData):
 	self.okButton = Button.Button("ForceAcknowledge", "OK",
                                       event = "ForceAcknowledge-ok")
 	self.okButton.setPos(0.0, -0.5)
-	# set rollover event
-	self.okButton.button.setPriority(self.okButton.button, GuiItem.PHighest)
+	self.okButton.button.setPriority(self.okButton.button,
+                                         GuiItem.PHighest)
 
 	self.isLoaded = 1
 	return None

@@ -35,8 +35,6 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
         self.style = style
         self.font = font
         self.wordwrap = wordwrap
-	self.soundRollover = None
-	self.soundOk = None
         self.isLoaded = 0
 
         # initialize our OnscreenPanel essence
@@ -112,8 +110,8 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
 	self.isLoaded = 0
 	return None
 
-    def handleRollover(self):
-	return None
+    # def handleRollover(self):
+	# return None
 
     def handleOk(self, okButton, item):
         assert(self.style != NoButtons)
