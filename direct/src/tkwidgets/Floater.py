@@ -48,11 +48,11 @@ class FloaterWidget(Pmw.MegaWidget):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             # Appearance
-            ('width',           FLOATER_WIDTH,  INITOPT),
-            ('height',          FLOATER_HEIGHT, INITOPT),
-            ('relief',          SUNKEN,         self.setRelief),
-            ('borderwidth',     2,              self.setBorderwidth),
-            ('background',      'white',        self.setBackground),
+            ('width',           FLOATER_WIDTH,      INITOPT),
+            ('height',          FLOATER_HEIGHT,     INITOPT),
+            ('relief',          RAISED,             self.setRelief),
+            ('borderwidth',     2,                  self.setBorderwidth),
+            ('background',      'SystemButtonFace', self.setBackground),
             # Behavior
             # Initial value of floater, use self.set to change value
             ('value',           0.0,            INITOPT),
@@ -141,6 +141,7 @@ class FloaterWidget(Pmw.MegaWidget):
     def mouseDown(self,event):
         """ Begin mouse interaction """
         # Exectute user redefinable callback function (if any)
+        self['relief'] = SUNKEN
         if self['preCallback']:
             apply(self['preCallback'], self['callbackData'])
         self.velocitySF = 0.0
@@ -181,6 +182,7 @@ class FloaterWidget(Pmw.MegaWidget):
         # Execute user redefinable callback function (if any)
         if self['postCallback']:
             apply(self['postCallback'], self['callbackData'])
+        self['relief'] = RAISED
 
     def setNumDigits(self):
         """

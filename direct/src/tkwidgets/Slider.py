@@ -268,3 +268,37 @@ if __name__ == '__main__':
     d2.pack(expand = 1, fill = X)
     d3.pack(expand = 1, fill = X)
     d4.pack(expand = 1, fill = X)
+
+
+
+class PopupSliderWidget(Pmw.MegaToplevel):
+    def __init__(self, parent = None, **kw):
+        optiondefs = (
+            ('width',                    150,            None),
+            ('height',                   30,             None),
+            ('xoffset',                  0,              None), # pixels
+            ('yoffset',                  1,              None), # pixels
+            )
+        self.defineoptions(kw, optiondefs)
+        Pmw.MegaToplevel.__init__(self, parent)
+        self.withdraw()
+        self.overrideredirect(1)
+        self.interior()['relief'] = RAISED
+        self.interior()['borderwidth'] = 3
+        self.b = Button(self.interior(), text = 'hello')
+        self.b['command'] = self.withdraw
+        self.b.pack()
+        self.initialiseoptions(PopupSliderWidget)
+    def showPopup(self, widget):
+        x = widget.winfo_rootx() + widget.winfo_width() - self['width']
+        y = widget.winfo_rooty() + widget.winfo_height()
+        Pmw.setgeometryanddeiconify(self, '%dx%d+%d+%d' %
+                                    (self['width'], self['height'],x,y))
+"""
+pw = PopupSliderWidget()
+tl = Toplevel()
+b = Button(tl, text = 'hello')
+b.pack(expand = 1, fill = X)
+b.bind('<ButtonPress-1>', lambda event, s = b: pw.showPopup(b))
+#b.bind('<ButtonRelease-1>', lambda event: pw.withdraw())
+"""
