@@ -5,8 +5,8 @@
 
 import string
 from Tkinter import *
+from TkGlobal import *
 import Pmw
-
 
 ### public API
 
@@ -71,6 +71,7 @@ def initializeInspectorMap():
 class Inspector:
     def __init__(self, anObject):
         self.object = anObject
+        self.lastPartNumber = 0
         self.initializePartsList()
         self.initializePartNames()
 
@@ -92,6 +93,9 @@ class Inspector:
     def title(self):
         "Subclasses may override."
         return string.capitalize(self.objectType().__name__)
+
+    def getLastPartNumber(self):
+        return self.lastPartNumber
         
     def namedParts(self):
         return dir(self.object)
@@ -110,6 +114,7 @@ class Inspector:
             return str(object)
 
     def partNumber(self, partNumber):
+        self.lastPartNumber = partNumber
         if partNumber == 0:
             return self.object
         else:
@@ -179,11 +184,15 @@ class DictionaryInspector(Inspector):
             self._partsList.append(each)
 
     def partNumber(self, partNumber):
+        self.lastPartNumber = partNumber
         if partNumber == 0:
             return self.object
         key = self.privatePartNumber(partNumber)
-        return self.object[key]
-
+        if self.object.has_key(key):
+            return self.object[key]
+        else:
+            return eval('self.object.' + key)
+        
 class SequenceInspector(Inspector):
     def initializePartsList(self):
         Inspector.initializePartsList(self)
@@ -191,10 +200,14 @@ class SequenceInspector(Inspector):
             self._partsList.append(each)
 
     def partNumber(self, partNumber):
+        self.lastPartNumber = partNumber
         if partNumber == 0:
             return self.object
         index = self.privatePartNumber(partNumber)
-        return self.object[index]
+        if type(index) == IntType:
+            return self.object[index]
+        else:
+            return eval('self.object.' + index)
     
 class SliceInspector(Inspector):
     def namedParts(self):
@@ -215,41 +228,46 @@ class InspectorWindow:
         return self.topInspector().object
 
     def open(self):
-        self.top= Toplevel(tkroot)
+        self.top= Toplevel()
+        self.top.geometry('650x315')
         self.createViews()
         self.update()
 
     #Private - view construction
     def createViews(self):
         self.createMenus()
+        # Paned widget for dividing two halves
+        self.framePane = Pmw.PanedWidget(self.top, orient = HORIZONTAL)
         self.createListWidget()
         self.createTextWidget()
-        # self.top.resizable(0, 0)
+        self.framePane.pack(expand = 1, fill = BOTH)
 
     def setTitle(self):
         self.top.title('Inspecting: ' + self.topInspector().title())
 
     def createListWidget(self):
-        frame = Frame(self.top)
-        frame.pack(side=LEFT, fill=BOTH, expand=1)
-        # frame.grid(row=0, column=0, sticky=N+W+S+E)
-        scrollbar = Scrollbar(frame, orient=VERTICAL)
-        listWidget = self.listWidget = Listbox(frame, yscrollcommand=scrollbar.set)
-        scrollbar.config(command = listWidget.yview)
-        scrollbar.pack(side=RIGHT, fill=Y)
+        listFrame = self.framePane.add('list')
+        listWidget = self.listWidget = Pmw.ScrolledListBox(
+            listFrame, vscrollmode = 'static')
         listWidget.pack(side=LEFT, fill=BOTH, expand=1)
         # If you click in the list box, take focus so you can navigate
         # with the cursor keys
-        listWidget.bind('<ButtonPress-1>',
-                        lambda e, s = self: s.listWidget.focus_set())
-        listWidget.bind('<ButtonRelease-1>',  self.listSelectionChanged)
-        listWidget.bind('<Up>',  self.listSelectionChanged)
-        listWidget.bind('<Down>',  self.listSelectionChanged)
-        listWidget.bind('<Return>',  self.popOrDive)
-        listWidget.bind("<Double-Button-1>", self.popOrDive)
+        listbox = listWidget.component('listbox')
+        listbox.bind('<ButtonPress-1>',
+                        lambda e, l = listbox: l.focus_set())
+        listbox.bind('<ButtonRelease-1>',  self.listSelectionChanged)
+        listbox.bind('<Double-Button-1>', self.popOrDive)
+        listbox.bind('<ButtonPress-3>', self.popupMenu)
+        listbox.bind('<KeyRelease-Up>',  self.listSelectionChanged)
+        listbox.bind('<KeyRelease-Down>',  self.listSelectionChanged)
+        listbox.bind('<KeyRelease-Left>', lambda e, s = self: s.pop())
+        listbox.bind('<KeyRelease-Right>', lambda e, s = self: s.dive())
+        listbox.bind('<Return>',  self.popOrDive)
 
     def createTextWidget(self):
-        self.textWidget = Pmw.ScrolledText(self.top)
+        textFrame = self.framePane.add('text')
+        self.textWidget = Pmw.ScrolledText(
+            textFrame, vscrollmode = 'static')
         self.textWidget.pack(fill=BOTH, expand=1)
         # self.textWidget.grid(row=0, column=1, columnspan=2, sticky=N+W+S+E)
 
@@ -310,7 +328,18 @@ class InspectorWindow:
     def update(self):
         self.setTitle()
         self.fillList()
+        # What is active part in this inspector
+        partNumber = self.topInspector().getLastPartNumber()
+        self.listWidget.select_clear(0)
+        self.listWidget.activate(partNumber)
+        self.listWidget.select_set(partNumber)
         self.listSelectionChanged(None)
+        # Make sure selected item is visible
+        self.listWidget.see(partNumber)
+        # Make sure left side of listbox visible
+        self.listWidget.xview_moveto(0.0)
+        # Grab focus in listbox
+        self.listWidget.component('listbox').focus_set()
 
     def showHelp(self):
         help = Toplevel(tkroot)
@@ -333,21 +362,43 @@ class InspectorWindow:
         if partNumber == None:
             return None
         part = self.topInspector().partNumber(partNumber)
+        return self.topInspector().inspectorFor(part)
 
-        # If this is a node path, pop up a scene graph explorer
+    def popupMenu(self, event):
+        print event
+        partNumber = self.selectedIndex()
+        print partNumber
+        if partNumber == None:
+            return
+        part = self.topInspector().partNumber(partNumber)
+        print part
         from PandaModules import *
         import FSM
+        popupMenu = None
         if isinstance(part, NodePath):
-            # part.place()
-            top = Toplevel(tkroot)
-            import SceneGraphExplorer
-            sge = SceneGraphExplorer.SceneGraphExplorer(top, nodePath = part,
-                                                        scrolledCanvas_hull_width = 200,
-                                                        scrolledCanvas_hull_height = 400)
-            sge.pack(fill = BOTH, expand = 0)
+            popupMenu = self.createPopupMenu(
+                part,
+                [('Explore', NodePath.explore),
+                 ('Place', NodePath.place),
+                 ('Set Color', NodePath.rgbPanel)])
         elif isinstance(part, FSM.FSM):
             import FSMInspector
-            fsmi = FSMInspector.FSMInspector(part)
+            popupMenu = self.createPopupMenu(
+                part,
+                [('Inspect FSM', FSMInspector.FSMInspector)])
+        print popupMenu
+        if popupMenu:
+            popupMenu.post(event.widget.winfo_pointerx(),
+                           event.widget.winfo_pointery())
 
-        return self.topInspector().inspectorFor(part)
+    def createPopupMenu(self, part, menuList):
+        popupMenu = Menu(self.top, tearoff = 0)
+        for item, func in menuList:
+            popupMenu.add_command(
+                label = item,
+                command = lambda p = part, f = func: f(p))
+        return popupMenu
+        
+
+
 
