@@ -42,8 +42,10 @@ TrueClock *TrueClock::_global_ptr = NULL;
 static BOOL _has_high_res;
 static PN_int64 _frequency;
 static PN_int64 _init_count;
+double _fFrequency,_recip_fFrequency;
 static DWORD _init_tc;
 static bool _paranoid_clock;
+const double _0001 = 1.0/1000.0;
 
 void get_true_time_of_day(ulong &sec, ulong &usec) {
   struct timeb tb;
@@ -55,7 +57,7 @@ void get_true_time_of_day(ulong &sec, ulong &usec) {
 double TrueClock::
 get_long_time() const {
   DWORD tc = GetTickCount();
-  return (double)(tc - _init_tc) / 1000.0;
+  return (double)(tc - _init_tc) * _0001;
 }
 
 double TrueClock::
@@ -64,21 +66,21 @@ get_short_time() const {
     LARGE_INTEGER count;
     QueryPerformanceCounter(&count);
 
-    double time = (double)(count.QuadPart - _init_count) / (double)_frequency;
+    double time = (double)(count.QuadPart - _init_count) * _recip_fFrequency;
 
     if (_paranoid_clock) {
       // Now double-check the high-resolution clock against the system
       // clock.
       DWORD tc = GetTickCount();
-      double sys_time = (double)(tc - _init_tc) / 1000.0;
+      double sys_time = (double)(tc - _init_tc) * _0001;
       if (fabs(time - sys_time) > 0.5) {
         // Too much variance!
         express_cat.info()
           << "Clock error!  High resolution clock reads " << time 
           << " while system clock reads " << sys_time << ".\n";
         _init_count = 
-          (PN_int64)(count.QuadPart - sys_time * (double)_frequency);
-        time = (double)(count.QuadPart - _init_count) / (double)_frequency;
+          (PN_int64)(count.QuadPart - sys_time * _fFrequency);
+        time = (double)(count.QuadPart - _init_count) * _recip_fFrequency;
         express_cat.info()
           << "High resolution clock reset to " << time << ".\n";
       }
@@ -89,7 +91,7 @@ get_short_time() const {
   } else {
     // No high-resolution clock; return the best information we have.
     DWORD tc = GetTickCount();
-    return (double)(tc - _init_tc) / 1000.0;
+    return (double)(tc - _init_tc) * _0001;
   }
 }
 
@@ -98,6 +100,8 @@ TrueClock() {
   _has_high_res = false;
   if (get_use_high_res_clock()) {
     _has_high_res = QueryPerformanceFrequency((LARGE_INTEGER *)&_frequency);
+    _fFrequency = (double) _frequency;
+    _recip_fFrequency = 1.0/_fFrequency;
   }
 
   _paranoid_clock = get_paranoid_clock();
