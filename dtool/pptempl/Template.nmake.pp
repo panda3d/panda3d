@@ -392,7 +392,7 @@ $[varname] = $[patsubst %,$[osfilename %],$[sources]]
 #if $[GENERATE_BUILDDATE]
 $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[sources] $[static_lib_dependencies] $[dtool_ver_dir]/version.rc $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]]
 // first generate builddate for rc compiler using compiler preprocessor
-$[TAB]  if exist $[osfilename $[tmpdirname_cyg]] mkdir $[osfilename $[tmpdirname_cyg]]  // this dir-creation-stuff is leftover from trying to resolve parallel link difficulties
+$[TAB]  if not exist $[osfilename $[tmpdirname_cyg]] mkdir $[osfilename $[tmpdirname_cyg]]  // this dir-creation-stuff is leftover from trying to resolve parallel link difficulties
  #define VER_RESOURCE "$[tmpdirname_win]\$[mybasename].res"
 $[TAB]  cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[tmpdirname_win]\verdate.h"
 $[TAB]  rc /n /I"$[tmpdirname_win]" $[DECYGWINED_INC_PATHLIST_ARGS] /fo$[VER_RESOURCE] $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
@@ -749,7 +749,6 @@ $[osfilename $[output_exe]] : $[patsubst %,$[osfilename %],$[input_exe]]
 $[TAB] if exist $[osfilename $[output_exe]] del /f $[osfilename $[output_exe]]
 $[TAB] $[bin_postprocess_cmd] $[bin_postprocess_arg1] $[input_exe] $[bin_postprocess_arg2] $[output_exe]
 $[TAB] if exist $[file] del /f $[file]
-#end file
 
 $[osfilename $[install_bin_dir]/$[bin_postprocess_target].exe] : $[patsubst %,$[osfilename %],$[output_exe]]
 $[TAB] xcopy /I/Y $[osfilename $[output_exe]] $[osfilename $[install_bin_dir]]
