@@ -69,8 +69,7 @@ child_integrate(Physical *physical,
   current_object_iter = physical->get_object_vector().begin();
 
   for (; current_object_iter != physical->get_object_vector().end();
-       current_object_iter++) {
-
+       ++current_object_iter) {
     PhysicsObject *current_object = *current_object_iter;
 
     // bail out if this object doesn't exist or doesn't want to be
@@ -92,7 +91,7 @@ child_integrate(Physical *physical,
     // global forces
     f_cur = forces.begin();
     int index = 0;
-    for (; f_cur != forces.end(); f_cur++) {
+    for (; f_cur != forces.end(); ++f_cur) {
       AngularForce *cur_force = *f_cur;
 
       // make sure the force is turned on.
@@ -110,7 +109,7 @@ child_integrate(Physical *physical,
 
     // local forces
     f_cur = physical->get_angular_forces().begin();
-    for (; f_cur != physical->get_angular_forces().end(); f_cur++) {
+    for (; f_cur != physical->get_angular_forces().end(); ++f_cur) {
       AngularForce *cur_force = *f_cur;
 
       // make sure the force is turned on.
