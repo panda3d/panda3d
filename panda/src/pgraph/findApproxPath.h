@@ -42,15 +42,16 @@ public:
   bool add_flags(const string &str_flags);
   bool add_component(string str_component);
 
-  INLINE void add_match_name(const string &name, int flags);
-  INLINE void add_match_name_glob(const string &glob, int flags);
-  INLINE void add_match_exact_type(TypeHandle type, int flags);
-  INLINE void add_match_inexact_type(TypeHandle type, int flags);
-  INLINE void add_match_tag(const string &key, int flags);
-  INLINE void add_match_tag_value(const string &key, const string &value, int flags);
-  INLINE void add_match_one(int flags);
-  INLINE void add_match_many(int flags);
-  INLINE void add_match_pointer(PandaNode *pointer, int flags);
+  void add_match_name(const string &name, int flags);
+  void add_match_name_glob(const string &glob, int flags);
+  void add_match_exact_type(TypeHandle type, int flags);
+  void add_match_inexact_type(TypeHandle type, int flags);
+  void add_match_tag(const string &key, int flags);
+  void add_match_tag_value(const string &key, const string &value, int flags);
+  
+  void add_match_one(int flags);
+  void add_match_many(int flags);
+  void add_match_pointer(PandaNode *pointer, int flags);
 
   INLINE int get_num_components() const;
   INLINE bool is_component_match_many(int index) const;
@@ -59,6 +60,7 @@ public:
 
   INLINE bool return_hidden() const;
   INLINE bool return_stashed() const;
+  INLINE bool case_insensitive() const;
 
   void output(ostream &out) const;
   INLINE void output_component(ostream &out, int index) const;
@@ -70,6 +72,7 @@ private:
 #endif
   enum ComponentType {
     CT_match_name,
+    CT_match_name_insensitive,
     CT_match_name_glob,
     CT_match_exact_type,
     CT_match_inexact_type,
@@ -101,6 +104,7 @@ private:
 
   bool _return_hidden;
   bool _return_stashed;
+  bool _case_insensitive;
 
 friend ostream &operator << (ostream &, FindApproxPath::ComponentType);
 friend INLINE ostream &operator << (ostream &, const FindApproxPath::Component &);

@@ -47,6 +47,9 @@ public:
   INLINE void set_pattern(const string &pattern);
   INLINE const string &get_pattern() const;
 
+  INLINE void set_case_sensitive(bool case_sensitive);
+  INLINE bool get_case_sensitive() const;
+
   INLINE bool matches(const string &candidate) const;
 
   INLINE void output(ostream &out) const;
@@ -68,6 +71,7 @@ private:
                     vector_string &results, const Filename &cwd);
 
   string _pattern;
+  bool _case_sensitive;
 };
 
 INLINE ostream &operator << (ostream &out, const GlobPattern &glob) {

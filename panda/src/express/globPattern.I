@@ -24,6 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE GlobPattern::
 GlobPattern(const string &pattern) : _pattern(pattern) {
+  _case_sensitive = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -32,7 +33,10 @@ GlobPattern(const string &pattern) : _pattern(pattern) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GlobPattern::
-GlobPattern(const GlobPattern &copy) : _pattern(copy._pattern) {
+GlobPattern(const GlobPattern &copy) : 
+  _pattern(copy._pattern),
+  _case_sensitive(copy._case_sensitive)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -43,6 +47,7 @@ GlobPattern(const GlobPattern &copy) : _pattern(copy._pattern) {
 INLINE void GlobPattern::
 operator = (const GlobPattern &copy) {
   _pattern = copy._pattern;
+  _case_sensitive = copy._case_sensitive;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,6 +70,30 @@ set_pattern(const string &pattern) {
 INLINE const string &GlobPattern::
 get_pattern() const {
   return _pattern;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::set_case_sensitive
+//       Access: Public
+//  Description: Sets whether the match is case sensitive (true) or
+//               case insensitive (false).  The default is case
+//               sensitive.
+////////////////////////////////////////////////////////////////////
+INLINE void GlobPattern::
+set_case_sensitive(bool case_sensitive) {
+  _case_sensitive = case_sensitive;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::get_case_sensitive
+//       Access: Public
+//  Description: Returns whether the match is case sensitive (true) or
+//               case insensitive (false).  The default is case
+//               sensitive.
+////////////////////////////////////////////////////////////////////
+INLINE bool GlobPattern::
+get_case_sensitive() const {
+  return _case_sensitive;
 }
 
 ////////////////////////////////////////////////////////////////////

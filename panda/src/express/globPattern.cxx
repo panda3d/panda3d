@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "globPattern.h"
+#include <ctype.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GlobPattern::has_glob_characters
@@ -235,8 +236,14 @@ matches_substr(string::const_iterator pi, string::const_iterator pend,
 
   default:
     // Anything else means to match exactly that.
-    if ((*pi) != (*ci)) {
-      return false;
+    if (_case_sensitive) {
+      if ((*pi) != (*ci)) {
+        return false;
+      }
+    } else {
+      if (tolower(*pi) != tolower(*ci)) {
+        return false;
+      }
     }
     return matches_substr(pi + 1, pend, ci + 1, cend);
   }
@@ -290,7 +297,10 @@ matches_set(string::const_iterator &pi, string::const_iterator pend,
         char end = (*pi);
         ++pi;
 
-        if (ch >= start && ch <= end) {
+        if (ch >= start && ch <= end || 
+            (!_case_sensitive && 
+             ((tolower(ch) >= start && tolower(ch) <= end) ||
+              (toupper(ch) >= start && toupper(ch) <= end)))) {
           matched = true;
         }
       } else {
