@@ -11,9 +11,6 @@ class EntityTypeRegistry:
 
     def __init__(self, entityTypeModule=EntityTypes):
         """pass in a module that contains EntityType classes"""
-        # maps entity typename to type class
-        self.typeName2class = {}
-        
         # get a list of the entity type classes in the type module
         classes = []
         for key, value in entityTypeModule.__dict__.items():
@@ -26,37 +23,49 @@ class EntityTypeRegistry:
 
         # scrub through the class heirarchy and compile complete
         # attribute descriptor lists for each concrete Entity type class
+        typeName2class = {}
         for c in classes:
             # if this is a concrete Entity type, add it to the dict
             if c.__dict__.has_key('type'):
-                if self.typeName2class.has_key(c.type):
+                if typeName2class.has_key(c.type):
                     EntityTypeRegistry.notify.debug(
                         "replacing %s with %s for type '%s'" %
-                        (self.typeName2class[c.type], c, c.type))
-                self.typeName2class[c.type] = c
+                        (typeName2class[c.type], c, c.type))
+                typeName2class[c.type] = c
 
             self.privCompileAttribDescs(c)
 
+        # maps entity typename to ordered list of attrib names
+        self.typeName2attribNames = {}
+        # maps entity typename to dict of attrib name -> attrib descriptor
+        self.typeName2attribDescDict = {}
+        
+        for typeName, c in typeName2class.items():
+            self.typeName2attribNames[typeName] = []
+            self.typeName2attribDescDict[typeName] = {}
+
+            # ordered list of attrib descriptors
+            attribDescs = c._attribDescs
+
+            for desc in attribDescs:
+                attribName = desc.getName()
+                self.typeName2attribNames[typeName].append(attribName)
+                self.typeName2attribDescDict[typeName][attribName] = desc
+
     def getAttribNames(self, entityTypeName):
         """ returns ordered list of attribute names for entity type """
-        assert entityTypeName in self.typeName2class
-        # TODO: precompute this
-        attribDescs = self.typeName2class[entityTypeName]._attribDescs
-        attribNames = []
-        for desc in attribDescs:
-            attribNames.append(desc.getName())
-        return attribNames
+        assert entityTypeName in self.typeName2attribNames
+        return self.typeName2attribNames[entityTypeName]
 
     def getAttribDescDict(self, entityTypeName):
         """ returns dict of attribName -> attribDescriptor """
-        assert entityTypeName in self.typeName2class
-        # TODO: precompute this
-        attribDescs = self.typeName2class[entityTypeName]._attribDescs
-        attribNames = self.getAttribNames(entityTypeName)
-        name2desc = {}
-        for name, desc in zip(attribNames, attribDescs):
-            name2desc[name] = desc
-        return name2desc
+        assert entityTypeName in self.typeName2attribDescDict
+        return self.typeName2attribDescDict[entityTypeName]
+
+    def __hash__(self):
+        return hash(str(self))
+    def __str__(self):
+        return str(self.typeName2attribNames)+str(self.typeName2attribDescDict)
 
     def privCompileAttribDescs(self, entTypeClass):
         # has someone already compiled the info?
