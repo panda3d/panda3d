@@ -1,7 +1,4 @@
 from PandaObject import *
-from ParticleManagerGlobal import *
-from PhysicsManagerGlobal import *
-from TaskManagerGlobal import *
 
 import ParticleSystem
 import BaseParticleFactory
@@ -24,23 +21,18 @@ import RingEmitter
 import SphereSurfaceEmitter
 import SphereVolumeEmitter
 import TangentRingEmitter
-import PhysicalNode
-import ForceNode
-import RenderRelation
-import LinearEulerIntegrator
-import ClockObject
 import string
 import os
 
-globalClock = ClockObject.ClockObject.getGlobalClock()
 SparkleParticleRenderer.SparkleParticleRenderer.SPNOSCALE = 0
 SparkleParticleRenderer.SparkleParticleRenderer.SPSCALE = 1
 
 class Particles(ParticleSystem.ParticleSystem):
 
-    def __init__(self, poolSize = 1024):
+    def __init__(self, name, poolSize = 1024):
 	"""__init__(self)"""
 
+	self.name = name
 	ParticleSystem.ParticleSystem.__init__(self, poolSize)
 	self.setBirthRate(0.02)
 	self.setLitterSize(10)
@@ -56,24 +48,6 @@ class Particles(ParticleSystem.ParticleSystem):
 	self.emitter = None 
 	self.emitterType = "undefined"
 	self.setEmitter("SphereVolumeEmitter")
-
-	self.node = PhysicalNode.PhysicalNode()
-	self.node.addPhysical(self)
-	self.nodePath = hidden.attachNewNode(self.node)
-	self.forceNode = ForceNode.ForceNode()
-
-	self.integrator = LinearEulerIntegrator.LinearEulerIntegrator()
-
-	physicsMgr.attachLinearIntegrator(self.integrator)
-	physicsMgr.attachPhysical(self)
-
-	particleMgr.setFrameStepping(1)
-	particleMgr.attachParticlesystem(self)
-
-    def cleanup(self):
-	"""cleanup(self)"""
-	physicsMgr.removePhysical(self)
-	particleMgr.removeParticlesystem(self)
 
     def setFactory(self, type):
 	"""setFactory(self, type)"""
@@ -152,26 +126,6 @@ class Particles(ParticleSystem.ParticleSystem):
 	    print "unknown emitter type: %s" % type
 	    return None
 	ParticleSystem.ParticleSystem.setEmitter(self, self.emitter)
-
-    def __update(self, state):
-	"""update(self, state)"""
-        dt = min(globalClock.getDt(), 0.1)
-        physicsMgr.doPhysics(dt)
-        particleMgr.doParticles(dt)
-        return Task.cont
-
-    def getNodePath(self):
-	"""getNode(self)"""
-	return self.nodePath
-
-    def start(self):
-	"""start(self)"""
-	self.stop()
-	taskMgr.spawnTaskNamed(Task.Task(self.__update), 'update-particles')
-
-    def stop(self):
-	"""stop(self)"""
-	taskMgr.removeTasksNamed('update-particles')
 
     def bakeConfig(self, filename):
 	"""saveFileData(self, filename)"""

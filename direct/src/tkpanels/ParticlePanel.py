@@ -10,6 +10,7 @@ import EntryScale
 import VectorWidgets
 import Placer
 import Particles
+import ParticleEffect
 
 class ParticlePanel(AppShell):
     # Override class variables
@@ -20,14 +21,15 @@ class ParticlePanel(AppShell):
     usestatusarea  = 0
     balloonState = 'both'
     
-    def __init__(self, particles, **kw):
+    def __init__(self, particleEffect, particles, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title',     self.appname,       None),
             )
         self.defineoptions(kw, optiondefs)
 
-	self.particles = particles
+	self.particleEffect = particleEffect
+	self.particles = particles 
 
         AppShell.__init__(self)
 
@@ -656,9 +658,10 @@ class ParticlePanel(AppShell):
 
     def toggleParticleSystem(self):
         if self.systemActive.get():
-            self.particles.start()
+            self.particleEffect.activate()
         else:
-            self.particles.stop()
+            self.particleEffect.deactivate()
+	return None
             
     ## SYSTEM PAGE ##
     def updateSystemWidgets(self):
@@ -672,9 +675,9 @@ class ParticlePanel(AppShell):
         self.getWidget('System', 'Litter Spread').set(litterSpread, 0)
         systemLifespan = self.particles.getSystemLifespan()
         self.getWidget('System', 'Lifespan').set(systemLifespan, 0)
-        pos = self.particles.getNodePath().getPos()
+        pos = self.particleEffect.physicalNodePath.getPos()
         self.getWidget('System', 'Pos').set([pos[0], pos[1], pos[2]], 0)
-        hpr = self.particles.getNodePath().getHpr()
+        hpr = self.particleEffect.physicalNodePath.getHpr()
         self.getWidget('System', 'Hpr').set([hpr[0], hpr[1], hpr[2]], 0)
         self.systemLocalVelocity.set(self.particles.getLocalVelocityFlag())
         self.systemGrowsOlder.set(self.particles.getSystemGrowsOlderFlag())
@@ -693,9 +696,9 @@ class ParticlePanel(AppShell):
     def toggleSystemGrowsOlder(self):
 	self.particles.setSystemGrowsOlderFlag(self.systemGrowsOlder.get())
     def setSystemPos(self, pos):
-	self.particles.getNodePath().setPos(Vec3(pos[0], pos[1], pos[2]))
+	self.particleEffect.physicalNodePath.setPos(Vec3(pos[0], pos[1], pos[2]))
     def setSystemHpr(self, pos):
-	self.particles.getNodePath().setHpr(Vec3(pos[0], pos[1], pos[2]))
+	self.particleEffect.physicalNodePath.setHpr(Vec3(pos[0], pos[1], pos[2]))
 
     ## FACTORY PAGE ##
     def selectFactoryType(self, type):
@@ -1165,7 +1168,7 @@ class ParticlePanel(AppShell):
     def selectSystemNamed(self, name):
         system = self.systemDict.get(name, None)
         if system == None:
-            system = Particles.Particles(1024)
+            system = Particles.Particles('new-particles')
             self.systemDict[name] = system
         if system:
             self.particles = system

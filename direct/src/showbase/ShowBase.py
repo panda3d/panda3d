@@ -11,6 +11,7 @@ import Task
 import EventManager
 import math
 import sys
+import LinearEulerIntegrator
 
 class ShowBase:
 
@@ -106,7 +107,10 @@ class ShowBase:
         self.taskMgr = taskMgr
 
 	self.particleMgr = particleMgr
+	self.particleMgr.setFrameStepping(1)
 	self.physicsMgr = physicsMgr
+	self.integrator = LinearEulerIntegrator.LinearEulerIntegrator()
+	self.physicsMgr.attachLinearIntegrator(self.integrator)
 
         self.createAudioManager()
         self.createRootPanel()
