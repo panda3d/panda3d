@@ -121,6 +121,9 @@ make_user_filename(Filename filename) {
 //               caches the operation so that repeated calls to
 //               filenames in the same directory will tend to be
 //               faster.
+//
+//               Also guarantees that the directory containing the
+//               filename exists by making it if it does not.
 ////////////////////////////////////////////////////////////////////
 void FilenameUnifier::
 make_canonical(Filename &filename) {
@@ -137,6 +140,7 @@ make_canonical(Filename &filename) {
     return;
   }
 
+  filename.make_dir();
   filename.make_canonical();
   _canonical_filenames.insert(CanonicalFilenames::value_type(dirname, filename.get_dirname()));
 }

@@ -36,6 +36,7 @@
 #include <appTraverser.h>
 #include <collisionTraverser.h>
 #include <get_config_path.h>
+#include <allAttributesWrapper.h>
 
 ConfigureDef(config_showbase);
 ConfigureFn(config_showbase) {
