@@ -22,6 +22,9 @@ PUBLISHED:
   PiecewiseCurve();
   ~PiecewiseCurve();
 
+public:
+  // These functions are all inherited from ParametricCurve, and need
+  // not be re-published.
   virtual bool is_valid() const;
   virtual float get_max_t() const;
 
@@ -30,11 +33,11 @@ PUBLISHED:
   virtual bool get_pt(float t, LVecBase3f &point, LVecBase3f &tangent) const;
   virtual bool get_2ndtangent(float t, LVecBase3f &tangent2) const;
 
-  bool adjust_point(float t, float px, float py, float pz);
-  bool adjust_tangent(float t, float tx, float ty, float tz);
-  bool adjust_pt(float t,
-		 float px, float py, float pz,
-		 float tx, float ty, float tz);
+  virtual bool adjust_point(float t, float px, float py, float pz);
+  virtual bool adjust_tangent(float t, float tx, float ty, float tz);
+  virtual bool adjust_pt(float t,
+			 float px, float py, float pz,
+			 float tx, float ty, float tz);
 
 public:
   int get_num_segs() const;

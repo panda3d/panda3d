@@ -72,6 +72,14 @@ PUBLISHED:
   virtual bool get_pt(float t, LVecBase3f &point, LVecBase3f &tangent) const=0;
   virtual bool get_2ndtangent(float t, LVecBase3f &tangent2) const=0;
 
+  virtual bool adjust_point(float t, float px, float py, float pz);
+  virtual bool adjust_tangent(float t, float tx, float ty, float tz);
+  virtual bool adjust_pt(float t,
+			 float px, float py, float pz,
+			 float tx, float ty, float tz);
+
+  virtual bool recompute();
+
   virtual bool stitch(const ParametricCurve *a, const ParametricCurve *b);
 
   bool write_egg(Filename filename, CoordinateSystem cs = CS_default);

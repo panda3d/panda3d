@@ -168,5 +168,5 @@ convert_to_nurbs(ParametricCurve *nc) const {
     nurbs->set_knot(i, get_knot(i));
   }
 
-  return nurbs->recompute();
+  return nc->recompute();
 }

@@ -52,8 +52,6 @@ PUBLISHED:
   virtual bool set_knot(int n, float t)=0;
   virtual float get_knot(int n) const=0;
 
-  virtual bool recompute()=0;
-
   void write_cv(ostream &out, int n) const;
 
 

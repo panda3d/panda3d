@@ -264,6 +264,53 @@ find_length(float start_t, float length_offset) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::adjust_point
+//       Access: Published, Virtual
+//  Description: Recomputes the curve such that it passes through the
+//               point (px, py, pz) at time t, but keeps the same
+//               tangent value at that point.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+adjust_point(float, float, float, float) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::adjust_tangent
+//       Access: Published, Virtual
+//  Description: Recomputes the curve such that it has the tangent
+//               (tx, ty, tz) at time t, but keeps the same position
+//               at the point.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+adjust_tangent(float, float, float, float) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::adjust_pt
+//       Access: Published, Virtual
+//  Description: Recomputes the curve such that it passes through the
+//               point (px, py, pz) with the tangent (tx, ty, tz).
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+adjust_pt(float, float, float, float, float, float, float) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::recompute
+//       Access: Published, Virtual
+//  Description: Recalculates the curve, if necessary.  Returns
+//               true if the resulting curve is valid, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+recompute() {
+  return is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ParametricCurve::stitch
 //       Access: Published, Virtual
 //  Description: Regenerates this curve as one long curve: the first
@@ -547,9 +594,7 @@ convert_to_nurbs(ParametricCurve *nc) const {
     }
   }
 
-  nurbs->recompute();
-
-  return nc->is_valid();
+  return nc->recompute();
 }
 
 ////////////////////////////////////////////////////////////////////

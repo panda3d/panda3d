@@ -297,16 +297,26 @@ draw() {
   // First, remove the old drawing, if any.
   hide();
 
+  _drawn = true;
+
   // If there's no curve, draw nothing and return false.
-  if (_curves == (ParametricCurveCollection *)NULL ||
-      _curves->get_default_curve() == (ParametricCurve *)NULL) {
+  if (_curves == (ParametricCurveCollection *)NULL) {
+    return false;
+  }
+
+  ParametricCurve *xyz_curve = _curves->get_default_curve();
+  if (xyz_curve == (ParametricCurve *)NULL) {
     return false;
   }
 
   // Otherwise, let's go to town!
+
+  // Make sure the curve(s) are fresh.
+  _curves->recompute();
+
   int total_segs = (int)floor(_curves->get_max_t() * _num_segs + 0.5);
 
-  float max_t = get_max_t();
+  float max_t = xyz_curve->get_max_t();
   float scale = max_t / (float)(total_segs-1);
   float t;
   LVecBase3f point;
@@ -318,7 +328,7 @@ draw() {
   for (i = 0; i < total_segs; i++) {
     t = (float)i * scale;
 
-    next_in = _curves->evaluate_xyz(t, point);
+    next_in = xyz_curve->get_point(t, point);
 
     if (!next_in || !last_in) {
       _lines.move_to(point);
@@ -329,7 +339,9 @@ draw() {
   }
 
   _lines.create(_geom_node, _frame_accurate);
-  _drawn = true;
+
+  max_t = get_max_t();
+  scale = max_t / (float)(total_segs-1);
 
   // Now draw the time tick marks.
   if (_num_ticks > 0.0) {

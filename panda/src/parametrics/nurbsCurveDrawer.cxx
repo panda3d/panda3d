@@ -91,24 +91,20 @@ set_hull_color(float r, float g, float b) {
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurveDrawer::
 draw() {
+  // First, draw the curve itself.
+  if (!ParametricCurveDrawer::draw()) {
+    return false;
+  }
+
   ParametricCurve *curve = (ParametricCurve *)NULL;
   NurbsCurveInterface *nurbs = (NurbsCurveInterface *)NULL;
 
   if (_curves != (ParametricCurveCollection *)NULL) {
     curve = _curves->get_default_curve();
-  }
 
-  if (curve != (ParametricCurve *)NULL) {
-    nurbs = curve->get_nurbs_interface();
-    if (nurbs != (NurbsCurveInterface *)NULL) {
-      // Make sure the curve is fresh.
-      nurbs->recompute();
+    if (curve != (ParametricCurve *)NULL) {
+      nurbs = curve->get_nurbs_interface();
     }
-  }
-
-  // First, draw the curve itself.
-  if (!ParametricCurveDrawer::draw()) {
-    return false;
   }
 
   if (nurbs == (NurbsCurveInterface *)NULL) {

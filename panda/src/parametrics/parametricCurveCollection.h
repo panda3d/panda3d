@@ -35,6 +35,7 @@ PUBLISHED:
   INLINE ~ParametricCurveCollection();
 
   void add_curve(ParametricCurve *curve);
+  void add_curve(ParametricCurve *curve, int index);
   int add_curves(Node *node);
   bool remove_curve(ParametricCurve *curve);
   void remove_curve(int index);
@@ -49,10 +50,13 @@ PUBLISHED:
   ParametricCurve *get_hpr_curve() const;
   ParametricCurve *get_default_curve() const;
   int get_num_timewarps() const;
+  ParametricCurve *get_timewarp_curve(int n) const;
 
   INLINE float get_max_t() const;
 
   void make_even(float max_t, float segments_per_unit);
+  void face_forward(float segments_per_unit);
+  void reset_max_t(float max_t);
 
   bool evaluate(float t, LVecBase3f &xyz, LVecBase3f &hpr) const;
   bool evaluate(float t, LMatrix4f &result, CoordinateSystem cs = CS_default) const;
@@ -60,6 +64,13 @@ PUBLISHED:
   float evaluate_t(float t) const;
   INLINE bool evaluate_xyz(float t, LVecBase3f &xyz) const;
   INLINE bool evaluate_hpr(float t, LVecBase3f &hpr) const;
+
+  INLINE bool adjust_xyz(float t, float x, float y, float z);
+  bool adjust_xyz(float t, const LVecBase3f &xyz);
+  INLINE bool adjust_hpr(float t, float h, float p, float r);
+  bool adjust_hpr(float t, const LVecBase3f &xyz);
+
+  bool recompute();
 
   bool stitch(const ParametricCurveCollection *a, 
 	      const ParametricCurveCollection *b);
@@ -74,6 +85,12 @@ public:
   int r_add_curves(Node *node);
   void register_drawer(ParametricCurveDrawer *drawer);
   void unregister_drawer(ParametricCurveDrawer *drawer);
+
+private:
+  bool determine_hpr(float t, ParametricCurve *xyz_curve, LVecBase3f &hpr) const;
+  void prepare_add_curve(ParametricCurve *curve);
+  void prepare_remove_curve(ParametricCurve *curve);
+  void redraw();
 
 private:
   typedef vector<PT(ParametricCurve)> ParametricCurves;

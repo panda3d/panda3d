@@ -13,6 +13,7 @@
 #include <compose_matrix.h>
 #include <renderRelation.h>
 #include <string_utils.h>
+#include <look_at.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ParametricCurveCollection::Constructor
@@ -30,15 +31,23 @@ ParametricCurveCollection() {
 ////////////////////////////////////////////////////////////////////
 void ParametricCurveCollection::
 add_curve(ParametricCurve *curve) {
+  prepare_add_curve(curve);
   _curves.push_back(curve);
+  redraw();
+}
 
-  DrawerList::iterator di;
-  for (di = _drawers.begin(); di != _drawers.end(); ++di) {
-    ParametricCurveDrawer *drawer = (*di);
-    curve->register_drawer(drawer);
-
-    drawer->redraw();
-  }
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::add_curve
+//       Access: Published
+//  Description: Adds a new ParametricCurve to the collection at the
+//               indicated index.
+////////////////////////////////////////////////////////////////////
+void ParametricCurveCollection::
+add_curve(ParametricCurve *curve, int index) {
+  prepare_add_curve(curve);
+  index = max(min(index, (int)_curves.size()), 0);
+  _curves.insert(_curves.begin() + index, curve);
+  redraw();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,11 +62,7 @@ add_curves(Node *node) {
   int num_curves = r_add_curves(node);
 
   if (num_curves > 0) {
-    DrawerList::iterator di;
-    for (di = _drawers.begin(); di != _drawers.end(); ++di) {
-      ParametricCurveDrawer *drawer = (*di);
-      drawer->redraw();
-    }
+    redraw();
   }
 
   return num_curves;
@@ -99,15 +104,9 @@ void ParametricCurveCollection::
 remove_curve(int index) {
   nassertv(index >= 0 && index < (int)_curves.size());
   PT(ParametricCurve) curve = _curves[index];
+  prepare_remove_curve(curve);
   _curves.erase(_curves.begin() + index);
-
-  DrawerList::iterator di;
-  for (di = _drawers.begin(); di != _drawers.end(); ++di) {
-    ParametricCurveDrawer *drawer = (*di);
-    curve->unregister_drawer(drawer);
-
-    drawer->redraw();
-  }
+  redraw();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,18 +133,14 @@ has_curve(ParametricCurve *curve) const {
 ////////////////////////////////////////////////////////////////////
 void ParametricCurveCollection::
 clear() {
-  DrawerList::iterator di;
-  for (di = _drawers.begin(); di != _drawers.end(); ++di) {
-    ParametricCurveDrawer *drawer = (*di);
-    ParametricCurves::iterator ci;
-    for (ci = _curves.begin(); ci != _curves.end(); ++ci) {
-      ParametricCurve *curve = (*ci);
-      curve->unregister_drawer(drawer);
-    }
-
-    drawer->redraw();
+  ParametricCurves::iterator ci;
+  for (ci = _curves.begin(); ci != _curves.end(); ++ci) {
+    ParametricCurve *curve = (*ci);
+    prepare_remove_curve(curve);
   }
   _curves.clear();
+
+  redraw();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,7 +152,6 @@ void ParametricCurveCollection::
 clear_timewarps() {
   PT(ParametricCurve) xyz_curve = (ParametricCurve *)NULL;
   PT(ParametricCurve) hpr_curve = (ParametricCurve *)NULL;
-  ParametricCurves discard;
 
   ParametricCurves::iterator ci;
   for (ci = _curves.begin(); ci != _curves.end(); ++ci) {
@@ -168,7 +162,7 @@ clear_timewarps() {
       if (xyz_curve == (ParametricCurve *)NULL) {
 	xyz_curve = curve;
       } else {
-	discard.push_back(curve);
+	prepare_remove_curve(curve);
       }
       break;
 
@@ -176,12 +170,12 @@ clear_timewarps() {
       if (hpr_curve == (ParametricCurve *)NULL) {
 	hpr_curve = curve;
       } else {
-	discard.push_back(curve);
+	prepare_remove_curve(curve);
       }
       break;
 
     default:
-      discard.push_back(curve);
+      prepare_remove_curve(curve);
     }
   }
 
@@ -192,18 +186,7 @@ clear_timewarps() {
     _curves.push_back(hpr_curve);
   }
 
-  // Properly unregister all the curves we're discarding.
-  DrawerList::iterator di;
-  for (di = _drawers.begin(); di != _drawers.end(); ++di) {
-    ParametricCurveDrawer *drawer = (*di);
-    ParametricCurves::iterator ci;
-    for (ci = discard.begin(); ci != discard.end(); ++ci) {
-      ParametricCurve *curve = (*ci);
-      curve->unregister_drawer(drawer);
-    }
-
-    drawer->redraw();
-  }
+  redraw();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -289,6 +272,27 @@ get_num_timewarps() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::get_timewarp_curve
+//       Access: Published
+//  Description: Returns the nth timewarp curve in the collection.
+////////////////////////////////////////////////////////////////////
+ParametricCurve *ParametricCurveCollection::
+get_timewarp_curve(int n) const {
+  ParametricCurves::const_iterator ci;
+  for (ci = _curves.begin(); ci != _curves.end(); ++ci) {
+    ParametricCurve *curve = (*ci);
+    if (curve->get_curve_type() == PCT_T) {
+      if (n == 0) {
+	return curve;
+      }
+      n--;
+    }
+  }
+  nassertr(false, (ParametricCurve *)NULL);
+  return (ParametricCurve *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ParametricCurveCollection::make_even
 //       Access: Published
 //  Description: Discards all existing timewarp curves and recomputes
@@ -320,19 +324,41 @@ make_even(float max_t, float segments_per_unit) {
   // approximately the same length as all the others.
   CurveFitter fitter;
 
-  int num_segments = (int)floor(segments_per_unit * xyz_curve->get_max_t() + 0.5);
+  int num_segments = max(1, (int)floor(segments_per_unit * xyz_curve->get_max_t() + 0.5));
+
+  if (parametrics_cat.is_debug()) {
+    parametrics_cat.debug()
+      << "Calculating length of curve.\n";
+  }
 
   float net_length = xyz_curve->calc_length();
   float segment_length = net_length / (float)num_segments;
+
+  if (parametrics_cat.is_debug()) {
+    parametrics_cat.debug()
+      << "Curve has total length " << net_length << "; dividing into "
+      << num_segments << " segments of " << segment_length << " units each.\n";
+  }
 
   float last_t = 0.0;
   fitter.add_xyz(0.0, LVecBase3f(last_t, 0.0, 0.0));
 
   for (int i = 0; i < num_segments; i++) {
     float next_t = xyz_curve->find_length(last_t, segment_length);
-    fitter.add_xyz((float)(i + 1) / (num_segments + 1) * max_t,
+    fitter.add_xyz((float)(i + 1) / num_segments * max_t,
 		   LVecBase3f(next_t, 0.0, 0.0));
+
+    if (parametrics_cat.is_spam()) {
+      parametrics_cat.spam()
+	<< "Point " << i << " is at " << next_t << "\n";
+    }
+
     last_t = next_t;
+  }
+
+  if (parametrics_cat.is_debug()) {
+    parametrics_cat.debug()
+      << "Done computing segments.\n";
   }
 
   fitter.compute_tangents(1);
@@ -341,6 +367,96 @@ make_even(float max_t, float segments_per_unit) {
   nassertv(t_curve != (ParametricCurve *)NULL);
   t_curve->set_curve_type(PCT_T);
   add_curve(t_curve);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::face_forward
+//       Access: Published
+//  Description: Discards the existing HPR curve and generates a new
+//               one that looks in the direction of travel along the
+//               XYZ curve, based on the XYZ curve's tangent at each
+//               point.
+////////////////////////////////////////////////////////////////////
+void ParametricCurveCollection::
+face_forward(float segments_per_unit) {
+  ParametricCurve *xyz_curve = get_xyz_curve();
+  if (xyz_curve == (ParametricCurve *)NULL) {
+    parametrics_cat.error()
+      << "No XYZ curve for face_forward().\n";
+    return;
+  }
+
+  // Eliminate all the old hpr curves, and also take note of the index
+  // number of the first XYZ curve.
+  int xyz_index = -1;
+  ParametricCurves::const_iterator ci;
+  ParametricCurves new_curves;
+
+  for (ci = _curves.begin(); ci != _curves.end(); ++ci) {
+    ParametricCurve *curve = (*ci);
+    if (curve->get_curve_type() == PCT_HPR) {
+      prepare_remove_curve(curve);
+    } else {
+      if (curve->get_curve_type() == PCT_XYZ && xyz_index == -1) {
+	xyz_index = (ci - _curves.begin());
+      }
+      new_curves.push_back(curve);
+    }
+  }
+  _curves.swap(new_curves);
+
+  // Now divvy up the XYZ curve into num_segments sections, of equal
+  // length in parametric time (based on the timewarp curves).
+  CurveFitter fitter;
+
+  float max_t = get_max_t();
+  int num_segments = (int)floor(segments_per_unit * max_t + 0.5);
+
+  LVecBase3f hpr(0.0, 0.0, 0.0);
+
+  // We compute the first HPR point a little point into the beginning
+  // of the curve, instead of at 0.0, because the tangent at 0.0 is
+  // likely to be zero.
+  determine_hpr(0.001, xyz_curve, hpr);
+  fitter.add_hpr(0.0, hpr);
+
+  for (int i = 0; i < num_segments; i++) {
+    float t = (float)(i + 1) / num_segments * max_t;
+    determine_hpr(t, xyz_curve, hpr);
+    fitter.add_hpr(t, hpr);
+  }
+
+  fitter.wrap_hpr();
+  fitter.compute_tangents(1);
+  PT(ParametricCurveCollection) fit = fitter.make_nurbs();
+  ParametricCurve *hpr_curve = fit->get_hpr_curve();
+  nassertv(hpr_curve != (ParametricCurve *)NULL);
+  add_curve(hpr_curve, xyz_index + 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::reset_max_t
+//       Access: Published
+//  Description: Adjusts the apparent length of the curve by applying
+//               a new timewarp that maps the range [0..max_t] to the
+//               range [0..get_max_t()].  After this call, the curve
+//               collection will contain one more timewarp curve, and
+//               get_max_t() will return the given max_t value.
+////////////////////////////////////////////////////////////////////
+void ParametricCurveCollection::
+reset_max_t(float max_t) {
+  // Define a linear NURBS curve.
+  PT(NurbsCurve) nurbs = new NurbsCurve;
+  nurbs->set_curve_type(PCT_T);
+  nurbs->set_order(2);
+  nurbs->append_cv(LVecBase3f(0.0, 0.0, 0.0));
+  nurbs->append_cv(LVecBase3f(get_max_t(), 0.0, 0.0));
+  nurbs->set_knot(0, 0.0);
+  nurbs->set_knot(1, 0.0);
+  nurbs->set_knot(2, max_t);
+  nurbs->set_knot(3, max_t);
+  nurbs->recompute();
+  add_curve(nurbs);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -468,6 +584,72 @@ evaluate_t(float t) const {
   }
 
   return t0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::adjust_xyz
+//       Access: Published
+//  Description: Adjust the XYZ curve at the indicated time to the new
+//               value.  The curve shape will change correspondingly.
+//               Returns true if successful, false if unable to make
+//               the adjustment for some reason.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurveCollection::
+adjust_xyz(float t, const LVecBase3f &xyz) {
+  ParametricCurve *xyz_curve = get_xyz_curve();
+  if (xyz_curve == (ParametricCurve *)NULL) {
+    return false;
+  }
+
+  float t0 = evaluate_t(t);
+  if (t0 >= 0.0 && t < xyz_curve->get_max_t()) {
+    return xyz_curve->adjust_point(t, xyz[0], xyz[1], xyz[2]);
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::adjust_hpr
+//       Access: Published
+//  Description: Adjust the HPR curve at the indicated time to the new
+//               value.  The curve shape will change correspondingly.
+//               Returns true if successful, false if unable to make
+//               the adjustment for some reason.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurveCollection::
+adjust_hpr(float t, const LVecBase3f &hpr) {
+  ParametricCurve *hpr_curve = get_hpr_curve();
+  if (hpr_curve == (ParametricCurve *)NULL) {
+    return false;
+  }
+
+  float t0 = evaluate_t(t);
+  if (t0 >= 0.0 && t < hpr_curve->get_max_t()) {
+    return hpr_curve->adjust_point(t, hpr[0], hpr[1], hpr[2]);
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::recompute
+//       Access: Published
+//  Description: Ensures all the curves are freshly computed and
+//               up-to-date.  Returns true if everything is valid,
+//               false if at least one curve is incorrect.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurveCollection::
+recompute() {
+  bool all_ok = true;
+
+  ParametricCurves::iterator ci;
+  for (ci = _curves.begin(); ci != _curves.end(); ++ci) {
+    ParametricCurve *curve = (*ci);
+    if (!curve->recompute()) {
+      all_ok = false;
+    }
+  }
+
+  return all_ok;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -660,13 +842,8 @@ r_add_curves(Node *node) {
 
   if (node->is_of_type(ParametricCurve::get_class_type())) {
     ParametricCurve *curve = DCAST(ParametricCurve, node);
+    prepare_add_curve(curve);
     _curves.push_back(curve);
-
-    DrawerList::iterator di;
-    for (di = _drawers.begin(); di != _drawers.end(); ++di) {
-      ParametricCurveDrawer *drawer = (*di);
-      curve->register_drawer(drawer);
-    }
     num_curves++;
   }
 
@@ -717,5 +894,81 @@ unregister_drawer(ParametricCurveDrawer *drawer) {
   for (ci = _curves.begin(); ci != _curves.end(); ++ci) {
     ParametricCurve *curve = (*ci);
     curve->unregister_drawer(drawer);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::determine_hpr
+//       Access: Private
+//  Description: Computes the orientation at the given point in time,
+//               based on the tangent of the XYZ curve.  Returns true
+//               if the orientation can be determined, or false if it
+//               cannot (in which case hpr is left unchanged).
+////////////////////////////////////////////////////////////////////
+bool ParametricCurveCollection::
+determine_hpr(float t, ParametricCurve *xyz_curve, LVecBase3f &hpr) const {
+  float t0 = evaluate_t(t);
+
+  LVector3f tangent;
+  if (!xyz_curve->get_tangent(t0, tangent)) {
+    return false;
+  }
+
+  if (tangent.length_squared() == 0.0) {
+    return false;
+  }
+
+  LMatrix3f mat;
+  look_at(mat, tangent);
+
+  LVecBase3f scale;
+  decompose_matrix(mat, scale, hpr);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::prepare_add_curve
+//       Access: Private
+//  Description: Registers the curve with the list of drawers that
+//               share this collection, in preparation for adding it
+//               to the _curves list.
+////////////////////////////////////////////////////////////////////
+void ParametricCurveCollection::
+prepare_add_curve(ParametricCurve *curve) {
+  DrawerList::iterator di;
+  for (di = _drawers.begin(); di != _drawers.end(); ++di) {
+    ParametricCurveDrawer *drawer = (*di);
+    curve->register_drawer(drawer);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::prepare_remove_curve
+//       Access: Private
+//  Description: Unregisters the curve with the list of drawers that
+//               share this collection, in preparation for removing it
+//               from the _curves list.
+////////////////////////////////////////////////////////////////////
+void ParametricCurveCollection::
+prepare_remove_curve(ParametricCurve *curve) {
+  DrawerList::iterator di;
+  for (di = _drawers.begin(); di != _drawers.end(); ++di) {
+    ParametricCurveDrawer *drawer = (*di);
+    curve->unregister_drawer(drawer);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::redraw
+//       Access: Private
+//  Description: Calls redraw() on all drawers that share this
+//               collection.
+////////////////////////////////////////////////////////////////////
+void ParametricCurveCollection::
+redraw() {
+  DrawerList::iterator di;
+  for (di = _drawers.begin(); di != _drawers.end(); ++di) {
+    ParametricCurveDrawer *drawer = (*di);
+    drawer->redraw();
   }
 }

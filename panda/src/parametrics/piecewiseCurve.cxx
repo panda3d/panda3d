@@ -112,7 +112,7 @@ get_2ndtangent(float t, LVecBase3f &tangent2) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PiecewiseCurve::adjust_point
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Recomputes the curve such that it passes through the
 //               point (px, py, pz) at time t, but keeps the same
 //               tangent value at that point.
@@ -143,7 +143,7 @@ adjust_point(float t,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PiecewiseCurve::adjust_tangent
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Recomputes the curve such that it has the tangent
 //               (tx, ty, tz) at time t, but keeps the same position
 //               at the point.
@@ -168,7 +168,7 @@ adjust_tangent(float t,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PiecewiseCurve::adjust_pt
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Recomputes the curve such that it passes through the
 //               point (px, py, pz) with the tangent (tx, ty, tz).
 ////////////////////////////////////////////////////////////////////

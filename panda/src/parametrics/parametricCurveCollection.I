@@ -73,3 +73,29 @@ evaluate_hpr(float t, LVecBase3f &hpr) const {
   LVecBase3f xyz;
   return evaluate(t, xyz, hpr);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::adjust_xyz
+//       Access: Published
+//  Description: Adjust the XYZ curve at the indicated time to the new
+//               value.  The curve shape will change correspondingly.
+//               Returns true if successful, false if unable to make
+//               the adjustment for some reason.
+////////////////////////////////////////////////////////////////////
+INLINE bool ParametricCurveCollection::
+adjust_xyz(float t, float x, float y, float z) {
+  return adjust_xyz(t, LVecBase3f(x, y, z));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurveCollection::adjust_hpr
+//       Access: Published
+//  Description: Adjust the HPR curve at the indicated time to the new
+//               value.  The curve shape will change correspondingly.
+//               Returns true if successful, false if unable to make
+//               the adjustment for some reason.
+////////////////////////////////////////////////////////////////////
+INLINE bool ParametricCurveCollection::
+adjust_hpr(float t, float h, float p, float r) {
+  return adjust_hpr(t, LVecBase3f(h, p, r));
+}
