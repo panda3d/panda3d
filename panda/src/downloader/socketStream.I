@@ -113,10 +113,19 @@ get_collect_tcp_interval() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool OSocketStream::
 consider_flush() {
-  if (!_collect_tcp || 
-      ClockObject::get_global_clock()->get_real_time() - _queued_data_start >= _collect_tcp_interval) {
+  if (!_collect_tcp) {
     return flush();
+
+  } else {
+    double elapsed = 
+      ClockObject::get_global_clock()->get_real_time() - _queued_data_start;
+    // If the elapsed time is negative, someone must have reset the
+    // clock back, so just go ahead and flush.
+    if (elapsed < 0.0 || elapsed >= _collect_tcp_interval) {
+      return flush();
+    }
   }
+
   return true;
 }
 
@@ -221,10 +230,19 @@ get_collect_tcp_interval() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool SocketStream::
 consider_flush() {
-  if (!_collect_tcp || 
-      ClockObject::get_global_clock()->get_real_time() - _queued_data_start >= _collect_tcp_interval) {
+  if (!_collect_tcp) {
     return flush();
+
+  } else {
+    double elapsed = 
+      ClockObject::get_global_clock()->get_real_time() - _queued_data_start;
+    // If the elapsed time is negative, someone must have reset the
+    // clock back, so just go ahead and flush.
+    if (elapsed < 0.0 || elapsed >= _collect_tcp_interval) {
+      return flush();
+    }
   }
+
   return true;
 }
 

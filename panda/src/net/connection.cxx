@@ -183,9 +183,17 @@ bool Connection::
 consider_flush() {
   PR_Lock(_write_mutex);
 
-  if (!_collect_tcp || 
-      ClockObject::get_global_clock()->get_real_time() - _queued_data_start >= _collect_tcp_interval) {
+  if (!_collect_tcp) {
     return do_flush();
+
+  } else {
+    double elapsed = 
+      ClockObject::get_global_clock()->get_real_time() - _queued_data_start;
+    // If the elapsed time is negative, someone must have reset the
+    // clock back, so just go ahead and flush.
+    if (elapsed < 0.0 || elapsed >= _collect_tcp_interval) {
+      return do_flush();
+    }
   }
 
   PR_Unlock(_write_mutex);
