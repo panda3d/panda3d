@@ -17,7 +17,7 @@
 #if $[BUILD_DX8]
 #begin metalib_target
   #define TARGET pandadx8
-
   #define SOURCES pandadx8.cxx
+  #define TARGET_LIBS d3d8.lib dxerr8.lib
 #end metalib_target
 #endif
