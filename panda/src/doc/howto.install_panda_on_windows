@@ -37,13 +37,15 @@ Step 0: Map network drive to build tools drive
     You must exit and restart the cmd.exe shell to enable this, since the
     registry is only read at cmd.exe startup.
     
-Step 1: On Win2000, install ServicePack 2 and DX 8.1
-  - run
-    v:\win2k-servicepack2.exe  
+Step 1: Update OS software
+  - On Win2000, install ServicePack 2 and DX 8.1 by running
+    v:\win2k-servicepack2.exe  and
     v:\dx8.1\DX81NTeng.exe
     or download them from http://windowsupdate.microsoft.com (this will be MUCH slower).
     Also check your video card manufacturer's website for updated drivers, the ones
     on the original win2k CD are most likely too old.
+  - On both WinXP and Win2000, I recommend you go to http://windowsupdate.microsoft.com,
+    click on 'Product Updates', and install any patches labeled 'Critical Updates'.
 
 Step 2: 
   Choose whether to use Visual C++ v7.0 or v6.0
