@@ -357,7 +357,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       HDC hdc = BeginPaint(hwnd, &ps);
 
       RECT rect = { 0, 0, _width, _height };
-      FillRect(hdc, &rect, (HBRUSH)(COLOR_BTNFACE + 1));
+      FillRect(hdc, &rect, (HBRUSH)COLOR_BACKGROUND);
       EndPaint(hwnd, &ps);
       return 0;
     }
