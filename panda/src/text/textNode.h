@@ -145,7 +145,7 @@ PUBLISHED:
   void print() const;
   void write(ostream &out) const;
 
-  void rebuild();
+  INLINE void rebuild();
 
   // The following functions return information about the text that
   // was last built (and is currently visible).
