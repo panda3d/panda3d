@@ -129,8 +129,8 @@ DynamicTextFont(const Filename &font_filename, int face_index) {
             << *this << " has no default Unicode charmap.\n";
           if (_face->num_charmaps > 1) {
             text_cat.warning()
-              << "Choosing arbitrary charmap of " << _face->num_charmaps 
-              << ".\n";
+              << "Arbitrarily choosing first of " 
+              << _face->num_charmaps << " charmaps.\n";
           }
           FT_Set_Charmap(_face, _face->charmaps[0]);
         }
