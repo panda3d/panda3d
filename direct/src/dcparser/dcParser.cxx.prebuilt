@@ -1371,7 +1371,7 @@ case 53:
   if (yyvsp[0].u.integer == 0) {
     yyerror("Invalid divisor.");
 
-  } else if (!simple_param->set_divisor(yyvsp[0].u.integer)) {
+  } else if (!simple_param->set_divisor((int)yyvsp[0].u.integer)) {
     yyerror("A divisor is only valid on a numeric type.");
   }
   yyval.u.parameter = simple_param;
@@ -1384,7 +1384,7 @@ case 54:
   if (yyvsp[-3].u.integer == 0) {
     yyerror("Invalid divisor.");
 
-  } else if (!simple_param->set_divisor(yyvsp[-3].u.integer)) {
+  } else if (!simple_param->set_divisor((int)yyvsp[-3].u.integer)) {
     yyerror("A divisor is only valid on a numeric type.");
   }
   if (!simple_param->set_range(double_range)) {
@@ -1400,7 +1400,7 @@ case 55:
   if (yyvsp[0].u.integer == 0) {
     yyerror("Invalid divisor.");
 
-  } else if (!simple_param->set_divisor(yyvsp[0].u.integer)) {
+  } else if (!simple_param->set_divisor((int)yyvsp[0].u.integer)) {
     yyerror("A divisor is only valid on a numeric type.");
   }
   if (!simple_param->set_range(double_range)) {
@@ -1504,7 +1504,7 @@ case 65:
     yyerror("Nonnegative values only");
   } else {
     uint_range.clear();
-    if (!uint_range.add_range(yyvsp[0].u.integer, yyvsp[0].u.integer)) {
+    if (!uint_range.add_range((unsigned int)yyvsp[0].u.integer, (unsigned int)yyvsp[0].u.integer)) {
       yyerror("Overlapping range");
     }
   }
@@ -1517,7 +1517,7 @@ case 66:
     yyerror("Nonnegative values only");
   } else {
     uint_range.clear();
-    if (!uint_range.add_range(yyvsp[-2].u.integer, yyvsp[0].u.integer)) {
+    if (!uint_range.add_range((unsigned int)yyvsp[-2].u.integer, (unsigned int)yyvsp[0].u.integer)) {
       yyerror("Overlapping range");
     }
   }
@@ -1531,7 +1531,7 @@ case 67:
     yyerror("Syntax error");
   } else if (yyvsp[-1].u.integer < 0) {
     yyerror("Nonnegative values only");
-  } else if (!uint_range.add_range(yyvsp[-1].u.integer, -yyvsp[0].u.integer)) {
+  } else if (!uint_range.add_range((unsigned int)yyvsp[-1].u.integer, (unsigned int)-yyvsp[0].u.integer)) {
     yyerror("Overlapping range");
   }
 }
@@ -1541,7 +1541,7 @@ case 68:
 {
   if (yyvsp[0].u.integer < 0) {
     yyerror("Nonnegative values only");
-  } else if (!uint_range.add_range(yyvsp[0].u.integer, yyvsp[0].u.integer)) {
+  } else if (!uint_range.add_range((unsigned int)yyvsp[0].u.integer, (unsigned int)yyvsp[0].u.integer)) {
     yyerror("Overlapping range");
   }
 }
@@ -1551,7 +1551,7 @@ case 69:
 {
   if (yyvsp[-2].u.integer < 0 || yyvsp[0].u.integer < 0) {
     yyerror("Nonnegative values only");
-  } else if (!uint_range.add_range(yyvsp[-2].u.integer, yyvsp[0].u.integer)) {
+  } else if (!uint_range.add_range((unsigned int)yyvsp[-2].u.integer, (unsigned int)yyvsp[0].u.integer)) {
     yyerror("Overlapping range");
   }
 }
@@ -1563,7 +1563,7 @@ case 70:
     yyerror("Syntax error");
   } else if (yyvsp[-1].u.integer < 0) {
     yyerror("Nonnegative values only");
-  } else if (!uint_range.add_range(yyvsp[-1].u.integer, -yyvsp[0].u.integer)) {
+  } else if (!uint_range.add_range((unsigned int)yyvsp[-1].u.integer, (unsigned int)-yyvsp[0].u.integer)) {
     yyerror("Overlapping range");
   }
 }
@@ -1591,7 +1591,7 @@ case 74:
     yyerror("A divisor is only allowed on a primitive type.");
 
   } else {
-    if (!yyvsp[-2].u.parameter->as_simple_parameter()->set_divisor(yyvsp[0].u.integer)) {
+    if (!yyvsp[-2].u.parameter->as_simple_parameter()->set_divisor((int)yyvsp[0].u.integer)) {
       yyerror("A divisor is only valid on a numeric type.");
     }
   }
