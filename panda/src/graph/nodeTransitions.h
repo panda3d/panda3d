@@ -88,8 +88,19 @@ private:
 
 INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitions &nts);
 
+template<class Transition>
+INLINE_GRAPH bool
+get_transition_into(Transition *&ptr, const NodeTransitions &trans,
+                    TypeHandle transition_type);
+
+template<class Transition>
+INLINE_GRAPH bool
+get_transition_into(Transition *&ptr, const NodeTransitions &trans);
+
 #ifndef DONT_INLINE_GRAPH
 #include "nodeTransitions.I"
 #endif
+
+#include "nodeTransitions.T"
 
 #endif

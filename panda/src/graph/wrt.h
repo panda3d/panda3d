@@ -146,8 +146,6 @@ wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 extern EXPCL_PANDA PStatCollector _wrt_pcollector;
 extern EXPCL_PANDA PStatCollector _wrt_subtree_pcollector;
 
-#ifndef DONT_INLINE_GRAPH
-#include "wrt.I"
-#endif
+#include "wrt.T"
 
 #endif

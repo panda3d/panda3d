@@ -43,7 +43,7 @@
      pt_NodeRelation.h setTransitionHelpers.T  \
      setTransitionHelpers.h transitionDirection.h  \
      traverserVisitor.T traverserVisitor.h vector_PT_Node.h  \
-     vector_PT_NodeRelation.h vector_NodeRelation_star.h wrt.I \
+     vector_PT_NodeRelation.h vector_NodeRelation_star.h wrt.T \
      wrt.h
 
    #define INCLUDED_SOURCES \
@@ -97,7 +97,7 @@
     setTransitionHelpers.T setTransitionHelpers.h \
     transitionDirection.h traverserVisitor.T traverserVisitor.h \
     vector_PT_Node.h vector_PT_NodeRelation.h vector_NodeRelation_star.h \
-    wrt.I wrt.h
+    wrt.T wrt.h
 
   #define IGATESCAN all
 
