@@ -14,7 +14,8 @@
     guiItem.h guiItem.I guiItem.cxx \
     guiRollover.h guiRollover.I guiRollover.cxx \
     guiButton.h guiButton.I guiButton.cxx \
-    guiFrame.h guiFrame.I guiFrame.cxx
+    guiFrame.h guiFrame.I guiFrame.cxx \
+    guiSign.h guiSign.I guiSign.cxx
 
   #define INSTALL_HEADERS \
     guiManager.h guiManager.I \
@@ -23,7 +24,8 @@
     guiItem.h guiItem.I \
     guiRollover.h guiRollover.I \
     guiButton.h guiButton.I \
-    guiFrame.h guiFrame.I
+    guiFrame.h guiFrame.I \
+    guiSign.h guiSign.I
 
   #define IGATESCAN \
     guiManager.h guiManager.I \
@@ -32,6 +34,7 @@
     guiItem.h guiItem.I \
     guiRollover.h guiRollover.I \
     guiButton.h guiButton.I \
-    guiFrame.h guiFrame.I
+    guiFrame.h guiFrame.I \
+    guiSign.h guiSign.I
 
 #end lib_target
