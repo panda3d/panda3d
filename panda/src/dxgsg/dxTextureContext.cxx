@@ -28,7 +28,7 @@ static const DWORD g_LowByteMask = 0x000000FF;
 
 #define FORCE_16bpp_1555
 
-//#define PANDA_ARGB_ORDER
+#define PANDA_ARGB_ORDER
 
 #ifdef PANDA_ARGB_ORDER
 // assume Panda uses int ARGB format in PixelBuffers natively  (byte-order BGRA or BGR)
