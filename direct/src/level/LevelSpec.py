@@ -95,7 +95,7 @@ class LevelSpec:
         def setAttribChange(self, entId, attrib, value):
             """ we're being asked to change an attribute """
             LevelSpec.notify.debug("setAttribChange: %s, %s = '%s'" %
-                                   (entId, attrib, value))
+                                   (entId, attrib, repr(value)))
             assert entId in self.entId2specDict
             specDict = self.entId2specDict[entId]
             assert specDict[entId].has_key(attrib)
