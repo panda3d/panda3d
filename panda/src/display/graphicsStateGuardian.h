@@ -326,7 +326,7 @@ private:
 
 template<class Transition>
 INLINE bool
-get_attribute_into(Transition *&ptr, GraphicsStateGuardian *gsg);
+get_attribute_into(Transition *&ptr, const GraphicsStateGuardian *gsg);
 
 #include "graphicsStateGuardian.I"
 

@@ -277,7 +277,7 @@ get_coordinate_system() const {
 ////////////////////////////////////////////////////////////////////
 template<class Transition>
 INLINE bool
-get_attribute_into(Transition *&ptr, GraphicsStateGuardian *gsg) {
+get_attribute_into(Transition *&ptr, const GraphicsStateGuardian *gsg) {
   NodeTransition *nt = gsg->get_attribute(Transition::get_class_type());
   if (nt == (NodeTransition *)NULL) {
     ptr = (Transition *)NULL;

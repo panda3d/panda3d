@@ -1835,7 +1835,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     LMatrix4f modelview_mat;
 
     const TransformTransition *ctatt;
-    if (!get_attribute_into(ctatt, this)) {
+    if (!get_attribute_into(ctatt, this))
         modelview_mat = LMatrix4f::ident_mat();
     else
         modelview_mat = ctatt->get_matrix();
