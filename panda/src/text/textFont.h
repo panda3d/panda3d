@@ -29,6 +29,9 @@
 class Node;
 class TextGlyph;
 
+// For some reason, gcc's <string> doesn't define this.
+typedef basic_string<wchar_t> wstring;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : TextFont
 // Description : An encapsulation of a font; i.e. a set of glyphs that
@@ -57,6 +60,10 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
 public:
+  float calc_width(const wstring &line);
+  wstring wordwrap_to(const wstring &text, float wordwrap_width,
+                     bool preserve_trailing_whitespace);
+
   INLINE float get_space_advance() const;
   virtual bool get_glyph(int character, const TextGlyph *&glyph,
                          float &glyph_scale)=0;

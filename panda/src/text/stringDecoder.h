@@ -39,8 +39,11 @@ public:
   INLINE bool is_eof();
 
 protected:
+  INLINE bool test_eof();
+
   string _input;
   size_t _p;
+  bool _eof;
 };
 
 ////////////////////////////////////////////////////////////////////

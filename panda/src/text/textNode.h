@@ -186,7 +186,7 @@ PUBLISHED:
   INLINE void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
 
-  INLINE void set_text(const string &str);
+  void set_text(const string &str);
   INLINE void clear_text();
   INLINE bool has_text() const;
   INLINE string get_text() const;
@@ -218,19 +218,21 @@ PUBLISHED:
   PT_Node generate();
 
 private:
+  void decode_wtext(StringDecoder &decoder);
+  int expand_amp_sequence(StringDecoder &decoder);
+
   void do_rebuild();
   void do_measure();
 
-  StringDecoder *make_decoder(const string &text);
-
-  float assemble_row(StringDecoder *decoder, Node *dest);
-  Node *assemble_text(StringDecoder *decoder, LVector2f &ul, LVector2f &lr,
-                      int &num_rows);
-  float measure_row(StringDecoder *decoder);
-  void measure_text(StringDecoder *decoder, LVector2f &ul, LVector2f &lr,
-                    int &num_rows);
-
-  int expand_amp_sequence(StringDecoder *decoder);
+#ifndef CPPPARSER  // interrogate has a bit of trouble with wstring.
+  float assemble_row(wstring::iterator &si, const wstring::iterator &send, 
+                     Node *dest);
+  Node *assemble_text(wstring::iterator si, const wstring::iterator &send,
+                      LVector2f &ul, LVector2f &lr, int &num_rows);
+  float measure_row(wstring::iterator &si, const wstring::iterator &send);
+  void measure_text(wstring::iterator si, const wstring::iterator &send,
+                    LVector2f &ul, LVector2f &lr, int &num_rows);
+#endif  // CPPPARSER
 
   Node *make_frame();
   Node *make_card();
@@ -280,6 +282,7 @@ private:
   CoordinateSystem _coordinate_system;
 
   string _text;
+  wstring _wtext;
 
   LPoint2f _ul2d, _lr2d;
   LPoint3f _ul3d, _lr3d;

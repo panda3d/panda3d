@@ -118,13 +118,13 @@ get_font() const {
 //               (i.e. ASCII).  Other encodings are possible to take
 //               advantage of character sets with more than 256
 //               characters.
+//
+//               This affects only future calls to set_text(); it does
+//               not change text that was set previously.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_encoding(TextNode::Encoding encoding) {
-  if (_encoding != encoding) {
-    _encoding = encoding;
-    rebuild(true);
-  }
+  _encoding = encoding;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,16 +146,16 @@ get_encoding() const {
 //               expanded to special characters according to a subset
 //               of the HTML conventions.  When this is false,
 //               ampersands are treated as ordinary characters.
+//
+//               This affects only future calls to set_text(); it does
+//               not change text that was set previously.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_expand_amp(bool expand_amp) {
-  bool current_expand_amp = get_expand_amp();
-  if (expand_amp && !current_expand_amp) {
+  if (expand_amp) {
     _flags |= F_expand_amp;
-    rebuild(true);
   } else {
     _flags &= ~F_expand_amp;
-    rebuild(true);
   }
 }
 
@@ -1020,18 +1020,6 @@ set_coordinate_system(CoordinateSystem coordinate_system) {
 INLINE CoordinateSystem TextNode::
 get_coordinate_system() const {
   return _coordinate_system;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_text
-//       Access: Published
-//  Description: Changes the text that is displayed under the
-//               TextNode.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
-set_text(const string &text) {
-  _text = text;
-  rebuild(true);
 }
 
 ////////////////////////////////////////////////////////////////////

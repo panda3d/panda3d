@@ -78,7 +78,7 @@ TextNode(const string &name) : NamedNode(name) {
   _num_rows = 0;
 
   _freeze_level = 0;
-  _needs_rebuild = false;
+ _needs_rebuild = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,6 +88,41 @@ TextNode(const string &name) : NamedNode(name) {
 ////////////////////////////////////////////////////////////////////
 TextNode::
 ~TextNode() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_text
+//       Access: Published
+//  Description: Changes the text that is displayed under the
+//               TextNode.
+////////////////////////////////////////////////////////////////////
+void TextNode::
+set_text(const string &text) {
+  _text = text;
+  switch (_encoding) {
+  case E_utf8:
+    {
+      StringUtf8Decoder decoder(_text);
+      decode_wtext(decoder);
+    }
+    break;
+
+  case E_unicode:
+    {
+      StringUnicodeDecoder decoder(_text);
+      decode_wtext(decoder);
+    }
+    break;
+
+  case E_iso8859:
+  default:
+    {
+      StringDecoder decoder(_text);
+      decode_wtext(decoder);
+    }
+  };
+
+  rebuild(true);
 }
 
 
@@ -242,21 +277,18 @@ generate() {
 
   root_arc->set_transition(new TransformTransition(mat));
 
-  string text = _text;
+  wstring wtext = _wtext;
   if (has_wordwrap()) {
-    text = wordwrap_to(text, _wordwrap_width, false);
+    wtext = _font->wordwrap_to(wtext, _wordwrap_width, false);
   }
-
-  StringDecoder *decoder = make_decoder(text);
 
   // Assemble the text.
   LVector2f ul, lr;
   int num_rows = 0;
-  PT_Node text_root = assemble_text(decoder, ul, lr, num_rows);
+  PT_Node text_root = assemble_text(wtext.begin(), wtext.end(), ul, lr, num_rows);
   RenderRelation *text_arc =
     new RenderRelation(sub_root, text_root, _draw_order + 2);
 
-  delete decoder;
 
   if (has_text_color()) {
     text_arc->set_transition(new ColorTransition(_text_color));
@@ -362,326 +394,27 @@ generate() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::do_rebuild
+//     Function: TextNode::decode_wtext
 //       Access: Private
-//  Description: Removes any existing children of the TextNode, and
-//               adds the newly generated text instead.
+//  Description: Decodes the eight-bit stream from the indicated
+//               decoder, storing the decoded unicode characters in
+//               _wtext.
 ////////////////////////////////////////////////////////////////////
 void TextNode::
-do_rebuild() {
-  _needs_rebuild = false;
-
-  int num_children = get_num_children(RenderRelation::get_class_type());
-  while (num_children > 0) {
-    NodeRelation *arc = get_child(RenderRelation::get_class_type(), 0);
-    remove_arc(arc);
-    num_children--;
-  }
-
-  PT_Node new_text = generate();
-  if (new_text != (Node *)NULL) {
-    new RenderRelation(this, new_text);
-
-    // And we flatten one more time, to remove the new node itself if
-    // possible (it might be an unneeded node above multiple
-    // children).  This flatten operation should be fairly
-    // lightweight; it's already pretty flat.
-    SceneGraphReducer gr(RenderRelation::get_class_type());
-    gr.flatten(this, false);
-  }
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::do_measure
-//       Access: Private
-//  Description: Can be called in lieu of do_rebuild() to measure the
-//               text and set up the bounding boxes properly without
-//               actually assembling it.
-////////////////////////////////////////////////////////////////////
-void TextNode::
-do_measure() {
-  _ul2d.set(0.0f, 0.0f);
-  _lr2d.set(0.0f, 0.0f);
-  _ul3d.set(0.0f, 0.0f, 0.0f);
-  _lr3d.set(0.0f, 0.0f, 0.0f);
-  _num_rows = 0;
-
-  if (_text.empty() || _font.is_null()) {
-    return;
-  }
-
-  string text = _text;
-  if (has_wordwrap()) {
-    text = wordwrap_to(text, _wordwrap_width, false);
-  }
-
-  StringDecoder *decoder = make_decoder(text);
-
-  LVector2f ul, lr;
-  int num_rows = 0;
-  measure_text(decoder, ul, lr, num_rows);
-
-  delete decoder;
-
-  _num_rows = num_rows;
-  _ul2d = ul;
-  _lr2d = lr;
-  _ul3d.set(ul[0], 0.0f, ul[1]);
-  _lr3d.set(lr[0], 0.0f, lr[1]);
-
-  _ul3d = _ul3d * _transform;
-  _lr3d = _lr3d * _transform;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::make_decoder
-//       Access: Private
-//  Description: Creates and returns a new StringDecoder suitable for
-//               decoding the given input text, and corresponding to
-//               our input encoding type.  The decoder must be freed
-//               via delete later.
-////////////////////////////////////////////////////////////////////
-StringDecoder *TextNode::
-make_decoder(const string &text) {
-  switch (_encoding) {
-  case E_utf8:
-    return new StringUtf8Decoder(text);
-
-  case E_unicode:
-    return new StringUnicodeDecoder(text);
-
-  case E_iso8859:
-  default:
-    return new StringDecoder(text);
-  };
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::assemble_row
-//       Access: Private
-//  Description: Assembles the letters in the source string, up until
-//               the first newline or the end of the string into a
-//               single row (which is parented to 'dest'), and returns
-//               the length of the row.  The source pointer is moved
-//               to the terminating character.
-////////////////////////////////////////////////////////////////////
-float TextNode::
-assemble_row(StringDecoder *decoder, Node *dest) {
-  nassertr(_font != (TextFont *)NULL, 0.0f);
-
-  float xpos = 0.0f;
+decode_wtext(StringDecoder &decoder) {
+  _wtext.erase(_wtext.begin(), _wtext.end());
   bool expand_amp = get_expand_amp();
-  if (decoder->is_eof()) {
-    return xpos;
-  }
-  int character = decoder->get_next_character();
-  while (character != '\n') {
+
+  wchar_t character = decoder.get_next_character();
+  while (!decoder.is_eof()) {
     if (character == '&' && expand_amp) {
       // An ampersand in expand_amp mode is treated as an escape
       // character.
       character = expand_amp_sequence(decoder);
     }
-
-    if (character == ' ') {
-      // A space is a special case.
-      xpos += _font->get_space_advance();
-
-    } else {
-      // A printable character.
-
-      const TextGlyph *glyph;
-      float glyph_scale;
-      if (!_font->get_glyph(character, glyph, glyph_scale)) {
-        text_cat.warning()
-          << "No definition in " << _font->get_name() 
-          << " for character " << character;
-        if (character < 128 && isprint(character)) {
-          text_cat.warning(false)
-            << " ('" << (char)character << "')";
-        }
-        text_cat.warning(false)
-          << "\n";
-      }
-
-      if (glyph != (TextGlyph *)NULL) {
-        PT(Geom) char_geom = glyph->get_geom();
-        const AllTransitionsWrapper &trans = glyph->get_trans();
-
-        if (char_geom != (Geom *)NULL) {
-          LMatrix4f mat = LMatrix4f::scale_mat(glyph_scale);
-          mat.set_row(3, LVector3f(xpos, 0.0f, 0.0f));
-
-          string ch(1, (char)character);
-          GeomNode *geode = new GeomNode(ch);
-          geode->add_geom(char_geom);
-          RenderRelation* rel = new RenderRelation(dest, geode);
-          rel->set_transition(new TransformTransition(mat));
-          trans.store_to(rel);
-        }
-
-        xpos += glyph->get_advance() * glyph_scale;
-      }
-    }
-    if (decoder->is_eof()) {
-      return xpos;
-    }
-    character = decoder->get_next_character();
+    _wtext += character;
+    character = decoder.get_next_character();
   }
-
-  return xpos;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::assemble_text
-//       Access: Private
-//  Description: Constructs a hierarchy of nodes that contain the
-//               geometry representing the indicated source text, and
-//               returns it.  Also sets the ul, lr corners.
-////////////////////////////////////////////////////////////////////
-Node *TextNode::
-assemble_text(StringDecoder *decoder, LVector2f &ul, LVector2f &lr,
-              int &num_rows) {
-  nassertr(_font != (TextFont *)NULL, (Node *)NULL);
-  float line_height = get_line_height();
-
-  ul.set(0.0f, 0.8f * line_height);
-  lr.set(0.0f, 0.0f);
-
-  // Make a group node to hold our formatted text geometry.
-  Node *root_node = new NamedNode("text");
-
-  float posy = 0.0f;
-  int row_index = 0;
-  while (!decoder->is_eof()) {
-    char numstr[20];
-    sprintf(numstr, "row%d", row_index);
-    nassertr(strlen(numstr) < 20, root_node);
-
-    Node *row = new NamedNode(numstr);
-    float row_width = assemble_row(decoder, row);
-
-    LMatrix4f mat = LMatrix4f::ident_mat();
-    if (_align == A_left) {
-      mat.set_row(3, LVector3f(0.0f, 0.0f, posy));
-      lr[0] = max(lr[0], row_width);
-
-    } else if (_align == A_right) {
-      mat.set_row(3, LVector3f(-row_width, 0.0f, posy));
-      ul[0] = min(ul[0], -row_width);
-
-    } else {
-      float half_row_width=0.5f*row_width;
-      mat.set_row(3, LVector3f(-half_row_width, 0.0f, posy));
-      lr[0] = max(lr[0], half_row_width);
-      ul[0] = min(ul[0], -half_row_width);
-    }
-
-    // Also apply whatever slant the user has asked for to the entire
-    // row.  This is an X shear.
-    if (_slant != 0.0f) {
-      LMatrix4f shear(1.0f, 0.0f, 0.0f, 0.0f,
-                      0.0f, 1.0f, 0.0f, 0.0f,
-                      _slant, 0.0f, 1.0f, 0.0f,
-                      0.0f, 0.0f, 0.0f, 1.0f);
-      mat = shear * mat;
-    }
-
-    RenderRelation *arc = new RenderRelation(root_node, row);
-    arc->set_transition(new TransformTransition(mat));
-
-    posy -= line_height;
-    num_rows++;
-  }
-
-  lr[1] = posy + 0.8f * line_height;
-
-  return root_node;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::measure_row
-//       Access: Private
-//  Description: Returns the length of the row in units, as it would
-//               be if it were assembled, without actually assembling
-//               it.
-////////////////////////////////////////////////////////////////////
-float TextNode::
-measure_row(StringDecoder *decoder) {
-  nassertr(_font != (TextFont *)NULL, 0.0f);
-
-  float xpos = 0.0f;
-  bool expand_amp = get_expand_amp();
-  if (decoder->is_eof()) {
-    return xpos;
-  }
-  int character = decoder->get_next_character();
-  while (character != '\n') {
-    if (character == '&' && expand_amp) {
-      // An ampersand in expand_amp mode is treated as an escape
-      // character.
-      character = expand_amp_sequence(decoder);
-    }
-
-    if (character == ' ') {
-      // A space is a special case.
-      xpos += 0.25f;
-
-    } else {
-      // A printable character.
-
-      const TextGlyph *glyph;
-      float glyph_scale;
-      if (_font->get_glyph(character, glyph, glyph_scale)) {
-        xpos += glyph->get_advance() * glyph_scale;
-      }
-    }
-    if (decoder->is_eof()) {
-      return xpos;
-    }
-    character = decoder->get_next_character();
-  }
-
-  return xpos;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::measure_text
-//       Access: Private
-//  Description: Sets the ul, lr corners to fit the text, without
-//               actually assembling it.
-////////////////////////////////////////////////////////////////////
-void TextNode::
-measure_text(StringDecoder *decoder, LVector2f &ul, LVector2f &lr,
-             int &num_rows) {
-  nassertv(_font != (TextFont *)NULL);
-  float line_height = get_line_height();
-
-  ul.set(0.0f, 0.8f * line_height);
-  lr.set(0.0f, 0.0f);
-
-  float posy = 0.0f;
-  while (!decoder->is_eof()) {
-    float row_width = measure_row(decoder);
-
-    if (_align == A_left) {
-      lr[0] = max(lr[0], row_width);
-
-    } else if (_align == A_right) {
-      ul[0] = min(ul[0], -row_width);
-
-    } else {
-      float half_row_width=0.5f*row_width;
-
-      lr[0] = max(lr[0], half_row_width);
-      ul[0] = min(ul[0], -half_row_width);
-    }
-
-    posy -= line_height;
-    num_rows++;
-  }
-
-  lr[1] = posy + 0.8f * line_height;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -694,17 +427,17 @@ measure_text(StringDecoder *decoder, LVector2f &ul, LVector2f &lr,
 //               character, do the expansion and return the character.
 ////////////////////////////////////////////////////////////////////
 int TextNode::
-expand_amp_sequence(StringDecoder *decoder) {
+expand_amp_sequence(StringDecoder &decoder) {
   int result = 0;
 
-  int character = decoder->get_next_character();
-  if (character == '#') {
+  int character = decoder.get_next_character();
+  if (!decoder.is_eof() && character == '#') {
     // An explicit numeric sequence: &#nnn;
     result = 0;
-    character = decoder->get_next_character();
-    while (!decoder->is_eof() && character < 128 && isdigit(character)) {
+    character = decoder.get_next_character();
+    while (!decoder.is_eof() && character < 128 && isdigit(character)) {
       result = (result * 10) + (character - '0');
-      character = decoder->get_next_character();
+      character = decoder.get_next_character();
     }
     if (character != ';') {
       // Invalid sequence.
@@ -717,9 +450,9 @@ expand_amp_sequence(StringDecoder *decoder) {
   string sequence;
   
   // Some non-numeric sequence.
-  while (!decoder->is_eof() && character < 128 && isalpha(character)) {
+  while (!decoder.is_eof() && character < 128 && isalpha(character)) {
     sequence += character;
-    character = decoder->get_next_character();
+    character = decoder.get_next_character();
   }
   if (character != ';') {
     // Invalid sequence.
@@ -772,6 +505,289 @@ expand_amp_sequence(StringDecoder *decoder) {
   // Some unrecognized sequence.
   return 0;
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::do_rebuild
+//       Access: Private
+//  Description: Removes any existing children of the TextNode, and
+//               adds the newly generated text instead.
+////////////////////////////////////////////////////////////////////
+void TextNode::
+do_rebuild() {
+  _needs_rebuild = false;
+
+  int num_children = get_num_children(RenderRelation::get_class_type());
+  while (num_children > 0) {
+    NodeRelation *arc = get_child(RenderRelation::get_class_type(), 0);
+    remove_arc(arc);
+    num_children--;
+  }
+
+  PT_Node new_text = generate();
+  if (new_text != (Node *)NULL) {
+    new RenderRelation(this, new_text);
+
+    // And we flatten one more time, to remove the new node itself if
+    // possible (it might be an unneeded node above multiple
+    // children).  This flatten operation should be fairly
+    // lightweight; it's already pretty flat.
+    SceneGraphReducer gr(RenderRelation::get_class_type());
+    gr.flatten(this, false);
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::do_measure
+//       Access: Private
+//  Description: Can be called in lieu of do_rebuild() to measure the
+//               text and set up the bounding boxes properly without
+//               actually assembling it.
+////////////////////////////////////////////////////////////////////
+void TextNode::
+do_measure() {
+  _ul2d.set(0.0f, 0.0f);
+  _lr2d.set(0.0f, 0.0f);
+  _ul3d.set(0.0f, 0.0f, 0.0f);
+  _lr3d.set(0.0f, 0.0f, 0.0f);
+  _num_rows = 0;
+
+  if (_text.empty() || _font.is_null()) {
+    return;
+  }
+
+  wstring wtext = _wtext;
+  if (has_wordwrap()) {
+    wtext = _font->wordwrap_to(wtext, _wordwrap_width, false);
+  }
+
+  LVector2f ul, lr;
+  int num_rows = 0;
+  measure_text(wtext.begin(), wtext.end(), ul, lr, num_rows);
+
+  _num_rows = num_rows;
+  _ul2d = ul;
+  _lr2d = lr;
+  _ul3d.set(ul[0], 0.0f, ul[1]);
+  _lr3d.set(lr[0], 0.0f, lr[1]);
+
+  _ul3d = _ul3d * _transform;
+  _lr3d = _lr3d * _transform;
+}
+
+#ifndef CPPPARSER  // interrogate has a bit of trouble with wstring.
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::assemble_row
+//       Access: Private
+//  Description: Assembles the letters in the source string, up until
+//               the first newline or the end of the string into a
+//               single row (which is parented to 'dest'), and returns
+//               the length of the row.  The source pointer is moved
+//               to the terminating character.
+////////////////////////////////////////////////////////////////////
+float TextNode::
+assemble_row(wstring::iterator &si, const wstring::iterator &send, 
+             Node *dest) {
+  nassertr(_font != (TextFont *)NULL, 0.0f);
+
+  float xpos = 0.0f;
+  while (si != send && (*si) != '\n') {
+    wchar_t character = *si;
+
+    if (character == ' ') {
+      // A space is a special case.
+      xpos += _font->get_space_advance();
+
+    } else {
+      // A printable character.
+
+      const TextGlyph *glyph;
+      float glyph_scale;
+      if (!_font->get_glyph(character, glyph, glyph_scale)) {
+        text_cat.warning()
+          << "No definition in " << _font->get_name() 
+          << " for character " << character;
+        if (character < 128 && isprint(character)) {
+          text_cat.warning(false)
+            << " ('" << (char)character << "')";
+        }
+        text_cat.warning(false)
+          << "\n";
+      }
+
+      if (glyph != (TextGlyph *)NULL) {
+        PT(Geom) char_geom = glyph->get_geom();
+        const AllTransitionsWrapper &trans = glyph->get_trans();
+
+        if (char_geom != (Geom *)NULL) {
+          LMatrix4f mat = LMatrix4f::scale_mat(glyph_scale);
+          mat.set_row(3, LVector3f(xpos, 0.0f, 0.0f));
+
+          string ch(1, (char)character);
+          GeomNode *geode = new GeomNode(ch);
+          geode->add_geom(char_geom);
+          RenderRelation* rel = new RenderRelation(dest, geode);
+          rel->set_transition(new TransformTransition(mat));
+          trans.store_to(rel);
+        }
+
+        xpos += glyph->get_advance() * glyph_scale;
+      }
+    }
+    ++si;
+  }
+
+  return xpos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::assemble_text
+//       Access: Private
+//  Description: Constructs a hierarchy of nodes that contain the
+//               geometry representing the indicated source text, and
+//               returns it.  Also sets the ul, lr corners.
+////////////////////////////////////////////////////////////////////
+Node *TextNode::
+assemble_text(wstring::iterator si, const wstring::iterator &send,
+              LVector2f &ul, LVector2f &lr, int &num_rows) {
+  nassertr(_font != (TextFont *)NULL, (Node *)NULL);
+  float line_height = get_line_height();
+
+  ul.set(0.0f, 0.8f * line_height);
+  lr.set(0.0f, 0.0f);
+
+  // Make a group node to hold our formatted text geometry.
+  Node *root_node = new NamedNode("text");
+
+  float posy = 0.0f;
+  int row_index = 0;
+  while (si != send) {
+    char numstr[20];
+    sprintf(numstr, "row%d", row_index);
+    nassertr(strlen(numstr) < 20, root_node);
+
+    Node *row = new NamedNode(numstr);
+    float row_width = assemble_row(si, send, row);
+    if (si != send) {
+      // Skip past the newline.
+      ++si;
+    }
+
+    LMatrix4f mat = LMatrix4f::ident_mat();
+    if (_align == A_left) {
+      mat.set_row(3, LVector3f(0.0f, 0.0f, posy));
+      lr[0] = max(lr[0], row_width);
+
+    } else if (_align == A_right) {
+      mat.set_row(3, LVector3f(-row_width, 0.0f, posy));
+      ul[0] = min(ul[0], -row_width);
+
+    } else {
+      float half_row_width=0.5f*row_width;
+      mat.set_row(3, LVector3f(-half_row_width, 0.0f, posy));
+      lr[0] = max(lr[0], half_row_width);
+      ul[0] = min(ul[0], -half_row_width);
+    }
+
+    // Also apply whatever slant the user has asked for to the entire
+    // row.  This is an X shear.
+    if (_slant != 0.0f) {
+      LMatrix4f shear(1.0f, 0.0f, 0.0f, 0.0f,
+                      0.0f, 1.0f, 0.0f, 0.0f,
+                      _slant, 0.0f, 1.0f, 0.0f,
+                      0.0f, 0.0f, 0.0f, 1.0f);
+      mat = shear * mat;
+    }
+
+    RenderRelation *arc = new RenderRelation(root_node, row);
+    arc->set_transition(new TransformTransition(mat));
+
+    posy -= line_height;
+    num_rows++;
+  }
+
+  lr[1] = posy + 0.8f * line_height;
+
+  return root_node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::measure_row
+//       Access: Private
+//  Description: Returns the length of the row in units, as it would
+//               be if it were assembled, without actually assembling
+//               it.
+////////////////////////////////////////////////////////////////////
+float TextNode::
+measure_row(wstring::iterator &si, const wstring::iterator &send) {
+  float xpos = 0.0f;
+  while (si != send && *si != '\n') {
+    wchar_t character = *si;
+
+    if (character == ' ') {
+      // A space is a special case.
+      xpos += 0.25f;
+
+    } else {
+      // A printable character.
+
+      const TextGlyph *glyph;
+      float glyph_scale;
+      if (_font->get_glyph(character, glyph, glyph_scale)) {
+        xpos += glyph->get_advance() * glyph_scale;
+      }
+    }
+    ++si;
+  }
+
+  return xpos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::measure_text
+//       Access: Private
+//  Description: Sets the ul, lr corners to fit the text, without
+//               actually assembling it.
+////////////////////////////////////////////////////////////////////
+void TextNode::
+measure_text(wstring::iterator si, const wstring::iterator &send,
+             LVector2f &ul, LVector2f &lr, int &num_rows) {
+  nassertv(_font != (TextFont *)NULL);
+  float line_height = get_line_height();
+
+  ul.set(0.0f, 0.8f * line_height);
+  lr.set(0.0f, 0.0f);
+
+  float posy = 0.0f;
+  while (si != send) {
+    float row_width = measure_row(si, send);
+    if (si != send) {
+      // Skip past the newline.
+      ++si;
+    }
+
+    if (_align == A_left) {
+      lr[0] = max(lr[0], row_width);
+
+    } else if (_align == A_right) {
+      ul[0] = min(ul[0], -row_width);
+
+    } else {
+      float half_row_width=0.5f*row_width;
+
+      lr[0] = max(lr[0], half_row_width);
+      ul[0] = min(ul[0], -half_row_width);
+    }
+
+    posy -= line_height;
+    num_rows++;
+  }
+
+  lr[1] = posy + 0.8f * line_height;
+}
+#endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::make_frame

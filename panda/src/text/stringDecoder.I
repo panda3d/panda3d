@@ -25,6 +25,7 @@
 INLINE StringDecoder::
 StringDecoder(const string &input) : _input(input) {
   _p = 0;
+  _eof = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,7 +37,22 @@ StringDecoder(const string &input) : _input(input) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool StringDecoder::
 is_eof() {
-  return (_p >= _input.size());
+  return _eof;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StringDecoder::test_eof
+//       Access: Protected
+//  Description: If the pointer is past the last character of the
+//               string, set the eof flag and return true.
+////////////////////////////////////////////////////////////////////
+INLINE bool StringDecoder::
+test_eof() {
+  if (_p >= _input.size()) {
+    _eof = true;
+    return true;
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

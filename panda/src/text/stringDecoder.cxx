@@ -34,7 +34,7 @@ StringDecoder::
 ////////////////////////////////////////////////////////////////////
 int StringDecoder::
 get_next_character() {
-  if (is_eof()) {
+  if (test_eof()) {
     return -1;
   }
   return (unsigned char)_input[_p++];
@@ -71,7 +71,7 @@ The value of each individual byte indicates its UTF-8 function, as follows:
 ////////////////////////////////////////////////////////////////////
 int StringUtf8Decoder::
 get_next_character() {
-  if (is_eof()) {
+  if (test_eof()) {
     return -1;
   }
 
@@ -79,7 +79,7 @@ get_next_character() {
   if ((result & 0xe0) == 0xc0) {
     // First byte of two.
     unsigned int two = 0;
-    if (!is_eof()) {
+    if (!test_eof()) {
       two = (unsigned char)_input[_p++];
     }
     result = ((result & 0x1f) << 6) | (two & 0x3f);
@@ -88,10 +88,10 @@ get_next_character() {
     // First byte of three.
     unsigned int two = 0;
     unsigned int three = 0;
-    if (!is_eof()) {
+    if (!test_eof()) {
       two = (unsigned char)_input[_p++];
     }
-    if (!is_eof()) {
+    if (!test_eof()) {
       three = (unsigned char)_input[_p++];
     }
     result = ((result & 0x0f) << 12) | ((two & 0x3f) << 6) | (three & 0x3f);
@@ -107,13 +107,13 @@ get_next_character() {
 ////////////////////////////////////////////////////////////////////
 int StringUnicodeDecoder::
 get_next_character() {
-  if (is_eof()) {
+  if (test_eof()) {
     return -1;
   }
 
   unsigned int high = (unsigned char)_input[_p++];
   unsigned int low = 0;
-  if (!is_eof()) {
+  if (!test_eof()) {
     low = (unsigned char)_input[_p++];
   }
   return ((high << 8) | low);
