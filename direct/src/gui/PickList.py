@@ -5,9 +5,6 @@ import PandaObject
 import Frame
 import Button
 
-#import ClockObject
-#clock = ClockObject.ClockObject.getGlobalClock()
-
 class PickList(PandaObject.PandaObject):
     """PickList class: display a menu of choices and report users
     choice (via mouse or keyboard) as an event with the choice as
@@ -70,7 +67,6 @@ class PickList(PandaObject.PandaObject):
         """__displayChoices(self, string[])
         Display the list of choices
         """
-        #print "starting choiceList: t = %.3f" % clock.getRealTime()  
         for choice in choiceList:
             # create a button for each choice
             button = Button.Button(choice)
@@ -89,18 +85,12 @@ class PickList(PandaObject.PandaObject):
             button.button.setUpEvent(eventName)
             self.accept(eventName, self.__exitChoice)
             # keep a list of the choice buttons
-            #print "done with button events: t = %.3f" % clock.getRealTime()
             self.frame.addItem(button)
-            #print "frame add button: t = %.3f" % clock.getRealTime()
             self.choiceList.append(button)
-            #print "list add button: t = %.3f" % clock.getRealTime()
         
-        #print "done with choiceList: t = %.3f" % clock.getRealTime() 
         # set up the frame
         self.frame.makeWideAsWidest()
-        #print "done with makeWideAsWidest: t = %.3f" % clock.getRealTime()
         self.frame.makeVertical()
-        #print "done with makeVertical: t = %.3f" % clock.getRealTime()
 
     def manage(self):
         self.frame.manage()

@@ -4,9 +4,6 @@ import GuiLabel
 import GuiButton
 import Vec3
 
-#import ClockObject
-#clock = ClockObject.ClockObject.getGlobalClock()
-
 guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node())
 font = (loader.loadModelOnce("phase_3/models/fonts/ttf-comic")).node()
 
@@ -21,26 +18,18 @@ class Button:
             self.label = label
         # up
         self.l1 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label, font)
-        #print "made the label: t = %.3f" % clock.getRealTime()
         self.l1.setForegroundColor(0., 0., 0., 1.)
-        #print "set the label colors: t = %.3f" % clock.getRealTime()        
         # roll-over up
         self.l2 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label, font)
-        #print "made the label: t = %.3f" % clock.getRealTime()
         self.l2.setForegroundColor(0., 0., 0., 1.)
         self.l2.setBackgroundColor(1., 1., 0., 1.)        
-        #print "set the label colors: t = %.3f" % clock.getRealTime()
         # roll-over down
         self.l3 = GuiLabel.GuiLabel.makeSimpleTextLabel(self.label, font)
-        #print "made the label: t = %.3f" % clock.getRealTime()
         self.l3.setForegroundColor(1., 1., 1., 1.)
         self.l3.setBackgroundColor(0., 0., 0., 1.)
-        #print "set the label colors: t = %.3f" % clock.getRealTime()        
         self.button = GuiButton.GuiButton(self.name, self.l1, self.l2,
                                           self.l3, self.l3, self.l1)
-        #print "made the button: t = %.3f" % clock.getRealTime()
         self.setScale(0.1)
-        #print "scale button: t = %.3f" % clock.getRealTime()                
         self.managed = 0
 
 
@@ -86,3 +75,4 @@ class Button:
 
     def setScale(self, scale):
         self.button.setScale(scale)
+

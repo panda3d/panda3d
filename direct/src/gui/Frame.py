@@ -80,21 +80,15 @@ class Frame:
             
     # convenience functions
     def makeVertical(self):
-        # remove any previous packing
-        #self.frame.clearAllPacking()
         # make each item (except first) align under the last
         for itemNum in range(1, len(self.items)):            
             self.packItem(self.items[itemNum], GuiFrame.GuiFrame.UNDER,
                           self.items[itemNum - 1])
             self.packItem(self.items[itemNum], GuiFrame.GuiFrame.ALIGNLEFT,
                           self.items[itemNum - 1])
-        #print "MakeVert: done packing: t = %.3f" % clock.getRealTime()
         self.frame.recompute()
-        #print "MakeVert: done recompute: t = %.3f" % clock.getRealTime()
             
     def makeHorizontal(self):
-        # remove any previous packing
-        #self.frame.clearAllPacking()
         # make each item (except first) align right of the last
         for itemNum in range(1, len(self.items)):
             self.packItem(self.items[itemNum], GuiFrame.GuiFrame.RIGHT,
