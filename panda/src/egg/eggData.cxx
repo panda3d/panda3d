@@ -232,6 +232,10 @@ set_coordinate_system(CoordinateSystem new_coordsys) {
     r_transform(LMatrix4d::convert_mat(_coordsys, new_coordsys),
                 LMatrix4d::convert_mat(new_coordsys, _coordsys),
                 new_coordsys);
+
+    // Now we have to update the under_flags to ensure that all the
+    // cached relative matrices are correct.
+    update_under(0);
   }
 
   _coordsys = new_coordsys;

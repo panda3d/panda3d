@@ -224,6 +224,10 @@ transform(const LMatrix4d &mat) {
   LMatrix4d inv = invert(mat);
 
   r_transform(mat, inv, CS_default);
+
+  // Now we have to recompute the under_flags to ensure that all the
+  // cached relative matrices are correct.
+  update_under(0);
 }
 
 ////////////////////////////////////////////////////////////////////
