@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "fadeLodNode.h"
+#include "fadeLodNodeData.h"
 #include "cullTraverserData.h"
 #include "cullTraverser.h"
 #include "clockObject.h"
@@ -25,6 +26,18 @@
 #include "transparencyAttrib.h"
 
 TypeHandle FadeLODNode::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: FadeLODNode::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+FadeLODNode::
+FadeLODNode(const string &name) :
+  LODNode(name) 
+{
+  _fade_time = lod_fade_time;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FadeLODNode::make_copy
@@ -60,95 +73,114 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 bool FadeLODNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
-  if (_fade_mode) {
-    float now = ClockObject::get_global_clock()->get_frame_time();
-    float elapsed = now - _fade_start;
+  Camera *camera = trav->get_scene()->get_camera_node();
+  NodePath this_np = data._node_path.get_node_path();
+  FadeLODNodeData *ldata = 
+    DCAST(FadeLODNodeData, camera->get_aux_scene_data(this_np));
 
-    float half_fade_time = _fade_time / 2.0f;
+  double now = ClockObject::get_global_clock()->get_frame_time();
 
-    if (elapsed < half_fade_time) { 
-      // FIRST HALF OF FADE
-      // Fade the new LOD in with z writing off
-      // Keep drawing the old LOD opaque with z writing on
-      if (_fade_out >= 0 && _fade_out < get_num_children()) {
-        CullTraverserData next_data_out(data, get_child(_fade_out));
-        trav->traverse(next_data_out);
-      }
+  if (ldata == (AuxSceneData *)NULL || now > ldata->get_expiration_time()) {
+    // This is the first time we have rendered this instance of this
+    // LOD node in a while.
+    ldata = new FadeLODNodeData;
+    ldata->_fade_mode = false;
+    ldata->_fade_out = -1;
+    ldata->_fade_in = compute_child(trav, data);
+    camera->set_aux_scene_data(this_np, ldata);
 
-      if (_fade_in >= 0 && _fade_in < get_num_children()) {
-        CullTraverserData next_data_in(data, get_child(_fade_in));
+  } else {
+    // We had rendered this LOD node last frame (or not too long ago,
+    // at least).
 
-        float in_alpha = elapsed / half_fade_time;
-        if (in_alpha > 1.0f) {
-          in_alpha = 1.0f;
-        }
-        LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, in_alpha);
-
-        next_data_in._state = 
-          next_data_in._state->compose(get_fade_out_state())->compose
-          (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
-
-        trav->traverse(next_data_in);
-      }
-
-    } else if (elapsed < _fade_time) {
-      //SECOND HALF OF FADE:
-      //Fade out the old LOD with z write off and 
-      //draw the opaque new LOD with z write on
-      if (_fade_in >= 0 && _fade_in < get_num_children()) {
-        CullTraverserData next_data_in(data, get_child(_fade_in));
-        trav->traverse(next_data_in);
-      }
-
-      if (_fade_out >= 0 && _fade_out < get_num_children()) {
-        CullTraverserData next_data_out(data, get_child(_fade_out));
+    if (!ldata->_fade_mode) {
+      // We were drawing just one solid child last frame; check whether
+      // it's time to begin a transition.
+      int index = compute_child(trav, data);
+      if (index != ldata->_fade_in) {
+        // Start a transition.
+        ldata->_fade_mode = true;
         
-        float out_alpha = 1.0f - elapsed / half_fade_time;  
-        if (out_alpha < 0.0f) {
-          out_alpha = 0.0f;
-        }
-        LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, out_alpha);
-
-        next_data_out._state = 
-          next_data_out._state->compose(get_fade_out_state())->compose
-          (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
-
-        trav->traverse(next_data_out);
-      }
-
-    } else {
-      // Fading complete
-      _fade_mode = false;
-      
-      if (_fade_in >= 0 && _fade_in < get_num_children()) {
-        CullTraverserData next_data_in(data, get_child(_fade_in));
-        trav->traverse(next_data_in);
+        // We start the fade as of the last frame we actually rendered;
+        // that way, if the object happened to be offscreen for a large
+        // part of the fade, we'll just view the tail end of it--a
+        // little nicer.
+        ldata->_fade_start = ldata->get_last_render_time();
+        ldata->_fade_out = ldata->_fade_in; 
+        ldata->_fade_in = index;
       }
     }
 
-  } else {
-    int index = compute_child(trav, data);
-    if (index != _previous_child) { // Transition occurred
-      _fade_mode = true;
-      _fade_start = ClockObject::get_global_clock()->get_frame_time();
-      _fade_out = _previous_child; 
-      _fade_in = index;
-      _previous_child = index;
-      if (_fade_out >= 0 && _fade_out < get_num_children()) {
-        CullTraverserData next_data_transition(data, get_child(_fade_out));
-        trav->traverse(next_data_transition);
-      }
-      
-    } else {
-      if (index >= 0 && index < get_num_children()) {
-        // No transition... handle things as usual
-        // Traverse only one valid child
-        CullTraverserData next_data_normal(data, get_child(index));
-        trav->traverse(next_data_normal);
+    if (ldata->_fade_mode) {
+      // Play the transition.
+
+      float elapsed = now - ldata->_fade_start;
+      float half_fade_time = _fade_time * 0.5f;
+
+      if (elapsed < half_fade_time) { 
+        // FIRST HALF OF FADE
+        // Fade the new LOD in with z writing off
+        // Keep drawing the old LOD opaque with z writing on
+        if (ldata->_fade_out >= 0 && ldata->_fade_out < get_num_children()) {
+          CullTraverserData next_data_out(data, get_child(ldata->_fade_out));
+          trav->traverse(next_data_out);
+        }
+        
+        if (ldata->_fade_in >= 0 && ldata->_fade_in < get_num_children()) {
+          CullTraverserData next_data_in(data, get_child(ldata->_fade_in));
+          
+          float in_alpha = elapsed / half_fade_time;
+          LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, in_alpha);
+          
+          next_data_in._state = 
+            next_data_in._state->compose(get_fade_out_state())->compose
+            (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
+          
+          trav->traverse(next_data_in);
+        }
+        
+      } else if (elapsed < _fade_time) {
+        //SECOND HALF OF FADE:
+        //Fade out the old LOD with z write off and 
+        //draw the opaque new LOD with z write on
+        if (ldata->_fade_in >= 0 && ldata->_fade_in < get_num_children()) {
+          CullTraverserData next_data_in(data, get_child(ldata->_fade_in));
+          trav->traverse(next_data_in);
+        }
+        
+        if (ldata->_fade_out >= 0 && ldata->_fade_out < get_num_children()) {
+          CullTraverserData next_data_out(data, get_child(ldata->_fade_out));
+          
+          float out_alpha = 1.0f - (elapsed - half_fade_time) / half_fade_time;  
+          LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, out_alpha);
+          
+          next_data_out._state = 
+            next_data_out._state->compose(get_fade_out_state())->compose
+            (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
+          
+          trav->traverse(next_data_out);
+        }
+        
+      } else {
+        // Transition complete.
+        ldata->_fade_mode = false;
       }
     }
   }
 
+  if (!ldata->_fade_mode) {
+    // This is the normal case: we're not in the middle of a
+    // transition; we're just drawing one child of the LOD.
+    int index = ldata->_fade_in;
+    if (index >= 0 && index < get_num_children()) {
+      CullTraverserData next_data(data, get_child(index));
+      trav->traverse(next_data);
+    }
+  }
+
+  ldata->set_last_render_time(now);
+  ldata->set_duration(_fade_time);
+    
   return false;
 }
 

@@ -33,6 +33,7 @@
 #include "directionalLight.cxx"
 #include "drawCullHandler.cxx"
 #include "fadeLodNode.cxx"
+#include "fadeLodNodeData.cxx"
 #include "findApproxPath.cxx"
 #include "findApproxLevelEntry.cxx"
 #include "fog.cxx"

@@ -43,7 +43,13 @@ create_lod_node(NodePath &models, const char *a, const char *b) {
     lod->add_switch(1000, 10);
   }
 
-  models.attach_new_node(lod);
+  NodePath instance1(models.attach_new_node("instance1"));
+  instance1.set_pos(2, 0, 0);
+  instance1.attach_new_node(lod);
+
+  NodePath instance2(models.attach_new_node("instance2"));
+  instance2.set_pos(-2, 0, 0);
+  instance2.attach_new_node(lod);
 }
 
 
@@ -65,6 +71,16 @@ main(int argc, char *argv[]) {
                     argc > 2 ? argv[2] : filename_b);
 
     window->center_trackball(framework.get_models());
+
+    // Open another window too.
+    WindowFramework *window2 = framework.open_window();
+    if (window2 != (WindowFramework *)NULL) {
+      window2->enable_keyboard();
+      window2->setup_trackball();
+      framework.get_models().instance_to(window2->get_render());
+      
+      window2->center_trackball(framework.get_models());
+    }
 
     framework.enable_default_keys();
     framework.main_loop();

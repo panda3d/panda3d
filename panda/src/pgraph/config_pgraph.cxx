@@ -44,6 +44,7 @@
 #include "depthWriteAttrib.h"
 #include "directionalLight.h"
 #include "fadeLodNode.h"
+#include "fadeLodNodeData.h"
 #include "fog.h"
 #include "fogAttrib.h"
 #include "geomNode.h"
@@ -138,6 +139,10 @@ const bool paranoid_const = config_pgraph.GetBool("paranoid-const", false);
 // It is helpful for debugging
 const bool polylight_info = config_pgraph.GetBool("polylight-info", false);
 
+// The default amount of time (in seconds) over which a FadeLODNode
+// transitions between its different levels.
+const double lod_fade_time = config_pgraph.GetDouble("lod-fade-time", 0.5);
+
 // Set this false to disable TransparencyAttrib::M_dual altogether
 // (and use M_alpha in its place).
 const bool m_dual = config_pgraph.GetBool("m-dual", true);
@@ -208,6 +213,7 @@ init_libpgraph() {
   DepthWriteAttrib::init_type();
   DirectionalLight::init_type();
   FadeLODNode::init_type();
+  FadeLODNodeData::init_type();
   Fog::init_type();
   FogAttrib::init_type();
   GeomNode::init_type();

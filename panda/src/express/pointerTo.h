@@ -70,77 +70,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
-
-#include "referenceCount.h"
-#include "typedef.h"
-#include "memoryUsage.h"
-#include "config_express.h"
-
-
-////////////////////////////////////////////////////////////////////
-//       Class : PointerToBase
-// Description : This is the base class for PointerTo and
-//               ConstPointerTo.  Don't try to use it directly; use
-//               either derived class instead.
-////////////////////////////////////////////////////////////////////
-template <class T>
-class PointerToBase {
-public:
-  typedef T To;
-
-protected:
-  INLINE PointerToBase(To *ptr);
-  INLINE PointerToBase(const PointerToBase<T> &copy);
-  INLINE ~PointerToBase();
-
-  void reassign(To *ptr);
-
-  INLINE void reassign(const PointerToBase<To> &copy);
-
-  To *_ptr;
-
-  // No assignment or retrieval functions are declared in
-  // PointerToBase, because we will have to specialize on const
-  // vs. non-const later.
-
-public:
-  // These comparison functions are common to all things PointerTo, so
-  // they're defined up here.
-#ifndef CPPPARSER
-#ifndef WIN32_VC
-  INLINE bool operator == (const To *other) const;
-  INLINE bool operator != (const To *other) const;
-  INLINE bool operator > (const To *other) const;
-  INLINE bool operator <= (const To *other) const;
-  INLINE bool operator >= (const To *other) const;
-  INLINE bool operator == (To *other) const;
-  INLINE bool operator != (To *other) const;
-  INLINE bool operator > (To *other) const;
-  INLINE bool operator <= (To *other) const;
-  INLINE bool operator >= (To *other) const;
-
-  INLINE bool operator == (const PointerToBase<To> &other) const;
-  INLINE bool operator != (const PointerToBase<To> &other) const;
-  INLINE bool operator > (const PointerToBase<To> &other) const;
-  INLINE bool operator <= (const PointerToBase<To> &other) const;
-  INLINE bool operator >= (const PointerToBase<To> &other) const;
-#endif  // WIN32_VC
-  INLINE bool operator < (const To *other) const;
-  INLINE bool operator < (const PointerToBase<To> &other) const;
-#endif  // CPPPARSER
-
-PUBLISHED:
-  INLINE bool is_null() const;
-  INLINE void clear();
-
-  void output(ostream &out) const;
-};
-
-template<class T>
-INLINE ostream &operator <<(ostream &out, const PointerToBase<T> &pointer) {
-  pointer.output(out);
-  return out;
-}
+#include "pointerToBase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PointerTo
@@ -222,8 +152,8 @@ PUBLISHED:
   INLINE const To *p() const;
 
   INLINE ConstPointerTo<T> &operator = (const To *ptr);
-  INLINE ConstPointerTo<T> &operator = (const ConstPointerTo<T> &copy);
   INLINE ConstPointerTo<T> &operator = (const PointerTo<T> &copy);
+  INLINE ConstPointerTo<T> &operator = (const ConstPointerTo<T> &copy);
 
   // These functions normally wouldn't need to be redefined here, but
   // we do so anyway just to help out interrogate (which doesn't seem

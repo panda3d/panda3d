@@ -655,7 +655,7 @@ PUBLISHED:
   INLINE bool operator == (const NodePath &other) const;
   INLINE bool operator != (const NodePath &other) const;
   INLINE bool operator < (const NodePath &other) const;
-  int compare_to(const NodePath &other) const;
+  INLINE int compare_to(const NodePath &other) const;
 
   // Miscellaneous
   bool verify_complete() const;
@@ -754,6 +754,7 @@ private:
 
   friend class NodePathCollection;
   friend class WorkingNodePath;
+  friend class WeakNodePath;
 };
 
 INLINE ostream &operator << (ostream &out, const NodePath &node_path);

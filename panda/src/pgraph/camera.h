@@ -23,6 +23,7 @@
 
 #include "lensNode.h"
 #include "nodePath.h"
+#include "weakNodePath.h"
 #include "drawMask.h"
 #include "renderState.h"
 #include "pointerTo.h"
@@ -77,9 +78,11 @@ PUBLISHED:
   bool has_tag_state(const string &tag_state) const;
   CPT(RenderState) get_tag_state(const string &tag_state) const;
 
-public:
-  //  void set_aux_scene_data(const NodePath &node_path, AuxSceneData *data);
-  //  AuxSceneData *get_aux_scene_data(const NodePath &node_path) const;
+  void set_aux_scene_data(const NodePath &node_path, AuxSceneData *data);
+  bool clear_aux_scene_data(const NodePath &node_path);
+  AuxSceneData *get_aux_scene_data(const NodePath &node_path) const;
+  void list_aux_scene_data(ostream &out) const;
+  int cleanup_aux_scene_data();
 
 private:
   void add_display_region(DisplayRegion *display_region);
@@ -99,6 +102,9 @@ private:
 
   typedef pmap<string, CPT(RenderState) > TagStates;
   TagStates _tag_states;
+
+  typedef pmap<NodePath, PT(AuxSceneData) > AuxData;
+  AuxData _aux_data;
 
 public:
   static void register_with_read_factory();

@@ -1,4 +1,4 @@
-// Filename: auxSceneData.cxx
+// Filename: pointerToVoid.I
 // Created by:  drose (27Sep04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,27 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "auxSceneData.h"
-#include "indent.h"
-
-TypeHandle AuxSceneData::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AuxSceneData::output
-//       Access: Published, Virtual
-//  Description: 
+//     Function: PointerToVoid::Constructor
+//       Access: Protected
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void AuxSceneData::
-output(ostream &out) const {
-  out << get_type() << " expires " << get_expiration_time();
+INLINE PointerToVoid::
+PointerToVoid() {
+  _void_ptr = (void *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AuxSceneData::write
-//       Access: Published, Virtual
-//  Description: 
+//     Function: PointerToVoid::Destructor
+//       Access: Protected
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void AuxSceneData::
-write(ostream &out, int indent_level) const {
-  indent(out, indent_level) << *this << "\n";
+INLINE PointerToVoid::
+~PointerToVoid() {
+  nassertv(_void_ptr == (void *)NULL);
 }

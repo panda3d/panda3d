@@ -172,6 +172,104 @@ get_tag_state(const string &tag_state) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Camera::set_aux_scene_data
+//       Access: Published
+//  Description: Associates the indicated AuxSceneData object with the
+//               given NodePath, possibly replacing a previous
+//               data defined for the same NodePath, if any.
+////////////////////////////////////////////////////////////////////
+void Camera::
+set_aux_scene_data(const NodePath &node_path, AuxSceneData *data) {
+  if (data == (AuxSceneData *)NULL) {
+    clear_aux_scene_data(node_path);
+  } else {
+    _aux_data[node_path] = data;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::clear_aux_scene_data
+//       Access: Published
+//  Description: Removes the AuxSceneData associated with the
+//               indicated NodePath.  Returns true if it is removed
+//               successfully, false if it was already gone.
+////////////////////////////////////////////////////////////////////
+bool Camera::
+clear_aux_scene_data(const NodePath &node_path) {
+  AuxData::iterator ai;
+  ai = _aux_data.find(node_path);
+  if (ai != _aux_data.end()) {
+    _aux_data.erase(ai);
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::get_aux_scene_data
+//       Access: Published
+//  Description: Returns the AuxSceneData associated with the
+//               indicated NodePath, or NULL if nothing is associated.
+////////////////////////////////////////////////////////////////////
+AuxSceneData *Camera::
+get_aux_scene_data(const NodePath &node_path) const {
+  AuxData::const_iterator ai;
+  ai = _aux_data.find(node_path);
+  if (ai != _aux_data.end()) {
+    return (*ai).second;
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::list_aux_scene_data
+//       Access: Published
+//  Description: Outputs all of the NodePaths and AuxSceneDatas in
+//               use.
+////////////////////////////////////////////////////////////////////
+void Camera::
+list_aux_scene_data(ostream &out) const {
+  out << _aux_data.size() << " data objects held:\n";
+  AuxData::const_iterator ai;
+  for (ai = _aux_data.begin(); ai != _aux_data.end(); ++ai) {
+    out << (*ai).first << " " << *(*ai).second << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::cleanup_aux_scene_data
+//       Access: Published
+//  Description: Walks through the list of currently-assigned
+//               AuxSceneData objects and releases any that are
+//               past their expiration times.  Returns the number of
+//               elements released.
+////////////////////////////////////////////////////////////////////
+int Camera::
+cleanup_aux_scene_data() {
+  int num_deleted = 0;
+
+  double now = ClockObject::get_global_clock()->get_frame_time();
+
+  AuxData::iterator ai;
+  ai = _aux_data.begin();
+  while (ai != _aux_data.end()) {
+    AuxData::iterator anext = ai;
+    ++anext;
+
+    if (now > (*ai).second->get_expiration_time()) {
+      _aux_data.erase(ai);
+      num_deleted++;
+    }
+
+    ai = anext;
+  }
+
+  return num_deleted;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Camera::add_display_region
 //       Access: Private
 //  Description: Adds the indicated DisplayRegion to the set of

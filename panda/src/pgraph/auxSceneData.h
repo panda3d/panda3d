@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "typedReferenceCount.h"
+#include "clockObject.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AuxSceneData
@@ -36,9 +37,25 @@
 //               instance and for each camera.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AuxSceneData : public TypedReferenceCount {
-public:
-  INLINE AuxSceneData();
-  
+protected:
+  INLINE AuxSceneData(double duration = 0.0);
+
+PUBLISHED:
+  INLINE void set_duration(double duration);
+  INLINE double get_duration() const;
+
+  INLINE void set_last_render_time(double render_time);
+  INLINE double get_last_render_time() const;
+
+  INLINE double get_expiration_time() const;
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
+
+protected:
+  double _duration;
+  double _last_render_time;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -56,6 +73,8 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+INLINE ostream &operator << (ostream &out, const AuxSceneData &data);
 
 #include "auxSceneData.I"
 

@@ -1,4 +1,4 @@
-// Filename: auxSceneData.cxx
+// Filename: weakPointerToVoid.h
 // Created by:  drose (27Sep04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,27 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "auxSceneData.h"
-#include "indent.h"
+#ifndef WEAKPOINTERTOVOID_H
+#define WEAKPOINTERTOVOID_H
 
-TypeHandle AuxSceneData::_type_handle;
-
-////////////////////////////////////////////////////////////////////
-//     Function: AuxSceneData::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void AuxSceneData::
-output(ostream &out) const {
-  out << get_type() << " expires " << get_expiration_time();
-}
+#include "pandabase.h"
+#include "pointerToVoid.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AuxSceneData::write
-//       Access: Published, Virtual
-//  Description: 
+//       Class : WeakPointerToVoid
+// Description : This is the specialization of PointerToVoid for weak
+//               pointers.  It needs an additional flag to indicate
+//               that the pointer has been deleted.
 ////////////////////////////////////////////////////////////////////
-void AuxSceneData::
-write(ostream &out, int indent_level) const {
-  indent(out, indent_level) << *this << "\n";
-}
+class WeakPointerToVoid : public PointerToVoid {
+protected:
+  INLINE WeakPointerToVoid();
+
+public:
+  INLINE void mark_deleted();
+
+PUBLISHED:
+  INLINE bool was_deleted() const;
+
+protected:
+  bool _ptr_was_deleted;
+};
+
+#include "weakPointerToVoid.I"
+
+#endif

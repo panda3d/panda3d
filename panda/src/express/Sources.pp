@@ -45,6 +45,8 @@
     patchfile.I patchfile.h \
     pointerTo.I pointerTo.h \
     pointerToArray.I pointerToArray.h \
+    pointerToBase.I pointerToBase.h \
+    pointerToVoid.I pointerToVoid.h \
     profileTimer.I profileTimer.h \
     pta_uchar.h \
     ramfile.I ramfile.h \
@@ -72,6 +74,10 @@
     virtualFileMountMultifile.I virtualFileMountSystem.h \
     virtualFileMountSystem.I virtualFileSimple.h virtualFileSimple.I \
     virtualFileSystem.h virtualFileSystem.I \
+    weakPointerTo.I weakPointerTo.h \
+    weakPointerToBase.I weakPointerToBase.h \
+    weakPointerToVoid.I weakPointerToVoid.h \
+    weakReferenceList.I weakReferenceList.h \
     windowsRegistry.h \
     zStream.I zStream.h zStreamBuf.h
 
@@ -94,6 +100,10 @@
     ordered_vector.cxx \
     password_hash.cxx \
     patchfile.cxx \
+    pointerTo.cxx \
+    pointerToArray.cxx \
+    pointerToBase.cxx \
+    pointerToVoid.cxx \
     profileTimer.cxx \
     pta_uchar.cxx \
     ramfile.cxx \
@@ -113,6 +123,10 @@
     virtualFileMount.cxx \
     virtualFileMountMultifile.cxx virtualFileMountSystem.cxx \
     virtualFileSimple.cxx virtualFileSystem.cxx \
+    weakPointerTo.cxx \
+    weakPointerToBase.cxx \
+    weakPointerToVoid.cxx \
+    weakReferenceList.cxx \
     windowsRegistry.cxx \
     zStream.cxx zStreamBuf.cxx
 
@@ -146,8 +160,12 @@
     nativeNumericData.I nativeNumericData.h numeric_types.h \
     ordered_vector.h ordered_vector.I ordered_vector.T \
     password_hash.h \
-    patchfile.I patchfile.h pointerTo.I pointerTo.h \
-    pointerToArray.I pointerToArray.h profileTimer.I \
+    patchfile.I patchfile.h \
+    pointerTo.I pointerTo.h \
+    pointerToArray.I pointerToArray.h \
+    pointerToBase.I pointerToBase.h \
+    pointerToVoid.I pointerToVoid.h \
+    profileTimer.I \
     profileTimer.h pta_uchar.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
@@ -174,6 +192,10 @@
     virtualFileMountMultifile.I virtualFileMountSystem.h \
     virtualFileMountSystem.I virtualFileSimple.h virtualFileSimple.I \
     virtualFileSystem.h virtualFileSystem.I \
+    weakPointerTo.I weakPointerTo.h \
+    weakPointerToBase.I weakPointerToBase.h \
+    weakPointerToVoid.I weakPointerToVoid.h \
+    weakReferenceList.I weakReferenceList.h \
     windowsRegistry.h \
     zStream.I zStream.h zStreamBuf.h
 

@@ -75,7 +75,7 @@ get_camera_path() const {
 //  Description: Specifies the camera used to render the scene.
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneSetup::
-set_camera_node(const Camera *camera_node) {
+set_camera_node(Camera *camera_node) {
   _camera_node = camera_node;
 }
 
@@ -84,7 +84,7 @@ set_camera_node(const Camera *camera_node) {
 //       Access: Public
 //  Description: Returns the camera used to render the scene.
 ////////////////////////////////////////////////////////////////////
-INLINE const Camera *SceneSetup::
+INLINE Camera *SceneSetup::
 get_camera_node() const {
   return _camera_node;
 }

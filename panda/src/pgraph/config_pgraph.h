@@ -38,6 +38,7 @@ extern const bool compose_componentwise;
 extern const bool paranoid_const;
 
 extern const bool polylight_info;
+extern const double lod_fade_time;
 
 extern const bool m_dual;
 extern const bool m_dual_opaque;

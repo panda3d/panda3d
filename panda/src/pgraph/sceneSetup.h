@@ -44,8 +44,8 @@ public:
   INLINE void set_camera_path(const NodePath &camera_path);
   INLINE const NodePath &get_camera_path() const;
 
-  INLINE void set_camera_node(const Camera *camera_node);
-  INLINE const Camera *get_camera_node() const;
+  INLINE void set_camera_node(Camera *camera_node);
+  INLINE Camera *get_camera_node() const;
 
   INLINE void set_lens(const Lens *lens);
   INLINE const Lens *get_lens() const;
@@ -66,7 +66,7 @@ public:
 private:
   NodePath _scene_root;
   NodePath _camera_path;
-  CPT(Camera) _camera_node;
+  PT(Camera) _camera_node;
   CPT(Lens) _lens;
   CPT(TransformState) _camera_transform;
   CPT(TransformState) _world_transform;

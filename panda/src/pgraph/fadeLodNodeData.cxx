@@ -1,5 +1,5 @@
-// Filename: auxSceneData.cxx
-// Created by:  drose (27Sep04)
+// Filename: fadeLodNodeData.cxx
+// Created by:  drose (29Sep04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,27 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "auxSceneData.h"
-#include "indent.h"
+#include "fadeLodNodeData.h"
 
-TypeHandle AuxSceneData::_type_handle;
+TypeHandle FadeLODNodeData::_type_handle;
+
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AuxSceneData::output
-//       Access: Published, Virtual
+//     Function: FadeLODNodeData::output
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void AuxSceneData::
+void FadeLODNodeData::
 output(ostream &out) const {
-  out << get_type() << " expires " << get_expiration_time();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AuxSceneData::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void AuxSceneData::
-write(ostream &out, int indent_level) const {
-  indent(out, indent_level) << *this << "\n";
+  AuxSceneData::output(out);
+  if (_fade_mode) {
+    out << " fading " << _fade_out << " to " << _fade_in << " since "
+        << _fade_start;
+  } else {
+    out << " showing " << _fade_in;
+  }
 }

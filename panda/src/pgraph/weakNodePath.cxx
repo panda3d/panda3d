@@ -1,5 +1,5 @@
-// Filename: auxSceneData.cxx
-// Created by:  drose (27Sep04)
+// Filename: weakNodePath.cxx
+// Created by:  drose (29Sep04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,27 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "auxSceneData.h"
-#include "indent.h"
-
-TypeHandle AuxSceneData::_type_handle;
+#include "weakNodePath.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AuxSceneData::output
-//       Access: Published, Virtual
+//     Function: WeakNodePath::output
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void AuxSceneData::
+void WeakNodePath::
 output(ostream &out) const {
-  out << get_type() << " expires " << get_expiration_time();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AuxSceneData::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void AuxSceneData::
-write(ostream &out, int indent_level) const {
-  indent(out, indent_level) << *this << "\n";
+  if (was_deleted()) {
+    out << "deleted";
+  } else {
+    get_node_path().output(out);
+  }
 }

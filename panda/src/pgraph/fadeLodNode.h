@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FadeLODNode : public LODNode {
 PUBLISHED:
-  INLINE FadeLODNode(const string &name);
+  FadeLODNode(const string &name);
 
 protected:
   INLINE FadeLODNode(const FadeLODNode &copy);
@@ -47,16 +47,6 @@ private:
 
 private:
   float _fade_time;
-
-  // These values are used to implement the fade-in-transition, and
-  // really shouldn't be stored here (because it is incompatible with
-  // multiple cameras on the scene, or multiple instances of the
-  // LODNode).
-  bool _fade_mode;
-  float _fade_start;
-  int _fade_out;
-  int _fade_in;
-  int _previous_child;
   
 public:
   static void register_with_read_factory();

@@ -43,7 +43,7 @@
     depthWriteAttrib.I depthWriteAttrib.h \
     directionalLight.I directionalLight.h \
     drawCullHandler.I drawCullHandler.h \
-    fadeLodNode.I fadeLodNode.h \
+    fadeLodNode.I fadeLodNode.h fadeLodNodeData.h \
     findApproxLevelEntry.I findApproxLevelEntry.h \
     findApproxPath.I findApproxPath.h \
     fog.I fog.h \
@@ -97,6 +97,7 @@
     textureStageCollection.I textureStageCollection.h \
     transformState.I transformState.h \
     transparencyAttrib.I transparencyAttrib.h \
+    weakNodePath.I weakNodePath.h \
     workingNodePath.I workingNodePath.h
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
@@ -135,7 +136,7 @@
     depthWriteAttrib.cxx \
     directionalLight.cxx \
     drawCullHandler.cxx \
-    fadeLodNode.cxx \
+    fadeLodNode.cxx fadeLodNodeData.cxx \
     findApproxLevelEntry.cxx \
     findApproxPath.cxx \
     fog.cxx \
@@ -188,6 +189,7 @@
     textureStageCollection.cxx \
     transformState.cxx \
     transparencyAttrib.cxx \
+    weakNodePath.cxx \
     workingNodePath.cxx
 
   #define INSTALL_HEADERS \
@@ -225,7 +227,7 @@
     depthWriteAttrib.I depthWriteAttrib.h \
     directionalLight.I directionalLight.h \
     drawCullHandler.I drawCullHandler.h \
-    fadeLodNode.I fadeLodNode.h \
+    fadeLodNode.I fadeLodNode.h fadeLodNodeData.h \
     fog.I fog.h \
     fogAttrib.I fogAttrib.h \
     geomNode.I geomNode.h \
@@ -277,6 +279,7 @@
     textureStageCollection.I textureStageCollection.h \
     transformState.I transformState.h \
     transparencyAttrib.I transparencyAttrib.h \
+    weakNodePath.I weakNodePath.h \
     workingNodePath.I workingNodePath.h
 
 // No need to install these.

@@ -960,6 +960,7 @@ setup_scene(const NodePath &camera, GraphicsStateGuardian *gsg) {
     // Camera inactive, no draw.
     return NULL;
   }
+  camera_node->cleanup_aux_scene_data();
 
   Lens *lens = camera_node->get_lens();
   if (lens == (Lens *)NULL) {

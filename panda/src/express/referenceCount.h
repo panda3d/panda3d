@@ -20,7 +20,7 @@
 #define REFERENCECOUNT_H
 
 #include "pandabase.h"
-
+#include "weakReferenceList.h"
 #include "typedObject.h"
 #include "memoryUsage.h"
 #include "config_express.h"
@@ -54,6 +54,17 @@ PUBLISHED:
   INLINE void test_ref_count_integrity() const;
 
 public:
+  INLINE bool has_weak_list() const;
+  INLINE WeakReferenceList *get_weak_list() const;
+
+  INLINE void weak_ref(WeakPointerToVoid *ptv);
+  INLINE void weak_unref(WeakPointerToVoid *ptv);
+
+private:
+  int _ref_count;
+  WeakReferenceList *_weak_list;
+
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
@@ -62,7 +73,6 @@ public:
   }
 
 private:
-  int _ref_count;
   static TypeHandle _type_handle;
 };
 

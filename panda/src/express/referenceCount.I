@@ -37,6 +37,7 @@ TypeHandle RefCountObj<Base>::_type_handle;
 ////////////////////////////////////////////////////////////////////
 INLINE ReferenceCount::
 ReferenceCount() {
+  _weak_list = (WeakReferenceList *)NULL;
   _ref_count = 0;
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::record_pointer(this);
@@ -55,6 +56,7 @@ ReferenceCount() {
 ////////////////////////////////////////////////////////////////////
 INLINE ReferenceCount::
 ReferenceCount(const ReferenceCount &) {
+  _weak_list = (WeakReferenceList *)NULL;
   _ref_count = 0;
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::record_pointer(this);
@@ -128,6 +130,12 @@ INLINE ReferenceCount::
   // copied a dynamically allocated value--reference count and
   // all--onto a locally allocated one.
   nassertv(_ref_count == 0);
+
+  // Tell our weak reference holders that we're going away now.
+  if (_weak_list != (WeakReferenceList *)NULL) {
+    delete _weak_list;
+    _weak_list = (WeakReferenceList *)NULL;
+  }
 
 #ifndef NDEBUG
   // Ok, all clear to delete.  Now set the reference count to -100,
@@ -269,6 +277,60 @@ test_ref_count_integrity() const {
   // somewhere.
   nassertv(_ref_count >= 0);
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReferenceCount::has_weak_list
+//       Access: Public
+//  Description: Returns true if this particular ReferenceCount object
+//               has a WeakReferenceList created, false otherwise.  In
+//               general, this will be true if there was ever a
+//               WeakPointerTo created for this object (even if there
+//               is not any for it now).
+////////////////////////////////////////////////////////////////////
+INLINE bool ReferenceCount::
+has_weak_list() const {
+  return _weak_list != (WeakReferenceList *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReferenceCount::get_weak_list
+//       Access: Public
+//  Description: Returns the WeakReferenceList associated with this
+//               ReferenceCount object.  If there has never been a
+//               WeakReferenceList associated with this object,
+//               creates one now.
+////////////////////////////////////////////////////////////////////
+INLINE WeakReferenceList *ReferenceCount::
+get_weak_list() const {
+  if (_weak_list == (WeakReferenceList *)NULL) {
+    ((ReferenceCount *)this)->_weak_list = new WeakReferenceList;
+  }
+  return _weak_list;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReferenceCount::weak_ref
+//       Access: Public
+//  Description: Adds the indicated PointerToVoid as a weak reference
+//               to this object.
+////////////////////////////////////////////////////////////////////
+INLINE void ReferenceCount::
+weak_ref(WeakPointerToVoid *ptv) {
+  get_weak_list()->add_reference(ptv);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReferenceCount::weak_unref
+//       Access: Public
+//  Description: Removes the indicated PointerToVoid as a weak reference
+//               to this object.  It must have previously been added
+//               via a call to weak_ref().
+////////////////////////////////////////////////////////////////////
+INLINE void ReferenceCount::
+weak_unref(WeakPointerToVoid *ptv) {
+  nassertv(has_weak_list());
+  _weak_list->clear_reference(ptv);
 }
 
 ////////////////////////////////////////////////////////////////////

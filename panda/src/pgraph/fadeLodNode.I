@@ -17,20 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE FadeLODNode::
-FadeLODNode(const string &name) :
-  LODNode(name) 
-{
-  _fade_time = 1.0;
-  _fade_mode = false;
-  _previous_child = 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: FadeLODNode::Copy Constructor
 //       Access: Protected
 //  Description:
@@ -40,8 +26,6 @@ FadeLODNode(const FadeLODNode &copy) :
   LODNode(copy)
 {
   _fade_time = copy._fade_time;
-  _fade_mode = copy._fade_mode;
-  _previous_child = copy._previous_child;
 }
 
 ////////////////////////////////////////////////////////////////////

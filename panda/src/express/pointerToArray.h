@@ -91,6 +91,7 @@
 template <class Element>
 class PointerToArray : public PointerToBase<RefCountObj<pvector<Element> > > {
 public:
+  typedef TYPENAME PointerToBase<RefCountObj<pvector<Element> > >::To To;
   typedef TYPENAME pvector<Element>::value_type value_type;
   typedef TYPENAME pvector<Element>::reference reference;
   typedef TYPENAME pvector<Element>::const_reference const_reference;
@@ -200,6 +201,7 @@ private:
 template <class Element>
 class ConstPointerToArray : public PointerToBase<RefCountObj<pvector<Element> > > {
 public:
+  typedef TYPENAME PointerToBase<RefCountObj<pvector<Element> > >::To To;
   typedef TYPENAME pvector<Element>::value_type value_type;
   typedef TYPENAME pvector<Element>::const_reference reference;
   typedef TYPENAME pvector<Element>::const_reference const_reference;
