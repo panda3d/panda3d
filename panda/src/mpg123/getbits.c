@@ -1,32 +1,14 @@
-/* Filename: getbits.c
- * Created by:  
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- * PANDA 3D SOFTWARE
- * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
- *
- * All use of this software is subject to the terms of the Panda 3d
- * Software license.  You should have received a copy of this license
- * along with this source code; you will also find a current copy of
- * the license at http://www.panda3d.org/license.txt .
- *
- * To contact the maintainers of this program write to
- * panda3d@yahoogroups.com .
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
 #include "mpg123.h"
 #include "common.h"
 
 #if 0
 static void check_buffer_range(int size)
 {
-        int pos = (bsi->wordpointer-bsbuf) + (size>>3);
+    int pos = (bsi->wordpointer-bsbuf) + (size>>3);
 
-        if( pos >= fsizeold) {
-                fprintf(stderr,"Pointer out of range (%d,%d)!\n",pos,fsizeold);
-        }
+    if( pos >= fsizeold) {
+        fprintf(stderr,"Pointer out of range (%d,%d)!\n",pos,fsizeold);
+    }
 }
 #endif
 
@@ -37,7 +19,7 @@ void backbits(struct bitstream_info *bsi,int number_of_bits)
   bsi->bitindex    &= 0x7;
 }
 
-int getbitoffset(struct bitstream_info *bsi)
+int getbitoffset(struct bitstream_info *bsi) 
 {
   return (-bsi->bitindex)&0x7;
 }
@@ -45,7 +27,7 @@ int getbitoffset(struct bitstream_info *bsi)
 int getbyte(struct bitstream_info *bsi)
 {
 #ifdef DEBUG_GETBITS
-  if(bsi->bitindex)
+  if(bsi->bitindex) 
     fprintf(stderr,"getbyte called unsynched!\n");
 #endif
   return *bsi->wordpointer++;

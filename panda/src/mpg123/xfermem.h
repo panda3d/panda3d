@@ -1,20 +1,17 @@
-/* Filename: xfermem.h
- * Created by:  
+/*
+ *   xfermem.h
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *   Oliver Fromme  <oliver.fromme@heim3.tu-clausthal.de>
+ *   Sat Mar 29 04:41:34 MET 1997
  *
- * PANDA 3D SOFTWARE
- * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
- *
- * All use of this software is subject to the terms of the Panda 3d
- * Software license.  You should have received a copy of this license
- * along with this source code; you will also find a current copy of
- * the license at http://www.panda3d.org/license.txt .
- *
- * To contact the maintainers of this program write to
- * panda3d@yahoogroups.com .
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ *   This is a stand-alone module which implements a unidirectional,
+ *   fast pipe using mmap().  Its primary use is to transfer large
+ *   amounts of data from a parent process to its child process,
+ *   with a buffer in between which decouples blocking conditions
+ *   on both sides.  Control information is transferred between the
+ *   processes through a socketpair.  See xftest.c for an example on
+ *   how to use this module.
+ */
 
 #ifndef TRUE
 #define FALSE 0
@@ -22,15 +19,15 @@
 #endif
 
 typedef struct {
-        int freeindex;  /* [W] next free index */
-        int readindex;  /* [R] next index to read */
-        int fd[2];
-        int wakeme[2];
-        byte *data;
-        byte *metadata;
-        int size;
-        int metasize;
-        int buf[3];
+    int freeindex;  /* [W] next free index */
+    int readindex;  /* [R] next index to read */
+    int fd[2];
+    int wakeme[2];
+    byte *data;
+    byte *metadata;
+    int size;
+    int metasize;
+    int buf[3];
 } txfermem;
 /*
  *   [W] -- May be written to by the writing process only!

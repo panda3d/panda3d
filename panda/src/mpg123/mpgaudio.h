@@ -1,31 +1,17 @@
-/* Filename: mpgaudio.h
- * Created by:  
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- * PANDA 3D SOFTWARE
- * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
- *
- * All use of this software is subject to the terms of the Panda 3d
- * Software license.  You should have received a copy of this license
- * along with this source code; you will also find a current copy of
- * the license at http://www.panda3d.org/license.txt .
- *
- * To contact the maintainers of this program write to
- * panda3d@yahoogroups.com .
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* 
+ * Audio 'LIB' defines
+ */
 
 #define AUDIO_OUT_HEADPHONES       0x01
 #define AUDIO_OUT_INTERNAL_SPEAKER 0x02
 #define AUDIO_OUT_LINE_OUT         0x04
 
 enum { DECODE_TEST, DECODE_AUDIO, DECODE_FILE, DECODE_BUFFER, DECODE_WAV,
-        DECODE_AU,DECODE_CDR,DECODE_AUDIOFILE };
+    DECODE_AU,DECODE_CDR,DECODE_AUDIOFILE };
 
-#define AUDIO_FORMAT_MASK         0x100
-#define AUDIO_FORMAT_16           0x100
-#define AUDIO_FORMAT_8            0x000
+#define AUDIO_FORMAT_MASK     0x100
+#define AUDIO_FORMAT_16       0x100
+#define AUDIO_FORMAT_8        0x000
 
 #define AUDIO_FORMAT_SIGNED_16    0x110
 #define AUDIO_FORMAT_UNSIGNED_16  0x120

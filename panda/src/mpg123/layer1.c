@@ -1,20 +1,12 @@
-/* Filename: layer1.c
- * Created by:  
+/* 
+ * Mpeg Layer-1 audio decoder 
+ * --------------------------
+ * copyright (c) 1995 by Michael Hipp, All rights reserved. See also 'README'
+ * near unoptimzed ...
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * may have a few bugs after last optimization ... 
  *
- * PANDA 3D SOFTWARE
- * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
- *
- * All use of this software is subject to the terms of the Panda 3d
- * Software license.  You should have received a copy of this license
- * along with this source code; you will also find a current copy of
- * the license at http://www.panda3d.org/license.txt .
- *
- * To contact the maintainers of this program write to
- * panda3d@yahoogroups.com .
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ */
 
 #include "mpg123.h"
 
@@ -28,7 +20,7 @@ void I_step_one(unsigned int balloc[], unsigned int scale_index[2][SBLIMIT],stru
   if(fr->stereo) {
     int i;
     int jsbound = fr->jsbound;
-    for (i=0;i<jsbound;i++) {
+    for (i=0;i<jsbound;i++) { 
       *ba++ = getbits(4);
       *ba++ = getbits(4);
     }
@@ -61,7 +53,7 @@ void I_step_one(unsigned int balloc[], unsigned int scale_index[2][SBLIMIT],stru
 }
 
 void I_step_two(real fraction[2][SBLIMIT],unsigned int balloc[2*SBLIMIT],
-        unsigned int scale_index[2][SBLIMIT],struct frame *fr)
+    unsigned int scale_index[2][SBLIMIT],struct frame *fr)
 {
   int i,n;
   int smpb[2*SBLIMIT]; /* values: 0-65535 */
@@ -80,7 +72,7 @@ void I_step_two(real fraction[2][SBLIMIT],unsigned int balloc[2*SBLIMIT],
       if ((n = *ba++))
         *sample++ = getbits(n+1);
     }
-    for (i=jsbound;i<SBLIMIT;i++)
+    for (i=jsbound;i<SBLIMIT;i++) 
       if ((n = *ba++))
         *sample++ = getbits(n+1);
 

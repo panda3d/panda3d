@@ -1,20 +1,10 @@
-/* Filename: decode.c
- * Created by:  
+/* 
+ * Mpeg Layer-1,2,3 audio decoder 
+ * ------------------------------
+ * copyright (c) 1995,1996,1997 by Michael Hipp, All rights reserved.
+ * See also 'README'
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- * PANDA 3D SOFTWARE
- * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
- *
- * All use of this software is subject to the terms of the Panda 3d
- * Software license.  You should have received a copy of this license
- * along with this source code; you will also find a current copy of
- * the license at http://www.panda3d.org/license.txt .
- *
- * To contact the maintainers of this program write to
- * panda3d@yahoogroups.com .
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ */
 
 #include <stdlib.h>
 #include <math.h>
@@ -62,7 +52,7 @@ int synth_1to1_8bit_mono(real *bandPtr,unsigned char *samples,int *pnt)
     tmp1 += 2;
   }
   *pnt += 32;
-
+  
   return ret;
 }
 
@@ -131,11 +121,11 @@ int synth_1to1(real *bandPtr,int channel,unsigned char *out,int *pnt)
   short *samples = (short *) (out+*pnt);
 
   real *b0,(*buf)[0x110];
-  int clip = 0;
+  int clip = 0; 
   int bo1;
 
   if(param.enable_equalizer)
-        do_equalizer(bandPtr,channel);
+    do_equalizer(bandPtr,channel);
 
   if(!channel) {
     bo--;
@@ -162,7 +152,7 @@ int synth_1to1(real *bandPtr,int channel,unsigned char *out,int *pnt)
   {
     register int j;
     real *window = decwin + 16 - bo1;
-
+ 
     for (j=16;j;j--,window+=0x10,samples+=step)
     {
       real sum;

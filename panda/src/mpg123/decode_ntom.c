@@ -1,20 +1,11 @@
-/* Filename: decode_ntom.c
- * Created by:  
+/* 
+ * Mpeg Layer-1,2,3 audio decoder 
+ * ------------------------------
+ * copyright (c) 1995,1996,1997 by Michael Hipp, All rights reserved.
+ * See also 'README'
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- * PANDA 3D SOFTWARE
- * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
- *
- * All use of this software is subject to the terms of the Panda 3d
- * Software license.  You should have received a copy of this license
- * along with this source code; you will also find a current copy of
- * the license at http://www.panda3d.org/license.txt .
- *
- * To contact the maintainers of this program write to
- * panda3d@yahoogroups.com .
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * N->M down/up sampling. Not optimized for speed.
+ */
 
 #include <stdlib.h>
 #include <math.h>
@@ -34,23 +25,23 @@ static unsigned long ntom_step = NTOM_MUL;
 
 void synth_ntom_set_step(long m,long n)
 {
-        if(param.verbose > 1)
-                fprintf(stderr,"Init rate converter: %ld->%ld\n",m,n);
+    if(param.verbose > 1)
+        fprintf(stderr,"Init rate converter: %ld->%ld\n",m,n);
 
-        if(n >= 96000 || m >= 96000 || m == 0 || n == 0) {
-                fprintf(stderr,"NtoM converter: illegal rates\n");
-                exit(1);
-        }
+    if(n >= 96000 || m >= 96000 || m == 0 || n == 0) {
+        fprintf(stderr,"NtoM converter: illegal rates\n");
+        exit(1);
+    }
 
-        n *= NTOM_MUL;
-        ntom_step = n / m;
+    n *= NTOM_MUL;
+    ntom_step = n / m;
 
-        if(ntom_step > 8*NTOM_MUL) {
-                fprintf(stderr,"max. 1:8 conversion allowed!\n");
-                exit(1);
-        }
+    if(ntom_step > 8*NTOM_MUL) {
+        fprintf(stderr,"max. 1:8 conversion allowed!\n");
+        exit(1);
+    }
 
-        ntom_val[0] = ntom_val[1] = NTOM_MUL>>1;
+    ntom_val[0] = ntom_val[1] = NTOM_MUL>>1;
 }
 
 int synth_ntom_8bit(real *bandPtr,int channel,unsigned char *samples,int *pnt)
@@ -88,7 +79,7 @@ int synth_ntom_8bit_mono(real *bandPtr,unsigned char *samples,int *pnt)
     tmp1 += 2;
   }
   *pnt += pnt1 >> 2;
-
+  
   return ret;
 }
 
@@ -140,7 +131,7 @@ int synth_ntom_mono2stereo(real *bandPtr,unsigned char *samples,int *pnt)
 
   ret = synth_ntom(bandPtr,0,samples,pnt);
   samples += pnt1;
-
+  
   for(i=0;i<((*pnt-pnt1)>>2);i++) {
     ((short *)samples)[1] = ((short *)samples)[0];
     samples+=4;
@@ -158,12 +149,12 @@ int synth_ntom(real *bandPtr,int channel,unsigned char *out,int *pnt)
   short *samples = (short *) (out + *pnt);
 
   real *b0,(*buf)[0x110];
-  int clip = 0;
+  int clip = 0; 
   int bo1;
   int ntom;
 
   if(param.enable_equalizer)
-        do_equalizer(bandPtr,channel);
+    do_equalizer(bandPtr,channel);
 
   if(!channel) {
     bo--;
@@ -193,7 +184,7 @@ int synth_ntom(real *bandPtr,int channel,unsigned char *out,int *pnt)
   {
     register int j;
     real *window = decwin + 16 - bo1;
-
+ 
     for (j=16;j;j--,window+=0x10)
     {
       real sum;

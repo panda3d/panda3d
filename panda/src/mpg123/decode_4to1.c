@@ -1,20 +1,12 @@
-/* Filename: decode_4to1.c
- * Created by:  
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- * PANDA 3D SOFTWARE
- * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
- *
- * All use of this software is subject to the terms of the Panda 3d
- * Software license.  You should have received a copy of this license
- * along with this source code; you will also find a current copy of
- * the license at http://www.panda3d.org/license.txt .
- *
- * To contact the maintainers of this program write to
- * panda3d@yahoogroups.com .
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/*
+ * Mpeg Layer-1,2,3 audio decoder
+ * ------------------------------
+ * copyright (c) 1995,1996,1997 by Michael Hipp, All rights reserved.
+ * See also 'README'
+ * version for slower machines .. decodes only every fourth sample
+ * dunno why it sounds THIS annoying (maybe we should adapt the window?)
+ * absolutely not optimized for this operation
+ */
 
 #include <stdlib.h>
 #include <math.h>
@@ -130,7 +122,7 @@ int synth_4to1(real *bandPtr,int channel,unsigned char *out,int *pnt)
   short *samples = (short *) (out + *pnt);
 
   real *b0,(*buf)[0x110];
-  int clip = 0;
+  int clip = 0; 
   int bo1;
 
   if(param.enable_equalizer)
@@ -237,7 +229,7 @@ int synth_4to1(real *bandPtr,int channel,unsigned char *out,int *pnt)
 #endif
     }
   }
-
+  
   *pnt += 32;
 
   return clip;

@@ -1,20 +1,11 @@
-/* Filename: decode_2to1.c
- * Created by:  
+/*
+ * Mpeg Layer-1,2,3 audio decoder
+ * ------------------------------
+ * copyright (c) 1995 by Michael Hipp, All rights reserved. See also 'README'
+ * version for slower machines .. decodes only every second sample
+ * sounds like 24000,22050 or 16000 kHz .. (depending on original sample freq.)
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- * PANDA 3D SOFTWARE
- * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
- *
- * All use of this software is subject to the terms of the Panda 3d
- * Software license.  You should have received a copy of this license
- * along with this source code; you will also find a current copy of
- * the license at http://www.panda3d.org/license.txt .
- *
- * To contact the maintainers of this program write to
- * panda3d@yahoogroups.com .
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ */
 
 #include <stdlib.h>
 #include <math.h>
@@ -118,7 +109,7 @@ int synth_2to1_mono2stereo(real *bandPtr,unsigned char *samples,int *pnt)
     ((short *)samples)[1] = ((short *)samples)[0];
     samples+=4;
   }
-
+  
   return ret;
 }
 
@@ -130,7 +121,7 @@ int synth_2to1(real *bandPtr,int channel,unsigned char *out,int *pnt)
   short *samples = (short *) (out + *pnt);
 
   real *b0,(*buf)[0x110];
-  int clip = 0;
+  int clip = 0; 
   int bo1;
 
   if(param.enable_equalizer)

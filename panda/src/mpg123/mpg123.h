@@ -1,20 +1,7 @@
-/* Filename: mpg123.h
- * Created by:  
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- * PANDA 3D SOFTWARE
- * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
- *
- * All use of this software is subject to the terms of the Panda 3d
- * Software license.  You should have received a copy of this license
- * along with this source code; you will also find a current copy of
- * the license at http://www.panda3d.org/license.txt .
- *
- * To contact the maintainers of this program write to
- * panda3d@yahoogroups.com .
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/*
+ * mpg123 defines 
+ * used source: musicout.h from mpegaudio package
+ */
 
 #include        <stdio.h>
 #include        <string.h>
@@ -51,7 +38,7 @@ typedef unsigned char byte;
 # define WIN32
 
 # define M_PI       3.14159265358979323846
-# define M_SQRT2        1.41421356237309504880
+# define M_SQRT2    1.41421356237309504880
 # define REAL_IS_FLOAT
 # define NEW_DCT9
 
@@ -88,7 +75,7 @@ typedef unsigned char byte;
 #include "mpgaudio.h"
 
 /* AUDIOBUFSIZE = n*64 with n=1,2,3 ...  */
-#define         AUDIOBUFSIZE            16384
+#define     AUDIOBUFSIZE        16384
 
 #define         FALSE                   0
 #define         TRUE                    1
@@ -112,7 +99,7 @@ typedef unsigned char byte;
 #define AUSHIFT (3)
 
 
-struct al_table
+struct al_table 
 {
   short bits;
   short d;
@@ -156,21 +143,21 @@ struct frame {
 #define VBR_SCALE_FLAG      0x0008
 
 struct vbrHeader {
-        unsigned long flags;
-        unsigned long frames;
-        unsigned long bytes;
-        unsigned long scale;
-        unsigned char toc[100];
+    unsigned long flags;
+    unsigned long frames;
+    unsigned long bytes;
+    unsigned long scale;
+    unsigned char toc[100];
 };
 
 struct parameter {
     int aggressive; /* renice to max. priority */
-    int shuffle;        /* shuffle/random play */
+    int shuffle;    /* shuffle/random play */
     int remote; /* remote operation */
-    int outmode;        /* where to out the decoded sampels */
+    int outmode;    /* where to out the decoded sampels */
     int quiet;  /* shut up! */
     int xterm_title;  /* print filename in xterm title */
-    long usebuffer;     /* second level buffer size */
+    long usebuffer; /* second level buffer size */
     int tryresync;  /* resync stream after error */
     int verbose;    /* verbose level */
 #ifdef TERM_CONTROL
@@ -394,8 +381,8 @@ extern int au_close(void);
 extern int cdr_open(struct audio_info_struct *ai, char *cdrfilename);
 extern int cdr_close(void);
 
-extern int getVBRHeader(struct vbrHeader *head,unsigned char *buf,
-        struct frame *fr);
+extern int getVBRHeader(struct vbrHeader *head,unsigned char *buf, 
+    struct frame *fr);
 
 
 extern unsigned char *conv16to8;
