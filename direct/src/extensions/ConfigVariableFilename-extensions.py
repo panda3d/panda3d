@@ -1,4 +1,7 @@
 
+    def __str__(self):
+        return self.getValue()
+
     def __len__(self):
         return self.getValue().__len__()
     
