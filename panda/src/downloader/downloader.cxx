@@ -720,7 +720,8 @@ parse_header(DownloadStatus &status) {
     size_t nl = bufstr.find("\015\012", p);
     if (nl == string::npos) {
       downloader_cat.error()
-	<< "Downloader::parse_header() - No newlines in buffer!" << endl;
+	<< "Downloader::parse_header() - No newlines in buffer of "
+	<< "length: " << status._bytes_in_buffer << endl;
       return false;
     } else if (p == 0 && nl == p) {
       downloader_cat.error()
