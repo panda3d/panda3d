@@ -9,7 +9,7 @@ of the world, see INSTALL.txt in this directory.
 
 
 
-To install Panda3D on WinNT or Win98:
+To install Panda3D on WinNT/Win2000/Win98:
 -------------------------------------
 Notes:
   Lines preceeded by ">" are instructions to be typed on the command line. 
@@ -33,17 +33,32 @@ Notes:
     open space on any of your partitions.
   Make sure your machine has networking (IP, gateway, etc.) so you can use
     ftp to get to dumbo.
-
+    
+Step 0: Map network drive to build tools drive
+  - right click on Network Places, choose Map Network Drive
+  - Map Network Drive V: to \\dimbo\panda
+  - select reconnect drive at startup
+  - if this doesnt work, you can install the build tools from CD
 
 Step 1: Install Visual C++ (v6.0)
+  - Run V:\msvc-6.0\setup.exe, or install from CD.  
+    For a faster install, select custom install and uncheck everything
+    but Visual C++, Data Access, ActiveX, and Tools
   - On WinNT, you will be prompted to register environment variables for
     running the compiler from the command line - do it.
-  - I also recommend installing the full MSDN Library documentation.
-  - Make sure you install the latest service pack by running:
-       \\dimbo\panda\msvc-sp5\setupsp5.exe
+  - Installing the MSDN Library documentation if this is a primary dev machine.
+    This is currently available on CD only and not on the network.
+    
+  - Install MSVC Service Pack 5 by running V:\msvc-sp5\setupsp5.exe, or from CD
+  
+Step 2: Install MS Platform SDK to get updated VC libs and headers
+  - Install MS Platform SDK MSDN CD in default location.
+  - Run v:\platform-sdk\setup.exe, or install from July 2000 or newer CD
+    This should prepend the Platform SDK paths to your PATH,INCLUDE, and
+    LIB dirs.  Building libpandadx requires this step (needs DX7 headers/libs)
 
-Step 2: Install Cygwin (v1.0)
-  - Install Cygwin from the cd  
+Step 3: Install Cygwin (v1.0)
+  - Install Cygwin by running V:\cygwin-1.0\setup.exe, or from CD
   - Open up a shell by running (and, if you desire, creating a shortcut to)
     tcsh.exe in: 
        C:/Cygwin/contrib/bin 
@@ -101,7 +116,7 @@ Step 2: Install Cygwin (v1.0)
       > mount -s -b I:/gamma /gamma
       > mount -s -b J:/ /for
 
-Step 3: Create your home directory
+Step 4: Create your home directory
   - Create a HOME directory:
     > mkdir /usr/<yourname>
   - Create/copy necessary files: .cshrc, .emacs, Configrc, Config.pp
@@ -124,7 +139,7 @@ Step 3: Create your home directory
       directory /usr/<yourname> does not match the user name exactly. 
       To be safe, be sure and name your home directory to be /usr/<yourname>.
 
-Step 4: Update /usr/local/etc:
+Step 5: Update /usr/local/etc:
   - Copy vspec files from $WINTOOLS to /usr/local/etc
     > cd V:/win/install/wintools
     > cp_vspec 
@@ -141,7 +156,7 @@ Step 4: Update /usr/local/etc:
     - Edit appropriate *.vspec files to specify which trees you wish to use
       as a default (e.g. install vs. minstall vs. personal)
 
-Step 5: Grab the cvs trees
+Step 6: Grab the cvs trees
   - Open a new shell
   - Create personal trees:
     > cd ~
@@ -162,7 +177,7 @@ Step 5: Grab the cvs trees
     level corresponding to the version of DTOOL/PANDA you intend to attach
     to (install is built OPTIMIZE 2, release is built OPTIMIZE 3).
 
-Step 6: (Optional) Build $DTOOL
+Step 7: (Optional) Build $DTOOL
   - Now you must use the tcsh shortcut to open a new shell - it should attach
     to $DTOOL:install automatically, but you will need to attach to your
     own DTOOL if you want to build your own.
@@ -170,11 +185,6 @@ Step 6: (Optional) Build $DTOOL
     > cd $DTOOL
     > ppremake
     > nmake install
-
-Step 7: Install MS Platform SDK to get updated VC libs and headers
-  - Install July 2000 or newer MS Platform SDK MSDN CD in default location.
-    This should prepend the Platform SDK paths to your PATH,INCLUDE, and
-    LIB dirs.  Building libpandadx requires this step (needs DX7 headers/libs)
 
 Step 8: (Optional) Build $PANDA 
   - Build panda
