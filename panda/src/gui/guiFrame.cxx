@@ -185,6 +185,29 @@ void GuiFrame::add_item(GuiItem* item) {
   }
 }
 
+void GuiFrame::remove_item(GuiItem* item) {
+  Boxes::iterator i = find_box(item);
+  if (i == _items.end())
+    return;
+  (*i).erase_all_links();
+  // should NEVER link forward in the items, only backward, so it should be
+  // safe to start here, and go to the end
+  for (Boxes::iterator j=i+1; j!=_items.end(); ++j) {
+    bool done;
+    do {
+      done = true;
+      for (int k=0; k<(*j).get_num_links(); ++k)
+	if ((*j).get_nth_to(k) == item) {
+	  done = false;
+	  (*j).erase_nth_link(k);
+	  break;
+	}
+    } while (!done);
+  }
+  // now get rid of the thing itself
+  _items.erase(i);
+}
+
 void GuiFrame::pack_item(GuiItem* item, Packing rel, GuiItem* to, float gap) {
   Boxes::iterator box = find_box(item);
   if (box == _items.end()) {

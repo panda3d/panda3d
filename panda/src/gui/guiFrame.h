@@ -76,6 +76,7 @@ public:
   ~GuiFrame(void);
 
   void add_item(GuiItem*);
+  void remove_item(GuiItem*);
   void pack_item(GuiItem*, Packing, GuiItem*, float = 0.);
   void clear_packing(GuiItem*);
   void clear_all_packing(void);

@@ -5,7 +5,18 @@
 
 #include "framework.h"
 
-void deadrec_keys(EventHandler& eh) {
+static void deadrec_setup(void) {
+  static bool done = false;
+  if (done)
+    return;
+  // load smiley and put it in the scenegraph
+  smiley = ModelPool::load_model("smiley");
+  nassertv(smiley != (Node*)0L);
+  my_arc = new RenderRelation(render, smiley);
+}
+
+static void deadrec_keys(EventHandler& eh) {
+  deadrec_setup();
 }
 
 int main(int argc, char* argv[]) {
