@@ -44,7 +44,7 @@ public:
 
   enum Format {
     F_unspecified, 
-    F_rgba, F_rgba12, F_rgba8, F_rgba4, F_rgba5,
+    F_rgba, F_rgbm, F_rgba12, F_rgba8, F_rgba4, F_rgba5,
     F_rgb, F_rgb12, F_rgb8, F_rgb5, F_rgb332,
     F_luminance_alpha,
     F_red, F_green, F_blue, F_alpha, F_luminance, 

@@ -11,6 +11,7 @@
     bamWriter.h bitMask.I bitMask.cxx bitMask.h buttonEvent.I \
     buttonEvent.cxx buttonEvent.h buttonHandle.I buttonHandle.cxx \
     buttonHandle.h buttonRegistry.I buttonRegistry.cxx buttonRegistry.h \
+    collideMask.h \
     config_util.N config_util.cxx config_util.h configurable.cxx \
     configurable.h factoryBase.I factoryBase.cxx factoryBase.h \
     factoryParam.I factoryParam.cxx factoryParam.h factoryParams.I \
@@ -42,7 +43,8 @@
     bam.h bamReader.I bamReader.h bamReaderParam.I bamReaderParam.h \
     bamWriter.I bamWriter.h bitMask.I bitMask.h buttonEvent.I \
     buttonEvent.h buttonHandle.I buttonHandle.h buttonRegistry.I \
-    buttonRegistry.h config_util.h configurable.h factory.I factory.h \
+    buttonRegistry.h collideMask.h \
+    config_util.h configurable.h factory.I factory.h \
     factoryBase.I factoryBase.h factoryParam.I factoryParam.h \
     factoryParams.I factoryParams.h globPattern.I globPattern.h \
     globalPointerRegistry.I globalPointerRegistry.h indirectCompareTo.I \

@@ -25,7 +25,7 @@
     collisionTraverser.h config_collide.cxx config_collide.h
 
   #define INSTALL_HEADERS \
-    collideMask.h collisionEntry.I collisionEntry.h collisionHandler.h \
+    collisionEntry.I collisionEntry.h collisionHandler.h \
     collisionHandlerEvent.I collisionHandlerEvent.h \
     collisionHandlerFloor.I collisionHandlerFloor.h \
     collisionHandlerPhysical.I collisionHandlerPhysical.h \

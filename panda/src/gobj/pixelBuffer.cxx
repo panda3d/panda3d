@@ -95,27 +95,11 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     break;
 
   case PNMImage::CT_color:
-    // Choose a suitable default format based on the depth of the
-    // image components.
-    if (maxval > 255) {
-      _format = F_rgb12;
-    } else if (maxval > 31) {
-      _format = F_rgb8;
-    } else {
-      _format = F_rgb5;
-    }
+    _format = F_rgb;
     break;
 
   case PNMImage::CT_four_channel:
-    // Choose a suitable default format based on the depth of the
-    // image components.
-    if (maxval > 255) {
-      _format = F_rgba12;
-    } else if (maxval > 15) {
-      _format = F_rgba8;
-    } else {
-      _format = F_rgba4;
-    }
+    _format = F_rgba;
     break;
 
   default:

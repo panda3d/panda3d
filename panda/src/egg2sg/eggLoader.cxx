@@ -774,9 +774,6 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     case EggTexture::F_rgb5:
       tex->_pbuffer->set_format(PixelBuffer::F_rgb5);
       break;
-    case EggTexture::F_rgba5:
-      tex->_pbuffer->set_format(PixelBuffer::F_rgba5);
-      break;
     case EggTexture::F_rgb332:
       tex->_pbuffer->set_format(PixelBuffer::F_rgb332);
       break;
@@ -794,6 +791,9 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_rgba:
       tex->_pbuffer->set_format(PixelBuffer::F_rgba);
+      break;
+    case EggTexture::F_rgbm:
+      tex->_pbuffer->set_format(PixelBuffer::F_rgbm);
       break;
     case EggTexture::F_rgba12:
       if (tex->_pbuffer->get_component_width() >= 2) {

@@ -252,7 +252,6 @@ apply(Node *node, const AllAttributesWrapper &init_state,
     NamedNodeVector::iterator c;
     for (c = _casters.begin(); c != _casters.end(); ++c) {
       Node *caster = (*c);
-      NamedNode *output = DCAST(NamedNode, caster);
 
       LMatrix4f mat;
       get_rel_mat(caster, _plane_node, mat);

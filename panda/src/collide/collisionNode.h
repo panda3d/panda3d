@@ -9,8 +9,8 @@
 #include <pandabase.h>
 
 #include "collisionSolid.h"
-#include "collideMask.h"
 
+#include <collideMask.h>
 #include <namedNode.h>
 
 ////////////////////////////////////////////////////////////////////

@@ -368,6 +368,8 @@ EggTexture::Format EggTexture::
 string_format(const string &string) {
   if (cmp_nocase_uh(string, "rgba") == 0) {
     return F_rgba;
+  } else if (cmp_nocase_uh(string, "rgbm") == 0) {
+    return F_rgbm;
   } else if (cmp_nocase_uh(string, "rgba12") == 0) {
     return F_rgba12;
   } else if (cmp_nocase_uh(string, "rgba8") == 0) {
@@ -499,6 +501,8 @@ ostream &operator << (ostream &out, EggTexture::Format format) {
 
   case EggTexture::F_rgba:
     return out << "rgba";
+  case EggTexture::F_rgbm:
+    return out << "rgbm";
   case EggTexture::F_rgba12:
     return out << "rgba12";
   case EggTexture::F_rgba8:

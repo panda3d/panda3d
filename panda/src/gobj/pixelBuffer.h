@@ -44,12 +44,13 @@ public:
     F_green,
     F_blue,
     F_alpha,
-    F_rgb,
+    F_rgb,     // any suitable RGB mode, whatever the hardware prefers
     F_rgb5,    // specifically, 5 bits per R,G,B channel
     F_rgb8,    // 8 bits per R,G,B channel
     F_rgb12,   // 12 bits per R,G,B channel
     F_rgb332,  // 3 bits per R & G, 2 bits for B
-    F_rgba,
+    F_rgba,    // any suitable RGBA mode, whatever the hardware prefers
+    F_rgbm,    // as above, but only requires 1 bit for alpha (i.e. mask)
     F_rgba4,   // 4 bits per R,G,B,A channel
     F_rgba5,   // 5 bits per R,G,B channel, 1 bit alpha
     F_rgba8,   // 8 bits per R,G,B,A channel

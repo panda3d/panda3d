@@ -2032,6 +2032,7 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
   case PixelBuffer::F_rgb8:
   case PixelBuffer::F_rgb12:
   case PixelBuffer::F_rgba:
+  case PixelBuffer::F_rgbm:
   case PixelBuffer::F_rgba4:
   case PixelBuffer::F_rgba5:
   case PixelBuffer::F_rgba8:
@@ -3550,6 +3551,7 @@ get_external_image_format(PixelBuffer::Format format) {
   case PixelBuffer::F_rgb332:
     return GL_RGB;
   case PixelBuffer::F_rgba:
+  case PixelBuffer::F_rgbm:
   case PixelBuffer::F_rgba4:
   case PixelBuffer::F_rgba5:
   case PixelBuffer::F_rgba8:
@@ -3576,6 +3578,7 @@ GLenum GLGraphicsStateGuardian::
 get_internal_image_format(PixelBuffer::Format format) {
   switch (format) {
   case PixelBuffer::F_rgba:
+  case PixelBuffer::F_rgbm:
     return GL_RGBA;
   case PixelBuffer::F_rgba4:
     return GL_RGBA4;

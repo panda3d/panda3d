@@ -5,7 +5,7 @@
 #begin lib_target
   #define TARGET egg
   #define LOCAL_LIBS \
-    linmath putil collide
+    linmath putil
 
   #define SOURCES \
     config_egg.cxx config_egg.h eggAlphaMode.I eggAlphaMode.cxx \
