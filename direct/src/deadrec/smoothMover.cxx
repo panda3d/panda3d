@@ -80,21 +80,26 @@ mark_position() {
     // With smoothing disabled, mark_position() simply stores its
     // current position in the smooth_position members.
 
+    // In this mode, we also ignore the supplied timestamp, and just
+    // use the current frame time--there's no need to risk trusting
+    // the timestamp from another client.
+    double timestamp = ClockObject::get_global_clock()->get_frame_time();
+
     // We also need to compute the velocity here.
     if (_smooth_position_known) {
       LVector3f pos_delta = _sample._pos - _smooth_pos;
       LVecBase3f hpr_delta = _sample._hpr - _smooth_hpr;
-      double age = _sample._timestamp - _smooth_timestamp;
+      double age = timestamp - _smooth_timestamp;
       age = min(age, _max_position_age);
 
-      set_smooth_pos(_sample._pos, _sample._hpr, _sample._timestamp);
+      set_smooth_pos(_sample._pos, _sample._hpr, timestamp);
       if (age != 0.0) {
         compute_velocity(pos_delta, hpr_delta, age);
       }
 
     } else {
       // No velocity is possible, just position and orientation.
-      set_smooth_pos(_sample._pos, _sample._hpr, _sample._timestamp);
+      set_smooth_pos(_sample._pos, _sample._hpr, timestamp);
     }
 
   } else {
