@@ -38,7 +38,7 @@
 //               smartest it could possibly be; it's intended
 //               primarily as a visualization and editing tool.
 ////////////////////////////////////////////////////////////////////
-class LineSegs {
+class EXPCL_PANDA LineSegs {
 PUBLISHED:
   LineSegs();
   ~LineSegs();

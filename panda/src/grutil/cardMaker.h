@@ -30,7 +30,7 @@
 //               rectangular polygons, particularly useful for showing
 //               textures etc. in the 2-d scene graph.
 ////////////////////////////////////////////////////////////////////
-class CardMaker {
+class EXPCL_PANDA CardMaker {
 PUBLISHED:
   INLINE CardMaker();
   INLINE ~CardMaker();
