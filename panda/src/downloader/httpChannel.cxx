@@ -1738,11 +1738,14 @@ run_reading_header() {
                                     _method == HTTPEnum::M_head)) {
       // Sure!
       URLSpec new_url = get_redirect();
-      if (!_redirect_trail.insert(new_url).second) {
+      if (find(_redirect_trail.begin(), _redirect_trail.end(),
+               new_url) != _redirect_trail.end()) {
         downloader_cat.warning()
           << "cycle detected in redirect to " << new_url << "\n";
         
       } else {
+        _redirect_trail.push_back(new_url);
+
         if (downloader_cat.is_debug()) {
           downloader_cat.debug()
             << "following redirect to " << new_url << "\n";

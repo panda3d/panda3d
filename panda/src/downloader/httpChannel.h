@@ -36,6 +36,7 @@
 #include "bioPtr.h"
 #include "bioStreamPtr.h"
 #include "pmap.h"
+#include "pvector.h"
 #include "pointerTo.h"
 #include "config_downloader.h"
 #include "filename.h"
@@ -114,6 +115,9 @@ PUBLISHED:
   INLINE const string &get_proxy_realm() const;
   INLINE const URLSpec &get_redirect() const;
   string get_header_value(const string &key) const;
+
+  INLINE int get_num_redirect_trail() const;
+  INLINE const URLSpec &get_redirect_trail(int n) const;
 
   INLINE void set_persistent_connection(bool persistent_connection);
   INLINE bool get_persistent_connection() const;
@@ -394,7 +398,7 @@ private:
   string _current_field_value;
   ISocketStream *_body_stream;
   BIO *_sbio;
-  pset<URLSpec> _redirect_trail;
+  pvector<URLSpec> _redirect_trail;
   int _last_status_code;
   double _last_run_time;
 

@@ -166,6 +166,34 @@ get_redirect() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_num_redirect_trail
+//       Access: Published
+//  Description: If the document automatically followed one or more
+//               redirects, this will return the number of redirects
+//               that were automatically followed.  Use
+//               get_redirect_trail() to retrieve each URL in
+//               sequence.
+////////////////////////////////////////////////////////////////////
+INLINE int HTTPChannel::
+get_num_redirect_trail() const {
+  return _redirect_trail.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_redirect_trail
+//       Access: Published
+//  Description: Use in conjunction with get_num_redirect_trail() to
+//               extract the chain of URL's that the channel was
+//               automatically redirected through to arrive at the
+//               final document.
+////////////////////////////////////////////////////////////////////
+INLINE const URLSpec &HTTPChannel::
+get_redirect_trail(int n) const {
+  nassertr(n >= 0 && n < (int)_redirect_trail.size(), _redirect_trail[0]);
+  return _redirect_trail[n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::set_persistent_connection
 //       Access: Published
 //  Description: Indicates whether the HTTPChannel should try to keep

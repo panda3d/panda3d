@@ -708,8 +708,8 @@ write_cookies(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::send_cookies
 //       Access: Published
-//  Description: Writes to the indicated ostream a set of Cookie:
-//               lines for sending the cookies appropriate to the
+//  Description: Writes to the indicated ostream a "Cookie" header
+//               line for sending the cookies appropriate to the
 //               indicated URL along with an HTTP request.  This also
 //               removes expired cookies.
 ////////////////////////////////////////////////////////////////////
@@ -717,6 +717,7 @@ void HTTPClient::
 send_cookies(ostream &out, const URLSpec &url) {
   HTTPDate now = HTTPDate::now();
   bool any_expired = false;
+  bool first_cookie = true;
 
   Cookies::const_iterator ci;
   for (ci = _cookies.begin(); ci != _cookies.end(); ++ci) {
@@ -725,9 +726,18 @@ send_cookies(ostream &out, const URLSpec &url) {
       any_expired = true;
 
     } else if (cookie.matches_url(url)) {
-      out << "Cookie: " << cookie.get_name() << "=" 
-          << cookie.get_value() << "\r\n";
+      if (first_cookie) {
+        out << "Cookie: ";
+        first_cookie = false;
+      } else {
+        out << "; ";
+      }
+      out << cookie.get_name() << "=" << cookie.get_value();
     }
+  }
+
+  if (!first_cookie) {
+    out << "\r\n";
   }
 
   if (any_expired) {
