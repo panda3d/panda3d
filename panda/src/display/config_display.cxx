@@ -127,6 +127,14 @@ ConfigVariableBool depth_offset_decals
           "because it appears that many graphics drivers have issues with "
           "their depth offset implementation."));
 
+ConfigVariableBool auto_generate_mipmaps
+("auto-generate-mipmaps", false,
+ PRC_DESC("Set this true to use the hardware to generate mipmaps "
+          "automatically in all cases, if supported.  Set it false "
+          "to generate mipmaps in software when possible.  This is "
+          "false by default because some drivers (Intel) seem to do a "
+          "poor job of generating mipmaps when needed."));
+
 ConfigVariableInt win_size
 ("win-size", "640 480",
  PRC_DESC("This is the default size at which to open a new window.  This "

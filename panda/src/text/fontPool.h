@@ -56,7 +56,7 @@ private:
 
   bool ns_has_font(const string &str);
   TextFont *ns_load_font(const string &str);
-  void ns_add_font(const string &filename, TextFont *font);
+  void ns_add_font(const string &str, TextFont *font);
   void ns_release_font(const string &filename);
   void ns_release_all_fonts();
   int ns_garbage_collect();

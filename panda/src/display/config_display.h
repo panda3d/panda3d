@@ -36,47 +36,48 @@ ConfigureDecl(config_display, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(display, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(gsg, EXPCL_PANDA, EXPTP_PANDA);
 
-extern ConfigVariableBool view_frustum_cull;
-extern ConfigVariableBool pstats_unused_states;
+extern EXPCL_PANDA ConfigVariableBool view_frustum_cull;
+extern EXPCL_PANDA ConfigVariableBool pstats_unused_states;
 
-extern ConfigVariableString threading_model;
-extern ConfigVariableBool auto_flip;
-extern ConfigVariableBool yield_timeslice;
+extern EXPCL_PANDA ConfigVariableString threading_model;
+extern EXPCL_PANDA ConfigVariableBool auto_flip;
+extern EXPCL_PANDA ConfigVariableBool yield_timeslice;
 
-extern ConfigVariableString screenshot_filename;
-extern ConfigVariableString screenshot_extension;
+extern EXPCL_PANDA ConfigVariableString screenshot_filename;
+extern EXPCL_PANDA ConfigVariableString screenshot_extension;
 
-extern ConfigVariableBool show_buffers;
+extern EXPCL_PANDA ConfigVariableBool show_buffers;
 
-extern ConfigVariableBool prefer_parasite_buffer;
-extern ConfigVariableBool prefer_single_buffer;
+extern EXPCL_PANDA ConfigVariableBool prefer_parasite_buffer;
+extern EXPCL_PANDA ConfigVariableBool prefer_single_buffer;
 
-extern ConfigVariableBool copy_texture_inverted;
-extern ConfigVariableBool window_inverted;
-extern ConfigVariableBool depth_offset_decals;
+extern EXPCL_PANDA ConfigVariableBool copy_texture_inverted;
+extern EXPCL_PANDA ConfigVariableBool window_inverted;
+extern EXPCL_PANDA ConfigVariableBool depth_offset_decals;
+extern EXPCL_PANDA ConfigVariableBool auto_generate_mipmaps;
 
-extern ConfigVariableInt win_size;
-extern ConfigVariableInt win_origin;
-extern ConfigVariableInt win_width;
-extern ConfigVariableInt win_height;
-extern ConfigVariableInt win_origin_x;
-extern ConfigVariableInt win_origin_y;
-extern ConfigVariableBool fullscreen;
-extern ConfigVariableBool undecorated;
-extern ConfigVariableBool cursor_hidden;
-extern ConfigVariableFilename icon_filename;
-extern ConfigVariableFilename cursor_filename;
-extern ConfigVariableEnum<WindowProperties::ZOrder> z_order;
-extern ConfigVariableString window_title;
+extern EXPCL_PANDA ConfigVariableInt win_size;
+extern EXPCL_PANDA ConfigVariableInt win_origin;
+extern EXPCL_PANDA ConfigVariableInt win_width;
+extern EXPCL_PANDA ConfigVariableInt win_height;
+extern EXPCL_PANDA ConfigVariableInt win_origin_x;
+extern EXPCL_PANDA ConfigVariableInt win_origin_y;
+extern EXPCL_PANDA ConfigVariableBool fullscreen;
+extern EXPCL_PANDA ConfigVariableBool undecorated;
+extern EXPCL_PANDA ConfigVariableBool cursor_hidden;
+extern EXPCL_PANDA ConfigVariableFilename icon_filename;
+extern EXPCL_PANDA ConfigVariableFilename cursor_filename;
+extern EXPCL_PANDA ConfigVariableEnum<WindowProperties::ZOrder> z_order;
+extern EXPCL_PANDA ConfigVariableString window_title;
 
-extern ConfigVariableString framebuffer_mode;
-extern ConfigVariableInt depth_bits;
-extern ConfigVariableInt color_bits;
-extern ConfigVariableInt alpha_bits;
-extern ConfigVariableInt stencil_bits;
-extern ConfigVariableInt multisamples;
+extern EXPCL_PANDA ConfigVariableString framebuffer_mode;
+extern EXPCL_PANDA ConfigVariableInt depth_bits;
+extern EXPCL_PANDA ConfigVariableInt color_bits;
+extern EXPCL_PANDA ConfigVariableInt alpha_bits;
+extern EXPCL_PANDA ConfigVariableInt stencil_bits;
+extern EXPCL_PANDA ConfigVariableInt multisamples;
 
-extern ConfigVariableDouble background_color;
+extern EXPCL_PANDA ConfigVariableDouble background_color;
 
 
 extern EXPCL_PANDA void init_libdisplay();

@@ -3319,7 +3319,8 @@ specify_texture(Texture *tex) {
   }
 #endif
 
-  if (_supports_generate_mipmap) {
+  if (_supports_generate_mipmap && 
+      (auto_generate_mipmaps || !tex->might_have_ram_image())) {
     // If the hardware can automatically generate mipmaps, ask it to
     // do so now, but only if the texture requires them.
     GLP(TexParameteri)(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, uses_mipmaps);
@@ -3453,7 +3454,7 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
     << (int)type << ", " << tex->get_name() << ")\n";
 #endif
 
-  bool uses_mipmaps = tex->uses_mipmaps() && !CLP(ignore_mipmaps);
+  bool uses_mipmaps = (tex->uses_mipmaps() && !CLP(ignore_mipmaps)) || CLP(force_mipmaps);
 
 #ifndef NDEBUG
   if (CLP(force_mipmaps)) {
@@ -3470,7 +3471,7 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
       
     } else 
 #endif 
-      if (!_supports_generate_mipmap) {
+      if (!_supports_generate_mipmap || !auto_generate_mipmaps) {
         // We only need to build the mipmaps by hand if the GL
         // doesn't support generating them automatically.
         GLUP(Build2DMipmaps)(GL_TEXTURE_2D, internal_format,

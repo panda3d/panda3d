@@ -114,7 +114,7 @@ ns_load_font(const string &str) {
     return NULL;
   }
 
-  _fonts[filename] = font;
+  _fonts[index_str] = font;
   return font;
 }
 
@@ -124,9 +124,14 @@ ns_load_font(const string &str) {
 //  Description: The nonstatic implementation of add_font().
 ////////////////////////////////////////////////////////////////////
 void FontPool::
-ns_add_font(const string &filename, TextFont *font) {
+ns_add_font(const string &str, TextFont *font) {
+  string index_str;
+  Filename filename;
+  int face_index;
+  lookup_filename(str, index_str, filename, face_index);
+
   // We blow away whatever font was there previously, if any.
-  _fonts[filename] = font;
+  _fonts[index_str] = font;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -233,9 +233,11 @@ angle_rad(const FLOATNAME(LVector3) &other) const {
   // This algorithm yields better results than acos(dot(other)), which
   // behaves poorly as dot(other) approaches 1.0.
   if (dot(other) < 0.0f) {
-    return MathNumbers::cpi((FLOATTYPE)0.0f) - 2.0f * casin((-(*this)-other).length());
+    FLOATTYPE a = ((*this)+other).length() / 2.0f;
+    return MathNumbers::cpi((FLOATTYPE)0.0f) - 2.0f * casin(min(a, (FLOATTYPE)1.0));
   } else {
-    return 2.0f * casin(((*this)-other).length() / 2.0f);
+    FLOATTYPE a = ((*this)-other).length() / 2.0f;
+    return 2.0f * casin(min(a, (FLOATTYPE)1.0));
   }
 }
 
