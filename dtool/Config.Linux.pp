@@ -85,6 +85,9 @@
 // umask?  Versions of gcc prior to 3.2 had this.
 #define HAVE_OPEN_MASK
 
+// Do the compiler or system libraries define wchar_t for you?
+#define HAVE_WCHAR_T 1
+
 // Does <string> define the typedef wstring?  Most do, but for some
 // reason, versions of gcc before 3.0 didn't do this.
 #define HAVE_WSTRING 1
