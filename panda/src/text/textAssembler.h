@@ -146,6 +146,7 @@ private:
     CT_squash_mirror_diag,
     CT_small_squash,
     CT_small_squash_mirror_y,
+    CT_small_squash_mirror_diag,
     CT_small,
     CT_small_rotate_270,
     CT_tiny,

@@ -1067,7 +1067,10 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
     tack_on_accent('~', CP_above, CT_none, min_vert, max_vert, centroid,
                    properties, placement) ||
       tack_on_accent('s', CP_above, CT_squash_mirror_diag, min_vert, max_vert, centroid,
+                     properties, placement) ||
+      tack_on_accent('S', CP_above, CT_small_squash_mirror_diag, min_vert, max_vert, centroid,
                      properties, placement);
+
     break;
 
   case UnicodeLatinMap::AT_tilde_below:
@@ -1283,6 +1286,21 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           max_accent[0] *= small_squash_accent_scale_x;
           t = min_accent[2];
           min_accent[2] = -max_accent[2] * small_squash_accent_scale_y;
+          max_accent[2] = -t * small_squash_accent_scale_y;
+          mirrored = true;
+          break;
+
+        case CT_small_squash_mirror_diag:
+          accent_mat =
+            LMatrix4f::rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f)) *
+            LMatrix4f::scale_mat(-small_squash_accent_scale_x, 1.0f, small_squash_accent_scale_y);
+          
+          // rotate min, max
+          t = min_accent[0];
+          u = max_accent[0];
+          min_accent[0] = min_accent[2] * -small_squash_accent_scale_x;
+          max_accent[0] = max_accent[2] * -small_squash_accent_scale_x;
+          min_accent[2] = -u * small_squash_accent_scale_y;
           max_accent[2] = -t * small_squash_accent_scale_y;
           mirrored = true;
           break;
