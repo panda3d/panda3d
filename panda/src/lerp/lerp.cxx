@@ -16,8 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "lerp_headers.h"
+#endif
+
 #pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "lerp.h"
+#endif
+
+#include <clockObject.h>
+#include <throw_event.h>
 
 TypeHandle Lerp::_type_handle;
 TypeHandle AutonomousLerp::_type_handle;
