@@ -354,12 +354,12 @@ uninstall-lib$[TARGET] :
 $[install_lib_dir]/lib$[TARGET]$[dllext].dll : $[so_dir]/lib$[TARGET]$[dllext].dll $[so_dir]/stamp
 #define local lib$[TARGET]$[dllext].dll
 #define dest $[install_lib_dir]
-	cp $[so_dir]/$[local] $[dest]
+	cp -f $[so_dir]/$[local] $[dest]
 
 $[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].lib $[so_dir]/stamp
 #define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
-	cp $[so_dir]/$[local] $[dest]
+	cp -f $[so_dir]/$[local] $[dest]
 
 #if $[igatescan]
 // Now, some additional rules to generate and compile the interrogate
@@ -377,7 +377,7 @@ $[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].l
 $[install_igatedb_dir]/$[igatedb] : $[so_dir]/$[igatedb] $[so_dir]/stamp
 #define local $[igatedb]
 #define dest $[install_igatedb_dir]
-	cp $[so_dir]/$[local] $[dest]
+	cp -f $[so_dir]/$[local] $[dest]
 
 lib$[TARGET]_igatescan = $[igatescan]
 $[so_dir]/$[igatedb] $[so_dir]/$[igateoutput] : $[filter-out %.c %.cxx,$[igatescan]] $[so_dir]/stamp
@@ -480,7 +480,7 @@ uninstall-lib$[TARGET] :
 $[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].lib $[st_dir]/stamp
 #define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
-	cp $[st_dir]/$[local] $[dest]
+	cp -f $[st_dir]/$[local] $[dest]
 
 #end static_lib_target ss_lib_target
 
@@ -515,7 +515,7 @@ uninstall-$[TARGET] :
 #define local $[TARGET]
 #define dest $[install_bin_dir]
 $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET] $[st_dir]/stamp
-	cp $[st_dir]/$[local] $[dest]
+	cp -f $[st_dir]/$[local] $[dest]
 
 #end sed_bin_target
 
@@ -563,7 +563,7 @@ uninstall-$[TARGET] :
 $[install_bin_dir]/$[TARGET].exe : $[st_dir]/$[TARGET].exe $[st_dir]/stamp
 #define local $[TARGET].exe
 #define dest $[install_bin_dir]
-	cp $[st_dir]/$[local] $[dest]
+	cp -f $[st_dir]/$[local] $[dest]
 
 #end bin_target
 
@@ -701,35 +701,35 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx] $[st
 $[install_bin_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_bin_dir]
-	cp $[local] $[dest]
+	cp -f $[local] $[dest]
 #end file
 
 #foreach file $[install_headers]
 $[install_headers_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_headers_dir]
-	cp $[local] $[dest]
+	cp -f $[local] $[dest]
 #end file
 
 #foreach file $[install_parser_inc]
 $[install_parser_inc_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_parser_inc_dir]
-	cp $[local] $[dest]
+	cp -f $[local] $[dest]
 #end file
 
 #foreach file $[install_data]
 $[install_data_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_data_dir]
-	cp $[local] $[dest]
+	cp -f $[local] $[dest]
 #end file
 
 #foreach file $[install_config]
 $[install_config_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_config_dir]
-	cp $[local] $[dest]
+	cp -f $[local] $[dest]
 #end file
 
 
@@ -832,7 +832,7 @@ $[install_headers_dir] :
 $[install_headers_dir]/$[CONFIG_HEADER] : $[CONFIG_HEADER]
 #define local $[CONFIG_HEADER]
 #define dest $[install_headers_dir]
-	cp $[local] $[dest]
+	cp -f $[local] $[dest]
 #endif
 
 #end Makefile

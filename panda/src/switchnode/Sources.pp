@@ -13,6 +13,8 @@
   #define INSTALL_HEADERS \
     LODNode.I LODNode.h sequenceNode.h
 
+  #define IGATESCAN all
+
 #end lib_target
 
 #begin test_bin_target
