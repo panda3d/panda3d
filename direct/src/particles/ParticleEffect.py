@@ -49,8 +49,7 @@ class ParticleEffect(NodePath):
 	self.forceGroupDict[forceGroup.getName()] = forceGroup
 
 	# Associate the force group with all particles
-	flist = forceGroup.asList()
-	for f in flist:
+	for f in forceGroup:
 	    self.addForce(f)
 
     def addForce(self, force):
@@ -65,8 +64,7 @@ class ParticleEffect(NodePath):
 	self.forceGroupDict[forceGroup.getName()] = None
 
 	# Remove forces from all particles
-	flist = forceGroup.asList()
-	for f in flist:
+	for f in forceGroup:
 	    self.removeForce(f)
 
     def removeForce(self, force):
@@ -81,8 +79,7 @@ class ParticleEffect(NodePath):
 
 	# Associate all forces in all force groups with the particles
 	for fg in self.forceGroupDict.values():
-	    flist = fg.asList()
-	    for f in flist:
+	    for f in fg:
 		particles.addForce(f)
 
     def removeParticles(self, particles):
@@ -92,8 +89,7 @@ class ParticleEffect(NodePath):
 	
 	# Remove all forces from the particles
 	for fg in self.forceGroupDict.values():
-	    flist = fg.asList()
-	    for f in flist:
+	    for f in fg:
 		particles.removeForce(f)
 
     def getParticlesList(self):

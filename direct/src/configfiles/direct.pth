@@ -2,6 +2,7 @@ lib
 lib/py
 src/actor
 src/directtools
+src/directdevices
 src/directnotify
 src/distributed
 src/ffi

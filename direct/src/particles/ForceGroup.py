@@ -71,6 +71,8 @@ class ForceGroup(DirectObject):
     # Utility functions 
     def __getitem__(self, index):
 	"""__getItem__(self, index)"""
+        if (index < 0) | (index > self.node.getNumForces()):
+            raise IndexError
 	return self.node.getForce(index)
 
     def __len__(self):

@@ -6,6 +6,7 @@ from DirectGrid import *
 from DirectGeometry import *
 from DirectLights import *
 from DirectSessionPanel import *
+from DirectDeviceManager import *
 import Placer
 import OnscreenText
 import types
@@ -49,6 +50,12 @@ class DirectSession(PandaObject):
         useDirectRenderStyle(self.readout)
         # self.readout.textNode.setCardColor(0.5, 0.5, 0.5, 0.5)
         self.readout.reparentTo( hidden )
+
+        # Create a vrpn client vrpn-server or default
+        if base.config.GetBool('want-vrpn', 0):
+            self.deviceManager = DirectDeviceManager()
+        else:
+            self.deviceManager = None
 
         self.fControl = 0
         self.fAlt = 0

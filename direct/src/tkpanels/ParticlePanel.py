@@ -1627,7 +1627,7 @@ class ParticlePanel(AppShell):
                               forceGroup.getName())
         self.forcePage = self.forceGroupNotebook.add(self.forcePageName)
         self.forcePagesDict[self.forcePageName] = self.forcePage
-        for force in forceGroup.asList():
+        for force in forceGroup:
             self.addForceWidget(forceGroup, force)
 
     def addForceWidget(self, forceGroup, force):
@@ -1635,7 +1635,7 @@ class ParticlePanel(AppShell):
         pageName = self.forcePageName
         # How many forces of the same type in the force group object
         count = 0
-        for f in forceGroup.asList():
+        for f in forceGroup:
             if f.getClassType().eq(force.getClassType()):
                 count += 1
         if isinstance(force, LinearVectorForce):
