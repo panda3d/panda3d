@@ -488,6 +488,9 @@ class SelectionQueue(CollisionHandlerQueue):
         v.normalize()
         return v.dot(n) >= 0
 
+    def findNextCollisionEntry(self, skipFlags = SKIP_NONE):
+        return self.findCollisionEntry(skipFlags, self.index + 1)
+
     def findCollisionEntry(self, skipFlags = SKIP_NONE, startIndex = 0 ):
         # Init self.index and self.entry
         self.setCurrentIndex(-1)
@@ -658,10 +661,17 @@ class SelectionSphere(SelectionQueue):
         # If dot product of collision point surface normal and
         # ray from sphere origin to collision point is positive, we are
         # looking at the backface of the polygon
+        ip = entry.getFromIntersectionPoint()
+        c = entry.getFrom().getCenter()
+        n = entry.getFromSurfaceNormal()
         v = Vec3(entry.getFromIntersectionPoint() -
                  entry.getFrom().getCenter())
-        n = entry.getFromSurfaceNormal()
         # Normalize and check angle between to vectors
+        print '(%0.2f, %0.2f, %0.2f), (%0.2f, %0.2f, %0.2f), (%0.2f, %0.2f, %0.2f), %0.2f' %(ip[0],ip[1],ip[2],c[0],c[1],c[2],n[0],n[1],n[2], v.dot(n))
+        if v.length() < 0.05:
+            # Points almost on top of each other, 
+            # reject face (treat as backfacing)
+            return 1
         v.normalize()
         return v.dot(n) >= 0
 
