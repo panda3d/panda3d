@@ -208,6 +208,9 @@
      #define AUDIO_IPATH $[RAD_MSS_IPATH]
      #define AUDIO_LPATH $[RAD_MSS_LPATH]
      #define AUDIO_LIBS $[RAD_MSS_LIBS]
+     
+     // Miles will play mp3, so we dont need the mpg123 lib
+     #define USE_MPG123 
 #endif   
 
 #if $[HAVE_AUDIO]
@@ -243,6 +246,7 @@
      $[or $[not $[DIRECTORY_IF_IPC]],$[HAVE_IPC]], \
      $[or $[not $[DIRECTORY_IF_NET]],$[HAVE_NET]], \
      $[or $[not $[DIRECTORY_IF_AUDIO]],$[HAVE_AUDIO]], \
+     $[or $[not $[DIRECTORY_IF_MPG123]],$[USE_MPG123]], \
      $[or $[not $[DIRECTORY_IF_INTERROGATE]],$[HAVE_INTERROGATE]], \
       1 ]
 
@@ -273,6 +277,7 @@
      $[or $[not $[TARGET_IF_IPC]],$[HAVE_IPC]], \
      $[or $[not $[TARGET_IF_NET]],$[HAVE_NET]], \
      $[or $[not $[TARGET_IF_AUDIO]],$[HAVE_AUDIO]], \
+     $[or $[not $[TARGET_IF_MPG123]],$[USE_MPG123]], \
       1 ]
 
 // This takes advantage of the above two variables to get the actual

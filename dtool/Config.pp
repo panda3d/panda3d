@@ -322,6 +322,9 @@
 #define RAD_MSS_LIBS Mss32
 #defer HAVE_RAD_MSS $[libtest $[RAD_MSS_LPATH],$[RAD_MSS_LIBS]]
 
+// Is Panda using the mpg123 library to play mp3, requiring it be built?
+#define USE_MPG123 1
+
 // Is Gtk-- installed?  How should we run the gtkmm-config program?
 // This matters only to programs in PANDATOOL.
 #define GTKMM_CONFIG gtkmm-config

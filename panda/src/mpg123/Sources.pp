@@ -1,3 +1,5 @@
+#define DIRECTORY_IF_MPG123 yes
+
 #begin static_lib_target
   #define TARGET mpg123
   #define SOURCES \
