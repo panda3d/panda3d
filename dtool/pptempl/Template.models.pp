@@ -34,7 +34,7 @@
 
 #define build_models \
    $[SOURCES(flt_egg):%.flt=%.egg] \
-   $[SOURCES(lwo_egg):%.lwo=%.egg] \
+   $[patsubst %.lwo %.LWO,%.egg,$[SOURCES(lwo_egg)]] \
    $[forscopes soft_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]]
 
 #define build_anims \
@@ -160,7 +160,7 @@ $[TAB]flt2egg $[FLT2EGG_OPTS] -o $[target] $[source]
 // Egg file generation from Lightwave files.
 #forscopes lwo_egg
   #foreach lwo $[SOURCES]
-    #define target $[lwo:%.lwo=%.egg]
+    #define target $[patsubst %.lwo %.LWO,%.egg,$[lwo]]
     #define source $[lwo]
 $[target] : $[source]
 $[TAB]lwo2egg $[LWO2EGG_OPTS] -o $[target] $[source]
