@@ -21,10 +21,6 @@ def getTimeFrame():
 
     # Ask for the time last frame
     t = globalClock.getTime()
-
-    # Set the clock to have last frame's time in case we were
-    # Paused at the prompt for a long time
-    globalClock.setTime(t)
     
     # Get the new frame count
     f = globalClock.getFrameCount()
@@ -259,16 +255,24 @@ class TaskManager:
         return len(self.taskList)
 
     def run(self):
+
+        # Set the clock to have last frame's time in case we were
+        # Paused at the prompt for a long time
+        t = globalClock.getTime()
+        globalClock.setTime(t)
+        
         self.running = 1
         while self.running:
             try:
-                startTime = time.time()
+                startTime = globalClock.getRealTime()
                 self.step()
-                finishTime = time.time()
+                finishTime = globalClock.getRealTime()
                 # Max out the frame rate so we do not starve the cpu
                 if (maxFps > 0):
                     dt = finishTime - startTime
-                    time.sleep(max(0, (1.0/maxFps)-dt))
+                    length = (1.0/maxFps)-dt
+                    if (length > 0):
+                        time.sleep(length)
             except KeyboardInterrupt:
                 self.stop()
             except:
