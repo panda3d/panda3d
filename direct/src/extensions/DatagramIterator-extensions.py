@@ -24,6 +24,28 @@
                 retVal = self.getFloat64()
             elif subatomicType == STString:
                 retVal = self.getString()
+            elif subatomicType == STBlob:
+                retVal = self.getString()
+            elif subatomicType == STInt16array:
+                len = self.getUint16() >> 1
+                retVal = []
+                for i in range(len):
+                    retVal.append(self.getInt16())
+            elif subatomicType == STInt32array:
+                len = self.getUint16() >> 2
+                retVal = []
+                for i in range(len):
+                    retVal.append(self.getInt32())
+            elif subatomicType == STUint16array:
+                len = self.getUint16() >> 1
+                retVal = []
+                for i in range(len):
+                    retVal.append(self.getUint16())
+            elif subatomicType == STUint32array:
+                len = self.getUint16() >> 2
+                retVal = []
+                for i in range(len):
+                    retVal.append(self.getUint32())
             else:
                 raise Exception("Error: No such type as: " + str(subAtomicType))
         else:
@@ -48,11 +70,33 @@
                 retVal = self.getFloat64()
             elif subatomicType == STString:
                 retVal = self.getString()
+            elif subatomicType == STBlob:
+                retVal = self.getString()
+            elif subatomicType == STInt16array:
+                len = self.getUint16() >> 1
+                retVal = []
+                for i in range(len):
+                    retVal.append(self.getInt16()/float(divisor))
+            elif subatomicType == STInt32array:
+                len = self.getUint16() >> 2
+                retVal = []
+                for i in range(len):
+                    retVal.append(self.getInt32()/float(divisor))
+            elif subatomicType == STUint16array:
+                len = self.getUint16() >> 1
+                retVal = []
+                for i in range(len):
+                    retVal.append(self.getUint16()/float(divisor))
+            elif subatomicType == STUint32array:
+                len = self.getUint16() >> 2
+                retVal = []
+                for i in range(len):
+                    retVal.append(self.getUint32()/float(divisor))
             else:
                 raise Exception("Error: No such type as: " + str(subAtomicType))
 
 
-            
+
         return retVal
 
-                
+
