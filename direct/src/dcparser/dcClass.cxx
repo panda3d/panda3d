@@ -357,7 +357,7 @@ pack_required_field(Datagram &dg, PyObject *distobj, DCField *field) const {
     return;
   }
   
-  if (set_name.substr(0, 3) != "set") {
+  if (set_name.substr(0, 3) != string("set")) {
     // This is required to suit our set/get mangling convention.
     ostringstream strm;
     strm << "Required field " << set_name << " does not begin with 'set'";
