@@ -27,6 +27,11 @@ main(int argc, char *argv[]) {
   int source_file_length = read_stream.tellg();
   read_stream.seekg(0, ios::beg);
 
+  if (source_file_length == 0) {
+    cerr << "zero length file: " << source_file << endl;
+    return 1;
+  }
+
   // Open destination file
   ofstream write_stream;
   dest_file.set_binary();

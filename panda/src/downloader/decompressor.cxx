@@ -261,6 +261,12 @@ decompress(Filename &source_file, Filename &dest_file) {
   // Determine source file length
   read_stream.seekg(0, ios::end);
   int source_file_length = read_stream.tellg();
+  if (source_file_length == 0) {
+    downloader_cat.warning()
+      << "Decompressor::decompress() - Zero length file: "
+      << source_file << endl;
+    return true;
+  }
   read_stream.seekg(0, ios::beg);
 
   // Open destination file 
