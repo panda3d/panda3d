@@ -196,6 +196,8 @@ PUBLISHED:
   void reparent_to(const qpNodePath &other, int sort = 0);
   void wrt_reparent_to(const qpNodePath &other, int sort = 0);
   qpNodePath instance_to(const qpNodePath &other, int sort = 0) const;
+  qpNodePath instance_under_node(const qpNodePath &other, const string &name,
+                                 int sort = 0) const;
   qpNodePath copy_to(const qpNodePath &other, int sort = 0) const;
   qpNodePath attach_new_node(PandaNode *node, int sort = 0) const;
   INLINE qpNodePath attach_new_node(const string &name, int sort = 0) const;

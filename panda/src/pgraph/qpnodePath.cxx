@@ -268,6 +268,22 @@ instance_to(const qpNodePath &other, int sort) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::instance_under_node
+//       Access: Published
+//  Description: Behaves like instance_to(), but implicitly creates a
+//               new node to instance the geometry under, and returns a
+//               NodePath to that new node.  This allows the
+//               programmer to set a unique state and/or transform on
+//               this instance.
+////////////////////////////////////////////////////////////////////
+qpNodePath qpNodePath::
+instance_under_node(const qpNodePath &other, const string &name, int sort) const {
+  qpNodePath new_node = other.attach_new_node(name, sort);
+  instance_to(new_node);
+  return new_node;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::copy_to
 //       Access: Published
 //  Description: Functions exactly like instance_to(), except a deep
@@ -275,11 +291,6 @@ instance_to(const qpNodePath &other, int sort) const {
 //               descendents, which is then parented to the indicated
 //               node.  A qpNodePath to the newly created copy is
 //               returned.
-//
-//               Certain kinds of nodes (like a Camera, for instance,
-//               whose pointer value is important) may not be copied;
-//               if one of these is encountered, the node will be
-//               instanced, instead of actually copied.
 ////////////////////////////////////////////////////////////////////
 qpNodePath qpNodePath::
 copy_to(const qpNodePath &other, int sort) const {
