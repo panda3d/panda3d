@@ -510,7 +510,7 @@ do_rebuild() {
 
   if (flatten_text) {
     SceneGraphReducer gr(RenderRelation::get_class_type());
-    gr.apply_transitions(_root);
+    gr.apply_transitions(_root_arc);
     gr.flatten(_root, true);
   }
 }

@@ -47,13 +47,13 @@ extern EXPCL_PANDA UpdateSeq &last_graph_update(TypeHandle graph_type);
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NodeRelation : public TypedWriteableReferenceCount, public BoundedObject {
 public:
-  INLINE NodeRelation(Node *from, Node *to, int sort, TypeHandle type);
+  INLINE NodeRelation(Node *from, Node *to, int sort, TypeHandle graph_type);
 
 protected:
   // Normally, this should only be used from derived classes for
   // passing to the factory.  Don't attempt to create an unattached
   // arc directly.
-  INLINE NodeRelation(TypeHandle type);
+  INLINE NodeRelation(TypeHandle graph_type);
 
   //make_NodeRelation needs to have a construct that takes nothing
   //since it creates the object before it has any information
@@ -80,12 +80,14 @@ PUBLISHED:
   INLINE Node *get_parent() const;
   INLINE Node *get_child() const;
   INLINE int get_sort() const;
+  INLINE TypeHandle get_graph_type() const;
 
   INLINE void change_parent(Node *parent);
   INLINE void change_parent(Node *parent, int sort);
   INLINE void change_child(Node *child);
   INLINE void change_parent_and_child(Node *parent, Node *child);
   INLINE void set_sort(int sort);
+  INLINE void set_graph_type(TypeHandle graph_type);
 
   INLINE PT(NodeTransition) set_transition(TypeHandle handle, 
 					   NodeTransition *trans);
@@ -141,7 +143,7 @@ private:
   Node *_parent;
   PT_Node _child;
   int _sort;
-  TypeHandle _type;
+  TypeHandle _graph_type;
   bool _attached;
 
 private:
@@ -193,24 +195,18 @@ protected:
   virtual void propagate_stale_bound();
   virtual void recompute_bound();
 
+PUBLISHED:
+  INLINE static TypeHandle get_class_type();
+  INLINE static TypeHandle get_stashed_type();
+
 public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    TypedWriteableReferenceCount::init_type();
-    BoundedObject::init_type();
-    register_type(_type_handle, "NodeRelation",
-		  TypedWriteableReferenceCount::get_class_type(),
-		  BoundedObject::get_class_type());
-  }
-  virtual TypeHandle get_type() const {
-    return get_class_type();
-  }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  static void init_type();
+  virtual TypeHandle get_type() const;
+  virtual TypeHandle force_init_type();
 
 private:
   static TypeHandle _type_handle;
+  static TypeHandle _stashed_type_handle;
 
   friend INLINE void remove_arc(NodeRelation *arc);
   friend class Node;

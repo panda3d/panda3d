@@ -39,3 +39,13 @@ INLINE void RenderRelation::
 register_with_factory() {
   get_factory().register_factory(get_class_type(), make_arc);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderRelation::get_class_type
+//       Access: Public, Static
+//  Description: Returns the TypeHandle associated with this type.
+////////////////////////////////////////////////////////////////////
+INLINE TypeHandle RenderRelation::
+get_class_type() {
+  return _type_handle;
+}

@@ -98,3 +98,43 @@ register_with_read_factory(void)
 {
   BamReader::get_factory()->register_factory(get_class_type(), make_RenderRelation);
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderRelation::init_type
+//       Access: Public, Static
+//  Description: Initializes the TypeHandles associated with this
+//               class.
+////////////////////////////////////////////////////////////////////
+void RenderRelation::
+init_type() {
+  NodeRelation::init_type();
+  register_type(_type_handle, "RenderRelation",
+		NodeRelation::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderRelation::get_type
+//       Access: Public, Virtual
+//  Description: Returns the particular type represented by this
+//               instance of the class.
+////////////////////////////////////////////////////////////////////
+TypeHandle RenderRelation::
+get_type() const {
+  return get_class_type();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderRelation::force_init_type
+//       Access: Public, Virtual
+//  Description: Called by the TypeHandle system when it is detected
+//               that init_type() was not called for some reason.
+//               This is only called in an error situation, and it
+//               attempts to remedy the problem so we can recover and
+//               continue.
+////////////////////////////////////////////////////////////////////
+TypeHandle RenderRelation::
+force_init_type() {
+  init_type();
+  return get_class_type(); 
+}

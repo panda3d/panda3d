@@ -36,7 +36,7 @@ public:
     TT_texture_matrix  = 0x004,
   };
 
-  void apply_transitions(Node *root, int transition_types = ~0);
+  void apply_transitions(NodeRelation *arc, int transition_types = ~0);
 
 protected:
   class AccumulatedTransitions {

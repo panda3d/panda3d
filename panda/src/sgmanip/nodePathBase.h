@@ -32,8 +32,14 @@ protected:
   // Most of the interesting part of NodePathBase is inherited from
   // ArcChain.  This gives us a sharable linked list of arcs.
 
-  // The _top_node pointer is only used when the NodePath is a
-  // singleton.  If there is at least one arc, this is ignored.
+  // We also add an explicit pointer to the top node in the chain,
+  // mainly to allow us to define a NodePath containing a single node,
+  // even if the chain of arcs is empty.
+
+  // If the chain is nonempty, this might still be useful (int that it
+  // keeps a reference count to the top node), but this is problematic
+  // since it will not automatically update if our parent is changed
+  // without our knowledge.
   PT_Node _top_node;
 
   TypeHandle _graph_type;

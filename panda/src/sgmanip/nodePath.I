@@ -98,6 +98,7 @@ INLINE NodePath::
 NodePath(const ArcChain &chain, TypeHandle graph_type) :
   NodePathBase(chain, graph_type)
 {
+  reset_top_node();
   nassertv(verify_connectivity());
 }
 
@@ -260,6 +261,18 @@ get_num_nodes() const {
     return 0;
   }
   return get_num_arcs() + 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_top_node
+//       Access: Public
+//  Description: Returns the top node of the path, or NULL if the path
+//               is empty.
+////////////////////////////////////////////////////////////////////
+INLINE Node *NodePath::
+get_top_node() {
+  reset_top_node();
+  return _top_node;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1409,6 +1422,13 @@ show() {
 //       Access: Public
 //  Description: Puts a PruneTransition on this bottom arc so that the
 //               geometry at this level and below will be invisible.
+//
+//               However, it will remain part of the scene graph, and
+//               will still be counted in its parent's bounding
+//               volume; furthermore, traversals like the collision
+//               traversal will still visit the node.
+//
+//               See stash() for a more thorough way to hide the node.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 hide() {
@@ -1438,4 +1458,62 @@ show_collision_solids() {
 INLINE void NodePath::
 hide_collision_solids() {
   find_all_matches("**/+CollisionNode").hide();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::is_hidden
+//       Access: Public
+//  Description: Returns true if some arc above this bottom node has
+//               been set to 'hide', false if it should be visible.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+is_hidden() const {
+  return !get_hidden_ancestor().is_empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::stash
+//       Access: Public
+//  Description: A more thorough version of hide(), this effectively
+//               removes the bottom node from the scene graph--it does
+//               not appear in any traversals, rendering or otherwise,
+//               and cannot be located again via NodePath::find().
+//               The node is also removed from its parents' bounding
+//               volume.
+//
+//               However, the node is still associated with its
+//               parent, and will be removed if the parent is removed,
+//               and it can be revealed again by a future call to
+//               unstash().
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+stash() {
+  nassertv(has_arcs());
+  nassertv(_head != (ArcComponent *)NULL);
+
+  _head->_arc->set_graph_type(NodeRelation::get_stashed_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::unstash
+//       Access: Public
+//  Description: Reveals a node that was previously hidden via stash().
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+unstash() {
+  nassertv(has_arcs());
+  nassertv(_head != (ArcComponent *)NULL);
+
+  _head->_arc->set_graph_type(_head->_arc->get_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::is_stashed
+//       Access: Public
+//  Description: Returns true if some arc above this bottom node has
+//               been set to 'stash', false if it should be visible.
+////////////////////////////////////////////////////////////////////
+INLINE bool NodePath::
+is_stashed() const {
+  return !get_stashed_ancestor().is_empty();
 }

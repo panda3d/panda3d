@@ -14,6 +14,7 @@
 #include <vector>
 
 class Node;
+class NodeRelation;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FindApproxPath
@@ -27,19 +28,20 @@ public:
   INLINE FindApproxPath();
 
   bool add_string(const string &str_path);
-  bool add_component(const string &str_component);
+  bool add_component(string str_component);
 
-  INLINE void add_match_name(const string &name);
-  INLINE void add_match_name_glob(const string &glob);
-  INLINE void add_match_exact_type(TypeHandle type);
-  INLINE void add_match_inexact_type(TypeHandle type);
-  INLINE void add_match_one();
-  INLINE void add_match_many();
-  INLINE void add_match_pointer(Node *pointer);
+  INLINE void add_match_name(const string &name, int flags);
+  INLINE void add_match_name_glob(const string &glob, int flags);
+  INLINE void add_match_exact_type(TypeHandle type, int flags);
+  INLINE void add_match_inexact_type(TypeHandle type, int flags);
+  INLINE void add_match_one(int flags);
+  INLINE void add_match_many(int flags);
+  INLINE void add_match_pointer(Node *pointer, int flags);
 
   INLINE int get_num_components() const;
   INLINE bool is_component_match_many(int index) const;
-  INLINE bool matches_component(int index, Node *node) const;
+  INLINE bool matches_component(int index, NodeRelation *arc) const;
+  INLINE bool matches_stashed(int index) const;
 
   void output(ostream &out) const;
   INLINE void output_component(ostream &out, int index) const;
@@ -58,16 +60,20 @@ private:
     CT_match_many,
     CT_match_pointer
   };
+  enum ComponentFlags {
+    CF_stashed        = 0x001,
+  };
 
   class Component {
   public:
-    bool matches(Node *node) const;
+    bool matches(NodeRelation *arc) const;
     void output(ostream &out) const;
 
     ComponentType _type;
     string _name;
     TypeHandle _type_handle;
     Node *_pointer;
+    int _flags;
   };
 
   typedef vector<Component> Path;

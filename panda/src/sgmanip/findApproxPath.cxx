@@ -9,6 +9,7 @@
 #include <globPattern.h>
 #include <node.h>
 #include <namedNode.h>
+#include <nodeRelation.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -18,7 +19,8 @@
 //               component, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool FindApproxPath::Component::
-matches(Node *node) const {
+matches(NodeRelation *arc) const {
+  Node *node = arc->get_child();
   string node_name;
 
   switch (_type) {
@@ -113,12 +115,22 @@ add_string(const string &str_path) {
 //               the string component was in some way invalid.
 ////////////////////////////////////////////////////////////////////
 bool FindApproxPath::
-add_component(const string &str_component) {
+add_component(string str_component) {
+  int flags = 0;
+  if (str_component.size() >= 2 && str_component.substr(0, 2) == "@@") {
+    flags |= CF_stashed;
+    str_component = str_component.substr(2);
+  }
+
   if (str_component == "*") {
-    add_match_one();
+    add_match_one(flags);
 
   } else if (str_component == "**") {
-    add_match_many();
+    if ((flags & CF_stashed) != 0) {
+      sgmanip_cat.warning()
+	<< "@@** is ambiguous; use @@*/** or **/@@* instead.\n";
+    }
+    add_match_many(flags);
 
   } else if (!str_component.empty() && str_component[0] == '-') {
     string type_name = str_component.substr(1);
@@ -130,7 +142,7 @@ add_component(const string &str_component) {
       return false;
 
     } else {
-      add_match_exact_type(handle);
+      add_match_exact_type(handle, flags);
     }
 
   } else if (!str_component.empty() && str_component[0] == '+') {
@@ -143,11 +155,11 @@ add_component(const string &str_component) {
       return false;
 
     } else {
-      add_match_inexact_type(handle);
+      add_match_inexact_type(handle, flags);
     }
 
   } else {
-    add_match_name_glob(str_component);
+    add_match_name_glob(str_component, flags);
   }
 
   return true;

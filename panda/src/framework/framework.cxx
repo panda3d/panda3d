@@ -738,7 +738,7 @@ void event_C(CPT_Event) {
 void event_N(CPT_Event) {
   nout << "Reducing scene graph.\n";
   SceneGraphReducer gr(RenderRelation::get_class_type());
-  gr.apply_transitions(root);
+  gr.apply_transitions(first_arc);
   int num_reduced = gr.flatten(root, true);
   nout << "Removed " << num_reduced << " arcs.\n";
 }
@@ -1120,8 +1120,8 @@ int framework_main(int argc, char *argv[]) {
   first_arc = new RenderRelation(render, root, 100);
 
   if (files.empty() && framework.GetBool("have-omnitriangle", true)) {
-    // The user did not specify an file.  Create some default
-    // geometry.
+    // The user did not specify a model file to load.  Create some
+    // default geometry.
       
     PTA_Vertexf coords;
     PTA_TexCoordf uvs;

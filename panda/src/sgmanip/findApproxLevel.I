@@ -45,6 +45,17 @@ operator = (const FindApproxLevelEntry &copy) {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FindApproxLevelEntry::next_is_stashed
+//       Access: Public
+//  Description: Returns true if the next node matched by this entry
+//               must be a stashed node, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool FindApproxLevelEntry::
+next_is_stashed() const {
+  return _approx_path.matches_stashed(_i);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FindApproxLevelEntry::is_solution
 //       Access: Public
 //  Description: Returns true if this entry represents a solution to

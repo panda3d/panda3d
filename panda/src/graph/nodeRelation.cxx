@@ -12,6 +12,7 @@
 #include <algorithm>
 
 TypeHandle NodeRelation::_type_handle;
+TypeHandle NodeRelation::_stashed_type_handle;
 
 Factory<NodeRelation> *NodeRelation::_factory = NULL;
 
@@ -507,8 +508,8 @@ attach() {
 
   _attached = true;
 
-  DownRelationPointers &parent_list = _parent->_children[_type];
-  UpRelationPointers &child_list = _child->_parents[_type];
+  DownRelationPointers &parent_list = _parent->_children[_graph_type];
+  UpRelationPointers &child_list = _child->_parents[_graph_type];
   
   bool inserted_one = internal_insert_arc(parent_list, this);
   bool inserted_two = internal_insert_arc(child_list, this);
@@ -516,7 +517,7 @@ attach() {
 
   // Blow out the cache and increment the current update sequence.
   _net_transitions.clear();
-  _last_update = ++last_graph_update(_type);
+  _last_update = ++last_graph_update(_graph_type);
 
   // If we have just added a new parent arc to a node that previously
   // had exactly one parent, we also need to set the update sequence
@@ -557,8 +558,8 @@ detach() {
 
   force_bound_stale();
 
-  DownRelationPointers &parent_list = _parent->_children[_type];
-  UpRelationPointers &child_list = _child->_parents[_type];
+  DownRelationPointers &parent_list = _parent->_children[_graph_type];
+  UpRelationPointers &child_list = _child->_parents[_graph_type];
 
   bool removed_one = internal_remove_arc(parent_list, this);
   bool removed_two = internal_remove_arc(child_list, this);
@@ -570,7 +571,7 @@ detach() {
 
   // Blow out the cache and increment the current update sequence.
   _net_transitions.clear();
-  _last_update = ++last_graph_update(_type);
+  _last_update = ++last_graph_update(_graph_type);
 
   // If we have just removed a parent arc from a node, leaving exactly
   // one parent, we also need to set the update sequence
@@ -578,6 +579,16 @@ detach() {
   // changed the nature of the node from instanced to non-instanced.
   if (child_list.size() == 1) {
     child_list[0]->_last_update = _last_update;
+  }
+
+  // If we have completely emptied the parent or child lists, remove
+  // the entry for this graph type from the node, as a small render
+  // optimization.
+  if (parent_list.empty()) {
+    _parent->_children.erase(_graph_type);
+  }
+  if (child_list.empty()) {
+    _child->_parents.erase(_graph_type);
   }
 
   return result;
@@ -601,7 +612,7 @@ detach_below() {
 
   force_bound_stale();
 
-  bool removed = internal_remove_arc(_child->_parents[_type], this);
+  bool removed = internal_remove_arc(_child->_parents[_graph_type], this);
 
   nassertr(removed, result);
 
@@ -609,7 +620,7 @@ detach_below() {
 
   // Blow out the cache and increment the current update sequence.
   _net_transitions.clear();
-  _last_update = ++last_graph_update(_type);
+  _last_update = ++last_graph_update(_graph_type);
 
   return result;
 }
@@ -631,7 +642,7 @@ changed_transition(TypeHandle trans_type) {
   if (_net_transitions != (NodeTransitionCache *)NULL) {
     _net_transitions->clear_transition(trans_type);
   }
-  _last_update = ++last_graph_update(get_type());
+  _last_update = ++last_graph_update(_graph_type);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -648,7 +659,7 @@ propagate_stale_bound() {
   nassertv(node != (Node*)NULL);
 
   UpRelations::const_iterator uri;
-  uri = node->_parents.find(get_type());
+  uri = node->_parents.find(_graph_type);
   if (uri != node->_parents.end()) {
     const UpRelationPointers &urp = (*uri).second;
     
@@ -681,7 +692,7 @@ recompute_bound() {
   child_volumes.push_back(&node->get_bound());
 
   DownRelations::const_iterator dri;
-  dri = node->_children.find(get_type());
+  dri = node->_children.find(_graph_type);
   if (dri != node->_children.end()) {
     const DownRelationPointers &drp = (*dri).second;
     
@@ -717,7 +728,7 @@ void NodeRelation::
 write_datagram(BamWriter *manager, Datagram &me)
 {
   //Write out the "dynamic" type
-  manager->write_handle(me, _type);
+  manager->write_handle(me, _graph_type);
 
   //We should always be attached if we are trying to write out
   nassertv(_attached);
@@ -769,7 +780,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager)
 
     // We must explicitly add the arc to its child node, but not to
     // its parent node.
-    UpRelationPointers &child_list = _child->_parents[_type];
+    UpRelationPointers &child_list = _child->_parents[_graph_type];
     bool inserted = internal_insert_arc(child_list, this);
     nassertr(inserted, _num_transitions + 2);
     _attached = true;
@@ -785,8 +796,9 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager)
     //at old code
     if (plist[i] == TypedWriteable::Null)
     {
-      graph_cat->warning() << get_type().get_name() 
-			   << "Ignoring null Transition" << endl;
+      graph_cat->warning() 
+	<< get_type().get_name() 
+	<< ": Ignoring null Transition" << endl;
     }
     else
     {
@@ -829,7 +841,7 @@ make_NodeRelation(const FactoryParams &params)
 void NodeRelation::
 fillin(DatagramIterator& scan, BamReader* manager)
 {
-  _type = manager->read_handle(scan);
+  _graph_type = manager->read_handle(scan);
   //Read in my parent
   manager->read_pointer(scan, this);
   //Read in my child
@@ -854,4 +866,47 @@ void NodeRelation::
 register_with_read_factory(void)
 {
   BamReader::get_factory()->register_factory(get_class_type(), make_NodeRelation);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::init_type
+//       Access: Public, Static
+//  Description: Initializes the TypeHandles associated with this
+//               class.
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+init_type() {
+  TypedWriteableReferenceCount::init_type();
+  BoundedObject::init_type();
+  register_type(_type_handle, "NodeRelation",
+		TypedWriteableReferenceCount::get_class_type(),
+		BoundedObject::get_class_type());
+  register_type(_stashed_type_handle, "StashedNodeRelation",
+		get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::get_type
+//       Access: Public, Virtual
+//  Description: Returns the particular type represented by this
+//               instance of the class.
+////////////////////////////////////////////////////////////////////
+TypeHandle NodeRelation::
+get_type() const {
+  return get_class_type();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::force_init_type
+//       Access: Public, Virtual
+//  Description: Called by the TypeHandle system when it is detected
+//               that init_type() was not called for some reason.
+//               This is only called in an error situation, and it
+//               attempts to remedy the problem so we can recover and
+//               continue.
+////////////////////////////////////////////////////////////////////
+TypeHandle NodeRelation::
+force_init_type() {
+  init_type();
+  return get_class_type(); 
 }

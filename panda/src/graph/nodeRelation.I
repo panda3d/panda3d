@@ -10,9 +10,9 @@
 //               attaches it.
 ////////////////////////////////////////////////////////////////////
 INLINE NodeRelation::
-NodeRelation(Node *parent, Node *to, int sort, TypeHandle type) :
+NodeRelation(Node *parent, Node *to, int sort, TypeHandle graph_type) :
   _parent(parent), _child(to), _sort(sort), 
-  _type(type), _num_transitions(0)
+  _graph_type(graph_type), _num_transitions(0)
 {
   _top_subtree = NULL;
   _attached = false;
@@ -29,8 +29,8 @@ NodeRelation(Node *parent, Node *to, int sort, TypeHandle type) :
 //               general, attempt to create an unattached arc.
 ////////////////////////////////////////////////////////////////////
 INLINE NodeRelation::
-NodeRelation(TypeHandle type) :
-  _type(type)
+NodeRelation(TypeHandle graph_type) :
+  _graph_type(graph_type)
 {
   _parent = NULL;
   _child = NULL;
@@ -49,14 +49,13 @@ NodeRelation(TypeHandle type) :
 //               unattached arc.
 ////////////////////////////////////////////////////////////////////
 INLINE NodeRelation::
-NodeRelation(void)
-{
+NodeRelation(void) {
   _parent = NULL;
   _child = NULL;
   _sort = 0;
   _top_subtree = NULL;
   _attached = false;
-  _type = get_class_type();
+  _graph_type = get_class_type();
   _num_transitions = 0;
 }
 
@@ -125,6 +124,20 @@ get_sort() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::get_graph_type
+//       Access: Public
+//  Description: Returns the type of graph this arc represents.  This
+//               is normally the same value as get_type(), i.e. the
+//               class type of the arc, but it may be set to any type.
+//               A node may simultaneously have many arcs of different
+//               types.
+////////////////////////////////////////////////////////////////////
+INLINE TypeHandle NodeRelation::
+get_graph_type() const {
+  return _graph_type;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeRelation::change_parent
 //       Access: Public
 //  Description: Changes the parent of the arc to a different node.
@@ -186,6 +199,20 @@ INLINE void NodeRelation::
 set_sort(int sort) {
   PT(NodeRelation) hold_arc = detach();
   _sort = sort;
+  attach();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::set_graph_type
+//       Access: Public
+//  Description: Changes the graph type of the arc.  This moves the
+//               arc into a totally different graph; it may now be
+//               detected only by a special traversal.
+////////////////////////////////////////////////////////////////////
+INLINE void NodeRelation::
+set_graph_type(TypeHandle graph_type) {
+  PT(NodeRelation) hold_arc = detach();
+  _graph_type = graph_type;
   attach();
 }
 
@@ -388,6 +415,31 @@ get_factory() {
     _factory = new Factory<NodeRelation>;
   }
   return *_factory;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::get_class_type
+//       Access: Public, Static
+//  Description: Returns the TypeHandle associated with this type.
+////////////////////////////////////////////////////////////////////
+INLINE TypeHandle NodeRelation::
+get_class_type() {
+  return _type_handle;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::get_stashed_type
+//       Access: Public, Static
+//  Description: Returns a special TypeHandle that, by convention,
+//               arcs that wish to remove themselves from normal
+//               consideration during any traversal (including
+//               rendering and collision traversals), as well as
+//               removing themselves from the bounding volumes of
+//               their parents, should set their graph_type to.
+////////////////////////////////////////////////////////////////////
+INLINE TypeHandle NodeRelation::
+get_stashed_type() {
+  return _stashed_type_handle;
 }
 
 ////////////////////////////////////////////////////////////////////

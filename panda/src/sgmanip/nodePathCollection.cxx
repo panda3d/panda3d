@@ -349,6 +349,30 @@ hide() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::stash
+//       Access: Published
+//  Description: Stashes all NodePaths in the collection.
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+stash() {
+  for (int i = 0; i < get_num_paths(); i++) {
+    get_path(i).stash();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::unstash
+//       Access: Published
+//  Description: Unstashes all NodePaths in the collection.
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+unstash() {
+  for (int i = 0; i < get_num_paths(); i++) {
+    get_path(i).unstash();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::output
 //       Access: Published
 //  Description: Writes a brief one-line description of the

@@ -89,7 +89,7 @@ SceneGraphReducer(TypeHandle graph_type) :
 //               operations impossible.
 ////////////////////////////////////////////////////////////////////
 void SceneGraphReducer::
-apply_transitions(Node *root, int transition_types) {
+apply_transitions(NodeRelation *arc, int transition_types) {
   AccumulatedTransitions trans;
   if ((transition_types & TT_transform) != 0) {
     trans._transform = new TransformTransition;
@@ -101,20 +101,7 @@ apply_transitions(Node *root, int transition_types) {
     trans._texture_matrix = new TexMatrixTransition;
   }
 
-  DownRelations::const_iterator dri;
-  dri = root->_children.find(_graph_type);
-  if (dri != root->_children.end()) {
-    // We must make a temporary copy of the DownRelationPointers,
-    // because we'll be modifying this list as we go.
-    DownRelationPointers drp = (*dri).second;
-
-    DownRelationPointers::const_iterator drpi;
-    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-      NodeRelation *child_arc = (*drpi);
-
-      r_apply_transitions(child_arc, transition_types, trans, false);
-    }
-  }
+  r_apply_transitions(arc, transition_types, trans, false);
 }
 
 ////////////////////////////////////////////////////////////////////

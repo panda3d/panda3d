@@ -154,7 +154,7 @@ PUBLISHED:
   int get_num_arcs() const;
   NodeRelation *get_arc(int index) const;
 
-  Node *get_top_node() const;
+  INLINE Node *get_top_node();
   INLINE Node *node() const;
   INLINE NodeRelation *arc() const;
 
@@ -442,8 +442,13 @@ PUBLISHED:
   INLINE void hide();
   INLINE void show_collision_solids();
   INLINE void hide_collision_solids();
-  bool is_hidden() const;
+  INLINE bool is_hidden() const;
   NodePath get_hidden_ancestor() const;
+
+  INLINE void stash();
+  INLINE void unstash();
+  INLINE bool is_stashed() const;
+  NodePath get_stashed_ancestor() const;
 
   void prepare_scene(GraphicsStateGuardianBase *gsg);
 
@@ -466,6 +471,7 @@ public:
   };
 
 private:
+  void reset_top_node();
   static int r_compare_to(const ArcComponent *a, const ArcComponent *v);
   bool r_extend_by(const ArcComponent *other);
   int r_as_string(const ArcComponent *comp, string &result, 
@@ -475,6 +481,7 @@ private:
   void r_get_net_transitions(const ArcComponent *comp, 
 			     AllTransitionsWrapper &trans) const;
   string format_node_name(Node *dnode) const;
+  string format_arc_name(NodeRelation *arc) const;
 
   void find_matches(NodePathCollection &result, 
 		    const string &approx_path_str,

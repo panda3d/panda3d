@@ -20,10 +20,11 @@ FindApproxPath() {
 //               exactly.
 ////////////////////////////////////////////////////////////////////
 INLINE void FindApproxPath::
-add_match_name(const string &name) {
+add_match_name(const string &name, int flags) {
   Component comp;
   comp._type = CT_match_name;
   comp._name = name;
+  comp._flags = flags;
   _path.push_back(comp);
 }
 
@@ -35,10 +36,11 @@ add_match_name(const string &name) {
 //               characters accepted.
 ////////////////////////////////////////////////////////////////////
 INLINE void FindApproxPath::
-add_match_name_glob(const string &name) {
+add_match_name_glob(const string &name, int flags) {
   Component comp;
   comp._type = CT_match_name_glob;
   comp._name = name;
+  comp._flags = flags;
   _path.push_back(comp);
 }
 
@@ -49,10 +51,11 @@ add_match_name_glob(const string &name) {
 //               exactly, with no derived types matching.
 ////////////////////////////////////////////////////////////////////
 INLINE void FindApproxPath::
-add_match_exact_type(TypeHandle type) {
+add_match_exact_type(TypeHandle type, int flags) {
   Component comp;
   comp._type = CT_match_exact_type;
   comp._type_handle = type;
+  comp._flags = flags;
   _path.push_back(comp);
 }
 
@@ -63,10 +66,11 @@ add_match_exact_type(TypeHandle type) {
 //               or be a base class of the node's type.
 ////////////////////////////////////////////////////////////////////
 INLINE void FindApproxPath::
-add_match_inexact_type(TypeHandle type) {
+add_match_inexact_type(TypeHandle type, int flags) {
   Component comp;
   comp._type = CT_match_inexact_type;
   comp._type_handle = type;
+  comp._flags = flags;
   _path.push_back(comp);
 }
 
@@ -77,9 +81,10 @@ add_match_inexact_type(TypeHandle type) {
 //               chain of many nodes).
 ////////////////////////////////////////////////////////////////////
 INLINE void FindApproxPath::
-add_match_one() {
+add_match_one(int flags) {
   Component comp;
   comp._type = CT_match_one;
+  comp._flags = flags;
   _path.push_back(comp);
 }
 
@@ -90,9 +95,10 @@ add_match_one() {
 //               more consecutive nodes.
 ////////////////////////////////////////////////////////////////////
 INLINE void FindApproxPath::
-add_match_many() {
+add_match_many(int flags) {
   Component comp;
   comp._type = CT_match_many;
+  comp._flags = flags;
   _path.push_back(comp);
 }
 
@@ -103,10 +109,11 @@ add_match_many() {
 //               exactly, by pointer.
 ////////////////////////////////////////////////////////////////////
 INLINE void FindApproxPath::
-add_match_pointer(Node *pointer) {
+add_match_pointer(Node *pointer, int flags) {
   Component comp;
   comp._type = CT_match_pointer;
   comp._pointer = pointer;
+  comp._flags = flags;
   _path.push_back(comp);
 }
 
@@ -139,9 +146,24 @@ is_component_match_many(int index) const {
 //               the indicated node, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool FindApproxPath::
-matches_component(int index, Node *node) const {
+matches_component(int index, NodeRelation *arc) const {
   nassertr(index >= 0 && index < (int)_path.size(), false);
-  return (_path[index].matches(node));
+  return (_path[index].matches(arc));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FindApproxPath::matches_stashed
+//       Access: Public
+//  Description: Returns true if the nth component of the path matches
+//               a stashed node only, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool FindApproxPath::
+matches_stashed(int index) const {
+  if (index >= 0 && index < (int)_path.size()) {
+    return ((_path[index]._flags & CF_stashed) != 0);
+  } else {
+    return false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

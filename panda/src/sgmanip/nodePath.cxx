@@ -122,8 +122,6 @@ bool NodePath::
 extend_by(NodeRelation *arc) {
   nassertr(verify_connectivity(), false);
   nassertr(arc != (NodeRelation *)NULL, false);
-  // Make sure the graph types are consistent.
-  nassertr(arc->get_type() == _graph_type, false);
 
   if (is_empty()) {
     nassertr(_head == (ArcComponent *)NULL, false);
@@ -212,8 +210,8 @@ extend_down_to(Node *dnode) {
   nassertr(verify_connectivity(), false);
   NodePathCollection col;
   FindApproxPath approx_path;
-  approx_path.add_match_many();
-  approx_path.add_match_pointer(dnode);
+  approx_path.add_match_many(0);
+  approx_path.add_match_pointer(dnode, 0);
   find_matches(col, approx_path, -1);
 
   if (col.is_empty()) {
@@ -352,8 +350,8 @@ find_all_paths_down_to(Node *dnode) const {
   nassertr(verify_connectivity(), col);
   nassertr(dnode != (Node *)NULL, col);
   FindApproxPath approx_path;
-  approx_path.add_match_many();
-  approx_path.add_match_pointer(dnode);
+  approx_path.add_match_many(0);
+  approx_path.add_match_pointer(dnode, 0);
   find_matches(col, approx_path, -1);
   return col;
 }
@@ -486,30 +484,6 @@ get_arc(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_top_node
-//       Access: Public
-//  Description: Returns the top node of the path, or NULL if the path
-//               is empty.  This requires iterating through the path.
-////////////////////////////////////////////////////////////////////
-Node *NodePath::
-get_top_node() const {
-  if (_head == (ArcComponent *)NULL) {
-    // A singleton or empty list.
-    return _top_node;
-  }
-
-  ArcComponent *comp = _head;
-  while (comp->_next != (ArcComponent *)NULL) {
-    comp = comp->_next;
-  }
-
-  // This assertion should not fail unless there is a logic error in
-  // the above.
-  nassertr(comp != (ArcComponent *)NULL, NULL);
-  return comp->_arc->get_parent();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::share_with
 //       Access: Public
 //  Description: Adjusts this NodePath so that it shares components
@@ -604,12 +578,6 @@ verify_connectivity() const {
     return false;
   }
 
-  // We also want to verify that all of the arcs are of the proper
-  // type.
-  if (comp->_arc->get_type() != _graph_type) {
-    return false;
-  }
-
   comp = comp->_next;
   while (comp != (const ArcComponent *)NULL) {
     Node *next_parent = comp->_arc->get_parent();
@@ -620,14 +588,20 @@ verify_connectivity() const {
     if (next_child != parent) {
       return false;
     }
-    if (comp->_arc->get_type() != _graph_type) {
-      return false;
-    }
 
     parent = next_parent;
     child = next_child;
     comp = comp->_next;
   }
+
+  // We cannot insist that _top_node be correct, since it might have
+  // wandered, particularly if our parent path has changed without our
+  // knowledge.
+  /*
+    if (parent != _top_node) {
+      return false;
+    }
+  */
 
   return true;
 }
@@ -666,15 +640,6 @@ amputate_badness() {
     return false;
   }
 
-  // We also want to verify that all of the arcs are of the proper
-  // type.
-  if (comp->_arc->get_type() != _graph_type) {
-    // Eek!  The bottom arc is broken!
-    _top_node = child;
-    _head = (ArcComponent *)NULL;
-    return false;
-  }
-
   ArcComponent *prev = comp;
   comp = comp->_next;
   while (comp != (const ArcComponent *)NULL) {
@@ -682,14 +647,12 @@ amputate_badness() {
     Node *next_child = comp->_arc->get_child();
     if (next_parent == (Node *)NULL || next_child == (Node *)NULL) {
       prev->_next = (ArcComponent *)NULL;
+      _top_node = parent;
       return false;
     }
     if (next_child != parent) {
       prev->_next = (ArcComponent *)NULL;
-      return false;
-    }
-    if (comp->_arc->get_type() != _graph_type) {
-      prev->_next = (ArcComponent *)NULL;
+      _top_node = parent;
       return false;
     }
 
@@ -714,6 +677,14 @@ amputate_badness() {
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 repair_connectivity(const NodePath &top) {
+  // If the only problem is the top node, we can fix that first.
+  reset_top_node();
+  if (verify_connectivity()) {
+    return true;
+  }
+
+  nassertr(top.verify_connectivity(), false);
+  
   NodePath new_path(*this);
   new_path.amputate_badness();
   if (new_path.is_empty()) {
@@ -731,6 +702,7 @@ repair_connectivity(const NodePath &top) {
   }
 
   (*this) = full_path;
+
   return true;
 }
 
@@ -767,6 +739,7 @@ reparent_to(const NodePath &other, int sort) {
   // update our own path, as well as all paths that share the same
   // head pointer (i.e. all paths derived from this one).
   _head->_next = other._head;
+  _top_node = other._top_node;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -832,6 +805,7 @@ instance_to(const NodePath &other, int sort) const {
 
   NodePath instance(*this);
   instance._head = new ArcComponent(darc, other._head);
+  instance._top_node = other._top_node;
   return instance;
 }
 
@@ -874,6 +848,7 @@ copy_to(const NodePath &other, int sort) const {
 
   NodePath instance(*this);
   instance._head = new ArcComponent(darc, other._head);
+  instance._top_node = other._top_node;
   return instance;
 }
 
@@ -1080,7 +1055,7 @@ int NodePath::
 flatten_medium() {
   nassertr(!is_empty(), 0);
   SceneGraphReducer gr(_graph_type);
-  gr.apply_transitions(node());
+  gr.apply_transitions(arc());
   int num_removed = gr.flatten(node(), false);
 
   if (sgmanip_cat.is_debug()) {
@@ -1112,7 +1087,7 @@ int NodePath::
 flatten_strong() {
   nassertr(!is_empty(), 0);
   SceneGraphReducer gr(_graph_type);
-  gr.apply_transitions(node());
+  gr.apply_transitions(arc());
   int num_removed = gr.flatten(node(), true);
 
   if (sgmanip_cat.is_debug()) {
@@ -2313,17 +2288,6 @@ get_transparency() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::is_hidden
-//       Access: Public
-//  Description: Returns true if some arc above this bottom node has
-//               been set to 'hide', false if it should be visible.
-////////////////////////////////////////////////////////////////////
-bool NodePath::
-is_hidden() const {
-  return !get_hidden_ancestor().is_empty();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_hidden_ancestor
 //       Access: Public
 //  Description: Returns a NodePath indicating the lowest arc above
@@ -2349,6 +2313,33 @@ get_hidden_ancestor() const {
   NodePath next(*this);
   next.shorten();
   return next.get_hidden_ancestor();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_stashed_ancestor
+//       Access: Public
+//  Description: Returns a NodePath indicating the lowest arc above
+//               this node which has been set to 'stash'.  Calling
+//               unstash() on the NodePath returned by this function
+//               should make the node visible again (unless there is
+//               another arc further up that also has been 'stashed'.
+//
+//               This function returns an empty NodePath if no
+//               ancestors have been 'stashed'.
+////////////////////////////////////////////////////////////////////
+NodePath NodePath::
+get_stashed_ancestor() const {
+  if (!has_arcs()) {
+    return NodePath();
+  }
+  nassertr(_head != (ArcComponent *)NULL, NodePath());
+  if (_head->_arc->get_graph_type() != _graph_type) {
+    return *this;
+  }
+
+  NodePath next(*this);
+  next.shorten();
+  return next.get_stashed_ancestor();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2451,6 +2442,27 @@ write_bounds(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::reset_top_node
+//       Access: Private
+//  Description: Recomputes the _top_node member to accurately reflect
+//               the top node of the chain.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+reset_top_node() {
+  if (_head != (ArcComponent *)NULL) {
+    ArcComponent *comp = _head;
+    while (comp->_next != (ArcComponent *)NULL) {
+      comp = comp->_next;
+    }
+    
+    // This assertion should not fail unless there is a logic error in
+    // the above.
+    nassertv(comp != (ArcComponent *)NULL);
+    _top_node = comp->_arc->get_parent();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_compare_to
 //       Access: Private, Static
 //  Description: The recursive implementation of compare_to().  Returns
@@ -2513,8 +2525,9 @@ r_as_string(const ArcComponent *comp, string &result, int skip_nodes) const {
     // Here's the end of the chain.
     if (skip_nodes == 0) {
       // Skip no nodes; return the full name.
-      result = format_node_name(comp->_arc->get_parent()) + "/" +
-	format_node_name(comp->_arc->get_child());
+      result = format_node_name(comp->_arc->get_parent());
+      result += format_arc_name(comp->_arc);
+      result += format_node_name(comp->_arc->get_child());
 
     } else if (skip_nodes == 1) {
       // Skip the first node.
@@ -2530,14 +2543,13 @@ r_as_string(const ArcComponent *comp, string &result, int skip_nodes) const {
 	// This is not the first node, so format a slash between the
 	// previous node and this node.
 
-	if (comp->_arc->get_child() == (Node *)NULL ||
-	    comp->_arc->get_parent() == comp->_next->_arc->get_child()) {
-	  result += "/";
-	} else {
+	if (!(comp->_arc->get_child() == (Node *)NULL ||
+	      comp->_arc->get_parent() == comp->_next->_arc->get_child())) {
 	  // Unless the path is broken here.  In this case, insert a
 	  // visual indication of the break.
-	  result += "/.../" + format_node_name(comp->_arc->get_parent()) + "/";
+	  result += "/.../" + format_node_name(comp->_arc->get_parent());
 	}
+	result += format_arc_name(comp->_arc);
 	result += format_node_name(comp->_arc->get_child());
       }
     }
@@ -2616,6 +2628,28 @@ format_node_name(Node *dnode) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::format_arc_name
+//       Access: Private
+//  Description: Formats the "name" for the arc in as_string().
+//               Normally, this is simply "/", but for certain arcs
+//               (as for stashed nodes, for instance), it might
+//               contain other characters.
+////////////////////////////////////////////////////////////////////
+string NodePath::
+format_arc_name(NodeRelation *arc) const {
+  string result = "/";
+
+  if (arc->get_graph_type() == NodeRelation::get_stashed_type()) {
+    result += "@@";
+    
+  } else if (arc->get_graph_type() != _graph_type) {
+    result += "@@(" + arc->get_graph_type().get_name() + ")";
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::find_matches
 //       Access: Private
 //  Description: Finds up to max_matches matches against the given
@@ -2685,31 +2719,16 @@ r_find_matches(NodePathCollection &result,
   FindApproxLevel::Vec::const_iterator li;
   for (li = level._v.begin(); li != level._v.end(); ++li) {
     const FindApproxLevelEntry &entry = (*li);
+
     if (entry.is_solution()) {
       // Does this entry already represent a solution?
       result.add_path(entry._node_path);
-      if (max_matches > 0 && result.get_num_paths() >= max_matches) {
-	return;
-      }
-
     } else {
-      Node *bottom_node = entry._node_path.node();
-      nassertv(bottom_node != (Node *)NULL);
+      entry.consider_node(result, next_level, max_matches, _graph_type);
+    }
 
-      DownRelations::const_iterator dri;
-      dri = bottom_node->_children.find(_graph_type);
-      if (dri != bottom_node->_children.end()) {
-	const DownRelationPointers &drp = (*dri).second;
-	
-	DownRelationPointers::const_iterator drpi;
-	for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-	  NodeRelation *arc = (*drpi);
-	  entry.consider_next_step(result, arc, next_level, max_matches);
-	  if (max_matches > 0 && result.get_num_paths() >= max_matches) {
-	    return;
-	  }
-	}
-      }
+    if (max_matches > 0 && result.get_num_paths() >= max_matches) {
+      return;
     }
   }
 
