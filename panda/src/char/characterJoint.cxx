@@ -347,36 +347,36 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int CharacterJoint::
-complete_pointers(vector_typedWritable &plist, BamReader* manager)
+complete_pointers(vector_typedWritable &p_list, BamReader* manager)
 {
   int i;
-  int start = MovingPartMatrix::complete_pointers(plist, manager);
+  int start = MovingPartMatrix::complete_pointers(p_list, manager);
   int mid = start+_num_net_arcs;
   int end = start+_num_net_arcs+_num_local_arcs;
 
   for(i = start; i < mid; i++)
   {
-    if (plist[i] == TypedWritable::Null)
+    if (p_list[i] == TypedWritable::Null)
     {
       char_cat->warning() << get_name()
                           << " Ignoring null Net NodeRelation" << endl;
     }
     else
     {
-      add_net_transform(DCAST(NodeRelation, plist[i]));
+      add_net_transform(DCAST(NodeRelation, p_list[i]));
     }
   }
 
   for(i = mid; i < end; i++)
   {
-    if (plist[i] == TypedWritable::Null)
+    if (p_list[i] == TypedWritable::Null)
     {
       char_cat->warning() << get_name()
                           << " Ignoring null Local NodeRelation" << endl;
     }
     else
     {
-      add_local_transform(DCAST(NodeRelation, plist[i]));
+      add_local_transform(DCAST(NodeRelation, p_list[i]));
     }
   }
 

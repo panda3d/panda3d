@@ -464,15 +464,15 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int Character::
-complete_pointers(vector_typedWritable &plist, BamReader* manager)
+complete_pointers(vector_typedWritable &p_list, BamReader* manager)
 {
-  int start = PartBundleNode::complete_pointers(plist, manager);
-  _computed_vertices = DCAST(ComputedVertices, plist[start]);
+  int start = PartBundleNode::complete_pointers(p_list, manager);
+  _computed_vertices = DCAST(ComputedVertices, p_list[start]);
   start++;
 
   int num_parts = _parts.size();
   for (int i = 0; i < num_parts; i++) {
-    _parts[i] = DCAST(PartGroup, plist[start + i]);
+    _parts[i] = DCAST(PartGroup, p_list[start + i]);
   }
   start += num_parts;
 
