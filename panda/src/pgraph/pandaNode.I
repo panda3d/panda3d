@@ -370,6 +370,28 @@ clear_transform() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::ls
+//       Access: Published
+//  Description: Lists all the nodes at and below the current path
+//               hierarchically.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+ls() const {
+  ls(nout);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::ls
+//       Access: Published
+//  Description: Lists all the nodes at and below the current path
+//               hierarchically.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+ls(ostream &out, int indent_level) const {
+  r_list_descendants(out, indent_level);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_children
 //       Access: Public
 //  Description: Returns an object that can be used to walk through

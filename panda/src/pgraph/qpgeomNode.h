@@ -48,17 +48,17 @@ PUBLISHED:
   INLINE int get_num_geoms() const;
   INLINE Geom *get_geom(int n) const;
   INLINE const RenderState *get_geom_state(int n) const;
-  INLINE void set_state(int n, const RenderState *state);
+  INLINE void set_geom_state(int n, const RenderState *state);
 
-  INLINE int add_geom(Geom *geom, const RenderState *state);
+  INLINE int add_geom(Geom *geom, const RenderState *state = RenderState::make_empty());
   INLINE void remove_geom(int n);
   INLINE void remove_all_geoms();
 
+  void write_geoms(ostream &out, int indent_level) const;
   void write_verbose(ostream &out, int indent_level) const;
 
 public:
   virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
 
   virtual bool is_geom_node() const;
 

@@ -97,6 +97,24 @@ qpGeomNode::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomNode::write_geoms
+//       Access: Published
+//  Description: Writes a short description of all the Geoms in the
+//               node.
+////////////////////////////////////////////////////////////////////
+void qpGeomNode::
+write_geoms(ostream &out, int indent_level) const {
+  CDReader cdata(_cycler);
+  write(out, indent_level);
+  Geoms::const_iterator gi;
+  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
+    const GeomEntry &entry = (*gi);
+    indent(out, indent_level + 2) 
+      << *entry._geom << " (" << *entry._state << ")\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomNode::write_verbose
 //       Access: Published
 //  Description: Writes a detailed description of all the Geoms in the
@@ -105,7 +123,7 @@ qpGeomNode::
 void qpGeomNode::
 write_verbose(ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
-  PandaNode::write(out, indent_level);
+  write(out, indent_level);
   Geoms::const_iterator gi;
   for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
     const GeomEntry &entry = (*gi);
@@ -124,23 +142,6 @@ void qpGeomNode::
 output(ostream &out) const {
   PandaNode::output(out);
   out << " (" << get_num_geoms() << " geoms)";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomNode::write
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void qpGeomNode::
-write(ostream &out, int indent_level) const {
-  CDReader cdata(_cycler);
-  PandaNode::write(out, indent_level);
-  Geoms::const_iterator gi;
-  for (gi = cdata->_geoms.begin(); gi != cdata->_geoms.end(); ++gi) {
-    const GeomEntry &entry = (*gi);
-    indent(out, indent_level + 2) 
-      << *entry._geom << " (" << *entry._state << ")\n";
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

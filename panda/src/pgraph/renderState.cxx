@@ -423,6 +423,14 @@ add(const RenderAttrib *attrib, int override) const {
   *result = new_attribute;
   ++result;
 
+  if (ai != _attributes.end() && !(new_attribute < (*ai))) {
+    // At this point we know:
+    // !((*ai) < new_attribute) && !(new_attribute < (*ai))
+    // which means (*ai) == new_attribute--so we should leave it out,
+    // to avoid duplicating attributes in the set.
+    ++ai;
+  }
+
   while (ai != _attributes.end()) {
     *result = *ai;
     ++ai;

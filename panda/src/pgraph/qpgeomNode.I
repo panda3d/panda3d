@@ -79,7 +79,7 @@ get_geom_state(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomNode::set_state
+//     Function: qpGeomNode::set_geom_state
 //       Access: Public
 //  Description: Changes the RenderState associated with the nth geom
 //               of the node.  This is just the RenderState directly
@@ -89,7 +89,7 @@ get_geom_state(int n) const {
 //               above this GeomNode.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomNode::
-set_state(int n, const RenderState *state) {
+set_geom_state(int n, const RenderState *state) {
   CDWriter cdata(_cycler);
   nassertv(n >= 0 && n < (int)cdata->_geoms.size());
   cdata->_geoms[n]._state = state;

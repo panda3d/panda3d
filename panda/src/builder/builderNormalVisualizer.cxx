@@ -18,6 +18,8 @@
 
 #include "builderFuncs.h"
 #include "builderNormalVisualizer.h"
+#include "geomNode.h"
+#include "qpgeomNode.h"
 
 #ifdef SUPPORT_SHOW_NORMALS
 
@@ -57,6 +59,12 @@ add_prim(const BuilderPrimI &prim) {
 
 void BuilderNormalVisualizer::
 show_normals(GeomNode *node) {
+  // Ok, now we've got a bunch of normals saved up; create some geometry.
+  mesh_and_build(_lines.begin(), _lines.end(), _bucket, node, (BuilderPrim *)0);
+}
+
+void BuilderNormalVisualizer::
+show_normals(qpGeomNode *node) {
   // Ok, now we've got a bunch of normals saved up; create some geometry.
   mesh_and_build(_lines.begin(), _lines.end(), _bucket, node, (BuilderPrim *)0);
 }

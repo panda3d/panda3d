@@ -17,8 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "builderFuncs.h"
-#include <geomNode.h>
 #include "builderBucketNode.h"
+
+#include "geomNode.h"
+#include "qpgeomNode.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucketNode::add_prim
@@ -57,6 +59,57 @@ add_prim(const BuilderPrimI &prim) {
 ////////////////////////////////////////////////////////////////////
 int BuilderBucketNode::
 build(GeomNode *geom_node) const {
+  int count = 0;
+
+  {
+    // First, the nonindexed.
+    Prims::const_iterator pi, last_pi;
+    last_pi = _prims.begin();
+
+    for (pi = _prims.begin();
+         pi != _prims.end();
+         ++pi) {
+      if ((*last_pi) < (*pi)) {
+        count += mesh_and_build(last_pi, pi, *_bucket, geom_node,
+                                (BuilderPrim *)0);
+        last_pi = pi;
+      }
+    }
+    count += mesh_and_build(last_pi, pi, *_bucket, geom_node,
+                            (BuilderPrim *)0);
+  }
+
+  {
+    // Then, the indexed.
+    IPrims::const_iterator pi, last_pi;
+    last_pi = _iprims.begin();
+
+    for (pi = _iprims.begin();
+         pi != _iprims.end();
+         ++pi) {
+      if ((*last_pi) < (*pi)) {
+        count += mesh_and_build(last_pi, pi, *_bucket, geom_node,
+                                (BuilderPrimI *)0);
+        last_pi = pi;
+      }
+    }
+    count += mesh_and_build(last_pi, pi, *_bucket, geom_node,
+                            (BuilderPrimI *)0);
+  }
+
+  return count;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderBucketNode::build
+//       Access: Public
+//  Description: Builds all the geometry assigned to this particular
+//               bucket, and assigns it to the indicated GeomNode.
+//               Returns the number of Geoms created.
+////////////////////////////////////////////////////////////////////
+int BuilderBucketNode::
+build(qpGeomNode *geom_node) const {
   int count = 0;
 
   {

@@ -35,6 +35,7 @@
 #include "luse.h"
 #include "ordered_vector.h"
 #include "pointerTo.h"
+#include "notify.h"
 
 class NodeChainComponent;
 
@@ -90,6 +91,9 @@ PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
+  INLINE void ls() const;
+  INLINE void ls(ostream &out, int indent_level = 0) const;
+
 public:
   virtual bool is_geom_node() const;
 
@@ -107,6 +111,7 @@ private:
   PT(NodeChainComponent) get_generic_component();
   void delete_component(NodeChainComponent *component);
   void fix_chain_lengths();
+  void r_list_descendants(ostream &out, int indent_level) const;
 
 private:
   class EXPCL_PANDA DownConnection {

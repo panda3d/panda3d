@@ -19,25 +19,28 @@
 #ifndef BUILDERBUCKET_H
 #define BUILDERBUCKET_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "builderProperties.h"
 
-#include <namable.h>
-#include <pointerToArray.h>
-#include <luse.h>
-#include <nodeTransitions.h>
-#include <pta_Vertexf.h>
-#include <pta_Normalf.h>
-#include <pta_Colorf.h>
-#include <pta_TexCoordf.h>
+#include "namable.h"
+#include "pointerToArray.h"
+#include "luse.h"
+#include "nodeTransitions.h"
+#include "pta_Vertexf.h"
+#include "pta_Normalf.h"
+#include "pta_Colorf.h"
+#include "pta_TexCoordf.h"
+#include "renderState.h"
 
-#include <stdlib.h>
+#include "stdlib.h"
 
 
 class NamedNode;
 class Geom;
 class GeomNode;
+class PandaNode;
+class qpGeomNode;
 
 
 ///////////////////////////////////////////////////////////////////
@@ -67,6 +70,7 @@ public:
 
   virtual BuilderBucket *make_copy() const;
   virtual GeomNode *make_geom_node();
+  virtual qpGeomNode *qpmake_geom_node();
   virtual Geom *done_geom(Geom *geom);
 
   virtual bool operator < (const BuilderBucket &other) const;
@@ -88,11 +92,13 @@ public:
   virtual void output(ostream &out) const;
 
   NamedNode *_node;
+  PandaNode *_qpnode;
 
   short _drawBin;
   unsigned int _drawOrder;
 
   NodeTransitions _trans;
+  CPT(RenderState) _state;
 
 protected:
   PTA_Vertexf _coords;

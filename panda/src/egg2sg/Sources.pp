@@ -6,7 +6,7 @@
 #begin lib_target
   #define TARGET egg2sg
   #define LOCAL_LIBS \
-    parametrics cull collide egg builder loader chan char switchnode
+    parametrics cull collide egg2pg egg builder loader chan char switchnode
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 

@@ -20,6 +20,7 @@
 #include "pipeline.h"
 #include "drawCullHandler.h"
 #include "qpcullTraverser.h"
+#include "clockObject.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::Constructor
@@ -77,6 +78,10 @@ remove_window(GraphicsWindow *window) {
 void GraphicsEngine::
 render_frame() {
   cull_and_draw_together();
+
+  // **** This doesn't belong here; it really belongs in the Pipeline,
+  // but here it is for now.
+  ClockObject::get_global_clock()->tick();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -33,6 +33,10 @@
 #include "texture.h"
 #include "texturePool.h"
 
+// To load egg files directly.
+#include "qpload_egg_file.h"
+#include "eggData.h"
+
 // These are in support of legacy data graph operations.
 #include "namedNode.h"
 #include "mouse.h"
@@ -58,6 +62,28 @@ static const int win_height = config_pview.GetInt("win-height", 480);
 
 // As long as this is true, the main loop will continue running.
 bool run_flag = true;
+
+// These are used by report_frame_rate().
+static double start_time = 0.0;
+static int start_frame_count = 0;
+
+void 
+report_frame_rate() {
+  double now = ClockObject::get_global_clock()->get_frame_time();
+  double delta = now - start_time;
+  
+  int frame_count = ClockObject::get_global_clock()->get_frame_count();
+  int num_frames = frame_count - start_frame_count;
+  if (num_frames > 0) {
+    nout << endl << num_frames << " frames in " << delta << " seconds" << endl;
+    double x = ((double)num_frames) / delta;
+    nout << x << " fps average (" << 1000.0 / x << "ms)" << endl;
+
+    // Reset the frame rate counter for the next press of 'f'.
+    start_time = now;
+    start_frame_count = frame_count;
+  }
+}
 
 PT(GraphicsPipe)
 make_pipe() {
@@ -166,22 +192,28 @@ make_default_geometry(PandaNode *parent) {
 
 void
 get_models(PandaNode *parent, int argc, char *argv[]) {
-  make_default_geometry(parent);
-  /*
-  Loader loader;
+  if (argc < 2) {
+    // In the absence of any models on the command line, load up a
+    // default triangle so we at least have something to look at.
+    make_default_geometry(parent);
 
-  for (int i = 1; i < argc; i++) {
-    Filename filename = argv[i];
+  } else {
 
-    cerr << "Loading " << filename << "\n";
-    PT_Node node = loader.load_sync(filename);
-    if (node == (Node *)NULL) {
-      cerr << "Unable to load " << filename << "\n";
-    } else {
-      new RenderRelation(parent, node);
+    for (int i = 1; i < argc; i++) {
+      Filename filename = argv[i];
+      
+      cerr << "Loading " << filename << "\n";
+      EggData::resolve_egg_filename(filename);
+      PT(PandaNode) node = qpload_egg_file(filename);
+      if (node == (PandaNode *)NULL) {
+        cerr << "Unable to load " << filename << "\n";
+
+      } else {
+        node->ls();
+        parent->add_child(node);
+      }
     }
   }
-  */
 }
 
 NamedNode * 
@@ -218,6 +250,11 @@ event_esc(CPT_Event) {
   run_flag = false;
 }
 
+void
+event_f(CPT_Event) {
+  report_frame_rate();
+}
+
 int
 main(int argc, char *argv[]) {
   // First, we need a GraphicsPipe, before we can open a window.
@@ -245,10 +282,17 @@ main(int argc, char *argv[]) {
   EventHandler event_handler(EventQueue::get_global_event_queue());
   event_handler.add_hook("escape", event_esc);
   event_handler.add_hook("q", event_esc);
+  event_handler.add_hook("f", event_f);
 
 
   // Put something in the scene graph to look at.
   get_models(render, argc, argv);
+
+  // Tick the clock once so we won't count the time spent loading up
+  // files, above, in our frame rate average.
+  ClockObject::get_global_clock()->tick();
+  start_time = ClockObject::get_global_clock()->get_frame_time();
+  start_frame_count = ClockObject::get_global_clock()->get_frame_count();
 
 
   // This is our main update loop.  Loop here until someone
@@ -261,6 +305,7 @@ main(int argc, char *argv[]) {
     engine->render_frame();
   } 
 
+  report_frame_rate();
   delete engine;
   return (0);
 }

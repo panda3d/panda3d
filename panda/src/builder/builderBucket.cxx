@@ -21,8 +21,9 @@
 #include "builderBucket.h"
 #include "builderFuncs.h"
 #include "builderMisc.h"
-#include <namedNode.h>
-#include <geomNode.h>
+#include "namedNode.h"
+#include "geomNode.h"
+#include "qpgeomNode.h"
 
 
 BuilderBucket *BuilderBucket::_default_bucket = NULL;
@@ -36,6 +37,7 @@ BuilderBucket *BuilderBucket::_default_bucket = NULL;
 BuilderBucket::
 BuilderBucket() {
   _node = NULL;
+  _qpnode = NULL;
   (*this) = (*get_default_bucket());
 }
 
@@ -48,6 +50,7 @@ BuilderBucket() {
 BuilderBucket::
 BuilderBucket(const BuilderBucket &copy) {
   _node = NULL;
+  _qpnode = NULL;
   (*this) = copy;
 }
 
@@ -69,10 +72,12 @@ operator = (const BuilderBucket &copy) {
   set_colors(copy._colors);
 
   _node = copy._node;
+  _qpnode = copy._qpnode;
   _drawBin = copy._drawBin;
   _drawOrder = copy._drawOrder;
 
   _trans = copy._trans;
+  _state = copy._state;
 
   return *this;
 }
@@ -115,6 +120,20 @@ make_copy() const {
 GeomNode *BuilderBucket::
 make_geom_node() {
   return new GeomNode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderBucket::qpmake_geom_node
+//       Access: Public, Virtual
+//  Description: Called by the builder when it is time to create a new
+//               GeomNode.  This function should allocate and return a
+//               new GeomNode suitable for adding geometry to.  You
+//               may redefine it to return a subclass of GeomNode, or
+//               to do some initialization to the node.
+////////////////////////////////////////////////////////////////////
+qpGeomNode *BuilderBucket::
+qpmake_geom_node() {
+  return new qpGeomNode("");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -231,6 +250,7 @@ output(ostream &out) const {
 BuilderBucket::
 BuilderBucket(int) {
   _node = NULL;
+  _qpnode = NULL;
 
   _drawBin = -1;
   _drawOrder = 0;
@@ -251,4 +271,6 @@ BuilderBucket(int) {
   _consider_fans = true;
   _max_tfan_angle = 40.0;
   _min_tfan_tris = 0;
+
+  _state = RenderState::make_empty();
 }

@@ -23,7 +23,6 @@
 
 #include <geom.h>
 #include <geomprimitives.h>
-#include <geomNode.h>
 
 #include <algorithm>
 
@@ -485,7 +484,7 @@ expand(const PrimType &prim, BuilderBucket &bucket, OutputIterator result) {
 //               creates corresponding geometry for them in the
 //               indicated GeomNode.
 ////////////////////////////////////////////////////////////////////
-template<class InputIterator, class PrimType>
+template<class InputIterator, class PrimType, class GeomNode>
 static int
 build_geoms(InputIterator first, InputIterator last,
             BuilderBucket &bucket, GeomNode *geom_node,
@@ -796,7 +795,7 @@ public:
 //               to infer the PrimType (BuilderPrim or BuilderPrimI)
 //               from the iterator's value type, and template on that.
 ////////////////////////////////////////////////////////////////////
-template<class InputIterator, class PrimType>
+template<class InputIterator, class PrimType, class GeomNode>
 static int
 __mesh_and_build(InputIterator first, InputIterator last,
                  BuilderBucket &bucket, GeomNode *geom_node,
@@ -879,7 +878,7 @@ __mesh_and_build(InputIterator first, InputIterator last,
 //               runs them through the mesher if specified by the
 //               bucket, and builds them into the indicated GeomNode.
 ////////////////////////////////////////////////////////////////////
-template<class InputIterator, class value_type>
+template<class InputIterator, class value_type, class GeomNode>
 int
 mesh_and_build(InputIterator first, InputIterator last,
                BuilderBucket &bucket, GeomNode *geom_node,

@@ -32,7 +32,7 @@
   #define SOURCES \
     pview.cxx
 
-  #define LOCAL_LIBS pgraph $[LOCAL_LIBS]
+  #define LOCAL_LIBS egg2pg pgraph $[LOCAL_LIBS]
 #end test_bin_target
 
 #begin test_bin_target

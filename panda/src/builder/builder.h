@@ -176,6 +176,7 @@
 
 
 class GeomNode;
+class qpGeomNode;
 
 
 ///////////////////////////////////////////////////////////////////
@@ -196,6 +197,7 @@ public:
                                   const BuilderPrimI &prim);
 
   GeomNode *build(const string &default_name = "");
+  qpGeomNode *qpbuild(const string &default_name = "");
 
 protected:
   void add_bucket(const BuilderBucket &bucket);

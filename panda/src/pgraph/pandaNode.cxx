@@ -349,7 +349,7 @@ write(ostream &out, int indent_level) const {
     out << " T";
   }
   if (!cdata->_state->is_empty()) {
-    out << " (" << *cdata->_state << ")";
+    out << " " << *cdata->_state;
   }
   out << "\n";
 }
@@ -648,6 +648,30 @@ fix_chain_lengths() {
       (*di).get_child()->fix_chain_lengths();
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::r_list_descendants
+//       Access: Private
+//  Description: The recursive implementation of ls().
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+r_list_descendants(ostream &out, int indent_level) const {
+  write(out, indent_level);
+
+  CDReader cdata(_cycler);
+  Down::const_iterator di;
+  for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
+    (*di).get_child()->r_list_descendants(out, indent_level + 2);
+  }
+
+  // Also report the number of stashed nodes at this level.
+  /*
+  int num_stashed = get_num_stashed();
+  if (num_stashed != 0) {
+    indent(out, indent_level) << "(" << num_stashed << " stashed)\n";
+  }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////

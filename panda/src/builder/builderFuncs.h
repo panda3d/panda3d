@@ -25,7 +25,6 @@
 #include <string>
 
 class BuilderBucket;
-class GeomNode;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +56,7 @@ expand(const PrimType &prim, BuilderBucket &bucket,
 //               runs them through the mesher if specified by the
 //               bucket, and builds them into the indicated GeomNode.
 ////////////////////////////////////////////////////////////////////
-template<class InputIterator>
+template<class InputIterator, class GeomNode>
 int
 mesh_and_build(InputIterator first, InputIterator last,
                BuilderBucket &bucket, GeomNode *geom_node);
