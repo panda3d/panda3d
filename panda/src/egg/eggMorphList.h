@@ -19,7 +19,7 @@
 template<class MorphType>
 class EggMorphList : public vector<MorphType> {
 public:
-  pair<iterator, bool> insert(const MorphType &value);
+  pair<EggMorphList<MorphType>::iterator, bool> insert(const MorphType &value);
   void write(ostream &out, int indent_level) const;
 };
 
