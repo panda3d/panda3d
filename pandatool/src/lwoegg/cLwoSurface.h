@@ -39,7 +39,6 @@ public:
   bool check_texture();
 
   INLINE bool has_uvs() const;
-  LPoint2d get_uv(const LPoint3d &pos) const;
 
   enum Flags {
     F_color        = 0x0001,
@@ -72,6 +71,10 @@ public:
   bool _has_uvs;
 
   CLwoSurfaceBlock *_block;
+
+private:
+  LPoint2d get_uv(const LPoint3d &pos, const LPoint3d &centroid) const;
+  void generate_uvs(vector_PT_EggVertex &egg_vertices);
 };
 
 #include "cLwoSurface.I"

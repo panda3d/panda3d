@@ -168,11 +168,7 @@ apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
     egg_prim->clear_color();
 
     // Assign UV's to the vertices.
-    vector_PT_EggVertex::const_iterator vi;
-    for (vi = egg_vertices.begin(); vi != egg_vertices.end(); ++vi) {
-      EggVertex *egg_vertex = (*vi);
-      egg_vertex->set_uv(get_uv(egg_vertex->get_pos3()));
-    }
+    generate_uvs(egg_vertices);
   }
 
   if ((_flags & F_transparency) != 0) {
@@ -244,29 +240,85 @@ check_texture() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLwoSurface::get_uv
-//       Access: Public
+//       Access: Private
 //  Description: Computes or looks up the appropriate UV for the given
 //               vertex.
 ////////////////////////////////////////////////////////////////////
 LPoint2d CLwoSurface::
-get_uv(const LPoint3d &pos) const {
+get_uv(const LPoint3d &pos, const LPoint3d &centroid) const {
   // For now, we always compute spherical UV's.
 
   // To compute the x position on the frame, we only need to consider
   // the angle of the vector about the Y axis.  Project the vector
   // into the XZ plane to do this.
 
-  LVector2d xz(pos[0], pos[2]);
+  LVector2d xz_orig(pos[0], pos[2]);
+  LVector2d xz = xz_orig;
 
-  // The x position is longitude: the angle about the Y axis.
-  double x = 
-    (atan2(xz[0], -xz[1]) / (2.0 * MathNumbers::pi) + 0.5) * _block->_w_repeat;
+  double u_offset = 0.0;
 
-  // Now rotate the vector into the YZ plane, and the y position is
-  // latitude: the angle about the X axis.
-  LVector2d yz(pos[1], xz.length());
-  double y = 
+  if (xz == LVector2d::zero()) {
+    // If we have a point on either pole, we've got problems.  This
+    // point maps to the entire bottom edge of the image, so which U
+    // value should we choose?  It does make a difference, especially
+    // if we have a number of polygons around the south pole that all
+    // share the common vertex.
+
+    // We choose the U value based on the polygon's centroid.
+    xz.set(centroid[0], centroid[2]);
+
+  } else if (xz[1] >= 0.0 && ((xz[0] < 0.0) != (centroid[0] < 0.))) {
+    // Now, if our polygon crosses the seam along the back of the
+    // sphere--that is, the point is on the back of the sphere (xz[1]
+    // >= 0.0) and not on the same side of the XZ plane as the
+    // centroid, we've got problems too.  We need to add an offset to
+    // the computed U value, either 1 or -1, to keep all the vertices
+    // of the polygon on the same side of the seam.
+
+    u_offset = (xz[0] < 0.0) ? 1.0 : -1.0;
+  }
+
+  // The u value is based on the longitude: the angle about the Y
+  // axis.
+  double u = 
+    (atan2(xz[0], -xz[1]) / (2.0 * MathNumbers::pi) + 0.5 + u_offset) * _block->_w_repeat;
+
+  // Now rotate the vector into the YZ plane, and the v value is based
+  // on the latitude: the angle about the X axis.
+  LVector2d yz(pos[1], xz_orig.length());
+  double v = 
     (atan2(yz[0], yz[1]) / MathNumbers::pi + 0.5) * _block->_h_repeat;
 
-  return LPoint2d(x, y);
+  return LPoint2d(u, v);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoSurface::generate_uvs
+//       Access: Private
+//  Description: Computes all the UV's for the polygon's vertices,
+//               according to the _projection_mode defined in the
+//               block.
+////////////////////////////////////////////////////////////////////
+void CLwoSurface::
+generate_uvs(vector_PT_EggVertex &egg_vertices) {
+  // To do this properly near seams and singularities (for instance,
+  // the back seam and the poles of the spherical map), we will need
+  // to know the polygon's centroid.
+  LPoint3d centroid(0.0, 0.0, 0.0);
+  
+  vector_PT_EggVertex::const_iterator vi;
+  for (vi = egg_vertices.begin(); vi != egg_vertices.end(); ++vi) {
+    EggVertex *egg_vertex = (*vi);
+    centroid += egg_vertex->get_pos3();
+  }
+
+  centroid /= (double)egg_vertices.size();
+
+  // Now go back through and actually comput the UV's.
+  for (vi = egg_vertices.begin(); vi != egg_vertices.end(); ++vi) {
+    EggVertex *egg_vertex = (*vi);
+
+    egg_vertex->set_uv(get_uv(egg_vertex->get_pos3(), centroid));
+  }
+}
+  
