@@ -38,11 +38,13 @@
   // This is the real set of lib_targets we'll be building.  On Windows,
   // we don't build the shared libraries which are included on metalibs.
   #define real_lib_targets
+  #define real_lib_target_libs
   #define deferred_objs
   #forscopes lib_target
     #if $[eq $[module $[TARGET],$[TARGET]],]
       // This library is not on a metalib, so we can build it.
       #set real_lib_targets $[real_lib_targets] $[TARGET]
+      #set real_lib_target_libs $[real_lib_target_libs] $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
     #else
       // This library is on a metalib, so we can't build it, but we
       // should build all the obj's that go into it.
@@ -57,7 +59,7 @@
   // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
   // list of binaries that are to be built only when specifically asked for.
 
-  #define lib_targets $[forscopes metalib_target noinst_lib_target test_lib_target,$[if $[build_target],$[ODIR]/$[get_dllname $[TARGET]].$[dlllib]]] $[real_lib_targets]
+  #define lib_targets $[forscopes metalib_target noinst_lib_target test_lib_target,$[if $[build_target],$[ODIR]/$[get_dllname $[TARGET]].$[dlllib]]] $[real_lib_target_libs]
   #define static_lib_targets $[forscopes static_lib_target ss_lib_target,$[if $[build_target],$[ODIR]/$[get_dllname $[TARGET]].lib]]
 
   #define bin_targets \
