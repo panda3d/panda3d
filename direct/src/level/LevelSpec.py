@@ -116,7 +116,8 @@ class LevelSpec:
             # create a new entity spec entry w/ default values
             globalEnts[entId] = {}
             spec = globalEnts[entId]
-            attribDescs = self.entTypeReg.getAttribDescDict(entType)
+            attribDescs = self.entTypeReg.getTypeDesc(entType
+                                                      ).getAttribDescDict()
             for name, desc in attribDescs.items():
                 spec[name] = desc.getDefaultValue()
             spec['type'] = entType
@@ -323,8 +324,9 @@ class LevelSpec:
 
                     assert spec.has_key('type')
                     entType = spec['type']
-                    attribNames = self.entTypeReg.getAttribNames(entType)
-                    attribDescs = self.entTypeReg.getAttribDescDict(entType)
+                    typeDesc = self.entTypeReg.getTypeDesc(entType)
+                    attribNames = typeDesc.getAttribNames()
+                    attribDescs = typeDesc.getAttribDescDict()
 
                     # are there any unknown attribs in the spec?
                     for attrib in spec.keys():

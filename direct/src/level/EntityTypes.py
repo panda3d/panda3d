@@ -1,28 +1,17 @@
 """EntityTypes module: contains classes that describe Entity types"""
 
+from EntityTypeDesc import EntityTypeDesc
 from SpecImports import *
 
-class Entity:
+class Entity(EntityTypeDesc):
+    abstract = 1
+    type = 'entity'
     attribs = (
         ('type', None),
         ('name', 'unnamed'),
         ('comment', ''),
         )
 
-class ActiveCell(Entity):
-    type = 'activeCell'
-    attribs = (
-        ('row', 0, 'int'),
-        ('col', 0, 'int'),
-        ('gridId', None, 'entId', {'type':'grid'})
-        )
-
-class DirectionalCell(ActiveCell):
-    type = 'directionalCell'
-    attribs = (
-        ('dir', [0,0], 'choice', {'choiceSet':['l','r','up','dn']}),
-        )
-    
 class LevelMgr(Entity):
     type = 'levelMgr'
     attribs = (
@@ -60,7 +49,7 @@ class Nodepath(Entity):
         ('hpr', Vec3(0,0,0), 'hpr'),
         )
 
-class Zone(Entity, Nodepath):
+class Zone(Nodepath):
     type = 'zone'
     delAttribs = (
         'parent',
@@ -86,6 +75,7 @@ class CutScene(Entity):
         )
 
 class BarrelBase(Nodepath):
+    abstract = 1
     delAttribs = (
         'hpr',
         )
@@ -103,7 +93,8 @@ class GagBarrel(BarrelBase):
         ('gagTrack', 0, 'choice', {'choiceSet':range(7)}),
         )
 
-class Switch(Entity, Nodepath):
+class Switch(Nodepath):
+    abstract = 1
     output = 'bool'
     attribs = (
         ('scale', Vec3(1), 'scale'),
@@ -131,17 +122,6 @@ class ConveyorBelt(Nodepath):
         ('floorName', 'platformcollision'),
         )        
         
-class Crate(Nodepath):
-    type = 'crate'
-    delAttribs = (
-        'hpr',
-        )
-    attribs = (
-        ('scale', Vec3(1), 'scale'),
-        ('gridId', None, 'entId', {'type':'grid'}),
-        ('pushable', 1, 'bool'),
-        )
-
 class Door(Entity):
     type = 'door'
     output = 'bool'
@@ -175,6 +155,31 @@ class Grid(Nodepath):
         ('cellSize', 3, 'float'),
         ('numCol', 3, 'int'),
         ('numRow', 3, 'int'),
+        )
+
+class Crate(Nodepath):
+    type = 'crate'
+    delAttribs = (
+        'hpr',
+        )
+    attribs = (
+        ('scale', Vec3(1), 'scale'),
+        ('gridId', None, 'entId', {'type':'grid'}),
+        ('pushable', 1, 'bool'),
+        )
+
+class ActiveCell(Entity):
+    type = 'activeCell'
+    attribs = (
+        ('row', 0, 'int'),
+        ('col', 0, 'int'),
+        ('gridId', None, 'entId', {'type':'grid'})
+        )
+
+class DirectionalCell(ActiveCell):
+    type = 'directionalCell'
+    attribs = (
+        ('dir', [0,0], 'choice', {'choiceSet':['l','r','up','dn']}),
         )
 
 class Lift(Nodepath):
