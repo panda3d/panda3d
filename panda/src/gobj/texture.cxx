@@ -548,32 +548,6 @@ register_with_read_factory() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
-void Texture::
-write_datagram(BamWriter *manager, Datagram &me) {
-  ImageBuffer::write_datagram(manager, me);
-  me.add_uint32(0);  // For historical purposes
-  me.add_uint8(_wrapu);
-  me.add_uint8(_wrapv);
-  me.add_uint8(_minfilter);
-  me.add_uint8(_magfilter);
-  me.add_int16(_anisotropic_degree);
-
-  // We also need to write out the pixel buffer's format, even though
-  // that's not stored as part of the texture structure.
-  bool has_pbuffer = (_pbuffer != (PixelBuffer *)NULL);
-  me.add_bool(has_pbuffer);
-  if (has_pbuffer) {
-    me.add_uint8(_pbuffer->get_format());
-    me.add_uint8(_pbuffer->get_num_components());
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Texture::make_Texture
 //       Access: Protected
 //  Description: Factory method to generate a Texture object
@@ -640,6 +614,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _wrapv = (enum WrapMode) scan.get_uint8();
   _minfilter = (enum FilterType) scan.get_uint8();
   _magfilter = (enum FilterType) scan.get_uint8();
+  scan.get_uint16(); // placeholder for obsolete settings, remove this when you feel like bumping bam version number
   _anisotropic_degree = scan.get_int16();
 
   if (scan.get_remaining_size() > 0) {
@@ -662,5 +637,30 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::write_datagram
+//       Access: Public
+//  Description: Function to write the important information in
+//               the particular object to a Datagram
+////////////////////////////////////////////////////////////////////
+void Texture::
+write_datagram(BamWriter *manager, Datagram &me) {
+  ImageBuffer::write_datagram(manager, me);
+  me.add_uint32(0);  // For historical purposes
+  me.add_uint8(_wrapu);
+  me.add_uint8(_wrapv);
+  me.add_uint8(_minfilter);
+  me.add_uint8(_magfilter);
+  me.add_int16(0);  // placeholder for obsolete settings, remove this when you feel like bumping bam version number
+  me.add_int16(_anisotropic_degree);
 
+  // We also need to write out the pixel buffer's format, even though
+  // that's not stored as part of the texture structure.
+  bool has_pbuffer = (_pbuffer != (PixelBuffer *)NULL);
+  me.add_bool(has_pbuffer);
+  if (has_pbuffer) {
+    me.add_uint8(_pbuffer->get_format());
+    me.add_uint8(_pbuffer->get_num_components());
+  }
+}
 
