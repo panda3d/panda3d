@@ -30,6 +30,7 @@ static void check_sound_loaders(void) {
 AudioPool* AudioPool::get_ptr(void) {
   if (_global_ptr == (AudioPool*)0L)
     _global_ptr = new AudioPool;
+  audio_load_loaders();
   return _global_ptr;
 }
 

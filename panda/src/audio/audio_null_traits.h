@@ -44,7 +44,7 @@ public:
 			  AudioTraits::PlayingClass*);
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
-  virtual void set_volume(AudioTraits::PlayingClass*, int);
+  virtual void set_volume(AudioTraits::PlayingClass*, float);
 };
 
 #include "audio_null_traits.I"

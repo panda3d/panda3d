@@ -331,7 +331,8 @@ void MikModSamplePlayer::stop_sound(AudioTraits::SoundClass* sample,
   // stop it
 }
 
-void MikModSamplePlayer::set_volume(AudioTraits::PlayingClass* state, int v) {
+void MikModSamplePlayer::set_volume(AudioTraits::PlayingClass* state,
+				    float v) {
   initialize();
   MikModSamplePlaying* mplay = (MikModSamplePlaying*)state;
   Voice_SetVolume(mplay->get_voice(), v);
@@ -362,7 +363,7 @@ void MikModFmsynthPlayer::stop_sound(AudioTraits::SoundClass*,
 				     AudioTraits::PlayingClass*) {
 }
 
-void MikModFmsynthPlayer::set_volume(AudioTraits::PlayingClass*, int) {
+void MikModFmsynthPlayer::set_volume(AudioTraits::PlayingClass*, float) {
   audio_cat->error()
     << "trying to set volume on a sample with a MikModFmsynthPlayer" << endl;
 }
@@ -391,7 +392,7 @@ void MikModMidiPlayer::stop_sound(AudioTraits::SoundClass*,
 				  AudioTraits::PlayingClass*) {
 }
 
-void MikModMidiPlayer::set_volume(AudioTraits::PlayingClass*, int) {
+void MikModMidiPlayer::set_volume(AudioTraits::PlayingClass*, float) {
   audio_cat->error()
     << "trying to set volume on a sample with a MikModMidiPlayer" << endl;
 }

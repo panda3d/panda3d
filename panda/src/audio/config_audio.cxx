@@ -21,6 +21,7 @@ int audio_buffer_size = config_audio.GetInt("audio-buffer-size", 4096);
 string* audio_device;
 int audio_auto_update_delay = config_audio.GetInt("audio-auto-update-delay",
 						  100000);
+bool audio_is_active = config_audio.GetBool("audio-is-active", true);
 
 ConfigureFn(config_audio) {
   AudioSound::init_type();
@@ -43,6 +44,12 @@ ConfigureFn(config_audio) {
     *audio_driver_params += (*i).Val();
   }
 
+  audio_device = new string(config_audio.GetString("audio-device",
+						   "/dev/dsp"));
+}
+
+void audio_load_loaders(void) {
+  Config::ConfigTable::Symbol::iterator i;
   Config::ConfigTable::Symbol loaders;
   config_audio.GetAll("audio-loader", loaders);
   for (i=loaders.begin(); i!=loaders.end(); ++i) {
@@ -53,6 +60,4 @@ ConfigureFn(config_audio) {
     if (tmp == (void*)0L)
       audio_cat->info() << "unable to load: " << load_dso_error() << endl;
   }
-  audio_device = new string(config_audio.GetString("audio-device",
-						   "/dev/dsp"));
 }

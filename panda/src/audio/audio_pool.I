@@ -37,7 +37,9 @@ INLINE bool AudioPool::verify_sound(const string& filename) {
 //               file cannot be found, returns NULL.
 ////////////////////////////////////////////////////////////////////
 INLINE AudioSound* AudioPool::load_sound(const string& filename) {
-  return get_ptr()->ns_load_sound(filename);
+  if (audio_is_active)
+    return get_ptr()->ns_load_sound(filename);
+  return (AudioSound*)0L;
 }
 
 ////////////////////////////////////////////////////////////////////

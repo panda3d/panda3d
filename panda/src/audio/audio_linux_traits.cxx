@@ -139,6 +139,8 @@ static void mix_buffer(byte* buf) {
 static void update_linux(void) {
   if (buffers.empty())
     return;
+  if (!audio_is_active)
+    return;
   switch (want_buffers) {
   case 0:
     // all buffers are full right now.  This is a good state.
@@ -162,32 +164,37 @@ static void update_linux(void) {
 static void* internal_update(void*) {
   if ((output_fd = open(audio_device->c_str(), O_WRONLY, 0)) == -1) {
     audio_cat->error() << "could not open '" << audio_device << "'" << endl;
+    audio_is_active = false;
     return (void*)0L;
   }
   // this one I don't know about
   int fragsize = 0x0004000c;
   if (ioctl(output_fd, SNDCTL_DSP_SETFRAGMENT, &fragsize) == -1) {
     audio_cat->error() << "faied to set fragment size" << endl;
+    audio_is_active = false;
     return (void*)0L;
   }
   // for now signed, 16-bit, little endian
   int format = AFMT_S16_LE;
   if (ioctl(output_fd, SNDCTL_DSP_SETFMT, &format) == -1) {
     audio_cat->error() << "failed to set format on the dsp" << endl;
+    audio_is_active = false;
     return (void*)0L;
   }
   // set stereo
   int stereo = 1;
   if (ioctl(output_fd, SNDCTL_DSP_STEREO, &stereo) == -1) {
     audio_cat->error() << "failed to set stereo on the dsp" << endl;
+    audio_is_active = false;
     return (void*)0L;
   }
   // set the frequency
   if (ioctl(output_fd, SNDCTL_DSP_SPEED, &audio_mix_freq) == -1) {
     audio_cat->error() << "failed to set frequency on the dsp" << endl;
+    audio_is_active = false;
     return (void*)0L;
   }
-  while (!stop_mixing) {
+  while (!stop_mixing && !audio_is_active) {
     if (have_buffers == 0) {
       ipc_traits::sleep(0, audio_auto_update_delay);
     } else {
@@ -218,6 +225,8 @@ static void shutdown_linux(void) {
 
 static void initialize(void) {
   if (have_initialized)
+    return;
+  if (!audio_is_active)
     return;
 
   buffer1 = new byte[audio_buffer_size];
@@ -350,7 +359,7 @@ void LinuxSamplePlayer::stop_sound(AudioTraits::SoundClass*,
   buffers.erase(lplaying->get_data());
 }
 
-void LinuxSamplePlayer::set_volume(AudioTraits::PlayingClass*, int) {
+void LinuxSamplePlayer::set_volume(AudioTraits::PlayingClass*, float) {
 }
 
 LinuxSamplePlayer* LinuxSamplePlayer::get_instance(void) {
@@ -375,7 +384,7 @@ void LinuxMusicPlayer::stop_sound(AudioTraits::SoundClass*,
   initialize();
 }
 
-void LinuxMusicPlayer::set_volume(AudioTraits::PlayingClass*, int) {
+void LinuxMusicPlayer::set_volume(AudioTraits::PlayingClass*, float) {
 }
 
 LinuxMusicPlayer* LinuxMusicPlayer::get_instance(void) {

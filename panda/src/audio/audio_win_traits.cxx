@@ -28,6 +28,7 @@ static IDirectSound* musicDirectSound = NULL;
   if (FAILED(_result)) { \
     audio_cat->error() << _msg << " at " << __FILE__ << ":" << __LINE__ \
                        << endl; \
+    audio_is_active = false; \
     return; \
   }
 
@@ -39,6 +40,8 @@ static void update_win(void) {
 
 static void initialize(void) {
   if (have_initialized)
+    return;
+  if (!audio_is_active)
     return;
 
   if (audio_cat->is_debug())
@@ -821,9 +824,16 @@ void WinSamplePlayer::stop_sound(AudioTraits::SoundClass*,
     chan->Stop();
 }
 
-void WinSamplePlayer::set_volume(AudioTraits::PlayingClass*, int) {
+void WinSamplePlayer::set_volume(AudioTraits::PlayingClass* play, float v) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "winsampleplayer set_volume" << endl;
+  initialize();
+  WinSamplePlaying* wplay = (WinSamplePlaying*)play;
+  LPDIRECTSOUNDBUFFER chan = wplay->get_channel();
+  if (chan) {
+    LONG v2 = (v * (DSBVOLUME_MAX - DSBVOLUME_MIN)) + DSBVOLUME_MIN;
+    chan->SetVolume(v2);
+  }
 }
 
 WinSamplePlayer* WinSamplePlayer::get_instance(void) {
@@ -895,9 +905,15 @@ void WinMusicPlayer::stop_sound(AudioTraits::SoundClass* music,
   }
 }
 
-void WinMusicPlayer::set_volume(AudioTraits::PlayingClass*, int) {
+void WinMusicPlayer::set_volume(AudioTraits::PlayingClass* play, float v) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "WinMusicPlayer::set_volume()" << endl;
+  WinMusicPlaying* wplay = (WinMusicPlaying*)play;
+  IDirectMusicPerformance* perf = wplay->get_performance();
+  if (perf) {
+    LONG v2 = (v * (DSBVOLUME_MAX - DSBVOLUME_MIN)) + DSBVOLUME_MIN;
+    perf->SetGlobalParam(GUID_PerfMasterVolume, &v2, sizeof(LONG));
+  }
 }
 
 WinMusicPlayer* WinMusicPlayer::get_instance(void) {

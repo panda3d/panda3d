@@ -25,6 +25,11 @@ INLINE LPDIRECTSOUNDBUFFER WinSamplePlaying::get_channel(void) {
   return _channel;
 }
 
+INLINE IDirectMusicPerformance* WinMusic::get_performance(void) const {
+  WinMusic* wmusic = (WinMusic*)_sound;
+  return wmusic->get_performance();
+}
+
 INLINE WinSamplePlayer::WinSamplePlayer(void) : AudioTraits::PlayerClass() {
 }
 

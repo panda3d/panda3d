@@ -8,6 +8,7 @@
 
 #include "audio_sound.h"
 #include "audio_trait.h"
+#include "config_audio.h"
 #include <map>
 #include <pandabase.h>
 #include <filename.h>

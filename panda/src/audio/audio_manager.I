@@ -9,7 +9,8 @@
 //  Description: Play some audio
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::play(AudioSound* sound) {
-  get_ptr()->ns_play(sound);
+  if (audio_is_active)
+    get_ptr()->ns_play(sound);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -18,6 +19,8 @@ INLINE void AudioManager::play(AudioSound* sound) {
 //  Description: make sure buffers are full
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::update(void) {
+  if (!audio_is_active)
+    return;
   mutex_lock l(_manager_mutex);
   if (_update_func != (UpdateFunc*)0L)
     (*_update_func)();
@@ -30,7 +33,8 @@ INLINE void AudioManager::update(void) {
 //  Description: spawn a thread to call update
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::spawn_update(void) {
-  get_ptr()->ns_spawn_update();
+  if (audio_is_active)
+    get_ptr()->ns_spawn_update();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -47,8 +51,9 @@ INLINE void AudioManager::shutdown(void) {
 //       Access: Public, Static
 //  Description: set the volume on a sound instance
 ////////////////////////////////////////////////////////////////////
-INLINE void AudioManager::set_volume(AudioSound* sound, int v) {
-  get_ptr()->ns_set_volume(sound, v);
+INLINE void AudioManager::set_volume(AudioSound* sound, float v) {
+  if (audio_is_active)
+    get_ptr()->ns_set_volume(sound, v);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +62,8 @@ INLINE void AudioManager::set_volume(AudioSound* sound, int v) {
 //  Description: stop playing a given sound
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::stop(AudioSound* sound) {
-  get_ptr()->ns_stop(sound);
+  if (audio_is_active)
+    get_ptr()->ns_stop(sound);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,7 +72,8 @@ INLINE void AudioManager::stop(AudioSound* sound) {
 //  Description: set the looping state of the given sound
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::set_loop(AudioSound* sound, bool state) {
-  get_ptr()->ns_set_loop(sound, state);
+  if (audio_is_active)
+    get_ptr()->ns_set_loop(sound, state);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -58,6 +58,6 @@ void AudioTraits::PlayerClass::stop_sound(AudioTraits::SoundClass*,
   audio_cat->error() << "In abstract PlayerClass::stop_sound!" << endl;
 }
 
-void AudioTraits::PlayerClass::set_volume(AudioTraits::PlayingClass*, int) {
+void AudioTraits::PlayerClass::set_volume(AudioTraits::PlayingClass*, float) {
   audio_cat->error() << "In abstract PlayerClass::set_volume!" << endl;
 }

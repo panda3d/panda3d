@@ -8,6 +8,7 @@
 
 #include "audio_trait.h"
 #include "audio_sound.h"
+#include "config_audio.h"
 
 #include <ipc_mutex.h>
 #include <ipc_thread.h>
@@ -21,7 +22,7 @@ private:
   void ns_stop(AudioSound*);
   void ns_set_loop(AudioSound*, bool);
   bool ns_get_loop(AudioSound*);
-  void ns_set_volume(AudioSound*, int);
+  void ns_set_volume(AudioSound*, float);
   void ns_spawn_update(void);
   void ns_shutdown(void);
   void ns_update(void);
@@ -50,7 +51,7 @@ PUBLISHED:
   INLINE static void stop(AudioSound*);
   INLINE static void set_loop(AudioSound*, bool);
   INLINE static bool get_loop(AudioSound*);
-  INLINE static void set_volume(AudioSound*, int);
+  INLINE static void set_volume(AudioSound*, float);
   INLINE static void update(void);
   INLINE static void spawn_update(void);
   INLINE static void shutdown(void);

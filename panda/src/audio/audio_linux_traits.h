@@ -124,7 +124,7 @@ public:
 			  AudioTraits::PlayingClass*);
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
-  virtual void set_volume(AudioTraits::PlayingClass*, int);
+  virtual void set_volume(AudioTraits::PlayingClass*, float);
 public:
   // used by the readers
   static LinuxSamplePlayer* get_instance(void);
@@ -141,7 +141,7 @@ public:
 			  AudioTraits::PlayingClass*);
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
-  virtual void set_volume(AudioTraits::PlayingClass*, int);
+  virtual void set_volume(AudioTraits::PlayingClass*, float);
 public:
   // used by the readers
   static LinuxMusicPlayer* get_instance(void);

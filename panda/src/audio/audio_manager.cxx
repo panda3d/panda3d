@@ -145,7 +145,7 @@ void* AudioManager::spawned_update(void* data) {
 //       Access: Private
 //  Description: get the player off the sound, and set volume on it
 ////////////////////////////////////////////////////////////////////
-void AudioManager::ns_set_volume(AudioSound* sound, int v) {
+void AudioManager::ns_set_volume(AudioSound* sound, float v) {
   sound->get_player()->set_volume(sound->get_state(), v);
 }
 
