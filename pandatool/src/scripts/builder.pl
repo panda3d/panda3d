@@ -316,7 +316,7 @@ sub gen_python_code() {
     $genpy_args{'3'} = 'win-release';
     $genpy_args{'4'} = 'win-publish';
 
-    $genpy_arg1 = $genpy_args{$ENV{'PANDA_OPTIMIZE'}};
+    $genpy_arg1 = "-t ".$genpy_args{$ENV{'PANDA_OPTIMIZE'}};
     &myexecstr("genPyCode ".$genpy_arg1,"genPyCode failed","DO_LOG","NO_PANDA_ATTACH");
     
     $ENV{'PATH'}=$origpath;
