@@ -67,7 +67,7 @@ ProjectionScreen(const ProjectionScreen &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProjectionScreen::make_copy
-//       Access: Protected, Virtual
+//       Access: Public, Virtual
 //  Description: Returns a newly-allocated Node that is a shallow copy
 //               of this one.  It will be a different Node pointer,
 //               but its internal data may or may not be shared with
@@ -78,18 +78,44 @@ make_copy() const {
   return new ProjectionScreen(*this);
 }
 
-/*
 ////////////////////////////////////////////////////////////////////
-//     Function: ProjectionScreen::app_traverse
+//     Function: ProjectionScreen::has_cull_callback
 //       Access: Public, Virtual
-//  Description: This is called by the App traversal by virtue of the
-//               ProjectionScreen node's being present in the scene graph.
+//  Description: Should be overridden by derived classes to return
+//               true if cull_callback() has been defined.  Otherwise,
+//               returns false to indicate cull_callback() does not
+//               need to be called for this node during the cull
+//               traversal.
 ////////////////////////////////////////////////////////////////////
-void ProjectionScreen::
-app_traverse(const ArcChain &) {
-  recompute_if_stale();
+bool ProjectionScreen::
+has_cull_callback() const {
+  return true;
 }
-*/
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::cull_callback
+//       Access: Public, Virtual
+//  Description: If has_cull_callback() returns true, this function
+//               will be called during the cull traversal to perform
+//               any additional operations that should be performed at
+//               cull time.  This may include additional manipulation
+//               of render state or additional visible/invisible
+//               decisions, or any other arbitrary operation.
+//
+//               By the time this function is called, the node has
+//               already passed the bounding-volume test for the
+//               viewing frustum, and the node's transform and state
+//               have already been applied to the indicated
+//               CullTraverserData object.
+//
+//               The return value is true if this node should be
+//               visible, or false if it should be culled.
+////////////////////////////////////////////////////////////////////
+bool ProjectionScreen::
+cull_callback(CullTraverser *, CullTraverserData &) {
+  recompute_if_stale();
+  return true;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProjectionScreen::generate_screen

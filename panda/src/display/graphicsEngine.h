@@ -51,13 +51,14 @@ PUBLISHED:
   bool remove_window(GraphicsWindow *window);
 
   void render_frame();
+  void render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr);
 
 private:
   void cull_and_draw_together();
-  void cull_and_draw_together(GraphicsWindow *win, DisplayRegion *dr);
+  void cull_and_draw_together(GraphicsStateGuardian *gsg, DisplayRegion *dr);
 
   void cull_bin_draw();
-  void cull_bin_draw(GraphicsWindow *win, DisplayRegion *dr);
+  void cull_bin_draw(GraphicsStateGuardian *gsg, DisplayRegion *dr);
 
   PT(SceneSetup) setup_scene(const NodePath &camera, 
                              GraphicsStateGuardian *gsg);

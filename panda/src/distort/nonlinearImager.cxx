@@ -22,6 +22,7 @@
 #include "graphicsStateGuardian.h"
 #include "matrixLens.h"
 #include "graphicsWindow.h"
+#include "graphicsEngine.h"
 #include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -37,10 +38,11 @@ NonlinearImager::
 NonlinearImager(DisplayRegion *dr) {
   _dr = dr;
 
+  // The internal camera is an identity-matrix camera that simply
+  // views the meshes that represent the user's specified camera.
   _internal_camera = new Camera("NonlinearImager");
   _internal_camera->set_lens(new MatrixLens);
-  _internal_scene_node = new PandaNode("screens");
-  _internal_scene = NodePath(_internal_scene_node);
+  _internal_scene = NodePath("screens");
   _internal_camera->set_scene(_internal_scene);
 
   NodePath camera_np = _internal_scene.attach_new_node(_internal_camera);
@@ -101,15 +103,6 @@ add_screen(ProjectionScreen *screen) {
   new_screen._tex_height = 256;
   new_screen._last_screen = screen->get_last_screen();
   new_screen._active = true;
-
-  // If the LensNode associated with the ProjectionScreen is an actual
-  // Camera, then it has a scene associated.  Otherwise, the user will
-  // have to specify the scene later.
-  LensNode *projector = screen->get_projector();
-  if (projector->is_of_type(Camera::get_class_type())) {
-    Camera *camera = DCAST(Camera, projector);
-    new_screen._scene = camera->get_scene();
-  }
 
   _stale = true;
   return _screens.size() - 1;
@@ -205,35 +198,21 @@ set_size(int index, int width, int height) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NonlinearImager::set_source
+//     Function: NonlinearImager::set_source_camera
 //       Access: Published
-//  Description: Specifies the camera and root of the scene that will
-//               be used to render the image for this particular
-//               screen.
-////////////////////////////////////////////////////////////////////
-void NonlinearImager::
-set_source(int index, LensNode *source, const NodePath &scene) {
-  nassertv(index >= 0 && index < (int)_screens.size());
-  _screens[index]._source = source;
-  _screens[index]._scene = scene;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NonlinearImager::set_source
-//       Access: Published
-//  Description: Specifies the camera and root of the scene that will
-//               be used to render the image for this particular
-//               screen.
+//  Description: Specifies the camera that will be used to render the
+//               image for this particular screen.
 //
-//               Since this flavor accepts a Camera node, instead of
-//               just a LensNode, the scene is specified within the
-//               Camera itself.
+//               The parameter must be a NodePath whose node is a
+//               Camera.  The camera itself indicates the scene that
+//               is to be rendered.
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
-set_source(int index, Camera *source) {
+set_source_camera(int index, const NodePath &source_camera) {
   nassertv(index >= 0 && index < (int)_screens.size());
-  _screens[index]._source = source;
-  _screens[index]._scene = source->get_scene();
+  nassertv(!source_camera.is_empty() && 
+           source_camera.node()->is_of_type(Camera::get_class_type()));
+  _screens[index]._source_camera = source_camera;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -301,13 +280,13 @@ recompute() {
 //               rendering.
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
-render() {
+render(GraphicsEngine *engine) {
   recompute_if_stale();
 
   Screens::iterator si;
   for (si = _screens.begin(); si != _screens.end(); ++si) {
     if ((*si)._active) {
-      render_screen(*si);
+      render_screen(engine, *si);
     }
   }
 }
@@ -377,44 +356,34 @@ recompute_screen(NonlinearImager::Screen &screen) {
 //               the screen's own texture.
 ////////////////////////////////////////////////////////////////////
 void NonlinearImager::
-render_screen(NonlinearImager::Screen &screen) {
-  if (screen._source == (LensNode *)NULL) {
+render_screen(GraphicsEngine *engine, NonlinearImager::Screen &screen) {
+  if (screen._source_camera.is_empty()) {
     distort_cat.error()
-      << "No source lens specified for screen " << screen._screen->get_name()
-      << "\n";
-    return;
-  }
-
-  if (screen._scene.is_empty()) {
-    distort_cat.error()
-      << "No scene specified for screen " << screen._screen->get_name()
+      << "No source camera specified for screen " << screen._screen->get_name()
       << "\n";
     return;
   }
 
   // Got to update this to new scene graph.
-
-  /*
   GraphicsStateGuardian *gsg = _dr->get_window()->get_gsg();
 
   // Make a display region of the proper size and clear it to prepare for
   // rendering the scene.
   PT(DisplayRegion) scratch_region =
     gsg->get_window()->make_scratch_display_region(screen._tex_width, screen._tex_height);
+  scratch_region->set_camera(screen._source_camera);
+
   gsg->clear(gsg->get_render_buffer(RenderBuffer::T_back |
                                     RenderBuffer::T_depth), 
              scratch_region);
-
-  DisplayRegionStack old_dr = gsg->push_display_region(scratch_region);
-  gsg->prepare_display_region();
-  gsg->render_scene(screen._scene, screen._source);
+  engine->render_subframe(gsg, scratch_region);
 
   // Copy the results of the render from the frame buffer into the
   // screen's texture.
   screen._texture->copy(gsg, scratch_region, 
                         gsg->get_render_buffer(RenderBuffer::T_back));
-  
-  // Restore the original display region.
-  gsg->pop_display_region(old_dr);
-  */
+
+  // It might be nice if we didn't through away the scratch region
+  // every time, which prevents us from preserving cull state from one
+  // frame to the next.
 }

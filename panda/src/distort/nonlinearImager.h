@@ -30,6 +30,8 @@
 #include "pointerTo.h"
 #include "pvector.h"
 
+class GraphicsEngine;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : NonlinearImager
 // Description : This class object combines the rendered output of a
@@ -41,12 +43,18 @@
 //               fisheye camera, even though the 3-d graphics engine
 //               only supports linear cameras.
 //
-//               The NonlinearImager collects together a number of
-//               ProjectionScreens, each of which has a standard,
-//               linear Camera.  Each frame, the Imager renders each
-//               scene into a texture and then maps that texture onto
-//               a mesh which is presented to the graphics engine for
-//               rendering the final, non-linear output.
+//               
+//               A NonlinearImager may be visualized as a theater room
+//               into which a number of projection screens have been
+//               placed, at any arbitrary position and orientation to
+//               each other.  Each of these projection screens
+//               displays the view seen by a normal perspective camera
+//               that exists in the world (that is, under render).
+//
+//               There is also in the theater a single, possibly
+//               nonlinear, camera that observes these screens.  The
+//               user's window (or DisplayRegion) will display the
+//               output of this camera.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAFX NonlinearImager {
 PUBLISHED:
@@ -61,8 +69,7 @@ PUBLISHED:
   int get_num_screens() const;
   ProjectionScreen *get_screen(int index) const;
   void set_size(int index, int width, int height);
-  void set_source(int index, LensNode *source, const NodePath &scene);
-  void set_source(int index, Camera *source);
+  void set_source_camera(int index, const NodePath &source_camera);
 
   void set_active(int index, bool active);
   bool get_active(int index) const;
@@ -73,7 +80,7 @@ PUBLISHED:
   INLINE NodePath get_internal_scene() const;
 
   void recompute();
-  void render();
+  void render(GraphicsEngine *engine);
 
 private:
   class Screen {
@@ -81,8 +88,7 @@ private:
     PT(ProjectionScreen) _screen;
     NodePath _mesh;
     PT(Texture) _texture;
-    PT(LensNode) _source;
-    NodePath _scene;
+    NodePath _source_camera;
     int _tex_width, _tex_height;
     UpdateSeq _last_screen;
     bool _active;
@@ -90,7 +96,7 @@ private:
 
   void recompute_if_stale();
   void recompute_screen(Screen &screen);
-  void render_screen(Screen &screen);
+  void render_screen(GraphicsEngine *engine, Screen &screen);
 
   PT(DisplayRegion) _dr;
 
@@ -101,7 +107,6 @@ private:
 
   PT(Camera) _internal_camera;
   NodePath _internal_scene;
-  PT(PandaNode) _internal_scene_node;
 
   bool _stale;
   UpdateSeq _camera_lens_change;

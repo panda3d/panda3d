@@ -100,6 +100,24 @@ render_frame() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::render_subframe
+//       Access: Published
+//  Description: Performs a complete cull and draw pass for one
+//               particular display region.  This is normally useful
+//               only for special effects, like shaders, that require
+//               a complete offscreen render pass before they can
+//               complete.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
+  if (cull_sorting) {
+    cull_bin_draw(gsg, dr);
+  } else {
+    cull_and_draw_together(gsg, dr);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::cull_and_draw_together
 //       Access: Private
 //  Description: An implementation of render_frame() that renders the
@@ -118,7 +136,7 @@ cull_and_draw_together() {
       int num_display_regions = win->get_num_display_regions();
       for (int i = 0; i < num_display_regions; i++) {
         DisplayRegion *dr = win->get_display_region(i);
-        cull_and_draw_together(win, dr);
+        cull_and_draw_together(win->get_gsg(), dr);
       }
       win->end_frame();
     }
@@ -134,8 +152,7 @@ cull_and_draw_together() {
 //               windows in the same pass.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-cull_and_draw_together(GraphicsWindow *win, DisplayRegion *dr) {
-  GraphicsStateGuardian *gsg = win->get_gsg();
+cull_and_draw_together(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
   PT(SceneSetup) scene_setup = setup_scene(dr->get_camera(), gsg);
@@ -169,7 +186,7 @@ cull_bin_draw() {
       int num_display_regions = win->get_num_display_regions();
       for (int i = 0; i < num_display_regions; i++) {
         DisplayRegion *dr = win->get_display_region(i);
-        cull_bin_draw(win, dr);
+        cull_bin_draw(win->get_gsg(), dr);
       }
       win->end_frame();
     }
@@ -185,8 +202,7 @@ cull_bin_draw() {
 //               then draw the bins.  This is the normal method.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-cull_bin_draw(GraphicsWindow *win, DisplayRegion *dr) {
-  GraphicsStateGuardian *gsg = win->get_gsg();
+cull_bin_draw(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
   PT(CullResult) cull_result = dr->_cull_result;
