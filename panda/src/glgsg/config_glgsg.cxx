@@ -65,6 +65,11 @@ bool gl_save_mipmaps = config_glgsg.GetBool("gl-save-mipmaps", false);
 // variable.
 bool gl_auto_normalize_lighting = config_glgsg.GetBool("auto-normalize-lighting", false);
 
+// Configure this true to indicate the current version of GL fully
+// supports textures with B, G, R ordering; false if it only supports
+// R, G, B.
+bool gl_supports_bgr = config_glgsg.GetBool("gl-supports-bgr", true);
+
 GLDecalType gl_decal_type = GDT_offset;
 
 static GLDecalType

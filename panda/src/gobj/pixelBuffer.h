@@ -38,6 +38,18 @@ class RenderBuffer;
 ////////////////////////////////////////////////////////////////////
 //       Class : PixelBuffer
 // Description :
+
+//               Maintains an array of pixel data corresponding to an
+//               image, e.g. copied from the frame buffer, or as part
+//               of a Texture.
+
+//               Pixel data is stored in a generic, uncompressed
+//               format.  Each row of pixels is laid out horizontally,
+//               from the top to the bottom, with no padding between
+//               rows.  Each pixel consumes one or more bytes,
+//               according to get_component_width().  If the Format
+//               indicates multiple components are present, they are
+//               stored in the order B, G, R, A.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PixelBuffer : public ImageBuffer {
 public:

@@ -168,9 +168,12 @@ bool PixelBuffer::write( const string& name ) const
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: read
-//       Access:
-//  Description:
+//     Function: load
+//       Access: Public
+//  Description: Extracts the image data from the given PNMImage and
+//               stores it in the _image member, as an unadorned array
+//               of pixel values.  Note that we now store pixel
+//               components in the order B, G, R, A.
 ////////////////////////////////////////////////////////////////////
 bool PixelBuffer::load(const PNMImage& pnmimage)
 {
@@ -228,9 +231,9 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
         if (is_grayscale) {
           store_unscaled_byte(idx, pnmimage.get_gray_val(i, j));
         } else {
-          store_unscaled_byte(idx, pnmimage.get_red_val(i, j));
-          store_unscaled_byte(idx, pnmimage.get_green_val(i, j));
           store_unscaled_byte(idx, pnmimage.get_blue_val(i, j));
+          store_unscaled_byte(idx, pnmimage.get_green_val(i, j));
+          store_unscaled_byte(idx, pnmimage.get_red_val(i, j));
         }
         if (has_alpha) {
           store_unscaled_byte(idx, pnmimage.get_alpha_val(i, j));
@@ -250,9 +253,9 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
         if (is_grayscale) {
           store_unscaled_short(idx, pnmimage.get_gray_val(i, j));
         } else {
-          store_unscaled_short(idx, pnmimage.get_red_val(i, j));
-          store_unscaled_short(idx, pnmimage.get_green_val(i, j));
           store_unscaled_short(idx, pnmimage.get_blue_val(i, j));
+          store_unscaled_short(idx, pnmimage.get_green_val(i, j));
+          store_unscaled_short(idx, pnmimage.get_red_val(i, j));
         }
         if (has_alpha) {
           store_unscaled_short(idx, pnmimage.get_alpha_val(i, j));
@@ -274,9 +277,9 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
         if (is_grayscale) {
           store_scaled_byte(idx, pnmimage.get_gray_val(i, j), scale);
         } else {
-          store_scaled_byte(idx, pnmimage.get_red_val(i, j), scale);
-          store_scaled_byte(idx, pnmimage.get_green_val(i, j), scale);
           store_scaled_byte(idx, pnmimage.get_blue_val(i, j), scale);
+          store_scaled_byte(idx, pnmimage.get_green_val(i, j), scale);
+          store_scaled_byte(idx, pnmimage.get_red_val(i, j), scale);
         }
         if (has_alpha) {
           store_scaled_byte(idx, pnmimage.get_alpha_val(i, j), scale);
@@ -298,9 +301,9 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
         if (is_grayscale) {
           store_scaled_short(idx, pnmimage.get_gray_val(i, j), scale);
         } else {
-          store_scaled_short(idx, pnmimage.get_red_val(i, j), scale);
-          store_scaled_short(idx, pnmimage.get_green_val(i, j), scale);
           store_scaled_short(idx, pnmimage.get_blue_val(i, j), scale);
+          store_scaled_short(idx, pnmimage.get_green_val(i, j), scale);
+          store_scaled_short(idx, pnmimage.get_red_val(i, j), scale);
         }
         if (has_alpha) {
           store_scaled_short(idx, pnmimage.get_alpha_val(i, j), scale);
@@ -332,9 +335,9 @@ store(PNMImage &pnmimage) const {
         if (is_grayscale) {
           pnmimage.set_gray(i, j, get_unsigned_byte(idx));
         } else {
-          pnmimage.set_red(i, j, get_unsigned_byte(idx));
-          pnmimage.set_green(i, j, get_unsigned_byte(idx));
           pnmimage.set_blue(i, j, get_unsigned_byte(idx));
+          pnmimage.set_green(i, j, get_unsigned_byte(idx));
+          pnmimage.set_red(i, j, get_unsigned_byte(idx));
         }
         if (has_alpha)
           pnmimage.set_alpha(i, j, get_unsigned_byte(idx));
@@ -353,9 +356,9 @@ store(PNMImage &pnmimage) const {
         if (is_grayscale) {
           pnmimage.set_gray(i, j, get_unsigned_short(idx));
         } else {
-          pnmimage.set_red(i, j, get_unsigned_short(idx));
-          pnmimage.set_green(i, j, get_unsigned_short(idx));
           pnmimage.set_blue(i, j, get_unsigned_short(idx));
+          pnmimage.set_green(i, j, get_unsigned_short(idx));
+          pnmimage.set_red(i, j, get_unsigned_short(idx));
         }
         if (has_alpha)
           pnmimage.set_alpha(i, j, get_unsigned_short(idx));

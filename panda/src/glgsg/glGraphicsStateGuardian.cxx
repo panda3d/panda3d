@@ -2223,8 +2223,14 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   case GL_DEPTH_COMPONENT:
     glgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, ";
     break;
+  case GL_BGR:
+    glgsg_cat.debug(false) << "GL_BGR, ";
+    break;
   case GL_RGB:
     glgsg_cat.debug(false) << "GL_RGB, ";
+    break;
+  case GL_BGRA:
+    glgsg_cat.debug(false) << "GL_BGRA, ";
     break;
   case GL_RGBA:
     glgsg_cat.debug(false) << "GL_RGBA, ";
@@ -2350,8 +2356,14 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
   case GL_DEPTH_COMPONENT:
     glgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, ";
     break;
+  case GL_BGR:
+    glgsg_cat.debug(false) << "GL_BGR, ";
+    break;
   case GL_RGB:
     glgsg_cat.debug(false) << "GL_RGB, ";
+    break;
+  case GL_BGRA:
+    glgsg_cat.debug(false) << "GL_BGRA, ";
     break;
   case GL_RGBA:
     glgsg_cat.debug(false) << "GL_RGBA, ";
@@ -3784,10 +3796,12 @@ compute_gl_image_size(int xsize, int ysize, int external_format, int type) {
     num_components = 2;
     break;
 
+  case GL_BGR:
   case GL_RGB:
     num_components = 3;
     break;
 
+  case GL_BGRA:
   case GL_RGBA:
     num_components = 4;
     break;
@@ -3819,6 +3833,40 @@ compute_gl_image_size(int xsize, int ysize, int external_format, int type) {
 }
 #endif  // NDEBUG
 
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::uchar_bgr_to_rgb
+//  Description: Recopies the given array of pixels, converting from
+//               BGR to RGB arrangement.
+////////////////////////////////////////////////////////////////////
+static void
+uchar_bgr_to_rgb(unsigned char *dest, const unsigned char *source, 
+                 int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[2];
+    dest[1] = source[1];
+    dest[2] = source[0];
+    dest += 3;
+    source += 3;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::uchar_bgra_to_rgba
+//  Description: Recopies the given array of pixels, converting from
+//               BGRA to RGBA arrangement.
+////////////////////////////////////////////////////////////////////
+static void
+uchar_bgra_to_rgba(unsigned char *dest, const unsigned char *source, 
+                   int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[2];
+    dest[1] = source[1];
+    dest[2] = source[0];
+    dest[3] = source[3];
+    dest += 4;
+    source += 4;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::apply_texture_immediate
@@ -3837,13 +3885,30 @@ apply_texture_immediate(Texture *tex) {
     return false;
   }
 
+  int xsize = pb->get_xsize();
+  int ysize = pb->get_ysize();
+  int num_pixels = xsize * ysize;
+
   GLenum internal_format = get_internal_image_format(pb->get_format());
   GLenum external_format = get_external_image_format(pb->get_format());
   GLenum type = get_image_type(pb->get_image_type());
 
+  uchar *image = pb->_image;
+  if (!gl_supports_bgr) {
+    // If the GL doesn't claim to support BGR, we may have to reverse
+    // the byte ordering of the image.
+    if (external_format == GL_RGB && pb->get_image_type() == PixelBuffer::T_unsigned_byte) {
+      image = (uchar *)alloca(num_pixels * 3);
+      uchar_bgr_to_rgb(image, pb->_image, num_pixels);
+    } else if (external_format == GL_RGBA && pb->get_image_type() == PixelBuffer::T_unsigned_byte) {
+      image = (uchar *)alloca(num_pixels * 4);
+      uchar_bgra_to_rgba(image, pb->_image, num_pixels);
+    }
+  }
+
 #ifndef NDEBUG
   int wanted_size = 
-    compute_gl_image_size(pb->get_xsize(), pb->get_ysize(),
+    compute_gl_image_size(xsize, ysize,
                           external_format, type);
   nassertr(wanted_size == (int)pb->_image.size(), false);
 #endif  // NDEBUG
@@ -3854,7 +3919,7 @@ apply_texture_immediate(Texture *tex) {
   glgsg_cat.debug()
     << "glTexImage2D(GL_TEXTURE_2D, "
     << (int)internal_format << ", "
-    << pb->get_xsize() << ", " << pb->get_ysize() << ", "
+    << xsize << ", " << ysize << ", "
     << pb->get_border() << ", " << (int)external_format << ", "
     << (int)type << ", " << tex->get_name() << ")\n";
 #endif
@@ -3868,8 +3933,8 @@ apply_texture_immediate(Texture *tex) {
       }
 #endif
       gluBuild2DMipmaps(GL_TEXTURE_2D, internal_format,
-                        pb->get_xsize(), pb->get_ysize(),
-                        external_format, type, pb->_image);
+                        xsize, ysize,
+                        external_format, type, image);
 #ifndef NDEBUG
       if (gl_save_mipmaps) {
         save_mipmap_images(tex);
@@ -3882,8 +3947,8 @@ apply_texture_immediate(Texture *tex) {
 
   nassertr(!pb->_image.empty(), false);
   glTexImage2D(GL_TEXTURE_2D, 0, internal_format,
-               pb->get_xsize(), pb->get_ysize(), pb->get_border(),
-               external_format, type, pb->_image);
+               xsize, ysize, pb->get_border(),
+               external_format, type, image);
   report_errors();
   return true;
 }
@@ -3901,6 +3966,8 @@ get_texture_wrap_mode(Texture::WrapMode wm) {
     return GL_CLAMP;
   case Texture::WM_repeat:
     return GL_REPEAT;
+  case Texture::WM_invalid:
+    break;
   }
   glgsg_cat.error() << "Invalid Texture::WrapMode value!\n";
   return GL_CLAMP;
@@ -3924,6 +3991,8 @@ get_texture_filter_type(Texture::FilterType ft) {
     case Texture::FT_nearest_mipmap_linear:
     case Texture::FT_linear_mipmap_linear:
       return GL_LINEAR;
+    case Texture::FT_invalid:
+      break;
     }
   } else {
     switch (ft) {
@@ -3939,6 +4008,8 @@ get_texture_filter_type(Texture::FilterType ft) {
       return GL_NEAREST_MIPMAP_LINEAR;
     case Texture::FT_linear_mipmap_linear:
       return GL_LINEAR_MIPMAP_LINEAR;
+    case Texture::FT_invalid:
+      break;
     }
   }
   glgsg_cat.error() << "Invalid Texture::FilterType value!\n";
@@ -3999,14 +4070,14 @@ get_external_image_format(PixelBuffer::Format format) {
   case PixelBuffer::F_rgb8:
   case PixelBuffer::F_rgb12:
   case PixelBuffer::F_rgb332:
-    return GL_RGB;
+    return gl_supports_bgr ? GL_BGR : GL_RGB;
   case PixelBuffer::F_rgba:
   case PixelBuffer::F_rgbm:
   case PixelBuffer::F_rgba4:
   case PixelBuffer::F_rgba5:
   case PixelBuffer::F_rgba8:
   case PixelBuffer::F_rgba12:
-    return GL_RGBA;
+    return gl_supports_bgr ? GL_BGRA : GL_RGBA;
   case PixelBuffer::F_luminance:
     return GL_LUMINANCE;
   case PixelBuffer::F_luminance_alphamask:
@@ -4016,7 +4087,7 @@ get_external_image_format(PixelBuffer::Format format) {
   glgsg_cat.error()
     << "Invalid PixelBuffer::Format value in get_external_image_format(): "
     << (int)format << "\n";
-  return GL_RGB;
+  return GL_BGR;
 }
 
 ////////////////////////////////////////////////////////////////////
