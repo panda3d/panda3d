@@ -49,8 +49,12 @@ class FSM(DirectObject):
         """__str__(self)
         Print out something useful about the fsm
         """
-        str = ("FSM " + self.getName() + ' in state "' +
-               self.getCurrentState().getName() + '"')
+        currentState = self.getCurrentState()
+        if currentState:
+            str = ("FSM " + self.getName() + ' in state "' +
+                   currentState.getName() + '"')
+        else:
+            str = ("FSM " + self.getName() + ' not in any state')
         return str
 
     def enterInitialState(self):

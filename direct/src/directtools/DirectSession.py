@@ -110,6 +110,7 @@ class DirectSession(PandaObject):
                             'mouse3', 'mouse3-up']
 
         if base.wantTk:
+            from TkGlobal import *
             self.panel = DirectSessionPanel(parent = tkroot)
 
     def enable(self):

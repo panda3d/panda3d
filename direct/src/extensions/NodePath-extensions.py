@@ -744,7 +744,13 @@
         else:
             return self.__lerp(functorFunc, time, blendType)
             
-
+    def place(self):
+        base.wantDIRECT = 1
+        base.wantTk = 1
+        from TkGlobal import *
+        from DirectSessionGlobal import *
+        import Placer
+        Placer.place(self)
 
 
 

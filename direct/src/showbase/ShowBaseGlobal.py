@@ -14,7 +14,6 @@ __builtin__.camera = base.camera
 __builtin__.loader = base.loader
 __builtin__.ostream = Notify.out()
 __builtin__.run = base.run
-__builtin__.tkroot = base.tkroot
 __builtin__.taskMgr = base.taskMgr
 __builtin__.eventMgr = base.eventMgr
 __builtin__.messenger = base.messenger
@@ -24,4 +23,9 @@ __builtin__.directNotify = directNotify
 # Set direct notify categories now that we have config
 directNotify.setDconfigLevels()
 
+def inspect(anObject):
+    import Inspector
+    Inspector.inspect(anObject)
+
+__builtin__.inspect = inspect
 

@@ -2,6 +2,9 @@
 from Tkinter import *
 import Pmw
 
+import __builtin__
+__builtin__.tkroot = Pmw.initialise()
+
 import Task
 
 def tkloop(self):

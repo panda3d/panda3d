@@ -1,4 +1,9 @@
 
+# This module redefines the builtin import function with one
+# that prints out every import it does in a hierarchical form
+# Annoying and very noisy, but sometimes useful
+import VerboseImport
+
 from PandaModules import *
 from DirectNotifyGlobal import *
 from MessengerGlobal import *
@@ -160,7 +165,6 @@ class ShowBase:
 	self.physicsMgrAngular = 0
 
         self.createAudioManager()
-        self.createRootPanel()
         self.createStats()
 
         # Transition effects (fade, iris, etc)
@@ -219,13 +223,6 @@ class ShowBase:
     def createAudioManager(self):
         if self.wantSound:
             AudioManager.spawnUpdate()
-
-    def createRootPanel(self):
-        if self.wantTk:
-            from TkGlobal import *
-            self.tkroot = Pmw.initialise()
-        else:
-            self.tkroot = None
 
     def dataloop(self, state):
         # traverse the data graph.  This reads all the control
