@@ -1,3 +1,5 @@
+#define USE_PACKAGES dx
+
 #begin lib_target
   #define TARGET ptloader
   #define BUILDING_DLL BUILDING_PTLOADER
