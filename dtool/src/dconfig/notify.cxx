@@ -319,7 +319,6 @@ get_category(const string &fullname) {
 ////////////////////////////////////////////////////////////////////
 ostream &Notify::
 out() {
-  ptr()->_ostream_ptr->flush();
   return *(ptr()->_ostream_ptr);
 }
 
@@ -459,16 +458,26 @@ config_initialized() {
   already_initialized = true;
 
   if (_ostream_ptr == &cerr) {
-    Filename notify_output = config_notify.GetString("notify-output", "");
+    string notify_output = config_notify.GetString("notify-output", "");
     if (!notify_output.empty()) {
-      notify_output.set_text();
-      ofstream *out = new ofstream;
-      if (!notify_output.open_write(*out)) {
-	nout << "Unable to open file " << notify_output << " for output.\n";
-	delete out;
+      if (notify_output == "stdout") {
+	cout.setf(ios::unitbuf);
+	set_ostream_ptr(&cout, false);
+
+      } else if (notify_output == "stderr") {
+	set_ostream_ptr(&cerr, false);
+
       } else {
-	out->setf(ios::unitbuf);
-	set_ostream_ptr(out, true);
+	Filename filename = notify_output;
+	filename.set_text();
+	ofstream *out = new ofstream;
+	if (!filename.open_write(*out)) {
+	  nout << "Unable to open file " << filename << " for output.\n";
+	  delete out;
+	} else {
+	  out->setf(ios::unitbuf);
+	  set_ostream_ptr(out, true);
+	}
       }
     }
   }
