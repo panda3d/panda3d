@@ -1753,7 +1753,7 @@ set_mat(const NodePath &other, const LMatrix4f &mat) {
 //               this node's coordinate system.
 ////////////////////////////////////////////////////////////////////
 LPoint3f NodePath::
-get_relative_point(const NodePath &other, const LVecBase3f &point) {
+get_relative_point(const NodePath &other, const LVecBase3f &point) const {
   LPoint3f rel_point = LPoint3f(point) * other.get_mat(*this);
   return rel_point;
 }
@@ -1766,7 +1766,7 @@ get_relative_point(const NodePath &other, const LVecBase3f &point) {
 //               this node's coordinate system.
 ////////////////////////////////////////////////////////////////////
 LVector3f NodePath::
-get_relative_vector(const NodePath &other, const LVecBase3f &vec) {
+get_relative_vector(const NodePath &other, const LVecBase3f &vec) const {
   LVector3f rel_vector = LVector3f(vec) * other.get_mat(*this);
   return rel_vector;
 }
