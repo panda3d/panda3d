@@ -87,13 +87,27 @@ ConfigVariableBool show_buffers
           "GraphicsWindows, if possible, so that their contents may be viewed "
           "interactively.  Handy during development of multipass algorithms."));
 
+ConfigVariableBool prefer_texture_buffer
+("prefer-texture-buffer", true,
+ PRC_DESC("Set this true to make GraphicsOutput::make_texture_buffer() always "
+          "try to create an offscreen buffer supporting render-to-texture, "
+          "if the graphics card claims to be able to support this feature.  "
+          "If the graphics card cannot support this feature, this option is "
+          "ignored.  This is usually the fastest way to render "
+          "to a texture, and it presumably does not consume any additional "
+          "framebuffer memory over a copy-to-texture operation (since "
+          "the texture and the buffer share the "
+          "same memory)."));
+
 ConfigVariableBool prefer_parasite_buffer
 ("prefer-parasite-buffer", true,
  PRC_DESC("Set this true to make GraphicsOutput::make_texture_buffer() try to "
-          "create a parasite buffer before it tries to create an offscreen "
-          "buffer.  This may be desired if you know your graphics API does not "
-          "support render-to-texture and you want to minimize "
-          "framebuffer memory."));
+          "create a ParasiteBuffer before it tries to create an offscreen "
+          "buffer (assuming it could not create a direct render buffer for "
+          "some reason).  This may reduce your graphics card memory "
+          "requirements by sharing memory with the framebuffer, but it can "
+          "cause problems if the user subsequently resizes the window "
+          "smaller than the buffer."));
 
 ConfigVariableBool prefer_single_buffer
 ("prefer-single-buffer", true,
@@ -101,7 +115,7 @@ ConfigVariableBool prefer_single_buffer
           "try to create a single-buffered offscreen buffer, before falling "
           "back to a double-buffered one (or whatever kind the source window "
           "has).  This is true by default to reduce waste of framebuffer "
-          "memory, but you may get a performance benefit by setting it to "
+          "memory, but you might get a performance benefit by setting it to "
           "false (since in that case the buffer can share a graphics context "
           "with the window)."));
 

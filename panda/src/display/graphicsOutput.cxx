@@ -448,8 +448,12 @@ make_texture_buffer(const string &name, int x_size, int y_size) {
 
   // If the user so indicated in the Config.prc file, try to create a
   // parasite buffer first.  We can only do this if the requested size
-  // fits within the available framebuffer size.
+  // fits within the available framebuffer size.  Also, don't do this
+  // if the GSG supports render-to-a-texture and prefer_texture_buffer
+  // is true, since using a ParasiteButter precludes
+  // render-to-a-texture.
   if (prefer_parasite_buffer && 
+      !(prefer_texture_buffer && gsg->get_supports_render_texture()) && 
       (x_size <= host->get_x_size() && y_size <= host->get_y_size())) {
     buffer = engine->make_parasite(host, name, sort, x_size, y_size);
     if (buffer != (GraphicsOutput *)NULL) {

@@ -48,6 +48,7 @@ extern EXPCL_PANDA ConfigVariableString screenshot_extension;
 
 extern EXPCL_PANDA ConfigVariableBool show_buffers;
 
+extern EXPCL_PANDA ConfigVariableBool prefer_texture_buffer;
 extern EXPCL_PANDA ConfigVariableBool prefer_parasite_buffer;
 extern EXPCL_PANDA ConfigVariableBool prefer_single_buffer;
 
