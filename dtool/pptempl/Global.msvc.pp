@@ -106,21 +106,6 @@
 #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGPDBFLAGS]
 #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGPDBFLAGS]
 
-#if $[eq 0,1]
-// should be OK to build debug info for all builds, although it increases size of DLL by a tiny amt
-//#define FORCE_DEBUG_FLAGS 0
-#if $[FORCE_DEBUG_FLAGS]
-// make them all link with non-debug msvc runtime dlls for this case
-
-// this doesnt work right
-#defer DEBUGFLAGS $[subst /MDd,,$[DEBUGFLAGS]]
-#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] $[DEBUGFLAGS]
-#define LINKER_FLAGS $[LINKER_FLAGS] /debug
-#else
-#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS] 
-#endif
-#endif
-
 // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
 #defer LDFLAGS_OPT1 /fixed:no /incremental:no $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRT.LIB /WARN:3 
 #defer LDFLAGS_OPT2 /fixed:no /incremental:no $[LINKER_FLAGS] /NODEFAULTLIB:MSVCRT.LIB /WARN:3 
