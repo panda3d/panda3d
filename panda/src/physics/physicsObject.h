@@ -47,47 +47,47 @@ private:
   bool _oriented;
 
 PUBLISHED:
-  PhysicsObject(void);
+  PhysicsObject();
   PhysicsObject(const PhysicsObject &copy);
-  virtual ~PhysicsObject(void);
+  virtual ~PhysicsObject();
   const PhysicsObject &operator =(const PhysicsObject &other);
 
   static const float _default_terminal_velocity;
 
   INLINE void set_mass(float);
-  INLINE float get_mass(void) const;
+  INLINE float get_mass() const;
 
   INLINE void set_position(const LPoint3f &pos);
   INLINE void set_position(float x, float y, float z);
-  INLINE LPoint3f get_position(void) const;
+  INLINE LPoint3f get_position() const;
 
   INLINE void set_position_HandOfGod(const LPoint3f &pos);
 
   INLINE void set_last_position(const LPoint3f &pos);
-  INLINE LPoint3f get_last_position(void) const;
+  INLINE LPoint3f get_last_position() const;
 
   INLINE void set_velocity(const LVector3f &vel);
   INLINE void set_velocity(float x, float y, float z);
-  INLINE LVector3f get_velocity(void) const;
+  INLINE LVector3f get_velocity() const;
 
   INLINE void set_active(bool flag);
-  INLINE bool get_active(void) const;
+  INLINE bool get_active() const;
 
   INLINE void set_oriented(bool flag);
-  INLINE bool get_oriented(void) const;
+  INLINE bool get_oriented() const;
 
   INLINE void set_terminal_velocity(float tv);
-  INLINE float get_terminal_velocity(void) const;
+  INLINE float get_terminal_velocity() const;
 
   INLINE void set_orientation(const LOrientationf &orientation);
-  INLINE LOrientationf get_orientation(void) const;
+  INLINE LOrientationf get_orientation() const;
 
   INLINE void set_rotation(const LVector3f &rotation);
-  INLINE LVector3f get_rotation(void) const;
+  INLINE LVector3f get_rotation() const;
 
   virtual LMatrix4f get_inertial_tensor(void) const;
-  virtual LMatrix4f get_lcs(void) const;
-  virtual PhysicsObject *make_copy(void) const;
+  virtual LMatrix4f get_lcs() const;
+  virtual PhysicsObject *make_copy() const;
 
 public:
   static TypeHandle get_class_type() {

@@ -27,7 +27,7 @@
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 LinearIntegrator::
-LinearIntegrator(void) {
+LinearIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ LinearIntegrator(void) {
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 LinearIntegrator::
-~LinearIntegrator(void) {
+~LinearIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,16 +59,15 @@ integrate(Physical *physical, pvector< PT(LinearForce) > &forces,
   for (; current_object_iter != physical->get_object_vector().end();
        current_object_iter++) {
     PhysicsObject *current_object = *current_object_iter;
-
+    
     // bail out if this object doesn't exist or doesn't want to be
     // processed.
-    if (current_object == (PhysicsObject *) NULL)
+    if (current_object == (PhysicsObject *) NULL) {
       continue;
+    }
 
     // set the object's last position to its current position before we move it
     current_object->set_last_position(current_object->get_position());
-
   }
-
   child_integrate(physical, forces, dt);
 }

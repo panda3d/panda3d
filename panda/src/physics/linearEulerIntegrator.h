@@ -33,8 +33,8 @@ private:
                                float dt);
 
 PUBLISHED:
-  LinearEulerIntegrator(void);
-  virtual ~LinearEulerIntegrator(void);
+  LinearEulerIntegrator();
+  virtual ~LinearEulerIntegrator();
 };
 
 #endif // EULERINTEGRATOR_H
