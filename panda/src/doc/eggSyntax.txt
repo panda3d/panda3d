@@ -227,7 +227,45 @@ appear before they are referenced.
   This defines a set of material attributes that may later be
   referenced with <MRef> { name }.
 
-  At present, no material attributes have been implemented.
+  The following attributes may appear within the material block:
+
+  <Scalar> diffr { number }
+  <Scalar> diffg { number }
+  <Scalar> diffb { number }
+  <Scalar> diffa { number }
+
+  <Scalar> ambr { number }
+  <Scalar> ambg { number }
+  <Scalar> ambb { number }
+  <Scalar> amba { number }
+
+  <Scalar> emitr { number }
+  <Scalar> emitg { number }
+  <Scalar> emitb { number }
+  <Scalar> emita { number }
+
+  <Scalar> specr { number }
+  <Scalar> specg { number }
+  <Scalar> specb { number }
+  <Scalar> speca { number }
+
+  <Scalar> shininess { number }
+  <Scalar> local { flag }
+
+  These properties collectively define a "material" that controls the
+  lighting effects that are applied to a surface; a material is only
+  in effect in the presence of lighting.
+
+  The four color groups, diff*, amb*, emit*, and spec* specify the
+  diffuse, ambient, emission, and specular components of the lighting
+  equation, respectively.  Any of them may be omitted; the omitted
+  component(s) take their color from the native color of the
+  primitive, otherwise the primitive color is replaced with the
+  material color.
+
+  The shininess property controls the size of the specular highlight,
+  and the value ranges from 0 to 128.  A larger value creates a
+  smaller highlight (creating the appearance of a shinier surface).
 
 
 <VertexPool> name { vertices }

@@ -2783,14 +2783,15 @@ has_extension(const string &extension) const {
 //               least the indicated value, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-is_at_least_version(int major, int minor, int release) const {
-  if (_gl_version_major < major) {
+is_at_least_version(int major_version, int minor_version, 
+                    int release_version) const {
+  if (_gl_version_major < major_version) {
     return false;
   }
-  if (_gl_version_minor < minor) {
+  if (_gl_version_minor < minor_version) {
     return false;
   }
-  if (_gl_version_release < release) {
+  if (_gl_version_release < release_version) {
     return false;
   }
   return true;

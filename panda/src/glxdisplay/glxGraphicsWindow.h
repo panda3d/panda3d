@@ -36,6 +36,7 @@ public:
                     const string &name);
   virtual ~glxGraphicsWindow();
 
+  virtual bool make_context();
   virtual void make_current();
   virtual void release_gsg();
 

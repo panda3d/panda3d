@@ -69,6 +69,34 @@ glxGraphicsWindow::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::make_context
+//       Access: Public, Virtual
+//  Description: If _needs_context is true, this will be called
+//               in the draw thread prior to rendering into the
+//               window.  It should attempt to create a graphics
+//               context, and return true if successful, false
+//               otherwise.  If it returns false the window will be
+//               considered failed.
+////////////////////////////////////////////////////////////////////
+bool glxGraphicsWindow::
+make_context() {
+  PStatTimer timer(_make_current_pcollector);
+
+  glxGraphicsStateGuardian *glxgsg;
+  DCAST_INTO_R(glxgsg, _gsg, false);
+  glXMakeCurrent(_display, _xwindow, glxgsg->_context);
+  _needs_context = false;
+
+  // Now that we have made the context current to a window, we can
+  // reset the GSG state if this is the first time it has been used.
+  // (We can't just call reset() when we construct the GSG, because
+  // reset() requires having a current context.)
+  glxgsg->reset_if_new();
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsWindow::make_current
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
@@ -82,12 +110,6 @@ make_current() {
   glxGraphicsStateGuardian *glxgsg;
   DCAST_INTO_V(glxgsg, _gsg);
   glXMakeCurrent(_display, _xwindow, glxgsg->_context);
-
-  // Now that we have made the context current to a window, we can
-  // reset the GSG state if this is the first time it has been used.
-  // (We can't just call reset() when we construct the GSG, because
-  // reset() requires having a current context.)
-  glxgsg->reset_if_new();
 }
 
 ////////////////////////////////////////////////////////////////////
