@@ -77,6 +77,8 @@ MayaApi::
 ~MayaApi() {
   nassertv(_global_api == this);
   if (_is_valid) {
+    // Caution!  Calling this function seems to call exit() somewhere
+    // within Maya code.
     MLibrary::cleanup();
   }
   _global_api = (MayaApi *)NULL;
@@ -123,6 +125,21 @@ is_valid() const {
   return _is_valid;
 }
 
+#ifdef WIN32
+static string
+back_to_front_slash(const string &str) {
+  string result = str;
+  string::iterator si;
+  for (si = result.begin(); si != result.end(); ++si) {
+    if ((*si) == '\\') {
+      (*si) = '/';
+    }
+  }
+
+  return result;
+}
+#endif  // WIN32
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaApi::read
 //       Access: Public
@@ -136,6 +153,12 @@ read(const Filename &filename) {
   mayaegg_cat.info() << "Reading " << filename << "\n";
   // Load the file into Maya
   string os_filename = filename.to_os_specific();
+
+#ifdef WIN32
+  // Actually, Maya seems to want forward slashes, even on Windows.
+  os_filename = back_to_front_slash(os_filename);
+#endif
+
   MStatus stat = MFileIO::open(os_filename.c_str());
   if (!stat) {
     stat.perror(filename.c_str());

@@ -63,6 +63,9 @@ public:
   virtual bool convert_file(const Filename &filename);
   bool convert_maya();
 
+  bool open_api();
+  void close_api();
+
 private:
   bool process_node(const MDagPath &dag_path, EggData &data);
   void get_transform(const MDagPath &dag_path, EggGroup *egg_group);
@@ -89,6 +92,8 @@ private:
 
   typedef pmap<string, EggGroup *> Groups;
   Groups _groups;
+
+  string _program_name;
 
 public:
   MayaShaders _shaders;

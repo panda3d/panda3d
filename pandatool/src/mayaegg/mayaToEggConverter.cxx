@@ -66,9 +66,9 @@
 ////////////////////////////////////////////////////////////////////
 MayaToEggConverter::
 MayaToEggConverter(const string &program_name) :
-  _shaders(this)
+  _shaders(this),
+  _program_name(program_name)
 {
-  _maya = MayaApi::open_api(program_name);
   _polygon_output = false;
   _polygon_tolerance = 0.01;
   _ignore_transforms = false;
@@ -93,9 +93,7 @@ MayaToEggConverter(const MayaToEggConverter &copy) :
 ////////////////////////////////////////////////////////////////////
 MayaToEggConverter::
 ~MayaToEggConverter() {
-  // We have to clear the shaders before we release the Maya API.
-  _shaders.clear();
-  _maya.clear();
+  close_api();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,7 +142,7 @@ get_extension() const {
 ////////////////////////////////////////////////////////////////////
 bool MayaToEggConverter::
 convert_file(const Filename &filename) {
-  if (!_maya->is_valid()) {
+  if (!open_api()) {
     mayaegg_cat.error()
       << "Maya is not available.\n";
     return false;
@@ -166,6 +164,16 @@ convert_file(const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 bool MayaToEggConverter::
 convert_maya() {
+  _textures.clear();
+  _shaders.clear();
+  _groups.clear();
+
+  if (!open_api()) {
+    mayaegg_cat.error()
+      << "Maya is not available.\n";
+    return false;
+  }
+
   if (_egg_data->get_coordinate_system() == CS_default) {
     _egg_data->set_coordinate_system(_maya->get_coordinate_system());
   }
@@ -208,6 +216,35 @@ convert_maya() {
   }
 
   return all_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::open_api
+//       Access: Public
+//  Description: Attempts to open the Maya API if it was not already
+//               open, and returns true if successful, or false if
+//               there is an error.
+////////////////////////////////////////////////////////////////////
+bool MayaToEggConverter::
+open_api() {
+  if (_maya == (MayaApi *)NULL || !_maya->is_valid()) {
+    _maya = MayaApi::open_api(_program_name);
+  }
+  return _maya->is_valid();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::close_api
+//       Access: Public
+//  Description: Closes the Maya API, if it was previously opened.
+//               Caution!  Maya appears to call exit() when its API is
+//               closed.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+close_api() {
+  // We have to clear the shaders before we release the Maya API.
+  _shaders.clear();
+  _maya.clear();
 }
 
 ////////////////////////////////////////////////////////////////////

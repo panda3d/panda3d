@@ -87,7 +87,7 @@ run() {
 
   nout << "Initializing Maya.\n";
   MayaToEggConverter converter(_program_name);
-  if (!converter._maya->is_valid()) {
+  if (!converter.open_api()) {
     nout << "Unable to initialize Maya.\n";
     exit(1);
   }
