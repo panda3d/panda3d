@@ -1096,7 +1096,7 @@ search_for_device(int devnum, DXDeviceInfo *pDevinfo) {
     dx_force_16bpp_zbuffer = true;
   }
 
-  if (dx_full_screen) {
+  if (is_fullscreen()) {
     DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd_search);
     ddsd_search.dwFlags = DDSD_HEIGHT | DDSD_WIDTH;
     ddsd_search.dwWidth = dwRenderWidth;
@@ -1274,7 +1274,7 @@ set_coop_levels_and_display_modes() {
     }
     
     // note: its important we call SetDisplayMode on all cards before
-    // creating surfaces on any of them let driver choose default
+    // creating surfaces on any of them to let driver choose default
     // refresh rate (hopefully its >=60Hz)
     hr = pScrn->pDD->SetDisplayMode(pScrn->dwRenderWidth, 
                                     pScrn->dwRenderHeight,
