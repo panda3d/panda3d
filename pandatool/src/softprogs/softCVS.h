@@ -30,30 +30,32 @@ public:
   void run();
 
 private:
-  void traverse(const Filename &directory);
+  typedef vector<SoftFilename> SceneFiles;
+  typedef multiset<SoftFilename> ElementFiles;
 
-  bool rename_file(const string &dirname,
-		   vector<SoftFilename>::const_iterator begin, 
-		   vector<SoftFilename>::const_iterator end);
+  void traverse_root();
+  void traverse_subdir(const Filename &directory);
+
+  void collapse_scene_files();
+  void count_references();
+  void remove_unused_elements();
+
+  bool rename_file(SceneFiles::iterator begin, SceneFiles::iterator end);
   bool scan_cvs(const string &dirname, set<string> &cvs_elements);
-  void consider_add_cvs(const string &dirname, const string &filename, 
-			const set<string> &cvs_elements);
-  void consider_scene_file(Filename path);
-  bool scan_scene_file(istream &in, ostream &out);
+
+  void scan_scene_file(istream &in);
 
   bool cvs_add(const string &path);
-  bool cvs_add_all();
+  bool cvs_add_or_remove(const string &cvs_command, 
+			 const vector_string &paths);
 
-  bool prompt_yesno(const string &message);
-  string prompt(const string &message);
+  SceneFiles _scene_files;
+  ElementFiles _element_files;
 
-  set<string> _scene_files;
-  set<string> _versioned_files;
-
-  vector_string _cvs_paths;
+  vector_string _cvs_add;
+  vector_string _cvs_remove;
   
 protected:
-  bool _interactive;
   bool _no_cvs;
   string _cvs_binary;
 };

@@ -13,12 +13,17 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 SoftFilename::
-SoftFilename(const string &filename) :
+SoftFilename(const string &dirname, const string &filename) :
+  _dirname(dirname),
   _filename(filename)
 {
   _has_version = false;
   _major = 0;
   _minor = 0;
+  _in_cvs = false;
+  _use_count = 0;
+
+  _base = _filename;
 
   // Scan for a version number and an optional extension after each
   // dot in the filename.
@@ -56,12 +61,15 @@ SoftFilename(const string &filename) :
 ////////////////////////////////////////////////////////////////////
 SoftFilename::
 SoftFilename(const SoftFilename &copy) :
+  _dirname(copy._dirname),
   _filename(copy._filename),
   _has_version(copy._has_version),
   _base(copy._base),
   _major(copy._major),
   _minor(copy._minor),
-  _ext(copy._ext)
+  _ext(copy._ext),
+  _in_cvs(copy._in_cvs),
+  _use_count(copy._use_count)
 {
 }
 
@@ -72,12 +80,26 @@ SoftFilename(const SoftFilename &copy) :
 ////////////////////////////////////////////////////////////////////
 void SoftFilename::
 operator = (const SoftFilename &copy) {
+  _dirname = copy._dirname;
   _filename = copy._filename;
   _has_version = copy._has_version;
   _base = copy._base;
   _major = copy._major;
   _minor = copy._minor;
   _ext = copy._ext;
+  _in_cvs = copy._in_cvs;
+  _use_count = copy._use_count;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftFilename::get_dirname
+//       Access: Public
+//  Description: Returns the name of the directory this file was 
+//               found in.
+////////////////////////////////////////////////////////////////////
+const string &SoftFilename::
+get_dirname() const {
+  return _dirname;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,6 +207,19 @@ is_1_0() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SoftFilename::make_1_0
+//       Access: Public
+//  Description: Makes this a 1_0 filename.
+////////////////////////////////////////////////////////////////////
+void SoftFilename::
+make_1_0() {
+  _has_version = true;
+  _major = 1;
+  _minor = 0;
+  _filename = get_1_0_filename();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SoftFilename::is_same_file
 //       Access: Public
 //  Description: Returns true if this file has the same base and
@@ -200,31 +235,75 @@ is_same_file(const SoftFilename &other) const {
 //     Function: SoftFilename::Ordering operator
 //       Access: Public
 //  Description: Puts filenames in order such that the files with the
-//               same base and extension are sorted together; and
-//               within files with the same base and exntension, files
-//               are sorted in decreasing version number order so that
-//               the most recent version appears first.
-//
-//               The ordering operator is only defined for files that
-//               have a version number.
+//               same base are sorted together, ignoring extension;
+//               and within files with the same base, files are sorted
+//               in decreasing version number order so that the most
+//               recent version appears first.
 ////////////////////////////////////////////////////////////////////
 bool SoftFilename::
 operator < (const SoftFilename &other) const {
-  nassertr(_has_version, false);
-  nassertr(other._has_version, false);
-
   if (_base != other._base) {
     return _base < other._base;
   }
-  if (_ext != other._ext) {
-    return _ext < other._ext;
+
+  if (_has_version != other._has_version) {
+    // If one has a version and the other one doesn't, the one without
+    // a version comes first.
+    return _has_version < other._has_version;
   }
-  if (_major != other._major) {
-    return _major > other._major;
-  }
-  if (_minor != other._minor) {
-    return _minor > other._minor;
+
+  if (_has_version) {
+    if (_major != other._major) {
+      return _major > other._major;
+    }
+    if (_minor != other._minor) {
+      return _minor > other._minor;
+    }
   }
 
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftFilename::set_in_cvs
+//       Access: Public
+//  Description: Sets the flag that indicates whether this file is
+//               known to be entered into the CVS database.
+////////////////////////////////////////////////////////////////////
+void SoftFilename::
+set_in_cvs(bool in_cvs) {
+  _in_cvs = in_cvs;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftFilename::get_in_cvs
+//       Access: Public
+//  Description: Returns true if this file is known to be entered in
+//               the CVS database, false if it is not.
+////////////////////////////////////////////////////////////////////
+bool SoftFilename::
+get_in_cvs() const {
+  return _in_cvs;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftFilename::increment_use_count
+//       Access: Public
+//  Description: Indicates that this filename is referenced by one
+//               more scene file.
+////////////////////////////////////////////////////////////////////
+void SoftFilename::
+increment_use_count() {
+  _use_count++;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftFilename::get_use_count
+//       Access: Public
+//  Description: Returns the number of scene files that referenced
+//               this filename.
+////////////////////////////////////////////////////////////////////
+int SoftFilename::
+get_use_count() const {
+  return _use_count;
 }
