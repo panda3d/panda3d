@@ -659,7 +659,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                     pDstWord = (DWORD *)pDDSurfBytes;
 
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
-                        *pDstWord = *pSrcWord | 0x00FF;   // add full white
+                        *pDstWord = (*pSrcWord << 8) | 0x00FF;   // add full white
                     }
                 }
                 break;
@@ -720,7 +720,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
     assert(pixbuf->get_component_width()==sizeof(BYTE));   // cant handle anything else now
     assert(pixbuf->get_image_type()==PixelBuffer::T_unsigned_byte);   // cant handle anything else now
     assert((dwNumComponents==3) || (dwNumComponents==4));  // cant handle anything else now
-    assert(pD3DSurf8!=NULL);
+    assert(IS_VALID_PTR(pD3DSurf8));
 
     BYTE *pbuf=pixbuf->_image.p();
 
@@ -989,7 +989,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
     D3DFORMAT TargetPixFmt=D3DFMT_UNKNOWN;
     bool bNeedLuminance = false;
 
-    assert(_texture!=NULL);
+    assert(IS_VALID_PTR(_texture));
 
     PixelBuffer *pbuf = _texture->_pbuffer;
     // bpp indicates requested fmt, not pixbuf fmt
@@ -1000,7 +1000,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
     assert(pbuf->get_component_width()==sizeof(BYTE));   // cant handle anything else now
     assert(pixbuf_type==PixelBuffer::T_unsigned_byte);   // cant handle anything else now
 
-    if((pixbuf_type != PixelBuffer::T_unsigned_byte) || (pbuf->get_component_width()!=1)) {
+    if((pixbuf_type!=PixelBuffer::T_unsigned_byte) || (pbuf->get_component_width()!=1)) {
         dxgsg_cat.error() << "CreateTexture failed, havent handled non 8-bit channel pixelbuffer types yet! \n";
         return NULL;
     }
@@ -1442,6 +1442,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 HRESULT DXTextureContext::
 FillDDSurfTexturePixels(void) {
     HRESULT hr=E_FAIL;
+    assert(IS_VALID_PTR(_texture));
     PixelBuffer *pbuf = _texture->get_ram_image();
     if (pbuf == (PixelBuffer *)NULL) {
       dxgsg_cat.fatal() << "CreateTexture: get_ram_image() failed\n";
@@ -1449,11 +1450,15 @@ FillDDSurfTexturePixels(void) {
       return E_FAIL;
     }
 
-    assert(_pD3DTexture8!=NULL);
+    assert(IS_VALID_PTR(_pD3DTexture8));
 
     DWORD OrigWidth  = (DWORD) pbuf->get_xsize();
     DWORD OrigHeight = (DWORD) pbuf->get_ysize();
     DWORD cNumColorChannels = pbuf->get_num_components();
+    D3DFORMAT SrcFormat=_PixBufD3DFmt;
+    BYTE *pPixels=(BYTE*)pbuf->_image.p();
+
+    assert(IS_VALID_PTR(pPixels));
 
     IDirect3DSurface8 *pMipLevel0;
     hr=_pD3DTexture8->GetSurfaceLevel(0,&pMipLevel0);
@@ -1467,14 +1472,39 @@ FillDDSurfTexturePixels(void) {
     SrcSize.right = OrigWidth;
     SrcSize.bottom = OrigHeight;
 
+    UINT SrcPixBufRowByteLength=OrigWidth*cNumColorChannels;
+
     DWORD Lev0Filter,MipFilterFlags;
+    bool bUsingTempPixBuf=false;
 
     // need filtering if size changes, (also if bitdepth reduced (need dithering)??)
     Lev0Filter = D3DX_FILTER_LINEAR | D3DX_FILTER_DITHER;
 
+    // D3DXLoadSurfaceFromMemory will load black luminance and we want full white, 
+    // so convert to explicit luminance-alpha format
+    if(_PixBufD3DFmt==D3DFMT_A8) {
+        // alloc buffer for explicit D3DFMT_A8L8
+        USHORT *pTempPixBuf=new USHORT[OrigWidth*OrigHeight];
+        if(!IS_VALID_PTR(pTempPixBuf)) {
+            dxgsg_cat.error() << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
+            goto exit_FillDDSurf;
+        }
+        bUsingTempPixBuf=true;
+
+        USHORT *pOutPix=pTempPixBuf;
+        BYTE *pSrcPix=pPixels;
+        for(UINT y=0;y<OrigHeight;y++) 
+          for(UINT x=0;x<OrigWidth;x++,pSrcPix++,pOutPix++) 
+              *pOutPix = ((*pSrcPix) << 8 ) | 0xFF;  // add full white, which is our interpretation of alpha-only (similar to default adding full opaque alpha 0xFF to RGB-only textures)
+
+        SrcFormat=D3DFMT_A8L8;
+        SrcPixBufRowByteLength=OrigWidth*sizeof(USHORT);
+        pPixels=(BYTE*)pTempPixBuf;
+    }
+
     // filtering may be done here if texture if targetsize!=origsize
-    hr=D3DXLoadSurfaceFromMemory(pMipLevel0,(PALETTEENTRY*)NULL,(RECT*)NULL,(LPCVOID) pbuf->_image.p(),_PixBufD3DFmt,
-                                 OrigWidth*cNumColorChannels,(PALETTEENTRY*)NULL,&SrcSize,Lev0Filter,(D3DCOLOR)0x0);
+    hr=D3DXLoadSurfaceFromMemory(pMipLevel0,(PALETTEENTRY*)NULL,(RECT*)NULL,(LPCVOID)pPixels,SrcFormat,
+                                 SrcPixBufRowByteLength,(PALETTEENTRY*)NULL,&SrcSize,Lev0Filter,(D3DCOLOR)0x0);
     if(FAILED(hr)) {
        dxgsg_cat.error() << "FillDDSurfaceTexturePixels failed for "<< _tex->get_name() <<", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
        goto exit_FillDDSurf;
@@ -1495,6 +1525,9 @@ FillDDSurfTexturePixels(void) {
     }
 
  exit_FillDDSurf:
+    if(bUsingTempPixBuf) {
+      SAFE_DELETE_ARRAY(pPixels);
+    }
     RELEASE(pMipLevel0,dxgsg,"texture",RELEASE_ONCE);
     return hr;
 
