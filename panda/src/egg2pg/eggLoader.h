@@ -137,7 +137,8 @@ private:
 
   void check_for_polysets(EggGroup *egg_group, bool &all_polysets, 
                           bool &any_hidden);
-  PT(qpGeomVertexData) make_vertex_data(EggVertexPool *vertex_pool, 
+  PT(qpGeomVertexData) make_vertex_data(const EggRenderState *render_state,
+                                        EggVertexPool *vertex_pool, 
                                         const LMatrix4d &transform);
   void make_primitive(const EggRenderState *render_state, 
                       EggPrimitive *egg_prim, Primitives &primitives);
@@ -173,6 +174,7 @@ private:
                                  EggGroup::CollideFlags flags);
 
   void apply_deferred_nodes(PandaNode *node, const DeferredNodeProperty &prop);
+  bool expand_all_object_types(EggNode *egg_node);
   bool expand_object_types(EggGroup *egg_group, const pset<string> &expanded,
                            const pvector<string> &expanded_history);
   bool do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
@@ -207,8 +209,9 @@ private:
 
   class VertexPoolTransform {
   public:
-    INLINE bool operator < (const VertexPoolTransform &other) const;
+    bool operator < (const VertexPoolTransform &other) const;
     PT(EggVertexPool) _vertex_pool;
+    BakeInUVs _bake_in_uvs;
     LMatrix4d _transform;
   };
   typedef pmap<VertexPoolTransform, PT(qpGeomVertexData) > VertexPoolData;

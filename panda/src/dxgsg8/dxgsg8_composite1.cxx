@@ -2,6 +2,7 @@
 #include "config_dxgsg8.cxx"
 #include "dxTextureContext8.cxx"
 #include "dxVertexBufferContext8.cxx"
+#include "dxIndexBufferContext8.cxx"
 #include "dxGeomMunger8.cxx"
 #include "d3dfont8.cxx"
 #include "wdxGraphicsPipe8.cxx"

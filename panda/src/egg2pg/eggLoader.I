@@ -42,16 +42,3 @@ operator < (const PrimitiveUnifier &other) const {
   }
   return _shade_model < other._shade_model;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggLoader::VertexPoolTransform::operator <
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE bool EggLoader::VertexPoolTransform::
-operator < (const EggLoader::VertexPoolTransform &other) const {
-  if (_vertex_pool != other._vertex_pool) {
-    return _vertex_pool < other._vertex_pool;
-  }
-  return _transform.compare_to(other._transform, 0.001) < 0;
-}

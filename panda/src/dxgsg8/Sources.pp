@@ -21,6 +21,7 @@
   #define INSTALL_HEADERS \
     dxgsg8base.h config_dxgsg8.h dxGraphicsStateGuardian8.I dxGraphicsStateGuardian8.h \
     dxVertexBufferContext8.h \
+    dxIndexBufferContext8.h \
     dxTextureContext8.h \
     dxGeomMunger8.h \
     d3dfont8.h \
@@ -38,6 +39,7 @@
   #define INCLUDED_SOURCES \
     config_dxgsg8.cxx \
     dxVertexBufferContext8.cxx \
+    dxIndexBufferContext8.cxx \
     dxTextureContext8.cxx \
     dxGeomMunger8.cxx \
     d3dfont8.cxx \

@@ -570,7 +570,6 @@ build_geoms(InputIterator first, InputIterator last,
 
   InputIterator i;
   for (i = first; i != last; ++i) {
-
     // Normals.
 
     // Test rule 1.

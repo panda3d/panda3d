@@ -57,6 +57,7 @@
 #include "dxGeomMunger8.h"
 #include "config_gobj.h"
 #include "dxVertexBufferContext8.h"
+#include "dxIndexBufferContext8.h"
 
 #ifdef DO_PSTATS
 #include "pStatTimer.h"
@@ -2634,7 +2635,11 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_triangles(const qpGeomTriangles *primitive) {
-  if (_vbuffer_active && _ibuffer_active) {
+  if (_vbuffer_active) {
+    IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+    nassertv(ibc != (IndexBufferContext *)NULL);
+    apply_index_buffer(ibc);
+
     _pD3DDevice->DrawIndexedPrimitive
       (D3DPT_TRIANGLELIST,
        primitive->get_min_vertex(),
@@ -2669,19 +2674,36 @@ draw_tristrips(const qpGeomTristrips *primitive) {
   CPTA_ushort maxs = primitive->get_maxs();
   nassertv(mins.size() == ends.size() && maxs.size() == ends.size());
 
-  CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
-  int stride = _vertex_data->get_format()->get_array(0)->get_stride();
+  if (_vbuffer_active) {
+    IndexBufferContext *ibc = ((qpGeomPrimitive *)primitive)->prepare_now(get_prepared_objects(), this);
+    nassertv(ibc != (IndexBufferContext *)NULL);
+    apply_index_buffer(ibc);
 
-  unsigned int start = 0;
-  for (size_t i = 0; i < ends.size(); i++) {
-    _pD3DDevice->DrawIndexedPrimitiveUP
-      (D3DPT_TRIANGLESTRIP, 
-       mins[i], maxs[i] - mins[i] + 1, 
-       ends[i] - start - 2,
-       vertices + start, D3DFMT_INDEX16,
-       array_data, stride);
+    unsigned int start = 0;
+    for (size_t i = 0; i < ends.size(); i++) {
+      _pD3DDevice->DrawIndexedPrimitive
+        (D3DPT_TRIANGLESTRIP,
+         mins[i], maxs[i] - mins[i] + 1, 
+         start, ends[i] - start - 2);
 
-    start = ends[i];
+      start = ends[i];
+    }
+
+  } else {
+    CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
+    int stride = _vertex_data->get_format()->get_array(0)->get_stride();
+
+    unsigned int start = 0;
+    for (size_t i = 0; i < ends.size(); i++) {
+      _pD3DDevice->DrawIndexedPrimitiveUP
+        (D3DPT_TRIANGLESTRIP, 
+         mins[i], maxs[i] - mins[i] + 1, 
+         ends[i] - start - 2,
+         vertices + start, D3DFMT_INDEX16,
+         array_data, stride);
+      
+      start = ends[i];
+    }
   }
 }
 
@@ -2914,7 +2936,7 @@ release_texture(TextureContext *tc) {
 //               will also delete the pointer).
 //
 //               This function should not be called directly to
-//               prepare a data.  Instead, call Data::prepare().
+//               prepare a buffer.  Instead, call Geom::prepare().
 ////////////////////////////////////////////////////////////////////
 VertexBufferContext *DXGraphicsStateGuardian8::
 prepare_vertex_buffer(qpGeomVertexArrayData *data) {
@@ -2992,6 +3014,93 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 
   DXVertexBufferContext8 *dvbc = DCAST(DXVertexBufferContext8, vbc);
   delete dvbc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::prepare_index_buffer
+//       Access: Public, Virtual
+//  Description: Creates a new retained-mode representation of the
+//               given data, and returns a newly-allocated
+//               IndexBufferContext pointer to reference it.  It is the
+//               responsibility of the calling function to later call
+//               release_index_buffer() with this same pointer (which
+//               will also delete the pointer).
+//
+//               This function should not be called directly to
+//               prepare a buffer.  Instead, call Geom::prepare().
+////////////////////////////////////////////////////////////////////
+IndexBufferContext *DXGraphicsStateGuardian8::
+prepare_index_buffer(qpGeomPrimitive *data) {
+  if (dxgsg8_cat.is_debug()) {
+    dxgsg8_cat.debug()
+      << "prepare_index_buffer(" << (void *)data << ")\n";
+  }
+
+  DXIndexBufferContext8 *dibc = new DXIndexBufferContext8(data);
+
+  dibc->create_ibuffer(*_pScrn);
+  dibc->mark_loaded();
+
+  return dibc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::apply_index_buffer
+//       Access: Public
+//  Description: Makes the data the currently available data for
+//               rendering.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+apply_index_buffer(IndexBufferContext *ibc) {
+  DXIndexBufferContext8 *dibc = DCAST(DXIndexBufferContext8, ibc);
+
+  if (dibc->_ibuffer != NULL) {
+    add_to_index_buffer_record(dibc);
+  
+    if (dibc->was_modified()) {
+      if (dxgsg8_cat.is_debug()) {
+        dxgsg8_cat.debug()
+          << "apply_index_buffer(" << (void *)ibc->get_data() << ")\n";
+      }
+      if (dibc->changed_size()) {
+        // Here we have to destroy the old index buffer and create a
+        // new one.
+        dibc->create_ibuffer(*_pScrn);
+
+      } else {
+        // Here we just copy the new data to the index buffer.
+        dibc->upload_data();
+      }
+      
+      dibc->mark_loaded();
+    }
+
+    _pD3DDevice->SetIndices(dibc->_ibuffer, 0);
+    _ibuffer_active = true;
+
+  } else {
+    _pD3DDevice->SetIndices(NULL, 0);
+    _ibuffer_active = false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::release_index_buffer
+//       Access: Public, Virtual
+//  Description: Frees the GL resources previously allocated for the
+//               data.  This function should never be called
+//               directly; instead, call Data::release() (or simply
+//               let the Data destruct).
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+release_index_buffer(IndexBufferContext *ibc) {
+  if (dxgsg8_cat.is_debug()) {
+    dxgsg8_cat.debug()
+      << "release_index_buffer(" << (void *)ibc->get_data() << ")\n";
+  }
+
+  DXIndexBufferContext8 *dibc = DCAST(DXIndexBufferContext8, ibc);
+  delete dibc;
 }
 
 ////////////////////////////////////////////////////////////////////

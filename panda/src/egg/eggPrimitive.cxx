@@ -31,7 +31,7 @@ TypeHandle EggPrimitive::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::determine_alpha_mode
 //       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggPrimitive
+//  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this primitive that has an alpha_mode other than
 //               AM_unspecified.  Returns a valid EggRenderMode pointer
@@ -139,7 +139,7 @@ determine_visibility_mode() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::determine_draw_order
 //       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggPrimitive
+//  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this primitive that has a draw_order specified.
 //               Returns a valid EggRenderMode pointer if one is found,
@@ -166,7 +166,7 @@ determine_draw_order() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::determine_bin
 //       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggPrimitive
+//  Description: Walks back up the hierarchy, looking for an EggGroup
 //               or EggPrimitive or some such object at this level or
 //               above this primitive that has a bin specified.  Returns a
 //               valid EggRenderMode pointer if one is found, or NULL

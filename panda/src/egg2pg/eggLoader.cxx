@@ -154,7 +154,13 @@ void EggLoader::
 build_graph() {
   _deferred_nodes.clear();
 
-  // First, load up all of the textures.
+  // Expand all of the ObjectType flags before we do anything else;
+  // that might prune out large portions of the scene.
+  if (!expand_all_object_types(_data)) {
+    return;
+  }
+
+  // Now, load up all of the textures.
   load_textures();
 
   // Clean up the vertices.
@@ -1483,7 +1489,8 @@ make_polyset(EggBin *egg_bin, PandaNode *parent) {
     // Now convert the vertex pool to a GeomVertexData.
     nassertr(vertex_pool != (EggVertexPool *)NULL, NULL);
     PT(qpGeomVertexData) vertex_data = 
-      make_vertex_data(vertex_pool, egg_bin->get_vertex_to_node());
+      make_vertex_data(render_state, vertex_pool, 
+                       egg_bin->get_vertex_to_node());
     nassertr(vertex_data != (qpGeomVertexData *)NULL, NULL);
 
     // And create a Geom to hold the primitives.
@@ -1565,7 +1572,6 @@ make_lod(EggBin *egg_bin, PandaNode *parent) {
   return create_group_arc(egg_bin, parent, lod_node);
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_node (EggGroup)
 //       Access: Private
@@ -1574,14 +1580,6 @@ make_lod(EggBin *egg_bin, PandaNode *parent) {
 PandaNode *EggLoader::
 make_node(EggGroup *egg_group, PandaNode *parent) {
   PT(PandaNode) node = NULL;
-
-  if (egg_group->get_num_object_types() != 0) {
-    pset<string> expanded;
-    pvector<string> expanded_history;
-    if (!expand_object_types(egg_group, expanded, expanded_history)) {
-      return NULL;
-    }
-  }
 
   if (egg_group->get_dart_type() != EggGroup::DT_none) {
     // A group with the <Dart> flag set means to create a character.
@@ -1865,7 +1863,10 @@ check_for_polysets(EggGroup *egg_group, bool &all_polysets, bool &any_hidden) {
         all_polysets = false;
         return;
       }
-    } else {
+    } else if ((*ci)->is_of_type(EggGroup::get_class_type())) {
+      // Other kinds of children, like vertex pools, comments,
+      // textures, etc., are ignored; but groups indicate more nodes,
+      // so if we find a nested group it means we're not all polysets.
       all_polysets = false;
       return;
     }
@@ -1881,9 +1882,11 @@ check_for_polysets(EggGroup *egg_group, bool &all_polysets, bool &any_hidden) {
 //               transform, just returns it.
 ////////////////////////////////////////////////////////////////////
 PT(qpGeomVertexData) EggLoader::
-make_vertex_data(EggVertexPool *vertex_pool, const LMatrix4d &transform) {
+make_vertex_data(const EggRenderState *render_state, 
+                 EggVertexPool *vertex_pool, const LMatrix4d &transform) {
   VertexPoolTransform vpt;
   vpt._vertex_pool = vertex_pool;
+  vpt._bake_in_uvs = render_state->_bake_in_uvs;
   vpt._transform = transform;
 
   VertexPoolData::iterator di;
@@ -1916,9 +1919,8 @@ make_vertex_data(EggVertexPool *vertex_pool, const LMatrix4d &transform) {
     if (name == "default") {
       name = string();
     }
-    array_format->add_data_type
-      (InternalName::get_texcoord_name(name), 2, 
-       qpGeomVertexDataType::NT_float);
+    PT(InternalName) iname = InternalName::get_texcoord_name(name);
+    array_format->add_data_type(iname, 2, qpGeomVertexDataType::NT_float);
   }
 
   CPT(qpGeomVertexFormat) format = 
@@ -1950,13 +1952,23 @@ make_vertex_data(EggVertexPool *vertex_pool, const LMatrix4d &transform) {
 
     EggVertex::const_uv_iterator uvi;
     for (uvi = vertex->uv_begin(); uvi != vertex->uv_end(); ++uvi) {
-      EggVertexUV *uv = (*uvi);
-      string name = uv->get_name();
+      EggVertexUV *egg_uv = (*uvi);
+      TexCoordd uv = egg_uv->get_uv();
+
+      string name = egg_uv->get_name();
       if (name == "default") {
         name = string();
       }
-      gvi.set_data_type(InternalName::get_texcoord_name(name));
-      gvi.set_data2(LCAST(float, uv->get_uv()));
+      PT(InternalName) iname = InternalName::get_texcoord_name(name);
+      gvi.set_data_type(iname);
+
+      BakeInUVs::const_iterator buv = render_state->_bake_in_uvs.find(iname);
+      if (buv != render_state->_bake_in_uvs.end()) {
+        // If we are to bake in a texture matrix, do so now.
+        uv = uv * (*buv).second->get_transform();
+      }
+
+      gvi.set_data2(LCAST(float, uv));
     }
   }
 
@@ -2737,6 +2749,52 @@ apply_deferred_nodes(PandaNode *node, const DeferredNodeProperty &prop) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::expand_all_object_types
+//       Access: Private
+//  Description: Walks the hierarchy and calls expand_object_types()
+//               on each node, to expand all of the ObjectType
+//               definitions in the file at once.  Also prunes any
+//               nodes that are flagged "backstage".
+//
+//               The return value is true if this node should be kept,
+//               false if it should be pruned.
+////////////////////////////////////////////////////////////////////
+bool EggLoader::
+expand_all_object_types(EggNode *egg_node) {
+  if (egg_node->is_of_type(EggGroup::get_class_type())) {
+    EggGroup *egg_group = DCAST(EggGroup, egg_node);
+
+    if (egg_group->get_num_object_types() != 0) {
+      pset<string> expanded;
+      pvector<string> expanded_history;
+      if (!expand_object_types(egg_group, expanded, expanded_history)) {
+        return false;
+      }
+    }
+  }
+
+  // Now recurse on children, and we might prune children from this
+  // list as we go.
+  if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
+    EggGroupNode *egg_group_node = DCAST(EggGroupNode, egg_node);
+    EggGroupNode::const_iterator ci;
+    ci = egg_group_node->begin();
+    while (ci != egg_group_node->end()) {
+      EggGroupNode::const_iterator cnext = ci;
+      ++cnext;
+
+      if (!expand_all_object_types(*ci)) {
+        // Prune this child.
+        egg_group_node->erase(ci);
+      }
+      ci = cnext;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::expand_object_types
 //       Access: Private
 //  Description: Recursively expands the group's ObjectType string(s).
@@ -2797,7 +2855,7 @@ expand_object_types(EggGroup *egg_group, const pset<string> &expanded,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggLoader::expand_object_type
+//     Function: EggLoader::do_expand_object_types
 //       Access: Private
 //  Description: Further implementation of expand_object_types().
 ////////////////////////////////////////////////////////////////////
@@ -3093,5 +3151,37 @@ get_combine_operand(const EggTexture *egg_tex,
   return TextureStage::CO_undefined;
 }
 
-
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::VertexPoolTransform::operator <
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool EggLoader::VertexPoolTransform::
+operator < (const EggLoader::VertexPoolTransform &other) const {
+  if (_vertex_pool != other._vertex_pool) {
+    return _vertex_pool < other._vertex_pool;
+  }
+  int compare = _transform.compare_to(other._transform, 0.001);
+  if (compare != 0) {
+    return compare < 0;
+  }
   
+  if (_bake_in_uvs.size() != other._bake_in_uvs.size()) {
+    return _bake_in_uvs.size() < other._bake_in_uvs.size();
+  }
+
+  BakeInUVs::const_iterator ai, bi;
+  ai = _bake_in_uvs.begin();
+  bi = other._bake_in_uvs.begin();
+  while (ai != _bake_in_uvs.end()) {
+    nassertr(bi != other._bake_in_uvs.end(), false);
+    if ((*ai) != (*bi)) {
+      return (*ai) < (*bi);
+    }
+    ++ai;
+    ++bi;
+  }
+  nassertr(bi == other._bake_in_uvs.end(), false);
+
+  return false;
+}

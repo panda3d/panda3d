@@ -103,6 +103,10 @@ public:
   void apply_vertex_buffer(VertexBufferContext *vbc);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
+  virtual IndexBufferContext *prepare_index_buffer(qpGeomPrimitive *data);
+  void apply_index_buffer(IndexBufferContext *ibc);
+  virtual void release_index_buffer(IndexBufferContext *ibc);
+
   virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
 
   virtual void framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,

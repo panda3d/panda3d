@@ -188,7 +188,7 @@ fill_state(EggPrimitive *egg_prim) {
     const InternalName *uv_name = (*tmi).first;
     const TexMatTransforms &tmt = (*tmi).second;
 
-    if (tmt.size() == 1 && !needs_tex_mat && !use_qpgeom) {
+    if (tmt.size() == 1 && !needs_tex_mat) {
       // Only one unique transform sharing this set of UV's.  We can
       // bake in the transform!
       const TexMatTextures &tmtex = (*tmt.begin()).second;
@@ -346,8 +346,6 @@ fill_state(EggPrimitive *egg_prim) {
   if (use_qpgeom) {
     if (_flat_shaded) {
       add_attrib(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));
-    } else {
-      add_attrib(ShadeModelAttrib::make(ShadeModelAttrib::M_smooth));
     }
   }
 

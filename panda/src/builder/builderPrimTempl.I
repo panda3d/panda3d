@@ -55,6 +55,7 @@ operator = (const BuilderPrimTempl<VTX> &copy) {
   DAttrib::operator = (copy);
   _verts = copy._verts;
   _components = copy._components;
+  _texcoord_names = copy._texcoord_names;
   _type = copy._type;
   _overall = copy._overall;
 
@@ -334,6 +335,9 @@ has_any_pixel_size() const {
 template <class VTX>
 INLINE TYPENAME BuilderPrimTempl<VTX>::tcn_const_iterator BuilderPrimTempl<VTX>::
 tcn_begin() const {
+  if ((_overall & BAF_overall_updated) == 0) {
+    ((BuilderPrimTempl<VTX> *)this)->update_overall_attrib();
+  }
   return _texcoord_names.begin();
 }
 
@@ -347,6 +351,9 @@ tcn_begin() const {
 template <class VTX>
 INLINE TYPENAME BuilderPrimTempl<VTX>::tcn_const_iterator BuilderPrimTempl<VTX>::
 tcn_end() const {
+  if ((_overall & BAF_overall_updated) == 0) {
+    ((BuilderPrimTempl<VTX> *)this)->update_overall_attrib();
+  }
   return _texcoord_names.end();
 }
 
@@ -359,6 +366,9 @@ tcn_end() const {
 template <class VTX>
 INLINE TYPENAME BuilderPrimTempl<VTX>::tcn_size_type BuilderPrimTempl<VTX>::
 tcn_size() const {
+  if ((_overall & BAF_overall_updated) == 0) {
+    ((BuilderPrimTempl<VTX> *)this)->update_overall_attrib();
+  }
   return _texcoord_names.size();
 }
 

@@ -2031,8 +2031,6 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data) {
-  DO_PSTATS_STUFF(_draw_primitive_pcollector.start());
-
   if (!GraphicsStateGuardian::begin_draw_primitives(geom, vertex_data)) {
     return false;
   }
@@ -2095,8 +2093,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data) {
     GLP(EnableClientState)(GL_VERTEX_ARRAY);
   }
 
-  if (wants_normals() && 
-      _vertex_data->get_array_info(InternalName::get_normal(),
+  if (_vertex_data->get_array_info(InternalName::get_normal(),
                                    array_data, num_components, numeric_type, 
                                    start, stride)) {
     const unsigned char *client_pointer = setup_array_data(array_data);
@@ -2107,27 +2104,18 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data) {
     GLP(DisableClientState)(GL_NORMAL_ARRAY);
   }
 
-  if (wants_colors()) {
-    if (_vertex_data->get_array_info(InternalName::get_color(),
-                                     array_data, num_components, numeric_type, 
-                                     start, stride)) {
-      const unsigned char *client_pointer = setup_array_data(array_data);
-      GLP(ColorPointer)(num_components, get_numeric_type(numeric_type), 
-                        stride, client_pointer + start);
-      GLP(EnableClientState)(GL_COLOR_ARRAY);
-
-    } else {
-      // We wanted colors, but the geom didn't have any; just issue
-      // white.
-      GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
-      GLP(DisableClientState)(GL_COLOR_ARRAY);
-    }
+  if (_vertex_data->get_array_info(InternalName::get_color(),
+                                   array_data, num_components, numeric_type, 
+                                   start, stride)) {
+    const unsigned char *client_pointer = setup_array_data(array_data);
+    GLP(ColorPointer)(num_components, get_numeric_type(numeric_type), 
+                      stride, client_pointer + start);
+    GLP(EnableClientState)(GL_COLOR_ARRAY);
   } else {
     GLP(DisableClientState)(GL_COLOR_ARRAY);
   }
 
-  if (wants_texcoords() && 
-      _vertex_data->get_array_info(InternalName::get_texcoord(),
+  if (_vertex_data->get_array_info(InternalName::get_texcoord(),
                                    array_data, num_components, numeric_type, 
                                    start, stride)) {
     const unsigned char *client_pointer = setup_array_data(array_data);
@@ -2209,8 +2197,6 @@ end_draw_primitives() {
   _geom_display_list = NULL;
 
   GraphicsStateGuardian::end_draw_primitives();
-
-  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2426,7 +2412,7 @@ release_geom(GeomContext *gc) {
 //               will also delete the pointer).
 //
 //               This function should not be called directly to
-//               prepare a data.  Instead, call Data::prepare().
+//               prepare a buffer.  Instead, call Geom::prepare().
 ////////////////////////////////////////////////////////////////////
 VertexBufferContext *CLP(GraphicsStateGuardian)::
 prepare_vertex_buffer(qpGeomVertexArrayData *data) {
@@ -2557,7 +2543,7 @@ setup_array_data(const qpGeomVertexArrayData *data) {
 //               will also delete the pointer).
 //
 //               This function should not be called directly to
-//               prepare a data.  Instead, call Data::prepare().
+//               prepare a buffer.  Instead, call Geom::prepare().
 ////////////////////////////////////////////////////////////////////
 IndexBufferContext *CLP(GraphicsStateGuardian)::
 prepare_index_buffer(qpGeomPrimitive *data) {
