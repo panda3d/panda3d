@@ -527,8 +527,8 @@ class LevelEditor(NodePath, PandaObject):
             ('control-arrow_down', self.keyboardXformSelected, ['down', 'rotate']),
             ('shift-s', self.placeSuitPoint),
             ('shift-c', self.placeBattleCell),
-            ('o', self.addToLandmarkBlock),
-            ('shift-o', self.toggleShowLandmarkBlock),
+            ('k', self.addToLandmarkBlock),
+            ('shift-k', self.toggleShowLandmarkBlock),
             ('%', self.pdbBreak),
             ]
                 
