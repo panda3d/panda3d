@@ -12,7 +12,7 @@
 #
 ########################################################################
 
-import sys,os,time,stat,string,re,getopt,cPickle;
+import sys,os,time,stat,string,re,getopt,cPickle
 
 ########################################################################
 ##
@@ -101,6 +101,28 @@ else:
   def backslashify(exp):
     return(exp)
 
+def oslocalcmd(cd, cmd):
+  if (cd != "."):
+    print "cd "+cd+" ; "+cmd
+    base=os.getcwd()
+    os.chdir(cd)
+  else:
+    print cmd
+  sys.stdout.flush()
+  if (sys.platform == "win32"):
+    exe = cmd.split()[0]
+    if (os.path.isfile(exe)==0):
+      for i in os.environ["PATH"].split(";"):
+        if os.path.isfile(os.path.join(i, exe)):
+          exe = os.path.join(i, exe)
+          break
+      if (os.path.isfile(exe)==0):
+        sys.exit("Cannot find "+exe+" on search path")
+    os.spawnl(os.P_WAIT, exe, cmd)
+  else: os.system(cmd)
+  if (cd != "."):
+    os.chdir(base)
+
 if 1:
   def getExecutablePath(cmd):
     for i in os.getenv("PATH").split(os.pathsep):
@@ -175,8 +197,25 @@ def buildingwhat(opts):
     if (x[:9]=="BUILDING_"): building = x[9:]
   return(building)
 
+def ReadFile(wfile):
+  try:
+    srchandle = open(wfile, "rb")
+    data = srchandle.read()
+    srchandle.close()
+    return(data)
+  except: sys.exit("Cannot read "+wfile)
+
+def WriteFile(wfile,data):
+  try:
+    dsthandle = open(wfile, "wb")
+    dsthandle.write(data)
+    dsthandle.close()
+  except: sys.exit("Cannot write "+wfile)
+
+
+
+
 def ConditionalWriteFile(dest,desiredcontents):
-  #wdest = backslashify(dest)
   try:
     rfile = open(dest, 'rb');
     contents = rfile.read(-1);
@@ -205,24 +244,162 @@ if (sys.platform == "win32"): COMPILERS=["MSVC7"]
 if (sys.platform == "linux2"): COMPILERS=["LINUXA"]
 COMPILER=COMPILERS[0]
 OPTIMIZE="3"
-INSTALLER=1
+INSTALLER=0
 COMPLETE=0
-OMIT=["MILES"]
 THIRDPARTY=""
-VERSION1=1
+VERSION1=0
 VERSION2=0
 VERSION3=0
 COMPRESSOR="zlib"
 
 PACKAGES=["ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
-          "OPENSSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAX5","MAX6","MAX7"]
+          "SSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAX5","MAX6","MAX7"]
+OMIT=PACKAGES[:]
 WARNINGS=[]
 
 DirectXSDK=None
 VERBOSE=0
+##########################################################################################
+#
+# Read the default version number out of dtool/PandaVersion.pp
+#
+##########################################################################################
 
-if (sys.platform != "win32"):
-  OMIT.append("HELIX")
+try:
+  f = file("dtool/PandaVersion.pp","r")
+  pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+PANDA_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
+  for line in f:
+    match = pattern.match(line,0);
+    if (match):
+      VERSION1 = int(match.group(1))
+      VERSION2 = int(match.group(2))
+      VERSION3 = int(match.group(3))
+      break
+  f.close()
+except: pass
+
+##########################################################################################
+#
+# Initialize DTOOLCONFIG based on platform (Win/Unix)
+#
+# These are the defaults for the two broad classes of operating system.
+# Subsequent analysis will cause these values to be tweaked.
+#
+##########################################################################################
+
+DTOOLDEFAULTS=[
+
+# Variable                         Windows                   Unix
+
+("HAVE_PYTHON",                    '1',                      '1'),
+("PYTHON_FRAMEWORK",               'UNDEF',                  'UNDEF'),
+("COMPILE_IN_DEFAULT_FONT",        '1',                      '1'),
+("HAVE_MAYA",                      '1',                      '1'),
+("MAYA_PRE_5_0",                   'UNDEF',                  'UNDEF'),
+("HAVE_SOFTIMAGE",                 'UNDEF',                  'UNDEF'),
+("SSL_097",                        'UNDEF',                  'UNDEF'),
+("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
+("HAVE_GL",                        '1',                      '1'),
+("HAVE_MESA",                      'UNDEF',                  'UNDEF'),
+("MESA_MGL",                       'UNDEF',                  'UNDEF'),
+("HAVE_SGIGL",                     'UNDEF',                  'UNDEF'),
+("HAVE_GLX",                       'UNDEF',                  '1'),
+("HAVE_WGL",                       '1',                      'UNDEF'),
+("HAVE_DX",                        '1',                      'UNDEF'),
+("HAVE_CHROMIUM",                  'UNDEF',                  'UNDEF'),
+("HAVE_THREADS",                   'UNDEF',                  'UNDEF'),
+("HAVE_AUDIO",                     '1',                      '1'),
+("NOTIFY_DEBUG",                   'UNDEF',                  'UNDEF'),
+("DO_PSTATS",                      'UNDEF',                  'UNDEF'),
+("DO_COLLISION_RECORDING",         'UNDEF',                  'UNDEF'),
+("TRACK_IN_INTERPRETER",           'UNDEF',                  'UNDEF'),
+("DO_MEMORY_USAGE",                'UNDEF',                  'UNDEF'),
+("DO_PIPELINING",                  'UNDEF',                  'UNDEF'),
+("EXPORT_TEMPLATES",               'yes',                    'yes'),
+("LINK_IN_GL",                     'UNDEF',                  'UNDEF'),
+("LINK_IN_PHYSICS",                'UNDEF',                  'UNDEF'),
+("DEFAULT_PATHSEP",                '";"',                    '":"'),
+("DEFAULT_PRC_DIR",                '"<auto>"',               '"<auto>"'),
+("PRC_DIR_ENVVARS",                '"PANDA_PRC_DIR"',        '"PANDA_PRC_DIR"'),
+("PRC_PATH_ENVVARS",               '"PANDA_PRC_PATH"',       '"PANDA_PRC_PATH"'),
+("PRC_PATTERNS",                   '"*.prc"',                '"*.prc"'),
+("PRC_EXECUTABLE_PATTERNS",        '""',                     '""'),
+("PRC_EXECUTABLE_ARGS_ENVVAR",     '"PANDA_PRC_XARGS"',      '"PANDA_PRC_XARGS"'),
+("PRC_PUBLIC_KEYS_FILENAME",       '""',                     '""'),
+("PRC_RESPECT_TRUST_LEVEL",        'UNDEF',                  'UNDEF'),
+("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
+("WORDS_BIGENDIAN",                'UNDEF',                  'UNDEF'),
+("HAVE_NAMESPACE",                 '1',                      '1'),
+("HAVE_OPEN_MASK",                 'UNDEF',                  'UNDEF'),
+("HAVE_WCHAR_T",                   '1',                      '1'),
+("HAVE_WSTRING",                   '1',                      '1'),
+("HAVE_TYPENAME",                  '1',                      '1'),
+("SIMPLE_STRUCT_POINTERS",         '1',                      'UNDEF'),
+("HAVE_DINKUM",                    'UNDEF',                  'UNDEF'),
+("HAVE_STL_HASH",                  'UNDEF',                  'UNDEF'),
+("HAVE_GETTIMEOFDAY",              'UNDEF',                  '1'),
+("GETTIMEOFDAY_ONE_PARAM",         'UNDEF',                  'UNDEF'),
+("HAVE_GETOPT",                    'UNDEF',                  '1'),
+("HAVE_GETOPT_LONG_ONLY",          'UNDEF',                  '1'),
+("HAVE_GETOPT_H",                  'UNDEF',                  '1'),
+("IOCTL_TERMINAL_WIDTH",           'UNDEF',                  '1'),
+("HAVE_STREAMSIZE",                '1',                      '1'),
+("HAVE_IOS_TYPEDEFS",              '1',                      '1'),
+("HAVE_IOS_BINARY",                '1',                      '1'),
+("STATIC_INIT_GETENV",             '1',                      'UNDEF'),
+("HAVE_PROC_SELF_EXE",             'UNDEF',                  '1'),
+("HAVE_PROC_SELF_MAPS",            'UNDEF',                  '1'),
+("HAVE_PROC_SELF_ENVIRON",         'UNDEF',                  '1'),
+("HAVE_PROC_SELF_CMDLINE",         'UNDEF',                  '1'),
+("HAVE_GLOBAL_ARGV",               '1',                      'UNDEF'),
+("PROTOTYPE_GLOBAL_ARGV",          'UNDEF',                  'UNDEF'),
+("GLOBAL_ARGV",                    '__argv',                 'UNDEF'),
+("GLOBAL_ARGC",                    '__argc',                 'UNDEF'),
+("HAVE_IO_H",                      '1',                      'UNDEF'),
+("HAVE_IOSTREAM",                  '1',                      '1'),
+("HAVE_MALLOC_H",                  '1',                      '1'),
+("HAVE_SYS_MALLOC_H",              'UNDEF',                  'UNDEF'),
+("HAVE_ALLOCA_H",                  'UNDEF',                  '1'),
+("HAVE_LOCALE_H",                  'UNDEF',                  '1'),
+("HAVE_MINMAX_H",                  '1',                      'UNDEF'),
+("HAVE_SSTREAM",                   '1',                      '1'),
+("HAVE_NEW",                       '1',                      '1'),
+("HAVE_SYS_TYPES_H",               '1',                      '1'),
+("HAVE_SYS_TIME_H",                'UNDEF',                  '1'),
+("HAVE_UNISTD_H",                  'UNDEF',                  '1'),
+("HAVE_UTIME_H",                   'UNDEF',                  '1'),
+("HAVE_GLOB_H",                    'UNDEF',                  '1'),
+("HAVE_DIRENT_H",                  'UNDEF',                  '1'),
+("HAVE_SYS_SOUNDCARD_H",           'UNDEF',                  '1'),
+("HAVE_RTTI",                      '1',                      '1'),
+("GLOBAL_OPERATOR_NEW_EXCEPTIONS", 'UNDEF',                  '1'),
+("OLD_STYLE_ALLOCATOR",            'UNDEF',                  'UNDEF'),
+("GNU_STYLE_ALLOCATOR",            'UNDEF',                  '1'),
+("VC6_STYLE_ALLOCATOR",            'UNDEF',                  'UNDEF'),
+("MODERN_STYLE_ALLOCATOR",         'UNDEF',                  'UNDEF'),
+("NO_STYLE_ALLOCATOR",             '1',                      'UNDEF'),
+("HAVE_ZLIB",                      'UNDEF',                  'UNDEF'),
+("HAVE_PNG",                       'UNDEF',                  'UNDEF'),
+("HAVE_JPEG",                      'UNDEF',                  'UNDEF'),
+("HAVE_TIFF",                      'UNDEF',                  'UNDEF'),
+("HAVE_VRPN",                      'UNDEF',                  'UNDEF'),
+("HAVE_FMOD",                      'UNDEF',                  'UNDEF'),
+("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
+("HAVE_NSPR",                      'UNDEF',                  'UNDEF'),
+("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
+("HAVE_FFTW",                      'UNDEF',                  'UNDEF'),
+("HAVE_MILES",                     'UNDEF',                  'UNDEF'),
+("HAVE_SSL",                       'UNDEF',                  'UNDEF'),
+("HAVE_NET",                       'UNDEF',                  'UNDEF'),
+]
+
+DTOOLCONFIG={}
+if (sys.platform == "win32"):
+  for key,win,unix in DTOOLDEFAULTS:
+    DTOOLCONFIG[key] = win
+else:
+  for key,win,unix in DTOOLDEFAULTS:
+    DTOOLCONFIG[key] = unix
 
 ########################################################################
 ##
@@ -235,43 +412,73 @@ if (sys.platform != "win32"):
 
 def packageInfo():
   print """
+  See panda3d/doc/INSTALL-PP for more detailed information.
+
   3D modeling an painting packages:
     MAX5      3D Studio Max version 5
     MAX6      3D Studio Max version 6
     MAX7      3D Studio Max version 7
+              "uri?"
+              (for .??? files)
 
     MAYA5     Maya version 5
     MAYA6     Maya version 6
-
+              "uri?"
+              (for .??? files)
   Audio playback:
-    FMOD      f mod (.wav, .mp3 files)
+    FMOD      f mod
+              "http://www.fmod.org/"
+              A music and sound effects library (including playback).
+              (for .wav, .mp3 and other files)
 
     MILES     Miles Sound System from RAD Game Tools
               "http://www.radgametools.com/default.htm"
-              A proprietary (non-opensource) audio library
+              A proprietary (non-opensource) audio library.
               (for .wav, .mp3, and other files).
 
   Compression/decompression:
-    ZLIB      z lib (e.g. .zip files)
+    ZLIB      z lib
+              "http://www.gzip.org/zlib"
+              A commression/decomression library.
+              (for .zip and similar files and data)
 
   Font manipulation:
     FREETYPE  free type
               "http://www.freetype.org/"
+              A font manipulation library.
+              (for .ttf files).
 
 
   Image support libraries:
-    JPEG      .jpg and .jpeg files
+    JPEG      Join Photographic Experts Group
+              "http://www.ijg.org"
+              An image library.
+              (.jpg and .jpeg files)
 
-    PNG       .png files
+    PNG       Portable Network Graphics
+              "http://www.libpng.org"
+              An image library.
+              (.png files)
 
-    TIFF      .tiff files
+    TIFF      Tagged Image File Format
+              "ftp://ftp.sgi.com/graphics/tiff"
+              An image library.
+              (.tiff files)
 
   Misc libraries:
     HELIX
+              "uri?"
+              (for .??? files)
+              A ??? library.
 
-    FFTW
+    FFTW      Fast Fourier Transform (in the West)
+              "http://www.fftw.org/"
+              A library for computing DFT in one or more dimensions.
 
-    NVIDIACG
+    NVIDIACG  nVidia cg
+              "http://developer.nvidia.com/page/cg_main.html"
+              (for .??? files)
+              A library for gpu programming (shaders and such).
 
   Network communication:
     OPENSSL   Open Secure Socket Layer
@@ -302,8 +509,8 @@ def usage(problem):
     print ""
     print problem
   print ""
-  print "By default, makepanda generates a 'built' subdirectory and"
-  print "an executable panda installer.  Command-line arguments are:"
+  print "Makepanda generates a 'built' subdirectory containing a"
+  print "compiled copy of Panda3D.  Command-line arguments are:"
   print ""
   print "  --help            (print the help message you're reading now)"
   print "  --package-info    (help info about the optional packages)"
@@ -311,16 +518,17 @@ def usage(problem):
   print "  --optimize X      (optimization level can be 1,2,3,4)"
   print "  --thirdparty X    (directory containing third-party software)"
   print "  --complete        (copy models, samples, direct into the build)"
-  print "  --no-installer    (don't bother building the executable installer)"
+  print "  --installer       (build an executable installer)"
   print "  --v1 X            (set the major version number)"
   print "  --v2 X            (set the minor version number)"
   print "  --v3 X            (set the sequence version number)"
   print "  --lzma            (use lzma compression when building installer)"
   print ""
   for pkg in PACKAGES:
-    print "  --"+pkg.lower()+" or --no-"+pkg.lower()+"             "[len(pkg.lower()):]+"(enable or disable the use of "+pkg+")"
+    print "  --use-"+pkg.lower()+"         "[len(pkg.lower()):]+"  --no-"+pkg.lower()+"         "[len(pkg.lower()):]+"(enable/disable use of "+pkg+")"
   print ""
-  print "  --no-nothing      (don't use any of the third-party packages)"
+  print "  --nothing         (disable every third-party lib)"
+  print "  --everything      (enable every third-party lib)"
   print "  --default         (use default options for everything not specified)"
   print "  --vrdefault       (use default options for the vr studio)"
   print ""
@@ -329,7 +537,7 @@ def usage(problem):
   print ""
   print "The simplest way to compile panda is to just type:"
   print ""
-  print "  makepanda --default"
+  print "  makepanda --everything"
   print ""
   sys.exit(1)
 
@@ -338,11 +546,11 @@ def parseopts(args):
   global DirectXSDK,VERBOSE
   longopts = [
     "help","package-info","compiler=","directx-sdk=","thirdparty=",
-    "optimize=","no-nothing","no-installer","quiet","verbose",
+    "optimize=","everything","nothing","installer","quiet","verbose",
     "complete","default","v1=","v2=","v3=","lzma"]
   anything = 0
   for pkg in PACKAGES: longopts.append("no-"+pkg.lower())
-  for pkg in PACKAGES: longopts.append(pkg.lower())
+  for pkg in PACKAGES: longopts.append("use-"+pkg.lower())
   try:
     opts, extras = getopt.getopt(args, "", longopts)
     for option,value in opts:
@@ -354,17 +562,20 @@ def parseopts(args):
       if (option=="--optimize"): OPTIMIZE=value
       if (option=="--quiet"): VERBOSE-=1
       if (option=="--verbose"): VERBOSE+=1
-      if (option=="--no-installer"): INSTALLER=0
+      if (option=="--installer"): INSTALLER=1
       if (option=="--complete"): COMPLETE=1
-      if (option=="--no-nothing"): OMIT=PACKAGES[:]
+      if (option=="--everything"): OMIT=[]
+      if (option=="--nothing"): OMIT=PACKAGES[:]
       if (option=="--v1"): VERSION1=int(value)
       if (option=="--v2"): VERSION2=int(value)
       if (option=="--v3"): VERSION3=int(value)
       if (option=="--lzma"): COMPRESSOR="lzma"
       for pkg in PACKAGES:
-        if (option=="--no-"+pkg.lower()): OMIT.append(pkg)
+        if (option=="--use-"+pkg.lower()):
+          if (OMIT.count(pkg)): OMIT.delete(pkg)
       for pkg in PACKAGES:
-        if option=="--"+pkg.lower() and OMIT.count(pkg): OMIT.remove(pkg)
+        if (option=="--no-"+pkg.lower()):
+          if (OMIT.count(pkg)==0): OMIT.append(pkg)
       anything = 1
   except "package-info": packageInfo()
   except: usage(0)
@@ -380,7 +591,7 @@ parseopts(sys.argv[1:])
 
 ########################################################################
 #
-# Locate the root of the panda tree, sanity check for presence of files.
+# Locate the root of the panda tree
 #
 ########################################################################
 
@@ -546,6 +757,74 @@ if (COMPILER == "MSVC7"):
 
 ##########################################################################################
 #
+# Disable Helix unless running under Windows
+#
+##########################################################################################
+
+if (sys.platform != "win32"):
+  if (OMIT.count("HELIX")==0):
+    WARNINGS.append("HELIX not yet supported under linux")
+    WARNINGS.append("I have automatically added this command-line option: --no-helix")
+    OMIT.append("HELIX")
+
+##########################################################################################
+#
+# Disable Miles (until we implement support for it)
+#
+##########################################################################################
+
+if (OMIT.count("MILES")==0):
+  WARNINGS.append("Miles audio not yet supported by makepanda")
+  WARNINGS.append("I have automatically added this command-line option: --no-miles")
+  OMIT.append("MILES")
+  
+##########################################################################################
+#
+# Enable or Disable runtime debugging mechanisms based on optimize level.
+#
+##########################################################################################
+
+DTOOLCONFIG["HAVE_NET"] = DTOOLCONFIG["HAVE_NSPR"]
+
+if (OPTIMIZE <= 3):
+  if (DTOOLCONFIG["HAVE_NET"] != 'UNDEF'):
+    DTOOLCONFIG["DO_PSTATS"] = '1'
+
+if (OPTIMIZE <= 3):
+  DTOOLCONFIG["DO_COLLISION_RECORDING"] = '1'
+
+if (OPTIMIZE <= 2):
+  DTOOLCONFIG["TRACK_IN_INTERPRETER"] = '1'
+
+if (OPTIMIZE <= 3):
+  DTOOLCONFIG["DO_MEMORY_USAGE"] = '1'
+
+if (OPTIMIZE <= 1):
+  DTOOLCONFIG["DO_PIPELINING"] = '1'
+
+if (OPTIMIZE <= 3):
+  DTOOLCONFIG["NOTIFY_DEBUG"] = '1'
+
+##########################################################################################
+#
+# See if we're using SSL, and if so, which version.
+#
+##########################################################################################
+
+
+##########################################################################################
+#
+# Add the package selections to DTOOLCONFIG
+#
+##########################################################################################
+
+for x in PACKAGES:
+  if (OMIT.count(x)==0):
+    if (DTOOLCONFIG.has_key("HAVE_"+x)):
+      DTOOLCONFIG["HAVE_"+x] = '1'
+
+##########################################################################################
+#
 # Verify that LD_LIBRARY_PATH contains the built/lib directory.
 #
 # If not, add it on a temporary basis, and issue a warning.
@@ -671,9 +950,8 @@ def CxxGetIncludes(path):
   if (CxxIncludeCache.has_key(path)):
     cached = CxxIncludeCache[path]
     if (cached[0]==date): return cached[1]
-  wpath = backslashify(path)
-  try: sfile = open(wpath, 'rb')
-  except: sys.exit("Cannot open source file "+wpath+" for reading.");
+  try: sfile = open(path, 'rb')
+  except: sys.exit("Cannot open source file \""+path+"\" for reading.");
   include = []
   for line in sfile:
     match = CxxIncludeRegex.match(line,0);
@@ -696,10 +974,10 @@ def CxxGetIncludes(path):
 
 def CxxFindSource(name, ipath):
   for dir in ipath:
-    if (dir == "."): full = name;
-    else: full = dir + "/" + name;
-    if (filedate(backslashify(full)) > 0): return(full);
-  return(0);
+    if (dir == "."): full = name
+    else: full = dir + "/" + name
+    if filedate(full) > 0: return full
+  return 0
 
 ########################################################################
 ##
@@ -725,8 +1003,8 @@ def CxxFindHeader(srcfile, incfile, ipath):
         srcdir = srcdir[:last+1]
       else: sys.exit("CxxFindHeader cannot handle this case #3")
     full = srcdir + incfile;
-    if (filedate(backslashify(full)) > 0): return(full);
-    return(0);
+    if filedate(full) > 0: return full
+    return 0
   else: return CxxFindSource(incfile, ipath)
 
 ########################################################################
@@ -773,6 +1051,27 @@ def CxxCalcDependenciesAll(srcfiles, ipath):
 
 ########################################################################
 ##
+## ConditionalWriteFile
+##
+## Creates the given file, but only if it doesn't already
+## contain the correct contents.
+##
+########################################################################
+
+def ConditionalWriteFile(dest,desiredcontents):
+  wdest = backslashify(dest)
+  try:
+    rfile = open(wdest, 'rb');
+    contents = rfile.read(-1);
+    rfile.close();
+  except: contents=0;
+  if (contents != desiredcontents):
+    print "Regenerating file: "+dest
+    sys.stdout.flush()
+    WriteFile(wdest,desiredcontents)
+
+########################################################################
+##
 ## MakeDirectory
 ##
 ## Make a directory in the build tree
@@ -798,23 +1097,12 @@ def CopyFile(dstfile,srcfile):
     if (fnl < 0): fn = srcfile
     else: fn = srcfile[fnl+1:]
     dstfile = dstdir + fn;
-  #wdstfile = backslashify(dstfile)
-  #wsrcfile = backslashify(srcfile)
   if (older(dstfile,srcfile)):
     global VERBOSE
     if VERBOSE >= 1:
       print "Copying "+srcfile+" -> "+dstfile+"..."
-    try:
-      srchandle = open(srcfile, "rb")
-      dsthandle = open(dstfile, "wb")
-      data = " "
-      while (len(data) > 0):
-        data = srchandle.read(100000);
-        dsthandle.write(data)
-      srchandle.close()
-      dsthandle.close()
-      updatefiledate(dstfile);
-    except: sys.exit("Cannot copy data from \""+srcfile+"\" to \""+dstfile+"\"")
+    WriteFile(dstfile,ReadFile(srcfile))
+    updatefiledate(dstfile);
   ALLTARGETS.append(dstfile)
 
 ########################################################################
@@ -826,8 +1114,6 @@ def CopyFile(dstfile,srcfile):
 ########################################################################
 
 def CopyAllFiles(dstdir,srcdir):
-  #wdstdir = backslashify(dstdir)
-  #wsrcdir = backslashify(srcdir)
   files = os.listdir(srcdir)
   for x in files:
     if (os.path.isfile(srcdir+x)):
@@ -842,10 +1128,6 @@ def CopyAllFiles(dstdir,srcdir):
 ########################################################################
 
 def CopyTree(dstdir,srcdir):
-  #wdstdir = dstdir
-  #wsrcdir = srcdir
-  #wdstdir = backslashify(dstdir)
-  #wsrcdir = backslashify(srcdir)
   if (os.path.isdir(dstdir)): return(0);
   if (COMPILER=="MSVC7"): cmd = "xcopy.exe /I/Y/E/Q \""+srcdir+"\" \""+dstdir+"\""
   if (COMPILER=="LINUXA"): cmd = "cp --recursive --force "+srcdir+" "+dstdir
@@ -862,9 +1144,6 @@ def CopyTree(dstdir,srcdir):
 
 def CompileBison(pre,dstc,dsth,src):
   (base, fn) = os.path.split(src)
-  #wdstc = backslashify("built/tmp/"    +dstc)
-  #wdsth = backslashify("built/include/"+dsth)
-  #wsrc = backslashify(src)
   dstc=base+"/"+dstc
   dsth=base+"/"+dsth
   if (older(dstc,src) or older(dsth,src)):
@@ -873,17 +1152,12 @@ def CompileBison(pre,dstc,dsth,src):
       CopyFile("built/tmp/", STDTHIRDPARTY+"win-util/bison.simple")
       bisonFullPath=os.path.abspath(STDTHIRDPARTY+"win-util/bison.exe")
       oscdcmd("built/tmp", bisonFullPath+" -y -d -p " + pre + " " + fn)
-      #oscmd(bisonFullPath+" -y -d -p " + pre + " " + fn)
-      osmove("built/tmp/y_tab.c", dstc) # not os.path.join() because we want "/"
-      osmove("built/tmp/y_tab.h", dsth) # not os.path.join() because we want "/"
-      #oscmd("move /y built\\tmp\\y_tab.c " + wdstc)
-      #oscmd("move /y built\\tmp\\y_tab.h " + wdsth)
+      osmove("built/tmp/y_tab.c", dstc)
+      osmove("built/tmp/y_tab.h", dsth)
     if (COMPILER=="LINUXA"):
       oscdcmd("built/tmp", "bison -y -d -p "+pre+" "+fn)
       osmove("built/tmp/y.tab.c", dstc)
       osmove("built/tmp/y.tab.h", dsth)
-      #oscmd("mv built/tmp/y.tab.c "+wdstc)
-      #oscmd("mv built/tmp/y.tab.h "+wdsth)
     updatefiledate(dstc);
     updatefiledate(dsth);
 
@@ -898,23 +1172,20 @@ def CompileBison(pre,dstc,dsth,src):
 def CompileFlex(pre,dst,src,dashi):
   last = src.rfind("/")
   fn = src[last+1:]
-  wdst = backslashify("built/tmp/"+dst)
-  wsrc = backslashify(src)
-  wfn = backslashify(fn)
-  if (older(wdst,wsrc)):
+  dst = "built/tmp/"+dst
+  if (older(dst,src)):
     CopyFile("built/tmp/", src)
     if (COMPILER=="MSVC7"):
-      flexFullPath=os.path.abspath(backslashify(STDTHIRDPARTY)+"win-util\\flex.exe")
-      #sedFullPath=os.path.abspath(backslashify(STDTHIRDPARTY)+"win-util\\sed.exe")
-      if (dashi): oscdcmd("built/tmp", flexFullPath+" -i -P" + pre + " -olex.yy.c " + wfn)
-      else      : oscdcmd("built/tmp", flexFullPath+"    -P" + pre + " -olex.yy.c " + wfn)
-      replaceInFile('built/tmp/lex.yy.c', wdst, '#include <unistd.h>', '')
-      #oscdcmd('built/tmp', sedFullPath+' -e "s/#include <unistd.h>//" < lex.yy.c > ..\\..\\'+wdst)
+      flexFullPath=os.path.abspath(STDTHIRDPARTY+"win-util/flex.exe")
+      if (dashi): oscdcmd("built/tmp", flexFullPath+" -i -P" + pre + " -olex.yy.c " + fn)
+      else      : oscdcmd("built/tmp", flexFullPath+"    -P" + pre + " -olex.yy.c " + fn)
+      replaceInFile('built/tmp/lex.yy.c', dst, '#include <unistd.h>', '')
+      #WriteFile(wdst, ReadFile("built\\tmp\\lex.yy.c").replace("#include <unistd.h>",""))
     if (COMPILER=="LINUXA"):
-      if (dashi): oscdcmd("built/tmp", "flex -i -P" + pre + " -olex.yy.c " + wfn)
-      else      : oscdcmd("built/tmp", "flex    -P" + pre + " -olex.yy.c " + wfn)
-      oscmd('cp built/tmp/lex.yy.c '+wdst)
-    updatefiledate(wdst)
+      if (dashi): oscdcmd("built/tmp", "flex -i -P" + pre + " -olex.yy.c " + fn)
+      else      : oscdcmd("built/tmp", "flex    -P" + pre + " -olex.yy.c " + fn)
+      oscmd('cp built/tmp/lex.yy.c '+dst)
+    updatefiledate(dst)
 
 ########################################################################
 ##
@@ -939,7 +1210,6 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
   dep = CxxCalcDependencies(fullsrc, ipath, [])
 
   if (COMPILER=="MSVC7"):
-    #wobj = backslashify("built/tmp/"+obj);
     wobj = "built/tmp/"+obj
     if (older(wobj, dep)):
       global VERBOSE
@@ -979,11 +1249,11 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
       if (src[-2:]==".c"): cmd = "gcc -c -o "+wobj
       else:                cmd = "g++ -ftemplate-depth-30 -c -o "+wobj
       cmd = cmd + ' -I"' + PythonSDK + '"'
-      if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -I\'' + THIRDPARTY + 'vrpn/include\''
-      if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -I\'' + THIRDPARTY + 'fftw/include\''
-      if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -I\'' + THIRDPARTY + 'fmod/include\''
-      if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -I\'' + THIRDPARTY + 'nvidiacg/include\''
-      if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -I\'' + THIRDPARTY + 'nspr/include\''
+      if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -I"' + THIRDPARTY + 'vrpn/include"'
+      if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -I"' + THIRDPARTY + 'fftw/include"'
+      if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -I"' + THIRDPARTY + 'fmod/include"'
+      if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -I"' + THIRDPARTY + 'nvidiacg/include"'
+      if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -I"' + THIRDPARTY + 'nspr/include"'
       if (PkgSelected(opts,"FREETYPE")): cmd = cmd + ' -I/usr/include/freetype2'
       for x in ipath: cmd = cmd + ' -I"' + x + '"'
       if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
@@ -1009,19 +1279,17 @@ def CompileRES(obj=0,src=0,ipath=[],opts=[]):
   if ((obj==0)|(src==0)): sys.exit("syntax error in CompileRES directive");
   fullsrc = CxxFindSource(src, ipath)
   if (fullsrc == 0): sys.exit("Cannot find source file "+src)
-  wobj = backslashify("built/tmp/"+obj)
-  wsrc = backslashify(fullsrc)
-  wdep = backslashify(CxxCalcDependencies(fullsrc, ipath, []))
-  wipath = backslashify(ipath)
+  obj = "built/tmp/"+obj
+  wdep = CxxCalcDependencies(fullsrc, ipath, [])
 
   if (COMPILER=="MSVC7"):
-    if (older(wobj, wdep)):
+    if (older(obj, wdep)):
       cmd = 'rc.exe /d "NDEBUG" /l 0x409'
-      for x in wipath: cmd = cmd + " /I " + x;
-      cmd = cmd + ' /fo"' + wobj + '"'
-      cmd = cmd + ' "'+ wsrc + '"'
+      for x in ipath: cmd = cmd + " /I " + x;
+      cmd = cmd + ' /fo"' + obj + '"'
+      cmd = cmd + ' "'+ fullsrc + '"'
       oscmd(cmd)
-      updatefiledate(wobj)
+      updatefiledate(obj)
 
   if (COMPILER=="LINUXA"):
     sys.exit("Can only compile RES files on Windows.")
@@ -1038,57 +1306,52 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
   if ((ipath==0)|(opts==0)|(outd==0)|(outc==0)|(src==0)|(module==0)|(library==0)|(files==0)):
     sys.exit("syntax error in Interrogate directive");
   ipath = ["built/tmp"] + ipath + ["built/include"]
-  wipath = backslashify(ipath)
-  woutd = backslashify("built/etc/"+outd)
-  woutc = backslashify("built/tmp/"+outc)
-  wsrc = backslashify(src)
-  wfiles = backslashify(files)
+  outd = "built/etc/"+outd
+  outc = "built/tmp/"+outc
   paths = xpaths(src+"/",files,"")
   dep = CxxCalcDependenciesAll(paths, ipath)
-  wdep = backslashify(dep)
   dotdots = ""
   for i in range(0,src.count("/")+1): dotdots = dotdots + "../"
-  wdotdots = backslashify(dotdots)
   ALLIN.append(outd)
   building = 0;
   for x in opts:
     if (x[:9]=="BUILDING_"): building = x[9:]
-  if (older(woutc, wdep) or older(woutd, wdep)):
+  if (older(outc, dep) or older(outd, dep)):
     if (COMPILER=="MSVC7"):
-      cmd = wdotdots + "built/bin/interrogate.exe"
+      cmd = dotdots + "built/bin/interrogate.exe"
       cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
       cmd = cmd + ' -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
       if (OPTIMIZE==1): cmd = cmd + ' '
       if (OPTIMIZE==2): cmd = cmd + ' '
       if (OPTIMIZE==3): cmd = cmd + ' -DFORCE_INLINING'
       if (OPTIMIZE==4): cmd = cmd + ' -DFORCE_INLINING'
-      cmd = cmd + ' -S"' + wdotdots + 'built/include/parser-inc"'
-      cmd = cmd + ' -I"' + wdotdots + 'built/python/include"'
+      cmd = cmd + ' -S"' + dotdots + 'built/include/parser-inc"'
+      cmd = cmd + ' -I"' + dotdots + 'built/python/include"'
     if (COMPILER=="LINUXA"):
-      cmd = wdotdots + "built/bin/interrogate"
+      cmd = dotdots + "built/bin/interrogate"
       cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__i386__ -D__const=const'
       if (OPTIMIZE==1): cmd = cmd + ' '
       if (OPTIMIZE==2): cmd = cmd + ' '
       if (OPTIMIZE==3): cmd = cmd + ' '
       if (OPTIMIZE==4): cmd = cmd + ' '
-      cmd = cmd + ' -S"' + wdotdots + 'built/include/parser-inc" -S"/usr/include"'
-      cmd = cmd + ' -I"' + wdotdots + 'built/python/include"'
-    cmd = cmd + " -oc "+wdotdots+woutc+" -od "+wdotdots+woutd
+      cmd = cmd + ' -S"' + dotdots + 'built/include/parser-inc" -S"/usr/include"'
+      cmd = cmd + ' -I"' + dotdots + 'built/python/include"'
+    cmd = cmd + " -oc "+dotdots+outc+" -od "+dotdots+outd
     cmd = cmd + ' -fnames -string -refcount -assert -python'
-    for x in wipath: cmd = cmd + ' -I"' + wdotdots + x + '"'
+    for x in ipath: cmd = cmd + ' -I"' + dotdots + x + '"'
     if (building): cmd = cmd + " -DBUILDING_"+building
     if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
     for pkg in PACKAGES:
       if (PkgSelected(opts,pkg)):
-        cmd = cmd + ' -I"' + wdotdots + backslashify(STDTHIRDPARTY + pkg.lower() + "/include") + '"'
+        cmd = cmd + ' -I"' + dotdots + STDTHIRDPARTY + pkg.lower() + "/include" + '"'
     cmd = cmd + ' -module "' + module + '" -library "' + library + '"'
     if ((COMPILER=="MSVC7") and opts.count("DXSDK")): cmd = cmd + ' -I"' + DirectXSDK + '/include"'
     if ((COMPILER=="MSVC7") and opts.count("MAYA5")): cmd = cmd + ' -I"' + Maya5SDK + 'include"'
     if ((COMPILER=="MSVC7") and opts.count("MAYA6")): cmd = cmd + ' -I"' + Maya6SDK + 'include"'
-    for x in wfiles: cmd = cmd + ' ' + x
-    oscdcmd(wsrc, cmd)
-    updatefiledate(woutd)
-    updatefiledate(woutc)
+    for x in files: cmd = cmd + ' ' + x
+    oscdcmd(src, cmd)
+    updatefiledate(outd)
+    updatefiledate(outc)
 
 ########################################################################
 ##
@@ -1104,8 +1367,10 @@ def InterrogateModule(outc=0, module=0, library=0, files=0):
   woutc = backslashify("built/tmp/"+outc)
   wfiles = backslashify(xpaths("built/etc/",files,""))
   if (older(woutc, wfiles)):
-    if (COMPILER=="MSVC7"): cmd = "built\\bin\\interrogate_module.exe "
-    if (COMPILER=="LINUXA"): cmd = "built/bin/interrogate_module "
+    if (COMPILER=="MSVC7"):
+        cmd = "built\\bin\\interrogate_module.exe "
+    if (COMPILER=="LINUXA"):
+        cmd = "built/bin/interrogate_module "
     cmd = cmd + " -oc " + woutc + ' -module "' + module + '" -library "' + library + '" -python '
     for x in wfiles: cmd = cmd + ' ' + x
     oscmd(cmd)
@@ -1235,7 +1500,12 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
           cmd = cmd + ' "' + MAXSDK[max] +  'lib\\mesh.lib"'
           cmd = cmd + ' "' + MAXSDK[max] +  'lib\\maxutil.lib"'
           cmd = cmd + ' "' + MAXSDK[max] +  'lib\\paramblk2.lib"'
-      oscmd(cmd)
+      if 1:
+        oscmd(cmd)
+      else:
+        WriteFile('built\\tmp\\linkcontrol',cmd)
+        print "link.exe "+cmd
+        oscmd("link.exe @built\\tmp\\linkcontrol")
       updatefiledate(wdll);
       if ((OPTIMIZE == 1) and (dll[-4:]==".dll")):
         CopyFile(dll[:-4]+"_d.dll", dll);
@@ -1264,12 +1534,12 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
         cmd = cmd + ' -L"' + THIRDPARTY + 'nvidiacg/lib" '
         if (opts.count("CGGL")): cmd = cmd + " -lCgGL"
         cmd = cmd + " -lCg"
-      if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -L"' + THIRDPARTY + 'nspr/lib" -lnspr4'
+      if (PkgSelected(opts,"NSPR")):     cmd = cmd + ' -L"' + THIRDPARTY + 'nspr/lib" -lpandanspr4'
       if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " -lz"
       if (PkgSelected(opts,"PNG")):      cmd = cmd + " -lpng"
       if (PkgSelected(opts,"JPEG")):     cmd = cmd + " -ljpeg"
       if (PkgSelected(opts,"TIFF")):     cmd = cmd + " -ltiff"
-      if (PkgSelected(opts,"OPENSSL")):  cmd = cmd + " -lssl"
+      if (PkgSelected(opts,"SSL")):      cmd = cmd + " -lssl"
       if (PkgSelected(opts,"FREETYPE")): cmd = cmd + " -lfreetype"
       if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L"' + THIRDPARTY + 'vrpn/lib" -lvrpn -lquat'
       if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L"' + THIRDPARTY + 'fftw/lib" -lrfftw -lfftw'
@@ -1431,218 +1701,11 @@ for x in PACKAGES:
 #
 ##########################################################################################
 
-conf = ""
-conf=conf+'\n/* dtool_config.h.  Generated automatically by makepanda.py */'
-conf=conf+'\n'
-if (OMIT.count("ZLIB")==0):     conf=conf+'\n#define HAVE_ZLIB 1'
-if (OMIT.count("PNG")==0):      conf=conf+'\n#define HAVE_PNG 1'
-if (OMIT.count("JPEG")==0):     conf=conf+'\n#define HAVE_JPEG 1'
-if (OMIT.count("TIFF")==0):     conf=conf+'\n#define HAVE_TIFF 1'
-if (OMIT.count("VRPN")==0):     conf=conf+'\n#define HAVE_VRPN 1'
-if (OMIT.count("FMOD")==0):     conf=conf+'\n#define HAVE_FMOD 1'
-if (OMIT.count("NVIDIACG")==0): conf=conf+'\n#define HAVE_CG 1'
-if (OMIT.count("NVIDIACG")==0): conf=conf+'\n#define HAVE_CGGL 1'
-if (OMIT.count("HELIX")==0):    pass
-if (OMIT.count("NSPR")==0):     conf=conf+'\n#define HAVE_NSPR 1'
-if (OMIT.count("OPENSSL")==0):  conf=conf+'\n#define HAVE_SSL 1'
-if (OMIT.count("FREETYPE")==0): conf=conf+'\n#define HAVE_FREETYPE 1'
-if (OMIT.count("FFTW")==0):     conf=conf+'\n#define HAVE_FFTW 1'
-if (OMIT.count("MILES")==0):    conf=conf+'\n#define HAVE_RAD_MSS 1'
-if (OMIT.count("MAYA5")==0):    pass
-if (OMIT.count("MAYA6")==0):    pass
-if (OMIT.count("MAX5")==0):     pass
-if (OMIT.count("MAX6")==0):     pass
-if (OMIT.count("MAX7")==0):     pass
-
-if (COMPILER=="MSVC7"): conf = conf + """
-#define HAVE_PYTHON 1
-#undef  PYTHON_FRAMEWORK
-#define COMPILE_IN_DEFAULT_FONT 1
-#define HAVE_MAYA 1
-#undef  MAYA_PRE_5_0
-#undef  HAVE_SOFTIMAGE
-#define SSL_097
-#define REPORT_OPENSSL_ERRORS 1
-#define HAVE_GL 1
-#undef  HAVE_MESA
-#undef  MESA_MGL
-#undef  HAVE_SGIGL
-#undef  HAVE_GLX
-#define HAVE_WGL 1
-#define HAVE_DX 1
-#undef  HAVE_CHROMIUM
-#undef  HAVE_THREADS
-#define HAVE_NET 1
-#define HAVE_AUDIO 1
-#define DO_PSTATS 1
-#define DO_COLLISION_RECORDING 1
-#undef  TRACK_IN_INTERPRETER
-#define DO_MEMORY_USAGE 1
-#undef  DO_PIPELINING
-#define NOTIFY_DEBUG 1
-#define EXPORT_TEMPLATES yes
-#undef  LINK_IN_GL
-#undef  LINK_IN_PHYSICS
-#define DEFAULT_PATHSEP ";"
-
-#define DEFAULT_PRC_DIR "<auto>"
-#define PRC_DIR_ENVVARS "PRC_DIR"
-#define PRC_PATH_ENVVARS "PRC_PATH"
-#define PRC_PATTERNS "*.prc"
-#define PRC_EXECUTABLE_PATTERNS ""
-#define PRC_EXECUTABLE_ARGS_ENVVAR "PRC_EXECUTABLE_ARGS"
-#define PRC_PUBLIC_KEYS_FILENAME ""
-#undef  PRC_RESPECT_TRUST_LEVEL
-#define PRC_SAVE_DESCRIPTIONS 1
-
-#undef  WORDS_BIGENDIAN
-#define HAVE_NAMESPACE 1
-#undef  HAVE_OPEN_MASK
-#define HAVE_WCHAR_T 1
-#define HAVE_WSTRING 1
-#define HAVE_TYPENAME 1
-#define SIMPLE_STRUCT_POINTERS 1
-#undef HAVE_DINKUM
-#undef HAVE_STL_HASH
-
-#undef  HAVE_GETTIMEOFDAY
-#undef  GETTIMEOFDAY_ONE_PARAM
-#undef  HAVE_GETOPT
-#undef  HAVE_GETOPT_LONG_ONLY
-#undef  HAVE_GETOPT_H
-#undef  IOCTL_TERMINAL_WIDTH
-#define HAVE_STREAMSIZE 1
-#define HAVE_IOS_TYPEDEFS 1
-#define HAVE_IOS_BINARY 1
-#define STATIC_INIT_GETENV 1
-
-#undef  HAVE_PROC_SELF_ENVIRON
-#define HAVE_GLOBAL_ARGV 1
-#undef  PROTOTYPE_GLOBAL_ARGV
-#define GLOBAL_ARGV __argv
-#define GLOBAL_ARGC __argc
-#undef  HAVE_PROC_SELF_CMDLINE
-#define HAVE_IO_H 1
-#define HAVE_IOSTREAM 1
-#define HAVE_MALLOC_H 1
-#undef  HAVE_SYS_MALLOC_H
-#undef  HAVE_ALLOCA_H
-#undef  HAVE_LOCALE_H
-#define HAVE_MINMAX_H 1
-#define HAVE_SSTREAM 1
-#define HAVE_NEW 1
-#define HAVE_SYS_TYPES_H 1
-#undef  HAVE_SYS_TIME_H
-#undef  HAVE_UNISTD_H
-#undef  HAVE_UTIME_H
-#undef  HAVE_GLOB_H
-#undef  HAVE_DIRENT_H
-#undef  HAVE_SYS_SOUNDCARD_H
-
-#define HAVE_RTTI 1
-#undef  GLOBAL_OPERATOR_NEW_EXCEPTIONS
-#undef  OLD_STYLE_ALLOCATOR
-#undef  GNU_STYLE_ALLOCATOR
-#undef  VC6_STYLE_ALLOCATOR
-#undef  MODERN_STYLE_ALLOCATOR
-#define NO_STYLE_ALLOCATOR 1
-"""
-
-
-if (COMPILER=="LINUXA"): conf = conf + """
-#define HAVE_PYTHON 1
-#undef  PYTHON_FRAMEWORK
-#define COMPILE_IN_DEFAULT_FONT 1
-#define HAVE_MAYA 1
-#undef  MAYA_PRE_5_0
-#undef  HAVE_SOFTIMAGE
-#undef  SSL_097
-#define REPORT_OPENSSL_ERRORS 1
-#define HAVE_GL /usr/lib/libGL.so
-#undef  HAVE_MESA
-#undef  MESA_MGL
-#undef  HAVE_SGIGL
-#define HAVE_GLX 1
-#undef  HAVE_WGL
-#undef  HAVE_DX
-#undef  HAVE_CHROMIUM
-#undef  HAVE_THREADS
-#define HAVE_NET 1
-#define HAVE_AUDIO 1
-#define DO_PSTATS 1
-#define DO_COLLISION_RECORDING 1
-#undef  TRACK_IN_INTERPRETER
-#define DO_MEMORY_USAGE 1
-#undef  DO_PIPELINING
-#define NOTIFY_DEBUG 1
-#define EXPORT_TEMPLATES yes
-#undef  LINK_IN_GL
-#undef  LINK_IN_PHYSICS
-#define DEFAULT_PATHSEP ":"
-
-#define DEFAULT_PRC_DIR "<auto>"
-#define PRC_DIR_ENVVARS "PRC_DIR"
-#define PRC_PATH_ENVVARS "PRC_PATH"
-#define PRC_PATTERNS "*.prc"
-#define PRC_EXECUTABLE_PATTERNS ""
-#define PRC_EXECUTABLE_ARGS_ENVVAR "PRC_EXECUTABLE_ARGS"
-#define PRC_PUBLIC_KEYS_FILENAME ""
-#undef  PRC_RESPECT_TRUST_LEVEL
-#define PRC_SAVE_DESCRIPTIONS 1
-
-#undef WORDS_BIGENDIAN
-#define HAVE_NAMESPACE 1
-#undef HAVE_OPEN_MASK
-#define HAVE_WCHAR_T 1
-#define HAVE_WSTRING 1
-#define HAVE_TYPENAME 1
-#undef SIMPLE_STRUCT_POINTERS
-#undef HAVE_DINKUM
-#undef HAVE_STL_HASH
-
-#define HAVE_GETTIMEOFDAY 1
-#undef GETTIMEOFDAY_ONE_PARAM
-#define HAVE_GETOPT 1
-#define HAVE_GETOPT_LONG_ONLY 1
-#define HAVE_GETOPT_H 1
-#define IOCTL_TERMINAL_WIDTH 1
-#define HAVE_STREAMSIZE 1
-#define HAVE_IOS_TYPEDEFS 1
-#define HAVE_IOS_BINARY 1
-#undef STATIC_INIT_GETENV
-
-#define HAVE_PROC_SELF_ENVIRON 1
-#undef HAVE_GLOBAL_ARGV
-#undef PROTOTYPE_GLOBAL_ARGV
-#undef GLOBAL_ARGV
-#undef GLOBAL_ARGC
-#define HAVE_PROC_SELF_CMDLINE 1
-#undef HAVE_IO_H
-#define HAVE_IOSTREAM 1
-#define HAVE_MALLOC_H 1
-#undef HAVE_SYS_MALLOC_H
-#define HAVE_ALLOCA_H 1
-#define HAVE_LOCALE_H 1
-#undef HAVE_MINMAX_H
-#define HAVE_SSTREAM 1
-#define HAVE_NEW 1
-#define HAVE_SYS_TYPES_H 1
-#define HAVE_SYS_TIME_H 1
-#define HAVE_UNISTD_H 1
-#define HAVE_UTIME_H 1
-#define HAVE_GLOB_H 1
-#define HAVE_DIRENT_H 1
-#define HAVE_SYS_SOUNDCARD_H 1
-
-#define HAVE_RTTI 1
-#define GLOBAL_OPERATOR_NEW_EXCEPTIONS 1
-#undef OLD_STYLE_ALLOCATOR
-#define GNU_STYLE_ALLOCATOR 1
-#undef VC6_STYLE_ALLOCATOR
-#undef MODERN_STYLE_ALLOCATOR
-#undef NO_STYLE_ALLOCATOR
-"""
-
+conf = "/* dtool_config.h.  Generated automatically by makepanda.py */\n"
+for key,win,unix in DTOOLDEFAULTS:
+  val = DTOOLCONFIG[key]
+  if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
+  else               : conf = conf + "#define " + key + " " + val + "\n"
 ConditionalWriteFile('built/include/dtool_config.h',conf);
 
 ##########################################################################################
@@ -3409,7 +3472,7 @@ CompileLIB(lib='libcppParser.lib', obj=[
 #
 
 IPATH=['dtool/src/prc']
-OPTS=['BUILDING_DTOOLCONFIG', 'OPENSSL', 'NSPR']
+OPTS=['BUILDING_DTOOLCONFIG', 'SSL', 'NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='prc_composite1.cxx', obj='prc_composite1.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='prc_composite2.cxx', obj='prc_composite2.obj')
 
@@ -3438,7 +3501,7 @@ IPATH=['dtool/metalibs/dtoolconfig']
 OPTS=['BUILDING_DTOOLCONFIG', 'NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='dtoolconfig.cxx', obj='dtoolconfig_dtoolconfig.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='pydtool.cxx', obj='dtoolconfig_pydtool.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='libdtoolconfig.dll', obj=[
+CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='libdtoolconfig.dll', obj=[
              'dtoolconfig_dtoolconfig.obj',
              'dtoolconfig_pydtool.obj',
              'interrogatedb_composite1.obj',
@@ -3469,7 +3532,7 @@ IPATH=['dtool/src/interrogate', 'dtool/src/cppparser', 'dtool/src/interrogatedb'
 OPTS=['NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='interrogate_composite1.cxx', obj='interrogate_composite1.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='interrogate_composite2.cxx', obj='interrogate_composite2.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='interrogate.exe', obj=[
+CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='interrogate.exe', obj=[
              'interrogate_composite1.obj',
              'interrogate_composite2.obj',
              'libcppParser.lib',
@@ -3479,7 +3542,7 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='interrogate.exe', obj=[
 ])
 
 CompileC(ipath=IPATH, opts=OPTS, src='interrogate_module.cxx', obj='interrogate_module_interrogate_module.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='interrogate_module.exe', obj=[
+CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='interrogate_module.exe', obj=[
              'interrogate_module_interrogate_module.obj',
              'libcppParser.lib',
              'libpystub.dll',
@@ -3488,7 +3551,7 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='interrogate_module.exe', ob
 ])
 
 CompileC(ipath=IPATH, opts=OPTS, src='parse_file.cxx', obj='parse_file_parse_file.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='parse_file.exe', obj=[
+CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='parse_file.exe', obj=[
              'parse_file_parse_file.obj',
              'libcppParser.lib',
              'libpystub.dll',
@@ -3500,15 +3563,16 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='parse_file.exe', obj=[
 # DIRECTORY: dtool/src/prckeys/
 #
 
-IPATH=['dtool/src/prckeys']
-OPTS=['OPENSSL', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='makePrcKey.cxx', obj='make-prc-key_makePrcKey.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='make-prc-key.exe', obj=[
-             'make-prc-key_makePrcKey.obj',
-             'libpystub.dll',
-             'libdtool.dll',
-             'libdtoolconfig.dll',
-])
+if (OMIT.count("SSL")==0):
+  IPATH=['dtool/src/prckeys']
+  OPTS=['SSL', 'NSPR']
+  CompileC(ipath=IPATH, opts=OPTS, src='makePrcKey.cxx', obj='make-prc-key_makePrcKey.obj')
+  CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='make-prc-key.exe', obj=[
+               'make-prc-key_makePrcKey.obj',
+               'libpystub.dll',
+               'libdtool.dll',
+               'libdtoolconfig.dll',
+               ])
 
 #
 # DIRECTORY: dtool/src/test_interrogate/
@@ -3517,7 +3581,7 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='make-prc-key.exe', obj=[
 IPATH=['dtool/src/test_interrogate']
 OPTS=['NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='test_interrogate.cxx', obj='test_interrogate_test_interrogate.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='test_interrogate.exe', obj=[
+CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='test_interrogate.exe', obj=[
              'test_interrogate_test_interrogate.obj',
              'libpystub.dll',
              'libdtoolconfig.dll',
@@ -3537,7 +3601,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='pandabase.cxx', obj='pandabase_pandabase.o
 #
 
 IPATH=['panda/src/express']
-OPTS=['BUILDING_PANDAEXPRESS', 'OPENSSL', 'ZLIB', 'NSPR']
+OPTS=['BUILDING_PANDAEXPRESS', 'SSL', 'ZLIB', 'NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='express_composite1.cxx', obj='express_composite1.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='express_composite2.cxx', obj='express_composite2.obj')
 Interrogate(ipath=IPATH, opts=OPTS, outd='libexpress.in', outc='libexpress_igate.cxx',
@@ -3550,7 +3614,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='libexpress_igate.cxx', obj='libexpress_iga
 #
 
 IPATH=['panda/src/downloader']
-OPTS=['BUILDING_PANDAEXPRESS', 'OPENSSL', 'ZLIB', 'NSPR']
+OPTS=['BUILDING_PANDAEXPRESS', 'SSL', 'ZLIB', 'NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='downloader_composite1.cxx', obj='downloader_composite1.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='downloader_composite2.cxx', obj='downloader_composite2.obj')
 Interrogate(ipath=IPATH, opts=OPTS, outd='libdownloader.in', outc='libdownloader_igate.cxx',
@@ -3574,7 +3638,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='pandaexpress.cxx', obj='pandaexpress_panda
 InterrogateModule(outc='libpandaexpress_module.cxx', module='pandaexpress', library='libpandaexpress',
                   files=['libdownloader.in', 'libexpress.in'])
 CompileC(ipath=IPATH, opts=OPTS, src='libpandaexpress_module.cxx', obj='libpandaexpress_module.obj')
-CompileLink(opts=['ADVAPI', 'WINSOCK2', 'NSPR', 'OPENSSL', 'ZLIB'], dll='libpandaexpress.dll', obj=[
+CompileLink(opts=['ADVAPI', 'WINSOCK2', 'NSPR', 'SSL', 'ZLIB'], dll='libpandaexpress.dll', obj=[
              'pandaexpress_pandaexpress.obj',
              'libpandaexpress_module.obj',
              'downloader_composite1.obj',
@@ -4016,18 +4080,24 @@ INFILES=['librecorder.in', 'libpgraph.in', 'libpvrpn.in', 'libgrutil.in', 'libch
          'libgobj.in', 'libgsgbase.in', 'liblinmath.in', 'libmathutil.in', 'libnet.in', 'libparametrics.in',
          'libpnmimage.in', 'libtext.in', 'libtform.in', 'liblerp.in', 'libputil.in', 'libaudio.in',
          'libpgui.in']
-OBJFILES=['panda_panda.obj', 'libpanda_module.obj', 'recorder_composite1.obj', 'recorder_composite2.obj', 'librecorder_igate.obj',
-          'pgraph_nodePath.obj', 'pgraph_composite1.obj', 'pgraph_composite2.obj', 'libpgraph_igate.obj', 'pvrpn_config_vrpn.obj',
-          'pvrpn_vrpnClient.obj', 'pvrpn_vrpnAnalog.obj', 'pvrpn_vrpnAnalogDevice.obj', 'pvrpn_vrpnButton.obj', 'pvrpn_vrpnButtonDevice.obj',
-          'pvrpn_vrpnDial.obj', 'pvrpn_vrpnDialDevice.obj', 'pvrpn_vrpnTracker.obj', 'pvrpn_vrpnTrackerDevice.obj', 'libpvrpn_igate.obj',
-          'grutil_multitexReducer.obj', 'grutil_composite1.obj', 'libgrutil_igate.obj', 'chan_composite1.obj', 'chan_composite2.obj',
-          'libchan_igate.obj', 'pstatclient_composite1.obj', 'pstatclient_composite2.obj', 'libpstatclient_igate.obj', 'char_composite1.obj',
-          'char_composite2.obj', 'libchar_igate.obj', 'collide_composite1.obj', 'collide_composite2.obj', 'libcollide_igate.obj',
-          'device_composite1.obj', 'device_composite2.obj', 'libdevice_igate.obj', 'dgraph_composite1.obj', 'dgraph_composite2.obj',
-          'libdgraph_igate.obj', 'display_composite1.obj', 'display_composite2.obj', 'libdisplay_igate.obj', 'event_composite1.obj',
-          'libevent_igate.obj', 'gobj_composite1.obj', 'gobj_composite2.obj', 'libgobj_igate.obj', 'gsgbase_composite1.obj',
-          'libgsgbase_igate.obj', 'gsgmisc_geomIssuer.obj', 'linmath_composite1.obj', 'linmath_composite2.obj', 'liblinmath_igate.obj',
-          'mathutil_composite1.obj', 'mathutil_composite2.obj', 'libmathutil_igate.obj', 'net_composite1.obj', 'net_composite2.obj',
+OBJFILES=['panda_panda.obj', 'libpanda_module.obj', 'recorder_composite1.obj',
+          'recorder_composite2.obj', 'librecorder_igate.obj',
+          'pgraph_nodePath.obj', 'pgraph_composite1.obj', 'pgraph_composite2.obj', 'libpgraph_igate.obj',
+          'pvrpn_config_vrpn.obj', 'pvrpn_vrpnClient.obj', 'pvrpn_vrpnAnalog.obj',
+          'pvrpn_vrpnAnalogDevice.obj', 'pvrpn_vrpnButton.obj', 'pvrpn_vrpnButtonDevice.obj',
+          'pvrpn_vrpnDial.obj', 'pvrpn_vrpnDialDevice.obj', 'pvrpn_vrpnTracker.obj',
+          'pvrpn_vrpnTrackerDevice.obj', 'libpvrpn_igate.obj',
+          'grutil_multitexReducer.obj', 'grutil_composite1.obj', 'libgrutil_igate.obj',
+          'chan_composite1.obj', 'chan_composite2.obj', 'libchan_igate.obj', 'pstatclient_composite1.obj',
+          'pstatclient_composite2.obj', 'libpstatclient_igate.obj', 'char_composite1.obj',
+          'char_composite2.obj', 'libchar_igate.obj', 'collide_composite1.obj', 'collide_composite2.obj',
+          'libcollide_igate.obj', 'device_composite1.obj', 'device_composite2.obj', 'libdevice_igate.obj',
+          'dgraph_composite1.obj', 'dgraph_composite2.obj', 'libdgraph_igate.obj', 'display_composite1.obj',
+          'display_composite2.obj', 'libdisplay_igate.obj', 'event_composite1.obj', 'libevent_igate.obj',
+          'gobj_composite1.obj', 'gobj_composite2.obj', 'libgobj_igate.obj', 'gsgbase_composite1.obj',
+          'libgsgbase_igate.obj', 'gsgmisc_geomIssuer.obj', 'linmath_composite1.obj',
+          'linmath_composite2.obj', 'liblinmath_igate.obj', 'mathutil_composite1.obj', 'mathutil_composite2.obj',
+          'libmathutil_igate.obj', 'net_composite1.obj', 'net_composite2.obj',
           'libnet_igate.obj', 'parametrics_composite1.obj', 'parametrics_composite2.obj', 'libparametrics_igate.obj',
           'pnmimagetypes_pnmFileTypePNG.obj', 'pnmimagetypes_pnmFileTypeTIFF.obj', 'pnmimagetypes_composite1.obj',
           'pnmimagetypes_composite2.obj', 'pnmimage_composite1.obj', 'pnmimage_composite2.obj', 'libpnmimage_igate.obj',
@@ -4047,7 +4117,9 @@ if OMIT.count("HELIX")==0:
 InterrogateModule(outc='libpanda_module.cxx', module='panda', library='libpanda', files=INFILES)
 CompileC(ipath=IPATH, opts=OPTS, src='panda.cxx', obj='panda_panda.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='libpanda_module.cxx', obj='libpanda_module.obj')
-CompileLink(opts=LINKOPTS, xdep=LINKXDEP, dll='libpanda.dll', obj=OBJFILES)
+CompileLink(opts=['ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'HELIX', 'VRPN', 'NSPR',
+		  'ZLIB', 'JPEG', 'PNG', 'TIFF', 'FFTW', 'FREETYPE'],
+            xdep=['built/tmp/dtool_have_helix.dat'],  dll='libpanda.dll', obj=OBJFILES)
 
 #
 # DIRECTORY: panda/src/audiotraits/
@@ -4103,7 +4175,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='libdistort_igate.cxx', obj='libdistort_iga
 #
 
 IPATH=['panda/src/downloadertools']
-OPTS=['OPENSSL', 'ZLIB', 'NSPR']
+OPTS=['SSL', 'ZLIB', 'NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='apply_patch.cxx', obj='apply_patch_apply_patch.obj')
 CompileLink(dll='apply_patch.exe', opts=['ADVAPI', 'NSPR'], obj=[
              'apply_patch_apply_patch.obj',
@@ -4123,7 +4195,7 @@ CompileLink(dll='build_patch.exe', opts=['ADVAPI', 'NSPR'], obj=[
              'libpystub.dll',
 ])
 IPATH=['panda/src/downloadertools']
-OPTS=['OPENSSL', 'ZLIB', 'ZLIB', 'NSPR']
+OPTS=['SSL', 'ZLIB', 'ZLIB', 'NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='check_adler.cxx', obj='check_adler_check_adler.obj')
 CompileLink(dll='check_adler.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=[
              'check_adler_check_adler.obj',
@@ -4143,9 +4215,9 @@ CompileLink(dll='check_crc.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=[
              'libpystub.dll',
 ])
 IPATH=['panda/src/downloadertools']
-OPTS=['OPENSSL', 'ZLIB', 'NSPR']
+OPTS=['SSL', 'ZLIB', 'NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='check_md5.cxx', obj='check_md5_check_md5.obj')
-CompileLink(dll='check_md5.exe', opts=['ADVAPI', 'NSPR', 'OPENSSL'], obj=[
+CompileLink(dll='check_md5.exe', opts=['ADVAPI', 'NSPR', 'SSL'], obj=[
              'check_md5_check_md5.obj',
              'libpandaexpress.dll',
              'libpanda.dll',
@@ -4163,7 +4235,7 @@ CompileLink(dll='multify.exe', opts=['ADVAPI', 'NSPR'], obj=[
              'libpystub.dll',
 ])
 IPATH=['panda/src/downloadertools']
-OPTS=['OPENSSL', 'ZLIB', 'ZLIB', 'NSPR']
+OPTS=['SSL', 'ZLIB', 'ZLIB', 'NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='pcompress.cxx', obj='pcompress_pcompress.obj')
 CompileLink(dll='pcompress.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=[
              'pcompress_pcompress.obj',
@@ -4183,9 +4255,9 @@ CompileLink(dll='pdecompress.exe', opts=['ADVAPI', 'NSPR', 'ZLIB'], obj=[
              'libpystub.dll',
 ])
 IPATH=['panda/src/downloadertools']
-OPTS=['OPENSSL', 'ZLIB', 'NSPR']
+OPTS=['SSL', 'ZLIB', 'NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='pdecrypt.cxx', obj='pdecrypt_pdecrypt.obj')
-CompileLink(dll='pdecrypt.exe', opts=['ADVAPI', 'NSPR', 'OPENSSL'], obj=[
+CompileLink(dll='pdecrypt.exe', opts=['ADVAPI', 'NSPR', 'SSL'], obj=[
              'pdecrypt_pdecrypt.obj',
              'libpandaexpress.dll',
              'libpanda.dll',
@@ -4194,7 +4266,7 @@ CompileLink(dll='pdecrypt.exe', opts=['ADVAPI', 'NSPR', 'OPENSSL'], obj=[
              'libpystub.dll',
 ])
 CompileC(ipath=IPATH, opts=OPTS, src='pencrypt.cxx', obj='pencrypt_pencrypt.obj')
-CompileLink(dll='pencrypt.exe', opts=['ADVAPI', 'NSPR', 'OPENSSL'], obj=[
+CompileLink(dll='pencrypt.exe', opts=['ADVAPI', 'NSPR', 'SSL'], obj=[
              'pencrypt_pencrypt.obj',
              'libpandaexpress.dll',
              'libpanda.dll',
@@ -4635,7 +4707,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='libdeadrec_igate.cxx', obj='libdeadrec_iga
 #
 
 IPATH=['direct/src/distributed', 'direct/src/dcparser']
-OPTS=['WITHINPANDA', 'BUILDING_DIRECT', 'OPENSSL', 'NSPR']
+OPTS=['WITHINPANDA', 'BUILDING_DIRECT', 'SSL', 'NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='config_distributed.cxx', obj='distributed_config_distributed.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='cConnectionRepository.cxx', obj='distributed_cConnectionRepository.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='cDistributedSmoothNodeBase.cxx', obj='distributed_cDistributedSmoothNodeBase.obj')
@@ -4688,7 +4760,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='direct.cxx', obj='direct_direct.obj')
 InterrogateModule(outc='libdirect_module.cxx', module='direct', library='libdirect',
                   files=['libdcparser.in', 'libshowbase.in', 'libdeadrec.in', 'libinterval.in', 'libdistributed.in'])
 CompileC(ipath=IPATH, opts=OPTS, src='libdirect_module.cxx', obj='libdirect_module.obj')
-CompileLink(dll='libdirect.dll', opts=['ADVAPI', 'NSPR', 'OPENSSL'], obj=[
+CompileLink(dll='libdirect.dll', opts=['ADVAPI', 'NSPR', 'SSL'], obj=[
              'direct_direct.obj',
              'libdirect_module.obj',
              'directbase_directbase.obj',
@@ -5863,10 +5935,10 @@ CompileLIB(lib='libpandaappbase.lib', obj=['pandaappbase_pandaappbase.obj'])
 #
 
 IPATH=['pandaapp/src/httpbackup', 'pandaapp/src/pandaappbase']
-OPTS=['OPENSSL', 'NSPR']
+OPTS=['SSL', 'NSPR']
 CompileC(ipath=IPATH, opts=OPTS, src='backupCatalog.cxx', obj='httpbackup_backupCatalog.obj')
 CompileC(ipath=IPATH, opts=OPTS, src='httpBackup.cxx', obj='httpbackup_httpBackup.obj')
-CompileLink(opts=['ADVAPI', 'NSPR', 'OPENSSL'], dll='httpbackup.exe', obj=[
+CompileLink(opts=['ADVAPI', 'NSPR', 'SSL'], dll='httpbackup.exe', obj=[
              'httpbackup_backupCatalog.obj',
              'httpbackup_httpBackup.obj',
              'libpandaappbase.lib',
@@ -6030,7 +6102,10 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
 
 if (older('built/lib/pandac/PandaModules.pyz',xpaths("built/etc/",ALLIN,""))):
   ALLTARGETS.append('built/lib/pandac/PandaModules.pyz')
-  oscmd(backslashify("built/bin/genpycode"))
+  if (sys.platform=="win32"):
+    oscmd(backslashify("built/bin/genpycode.exe"))
+  else:
+    oscmd(backslashify("built/bin/genpycode"))
   updatefiledate('built/lib/pandac/PandaModules.pyz')
 
 ########################################################################
@@ -6078,9 +6153,10 @@ if (INSTALLER):
       VERSION = str(VERSION1)+"-"+str(VERSION2)+"-"+str(VERSION3)
       print("Building installer. This can take up to an hour.")
       if (COMPRESSOR != "lzma"): print("Note: you are using zlib, which is faster, but lzma gives better compression.")
-      oscmd("if exist panda3d-"+VERSION+".exe del panda3d-"+VERSION+".exe")
+      if (os.path.exists("panda3d-"+VERSION+".exe")):
+        os.remove("panda3d-"+VERSION+".exe")
       oscmd("thirdparty\\win-nsis\\makensis.exe /V2 /DCOMPRESSOR="+COMPRESSOR+" /DVERSION="+VERSION+" thirdparty\\win-nsis\\panda.nsi")
-      oscmd("rename panda3d-install-TMP.exe panda3d-"+VERSION+".exe")
+      os.rename("panda3d-install-TMP.exe", "panda3d-"+VERSION+".exe")
   else:
     # Do an rpmbuild or something like that.
     pass
