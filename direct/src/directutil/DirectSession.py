@@ -6,7 +6,6 @@ from DirectGrid import *
 from DirectGeometry import *
 import OnscreenText
 
-
 class DirectSession(PandaObject):
 
     def __init__(self):
