@@ -18,7 +18,6 @@ class StateData(DirectObject):
         self.doneStatus = None
         self.isLoaded = 0
         self.isEntered = 0
-        return None
     
     def enter(self):
         """enter(self)
