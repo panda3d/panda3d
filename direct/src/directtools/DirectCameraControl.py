@@ -28,7 +28,7 @@ class DirectCameraControl(PandaObject):
             ['c', self.centerCamIn, 0.5],
             ['f', self.fitOnWidget],
             ['h', self.homeCam],
-            ['i', self.toggleMarkerVis],
+            ['V', self.toggleMarkerVis],
             ['m', self.moveToFit],
             ['n', self.pickNextCOA],
             ['u', self.orbitUprightCam],

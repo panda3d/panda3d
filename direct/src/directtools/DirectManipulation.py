@@ -32,7 +32,7 @@ class DirectManipulationControl(PandaObject):
             [',', self.objectHandles.multiplyScalingFactorBy, 0.5],
             ['<', self.objectHandles.multiplyScalingFactorBy, 0.5],
             ['F', self.objectHandles.growToFit],
-            ['P', self.plantSelectedNodePath],
+            ['i', self.plantSelectedNodePath],
             ]
 
     def manipulationStart(self):
