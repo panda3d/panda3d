@@ -28,6 +28,7 @@
 #include "cppGlobals.h"
 #include "cppCommentBlock.h"
 #include "cppBison.h"
+#include "indent.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -282,7 +283,8 @@ get_next_token() {
 
 #ifdef CPP_VERBOSE_LEX
   CPPToken tok = get_next_token0();
-  cerr << _token_index++ << ". " << tok << "\n";
+  indent(cerr, _files.size() * 2)
+    << _token_index++ << ". " << tok << "\n";
   return tok;
 }
 
@@ -453,9 +455,11 @@ warning(const string &message, int line, int col, CPPFile file) {
     if (file.empty()) {
       file = get_file();
     }
-    cerr << "\nWarning in " << file
-         << " near line " << line << ", column " << col << ":\n"
-         << message << "\n";
+    indent(cerr, _files.size() * 2)
+      << "*** Warning in " << file
+      << " near line " << line << ", column " << col << ":\n";
+    indent(cerr, _files.size() * 2)
+      << message << "\n";
   }
   _warning_count++;
 }
@@ -481,9 +485,11 @@ error(const string &message, int line, int col, CPPFile file) {
     if (file.empty()) {
       file = get_file();
     }
-    cerr << "\nError in " << file
-         << " near line " << line << ", column " << col << ":\n"
-         << message << "\n";
+    indent(cerr, _files.size() * 2)
+      << "*** Error in " << file
+      << " near line " << line << ", column " << col << ":\n";
+    indent(cerr, _files.size() * 2)
+      << message << "\n";
   }
   _error_count++;
 }
@@ -592,9 +598,10 @@ init_type(const string &type) {
 ////////////////////////////////////////////////////////////////////
 bool CPPPreprocessor::
 push_file(const CPPFile &file) {
-#ifdef CPP_VERBOSE_LEX
-  cerr << "Pushing to file " << file << "\n";
-#endif
+  if (_verbose >= 2) {
+    indent(cerr, _files.size() * 2)
+      << "Reading " << file << "\n";
+  }
   _files.push_back(InputFile());
   InputFile &infile = _files.back();
 
@@ -609,9 +616,6 @@ push_file(const CPPFile &file) {
     return true;
   }
 
-#ifdef CPP_VERBOSE_LEX
-  cerr << "Unable to read file\n";
-#endif
   _files.pop_back();
   return false;
 }
@@ -624,8 +628,9 @@ push_file(const CPPFile &file) {
 bool CPPPreprocessor::
 push_string(const string &input, bool lock_position) {
 #ifdef CPP_VERBOSE_LEX
-  cerr << "Pushing to string \"" << input
-       << "\"\nlock_position = " << lock_position << "\n";
+  indent(cerr, _files.size() * 2)
+    << "Pushing to string \"" << input
+    << "\"\nlock_position = " << lock_position << "\n";
 #endif
   CPPFile first_file = get_file();
   int first_line = get_line_number();
@@ -648,7 +653,8 @@ push_string(const string &input, bool lock_position) {
   }
 
 #ifdef CPP_VERBOSE_LEX
-  cerr << "Unable to read string\n";
+  indent(cerr, _files.size() * 2)
+    << "Unable to read string\n";
 #endif
 
   _files.pop_back();
@@ -1084,7 +1090,8 @@ process_directive(int c) {
   c = get_preprocessor_args(c, args);
 
 #ifdef CPP_VERBOSE_LEX
-  cerr << "#" << command << " " << args << "\n";
+  indent(cerr, _files.size() * 2)
+    << "#" << command << " " << args << "\n";
 #endif
 
   if (command == "define") {
@@ -1365,10 +1372,6 @@ handle_include_directive(const string &args, int first_line,
       if (!push_file(CPPFile(filename, filename_as_referenced, source))) {
         warning("Unable to read " + filename.get_fullpath(),
                 first_line, first_col, first_file);
-      } else {
-        if (_verbose >= 2) {
-          cerr << "Reading " << filename << "\n";
-        }
       }
     }
   } else {
@@ -1554,7 +1557,8 @@ expand_manifest(const CPPManifest *manifest) {
   }
 
 #ifdef CPP_VERBOSE_LEX
-  cerr << "Expanding " << manifest->_name << " to " << expanded << "\n";
+  indent(cerr, _files.size() * 2)
+    << "Expanding " << manifest->_name << " to " << expanded << "\n";
 #endif
 
   return internal_get_next_token();
@@ -2047,7 +2051,8 @@ get() {
 
   while (c == EOF && !_files.empty()) {
 #ifdef CPP_VERBOSE_LEX
-    cerr << "End of input stream, restoring to previous input\n";
+    indent(cerr, _files.size() * 2)
+      << "End of input stream, restoring to previous input\n";
 #endif
     int last_c = _files.back()._prev_last_c;
     _files.pop_back();
@@ -2092,7 +2097,8 @@ unget(int c) {
 CPPTemplateParameterList *CPPPreprocessor::
 nested_parse_template_instantiation(CPPTemplateScope *scope) {
 #ifdef CPP_VERBOSE_LEX
-  cerr << "Beginning nested parse\n";
+  indent(cerr, _files.size() * 2)
+    << "Beginning nested parse\n";
 #endif
   assert(scope != NULL);
 
@@ -2154,7 +2160,8 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
   _angle_bracket_found = false;
 
 #ifdef CPP_VERBOSE_LEX
-  cerr << "Ending nested parse\n";
+  indent(cerr, _files.size() * 2)
+    << "Ending nested parse\n";
 #endif
   return actual_params;
 }
@@ -2173,7 +2180,8 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
 void CPPPreprocessor::
 skip_to_end_nested() {
 #ifdef CPP_VERBOSE_LEX
-  cerr << "Skipping tokens:\n";
+  indent(cerr, _files.size() * 2)
+    << "Skipping tokens:\n";
 #endif
 
   // Eat any eof tokens on the pushback stack.
@@ -2186,7 +2194,8 @@ skip_to_end_nested() {
   }
 
 #ifdef CPP_VERBOSE_LEX
-  cerr << "Done skipping tokens.\n";
+  indent(cerr, _files.size() * 2)
+    << "Done skipping tokens.\n";
 #endif
 }
 
@@ -2201,7 +2210,8 @@ skip_to_end_nested() {
 void CPPPreprocessor::
 skip_to_angle_bracket() {
 #ifdef CPP_VERBOSE_LEX
-  cerr << "Skipping tokens:\n";
+  indent(cerr, _files.size() * 2)
+    << "Skipping tokens:\n";
 #endif
 
   while (!_angle_bracket_found && _state != S_eof) {
@@ -2217,6 +2227,7 @@ skip_to_angle_bracket() {
   }
 
 #ifdef CPP_VERBOSE_LEX
-  cerr << "Done skipping tokens.\n";
+  indent(cerr, _files.size() * 2)
+    << "Done skipping tokens.\n";
 #endif
 }
