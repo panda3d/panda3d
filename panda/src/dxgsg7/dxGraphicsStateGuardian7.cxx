@@ -41,6 +41,7 @@
 #include "texMatrixAttrib.h"
 #include "materialAttrib.h"
 #include "renderModeAttrib.h"
+#include "rescaleNormalAttrib.h"
 #include "fogAttrib.h"
 #include "depthOffsetAttrib.h"
 #include "fog.h"
@@ -252,6 +253,7 @@ DXGraphicsStateGuardian7(const FrameBufferProperties &properties) :
 
     ZeroMemory(&matIdentity,sizeof(D3DMATRIX));
     matIdentity._11 = matIdentity._22 = matIdentity._33 = matIdentity._44 = 1.0f;
+     _auto_rescale_normal = false;
 
     // All implementations have the following buffers.
     _buffer_mask = (RenderBuffer::T_color |
@@ -589,9 +591,6 @@ dx_init( void) {
     _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_FILLMODE, D3DFILL_SOLID);
 
     _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
-
-    if(dx_auto_normalize_lighting)
-         _pScrn->pD3DDevice->SetRenderState(D3DRENDERSTATE_NORMALIZENORMALS, true);
 
     // initial clip rect
     SetRect(&_pScrn->clip_rect, 0,0,0,0);     // no clip rect set
@@ -3755,6 +3754,11 @@ issue_transform(const TransformState *transform) {
 
   _pScrn->pD3DDevice->SetTransform(D3DTRANSFORMSTATE_WORLD,
                                 (LPD3DMATRIX)transform->get_mat().get_data());
+ 
+  _transform = transform;
+  if (_auto_rescale_normal) {
+    do_auto_rescale_normal();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3845,6 +3849,38 @@ issue_render_mode(const RenderModeAttrib *attrib) {
   }
 
   _current_fill_mode = mode;
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian7::issue_rescale_normal
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian7::
+issue_rescale_normal(const RescaleNormalAttrib *attrib) {
+  RescaleNormalAttrib::Mode mode = attrib->get_mode();
+
+  _auto_rescale_normal = false;
+
+  switch (mode) {
+  case RescaleNormalAttrib::M_none:
+    _pD3DDevice->SetRenderState(D3DRENDERSTATE_NORMALIZENORMALS, false);
+    break;
+
+  case RescaleNormalAttrib::M_rescale:
+  case RescaleNormalAttrib::M_normalize:
+    _pD3DDevice->SetRenderState(D3DRENDERSTATE_NORMALIZENORMALS, true);
+    break;
+
+  case RescaleNormalAttrib::M_auto:
+    _auto_rescale_normal = true;
+    do_auto_rescale_normal();
+    break;
+
+  default:
+    dxgsg7_cat.error()
+      << "Unknown rescale_normal mode " << (int)mode << endl;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4262,7 +4298,7 @@ end_frame() {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool DXGraphicsStateGuardian7::
+bool DXGraphicsStateGuardian7::
 wants_texcoords() const {
     return _texturing_enabled;
 }
@@ -4363,7 +4399,7 @@ set_read_buffer(const RenderBuffer &rb) {
 //  Description: Maps from the Texture's internal wrap mode symbols to
 //               GL's.
 ////////////////////////////////////////////////////////////////////
-INLINE D3DTEXTUREADDRESS DXGraphicsStateGuardian7::
+D3DTEXTUREADDRESS DXGraphicsStateGuardian7::
 get_texture_wrap_mode(Texture::WrapMode wm) const {
 
     if (wm == Texture::WM_clamp)
@@ -4382,7 +4418,7 @@ get_texture_wrap_mode(Texture::WrapMode wm) const {
 //       Access: Protected
 //  Description: Maps from the fog types to gl version
 ////////////////////////////////////////////////////////////////////
-INLINE D3DFOGMODE DXGraphicsStateGuardian7::
+D3DFOGMODE DXGraphicsStateGuardian7::
 get_fog_mode_type(Fog::Mode m) const {
   switch (m) {
   case Fog::M_linear:
@@ -4394,6 +4430,26 @@ get_fog_mode_type(Fog::Mode m) const {
   }
   dxgsg7_cat.error() << "Invalid Fog::Mode value" << endl;
   return D3DFOG_EXP;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian7::do_auto_rescale_normal
+//       Access: Protected
+//  Description: Issues the appropriate GL commands to either rescale
+//               or normalize the normals according to the current
+//               transform.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian7::
+do_auto_rescale_normal() {
+  if (_transform->has_uniform_scale() &&
+      IS_NEARLY_EQUAL(_transform->get_uniform_scale(), 1.0f)) {
+    // If there's no scale, don't normalize anything.
+    _pD3DDevice->SetRenderState(D3DRENDERSTATE_NORMALIZENORMALS, false);
+
+  } else {
+    // If there is a scale, turn on normalization.
+    _pD3DDevice->SetRenderState(D3DRENDERSTATE_NORMALIZENORMALS, true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4467,7 +4523,7 @@ slot_new_clip_plane(int plane_id) {
 //               PlaneNode will already have been bound to this id via
 //               bind_clip_plane().
 ////////////////////////////////////////////////////////////////////
-INLINE void DXGraphicsStateGuardian7::
+void DXGraphicsStateGuardian7::
 enable_clip_plane(int plane_id, bool enable) {
   assert(plane_id < D3DMAXUSERCLIPPLANES);
 

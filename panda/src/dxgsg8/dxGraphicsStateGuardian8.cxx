@@ -43,6 +43,7 @@
 #include "texMatrixAttrib.h"
 #include "materialAttrib.h"
 #include "renderModeAttrib.h"
+#include "rescaleNormalAttrib.h"
 #include "fogAttrib.h"
 #include "depthOffsetAttrib.h"
 #include "fog.h"
@@ -151,6 +152,8 @@ void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,IDirect3DDevice8 *pD3D
 void DXGraphicsStateGuardian8::
 reset_panda_gsg(void) {
     GraphicsStateGuardian::reset();
+
+    _auto_rescale_normal = false;
 
     // overwrite gsg defaults with these values
 
@@ -479,9 +482,6 @@ dx_init(void) {
       init_lights(min(DXGSG_MAX_LIGHTS,_pScrn->d3dcaps.MaxActiveLights));
     }
     */
-
-    if(dx_auto_normalize_lighting)
-         _pD3DDevice->SetRenderState(D3DRS_NORMALIZENORMALS, true);
 
     // must do SetTSS here because redundant states are filtered out by our code based on current values above, so
     // initial conditions must be correct
@@ -3146,6 +3146,11 @@ issue_transform(const TransformState *transform) {
   // if we're using ONLY vertex shaders, could get avoid calling SetTrans
   D3DMATRIX *pMat = (D3DMATRIX*)transform->get_mat().get_data();
   _pD3DDevice->SetTransform(D3DTS_WORLD,pMat);
+
+  _transform = transform;
+  if (_auto_rescale_normal) {
+    do_auto_rescale_normal();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3285,6 +3290,38 @@ issue_render_mode(const RenderModeAttrib *attrib) {
   }
 
   _current_fill_mode = mode;
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::issue_rescale_normal
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+issue_rescale_normal(const RescaleNormalAttrib *attrib) {
+  RescaleNormalAttrib::Mode mode = attrib->get_mode();
+
+  _auto_rescale_normal = false;
+
+  switch (mode) {
+  case RescaleNormalAttrib::M_none:
+    _pD3DDevice->SetRenderState(D3DRS_NORMALIZENORMALS, false);
+    break;
+
+  case RescaleNormalAttrib::M_rescale:
+  case RescaleNormalAttrib::M_normalize:
+    _pD3DDevice->SetRenderState(D3DRS_NORMALIZENORMALS, true);
+    break;
+
+  case RescaleNormalAttrib::M_auto:
+    _auto_rescale_normal = true;
+    do_auto_rescale_normal();
+    break;
+
+  default:
+    dxgsg8_cat.error()
+      << "Unknown rescale_normal mode " << (int)mode << endl;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3763,6 +3800,26 @@ set_read_buffer(const RenderBuffer &rb) {
             dxgsg8_cat.error() << "Invalid or unimplemented Argument to set_read_buffer!\n";
     }
     return;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::do_auto_rescale_normal
+//       Access: Protected
+//  Description: Issues the appropriate GL commands to either rescale
+//               or normalize the normals according to the current
+//               transform.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+do_auto_rescale_normal() {
+  if (_transform->has_uniform_scale() &&
+      IS_NEARLY_EQUAL(_transform->get_uniform_scale(), 1.0f)) {
+    // If there's no scale, don't normalize anything.
+    _pD3DDevice->SetRenderState(D3DRS_NORMALIZENORMALS, false);
+
+  } else {
+    // If there is a scale, turn on normalization.
+    _pD3DDevice->SetRenderState(D3DRS_NORMALIZENORMALS, true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -112,6 +112,7 @@ public:
   virtual void issue_texture(const TextureAttrib *attrib);
   virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_render_mode(const RenderModeAttrib *attrib);
+  virtual void issue_rescale_normal(const RescaleNormalAttrib *attrib);
   virtual void issue_texture_apply(const TextureApplyAttrib *attrib);
   virtual void issue_alpha_test(const AlphaTestAttrib *attrib);
   virtual void issue_depth_test(const DepthTestAttrib *attrib);
@@ -181,6 +182,7 @@ protected:
   D3DMATRIX         _SavedTransform;   
 
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
+  bool _auto_rescale_normal;
 
   void GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
                     void *pIndexSpace,DWORD dwIndexSpaceByteSize,
@@ -202,8 +204,10 @@ protected:
   INLINE void enable_zwritemask(bool val);
   INLINE void set_shademode(D3DSHADEMODE val);
 
-  INLINE D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm) const;
-  INLINE D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
+  D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm) const;
+  D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
+
+  void do_auto_rescale_normal();
 
   INLINE void enable_primitive_clipping(bool val);
   INLINE void enable_alpha_test(bool val);

@@ -50,15 +50,6 @@ ConfigVariableBool dx_full_screen_antialiasing
 ConfigVariableBool dx_no_vertex_fog
 ("dx-no-vertex-fog", false);
 
-// Configure this true to cause all lighting normals to automatically
-// be normalized by the CPU before rendering.  This is
-// necessary if you intend to render things under scale transforms and
-// expect lighting to work correctly.  Maybe one day there will be
-// another way to set this at runtime, instead of only as a configure
-// variable
-ConfigVariableBool dx_auto_normalize_lighting
-("auto-normalize-lighting", true);
-
 #ifndef NDEBUG
 // debugging flag
 // values are same as D3DCULL enumtype, 0 - no force, 1 - force none, 2 - force CW, 3 - force CCW

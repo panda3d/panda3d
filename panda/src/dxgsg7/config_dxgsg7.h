@@ -32,7 +32,6 @@ extern ConfigVariableBool dx_full_screen;
 extern ConfigVariableBool dx_sync_video;
 extern ConfigVariableBool dx_no_vertex_fog;
 extern ConfigVariableBool dx_full_screen_antialiasing;
-extern ConfigVariableBool dx_auto_normalize_lighting;
 extern ConfigVariableBool dx_use_rangebased_fog;
 extern ConfigVariableBool link_tristrips;
 

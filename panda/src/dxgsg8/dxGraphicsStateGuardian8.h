@@ -114,6 +114,7 @@ public:
   virtual void issue_texture(const TextureAttrib *attrib);
   virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_render_mode(const RenderModeAttrib *attrib);
+  virtual void issue_rescale_normal(const RescaleNormalAttrib *attrib);
   virtual void issue_texture_apply(const TextureApplyAttrib *attrib);
   virtual void issue_alpha_test(const AlphaTestAttrib *attrib);
   virtual void issue_depth_test(const DepthTestAttrib *attrib);
@@ -169,6 +170,8 @@ protected:
 
   INLINE void add_to_FVFBuf(void *data,  size_t bytes) ;
 
+  void do_auto_rescale_normal();
+
   bool                  _bDXisReady;
   HRESULT               _last_testcooplevel_result;
   DXTextureContext8  *_pCurTexContext;
@@ -177,6 +180,7 @@ protected:
   D3DMATRIX         _SavedTransform;
 
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
+  bool _auto_rescale_normal;
 
   void GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
                     void *pIndexSpace,DWORD dwIndexSpaceByteSize,
