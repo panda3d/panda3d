@@ -63,6 +63,7 @@ PUBLISHED:
 
   GeomNode *generate_screen(LensNode *projector, const string &screen_name,
                             int num_x_verts, int num_y_verts, float distance);
+  PT_Node make_flat_mesh(LensNode *camera);
 
   INLINE void set_vignette_on(bool vignette_on);
   INLINE bool get_vignette_on() const;
@@ -79,6 +80,16 @@ private:
   void recompute_node(Node *node, LMatrix4f &rel_mat, bool &computed_rel_mat);
   void recompute_geom_node(GeomNode *node, LMatrix4f &rel_mat, bool &computed_rel_mat);
   void recompute_geom(Geom *geom, const LMatrix4f &rel_mat);
+
+  NodeRelation *
+  make_mesh_node(Node *result_parent, Node *node, LensNode *camera,
+                 LMatrix4f &rel_mat, bool &computed_rel_mat);
+  void make_mesh_children(Node *new_node, Node *node, LensNode *camera,
+                          LMatrix4f &rel_mat, bool &computed_rel_mat);
+  PT(GeomNode) make_mesh_geom_node(GeomNode *node, LensNode *camera,
+                                   LMatrix4f &rel_mat, bool &computed_rel_mat);
+  PT(dDrawable) make_mesh_geom(Geom *geom, Lens *lens, LMatrix4f &rel_mat);
+
 
   PT(LensNode) _projector;
   bool _vignette_on;

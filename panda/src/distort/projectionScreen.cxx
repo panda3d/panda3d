@@ -215,6 +215,39 @@ generate_screen(LensNode *projector, const string &screen_name,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::make_flat_mesh
+//       Access: Published
+//  Description: Generates a deep copy of the hierarchy at the
+//               ProjectionScreen node and below, with vertices
+//               flattened into two dimensions as if they were seen by
+//               the indicated camera node.
+//
+//               This is useful for rendering an image as seen through
+//               a non-linear lens.  The resulting mesh will have
+//               vertices in the range [-1, 1] in both x and y, and
+//               may be then rendered with an ordinary orthographic
+//               lens, to generate the effect of seeing the image
+//               through the specified non-linear lens.
+//
+//               The returned node has no parent; it is up to the user
+//               to caller to parent it somewhere or store it so that
+//               it does not get dereferenced and deleted.
+////////////////////////////////////////////////////////////////////
+PT_Node ProjectionScreen::
+make_flat_mesh(LensNode *camera) {
+  nassertr(camera != (LensNode *)NULL, NULL);
+  nassertr(camera->get_lens() != (Lens *)NULL, NULL);
+
+  PT_Node top = new NamedNode(get_name());
+
+  LMatrix4f rel_mat;
+  bool computed_rel_mat = false;
+  make_mesh_children(top, this, camera, rel_mat, computed_rel_mat);
+
+  return top;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ProjectionScreen::recompute
 //       Access: Published
 //  Description: Recomputes all the UV's for geometry below the
@@ -373,4 +406,145 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
   if (_vignette_on) {
     geom->set_colors(_colors, G_PER_VERTEX, color_index);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::make_mesh_node
+//       Access: Private
+//  Description: Recurses over all geometry at the indicated node and
+//               below, and generates a corresponding node hierarchy
+//               with all the geometry copied, but flattened into 2-d,
+//               as seen from the indicated camera.  Returns the newly
+//               created, arc, or NULL if no arc was created.
+////////////////////////////////////////////////////////////////////
+NodeRelation *ProjectionScreen::
+make_mesh_node(Node *result_parent, Node *node, LensNode *camera,
+               LMatrix4f &rel_mat, bool &computed_rel_mat) {
+  if (!node->safe_to_flatten()) {
+    // If we can't safely flatten this node, ignore it (and all of its
+    // children) completely.  It's got no business being here anyway.
+    return NULL;
+  }
+
+  PT(Node) new_node;
+  if (node->is_of_type(GeomNode::get_class_type())) {
+    new_node =
+      make_mesh_geom_node(DCAST(GeomNode, node), camera,
+                          rel_mat, computed_rel_mat);
+  } else {
+    new_node = node->make_copy();
+  }
+
+  // Now attach the new node to the result.
+  RenderRelation *arc = new RenderRelation(result_parent, new_node);
+  make_mesh_children(new_node, node, camera, rel_mat, computed_rel_mat);
+  return arc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::make_mesh_children
+//       Access: Private
+//  Description: Walks over the list of children for the indicated
+//               node, calling make_mesh_node() on each one.
+////////////////////////////////////////////////////////////////////
+void ProjectionScreen::
+make_mesh_children(Node *new_node, Node *node, LensNode *camera,
+                   LMatrix4f &rel_mat, bool &computed_rel_mat) {
+  int num_children = node->get_num_children(RenderRelation::get_class_type());
+  for (int i = 0; i < num_children; i++) {
+    NodeRelation *arc = node->get_child(RenderRelation::get_class_type(), i);
+    NodeRelation *new_arc;
+
+    if (arc->has_transition(TransformTransition::get_class_type())) {
+      // This arc has a transform; therefore, we must recompute the
+      // relative matrix from this point.
+      LMatrix4f new_rel_mat;
+      bool computed_new_rel_mat = false;
+      new_arc = make_mesh_node(new_node, arc->get_child(), camera,
+                               new_rel_mat, computed_new_rel_mat);
+    } else {
+      // This arc has no transform, so we can use the same transform
+      // space from before.
+      new_arc = make_mesh_node(new_node, arc->get_child(), camera,
+                               rel_mat, computed_rel_mat);
+    }
+
+    // Copy all of the attributes (except TransformTransition) to the
+    // new arc.
+    new_arc->copy_transitions_from(arc);
+    new_arc->clear_transition(TransformTransition::get_class_type());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::make_mesh_geom_node
+//       Access: Private
+//  Description: Makes a new GeomNode, just like the given one, except
+//               flattened into two dimensions as seen by the
+//               indicated camera.
+////////////////////////////////////////////////////////////////////
+PT(GeomNode) ProjectionScreen::
+make_mesh_geom_node(GeomNode *node, LensNode *camera,
+                    LMatrix4f &rel_mat, bool &computed_rel_mat) {
+  PT(GeomNode) new_node = new GeomNode;
+  new_node->set_name(node->get_name());
+
+  if (!computed_rel_mat) {
+    // All right, time to compute the matrix.
+    get_rel_mat(node, camera, rel_mat);
+    computed_rel_mat = true;
+  }
+
+  int num_geoms = node->get_num_geoms();
+  for (int i = 0; i < num_geoms; i++) {
+    dDrawable *drawable = node->get_geom(i);
+    if (drawable->is_of_type(Geom::get_class_type())) {
+      PT(dDrawable) new_drawable = 
+        make_mesh_geom(DCAST(Geom, drawable), camera->get_lens(), rel_mat);
+      if (new_drawable != (dDrawable *)NULL) {
+        new_node->add_geom(new_drawable);
+      }
+    }
+  }
+
+  return new_node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::make_mesh_geom
+//       Access: Private
+//  Description: Makes a new Geom, just like the given one, except
+//               flattened into two dimensions as seen by the
+//               indicated lens.
+////////////////////////////////////////////////////////////////////
+PT(dDrawable) ProjectionScreen::
+make_mesh_geom(Geom *geom, Lens *lens, LMatrix4f &rel_mat) {
+  Geom *new_geom = geom->make_copy();
+  PT(dDrawable) result = new_geom;
+
+  PTA_Vertexf coords;
+  GeomBindType bind;
+  PTA_ushort vindex;
+
+  new_geom->get_coords(coords, bind, vindex);
+
+  PTA_Vertexf new_coords;
+  new_coords.reserve(coords.size());
+  for (int i = 0; i < (int)coords.size(); i++) {
+    const Vertexf &vert = coords[i];
+
+    // Project each vertex into the film plane, but use three
+    // dimensions so the Z coordinate remains meaningful.
+    LPoint3f film(0.0f, 0.0f, 0.0f);
+    lens->project(vert * rel_mat, film);
+
+    // Invert the Z coordinate.  We like -1 being closer than 1.
+    film[2] = -film[2];
+
+    new_coords.push_back(film);
+  }
+
+  new_geom->set_coords(new_coords, bind, vindex);
+
+  return result;
 }
