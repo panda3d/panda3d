@@ -1,6 +1,7 @@
 from DirectFrame import *
 from DirectButton import *
 import Task
+import types
 
 class DirectScrolledList(DirectFrame):
     def __init__(self, parent = aspect2d, **kw):
@@ -103,6 +104,13 @@ class DirectScrolledList(DirectFrame):
     def getItemIndexForItemID(self, itemID):
         #for i in range(len(self["items"])):
         #    print "buttontext[",i,"]",self["items"][i]["text"]
+
+        if(len(self["items"])==0):
+            return
+
+        if(type(self["items"][0])!=types.InstanceType):
+            print "warning: getItemIndexForItemID: cant find itemID for non-class list items!"
+            return
 
         for i in range(len(self["items"])):
             if(self["items"][i].itemID == itemID):
@@ -218,14 +226,18 @@ class DirectScrolledList(DirectFrame):
         """
         Add this string and extraArg to the list
         """
-        item.itemID = self.nextItemID
-        self.nextItemID += 1
+        if(type(item) == types.InstanceType):
+            # cant add attribs to non-classes (like strings & ints)
+            item.itemID = self.nextItemID
+            self.nextItemID += 1
         self['items'].append(item)
         if type(item) != type(''):
             item.reparentTo(self.itemFrame)
         if refresh:
             self.refresh()
-        return item.itemID  # to pass to scrollToItemID
+        if(type(item) == types.InstanceType):
+            return item.itemID  # to pass to scrollToItemID
+        return
 
     def removeItem(self, item, refresh=1):
         """
