@@ -6,6 +6,7 @@ from ShowBaseGlobal import *
 
 import Avatar
 import DirectNotifyGlobal
+import GravityWalker
 import NonPhysicsWalker
 import PhysicsWalker
 import Task
@@ -22,8 +23,11 @@ class ControlManager:
         assert(self.debugPrint("ControlManager()"))
         self.swimControls=NonPhysicsWalker.NonPhysicsWalker()
         if self.wantAvatarPhysics:
-            self.walkControls=PhysicsWalker.PhysicsWalker(
+            self.walkControls=GravityWalker.GravityWalker(
                     gravity = -32.1740 * 2.0) # * 2.0 is a hack;
+            #self.walkControls=NonPhysicsWalker.NonPhysicsWalker()
+            #self.walkControls=PhysicsWalker.PhysicsWalker(
+            #        gravity = -32.1740 * 2.0) # * 2.0 is a hack;
         else:
             self.walkControls=NonPhysicsWalker.NonPhysicsWalker()
         self.currentControls = self.walkControls
@@ -124,7 +128,7 @@ class ControlManager:
 
         if self.wantAvatarPhysicsIndicator:
             indicator=loader.loadModelCopy('phase_5/models/props/dagger')
-            self.walkControls.setAvatarPhysicsIndicator(indicator)
+            #self.walkControls.setAvatarPhysicsIndicator(indicator)
 
     def deleteCollisions(self):
         assert(self.debugPrint("deleteCollisions()"))
