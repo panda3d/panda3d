@@ -32,6 +32,9 @@ class DirectEntry(DirectFrame):
             ('focus',           0,                self.setFocus),
             ('cursorKeys',      0,                self.setCursorKeysActive),
             ('obscured',        0,                self.setObscureMode),
+            # Setting backgroundFocus allows the entry box to get keyboard
+            # events that are not handled by other things (i.e. events that
+            # fall through to the background):
             ('backgroundFocus', 0,                self.setBackgroundFocus),
             # Text used for the PGEntry text node
             # NOTE: This overrides the DirectFrame text option
