@@ -20,6 +20,8 @@
 #include "bioStream.h"
 #include "chunkedStream.h"
 
+#ifdef HAVE_SSL
+
 TypeHandle HTTPDocument::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -253,3 +255,5 @@ read_headers() {
 
   // A blank line terminates the headers.
 }
+
+#endif  // HAVE_SSL

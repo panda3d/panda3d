@@ -63,5 +63,7 @@ const int patcher_buffer_size =
         config_downloader.GetInt("patcher-buffer-size", 4096);
 
 ConfigureFn(config_downloader) {
+#ifdef HAVE_SSL
   HTTPDocument::init_type();
+#endif
 }

@@ -19,6 +19,8 @@
 #include "httpClient.h"
 #include "config_downloader.h"
 
+#ifdef HAVE_SSL
+
 #ifndef NDEBUG
 #include <openssl/err.h>
 #endif
@@ -287,3 +289,5 @@ send_get_request(BIO *bio,
   }
   BIO_puts(bio, request_str.c_str());
 }
+
+#endif  // HAVE_SSL
