@@ -27,7 +27,6 @@ import sys,os,time,stat,string,re,getopt,cPickle
 
 global FileDateCache
 FileDateCache = {}
-skylerTest=0
 
 def filedate(path):
     global FileDateCache
@@ -48,7 +47,6 @@ def youngest(files):
     if (type(files) == str):
         source = filedate(files)
         if (source==0):
-            import pdb; pdb.set_trace()
             sys.exit("Error: source file not readable: "+files)
         return source
     result = 0
@@ -56,15 +54,6 @@ def youngest(files):
         source = youngest(sfile)
         if (source > result): result = source
     return result
-
-def debug_older(file,others):
-    print [file, others]
-    y=youngest(others)
-    fd=filedate(file)
-    print "youngest", y
-    print "filedate", fd
-    print "is older", fd<y
-    return fd<y
 
 def older(file,others):
     return (filedate(file)<youngest(others))
@@ -89,82 +78,32 @@ if (sys.platform == "win32"):
         if (key!=0): _winreg.CloseKey(key)
         return k1
 
-if 0:
-    def oslocalcmd(cd, cmd):
-        if (cd != "."):
-            print "cd "+cd+" ; "+cmd
-            base=os.getcwd()
-            os.chdir(cd)
-        else:
-            print cmd
-        sys.stdout.flush()
-        if (sys.platform == "win32"):
-            exe = cmd.split()[0]
+def oslocalcmd(cd, cmd):
+    if (cd != "."):
+        print "cd "+cd+" ; "+cmd
+        base=os.getcwd()
+        os.chdir(cd)
+    else:
+        print cmd
+    sys.stdout.flush()
+    if (sys.platform == "win32"):
+        exe = cmd.split()[0]
+        if (os.path.isfile(exe)==0):
+            for i in os.environ["PATH"].split(";"):
+                if os.path.isfile(os.path.join(i, exe)):
+                    exe = os.path.join(i, exe)
+                    break
             if (os.path.isfile(exe)==0):
-                for i in os.environ["PATH"].split(";"):
-                    if os.path.isfile(os.path.join(i, exe)):
-                        exe = os.path.join(i, exe)
-                        break
-                if (os.path.isfile(exe)==0):
-                    sys.exit("Cannot find "+exe+" on search path")
-            os.spawnl(os.P_WAIT, exe, cmd)
-        else: os.system(cmd)
-        if (cd != "."):
-            os.chdir(base)
+                sys.exit("Cannot find "+exe+" on search path")
+        res = os.spawnl(os.P_WAIT, exe, cmd)
+    else: res = os.system(cmd)
+    if (res != 0):
+        sys.exit(1)
+    if (cd != "."):
+        os.chdir(base)
 
-if 1:
-    def getExecutablePath(cmd):
-        for i in os.getenv("PATH").split(os.pathsep):
-            if os.path.isfile(os.path.join(i, cmd)):
-                return os.path.join(i, cmd)
-        return cmd
-
-    # This version gives us more control of how the executable is called:
-    def oscmd(cmd):
-        global VERBOSE
-        if VERBOSE >= 1:
-            print cmd
-        sys.stdout.flush()
-        cmdLine = cmd.split()
-        cmd = getExecutablePath(cmdLine[0])
-        exitCode = os.spawnv(os.P_WAIT, cmd, cmdLine)
-        if exitCode:
-            sys.exit("Failed: \"%s\" returned exit code (%s)"%(cmd, exitCode))
-
-    def osCmdEnv(cmd, environment):
-        global VERBOSE
-        if VERBOSE >= 1:
-            print cmd
-        sys.stdout.flush()
-        cmdLine = cmd.split()
-        cmd = getExecutablePath(cmdLine[0])
-        exitCode = os.spawnve(os.P_WAIT, cmd, cmdLine, environment)
-        if exitCode:
-            sys.exit("Failed: \"%s\" returned exit code (%s)"%(cmd, exitCode))
-else:
-    from distutils.spawn import spawn
-    # This version seems more "standard" and may be updated
-    # without us needing to do it:
-    def oscmd(cmd):
-        # pring the cmd ourselves rather than using verbose=1
-        # on the spawn so that we can flush stdout:
-        global VERBOSE
-        if VERBOSE >= 1:
-            print cmd
-        sys.stdout.flush()
-        cmdLine = cmd.split()
-        spawn(cmdLine)
-
-def oscdcmd(cd, cmd):
-    global VERBOSE
-    if VERBOSE >= 1:
-        print "cd", cd
-    base=os.getcwd()
-    os.chdir(cd)
-    oscmd(cmd)
-    if VERBOSE >= 1:
-        print "cd", base
-    os.chdir(base)
+def oscmd(cmd):
+    oslocalcmd(".",cmd)
 
 def osmove(src,dst):
     """
@@ -242,18 +181,15 @@ OPTIMIZE="3"
 INSTALLER=0
 COMPLETE=0
 THIRDPARTY=""
-VERSION1=0
-VERSION2=0
-VERSION3=0
+VERSION="0.0.0"
+VERBOSE=1
 COMPRESSOR="zlib"
-
 PACKAGES=["ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
           "SSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAX5","MAX6","MAX7"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
 
-DirectXSDK=None
-VERBOSE=0
+DIRECTXSDK=None
 
 ##########################################################################################
 #
@@ -267,9 +203,7 @@ try:
     for line in f:
         match = pattern.match(line,0)
         if (match):
-            VERSION1 = int(match.group(1))
-            VERSION2 = int(match.group(2))
-            VERSION3 = int(match.group(3))
+            VERSION = match.group(1)+"."+match.group(2)+"."+match.group(3)
             break
     f.close()
 except: pass
@@ -382,7 +316,6 @@ DTOOLDEFAULTS=[
     ("HAVE_NSPR",                      'UNDEF',                  'UNDEF'),
     ("HAVE_FREETYPE",                  'UNDEF',                  'UNDEF'),
     ("HAVE_FFTW",                      'UNDEF',                  'UNDEF'),
-    ("HAVE_MILES",                     'UNDEF',                  'UNDEF'),
     ("HAVE_SSL",                       'UNDEF',                  'UNDEF'),
     ("HAVE_NET",                       'UNDEF',                  'UNDEF'),
     ]
@@ -519,6 +452,7 @@ def usage(problem):
     print "  --v2 X            (set the minor version number)"
     print "  --v3 X            (set the sequence version number)"
     print "  --lzma            (use lzma compression when building installer)"
+    print "  --prc X           (absolute path where panda look for 'Config.prc')"
     print ""
     for pkg in PACKAGES:
         p = pkg.lower()
@@ -526,8 +460,6 @@ def usage(problem):
     print ""
     print "  --nothing         (disable every third-party lib)"
     print "  --everything      (enable every third-party lib)"
-    print "  --default         (use default options for everything not specified)"
-    print "  --vrdefault       (use default options for the vr studio)"
     print ""
     print "  --quiet           (print less output)"
     print "  --verbose         (print more output and debugging info)"
@@ -540,12 +472,11 @@ def usage(problem):
 
 def parseopts(args):
     global PREFIX,COMPILER,OPTIMIZE,OMIT,THIRDPARTY,INSTALLER
-    global COPYEXTRAS,VERSION1,VERSION2,VERSION3,COMPRESSOR
-    global DirectXSDK,VERBOSE
+    global COPYEXTRAS,VERSION,COMPRESSOR,DIRECTXSDK,VERBOSE
     longopts = [
         "help","package-info","prefix=","compiler=","directx-sdk=","thirdparty=",
         "optimize=","everything","nothing","installer","quiet","verbose",
-        "complete","default","v1=","v2=","v3=","lzma"]
+        "complete","version=","lzma"]
     anything = 0
     for pkg in PACKAGES: longopts.append("no-"+pkg.lower())
     for pkg in PACKAGES: longopts.append("use-"+pkg.lower())
@@ -556,7 +487,7 @@ def parseopts(args):
             elif (option=="--package-info"): raise "package-info"
             elif (option=="--prefix"): PREFIX=value
             elif (option=="--compiler"): COMPILER=value
-            elif (option=="--directx-sdk"): DirectXSDK=value
+            elif (option=="--directx-sdk"): DIRECTXSDK=value
             elif (option=="--thirdparty"): THIRDPARTY=value
             elif (option=="--optimize"): OPTIMIZE=value
             elif (option=="--quiet"): VERBOSE-=1
@@ -565,9 +496,9 @@ def parseopts(args):
             elif (option=="--complete"): COMPLETE=1
             elif (option=="--everything"): OMIT=[]
             elif (option=="--nothing"): OMIT=PACKAGES[:]
-            elif (option=="--v1"): VERSION1=int(value)
-            elif (option=="--v2"): VERSION2=int(value)
-            elif (option=="--v3"): VERSION3=int(value)
+            elif (option=="--version"):
+                VERSION=value
+                if (len(VERSION.split(".")) != 3): raise "usage"
             elif (option=="--lzma"): COMPRESSOR="lzma"
             else:
                 for pkg in PACKAGES:
@@ -597,15 +528,15 @@ parseopts(sys.argv[1:])
 #
 ########################################################################
 
-PANDASOURCE=os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
-print "PANDASOURCE:", PANDASOURCE
+PANDASOURCE=os.path.dirname(os.path.abspath(sys.path[0]))
 
 if ((os.path.exists(os.path.join(PANDASOURCE,"makepanda/makepanda.py"))==0) or
-        (os.path.exists(os.path.join(PANDASOURCE,"makepanda/makepanda.sln"))==0) or
-        (os.path.exists(os.path.join(PANDASOURCE,"dtool","src","dtoolbase","dtoolbase.h"))==0) or
-        (os.path.exists(os.path.join(PANDASOURCE,"panda","src","pandabase","pandabase.h"))==0)):
+    (os.path.exists(os.path.join(PANDASOURCE,"makepanda/makepanda.sln"))==0) or
+    (os.path.exists(os.path.join(PANDASOURCE,"dtool","src","dtoolbase","dtoolbase.h"))==0) or
+    (os.path.exists(os.path.join(PANDASOURCE,"panda","src","pandabase","pandabase.h"))==0)):
     sys.exit("I am unable to locate the root of the panda source tree.")
-    os.chdir(PANDASOURCE)
+
+os.chdir(PANDASOURCE)
 
 ########################################################################
 ##
@@ -617,7 +548,6 @@ if ((os.path.exists(os.path.join(PANDASOURCE,"makepanda/makepanda.py"))==0) or
 if (THIRDPARTY == ""):
     if (COMPILER == "MSVC7"): THIRDPARTY="thirdparty/win-libs-vc7/"
     if (COMPILER == "LINUXA"): THIRDPARTY="thirdparty/linux-libs-a/"
-STDTHIRDPARTY = THIRDPARTY.replace("\\","/")
 
 ########################################################################
 ##
@@ -625,22 +555,22 @@ STDTHIRDPARTY = THIRDPARTY.replace("\\","/")
 ##
 ########################################################################
 
-if sys.platform == "win32" and DirectXSDK is None:
+if sys.platform == "win32" and DIRECTXSDK is None:
     dxdir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX SDK", "DX9SDK Samples Path")
-    if (dxdir != 0): DirectXSDK = os.path.dirname(dxdir)
+    if (dxdir != 0): DIRECTXSDK = os.path.dirname(dxdir)
     else:
         dxdir = GetRegistryKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment","DXSDK_DIR")
-        if (dxdir != 0): DirectXSDK=dxdir
+        if (dxdir != 0): DIRECTXSDK=dxdir
         else:
             dxdir = GetRegistryKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment","DXSDKROOT")
             if dxdir != 0:
                 if dxdir[-2:]=="/.":
-                    DirectXSDK=dxdir[:-1]
+                    DIRECTXSDK=dxdir[:-1]
                 else:
-                    DirectXSDK=dxdir
+                    DIRECTXSDK=dxdir
             else:
                 sys.exit("The registry does not appear to contain a pointer to the DirectX 9.0 SDK.")
-    DirectXSDK=DirectXSDK.replace("\\", "/")
+    DIRECTXSDK=DIRECTXSDK.replace("\\", "/")
 
 ########################################################################
 ##
@@ -705,8 +635,8 @@ if (OMIT.count("MAYA6")==0):
 ########################################################################
 
 MAXVERSIONS = [("MAX5", "SOFTWARE\\Autodesk\\3DSMAX\\5.0\\MAX-1:409", "uninstallpath", "Cstudio\\Sdk"),
-                              ("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0",            "installdir",    "maxsdk\\cssdk\\include"),
-                              ("MAX7", "SOFTWARE\\Autodesk\\3DSMAX\\7.0",            "Installdir",    "maxsdk\\include\\CS")]
+               ("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0",            "installdir",    "maxsdk\\cssdk\\include"),
+               ("MAX7", "SOFTWARE\\Autodesk\\3DSMAX\\7.0",            "Installdir",    "maxsdk\\include\\CS")]
 MAXSDK = {}
 MAXSDKCS = {}
 for version,key1,key2,subdir in MAXVERSIONS:
@@ -771,6 +701,18 @@ if (sys.platform != "win32"):
 
 ##########################################################################################
 #
+# See if there's a "MILES" subdirectory under 'thirdparty'
+#
+##########################################################################################
+
+if (os.path.isdir(os.path.join(THIRDPARTY, "miles"))==0):
+    if (OMIT.count("MILES")==0):
+        WARNINGS.append("You do not have a copy of MILES sound system")
+        WARNINGS.append("I have automatically added this command-line option: --no-miles")
+        OMIT.append("MILES")
+
+##########################################################################################
+#
 # Enable or Disable runtime debugging mechanisms based on optimize level.
 #
 ##########################################################################################
@@ -795,13 +737,6 @@ if (OPTIMIZE <= 1):
 
 if (OPTIMIZE <= 3):
     DTOOLCONFIG["NOTIFY_DEBUG"] = '1'
-
-##########################################################################################
-#
-# See if we're using SSL, and if so, which version.
-#
-##########################################################################################
-
 
 ##########################################################################################
 #
@@ -862,11 +797,11 @@ def printStatus(header,warnings):
         print "Makepanda: Optimize:",OPTIMIZE
         print "Makepanda: Keep Pkg:",tkeep
         print "Makepanda: Omit Pkg:",tomit
-        print "Makepanda: Thirdparty dir:",STDTHIRDPARTY
-        print "Makepanda: DirectX SDK dir:",DirectXSDK
+        print "Makepanda: Thirdparty dir:",THIRDPARTY
+        print "Makepanda: DirectX SDK dir:",DIRECTXSDK
         print "Makepanda: Verbose vs. Quiet Level:",VERBOSE
         print "Makepanda: Build installer:",INSTALLER,COMPRESSOR
-        print "Makepanda: Version ID: "+str(VERSION1)+"."+str(VERSION2)+"."+str(VERSION3)
+        print "Makepanda: Version ID: "+VERSION
         for x in warnings: print "Makepanda: "+x
         print "-------------------------------------------------------------------"
         print ""
@@ -1143,13 +1078,13 @@ def CompileBison(pre,dstc,dsth,src):
     if (older(dstc,src) or older(dsth,src)):
         CopyFile(PREFIX+"/tmp/", src)
         if (COMPILER=="MSVC7"):
-            CopyFile(PREFIX+"/tmp/", STDTHIRDPARTY+"win-util/bison.simple")
-            bisonFullPath=os.path.abspath(STDTHIRDPARTY+"win-util/bison.exe")
-            oscdcmd(PREFIX+"/tmp", bisonFullPath+" -y -d -p " + pre + " " + fn)
+            CopyFile(PREFIX+"/tmp/", "thirdparty/win-util/bison.simple")
+            bisonFullPath=os.path.abspath("thirdparty/win-util/bison.exe")
+            oslocalcmd(PREFIX+"/tmp", bisonFullPath+" -y -d -p " + pre + " " + fn)
             osmove(PREFIX+"/tmp/y_tab.c", dstc)
             osmove(PREFIX+"/tmp/y_tab.h", dsth)
         if (COMPILER=="LINUXA"):
-            oscdcmd(PREFIX+"/tmp", "bison -y -d -p "+pre+" "+fn)
+            oslocalcmd(PREFIX+"/tmp", "bison -y -d -p "+pre+" "+fn)
             osmove(PREFIX+"/tmp/y.tab.c", dstc)
             osmove(PREFIX+"/tmp/y.tab.h", dsth)
         updatefiledate(dstc)
@@ -1165,14 +1100,14 @@ def CompileFlex(pre,dst,src,dashi):
     if (older(dst,src)):
         CopyFile(PREFIX+"/tmp/", src)
         if (COMPILER=="MSVC7"):
-            flexFullPath=os.path.abspath(STDTHIRDPARTY+"win-util/flex.exe")
-            if (dashi): oscdcmd(PREFIX+"/tmp", flexFullPath+" -i -P" + pre + " -olex.yy.c " + fn)
-            else:       oscdcmd(PREFIX+"/tmp", flexFullPath+"    -P" + pre + " -olex.yy.c " + fn)
+            flexFullPath=os.path.abspath("thirdparty/win-util/flex.exe")
+            if (dashi): oslocalcmd(PREFIX+"/tmp", flexFullPath+" -i -P" + pre + " -olex.yy.c " + fn)
+            else:       oslocalcmd(PREFIX+"/tmp", flexFullPath+"    -P" + pre + " -olex.yy.c " + fn)
             replaceInFile(PREFIX+'/tmp/lex.yy.c', dst, '#include <unistd.h>', '')
             #WriteFile(wdst, ReadFile("built\\tmp\\lex.yy.c").replace("#include <unistd.h>",""))
         if (COMPILER=="LINUXA"):
-            if (dashi): oscdcmd(PREFIX+"/tmp", "flex -i -P" + pre + " -olex.yy.c " + fn)
-            else:       oscdcmd(PREFIX+"/tmp", "flex    -P" + pre + " -olex.yy.c " + fn)
+            if (dashi): oslocalcmd(PREFIX+"/tmp", "flex -i -P" + pre + " -olex.yy.c " + fn)
+            else:       oslocalcmd(PREFIX+"/tmp", "flex    -P" + pre + " -olex.yy.c " + fn)
             oscmd('cp built/tmp/lex.yy.c '+dst)
         updatefiledate(dst)
 
@@ -1188,7 +1123,7 @@ priorIPath=None
 def checkIfNewDir(path):
     global priorIPath
     if priorIPath != path:
-        print "\nStaring compile in \"%s\":\n"%(path,)
+        print "\nStarting compile in \"%s\":\n"%(path,)
     priorIPath=path
 
 def CompileC(obj=0,src=0,ipath=[],opts=[]):
@@ -1206,7 +1141,7 @@ def CompileC(obj=0,src=0,ipath=[],opts=[]):
                 checkIfNewDir(ipath[1])
             cmd = 'cl.exe /Fo"' + wobj + '" /nologo /c'
             cmd = cmd + " /I\""+PREFIX+"/python/include\""
-            if (opts.count("DXSDK")): cmd = cmd + ' /I"' + DirectXSDK + '/include"'
+            if (opts.count("DXSDK")): cmd = cmd + ' /I"' + DIRECTXSDK + '/include"'
             if (opts.count("MAYA5")): cmd = cmd + ' /I"' + Maya5SDK + 'include"'
             if (opts.count("MAYA6")): cmd = cmd + ' /I"' + Maya6SDK + 'include"'
             for max in ["MAX5","MAX6","MAX7"]:
@@ -1331,13 +1266,13 @@ def Interrogate(ipath=0, opts=0, outd=0, outc=0, src=0, module=0, library=0, fil
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
         for pkg in PACKAGES:
             if (PkgSelected(opts,pkg)):
-                cmd = cmd + ' -I"' + dotdots + STDTHIRDPARTY + pkg.lower() + "/include" + '"'
+                cmd = cmd + ' -I"' + dotdots + THIRDPARTY + pkg.lower() + "/include" + '"'
         cmd = cmd + ' -module "' + module + '" -library "' + library + '"'
-        if ((COMPILER=="MSVC7") and opts.count("DXSDK")): cmd = cmd + ' -I"' + DirectXSDK + '/include"'
+        if ((COMPILER=="MSVC7") and opts.count("DXSDK")): cmd = cmd + ' -I"' + DIRECTXSDK + '/include"'
         if ((COMPILER=="MSVC7") and opts.count("MAYA5")): cmd = cmd + ' -I"' + Maya5SDK + 'include"'
         if ((COMPILER=="MSVC7") and opts.count("MAYA6")): cmd = cmd + ' -I"' + Maya6SDK + 'include"'
         for x in files: cmd = cmd + ' ' + x
-        oscdcmd(src, cmd)
+        oslocalcmd(src, cmd)
         updatefiledate(outd)
         updatefiledate(outc)
 
@@ -1424,22 +1359,21 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             else: sys.exit("unknown suffix in object list.")
         if (older(dll, wobj+xdep)):
             cmd = 'link.exe /nologo /NODEFAULTLIB:LIBCI.LIB'
-            if (dll[-4:-1]==".dl"): cmd = cmd + " /DLL"
+            if (dll[-4:]!=".exe"): cmd = cmd + " /DLL"
             if (OPTIMIZE==1): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRT.LIB "
             if (OPTIMIZE==2): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRT.LIB "
             if (OPTIMIZE==3): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF "
             if (OPTIMIZE==4): cmd = cmd + " /DEBUG /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF /LTCG "
             cmd = cmd + " /MAP /MAPINFO:EXPORTS /MAPINFO:LINES /fixed:no /incremental:no /stack:4194304 "
             if (opts.count("NOLIBCI")): cmd = cmd + " /NODEFAULTLIB:LIBCI.LIB "
-            if (PkgSelected(opts,"MAX5") or PkgSelected(opts,"MAX6")
-                    or PkgSelected(opts,"MAX7")):
-                cmd = cmd + ' /DEF:"./pandatool/src/maxegg/MaxEgg.def" '
+            if (opts.count("MAXEGGDEF")): cmd = cmd + ' /DEF:pandatool/src/maxegg/MaxEgg.def'
             cmd = cmd + " /OUT:\"" + dll + "\" /IMPLIB:\"" + lib + "\" /MAP:NUL"
             cmd = cmd + " /LIBPATH:\""+PREFIX+"/python/libs\" "
-            for x in wobj: cmd = cmd + " \"" + x + "\""
+            for x in wobj: cmd = cmd + ' "' + x + '"'
+            if (dll[-4:]==".exe"): cmd = cmd + " built/tmp/pandaIcon.res"
             if (opts.count("D3D8") or opts.count("D3D9") or opts.count("DXDRAW") or opts.count("DXSOUND") or opts.count("DXGUID")):
-                cmd = cmd + ' /LIBPATH:"' + DirectXSDK + 'lib/x86"'
-                cmd = cmd + ' /LIBPATH:"' + DirectXSDK + 'lib"'
+                cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK + 'lib/x86"'
+                cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK + 'lib"'
             if (opts.count("D3D8")):        cmd = cmd + ' d3d8.lib d3dx8.lib dxerr8.lib'
             if (opts.count("D3D9")):        cmd = cmd + ' d3d9.lib d3dx9.lib dxerr9.lib'
             if (opts.count("DXDRAW")):      cmd = cmd + ' ddraw.lib'
@@ -1456,57 +1390,53 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             if (opts.count("WINGDI")):      cmd = cmd + " gdi32.lib"
             if (opts.count("ADVAPI")):      cmd = cmd + " advapi32.lib"
             if (opts.count("GLUT")):        cmd = cmd + " opengl32.lib glu32.lib"
-            if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " \"" + THIRDPARTY + 'zlib/lib/libz.lib"'
-            if (PkgSelected(opts,"PNG")):      cmd = cmd + " \"" + THIRDPARTY + 'png/lib/libpng.lib"'
-            if (PkgSelected(opts,"JPEG")):     cmd = cmd + " \"" + THIRDPARTY + 'jpeg/lib/libjpeg.lib"'
-            if (PkgSelected(opts,"TIFF")):     cmd = cmd + " \"" + THIRDPARTY + 'tiff/lib/libtiff.lib"'
+            if (PkgSelected(opts,"ZLIB")):     cmd = cmd + ' "' + THIRDPARTY + 'zlib/lib/libz.lib"'
+            if (PkgSelected(opts,"PNG")):      cmd = cmd + ' "' + THIRDPARTY + 'png/lib/libpng.lib"'
+            if (PkgSelected(opts,"JPEG")):     cmd = cmd + ' "' + THIRDPARTY + 'jpeg/lib/libjpeg.lib"'
+            if (PkgSelected(opts,"TIFF")):     cmd = cmd + ' "' + THIRDPARTY + 'tiff/lib/libtiff.lib"'
             if (PkgSelected(opts,"VRPN")):
-                cmd = cmd + " \"" + THIRDPARTY + 'vrpn/lib/vrpn.lib"'
-                cmd = cmd + " \"" + THIRDPARTY + 'vrpn/lib/quat.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'vrpn/lib/vrpn.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'vrpn/lib/quat.lib"'
             if (PkgSelected(opts,"FMOD")):
-                cmd = cmd + " \"" + THIRDPARTY + 'fmod/lib/fmod.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'fmod/lib/fmod.lib"'
             if (PkgSelected(opts,"MILES")):
-                cmd = cmd + " \"" + THIRDPARTY + 'miles/lib/mss32.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'miles/lib/mss32.lib"'
             if (PkgSelected(opts,"NVIDIACG")):
-                if (opts.count("CGGL")): cmd = cmd + " \"" + THIRDPARTY + 'nvidiacg/lib/cgGL.lib"'
-                cmd = cmd + " \"" + THIRDPARTY + 'nvidiacg/lib/cg.lib"'
+                if (opts.count("CGGL")):
+                    cmd = cmd + ' "' + THIRDPARTY + 'nvidiacg/lib/cgGL.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'nvidiacg/lib/cg.lib"'
             if (PkgSelected(opts,"HELIX")):
-                cmd = cmd + " \"" + THIRDPARTY + 'helix/lib/runtlib.lib"'
-                cmd = cmd + " \"" + THIRDPARTY + 'helix/lib/syslib.lib"'
-                cmd = cmd + " \"" + THIRDPARTY + 'helix/lib/contlib.lib"'
-                cmd = cmd + " \"" + THIRDPARTY + 'helix/lib/debuglib.lib"'
-                cmd = cmd + " \"" + THIRDPARTY + 'helix/lib/utillib.lib"'
-                cmd = cmd + " \"" + THIRDPARTY + 'helix/lib/stlport_vc7.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'helix/lib/runtlib.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'helix/lib/syslib.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'helix/lib/contlib.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'helix/lib/debuglib.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'helix/lib/utillib.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'helix/lib/stlport_vc7.lib"'
             if (PkgSelected(opts,"NSPR")):
-                cmd = cmd + " \"" + THIRDPARTY + 'nspr/lib/libnspr4.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'nspr/lib/libnspr4.lib"'
             if (PkgSelected(opts,"SSL")):
-                cmd = cmd + " \"" + THIRDPARTY + 'ssl/lib/ssleay32.lib"'
-                cmd = cmd + " \"" + THIRDPARTY + 'ssl/lib/libeay32.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'ssl/lib/ssleay32.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'ssl/lib/libeay32.lib"'
             if (PkgSelected(opts,"FREETYPE")):
-                cmd = cmd + " \"" + THIRDPARTY + 'freetype/lib/libfreetype.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'freetype/lib/libfreetype.lib"'
             if (PkgSelected(opts,"FFTW")):
-                cmd = cmd + " \"" + THIRDPARTY + 'fftw/lib/rfftw.lib"'
-                cmd = cmd + " \"" + THIRDPARTY + 'fftw/lib/fftw.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'fftw/lib/rfftw.lib"'
+                cmd = cmd + ' "' + THIRDPARTY + 'fftw/lib/fftw.lib"'
             if (PkgSelected(opts,"MAYA5")):
-                cmd = cmd + ' \""' + Maya5SDK +  'lib/Foundation.lib"'
-                cmd = cmd + ' \""' + Maya5SDK +  'lib/OpenMaya.lib"'
-                cmd = cmd + ' \""' + Maya5SDK +  'lib/OpenMayaAnim.lib"'
+                cmd = cmd + ' "' + Maya5SDK +  'lib/Foundation.lib"'
+                cmd = cmd + ' "' + Maya5SDK +  'lib/OpenMaya.lib"'
+                cmd = cmd + ' "' + Maya5SDK +  'lib/OpenMayaAnim.lib"'
             if (PkgSelected(opts,"MAYA6")):
-                cmd = cmd + ' \""' + Maya6SDK +  'lib/Foundation.lib"'
-                cmd = cmd + ' \""' + Maya6SDK +  'lib/OpenMaya.lib"'
-                cmd = cmd + ' \""' + Maya6SDK +  'lib/OpenMayaAnim.lib"'
+                cmd = cmd + ' "' + Maya6SDK +  'lib/Foundation.lib"'
+                cmd = cmd + ' "' + Maya6SDK +  'lib/OpenMaya.lib"'
+                cmd = cmd + ' "' + Maya6SDK +  'lib/OpenMayaAnim.lib"'
             for max in ["MAX5","MAX6","MAX7"]:
                 if PkgSelected(opts,max):
                     cmd = cmd + ' "' + MAXSDK[max] +  'lib/core.lib"'
                     cmd = cmd + ' "' + MAXSDK[max] +  'lib/mesh.lib"'
                     cmd = cmd + ' "' + MAXSDK[max] +  'lib/maxutil.lib"'
                     cmd = cmd + ' "' + MAXSDK[max] +  'lib/paramblk2.lib"'
-            if 1:
-                oscmd(cmd)
-            else:
-                WriteFile(PREFIX+'/tmp/linkcontrol',cmd)
-                print "link.exe "+cmd
-                oscmd("link.exe @built/tmp/linkcontrol")
+            oscmd(cmd)
             updatefiledate(dll)
             if ((OPTIMIZE == 1) and (dll[-4:]==".dll")):
                 CopyFile(dll[:-4]+"_d.dll", dll)
@@ -1523,13 +1453,13 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             elif (suffix==".lib"): wobj.append(PREFIX+"/lib/"+x[:-4]+".a")
             else: sys.exit("unknown suffix in object list.")
         if (older(wdll, wobj+xdep)):
-            if (dll[-4:]==".exe"): cmd = "g++ -o " + wdll + " -Lbuilt/lib"
-            else:                  cmd = "g++ -shared -o " + wdll + " -Lbuilt/lib"
+            if (dll[-4:]==".exe"): cmd = "g++ -o " + wdll + " -L" + PREFIX + "/lib"
+            else:                  cmd = "g++ -shared -o " + wdll + " -L" + PREFIX + "/lib"
             for x in obj:
                 suffix = x[-4:]
-                if   (suffix==".obj"): cmd = cmd + " built/tmp/"+x[:-4]+".o"
+                if   (suffix==".obj"): cmd = cmd + " " + PREFIX + "/tmp/"+x[:-4]+".o"
                 elif (suffix==".dll"): cmd = cmd + " -l" + x[3:-4]
-                elif (suffix==".lib"): cmd = cmd + " built/lib/"+x[:-4]+".a"
+                elif (suffix==".lib"): cmd = cmd + " " + PREFIX + "/lib/"+x[:-4]+".a"
             if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -L"' + THIRDPARTY + 'fmod/lib" -lfmod-3.74'
             if (PkgSelected(opts,"NVIDIACG")):
                 cmd = cmd + ' -L"' + THIRDPARTY + 'nvidiacg/lib" '
@@ -1546,7 +1476,7 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L"' + THIRDPARTY + 'fftw/lib" -lrfftw -lfftw'
             if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
             oscmd(cmd)
-            updatefiledate(dll)
+            updatefiledate(wdll)
 
 ##########################################################################################
 #
@@ -1603,6 +1533,11 @@ CxxIgnoreHeader["afxres.h"] = 1
 #
 ##########################################################################################
 
+VERSION1=int(VERSION.split(".")[0])
+VERSION2=int(VERSION.split(".")[1])
+VERSION3=int(VERSION.split(".")[2])
+NVERSION=VERSION1*1000000+VERSION2*1000+VERSION3
+
 conf="""
 #define PANDA_MAJOR_VERSION VERSION1
 #define PANDA_MINOR_VERSION VERSION2
@@ -1616,7 +1551,7 @@ conf="""
 conf = conf.replace("VERSION1",str(VERSION1))
 conf = conf.replace("VERSION2",str(VERSION2))
 conf = conf.replace("VERSION3",str(VERSION3))
-conf = conf.replace("NVERSION",str(VERSION1*1000000+VERSION2*1000+VERSION3))
+conf = conf.replace("NVERSION",str(NVERSION))
 
 ConditionalWriteFile(PREFIX+'/include/pandaVersion.h',conf)
 
@@ -1628,7 +1563,7 @@ EXPCL_DTOOL int panda_version_VERSION1_VERSION2_VERSION3 = 0;
 conf = conf.replace("VERSION1",str(VERSION1))
 conf = conf.replace("VERSION2",str(VERSION2))
 conf = conf.replace("VERSION3",str(VERSION3))
-conf = conf.replace("NVERSION",str(VERSION1*1000000+VERSION2*1000+VERSION3))
+conf = conf.replace("NVERSION",str(NVERSION))
 
 ConditionalWriteFile(PREFIX+'/include/checkPandaVersion.cxx',conf)
 
@@ -1647,9 +1582,20 @@ static int check_panda_version = panda_version_VERSION1_VERSION2_VERSION3;
 conf = conf.replace("VERSION1",str(VERSION1))
 conf = conf.replace("VERSION2",str(VERSION2))
 conf = conf.replace("VERSION3",str(VERSION3))
-conf = conf.replace("NVERSION",str(VERSION1*1000000+VERSION2*1000+VERSION3))
+conf = conf.replace("NVERSION",str(NVERSION))
 
 ConditionalWriteFile(PREFIX+'/include/checkPandaVersion.h',conf)
+
+##########################################################################################
+#
+# If running under windows, compile up the icon.
+#
+##########################################################################################
+
+if (sys.platform == "win32"):
+  IPATH=["dtool/src/dtoolutil"]
+  OPTS=[]
+  CompileRES(ipath=IPATH, opts=OPTS, src='pandaIcon.rc', obj='pandaIcon.res')
 
 ##########################################################################################
 #
@@ -1696,7 +1642,7 @@ ConditionalWriteFile(PREFIX+'/include/dtool_config.h',conf)
 #
 ##########################################################################################
 
-CopyFile(PREFIX+'/', 'Config.prc')
+CopyFile(PREFIX+'/', 'doc/Config.prc')
 
 ##########################################################################################
 #
@@ -1707,17 +1653,17 @@ CopyFile(PREFIX+'/', 'Config.prc')
 for pkg in PACKAGES:
     if (OMIT.count(pkg)==0):
         if (sys.platform == "win32"):
-            if (os.path.exists(STDTHIRDPARTY+pkg.lower()+"/bin")):
-                CopyAllFiles(PREFIX+"/bin/", STDTHIRDPARTY + pkg.lower() + "/bin/")
+            if (os.path.exists(THIRDPARTY+pkg.lower()+"/bin")):
+                CopyAllFiles(PREFIX+"/bin/", THIRDPARTY + pkg.lower() + "/bin/")
         else:
-            if (os.path.exists(STDTHIRDPARTY + pkg.lower() + "/lib")):
-                CopyAllFiles(PREFIX+"/lib/", STDTHIRDPARTY + pkg.lower() + "/lib/")
+            if (os.path.exists(THIRDPARTY + pkg.lower() + "/lib")):
+                CopyAllFiles(PREFIX+"/lib/", THIRDPARTY + pkg.lower() + "/lib/")
 
-if (os.path.exists(STDTHIRDPARTY+"extras/bin")):
-    CopyAllFiles(PREFIX+"/bin/", STDTHIRDPARTY + "extras/bin/")
+if (os.path.exists(THIRDPARTY+"extras/bin")):
+    CopyAllFiles(PREFIX+"/bin/", THIRDPARTY + "extras/bin/")
 if (sys.platform == "win32"):
-    CopyTree(PREFIX+'/python', STDTHIRDPARTY+'win-python')
-    CopyFile(PREFIX+'/bin/', STDTHIRDPARTY+'win-python/python22.dll')
+    CopyTree(PREFIX+'/python', 'thirdparty/win-python')
+    CopyFile(PREFIX+'/bin/', 'thirdparty/win-python/python22.dll')
 
 ########################################################################
 ##
@@ -1725,23 +1671,26 @@ if (sys.platform == "win32"):
 ##
 ########################################################################
 
-WANT_PPYTHON=not skylerTest
-WANT_GENPYCODE_EXE=not skylerTest
-if WANT_PPYTHON:
-    IPATH=['direct/src/directbase']
-    CompileC(ipath=IPATH, opts=['BUILDING_PPYTHON'], src='ppython.cxx', obj='ppython.obj')
-    CompileLink(opts=['WINUSER'], dll='ppython.exe', obj=['ppython.obj'])
-if WANT_GENPYCODE_EXE:
-    IPATH=['direct/src/directbase']
-    CompileC(ipath=IPATH, opts=['BUILDING_GENPYCODE'], src='ppython.cxx', obj='genpycode.obj')
-    CompileLink(opts=['WINUSER'], dll='genpycode.exe', obj=['genpycode.obj'])
+IPATH=['direct/src/directbase']
+CompileC(ipath=IPATH, opts=['BUILDING_PPYTHON'], src='ppython.cxx', obj='ppython.obj')
+CompileLink(opts=['WINUSER'], dll='ppython.exe', obj=['ppython.obj'])
+
+IPATH=['direct/src/directbase']
+CompileC(ipath=IPATH, opts=['BUILDING_GENPYCODE'], src='ppython.cxx', obj='genpycode.obj')
+CompileLink(opts=['WINUSER'], dll='genpycode.exe', obj=['genpycode.obj'])
 
 ########################################################################
 #
-# Copy header files to the built/include directory.
+# Copy header files to the PREFIX/include directory.
 #
 # Are we just copying *ALL* headers into the include directory?
-# If so, let's automate this.
+# If so, let's automate this. - Dave Schuyler
+#
+# We're definitely not copying all headers.  We're only copying those
+# same headers that are copied by ppremake.  But the bigger question
+# is, did he *intend* to copy all headers?  Another good question is,
+# could we just put a little tag into the header file itself, indicating
+# that it is meant to be copied?  - Josh Yelon
 #
 ########################################################################
 
@@ -5476,7 +5425,7 @@ for VER in ["5","6"]:
 for VER in ["5", "6", "7"]:
   if (OMIT.count("MAX"+VER)==0):
     IPATH=['pandatool/src/maxegg']
-    OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINUSER"]
+    OPTS=['MAX'+VER, 'NSPR', "WINCOMCTL", "WINUSER", "MAXEGGDEF"]
     CompileC(ipath=IPATH, opts=OPTS, src='DllEntry.cpp',         obj='maxegg'+VER+'_DllEntry.obj')
     CompileC(ipath=IPATH, opts=OPTS, src='Logger.cpp',           obj='maxegg'+VER+'_Logger.obj')
     CompileC(ipath=IPATH, opts=OPTS, src='MaxEgg.cpp',           obj='maxegg'+VER+'_MaxEgg.obj')
@@ -5486,7 +5435,7 @@ for VER in ["5", "6", "7"]:
     CompileC(ipath=IPATH, opts=OPTS, src='MaxToEggConverter.cxx',obj='maxegg'+VER+'_MaxToEggConverter.obj')
     CompileRES(ipath=IPATH, opts=OPTS, src='MaxEgg.rc',          obj='maxegg'+VER+'_MaxEgg.res')
 
-    CompileLink(opts = OPTS, dll='maxegg'+VER+'.dle', obj=[
+    CompileLink(opts=OPTS, dll='maxegg'+VER+'.dle', obj=[
                 'maxegg'+VER+'_DllEntry.obj',
                 'maxegg'+VER+'_Logger.obj',
                 'maxegg'+VER+'_MaxEgg.obj',
@@ -6091,27 +6040,13 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
 #
 ##########################################################################################
 
-if skylerTest:
-    if older(PREFIX+'/lib/pandac/PandaModules.pyz', xpaths(PREFIX+"/etc/", ALLIN, "")):
-        ALLTARGETS.append(PREFIX+'/lib/pandac/PandaModules.pyz')
-        if (sys.platform=="win32"):
-            env=os.environ.copy()
-            env["PYTHONPATH"]="%s;%s\\bin;%s\\lib;%s;%s"%(
-                PREFIX, PREFIX, PREFIX, PANDASOURCE, os.getenv("PYTHONPATH"))
-            env["PATH"]="%s\\bin;%s"%(PREFIX, os.getenv("PATH"))
-            env["PANDAROOT"]=PANDASOURCE
-            osCmdEnv("python.exe \""+PANDASOURCE+"\\direct\\src/ffi/jGenPyCode.py\"", env)
-        else:
-            oscmd(PREFIX+"/bin/genpycode")
-        updatefiledate(PREFIX+'/lib/pandac/PandaModules.pyz')
-else:
-    if (older(PREFIX+'/lib/pandac/PandaModules.pyz',xpaths(PREFIX+"/etc/",ALLIN,""))):
-        ALLTARGETS.append(PREFIX+'/lib/pandac/PandaModules.pyz')
-        if (sys.platform=="win32"):
-            oscmd(PREFIX+"/bin/genpycode.exe")
-        else:
-            oscmd(PREFIX+"/bin/genpycode")
-        updatefiledate(PREFIX+'/lib/pandac/PandaModules.pyz')
+if (older(PREFIX+'/lib/pandac/PandaModules.pyz',xpaths(PREFIX+"/etc/",ALLIN,""))):
+    ALLTARGETS.append(PREFIX+'/lib/pandac/PandaModules.pyz')
+    if (sys.platform=="win32"):
+        oscmd(PREFIX+"/bin/genpycode.exe")
+    else:
+        oscmd(PREFIX+"/bin/genpycode")
+    updatefiledate(PREFIX+'/lib/pandac/PandaModules.pyz')
 
 ########################################################################
 ##
