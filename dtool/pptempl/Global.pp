@@ -40,9 +40,18 @@
 // These allow us to determine whether a particular local library is a
 // static or a dynamic library.  If the library name appears in the
 // static_libs map, it is a static library (i.e. libname.a);
-// otherwise, it is a dynamic library (libname.so).
-#map static_libs TARGET(*/static_lib_target */ss_lib_target)
-#map dynamic_libs TARGET(*/lib_target */noinst_lib_target */metalib_target)
+// otherwise, it is a dynamic library (libname.so).  The target
+// ss_lib_target is a special case: these libraries are dynamic where
+// it's easy to make them so (e.g. on Unix platforms), and static on
+// platforms where dynamic libraries aren't quite so robust (e.g. on
+// Windows).
+#if $[eq $[PLATFORM],Win32]
+  #map static_libs TARGET(*/static_lib_target */ss_lib_target)
+  #map dynamic_libs TARGET(*/lib_target */noinst_lib_target */metalib_target)
+#else
+  #map static_libs TARGET(*/static_lib_target)
+  #map dynamic_libs TARGET(*/lib_target */ss_lib_target */noinst_lib_target */metalib_target)
+#endif
 
 // This lets us identify which metalib, if any, is including each
 // named library.  That is, $[module $[TARGET],name] will return

@@ -6,7 +6,7 @@
 // well when gcc/g++ will be used to compile, for instance on Linux.
 //
 
-#defer get_sys_libs $[subst -ldl,@libdl@,$[patsubst %,-l%,$[UNIX_SYS_LIBS]]]
+#defer get_sys_libs $[wordsubst -ldl,@libdl@,$[patsubst %,-l%,$[UNIX_SYS_LIBS]]]
 
 // First, check to see if the entire directory has been switched out.
 #define omit

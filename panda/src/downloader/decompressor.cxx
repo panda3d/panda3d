@@ -132,7 +132,9 @@ request_decompress(const Filename &source_file, const Filename &dest_file,
     }
 
     // We need to grab the lock in order to signal the condition variable
+#ifdef HAVE_IPC
     _lock.lock();
+#endif
 
       if (_token_board->_waiting.is_full()) {
         downloader_cat.error()
@@ -149,9 +151,10 @@ request_decompress(const Filename &source_file, const Filename &dest_file,
 					event_name);
       _token_board->_waiting.insert(tok);
 
+#ifdef HAVE_IPC
       _request_cond->signal();
-
     _lock.unlock();
+#endif
 
   } else {
     // If we're not running asynchronously, process the load request
