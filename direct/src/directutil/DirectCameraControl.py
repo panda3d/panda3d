@@ -4,9 +4,8 @@ CAM_MOVE_DURATION = 1.0
 Y_AXIS = Vec3(0,1,0)
 
 class DirectCameraControl(PandaObject):
-    def __init__(self, direct):
+    def __init__(self):
         # Create the grid
-        self.direct = direct
         self.chan = direct.chan
         self.camera = self.chan.camera
 	self.orthoViewRoll = 0.0
@@ -31,19 +30,19 @@ class DirectCameraControl(PandaObject):
             # Hide the marker for this kind of motion
             self.coaMarker.hide()
             # See if the shift key is pressed
-            if (self.direct.fShift):
+            if (direct.fShift):
                 # If shift key is pressed, just perform horiz and vert pan:
                 self.spawnHPPan()
             else:
                 # Otherwise, check for a hit point based on
                 # current mouse position
                 # And then spawn task to determine mouse mode
-                numEntries = self.direct.iRay.pickGeom(
+                numEntries = direct.iRay.pickGeom(
                     render,chan.mouseX,chan.mouseY)
                 # Filter out hidden nodes from entry list
                 indexList = []
                 for i in range(0,numEntries):
-                    entry = self.direct.iRay.cq.getEntry(i)
+                    entry = direct.iRay.cq.getEntry(i)
                     node = entry.getIntoNode()
                     if node.isHidden():
                         pass
@@ -55,7 +54,7 @@ class DirectCameraControl(PandaObject):
                     # Start off with first point
                     minPt = indexList[0]
                     # Find hit point in camera's space
-                    hitPt = self.direct.iRay.camToHitPt(minPt)
+                    hitPt = direct.iRay.camToHitPt(minPt)
                     coa.set(hitPt[0],hitPt[1],hitPt[2])
                     coaDist = Vec3(coa - self.zeroPoint).length()
                     # Check other intersection points, sorting them
@@ -63,7 +62,7 @@ class DirectCameraControl(PandaObject):
                     if len(indexList) > 1:
                         for i in range(1,len(indexList)):
                             entryNum = indexList[i]
-                            hitPt = self.direct.iRay.camToHitPt(entryNum)
+                            hitPt = direct.iRay.camToHitPt(entryNum)
                             dist = Vec3(hitPt - self.zeroPoint).length()
                             if (dist < coaDist):
                                 coaDist = dist
@@ -287,7 +286,7 @@ class DirectCameraControl(PandaObject):
         taskMgr.spawnTaskNamed(t, 'manipulateCamera')
 
     def XZTranslateOrHPPanTask(self, state):
-        if self.direct.fShift:
+        if direct.fShift:
             self.camera.setHpr(self.camera,
                                (0.5 * self.chan.mouseDeltaX *
                                 self.chan.fovH),
@@ -368,7 +367,7 @@ class DirectCameraControl(PandaObject):
         taskMgr.removeTasksNamed('manipulateCamera')
 
         # How big is the node?
-        nodeScale = self.direct.widget.scalingNode.getScale(render)
+        nodeScale = direct.widget.scalingNode.getScale(render)
         maxScale = max(nodeScale[0],nodeScale[1],nodeScale[2])
         maxDim = min(self.chan.nearWidth, self.chan.nearHeight)
 
@@ -380,7 +379,7 @@ class DirectCameraControl(PandaObject):
         centerVec = Y_AXIS * camY
     
         # Where is the node relative to the viewpoint
-        vWidget2Camera = self.direct.widget.getPos(self.camera)
+        vWidget2Camera = direct.widget.getPos(self.camera)
     
         # How far do you move the camera to be this distance from the node?
         deltaMove = vWidget2Camera - centerVec

@@ -2,13 +2,10 @@ from PandaObject import *
 from DirectGeometry import *
 
 class DirectGrid(NodePath,PandaObject):
-    def __init__(self, direct):
+    def __init__(self):
         # Initialize superclass
         NodePath.__init__(self)
         self.assign(hidden.attachNewNode( NamedNode('DirectGrid')))
-
-        # Record handle to direct session
-        self.direct = direct
 
 	# Load up grid parts to initialize grid object
 	# Polygon used to mark grid plane
@@ -60,7 +57,7 @@ class DirectGrid(NodePath,PandaObject):
 
     def selectGridBackParent(self, nodePath):
         if nodePath.getName() == 'GridBack':
-            self.direct.select(self)
+            direct.select(self)
 
     def updateGrid(self):
 	# Update grid lines based upon current grid spacing and grid size

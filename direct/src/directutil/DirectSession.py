@@ -5,10 +5,14 @@ from DirectSelection import *
 from DirectGrid import *
 from DirectGeometry import *
 import OnscreenText
+import __builtin__
 
 class DirectSession(PandaObject):
 
     def __init__(self):
+        # Establish a global pointer to the direct object early on
+        # so dependant classes can access it in their code
+        __builtin__.direct = self
         self.contextList = []
         self.iRayList = []
         for camera in base.cameraList:
@@ -17,14 +21,14 @@ class DirectSession(PandaObject):
         self.chan = self.getChanData(0)
         self.camera = base.cameraList[0]
 
-        self.cameraControl = DirectCameraControl(self)
-        self.manipulationControl = DirectManipulationControl(self)
+        self.cameraControl = DirectCameraControl()
+        self.manipulationControl = DirectManipulationControl()
         self.useObjectHandles()
-        self.grid = DirectGrid(self)
+        self.grid = DirectGrid()
         self.grid.disable()
 
         # Initialize the collection of selected nodePaths
-        self.selected = SelectedNodePaths(self)
+        self.selected = SelectedNodePaths()
 
         self.readout = OnscreenText.OnscreenText( '', 0.1, -0.95 )
         # self.readout.textNode.setCardColor(0.5, 0.5, 0.5, 0.5)

@@ -46,8 +46,7 @@ class DirectNodePath(NodePath):
 
 
 class SelectedNodePaths(PandaObject):
-    def __init__(self,direct):
-        self.direct = direct
+    def __init__(self):
         self.selectedDict = {}
         self.deselectedDict = {}
         self.last = None
@@ -131,13 +130,13 @@ class SelectedNodePaths(PandaObject):
         self.forEachSelectedNodePathDo(self.getWrt)
 
     def getWrt(self, nodePath):
-        nodePath.mDnp2Widget.assign(nodePath.getMat(self.direct.widget))
+        nodePath.mDnp2Widget.assign(nodePath.getMat(direct.widget))
 
     def moveWrtWidgetAll(self):
         self.forEachSelectedNodePathDo(self.moveWrtWidget)
 
     def moveWrtWidget(self, nodePath):
-        nodePath.setMat(self.direct.widget, nodePath.mDnp2Widget)
+        nodePath.setMat(direct.widget, nodePath.mDnp2Widget)
 
     def deselectAll(self):
         self.forEachSelectedNodePathDo(self.deselect)

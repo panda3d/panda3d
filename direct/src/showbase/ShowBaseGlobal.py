@@ -1,15 +1,16 @@
 """instantiate global ShowBase object"""
 
 from ShowBase import *
+import __builtin__
 
-base = ShowBase()
+__builtin__.base = ShowBase()
 
 # Make some global aliases for convenience
-render2d = base.render2d
-render = base.render
-hidden = base.hidden
-camera = base.camera
-loader = base.loader
-ostream = Notify.out()
-run = base.run
-tkroot = base.tkroot
+__builtin__.render2d = base.render2d
+__builtin__.render = base.render
+__builtin__.hidden = base.hidden
+__builtin__.camera = base.camera
+__builtin__.loader = base.loader
+__builtin__.ostream = Notify.out()
+__builtin__.run = base.run
+__builtin__.tkroot = base.tkroot

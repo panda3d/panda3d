@@ -1,10 +1,11 @@
 from ShowBaseGlobal import *
+import __builtin__
 
 # If specified in the user's Configrc, create the direct session
 if base.wantDIRECT:
     from DirectSession import *
-    direct = base.direct = DirectSession()
+    __builtin__.direct = base.direct = DirectSession()
 else:
     # Otherwise set the values to None
-    direct = base.direct = None
+    __builtin__.direct = base.direct = None
 
