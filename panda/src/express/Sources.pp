@@ -44,6 +44,12 @@
     typeRegistry.I typeRegistry.h \
     typeRegistryNode.I typeRegistryNode.h \
     vector_uchar.h \
+    virtualFileComposite.h virtualFileComposite.I virtualFile.h \
+    virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h \
+    virtualFileMount.I virtualFileMountMultifile.h \
+    virtualFileMountMultifile.I virtualFileMountSystem.h \
+    virtualFileMountSystem.I virtualFileSimple.h virtualFileSimple.I \
+    virtualFileSystem.h virtualFileSystem.I \
     zStream.I zStream.h zStreamBuf.h \
     $[if $[HAVE_CRYPTO], \
        crypto_utils.cxx crypto_utils.h patchfile.I \
@@ -68,6 +74,10 @@
     trueClock.cxx typeHandle.cxx \
     typedObject.cxx typedReferenceCount.cxx \
     typeRegistry.cxx typeRegistryNode.cxx vector_uchar.cxx \
+    virtualFileComposite.cxx virtualFile.cxx virtualFileList.cxx \
+    virtualFileMount.cxx \
+    virtualFileMountMultifile.cxx virtualFileMountSystem.cxx \
+    virtualFileSimple.cxx virtualFileSystem.cxx \
     zStream.cxx zStreamBuf.cxx
 
   #define INSTALL_HEADERS  \
@@ -101,6 +111,12 @@
     typeRegistry.I typeRegistry.h \
     typeRegistryNode.I typeRegistryNode.h \
     vector_uchar.h \
+    virtualFileComposite.h virtualFileComposite.I virtualFile.h \
+    virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h \
+    virtualFileMount.I virtualFileMountMultifile.h \
+    virtualFileMountMultifile.I virtualFileMountSystem.h \
+    virtualFileMountSystem.I virtualFileSimple.h virtualFileSimple.I \
+    virtualFileSystem.h virtualFileSystem.I \
     zStream.I zStream.h zStreamBuf.h
 
   #define IGATESCAN all

@@ -18,11 +18,16 @@
 
 
 #include "config_express.h"
-#include "clockObject.h"
-#include "typedObject.h"
-#include "referenceCount.h"
-#include "typedReferenceCount.h"
 #include "datagram.h"
+#include "referenceCount.h"
+#include "typedObject.h"
+#include "typedReferenceCount.h"
+#include "virtualFile.h"
+#include "virtualFileComposite.h"
+#include "virtualFileMount.h"
+#include "virtualFileMountMultifile.h"
+#include "virtualFileMountSystem.h"
+#include "virtualFileSimple.h"
 
 #include <dconfig.h>
 
@@ -32,12 +37,18 @@ NotifyCategoryDef(express, "");
 extern void init_system_type_handles();
 
 ConfigureFn(config_express) {
-//  ClockObject::init_ptr();
-  TypedObject::init_type();
-  ReferenceCount::init_type();
-  TypedReferenceCount::init_type();
-  init_system_type_handles();
   Datagram::init_type();
+  ReferenceCount::init_type();
+  TypedObject::init_type();
+  TypedReferenceCount::init_type();
+  VirtualFileComposite::init_type();
+  VirtualFile::init_type();
+  VirtualFileMount::init_type();
+  VirtualFileMountMultifile::init_type();
+  VirtualFileMountSystem::init_type();
+  VirtualFileSimple::init_type();
+
+  init_system_type_handles();
 }
 
 

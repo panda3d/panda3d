@@ -29,7 +29,7 @@
 // Description : A list of VirtualFiles, as returned by 
 //               VirtualDirectory::scan().
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VirtualFileList : public ReferenceCount {
+class EXPCL_PANDAEXPRESS VirtualFileList : public ReferenceCount {
 public:
   INLINE VirtualFileList();
 

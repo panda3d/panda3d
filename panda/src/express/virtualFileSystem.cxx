@@ -22,7 +22,7 @@
 #include "virtualFileMountSystem.h"
 #include "dSearchPath.h"
 #include "dcast.h"
-#include "config_util.h"
+#include "config_express.h"
 #include "executionEnvironment.h"
 #include "pset.h"
 
@@ -85,7 +85,7 @@ bool VirtualFileSystem::
 mount(const Filename &physical_filename, const string &mount_point, 
       int flags) {
   if (!physical_filename.exists()) {
-    util_cat.warning()
+    express_cat.warning()
       << "Attempt to mount " << physical_filename << ", not found.\n";
     return false;
   }
@@ -451,7 +451,7 @@ get_global_ptr() {
 
     // Then, we add whatever mounts are listed in the Configrc file.
     Config::ConfigTable::Symbol mounts;
-    config_util.GetAll("vfs-mount", mounts);
+    config_express.GetAll("vfs-mount", mounts);
 
     // When we use GetAll(), we might inadvertently read duplicate
     // lines.  Filter them out with a set.
@@ -475,12 +475,15 @@ get_global_ptr() {
         // Spaces before that are part of the system filename.
         size_t space = mount_desc.rfind(' ');
         if (space == string::npos) {
-          util_cat.warning()
+          express_cat.warning()
             << "No space in vfs-mount descriptor: " << mount_desc << "\n";
           
         } else {
           string mount_point = mount_desc.substr(space + 1);
-          mount_desc = trim_right(mount_desc.substr(0, space)); 
+          while (space > 0 && isspace(mount_desc[space - 1])) {
+            space--;
+          }
+          mount_desc = mount_desc.substr(0, space);
           string options;
 
           space = mount_desc.rfind(' ');
@@ -488,7 +491,10 @@ get_global_ptr() {
             // If there's another space, we have the optional options field.
             options = mount_point;
             mount_point = mount_desc.substr(space + 1);
-            mount_desc = trim_right(mount_desc.substr(0, space)); 
+            while (space > 0 && isspace(mount_desc[space - 1])) {
+              space--;
+            }
+            mount_desc = mount_desc.substr(0, space);
           }
 
           mount_desc = ExecutionEnvironment::expand_string(mount_desc);

@@ -33,7 +33,7 @@ class VirtualFileSystem;
 //               within a VirtualFileSystem.  Normally users don't
 //               need to monkey with this class directly.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VirtualFileMount : public TypedObject {
+class EXPCL_PANDAEXPRESS VirtualFileMount : public TypedObject {
 public:
   INLINE VirtualFileMount(VirtualFileSystem *file_system,
                           const Filename &physical_filename,

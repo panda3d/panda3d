@@ -25,7 +25,7 @@
 #include "filename.h"
 #include "pointerTo.h"
 #include "pmap.h"
-#include "config_util.h"
+#include "config_express.h"
 
 class Multifile;
 class VirtualFileMount;
@@ -42,7 +42,7 @@ class VirtualFileComposite;
 //               mount one or more Multifiles as their own
 //               subdirectory hierarchies.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VirtualFileSystem {
+class EXPCL_PANDAEXPRESS VirtualFileSystem {
 PUBLISHED:
   VirtualFileSystem();
   ~VirtualFileSystem();

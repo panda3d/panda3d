@@ -17,28 +17,22 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_util.h"
+#include "bamReaderParam.h"
 #include "buttonEventList.h"
 #include "clockObject.h"
-#include "typedObject.h"
 #include "configurable.h"
+#include "datagram.h"
+#include "factoryParam.h"
 #include "namable.h"
 #include "referenceCount.h"
+#include "typedObject.h"
 #include "typedReferenceCount.h"
-#include "keyboardButton.h"
-#include "mouseButton.h"
-#include "factoryParam.h"
-#include "datagram.h"
 #include "typedWritable.h"
 #include "typedWritableReferenceCount.h"
-#include "virtualFileComposite.h"
-#include "virtualFile.h"
-#include "virtualFileMount.h"
-#include "virtualFileMountMultifile.h"
-#include "virtualFileMountSystem.h"
-#include "virtualFileSimple.h"
-#include "writableParam.h"
-#include "bamReaderParam.h"
 #include "writableConfigurable.h"
+#include "writableParam.h"
+#include "keyboardButton.h"
+#include "mouseButton.h"
 #include "get_config_path.h"
 
 #include <dconfig.h>
@@ -48,28 +42,22 @@ NotifyCategoryDef(util, "");
 NotifyCategoryDef(bam, util_cat);
 
 ConfigureFn(config_util) {
-//  ClockObject::init_ptr();
+  BamReaderParam::init_type();
   ButtonEventList::init_type();
-  TypedObject::init_type();
   Configurable::init_type();
+  Datagram::init_type();
+  FactoryParam::init_type();
   Namable::init_type();
   ReferenceCount::init_type();
+  TypedObject::init_type();
   TypedReferenceCount::init_type();
+  TypedWritable::init_type();
+  TypedWritableReferenceCount::init_type();
+  WritableConfigurable::init_type();
+  WritableParam::init_type();
+
   KeyboardButton::init_keyboard_buttons();
   MouseButton::init_mouse_buttons();
-  FactoryParam::init_type();
-  Datagram::init_type();
-  TypedWritable::init_type();
-  WritableParam::init_type();
-  BamReaderParam::init_type();
-  TypedWritableReferenceCount::init_type();
-  VirtualFileComposite::init_type();
-  VirtualFile::init_type();
-  VirtualFileMount::init_type();
-  VirtualFileMountMultifile::init_type();
-  VirtualFileMountSystem::init_type();
-  VirtualFileSimple::init_type();
-  WritableConfigurable::init_type();
 }
 
 

@@ -35,7 +35,7 @@ class VirtualFileSystem;
 // Description : The abstract base class for a file or directory
 //               within the VirtualFileSystem.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VirtualFile : public TypedReferenceCount {
+class EXPCL_PANDAEXPRESS VirtualFile : public TypedReferenceCount {
 public:
   INLINE VirtualFile();
 

@@ -31,6 +31,7 @@
 #include "dcast.h"
 
 #include <algorithm>
+#include <stdio.h>  // for sprintf
 
 
 Configure(chanconfig);

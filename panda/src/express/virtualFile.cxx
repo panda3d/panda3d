@@ -19,7 +19,7 @@
 #include "virtualFile.h"
 #include "virtualFileSystem.h"
 #include "virtualFileList.h"
-#include "config_util.h"
+#include "config_express.h"
 
 TypeHandle VirtualFile::_type_handle;
 
@@ -162,7 +162,7 @@ read_file(string &result) const {
 
   istream *in = open_read_file();
   if (in == (istream *)NULL) {
-    util_cat.info()
+    express_cat.info()
       << "Unable to read " << get_filename() << "\n";
     return false;
   }
@@ -175,7 +175,7 @@ read_file(string &result) const {
   delete in;
 
   if (failed) {
-    util_cat.info()
+    express_cat.info()
       << "Error while reading " << get_filename() << "\n";
   }
   return !failed;

@@ -28,7 +28,7 @@
 // Description : Maps an actual OS directory into the
 //               VirtualFileSystem.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VirtualFileMountSystem : public VirtualFileMount {
+class EXPCL_PANDAEXPRESS VirtualFileMountSystem : public VirtualFileMount {
 public:
   INLINE VirtualFileMountSystem(VirtualFileSystem *file_system,
                                 const Filename &physical_filename,

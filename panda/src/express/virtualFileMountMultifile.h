@@ -29,7 +29,7 @@
 // Description : Maps a Multifile's contents into the
 //               VirtualFileSystem.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VirtualFileMountMultifile : public VirtualFileMount {
+class EXPCL_PANDAEXPRESS VirtualFileMountMultifile : public VirtualFileMount {
 public:
   INLINE VirtualFileMountMultifile(VirtualFileSystem *file_system,
                                    Multifile *multifile, 

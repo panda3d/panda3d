@@ -64,7 +64,7 @@ INLINE void VirtualFileSystem::
 ls(const string &filename) const {
   PT(VirtualFile) file = get_file(filename);
   if (file == (VirtualFile *)NULL) {
-    util_cat.info()
+    express_cat.info()
       << "Not found: " << filename << "\n";
   } else {
     file->ls();
@@ -84,7 +84,7 @@ INLINE void VirtualFileSystem::
 ls_all(const string &filename) const {
   PT(VirtualFile) file = get_file(filename);
   if (file == (VirtualFile *)NULL) {
-    util_cat.info()
+    express_cat.info()
       << "Not found: " << filename << "\n";
   } else {
     file->ls_all();
