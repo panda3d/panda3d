@@ -100,6 +100,7 @@ make_gsg() {
 void glxGraphicsWindow::
 release_gsg() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
+    glXMakeCurrent(_display, _xwindow, _context);
     GraphicsWindow::release_gsg();
     glXDestroyContext(_display, _context);
     _context = (GLXContext)0;
