@@ -242,6 +242,7 @@ sub addpathsfromfile() {
 
 }
 
+
 sub gen_python_code() {
 
     # ETC_PATH required by generatePythonCode
@@ -249,7 +250,7 @@ sub gen_python_code() {
     my $origpath=$ENV{'PATH'};
 
     $ENV{'PATH'}=$ENV{'WINTOOLS'}."/bin:".$ENV{'WINTOOLS'}."/lib:/bin:/contrib/bin:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/player/dtool/bin:/home/builder/player/dtool/lib:/home/builder/player/direct/bin:/home/builder/player/direct/lib::/home/builder/player/toontown/bin:/home/builder/player/toontown/lib:/home/builder/player/panda/lib:/home/builder/player/panda/bin:/usr/local/bin:.:/c/WINNT/system32:/c/WINNT:/c/WINNT/System32/Wbem:/c/bin:/mspsdk/Bin/:/mspsdk/Bin/WinNT:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/scripts:";
-    $ENV{'PATH'}.=$ENV{'WINTOOLS'}."/sdk/python/Tcl/bin:".$ENV{'WINTOOLS'}."/sdk/python/Tcl/lib";
+    $ENV{'PATH'}.=$ENV{'WINTOOLS'}."/sdk/python/Tcl/bin:".$ENV{'WINTOOLS'}."/sdk/python/Tcl/lib"."/c/WINNT/system32:/c/WINNT";
     
 	$ENV{'PYTHONPATH'}= $WINBLDROOT."\\panda\\lib;".$WINBLDROOT."\\dtool\\lib;".$WINBLDROOT."\\wintools\\bin;".$WINBLDROOT."\\wintools\\lib;";
     $ENV{'PYTHONPATH'}.= $WINBLDROOT."\\wintools\\sdk\\python\\Python-2.0\\Lib;".$WINBLDROOT."\\wintools\\sdk\\python\\Python-2.0\\DLLs;";
@@ -482,7 +483,7 @@ sub buildall() {
     
     foreach my $dir1 (@dirstodolist) {        
         &mymkdir($inst_dirs[$treenum]."\\".$dir1);
-        &myexecstr("xcopy ".$xcopy_opt_str." ".$WINBLDROOT."\\".$dir1."\\* ".$inst_dirs[$treenum]."\\".$dir1, 
+        &myexecstr("\\WINNT\\system32\\xcopy ".$xcopy_opt_str." ".$WINBLDROOT."\\".$dir1."\\* ".$inst_dirs[$treenum]."\\".$dir1, 
                    "xcopy of ".$inst_dirnames[$treenum]." tree failed!!", "DO_LOG","NT cmd");
     }
 	shift(dirstodolist);
@@ -569,7 +570,7 @@ foreach my $dir1 (@dirstodolist) {
 }
 
 # pick up cygwin utils
-$ENV{'PATH'}=$ENV{'WINTOOLS'}."/bin".$DIRPATH_SEPARATOR.$ENV{'WINTOOLS'}."/lib".$DIRPATH_SEPARATOR."/bin".$DIRPATH_SEPARATOR."/contrib/bin".$DIRPATH_SEPARATOR.$ENV{'PATH'};
+$ENV{'PATH'}=$ENV{'WINTOOLS'}."/bin".$DIRPATH_SEPARATOR.$ENV{'WINTOOLS'}."/lib".$DIRPATH_SEPARATOR."/bin".$DIRPATH_SEPARATOR."/contrib/bin".$DIRPATH_SEPARATOR.$ENV{'PATH'}."/c/WINNT/system32".$DIRPATH_SEPARATOR."/c/WINNT";
 
 # want build to pick up python dll's from /usr/lib before /c/python16
 # $ENV{'PATH'}="/usr/lib".$DIRPATH_SEPARATOR.$ENV{'PATH'};  not needed
