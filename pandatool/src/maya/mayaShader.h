@@ -40,6 +40,8 @@ public:
   ~MayaShader();
 
   LMatrix3d compute_texture_matrix() const;
+  bool has_projection() const;
+  TexCoordd project_uv(const LPoint3d &point) const;
 
   void output(ostream &out) const;
   bool reset_maya_texture(const Filename &texture);
@@ -52,6 +54,20 @@ public:
 
   bool _has_texture;
   Filename _texture;
+
+  enum ProjectionType {
+    PT_off,
+    PT_planar,
+    PT_spherical,
+    PT_cylindrical,
+    PT_ball,
+    PT_cubic,
+    PT_triplanar,
+    PT_concentric,
+    PT_perspective,
+  };
+  ProjectionType _projection_type;
+  LMatrix4d _projection_matrix;
 
   LVector2f _coverage;
   LVector2f _translate_frame;
@@ -71,6 +87,7 @@ private:
 
   bool read_surface_shader(MObject shader);
   void read_surface_color(MObject color);
+  void set_projection_type(const string &type);
 };
 
 INLINE ostream &operator << (ostream &out, const MayaShader &shader) {

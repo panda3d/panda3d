@@ -19,6 +19,7 @@
 #include "mayaToEgg.h"
 #include "mayaToEggConverter.h"
 #include "config_mayaegg.h"
+#include "config_maya.h"  // for maya_cat
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaToEgg::Constructor
@@ -78,12 +79,19 @@ void MayaToEgg::
 run() {
   // Set the verbose level by using Notify.
   if (_verbose >= 3) {
+    maya_cat->set_severity(NS_spam);
     mayaegg_cat->set_severity(NS_spam);
   } else if (_verbose >= 2) {
+    maya_cat->set_severity(NS_debug);
     mayaegg_cat->set_severity(NS_debug);
   } else if (_verbose >= 1) {
+    maya_cat->set_severity(NS_info);
     mayaegg_cat->set_severity(NS_info);
   }
+
+  // Let's open the output file before we initialize Maya, since Maya
+  // now has a nasty habit of changing the current directory.
+  get_output();
 
   nout << "Initializing Maya.\n";
   MayaToEggConverter converter(_program_name);

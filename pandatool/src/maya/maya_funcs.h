@@ -49,6 +49,9 @@ set_maya_attribute(MObject &node, const string &attribute_name,
                    ValueType &value);
 
 bool
+has_attribute(MObject &node, const string &attribute_name);
+
+bool
 get_bool_attribute(MObject &node, const string &attribute_name,
                    bool &value);
 
@@ -63,6 +66,10 @@ get_vec2f_attribute(MObject &node, const string &attribute_name,
 bool
 get_vec2d_attribute(MObject &node, const string &attribute_name,
                     LVecBase2d &value);
+
+bool
+get_mat4d_attribute(MObject &node, const string &attribute_name,
+                    LMatrix4d &value);
 
 bool
 get_enum_attribute(MObject &node, const string &attribute_name,

@@ -43,6 +43,9 @@ MayaApi::
 MayaApi(const string &program_name) {
   // Beginning with Maya4.5, the call to initialize seems to change
   // the current directory!  Yikes!
+
+  // Furthermore, the current directory may change during the call to
+  // any Maya function!  Egad!
   Filename cwd = ExecutionEnvironment::get_cwd();
   MStatus stat = MLibrary::initialize((char *)program_name.c_str());
   
@@ -52,6 +55,11 @@ MayaApi(const string &program_name) {
     maya_cat.warning()
       << "Unable to restore current directory to " << cwd
       << " after initializing Maya.\n";
+  } else {
+    if (maya_cat.is_debug()) {
+      maya_cat.debug()
+        << "Restored current directory to " << cwd << "\n";
+    }
   }
 
   if (!stat) {

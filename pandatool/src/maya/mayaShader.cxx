@@ -19,6 +19,7 @@
 #include "mayaShader.h"
 #include "maya_funcs.h"
 #include "config_maya.h"
+#include "string_utils.h"
 #include "pset.h"
 
 #include "pre_maya_include.h"
@@ -43,6 +44,7 @@ MayaShader(MObject engine) {
   _transparency = 0.0;
 
   _has_texture = false;
+  _projection_type = PT_off;
 
   _coverage.set(1.0, 1.0);
   _translate_frame.set(0.0, 0.0);
@@ -115,6 +117,38 @@ compute_texture_matrix() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::has_projection
+//       Access: Public
+//  Description: Returns true if the shader has a projection in effect.
+////////////////////////////////////////////////////////////////////
+bool MayaShader::
+has_projection() const {
+  return (_projection_type != PT_off);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::project_uv
+//       Access: Public
+//  Description: If the shader has a projection (has_projection()
+//               returns true), this computes the appropriate UV
+//               corresponding to the indicated 3-d point.
+////////////////////////////////////////////////////////////////////
+TexCoordd MayaShader::
+project_uv(const LPoint3d &point) const {
+  switch (_projection_type) {
+  case PT_planar:
+    {
+      LPoint3d p2d = point * _projection_matrix;
+      return TexCoordd(p2d[0], p2d[1]);
+      //return TexCoordd((p2d[0] + 1.0) / 2.0, (p2d[1] + 1.0) / 2.0);
+    }
+
+  default:
+    return TexCoordd(0.0, 0.0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaShader::output
 //       Access: Public
 //  Description: 
@@ -168,7 +202,7 @@ reset_maya_texture(const Filename &texture) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaShader::read_surface_shader
-//       Access: Public
+//       Access: Private
 //  Description: Extracts out the shading information from the Maya
 //               surface shader.
 ////////////////////////////////////////////////////////////////////
@@ -190,6 +224,19 @@ read_surface_shader(MObject shader) {
   if (!color_plug.isNull()) {
     MPlugArray color_pa;
     color_plug.connectedTo(color_pa, true, false);
+
+    for (size_t i = 0; i < color_pa.length(); i++) {
+      read_surface_color(color_pa[0].node());
+    }
+  }
+
+  // Or maybe a connection to outColor.  Not sure how this differs
+  // from just color, but empirically it seems that either might be
+  // used.
+  MPlug out_color_plug = shader_fn.findPlug("outColor");
+  if (!out_color_plug.isNull()) {
+    MPlugArray color_pa;
+    out_color_plug.connectedTo(color_pa, true, false);
 
     for (size_t i = 0; i < color_pa.length(); i++) {
       read_surface_color(color_pa[0].node());
@@ -218,16 +265,15 @@ read_surface_shader(MObject shader) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaShader::read_surface_color
-//       Access: Public
+//       Access: Private
 //  Description: Determines the surface color specified by the shader.
 //               This includes texturing and other advanced shader
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void MayaShader::
 read_surface_color(MObject color) {
-  _color_object = new MObject(color);
-
   if (color.hasFn(MFn::kFileTexture)) {
+    _color_object = new MObject(color);
     string filename;
     _has_texture = get_string_attribute(color, "fileTextureName", filename);
     if (_has_texture) {
@@ -247,6 +293,29 @@ read_surface_color(MObject color) {
     get_vec2f_attribute(color, "offset", _offset);
     get_angle_attribute(color, "rotateUV", _rotate_uv);
 
+  } else if (color.hasFn(MFn::kProjection)) {
+    // This is a projected texture.  We will have to step one level
+    // deeper to find the actual texture.
+    MFnDependencyNode projection_fn(color);
+    MPlug image_plug = projection_fn.findPlug("image");
+    if (!image_plug.isNull()) {
+      MPlugArray image_pa;
+      image_plug.connectedTo(image_pa, true, false);
+      
+      for (size_t i = 0; i < image_pa.length(); i++) {
+        read_surface_color(image_pa[0].node());
+      }
+    }
+
+    if (!get_mat4d_attribute(color, "placementMatrix", _projection_matrix)) {
+      _projection_matrix = LMatrix4d::ident_mat();
+    }
+
+    string type;
+    if (get_enum_attribute(color, "projType", type)) {
+      set_projection_type(type);
+    }
+
   } else {
     // This shader wasn't understood.
     if (maya_cat.is_debug()) {
@@ -264,5 +333,31 @@ read_surface_color(MObject color) {
           << color.apiTypeStr() << "\n";
       }
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::set_projection_type
+//       Access: Private
+//  Description: Sets up the shader to apply UV's according to the
+//               indicated projection type.
+////////////////////////////////////////////////////////////////////
+void MayaShader::
+set_projection_type(const string &type) {
+  if (cmp_nocase(type, "planar") == 0) {
+    _projection_type = PT_planar;
+
+    // The Planar projection normally projects to a range (-1, 1) in
+    // both axes.  Scale this into our UV range of (0, 1).
+    _projection_matrix = _projection_matrix * LMatrix4d(0.5, 0.0, 0.0, 0.0,
+                                                        0.0, 0.5, 0.0, 0.0,
+                                                        0.0, 0.0, 0.5, 0.0,
+                                                        0.5, 0.5, 0.0, 1.0);
+
+  } else {
+    // Other projection types are currently unimplemented by the
+    // converter.
+    maya_cat.error()
+      << "Don't know how to handle type " << type << " projections.\n";
   }
 }

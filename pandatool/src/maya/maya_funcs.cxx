@@ -30,6 +30,8 @@
 #include <maya/MFnAttribute.h>
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnEnumAttribute.h>
+#include <maya/MFnMatrixData.h>
+#include <maya/MMatrix.h>
 #include "post_maya_include.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -67,6 +69,29 @@ get_maya_plug(MObject &node, const string &attribute_name, MPlug &plug) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: has_attribute
+//  Description: Returns true if the node has the indicated attribute,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool
+has_attribute(MObject &node, const string &attribute_name) { 
+  MStatus status;
+  MFnDependencyNode node_fn(node, &status);
+  if (!status) {
+    maya_cat.error()
+      << "Object is a " << node.apiTypeStr() << ", not a DependencyNode.\n";
+    return false;
+  }
+
+  node_fn.attribute(attribute_name.c_str(), &status);
+  if (!status) {
+    // No such attribute.
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: get_bool_attribute
 //  Description: Extracts the named boolean attribute from the
 //               MObject.
@@ -74,6 +99,12 @@ get_maya_plug(MObject &node, const string &attribute_name, MPlug &plug) {
 bool
 get_bool_attribute(MObject &node, const string &attribute_name,
                    bool &value) {
+  if (!has_attribute(node, attribute_name)) {
+    // For bool attributes only, we assume if the attribute is absent
+    // it's the same thing as being false.
+    return false;
+  }
+
   if (!get_maya_attribute(node, attribute_name, value)) {
     maya_cat.error()
       << "Attribute " << attribute_name
@@ -175,6 +206,36 @@ get_vec2d_attribute(MObject &node, const string &attribute_name,
       << ", of type " << vec2d_object.apiTypeStr() << "\n";
   }
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_mat4d_attribute
+//  Description: Extracts the named 4x4 matrix from the MObject.
+////////////////////////////////////////////////////////////////////
+bool
+get_mat4d_attribute(MObject &node, const string &attribute_name,
+                    LMatrix4d &value) {
+  MStatus status;
+  MObject matrix;
+  if (!get_maya_attribute(node, attribute_name, matrix)) {
+    return false;
+  }
+
+  MFnMatrixData matrix_data(matrix, &status);
+  if (!status) {
+    maya_cat.error()
+      << "Attribute " << attribute_name << " is of type "
+      << node.apiTypeStr() << ", not a Matrix.\n";
+    return false;
+  }
+    
+  const MMatrix &mat = matrix_data.matrix();
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      value(i, j) = mat(i, j);
+    }
+  }
   return true;
 }
 

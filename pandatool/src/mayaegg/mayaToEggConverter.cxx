@@ -1209,12 +1209,29 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
 
     egg_poly->set_bface_flag(double_sided);
 
+    // Determine the shader for this particular polygon.
+    MayaShader *shader = NULL;
+    int index = pi.index();
+    nassertv(index >= 0 && index < (int)poly_shader_indices.length());
+    int shader_index = poly_shader_indices[index];
+    if (shader_index != -1) {
+      nassertv(shader_index >= 0 && shader_index < (int)shaders.length());
+      MObject engine = shaders[shader_index];
+      shader =
+        _shaders.find_shader_for_shading_engine(engine);
+
+    } else if (default_shader != (MayaShader *)NULL) {
+      shader = default_shader;
+    }
+
+    // Get the vertices for the polygon.
     long num_verts = pi.polygonVertexCount();
     for (long i = 0; i < num_verts; i++) {
       EggVertex vert;
 
       MPoint p = pi.point(i, MSpace::kWorld);
-      vert.set_pos(LPoint3d(p[0], p[1], p[2]));
+      LPoint3d p3d(p[0], p[1], p[2]);
+      vert.set_pos(p3d);
 
       MVector n;
       status = pi.getNormal(i, n, MSpace::kWorld);
@@ -1224,7 +1241,13 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
         vert.set_normal(LVector3d(n[0], n[1], n[2]));
       }
 
-      if (pi.hasUVs()) {
+      if (shader->has_projection()) {
+        // If the shader has a projection, use it instead of the
+        // polygon's built-in UV's.
+        vert.set_uv(shader->project_uv(p3d));
+
+      } else if (pi.hasUVs()) {
+        // Get the UV's from the polygon.
         float2 uvs;
         status = pi.getUV(i, uvs);
         if (!status) {
@@ -1249,21 +1272,9 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
       egg_poly->add_vertex(vpool->create_unique_vertex(vert));
     }
 
-    // Determine the shader for this particular polygon.
-    int index = pi.index();
-    nassertv(index >= 0 && index < (int)poly_shader_indices.length());
-    int shader_index = poly_shader_indices[index];
-    if (shader_index != -1) {
-      nassertv(shader_index >= 0 && shader_index < (int)shaders.length());
-      MObject engine = shaders[shader_index];
-      MayaShader *shader =
-        _shaders.find_shader_for_shading_engine(engine);
-      if (shader != (MayaShader *)NULL) {
-        set_shader_attributes(*egg_poly, *shader);
-      }
-
-    } else if (default_shader != (MayaShader *)NULL) {
-      set_shader_attributes(*egg_poly, *default_shader);
+    // Now apply the shader.
+    if (shader != (MayaShader *)NULL) {
+      set_shader_attributes(*egg_poly, *shader);
     }
 
     pi.next();
