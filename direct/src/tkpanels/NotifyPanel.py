@@ -14,7 +14,7 @@ class NotifyPanel:
         # To get severity levels
         from NotifySeverity import NSFatal, NSError, NSWarning, NSInfo
         from NotifySeverity import NSDebug, NSSpam
-        
+
         if tl == None:
             tl = Toplevel()
             tl.title('Notify Controls')
@@ -48,59 +48,63 @@ class NotifyPanel:
         # Create a listbox
         self.categoryList = Pmw.ScrolledListBox(
             categoryFrame,
-            labelpos = NW, label_text = 'Categories:',
+            labelpos = 'nw', label_text = 'Categories:',
             label_font=('MSSansSerif', 10, 'bold'),
             listbox_takefocus = 1,
             items = categoryNames,
             selectioncommand = self.setActivePandaCategory)
-        self.categoryList.pack(expand = 1, fill = BOTH)
+        self.categoryList.pack(expand = 1, fill = 'both')
                                            
         # Severity frame
         Label(severityFrame, text = 'Severity:',
               font=('MSSansSerif', 10, 'bold'),
+<<<<<<< NotifyPanel.py
+              justify = 'right', anchor = 'w').pack(fill = X, padx = 5)
+=======
               justify = RIGHT, anchor = W).pack(
             fill = X, padx = 5)
+>>>>>>> 1.2
         self.severity = IntVar()
         self.severity.set(0)
         self.fatalSeverity = Radiobutton(severityFrame, text = 'Fatal',
-                                         justify = LEFT, anchor = W,
+                                         justify = 'left', anchor = 'w',
                                          value = NSFatal,
                                          variable = self.severity,
                                          command = self.setActiveSeverity)
         self.fatalSeverity.pack(fill = X)
         self.errorSeverity = Radiobutton(severityFrame, text = 'Error',
-                                         justify = LEFT, anchor = W,
+                                         justify = 'left', anchor = 'w',
                                          value = NSError,
                                          variable = self.severity,
                                          command = self.setActiveSeverity)
         self.errorSeverity.pack(fill = X)
         self.warningSeverity = Radiobutton(severityFrame, text = 'Warning',
-                                           justify = LEFT, anchor = W,
+                                           justify = 'left', anchor = 'w',
                                            value = NSWarning,
                                            variable = self.severity,
                                            command = self.setActiveSeverity)
         self.warningSeverity.pack(fill = X)
         self.infoSeverity = Radiobutton(severityFrame, text = 'Info',
-                                        justify = LEFT, anchor = W,
+                                        justify = 'left', anchor = 'w',
                                         value = NSInfo,
                                         variable = self.severity,
                                         command = self.setActiveSeverity)
         self.infoSeverity.pack(fill = X)
         self.debugSeverity = Radiobutton(severityFrame, text = 'Debug',
-                                         justify = LEFT, anchor = W,
+                                         justify = 'left', anchor = 'w',
                                          value = NSDebug,
                                          variable = self.severity,
                                          command = self.setActiveSeverity)
         self.debugSeverity.pack(fill = X)
         self.spamSeverity = Radiobutton(severityFrame, text = 'Spam',
-                                        justify = LEFT, anchor = W,
+                                        justify = 'left', anchor = 'w',
                                         value = NSSpam,
                                         variable = self.severity,
                                         command = self.setActiveSeverity)
         self.spamSeverity.pack(fill = X)
         # Pack frames
-        framePane.pack(expand = 1, fill = BOTH)
-        mainFrame.pack(expand = 1, fill = BOTH)
+        framePane.pack(expand = 1, fill = 'both')
+        mainFrame.pack(expand = 1, fill = 'both')
         # Get listbox
         listbox = self.categoryList.component('listbox')
         # Bind updates to arrow buttons

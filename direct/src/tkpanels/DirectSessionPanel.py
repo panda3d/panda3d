@@ -726,6 +726,7 @@ class DirectSessionPanel(AppShell):
         dr = self.activeDisplayRegion
         if dr:
             dr.camLens.setNear(near)
+            cluster('base.camLens.setNear(%f)' % near, 0)
 
     def setFar(self, far):
         dr = self.activeDisplayRegion
