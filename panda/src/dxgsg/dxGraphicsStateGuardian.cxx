@@ -278,9 +278,13 @@ void DXGraphicsStateGuardian::FillFPSMeterTexture(void) {
     ZeroMemory(ddsd.lpSurface,ddsd.dwWidth*ddsd.dwHeight*2);
     _fpsmeter_font_surf->Unlock(NULL);
 
-    // draw text
+    // draw text using GDI
     HDC hDC;
-    _fpsmeter_font_surf->GetDC(&hDC);
+    if(FAILED( hr = _fpsmeter_font_surf->GetDC(&hDC))) {
+        dxgsg_cat.error() << "fps meter creation failed, GetDC failed on fps font surface! hr = " << ConvD3DErrorToString(hr) << "\n";
+        dx_show_fps_meter = false;
+        return;
+    }
 
     SetTextColor(hDC, RGB(255,255,128) );
     SetBkMode(hDC, TRANSPARENT );
@@ -783,11 +787,18 @@ init_dx(  LPDIRECTDRAW7     context,
         ddsd.dwFlags |= DDSD_TEXTURESTAGE;
         ddsd.dwMipMapCount = 1;
 
-        // use 4-4-4-4 fmt so blending looks cool
+        // note GDI cant draw to 4-4-4-4 fmt DDSURF on win9x (GetDC will fail)
+
         DDPIXELFORMAT *pCurPixFmt;
         for(i=0,pCurPixFmt=&_pTexPixFmts[_cNumTexPixFmts-1];i<_cNumTexPixFmts;i++,pCurPixFmt--) {
-            if((pCurPixFmt->dwRGBBitCount==16) && (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)
-               && (pCurPixFmt->dwRGBAlphaBitMask==0xF000))
+            if((pCurPixFmt->dwRGBBitCount==16) && 
+        #ifdef MAKE_FPSMETER_TRANSPARENT    
+               (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS) &&
+               (pCurPixFmt->dwRGBAlphaBitMask==0x8000))
+        #else
+               ((pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)==0) && 
+               (pCurPixFmt->dwBBitMask==0x001F))
+        #endif
                break;
         }
 
