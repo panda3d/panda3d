@@ -30,9 +30,13 @@ class ActorInterval(Interval.Interval):
     # Note: if loop == 0 and duration > anim duration then the
     # animation will play once and then hold its final pose for the
     # remainder of the interval.
+
+    # loop = 1 implies a loop within the entire range of animation,
+    # while constrainedLoop = 1 implies a loop within startFrame and
+    # endFrame only.
     
-    def __init__(self, actor, animName, loop=0, duration=None,
-                 startTime=None, endTime=None,
+    def __init__(self, actor, animName, loop=0, constrainedLoop=0,
+                 duration=None, startTime=None, endTime=None,
                  startFrame=None, endFrame=None,
                  playRate=1.0, name=None, forceUpdate=0,
                  partName=None, lodName=None):
@@ -47,6 +51,7 @@ class ActorInterval(Interval.Interval):
         self.controls = self.actor.getAnimControls(
             self.animName, partName = partName, lodName = lodName)
         self.loopAnim = loop
+        self.constrainedLoop = constrainedLoop
         self.forceUpdate = forceUpdate
 
         # If no name specified, use id as name
@@ -101,22 +106,26 @@ class ActorInterval(Interval.Interval):
             self.endFrame = self.startFrame
             self.startFrame = t
 
-        numFrames = self.endFrame - self.startFrame + 1
+        self.numFrames = self.endFrame - self.startFrame + 1
 
         # Compute duration if no duration specified
         self.implicitDuration = 0
         if duration == None:
             self.implicitDuration = 1
-            duration = float(numFrames) / self.frameRate
+            duration = float(self.numFrames) / self.frameRate
 
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
 
     def privStep(self, t):
+        frameCount = t * self.frameRate
+        if self.constrainedLoop:
+            frameCount = frameCount % self.numFrames
+            
         if self.reverse:
-            absFrame = self.endFrame - t * self.frameRate
+            absFrame = self.endFrame - frameCount
         else:
-            absFrame = self.startFrame + t * self.frameRate
+            absFrame = self.startFrame + frameCount
 
         # Calc integer frame number
         absFrame = int(math.floor(absFrame + 0.0001))
