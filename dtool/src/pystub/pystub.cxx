@@ -40,6 +40,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyLong_AsUnsignedLongLong(...);
   EXPCL_DTOOLCONFIG int PyErr_Occurred(...);
   EXPCL_DTOOLCONFIG int PyObject_GetAttrString(...);
+  EXPCL_DTOOLCONFIG int PyObject_SetAttrString(...);
   EXPCL_DTOOLCONFIG int PyLong_FromUnsignedLong(...);
   EXPCL_DTOOLCONFIG int PyLong_FromUnsignedLongLong(...);
   EXPCL_DTOOLCONFIG int PyTuple_GetItem(...);
@@ -163,6 +164,11 @@ PyErr_Occurred(...) {
 
 int
 PyObject_GetAttrString(...) {
+  return 0;
+}
+
+int
+PyObject_SetAttrString(...) {
   return 0;
 }
 
