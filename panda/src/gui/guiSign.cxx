@@ -30,7 +30,7 @@ void GuiSign::manage(GuiManager* mgr, EventHandler& eh) {
     mgr->add_label(_sign);
     GuiItem::manage(mgr, eh);
   } else
-    gui_cat->warning() << "tried to manager sign (0x" << (void*)this
+    gui_cat->warning() << "tried to manage sign (0x" << (void*)this
 		       << ") that is already managed" << endl;
 }
 

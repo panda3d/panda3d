@@ -17,7 +17,8 @@
     guiButton.h guiButton.I guiButton.cxx \
     guiFrame.h guiFrame.I guiFrame.cxx \
     guiSign.h guiSign.I guiSign.cxx \
-    guiListBox.h guiListBox.I guiListBox.cxx
+    guiListBox.h guiListBox.I guiListBox.cxx \
+    guiBackground.h guiBackground.I guiBackground.cxx
 
   #define INSTALL_HEADERS \
     guiManager.h guiManager.I \
@@ -28,7 +29,8 @@
     guiButton.h guiButton.I \
     guiFrame.h guiFrame.I \
     guiSign.h guiSign.I \
-    guiListBox.h guiListBox.I
+    guiListBox.h guiListBox.I \
+    guiBackground.h guiBackground.I
 
   #define IGATESCAN \
     guiManager.h guiManager.I \
@@ -39,6 +41,7 @@
     guiButton.h guiButton.I \
     guiFrame.h guiFrame.I \
     guiSign.h guiSign.I \
-    guiListBox.h guiListBox.I
+    guiListBox.h guiListBox.I \
+    guiBackground.h guiBackground.I
 
 #end lib_target
