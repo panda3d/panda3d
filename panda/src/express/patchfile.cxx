@@ -18,10 +18,12 @@
 
 #include "config_express.h"
 #include "error_utils.h"
-#include <stdio.h> // for tempnam
-
 #include "patchfile.h"
 #include "crypto_utils.h" // MD5 stuff
+#include "streamReader.h"
+#include "streamWriter.h"
+
+#include <stdio.h> // for tempnam
 
 // PROFILING ///////////////////////////////////////////////////////
 //#define PROFILE_PATCH_BUILD
@@ -108,8 +110,6 @@ init(PT(Buffer) buffer) {
   _buffer = buffer;
 
   reset_footprint_length();
-
-  _datagram.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,11 +198,11 @@ initiate(Filename &patch_file, Filename &file) {
         << "Patchfile::initiate() - Failed to create temp file name, using default" << endl;
       _temp_file = "patcher_temp_file";
     } else {
-      //cout << tempfilename << endl;
       _temp_file = tempfilename;
       free(tempfilename);
     }
   }
+
   _temp_file.set_binary();
   if (!_temp_file.open_write(_write_stream)) {
     express_cat.error()
@@ -210,16 +210,19 @@ initiate(Filename &patch_file, Filename &file) {
     return get_write_error();
   }
 
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Using temporary file " << _temp_file << "\n";
+  }
+
   /////////////
   // read header, make sure the patch file is valid
 
+  StreamReader patch_reader(_patch_stream);
+
   // check the magic number
   nassertr(_buffer->get_length() >= _header_length, false);
-  _patch_stream.read(_buffer->_buffer, _header_length);
-  _datagram.clear();
-  _datagram.append_data(_buffer->_buffer, _header_length);
-  DatagramIterator di(_datagram);
-  PN_uint32 magic_number = di.get_uint32();
+  PN_uint32 magic_number = patch_reader.get_uint32();
   if (magic_number != _magic_number) {
     express_cat.error()
       << "Patchfile::initiate() - invalid patch file: " << _patch_file << endl;
@@ -227,20 +230,16 @@ initiate(Filename &patch_file, Filename &file) {
   }
 
   // get the length of the patched result file
-  _result_file_length = di.get_uint32();
+  _result_file_length = patch_reader.get_uint32();
 
   // get the MD5 of the resultant patched file
-  _MD5_ofResult.set_value(0, di.get_uint32());
-  _MD5_ofResult.set_value(1, di.get_uint32());
-  _MD5_ofResult.set_value(2, di.get_uint32());
-  _MD5_ofResult.set_value(3, di.get_uint32());
+  _MD5_ofResult.set_value(0, patch_reader.get_uint32());
+  _MD5_ofResult.set_value(1, patch_reader.get_uint32());
+  _MD5_ofResult.set_value(2, patch_reader.get_uint32());
+  _MD5_ofResult.set_value(3, patch_reader.get_uint32());
 
   express_cat.debug()
     << "Patchfile::initiate() - valid patchfile" << endl;
-  /*
-  express_cat.debug()
-    << "Patchfile::initiate() - valid patchfile for file: " << name << endl;
-  */
 
   _total_bytes_processed = 0;
 
@@ -270,6 +269,8 @@ run(void) {
     return EU_error_abort;
   }
 
+  StreamReader patch_reader(_patch_stream);
+
   buflen = _buffer->get_length();
   bytes_read = 0;
 
@@ -277,11 +278,7 @@ run(void) {
     ///////////
     // read # of ADD bytes
     nassertr(_buffer->get_length() >= (int)sizeof(ADD_length), false);
-    _patch_stream.read(_buffer->_buffer, sizeof(ADD_length));
-    _datagram.clear();
-    _datagram.append_data(_buffer->_buffer, sizeof(ADD_length));
-    DatagramIterator di(_datagram);
-    ADD_length = di.get_uint16();
+    ADD_length = patch_reader.get_uint16();
 
     bytes_read += (int)ADD_length;
     _total_bytes_processed += (int)ADD_length;
@@ -290,7 +287,10 @@ run(void) {
     if (0 != ADD_length) {
       PN_uint32 bytes_left = (PN_uint32)ADD_length;
 
-      //cout << "ADD: " << ADD_length << endl;
+      if (express_cat.is_spam()) {
+        express_cat.spam()
+          << "ADD: " << ADD_length << endl;
+      }
 
       while (bytes_left > 0) {
         PN_uint32 bytes_this_time = (PN_uint32) min(bytes_left, (PN_uint32) buflen);
@@ -303,11 +303,7 @@ run(void) {
     ///////////
     // read # of COPY bytes
     nassertr(_buffer->get_length() >= (int)sizeof(COPY_length), false);
-    _patch_stream.read(_buffer->_buffer, sizeof(COPY_length));
-    _datagram.clear();
-    _datagram.append_data(_buffer->_buffer, sizeof(COPY_length));
-    DatagramIterator di2(_datagram);
-    COPY_length = di2.get_uint16();
+    COPY_length = patch_reader.get_uint16();
 
     bytes_read += (int)COPY_length;
     _total_bytes_processed += (int)COPY_length;
@@ -316,13 +312,13 @@ run(void) {
     if (0 != COPY_length) {
       // read copy offset
       nassertr(_buffer->get_length() >= (int)sizeof(COPY_offset), false);
-      _patch_stream.read(_buffer->_buffer, sizeof(COPY_offset));
-      _datagram.clear();
-      _datagram.append_data(_buffer->_buffer, sizeof(COPY_offset));
-      DatagramIterator di(_datagram);
-      COPY_offset = di.get_uint32();
+      COPY_offset = patch_reader.get_uint32();
 
-      //cout << "COPY: " << COPY_length << " bytes at offset " << COPY_offset << endl;
+      if (express_cat.is_spam()) {
+        express_cat.spam()
+          << "COPY: " << COPY_length << " bytes at offset " << COPY_offset
+          << endl;
+      }
 
       // seek to the offset
       _origfile_stream.seekg(COPY_offset, ios::beg);
@@ -342,24 +338,46 @@ run(void) {
     if ((0 == ADD_length) && (0 == COPY_length)) {
       cleanup();
 
-      //cout << _result_file_length << " " << _total_bytes_processed << endl;
+      if (express_cat.is_spam()) {
+        express_cat.spam()
+          << "result file = " << _result_file_length 
+          << " total bytes = " << _total_bytes_processed << endl;
+      }
 
       // check the MD5 from the patch file against the newly patched file
       {
         HashVal MD5_actual;
         md5_a_file(_temp_file, MD5_actual);
-        if (memcmp((const void*)&_MD5_ofResult, (const void*)&MD5_actual, sizeof(HashVal))) {
+        if (_MD5_ofResult != MD5_actual) {
+          express_cat.info()
+            << "Patching produced incorrect checksum.  Got:\n"
+            << "    " << MD5_actual
+            << "\nExpected:\n"
+            << "    " << _MD5_ofResult
+            << "\n";
+
           // delete the temp file and the patch file
-          _temp_file.unlink();
-          _patch_file.unlink();
+          if (!keep_temporary_files) {
+            _temp_file.unlink();
+            _patch_file.unlink();
+          }
           // return "invalid checksum"
           return EU_error_invalid_checksum;
         }
       }
 
       // delete the patch file and the original file
-      _patch_file.unlink();
-      _orig_file.unlink();
+      if (!keep_temporary_files) {
+        _patch_file.unlink();
+        _orig_file.unlink();
+
+      } else {
+        // If we're keeping temporary files, rename the orig file to a
+        // backup.
+        Filename orig_backup = _orig_file.get_fullpath() + ".orig";
+        orig_backup.unlink();
+        _orig_file.rename_to(orig_backup);
+      }
 
       // rename the temp file to the original file name
       if (!_temp_file.rename_to(_orig_file)) {
@@ -618,17 +636,12 @@ emit_ADD(ofstream &write_stream, PN_uint16 length, const char* buffer) {
   //cout << "ADD: " << length << " bytes" << endl;
 
   // write ADD length
-  _datagram.clear();
-  _datagram.add_uint16(length);
-  string msg = _datagram.get_message();
-  write_stream.write((char *)msg.data(), msg.length());
+  StreamWriter patch_writer(write_stream);
+  patch_writer.add_uint16(length);
 
   // if there are bytes to add, add them
   if (length > 0) {
-    _datagram.clear();
-    _datagram.append_data(buffer, length);
-    string msg = _datagram.get_message();
-    write_stream.write((char *)msg.data(), msg.length());
+    patch_writer.append_data(buffer, length);
   }
 }
 
@@ -642,17 +655,12 @@ emit_COPY(ofstream &write_stream, PN_uint16 length, PN_uint32 offset) {
   //cout << "COPY: " << length << " bytes at offset " << offset << endl;
 
   // write COPY length
-  _datagram.clear();
-  _datagram.add_uint16(length);
-  string msg = _datagram.get_message();
-  write_stream.write((char *)msg.data(), msg.length());
+  StreamWriter patch_writer(write_stream);
+  patch_writer.add_uint16(length);
 
   if(length > 0) {
     // write COPY offset
-    _datagram.clear();
-    _datagram.add_uint32(offset);
-    string msg2 = _datagram.get_message();
-    write_stream.write((char *)msg2.data(), msg2.length());
+    patch_writer.add_uint32(offset);
   }
 }
 
@@ -744,21 +752,19 @@ build(Filename &file_orig, Filename &file_new) {
   START_PROFILE(writeHeader);
 
   // write the patch file header
-  _datagram.clear();
-  _datagram.add_uint32(_magic_number);
-  _datagram.add_uint32(length_new);
+  StreamWriter patch_writer(write_stream);
+  patch_writer.add_uint32(_magic_number);
+  patch_writer.add_uint32(length_new);
   {
     // calc MD5 of resultant patched file
     HashVal md5New;
     md5_a_buffer((const unsigned char*)buffer_new, (int)length_new, md5New);
     // add it to the header
-    _datagram.add_uint32(md5New.get_value(0));
-    _datagram.add_uint32(md5New.get_value(1));
-    _datagram.add_uint32(md5New.get_value(2));
-    _datagram.add_uint32(md5New.get_value(3));
+    patch_writer.add_uint32(md5New.get_value(0));
+    patch_writer.add_uint32(md5New.get_value(1));
+    patch_writer.add_uint32(md5New.get_value(2));
+    patch_writer.add_uint32(md5New.get_value(3));
   }
-  string msg = _datagram.get_message();
-  write_stream.write((char *)msg.data(), msg.length());
 
   END_PROFILE(writeHeader, "writing patch file header");
 

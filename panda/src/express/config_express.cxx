@@ -149,6 +149,12 @@ const int patchfile_buffer_size =
 const int patchfile_zone_size =
         config_express.GetInt("patchfile-zone-size", 10000);
 
+// Set this true to keep around the temporary files from downloading,
+// decompressing, and patching, or false (the default) to delete
+// these.  Mainly useful for debugging when the process goes wrong.
+const bool keep_temporary_files =
+config_express.GetBool("keep-temporary-files", false);
+
 // Set this true to use the VirtualFileSystem mechanism for loading
 // models, etc.  Since the VirtualFileSystem maps to the same as the
 // actual file system by default, there is probably no reason to set

@@ -46,6 +46,8 @@ extern const int patchfile_increment_size;
 extern const int patchfile_buffer_size;
 extern const int patchfile_zone_size;
 
+extern const bool keep_temporary_files;
+
 extern EXPCL_PANDAEXPRESS const bool use_vfs;
 
 // Expose the Config variable for Python access.

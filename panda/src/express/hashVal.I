@@ -42,6 +42,16 @@ operator == (const HashVal &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HashVal::operator !=
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool HashVal::
+operator != (const HashVal &other) const {
+  return !operator == (other);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HashVal::get_value
 //       Access: Public
 //  Description: Returns the integer value of the indicated component.

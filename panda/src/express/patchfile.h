@@ -113,8 +113,6 @@ protected:
   Filename _orig_file;
   Filename _temp_file;
 
-  Datagram _datagram; // used to eliminate endian problems
-
   static const PN_uint32 _magic_number;
 };
 
