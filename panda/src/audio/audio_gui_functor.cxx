@@ -20,17 +20,21 @@
 
 TypeHandle AudioGuiFunctor::_type_handle;
 
-AudioGuiFunctor::AudioGuiFunctor(AudioSound* sound,
-                                 GuiBehavior::BehaviorFunctor* prev)
-  : GuiBehavior::BehaviorFunctor(), _prev(prev), _sound(sound) {}
+AudioGuiFunctor::
+AudioGuiFunctor(AudioSound* sound,
+    GuiBehavior::BehaviorFunctor* prev)
+    : GuiBehavior::BehaviorFunctor(), _prev(prev), _sound(sound) {
+}
 
-AudioGuiFunctor::~AudioGuiFunctor() {
+AudioGuiFunctor::
+~AudioGuiFunctor() {
   _prev.clear();
 }
 
 #include "audioManager.h"
 
-void AudioGuiFunctor::doit(GuiBehavior* b) {
+void AudioGuiFunctor::
+doit(GuiBehavior* b) {
   if (_sound) {
     _sound->play();
   }

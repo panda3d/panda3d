@@ -26,15 +26,18 @@ class EXPCL_PANDA AudioGuiFunctor : public GuiBehavior::BehaviorFunctor {
 protected:
   PT(GuiBehavior::BehaviorFunctor) _prev;
   PT(AudioSound) _sound;
+
 public:
   virtual ~AudioGuiFunctor();
   virtual void doit(GuiBehavior*);
+
 PUBLISHED:
   AudioGuiFunctor(AudioSound* = (AudioSound*)0L,
                   GuiBehavior::BehaviorFunctor* =
                   (GuiBehavior::BehaviorFunctor*)0L);
   INLINE AudioSound* get_sound() const { return _sound; }
   INLINE GuiBehavior::BehaviorFunctor* get_prev() const { return _prev; }
+
 public:
   // type interface
   static TypeHandle get_class_type() {
@@ -52,6 +55,7 @@ public:
     init_type();
     return get_class_type();
   }
+
 private:
   static TypeHandle _type_handle;
 };
