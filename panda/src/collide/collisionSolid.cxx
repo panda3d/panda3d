@@ -55,7 +55,7 @@ CollisionSolid(const CollisionSolid &copy) :
   _effective_normal(copy._effective_normal),
   _flags(copy._flags)
 {
-  _flags &= ~F_viz_geom_stale;
+  _flags |= F_viz_geom_stale;
 }
 
 ////////////////////////////////////////////////////////////////////
