@@ -7,7 +7,8 @@
 //
 
 // What additional flags should we pass to interrogate?
-#define SYSTEM_IGATE_FLAGS -longlong __int64 -D_X86_ -DWIN32_VC -D"__declspec(param)=" -D_near  -D_far -D__near  -D__far -D_WIN32 -D__stdcall
+// NSPR versions prior to 4.4 used _declspec instead of __declspec.
+#define SYSTEM_IGATE_FLAGS -longlong __int64 -D_X86_ -DWIN32_VC -D"_declspec(param)=" -D"__declspec(param)=" -D_near  -D_far -D__near  -D__far -D_WIN32 -D__stdcall
 
 // Is the platform big-endian (like an SGI workstation) or
 // little-endian (like a PC)?  Define this to the empty string to
