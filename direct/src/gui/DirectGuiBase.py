@@ -664,6 +664,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             ('frameSize',      None,         self.setFrameSize),
             ('frameColor',     (.8,.8,.8,1), self.setFrameColor),
             ('pad',            (.25,.15),    self.resetFrameSize),
+            # Override button id (beware! your name may not be unique!)
+            ('guiId',          None,         INITOPT),
             # Initial pos/scale of the widget
             ('pos',            None,         INITOPT),
             ('scale',          None,         INITOPT),
@@ -676,6 +678,9 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         NodePath.__init__(self)
         # Create a button
         self.guiItem = self['pgFunc']()
+        # Override automatically generated guiId
+        if self['guiId']:
+            self.guiItem.setId(self['guiId'])
         self.guiId = self.guiItem.getId()
         # Attach button to parent and make that self
         self.assign(parent.attachNewNode( self.guiItem ) )

@@ -28,8 +28,8 @@ class DirectButton(DirectFrame):
             # Which mouse buttons can be used to click the button
             ('commandButtons',  (LMB,),     self.setCommandButtons),
             # Sounds to be used for button events
-            ('rolloverSound',   None,       None),
-            ('clickSound',      None,       None),
+            ('rolloverSound',   None,       self.setRolloverSound),
+            ('clickSound',      None,       self.setClickSound),
             # Can only be specified at time of widget contruction
             # Do the text/graphics appear to move when the button is clicked
             ('pressEffect',     1,          INITOPT),
@@ -79,3 +79,27 @@ class DirectButton(DirectFrame):
             # Pass any extra args to command
             apply(self['command'], self['extraArgs'])
             
+    def setClickSound(self):
+        if base.wantSfx:
+            clickSound = self['clickSound']
+            # Clear out sounds
+            self.guiItem.clearSound(B1PRESS + self.guiId)
+            self.guiItem.clearSound(B2PRESS + self.guiId)
+            self.guiItem.clearSound(B3PRESS + self.guiId)
+            if clickSound:
+                if LMB in self['commandButtons']:
+                    self.guiItem.setSound(B1PRESS + self.guiId, clickSound)
+                if MMB in self['commandButtons']:
+                    self.guiItem.setSound(B2PRESS + self.guiId, clickSound)
+                if RMB in self['commandButtons']:
+                    self.guiItem.setSound(B3PRESS + self.guiId, clickSound)
+
+    def setRolloverSound(self):
+        if base.wantSfx:
+            rolloverSound = self['rolloverSound']
+            if rolloverSound:
+                self.guiItem.setSound(ENTER + self.guiId, rolloverSound)
+            else:
+                self.guiItem.clearSound(ENTER + self.guiId)
+
+

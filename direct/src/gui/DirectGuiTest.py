@@ -1,5 +1,7 @@
 from DirectGui import *
 from whrandom import *
+from GuiGlobals import getDefaultClickSound
+from GuiGlobals import getDefaultRolloverSound
 
 # EXAMPLE CODE
 # Load a model
@@ -48,6 +50,7 @@ dl.setScale(.5)
 # Create a button with a background image, smiley as a geometry element,
 # and a text overlay, set a different text for the four button states:
 # (normal, press, rollover, and disabled), set scale = .15, and relief raised
+dbArray = []
 for i in range(10):
     db = DirectButton(parent = dl,
                       image = 'phase_4/maps/middayskyB.jpg',
@@ -57,7 +60,11 @@ for i in range(10):
                       # Here we set an option for a component of the button
                       geom1_color = Vec4(1,0,0,1),
                       # Here is an example of a component group option
-                      text_pos = (.6, -.8))
+                      text_pos = (.6, -.8),
+                      # Set audio characteristics
+                      clickSound = getDefaultClickSound(),
+                      rolloverSound = getDefaultRolloverSound()
+                      )
 
     # You can set component or component group options after a gui item
     # has been created
@@ -70,6 +77,8 @@ for i in range(10):
     db.bind(B1PRESS, lambda x, db = db: ouch(db))
     # Pop up placer when button 2 is pressed
     db.bind(B3PRESS, lambda x, db = db: db.place())
+
+    dbArray.append(db)
     
     # To get rid of button and clear out hooks call:
     # db.destroy()
