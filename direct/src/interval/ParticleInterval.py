@@ -43,17 +43,16 @@ class ParticleInterval(Interval.Interval):
         # Update particle effect based on current time
         if (t >= self.getDuration()):
             # If duration reached or stop event received, stop particle effect 
-            ParticleEffect.cleanupParticleEffect(self.particleEffect)
+            self.particleEffect.cleanup()
             self.ignore(self.stopEvent)
             self.cleanedUp = 1
         elif (event == Interval.IVAL_INIT):
             # IVAL_INIT event, start new particle effect
-            ParticleEffect.startParticleEffect(self.particleEffect,
-                                                self.parent, self.worldRelative)
+            self.particleEffect.start(self.parent, self.worldRelative)
             # Accept event to kill particle effect 
             self.acceptOnce(self.stopEvent,
                         lambda s = self: 
-                ParticleEffect.cleanupParticleEffect(s.particleEffect))
+                s.particleEffect.cleanup())
         # Print debug information
         assert(self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t)))
             

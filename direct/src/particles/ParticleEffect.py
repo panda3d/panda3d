@@ -3,25 +3,6 @@ import Particles
 import ForceGroup
 import DirectNotifyGlobal
 
-
-# NOTE: these two calls were moved here from BattleParticles
-# to avoid DIRECT depending on TOONTOWN! - gregw
-def startParticleEffect(effect, parent, worldRelative=1):
-    assert(effect != None and parent != None)
-    #notify.debug('startParticleEffect() - name: %s' % effect.getName())
-    particles = effect.getParticlesNamed('particles-1')
-    if (worldRelative == 1):
-        particles.setRenderParent(render.node())
-    effect.enable()
-    effect.reparentTo(parent)
-
-def cleanupParticleEffect(effect):
-    assert(effect != None)
-    #notify.debug('cleanupParticleEffect() - %s' % effect.getName())
-    effect.disable()
-    effect.reparentTo(hidden)
-    effect.cleanup()
-
 class ParticleEffect(NodePath):
 
     notify = DirectNotifyGlobal.directNotify.newCategory('ParticleEffect')
@@ -44,8 +25,18 @@ class ParticleEffect(NodePath):
         # The effect's particle system
         if (particles != None):
             self.addParticles(particles)
+        self.worldRelative = 0
+
+    def start(self, parent=None, worldRelative=1):
+        assert(self.notify.debug('start() - name: %s' % self.name))
+        self.worldRelative = worldRelative
+        self.enable()
+        if (parent != None):
+            self.reparentTo(parent)
 
     def cleanup(self):
+        self.reparentTo(hidden)
+        self.disable()
         for f in self.forceGroupDict.values():
             f.cleanup()
         for p in self.particlesDict.values():
@@ -62,6 +53,9 @@ class ParticleEffect(NodePath):
 
     def enable(self):
         """enable()"""
+        if (self.worldRelative == 1):
+            for p in self.particlesDict.values():
+                p.setRenderParent(render.node())
         for f in self.forceGroupDict.values():
             f.enable()
         for p in self.particlesDict.values():
@@ -70,6 +64,9 @@ class ParticleEffect(NodePath):
 
     def disable(self):
         """disable()"""
+        if (self.worldRelative == 1):
+            for p in self.particlesDict.values():
+                p.setRenderParent(hidden.node()) 
         for f in self.forceGroupDict.values():
             f.disable()
         for p in self.particlesDict.values():
