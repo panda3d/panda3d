@@ -1,0 +1,574 @@
+Panda3D Install
+
+This document describes how to compile and install Panda 3D on a
+system for the first time.  Panda is a complex project and is not
+trivial to install, although it is not really very difficult.  Please
+do take the time to read this document before starting.
+
+Panda is known to build successfully on Linux, SGI Irix, Windows NT
+and Windows 2000.  It should also be easily portable to other
+Unix-based OpenGL systems with little or no changes (please let us
+know if you try this).  When compiled by Windows NT or 2000, it will
+then run on a Windows 95 or 98 system, but we have found that Windows
+98 is not itself stable enough to compile the codebase without
+crashing.
+
+Presently, Panda does not compile successfully with Microsoft Visual
+C++ version 6.0.  You must install Visual C++ 7.0 (that is, Microsoft
+Visual Studio .NET) in order to compile Panda on Windows.
+
+Before you begin to compile Panda, there are a number of optional
+support libraries that you may wish to install.  None of these are
+essential; Panda will build successfully without them, but possibly
+without some functionality.
+
+* Python.  Panda is itself a C++ project, but it can generate a
+  seamless Python interface layer to its C++ objects and function
+  calls.  Since Python is an interpreted language with a command
+  prompt, this provides an excellent way to get interactive control
+  over the 3-D environment.  However, it is not necessary to use the
+  Python interface; Panda is also perfectly useful without Python, as
+  a C++ 3-D library.
+
+  Other scripting language interfaces are possible, too, in theory.
+  Panda can generate an interface layer for itself that should be
+  accessible by any scripting language that can make C function calls
+  to an external library.  We have used this in the past, for
+  instance, to interface Panda with Squeak, an implementation of
+  Smalltalk.  At the present, the Python interface is the only one we
+  actively maintain.  We use Python 2.2; you can get Python at
+  http://www.python.org .
+
+* NSPR.  This is the Netscape Portable Runtime library, an OS
+  compatibility layer written by the folks at Mozilla for support of
+  the Netscape browser on different platforms.  Panda takes advantage
+  of NSPR to implement threading and network communications.  At the
+  present, if you do not have NSPR available Panda will not be able to
+  fork threads and will not provide a networking interface.  Aside
+  from that, the PStats analysis tools (which depend on networking)
+  will not be built without NSPR.  We have compiled Panda with NSPR
+  version 3 and 4.0, although other versions should also work.  You
+  can download NSPR from http://www.mozilla.org .
+
+* VRPN, the "Virtual Reality Peripheral Network," a peripheral
+  interface library designed by UNC.  This is particularly useful for
+  interfacing Panda with external devices like trackers and joysticks;
+  without it, Panda can only interface with the keyboard and mouse.
+  You can find out about it at http://www.cs.unc.edu/Research/vrpn .
+
+* libjpeg and libtiff.  These free libraries provide support to Panda
+  for reading and writing JPEG and TIFF image files, for instance for
+  texture images.  Even without these libraries, Panda has built-in
+  support for pbm/pgm/ppm, SGI (rgb), TGA, BMP, and a few other
+  assorted image types like Alias and SoftImage native formats.  Most
+  Linux systems come with libjpeg and libtiff already installed, and
+  the version numbers of these libraries is not likely to be
+  important.  You can download libjpeg from the Independent JPEG group
+  at http://www.ijg.org , and libtiff from SGI at
+  ftp://ftp.sgi.com/graphics/tiff .
+
+* Gtk--.  This is a C++ graphical toolkit library, and is only used
+  for one application, the PStats viewer for graphical analysis of
+  real-time performance, which is part of the pandatool package.
+  Gtk-- only compiles on Unix, and primarily Linux; it may be possible
+  to compile it with considerable difficulty on Irix.  We have used
+  version 1.2.1.  You can find it at http://www.gtkmm.org .
+
+
+PANDA'S BUILD PHILOSOPHY 
+
+Panda is divided into a number of separate packages, each of which
+compiles separately, and each of which generally depends on the ones
+before it.  The packages are, in order:
+
+  dtool - this defines most of the build scripts and local
+    configuration options for Panda.  It also includes the program
+    "interrogate," which is used to generate the Python interface, as
+    well as some low-level libraries that are shared both by
+    interrogate and Panda.  It is a fairly small package.
+
+  panda - this is the bulk of the C++ Panda code.  It contains the 3-D
+    engine itself, as well as supporting C++ interfaces like
+    networking, audio, and device interfaces.  Expect this package to
+    take from one to two hours to build from scratch.  You must build
+    and install dtool before you can build panda.
+
+  direct - this is the high-level Python interface to Panda.  Although
+    there is some additional C++ interface code here, most of the code
+    in this package is Python; there is no reason to install this
+    package if you are not planning on using the Python interface.
+    DIRECT is an acronym, and has nothing to do with DirectX.
+    You must build and install dtool and panda before you can build
+    direct.
+
+  pandatool - this is a suite of command-line utilities, written in
+    C++ using the Panda libraries, that provide useful support
+    functionality for Panda as a whole, like model-conversion
+    utilities.  You must build and install dtool and panda before you
+    can build pandatool, although it does not depend on direct.
+
+In graphical form, here are packages along with a few extras:
+
+  +------------------------------+
+  | Your Python Application Here |
+  +------------------------------+
+      |
+      V
+  +--------+  +-----------+  +---------------------------+
+  | direct |  | pandatool |  | Your C++ Application Here |
+  +--------+  +-----------+  +---------------------------+
+      |             |                   |
+      +-------------+-------------------/
+      V
+  +-------+
+  | panda |
+  +-------+
+      |
+      V
+  +-------+
+  | dtool |
+  +-------+
+
+The arrows above show dependency.
+
+
+Usually, these packages will be installed as siblings of each other
+within the same directory; the build scripts expect this by default,
+although other installations are possible.
+
+In order to support multiplatform builds, we do not include makefiles
+or project files with the sources.  Instead, all the compilation
+relationships are defined in a series of files distributed throughout
+the source trees, one per directory, called Sources.pp.
+
+A separate program, called ppremake ("Panda pre-make") reads the
+various Sources.pp files, as well as any local configuration
+definitions you have provided, and generates the actual makefiles that
+are appropriate for the current platform and configuration.  It is
+somewhat akin to the idea of GNU autoconf ("configure"), although it
+is both less automatic and more general, and it supports non-Unix
+platforms easily.
+
+
+HOW TO CONFIGURE PANDA FOR YOUR ENVIRONMENT
+
+When you run ppremake within a Panda source tree, it reads in a number
+of configure variable definitions given in the file Config.pp in the
+root of the dtool package.  Many of these variables will already have
+definitions that are sensible for you; some will not.  You must
+customize these variables before you run ppremake.
+
+Normally, rather than modifying dtool/Config.pp directly, you would
+create your own, empty Config.pp file in a safe place (for instance,
+in your personal home directory) and define just the variables you
+need there.  The definitions you give in your personal Config.pp file
+will override those in the source directory.  You will need to set an
+environment variable PPREMAKE_CONFIG to the full filename path of your
+personal Config.pp (more on this in the platform-specific installation
+notes, below).  It is also possible simply to modify dtool/Config.pp,
+but this is not recommended as it makes it difficult to install
+updated versions of Panda.
+
+The syntax of the Config.pp file is something like a cross between the
+C preprocessor and Makefile syntax.  The full syntax of ppremake
+input scripts is described in more detail in another document, but the
+most common thing you will need to do is set the value of a variable
+using the #define statement.  Look in dtool/Config.pp for numerous
+examples of this.
+
+Some of the variables you may define within the Config.pp file hold a
+true or a false value by nature.  It is important to note that you
+indicate a variable is true by defining it to some nonempty string
+(e.g. "yes" or "1"), and false by defining it to nothing.  For
+example:
+  #define HAVE_DX 1
+Indicates you have the DirectX SDK installed, while
+  #define HAVE_DX
+Indicates you do not.  Do not be tempted to define HAVE_DX to "no" or
+"0"; since these are both nonempty strings, they are considered to
+represent "true"!
+
+The comments within dtool/Config.pp describe a more complete list of
+the variables you may define.  The ones that you are most likely to
+find useful are:
+
+  INSTALL_DIR - this is the prefix of the directory hierarchy into
+    which Panda should be installed.  By default, this is
+    /usr/local/panda, a fine convention for Unix machines although a
+    little questionable for Windows environments.
+
+  OPTIMIZE - define this to 1, 2, 3, or 4.  This is not the same thing
+    as compiler optimization level; our four levels of OPTIMIZE define
+    broad combinations of compiler optimizations and debug symbols:
+
+     1 - No compiler optimizations, full debug symbols
+     2 - Full compiler optimizations, full debug symbols
+           (if the compiler supports this)
+     3 - Full compiler optimizations, no debug symbols, non-debug heap
+     4 - Full optimizations, no debug symbols, and asserts removed
+
+    Usually OPTIMIZE 2 or 3 is the most appropriate choice for
+    development work.
+
+  PYTHON_IPATH / PYTHON_LPATH / PYTHON_LIBS - the full pathname to
+    Python header files, if Python is installed on your system.  As of
+    Python version 2.0, compiling Python interfaces doesn't require
+    linking with any special libraries, so normally PYTHON_LPATH and
+    PYTHON_LIBS are left empty.
+
+  NSPR_IPATH / NSPR_LPATH / NSPR_LIBS - the full pathname to NSPR
+    header and library files, and the name of the NSPR library, if
+    NSPR is installed on your system.
+
+  VRPN_IPATH / VRPN_LPATH / VRPN_LIBS - the full pathname to VRPN
+    header and library files, and the name of the VRPN libraries, if
+    VRPN is installed on your system.
+
+  DX_IPATH / DX_LPATH / DX_LIBS - the full pathname to the DirectX 8.1
+    SDK header and library files, if you have installed this SDK.
+    (You must currently install this SDK in order to build DirectX
+    support for Panda.)
+
+  GL_IPATH / GL_LPATH / GL_LIBS - You get the idea.  (Normally, OpenGL
+    is installed in the standard system directories, so you can leave
+    GL_IPATH and GL_LPATH empty.  But if they happen to be installed
+    somewhere else on your machine, you can fill in the pathnames
+    here.)
+
+
+
+HOW TO BUILD PANDA ON A UNIX SYSTEM
+
+First, make a subdirectory to hold the Panda sources.  This can be
+anywhere you like; in these examples, we'll assume you build
+everything within a directory called "panda3d" in your home directory.
+
+  mkdir ~/panda3d
+
+You must compile ppremake before you can begin to compile Panda
+itself.  Generally, you do something like the following:
+
+  cd ~/panda3d/ppremake
+  ./configure
+  make
+  make install
+
+By default, ppremake will install itself in /usr/local/panda/bin, the
+same directory that the other Panda binaries will install themselves
+to.  If you prefer, you can install it in another directory by doing
+something like this:
+
+  ./configure --prefix=/my/install/directory
+
+If you do this, you will also want to redefine INSTALL_DIR in your
+Config.pp to be the same directory (see above).  Wherever you install
+it, you should make sure the bin directory is included on your search
+path, and the corresponding lib directory (e.g. /usr/local/panda/lib)
+is on your LD_LIBRARY_PATH (the following example assumes you are
+using a csh derivative):
+
+  set path=(/usr/local/panda/bin $path)
+  setenv LD_LIBRARY_PATH /usr/local/panda/lib:$LD_LIBRARY_PATH
+
+If you have a Bourne-shell derivative, e.g. bash, the syntax is:
+
+  PATH=/usr/local/panda/bin:$PATH
+  LD_LIBRARY_PATH=/usr/local/panda/lib:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH
+
+Now you should create your personal Config.pp file, as described
+above, and customize whatever variables are appropriate.  Be sure to
+set the PPREMAKE_CONFIG environment variable to point to it.
+
+  setenv PPREMAKE_CONFIG ~/Config.pp
+
+In bash:
+
+  PPREMAKE_CONFIG=~/Config.pp
+  export PPREMAKE_CONFIG
+
+You may find it a good idea to make these environment settings in your
+.cshrc or .bashrc file so that they will remain set for future sessions.
+
+Now that you have ppremake, you can test the configuration settings in
+your Config.pp file.
+
+  cd ~/panda3d/dtool
+  ppremake
+
+When you run ppremake within the dtool directory, it will generate a
+file, dtool_config.h (as well as all of the Makefiles).  This file
+will be included by all of the Panda3D sources, and reveals the
+settings of many of the options you have configured.  You should
+examine this file to ensure that your settings have been made the way
+you expect.
+
+Now you can build the Panda3D sources.  Begin with dtool (the current
+directory):
+
+  make
+  make install
+
+Once you have successfully built and installed dtool, you can then
+build and install panda:
+
+  cd ~/panda3d/panda
+  ppremake
+  make
+  make install
+
+After installing panda, you are almost ready to run the program
+"pview," which is a basic model viewer program that demonstrates some
+Panda functionality.  Successfully running pview proves that Panda is
+now installed and configured correctly.  However, you must set up a
+Configrc file to set your runtime configuration options before you can
+run Panda and open up a graphics window.  See HOW TO RUN PANDA, below.
+
+If you wish, you may also build direct or pandatool:
+
+  cd ~/panda3d/direct
+  ppremake
+  make
+  make install
+
+  cd ~/panda3d/pandatool
+  ppremake
+  make
+  make install
+
+
+
+HOW TO BUILD PANDA ON A WINDOWS SYSTEM, USING CYGWIN
+
+Cygwin is a set of third-party libraries and tools that present a very
+Unix-like environment for Windows systems.  If you prefer to use a
+Unix environment, Cygwin is the way to go.  You can download a free
+version from http://www.cygwin.com which will have almost everything
+you might need, or you can purchase a CD which has some additional
+tools (including csh or bash) that you might find useful.
+
+Panda can build and run within a Cygwin environment, but it does not
+require it.  Note that Cygwin is used strictly as a build environment;
+the Cygwin compiler is not used, so no dependency on Cygwin will be
+built into Panda.  The Panda DLL's that you will generate within a
+Cygwin environment will be exactly the same as those you would
+generate in a non-Cygwin environment; once built, Panda will run
+correctly on any Win32 machine, with or without Cygwin installed.
+
+If you do not wish to install Cygwin for your build environment, see
+the instructions below.
+
+If you wish to use Cygwin, there is one important point to keep in
+mind.  Panda internally uses a Unix-like filename convention; that is,
+forward slashes (instead of backslashes) separate directory
+components, and there is no leading drive letter on any filename.
+These Unix-like filenames are mapped to Windows filenames (with drive
+letters and backslashes) when system calls are made.
+
+Cygwin also uses a Unix-like filename convention, and uses a series of
+mount commands to control the mapping of Unix filenames to Windows
+filenames.  Panda is not itself a Cygwin program, and does not read
+the Cygwin mount definitions.
+
+That's important enough it's worth repeating.  Panda is not aware of
+the Cygwin mount points.  So a Unix-like filename that makes sense to
+a Cygwin command may not be accessible by the same filename from
+within Panda.
+
+However, you can set things up so that most of the time, Cygwin and
+Panda agree, which is convenient.  To do this, it is important to
+understand how Panda maps Unix-like filenames to Windows filenames.
+
+  * Any relative pathname (that is, a pathname that does not begin
+    with a leading slash) is left unchanged, except to reverse the
+    slashes.
+
+  * Any full pathname whose topmost directory component is *not* a
+    single letter is prepended with the contents of the environment
+    variable PANDA_ROOT.
+
+  * Any full pathname whose topmost directory component *is* a single
+    letter is turned into a drive letter and colon followed by the
+    remainder of the path.  For example, /c/windows/system is turned
+    into C:\windows\system.
+
+The expectation is that most of the files you will want to access
+within Panda will all be within one directory structure, which you
+identify by setting the PANDA_ROOT variable.  Generally, when you are
+using Cygwin, you will want to set this variable to be the same thing
+as the root of your Cygwin tree.
+
+For instance, typically Cygwin installs itself in C:\Cygwin.  This
+means that when you reference the directory /usr/local/bin within
+Cygwin, you are actually referring to C:\Cygwin\usr\local\bin.  You
+should therefore set PANDA_ROOT to C:\Cygwin, so that /usr/local/bin
+within Panda will also refer to C:\Cygwin\usr\local\bin.
+
+To sum up: to use Panda within a Cygwin environment,
+
+In tcsh:
+
+  setenv PANDA_ROOT 'C:\Cygwin'
+
+or in bash:
+
+  PANDA_ROOT='C:\Cygwin'
+
+Follow the instructions under HOW TO BUILD PANDA FOR A UNIX
+ENVIRONMENT, above.
+
+
+
+HOW TO BUILD PANDA ON A WINDOWS SYSTEM, WITHOUT CYGWIN
+
+You will need a directory for holding the installed Panda.  This can
+be anywhere you like; in this example we'll assume you use a directory
+called "panda3d" on the root of the C drive.
+
+  md c:\panda3d
+
+Panda3D includes a pre-compiled ppremake.exe, but not the cygwin DLL.
+Since ppremake is a Cygwin program (even though the rest of Panda is
+not), you will need the DLL in order to run ppremake.
+
+The cygwin1.dll should be available at http://www.cygwin.com
+
+Make sure the Panda bin and lib directories are on your path, and set
+a few environment variables for building.  We suggest creating a file
+called PandaEnv.bat to hold these commands; then you may invoke this
+batch file before every Panda session to set up your environment
+properly.  Alternatively, you may make these definitions in the
+registry.
+
+  path c:\panda3d\bin;c:\panda3d\lib;%PATH%
+  set PANDA_ROOT=c:\
+  set PPREMAKE_CONFIG=c:\panda3d\Config.pp
+
+Setting PANDA_ROOT specifies the default drive Panda will search for
+file references.  (Panda internally uses a Unix-like filename
+convention, which does not use leading drive letters.  See the bullet
+points in the Cygwin section, above, describing the rules Panda uses
+to map its Unix-like filenames to Windows filenames.)
+
+Now make a directory for building Panda.  This may be different from
+the directory, above, that holds the installed Panda files; or it may
+be the same.  In this example we assume you will be building in the
+same directory, c:\panda3d.
+
+Now set up your personal Config.pp file to control your local
+configuration settings, as described above.  We suggest putting it in
+the root of the build directory.
+
+  edit c:\panda3d\Config.pp
+
+Add at least the following line to your Config.pp file.  (You may want
+to add additional lines, according to your needs.  See HOW TO
+CONFIGURE PANDA FOR YOUR ENVIRONMENT, above.)
+
+  #define INSTALL_DIR c:\panda3d
+
+Now you should be able to build dtool.
+
+  c:
+  cd \panda3d\dtool
+  ppremake
+  nmake
+  nmake install
+
+And then build panda.
+
+  c:
+  cd \panda3d\panda
+  ppremake
+  nmake
+  nmake install
+
+And (optionally) build direct.
+
+  c:
+  cd \panda3d\direct
+  ppremake
+  nmake
+  nmake install
+
+And (optionally) build pandatool.
+
+  c:
+  cd \panda3d\pandatool
+  ppremake
+  nmake
+  nmake install
+
+
+
+
+
+HOW TO RUN PANDA
+
+Once Panda has been successfully built and installed, you should be
+able to run pview to test that everything is working:
+
+  pview
+
+The first time you run pview, if you have not yet created a Configrc
+file, you should see something like this:
+
+  Known pipe types:
+  No interactive pipe is available!  Check your Configrc!
+
+If you get instead an error about some shared library or libraries not
+being found, check that your LD_LIBRARY_PATH setting (on Unix) or your
+PATH (on Windows) include the directory in which all of the Panda
+libraries have been installed (That is, $INSTALL_DIR/lib, or whatever
+you set INSTALL_DIR to followed by "lib".  On Unix, this defaults to
+/usr/local/panda/lib).
+
+If you do get the above error message, you will need to create a
+Configrc file to indicate some run-time parameters.  This is different
+from the Config.pp file you created above, which is only used by
+ppremake to define compile-time parameters; the Configrc file is read
+every time Panda is started and it defines parameters that control
+run-time behavior.
+
+Create a file called Configrc in your home directory (or wherever you
+find convenient).  Note that this file must have no extension; in
+particular, it should not have the extension "txt".  Notepad will add
+this extension by default, so if you use Notepad to create the file,
+you should then rename it so that it does not have the extension
+"txt".
+
+For now, add just the line:
+
+  load-display pandagl
+
+Or, if you are on Windows and prefer to use DirectX instead of OpenGL,
+add instead the line:
+
+  load-display pandadx
+
+Later you may add additional lines here to control the default
+behavior of Panda in other ways.
+
+If you do not specify otherwise, Panda will look for the Configrc file
+in the current directory, so for now try to run pview from within the
+same directory as your Configrc file.  If all goes well, it should
+open up a window with a blue triangle.  You can use the mouse to move
+the triangle around.  You can also pass the name of an egg file, if
+you have one, on the command line, and pview will load up and display
+the egg file.
+
+If you want to load the Configrc from other than the current
+directory, set the following two environment variables:
+
+  CONFIG_CONFIG=:configpath=CFG_PATH
+  CFG_PATH=/my/home/directory
+
+Where /my/home/directory is the name of your home directory (or
+wherever you put the Configrc file).  Note that forward slashes should
+be used, according to the Panda convention.  Also note that on
+Windows, the path you specify is relative to the directory named by
+PANDA_ROOT, unless it begins with a single-letter directory name (see
+the explanation of how Panda maps its internal filenames to Windows
+filenames, above.)
+
+
