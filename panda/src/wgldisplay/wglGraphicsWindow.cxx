@@ -504,6 +504,7 @@ void wglGraphicsWindow::config(void) {
 
   wglGraphicsPipe* pipe = DCAST(wglGraphicsPipe, _pipe);
   HINSTANCE hinstance = GetModuleHandle(NULL);
+  HWND desktop = GetDesktopWindow();
 
   if (_props._fullscreen) {
     _props._xorg = 0;
@@ -513,7 +514,7 @@ void wglGraphicsWindow::config(void) {
     _mwindow = CreateWindow("wglFullscreen", _props._title.c_str(),
                 WS_POPUP | WS_MAXIMIZE, 
 		_props._xorg, _props._yorg, _props._xsize, _props._ysize,
-                NULL, NULL, hinstance, 0);
+                desktop, NULL, hinstance, 0);
   } else {
 
     int xorg = _props._xorg;
@@ -529,7 +530,7 @@ void wglGraphicsWindow::config(void) {
 
     _mwindow = CreateWindow("wglStandard", _props._title.c_str(),
                 style, xorg, yorg, xsize, ysize,
-                NULL, NULL, hinstance, 0);
+                desktop, NULL, hinstance, 0);
   }
 
   if (!_mwindow) {

@@ -1077,12 +1077,13 @@ void wdxGraphicsWindow::config(void) {
   RECT win_rect;
   SetRect(&win_rect, _props._xorg,  _props._yorg, _props._xorg + _props._xsize, 
 				 _props._yorg + _props._ysize);
+  HWND desktop = GetDesktopWindow();
 
   // rect now contains the coords for the entire window, not the client
   if (dx_full_screen) {
 	  _mwindow = CreateWindow("wdxDisplay", _props._title.c_str(),
                               WS_POPUP, 0, 0, _props._xsize,_props._ysize,
-                              NULL, NULL, hinstance, 0);
+                              desktop, NULL, hinstance, 0);
   } else  {
 	  if (_props._border)
 		    style = WS_OVERLAPPEDWINDOW; 
@@ -1098,7 +1099,7 @@ void wdxGraphicsWindow::config(void) {
 	  _mwindow = CreateWindow("wdxDisplay", _props._title.c_str(),
 		style, win_rect.left, win_rect.top, win_rect.right-win_rect.left, 
 		win_rect.bottom-win_rect.top,
-		NULL, NULL, hinstance, 0);
+		desktop, NULL, hinstance, 0);
   }
 
   if (!_mwindow) {
