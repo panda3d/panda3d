@@ -19,6 +19,7 @@
 #include "httpClient.h"
 #include "httpChannel.h"
 #include "config_downloader.h"
+#include "ssl_utils.h"
 #include "filename.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
@@ -769,9 +770,7 @@ load_certificates(const Filename &filename) {
   if (result <= 0) {
     downloader_cat.info()
       << "Could not load certificates from " << filename << ".\n";
-#ifdef REPORT_OPENSSL_ERRORS
-    ERR_print_errors_fp(stderr);
-#endif
+    notify_ssl_errors();
     return false;
   }
 
@@ -1236,10 +1235,6 @@ unload_client_certificate() {
 ////////////////////////////////////////////////////////////////////
 void HTTPClient::
 initialize_ssl() {
-#ifdef REPORT_OPENSSL_ERRORS
-  ERR_load_crypto_strings();
-  ERR_load_SSL_strings();
-#endif
   OpenSSL_add_all_algorithms();
 
   // Call RAND_status() here to force the random number generator to
@@ -1293,9 +1288,7 @@ load_verify_locations(SSL_CTX *ctx, const Filename &ca_file) {
     // Could not scan certificates.
     downloader_cat.info()
       << "PEM_X509_INFO_read_bio() returned NULL.\n";
-#ifdef REPORT_OPENSSL_ERRORS
-    ERR_print_errors_fp(stderr);
-#endif
+    notify_ssl_errors();
     return 0;
   }
   

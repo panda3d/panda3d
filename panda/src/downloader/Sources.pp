@@ -33,6 +33,7 @@
     multiplexStreamBuf.I multiplexStreamBuf.h \
     patcher.h patcher.I \
     socketStream.h socketStream.I \
+    ssl_utils.h \
     urlSpec.I urlSpec.h
     
   #define INCLUDED_SOURCES                 \
@@ -59,6 +60,7 @@
     multiplexStream.cxx multiplexStreamBuf.cxx \
     patcher.cxx \
     socketStream.cxx \
+    ssl_utils.cxx \
     urlSpec.cxx
 
   #define INSTALL_HEADERS \
@@ -85,6 +87,7 @@
     multiplexStreamBuf.I multiplexStreamBuf.h \
     patcher.h patcher.I \
     socketStream.h socketStream.I \
+    ssl_utils.h \
     urlSpec.h urlSpec.I
     
   #define IGATESCAN all

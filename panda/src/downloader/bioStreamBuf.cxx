@@ -18,12 +18,9 @@
 
 #include "bioStreamBuf.h"
 #include "config_downloader.h"
+#include "ssl_utils.h"
 
 #ifdef HAVE_SSL
-
-#ifdef REPORT_OPENSSL_ERRORS
-#include <openssl/err.h>
-#endif
 
 #ifndef HAVE_STREAMSIZE
 // Some compilers (notably SGI) don't define this for us
@@ -166,9 +163,7 @@ underflow() {
             << "Lost connection to "
             << _source->get_server_name() << ":" 
             << _source->get_port() << " (" << read_count << ").\n";
-#ifdef REPORT_OPENSSL_ERRORS
-          ERR_print_errors_fp(stderr);
-#endif
+          notify_ssl_errors();
         }
         gbump(num_bytes);
         return EOF;

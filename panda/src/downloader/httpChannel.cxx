@@ -19,6 +19,7 @@
 #include "httpChannel.h"
 #include "httpClient.h"
 #include "bioStream.h"
+#include "ssl_utils.h"
 #include "chunkedStream.h"
 #include "identityStream.h"
 #include "config_downloader.h"
@@ -27,9 +28,6 @@
 
 #ifdef HAVE_SSL
 #include <openssl/x509.h>
-#ifdef REPORT_OPENSSL_ERRORS
-#include <openssl/err.h>
-#endif
 
 #ifdef WIN32_VC
   #include <windows.h>  // for select()
@@ -852,9 +850,7 @@ run_connecting() {
     downloader_cat.info()
       << "Could not connect to " << _bio->get_server_name() << ":" 
       << _bio->get_port() << "\n";
-#ifdef REPORT_OPENSSL_ERRORS
-    ERR_print_errors_fp(stderr);
-#endif
+    notify_ssl_errors();
     _status_entry._status_code = SC_no_connection;
     _state = S_try_next_proxy;
     return false;
@@ -1328,9 +1324,7 @@ run_setup_ssl() {
   if (result == 0) {
     downloader_cat.error()
       << "Invalid cipher list: '" << cipher_list << "'\n";
-#ifdef REPORT_OPENSSL_ERRORS
-    ERR_print_errors_fp(stderr);
-#endif
+    notify_ssl_errors();
     _status_entry._status_code = SC_ssl_internal_failure;
     _state = S_failure;
     return false;
@@ -1392,9 +1386,8 @@ run_ssl_handshake() {
     downloader_cat.info()
       << "Could not establish SSL handshake with " 
       << _request.get_url().get_server_and_port() << "\n";
-#ifdef REPORT_OPENSSL_ERRORS
-    ERR_print_errors_fp(stderr);
-#endif
+    notify_ssl_errors();
+
     // It seems to be an error to free sbio at this point; perhaps
     // it's already been freed?
     _status_entry._status_code = SC_ssl_no_handshake;
