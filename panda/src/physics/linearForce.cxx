@@ -99,7 +99,7 @@ is_linear() const {
 void LinearForce::
 output(ostream &out) const {
   #ifndef NDEBUG //[
-  out<<"LinearForce";
+  out<<"LinearForce (id "<<this<<")";
   #endif //] NDEBUG
 }
 
@@ -112,7 +112,7 @@ output(ostream &out) const {
 void LinearForce::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
-  out.width(indent); out<<""; out<<"LinearForce:\n";
+  out.width(indent); out<<""; out<<"LinearForce (id "<<this<<")\n";
   out.width(indent+2); out<<""; out<<"_amplitude "<<_amplitude<<"\n";
   out.width(indent+2); out<<""; out<<"_mass_dependent "<<_mass_dependent<<"\n";
   out.width(indent+2); out<<""; out<<"_x_mask "<<_x_mask<<"\n";

@@ -79,7 +79,7 @@ is_linear() const {
 void AngularForce::
 output(ostream &out) const {
   #ifndef NDEBUG //[
-  out<<"AngularForce";
+  out<<"AngularForce (id "<<this<<")";
   #endif //] NDEBUG
 }
 
@@ -92,7 +92,7 @@ output(ostream &out) const {
 void AngularForce::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
-  out.width(indent); out<<""; out<<"AngularForce:\n";
+  out.width(indent); out<<""; out<<"AngularForce (id "<<this<<")\n";
   BaseForce::write(out, indent+2);
   #endif //] NDEBUG
 }
