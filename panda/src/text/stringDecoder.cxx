@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "stringDecoder.h"
+#include "config_text.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StringDecoder::Destructor
@@ -71,33 +72,51 @@ The value of each individual byte indicates its UTF-8 function, as follows:
 ////////////////////////////////////////////////////////////////////
 int StringUtf8Decoder::
 get_next_character() {
-  if (test_eof()) {
-    return -1;
+  unsigned int result;
+  while (!test_eof()) {
+    result = (unsigned char)_input[_p++];
+    if ((result & 0x80) == 0) {
+      // A 7-bit ascii value in one byte.
+      return result;
+
+    } if ((result & 0xe0) == 0xc0) {
+      // First byte of two.
+      unsigned int two = 0;
+      if (test_eof()) {
+        text_cat.warning()
+          << "utf-8 encoded string ends abruptly.\n";
+        return -1;
+      }
+      two = (unsigned char)_input[_p++];
+      result = ((result & 0x1f) << 6) | (two & 0x3f);
+      return result;
+      
+    } else if ((result & 0xf0) == 0xe0) {
+      // First byte of three.
+      if (test_eof()) {
+        text_cat.warning()
+          << "utf-8 encoded string ends abruptly.\n";
+        return -1;
+      }
+      unsigned int two = (unsigned char)_input[_p++];
+      if (test_eof()) {
+        text_cat.warning()
+          << "utf-8 encoded string ends abruptly.\n";
+        return -1;
+      }
+      unsigned int three = (unsigned char)_input[_p++];
+      result = ((result & 0x0f) << 12) | ((two & 0x3f) << 6) | (three & 0x3f);
+      return result;
+    }
+
+    // Otherwise--the high bit is set but it is not one of the
+    // introductory utf-8 bytes--we have an error.
+    text_cat.warning()
+      << "Non utf-8 byte in string: 0x" << hex << result << dec << "\n";
   }
 
-  unsigned int result = (unsigned char)_input[_p++];
-  if ((result & 0xe0) == 0xc0) {
-    // First byte of two.
-    unsigned int two = 0;
-    if (!test_eof()) {
-      two = (unsigned char)_input[_p++];
-    }
-    result = ((result & 0x1f) << 6) | (two & 0x3f);
-
-  } else if ((result & 0xf0) == 0xe0) {
-    // First byte of three.
-    unsigned int two = 0;
-    unsigned int three = 0;
-    if (!test_eof()) {
-      two = (unsigned char)_input[_p++];
-    }
-    if (!test_eof()) {
-      three = (unsigned char)_input[_p++];
-    }
-    result = ((result & 0x0f) << 12) | ((two & 0x3f) << 6) | (three & 0x3f);
-  } 
-
-  return result;
+  // End of string reached.
+  return -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,9 +131,11 @@ get_next_character() {
   }
 
   unsigned int high = (unsigned char)_input[_p++];
-  unsigned int low = 0;
-  if (!test_eof()) {
-    low = (unsigned char)_input[_p++];
+  if (test_eof()) {
+    text_cat.warning()
+      << "Unicode-encoded string has odd number of bytes.\n";
+    return -1;
   }
+  unsigned int low = (unsigned char)_input[_p++];
   return ((high << 8) | low);
 }
