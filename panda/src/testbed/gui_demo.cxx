@@ -51,6 +51,8 @@
 extern PT(GeomNode) geomnode;
 extern RenderRelation* first_arc;
 
+static GuiFrame* global_frame;
+
 static void setup_gui(void) {
   GuiManager* mgr = GuiManager::get_ptr(main_win, mak);
   PT_Node font = ModelPool::load_model("ttf-comic");
@@ -167,22 +169,10 @@ static void setup_gui(void) {
   GuiLabel* l2 = GuiLabel::make_simple_text_label("off", font);
   GuiLabel* l3 = GuiLabel::make_simple_text_label("over", font);
   GuiLabel* l4 = GuiLabel::make_simple_text_label("easy", font);
-  float w1, w2, w3, w4, w;
-  w1 = l1->get_width();
-  w2 = l2->get_width();
-  w3 = l3->get_width();
-  w4 = l4->get_width();
-  w = (w1>w2)?w1:w2;
-  w = (w>w3)?w:w3;
-  w = (w>w4)?w:w4;
   l1->set_background_color(1., 1., 1., 0.3);
   l2->set_background_color(1., 1., 1., 0.3);
   l3->set_background_color(1., 1., 1., 0.3);
   l4->set_background_color(1., 1., 1., 0.3);
-  l1->set_width(w);
-  l2->set_width(w);
-  l3->set_width(w);
-  l4->set_width(w);
   GuiRollover* r1 = new GuiRollover("r1", l1, l2);
   GuiRollover* r2 = new GuiRollover("r2", l3, l4);
   GuiFrame* f1 = new GuiFrame("test5");
@@ -191,6 +181,19 @@ static void setup_gui(void) {
   f1->pack_item(r2, GuiFrame::UNDER, r1);
   f1->set_scale(0.1);
   f1->manage(mgr, event_handler);
+  float w1, w2, w3, w4, w;
+  w1 = l1->get_width();
+  w2 = l2->get_width();
+  w3 = l3->get_width();
+  w4 = l4->get_width();
+  w = (w1>w2)?w1:w2;
+  w = (w>w3)?w:w3;
+  w = (w>w4)?w:w4;
+  l1->set_width(w);
+  l2->set_width(w);
+  l3->set_width(w);
+  l4->set_width(w);
+  global_frame = f1;
 }
 
 static void event_2(CPT_Event) {
@@ -201,11 +204,16 @@ static void event_2(CPT_Event) {
   }
 }
 
+static void event_3(CPT_Event) {
+  delete global_frame;
+}
+
 void demo_keys(EventHandler&) {
   new RenderRelation( lights, dlight );
   have_dlight = true;
 
   event_handler.add_hook("2", event_2);
+  event_handler.add_hook("3", event_3);
 }
 
 int main(int argc, char *argv[]) {
