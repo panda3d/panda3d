@@ -402,7 +402,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
   double x = 0.0f;
   double y = 0.0f;
 
-  bool got_mouse = false;
+  //bool got_mouse = false;
 
   if (required_buttons_match && input.has_data(_xy_input)) {
     const EventStoreVec2 *xy;
@@ -411,7 +411,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
     x = p[0];
     y = p[1];
 
-    got_mouse = true;
+    //got_mouse = true;
   }
 
   // Look for keyboard events.
