@@ -454,7 +454,9 @@ add_class(DCClass *dclass) {
     }
   }
 
-  dclass->set_number(get_num_classes());
+  if (!dclass->is_struct()) {
+    dclass->set_number(get_num_classes());
+  }
   _classes.push_back(dclass);
 
   if (dclass->is_bogus_class()) {

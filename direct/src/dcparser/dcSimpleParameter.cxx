@@ -2013,6 +2013,7 @@ output_instance(ostream &out, bool brief, const string &prename,
     if (!prename.empty() || !name.empty() || !postname.empty()) {
       out << " " << prename << name << postname;
     }
+    output_flags(out);
   }
 }
 

@@ -159,7 +159,12 @@ write_instance(ostream &out, bool brief, int indent_level,
                const string &postname) const {
   indent(out, indent_level);
   output_instance(out, brief, prename, name, postname);
-  out << ";\n";
+  output_flags(out);
+  out << ";";
+  if (!brief && _number >= 0) {
+    out << "  // field " << _number;
+  }
+  out << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,14 +189,20 @@ output_typedef_name(ostream &out, bool, const string &prename,
 //               the typedef name instead.
 ////////////////////////////////////////////////////////////////////
 void DCParameter::
-write_typedef_name(ostream &out, bool, int indent_level, const string &prename,
-                   const string &name, const string &postname) const {
+write_typedef_name(ostream &out, bool brief, int indent_level, 
+                   const string &prename, const string &name, 
+                   const string &postname) const {
   indent(out, indent_level)
     << get_typedef()->get_name();
   if (!prename.empty() || !name.empty() || !postname.empty()) {
     out << " " << prename << name << postname;
   }
-  out << ";\n";
+  output_flags(out);
+  out << ";";
+  if (!brief && _number >= 0) {
+    out << "  // field " << _number;
+  }
+  out << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -201,7 +212,9 @@ write_typedef_name(ostream &out, bool, int indent_level, const string &prename,
 //               hash.
 ////////////////////////////////////////////////////////////////////
 void DCParameter::
-generate_hash(HashGenerator &) const {
+generate_hash(HashGenerator &hashgen) const {
   // We specifically don't call up to DCField::generate_hash(), since
   // the parameter name is not actually significant to the hash.
+
+  hashgen.add_int(get_flags());
 }

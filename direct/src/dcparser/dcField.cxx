@@ -29,6 +29,7 @@
 DCField::
 DCField(const string &name) : DCPackerInterface(name) {
   _number = -1;
+  _flags = 0;
 
   _has_nested_fields = true;
   _num_nested_fields = 0;
@@ -177,6 +178,117 @@ validate_ranges(const string &packed_data) const {
   }
 
   return (packer.get_num_unpacked_bytes() == packed_data.length());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::is_required
+//       Access: Published
+//  Description: Returns true if the "required" flag is set for this
+//               field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+is_required() const {
+  return (_flags & F_required) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::is_broadcast
+//       Access: Published
+//  Description: Returns true if the "broadcast" flag is set for this
+//               field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+is_broadcast() const {
+  return (_flags & F_broadcast) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::is_p2p
+//       Access: Published
+//  Description: Returns true if the "p2p" flag is set for this
+//               field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+is_p2p() const {
+  return (_flags & F_p2p) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::is_ram
+//       Access: Published
+//  Description: Returns true if the "ram" flag is set for this
+//               field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+is_ram() const {
+  return (_flags & F_ram) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::is_db
+//       Access: Published
+//  Description: Returns true if the "db" flag is set for this
+//               field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+is_db() const {
+  return (_flags & F_db) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::is_clsend
+//       Access: Published
+//  Description: Returns true if the "clsend" flag is set for this
+//               field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+is_clsend() const {
+  return (_flags & F_clsend) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::is_clrecv
+//       Access: Published
+//  Description: Returns true if the "clrecv" flag is set for this
+//               field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+is_clrecv() const {
+  return (_flags & F_clrecv) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::is_ownsend
+//       Access: Published
+//  Description: Returns true if the "ownsend" flag is set for this
+//               field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+is_ownsend() const {
+  return (_flags & F_ownsend) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::is_airecv
+//       Access: Published
+//  Description: Returns true if the "airecv" flag is set for this
+//               field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+is_airecv() const {
+  return (_flags & F_airecv) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::compare_flags
+//       Access: Published
+//  Description: Returns true if this field has the same flags
+//               settings as the other field, false if some flags
+//               differ.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+compare_flags(const DCField &other) const {
+  return _flags == other._flags;
 }
 
 #ifdef HAVE_PYTHON
@@ -388,3 +500,68 @@ set_number(int number) {
   _number = number;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::add_flag
+//       Access: Public
+//  Description: Adds a new flag to the field.
+////////////////////////////////////////////////////////////////////
+void DCField::
+add_flag(enum Flags flag) {
+  _flags |= flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::set_flags
+//       Access: Public
+//  Description: Resets the flag bitmask to the indicated value.
+////////////////////////////////////////////////////////////////////
+void DCField::
+set_flags(int flags) {
+  _flags = flags;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::get_flags
+//       Access: Public
+//  Description: Returns the complete flag bitmask.
+////////////////////////////////////////////////////////////////////
+int DCField::
+get_flags() const {
+  return _flags;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::output_flags
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void DCField::
+output_flags(ostream &out) const {
+  if ((_flags & F_required) != 0) {
+    out << " required";
+  }
+  if ((_flags & F_broadcast) != 0) {
+    out << " broadcast";
+  }
+  if ((_flags & F_p2p) != 0) {
+    out << " p2p";
+  }
+  if ((_flags & F_ram) != 0) {
+    out << " ram";
+  }
+  if ((_flags & F_db) != 0) {
+    out << " db";
+  }
+  if ((_flags & F_clsend) != 0) {
+    out << " clsend";
+  }
+  if ((_flags & F_clrecv) != 0) {
+    out << " clrecv";
+  }
+  if ((_flags & F_ownsend) != 0) {
+    out << " ownsend";
+  }
+  if ((_flags & F_airecv) != 0) {
+    out << " airecv";
+  }
+}

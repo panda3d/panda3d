@@ -786,7 +786,9 @@ add_field(DCField *field) {
     return false;
   }
 
-  field->set_number(get_num_inherited_fields());
+  if (!is_struct()) {
+    field->set_number(get_num_inherited_fields());
+  }
   _fields.push_back(field);
   return true;
 }

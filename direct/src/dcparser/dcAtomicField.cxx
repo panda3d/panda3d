@@ -31,7 +31,6 @@
 ////////////////////////////////////////////////////////////////////
 DCAtomicField::
 DCAtomicField(const string &name) : DCField(name) {
-  _flags = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -155,117 +154,6 @@ get_element_divisor(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::is_required
-//       Access: Published
-//  Description: Returns true if the "required" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::
-is_required() const {
-  return (_flags & F_required) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::is_broadcast
-//       Access: Published
-//  Description: Returns true if the "broadcast" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::
-is_broadcast() const {
-  return (_flags & F_broadcast) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::is_p2p
-//       Access: Published
-//  Description: Returns true if the "p2p" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::
-is_p2p() const {
-  return (_flags & F_p2p) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::is_ram
-//       Access: Published
-//  Description: Returns true if the "ram" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::
-is_ram() const {
-  return (_flags & F_ram) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::is_db
-//       Access: Published
-//  Description: Returns true if the "db" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::
-is_db() const {
-  return (_flags & F_db) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::is_clsend
-//       Access: Published
-//  Description: Returns true if the "clsend" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::
-is_clsend() const {
-  return (_flags & F_clsend) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::is_clrecv
-//       Access: Published
-//  Description: Returns true if the "clrecv" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::
-is_clrecv() const {
-  return (_flags & F_clrecv) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::is_ownsend
-//       Access: Published
-//  Description: Returns true if the "ownsend" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::
-is_ownsend() const {
-  return (_flags & F_ownsend) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::is_airecv
-//       Access: Published
-//  Description: Returns true if the "airecv" flag is set for this
-//               field, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::
-is_airecv() const {
-  return (_flags & F_airecv) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::compare_flags
-//       Access: Published
-//  Description: Returns true if this field has the same flags
-//               settings as the other field, false if some flags
-//               differ.
-////////////////////////////////////////////////////////////////////
-bool DCAtomicField::
-compare_flags(const DCAtomicField &other) const {
-  return _flags == other._flags;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::output
 //       Access: Public, Virtual
 //  Description: 
@@ -286,35 +174,7 @@ output(ostream &out, bool brief) const {
   }
   out << ")";
 
-  if ((_flags & F_required) != 0) {
-    out << " required";
-  }
-  if ((_flags & F_broadcast) != 0) {
-    out << " broadcast";
-  }
-  if ((_flags & F_p2p) != 0) {
-    out << " p2p";
-  }
-  if ((_flags & F_ram) != 0) {
-    out << " ram";
-  }
-  if ((_flags & F_db) != 0) {
-    out << " db";
-  }
-  if ((_flags & F_clsend) != 0) {
-    out << " clsend";
-  }
-  if ((_flags & F_clrecv) != 0) {
-    out << " clrecv";
-  }
-  if ((_flags & F_ownsend) != 0) {
-    out << " ownsend";
-  }
-  if ((_flags & F_airecv) != 0) {
-    out << " airecv";
-  }
-
-  out << ";";
+  output_flags(out);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -327,6 +187,7 @@ void DCAtomicField::
 write(ostream &out, bool brief, int indent_level) const {
   indent(out, indent_level);
   output(out, brief);
+  out << ";";
   if (!brief && _number >= 0) {
     out << "  // field " << _number;
   }
@@ -349,7 +210,7 @@ generate_hash(HashGenerator &hashgen) const {
     const ElementType &element = (*ei);
     element._param->generate_hash(hashgen);
   }
-  hashgen.add_int(_flags);
+  hashgen.add_int(get_flags());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -385,16 +246,6 @@ add_element(const DCAtomicField::ElementType &element) {
   if (_has_fixed_structure) {
     _has_fixed_structure = element._param->has_fixed_structure();
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::add_flag
-//       Access: Public
-//  Description: Adds a new flag to the field.
-////////////////////////////////////////////////////////////////////
-void DCAtomicField::
-add_flag(enum Flags flag) {
-  _flags |= flag;
 }
 
 ////////////////////////////////////////////////////////////////////

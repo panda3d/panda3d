@@ -51,18 +51,6 @@ PUBLISHED:
   string get_element_name(int n) const;
   DCSubatomicType get_element_type(int n) const;
   int get_element_divisor(int n) const;
-
-  bool is_required() const;
-  bool is_broadcast() const;
-  bool is_p2p() const;
-  bool is_ram() const;
-  bool is_db() const;
-  bool is_clsend() const;
-  bool is_clrecv() const;
-  bool is_ownsend() const;
-  bool is_airecv() const;
-
-  bool compare_flags(const DCAtomicField &other) const;
   
 public:
   virtual void output(ostream &out, bool brief) const;
@@ -88,26 +76,11 @@ public:
     bool _has_default_value;
   };
 
-  enum Flags {
-    F_required        = 0x0001,
-    F_broadcast       = 0x0002,
-    F_p2p             = 0x0004,
-    F_ram             = 0x0008,
-    F_db              = 0x0010,
-    F_clsend          = 0x0020,
-    F_clrecv          = 0x0040,
-    F_ownsend         = 0x0080,
-    F_airecv          = 0x0100,
-  };
-
   void add_element(const ElementType &element);
-  void add_flag(enum Flags flag);
 
 private:
   typedef pvector<ElementType> Elements;
   Elements _elements;
-
-  int _flags;  // A bitmask union of any of the above values.
 };
 
 #endif

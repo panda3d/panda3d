@@ -54,6 +54,18 @@ PUBLISHED:
 
   bool validate_ranges(const string &packed_data) const;
 
+  bool is_required() const;
+  bool is_broadcast() const;
+  bool is_p2p() const;
+  bool is_ram() const;
+  bool is_db() const;
+  bool is_clsend() const;
+  bool is_clrecv() const;
+  bool is_ownsend() const;
+  bool is_airecv() const;
+
+  bool compare_flags(const DCField &other) const;
+
 #ifdef HAVE_PYTHON
   bool pack_args(DCPacker &packer, PyObject *sequence) const;
   PyObject *unpack_args(DCPacker &packer) const;
@@ -72,8 +84,29 @@ public:
 
   void set_number(int number);
 
+  enum Flags {
+    F_required        = 0x0001,
+    F_broadcast       = 0x0002,
+    F_p2p             = 0x0004,
+    F_ram             = 0x0008,
+    F_db              = 0x0010,
+    F_clsend          = 0x0020,
+    F_clrecv          = 0x0040,
+    F_ownsend         = 0x0080,
+    F_airecv          = 0x0100,
+  };
+  void add_flag(enum Flags flag);
+  void set_flags(int flags);
+  int get_flags() const;
+
+protected:
+  void output_flags(ostream &out) const;
+
 protected:
   int _number;
+
+private:
+  int _flags;  // A bitmask union of any of the above values.
 };
 
 #endif

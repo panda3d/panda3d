@@ -120,6 +120,7 @@ dc_cleanup_parser() {
 %type <u.dclass> dclass
 %type <u.dswitch> switch
 %type <u.atomic> atomic_name
+%type <u.s_int> server_flags
 %type <u.field> dclass_field
 %type <u.field> switch_field
 %type <u.field> atomic_field
@@ -306,24 +307,29 @@ dclass_fields:
 dclass_field:
 	atomic_field
 	| molecular_field
-	| unnamed_parameter ';'
+	| unnamed_parameter server_flags ';'
 {
   $$ = $1;
+  $$->set_flags($2);
 }
-	| named_parameter
+	| named_parameter server_flags
 {
   $$ = $1;
+  $$->set_flags($2);
 }
 	;
 
 atomic_field:
         IDENTIFIER '('
 {
+  $$ = current_atomic;
   current_atomic = new DCAtomicField($1);
 }
-        parameter_list ')' atomic_flags
+        parameter_list ')' server_flags
 {
   $$ = current_atomic;
+  current_atomic = $<u.atomic>3;
+  $$->set_flags($6);
 }
         ;
 
@@ -820,43 +826,46 @@ type_token:
 }
         ;
 
-atomic_flags:
+server_flags:
         empty
-        | atomic_flags KW_REQUIRED
 {
-  current_atomic->add_flag(DCAtomicField::F_required);
+  $$ = 0;
 }
-        | atomic_flags KW_BROADCAST
+        | server_flags KW_REQUIRED
 {
-  current_atomic->add_flag(DCAtomicField::F_broadcast);
+  $$ = $1 | DCAtomicField::F_required;
 }
-        | atomic_flags KW_P2P
+        | server_flags KW_BROADCAST
 {
-  current_atomic->add_flag(DCAtomicField::F_p2p);
+  $$ = $1 | DCAtomicField::F_broadcast;
 }
-        | atomic_flags KW_RAM
+        | server_flags KW_P2P
 {
-  current_atomic->add_flag(DCAtomicField::F_ram);
+  $$ = $1 | DCAtomicField::F_p2p;
 }
-        | atomic_flags KW_DB
+        | server_flags KW_RAM
 {
-  current_atomic->add_flag(DCAtomicField::F_db);
+  $$ = $1 | DCAtomicField::F_ram;
 }
-        | atomic_flags KW_CLSEND
+        | server_flags KW_DB
 {
-  current_atomic->add_flag(DCAtomicField::F_clsend);
+  $$ = $1 | DCAtomicField::F_db;
 }
-        | atomic_flags KW_CLRECV
+        | server_flags KW_CLSEND
 {
-  current_atomic->add_flag(DCAtomicField::F_clrecv);
+  $$ = $1 | DCAtomicField::F_clsend;
 }
-        | atomic_flags KW_OWNSEND
+        | server_flags KW_CLRECV
 {
-  current_atomic->add_flag(DCAtomicField::F_ownsend);
+  $$ = $1 | DCAtomicField::F_clrecv;
 }
-        | atomic_flags KW_AIRECV
+        | server_flags KW_OWNSEND
 {
-  current_atomic->add_flag(DCAtomicField::F_airecv);
+  $$ = $1 | DCAtomicField::F_ownsend;
+}
+        | server_flags KW_AIRECV
+{
+  $$ = $1 | DCAtomicField::F_airecv;
 }
         ;
 
@@ -898,7 +907,7 @@ molecular_atom_list:
 {
   if ($3 != (DCAtomicField *)NULL) {
     current_molecular->add_atomic($3);
-    if (!current_molecular->get_atomic(0)->compare_flags(*$3)) {
+    if (!current_molecular->compare_flags(*$3)) {
       yyerror("Mismatched flags in molecule between " + 
               current_molecular->get_atomic(0)->get_name() + " and " +
               $3->get_name());
