@@ -15,15 +15,21 @@ INLINE GuiRegion::GuiRegion(const string& name, float l, float r, float b,
 }
 
 INLINE MouseWatcherRegion* GuiRegion::get_region(void) const {
+  test_ref_count_integrity();
+  _region->test_ref_count_integrity();
   return _region;
 }
 
 INLINE void GuiRegion::trap_clicks(bool t) {
+  test_ref_count_integrity();
+  _region->test_ref_count_integrity();
   _region->set_suppress_below(t);
 }
 
 INLINE void GuiRegion::set_region(float left, float right, float bottom,
 				  float top) {
+  test_ref_count_integrity();
+  _region->test_ref_count_integrity();
   _region->set_frame(left, right, bottom, top);
   _left = left;
   _right = right;
@@ -32,5 +38,7 @@ INLINE void GuiRegion::set_region(float left, float right, float bottom,
 }
 
 INLINE LVector4f GuiRegion::get_frame(void) const {
+  test_ref_count_integrity();
+  _region->test_ref_count_integrity();
   return LVector4f(_left, _right, _bottom, _top);
 }

@@ -118,6 +118,7 @@ GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak) {
 }
 
 void GuiManager::add_region(GuiRegion* region) {
+  region->test_ref_count_integrity();
   RegionSet::const_iterator ri;
   ri = _regions.find(region);
   if (ri == _regions.end()) {
@@ -129,6 +130,7 @@ void GuiManager::add_region(GuiRegion* region) {
 }
 
 void GuiManager::add_label(GuiLabel* label) {
+  label->test_ref_count_integrity();
   LabelSet::const_iterator li;
   li = _labels.find(label);
   if (li == _labels.end()) {
@@ -141,6 +143,7 @@ void GuiManager::add_label(GuiLabel* label) {
 }
 
 void GuiManager::remove_region(GuiRegion* region) {
+  region->test_ref_count_integrity();
   RegionSet::iterator ri;
   ri = _regions.find(region);
   if (ri == _regions.end())
@@ -153,6 +156,7 @@ void GuiManager::remove_region(GuiRegion* region) {
 }
 
 void GuiManager::remove_label(GuiLabel* label) {
+  label->test_ref_count_integrity();
   LabelSet::iterator li;
   li = _labels.find(label);
   if (li == _labels.end())

@@ -13,6 +13,17 @@ static RolloverMap rollovers;
 
 TypeHandle GuiRollover::_type_handle;
 
+
+static GuiRollover *
+find_in_rollovers_map(const string &name) {
+  RolloverMap::const_iterator bi;
+  bi = rollovers.find(name);
+  if (bi == rollovers.end()) {
+    return (GuiRollover *)NULL;
+  }
+  return (*bi).second;
+}
+
 inline void GetExtents(GuiLabel* x, GuiLabel* y, float& l, float& r, float& b,
 		       float& t) {
   float l1, l2, r1, r2, b1, b2, t1, t2;
@@ -25,12 +36,26 @@ inline void GetExtents(GuiLabel* x, GuiLabel* y, float& l, float& r, float& b,
 }
 
 static void enter_rollover(CPT_Event e) {
-  GuiRollover* val = rollovers[e->get_name()];
+  GuiRollover* val = find_in_rollovers_map(e->get_name());
+  if (val == (GuiRollover *)NULL) {
+    if (gui_cat.is_debug()) {
+      gui_cat.debug()
+	<< "Ignoring event " << e->get_name() << " for deleted rollover\n";
+    }
+    return;
+  }
   val->enter();
 }
 
 static void exit_rollover(CPT_Event e) {
-  GuiRollover* val = rollovers[e->get_name()];
+  GuiRollover* val = find_in_rollovers_map(e->get_name());
+  if (val == (GuiRollover *)NULL) {
+    if (gui_cat.is_debug()) {
+      gui_cat.debug()
+	<< "Ignoring event " << e->get_name() << " for deleted rollover\n";
+    }
+    return;
+  }
   val->exit();
 }
 
@@ -54,6 +79,12 @@ GuiRollover::GuiRollover(const string& name, GuiLabel* off, GuiLabel* on)
 
 GuiRollover::~GuiRollover(void) {
   this->unmanage();
+
+  // Remove the names from the rollovers map, so we don't end up with
+  // an invalid pointer.
+  string name = get_name();
+  rollovers.erase("gui-in-rollover-" + name);
+  rollovers.erase("gui-out-rollover-" + name);
 }
 
 void GuiRollover::manage(GuiManager* mgr, EventHandler& eh) {

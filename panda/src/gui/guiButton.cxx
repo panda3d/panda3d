@@ -15,6 +15,17 @@ static ButtonMap buttons;
 
 TypeHandle GuiButton::_type_handle;
 
+
+static GuiButton *
+find_in_buttons_map(const string &name) {
+  ButtonMap::const_iterator bi;
+  bi = buttons.find(name);
+  if (bi == buttons.end()) {
+    return (GuiButton *)NULL;
+  }
+  return (*bi).second;
+}
+
 inline void GetExtents(GuiLabel* v, GuiLabel* w, GuiLabel* x, GuiLabel* y,
 		       GuiLabel* z, float& l, float& r, float& b, float& t) {
   float l1, l2, r1, r2, b1, b2, t1, t2;
@@ -48,21 +59,46 @@ inline void GetExtents(GuiLabel* v, GuiLabel* w, GuiLabel* x, GuiLabel* y,
 }
 
 static void enter_button(CPT_Event e) {
-  GuiButton* val = buttons[e->get_name()];
+  GuiButton* val = find_in_buttons_map(e->get_name());
+  if (val == (GuiButton *)NULL) {
+    if (gui_cat.is_debug()) {
+      gui_cat.debug()
+	<< "Ignoring event " << e->get_name() << " for deleted button\n";
+    }
+    return;
+  }
+  val->test_ref_count_integrity();
   val->enter();
 }
 
 static void exit_button(CPT_Event e) {
-  GuiButton* val = buttons[e->get_name()];
+  GuiButton* val = find_in_buttons_map(e->get_name());
+  if (val == (GuiButton *)NULL) {
+    if (gui_cat.is_debug()) {
+      gui_cat.debug()
+	<< "Ignoring event " << e->get_name() << " for deleted button\n";
+    }
+    return;
+  }
+  val->test_ref_count_integrity();
   val->exit();
 }
 
 static void click_button(CPT_Event e) {
-  GuiButton* val = buttons[e->get_name()];
+  GuiButton* val = find_in_buttons_map(e->get_name());
+  if (val == (GuiButton *)NULL) {
+    if (gui_cat.is_debug()) {
+      gui_cat.debug()
+	<< "Ignoring event " << e->get_name() << " for deleted button\n";
+    }
+    return;
+  }
+  val->test_ref_count_integrity();
   val->click();
 }
 
 void GuiButton::switch_state(GuiButton::States nstate) {
+  test_ref_count_integrity();
   // cleanup old state
   switch (_state) {
   case NONE:
@@ -231,6 +267,15 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
 
 GuiButton::~GuiButton(void) {
   this->unmanage();
+
+  // Remove the names from the buttons map, so we don't end up with
+  // an invalid pointer.
+  string name = get_name();
+  buttons.erase("gui-in-button-" + name);
+  buttons.erase("gui-out-button-" + name);
+  buttons.erase("gui-button-" + name + "-mouse1");
+  buttons.erase("gui-button-" + name + "-mouse2");
+  buttons.erase("gui-button-" + name + "-mouse3");
 }
 
 void GuiButton::manage(GuiManager* mgr, EventHandler& eh) {

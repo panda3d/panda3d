@@ -8,6 +8,7 @@
 TypeHandle GuiItem::_type_handle;
 
 void GuiItem::recompute_frame(void) {
+  test_ref_count_integrity();
 }
 
 GuiItem::GuiItem(const string& name) : Namable(name), _added_hooks(false),
@@ -24,10 +25,12 @@ GuiItem::~GuiItem(void) {
 }
 
 void GuiItem::manage(GuiManager* mgr, EventHandler&) {
+  test_ref_count_integrity();
   _mgr = mgr;
 }
 
 void GuiItem::unmanage(void) {
+  test_ref_count_integrity();
   _mgr = (GuiManager*)0L;
 }
 

@@ -79,6 +79,12 @@ has_region(MouseWatcherRegion *region) const {
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcher::
 remove_region(MouseWatcherRegion *region) {
+  if (region == _current_region) {
+    _current_region = (MouseWatcherRegion *)NULL;
+  }
+  if (region == _button_down_region) {
+    _button_down_region = (MouseWatcherRegion *)NULL;
+  }
   return _regions.erase(region) != 0;
 }
 
@@ -151,6 +157,11 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 set_current_region(MouseWatcherRegion *region) {
+#ifndef NDEBUG
+  if (region != (MouseWatcherRegion *)NULL) {
+    region->test_ref_count_integrity();
+  }
+#endif
   if (region != _current_region) {
     if (_current_region != (MouseWatcherRegion *)NULL) {
       throw_event_pattern(_leave_pattern, _current_region);
@@ -171,6 +182,7 @@ set_current_region(MouseWatcherRegion *region) {
 void MouseWatcher::
 throw_event_pattern(const string &pattern, const MouseWatcherRegion *region, 
 		    const string &button_name) {
+  region->test_ref_count_integrity();
   if (pattern.empty()) {
     return;
   }

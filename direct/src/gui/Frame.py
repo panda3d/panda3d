@@ -72,6 +72,7 @@ class Frame:
         for itemNum in range(1, len(self.items)):
             self.packItem(itemNum, GuiFrame.GuiFrame.UNDER, itemNum - 1)
             self.packItem(itemNum, GuiFrame.GuiFrame.ALIGNLEFT, itemNum - 1)
+        self.frame.recompute()
             
     def makeHorizontal(self):
         # remove any previous packing
@@ -80,6 +81,7 @@ class Frame:
         for itemNum in range(1, len(self.items)):
             self.packItem(itemNum, GuiFrame.GuiFrame.RIGHT, itemNum - 1)
             self.packItem(itemNum, GuiFrame.GuiFrame.ALIGNABOVE, itemNum - 1)
+        self.frame.recompute()
             
     def makeWideAsWidest(self):
         # make all the buttons as wide as the widest button in
