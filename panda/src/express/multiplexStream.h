@@ -21,7 +21,7 @@
 //               thing to set Notify to refer to when running in batch
 //               mode.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MultiplexStream : public ostream {
+class EXPCL_PANDAEXPRESS MultiplexStream : public ostream {
 PUBLISHED:
   INLINE MultiplexStream();
 

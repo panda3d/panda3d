@@ -16,7 +16,7 @@
 //               sends what is written to it to any number of
 //               additional sources, like other ostreams.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MultiplexStreamBuf : public streambuf {
+class EXPCL_PANDAEXPRESS MultiplexStreamBuf : public streambuf {
 public:
   MultiplexStreamBuf();
   virtual ~MultiplexStreamBuf();
