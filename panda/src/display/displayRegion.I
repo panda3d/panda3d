@@ -66,7 +66,7 @@ get_camera() const {
 //               debugging mode where the culling effectiveness can be
 //               observed from a third-person perspective.
 ////////////////////////////////////////////////////////////////////
-void DisplayRegion::
+INLINE void DisplayRegion::
 set_cull_frustum(ProjectionNode *cull_frustum) {
   _cull_frustum = cull_frustum;
 }
