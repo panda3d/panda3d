@@ -3616,9 +3616,9 @@ apply_texture(TextureContext *tc) {
     #ifndef NDEBUG
        // sanity check
        extern char *PandaFilterNameStrs[];
-       if((!(dtc->_bHasMipMaps))&&(mipfilter!=D3DTFP_NONE)) {
+       if((!(dtc->_bHasMipMaps))&&(newMipFilter!=D3DTFP_NONE)) {
                 dxgsg_cat.error() << "Trying to set mipmap filtering for texture with no generated mipmaps!! texname[" << tex->get_name() << "], filter("<<PandaFilterNameStrs[ft]<<")\n";
-                mipfilter=D3DTFP_NONE;
+                newMipFilter=D3DTFP_NONE;
        }
     #endif
 
