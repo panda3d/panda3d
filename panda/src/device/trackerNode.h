@@ -47,6 +47,8 @@ PUBLISHED:
   INLINE const LPoint3f &get_pos() const;
   INLINE const LOrientationf &get_orient() const;
   INLINE const LMatrix4f &get_transform() const;
+  INLINE double get_time() const;
+  INLINE bool has_time() const;
 
   INLINE void set_tracker_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_tracker_coordinate_system() const;

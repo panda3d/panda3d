@@ -51,6 +51,26 @@ get_orient() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TrackerNode::get_time
+//       Access: Public
+//  Description: Returns the time of the tracker's last update.
+////////////////////////////////////////////////////////////////////
+INLINE double TrackerNode::
+get_time() const {
+  return _data.get_time();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrackerNode::has_time
+//       Access: Public
+//  Description: True if this data comes with timestamps.
+////////////////////////////////////////////////////////////////////
+INLINE bool TrackerNode::
+has_time() const {
+  return _data.has_time();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TrackerNode::get_transform
 //       Access: Public
 //  Description: Returns the current position and orientation of the
