@@ -31,13 +31,13 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCSwitch : public DCField {
 public:
-  DCSwitch(const string &name, DCParameter *switch_parameter);
+  DCSwitch(const string &name, DCParameter *key_parameter);
   virtual ~DCSwitch();
 
 PUBLISHED:
   virtual DCSwitch *as_switch();
 
-  DCParameter *get_switch_parameter() const;
+  DCParameter *get_key_parameter() const;
 
   int get_num_cases() const;
   int get_case_by_value(const string &case_value) const;
@@ -59,7 +59,7 @@ public:
   virtual void generate_hash(HashGenerator &hashgen) const;
 
 private:
-  DCParameter *_switch_parameter;
+  DCParameter *_key_parameter;
 
   typedef pvector<DCField *> Fields;
   typedef pmap<string, DCField *> FieldsByName;

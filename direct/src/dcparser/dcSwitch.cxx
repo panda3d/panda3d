@@ -23,21 +23,21 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::Constructor
 //       Access: Public
-//  Description: The switch_parameter must be recently allocated via
+//  Description: The key_parameter must be recently allocated via
 //               new; it will be deleted via delete when the switch
 //               destructs.
 ////////////////////////////////////////////////////////////////////
 DCSwitch::
-DCSwitch(const string &name, DCParameter *switch_parameter) :
+DCSwitch(const string &name, DCParameter *key_parameter) :
   DCField(name),
-  _switch_parameter(switch_parameter)
+  _key_parameter(key_parameter)
 {
-  _has_fixed_byte_size = _switch_parameter->has_fixed_byte_size();
-  _fixed_byte_size = _switch_parameter->get_fixed_byte_size();
+  _has_fixed_byte_size = _key_parameter->has_fixed_byte_size();
+  _fixed_byte_size = _key_parameter->get_fixed_byte_size();
   _has_fixed_structure = false;
 
   // The DCSwitch presents just one nested field initially, which is
-  // the switch parameter.  When we pack or unpack that, the DCPacker
+  // the key parameter.  When we pack or unpack that, the DCPacker
   // calls apply_switch(), which returns a new record that presents
   // the remaining nested fields.
   _has_nested_fields = true;
@@ -53,7 +53,7 @@ DCSwitch(const string &name, DCParameter *switch_parameter) :
 ////////////////////////////////////////////////////////////////////
 DCSwitch::
 ~DCSwitch() {
-  delete _switch_parameter;
+  delete _key_parameter;
 
   Cases::iterator ci;
   for (ci = _cases.begin(); ci != _cases.end(); ++ci) {
@@ -73,7 +73,7 @@ as_switch() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::get_switch_parameter
+//     Function: DCSwitch::get_key_parameter
 //       Access: Published
 //  Description: Returns the key parameter on which the switch is
 //               based.  The value of this parameter in the record
@@ -81,8 +81,8 @@ as_switch() {
 //               switch will be used.
 ////////////////////////////////////////////////////////////////////
 DCParameter *DCSwitch::
-get_switch_parameter() const {
-  return _switch_parameter;
+get_key_parameter() const {
+  return _key_parameter;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -181,10 +181,10 @@ get_field_by_name(int case_index, const string &name) const {
 DCPackerInterface *DCSwitch::
 get_nested_field(int) const {
   // The DCSwitch presents just one nested field initially, which is
-  // the switch parameter.  When we pack or unpack that, the DCPacker
+  // the key parameter.  When we pack or unpack that, the DCPacker
   // calls apply_switch(), which returns a new record that presents
   // the remaining nested fields.
-  return _switch_parameter;
+  return _key_parameter;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -203,7 +203,7 @@ add_case(const string &value) {
   }
 
   SwitchCase *dcase = new SwitchCase(_name, value);
-  dcase->add_field(_switch_parameter);
+  dcase->add_field(_key_parameter);
   _cases.push_back(dcase);
   return case_index;
 }
@@ -282,14 +282,14 @@ write(ostream &out, bool brief, int indent_level) const {
     out << " " << _name;
   }
   out << " (";
-  _switch_parameter->output(out, brief);
+  _key_parameter->output(out, brief);
   out << ") {\n";
 
   Cases::const_iterator ci;
   for (ci = _cases.begin(); ci != _cases.end(); ++ci) {
     const SwitchCase *dcase = (*ci);
     indent(out, indent_level)
-      << "case " << _switch_parameter->format_data(dcase->_value) << ":\n";
+      << "case " << _key_parameter->format_data(dcase->_value) << ":\n";
     
     Fields::const_iterator fi;
     if (!dcase->_fields.empty()) {
@@ -315,7 +315,7 @@ void DCSwitch::
 generate_hash(HashGenerator &hashgen) const {
   DCField::generate_hash(hashgen);
 
-  _switch_parameter->generate_hash(hashgen);
+  _key_parameter->generate_hash(hashgen);
 
   hashgen.add_int(_cases.size());
   Cases::const_iterator ci;

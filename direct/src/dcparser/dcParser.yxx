@@ -917,7 +917,7 @@ switch_case:
 	KW_CASE
 {
   current_packer = &default_packer;
-  current_packer->begin_pack(current_switch->get_switch_parameter());
+  current_packer->begin_pack(current_switch->get_key_parameter());
 }
 	parameter_value ':'
 {

@@ -1993,7 +1993,7 @@ case 148:
 #line 918 "dcParser.yxx"
 {
   current_packer = &default_packer;
-  current_packer->begin_pack(current_switch->get_switch_parameter());
+  current_packer->begin_pack(current_switch->get_key_parameter());
 }
     break;
 case 149:
