@@ -54,7 +54,8 @@ set_string_value(const string &key, const string &name, const string &value) {
                         NULL, NULL);
   if (mb_result_len == 0) {
     express_cat.error()
-      << "Unable to convert " << value << " from Unicode to MultiByte form.\n";
+      << "Unable to convert '" << value
+      << "' from Unicode to MultiByte form.\n";
     return false;
   }
 
@@ -139,17 +140,22 @@ get_string_value(const string &key, const string &name,
 
   // Now we have to decode the MultiByte string to Unicode, and re-encode
   // it according to our own encoding.
-  
+
+  if (data.empty()) {
+    return data;
+  }
+
   int wide_result_len =
     MultiByteToWideChar(CP_ACP, 0,
                         data.data(), data.length(),
                         NULL, 0);
   if (wide_result_len == 0) {
     express_cat.error()
-      << "Unable to convert " << data << " from MultiByte to Unicode form.\n";
+      << "Unable to convert '" << data 
+      << "' from MultiByte to Unicode form.\n";
     return data;
   }
-
+    
   wchar_t *wide_result = (wchar_t *)alloca(wide_result_len * sizeof(wchar_t));
   MultiByteToWideChar(CP_ACP, 0,
                       data.data(), data.length(),
