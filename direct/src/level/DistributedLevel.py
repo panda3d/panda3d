@@ -161,7 +161,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
         entityZoneNums = self.zoneNum2entId.keys()
         if not sameElements(modelZoneNums, entityZoneNums):
             DistributedLevel.notify.error(
-                'model zone nums (%s) do not match entity zone nums (%s)' %
+                'model zone nums (%s) do not match entity zone nums (%s)\n'
+                'use SpecUtil.updateSpec' %
                 (modelZoneNums, entityZoneNums))
 
         # load stuff
