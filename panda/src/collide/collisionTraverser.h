@@ -53,6 +53,9 @@ PUBLISHED:
   CollisionTraverser();
   ~CollisionTraverser();
 
+  INLINE void set_respect_prev_transform(bool flag);
+  INLINE bool get_respect_prev_transform() const;
+
   void add_collider(CollisionNode *node, CollisionHandler *handler);
   bool remove_collider(CollisionNode *node);
   bool has_collider(CollisionNode *node) const;
@@ -62,6 +65,7 @@ PUBLISHED:
   void clear_colliders();
 
   void traverse(const NodePath &root);
+  void reset_prev_transform(const NodePath &root);
 
 #ifdef DO_COLLISION_RECORDING
   void set_recorder(CollisionRecorder *recorder);
@@ -93,6 +97,8 @@ private:
                                 const GeometricBoundingVolume *from_node_gbv,
                                 const GeometricBoundingVolume *solid_gbv);
 
+  void r_reset_prev_transform(PandaNode *node);
+
 private:
   PT(CollisionHandler) _default_handler;
   TypeHandle _graph_type;
@@ -107,6 +113,7 @@ private:
 
   Handlers::iterator remove_handler(Handlers::iterator hi);
 
+  bool _respect_prev_transform;
 #ifdef DO_COLLISION_RECORDING
   CollisionRecorder *_recorder;
 #endif  // DO_COLLISION_RECORDING

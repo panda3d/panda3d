@@ -167,10 +167,10 @@ get_node(int n) const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &CollisionLevelState::
+INLINE const TransformState *CollisionLevelState::
 get_space(int n) const {
-  nassertr(n >= 0 && n < (int)_colliders.size(), LMatrix4f::ident_mat());
-  nassertr(has_collider(n), LMatrix4f::ident_mat());
+  nassertr(n >= 0 && n < (int)_colliders.size(), TransformState::make_identity());
+  nassertr(has_collider(n), TransformState::make_identity());
 
   return _colliders[n]._space;
 }
@@ -180,12 +180,38 @@ get_space(int n) const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &CollisionLevelState::
+INLINE const TransformState *CollisionLevelState::
 get_inv_space(int n) const {
-  nassertr(n >= 0 && n < (int)_colliders.size(), LMatrix4f::ident_mat());
-  nassertr(has_collider(n), LMatrix4f::ident_mat());
+  nassertr(n >= 0 && n < (int)_colliders.size(), TransformState::make_identity());
+  nassertr(has_collider(n), TransformState::make_identity());
 
   return _colliders[n]._inv_space;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionLevelState::get_prev_space
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *CollisionLevelState::
+get_prev_space(int n) const {
+  nassertr(n >= 0 && n < (int)_colliders.size(), TransformState::make_identity());
+  nassertr(has_collider(n), TransformState::make_identity());
+
+  return _colliders[n]._prev_space;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionLevelState::get_delta
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const LVector3f &CollisionLevelState::
+get_delta(int n) const {
+  nassertr(n >= 0 && n < (int)_colliders.size(), LVector3f::zero());
+  nassertr(has_collider(n), LVector3f::zero());
+
+  return _colliders[n]._delta;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -7,11 +7,12 @@ class Mopath(PandaObject):
 
     nameIndex = 1
 
-    def __init__(self, name = None):
+    def __init__(self, name = None, fluid = 1):
         if (name == None):
             name = 'mopath%d' % self.nameIndex
             self.nameIndex = self.nameIndex + 1
         self.name = name
+        self.fluid = fluid
         self.tPoint = Point3(0)
         self.posPoint = Point3(0)
         self.hprPoint = Point3(0)
@@ -97,7 +98,10 @@ class Mopath(PandaObject):
         self.playbackTime = self.calcTime(CLAMP(time, 0.0, self.maxT))
         if (self.xyzNurbsCurve != None):
             self.xyzNurbsCurve.getPoint(self.playbackTime, self.posPoint)
-            node.setPos(self.posPoint)
+            if self.fluid:
+                node.setFluidPos(self.posPoint)
+            else:
+                node.setPos(self.posPoint)
         if (self.hprNurbsCurve != None):
             self.hprNurbsCurve.getPoint(self.playbackTime, self.hprPoint)
             node.setHpr(self.hprPoint)

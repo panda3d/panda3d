@@ -41,6 +41,7 @@ PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
 ////////////////////////////////////////////////////////////////////
 CollisionTraverser::
 CollisionTraverser() {
+  _respect_prev_transform = false;
 #ifdef DO_COLLISION_RECORDING
   _recorder = (CollisionRecorder *)NULL;
 #endif
@@ -262,22 +263,25 @@ traverse(const NodePath &root) {
     }
   }
 
-  if (auto_clear_velocity) {
-    // Clear all the velocities for next time.
-    OrderedColliders::iterator ci;
-    for (ci = _ordered_colliders.begin(); 
-         ci != _ordered_colliders.end(); 
-         ++ci) {
-      CollisionNode *node = (*ci);
-      node->clear_velocity();
-    }
-  }
-
 #ifdef DO_COLLISION_RECORDING
   if (has_recorder()) {
     get_recorder()->end_traversal();
   }
 #endif  // DO_COLLISION_RECORDING
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::reset_prev_transform
+//       Access: Public
+//  Description: Once the collision traversal has finished, resets all
+//               of the velocity deltas in the scene graph by setting
+//               the "previous" transform to the current transform.
+//               This must be called at least once per frame for
+//               collisions to respect this velocity setting properly.
+////////////////////////////////////////////////////////////////////
+void CollisionTraverser::
+reset_prev_transform(const NodePath &root) {
+  r_reset_prev_transform(root.node());
 }
 
 #ifdef DO_COLLISION_RECORDING
@@ -381,16 +385,22 @@ prepare_colliders(CollisionLevelState &level_state) {
 
     CollisionLevelState::ColliderDef def;
     def._node = cnode;
-    NodePath root;
     NodePath cnode_path(cnode);
-    def._space = cnode_path.get_mat(root);
-    def._inv_space = root.get_mat(cnode_path);
+    def._space = cnode_path.get_net_transform();
+    def._inv_space = def._space->invert_compose(TransformState::make_identity());
+    def._prev_space = cnode_path.get_net_prev_transform();
+    if (_respect_prev_transform) {
+      def._delta = cnode_path.get_pos_delta();
+    } else {
+      def._delta = LVector3f::zero();
+    }
+
 
 #ifndef NDEBUG
-    if (def._space.is_nan()) {
+    if (def._space->is_invalid()) {
       collide_cat.error()
         << "Collider " << *cnode
-        << " has become NaN.  Dropping from traverser.\n";
+        << " has become invalid.  Dropping from traverser.\n";
       // This is safe to do while traversing the list of colliders,
       // because we do not increment i in this case.
       remove_collider(cnode);
@@ -435,7 +445,7 @@ r_traverse(CollisionLevelState &level_state) {
     CollisionEntry entry;
     entry._into_node = cnode;
     entry._into_node_path = level_state.get_node_path();
-    entry._into_space = entry._into_node_path.get_mat(NodePath());
+    entry._into_space = entry._into_node_path.get_net_transform();
 
     int num_colliders = level_state.get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
@@ -447,16 +457,26 @@ r_traverse(CollisionLevelState &level_state) {
           entry._from = level_state.get_collider(c);
           entry._from_space = level_state.get_space(c);
 
-          if (entry._from_node->has_velocity()) {
-            entry.set_from_velocity(entry._from_node->get_velocity());
-          }
+          LVector3f from_delta = level_state.get_delta(c);
 
-          NodePath root;
-          const LMatrix4f &into_space_inv = 
-            root.get_mat(entry._into_node_path);
-          entry._wrt_space = entry._from_space * into_space_inv;
-          entry._inv_wrt_space =
-            entry._into_space * level_state.get_inv_space(c);
+          entry._wrt_space = entry._into_space->invert_compose(entry._from_space);
+          entry._inv_wrt_space = entry._from_space->invert_compose(entry._into_space);
+          if (_respect_prev_transform) {
+            CPT(TransformState) from_prev_space = level_state.get_prev_space(c);
+            CPT(TransformState) inv_wrt_prev_space = from_prev_space->invert_compose(entry._into_node_path.get_net_prev_transform());
+            
+            LVector3f into_delta = entry._inv_wrt_space->get_pos() - inv_wrt_prev_space->get_pos();
+            LVector3f delta = from_delta - into_delta;
+            if (delta != LVector3f::zero()) {
+              /*
+                if (entry._from_node->get_name() == "cSphereNode" && entry._into_node->get_name() == "MickeyBlatherSphere") {
+                cerr << "from_delta = " << from_delta << " into_delta = "
+                << into_delta << " delta = " << delta << "\n";
+                }
+              */
+              entry.set_from_pos_delta(delta);
+            }
+          }
 
           compare_collider_to_node(entry, 
                                    level_state.get_parent_bound(c),
@@ -485,7 +505,7 @@ r_traverse(CollisionLevelState &level_state) {
     CollisionEntry entry;
     entry._into_node = gnode;
     entry._into_node_path = level_state.get_node_path();
-    entry._into_space = entry._into_node_path.get_mat(NodePath());
+    entry._into_space = entry._into_node_path.get_net_transform();
 
     int num_colliders = level_state.get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
@@ -495,12 +515,8 @@ r_traverse(CollisionLevelState &level_state) {
         entry._from = level_state.get_collider(c);
         entry._from_space = level_state.get_space(c);
 
-        NodePath root;
-        const LMatrix4f &into_space_inv = 
-          root.get_mat(entry._into_node_path);
-        entry._wrt_space = entry._from_space * into_space_inv;
-        entry._inv_wrt_space =
-          entry._into_space * level_state.get_inv_space(c);
+        entry._wrt_space = entry._into_space->invert_compose(entry._from_space);
+        entry._inv_wrt_space = entry._from_space->invert_compose(entry._into_space);
 
         compare_collider_to_geom_node(entry, 
                                       level_state.get_parent_bound(c),
@@ -716,12 +732,6 @@ remove_handler(CollisionTraverser::Handlers::iterator hi) {
       
       nassertr(_ordered_colliders.size() == _colliders.size(), false);
 
-      if (auto_clear_velocity) {
-        // Clear the velocity on the removed node, to be consistent
-        // with nodes that were not removed.
-        node->clear_velocity();
-      }
-
     } else {
       // This collider references some other handler; keep it.
       ++ci;
@@ -729,4 +739,18 @@ remove_handler(CollisionTraverser::Handlers::iterator hi) {
   }
 
   return hi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::r_reset_prev_transform
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CollisionTraverser::
+r_reset_prev_transform(PandaNode *node) {
+  node->reset_prev_transform();
+  int num_children = node->get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    r_reset_prev_transform(node->get_child(i));
+  }
 }

@@ -179,13 +179,11 @@ class NonPhysicsWalker(DirectObject.DirectObject):
                 # our previous heading.
                 rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
                 step=rotMat.xform(self.vel)
-                self.avatarNodePath.setPos(Point3(self.avatarNodePath.getPos()+step))
+                self.avatarNodePath.setFluidPos(Point3(self.avatarNodePath.getPos()+step))
             self.avatarNodePath.setH(self.avatarNodePath.getH()+rotation)
             messenger.send("avatarMoving")
         else:
             self.vel.set(0.0, 0.0, 0.0)
-        # Set collision sphere node:
-        self.cSphereNode.setVelocity(self.vel)
         return Task.cont
 
     def enableAvatarControls(self):

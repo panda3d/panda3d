@@ -179,6 +179,7 @@ class TaskManagerWidget(PandaObject):
             name = self.currentTask.name
             ok = 1
             if ((name == 'dataloop') or
+                (name == 'resetPrevTransform') or
                 (name == 'tkloop') or
                 (name == 'eventManager') or
                 (name == 'igloop')):
@@ -195,6 +196,7 @@ class TaskManagerWidget(PandaObject):
         name = self.taskListBox.getcurselection()[0]
         ok = 1
         if ((name == 'dataloop') or
+            (name == 'resetPrevTransform') or
             (name == 'tkloop') or
             (name == 'eventManager') or
             (name == 'igloop')):

@@ -133,6 +133,7 @@ handle_entries() {
             LVecBase3f pos = trans->get_pos();
             pos[2] += adjust;
             def._node->set_transform(trans->set_pos(pos));
+
           } else {
             // Otherwise, go ahead and do the matrix math to do things
             // the old and clumsy way.

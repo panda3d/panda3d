@@ -225,16 +225,22 @@ PUBLISHED:
 
   // Aggregate transform and state information.
   INLINE const RenderState *get_state() const;
-  INLINE void set_state(const RenderState *state) const;
+  INLINE void set_state(const RenderState *state);
   CPT(RenderState) get_state(const NodePath &other) const;
-  void set_state(const NodePath &other, const RenderState *state) const;
+  void set_state(const NodePath &other, const RenderState *state);
   INLINE CPT(RenderState) get_net_state() const;
 
   INLINE const TransformState *get_transform() const;
-  INLINE void set_transform(const TransformState *transform) const;
+  INLINE void set_transform(const TransformState *transform);
   CPT(TransformState) get_transform(const NodePath &other) const;
-  void set_transform(const NodePath &other, const TransformState *transform) const;
+  void set_transform(const NodePath &other, const TransformState *transform);
   INLINE CPT(TransformState) get_net_transform() const;
+
+  INLINE const TransformState *get_prev_transform() const;
+  INLINE void set_prev_transform(const TransformState *transform);
+  CPT(TransformState) get_prev_transform(const NodePath &other) const;
+  void set_prev_transform(const NodePath &other, const TransformState *transform);
+  INLINE CPT(TransformState) get_net_prev_transform() const;
 
 
   // Methods that get and set the matrix transform: pos, hpr, scale,
@@ -245,10 +251,17 @@ PUBLISHED:
   void set_x(float x);
   void set_y(float y);
   void set_z(float z);
+  INLINE void set_fluid_pos(float x, float y, float z);
+  void set_fluid_pos(const LVecBase3f &pos);
+  void set_fluid_x(float x);
+  void set_fluid_y(float y);
+  void set_fluid_z(float z);
   LPoint3f get_pos() const;
   INLINE float get_x() const;
   INLINE float get_y() const;
   INLINE float get_z() const;
+
+  LVector3f get_pos_delta() const;
 
   INLINE void set_hpr(float h, float p, float r);
   void set_hpr(const LVecBase3f &hpr);
@@ -333,6 +346,8 @@ PUBLISHED:
   INLINE float get_x(const NodePath &other) const;
   INLINE float get_y(const NodePath &other) const;
   INLINE float get_z(const NodePath &other) const;
+
+  LVector3f get_pos_delta(const NodePath &other) const;
 
   INLINE void set_hpr(const NodePath &other, float h, float p, float r);
   void set_hpr(const NodePath &other, const LVecBase3f &hpr);
@@ -420,17 +435,6 @@ PUBLISHED:
                 const LVector3f &up = LVector3f::up());
 
   INLINE float get_distance(const NodePath &other) const;
-
-  INLINE void set_velocity(const LVector3f &velocity);
-  INLINE void clear_velocity();
-  INLINE bool has_velocity() const;
-  INLINE const LVector3f &get_velocity() const;
-
-  LVector3f get_velocity(const NodePath &other) const;
-  void set_velocity(const NodePath &other, const LVector3f &velocity);
-
-  LVector3f get_net_velocity() const;
-  
 
   // Methods that affect appearance of geometry: color, texture, etc.
   // These affect the state at the bottom level only.
@@ -595,14 +599,8 @@ private:
   CPT(RenderState) r_get_partial_state(NodePathComponent *comp, int n) const;
   CPT(TransformState) r_get_net_transform(NodePathComponent *comp) const;
   CPT(TransformState) r_get_partial_transform(NodePathComponent *comp, int n) const;
-
-  void r_get_net_velocity(NodePathComponent *comp, LVector3f &net_vel, 
-                          CPT(TransformState) &net_transform,
-                          CPT(TransformState) &parent_net_transform) const;
-  void r_get_partial_velocity(NodePathComponent *comp, int n, 
-                              LVector3f &net_vel, 
-                              CPT(TransformState) &net_transform,
-                              CPT(TransformState) &parent_net_transform) const;
+  CPT(TransformState) r_get_net_prev_transform(NodePathComponent *comp) const;
+  CPT(TransformState) r_get_partial_prev_transform(NodePathComponent *comp, int n) const;
 
   void find_matches(NodePathCollection &result,
                     const string &approx_path_str,

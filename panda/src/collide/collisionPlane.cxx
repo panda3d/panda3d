@@ -108,9 +108,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
-  LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
+  LPoint3f from_center = sphere->get_center() * entry.get_wrt_mat();
   LVector3f from_radius_v =
-    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
+    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_mat();
   float from_radius = length(from_radius_v);
 
   float dist = dist_to_plane(from_center);
@@ -126,7 +126,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LVector3f from_normal = get_normal() * entry.get_inv_wrt_space();
+  LVector3f from_normal = get_normal() * entry.get_inv_wrt_mat();
   float from_depth = from_radius - dist;
 
   new_entry->set_into_surface_normal(get_normal());
@@ -147,8 +147,8 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
 
-  LPoint3f from_origin = ray->get_origin() * entry.get_wrt_space();
-  LVector3f from_direction = ray->get_direction() * entry.get_wrt_space();
+  LPoint3f from_origin = ray->get_origin() * entry.get_wrt_mat();
+  LVector3f from_direction = ray->get_direction() * entry.get_wrt_mat();
 
   float t;
   if (!_plane.intersects_line(t, from_origin, from_direction)) {

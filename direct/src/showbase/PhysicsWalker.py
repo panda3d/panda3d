@@ -305,17 +305,12 @@ class PhysicsWalker(DirectObject.DirectObject):
             self.__vel.set(0.0, 0.0, 0.0)
         # Clear the contact vector so we can tell if we contact something next frame:
         self.actorNode.setContactVector(Vec3.zero())
-        # Set collision sphere node:
-        v=physObject.getImplicitVelocity()
-        v=rotAvatarToPhys.xform(v)
-        self.cSphereNode.setVelocity(Vec3(v))
         return Task.cont
     
     def resetPhys(self):
         assert(self.debugPrint("resetPhys()"))
         self.actorNode.getPhysicsObject().resetPosition(self.avatarNodePath.getPos())
         self.actorNode.setContactVector(Vec3.zero())
-        self.cSphereNode.setVelocity(Vec3(0.0))
 
     def enableAvatarControls(self):
         """

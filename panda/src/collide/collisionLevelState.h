@@ -26,7 +26,8 @@
 #include "geometricBoundingVolume.h"
 #include "nodePath.h"
 #include "workingNodePath.h"
-
+#include "transformState.h"
+#include "pointerTo.h"
 #include "plist.h"
 
 class CollisionSolid;
@@ -44,8 +45,10 @@ public:
   public:
     CollisionSolid *_collider;
     CollisionNode *_node;
-    LMatrix4f _space;
-    LMatrix4f _inv_space;
+    CPT(TransformState) _space;
+    CPT(TransformState) _inv_space;
+    CPT(TransformState) _prev_space;
+    LVector3f _delta;
   };
 
   INLINE CollisionLevelState(const NodePath &node_path);
@@ -72,8 +75,10 @@ public:
 
   INLINE CollisionSolid *get_collider(int n) const;
   INLINE CollisionNode *get_node(int n) const;
-  INLINE const LMatrix4f &get_space(int n) const;
-  INLINE const LMatrix4f &get_inv_space(int n) const;
+  INLINE const TransformState *get_space(int n) const;
+  INLINE const TransformState *get_inv_space(int n) const;
+  INLINE const TransformState *get_prev_space(int n) const;
+  INLINE const LVector3f &get_delta(int n) const;
   INLINE const GeometricBoundingVolume *get_local_bound(int n) const;
   INLINE const GeometricBoundingVolume *get_parent_bound(int n) const;
 

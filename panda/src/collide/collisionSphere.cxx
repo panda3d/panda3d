@@ -121,9 +121,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
-  LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
+  LPoint3f from_center = sphere->get_center() * entry.get_wrt_mat();
   LVector3f from_radius_v =
-    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
+    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_mat();
   float from_radius = length(from_radius_v);
 
   LPoint3f into_center = _center;
@@ -161,7 +161,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   new_entry->set_into_intersection_point(into_intersection_point);
   new_entry->set_into_depth(into_depth);
 
-  LVector3f from_depth_vec = (into_normal * into_depth) * entry.get_inv_wrt_space();
+  LVector3f from_depth_vec = (into_normal * into_depth) * entry.get_inv_wrt_mat();
   new_entry->set_from_depth(from_depth_vec.length());
 
   return new_entry;
@@ -177,8 +177,8 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
 
-  LPoint3f from_origin = ray->get_origin() * entry.get_wrt_space();
-  LVector3f from_direction = ray->get_direction() * entry.get_wrt_space();
+  LPoint3f from_origin = ray->get_origin() * entry.get_wrt_mat();
+  LVector3f from_direction = ray->get_direction() * entry.get_wrt_mat();
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction)) {
@@ -223,8 +223,8 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
   DCAST_INTO_R(segment, entry.get_from(), 0);
 
-  LPoint3f from_a = segment->get_point_a() * entry.get_wrt_space();
-  LPoint3f from_b = segment->get_point_b() * entry.get_wrt_space();
+  LPoint3f from_a = segment->get_point_a() * entry.get_wrt_mat();
+  LPoint3f from_b = segment->get_point_b() * entry.get_wrt_mat();
   LVector3f from_direction = from_b - from_a;
 
   double t1, t2;

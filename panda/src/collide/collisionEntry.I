@@ -19,17 +19,21 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionEntry::
 CollisionEntry() {
   _flags = 0;
+  _from_space = TransformState::make_identity();
+  _into_space = TransformState::make_identity();
+  _wrt_space = TransformState::make_identity();
+  _inv_wrt_space = TransformState::make_identity();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_from
-//       Access: Public
+//       Access: Published
 //  Description: Returns the CollisionSolid pointer for the particular
 //               solid that triggered this collision.
 ////////////////////////////////////////////////////////////////////
@@ -40,7 +44,7 @@ get_from() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::has_into
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the "into" solid is, in fact, a
 //               CollisionSolid, and its pointer is known (in which
 //               case get_into() may be called to retrieve it).  If
@@ -55,7 +59,7 @@ has_into() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_into
-//       Access: Public
+//       Access: Published
 //  Description: Returns the CollisionSolid pointer for the particular
 //               solid was collided into.  This pointer might be NULL
 //               if the collision was into a piece of visible
@@ -69,7 +73,7 @@ get_into() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_from_node
-//       Access: Public
+//       Access: Published
 //  Description: Returns the node that contains the CollisionSolid
 //               that triggered this collision.  This will be a node
 //               that has been added to a CollisionTraverser via
@@ -81,21 +85,8 @@ get_from_node() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_from_space
-//       Access: Public
-//  Description: Returns the global coordinate space of the
-//               CollisionNode returned by get_from_node(), as of the
-//               time of the collision.  This will be equivalent to a
-//               wrt() from the node to render.
-////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &CollisionEntry::
-get_from_space() const {
-  return _from_space;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_into_node
-//       Access: Public
+//       Access: Published
 //  Description: Returns the node that contains the CollisionSolid
 //               that was collided into.  This returns a PandaNode
 //               pointer instead of something more specific, because
@@ -110,7 +101,7 @@ get_into_node() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_into_node_path
-//       Access: Public
+//       Access: Published
 //  Description: Returns the NodePath that represents the specific
 //               CollisionNode or GeomNode instance that was collided
 //               into.  This is the same node returned by
@@ -125,77 +116,138 @@ get_into_node_path() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_from_space
+//       Access: Published
+//  Description: Returns the global coordinate space of the
+//               CollisionNode returned by get_from_node(), as of the
+//               time of the collision.  This will be equivalent to a
+//               wrt() from the node to render.
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *CollisionEntry::
+get_from_space() const {
+  return _from_space;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_into_space
-//       Access: Public
+//       Access: Published
 //  Description: Returns the global coordinate space of the
 //               CollisionNode or GeomNode returned by
 //               get_into_node(), as of the time of the collision.
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &CollisionEntry::
+INLINE const TransformState *CollisionEntry::
 get_into_space() const {
   return _into_space;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_wrt_space
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &CollisionEntry::
+INLINE const TransformState *CollisionEntry::
 get_wrt_space() const {
   return _wrt_space;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_inv_wrt_space
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &CollisionEntry::
+INLINE const TransformState *CollisionEntry::
 get_inv_wrt_space() const {
   return _inv_wrt_space;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::set_from_velocity
-//       Access: Public
-//  Description: Indicates the velocity associated with the "from"
+//     Function: CollisionEntry::get_from_mat
+//       Access: Published
+//  Description: Returns the global coordinate space of the
+//               CollisionNode returned by get_from_node(), as of the
+//               time of the collision.  This will be equivalent to a
+//               wrt() from the node to render.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4f &CollisionEntry::
+get_from_mat() const {
+  return _from_space->get_mat();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_into_mat
+//       Access: Published
+//  Description: Returns the global coordinate space of the
+//               CollisionNode or GeomNode returned by
+//               get_into_node(), as of the time of the collision.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4f &CollisionEntry::
+get_into_mat() const {
+  return _into_space->get_mat();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_wrt_mat
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4f &CollisionEntry::
+get_wrt_mat() const {
+  return _wrt_space->get_mat();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_inv_wrt_mat
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4f &CollisionEntry::
+get_inv_wrt_mat() const {
+  return _inv_wrt_space->get_mat();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::set_from_pos_delta
+//       Access: Published
+//  Description: Indicates the pos_delta associated with the "from"
 //               object, in the object's coordinate space.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
-set_from_velocity(const LVector3f &vel) {
-  _from_velocity = vel;
-  _flags |= F_has_from_velocity;
+set_from_pos_delta(const LVector3f &vel) {
+  _from_pos_delta = vel;
+  _flags |= F_has_from_pos_delta;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::has_from_velocity
-//       Access: Public
-//  Description: Returns true if the "from" object had an indicated
-//               velocity, false otherwise.
+//     Function: CollisionEntry::has_from_pos_delta
+//       Access: Published
+//  Description: Returns true if the objects appeared to be moving
+//               relative to each other, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionEntry::
-has_from_velocity() const {
-  return (_flags & F_has_from_velocity) != 0;
+has_from_pos_delta() const {
+  return (_flags & F_has_from_pos_delta) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_from_velocity
-//       Access: Public
-//  Description: Returns the instantaneous velocity of the "from"
-//               object, in its own coordinate space.  This represents
-//               the delta between its current position and its
-//               position last frame.
+//     Function: CollisionEntry::get_from_pos_delta
+//       Access: Published
+//  Description: Returns the position delta between the two objects,
+//               in the coordinate space of the "from" object.  This
+//               is the delta between their relative position in the
+//               previous frame and their relative position this
+//               frame.
 ////////////////////////////////////////////////////////////////////
 INLINE const LVector3f &CollisionEntry::
-get_from_velocity() const {
-  nassertr(has_from_velocity(), _from_velocity);
-  return _from_velocity;
+get_from_pos_delta() const {
+  if (!has_from_pos_delta()) {
+    return LVector3f::zero();
+  }
+  return _from_pos_delta;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::set_into_intersection_point
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
@@ -206,7 +258,7 @@ set_into_intersection_point(const LPoint3f &point) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::has_into_intersection_point
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the detected collision knows its
 //               intersection point in the coordinate space of the
 //               collided-into object, false otherwise.
@@ -218,7 +270,7 @@ has_into_intersection_point() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_into_intersection_point
-//       Access: Public
+//       Access: Published
 //  Description: Returns the intersection point in the coordinate
 //               space of the collided-into object.  It is an error to
 //               call this if has_into_intersection_point() returns
@@ -232,7 +284,7 @@ get_into_intersection_point() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::has_from_intersection_point
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the detected collision knows its
 //               intersection point in the coordinate space of the
 //               colliding object, false otherwise.
@@ -246,7 +298,7 @@ has_from_intersection_point() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_from_intersection_point
-//       Access: Public
+//       Access: Published
 //  Description: Returns the intersection point in the coordinate
 //               space of the colliding object.  It is an error to
 //               call this if has_from_intersection_point() returns
@@ -254,12 +306,12 @@ has_from_intersection_point() const {
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f CollisionEntry::
 get_from_intersection_point() const {
-  return get_into_intersection_point() * get_inv_wrt_space();
+  return get_into_intersection_point() * get_inv_wrt_mat();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::set_into_surface_normal
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
@@ -270,7 +322,7 @@ set_into_surface_normal(const LVector3f &normal) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::has_into_surface_normal
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the detected collision knows the
 //               surface normal of the collided-into object at the
 //               point of the collision, false otherwise.
@@ -282,7 +334,7 @@ has_into_surface_normal() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_into_surface_normal
-//       Access: Public
+//       Access: Published
 //  Description: Returns the surface normal of the collided-into
 //               object at the point of the collision.  It is an error
 //               to call this if has_into_surface_normal() returns
@@ -296,7 +348,7 @@ get_into_surface_normal() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::set_from_surface_normal
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
@@ -307,7 +359,7 @@ set_from_surface_normal(const LVector3f &normal) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::has_from_surface_normal
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the detected collision knows the
 //               surface normal of the collided-into object at the
 //               point of the collision, false otherwise.
@@ -319,7 +371,7 @@ has_from_surface_normal() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_from_surface_normal
-//       Access: Public
+//       Access: Published
 //  Description: Returns the surface normal of the collided-into
 //               object at the point of the collision, in the space of
 //               the collided-from object.  It is an error to call
@@ -337,7 +389,7 @@ get_from_surface_normal() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::set_into_depth
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
@@ -348,7 +400,7 @@ set_into_depth(float depth) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::has_into_depth
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the collision entry knows how "deep"
 //               the collision was into the collided-into object; that
 //               is, how far into the surface of the collided-into
@@ -361,7 +413,7 @@ has_into_depth() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_into_depth
-//       Access: Public
+//       Access: Published
 //  Description: Returns how "deep" the collision was into the
 //               collided-into object; that is, how far into the
 //               surface of the collided-into object the colliding
@@ -376,7 +428,7 @@ get_into_depth() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::set_from_depth
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
@@ -387,7 +439,7 @@ set_from_depth(float depth) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::has_from_depth
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the collision entry knows how "deep"
 //               the collision was from the collided-from object; that
 //               is, how far from the surface of the collided-from
@@ -400,7 +452,7 @@ has_from_depth() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_from_depth
-//       Access: Public
+//       Access: Published
 //  Description: Returns how "deep" the collision was from the
 //               collided-from object; that is, how far from the
 //               surface of the collided-from object the colliding

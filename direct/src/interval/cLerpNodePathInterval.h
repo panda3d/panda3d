@@ -32,6 +32,7 @@ class EXPCL_DIRECT CLerpNodePathInterval : public CLerpInterval {
 PUBLISHED:
   CLerpNodePathInterval(const string &name, double duration, 
                         BlendType blend_type, bool bake_in_start,
+                        bool fluid,
                         const NodePath &node, const NodePath &other);
 
   INLINE const NodePath &get_node() const;
@@ -79,6 +80,7 @@ private:
     F_start_color_scale  = 0x1000,
     F_start_shear        = 0x2000,
 
+    F_fluid              = 0x4000,
     F_bake_in_start      = 0x8000,
   };
   

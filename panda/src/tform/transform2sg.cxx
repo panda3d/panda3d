@@ -32,10 +32,8 @@ Transform2SG(const string &name) :
   DataNode(name)
 {
   _transform_input = define_input("transform", EventStoreTransform::get_class_type());
-  _velocity_input = define_input("velocity", EventStoreVec3::get_class_type());
 
   _node = NULL;
-  _velocity_node = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,33 +55,6 @@ set_node(PandaNode *node) {
 PandaNode *Transform2SG::
 get_node() const {
   return _node;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Transform2SG::set_velocity_node
-//       Access: Public
-//  Description: Sets the node that this object will assign the
-//               computed velocity to.  Normally this is a
-//               CollisionNode parented below the node indicated by
-//               set_node().  Setting this node allows the collision
-//               system to track the velocity imparted to the
-//               CollisionNode by the data graph object that set its
-//               transform, if that data is available.
-////////////////////////////////////////////////////////////////////
-void Transform2SG::
-set_velocity_node(PandaNode *node) {
-  _velocity_node = node;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Transform2SG::get_velocity_node
-//       Access: Public
-//  Description: Returns the node that this object will assign the
-//               computed velocity to.  See set_velocity_node().
-////////////////////////////////////////////////////////////////////
-PandaNode *Transform2SG::
-get_velocity_node() const {
-  return _velocity_node;
 }
 
 
@@ -108,15 +79,6 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &) {
     CPT(TransformState) ts = transform->get_value();
     if (_node != (PandaNode *)NULL) {
       _node->set_transform(ts);
-    }
-  }
-
-  if (input.has_data(_velocity_input)) {
-    const EventStoreVec3 *velocity;
-    DCAST_INTO_V(velocity, input.get_data(_velocity_input).get_ptr());
-    LVector3f vel = velocity->get_value();
-    if (_velocity_node != (PandaNode *)NULL) {
-      _velocity_node->set_velocity(vel);
     }
   }
 }

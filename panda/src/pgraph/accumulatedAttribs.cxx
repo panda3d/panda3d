@@ -76,6 +76,7 @@ collect(PandaNode *node, int attrib_types) {
     nassertv(_transform != (TransformState *)NULL);
     _transform = _transform->compose(node->get_transform());
     node->set_transform(TransformState::make_identity());
+    node->reset_prev_transform();
   }
 
   if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
@@ -141,6 +142,7 @@ void AccumulatedAttribs::
 apply_to_node(PandaNode *node, int attrib_types) {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
     node->set_transform(_transform->compose(node->get_transform()));
+    node->reset_prev_transform();
     _transform = TransformState::make_identity();
   }
 

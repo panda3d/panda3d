@@ -64,20 +64,20 @@ prepare_collider(const ColliderDef &def) {
     GeometricBoundingVolume *gbv;
     DCAST_INTO_V(gbv, bv.make_copy());
 
-    if (def._node->has_velocity()) {
-      // If the node has a velocity, we have to include the starting
+    if (def._delta != LVector3f::zero()) {
+      // If the node has a delta, we have to include the starting
       // point in the volume as well.
 
       // Strictly speaking, we should actually transform gbv backward
-      // by get_velocity(), and extend by *that* volume, instead of
+      // by the delta(), and extend by *that* volume, instead of
       // just extending by the single point at -get_velocity().
       // However, assuming the solids within a moving CollisionNode
       // tend to be near the origin, this will generally produce the
       // same results, and is much easier to compute.
-      gbv->extend_by(LPoint3f(-def._node->get_velocity()));
+      gbv->extend_by(LPoint3f(-def._delta));
     }
 
-    gbv->xform(def._space);
+    gbv->xform(def._space->get_mat());
     _local_bounds.push_back(gbv);
   }
 

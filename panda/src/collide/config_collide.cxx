@@ -43,11 +43,6 @@ ConfigureFn(config_collide) {
   init_libcollide();
 }
 
-// Set this false to stop the CollisionTraverser from automatically
-// clearing the velocity associated with its CollisionNodes after it
-// has traversed them.  Mainly useful for visualizing the velocities.
-const bool auto_clear_velocity = config_collide.GetBool("auto-clear-velocity", true);
-
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libcollide
 //  Description: Initializes the library.  This must be called at

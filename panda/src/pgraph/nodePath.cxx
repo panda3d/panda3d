@@ -291,6 +291,9 @@ reparent_to(const NodePath &other, int sort) {
   uncollapse_head();
   other.uncollapse_head();
   PandaNode::reparent(other._head, _head, sort);
+
+  // Reparenting implicitly resents the delta vector.
+  node()->reset_prev_transform();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -309,7 +312,14 @@ wrt_reparent_to(const NodePath &other, int sort) {
   nassertv_always(!is_empty());
   nassertv_always(!other.is_empty());
 
-  set_transform(get_transform(other));
+  if (get_transform() == get_prev_transform()) {
+    set_transform(get_transform(other));
+    node()->reset_prev_transform();
+  } else {
+    set_transform(get_transform(other));
+    set_prev_transform(get_prev_transform(other));
+  }
+
   reparent_to(other, sort);
 }
 
@@ -343,6 +353,11 @@ instance_to(const NodePath &other, int sort) const {
   NodePath new_instance;
   new_instance._head = PandaNode::attach(other._head, node(), sort);
 
+  // instance_to() doesn't reset the velocity delta, unlike most of
+  // the other reparenting operations.  The reasoning is that
+  // instance_to() is not necessarily a reparenting operation, since
+  // it doesn't change the original instance.
+
   return new_instance;
 }
 
@@ -369,7 +384,7 @@ instance_under_node(const NodePath &other, const string &name, int sort) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::copy_to
 //       Access: Published
-//  Description: Functions exactly like instance_to(), except a deep
+//  Description: Functions like instance_to(), except a deep
 //               copy is made of the referenced node and all of its
 //               descendents, which is then parented to the indicated
 //               node.  A NodePath to the newly created copy is
@@ -385,6 +400,8 @@ copy_to(const NodePath &other, int sort) const {
   PandaNode *source_node = node();
   PT(PandaNode) copy_node = source_node->copy_subgraph();
   nassertr(copy_node != (PandaNode *)NULL, fail());
+
+  copy_node->reset_prev_transform();
 
   return other.attach_new_node(copy_node, sort);
 }
@@ -444,6 +461,7 @@ remove_node() {
   // In either case, quietly do nothing except to ensure the
   // NodePath is clear.
   if (!is_empty() && !is_singleton()) {
+    node()->reset_prev_transform();
     uncollapse_head();
     PandaNode::detach(_head);
   }
@@ -474,6 +492,7 @@ void NodePath::
 detach_node() {
   nassertv(_error_type != ET_not_found);
   if (!is_empty() && !is_singleton()) {
+    node()->reset_prev_transform();
     uncollapse_head();
     PandaNode::detach(_head);
   }
@@ -546,7 +565,7 @@ get_state(const NodePath &other) const {
 //               the other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_state(const NodePath &other, const RenderState *state) const {
+set_state(const NodePath &other, const RenderState *state) {
   nassertv(_error_type == ET_ok && other._error_type == ET_ok);
   nassertv_always(!is_empty());
 
@@ -594,7 +613,7 @@ get_transform(const NodePath &other) const {
 //               other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_transform(const NodePath &other, const TransformState *transform) const {
+set_transform(const NodePath &other, const TransformState *transform) {
   nassertv(_error_type == ET_ok && other._error_type == ET_ok);
   nassertv_always(!is_empty());
 
@@ -611,15 +630,73 @@ set_transform(const NodePath &other, const TransformState *transform) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_prev_transform
+//       Access: Published
+//  Description: Returns the relative "previous" transform to this
+//               node from the other node; i.e. the position of this
+//               node in the previous frame, as seen by the other node
+//               in the previous frame.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) NodePath::
+get_prev_transform(const NodePath &other) const {
+  if (other.is_empty()) {
+    return get_net_prev_transform();
+  }
+  if (is_empty()) {
+    return other.get_net_prev_transform()->invert_compose(TransformState::make_identity());
+  }
+    
+  nassertr(verify_complete(), TransformState::make_identity());
+  nassertr(other.verify_complete(), TransformState::make_identity());
+
+  int a_count, b_count;
+  find_common_ancestor(*this, other, a_count, b_count);
+
+  CPT(TransformState) a_prev_transform = r_get_partial_prev_transform(_head, a_count);
+  CPT(TransformState) b_prev_transform = r_get_partial_prev_transform(other._head, b_count);
+  return b_prev_transform->invert_compose(a_prev_transform);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_prev_transform
+//       Access: Published
+//  Description: Sets the "previous" transform object on this node,
+//               relative to the other node.  This computes a new
+//               transform object that will have the indicated value
+//               when seen from the other node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_prev_transform(const NodePath &other, const TransformState *transform) {
+  nassertv(_error_type == ET_ok && other._error_type == ET_ok);
+  nassertv_always(!is_empty());
+
+  // First, we perform a wrt to the parent, to get the conversion.
+  CPT(TransformState) rel_trans;
+  if (has_parent()) {
+    rel_trans = other.get_prev_transform(get_parent());
+  } else {
+    rel_trans = other.get_prev_transform(NodePath());
+  }
+
+  CPT(TransformState) new_trans = rel_trans->compose(transform);
+  set_prev_transform(new_trans);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos
 //       Access: Published
 //  Description: Sets the translation component of the transform,
-//               leaving rotation and scale untouched.
+//               leaving rotation and scale untouched.  This also
+//               resets the node's "previous" position, so that the
+//               collision system will see the node as having suddenly
+//               appeared in the new position, without passing any
+//               points in between.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_pos(const LVecBase3f &pos) {
   nassertv_always(!is_empty());
   set_transform(get_transform()->set_pos(pos));
+  node()->reset_prev_transform();
 }
 
 void NodePath::
@@ -647,6 +724,44 @@ set_z(float z) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_fluid_pos
+//       Access: Published
+//  Description: Sets the translation component, without changing the
+//               "previous" position, so that the collision system
+//               will see the node as moving fluidly from its previous
+//               position to its new position.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_fluid_pos(const LVecBase3f &pos) {
+  nassertv_always(!is_empty());
+  set_transform(get_transform()->set_pos(pos));
+}
+
+void NodePath::
+set_fluid_x(float x) {
+  nassertv_always(!is_empty());
+  LPoint3f pos = get_pos();
+  pos[0] = x;
+  set_fluid_pos(pos);
+}
+
+void NodePath::
+set_fluid_y(float y) {
+  nassertv_always(!is_empty());
+  LPoint3f pos = get_pos();
+  pos[1] = y;
+  set_fluid_pos(pos);
+}
+
+void NodePath::
+set_fluid_z(float z) {
+  nassertv_always(!is_empty());
+  LPoint3f pos = get_pos();
+  pos[2] = z;
+  set_fluid_pos(pos);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_pos
 //       Access: Published
 //  Description: Retrieves the translation component of the transform.
@@ -655,6 +770,26 @@ LPoint3f NodePath::
 get_pos() const {
   nassertr_always(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
   return get_transform()->get_pos();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_pos_delta
+//       Access: Published
+//  Description: Returns the delta vector from this node's position in
+//               the previous frame (according to
+//               set_prev_transform(), typically set via the use of
+//               set_fluid_pos()) and its position in the current
+//               frame.  This is the vector used to determine
+//               collisions.  Generally, if the node was last
+//               repositioned via set_pos(), the delta will be zero;
+//               if it was adjusted via set_fluid_pos(), the delta
+//               will represent the change from the previous frame's
+//               position.
+////////////////////////////////////////////////////////////////////
+LVector3f NodePath::
+get_pos_delta() const {
+  nassertr_always(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  return get_transform()->get_pos() - get_prev_transform()->get_pos();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -856,6 +991,7 @@ set_pos_hpr(const LVecBase3f &pos, const LVecBase3f &hpr) {
   transform = TransformState::make_pos_hpr_scale_shear
     (pos, hpr, transform->get_scale(), transform->get_shear());
   set_transform(transform);
+  node()->reset_prev_transform();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -885,6 +1021,7 @@ set_pos_hpr_scale(const LVecBase3f &pos, const LVecBase3f &hpr,
   nassertv_always(!is_empty());
   set_transform(TransformState::make_pos_hpr_scale
                 (pos, hpr, scale));
+  node()->reset_prev_transform();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -899,6 +1036,7 @@ set_pos_quat_scale(const LVecBase3f &pos, const LQuaternionf &quat,
   nassertv_always(!is_empty());
   set_transform(TransformState::make_pos_quat_scale
                 (pos, quat, scale));
+  node()->reset_prev_transform();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -913,6 +1051,7 @@ set_pos_hpr_scale_shear(const LVecBase3f &pos, const LVecBase3f &hpr,
   nassertv_always(!is_empty());
   set_transform(TransformState::make_pos_hpr_scale_shear
                 (pos, hpr, scale, shear));
+  node()->reset_prev_transform();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -927,6 +1066,7 @@ set_pos_quat_scale_shear(const LVecBase3f &pos, const LQuaternionf &quat,
   nassertv_always(!is_empty());
   set_transform(TransformState::make_pos_quat_scale_shear
                 (pos, quat, scale, shear));
+  node()->reset_prev_transform();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -938,6 +1078,7 @@ void NodePath::
 set_mat(const LMatrix4f &mat) {
   nassertv_always(!is_empty());
   set_transform(TransformState::make_mat(mat));
+  node()->reset_prev_transform();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1003,6 +1144,7 @@ set_pos(const NodePath &other, const LVecBase3f &pos) {
     // If we didn't have a componentwise transform already, never
     // mind.
     set_transform(other, rel_transform->set_pos(pos));
+    node()->reset_prev_transform();
   }
 }
 
@@ -1043,6 +1185,27 @@ get_pos(const NodePath &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_pos_delta
+//       Access: Published
+//  Description: Returns the delta vector from this node's position in
+//               the previous frame (according to
+//               set_prev_transform(), typically set via the use of
+//               set_fluid_pos()) and its position in the current
+//               frame, as seen in the indicated node's coordinate
+//               space.  This is the vector used to determine
+//               collisions.  Generally, if the node was last
+//               repositioned via set_pos(), the delta will be zero;
+//               if it was adjusted via set_fluid_pos(), the delta
+//               will represent the change from the previous frame's
+//               position.
+////////////////////////////////////////////////////////////////////
+LVector3f NodePath::
+get_pos_delta(const NodePath &other) const {
+  nassertr_always(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  return get_transform(other)->get_pos() - get_prev_transform(other)->get_pos();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_hpr
 //       Access: Published
 //  Description: Sets the rotation component of the transform,
@@ -1067,7 +1230,8 @@ set_hpr(const NodePath &other, const LVecBase3f &hpr) {
     set_transform(other, rel_transform->set_hpr(hpr));
     const TransformState *new_transform = get_transform();
     if (new_transform->has_components()) {
-      set_pos_hpr_scale_shear(orig_pos, new_transform->get_hpr(), orig_scale, orig_shear);
+      set_transform(TransformState::make_pos_hpr_scale_shear
+                    (orig_pos, new_transform->get_hpr(), orig_scale, orig_shear));
     }
 
   } else {
@@ -1139,7 +1303,8 @@ set_quat(const NodePath &other, const LQuaternionf &quat) {
     set_transform(other, rel_transform->set_quat(quat));
     const TransformState *new_transform = get_transform();
     if (new_transform->has_components()) {
-      set_pos_quat_scale_shear(orig_pos, new_transform->get_quat(), orig_scale, orig_shear);
+      set_transform(TransformState::make_pos_quat_scale_shear
+                    (orig_pos, new_transform->get_quat(), orig_scale, orig_shear));
     }
 
   } else {
@@ -1186,7 +1351,8 @@ set_scale(const NodePath &other, const LVecBase3f &scale) {
     set_transform(other, rel_transform->set_scale(scale));
     const TransformState *new_transform = get_transform();
     if (new_transform->has_components()) {
-      set_pos_hpr_scale_shear(orig_pos, orig_hpr, new_transform->get_scale(), orig_shear);
+      set_transform(TransformState::make_pos_hpr_scale_shear
+                    (orig_pos, orig_hpr, new_transform->get_scale(), orig_shear));
     }
 
   } else {
@@ -1257,7 +1423,8 @@ set_shear(const NodePath &other, const LVecBase3f &shear) {
     set_transform(other, rel_transform->set_shear(shear));
     const TransformState *new_transform = get_transform();
     if (new_transform->has_components()) {
-      set_pos_hpr_scale_shear(orig_pos, orig_hpr, orig_scale, new_transform->get_shear());
+      set_transform(TransformState::make_pos_hpr_scale_shear
+                    (orig_pos, orig_hpr, orig_scale, new_transform->get_shear()));
     }
 
   } else {
@@ -1338,6 +1505,7 @@ set_pos_hpr(const NodePath &other, const LVecBase3f &pos,
     // mind.
     set_transform(other, TransformState::make_pos_hpr_scale_shear
                   (pos, hpr, rel_transform->get_scale(), rel_transform->get_shear()));
+    node()->reset_prev_transform();
   }
 }
 
@@ -1376,6 +1544,7 @@ set_pos_hpr_scale(const NodePath &other,
   nassertv_always(!is_empty());
   set_transform(other, TransformState::make_pos_hpr_scale
                 (pos, hpr, scale));
+  node()->reset_prev_transform();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1392,6 +1561,7 @@ set_pos_quat_scale(const NodePath &other,
   nassertv_always(!is_empty());
   set_transform(other, TransformState::make_pos_quat_scale
                 (pos, quat, scale));
+  node()->reset_prev_transform();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1408,6 +1578,7 @@ set_pos_hpr_scale_shear(const NodePath &other,
   nassertv_always(!is_empty());
   set_transform(other, TransformState::make_pos_hpr_scale_shear
                 (pos, hpr, scale, shear));
+  node()->reset_prev_transform();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1424,6 +1595,7 @@ set_pos_quat_scale_shear(const NodePath &other,
   nassertv_always(!is_empty());
   set_transform(other, TransformState::make_pos_quat_scale_shear
                 (pos, quat, scale, shear));
+  node()->reset_prev_transform();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1455,6 +1627,7 @@ void NodePath::
 set_mat(const NodePath &other, const LMatrix4f &mat) {
   nassertv_always(!is_empty());
   set_transform(other, TransformState::make_mat(mat));
+  node()->reset_prev_transform();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1523,106 +1696,6 @@ heads_up(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
   LQuaternionf quat;
   ::heads_up(quat, rel_point - pos, up);
   set_quat(quat);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_velocity
-//       Access: Published
-//  Description: Returns the relative velocity to this node from the
-//               other node; i.e. the velocity of this node as seen
-//               from the other node.
-////////////////////////////////////////////////////////////////////
-LVector3f NodePath::
-get_velocity(const NodePath &other) const {
-  if (other.is_empty()) {
-    return get_net_velocity();
-  }
-  if (is_empty()) {
-    other.uncollapse_head();
-    CPT(TransformState) net_transform = TransformState::make_identity();
-    CPT(TransformState) parent_transform = net_transform;
-    LVector3f net_velocity = LVector3f::zero();
-    r_get_net_velocity(other._head, net_velocity, net_transform, parent_transform);
-    return -net_velocity;
-  }
-    
-  nassertr(verify_complete(), LVector3f::zero());
-  nassertr(other.verify_complete(), LVector3f::zero());
-
-  int a_count, b_count;
-  find_common_ancestor(*this, other, a_count, b_count);
-
-  // Now compute the net velocity of each node, by working down from
-  // the common ancestor.
-  CPT(TransformState) a_transform = TransformState::make_identity();
-  CPT(TransformState) a_parent_transform = a_transform;
-  LVector3f a_velocity = LVector3f::zero();
-  r_get_partial_velocity(_head, a_count, a_velocity, a_transform, 
-                         a_parent_transform);
-
-  CPT(TransformState) b_transform = TransformState::make_identity();
-  CPT(TransformState) b_parent_transform = b_transform;
-  LVector3f b_velocity = LVector3f::zero();
-  r_get_partial_velocity(other._head, b_count, b_velocity, b_transform, 
-                         b_parent_transform);
-
-  LVector3f net_velocity = a_velocity - b_velocity;
-  
-  // Finally, convert the net velocity back into the parent's
-  // coordinate space.
-  CPT(TransformState) a_parent_inverse = 
-    a_parent_transform->invert_compose(TransformState::make_identity());
-  return net_velocity * a_parent_inverse->get_mat();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_velocity
-//       Access: Published
-//  Description: Sets the velocity of this node, relative to the other
-//               node.  This computes a new velocity that will have
-//               the indicated value when seen from the other node.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_velocity(const NodePath &other, const LVector3f &velocity) {
-  nassertv(_error_type == ET_ok && other._error_type == ET_ok);
-  nassertv_always(!is_empty());
-
-  // First, we perform a wrt to the parent, to get the conversion.
-  LVector3f rel_velocity;
-  if (has_parent()) {
-    rel_velocity = other.get_velocity(get_parent());
-  } else {
-    rel_velocity = other.get_velocity(NodePath());
-  }
-
-  LVector3f new_velocity = velocity + rel_velocity;
-  set_velocity(new_velocity);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_net_velocity
-//       Access: Published
-//  Description: Returns the relative "velocity" of this node (as
-//               reported by get_velocity()) from the root of the
-//               scene graph, accumulating all velocity values set on
-//               ancestor nodes.  The result is returned in the
-//               coordinate space of the node's parent (the same
-//               coordinate space in which get_velocity() is
-//               returned).
-////////////////////////////////////////////////////////////////////
-LVector3f NodePath::
-get_net_velocity() const {
-  uncollapse_head();
-  CPT(TransformState) net_transform = TransformState::make_identity();
-  CPT(TransformState) parent_transform = net_transform;
-  LVector3f net_velocity = LVector3f::zero();
-  r_get_net_velocity(_head, net_velocity, net_transform, parent_transform);
-
-  // Convert the net velocity back from global coordinates into the
-  // parent's coordinate space.
-  CPT(TransformState) parent_inverse = 
-    parent_transform->invert_compose(TransformState::make_identity());
-  return net_velocity * parent_inverse->get_mat();
 }
 
 
@@ -3442,58 +3515,38 @@ r_get_partial_transform(NodePathComponent *comp, int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::r_get_net_velocity
+//     Function: NodePath::r_get_net_prev_transform
 //       Access: Private
-//  Description: Recursively determines the net velocity of the
-//               indicated node; the result is returned in the global
-//               coordinate space.
+//  Description: Recursively determines the net "previous" transform
+//               to the indicated component node from the root of the
+//               graph.
 ////////////////////////////////////////////////////////////////////
-void NodePath::
-r_get_net_velocity(NodePathComponent *comp, LVector3f &net_vel, 
-                   CPT(TransformState) &net_transform,
-                   CPT(TransformState) &parent_net_transform) const {
-  if (comp != (NodePathComponent *)NULL) {
-    r_get_net_velocity(comp->get_next(), net_vel, net_transform, 
-                       parent_net_transform);
-
-    PandaNode *node = comp->get_node();
-    if (node->has_velocity()) {
-      LVector3f vel = node->get_velocity();
-      net_vel += vel * net_transform->get_mat();
-    }
-    
-    CPT(TransformState) transform = node->get_transform();
-    parent_net_transform = net_transform;
-    net_transform = net_transform->compose(transform);
+CPT(TransformState) NodePath::
+r_get_net_prev_transform(NodePathComponent *comp) const {
+  if (comp == (NodePathComponent *)NULL) {
+    return TransformState::make_identity();
+  } else {
+    CPT(TransformState) transform = comp->get_node()->get_prev_transform();
+    return r_get_net_prev_transform(comp->get_next())->compose(transform);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::r_get_partial_velocity
+//     Function: NodePath::r_get_partial_prev_transform
 //       Access: Private
-//  Description: Recursively determines the net velocity of the
-//               indicated component node from the nth node above it.
-//               If n exceeds the length of the path, this returns the
-//               net velocity from the root of the graph.
+//  Description: Recursively determines the net "previous" transform
+//               to the indicated component node from the nth node
+//               above it.  If n exceeds the length of the path, this
+//               returns the net previous transform from the root of
+//               the graph.
 ////////////////////////////////////////////////////////////////////
-void NodePath::
-r_get_partial_velocity(NodePathComponent *comp, int n, 
-                       LVector3f &net_vel,
-                       CPT(TransformState) &net_transform,
-                       CPT(TransformState) &parent_net_transform) const {
-  if (n != 0 && comp != (NodePathComponent *)NULL) {
-    r_get_partial_velocity(comp->get_next(), n - 1, net_vel, net_transform,
-                           parent_net_transform);
-    
-    PandaNode *node = comp->get_node();
-    if (node->has_velocity()) {
-      LVector3f vel = node->get_velocity();
-      net_vel += vel * net_transform->get_mat();
-    }
-    
-    CPT(TransformState) transform = node->get_transform();
-    parent_net_transform = net_transform;
-    net_transform = net_transform->compose(transform);
+CPT(TransformState) NodePath::
+r_get_partial_prev_transform(NodePathComponent *comp, int n) const {
+  if (n == 0 || comp == (NodePathComponent *)NULL) {
+    return TransformState::make_identity();
+  } else {
+    CPT(TransformState) transform = comp->get_node()->get_prev_transform();
+    return r_get_partial_prev_transform(comp->get_next(), n - 1)->compose(transform);
   }
 }
 

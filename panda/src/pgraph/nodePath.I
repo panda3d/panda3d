@@ -417,7 +417,7 @@ get_state() const {
 //  Description: Changes the complete state object on this node.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_state(const RenderState *state) const {
+set_state(const RenderState *state) {
   nassertv_always(!is_empty());
   node()->set_state(state);
 }
@@ -450,7 +450,7 @@ get_transform() const {
 //  Description: Changes the complete transform object on this node.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_transform(const TransformState *transform) const {
+set_transform(const TransformState *transform) {
   nassertv_always(!is_empty());
   node()->set_transform(transform);
 }
@@ -467,14 +467,70 @@ get_net_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_prev_transform
+//       Access: Published
+//  Description: Returns the transform that has been set as this
+//               node's "previous" position.  See
+//               set_prev_transform().
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *NodePath::
+get_prev_transform() const {
+  nassertr_always(!is_empty(), TransformState::make_identity());
+  return node()->get_prev_transform();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_prev_transform
+//       Access: Published
+//  Description: Sets the transform that represents this node's
+//               "previous" position, one frame ago, for the purposes
+//               of detecting motion for accurate collision
+//               calculations.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_prev_transform(const TransformState *transform) {
+  nassertv_always(!is_empty());
+  node()->set_prev_transform(transform);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_net_prev_transform
+//       Access: Published
+//  Description: Returns the net "previous" transform on this node
+//               from the root.  See set_prev_transform().
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) NodePath::
+get_net_prev_transform() const {
+  uncollapse_head();
+  return r_get_net_prev_transform(_head);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos
 //       Access: Published
 //  Description: Sets the translation component of the transform,
-//               leaving rotation and scale untouched.
+//               leaving rotation and scale untouched.  This also
+//               resets the node's "previous" position, so that the
+//               collision system will see the node as having suddenly
+//               appeared in the new position, without passing any
+//               points in between.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_pos(float x, float y, float z) {
   set_pos(LPoint3f(x, y, z));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_fluid_pos
+//       Access: Published
+//  Description: Sets the translation component, without changing the
+//               "previous" position, so that the collision system
+//               will see the node as moving fluidly from its previous
+//               position to its new position.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_fluid_pos(float x, float y, float z) {
+  set_fluid_pos(LPoint3f(x, y, z));
 }
 
 INLINE float NodePath::
@@ -868,59 +924,6 @@ INLINE float NodePath::
 get_distance(const NodePath &other) const {
   LPoint3f pos = get_pos(other);
   return length(LVector3f(pos));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_velocity
-//       Access: Published
-//  Description: Sets the velocity of this node.  This is a delta from
-//               the position of this node in the previous frame,
-//               relative to the node's parent.  The value should not
-//               be transformed by the node's transformation (it is in
-//               the coordinate system of the node's parent).  This
-//               has meaning only to the collision subsystem.
-////////////////////////////////////////////////////////////////////
-INLINE void NodePath::
-set_velocity(const LVector3f &velocity) {
-  nassertv_always(!is_empty());
-  node()->set_velocity(velocity);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::clear_velocity
-//       Access: Published
-//  Description: Resets the velocity of this node to zero.  See
-//               set_velocity().
-////////////////////////////////////////////////////////////////////
-INLINE void NodePath::
-clear_velocity() {
-  nassertv_always(!is_empty());
-  node()->clear_velocity();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::has_velocity
-//       Access: Published
-//  Description: Returns true if a nonzero velocity has been set on
-//               this node, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool NodePath::
-has_velocity() const {
-  nassertr_always(!is_empty(), false);
-  return node()->has_velocity();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_velocity
-//       Access: Published
-//  Description: Returns the velocity previously set on this node via
-//               set_velocity(), or LVector3f::zero() if no velocity
-//               has been set.
-////////////////////////////////////////////////////////////////////
-INLINE const LVector3f &NodePath::
-get_velocity() const {
-  nassertr_always(!is_empty(), LVector3f::zero());
-  return node()->get_velocity();
 }
 
 ////////////////////////////////////////////////////////////////////

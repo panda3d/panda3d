@@ -793,6 +793,18 @@ class ShowBase(DirectObject.DirectObject):
                 music.setLoop(looping)
                 music.play()
 
+    def resetPrevTransform(self, state):
+        # Clear out the previous velocity deltas now, after we have
+        # rendered (the previous frame).  We do this after the render,
+        # so that we have a chance to draw a representation of spheres
+        # along with their velocities.  At the beginning of the frame
+        # really means after the command prompt, which allows the user
+        # to interactively query these deltas meaningfully.
+        
+        if self.cTrav:
+            self.cTrav.resetPrevTransform(self.render)
+        return Task.cont
+
     def dataloop(self, state):
         # traverse the data graph.  This reads all the control
         # inputs (from the mouse and keyboard, for instance) and also
@@ -845,6 +857,8 @@ class ShowBase(DirectObject.DirectObject):
 
     def restart(self):
         self.shutdown()
+        # resetPrevTransform goes at the very beginning of the frame.
+        self.taskMgr.add(self.resetPrevTransform, 'resetPrevTransform', priority = -51)
         # give the dataloop task a reasonably "early" priority,
         # so that it will get run before most tasks
         self.taskMgr.add(self.dataloop, 'dataloop', priority = -50)
@@ -868,6 +882,7 @@ class ShowBase(DirectObject.DirectObject):
         self.taskMgr.remove('shadowCollisionLoop')
         self.taskMgr.remove('collisionloop')
         self.taskMgr.remove('dataloop')
+        self.taskMgr.remove('resetPrevTransform')
         self.taskMgr.remove('ivalloop')
         self.eventMgr.shutdown()
 

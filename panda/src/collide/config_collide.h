@@ -24,8 +24,6 @@
 
 NotifyCategoryDecl(collide, EXPCL_PANDA, EXPTP_PANDA);
 
-extern const bool auto_clear_velocity;
-
 extern EXPCL_PANDA void init_libcollide();
 
 #endif

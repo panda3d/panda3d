@@ -150,6 +150,10 @@ PUBLISHED:
   INLINE const TransformState *get_transform() const;
   INLINE void clear_transform();
 
+  INLINE void set_prev_transform(const TransformState *transform);
+  INLINE const TransformState *get_prev_transform() const;
+  INLINE void reset_prev_transform();
+
   INLINE void set_tag(const string &key, const string &value);
   INLINE string get_tag(const string &key) const;
   INLINE bool has_tag(const string &key) const;
@@ -161,11 +165,6 @@ PUBLISHED:
   INLINE DrawMask get_draw_mask() const;
 
   INLINE CollideMask get_net_collide_mask() const;
-
-  INLINE void set_velocity(const LVector3f &velocity);
-  INLINE void clear_velocity();
-  INLINE bool has_velocity() const;
-  INLINE const LVector3f &get_velocity() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
@@ -314,14 +313,12 @@ private:
     CPT(RenderState) _state;
     CPT(RenderEffects) _effects;
     CPT(TransformState) _transform;
+    CPT(TransformState) _prev_transform;
 
     TagData _tag_data;
 
     // This is the draw_mask of this particular node.
     DrawMask _draw_mask;
-
-    LVector3f _velocity;
-    bool _has_velocity;
 
     // This is the union of all into_collide_mask bits for any
     // CollisionNodes at and below this level.  It's conceptually

@@ -54,11 +54,14 @@ TypeHandle CLerpNodePathInterval::_type_handle;
 //               "smart" behavior allows code to manipulate the object
 //               event while it is being lerped, and the lerp
 //               continues to apply in a sensible way.
+//
+//               If fluid is true, the prev_transform is not adjusted
+//               by the lerp; otherwise, it is reset.
 ////////////////////////////////////////////////////////////////////
 CLerpNodePathInterval::
 CLerpNodePathInterval(const string &name, double duration, 
                       CLerpInterval::BlendType blend_type,
-                      bool bake_in_start,
+                      bool bake_in_start, bool fluid,
                       const NodePath &node, const NodePath &other) :
   CLerpInterval(name, duration, blend_type),
   _node(node),
@@ -67,6 +70,9 @@ CLerpNodePathInterval(const string &name, double duration,
 {
   if (bake_in_start) {
     _flags |= F_bake_in_start;
+  }
+  if (fluid) {
+    _flags |= F_fluid;
   }
   _prev_d = 0.0;
 }
@@ -118,6 +124,9 @@ priv_step(double t) {
   check_started(get_class_type(), "priv_step");
   _state = S_started;
   double d = compute_delta(t);
+
+  // Save this in case we want to restore it later.
+  CPT(TransformState) prev_transform = _node.get_prev_transform();
 
   if ((_flags & (F_end_pos | F_end_hpr | F_end_scale | F_end_shear)) != 0) {
     // We have some transform lerp.
@@ -295,6 +304,13 @@ priv_step(double t) {
         }
       }
     }
+  }
+
+  if ((_flags & F_fluid) != 0) {
+    // If we have the fluid flag set, we shouldn't mess with the prev
+    // transform.  Therefore, restore it to what it was before we
+    // started messing with it.
+    _node.set_prev_transform(prev_transform);
   }
 
   if ((_flags & (F_end_color | F_end_color_scale)) != 0) {
