@@ -62,10 +62,10 @@ fi
 HOME=`cygpath -w $HOME`
 export HOME
 
-if [ x"$1" = x"-msdev" ]; then
+if [ x"$1" = x"-devenv" ]; then
   # used for local machine debugging of vc dlls called by python
   shift 1
-  exec msdev ${1+"$@"} &
+  exec devenv ${1+"$@"} &
 elif [ x"$1" = x"-remotedbg" ]; then
   # run msvc remote debug setup on local dbg tgt machine, connect using msdev on another machine
   shift 1
