@@ -5,13 +5,13 @@ from ShowBaseGlobal import *
 #from IntervalGlobal import *
 
 from otp.avatar import Avatar
-if __debug__:
-    import DevWalker
 from direct.directnotify import DirectNotifyGlobal
-import GhostWalker
-import GravityWalker
-import NonPhysicsWalker
-import PhysicsWalker
+#import GhostWalker
+#import GravityWalker
+#import NonPhysicsWalker
+#import PhysicsWalker
+#if __debug__:
+#    import DevWalker
 from direct.task import Task
 
 
@@ -20,16 +20,10 @@ class ControlManager:
     wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     wantAvatarPhysicsDebug = base.config.GetBool('want-avatar-physics-debug', 0)
 
-    def __init__(self, avatar):
-        self.avatar = avatar
+    def __init__(self):
         assert self.notify.debugCall(id(self))
-        
         self.enableJumpCounter = 1
         self.controls = {}
-        
-        # This is the non physics walker if you ever wanted to turn off phys
-        # self.walkControls=NonPhysicsWalker.NonPhysicsWalker()
-        
         self.currentControls = None
         self.isEnabled = 1
         #self.monitorTask = taskMgr.add(self.monitor, "ControlManager-%s"%(id(self)), priority=-1)
@@ -81,29 +75,49 @@ class ControlManager:
         #inputState.watch("slideRight", "shift-arrow_right", "shift-arrow_right-up")
         #inputState.watch("slideRight", "slide-is-disabled", "slide-is-disabled")
 
-
     def add(self, controls, name="basic"):
+        """
+        controls is an avatar control system.
+        name is any key that you want to use to refer to the
+            the controls later (e.g. using the use(<name>) call).
+        
+        Add a control instance to the list of available control systems.
+        
+        See also: use().
+        """
         assert self.notify.debugCall(id(self))
         assert controls is not None
         oldControls = self.controls.get(name)
         if oldControls is not None:
             print "Replacing controls:", name
+            oldControls.disableAvatarControls()
+            oldControls.setCollisionsActive(0)
             oldControls.delete()
+        controls.disableAvatarControls()
+        controls.setCollisionsActive(0)
         self.controls[name] = controls
 
     def use(self, name="basic"):
+        """
+        name is a key (string) that was previously passed to add().
+        
+        Use a previously added control system.
+        
+        See also: add().
+        """
         assert self.notify.debugCall(id(self))
         controls = self.controls.get(name)
         if controls is not None:
             if controls is not self.currentControls:
-                self.currentControls.disableAvatarControls()
-                self.currentControls.setCollisionsActive(0)
+                if self.currentControls is not None:
+                    self.currentControls.disableAvatarControls()
+                    self.currentControls.setCollisionsActive(0)
                 self.currentControls = controls
                 self.currentControls.setCollisionsActive(1)
                 if self.isEnabled:
                     self.currentControls.enableAvatarControls()
-            else:
-                print "Controls are already", name
+            #else:
+            #    print "Controls are already", name
         else:
             print "Unkown controls:", name
     
@@ -114,24 +128,6 @@ class ControlManager:
             controls.setWalkSpeed(
                 forwardSpeed, jumpForce, reverseSpeed, rotateSpeed)
 
-
-    #def useSwimControls(self):
-    #    assert self.notify.debugCall(id(self))
-    #    self.use("swim")
-
-    #def useGhostControls(self):
-    #    assert self.notify.debugCall(id(self))
-    #    self.use("ghost")
-
-    #def useWalkControls(self):
-    #    assert self.notify.debugCall(id(self))
-    #    self.use("walk")
-
-    #if __debug__:
-    #    def useDevControls(self):
-    #        assert self.notify.debugCall(id(self))
-    #        self.use("dev")
-
     def delete(self):
         assert self.notify.debugCall(id(self))
         self.disable()
@@ -139,49 +135,6 @@ class ControlManager:
     
     def getSpeeds(self):
         return self.currentControls.getSpeeds()
-    
-    def initializeCollisions(self, cTrav,
-            wallBitmask, floorBitmask, ghostBitmask, avatarRadius, floorOffset, reach = 4.0):
-        assert self.notify.debugCall(id(self))
-        
-        swimControls=NonPhysicsWalker.NonPhysicsWalker()
-        ghostControls=GhostWalker.GhostWalker()
-        if __debug__:
-            devControls=DevWalker.DevWalker()
-        walkControls=GravityWalker.GravityWalker(
-            gravity = -32.1740 * 2.0) # * 2.0 is a hack;
-        
-        walkControls.initializeCollisions(cTrav, self.avatar,
-                wallBitmask, floorBitmask, avatarRadius, floorOffset, reach)
-        walkControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
-        walkControls.disableAvatarControls()
-        walkControls.setCollisionsActive(0)
-        
-        swimControls.initializeCollisions(cTrav, self.avatar,
-                wallBitmask, floorBitmask, avatarRadius, floorOffset, reach)
-        swimControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
-        swimControls.disableAvatarControls()
-        swimControls.setCollisionsActive(0)
-        
-        ghostControls.initializeCollisions(cTrav, self.avatar,
-                ghostBitmask, floorBitmask, avatarRadius, floorOffset, reach)
-        ghostControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
-        ghostControls.disableAvatarControls()
-        ghostControls.setCollisionsActive(0)
-        
-        if __debug__:
-            devControls.initializeCollisions(cTrav, self.avatar,
-                    wallBitmask, floorBitmask, avatarRadius, floorOffset, reach)
-            devControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
-            devControls.disableAvatarControls()
-            devControls.setCollisionsActive(0)
-
-        self.add(walkControls, "walk")
-        self.add(swimControls, "swim")
-        self.add(ghostControls, "ghost")
-        self.add(devControls, "dev")
-
-        self.currentControls=walkControls
 
     def deleteCollisions(self):
         assert self.notify.debugCall(id(self))
@@ -232,9 +185,9 @@ class ControlManager:
     
     def monitor(self, foo):
         #assert(self.debugPrint("monitor()"))
-        if 1:
-            airborneHeight=self.avatar.getAirborneHeight()
-            onScreenDebug.add("airborneHeight", "% 10.4f"%(airborneHeight,))
+        #if 1:
+        #    airborneHeight=self.avatar.getAirborneHeight()
+        #    onScreenDebug.add("airborneHeight", "% 10.4f"%(airborneHeight,))
         if 0:
             onScreenDebug.add("InputState forward", "%d"%(inputState.isSet("forward")))
             onScreenDebug.add("InputState reverse", "%d"%(inputState.isSet("reverse")))
