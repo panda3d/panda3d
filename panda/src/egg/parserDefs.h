@@ -30,7 +30,7 @@ void egg_cleanup_parser();
 // union), so we'll use a class instead.  That means we need to
 // declare it externally, here.
 
-class EggTokenType {
+class EXPCL_PANDAEGG EggTokenType {
 public:
   double _number;
   string _string;

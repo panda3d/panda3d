@@ -149,7 +149,7 @@ private:
 //               referenced EggTexture pointers are in sorted order,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
-class UniqueEggTextures {
+class EXPCL_PANDAEGG UniqueEggTextures {
 public:
   INLINE UniqueEggTextures(int eq = ~0);
   INLINE bool operator ()(const EggTexture *t1, const EggTexture *t2) const;
@@ -162,7 +162,7 @@ public:
 // Description : An STL function object for sorting textures into
 //               order by TRef name.
 ////////////////////////////////////////////////////////////////////
-class TRefEggTextures {
+class EXPCL_PANDAEGG TRefEggTextures {
 public:
   INLINE bool operator ()(const EggTexture *t1, const EggTexture *t2) const;
 };

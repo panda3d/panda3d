@@ -16,7 +16,7 @@
 // 	 Class : EggNurbsCurve
 // Description : A parametric NURBS curve.
 ////////////////////////////////////////////////////////////////////
-class EggNurbsCurve : public EggCurve {
+class EXPCL_PANDAEGG EggNurbsCurve : public EggCurve {
 public:
   INLINE EggNurbsCurve(const string &name = "");
   INLINE EggNurbsCurve(const EggNurbsCurve &copy);

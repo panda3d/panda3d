@@ -19,7 +19,7 @@
 // 	 Class : EggNurbsSurface
 // Description : A parametric NURBS surface.
 ////////////////////////////////////////////////////////////////////
-class EggNurbsSurface : public EggSurface {
+class EXPCL_PANDAEGG EggNurbsSurface : public EggSurface {
 public:
   typedef list<PT(EggNurbsCurve)> Curves;
   typedef Curves Loop;

@@ -7,7 +7,7 @@
 #include "config_pnmimagetypes.h"
 
 static const char * const extensions[] = {
-  "jpg"
+  "jpg", "jpeg"
 };
 static const int num_extensions = sizeof(extensions) / sizeof(const char *);
 
@@ -29,7 +29,7 @@ PNMFileTypeJPG() {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeJPG::
 get_name() const {
-  return "Jpeg";
+  return "JPEG";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ get_extension(int n) const {
 ////////////////////////////////////////////////////////////////////
 string PNMFileTypeJPG::
 get_suggested_extension() const {
-  return "bmp";
+  return "jpg";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,7 +89,8 @@ has_magic_number() const {
 bool PNMFileTypeJPG::
 matches_magic_number(const string &magic_number) const {
   nassertr(magic_number.size() >= 2, false);
-  return (magic_number.substr(0, 2) == "BM");
+  return ((char)magic_number[0] == (char)0xff && 
+	  (char)magic_number[1] == (char)0xd8);
 }
 
 ////////////////////////////////////////////////////////////////////

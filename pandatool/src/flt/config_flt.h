@@ -10,7 +10,7 @@
 
 #include <notifyCategoryProxy.h>
 
-NotifyCategoryDecl(flt, EXPCL_MISC, EXPTP_MISC);
+NotifyCategoryDeclNoExport(flt);
 
 extern const bool flt_error_abort;
 

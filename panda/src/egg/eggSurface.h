@@ -15,7 +15,7 @@
 // Description : A parametric surface of some kind.  See
 //               EggNurbsSurface.
 ////////////////////////////////////////////////////////////////////
-class EggSurface : public EggPrimitive {
+class EXPCL_PANDAEGG EggSurface : public EggPrimitive {
 public:
   INLINE EggSurface(const string &name = "");
   INLINE EggSurface(const EggSurface &copy);

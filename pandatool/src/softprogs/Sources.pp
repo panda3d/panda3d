@@ -3,6 +3,7 @@
   #define LOCAL_LIBS progbase
 
   #define OTHER_LIBS \
+    linmath:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dconfig:c dtool:m pystub
 

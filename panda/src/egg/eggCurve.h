@@ -15,7 +15,7 @@
 // Description : A parametric curve of some kind.  See
 //               EggNurbsCurve.
 ////////////////////////////////////////////////////////////////////
-class EggCurve : public EggPrimitive {
+class EXPCL_PANDAEGG EggCurve : public EggPrimitive {
 public:
   INLINE EggCurve(const string &name = "");
   INLINE EggCurve(const EggCurve &copy);
