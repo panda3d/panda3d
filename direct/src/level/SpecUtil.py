@@ -8,12 +8,21 @@ from PythonUtil import list2dict
 import EntityTypes
 import types
 
+"""
+TO CREATE A NEW SPEC:
+import SpecUtil
+import FactoryEntityTypes
+SpecUtil.makeNewSpec('$TOONTOWN/src/coghq/FactoryMockupSpec.py', 'phase_9/models/cogHQ/SelbotLegFactory', FactoryEntityTypes)
+"""
 def makeNewSpec(filename, modelPath, entTypeModule=EntityTypes):
     """call this to create a new level spec for the level model at 'modelPath'.
     Spec will be saved as 'filename'"""
     spec = LevelSpec.LevelSpec()
-    privUpdateSpec(spec, modelPath, entTypeModule)
-    spec.saveToDisk(filename, makeBackup=0)
+    # make every zone visible from every other zone
+    privUpdateSpec(spec, modelPath, entTypeModule, newZonesGloballyVisible=1)
+    # expand any env vars, then convert to an OS-correct path
+    fname = Filename.expandFrom(filename).toOsSpecific()
+    spec.saveToDisk(fname, makeBackup=0)
     print 'Done.'
 
 """
@@ -39,8 +48,11 @@ def updateSpec(specModule, entTypeModule=EntityTypes, modelPath=None):
     spec.saveToDisk()
     print 'Done.'
 
-def privUpdateSpec(spec, modelPath, entTypeModule):
-    """internal: take a spec and update it to match its level model"""
+def privUpdateSpec(spec, modelPath, entTypeModule, newZonesGloballyVisible=0):
+    """internal: take a spec and update it to match its level model
+    If newZonesGloballyVisible is true, any new zones will be added to the
+    visibility lists for every zone.
+    """
     assert __dev__
     assert type(entTypeModule) is types.ModuleType
     import EntityTypeRegistry
@@ -118,6 +130,16 @@ def privUpdateSpec(spec, modelPath, entTypeModule):
             insertZoneEntity(entId, zoneNum)
             # by default, new zone can't see any other zones
             spec.doSetAttrib(entId, 'visibility', [])
+
+    if newZonesGloballyVisible:
+        for entId in zoneEntIds:
+            visList = list(spec.getEntitySpec(entId)['visibility'])
+            visDict = list2dict(visList)
+            for zoneNum in newZoneNums:
+                visDict[zoneNum] = None
+            visList = visDict.keys()
+            visList.sort()
+            spec.doSetAttrib(entId, 'visibility', visList)
 
     # make sure none of the zones reference removed zones
     # TODO: prune from other zoneList attribs
