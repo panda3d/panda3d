@@ -83,21 +83,35 @@ int PipeStreamBuf::sync(void) {
 int PipeStreamBuf::underflow(void) {
   assert(_pipe != (FILE*)0L);
   assert(_dir == Input);
+  if ((eback() == (char*)0L) || (gptr() == (char*)0L) ||
+      (egptr() == (char*)0L)) {
+    // must be in win32
+    char* buf = new char[4096];
+    char* ebuf = &(buf[4096]);
+    setg(buf, ebuf, ebuf);
+  }
   if (gptr() < egptr()) {
     char c = *(gptr());
     return c;
   }
   if (feof(_pipe) != 0)
     return EOF;
-  //  size_t len = ebuf() - base();
-  size_t len = 1024;
+#ifdef WIN32_VC
+  size_t len = 4096;
+#else /* WIN32_VC */
+  size_t len = ebuf() - base();
+#endif /* WIN32_VC */
   char* buf = new char[len];
   size_t n = fread(buf, 1, len, _pipe);
   int ret = buf[0];
   if (n == 0)
     ret = EOF;
   else {
-    //    memcpy(base()+(len - n), buf, n);
+#ifdef WIN32_VC
+    memcpy(eback()+(len-n), buf, n);
+#else /* WIN32_VC */
+    memcpy(base()+(len-n), buf, n);
+#endif /* WIN32_VC */
     gbump(-n);
   }
   delete buf;

@@ -6,7 +6,7 @@
 #ifndef __PFSTREAM_H__
 #define __PFSTREAM_H__
 
-#include "pfstreambuf.h"
+#include "pfstreamBuf.h"
 
 class EXPCL_DTOOL ipfstream : public istream {
 PUBLISHED:
