@@ -38,6 +38,9 @@ PUBLISHED:
   virtual ~ActorNode();
   
   PhysicsObject *get_physics_object() { return _mass_center; }
+  
+  void set_contact_vector(const LVector3f &contact_vector);
+  const LVector3f &get_contact_vector() const;
 
   // update the parent scene graph node with PhysicsObject information
   // i.e. copy from PhysicsObject to PandaNode
@@ -48,6 +51,7 @@ PUBLISHED:
 
 private:
   PhysicsObject *_mass_center;
+  LVector3f _contact_vector;
   bool _ok_to_callback;
 
   // node hook if the client changes the node's transform.
