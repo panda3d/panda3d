@@ -270,6 +270,12 @@ post_txa_file() {
 	(_properties._num_channels == 3 || _properties._num_channels == 4)) {
       consider_grayscale();
     }
+
+    // Also consider downgrading from alpha to non-alpha.
+    if (_properties._got_num_channels &&
+	(_properties._num_channels == 2 || _properties._num_channels == 4)) {
+      consider_unalpha();
+    }
   }
 
   if (_request._format != EggTexture::F_unspecified) {
@@ -426,9 +432,12 @@ get_preferred_source() {
 //               it has been unplaced.  Also removes the old filenames
 //               for previous sessions where it was unplaced, but is
 //               no longer.
+//
+//               If redo_all is true, this recopies the texture
+//               whether it needed to or not.
 ////////////////////////////////////////////////////////////////////
 void TextureImage::
-copy_unplaced() {
+copy_unplaced(bool redo_all) {
   // First, we need to build up the set of DestTextureImages that
   // represents the files we need to generate.
   Dests generate;
@@ -458,12 +467,19 @@ copy_unplaced() {
     }
   }
 
-  // Now remove the old files that we previously generated, but we
-  // don't need any more.
-  remove_old_dests(generate, _dests);
+  if (redo_all) {
+    // If we're redoing everything, we remove everything first and
+    // then recopy it again.
+    Dests empty;
+    remove_old_dests(empty, _dests);
+    copy_new_dests(generate, empty);
 
-  // And then copy in the new ones.
-  copy_new_dests(generate, _dests);
+  } else {
+    // Otherwise, we only remove and recopy the things that changed
+    // between this time and last time.
+    remove_old_dests(generate, _dests);
+    copy_new_dests(generate, _dests);
+  }
 
   // Clean up the old set.
   Dests::iterator di;
@@ -695,6 +711,38 @@ consider_grayscale() {
 
   // All pixels in the image were grayscale!
   _properties._num_channels -= 2;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::consider_unalpha
+//       Access: Private
+//  Description: Examines the actual contents of the image to
+//               determine if its alpha channel should be eliminated
+//               (e.g. it's completely white, and therefore
+//               pointless).
+////////////////////////////////////////////////////////////////////
+void TextureImage::
+consider_unalpha() {
+  const PNMImage &source = read_source_image();
+  if (!source.is_valid()) {
+    return;
+  }
+
+  if (!source.has_alpha()) {
+    return;
+  }
+
+  for (int y = 0; y < source.get_y_size(); y++) {
+    for (int x = 0; x < source.get_x_size(); x++) {
+      if (source.get_alpha_val(x, y) != source.get_maxval()) {
+	// Here's a non-white pixel; the alpha channel is meaningful.
+	return;
+      }
+    }
+  }
+
+  // All alpha pixels in the image were white!
+  _properties._num_channels--;
 }
 
 ////////////////////////////////////////////////////////////////////

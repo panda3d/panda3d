@@ -9,6 +9,7 @@
 #include "texturePlacement.h"
 #include "palettizer.h"
 #include "textureImage.h"
+#include "filenameUnifier.h"
 
 #include <indent.h>
 #include <datagram.h>
@@ -245,6 +246,7 @@ check_solitary() {
     placement->omit_solitary();
 
   } else {
+    // Zero or multiple.
     Placements::const_iterator pi;
     for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
       TexturePlacement *placement = (*pi);
@@ -272,19 +274,49 @@ write_placements(ostream &out, int indent_level) const {
 }
  
 ////////////////////////////////////////////////////////////////////
+//     Function: PaletteImage::reset_image
+//       Access: Public
+//  Description: Unpacks each texture that has been placed on this
+//               image, resetting the image to empty.
+////////////////////////////////////////////////////////////////////
+void PaletteImage::
+reset_image() {
+  // We need a copy so we can modify this list as we traverse it.
+  Placements copy_placements = _placements;
+  Placements::const_iterator pi;
+  for (pi = copy_placements.begin(); pi != copy_placements.end(); ++pi) {
+    TexturePlacement *placement = (*pi);
+    placement->force_replace();
+  }
+
+  _placements.clear();
+  _cleared_regions.clear();
+  unlink();
+  _new_image = true;
+}
+ 
+////////////////////////////////////////////////////////////////////
 //     Function: PaletteImage::update_image
 //       Access: Public
 //  Description: If the palette has changed since it was last written
-//               out, updates the image and writes out a new one.
+//               out, updates the image and writes out a new one.  If
+//               redo_all is true, regenerates the image from scratch
+//               and writes it out again, whether it needed it or not.
 ////////////////////////////////////////////////////////////////////
 void PaletteImage::
-update_image() {
+update_image(bool redo_all) {
   if (is_empty() && pal->_aggressively_clean_mapdir) {
     // If the palette image is 'empty', ensure that it doesn't exist.
     // No need to clutter up the map directory.
     unlink();
     _new_image = true;
     return;
+  }
+
+  if (redo_all) {
+    // If we're redoing everything, throw out the old image anyway.
+    unlink();
+    _new_image = true;
   }
 
   // Do we need to update?
@@ -411,7 +443,7 @@ get_image() {
     }
   }
 
-  nout << "Generating new " << get_filename() << "\n";
+  nout << "Generating new " << FilenameUnifier::make_user_filename(get_filename()) << "\n";
 
   // We won't be using this any more.
   _cleared_regions.clear();

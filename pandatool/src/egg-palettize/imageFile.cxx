@@ -196,8 +196,9 @@ exists() const {
     return false;
   }
   if (_properties._alpha_type != (PNMFileType *)NULL && 
-      _properties.uses_alpha()) {
-    if (_alpha_filename.exists()) {
+      _properties.uses_alpha() &&
+      !_alpha_filename.empty()) {
+    if (!_alpha_filename.exists()) {
       return false;
     }
   }

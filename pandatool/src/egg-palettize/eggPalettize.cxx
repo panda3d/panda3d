@@ -104,6 +104,17 @@ EggPalettize() : EggMultiFilter(true) {
      "the command line.",
      &EggPalettize::dispatch_none, &_all_textures);
   add_option
+    ("egg", "", 0, 
+     "Regenerate all egg files that need modification, even those that "
+     "aren't named on the command line.",
+     &EggPalettize::dispatch_none, &_redo_eggs);
+  add_option
+    ("redo", "", 0, 
+     "Force a regeneration of each image from its original source(s).  "
+     "When used in conjunction with -egg, this also forces each egg file to "
+     "be regenerated.",
+     &EggPalettize::dispatch_none, &_redo_all);
+  add_option
     ("opt", "", 0, 
      "Force an optimal packing.  By default, textures are added to "
      "existing palettes without disturbing them, which can lead to "
@@ -111,20 +122,6 @@ EggPalettize() : EggMultiFilter(true) {
      "to be rebuilt if necessary to optimize the packing, but this "
      "may invalidate other egg files which share this palette.",
      &EggPalettize::dispatch_none, &_force_optimal);
-  add_option
-    ("redo", "", 0, 
-     "Force a redo of everything.  This is useful in case something "
-     "has gotten out of sync and the old palettes are just bad.",
-     &EggPalettize::dispatch_none, &_force_redo_all);
-  add_option
-    ("R", "", 0, 
-     "Resize mostly-empty palettes to their minimal size.",
-     &EggPalettize::dispatch_none, &_optimal_resize);
-  add_option
-    ("egg", "", 0, 
-     "Regenerate all egg files that need modification, even those that "
-     "aren't named on the command line.",
-     &EggPalettize::dispatch_none, &_redo_eggs);
 
   add_option
     ("nolock", "", 0, 
@@ -327,6 +324,16 @@ run() {
     pal->_command_line_eggs.push_back(egg_file);
   }
 
+  if (_force_optimal) {
+    // If we're asking for an optimal packing, throw away the old
+    // packing and start fresh.
+    pal->reset_images();
+    _all_textures = true;
+
+    // Also turn off the rounding-up of UV's for this purpose.
+    pal->_round_uvs = false;
+  }
+
   if (_all_textures) {
     pal->process_all();
   } else {
@@ -334,12 +341,12 @@ run() {
   }
 
   if (_redo_eggs) {
-    if (!pal->read_stale_eggs()) {
+    if (!pal->read_stale_eggs(_redo_all)) {
       okflag = false;
     }
   }
 
-  pal->generate_images();
+  pal->generate_images(_redo_all);
 
   if (!pal->write_eggs()) {
     okflag = false;

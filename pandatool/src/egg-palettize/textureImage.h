@@ -63,7 +63,7 @@ public:
 
   SourceTextureImage *get_preferred_source();
 
-  void copy_unplaced();
+  void copy_unplaced(bool redo_all);
 
   const PNMImage &read_source_image();
   const PNMImage &get_dest_image();
@@ -82,6 +82,7 @@ private:
 
   void assign_to_groups(const PaletteGroups &groups);
   void consider_grayscale();
+  void consider_unalpha();
 
   void remove_old_dests(const Dests &a, const Dests &b);
   void copy_new_dests(const Dests &a, const Dests &b);

@@ -307,17 +307,33 @@ write_image_info(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::reset_images
+//       Access: Public
+//  Description: Throws away all of the current PaletteImages, so that
+//               new ones may be created (and the packing made more
+//               optimal).
+////////////////////////////////////////////////////////////////////
+void PaletteGroup::
+reset_images() {
+  Pages::iterator pai;
+  for (pai = _pages.begin(); pai != _pages.end(); ++pai) {
+    PalettePage *page = (*pai).second;
+    page->reset_images();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PaletteGroup::update_images
 //       Access: Public
 //  Description: Regenerates each PaletteImage on this group that needs
 //               it.
 ////////////////////////////////////////////////////////////////////
 void PaletteGroup::
-update_images() {
+update_images(bool redo_all) {
   Pages::iterator pai;
   for (pai = _pages.begin(); pai != _pages.end(); ++pai) {
     PalettePage *page = (*pai).second;
-    page->update_images();
+    page->update_images(redo_all);
   }
 }
 

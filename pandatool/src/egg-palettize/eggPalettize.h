@@ -45,8 +45,7 @@ private:
   bool _statistics_only;
   bool _all_textures; 
   bool _force_optimal;
-  bool _force_redo_all;
-  bool _optimal_resize;
+  bool _redo_all;
   bool _redo_eggs;
   bool _dont_lock_pi;
 

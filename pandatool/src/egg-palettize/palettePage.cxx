@@ -191,17 +191,36 @@ write_image_info(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PalettePage::reset_images
+//       Access: Public
+//  Description: Throws away all of the current PaletteImages, so that
+//               new ones may be created (and the packing made more
+//               optimal).
+////////////////////////////////////////////////////////////////////
+void PalettePage::
+reset_images() {
+  Images::iterator ii;
+  for (ii = _images.begin(); ii != _images.end(); ++ii) {
+    PaletteImage *image = (*ii);
+    image->reset_image();
+    delete image;
+  }
+
+  _images.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PalettePage::update_images
 //       Access: Public
 //  Description: Regenerates each PaletteImage on this page that needs
 //               it.
 ////////////////////////////////////////////////////////////////////
 void PalettePage::
-update_images() {
+update_images(bool redo_all) {
   Images::iterator ii;
   for (ii = _images.begin(); ii != _images.end(); ++ii) {
     PaletteImage *image = (*ii);
-    image->update_image();
+    image->update_image(redo_all);
   }
 }
 

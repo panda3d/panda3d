@@ -40,7 +40,8 @@ public:
   void check_solitary();
 
   void write_placements(ostream &out, int indent_level = 0) const;
-  void update_image();
+  void reset_image();
+  void update_image(bool redo_all);
 
 private:
   bool find_hole(int &x, int &y, int x_size, int y_size) const;

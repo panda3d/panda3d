@@ -346,23 +346,41 @@ process_all() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::generate_images
+//     Function: Palettizer::reset_images
 //       Access: Public
-//  Description: Actually generates the appropriate palette and
-//               unplaced texture images into the map directories.
+//  Description: Throws away all of the current PaletteImages, so that
+//               new ones may be created (and the packing made more
+//               optimal).
 ////////////////////////////////////////////////////////////////////
 void Palettizer::
-generate_images() {
+reset_images() {
   Groups::iterator gi;
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
     PaletteGroup *group = (*gi).second;
-    group->update_images();
+    group->reset_images();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::generate_images
+//       Access: Public
+//  Description: Actually generates the appropriate palette and
+//               unplaced texture images into the map directories.  If
+//               redo_all is true, this forces a regeneration of each
+//               image file.
+////////////////////////////////////////////////////////////////////
+void Palettizer::
+generate_images(bool redo_all) {
+  Groups::iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    PaletteGroup *group = (*gi).second;
+    group->update_images(redo_all);
   }
 
   Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     TextureImage *texture = (*ti).second;
-    texture->copy_unplaced();
+    texture->copy_unplaced(redo_all);
   }
 }
 
@@ -372,17 +390,21 @@ generate_images() {
 //  Description: Reads in any egg file that is known to be stale, even
 //               if it was not listed on the command line, so that it
 //               may be updated and written out when write_eggs() is
-//               called.  Returns true if successful, or false if
-//               there was some error.
+//               called.  If redo_all is true, this even reads egg
+//               files that were not flagged as stale.
+//
+//               Returns true if successful, or false if there was
+//               some error.
 ////////////////////////////////////////////////////////////////////
 bool Palettizer::
-read_stale_eggs() {
+read_stale_eggs(bool redo_all) {
   bool okflag = true;
 
   EggFiles::iterator ei;
   for (ei = _egg_files.begin(); ei != _egg_files.end(); ++ei) {
     EggFile *egg_file = (*ei).second;
-    if (!egg_file->has_data() && egg_file->is_stale()) {
+    if (!egg_file->has_data() && 
+	(egg_file->is_stale() || redo_all)) {
       if (!egg_file->read_egg()) {
 	okflag = false;
 
