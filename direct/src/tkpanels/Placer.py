@@ -54,7 +54,7 @@ class Placer(AppShell):
         self.refNodePathDict['render'] = render
         self.refNodePathDict['camera'] = direct.camera
         self.refNodePathDict['widget'] = direct.widget
-        self.refNodePathNames = ['self', 'parent', 'render',
+        self.refNodePathNames = ['parent', 'self', 'render',
                                  'camera', 'widget', 'selected']
 
         # Initial state
@@ -135,7 +135,7 @@ class Placer(AppShell):
             menuFrame, entry_width = 16,
             selectioncommand = self.selectRefNodePathNamed,
             scrolledlist_items = self.refNodePathNames)
-        self.refNodePathMenu.selectitem('self')
+        self.refNodePathMenu.selectitem('parent')
         self.refNodePathMenuEntry = (
             self.refNodePathMenu.component('entryfield_entry'))
         self.refNodePathMenu.pack(side = 'left', fill = 'x', expand = 1)
@@ -364,6 +364,7 @@ class Placer(AppShell):
         self.setMovementMode('Relative To:')
         # Set up placer for inital node path
         self.selectNodePathNamed('init')
+        self.selectRefNodePathNamed('parent')
 
         self.createButtons()
 
@@ -461,7 +462,7 @@ class Placer(AppShell):
                 # This calls updatePlacer
                 self.setReferenceNodePath(self.tempCS)
                 # update listbox accordingly
-                self.refNodePathMenu.selectitem('self')
+                self.refNodePathMenu.selectitem('parent')
             else:
                 # Record initial value and initialize the widgets
                 self.updatePlacer()
@@ -502,7 +503,7 @@ class Placer(AppShell):
         if (nodePath != None) and (nodePath.id() == self['nodePath'].id()):
             # Yes they are, use temp CS and update listbox accordingly
             nodePath = self.tempCS
-            self.refNodePathMenu.selectitem('self')
+            self.refNodePathMenu.selectitem('parent')
         # Update ref node path
         self.setReferenceNodePath(nodePath)
 
