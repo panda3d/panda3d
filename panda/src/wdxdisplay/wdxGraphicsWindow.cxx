@@ -45,6 +45,8 @@
 ////////////////////////////////////////////////////////////////////
 TypeHandle wdxGraphicsWindow::_type_handle;
 
+static bool wc_registered = false;
+
 #define LAST_ERROR 0
 #define ERRORBOX_TITLE "Panda3D Error"
 #define WDX_WINDOWCLASSNAME "wdxDisplay"
@@ -934,14 +936,17 @@ void wdxGraphicsWindow::config(void) {
         _hMouseCursor = LoadCursor(NULL, IDC_ARROW);
     }
 
-    wc.hCursor = _hMouseCursor;
-    wc.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    wc.lpszMenuName   = NULL;
-    wc.lpszClassName  = WDX_WINDOWCLASSNAME;
-
-    if(!RegisterClass(&wc)) {
-        wdxdisplay_cat.fatal() << "could not register window class!" << endl;
-        exit(1);
+    if (!wc_registered) {
+      // We only need to register the window class once per session.
+      wc.hCursor = _hMouseCursor;
+      wc.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
+      wc.lpszMenuName   = NULL;
+      wc.lpszClassName  = WDX_WINDOWCLASSNAME;
+      
+      if(!RegisterClass(&wc)) {
+        wdxdisplay_cat.error() << "could not register window class!" << endl;
+      }
+      wc_registered = true;
     }
 
     DWORD window_style = WS_POPUP | WS_SYSMENU;  // for CreateWindow
