@@ -46,6 +46,7 @@
     timedCycle.I timedCycle.h typedWritable.I \
     typedWritable.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
+    uniqueIdAllocator.h \
     vector_double.h vector_float.h vector_typedWritable.h \
     vector_ushort.h vector_writable.h \
     writableConfigurable.h \
@@ -75,6 +76,7 @@
     pta_int.cxx pta_ushort.cxx \
     string_utils.cxx timedCycle.cxx typedWritable.cxx \
     typedWritableReferenceCount.cxx updateSeq.cxx \
+    uniqueIdAllocator.cxx \
     vector_double.cxx vector_float.cxx \
     vector_typedWritable.cxx \
     vector_ushort.cxx vector_writable.cxx \
@@ -116,6 +118,7 @@
     string_utils.h timedCycle.I timedCycle.h typedWritable.I \
     typedWritable.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
+    uniqueIdAllocator.h \
     vector_double.h vector_float.h vector_typedWritable.h \
     vector_ushort.h vector_writable.h \
     writableConfigurable.h writableParam.I \
@@ -150,6 +153,14 @@
 
   #define SOURCES \
     test_filename.cxx
+
+#end test_bin_target
+
+#begin test_bin_target
+  #define TARGET test_uniqueIdAllocator
+
+  #define SOURCES \
+    test_uniqueIdAllocator.cxx
 
 #end test_bin_target
 

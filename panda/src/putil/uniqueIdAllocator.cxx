@@ -31,7 +31,7 @@ UniqueIdAllocator::
 UniqueIdAllocator(U32 min, U32 max)
   : _min(min), _max(max) {
   //cout<<"UniqueIdAllocator::UniqueIdAllocator("<<min<<", "<<max<<")"<<endl;
-  _size=_max-_min;
+  _size=_max-_min+1; // +1 because min and max are inclusive.
   assert(_size); // size must be > 0.
   _table=new U32[_size];
   assert(_table); // This should be redundant if new throws an exception.
@@ -98,11 +98,19 @@ void UniqueIdAllocator::
 free(U32 index) {
   //cout<<"UniqueIdAllocator::free(index)"<<endl;
   assert(index>=_min); // Attempt to free out-of-range id.
-  assert(index<_max); // Attempt to free out-of-range id.
+  assert(index<=_max); // Attempt to free out-of-range id.
   index=index-_min;
   assert(_table[index]==-2); // Attempt to free non-allocated id.
   _table[index]=-1;
   _table[_last_free]=index;
+  #if 0 //[
+  // This is only necessary if the free pool is allowed to go empty.
+  // Since we don't allow that, it is an optimization to comment
+  // this out.
+  if (_next_free==-1) {
+    _next_free=index;
+  }
+  #endif //]
   _last_free=index;
   ++_free;
 }

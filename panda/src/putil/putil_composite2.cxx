@@ -11,6 +11,7 @@
 #include "typedWritable.cxx"
 #include "typedWritableReferenceCount.cxx"
 #include "updateSeq.cxx"
+#include "uniqueIdAllocator.cxx"
 #include "vector_double.cxx"
 #include "vector_float.cxx"
 #include "vector_typedWritable.cxx"
