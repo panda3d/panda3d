@@ -1375,6 +1375,7 @@ write_data(ostream &write, istream *read, streampos fpos) {
           express_cat.info()
             << "Unexpected EOF for subfile " << _name << ".\n";
           _flags |= SF_data_invalid;
+          break;
         }
         write.put(byte);
       }
