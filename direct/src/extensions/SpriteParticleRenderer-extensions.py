@@ -7,7 +7,7 @@
     # Initialize class variable for source file and node for node path textures
     # Will use instance copy of this in functions below
     sourceFileName = 'models/directmodels/smiley'
-    sourceNodeName = 'Happy'
+    sourceNodeName = '**/Happy'
 
     def getSourceFileName(self):
         # Return instance copy of class variable
@@ -43,6 +43,7 @@
         np = m.find(nodeName)
         if np.isEmpty():
             print "SpriteParticleRenderer: Couldn't find node: %s!" % nodeName
+            m.removeNode()
             return None
         self.setFromNode(np)
         m.removeNode()

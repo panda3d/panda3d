@@ -350,7 +350,7 @@ class Particles(ParticleSystem.ParticleSystem):
             else:
                 modelName = self.renderer.getSourceFileName()
                 nodeName = self.renderer.getSourceNodeName()
-                file.write(targ + '.renderer.setTextureFromNode(%s, %s)' % (modelName, nodeName))
+                file.write(targ + '.renderer.setTextureFromNode("%s", "%s")\n' % (modelName, nodeName))
 	    sColor = self.renderer.getColor()
 	    file.write((targ + '.renderer.setColor(Vec4(%.2f, %.2f, %.2f, %.2f))\n' % (sColor[0], sColor[1], sColor[2], sColor[3])))
 	    file.write(targ + '.renderer.setXScaleFlag(%d)\n' % self.renderer.getXScaleFlag())
