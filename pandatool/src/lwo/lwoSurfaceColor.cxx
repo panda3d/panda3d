@@ -19,7 +19,8 @@
 #include "lwoSurfaceColor.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle LwoSurfaceColor::_type_handle;
 

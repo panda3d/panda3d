@@ -19,7 +19,8 @@
 #include "lwoSurfaceBlockWrap.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle LwoSurfaceBlockWrap::_type_handle;
 

@@ -19,8 +19,9 @@
 #include "lwoSurfaceSmoothingAngle.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
-#include <deg_2_rad.h>
+#include "dcast.h"
+#include "indent.h"
+#include "deg_2_rad.h"
 
 TypeHandle LwoSurfaceSmoothingAngle::_type_handle;
 

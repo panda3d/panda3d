@@ -19,7 +19,8 @@
 #include "lwoSurfaceParameter.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle LwoSurfaceParameter::_type_handle;
 

@@ -18,8 +18,9 @@
 
 #include "eggMatrixTablePointer.h"
 
-#include <eggXfmAnimData.h>
-#include <eggXfmSAnim.h>
+#include "dcast.h"
+#include "eggXfmAnimData.h"
+#include "eggXfmSAnim.h"
 
 TypeHandle EggMatrixTablePointer::_type_handle;
 

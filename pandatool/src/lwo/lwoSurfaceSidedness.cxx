@@ -19,7 +19,8 @@
 #include "lwoSurfaceSidedness.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle LwoSurfaceSidedness::_type_handle;
 

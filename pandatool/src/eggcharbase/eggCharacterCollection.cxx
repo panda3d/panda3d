@@ -21,14 +21,15 @@
 #include "eggJointData.h"
 #include "eggSliderData.h"
 
-#include <eggGroup.h>
-#include <eggTable.h>
-#include <eggPrimitive.h>
-#include <eggVertex.h>
-#include <eggMorphList.h>
-#include <eggSAnimData.h>
-#include <indirectCompareNames.h>
-#include <indent.h>
+#include "dcast.h"
+#include "eggGroup.h"
+#include "eggTable.h"
+#include "eggPrimitive.h"
+#include "eggVertex.h"
+#include "eggMorphList.h"
+#include "eggSAnimData.h"
+#include "indirectCompareNames.h"
+#include "indent.h"
 
 #include <algorithm>
 

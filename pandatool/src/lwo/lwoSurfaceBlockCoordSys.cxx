@@ -19,7 +19,8 @@
 #include "lwoSurfaceBlockCoordSys.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle LwoSurfaceBlockCoordSys::_type_handle;
 

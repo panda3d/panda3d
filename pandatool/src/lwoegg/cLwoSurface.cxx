@@ -21,14 +21,15 @@
 #include "cLwoClip.h"
 #include "lwoToEggConverter.h"
 
-#include <lwoSurfaceColor.h>
-#include <lwoSurfaceParameter.h>
-#include <lwoSurfaceSmoothingAngle.h>
-#include <lwoSurfaceSidedness.h>
-#include <lwoSurfaceBlock.h>
-#include <eggPrimitive.h>
-#include <string_utils.h>
-#include <mathNumbers.h>
+#include "lwoSurfaceColor.h"
+#include "lwoSurfaceParameter.h"
+#include "lwoSurfaceSmoothingAngle.h"
+#include "lwoSurfaceSidedness.h"
+#include "lwoSurfaceBlock.h"
+#include "eggPrimitive.h"
+#include "string_utils.h"
+#include "mathNumbers.h"
+#include "dcast.h"
 
 
 ////////////////////////////////////////////////////////////////////

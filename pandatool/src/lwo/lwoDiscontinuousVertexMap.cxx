@@ -19,7 +19,9 @@
 #include "lwoDiscontinuousVertexMap.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
+
 #include <algorithm>
 
 TypeHandle LwoDiscontinuousVertexMap::_type_handle;

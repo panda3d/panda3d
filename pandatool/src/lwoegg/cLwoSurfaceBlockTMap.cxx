@@ -19,9 +19,10 @@
 #include "cLwoSurfaceBlockTMap.h"
 #include "lwoToEggConverter.h"
 
-#include <lwoSurfaceBlockTransform.h>
-#include <lwoSurfaceBlockRefObj.h>
-#include <compose_matrix.h>
+#include "lwoSurfaceBlockTransform.h"
+#include "lwoSurfaceBlockRefObj.h"
+#include "compose_matrix.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLwoSurfaceBlockTMap::Constructor

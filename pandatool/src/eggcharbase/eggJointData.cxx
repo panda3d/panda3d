@@ -20,9 +20,10 @@
 #include "eggJointNodePointer.h"
 #include "eggMatrixTablePointer.h"
 
-#include <eggGroup.h>
-#include <eggTable.h>
-#include <indent.h>
+#include "dcast.h"
+#include "eggGroup.h"
+#include "eggTable.h"
+#include "indent.h"
 
 
 ////////////////////////////////////////////////////////////////////

@@ -18,9 +18,10 @@
 
 #include "eggJointNodePointer.h"
 
-#include <eggObject.h>
-#include <eggGroup.h>
-#include <pointerTo.h>
+#include "dcast.h"
+#include "eggObject.h"
+#include "eggGroup.h"
+#include "pointerTo.h"
 
 
 TypeHandle EggJointNodePointer::_type_handle;

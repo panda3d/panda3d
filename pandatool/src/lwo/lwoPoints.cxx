@@ -19,7 +19,8 @@
 #include "lwoPoints.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle LwoPoints::_type_handle;
 

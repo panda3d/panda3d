@@ -19,7 +19,8 @@
 #include "lwoHeader.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle LwoHeader::_type_handle;
 

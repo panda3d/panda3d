@@ -23,17 +23,18 @@
 #include "cLwoPolygons.h"
 #include "cLwoSurface.h"
 
-#include <eggData.h>
-#include <lwoHeader.h>
-#include <lwoLayer.h>
-#include <lwoClip.h>
-#include <lwoPoints.h>
-#include <lwoPolygons.h>
-#include <lwoVertexMap.h>
-#include <lwoDiscontinuousVertexMap.h>
-#include <lwoTags.h>
-#include <lwoPolygonTags.h>
-#include <lwoInputFile.h>
+#include "eggData.h"
+#include "lwoHeader.h"
+#include "lwoLayer.h"
+#include "lwoClip.h"
+#include "lwoPoints.h"
+#include "lwoPolygons.h"
+#include "lwoVertexMap.h"
+#include "lwoDiscontinuousVertexMap.h"
+#include "lwoTags.h"
+#include "lwoPolygonTags.h"
+#include "lwoInputFile.h"
+#include "dcast.h"
 
 
 ////////////////////////////////////////////////////////////////////

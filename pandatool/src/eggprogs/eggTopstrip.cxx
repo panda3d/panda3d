@@ -18,12 +18,13 @@
 
 #include "eggTopstrip.h"
 
-#include <eggJointData.h>
-#include <eggCharacterCollection.h>
-#include <eggCharacterData.h>
-#include <eggJointPointer.h>
-#include <eggTable.h>
-#include <compose_matrix.h>
+#include "dcast.h"
+#include "eggJointData.h"
+#include "eggCharacterCollection.h"
+#include "eggCharacterData.h"
+#include "eggJointPointer.h"
+#include "eggTable.h"
+#include "compose_matrix.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTopstrip::Constructor

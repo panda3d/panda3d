@@ -19,7 +19,8 @@
 #include "lwoVertexMap.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle LwoVertexMap::_type_handle;
 

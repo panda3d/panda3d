@@ -25,6 +25,7 @@
 #include "eggGroupNode.h"
 #include "eggSwitchCondition.h"
 #include "string_utils.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggReader::Constructor

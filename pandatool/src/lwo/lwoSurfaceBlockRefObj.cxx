@@ -19,7 +19,8 @@
 #include "lwoSurfaceBlockRefObj.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle LwoSurfaceBlockRefObj::_type_handle;
 

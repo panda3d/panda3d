@@ -28,6 +28,8 @@
 #include "fltTransformRotateScale.h"
 #include "config_flt.h"
 
+#include "dcast.h"
+
 #include <assert.h>
 
 TypeHandle FltBead::_type_handle;

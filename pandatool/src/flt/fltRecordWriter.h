@@ -19,12 +19,13 @@
 #ifndef FLTRECORDWRITER_H
 #define FLTRECORDWRITER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltOpcode.h"
 #include "fltError.h"
 
-#include <datagram.h>
+#include "datagram.h"
+#include "pset.h"
 
 class FltHeader;
 

@@ -19,7 +19,8 @@
 #include "lwoTags.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle LwoTags::_type_handle;
 

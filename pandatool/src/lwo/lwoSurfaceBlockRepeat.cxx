@@ -19,7 +19,8 @@
 #include "lwoSurfaceBlockRepeat.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle LwoSurfaceBlockRepeat::_type_handle;
 

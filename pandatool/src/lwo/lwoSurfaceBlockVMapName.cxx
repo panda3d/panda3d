@@ -19,7 +19,8 @@
 #include "lwoSurfaceBlockVMapName.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle LwoSurfaceBlockVMapName::_type_handle;
 

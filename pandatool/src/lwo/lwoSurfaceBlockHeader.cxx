@@ -23,7 +23,8 @@
 #include "lwoSurfaceBlockOpacity.h"
 #include "lwoSurfaceBlockAxis.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle LwoSurfaceBlockHeader::_type_handle;
 

@@ -22,11 +22,12 @@
 #include "pal_string_utils.h"
 #include "filenameUnifier.h"
 
-#include <eggData.h>
-#include <bamFile.h>
-#include <notify.h>
-#include <notifyCategory.h>
-#include <notifySeverity.h>
+#include "dcast.h"
+#include "eggData.h"
+#include "bamFile.h"
+#include "notify.h"
+#include "notifyCategory.h"
+#include "notifySeverity.h"
 
 #include <stdio.h>
 

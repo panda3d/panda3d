@@ -19,8 +19,9 @@
 #include "cLwoClip.h"
 #include "lwoToEggConverter.h"
 
-#include <lwoClip.h>
-#include <lwoStillImage.h>
+#include "lwoClip.h"
+#include "lwoStillImage.h"
+#include "dcast.h"
 
 
 ////////////////////////////////////////////////////////////////////

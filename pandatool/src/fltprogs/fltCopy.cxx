@@ -18,11 +18,12 @@
 
 #include "fltCopy.h"
 
-#include <cvsSourceDirectory.h>
-#include <fltHeader.h>
-#include <fltFace.h>
-#include <fltExternalReference.h>
-#include <fltError.h>
+#include "cvsSourceDirectory.h"
+#include "fltHeader.h"
+#include "fltFace.h"
+#include "fltExternalReference.h"
+#include "fltError.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltCopy::Constructor

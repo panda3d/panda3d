@@ -20,11 +20,12 @@
 #include "cLwoSurfaceBlockTMap.h"
 #include "lwoToEggConverter.h"
 
-#include <lwoSurfaceBlockChannel.h>
-#include <lwoSurfaceBlockEnabled.h>
-#include <lwoSurfaceBlockImage.h>
-#include <lwoSurfaceBlockRepeat.h>
-#include <lwoSurfaceBlockVMapName.h>
+#include "lwoSurfaceBlockChannel.h"
+#include "lwoSurfaceBlockEnabled.h"
+#include "lwoSurfaceBlockImage.h"
+#include "lwoSurfaceBlockRepeat.h"
+#include "lwoSurfaceBlockVMapName.h"
+#include "dcast.h"
 
 
 ////////////////////////////////////////////////////////////////////

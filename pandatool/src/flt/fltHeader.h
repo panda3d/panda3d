@@ -19,7 +19,7 @@
 #ifndef FLTHEADER_H
 #define FLTHEADER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltBeadID.h"
 #include "fltVertex.h"
@@ -30,9 +30,12 @@
 #include "fltTrackplane.h"
 #include "fltInstanceDefinition.h"
 
-#include <filename.h>
-#include <dSearchPath.h>
-#include <distanceUnit.h>
+#include "filename.h"
+#include "dSearchPath.h"
+#include "distanceUnit.h"
+#include "pvector.h"
+#include "pset.h"
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltHeader

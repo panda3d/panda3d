@@ -19,7 +19,8 @@
 #include "lwoPolygonTags.h"
 #include "lwoInputFile.h"
 
-#include <indent.h>
+#include "dcast.h"
+#include "indent.h"
 
 TypeHandle LwoPolygonTags::_type_handle;
 

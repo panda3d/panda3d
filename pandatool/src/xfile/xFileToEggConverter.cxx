@@ -27,6 +27,7 @@
 #include "datagram.h"
 #include "eggMaterialCollection.h"
 #include "eggTextureCollection.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileToEggConverter::Constructor
