@@ -191,7 +191,11 @@ $[cdefine HAVE_RTTI]
 $[cdefine GLOBAL_OPERATOR_NEW_EXCEPTIONS]
 
 /* What style STL allocator should we declare? */
-$[cdefine UNKNOWN_ALLOCATOR]
+
+// Use this to force UNKNOWN_ALLOCATOR for non-Opt4 (it is already default for Opt4 using /DUNKNOWN_ALLOCATOR)
+// see dtoolbase.h
+$[cdefine USE_UNKNOWN_ALLOCATOR]
+
 $[cdefine OLD_STYLE_ALLOCATOR]
 $[cdefine GNU_STYLE_ALLOCATOR]
 

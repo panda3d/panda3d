@@ -104,8 +104,8 @@
 // this indicates OLD_STYLE_ALLOCATOR is NOT used (defined as the empty string)
 #define OLD_STYLE_ALLOCATOR
 
-// this is reqd for msvc 7.0 to build (beta-only, havent tested final)
-// #define UNKNOWN_ALLOCATOR 1
+// this is reqd for msvc 7.0 to build (beta-only, havent tested final).  Default on for Opt4, off otherwise
+//#define USE_UNKNOWN_ALLOCATOR 1
 
 // can Intel C++ build this directory successfully (if not, change CC to msvc)
 #define NOT_INTEL_BUILDABLE false
