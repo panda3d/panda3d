@@ -1,0 +1,23 @@
+; This file is used by the MSVC linker to specify DLL base addresses to
+; prevent runtime relocation of DLLs by the windows loader.  This speeds
+; loading.  This file was generated using $PANDATOOL/src/scripts/basedlls.pl
+; which uses rebase.exe from the MS platform SDK.  It may additionally be
+; hand-hacked to simplify addresses for popular dlls to aid debugging.
+
+
+libpanda         0x60000000 0x00770000
+libpandadx       0x61000000 0x00050000 ; hacked
+libpandagl       0x62000000 0x00040000 ; hacked
+libpandaexpress  0x63000000 0x000c0000 ; hacked
+libpandaphysics  0x608c0000 0x00080000
+libshader        0x60940000 0x00030000
+libdtool         0x60970000 0x00020000
+libdtoolconfig   0x60990000 0x00060000
+libpystub        0x609f0000 0x00010000
+libdirect        0x60a00000 0x00040000
+libtoontown      0x60a40000 0x000a0000
+libaudio_load_midi 0x60ae0000 0x00010000
+libaudio_load_mp3 0x60af0000 0x00040000
+libaudio_load_st 0x60b30000 0x00010000
+libaudio_load_wav 0x60b40000 0x00010000
+libpandaegg      0x60b50000 0x001a0000
