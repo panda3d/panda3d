@@ -344,6 +344,7 @@ class ShowBase:
         # ad-hoc development in Python using ShowBase.  Applications
         # can explicitly call base.useDrive() if they prefer a drive
         # interface.
+        self.mouseInterface = self.trackball
         self.useTrackball()
 
         # A ButtonThrower to generate events from the mouse and
@@ -626,29 +627,29 @@ class ShowBase:
         Switch mouse action to drive mode
         """
         # Get rid of the trackball
-        self.trackball.reparentTo(self.dataUnused)
+        self.mouseInterface.reparentTo(self.dataUnused)
         # Update the mouseInterface to point to the drive
         self.mouseInterface = self.drive
         self.mouseInterfaceNode = self.mouseInterface.node()
-        self.drive.node().reset()
         # Hookup the drive to the camera.
-        self.drive.reparentTo(self.mouseWatcher)
-        self.mouse2cam.reparentTo(self.drive)
+        self.mouseInterface.reparentTo(self.mouseWatcher)
+        self.mouse2cam.reparentTo(self.mouseInterface)
         # Set the height to a good eyeheight
-        self.drive.node().setZ(4.0)
+        self.mouseInterfaceNode.reset()
+        self.mouseInterfaceNode.setZ(4.0)
 
     def useTrackball(self):
         """
         Switch mouse action to trackball mode
         """
         # Get rid of the drive
-        self.drive.reparentTo(self.dataUnused)
+        self.mouseInterface.reparentTo(self.dataUnused)
         # Update the mouseInterface to point to the trackball
         self.mouseInterface = self.trackball
         self.mouseInterfaceNode = self.mouseInterface.node()
         # Hookup the trackball to the camera.
-        self.trackball.reparentTo(self.mouseWatcher)
-        self.mouse2cam.reparentTo(self.trackball)
+        self.mouseInterface.reparentTo(self.mouseWatcher)
+        self.mouse2cam.reparentTo(self.mouseInterface)
 
     def oobe(self):
         """
@@ -686,24 +687,16 @@ class ShowBase:
             self.oobeLens.setAspectRatio(self.aspectRatio)
             self.oobeLens.setNearFar(0.1, 10000.0)
             self.oobeLens.setFov(52.0)
-            self.oobeControl = DataValve.Control()
-            self.mouseValve.node().setControl(1, self.oobeControl)
-            self.oobeTrackball = self.mouseValve.attachNewNode(Trackball('oobeTrackball'), 1)
-            self.oobe2cam = self.oobeTrackball.attachNewNode(Transform2SG('oobe2cam'))
-            self.oobe2cam.node().setArc(self.oobeCameraTrackball.arc())
 
-            self.oobeButtonEventsType = TypeRegistry.ptr().findType('ButtonEvents_ButtonEventDataTransition')
+            self.oobeTrackball = self.dataUnused.attachNewNode(Trackball('oobeTrackball'), 1)
+            self.oobe2cam = self.oobeTrackball.attachNewNode(Transform2SG('oobe2cam'))
+            self.oobe2cam.node().setNode(self.oobeCameraTrackball.node())
 
             self.oobeVis = loader.loadModelOnce('models/misc/camera')
             if self.oobeVis:
-                self.oobeVis.arc().setFinal(1)
+                self.oobeVis.node().setFinal(1)
             self.oobeCullFrustum = None
             self.oobeCullFrustumVis = None
-
-            # Make sure the MouseValve is monitoring the Control key.
-            mods = ModifierButtons(self.mouseValve.node().getModifierButtons())
-            mods.addButton(KeyboardButton.control())
-            self.mouseValve.node().setModifierButtons(mods)
 
         if self.oobeMode:
             # Disable OOBE mode.
@@ -712,34 +705,27 @@ class ShowBase:
                 # First, disable OOBE cull mode.
                 self.oobeCull()
             
-            self.oobeControl.setOff()
-            self.mouseControl.setOn()
             if self.oobeVis:
                 self.oobeVis.reparentTo(self.hidden)
+
+            # Restore the mouse interface node.
+            self.mouseInterface.reparentTo(self.mouseWatcher)
+            self.oobeTrackball.reparentTo(self.dataUnused)
+                
             self.cam.reparentTo(self.camera)
             self.camNode.setLens(self.camLens)
             self.oobeCamera.reparentTo(self.hidden)
             self.oobeMode = 0            
         else:
-            # Enable OOBE mode.
-            mods = ModifierButtons(self.mouseValve.node().getModifierButtons())
-
-            # We're in OOBE control mode without the control key.
-            mods.allButtonsUp()
-            self.oobeControl.setButtons(mods)
-
-            # We're in traditional control mode with the control key.
-            mods.buttonDown(KeyboardButton.control())
-            self.mouseControl.setButtons(mods)
-
-            # However, keyboard buttons always make it through to the
-            # traditional controller, regardless of the control key.
-            self.mouseValve.node().setFineControl(0, self.oobeButtonEventsType, self.onControl)
-
             # Make oobeCamera be a sibling of wherever camera is now.
             cameraParent = self.camera.getParent()
             self.oobeCamera.reparentTo(cameraParent)
             self.oobeCamera.clearMat()
+
+            # Move aside the current mouse interface node and put the
+            # oobeTrackball in its place.
+            self.mouseInterface.reparentTo(self.dataUnused)
+            self.oobeTrackball.reparentTo(self.mouseWatcher)
 
             # Set our initial OOB position to be just behind the camera.
             mat = Mat4.translateMat(0, -10, 3) * self.camera.getMat(cameraParent)
@@ -781,18 +767,18 @@ class ShowBase:
 
             # Assign each DisplayRegion shared by the camera to use
             # this cull frustum.
-            numDrs = self.camNode.getNumDrs()
-            for d in range(0, numDrs):
-                dr = self.camNode.getDr(d)
+            numDisplayRegions = self.camNode.getNumDisplayRegions()
+            for d in range(0, numDisplayRegions):
+                dr = self.camNode.getDisplayRegion(d)
                 dr.setCullFrustum(pnode)
         else:
             # Disable OOBE culling.
 
             # Assign each DisplayRegion shared by the camera to use
             # the default cull frustum, the camera itself.
-            numDrs = self.camNode.getNumDrs()
-            for d in range(0, numDrs):
-                dr = self.camNode.getDr(d)
+            numDisplayRegions = self.camNode.getNumDisplayRegions()
+            for d in range(0, numDisplayRegions):
+                dr = self.camNode.getDisplayRegion(d)
                 dr.setCullFrustum(self.camNode)
 
             self.oobeCullFrustum.removeNode()
