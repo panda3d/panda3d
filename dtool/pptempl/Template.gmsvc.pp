@@ -173,7 +173,7 @@
 
 // for single-processor builds, write out *_composite.cxx files that include all composite
 // files into 1 in order to speed the build of our heavily templated source
-#forscopes lib_target bin_target static_lib_target
+#forscopes lib_target bin_target static_lib_target ss_lib_target
 #if $[and $[<= $[NUMBER_OF_PROCESSORS],2], $[eq $[NO_COMBINED_SOURCES],], $[ne $[COMBINED_SOURCES],]]
 #output $[TARGET]_composite.cxx notouch
 #format collapse
@@ -186,7 +186,7 @@
 
 #end $[TARGET]_composite.cxx
 #endif
-#end lib_target bin_target static_lib_target
+#end lib_target bin_target static_lib_target ss_lib_target
 
 // Okay, we're ready.  Start outputting the Makefile now.
 #output Makefile
