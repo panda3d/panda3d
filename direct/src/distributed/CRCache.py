@@ -19,7 +19,7 @@ class CRCache:
         CRCache.notify.debug("Flushing the cache")
         for distObj in self.dict.values():
             distObj.delete()
-        # Null out all references to the objects so they will get gc'd
+        # Null out all references to the objects so they will get gcd
         self.dict = {}
         self.fifo = []
 
