@@ -38,7 +38,9 @@ class Level:
 
     def initializeLevel(self, levelId, levelSpec, scenarioIndex):
         """subclass should call this as soon as it has located
-        its spec data"""
+        its spec data. levelId should be a unique integer (a doId works
+        just fine) that differentiates this level from all other levels
+        that may exist concurrently."""
         self.levelId = levelId
         self.levelSpec = levelSpec
         self.scenarioIndex = scenarioIndex

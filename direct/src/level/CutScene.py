@@ -183,7 +183,7 @@ class CutScene(BasicEntities.NodePathEntity, DirectObject.DirectObject):
         assert(self.debugPrint("setStartStop(event=%s)"%(event,)))
         if self.startStopEvent:
             self.ignore(self.startStopEvent)
-        self.startStopEvent = "switch-%s"%(event,)
+        self.startStopEvent = self.getOutputEventName(event)
         if self.startStopEvent:
             self.accept(self.startStopEvent, self.startOrStop)
     

@@ -38,32 +38,32 @@ import Entity
 def andTest(self, a, b):
     assert(self.debugPrint("andTest(a=%s, b=%s)"%(a, b)))
     if b:
-        messenger.send(self.getName(), [a])
+        messenger.send(self.getOutputEventName(), [a])
 
 def orTest(self, a, b):
     assert(self.debugPrint("orTest(a=%s, b=%s)"%(a, b)))
     if not b:
-        messenger.send(self.getName(), [a])
+        messenger.send(self.getOutputEventName(), [a])
     # else: ...we already sent the messege when b was set.
 
 def xorTest(self, a, b):
     assert(self.debugPrint("xorTest(a=%s, b=%s)"%(a, b)))
-    messenger.send(self.getName(), [(not (a and b)) and (a or b)])
+    messenger.send(self.getOutputEventName(), [(not (a and b)) and (a or b)])
 
 def nandTest(self, a, b):
     assert(self.debugPrint("nandTest(a=%s, b=%s)"%(a, b)))
     if b:
-        messenger.send(self.getName(), [not (a and b)])
+        messenger.send(self.getOutputEventName(), [not (a and b)])
 
 def norTest(self, a, b):
     assert(self.debugPrint("norTest(a=%s, b=%s)"%(a, b)))
     if not b:
-        messenger.send(self.getName(), [not (a or b)])
+        messenger.send(self.getOutputEventName(), [not (a or b)])
     # else: ...we already sent the messege when b was set.
 
 def xnorTest(self, a, b):
     assert(self.debugPrint("xnorTest(a=%s, b=%s)"%(a, b)))
-    messenger.send(self.getName(), [(a and b) or (not (a or b))])
+    messenger.send(self.getOutputEventName(), [(a and b) or (not (a or b))])
 
 
 class LogicGate(Entity.Entity, PandaObject.PandaObject):
@@ -126,7 +126,7 @@ class LogicGate(Entity.Entity, PandaObject.PandaObject):
         assert(self.debugPrint("setInput1Event(event=%s)"%(event,)))
         if self.input1Event:
             self.ignore(self.input1Event)
-        self.input1Event = "switch-%s"%(event,)
+        self.input1Event = self.getOutputEventName(event)
         if self.input1Event:
             self.accept(self.input1Event, self.setIsInput1)
     
@@ -134,7 +134,7 @@ class LogicGate(Entity.Entity, PandaObject.PandaObject):
         assert(self.debugPrint("setInput2Event(event=%s)"%(event,)))
         if self.input2Event:
             self.ignore(self.input2Event)
-        self.input2Event = "switch-%s"%(event,)
+        self.input2Event = self.getOutputEventName(event)
         if self.input2Event:
             self.accept(self.input2Event, self.setIsInput2)
     
