@@ -32,7 +32,8 @@ COLOR_TYPES = ['wall_color', 'window_color',
 # The list of dna components maintained in the style attribute dictionary
 DNA_TYPES = ['wall', 'window', 'sign', 'door', 'cornice', 'toon_landmark',
              'prop', 'street']
-BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10']
+BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10',
+                  '5_10', '5_15', '5_20', '5_10_10']
 # The list of neighborhoods to edit
 NEIGHBORHOODS = ['toontown_central',
                  'donalds_dock',
@@ -137,10 +138,10 @@ except NameError:
     # Load the generic storage file
     loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
     # Load all the neighborhood specific storage files
-    loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_8/dna/storage_BR.dna', CSDefault, 1)
+    #loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
+    #loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
+    #loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
+    #loadDNAFile(DNASTORE, 'phase_8/dna/storage_BR.dna', CSDefault, 1)
     loadDNAFile(DNASTORE, 'phase_8/dna/storage_DG.dna', CSDefault, 1)
     __builtin__.dnaLoaded = 1
 
@@ -759,27 +760,43 @@ class LevelEditor(NodePath, PandaObject):
         self.accept('space', self.initNodePath, [dnaNode, 'space'])
         self.accept('insert', self.initNodePath, [dnaNode, 'insert'])
 
+    def getRandomBuildingType(self, buildingType):
+        # Select a list of wall heights
+        chance = randint(1,100)
+        if buildingType == 'random20':
+            if chance <= 35:
+                return '10_10'
+            elif chance <= 65:
+                return '5_15'
+            else:
+                return '20'
+        elif buildingType == 'random25':
+            if chance <= 35:
+                return '5_10_10'
+            else:
+                return '5_20'           
+        elif buildingType == 'random30':
+            if chance <= 40:
+                return '10_20'
+            elif (chance > 80):
+                return '10_10_10'
+            else:
+                return '20_10'
+        else:
+            return buildingType
+
     def setRandomBuildingStyle(self, dnaNode, name = 'building'):
         """ Initialize a new DNA Flat building to a random building style """
-        buildingType = self.getCurrent('building_type')
+        randomBuildingType = self.getCurrent('building_type')
         # Select a list of wall heights
-        if buildingType == 'random20':
-            chance = randint(1,100)
-            if chance <= 65:
-                buildingType = '10_10'
-            else:
-                buildingType = '20'
-        elif buildingType == 'random30':
-            chance = randint(1,100)
-            if chance <= 40:
-                buildingType = '10_20'
-            elif (chance > 80):
-                buildingType = '10_10_10'
-            else:
-                buildingType = '20_10'
-        
-        # The building_style attribute dictionary for this number of stories
-        dict = self.getAttribute('building_style_' + buildingType).getDict()
+        dict = {}
+        while not dict:
+            buildingType = self.getRandomBuildingType(randomBuildingType)
+            buildingStyle = 'building_style_' + buildingType
+            
+            # The building_style attribute dictionary for this number of stories
+            dict = self.getAttribute(buildingStyle).getDict()
+            
         style = self.getRandomDictionaryEntry(dict)
         self.styleManager.setDNAFlatBuildingStyle(
             dnaNode, style, width = self.getRandomWallWidth(), name = name)
@@ -1913,7 +1930,11 @@ class LevelEditor(NodePath, PandaObject):
     def getAttribute(self, attribute):
         """ Return specified attribute for current neighborhood """
         return self.styleManager.getAttribute(attribute)
-    
+
+    def hasAttribute(self, attribute):
+        """ Return specified attribute for current neighborhood """
+        return self.styleManager.hasAttribute(attribute)
+
     def getCurrent(self, attribute):
         """ Return neighborhood's current selection for specified attribute """
         return self.getAttribute(attribute).getCurrent()
@@ -2804,6 +2825,20 @@ class LevelStyleManager:
             levelAttribute = levelAttribute[self.getEditMode()]
         return levelAttribute
 
+    # UTILITY FUNCTIONS
+    def hasAttribute(self, attribute):
+        """ Return specified attribute for current neighborhood """
+        if not self.attributeDictionary.has_key(attribute):
+            return 0
+        else:
+            levelAttribute = self.attributeDictionary[attribute]
+            # Get attribute for current neighborhood
+            if (type(levelAttribute) == types.DictionaryType):
+                editMode = self.getEditMode()
+                return levelAttribute.has_key(editMode)
+            else:
+                return 1
+
     def getCatalogCode(self, category, i):
         return DNASTORE.getCatalogCode(category, i)
     
@@ -3203,7 +3238,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             label_text = 'Toon bldg type:',
             entry_width = 30,
             selectioncommand = self.setFlatBuildingType,
-            scrolledlist_items = ['random20', 'random30'] + BUILDING_TYPES
+            scrolledlist_items = ['random20', 'random25', 'random30'] + BUILDING_TYPES
             )
         self.toonBuildingType = 'random20'
         self.toonBuildingSelector.selectitem(self.toonBuildingType)
@@ -3547,7 +3582,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
     def setLandmarkType(self,name):
         self.landmarkType = 'toon_landmark_' + name
         self.levelEditor.setCurrent('toon_landmark_texture', self.landmarkType)
-    
+
     def signPanelSync(self):
         self.baselineMenu.delete(0, END)
         sign=self.findSignFromDNARoot()
@@ -3559,7 +3594,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.baselineMenu.insert(END, s)
         self.baselineMenu.selectitem(0)
         self.selectSignBaseline(0)
-    
+     
     def updateSignPage(self):
         if (self.notebook.getcurselection() == 'Signs'):
             sign=self.findSignFromDNARoot()
@@ -3567,7 +3602,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             if (self.currentSignDNA != sign):
                 self.currentSignDNA = sign
                 self.signPanelSync()
-        
+
     def findSignFromDNARoot(self):
         dnaRoot=self.levelEditor.selectedDNARoot
         if not dnaRoot:
@@ -3575,7 +3610,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         if (DNAGetClassType(dnaRoot).eq(DNA_LANDMARK_BUILDING)):
             target=DNAGetChildRecursive(dnaRoot, DNA_SIGN)
             return target
-    
+        
     def selectSignBaseline(self, val):
         if not self.currentSignDNA:
             return
