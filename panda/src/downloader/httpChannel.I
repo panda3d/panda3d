@@ -167,6 +167,96 @@ get_persistent_connection() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::set_download_throttle
+//       Access: Published
+//  Description: Specifies whether nonblocking downloads (via
+//               download_to_file() or download_to_ram()) will be
+//               limited so as not to use all available bandwidth.
+//
+//               If this is true, when a download has been started on
+//               this channel it will be invoked no more frequently
+//               than get_max_updates_per_second(), and the total
+//               bandwidth used by the download will be no more than
+//               get_max_bytes_per_second().  If this is false,
+//               downloads will proceed as fast as the server can send
+//               the data.
+//
+//               This only has effect on the nonblocking I/O methods
+//               like request_document(), etc.  The blocking methods
+//               like get_document() always use as much CPU and
+//               bandwidth as they can get.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+set_download_throttle(bool download_throttle) {
+  _download_throttle = download_throttle;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_download_throttle
+//       Access: Published
+//  Description: Returns whether the nonblocking downloads will be
+//               bandwidth-limited.  See set_download_throttle().
+////////////////////////////////////////////////////////////////////
+INLINE bool HTTPChannel::
+get_download_throttle() const {
+  return _download_throttle;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::set_max_bytes_per_second
+//       Access: Published
+//  Description: When bandwidth throttling is in effect (see
+//               set_download_throttle()), this specifies the maximum
+//               number of bytes per second that may be consumed by
+//               this channel.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+set_max_bytes_per_second(double max_bytes_per_second) {
+  _max_bytes_per_second = max_bytes_per_second;
+  _bytes_per_update = int(_max_bytes_per_second * _seconds_per_update);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_max_bytes_per_second
+//       Access: Published
+//  Description: Returns the maximum number of bytes per second that
+//               may be consumed by this channel when
+//               get_download_throttle() is true.
+////////////////////////////////////////////////////////////////////
+INLINE double HTTPChannel::
+get_max_bytes_per_second() const {
+  return _max_bytes_per_second;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::set_max_updates_per_second
+//       Access: Published
+//  Description: When bandwidth throttling is in effect (see
+//               set_download_throttle()), this specifies the maximum
+//               number of times per second that run() will attempt to
+//               do any downloading at all.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+set_max_updates_per_second(double max_updates_per_second) {
+  nassertv(max_updates_per_second != 0.0f);
+  _max_updates_per_second = max_updates_per_second;
+  _seconds_per_update = 1.0f / _max_updates_per_second;
+  _bytes_per_update = int(_max_bytes_per_second * _seconds_per_update);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_max_updates_per_second
+//       Access: Published
+//  Description: Returns the maximum number of times per second that
+//               run() will do anything at all, when
+//               get_download_throttle() is true.
+////////////////////////////////////////////////////////////////////
+INLINE double HTTPChannel::
+get_max_updates_per_second() const {
+  return _max_updates_per_second;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::get_file_size
 //       Access: Published
 //  Description: Returns the size of the file, if it is known.

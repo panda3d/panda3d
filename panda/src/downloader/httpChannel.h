@@ -86,6 +86,15 @@ PUBLISHED:
   INLINE void set_persistent_connection(bool persistent_connection);
   INLINE bool get_persistent_connection() const;
 
+  INLINE void set_download_throttle(bool download_throttle);
+  INLINE bool get_download_throttle() const;
+
+  INLINE void set_max_bytes_per_second(double max_bytes_per_second);
+  INLINE double get_max_bytes_per_second() const;
+
+  INLINE void set_max_updates_per_second(double max_updates_per_second);
+  INLINE double get_max_updates_per_second() const;
+
   INLINE size_t get_file_size() const;
 
   void write_headers(ostream &out) const;
@@ -165,6 +174,11 @@ private:
   PT(BioPtr) _bio;
   PT(BioStreamPtr) _source;
   bool _persistent_connection;
+  bool _download_throttle;
+  double _max_bytes_per_second;
+  double _max_updates_per_second;
+  double _seconds_per_update;
+  int _bytes_per_update;
   bool _nonblocking;
 
   URLSpec _url;
@@ -235,6 +249,7 @@ private:
   BIO *_sbio;
   pset<URLSpec> _redirect_trail;
   int _last_status_code;
+  double _last_run_time;
 
   typedef pmap<string, string> Tokens;
   typedef pmap<string, Tokens> AuthenticationSchemes;

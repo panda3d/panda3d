@@ -21,6 +21,8 @@
 #include "bioStream.h"
 #include "chunkedStream.h"
 #include "identityStream.h"
+#include "config_downloader.h"
+#include "clockObject.h"
 #include "buffer.h"  // for Ramfile
 
 #ifdef HAVE_SSL
@@ -48,6 +50,11 @@ HTTPChannel(HTTPClient *client) :
   _client(client)
 {
   _persistent_connection = false;
+  _download_throttle = false;
+  _max_bytes_per_second = downloader_byte_rate;
+  _seconds_per_update = downloader_frequency;
+  _max_updates_per_second = 1.0f / _seconds_per_update;
+  _bytes_per_update = int(_max_bytes_per_second * _seconds_per_update);
   _nonblocking = false;
   _read_index = 0;
   _file_size = 0;
@@ -63,6 +70,8 @@ HTTPChannel(HTTPClient *client) :
   _proxy_tunnel = false;
   _body_stream = NULL;
   _sbio = NULL;
+  _last_status_code = 0;
+  _last_run_time = 0.0f;
   _download_to_ramfile = NULL;
 }
 
@@ -201,6 +210,15 @@ run() {
   }
 
   if (_started_download) {
+    if (_nonblocking && _download_throttle) {
+      double now = ClockObject::get_global_clock()->get_real_time();
+      double elapsed = now - _last_run_time;
+      _last_run_time = now;
+      if (elapsed < _seconds_per_update) {
+        // Come back later.
+        return true;
+      }
+    }
     switch (_download_dest) {
     case DD_none:
       return false;  // We're done.
@@ -1102,9 +1120,17 @@ bool HTTPChannel::
 run_download_to_file() {
   nassertr(_body_stream != (ISocketStream *)NULL, false);
 
+  bool do_throttle = _nonblocking && _download_throttle;
+  int count = 0;
+
   int ch = _body_stream->get();
   while (!_body_stream->eof() && !_body_stream->fail()) {
     _download_to_file.put(ch);
+    if (do_throttle && ++count > _bytes_per_update) {
+      // That's enough for now.
+      return true;
+    }
+
     ch = _body_stream->get();
   }
 
@@ -1137,9 +1163,17 @@ run_download_to_ram() {
   nassertr(_body_stream != (ISocketStream *)NULL, false);
   nassertr(_download_to_ramfile != (Ramfile *)NULL, false);
 
+  bool do_throttle = _nonblocking && _download_throttle;
+  int count = 0;
+
   int ch = _body_stream->get();
   while (!_body_stream->eof() && !_body_stream->fail()) {
     _download_to_ramfile->_data += (char)ch;
+    if (do_throttle && ++count > _bytes_per_update) {
+      // That's enough for now.
+      return true;
+    }
+
     ch = _body_stream->get();
   }
 
