@@ -1,12 +1,12 @@
 #begin lib_target
   #define TARGET showbase
   #define LOCAL_LIBS \
-    directbase
+    directbase mersenne
   #define OTHER_LIBS \
     linmath:c putil:c panda:m express:c pandaexpress:m dtoolconfig dtool
 
   #define SOURCES \
-    showBase.cxx showBase.h
+    showBase.cxx showBase.h mersenne.cxx mersenne.h
 
   #define IGATESCAN all
 #end lib_target
