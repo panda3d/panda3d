@@ -699,10 +699,18 @@ $[TAB] $[INSTALL]
 #end file
 
 #foreach file $[install_parser_inc]
-$[install_parser_inc_dir]/$[file] : $[file]
-#define local $[file]
-#define dest $[install_parser_inc_dir]
+#if $[ne $[dir $[file]], ./]
+$[install_parser_inc_dir]/$[file] : $[notdir $[file]]
+  #define local $[notdir $[file]]
+  #define dest $[install_parser_inc_dir]/$[dir $[file]]
+$[TAB] mkdir -p $[install_parser_inc_dir]/$[dir $[file]] || echo
 $[TAB] $[INSTALL]
+#else
+$[install_parser_inc_dir]/$[file] : $[file]
+  #define local $[file]
+  #define dest $[install_parser_inc_dir]
+$[TAB] $[INSTALL]
+#endif
 #end file
 
 #foreach file $[install_data]

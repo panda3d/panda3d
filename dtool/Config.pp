@@ -287,6 +287,17 @@
 #define NURBSPP_LIBS nurbsf matrixN matrixI matrix
 #defer HAVE_NURBSPP $[libtest $[NURBSPP_LPATH],$[NURBSPP_LIBS]]
 
+// Is Cg installed, and where?
+#define CG_IPATH /c/Progra~1/Micros~1.NET/Vc7/include
+#define CG_LPATH /c/Progra~1/Micros~1.NET/Vc7/lib
+#define CG_LIBS cg.lib
+#defer HAVE_CG $[libtest $[CG_LPATH],$[CG_LIBS]]
+
+// Is CgGL installed, and where?
+#define CGGL_IPATH $[CG_IPATH]
+#define CGGL_LPATH $[CG_LPATH]
+#define CGGL_LIBS cgGL.lib
+#defer HAVE_CGGL $[and $[HAVE_CG],$[libtest $[CGGL_LPATH],$[CGGL_LIBS]]]
 
 // Is VRPN installed, and where?
 #define VRPN_IPATH

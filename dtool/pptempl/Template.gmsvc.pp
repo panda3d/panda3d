@@ -859,10 +859,18 @@ $[TAB] cp -f $[local] $[dest]/
 #end file
 
 #foreach file $[install_parser_inc]
+#if $[ne $[dir $[file]], ./]
+$[install_parser_inc_dir]/$[file] : $[notdir $[file]]
+  #define local $[notdir $[file]]
+  #define dest $[install_parser_inc_dir]/$[dir $[file]]
+$[TAB] mkdir -p $[install_parser_inc_dir]/$[dir $[file]] || echo
+$[TAB] cp -f $[local] $[dest]
+#else
 $[install_parser_inc_dir]/$[file] : $[file]
-#define local $[file]
-#define dest $[install_parser_inc_dir]
+  #define local $[file]
+  #define dest $[install_parser_inc_dir]
 $[TAB] cp -f $[local] $[dest]/
+#endif
 #end file
 
 #foreach file $[install_data]

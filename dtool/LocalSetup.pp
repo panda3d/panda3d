@@ -29,6 +29,12 @@
 #if $[HAVE_FFTW]
 #print - fftw
 #endif
+#if $[HAVE_CG]
+#print - Nvidia Cg High Level Shading Language
+#endif
+#if $[HAVE_CGGL]
+#print - Cg OpenGL API
+#endif
 #if $[HAVE_VRPN]
 #print - VRPN
 #endif
@@ -116,6 +122,12 @@ $[cdefine HAVE_NURBSPP]
 
 /* Define if we have VRPN installed.  */
 $[cdefine HAVE_VRPN]
+
+/* Define if we have CG installed.  */
+$[cdefine HAVE_CG]
+
+/* Define if we have CGGL installed.  */
+$[cdefine HAVE_CGGL]
 
 /* Define if we have zlib installed.  */
 $[cdefine HAVE_ZLIB]
