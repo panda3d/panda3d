@@ -62,9 +62,7 @@ class InputState(DirectObject.DirectObject):
         #assert(self.debugPrint("isSet(name=%s)"%(name)))
         return self.state.get(name)
     
-    if __debug__:
-        def debugPrint(self, message):
-            """for debugging"""
-            return self.notify.debug(
-                    "%s (%s) %s"%(id(self), len(self.state), message))
-    
+    def debugPrint(self, message):
+        """for debugging"""
+        return self.notify.debug(
+            "%s (%s) %s"%(id(self), len(self.state), message))
