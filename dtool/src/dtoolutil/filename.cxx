@@ -1197,6 +1197,10 @@ open_read(ifstream &stream) const {
 //               appropriately as indicated; it is an error to call
 //               open_read() without first calling one of set_text()
 //               or set_binary().
+//
+//               If truncate is true, the file is truncated to zero
+//               length upon opening it, if it already exists.
+//               Otherwise, the file is kept at its original length.
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 open_write(ofstream &stream, bool truncate) const {
