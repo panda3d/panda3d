@@ -64,7 +64,7 @@ int get_net_max_write_queue() {
 // in the various QueuedConnectionReader, QueuedConnectionListener,
 // and QueuedConnectionManager classes.
 int get_net_max_response_queue() {
-  return config_net.GetInt("net-max-response-queue", 10000);
+  return config_net.GetInt("net-max-response-queue", 50000);
 }
 
 bool get_net_error_abort() {
