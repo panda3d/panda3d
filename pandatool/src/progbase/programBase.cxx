@@ -694,7 +694,7 @@ format_text(ostream &out,
   if (!prefix.empty()) {
     out << prefix;
     indent_amount = indent_width - prefix.length();
-    if (prefix.length() + 1 > indent_width) {
+    if ((int)prefix.length() + 1 > indent_width) {
       out << "\n";
       initial_break = true;
       indent_amount = indent_width;
@@ -759,6 +759,11 @@ format_text(ostream &out,
       if (q != min_eol) {
 	// Here's a good place to stop!
 	eol = q + 1;
+
+      } else {
+	// The line cannot be broken cleanly.  Just let it keep going;
+	// don't try to wrap it.
+	eol = par;
       }
     }
     out << text.substr(p, eol - p) << "\n";
