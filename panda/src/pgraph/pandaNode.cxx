@@ -1034,13 +1034,14 @@ steal_children(PandaNode *other) {
   // the end.
 
   int num_children = other->get_num_children();
-  for (int i = 0; i < num_children; i++) {
+  int i;
+  for (i = 0; i < num_children; i++) {
     PandaNode *child_node = other->get_child(i);
     int sort = other->get_child_sort(i);
     add_child(child_node, sort);
   }
   int num_stashed = other->get_num_stashed();
-  for (int i = 0; i < num_stashed; i++) {
+  for (i = 0; i < num_stashed; i++) {
     PandaNode *child_node = other->get_stashed(i);
     int sort = other->get_stashed_sort(i);
     add_stashed(child_node, sort);
@@ -1062,13 +1063,14 @@ copy_children(PandaNode *other) {
     return;
   }
   int num_children = other->get_num_children();
-  for (int i = 0; i < num_children; i++) {
+  int i;
+  for (i = 0; i < num_children; i++) {
     PandaNode *child_node = other->get_child(i);
     int sort = other->get_child_sort(i);
     add_child(child_node, sort);
   }
   int num_stashed = other->get_num_stashed();
-  for (int i = 0; i < num_stashed; i++) {
+  for (i = 0; i < num_stashed; i++) {
     PandaNode *child_node = other->get_stashed(i);
     int sort = other->get_stashed_sort(i);
     add_stashed(child_node, sort);
