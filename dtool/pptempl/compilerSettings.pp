@@ -52,7 +52,9 @@
   #if $[DO_CROSSOBJ_OPT]
      #define OPT4FLAGS /GL
      #define LDFLAGS_OPT4 /LTCG
-     #define LIBBER $[LIBBER] /LTCG
+     #if $[>= $[OPTIMIZE],4] 
+        #define LIBBER $[LIBBER] /LTCG
+     #endif 
   #endif 
   
   // remove 1-3 when allocator stuff is rewritten to build with VC7 STL
