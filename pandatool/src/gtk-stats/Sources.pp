@@ -6,7 +6,8 @@
   #define LOCAL_LIBS \
     gtkbase progbase pstatserver
   #define OTHER_LIBS \
-    pstatclient:c linmath:c putil:c express:c panda:m dtool
+    pstatclient:c linmath:c putil:c express:c panda:m \
+    dtoolutil:c dconfig:c dtool:m
   #define UNIX_SYS_LIBS \
     m
 
