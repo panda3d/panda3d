@@ -150,8 +150,7 @@
 
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
-// (Note: platform sdk must be on end since it has filename collisions with panda stuff (buffer.h))
-#defer target_ipath $[TOPDIR] $[sort $[complete_ipath]] $[other_trees:%=%\include] $[get_ipath] $[WIN32_PLATFORMSDK_INCPATH] 
+#defer target_ipath $[TOPDIR] $[sort $[complete_ipath]] $[other_trees:%=%\include] $[get_ipath]
 
 // $[file_ipath] is the ipath from the context of a particular source
 // file, given in $[file].  It uses the all_sources map to look up
@@ -459,14 +458,12 @@ $[TAB] $[NT_COPYCMD] $[so_dir]\$[local] $[dest]
 $[install_igatedb_dir]\$[igatedb] : $[so_dir]\$[igatedb]
 #define local $[igatedb]
 #define dest $[install_igatedb_dir]
-// have to filter out plat-sdk inc dir, since interrogate is currently too buggy to parse stuff there
-#define filtered_interrogate_options $[filter-out -I"C:\Program Files\Microsoft Platform Sdk\Include", $[interrogate_options]]
 $[TAB] $[NT_COPYCMD] $[so_dir]\$[local] $[dest]
 
 lib$[TARGET]_igatescan = $[osfilename $[igatescan]]
 $[so_dir]\$[igatedb] $[so_dir]\$[igateoutput] : $[sort $[patsubst %.h,%.h,%.I,%.I,%.T,%.T,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]]
 // We use forward slash for interrogate because it prefers those.
-$[TAB] interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[filtered_interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
+$[TAB] interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
 
 #define target $[igateoutput:%.cxx=$[so_dir]\%.obj]
 #define source $[so_dir]\$[igateoutput]
