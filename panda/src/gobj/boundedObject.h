@@ -104,6 +104,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class PandaNode;
+  friend class CData;  // MSVC6 seems to require this.
 };
 
 #include "boundedObject.I"
