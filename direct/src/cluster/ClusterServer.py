@@ -7,10 +7,6 @@ import DirectNotifyGlobal
 import DirectObject
 import Task
 
-# Cam offset handling is a little sloppy.  The problem is that there is a
-# single arc used for both movement of the camera, and the offset of the
-# group.
-
 # Also, I'm not sure multiple camera-group configurations are working for the
 # cluster system.
 
@@ -18,138 +14,120 @@ class ClusterServer(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClusterServer")
     MSG_NUM = 2000000
 
-    def __init__(self,cameraGroup,camera):
+    def __init__(self,cameraJig,camera):
         # Store information about the cluster's camera
-        self.cameraGroup = cameraGroup
+        self.cameraJig = cameraJig
         self.camera = camera
         self.lens = camera.node().getLens()
-        # Initialize camera offsets
-        self.posOffset = Vec3(0,0,0)
-        self.hprOffset = Vec3(0,0,0)
-        # Create network layer objects
         self.lastConnection = None
+        self.fPosReceived = 0
+        # Create network layer objects
         self.qcm = QueuedConnectionManager()
         self.qcl = QueuedConnectionListener(self.qcm, 0)
         self.qcr = QueuedConnectionReader(self.qcm, 0)
         self.cw = ConnectionWriter(self.qcm,0)
-        port = base.config.GetInt("cluster-server-port",CLUSTER_PORT)
+        port = base.config.GetInt('cluster-server-port', CLUSTER_PORT)
         self.tcpRendezvous = self.qcm.openTCPServerRendezvous(port, 1)
         self.qcl.addConnection(self.tcpRendezvous)
-        self.msgHandler = MsgHandler(ClusterServer.MSG_NUM,self.notify)
+        self.msgHandler = ClusterMsgHandler(ClusterServer.MSG_NUM, self.notify)
         # Start cluster tasks
         self.startListenerPollTask()
         self.startReaderPollTask()
 
     def startListenerPollTask(self):
+        # Run this task near the start of frame, sometime after the dataloop
         taskMgr.add(self.listenerPollTask, "serverListenerPollTask",-40)
 
     def listenerPollTask(self, task):
         """ Task to listen for a new connection from the client """
         # Run this task after the dataloop
         if self.qcl.newConnectionAvailable():
-            print "New connection is available"
+            self.notify.info("New connection is available")
             rendezvous = PointerToConnection()
             netAddress = NetAddress()
             newConnection = PointerToConnection()
-            retVal = self.qcl.getNewConnection(rendezvous, netAddress,
-                                               newConnection)
-            if retVal:
+            if self.qcl.getNewConnection(rendezvous,netAddress,newConnection):
                 # Crazy dereferencing
                 newConnection=newConnection.p()
                 self.qcr.addConnection(newConnection)
-                print "Got a connection!"
                 self.lastConnection = newConnection
+                self.notify.info("Got a connection!")
             else:
-                self.notify.warning(
-                    "getNewConnection returned false")
+                self.notify.warning("getNewConnection returned false")
         return Task.cont
 
     def startReaderPollTask(self):
         """ Task to handle datagrams from client """
-        # Run this task just after the listener poll task and dataloop
+        # Run this task just after the listener poll task
         taskMgr.add(self.readerPollTask, "serverReaderPollTask", -39)
 
     def readerPollTask(self, state):
-        # Process all available datagrams
+        """ Non blocking task to read all available datagrams """
         while 1:
             (datagram, dgi,type) = self.msgHandler.nonBlockingRead(self.qcr)
+            # Queue is empty, done for now
             if type is CLUSTER_NONE:
                 break
             else:
-                handleDatagram(dgi, type)
+                # Got a datagram, handle it
+                self.handleDatagram(dgi, type)
         return Task.cont
 
     def handleDatagram(self, dgi, type):
-        if type == CLUSTER_NONE:
+        """ Process a datagram depending upon type flag """
+        if (type == CLUSTER_NONE):
             pass
-        elif type == CLUSTER_EXIT:
+        elif (type == CLUSTER_EXIT):
             import sys
             sys.exit()
-        elif type == CLUSTER_CAM_OFFSET:
+        elif (type == CLUSTER_CAM_OFFSET):
             self.handleCamOffset(dgi)
-        elif type == CLUSTER_CAM_FRUSTUM:
+        elif (type == CLUSTER_CAM_FRUSTUM):
             self.handleCamFrustum(dgi)
-        elif type == CLUSTER_CAM_MOVEMENT:
+        elif (type == CLUSTER_CAM_MOVEMENT):
             self.handleCamMovement(dgi)
-        elif type == CLUSTER_COMMAND_STRING:
+        elif (type == CLUSTER_COMMAND_STRING):
             self.handleCommandString(dgi)
+        elif (type == CLUSTER_SWAP_READY):
+            pass
+        elif (type == CLUSTER_SWAP_NOW):
+            self.notify.debug('swapping')
+            base.win.swap()
         else:
-            self.notify.warning("Recieved unknown packet type:" % type)
+            self.notify.warning("Received unknown packet type:" % type)
         return type
-    
+
+    # Server specific tasks
     def handleCamOffset(self,dgi):
-        x=dgi.getFloat32()
-        y=dgi.getFloat32()
-        z=dgi.getFloat32()
-        h=dgi.getFloat32()
-        p=dgi.getFloat32()
-        r=dgi.getFloat32()
-        self.notify.debug(('  new offset=%f %f %f  %f %f %f' %
-                           (x,y,z,h,p,r)))
-        self.posOffset = Vec3(x,y,z)
-        self.hprOffset = Vec3(h,p,r)
+        """ Set offset of camera from cameraJig """
+        (x,y,z,h,p,r) = self.msgHandler.parseCamOffsetDatagram(dgi)
+        self.lens.setIodOffset(x)
+        self.lens.setViewHpr(h,p,r)
         
     def handleCamFrustum(self,dgi):
-        focalLength=dgi.getFloat32()
-        filmSize=(dgi.getFloat32(), dgi.getFloat32())
-        filmOffset=(dgi.getFloat32(),dgi.getFloat32())
-        self.notify.debug('  fl, fs, fo=%f, (%f, %f), (%f, %f)' %
-                          (focalLength, filmSize[0], filmSize[1],
-                           filmOffset[0], filmOffset[1]))
-        self.lens.setFocalLength(focalLength)
-        self.lens.setFilmSize(filmSize[0], filmSize[1])
-        self.lens.setFilmOffset(filmOffset[0], filmOffset[1])
+        """ Adjust camera frustum based on parameters sent by client """
+        (fl,fs,fo) = self.msgHandler.parseCamFrustumDatagram(dgi)
+        self.lens.setFocalLength(fl)
+        self.lens.setFilmSize(fs[0], fs[1])
+        self.lens.setFilmOffset(fo[0], fo[1])
 
     def handleCamMovement(self,dgi):
-        x=dgi.getFloat32()
-        y=dgi.getFloat32()
-        z=dgi.getFloat32()
-        h=dgi.getFloat32()
-        p=dgi.getFloat32()
-        r=dgi.getFloat32()
-        self.notify.debug(('  new position=%f %f %f  %f %f %f' %
-                           (x,y,z,h,p,r)))
-        finalX = x + self.posOffset[0]
-        finalY = y + self.posOffset[1]
-        finalZ = z + self.posOffset[2]
-        finalH = h + self.hprOffset[0]
-        finalP = p + self.hprOffset[1]
-        finalR = r + self.hprOffset[2]
-        self.cameraGroup.setPosHpr(render,finalX,finalY,finalZ,
-                                   finalH,finalP,finalR)
+        """ Update cameraJig position to reflect latest position """
+        (x,y,z,h,p,r) = self.msgHandler.parseCamMovementDatagram(dgi)
+        self.cameraJig.setPosHpr(render,x,y,z,h,p,r)
+        self.fPosReceived = 1
 
     def handleCommandString(self, dgi):
-        command = dgi.getString()
-        exec( command, globals())
+        """ Handle arbitrary command string from client """
+        command = self.msgHandler.parseCommandStringDatagram(dgi)
+        exec( command, globals() )
         
 class ClusterServerSync(ClusterServer):
 
-    def __init__(self,cameraGroup,camera):
+    def __init__(self,cameraJig,camera):
         self.notify.info('starting ClusterServerSync')
-        self.posRecieved = 0
-        ClusterServer.__init__(self,cameraGroup,camera)
+        ClusterServer.__init__(self,cameraJig,camera)
         self.startSwapCoordinator()
-        return None
 
     def readerPollTask(self, task):
         if self.lastConnection is None:
@@ -158,42 +136,32 @@ class ClusterServerSync(ClusterServer):
             # Process datagrams till you get a postion update
             type = CLUSTER_NONE
             while type != CLUSTER_CAM_MOVEMENT:
+                # Block until you get a new datagram
                 (datagram,dgi,type) = self.msgHandler.blockingRead(self.qcr)
-                if type == CLUSTER_CAM_MOVEMENT:
-                    # Move camera
-                    self.handleCamMovement(dgi)
-                    # Set flag for swap coordinator
-                    self.posRecieved = 1
-                elif type == CLUSTER_CAM_OFFSET:
-                    # Update camera offset                    
-                    self.handleCamOffset(dgi)
-                elif type == CLUSTER_COMMAND_STRING:
-                    # Got a command, execute it
-                    self.handleCommandString(dgi)
+                # Process datagram
+                self.handleDatagram(dgi,type)
         return Task.cont
 
     def sendSwapReady(self):
-        self.notify.debug( ('send swap ready packet %d' %
-                            self.msgHandler.packetNumber ) )
+        self.notify.debug(
+            'send swap ready packet %d' % self.msgHandler.packetNumber)
         datagram = self.msgHandler.makeSwapReadyDatagram()
         self.cw.send(datagram, self.lastConnection)
 
     def startSwapCoordinator(self):
         taskMgr.add(self.swapCoordinatorTask, "serverSwapCoordinator", 51)
-        return None
 
     def swapCoordinatorTask(self, task):
-        if self.posRecieved:
-            self.posRecieved = 0
+        if self.fPosReceived:
+            self.fPosReceived = 0
+            # Alert client that this server is ready to swap
             self.sendSwapReady()
+            # Wait for swap command (processing any intermediate datagrams)
             while 1:
                 (datagram,dgi,type) = self.msgHandler.blockingRead(self.qcr)
+                self.handleDatagram(dgi,type)
                 if type == CLUSTER_SWAP_NOW:
-                    self.notify.debug('swapping')
-                    base.win.swap()
                     break
-                else:
-                    self.handleDatagram(dgi,type)
         return Task.cont
 
 

@@ -7,7 +7,6 @@ from DirectGrid import *
 from DirectGeometry import *
 from DirectLights import *
 from DirectSessionPanel import *
-from DirectCamConfig import *
 from ClusterClient import *
 from ClusterServer import *
 from tkSimpleDialog import askstring
@@ -241,7 +240,7 @@ class DirectSession(PandaObject):
 
             self.oobeVis = loader.loadModelOnce('models/misc/camera')
             if self.oobeVis:
-                self.oobeVis.arc().setFinal(1)
+                self.oobeVis.node().setFinal(1)
 
         if self.oobeMode:
             # Position a target point to lerp the oobe camera to
@@ -259,8 +258,7 @@ class DirectSession(PandaObject):
             # Remove any transformation on the models arc
             self.oobeVis.clearMat()
             # Make oobeCamera be a sibling of wherever camera is now.
-            cameraParent = NodePath(self.camera)
-            cameraParent.shorten(1)
+            cameraParent = self.camera.getParent()
             # Prepare oobe camera
             self.oobeCamera.reparentTo(cameraParent)
             self.oobeCamera.iPosHpr(self.trueCamera)
@@ -396,6 +394,12 @@ class DirectSession(PandaObject):
             self.undo()
         elif (input == ']') or (input == '}'):
             self.redo()
+
+        #Pass along certain events if this display is a cluster client
+        if self.clusterMode == 'client':
+            if input in ('v','b','l','p', 'r', 'shift-r', 's', 't',
+                         'shift-a', 'w'):
+                self.cluster.cmd('messenger.send("%s")' % input,0)
         
     def select(self, nodePath, fMultiSelect = 0, fResetAncestry = 1):
         dnp = self.selected.select(nodePath, fMultiSelect)
@@ -409,7 +413,7 @@ class DirectSession(PandaObject):
             # Update the selectedNPReadout
             self.selectedNPReadout.reparentTo(aspect2d)
             self.selectedNPReadout.setText(
-                'Selected:' + dnp.name)
+                'Selected:' + dnp.getName())
             # Show the manipulation widget
             self.widget.showWidget()
             # Update camera controls coa to this point

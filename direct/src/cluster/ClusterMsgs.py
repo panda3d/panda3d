@@ -1,11 +1,7 @@
 """ClusterMsgs module: Message types for Cluster rendering"""
 
 # This module is intended to supply routines and dataformats common to
-# both ClusterClient and ClusterServer.  There is a bit of sloppiness
-# though.  For example:
-#    This is where datagrams are constructed for sending, but datagrams
-#    recieved are handled outside of here, after the header (message type
-#    and number) are read here.
+# both ClusterClient and ClusterServer.
 
 from PandaModules import *
 import Datagram
@@ -24,11 +20,11 @@ CLUSTER_EXIT = 100
 #Port number for cluster rendering
 CLUSTER_PORT = 1970
 
-class MsgHandler:
-    """MsgHandler: wrapper for PC clusters/multi-piping networking"""
+class ClusterMsgHandler:
+    """ClusterMsgHandler: wrapper for PC clusters/multi-piping networking"""
     def __init__(self,packetStart, notify):
-        # packetStart can be used to distinguish which MsgHandler sends a
-        # given packet.
+        # packetStart can be used to distinguish which ClusterMsgHandler
+        # sends a given packet.
         self.packetNumber = packetStart
         self.notify = notify
 
@@ -76,7 +72,7 @@ class MsgHandler:
         dgi = DatagramIterator(datagram)
         number = dgi.getUint32()
         type = dgi.getUint8()
-        self.notify.debug("Packet %d type %d recieved" % (number,type))
+        self.notify.debug("Packet %d type %d received" % (number,type))
         return (dgi,type)        
 
     def makeCamOffsetDatagram(self,xyz,hpr):
@@ -92,6 +88,16 @@ class MsgHandler:
         datagram.addFloat32(hpr[2])
         return datagram
 
+    def parseCamOffsetDatagram(self, dgi):
+        x=dgi.getFloat32()
+        y=dgi.getFloat32()
+        z=dgi.getFloat32()
+        h=dgi.getFloat32()
+        p=dgi.getFloat32()
+        r=dgi.getFloat32()
+        self.notify.debug('new offset=%f %f %f  %f %f %f' % (x,y,z,h,p,r))
+        return (x,y,z,h,p,r)
+
     def makeCamFrustumDatagram(self,focalLength, filmSize, filmOffset):
         datagram = Datagram.Datagram()
         datagram.addUint32(self.packetNumber)
@@ -104,7 +110,16 @@ class MsgHandler:
         datagram.addFloat32(filmOffset[1])
         return datagram
 
-    def makeMoveCamDatagram(self,xyz,hpr):
+    def parseCamFrustumDatagram(self, dgi):
+        focalLength = dgi.getFloat32()
+        filmSize    = (dgi.getFloat32(), dgi.getFloat32())
+        filmOffset  = (dgi.getFloat32(),dgi.getFloat32())
+        self.notify.debug('fl, fs, fo=%f, (%f, %f), (%f, %f)' %
+                          (focalLength, filmSize[0], filmSize[1],
+                           filmOffset[0], filmOffset[1]))
+        return (focalLength, filmSize, filmOffset)
+
+    def makeCamMovementDatagram(self,xyz,hpr):
         datagram = Datagram.Datagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
@@ -117,6 +132,17 @@ class MsgHandler:
         datagram.addFloat32(hpr[2])
         return datagram
 
+    def parseCamMovementDatagram(self, dgi):
+        x=dgi.getFloat32()
+        y=dgi.getFloat32()
+        z=dgi.getFloat32()
+        h=dgi.getFloat32()
+        p=dgi.getFloat32()
+        r=dgi.getFloat32()
+        self.notify.debug(('  new position=%f %f %f  %f %f %f' %
+                           (x,y,z,h,p,r)))
+        return (x,y,z,h,p,r)
+
     def makeCommandStringDatagram(self, commandString):
         datagram = Datagram.Datagram()
         datagram.addUint32(self.packetNumber)
@@ -124,6 +150,10 @@ class MsgHandler:
         datagram.addUint8(CLUSTER_COMMAND_STRING)
         datagram.addString(commandString)
         return datagram
+
+    def parseCommandStringDatagram(self, dgi):
+        command = dgi.getString()
+        return command
 
     def makeSwapNowDatagram(self):
         datagram = Datagram.Datagram()

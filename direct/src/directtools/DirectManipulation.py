@@ -113,6 +113,9 @@ class DirectManipulationControl(PandaObject):
             self.fScaling = 0
         direct.selected.highlightAll()
         self.objectHandles.showAllHandles()
+        if direct.clusterMode == 'client':
+            direct.cluster.cmd(
+                'direct.manipulationControl.objectHandles.showAllHandles()')
         self.objectHandles.hideGuides()
         # Restart followSelectedNodePath task
         self.spawnFollowSelectedNodePathTask()
@@ -177,6 +180,11 @@ class DirectManipulationControl(PandaObject):
             self.objectHandles.showGuides()
             self.objectHandles.hideAllHandles()
             self.objectHandles.showHandle(self.constraint)
+            if direct.clusterMode == 'client':
+                oh = 'direct.manipulationControl.objectHandles' 
+                direct.cluster.cmd(oh + '.showGuides()', 0)
+                direct.cluster.cmd(oh + '.hideAllHandles()', 0)
+                direct.cluster.cmd(oh + ('.showHandle("%s")'% self.constraint))
             # Record relationship between selected nodes and widget
             direct.selected.getWrtAll()
             # hide the bbox of the selected objects during interaction

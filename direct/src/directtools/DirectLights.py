@@ -9,7 +9,6 @@ class DirectLight(NodePath):
         NodePath.__init__(self)
         # Record light and name
         self.light = light
-        self.name = light.getName()
 
         # Upcast the light object to its node base pointer
         if isinstance(light, Spotlight):
@@ -25,7 +24,8 @@ class DirectLight(NodePath):
             pass
 
     def getName(self):
-        return self.name
+        return self.light.getName()
+    
     def getLight(self):
         return self.light
 

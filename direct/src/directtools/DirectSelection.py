@@ -13,8 +13,6 @@ class DirectNodePath(NodePath):
         # Initialize the superclass
         NodePath.__init__(self)
         self.assign(nodePath)
-        # Get a reasonable name
-        self.name = self.getName()
         # Create a bounding box
         self.bbox = DirectBoundingBox(self)
         center = self.bbox.getCenter()
@@ -44,10 +42,6 @@ class DirectNodePath(NodePath):
 
     def getMax(self):
         return self.bbox.getMax()
-
-    def __repr__(self):
-        return ('NodePath:\t%s\n' % self.name)
-
 
 class SelectedNodePaths(PandaObject):
     def __init__(self):
@@ -91,6 +85,9 @@ class SelectedNodePaths(PandaObject):
             self.selectedDict[dnp.id()] = dnp
         # And update last
         __builtin__.last = self.last = dnp
+        # Update cluster servers if this is a cluster client
+        if direct.clusterMode == 'client':
+            direct.cluster.selectNodePath(dnp)
         return dnp
 
     def deselect(self, nodePath):
@@ -109,6 +106,9 @@ class SelectedNodePaths(PandaObject):
             self.deselectedDict[id] = dnp
             # Send a message
             messenger.send('DIRECT_deselectedNodePath', [dnp])
+            # Update cluster servers if this is a cluster client
+            if direct.clusterMode == 'client':
+                direct.cluster.deselectNodePath(dnp)
         return dnp
 
     def getSelectedAsList(self):
@@ -173,6 +173,17 @@ class SelectedNodePaths(PandaObject):
 
     def moveWrtWidgetAll(self):
         self.forEachSelectedNodePathDo(self.moveWrtWidget)
+        # Update cluster if current display is a cluster client
+        if (direct.clusterMode == 'client') and (last is not None):
+            pos = Point3(0)
+            hpr = VBase3(0)
+            scale = VBase3(1)
+            decomposeMatrix(last.getMat(), scale, hpr, pos)
+            direct.cluster.cmd(
+                'last.setPosHprScale(%f,%f,%f,%f,%f,%f,%f,%f,%f)' %
+                (pos[0], pos[1], pos[2],
+                 hpr[0], hpr[1], hpr[2],
+                 scale[0], scale[1], scale[2]))
 
     def moveWrtWidget(self, nodePath):
         nodePath.setMat(direct.widget, nodePath.mDnp2Widget)
