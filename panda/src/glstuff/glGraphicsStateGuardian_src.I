@@ -22,17 +22,38 @@
 //       Access: Public, Static
 //  Description: Checks for any outstanding error codes and outputs
 //               them, if found.  If NDEBUG is defined, this function
-//               does nothing.
+//               does nothing.  The return value is true if everything is
+//               ok, or false if we should shut down.
 //
 //               This is a static method so it can be called when
 //               there's no gsg pointer around.
 ////////////////////////////////////////////////////////////////////
-INLINE void CLP(GraphicsStateGuardian)::
+INLINE bool CLP(GraphicsStateGuardian)::
 report_errors(int line, const char *source_file) {
 #ifndef NDEBUG
   GLenum error_code = GLP(GetError)();
   if (error_code != GL_NO_ERROR) {
-    report_errors_loop(line, source_file, error_code);
+    int error_count = 0;
+    return report_errors_loop(line, source_file, error_code, error_count);
+  }
+#endif
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::report_my_errors
+//       Access: Public
+//  Description: Like report_errors(), above, but non-static so we can
+//               throw an event on failure.
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+report_my_errors(int line, const char *source_file) {
+#ifndef NDEBUG
+  GLenum error_code = GLP(GetError)();
+  if (error_code != GL_NO_ERROR) {
+    if (!report_errors_loop(line, source_file, error_code, _error_count)) {
+      panic_deactivate();
+    }
   }
 #endif
 }

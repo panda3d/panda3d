@@ -21,7 +21,7 @@
 
 #include "pandabase.h"
 
-#include "typedReferenceCount.h"
+#include "typedWritableReferenceCount.h"
 #include "luse.h"
 
 // A handful of forward references.
@@ -92,8 +92,14 @@ class Lens;
 //               double-dispatch of GSG to geoms, transitions, etc.  It
 //               lives in a separate class in its own package so we
 //               can avoid circular build dependency problems.
+//
+//               GraphicsStateGuardians are not actually writable to
+//               bam files, of course, but they may be passed as event
+//               parameters, so they inherit from
+//               TypedWritableReferenceCount instead of
+//               TypedReferenceCount for that convenience.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsStateGuardianBase : public TypedReferenceCount {
+class EXPCL_PANDA GraphicsStateGuardianBase : public TypedWritableReferenceCount {
 public:
   // These functions will be queried by the GeomIssuer to determine if
   // it should issue normals, texcoords, and/or colors, based on the
@@ -203,9 +209,9 @@ PUBLISHED:
 
 public:
   static void init_type() {
-    TypedReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "GraphicsStateGuardianBase",
-                  TypedReferenceCount::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

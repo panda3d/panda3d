@@ -84,6 +84,32 @@ get_threading_model() const {
   return _threading_model;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_active
+//       Access: Published
+//  Description: Sets the active flag associated with the
+//               GraphicsStateGuardian.  If the GraphicsStateGuardian
+//               is marked inactive, nothing is rendered.  This is not
+//               normally turned off unless there is a problem with
+//               the rendering detected at a low level.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+set_active(bool active) {
+  _active = active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::is_active
+//       Access: Published
+//  Description: Returns the active flag associated with the
+//               GraphicsStateGuardian.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+is_active() const {
+  return _active;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_scene
 //       Access: Public

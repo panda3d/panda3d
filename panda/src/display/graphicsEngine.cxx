@@ -480,7 +480,7 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
   Windows::const_iterator wi;
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
-    if (win->is_active()) {
+    if (win->is_active() && win->get_gsg()->is_active()) {
       if (win->begin_frame()) {
         win->clear();
       

@@ -78,6 +78,9 @@ public:
   INLINE GraphicsEngine *get_engine() const;
   INLINE const GraphicsThreadingModel &get_threading_model() const;
 
+  INLINE void set_active(bool active);
+  INLINE bool is_active() const;
+
   INLINE void set_scene(SceneSetup *scene_setup);
   INLINE SceneSetup *get_scene() const;
 
@@ -199,6 +202,7 @@ protected:
 
   virtual void free_pointers();
   virtual void close_gsg();
+  void panic_deactivate();
 
 #ifdef DO_PSTATS
   // These functions are used to update the active texture memory
@@ -269,6 +273,7 @@ protected:
 
   bool _needs_reset;
   bool _closing_gsg;
+  bool _active;
 
 public:
   // Statistics

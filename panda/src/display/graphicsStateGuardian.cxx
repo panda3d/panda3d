@@ -34,7 +34,7 @@
 #include "light.h"
 #include "planeNode.h"
 #include "ambientLight.h"
-
+#include "throw_event.h"
 #include "clockObject.h"
 #include "pStatTimer.h"
 
@@ -77,6 +77,7 @@ GraphicsStateGuardian(const FrameBufferProperties &properties) {
   _current_lens = (Lens *)NULL;
   _needs_reset = true;
   _closing_gsg = false;
+  _active = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1370,6 +1371,25 @@ close_gsg() {
   free_pointers();
   release_all_textures();
   release_all_geoms();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::panic_deactivate
+//       Access: Protected
+//  Description: This is called internally when it is determined that
+//               things are just fubar.  It temporarily deactivates
+//               the GSG just so things don't get out of hand, and
+//               throws an event so the application can deal with this
+//               if it needs to.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+panic_deactivate() {
+  if (_active) {
+    display_cat.error()
+      << "Deactivating " << get_type() << ".\n";
+    set_active(false);
+    throw_event("panic-deactivate-gsg", this);
+  }
 }
 
 #ifdef DO_PSTATS

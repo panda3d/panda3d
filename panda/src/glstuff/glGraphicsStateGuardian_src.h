@@ -126,11 +126,12 @@ public:
 
   void issue_transformed_color(const Colorf &color) const;
 
-  INLINE static void report_errors(int line, const char *source_file);
+  INLINE static bool report_errors(int line, const char *source_file);
+  INLINE void report_my_errors(int line, const char *source_file);
 
 protected:
-  static void report_errors_loop(int line, const char *source_file, 
-                                 GLenum error_code);
+  static bool report_errors_loop(int line, const char *source_file, 
+                                 GLenum error_code, int &error_count);
   void show_gl_string(const string &name, GLenum id);
   void save_extensions(const char *extensions);
   virtual void get_extra_extensions();
@@ -304,6 +305,8 @@ protected:
 
   pset<string> _extensions;
   bool _supports_bgr;
+
+  int _error_count;
 
 public:
   static GraphicsStateGuardian *
