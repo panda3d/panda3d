@@ -130,7 +130,7 @@ public:
   INLINE void erase(iterator first, iterator last) const;
 
 PUBLISHED:
-#if !defined(WIN32_VC) || defined(CPPPARSER)
+#if !defined(WIN32_VC)
   INLINE reference operator [](size_type n) const;
 #endif
   INLINE void push_back(const Element &x);

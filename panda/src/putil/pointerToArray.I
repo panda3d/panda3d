@@ -316,7 +316,7 @@ erase(iterator first, iterator last) const {
   _ptr->erase(first, last);
 }
 
-#if !defined(WIN32_VC) || defined(CPPPARSER)
+#if !defined(WIN32_VC)
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Indexing operator
 //       Access: Published
