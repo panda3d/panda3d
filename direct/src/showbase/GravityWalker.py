@@ -95,15 +95,15 @@ class GravityWalker(DirectObject.DirectObject):
         self.platform = MovingPlatform.MovingPlatform()
         self.platform.setupCopyModel(fakeId, model, 'platformcollision')
         self.platformRoot = render.attachNewNode("GravityWalker-spawnTest-%s"%fakeId)
-        self.platformRoot.setPos(toonbase.localToon, Vec3(0.0, 0.0, 1.0))
-        self.platformRoot.setHpr(toonbase.localToon, Vec3.zero())
+        self.platformRoot.setPos(base.localAvatar, Vec3(0.0, 0.0, 1.0))
+        self.platformRoot.setHpr(base.localAvatar, Vec3.zero())
         self.platform.reparentTo(self.platformRoot)
 
         self.platform2 = MovingPlatform.MovingPlatform()
         self.platform2.setupCopyModel(1+fakeId, model, 'platformcollision')
         self.platform2Root = render.attachNewNode("GravityWalker-spawnTest2-%s"%fakeId)
-        self.platform2Root.setPos(toonbase.localToon, Vec3(-16.0, 30.0, 1.0))
-        self.platform2Root.setHpr(toonbase.localToon, Vec3.zero())
+        self.platform2Root.setPos(base.localAvatar, Vec3(-16.0, 30.0, 1.0))
+        self.platform2Root.setHpr(base.localAvatar, Vec3.zero())
         self.platform2.reparentTo(self.platform2Root)
 
         duration = 5

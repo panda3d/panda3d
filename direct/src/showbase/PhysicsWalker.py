@@ -82,8 +82,8 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.platform = MovingPlatform.MovingPlatform()
         self.platform.setupCopyModel(fakeId, model, 'platformcollision')
         self.platformRoot = render.attachNewNode("physicsWalker-spawnTest-%s"%fakeId)
-        self.platformRoot.setPos(toonbase.localToon, Vec3(0.0, 3.0, 1.0))
-        self.platformRoot.setHpr(toonbase.localToon, Vec3.zero())
+        self.platformRoot.setPos(base.localAvatar, Vec3(0.0, 3.0, 1.0))
+        self.platformRoot.setHpr(base.localAvatar, Vec3.zero())
         self.platform.reparentTo(self.platformRoot)
 
         startPos = Vec3(0.0, -15.0, 0.0)
@@ -403,9 +403,9 @@ class PhysicsWalker(DirectObject.DirectObject):
         """
         if __debug__:
             if self.wantAvatarPhysicsIndicator:
-                onScreenDebug.append("localToon pos = %s\n"%(toonbase.localToon.getPos().pPrintValues(),))
-                onScreenDebug.append("localToon h = % 10.4f\n"%(toonbase.localToon.getH(),))
-                onScreenDebug.append("localToon anim = %s\n"%(toonbase.localToon.animFSM.getCurrentState().getName(),))
+                onScreenDebug.append("localToon pos = %s\n"%(base.localAvatar.getPos().pPrintValues(),))
+                onScreenDebug.append("localToon h = % 10.4f\n"%(base.localAvatar.getH(),))
+                onScreenDebug.append("localToon anim = %s\n"%(base.localAvatar.animFSM.getCurrentState().getName(),))
         #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
         physObject=self.actorNode.getPhysicsObject()
         #rotAvatarToPhys=Mat3.rotateMatNormaxis(-self.avatarNodePath.getH(), Vec3.up())

@@ -165,7 +165,7 @@ def replaceStateFunc(oldFunc, newFunc):
 
 def replaceTcrFunc(oldFunc, newFunc):
     try:
-        res = toonbase.tcr.replaceMethod(oldFunc, newFunc)
+        res = base.cr.replaceMethod(oldFunc, newFunc)
     except:
         try:
             res = simbase.air.replaceMethod(oldFunc, newFunc)

@@ -29,7 +29,7 @@ class DistributedLargeBlobSender(DistributedObject.DistributedObject):
         DistributedLargeBlobSender.notify.debug('announceGenerate')
         DistributedObject.DistributedObject.announceGenerate(self)
 
-        if self.targetAvId != toonbase.localToon.doId:
+        if self.targetAvId != base.localAvatar.doId:
             # it's not for us
             return
 

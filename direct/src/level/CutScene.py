@@ -55,7 +55,7 @@ def foo1(self, track, subjectNodePath, duration):
             "foo1(track=%s, subjectNodePath=%s, duration=%s)"%(
             track, subjectNodePath, duration)))
     track.append(Sequence(
-        Func(toonbase.localToon.stopUpdateSmartCamera),
+        Func(base.localAvatar.stopUpdateSmartCamera),
         PosHprInterval(
             camera,
             other=subjectNodePath,
@@ -73,7 +73,7 @@ def foo1(self, track, subjectNodePath, duration):
             other=subjectNodePath,
             pos=Point3(0, -28, 7.5),
             hpr=VBase3(0, 0, 0)),
-        Func(toonbase.localToon.startUpdateSmartCamera),
+        Func(base.localAvatar.startUpdateSmartCamera),
         ))
     return track
 
@@ -82,7 +82,7 @@ def doorUnlock(self, track, subjectNodePath, duration):
             "doorUnlock(track=%s, subjectNodePath=%s, duration=%s)"%(
             track, subjectNodePath, duration)))
     track.append(Sequence(
-        Func(toonbase.localToon.stopUpdateSmartCamera),
+        Func(base.localAvatar.stopUpdateSmartCamera),
         PosHprInterval(
             camera,
             other=self,
@@ -100,7 +100,7 @@ def doorUnlock(self, track, subjectNodePath, duration):
             other=self,
             pos=Point3(0, -28, 7.5),
             hpr=VBase3(0, 0, 0)),
-        Func(toonbase.localToon.startUpdateSmartCamera),
+        Func(base.localAvatar.startUpdateSmartCamera),
         ))
     return track
 
@@ -176,7 +176,7 @@ class CutScene(BasicEntities.NodePathEntity, DirectObject.DirectObject):
             if self.track:
                 self.track.pause()
                 self.track = None
-                toonbase.localToon.startUpdateSmartCamera()
+                base.localAvatar.startUpdateSmartCamera()
     
     def setStartStop(self, event):
         assert(self.debugPrint("setStartStop(event=%s)"%(event,)))

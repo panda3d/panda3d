@@ -81,10 +81,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # the entities get created.
         # We should listen for any and all time-sync events and re-sync
         # all our entities at that time.
-        toonbase.tcr.timeManager.synchronize('DistributedLevel.generate')
+        base.cr.timeManager.synchronize('DistributedLevel.generate')
 
         # add factory menu to SpeedChat
-        toonbase.localToon.chatMgr.chatInputSpeedChat.addFactoryMenu()
+        base.localAvatar.chatMgr.chatInputSpeedChat.addFactoryMenu()
 
         # add special camera views
         self.factoryViews = FactoryCameraViews.FactoryCameraViews(self)
@@ -98,7 +98,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def setPlayerIds(self, avIdList):
         self.avIdList = avIdList
-        assert toonbase.localToon.doId in self.avIdList
+        assert base.localAvatar.doId in self.avIdList
 
     def setEntranceId(self, entranceId):
         self.entranceId = entranceId
@@ -159,7 +159,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
             
         def setSpecSenderDoId(self, doId):
             DistributedLevel.notify.debug('setSpecSenderDoId: %s' % doId)
-            blobSender = toonbase.tcr.doId2do[doId]
+            blobSender = base.cr.doId2do[doId]
 
             def setSpecBlob(specBlob, blobSender=blobSender, self=self):
                 blobSender.sendAck()
@@ -211,7 +211,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # the entrancePoint entities register themselves with us
         if self.entranceId not in self.entranceId2entity:
             self.notify.warning('unknown entranceId %s' % self.entranceId)
-            toonbase.localToon.setPos(0,0,0)
+            base.localAvatar.setPos(0,0,0)
             self.notify.warning('showing all zones')
             self.setColorZones(1)
             # put the toon in a random zone to start
@@ -220,14 +220,14 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 zoneEntId = random.choice(zoneEntIds)
                 if zoneEntId is not LevelConstants.UberZoneEntId:
                     initialZoneEnt = self.getEntity(zoneEntId)
-                    toonbase.localToon.setPos(
+                    base.localAvatar.setPos(
                         render,
                         initialZoneEnt.getZoneNode().getPos(render))
                     break
         else:
             epEnt = self.entranceId2entity[self.entranceId]
-            epEnt.placeToon(toonbase.localToon,
-                            self.avIdList.index(toonbase.localToon.doId),
+            epEnt.placeToon(base.localAvatar,
+                            self.avIdList.index(base.localAvatar.doId),
                             len(self.avIdList))
             initialZoneEnt = self.getEntity(epEnt.getZoneEntId())
 
@@ -338,7 +338,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         DistributedLevel.notify.debug('delete')
         DistributedObject.DistributedObject.delete(self)
         # remove factory menu to SpeedChat
-        toonbase.localToon.chatMgr.chatInputSpeedChat.removeFactoryMenu()
+        base.localAvatar.chatMgr.chatInputSpeedChat.removeFactoryMenu()
         # remove special camera views
         del self.factoryViews
         # make sure the ouch task is stopped
@@ -391,8 +391,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
         zoneNode = self.getZoneNode(zoneNum)
         if zoneNode is None:
             return
-        toonbase.localToon.setPos(zoneNode,0,0,0)
-        toonbase.localToon.setHpr(zoneNode,0,0,0)
+        base.localAvatar.setPos(zoneNode,0,0,0)
+        base.localAvatar.setHpr(zoneNode,0,0,0)
         self.enterZone(zoneNum)
 
     def showZone(self, zoneNum):
@@ -639,7 +639,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         assert(uniqueElements(visibleZoneIds))
         DistributedLevel.notify.debug('new viz list: %s' % visibleZoneIds)
 
-        toonbase.tcr.sendSetZoneMsg(self.levelZone, visibleZoneIds)
+        base.cr.sendSetZoneMsg(self.levelZone, visibleZoneIds)
 
     def resetVisibility(self):
         # start out with every zone visible, since none of the zones have
@@ -781,7 +781,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def b_setOuch(self, penalty, anim=None):
         self.notify.debug('b_setOuch %s' % penalty)
-        av = toonbase.localToon
+        av = base.localAvatar
 
         # play the stun track (flashing toon) 
         if not av.isStunned:
@@ -793,10 +793,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def setOuch(self, penalty, anim = None):
         if anim == "Squish":
-            toonbase.tcr.playGame.getPlace().fsm.request('squished')
+            base.cr.playGame.getPlace().fsm.request('squished')
         elif anim == "Fall":
-            toonbase.tcr.playGame.getPlace().fsm.request('fallDown')
+            base.cr.playGame.getPlace().fsm.request('fallDown')
             
-        av = toonbase.localToon
+        av = base.localAvatar
         av.stunToon()
         av.playDialogueForString("!")

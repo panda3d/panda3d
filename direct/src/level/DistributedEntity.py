@@ -35,7 +35,7 @@ class DistributedEntity(DistributedObject.DistributedObject, Entity.Entity):
         DistributedEntity.notify.debug('announceGenerate (%s)' % self.entId)
 
         # ask our level obj for our spec data
-        level = toonbase.tcr.doId2do[self.levelDoId]
+        level = base.cr.doId2do[self.levelDoId]
         self.initializeEntity(level, self.entId)
         # announce our presence (Level does this for non-distributed entities)
         self.level.onEntityCreate(self.entId)

@@ -308,7 +308,7 @@ class DistributedObject(PandaObject):
             numToons = dgi.getUint16()
             for i in range(numToons):
                 avId = dgi.getUint32()
-                if avId == toonbase.localToon.doId:
+                if avId == base.localAvatar.doId:
                     # We found localToon's Id; stop here.
                     self.__barrierContext = context
                     assert(self.notify.debug('setBarrierData(%s)' % (context)))
