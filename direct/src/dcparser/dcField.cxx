@@ -130,7 +130,7 @@ pack_args(Datagram &datagram, PyObject *sequence) const {
   PyObject *str = PyObject_Str(tuple);
   
   ostringstream strm;
-  strm << "Incorrect arguments or value too large on field: " << get_name()
+  strm << "Incorrect arguments or value out of range on field: " << get_name()
        << PyString_AsString(str);
 
   Py_DECREF(str);
