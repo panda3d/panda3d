@@ -1019,8 +1019,16 @@ py-beep-if-tab-change\t\tring the bell if `tab-width' is changed"
     (py-toggle-shells py-default-interpreter))
   ;; Add colors
   (font-lock-fontify-buffer)
+  ;; Make sure we use unix encoding
+  (setq local-write-file-hooks  'Use-Undecided-Unix-Mode)
   )
 
+(defun Use-Undecided-Unix-Mode()
+  (interactive)
+  (set-buffer-file-coding-system 'undecided-unix)
+  (message "buffer-file-coding-system: undecided-unix")
+  nil
+  )
 
 ;; electric characters
 (defun py-outdent-p ()
