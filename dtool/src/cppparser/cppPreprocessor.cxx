@@ -602,6 +602,7 @@ push_file(const CPPFile &file) {
 
     infile._prev_last_c = _last_c;
     _last_c = '\0';
+    _start_of_line = true;
     return true;
   }
 
