@@ -117,11 +117,11 @@ class ForceGroup(DirectObject):
 		elif isinstance(f, LinearNoiseForce):
 		    file.write(fname + ' = LinearNoiseForce(%.4f, %d)\n' % (amplitude, massDependent))
 		elif isinstance(f, LinearVectorForce):
-		    vec = f.getVector()
+		    vec = f.getLocalVector()
 		    file.write(fname + ' = LinearVectorForce(Vec3(%.4f, %.4f, %.4f), %.4f, %d)\n' % (vec[0], vec[1], vec[2], amplitude, massDependent))
 	    elif isinstance(f, AngularForce):
 		if isinstance(f, AngularVectorForce):
-		    vec = f.getVector()
+		    vec = f.getLocalVector()
 		    file.write(fname + ' = AngularVectorForce(Vec3(%.4f, %.4f, %.4f))\n' % (vec[0], vec[1], vec[2]))
 	    file.write(fname + '.setActive(%d)\n' % f.getActive())
 	    file.write(targ + '.addForce(%s)\n' % fname)

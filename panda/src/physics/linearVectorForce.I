@@ -24,11 +24,11 @@ set_vector(float x, float y, float z) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_vector
+//    Function : get_local_vector
 //      Access : Public
 // Description :
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f LinearVectorForce::
-get_vector(void) const {
+get_local_vector(void) const {
   return _fvec;
 }
