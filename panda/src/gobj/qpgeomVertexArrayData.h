@@ -32,13 +32,16 @@
 
 class PreparedGraphicsObjects;
 class DataContext;
+class GraphicsStateGuardianBase;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : qpGeomVertexArrayData
 // Description : This is the data for one array of a GeomVertexData
 //               structure.  Many GeomVertexData structures will only
-//               define one array; some will define multiple arrays.
-//               DirectX calls this concept a "stream".
+//               define one array, with all data elements interleaved
+//               (DirectX 8.0 and before insisted on this format);
+//               some will define multiple arrays.  DirectX calls this
+//               concept a "stream".
 //
 //               This object is just a block of data.  See
 //               GeomVertexData for the organizing structure.

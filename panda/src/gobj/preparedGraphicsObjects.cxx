@@ -18,9 +18,13 @@
 
 #include "preparedGraphicsObjects.h"
 #include "textureContext.h"
+#include "texture.h"
+#include "geom.h"
+#include "qpgeomVertexArrayData.h"
 #include "mutexHolder.h"
 
 PStatCollector PreparedGraphicsObjects::_total_texusage_pcollector("Texture usage");
+PStatCollector PreparedGraphicsObjects::_total_buffers_pcollector("Vertex Buffers");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::Constructor
@@ -69,6 +73,19 @@ PreparedGraphicsObjects::
   _prepared_geoms.clear();
   _released_geoms.clear();
   _enqueued_geoms.clear();
+
+  Datas::iterator dci;
+  for (dci = _prepared_datas.begin();
+       dci != _prepared_datas.end();
+       ++dci) {
+    DataContext *dc = (*dci);
+    _total_texusage_pcollector.sub_level(dc->get_num_bytes());
+    dc->_data->clear_prepared(this);
+  }
+
+  _prepared_datas.clear();
+  _released_datas.clear();
+  _enqueued_datas.clear();
 }
 
 
@@ -411,20 +428,21 @@ dequeue_data(qpGeomVertexArrayData *data) {
 //               it's in, at the time release_data is called).
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
-release_data(DataContext *gc) {
+release_data(DataContext *dc) {
   MutexHolder holder(_lock);
 
-  gc->_data->clear_prepared(this);
+  dc->_data->clear_prepared(this);
+  _total_buffers_pcollector.sub_level(dc->get_num_bytes());
 
   // We have to set the Data pointer to NULL at this point, since
   // the Data itself might destruct at any time after it has been
   // released.
-  gc->_data = (qpGeomVertexArrayData *)NULL;
+  dc->_data = (qpGeomVertexArrayData *)NULL;
 
-  bool removed = (_prepared_datas.erase(gc) != 0);
+  bool removed = (_prepared_datas.erase(dc) != 0);
   nassertv(removed);
 
-  _released_datas.insert(gc);
+  _released_datas.insert(dc);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -441,15 +459,16 @@ release_all_datas() {
 
   int num_datas = (int)_prepared_datas.size();
 
-  Datas::iterator gci;
-  for (gci = _prepared_datas.begin();
-       gci != _prepared_datas.end();
-       ++gci) {
-    DataContext *gc = (*gci);
-    gc->_data->clear_prepared(this);
-    gc->_data = (qpGeomVertexArrayData *)NULL;
+  Datas::iterator dci;
+  for (dci = _prepared_datas.begin();
+       dci != _prepared_datas.end();
+       ++dci) {
+    DataContext *dc = (*dci);
+    dc->_data->clear_prepared(this);
+    _total_buffers_pcollector.sub_level(dc->get_num_bytes());
+    dc->_data = (qpGeomVertexArrayData *)NULL;
 
-    _released_datas.insert(gc);
+    _released_datas.insert(dc);
   }
 
   _prepared_datas.clear();
@@ -487,14 +506,16 @@ prepare_data_now(qpGeomVertexArrayData *data, GraphicsStateGuardianBase *gsg) {
   // be several GSG's sharing the same set of datas; if so, it
   // doesn't matter which of them creates the context (since they're
   // all shared anyway).
-  DataContext *gc = gsg->prepare_data(data);
+  DataContext *dc = gsg->prepare_data(data);
 
-  if (gc != (DataContext *)NULL) {
-    bool prepared = _prepared_datas.insert(gc).second;
-    nassertr(prepared, gc);
+  if (dc != (DataContext *)NULL) {
+    bool prepared = _prepared_datas.insert(dc).second;
+    nassertr(prepared, dc);
+
+    _total_buffers_pcollector.add_level(dc->get_num_bytes());
   }
 
-  return gc;
+  return dc;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -513,7 +534,8 @@ void PreparedGraphicsObjects::
 update(GraphicsStateGuardianBase *gsg) {
   MutexHolder holder(_lock);
 
-  // First, release all the textures awaiting release.
+  // First, release all the textures, geoms, and data arrays awaiting
+  // release.
   Textures::iterator tci;
   for (tci = _released_textures.begin();
        tci != _released_textures.end();
@@ -524,7 +546,6 @@ update(GraphicsStateGuardianBase *gsg) {
 
   _released_textures.clear();
 
-  // Next, release all the geoms awaiting release.
   Geoms::iterator gci;
   for (gci = _released_geoms.begin();
        gci != _released_geoms.end();
@@ -535,7 +556,18 @@ update(GraphicsStateGuardianBase *gsg) {
 
   _released_geoms.clear();
 
-  // Now prepare all the textures awaiting preparation.
+  Datas::iterator dci;
+  for (dci = _released_datas.begin();
+       dci != _released_datas.end();
+       ++dci) {
+    DataContext *dc = (*dci);
+    gsg->release_data(dc);
+  }
+
+  _released_datas.clear();
+
+  // Now prepare all the textures, geoms, and data arrays awaiting
+  // preparation.
   EnqueuedTextures::iterator qti;
   for (qti = _enqueued_textures.begin();
        qti != _enqueued_textures.end();
@@ -546,7 +578,6 @@ update(GraphicsStateGuardianBase *gsg) {
 
   _enqueued_textures.clear();
 
-  // And finally prepare all the geoms awaiting preparation.
   EnqueuedGeoms::iterator qgi;
   for (qgi = _enqueued_geoms.begin();
        qgi != _enqueued_geoms.end();
@@ -555,5 +586,13 @@ update(GraphicsStateGuardianBase *gsg) {
     geom->prepare_now(this, gsg);
   }
 
-  _enqueued_geoms.clear();
+  EnqueuedDatas::iterator qdi;
+  for (qdi = _enqueued_datas.begin();
+       qdi != _enqueued_datas.end();
+       ++qdi) {
+    qpGeomVertexArrayData *data = (*qdi);
+    data->prepare_now(this, gsg);
+  }
+
+  _enqueued_datas.clear();
 }

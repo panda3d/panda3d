@@ -55,6 +55,8 @@
 #include "qpgeomTristrips.h"
 #include "qpgeomTrifans.h"
 #include "dxGeomMunger8.h"
+#include "config_gobj.h"
+#include "dxDataContext8.h"
 
 #ifdef DO_PSTATS
 #include "pStatTimer.h"
@@ -197,6 +199,9 @@ DXGraphicsStateGuardian8(const FrameBufferProperties &properties) :
 
     _pFvfBufBasePtr = NULL;
     _index_buf=NULL;
+
+    _vbuffer_active = false;
+    _ibuffer_active = false;
 
     //    _max_light_range = __D3DLIGHT_RANGE_MAX;
 
@@ -2613,60 +2618,12 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
 
   // The munger should have put the "vertex" data at the beginning of
   // the first array.
-  const qpGeomVertexArrayFormat *array_format = format->get_array(0);
+  const qpGeomVertexArrayData *data = _vertex_data->get_array(0);
 
-  // Now we have to start with the vertex data, and work up from there
-  // in order, since that's the way the FVF is defined.
-  int n = 0;
-  int num_data_types = array_format->get_num_data_types();
+  DataContext *dc = ((qpGeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
+  nassertr(dc != (DataContext *)NULL, false);
+  apply_data(dc);
 
-  DWORD fvf = 0;
-  
-  if (n < num_data_types && 
-      array_format->get_data_type(n)->get_name() == InternalName::get_vertex()) {
-    fvf |= D3DFVF_XYZ;
-    ++n;
-  } else {
-    // No vertex data, no vertices.
-    return false;
-  }
-  if (n < num_data_types && 
-      array_format->get_data_type(n)->get_name() == InternalName::get_normal()) {
-    fvf |= D3DFVF_NORMAL;
-    ++n;
-  }
-  if (n < num_data_types && 
-      array_format->get_data_type(n)->get_name() == InternalName::get_color()) {
-    fvf |= D3DFVF_DIFFUSE;
-    ++n;
-  }
-
-  // For multitexture support, we will need to look for all of the
-  // texcoord names and enable them in order.
-  if (n < num_data_types && 
-      array_format->get_data_type(n)->get_name() == InternalName::get_texcoord()) {
-    const qpGeomVertexDataType *data_type = array_format->get_data_type(n);
-    switch (data_type->get_num_values()) {
-    case 1:
-      fvf |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE1(0);
-      ++n;
-      break;
-    case 2:
-      fvf |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0);
-      ++n;
-      break;
-    case 3:
-      fvf |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE3(0);
-      ++n;
-      break;
-    case 4:
-      fvf |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE4(0);
-      ++n;
-      break;
-    }
-  }
-
-  set_vertex_format(fvf);
   return true;
 }
 
@@ -2677,15 +2634,24 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 draw_triangles(const qpGeomTriangles *primitive) {
-  _pD3DDevice->DrawIndexedPrimitiveUP
-    (D3DPT_TRIANGLELIST, 
-     primitive->get_min_vertex(),
-     primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
-     primitive->get_num_primitives(), 
-     primitive->get_flat_first_vertices(),
-     D3DFMT_INDEX16,
-     _vertex_data->get_array(0)->get_data(),
-     _vertex_data->get_format()->get_array(0)->get_stride());
+  if (_vbuffer_active && _ibuffer_active) {
+    _pD3DDevice->DrawIndexedPrimitive
+      (D3DPT_TRIANGLELIST,
+       primitive->get_min_vertex(),
+       primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+       0, primitive->get_num_primitives());
+
+  } else {
+    _pD3DDevice->DrawIndexedPrimitiveUP
+      (D3DPT_TRIANGLELIST, 
+       primitive->get_min_vertex(),
+       primitive->get_max_vertex() - primitive->get_min_vertex() + 1,
+       primitive->get_num_primitives(), 
+       primitive->get_flat_first_vertices(),
+       D3DFMT_INDEX16,
+       _vertex_data->get_array(0)->get_data(),
+       _vertex_data->get_format()->get_array(0)->get_stride());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2934,6 +2900,97 @@ release_texture(TextureContext *tc) {
   DXTextureContext8 *gtc = DCAST(DXTextureContext8, tc);
   gtc->DeleteTexture();
   delete gtc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::prepare_data
+//       Access: Public, Virtual
+//  Description: Creates a new retained-mode representation of the
+//               given data, and returns a newly-allocated
+//               DataContext pointer to reference it.  It is the
+//               responsibility of the calling function to later
+//               call release_data() with this same pointer (which
+//               will also delete the pointer).
+//
+//               This function should not be called directly to
+//               prepare a data.  Instead, call Data::prepare().
+////////////////////////////////////////////////////////////////////
+DataContext *DXGraphicsStateGuardian8::
+prepare_data(qpGeomVertexArrayData *data) {
+  if (dxgsg8_cat.is_debug()) {
+    dxgsg8_cat.debug()
+      << "prepare_data(" << (void *)data << ")\n";
+  }
+
+  DXDataContext8 *ddc = new DXDataContext8(data);
+
+  if (vertex_buffers) {
+    ddc->create_vbuffer(*_pScrn);
+    ddc->mark_loaded();
+  }
+
+  return ddc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::apply_data
+//       Access: Public
+//  Description: Makes the data the currently available data for
+//               rendering.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+apply_data(DataContext *dc) {
+  DXDataContext8 *ddc = DCAST(DXDataContext8, dc);
+
+  if (ddc->_vbuffer != NULL) {
+    add_to_data_record(ddc);
+  
+    if (ddc->was_modified()) {
+      if (dxgsg8_cat.is_debug()) {
+        dxgsg8_cat.debug()
+          << "apply_data(" << (void *)dc->get_data() << ")\n";
+      }
+      if (ddc->changed_size()) {
+        // Here we have to destroy the old vertex buffer and create a
+        // new one.
+        ddc->create_vbuffer(*_pScrn);
+
+      } else {
+        // Here we just copy the new data to the vertex buffer.
+        ddc->upload_data();
+      }
+      
+      ddc->mark_loaded();
+    }
+
+    _pD3DDevice->SetStreamSource
+      (0, ddc->_vbuffer, ddc->get_data()->get_array_format()->get_stride());
+    _vbuffer_active = true;
+
+  } else {
+    _vbuffer_active = false;
+  }
+
+  set_vertex_format(ddc->_fvf);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::release_data
+//       Access: Public, Virtual
+//  Description: Frees the GL resources previously allocated for the
+//               data.  This function should never be called
+//               directly; instead, call Data::release() (or simply
+//               let the Data destruct).
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+release_data(DataContext *dc) {
+  if (dxgsg8_cat.is_debug()) {
+    dxgsg8_cat.debug()
+      << "release_data(" << (void *)dc->get_data() << ")\n";
+  }
+
+  DXDataContext8 *ddc = DCAST(DXDataContext8, dc);
+  delete ddc;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -105,7 +105,7 @@ public:
   virtual void release_geom(GeomContext *gc);
 
   virtual DataContext *prepare_data(qpGeomVertexArrayData *data);
-  virtual void apply_data(DataContext *dc);
+  void apply_data(DataContext *dc);
   virtual void release_data(DataContext *dc);
   const unsigned char *setup_array_data(const qpGeomVertexArrayData *data);
 

@@ -24,6 +24,68 @@
 ////////////////////////////////////////////////////////////////////
 INLINE DataContext::
 DataContext(qpGeomVertexArrayData *data) :
-  _data(data)
+  _data(data),
+  // Initially, the number of bytes is zero, until the data has been
+  // loaded (and mark_loaded() is called).
+  _num_bytes(0)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DataContext::get_data
+//       Access: Public
+//  Description: Returns the pointer to the client-side array data
+//               object.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexArrayData *DataContext::
+get_data() const {
+  return _data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DataContext::get_num_bytes
+//       Access: Public
+//  Description: Returns the number of bytes previously reported for
+//               the data object.  This is used to track changes in
+//               the data object's allocated size; if it changes from
+//               this, we need to create a new buffer.
+////////////////////////////////////////////////////////////////////
+INLINE int DataContext::
+get_num_bytes() const {
+  return _num_bytes;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DataContext::changed_size
+//       Access: Public
+//  Description: Returns true if the data has changed size since the
+//               last time mark_loaded() was called.
+////////////////////////////////////////////////////////////////////
+INLINE bool DataContext::
+changed_size() const {
+  return get_num_bytes() != _data->get_num_bytes();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DataContext::was_modified
+//       Access: Public
+//  Description: Returns true if the data has been modified since the
+//               last time mark_loaded() was called.
+////////////////////////////////////////////////////////////////////
+INLINE bool DataContext::
+was_modified() const {
+  return _modified != _data->get_modified();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DataContext::mark_loaded
+//       Access: Public
+//  Description: Should be called after the DataContext has been
+//               loaded into graphics memory, this updates the
+//               internal flags for changed_size() and modified().
+////////////////////////////////////////////////////////////////////
+INLINE void DataContext::
+mark_loaded() {
+  _num_bytes = _data->get_num_bytes();
+  _modified = _data->get_modified();
 }

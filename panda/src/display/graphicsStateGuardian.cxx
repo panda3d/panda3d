@@ -47,8 +47,8 @@ PStatCollector GraphicsStateGuardian::_total_texusage_pcollector("Texture usage"
 PStatCollector GraphicsStateGuardian::_active_texusage_pcollector("Texture usage:Active");
 PStatCollector GraphicsStateGuardian::_total_geom_pcollector("Prepared Geoms");
 PStatCollector GraphicsStateGuardian::_active_geom_pcollector("Prepared Geoms:Active");
-PStatCollector GraphicsStateGuardian::_total_buffers_pcollector("Prepared Bufferss");
-PStatCollector GraphicsStateGuardian::_active_buffers_pcollector("Prepared Bufferss:Active");
+PStatCollector GraphicsStateGuardian::_total_buffers_pcollector("Vertex Buffers");
+PStatCollector GraphicsStateGuardian::_active_buffers_pcollector("Vertex Buffers:Active");
 PStatCollector GraphicsStateGuardian::_total_geom_node_pcollector("Prepared GeomNodes");
 PStatCollector GraphicsStateGuardian::_active_geom_node_pcollector("Prepared GeomNodes:Active");
 PStatCollector GraphicsStateGuardian::_total_texmem_pcollector("Texture memory");
@@ -1446,6 +1446,7 @@ init_frame_pstats() {
     _active_texusage_pcollector.clear_level();
     _active_geom_pcollector.clear_level();
     _active_geom_node_pcollector.clear_level();
+    _active_buffers_pcollector.clear_level();
     
     // Also clear out our other counters while we're here.
     _vertices_tristrip_pcollector.clear_level();
@@ -1507,7 +1508,9 @@ void GraphicsStateGuardian::
 add_to_data_record(DataContext *dc) {
   if (PStatClient::is_connected()) {
     if (dc != (DataContext *)NULL && _current_datas.insert(dc).second) {
-      _active_buffers_pcollector.add_level(dc->_data->get_num_bytes());
+      int delta = dc->get_data()->get_num_bytes() - dc->get_num_bytes();
+      _total_buffers_pcollector.add_level(delta);
+      _active_buffers_pcollector.add_level(dc->get_data()->get_num_bytes());
     }
   }
 }
@@ -1555,6 +1558,13 @@ get_untextured_state() {
   return state;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::traverse_prepared_textures
+//       Access: Public
+//  Description: Calls the indicated function on all
+//               currently-prepared textures, or until the callback
+//               function returns false.
+////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg) {
   PreparedGraphicsObjects::Textures::const_iterator ti;

@@ -2357,11 +2357,12 @@ prepare_data(qpGeomVertexArrayData *data) {
     CLP(DataContext) *gdc = new CLP(DataContext)(data);
     _glGenBuffers(1, &gdc->_index);
 
+    add_to_data_record(gdc);
     _glBindBuffer(GL_ARRAY_BUFFER, gdc->_index);
-    _glBufferData(GL_ARRAY_BUFFER, gdc->_data->get_num_bytes(),
-                  gdc->_data->get_data(), 
-                  get_usage(gdc->_data->get_usage_hint()));
-    gdc->_modified = gdc->_data->get_modified();
+    _glBufferData(GL_ARRAY_BUFFER, gdc->get_data()->get_num_bytes(),
+                  gdc->get_data()->get_data(), 
+                  get_usage(gdc->get_data()->get_usage_hint()));
+    gdc->mark_loaded();
     
     report_my_gl_errors();
     return gdc;
@@ -2372,17 +2373,12 @@ prepare_data(qpGeomVertexArrayData *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::apply_data
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: Makes the data the currently available data for
 //               rendering.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 apply_data(DataContext *dc) {
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "apply_data(" << (void *)dc->_data << ")\n";
-  }
-
   nassertv(_supports_buffers);
 
   CLP(DataContext) *gdc = DCAST(CLP(DataContext), dc);
@@ -2390,11 +2386,22 @@ apply_data(DataContext *dc) {
   add_to_data_record(gdc);
   _glBindBuffer(GL_ARRAY_BUFFER, gdc->_index);
   
-  if (gdc->_modified != gdc->_data->get_modified()) {
-    _glBufferSubData(GL_ARRAY_BUFFER, 0, gdc->_data->get_num_bytes(),
-                     gdc->_data->get_data());
+  if (gdc->was_modified()) {
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "apply_data(" << (void *)dc->get_data() << ")\n";
+    }
+    if (gdc->changed_size()) {
+      _glBufferData(GL_ARRAY_BUFFER, gdc->get_data()->get_num_bytes(),
+                    gdc->get_data()->get_data(), 
+                    get_usage(gdc->get_data()->get_usage_hint()));
 
-    gdc->_modified = gdc->_data->get_modified();
+    } else {
+      _glBufferSubData(GL_ARRAY_BUFFER, 0, gdc->get_num_bytes(),
+                       gdc->get_data()->get_data());
+    }
+
+    gdc->mark_loaded();
   }
 
   report_my_gl_errors();
@@ -2412,7 +2419,7 @@ void CLP(GraphicsStateGuardian)::
 release_data(DataContext *dc) {
   if (GLCAT.is_debug()) {
     GLCAT.debug()
-      << "release_data(" << (void *)dc->_data << ")\n";
+      << "release_data(" << (void *)dc->get_data() << ")\n";
   }
 
   nassertv(_supports_buffers);
@@ -2458,9 +2465,7 @@ setup_array_data(const qpGeomVertexArrayData *data) {
   // Prepare the buffer object and bind it.
   DataContext *dc = ((qpGeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
   nassertr(dc != (DataContext *)NULL, data->get_data());
-
-  CLP(DataContext) *gdc = DCAST(CLP(DataContext), dc);
-  _glBindBuffer(GL_ARRAY_BUFFER, gdc->_index);
+  apply_data(dc);
 
   // NULL is the OpenGL convention for the first byte of the buffer.
   return NULL;

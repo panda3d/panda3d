@@ -99,6 +99,7 @@ private:
   EnqueuedDatas _enqueued_datas;
 
   static PStatCollector _total_texusage_pcollector;
+  static PStatCollector _total_buffers_pcollector;
 
   friend class GraphicsStateGuardian;
 };

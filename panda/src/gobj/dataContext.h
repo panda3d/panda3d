@@ -23,8 +23,7 @@
 
 #include "savedContext.h"
 #include "updateSeq.h"
-
-class qpGeomVertexArrayData;
+#include "qpgeomVertexArrayData.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DataContext
@@ -41,11 +40,21 @@ class EXPCL_PANDA DataContext : public SavedContext {
 public:
   INLINE DataContext(qpGeomVertexArrayData *data);
 
+  INLINE qpGeomVertexArrayData *get_data() const;
+
+  INLINE int get_num_bytes() const;
+  INLINE bool changed_size() const;
+  INLINE bool was_modified() const;
+
+  INLINE void mark_loaded();
+
+private:
   // This cannot be a PT(qpGeomVertexArrayData), because the data and
   // the GSG both own their DataContexts!  That would create a
   // circular reference count.
   qpGeomVertexArrayData *_data;
   UpdateSeq _modified;
+  int _num_bytes;
 
 public:
   static TypeHandle get_class_type() {
@@ -63,6 +72,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class PreparedGraphicsObjects;
 };
 
 #include "dataContext.I"

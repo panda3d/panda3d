@@ -99,6 +99,10 @@ public:
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
+  virtual DataContext *prepare_data(qpGeomVertexArrayData *data);
+  void apply_data(DataContext *dc);
+  virtual void release_data(DataContext *dc);
+
   virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
 
   virtual void framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
@@ -313,6 +317,8 @@ protected:
   int _projection_mat_stack_count;
 
   CPT(DisplayRegion) _actual_display_region;
+  bool _vbuffer_active;
+  bool _ibuffer_active;
 
   // Color/Alpha Matrix Transition stuff
   INLINE void transform_color(Colorf &InColor,D3DCOLOR &OutColor);
