@@ -4,6 +4,7 @@
 # the three or four cases we use all the time
 # usage: genPyCode [opts] [linux|win-debug|win-release|win-publish|install|release] [other libs]
 
+# -g adds libgateway
 # -t adds libtoontown
 # -p adds libpirates
 # -v adds libvrpn
@@ -17,8 +18,9 @@ optimizeFlag=""
 ppython=ppython
 ppythonOptimizeFlag=""
 
-while getopts tpven flag; do
+while getopts gtpven flag; do
   case $flag in
+    g) extra_genPyCode_libs="$extra_genPyCode_libs libgateway" ;;
     t) extra_genPyCode_libs="$extra_genPyCode_libs libtoontown" ;;
     p) extra_genPyCode_libs="$extra_genPyCode_libs libpirates" ;;
     v) extra_genPyCode_libs="$extra_genPyCode_libs libvrpn" ;;
