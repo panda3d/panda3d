@@ -91,15 +91,15 @@
 template <class Element>
 class PointerToArray : public PointerToBase<RefCountObj<pvector<Element> > > {
 public:
-  typedef pvector<Element>::value_type value_type;
-  typedef pvector<Element>::reference reference;
-  typedef pvector<Element>::const_reference const_reference;
-  typedef pvector<Element>::iterator iterator;
-  typedef pvector<Element>::const_iterator const_iterator;
-  typedef pvector<Element>::reverse_iterator reverse_iterator;
-  typedef pvector<Element>::const_reverse_iterator const_reverse_iterator;
-  typedef pvector<Element>::difference_type difference_type;
-  typedef pvector<Element>::size_type size_type;
+  typedef typename pvector<Element>::value_type value_type;
+  typedef typename pvector<Element>::reference reference;
+  typedef typename pvector<Element>::const_reference const_reference;
+  typedef typename pvector<Element>::iterator iterator;
+  typedef typename pvector<Element>::const_iterator const_iterator;
+  typedef typename pvector<Element>::reverse_iterator reverse_iterator;
+  typedef typename pvector<Element>::const_reverse_iterator const_reverse_iterator;
+  typedef typename pvector<Element>::difference_type difference_type;
+  typedef typename pvector<Element>::size_type size_type;
 
 PUBLISHED:
   INLINE PointerToArray();
@@ -116,8 +116,8 @@ public:
 
   INLINE iterator begin() const;
   INLINE iterator end() const;
-  INLINE PointerToArray<Element>::reverse_iterator rbegin() const;
-  INLINE PointerToArray<Element>::reverse_iterator rend() const;
+  INLINE typename PointerToArray<Element>::reverse_iterator rbegin() const;
+  INLINE typename PointerToArray<Element>::reverse_iterator rend() const;
 
   // Equality and comparison operators are pointerwise for
   // PointerToArrays, not elementwise as in vector.
@@ -196,20 +196,20 @@ private:
 template <class Element>
 class ConstPointerToArray : public PointerToBase<RefCountObj<pvector<Element> > > {
 public:
-  typedef pvector<Element>::value_type value_type;
-  typedef pvector<Element>::const_reference reference;
-  typedef pvector<Element>::const_reference const_reference;
-  typedef pvector<Element>::const_iterator iterator;
-  typedef pvector<Element>::const_iterator const_iterator;
+  typedef typename pvector<Element>::value_type value_type;
+  typedef typename pvector<Element>::const_reference reference;
+  typedef typename pvector<Element>::const_reference const_reference;
+  typedef typename pvector<Element>::const_iterator iterator;
+  typedef typename pvector<Element>::const_iterator const_iterator;
 #ifdef WIN32_VC
   // VC++ seems to break the const_reverse_iterator definition somehow.
-  typedef pvector<Element>::reverse_iterator reverse_iterator;
+  typedef typename pvector<Element>::reverse_iterator reverse_iterator;
 #else
-  typedef pvector<Element>::const_reverse_iterator reverse_iterator;
+  typedef typename pvector<Element>::const_reverse_iterator reverse_iterator;
 #endif
-  typedef pvector<Element>::const_reverse_iterator const_reverse_iterator;
-  typedef pvector<Element>::difference_type difference_type;
-  typedef pvector<Element>::size_type size_type;
+  typedef typename pvector<Element>::const_reverse_iterator const_reverse_iterator;
+  typedef typename pvector<Element>::difference_type difference_type;
+  typedef typename pvector<Element>::size_type size_type;
 
   INLINE ConstPointerToArray();
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
@@ -219,8 +219,8 @@ public:
 
   INLINE iterator begin() const;
   INLINE iterator end() const;
-  INLINE ConstPointerToArray<Element>::reverse_iterator rbegin() const;
-  INLINE ConstPointerToArray<Element>::reverse_iterator rend() const;
+  INLINE typename ConstPointerToArray<Element>::reverse_iterator rbegin() const;
+  INLINE typename ConstPointerToArray<Element>::reverse_iterator rend() const;
 
   // Equality and comparison operators are pointerwise for
   // PointerToArrays, not elementwise as in vector.

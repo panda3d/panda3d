@@ -32,9 +32,9 @@
 //               referencing the original value is returned.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
-insert_unique(ordered_vector<Key, Compare>::ITERATOR position, 
-              const ordered_vector<Key, Compare>::VALUE_TYPE &key) {
+typename ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
+insert_unique(typename ordered_vector<Key, Compare>::ITERATOR position, 
+              const typename ordered_vector<Key, Compare>::VALUE_TYPE &key) {
   if (position != end()) {
     // If we're not inserting at the end, the element we're
     // inserting before should not lexicographically precede this one.
@@ -78,9 +78,9 @@ insert_unique(ordered_vector<Key, Compare>::ITERATOR position,
 //               same key to be inserted.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
-insert_nonunique(ordered_vector<Key, Compare>::ITERATOR position, 
-                 const ordered_vector<Key, Compare>::VALUE_TYPE &key) {
+typename ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
+insert_nonunique(typename ordered_vector<Key, Compare>::ITERATOR position, 
+                 const typename ordered_vector<Key, Compare>::VALUE_TYPE &key) {
   if (position != end()) {
     // If we're not inserting at the end, the element we're
     // inserting before should not lexicographically precede this one.
@@ -162,10 +162,10 @@ verify_list_nonunique() const {
 //               find_insert_position().
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
-r_find_insert_position(ordered_vector<Key, Compare>::ITERATOR first,
-                       ordered_vector<Key, Compare>::ITERATOR last,
-                       const ordered_vector<Key, Compare>::KEY_TYPE &key) {
+typename ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
+r_find_insert_position(typename ordered_vector<Key, Compare>::ITERATOR first,
+                       typename ordered_vector<Key, Compare>::ITERATOR last,
+                       const typename ordered_vector<Key, Compare>::KEY_TYPE &key) {
   if (first == last) {
     // The list is empty; the insert position is the last of the list.
     return last;
@@ -190,11 +190,11 @@ r_find_insert_position(ordered_vector<Key, Compare>::ITERATOR first,
 //  Description: The recursive implementation of find().
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
-r_find(ordered_vector<Key, Compare>::CONST_ITERATOR first,
-       ordered_vector<Key, Compare>::CONST_ITERATOR last,
-       ordered_vector<Key, Compare>::CONST_ITERATOR not_found,
-       const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+typename ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
+r_find(typename ordered_vector<Key, Compare>::CONST_ITERATOR first,
+       typename ordered_vector<Key, Compare>::CONST_ITERATOR last,
+       typename ordered_vector<Key, Compare>::CONST_ITERATOR not_found,
+       const typename ordered_vector<Key, Compare>::KEY_TYPE &key) const {
   if (first == last) {
     // The list is empty; the key is not on the list.
     return not_found;
@@ -223,11 +223,11 @@ r_find(ordered_vector<Key, Compare>::CONST_ITERATOR first,
 //  Description: The recursive implementation of find_particular().
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
-r_find_particular(ordered_vector<Key, Compare>::CONST_ITERATOR first,
-                  ordered_vector<Key, Compare>::CONST_ITERATOR last,
-                  ordered_vector<Key, Compare>::CONST_ITERATOR not_found,
-                  const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+typename ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
+r_find_particular(typename ordered_vector<Key, Compare>::CONST_ITERATOR first,
+                  typename ordered_vector<Key, Compare>::CONST_ITERATOR last,
+                  typename ordered_vector<Key, Compare>::CONST_ITERATOR not_found,
+                  const typename ordered_vector<Key, Compare>::KEY_TYPE &key) const {
   if (first == last) {
     // The list is empty; the key is not on the list.
     return not_found;
@@ -276,11 +276,11 @@ r_find_particular(ordered_vector<Key, Compare>::CONST_ITERATOR first,
 //  Description: The recursive implementation of count().
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-ordered_vector<Key, Compare>::SIZE_TYPE ordered_vector<Key, Compare>::
-r_count(ordered_vector<Key, Compare>::CONST_ITERATOR first,
-        ordered_vector<Key, Compare>::CONST_ITERATOR last,
-        const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
-  typedef pair<ordered_vector<Key, Compare>::CONST_ITERATOR, ordered_vector<Key, Compare>::CONST_ITERATOR> pair_type;
+typename ordered_vector<Key, Compare>::SIZE_TYPE ordered_vector<Key, Compare>::
+r_count(typename ordered_vector<Key, Compare>::CONST_ITERATOR first,
+        typename ordered_vector<Key, Compare>::CONST_ITERATOR last,
+        const typename ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+  typedef pair<typename ordered_vector<Key, Compare>::CONST_ITERATOR, typename ordered_vector<Key, Compare>::CONST_ITERATOR> pair_type;
 
   if (first == last) {
     // The list is empty; the key is not on the list.
@@ -312,10 +312,10 @@ r_count(ordered_vector<Key, Compare>::CONST_ITERATOR first,
 //  Description: The recursive implementation of lower_bound().
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
-r_lower_bound(ordered_vector<Key, Compare>::CONST_ITERATOR first,
-              ordered_vector<Key, Compare>::CONST_ITERATOR last,
-              const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+typename ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
+r_lower_bound(typename ordered_vector<Key, Compare>::CONST_ITERATOR first,
+              typename ordered_vector<Key, Compare>::CONST_ITERATOR last,
+              const typename ordered_vector<Key, Compare>::KEY_TYPE &key) const {
   if (first == last) {
     // The list is empty; the key is not on the list.
     return last;
@@ -345,10 +345,10 @@ r_lower_bound(ordered_vector<Key, Compare>::CONST_ITERATOR first,
 //  Description: The recursive implementation of upper_bound().
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
-r_upper_bound(ordered_vector<Key, Compare>::CONST_ITERATOR first,
-              ordered_vector<Key, Compare>::CONST_ITERATOR last,
-              const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+typename ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
+r_upper_bound(typename ordered_vector<Key, Compare>::CONST_ITERATOR first,
+              typename ordered_vector<Key, Compare>::CONST_ITERATOR last,
+              const typename ordered_vector<Key, Compare>::KEY_TYPE &key) const {
   if (first == last) {
     // The list is empty; the key is not on the list.
     return last;
@@ -378,11 +378,11 @@ r_upper_bound(ordered_vector<Key, Compare>::CONST_ITERATOR first,
 //  Description: The recursive implementation of equal_range().
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-pair<ordered_vector<Key, Compare>::CONST_ITERATOR, ordered_vector<Key, Compare>::CONST_ITERATOR> ordered_vector<Key, Compare>::
-r_equal_range(ordered_vector<Key, Compare>::CONST_ITERATOR first,
-              ordered_vector<Key, Compare>::CONST_ITERATOR last,
-              const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
-  typedef pair<ordered_vector<Key, Compare>::CONST_ITERATOR, ordered_vector<Key, Compare>::CONST_ITERATOR> pair_type;
+pair<typename ordered_vector<Key, Compare>::CONST_ITERATOR, typename ordered_vector<Key, Compare>::CONST_ITERATOR> ordered_vector<Key, Compare>::
+r_equal_range(typename ordered_vector<Key, Compare>::CONST_ITERATOR first,
+              typename ordered_vector<Key, Compare>::CONST_ITERATOR last,
+              const typename ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+  typedef pair<typename ordered_vector<Key, Compare>::CONST_ITERATOR, typename ordered_vector<Key, Compare>::CONST_ITERATOR> pair_type;
 
   if (first == last) {
     // The list is empty; the key is not on the list.

@@ -72,7 +72,7 @@ INLINE ordered_vector<Key, Compare>::
 //               the ordered vector.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
+INLINE typename ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
 begin() {
   return _vector.begin();
 }
@@ -84,7 +84,7 @@ begin() {
 //               ordered vector.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
+INLINE typename ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
 end() {
   return _vector.end();
 }
@@ -96,7 +96,7 @@ end() {
 //               the ordered vector, when viewed in reverse order.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::REVERSE_ITERATOR ordered_vector<Key, Compare>::
+INLINE typename ordered_vector<Key, Compare>::REVERSE_ITERATOR ordered_vector<Key, Compare>::
 rbegin() {
   return _vector.rbegin();
 }
@@ -108,7 +108,7 @@ rbegin() {
 //               ordered vector, when viewed in reverse order.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::REVERSE_ITERATOR ordered_vector<Key, Compare>::
+INLINE typename ordered_vector<Key, Compare>::REVERSE_ITERATOR ordered_vector<Key, Compare>::
 rend() {
   return _vector.rend();
 }
@@ -120,7 +120,7 @@ rend() {
 //               the ordered vector.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
+INLINE typename ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
 begin() const {
   return _vector.begin();
 }
@@ -132,7 +132,7 @@ begin() const {
 //               ordered vector.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
+INLINE typename ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
 end() const {
   return _vector.end();
 }
@@ -144,7 +144,7 @@ end() const {
 //               the ordered vector, when viewed in reverse order.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::CONST_REVERSE_ITERATOR ordered_vector<Key, Compare>::
+INLINE typename ordered_vector<Key, Compare>::CONST_REVERSE_ITERATOR ordered_vector<Key, Compare>::
 rbegin() const {
   return _vector.rbegin();
 }
@@ -156,7 +156,7 @@ rbegin() const {
 //               ordered vector, when viewed in reverse order.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::CONST_REVERSE_ITERATOR ordered_vector<Key, Compare>::
+INLINE typename ordered_vector<Key, Compare>::CONST_REVERSE_ITERATOR ordered_vector<Key, Compare>::
 rend() const {
   return _vector.rend();
 }
@@ -167,8 +167,8 @@ rend() const {
 //  Description: Returns the nth element.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::REFERENCE ordered_vector<Key, Compare>::
-operator [] (ordered_vector<Key, Compare>::SIZE_TYPE n) {
+INLINE typename ordered_vector<Key, Compare>::REFERENCE ordered_vector<Key, Compare>::
+operator [] (typename ordered_vector<Key, Compare>::SIZE_TYPE n) {
   return _vector[n];
 }
 
@@ -178,8 +178,8 @@ operator [] (ordered_vector<Key, Compare>::SIZE_TYPE n) {
 //  Description: Returns the nth element.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::CONST_REFERENCE ordered_vector<Key, Compare>::
-operator [] (ordered_vector<Key, Compare>::SIZE_TYPE n) const {
+INLINE typename ordered_vector<Key, Compare>::CONST_REFERENCE ordered_vector<Key, Compare>::
+operator [] (typename ordered_vector<Key, Compare>::SIZE_TYPE n) const {
   return _vector[n];
 }
 
@@ -189,7 +189,7 @@ operator [] (ordered_vector<Key, Compare>::SIZE_TYPE n) const {
 //  Description: Returns the number of elements in the ordered vector.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::SIZE_TYPE ordered_vector<Key, Compare>::
+INLINE typename ordered_vector<Key, Compare>::SIZE_TYPE ordered_vector<Key, Compare>::
 size() const {
   return _vector.size();
 }
@@ -201,7 +201,7 @@ size() const {
 //               possibly be stored in an ordered vector.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::SIZE_TYPE ordered_vector<Key, Compare>::
+INLINE typename ordered_vector<Key, Compare>::SIZE_TYPE ordered_vector<Key, Compare>::
 max_size() const {
   return _vector.max_size();
 }
@@ -309,8 +309,8 @@ operator >= (const ordered_vector<Key, Compare> &other) const {
 //               the insert operation has taken place.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE pair<ordered_vector<Key, Compare>::ITERATOR, bool> ordered_vector<Key, Compare>::
-insert_unique(const ordered_vector<Key, Compare>::VALUE_TYPE &key) {
+INLINE typename pair<typename ordered_vector<Key, Compare>::ITERATOR, bool> ordered_vector<Key, Compare>::
+insert_unique(const typename ordered_vector<Key, Compare>::VALUE_TYPE &key) {
   ITERATOR position = find_insert_position(begin(), end(), key);
 #ifdef NDEBUG
   pair<ITERATOR, bool> bogus_result(end(), false);
@@ -341,8 +341,8 @@ insert_unique(const ordered_vector<Key, Compare>::VALUE_TYPE &key) {
 //               element.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
-insert_nonunique(const ordered_vector<Key, Compare>::VALUE_TYPE &key) {
+INLINE typename ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
+insert_nonunique(const typename ordered_vector<Key, Compare>::VALUE_TYPE &key) {
   ITERATOR position = find_insert_position(begin(), end(), key);
   nassertr(position >= begin() && position <= end(), end());
 
@@ -358,8 +358,8 @@ insert_nonunique(const ordered_vector<Key, Compare>::VALUE_TYPE &key) {
 //               and returns the next sequential iterator.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
-erase(ordered_vector<Key, Compare>::ITERATOR position) {
+INLINE typename ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
+erase(typename ordered_vector<Key, Compare>::ITERATOR position) {
   SIZE_TYPE count = position - begin();
   _vector.erase(position);
   return begin() + count;
@@ -372,8 +372,8 @@ erase(ordered_vector<Key, Compare>::ITERATOR position) {
 //               returns the number of elements removed.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::SIZE_TYPE ordered_vector<Key, Compare>::
-erase(const ordered_vector<Key, Compare>::KEY_TYPE &key) {
+INLINE typename ordered_vector<Key, Compare>::SIZE_TYPE ordered_vector<Key, Compare>::
+erase(const typename ordered_vector<Key, Compare>::KEY_TYPE &key) {
   pair<ITERATOR, ITERATOR> result = equal_range(key);
   SIZE_TYPE count = result.second - result.first;
   erase(result.first, result.second);
@@ -388,8 +388,8 @@ erase(const ordered_vector<Key, Compare>::KEY_TYPE &key) {
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
 INLINE void ordered_vector<Key, Compare>::
-erase(ordered_vector<Key, Compare>::ITERATOR first,
-      ordered_vector<Key, Compare>::ITERATOR last) {
+erase(typename ordered_vector<Key, Compare>::ITERATOR first,
+      typename ordered_vector<Key, Compare>::ITERATOR last) {
   _vector.erase(first, last);
 }
 
@@ -413,8 +413,8 @@ clear() {
 //               key, the particular iterator returned is not defined.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
-find(const ordered_vector<Key, Compare>::KEY_TYPE &key) {
+INLINE typename ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
+find(const typename ordered_vector<Key, Compare>::KEY_TYPE &key) {
   return nci(r_find(begin(), end(), end(), key));
 }
 
@@ -427,8 +427,8 @@ find(const ordered_vector<Key, Compare>::KEY_TYPE &key) {
 //               key, the particular iterator returned is not defined.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
-find(const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+INLINE typename ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
+find(const typename ordered_vector<Key, Compare>::KEY_TYPE &key) const {
   return r_find(begin(), end(), end(), key);
 }
 
@@ -449,8 +449,8 @@ find(const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
 //               !Compare(b, a), but not necessarily the converse.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
-find_particular(const ordered_vector<Key, Compare>::KEY_TYPE &key) {
+INLINE typename ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
+find_particular(const typename ordered_vector<Key, Compare>::KEY_TYPE &key) {
   return nci(r_find_particular(begin(), end(), end(), key));
 }
 
@@ -468,8 +468,8 @@ find_particular(const ordered_vector<Key, Compare>::KEY_TYPE &key) {
 //               particular iterator returned is not defined./
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
-find_particular(const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+INLINE typename ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
+find_particular(const typename ordered_vector<Key, Compare>::KEY_TYPE &key) const {
   return r_find_particular(begin(), end(), end(), key);
 }
 
@@ -480,7 +480,7 @@ find_particular(const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
 //               to the key that are in the vector.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::SIZE_TYPE ordered_vector<Key, Compare>::
+INLINE typename ordered_vector<Key, Compare>::SIZE_TYPE ordered_vector<Key, Compare>::
 count(const key_type &key) const {
   return r_count(begin(), end(), key);
 }
@@ -492,8 +492,8 @@ count(const key_type &key) const {
 //               than key, or end() if all elements are less than key.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
-lower_bound(const ordered_vector<Key, Compare>::KEY_TYPE &key) {
+INLINE typename ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
+lower_bound(const typename ordered_vector<Key, Compare>::KEY_TYPE &key) {
   return nci(r_lower_bound(begin(), end(), key));
 }
 
@@ -504,8 +504,8 @@ lower_bound(const ordered_vector<Key, Compare>::KEY_TYPE &key) {
 //               than key, or end() if all elements are less than key.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
-lower_bound(const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+INLINE typename ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
+lower_bound(const typename ordered_vector<Key, Compare>::KEY_TYPE &key) const {
   return r_lower_bound(begin(), end(), key);
 }
 
@@ -517,8 +517,8 @@ lower_bound(const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
 //               key.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
-upper_bound(const ordered_vector<Key, Compare>::KEY_TYPE &key) {
+INLINE typename ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
+upper_bound(const typename ordered_vector<Key, Compare>::KEY_TYPE &key) {
   return nci(r_upper_bound(begin(), end(), key));
 }
 
@@ -530,8 +530,8 @@ upper_bound(const ordered_vector<Key, Compare>::KEY_TYPE &key) {
 //               key.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
-upper_bound(const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+INLINE typename ordered_vector<Key, Compare>::CONST_ITERATOR ordered_vector<Key, Compare>::
+upper_bound(const typename ordered_vector<Key, Compare>::KEY_TYPE &key) const {
   return r_upper_bound(begin(), end(), key);
 }
 
@@ -541,11 +541,11 @@ upper_bound(const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
 //  Description: Returns the pair (lower_bound(key), upper_bound(key)).
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE pair<ordered_vector<Key, Compare>::ITERATOR, ordered_vector<Key, Compare>::ITERATOR> ordered_vector<Key, Compare>::
-equal_range(const ordered_vector<Key, Compare>::KEY_TYPE &key) {
-  pair<ordered_vector<Key, Compare>::CONST_ITERATOR, ordered_vector<Key, Compare>::CONST_ITERATOR> result;
+INLINE pair<typename ordered_vector<Key, Compare>::ITERATOR, typename ordered_vector<Key, Compare>::ITERATOR> ordered_vector<Key, Compare>::
+equal_range(const typename ordered_vector<Key, Compare>::KEY_TYPE &key) {
+  pair<typename ordered_vector<Key, Compare>::CONST_ITERATOR, typename ordered_vector<Key, Compare>::CONST_ITERATOR> result;
   result = r_equal_range(begin(), end(), key);
-  return pair<ordered_vector<Key, Compare>::ITERATOR, ordered_vector<Key, Compare>::ITERATOR>(nci(result.first), nci(result.second));
+  return pair<typename ordered_vector<Key, Compare>::ITERATOR, typename ordered_vector<Key, Compare>::ITERATOR>(nci(result.first), nci(result.second));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -554,8 +554,8 @@ equal_range(const ordered_vector<Key, Compare>::KEY_TYPE &key) {
 //  Description: Returns the pair (lower_bound(key), upper_bound(key)).
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE pair<ordered_vector<Key, Compare>::CONST_ITERATOR, ordered_vector<Key, Compare>::CONST_ITERATOR> ordered_vector<Key, Compare>::
-equal_range(const ordered_vector<Key, Compare>::KEY_TYPE &key) const {
+INLINE pair<typename ordered_vector<Key, Compare>::CONST_ITERATOR, typename ordered_vector<Key, Compare>::CONST_ITERATOR> ordered_vector<Key, Compare>::
+equal_range(const typename ordered_vector<Key, Compare>::KEY_TYPE &key) const {
   return r_equal_range(begin(), end(), key);
 }
 
@@ -580,7 +580,7 @@ swap(ordered_vector<Key, Compare> &copy) {
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
 INLINE void ordered_vector<Key, Compare>::
-reserve(ordered_vector<Key, Compare>::SIZE_TYPE n) {
+reserve(typename ordered_vector<Key, Compare>::SIZE_TYPE n) {
   _vector.reserve(n);
 }
 
@@ -642,8 +642,8 @@ push_back(const value_type &key) {
 //               some of these methods.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
-nci(ordered_vector<Key, Compare>::CONST_ITERATOR i) {
+INLINE typename ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
+nci(typename ordered_vector<Key, Compare>::CONST_ITERATOR i) {
   return begin() + (i - begin());
 }
 
@@ -655,10 +655,10 @@ nci(ordered_vector<Key, Compare>::CONST_ITERATOR i) {
 //               corresponding iterator.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
-find_insert_position(ordered_vector<Key, Compare>::ITERATOR first,
-                     ordered_vector<Key, Compare>::ITERATOR last,
-                     const ordered_vector<Key, Compare>::KEY_TYPE &key) {
+INLINE typename ordered_vector<Key, Compare>::ITERATOR ordered_vector<Key, Compare>::
+find_insert_position(typename ordered_vector<Key, Compare>::ITERATOR first,
+                     typename ordered_vector<Key, Compare>::ITERATOR last,
+                     const typename ordered_vector<Key, Compare>::KEY_TYPE &key) {
   ITERATOR result = r_find_insert_position(first, last, key);
   return result;
 }
@@ -705,9 +705,9 @@ operator = (const ov_set<Key, Compare> &copy) {
 //  Description: Maps to insert_unique().
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-ov_set<Key, Compare>::ITERATOR ov_set<Key, Compare>::
-insert(ov_set<Key, Compare>::ITERATOR position, 
-       const ov_set<Key, Compare>::VALUE_TYPE &key) {
+typename ov_set<Key, Compare>::ITERATOR ov_set<Key, Compare>::
+insert(typename ov_set<Key, Compare>::ITERATOR position, 
+       const typename ov_set<Key, Compare>::VALUE_TYPE &key) {
   return ordered_vector<Key, Compare>::insert_unique(position, key);
 }
 
@@ -717,8 +717,8 @@ insert(ov_set<Key, Compare>::ITERATOR position,
 //  Description: Maps to insert_unique().
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE pair<ov_set<Key, Compare>::ITERATOR, bool> ov_set<Key, Compare>::
-insert(const ov_set<Key, Compare>::VALUE_TYPE &key) {
+INLINE pair<typename ov_set<Key, Compare>::ITERATOR, bool> ov_set<Key, Compare>::
+insert(const typename ov_set<Key, Compare>::VALUE_TYPE &key) {
   return ordered_vector<Key, Compare>::insert_unique(key);
 }
 
@@ -786,9 +786,9 @@ operator = (const ov_multiset<Key, Compare> &copy) {
 //  Description: Maps to insert_nonunique().
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-ov_multiset<Key, Compare>::ITERATOR ov_multiset<Key, Compare>::
-insert(ov_multiset<Key, Compare>::ITERATOR position, 
-       const ov_multiset<Key, Compare>::VALUE_TYPE &key) {
+typename ov_multiset<Key, Compare>::ITERATOR ov_multiset<Key, Compare>::
+insert(typename ov_multiset<Key, Compare>::ITERATOR position, 
+       const typename ov_multiset<Key, Compare>::VALUE_TYPE &key) {
   return ordered_vector<Key, Compare>::insert_nonunique(position, key);
 }
 
@@ -798,8 +798,8 @@ insert(ov_multiset<Key, Compare>::ITERATOR position,
 //  Description: Maps to insert_nonunique().
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-INLINE ov_multiset<Key, Compare>::ITERATOR ov_multiset<Key, Compare>::
-insert(const ov_multiset<Key, Compare>::VALUE_TYPE &key) {
+INLINE typename ov_multiset<Key, Compare>::ITERATOR ov_multiset<Key, Compare>::
+insert(const typename ov_multiset<Key, Compare>::VALUE_TYPE &key) {
   return ordered_vector<Key, Compare>::insert_nonunique(key);
 }
 
