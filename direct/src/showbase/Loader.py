@@ -106,8 +106,9 @@ class Loader:
     def unloadSound(self, sound):
 	"""unloadSound(self, sound)
 	"""
-        Loader.notify.info("Unloading sound: %s" % (sound) )
-	AudioPool.releaseSound(sound)
+        if sound:
+            Loader.notify.info("Unloading sound: %s" % (sound) )
+            AudioPool.releaseSound(sound)
 
 
 
