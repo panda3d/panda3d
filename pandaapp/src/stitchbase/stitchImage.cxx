@@ -83,7 +83,7 @@ StitchImage(const string &name, const string &filename,
   _mm_to_uv =
     LMatrix3d::translate_mat(-_film_offset_mm) *
     LMatrix3d::scale_mat(1.0 / mm_per_uv[0], 1.0 / mm_per_uv[1]) *
-    LMatrix3d::translate_mat(LVector2d(0.5, 0.5) + _film_offset_mm);
+    LMatrix3d::translate_mat(LVector2d(0.5, 0.5));
 
   setup_pixel_scales();
 
@@ -147,8 +147,8 @@ set_fade_filename(const Filename &filename) {
 bool StitchImage::
 read_file() {
   if (_data != NULL) {
-    delete _data;
-    _data = NULL;
+    // The data is already available; no need to re-read it.
+    return true;
   }
   if (!has_filename()) {
     return false;

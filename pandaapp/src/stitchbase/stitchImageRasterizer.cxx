@@ -313,7 +313,10 @@ draw_image(StitchImage *output, StitchImage *input) {
   output->pick_up_singularity(rast, input);
   output->close_layer(rast._read_input);
 
-  input->clear_file();
+  // We don't necessarily want to clear the input file now.  Although
+  // that would reduce memory consumption, maybe we've got plenty of
+  // memory and we're more concerned with reducing load time.
+  //  input->clear_file();
 }
 
 
