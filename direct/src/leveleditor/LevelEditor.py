@@ -336,6 +336,9 @@ class LevelEditor(NodePath, PandaObject):
         # Become the new node path
         self.assign(hidden.attachNewNode('LevelEditor'))
         
+        # Enable replaceSelected by default:
+        self.replaceSelectedEnabled=1
+        
         # Create ancillary objects
         # Style manager for keeping track of styles/colors
         self.styleManager = LevelStyleManager()
@@ -626,10 +629,11 @@ class LevelEditor(NodePath, PandaObject):
         return DNASTORE.findDNAGroup(nodePath.id())
 
     def replaceSelected(self):
-        # Update visible geometry using new DNA
-        newRoot = self.replace(self.selectedNPRoot, self.selectedDNARoot)
-        # Reselect node path and respawn followSelectedNodePathTask
-        direct.select(newRoot)
+        if self.replaceSelectedEnabled:
+            # Update visible geometry using new DNA
+            newRoot = self.replace(self.selectedNPRoot, self.selectedDNARoot)
+            # Reselect node path and respawn followSelectedNodePathTask
+            direct.select(newRoot)
 
     def replace(self, nodePath, dnaNode):
         """ Replace a node path with the results of a DNANode traversal """
@@ -3571,20 +3575,13 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.levelEditor.selectedNodePathHookHooks.append(self.updateSignPage)
         gridFrame = Frame(signPage)
 
-        self.baselineString=StringVar()
-        self.baselineString.trace("wu", self.signBaselineTrace)
-        self.baselineTextBox = Entry(
-            gridFrame, width = 24,
-            textvariable=self.baselineString)
-        self.baselineTextBox.grid(row=1, column=0, columnspan=6)
-
         signSelectedFrame = Frame(gridFrame)
 
         self.currentBaselineIndex=0
         self.baselineMenu = Pmw.ComboBox(
             signSelectedFrame, 
             labelpos = W,
-            label_text = 'Selected:', entry_width = 14,
+            label_text = 'Selected:', entry_width = 24,
             selectioncommand = self.selectSignBaseline,
             history = 0, # unique = 0,
             scrolledlist_items = ['<the sign>'])
@@ -3598,16 +3595,14 @@ class LevelEditorPanel(Pmw.MegaToplevel):
 
         signSelectedFrame.grid(row=0, column=0, columnspan=6)
 
-        fontList = [""]+self.styleManager.getCatalogCodes('font')
-        self.fontMenu = Pmw.ComboBox(
-            gridFrame, labelpos = W,
-            label_text = 'Font:', entry_width = 12,
-            selectioncommand = self.setSignBaslineFont, history = 0,
-            scrolledlist_items = fontList)
-        self.fontMenu.selectitem(fontList[0])
-        self.fontMenu.grid(row=2, column=3, columnspan=3)
+        self.baselineString=StringVar()
+        self.baselineString.trace("wu", self.signBaselineTrace)
+        self.baselineTextBox = Entry(
+            gridFrame, width = 24,
+            textvariable=self.baselineString)
+        self.baselineTextBox.grid(row=1, column=0, columnspan=6)
         
-        levelAttribute = ( # Yes, there are a lot of steps here:
+        levelAttribute = (
             self.styleManager.attributeDictionary
             ['baseline_style']['toontown_central']
             .getDict().keys())
@@ -3620,6 +3615,15 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             scrolledlist_items = baselineStyleList)
         self.baselineStyleMenu.selectitem(baselineStyleList[0])
         self.baselineStyleMenu.grid(row=2, column=0, columnspan=3)
+
+        fontList = [""]+self.styleManager.getCatalogCodes('font')
+        self.fontMenu = Pmw.ComboBox(
+            gridFrame, labelpos = W,
+            label_text = 'Font:', entry_width = 12,
+            selectioncommand = self.setSignBaslineFont, history = 0,
+            scrolledlist_items = fontList)
+        self.fontMenu.selectitem(fontList[0])
+        self.fontMenu.grid(row=2, column=3, columnspan=3)
 
         signButtonFrame = Frame(gridFrame)
         
@@ -3947,6 +3951,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             return target
         
     def selectSignBaseline(self, val):
+        print "\nselectSignBaseline:", val
         if not self.currentSignDNA:
             return
         # Temporarily undefine DNATarget (this will speed 
@@ -4037,7 +4042,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             if val == '<custom>':
                 return
             elif val == 'Zero':
-                self.currentBaselineDNA=None
+                self.levelEditor.replaceSelectedEnabled=0
+                
                 # Don't set string: self.baselineString.set('')
                 self.addCurveFloater.set(0)
                 self.addKernFloater.set(0)
@@ -4047,18 +4053,21 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                 self.bigFirstLetterIntVar.set(0)
                 self.allCapsIntVar.set(0)
                 self.dropShadowIntVar.set(0)
-                self.currentBaselineDNA=baseline
 
-                target=self.levelEditor.DNATarget
-                self.levelEditor.DNATarget=None
                 self.fontMenu.selectitem(0)
                 self.addXFloater.set(0)
                 self.addZFloater.set(0)
                 self.addScaleXFloater.set(1)
                 self.addScaleZFloater.set(1)
                 self.addRollFloater.set(0)
-                self.levelEditor.DNATarget=target
 
+                self.bigFirstLetterIntVar.set(0)
+                self.allCapsIntVar.set(0)
+                self.dropShadowIntVar.set(0)
+                
+                self.updateSelectedObjColor(Vec4(1.0))
+                
+                self.levelEditor.replaceSelectedEnabled=1
                 self.levelEditor.replaceSelected()
                 return
             else:
@@ -4067,7 +4076,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                     ['baseline_style']['toontown_central'] 
                     # TODO: toontown_centeral should not be hard coded.
                     .getDict()[val])
-            self.currentBaselineDNA=None
+            self.levelEditor.replaceSelectedEnabled=0
             
             # Don't set string: self.baselineString.set('')
             if settings['curve']:
@@ -4086,11 +4095,6 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                 self.allCapsIntVar.set('c' in flags)
                 self.dropShadowIntVar.set('d' in flags)
 
-            self.currentBaselineDNA=baseline
-
-            target=self.levelEditor.DNATarget
-            self.levelEditor.DNATarget=None
-
             if settings['code']:
                 self.fontMenu.selectitem(settings['code'])
             if settings['x']:
@@ -4103,9 +4107,11 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                 self.addScaleZFloater.set(float(settings['scaleZ']))
             if settings['roll']:
                 self.addRollFloater.set(float(settings['roll']))
+                
+            if settings['color']:
+                self.updateSelectedObjColor(settings['color'])
 
-            self.levelEditor.DNATarget=target
-
+            self.levelEditor.replaceSelectedEnabled=1
             self.levelEditor.replaceSelected()
                 
 
