@@ -61,7 +61,7 @@ public:
   // these are used by the loaders
   static WinMusic* load_midi(Filename);
   // these are used by the players
-  INLINE IDirectMusicPerformance* get_performance(void);
+  INLINE IDirectMusicPerformance* get_performance(void) const;
   INLINE IDirectMusicSegment* get_music(void);
 };
 
