@@ -71,6 +71,8 @@
 // currently doesnt work well enough in toontown models for us to use
 // prob is when viewer gets close to decals, they disappear into wall poly, need to investigate
 
+//#define PRINT_TEXSTATS
+
 TypeHandle DXGraphicsStateGuardian::_type_handle;
 
 // bit masks used for drawing primitives
@@ -799,6 +801,63 @@ render_frame(const AllAttributesWrapper &initial_state) {
   
   _win->end_frame();  
   show_frame();
+
+#ifdef PRINT_TEXSTATS
+{
+    
+  #define TICKSPERINFO (3*1000)
+  static DWORD LastTickCount=0;
+
+  DWORD CurTickCount=GetTickCount();
+    
+    if(CurTickCount-LastTickCount > TICKSPERINFO ) {
+      LastTickCount=CurTickCount;
+      HRESULT hr;
+    
+      D3DDEVINFO_TEXTUREMANAGER tminfo;
+      ZeroMemory(&tminfo,sizeof(  D3DDEVINFO_TEXTUREMANAGER));
+      hr = _d3dDevice->GetInfo(D3DDEVINFOID_TEXTUREMANAGER,&tminfo,sizeof(D3DDEVINFO_TEXTUREMANAGER));
+      if(hr!=D3D_OK) {
+        if(hr==S_FALSE) 
+           dxgsg_cat.error() << "GetInfo requires debug DX7 DLLs to be installed!!\n";
+        else dxgsg_cat.error() << "GetInfo appinfo failed : result = " << ConvD3DErrorToString(hr) << endl;
+        } else
+            dxgsg_cat.spam() 
+            << "\n bThrashing:\t" << tminfo.bThrashing 
+            << "\n NumEvicts:\t" << tminfo.dwNumEvicts 
+            << "\n NumVidCreates:\t" << tminfo.dwNumVidCreates 
+            << "\n NumTexturesUsed:\t" << tminfo.dwNumTexturesUsed 
+            << "\n NumUsedTexInVid:\t" << tminfo.dwNumUsedTexInVid 
+            << "\n WorkingSet:\t" << tminfo.dwWorkingSet
+            << "\n WorkingSetBytes:\t" << tminfo.dwWorkingSetBytes 
+            << "\n TotalManaged:\t" << tminfo.dwTotalManaged     
+            << "\n TotalBytes:\t" << tminfo.dwTotalBytes       
+            << "\n LastPri:\t" << tminfo.dwLastPri       << endl;
+    
+    
+      D3DDEVINFO_TEXTURING texappinfo;
+      ZeroMemory(&texappinfo,sizeof(  D3DDEVINFO_TEXTURING));
+      hr = _d3dDevice->GetInfo(D3DDEVINFOID_TEXTURING,&texappinfo,sizeof(D3DDEVINFO_TEXTURING));
+      if(hr!=D3D_OK) {
+        if(hr==S_FALSE) 
+        dxgsg_cat.error() << "GetInfo requires debug DX7 DLLs to be installed!!\n";
+        else dxgsg_cat.error() << "GetInfo appinfo failed : result = " << ConvD3DErrorToString(hr) << endl;
+        } else
+            dxgsg_cat.spam() 
+            << "\n NumLoads:\t" << texappinfo.dwNumLoads 
+            << "\n ApproxBytesLoaded:\t" << texappinfo.dwApproxBytesLoaded
+            << "\n NumPreLoads:\t" << texappinfo.dwNumPreLoads 
+            << "\n NumSet:\t" << texappinfo.dwNumSet   
+            << "\n NumCreates:\t" << texappinfo.dwNumCreates 
+            << "\n NumDestroys:\t" << texappinfo.dwNumDestroys
+            << "\n NumSetPriorities:\t" << texappinfo.dwNumSetPriorities 
+            << "\n NumSetLODs:\t" << texappinfo.dwNumSetLODs 
+            << "\n NumLocks:\t" << texappinfo.dwNumLocks 
+            << "\n NumGetDCs:\t" << texappinfo.dwNumGetDCs << endl;
+    }
+
+}
+#endif
 
 #ifdef GSG_VERBOSE
   dxgsg_cat.debug()
