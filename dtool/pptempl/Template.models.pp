@@ -242,7 +242,7 @@ $[TAB]gunzip $[GUNZIP_OPTS] < $[source] > $[target]
 // Egg file generation from Flt files.
 #forscopes flt_egg
   #foreach flt $[SOURCES]
-    #define target $[or $[TARGET],$[flt:%.flt=%.egg]]
+    #define target $[or $[TARGET],$[patsubst %.flt %.FLT,$[EGG_PREFIX]%$[EGG_SUFFIX].egg,$[flt]]]
     #define source $[flt]
 $[target] : $[source]
 $[TAB]flt2egg $[FLT2EGG_OPTS] -o $[target] $[source]
@@ -253,7 +253,7 @@ $[TAB]flt2egg $[FLT2EGG_OPTS] -o $[target] $[source]
 // Egg file generation from Lightwave files.
 #forscopes lwo_egg
   #foreach lwo $[SOURCES]
-    #define target $[or $[TARGET],$[patsubst %.lwo %.LWO,%.egg,$[lwo]]]
+    #define target $[or $[TARGET],$[patsubst %.lwo %.LWO,$[EGG_PREFIX]%$[EGG_SUFFIX].egg,$[lwo]]]
     #define source $[lwo]
 $[target] : $[source]
 $[TAB]lwo2egg $[LWO2EGG_OPTS] -o $[target] $[source]
@@ -264,7 +264,7 @@ $[TAB]lwo2egg $[LWO2EGG_OPTS] -o $[target] $[source]
 // Egg file generation from Maya files (for unanimated models).
 #forscopes maya_egg
   #foreach maya $[SOURCES]
-    #define target $[or $[TARGET],$[patsubst %.ma %.mb,%.egg,$[maya]]]
+    #define target $[or $[TARGET],$[patsubst %.ma %.mb,$[EGG_PREFIX]%$[EGG_SUFFIX].egg,$[maya]]]
     #define source $[maya]
 $[target] : $[source]
 $[TAB]maya2egg $[MAYA2EGG_OPTS] -o $[target] $[source]
