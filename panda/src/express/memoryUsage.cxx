@@ -333,7 +333,7 @@ win32_malloc_hook(int alloc_type, void *ptr,
         break;
         
       case _HOOK_FREE:
-        increment = -_msize(ptr);
+        increment = - ((int)_msize(ptr));
         break;
       }
       
