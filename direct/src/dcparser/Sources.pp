@@ -1,5 +1,6 @@
 #define OTHER_LIBS \
     express:c pandaexpress:m \
+    pstatclient:c panda:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
 #define LOCAL_LIBS \
@@ -15,7 +16,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx  $[TARGET]_composite2.cxx
 
   #define SOURCES \
-     dcAtomicField.h dcClass.h \
+     dcAtomicField.h dcClass.h dcClass.I \
      dcDeclaration.h \
      dcField.h dcFile.h dcLexer.lxx  \
      dcLexerDefs.h dcMolecularField.h dcParser.yxx dcParserDefs.h  \

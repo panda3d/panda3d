@@ -25,8 +25,14 @@
 #include "urlSpec.h"
 #include "datagramIterator.h"
 #include "throw_event.h"
+#include "pStatTimer.h"
+
 
 const string CConnectionRepository::_overflow_event_name = "CRDatagramOverflow";
+
+#ifndef CPPPARSER
+PStatCollector CConnectionRepository::_update_pcollector("App:Show code:readerPollTask:Update");
+#endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::Constructor
@@ -379,6 +385,7 @@ do_check_datagram() {
 bool CConnectionRepository::
 handle_update_field() {
 #ifdef HAVE_PYTHON
+  PStatTimer timer(_update_pcollector);
   int do_id = _di.get_uint32();
   if (_python_repository != (PyObject *)NULL) {
     PyObject *doId2do =

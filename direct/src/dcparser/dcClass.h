@@ -24,6 +24,10 @@
 #include "dcDeclaration.h"
 #include "dcPython.h"
 
+#ifdef WITHIN_PANDA
+#include "pStatCollector.h"
+#endif
+
 class HashGenerator;
 class DCParameter;
 
@@ -57,8 +61,11 @@ PUBLISHED:
   int get_num_inherited_fields() const;
   DCField *get_inherited_field(int n) const;
 
-  bool is_struct() const;
-  bool is_bogus_class() const;
+  INLINE bool is_struct() const;
+  INLINE bool is_bogus_class() const;
+
+  INLINE void start_generate();
+  INLINE void stop_generate();
 
 #ifdef HAVE_PYTHON
   bool has_class_def() const;
@@ -101,6 +108,13 @@ public:
   void set_number(int number);
 
 private:
+#ifdef WITHIN_PANDA
+  PStatCollector _class_update_pcollector;
+  PStatCollector _class_generate_pcollector;
+  static PStatCollector _update_pcollector;
+  static PStatCollector _generate_pcollector;
+#endif
+
   string _name;
   bool _is_struct;
   bool _bogus_class;
@@ -121,5 +135,7 @@ private:
   PyObject *_class_def;
 #endif
 };
+
+#include "dcClass.I"
 
 #endif

@@ -25,6 +25,7 @@
 #include "dcbase.h"
 #include "dcFile.h"
 #include "dcField.h"  // to pick up Python.h
+#include "pStatCollector.h"
 
 #ifdef HAVE_NSPR
 #include "queuedConnectionManager.h"
@@ -130,6 +131,8 @@ private:
   unsigned int _msg_type;
 
   static const string _overflow_event_name;
+
+  static PStatCollector _update_pcollector;
 };
 
 #include "cConnectionRepository.I"

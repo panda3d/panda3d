@@ -101,8 +101,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         doId = di.getUint32()
         # Look up the dclass
         dclass = self.dclassesByNumber[classId]
+        dclass.startGenerate()
         # Create a new distributed object, and put it in the dictionary
         distObj = self.generateWithRequiredFields(dclass, doId, di)
+        dclass.stopGenerate()
 
     def handleGenerateWithRequiredOther(self, di):
         # Get the class Id
@@ -111,8 +113,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         doId = di.getUint32()
         # Look up the dclass
         dclass = self.dclassesByNumber[classId]
+        dclass.startGenerate()
         # Create a new distributed object, and put it in the dictionary
         distObj = self.generateWithRequiredOtherFields(dclass, doId, di)
+        dclass.stopGenerate()
 
     def handleQuietZoneGenerateWithRequired(self, di):
         # Special handler for quiet zone generates -- we need to filter
@@ -122,11 +126,13 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         doId = di.getUint32()
         # Look up the dclass
         dclass = self.dclassesByNumber[classId]
+        dclass.startGenerate()
         # If the class is a neverDisable class (which implies uberzone) we
         # should go ahead and generate it even though we are in the quiet zone
         if dclass.getClassDef().neverDisable:
             # Create a new distributed object, and put it in the dictionary
             distObj = self.generateWithRequiredFields(dclass, doId, di)
+        dclass.stopGenerate()
 
     def handleQuietZoneGenerateWithRequiredOther(self, di):
         # Special handler for quiet zone generates -- we need to filter
@@ -138,9 +144,11 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         dclass = self.dclassesByNumber[classId]
         # If the class is a neverDisable class (which implies uberzone) we
         # should go ahead and generate it even though we are in the quiet zone
+        dclass.startGenerate()
         if dclass.getClassDef().neverDisable:
             # Create a new distributed object, and put it in the dictionary
             distObj = self.generateWithRequiredOtherFields(dclass, doId, di)
+        dclass.stopGenerate()
 
     def generateWithRequiredFields(self, dclass, doId, di):
         if self.doId2do.has_key(doId):
@@ -410,10 +418,12 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # watch for setZoneDones
         if msgType == CLIENT_DONE_SET_ZONE_RESP:
             self.handleSetZoneDone()
+
         if self.handler == None:
             self.handleUnexpectedMsgType(msgType, di)
         else:
             self.handler(msgType, di)
+            
         # If we're processing a lot of datagrams within one frame, we
         # may forget to send heartbeats.  Keep them coming!
         self.considerHeartbeat()
