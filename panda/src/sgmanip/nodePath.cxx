@@ -44,6 +44,7 @@
 
 #include "plist.h"
 
+int NodePath::_max_search_depth = 10000;
 TypeHandle NodePath::_type_handle;
 
 
@@ -93,6 +94,7 @@ public:
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 extend_by(Node *dnode) {
+  nassertr(_error_type == ET_ok, false);
   nassertr(verify_connectivity(), false);
   nassertr(dnode != (Node *)NULL, false);
 
@@ -129,6 +131,7 @@ extend_by(Node *dnode) {
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 extend_by(NodeRelation *darc) {
+  nassertr(_error_type == ET_ok, false);
   nassertr(verify_connectivity(), false);
   nassertr(darc != (NodeRelation *)NULL, false);
 
@@ -173,6 +176,8 @@ extend_by(NodeRelation *darc) {
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 extend_by(const NodePath &other) {
+  nassertr(_error_type == ET_ok, false);
+  nassertr(other._error_type == ET_ok, false);
   nassertr(verify_connectivity(), false);
   if (is_empty()) {
     // A special case: extending an empty path by another path is just
@@ -195,6 +200,7 @@ extend_by(const NodePath &other) {
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 extend_by(const string &path) {
+  nassertr(_error_type == ET_ok, false);
   nassertr(verify_connectivity(), false);
   NodePathCollection col;
   find_matches(col, path, 1);
@@ -223,6 +229,7 @@ extend_by(const string &path) {
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 extend_down_to(Node *dnode) {
+  nassertr(_error_type == ET_ok, false);
   if (!is_empty() && node() == dnode) {
     // We're already there!
     return true;
@@ -258,6 +265,7 @@ extend_down_to(Node *dnode) {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 shorten(int num_nodes) {
+  nassertv(_error_type == ET_ok);
   nassertv(num_nodes >= 0 && num_nodes <= get_num_nodes());
 
   int count = num_nodes;
@@ -276,6 +284,7 @@ shorten(int num_nodes) {
 void NodePath::
 clear() {
   _head.clear();
+  _error_type = ET_ok;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -345,6 +354,7 @@ get_siblings() const {
 NodePathCollection NodePath::
 find_all_paths_down_to(Node *dnode) const {
   NodePathCollection col;
+  nassertr(!is_empty(), col);
   nassertr(verify_connectivity(), col);
   nassertr(dnode != (Node *)NULL, col);
   FindApproxPath approx_path;
@@ -365,6 +375,7 @@ find_all_paths_down_to(Node *dnode) const {
 NodePathCollection NodePath::
 find_all_matches(const string &path) const {
   NodePathCollection col;
+  nassertr(!is_empty(), col);
   nassertr(verify_connectivity(), col);
   find_matches(col, path, -1);
   return col;
@@ -386,6 +397,8 @@ find_all_matches(const string &path) const {
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
 find_singular_transform() const {
+  nassertr(!is_empty(), NodePath::fail());
+
   if (has_mat()) {
     LMatrix4f mat;
     if (!mat.invert_from(get_mat())) {
@@ -402,7 +415,7 @@ find_singular_transform() const {
     }
   }
 
-  return NodePath();
+  return NodePath::not_found();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -800,16 +813,16 @@ wrt_reparent_to(const NodePath &other, int sort) {
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
 instance_to(const NodePath &other, int sort) const {
-  nassertr(verify_connectivity(), NodePath());
-  nassertr(!is_empty(), NodePath());
-  nassertr(!other.is_empty(), NodePath());
+  nassertr(verify_connectivity(), NodePath::fail());
+  nassertr(!is_empty(), NodePath::fail());
+  nassertr(!other.is_empty(), NodePath::fail());
 
   Node *bottom_node = node();
   NodeRelation *darc =
     NodeRelation::create_typed_arc(_graph_type, other.node(),
                                    bottom_node, sort);
-  nassertr(darc != (NodeRelation *)NULL, NodePath());
-  nassertr(darc->is_exact_type(_graph_type), NodePath());
+  nassertr(darc != (NodeRelation *)NULL, NodePath::fail());
+  nassertr(darc->is_exact_type(_graph_type), NodePath::fail());
 
   if (has_arcs()) {
     // Copy the transitions from this one's bottom arc, so the
@@ -839,19 +852,19 @@ instance_to(const NodePath &other, int sort) const {
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
 copy_to(const NodePath &other, int sort) const {
-  nassertr(verify_connectivity(), NodePath());
-  nassertr(!is_empty(), NodePath());
-  nassertr(!other.is_empty(), NodePath());
+  nassertr(verify_connectivity(), NodePath::fail());
+  nassertr(!is_empty(), NodePath::fail());
+  nassertr(!other.is_empty(), NodePath::fail());
 
   Node *source_node = node();
   PT_Node copy_node = source_node->copy_subgraph(_graph_type);
-  nassertr(copy_node != (Node *)NULL, NodePath());
+  nassertr(copy_node != (Node *)NULL, NodePath::fail());
 
   NodeRelation *darc =
     NodeRelation::create_typed_arc(_graph_type, other.node(),
                                    copy_node, sort);
-  nassertr(darc != (NodeRelation *)NULL, NodePath());
-  nassertr(darc->is_exact_type(_graph_type), NodePath());
+  nassertr(darc != (NodeRelation *)NULL, NodePath::fail());
+  nassertr(darc->is_exact_type(_graph_type), NodePath::fail());
 
   if (has_arcs()) {
     // Copy the transitions from this one's bottom arc, so the
@@ -879,7 +892,7 @@ copy_to(const NodePath &other, int sort) const {
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
 attach_new_node(Node *dnode, int sort) const {
-  nassertr(verify_connectivity(), NodePath());
+  nassertr(verify_connectivity(), NodePath::fail());
   nassertr(!is_empty(), NodePath(_graph_type));
   nassertr(dnode != (Node *)NULL, NodePath(_graph_type));
 
@@ -906,11 +919,12 @@ attach_new_node(Node *dnode, int sort) const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 remove_node() {
+  nassertv(_error_type != ET_not_found);
   if (!has_arcs() || !arc()->is_attached()) {
     // If we have no arcs (maybe we were already removed), or if the
     // bottom arc has been disconnected (maybe a parent was removed),
     // quietly do nothing except to ensure the NodePath is clear.
-    clear();
+    (*this) = NodePath::removed();
     return;
   }
 
@@ -935,7 +949,7 @@ remove_node() {
   // from being actually destructed (although it has been removed from
   // the scene graph), and they will now believe they are rooted at
   // that destructed node, cut off from the rest of the world.
-  clear();
+  (*this) = NodePath::removed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -962,6 +976,17 @@ remove_node() {
 string NodePath::
 as_string(int start_at_node) const {
   nassertr(start_at_node >= 0, string());
+
+  switch (_error_type) {
+  case ET_not_found:
+    return "**not found**";
+  case ET_removed:
+    return "**removed**";
+  case ET_fail:
+    return "**error**";
+  default:
+    break;
+  }
 
   if (is_empty()) {
     // An empty path always returns an empty string.
@@ -1854,6 +1879,8 @@ set_pos_hpr_scale(const NodePath &other,
 ////////////////////////////////////////////////////////////////////
 LMatrix4f NodePath::
 get_mat(const NodePath &other) const {
+  nassertr(_error_type == ET_ok && other._error_type == ET_ok,
+           LMatrix4f::ident_mat());
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
 
   if (is_empty() && other.is_empty()) {
@@ -1890,6 +1917,7 @@ get_mat(const NodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_mat(const NodePath &other, const LMatrix4f &mat) {
+  nassertv(_error_type == ET_ok && other._error_type == ET_ok);
   nassertv_always(has_arcs());
 
 #ifndef NDEBUG
@@ -2735,7 +2763,7 @@ get_transparency() const {
 NodePath NodePath::
 get_hidden_ancestor() const {
   if (!has_arcs()) {
-    return NodePath();
+    return NodePath::not_found();
   }
 
   if (arc()->has_transition(PruneTransition::get_class_type())) {
@@ -2762,7 +2790,7 @@ get_hidden_ancestor() const {
 NodePath NodePath::
 get_stashed_ancestor() const {
   if (!has_arcs()) {
-    return NodePath();
+    return NodePath::not_found();
   }
 
   if (arc()->get_graph_type() != _graph_type) {

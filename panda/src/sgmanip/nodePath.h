@@ -21,7 +21,6 @@
 
 #include <pandabase.h>
 
-#include "nodePathBase.h"
 #include "nodePathCollection.h"
 
 #include <allTransitionsWrapper.h>
@@ -135,23 +134,29 @@ class GraphicsStateGuardianBase;
 //               to a GeomNode).  It thus unambiguously defines
 //               instances, especially when it is rooted at the top of
 //               the graph.
-//
-//               This class does not have any data members or
-//               additional virtual functions; it's just interface.
-//               All of the data is defined in the base class,
-//               NodePathBase.  This is important so that
-//               NodePathCollection can work correctly without knowing
-//               exactly what a NodePath is.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NodePath : public NodePathBase {
+class EXPCL_PANDA NodePath : public ArcChain {
 PUBLISHED:
+  // This enumeration is returned by get_error_type() for an empty
+  // NodePath to report the reason it's empty.
+  enum ErrorType {
+    ET_ok = 0,     // i.e. not empty, or never assigned to anything.
+    ET_not_found,  // returned from a failed find() or similar function.
+    ET_removed,    // remove_node() was previously called on this NodePath.
+    ET_fail,       // general failure return from some function.
+  };
+
   INLINE NodePath(TypeHandle graph_type = RenderRelation::get_class_type());
   INLINE NodePath(Node *top_node, TypeHandle graph_type = RenderRelation::get_class_type());
   INLINE NodePath(const ArcChain &chain, TypeHandle graph_type);
 
-  INLINE NodePath(const NodePathBase &copy);
+  INLINE NodePath(const NodePath &copy);
   INLINE void operator = (const NodePath &copy);
   INLINE ~NodePath();
+
+  INLINE static NodePath not_found();
+  INLINE static NodePath removed();
+  INLINE static NodePath fail();
 
   INLINE bool operator == (const NodePath &other) const;
   INLINE bool operator != (const NodePath &other) const;
@@ -179,6 +184,7 @@ PUBLISHED:
   // Methods to query a NodePath's contents.
 
   INLINE bool is_empty() const;
+  INLINE ErrorType get_error_type() const;
   INLINE bool is_singleton() const;
   INLINE bool has_arcs() const;
   int get_num_nodes() const;
@@ -547,17 +553,19 @@ private:
   void r_adjust_all_priorities(NodeRelation *arc, int adjustment);
   void r_clear_wrt_cache(NodeRelation *arc);
 
-  // It's important that there are no data members in this class.  Put
-  // them in NodePathBase instead.
+private:
+  TypeHandle _graph_type;
+  ErrorType _error_type;
+  static int _max_search_depth;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    NodePathBase::init_type();
+    ArcChain::init_type();
     register_type(_type_handle, "NodePath",
-                  NodePathBase::get_class_type());
+                  ArcChain::get_class_type());
   }
 
 private:

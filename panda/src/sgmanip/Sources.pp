@@ -11,15 +11,15 @@
   #define SOURCES \
      config_sgmanip.h findApproxLevel.I findApproxLevel.h  \
      findApproxPath.I findApproxPath.h nodePath.I nodePath.h  \
-     nodePathBase.I nodePathBase.h nodePathCollection.I  \
+     nodePathCollection.I  \
      nodePathCollection.h nodePathLerps.h nodePath.cxx
     
   #define INCLUDED_SOURCES \
      config_sgmanip.cxx findApproxLevel.cxx findApproxPath.cxx  \
-     nodePathBase.cxx nodePathCollection.cxx nodePathLerps.cxx 
+     nodePathCollection.cxx nodePathLerps.cxx 
 
   #define INSTALL_HEADERS \
-    nodePath.I nodePath.h nodePathBase.I nodePathBase.h \
+    nodePath.I nodePath.h \
     nodePathCollection.I nodePathCollection.h
 
   #define IGATESCAN all

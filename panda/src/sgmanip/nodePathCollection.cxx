@@ -22,6 +22,7 @@
 #include "findApproxLevel.h"
 
 #include <indent.h>
+#include <renderRelation.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::Constructor
@@ -30,6 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 NodePathCollection::
 NodePathCollection() {
+  _graph_type = RenderRelation::get_class_type();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,7 +41,8 @@ NodePathCollection() {
 ////////////////////////////////////////////////////////////////////
 NodePathCollection::
 NodePathCollection(const NodePathCollection &copy) :
-  _node_paths(copy._node_paths)
+  _node_paths(copy._node_paths),
+  _graph_type(copy._graph_type)
 {
 }
 
@@ -51,6 +54,7 @@ NodePathCollection(const NodePathCollection &copy) :
 void NodePathCollection::
 operator = (const NodePathCollection &copy) {
   _node_paths = copy._node_paths;
+  _graph_type = copy._graph_type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,14 +64,24 @@ operator = (const NodePathCollection &copy) {
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
 add_path(const NodePath &node_path) {
+  if (_node_paths.empty()) {
+    // If this is the first NodePath added to the collection, it
+    // defines our graph_type.
+    _graph_type = node_path.get_graph_type();
+
+  } else {
+    // Otherwise, the graph_type must match what's already there.
+    nassertv(node_path.get_graph_type() == _graph_type);
+  }
+
   // If the pointer to our internal array is shared by any other
   // NodePathCollections, we have to copy the array now so we won't
   // inadvertently modify any of our brethren NodePathCollection
   // objects.
 
   if (_node_paths.get_ref_count() > 1) {
-    PTA(NodePathBase) old_node_paths = _node_paths;
-    _node_paths = PTA(NodePathBase)(0);
+    PTA(ArcChain) old_node_paths = _node_paths;
+    _node_paths = PTA(ArcChain)(0);
     _node_paths.v() = old_node_paths.v();
   }
 
@@ -85,7 +99,7 @@ bool NodePathCollection::
 remove_path(const NodePath &node_path) {
   int path_index = -1;
   for (int i = 0; path_index == -1 && i < (int)_node_paths.size(); i++) {
-    if ((const NodePath &)_node_paths[i] == node_path) {
+    if (_node_paths[i] == node_path) {
       path_index = i;
     }
   }
@@ -101,8 +115,8 @@ remove_path(const NodePath &node_path) {
   // objects.
 
   if (_node_paths.get_ref_count() > 1) {
-    PTA(NodePathBase) old_node_paths = _node_paths;
-    _node_paths = PTA(NodePathBase)(0);
+    PTA(ArcChain) old_node_paths = _node_paths;
+    _node_paths = PTA(ArcChain)(0);
     _node_paths.v() = old_node_paths.v();
   }
 
@@ -120,6 +134,16 @@ remove_path(const NodePath &node_path) {
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
 add_paths_from(const NodePathCollection &other) {
+  if (_node_paths.empty()) {
+    // If this is the first NodePath added to the collection, it
+    // defines our graph_type.
+    _graph_type = other.get_graph_type();
+
+  } else {
+    // Otherwise, the graph_type must match what's already there.
+    nassertv(other.get_graph_type() == _graph_type);
+  }
+
   int other_num_paths = other.get_num_paths();
   for (int i = 0; i < other_num_paths; i++) {
     add_path(other.get_path(i));
@@ -231,7 +255,7 @@ NodePath NodePathCollection::
 get_path(int index) const {
   nassertr(index >= 0 && index < (int)_node_paths.size(), NodePath());
 
-  return NodePath(_node_paths[index]);
+  return NodePath(_node_paths[index], _graph_type);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -245,7 +269,18 @@ NodePath NodePathCollection::
 operator [] (int index) const {
   nassertr(index >= 0 && index < (int)_node_paths.size(), NodePath());
 
-  return NodePath(_node_paths[index]);
+  return NodePath(_node_paths[index], _graph_type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::get_graph_type
+//       Access: Public
+//  Description: Returns the type of graph that all the NodePaths in
+//               the collection represent.
+////////////////////////////////////////////////////////////////////
+TypeHandle NodePathCollection::
+get_graph_type() const {
+  return _graph_type;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -26,7 +26,10 @@
 //               this object.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
-NodePath(TypeHandle graph_type) : NodePathBase(graph_type) {
+NodePath(TypeHandle graph_type) :
+  _graph_type(graph_type),
+  _error_type(ET_ok)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -41,8 +44,11 @@ NodePath(TypeHandle graph_type) : NodePathBase(graph_type) {
 //               empty NodePath.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
-NodePath(Node *top_node, TypeHandle graph_type) : NodePathBase(top_node, graph_type) {
-  nassertv(verify_connectivity());
+NodePath(Node *top_node, TypeHandle graph_type) :
+  ArcChain(top_node),
+  _graph_type(graph_type),
+  _error_type(ET_ok)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,9 +62,10 @@ NodePath(Node *top_node, TypeHandle graph_type) : NodePathBase(top_node, graph_t
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
 NodePath(const ArcChain &chain, TypeHandle graph_type) :
-  NodePathBase(chain, graph_type)
+  ArcChain(chain),
+  _graph_type(graph_type),
+  _error_type(ET_ok)
 {
-  nassertv(verify_connectivity());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,7 +74,11 @@ NodePath(const ArcChain &chain, TypeHandle graph_type) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
-NodePath(const NodePathBase &copy) : NodePathBase(copy) {
+NodePath(const NodePath &copy) :
+  ArcChain(copy),
+  _graph_type(copy._graph_type),
+  _error_type(copy._error_type)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,7 +88,9 @@ NodePath(const NodePathBase &copy) : NodePathBase(copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 operator = (const NodePath &copy) {
-  NodePathBase::operator = (copy);
+  ArcChain::operator = (copy);
+  _graph_type = copy._graph_type;
+  _error_type = copy._error_type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,6 +100,45 @@ operator = (const NodePath &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
 ~NodePath() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::not_found named constructor
+//       Access: Public, Static
+//  Description: Creates a NodePath with the ET_not_found error type
+//               set.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath NodePath::
+not_found() {
+  NodePath result;
+  result._error_type = ET_not_found;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::removed named constructor
+//       Access: Public, Static
+//  Description: Creates a NodePath with the ET_removed error type
+//               set.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath NodePath::
+removed() {
+  NodePath result;
+  result._error_type = ET_removed;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::fail named constructor
+//       Access: Public, Static
+//  Description: Creates a NodePath with the ET_fail error type
+//               set.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath NodePath::
+fail() {
+  NodePath result;
+  result._error_type = ET_fail;
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -120,7 +172,10 @@ operator != (const NodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int NodePath::
 compare_to(const NodePath &other) const {
-  return NodePathBase::compare_to(other);
+  if (is_empty() && other.is_empty()) {
+    return (int)get_error_type() - (int)other.get_error_type();
+  }
+  return ArcChain::compare_to(other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -199,6 +254,17 @@ is_empty() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_error_type
+//       Access: Public
+//  Description: If is_empty() is true, this returns a code that
+//               represents the reason why the NodePath is empty.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath::ErrorType NodePath::
+get_error_type() const {
+  return _error_type;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::is_singleton
 //       Access: Public
 //  Description: Returns true if the NodePath contains exactly one
@@ -243,6 +309,7 @@ get_num_arcs() const {
 ////////////////////////////////////////////////////////////////////
 INLINE Node *NodePath::
 node() const {
+  nassertr(_error_type == ET_ok, (Node *)NULL);
   if (is_empty()) {
     return (Node *)NULL;
   }
@@ -257,6 +324,7 @@ node() const {
 ////////////////////////////////////////////////////////////////////
 INLINE NodeRelation *NodePath::
 arc() const {
+  nassertr(_error_type == ET_ok, (NodeRelation *)NULL);
   if (!has_arcs()) {
     // A singleton or empty list.
     return (NodeRelation *)NULL;
@@ -288,9 +356,9 @@ get_num_children() const {
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
 get_child(int n) const {
-  nassertr(verify_connectivity(), NodePath());
-  nassertr(!is_empty(), NodePath());
-  nassertr(n >= 0 && n < get_num_children(), NodePath());
+  nassertr(verify_connectivity(), NodePath::fail());
+  nassertr(!is_empty(), NodePath::fail());
+  nassertr(n >= 0 && n < get_num_children(), NodePath::fail());
 
   NodePath result(*this);
   result.extend_by(node()->get_child(_graph_type, n));
@@ -317,7 +385,7 @@ has_parent() const {
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
 get_parent() const {
-  nassertr(has_parent(), NodePath());
+  nassertr(has_parent(), NodePath::fail());
   NodePath parent(*this);
   parent.shorten();
   return parent;
@@ -333,11 +401,12 @@ get_parent() const {
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
 find_path_down_to(Node *dnode) const {
+  nassertr(_error_type == ET_ok, *this);
   NodePath result(*this);
   if (result.extend_down_to(dnode)) {
     return result;
   }
-  return NodePath();
+  return NodePath::not_found();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -350,11 +419,12 @@ find_path_down_to(Node *dnode) const {
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
 find(const string &path) const {
+  nassertr(_error_type == ET_ok, *this);
   NodePath result(*this);
   if (result.extend_by(path)) {
     return result;
   }
-  return NodePath();
+  return NodePath::not_found();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -366,8 +436,8 @@ find(const string &path) const {
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
 attach_new_node(const string &name, int sort) const {
-  nassertr(verify_connectivity(), NodePath());
-  nassertr(!is_empty(), NodePath(_graph_type));
+  nassertr(verify_connectivity(), NodePath::fail());
+  nassertr(!is_empty(), *this);
 
   return attach_new_node(new NamedNode(name), sort);
 }

@@ -23,8 +23,7 @@
 
 // We don't include NodePath in the header file, so NodePath can
 // include us.
-#include "nodePathBase.h"
-
+#include <arcChain.h>
 #include <pointerToArray.h>
 
 class NodePath;
@@ -35,6 +34,9 @@ class NodePath;
 //               for returning from functions that need to return
 //               multiple NodePaths (for instance,
 //               NodePaths::get_children).
+//
+//               All the NodePaths added to a NodePathCollection must
+//               share the same graph_type.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NodePathCollection {
 PUBLISHED:
@@ -55,6 +57,7 @@ PUBLISHED:
   int get_num_paths() const;
   NodePath get_path(int index) const;
   NodePath operator [] (int index) const;
+  TypeHandle get_graph_type() const;
 
   // Handy operations on many NodePaths at once.
   INLINE void ls() const;
@@ -74,8 +77,9 @@ PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
 
 private:
-  typedef PTA(NodePathBase) NodePaths;
+  typedef PTA(ArcChain) NodePaths;
   NodePaths _node_paths;
+  TypeHandle _graph_type;
 };
 
 INLINE ostream &operator << (ostream &out, const NodePathCollection &col) {

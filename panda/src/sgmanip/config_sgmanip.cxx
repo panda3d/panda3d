@@ -20,7 +20,6 @@
 
 #include <dconfig.h>
 
-#include "nodePathBase.h"
 #include "nodePath.h"
 #include "nodePathLerps.h"
 
@@ -28,7 +27,6 @@ Configure(config_sgmanip);
 NotifyCategoryDef(sgmanip, "");
 
 ConfigureFn(config_sgmanip) {
-  NodePathBase::init_type();
   NodePath::init_type();
   PosLerpFunctor::init_type();
   HprLerpFunctor::init_type();
