@@ -447,8 +447,17 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
     for (i = 0; i < num_nodes; i++) {
       MayaNodeDesc *node_desc = _tree.get_node(i);
       if (node_desc->is_joint()) {
+        if (mayaegg_cat.is_spam()) {
+          mayaegg_cat.spam()
+            << "joint " << node_desc->get_name() << "\n";
+        }
         get_joint_transform(node_desc->get_dag_path(), tgroup);
-        _tree.get_egg_anim(node_desc)->add_data(tgroup->get_transform());
+        EggXfmSAnim *anim = _tree.get_egg_anim(node_desc);
+        if (!anim->add_data(tgroup->get_transform())) {
+          mayaegg_cat.error()
+            << "Shear transform on " << node_desc->get_name()
+            << " frame " << frame.value() << ".\n";
+        }
       }
     }
 
@@ -456,7 +465,8 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
   }
 
   // Now optimize all of the tables we just filled up, for no real
-  // good reason.
+  // good reason, except that it makes the resulting egg file a little
+  // easier to read.
   for (i = 0; i < num_nodes; i++) {
     MayaNodeDesc *node_desc = _tree.get_node(i);
     if (node_desc->is_joint()) {
@@ -783,6 +793,12 @@ get_joint_transform(const MDagPath &dag_path, EggGroup *egg_group) {
     matrix.getScale(d, MSpace::kWorld);
     mayaegg_cat.spam()
       << "  scale: ["
+      << d[0] << ", "
+      << d[1] << ", "
+      << d[2] << "]\n";
+    matrix.getShear(d, MSpace::kWorld);
+    mayaegg_cat.spam()
+      << "  shear: ["
       << d[0] << ", "
       << d[1] << ", "
       << d[2] << "]\n";
