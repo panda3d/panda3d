@@ -184,7 +184,7 @@ private:
   void reset_for_new_request();
 
   void finished_body(bool has_trailer);
-  bool reset_download_position();
+  bool reset_download_position(size_t first_byte);
 
   bool server_getline(string &str);
   bool server_getline_failsafe(string &str);
@@ -276,8 +276,10 @@ private:
   bool _proxy_serves_document;
   bool _proxy_tunnel;
   bool _server_response_has_no_body;
-  size_t _first_byte;
-  size_t _last_byte;
+  size_t _first_byte_requested;
+  size_t _last_byte_requested;
+  size_t _first_byte_delivered;
+  size_t _last_byte_delivered;
   int _connect_count;
 
   enum DownloadDest {

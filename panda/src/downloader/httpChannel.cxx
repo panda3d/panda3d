@@ -56,8 +56,10 @@ HTTPChannel(HTTPClient *client) :
   _want_ssl = false;
   _proxy_serves_document = false;
   _proxy_tunnel = false;
-  _first_byte = 0;
-  _last_byte = 0;
+  _first_byte_requested = 0;
+  _last_byte_requested = 0;
+  _first_byte_delivered = 0;
+  _last_byte_delivered = 0;
   _read_index = 0;
   _file_size = 0;
   _bytes_downloaded = 0;
@@ -487,7 +489,7 @@ download_to_file(const Filename &filename, bool subdocument_resumes) {
   _download_to_file.close();
   _download_to_file.clear();
 
-  _subdocument_resumes = (subdocument_resumes && _first_byte != 0);
+  _subdocument_resumes = (subdocument_resumes && _first_byte_requested != 0);
 
   if (!_download_to_filename.open_write(_download_to_file, !_subdocument_resumes)) {
     downloader_cat.info()
@@ -496,7 +498,7 @@ download_to_file(const Filename &filename, bool subdocument_resumes) {
   }
 
   _download_dest = DD_file;
-  if (!reset_download_position()) {
+  if (!reset_download_position(_first_byte_requested)) {
     reset_download_to();
     return false;
   }
@@ -550,9 +552,9 @@ download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
   ramfile->_pos = 0;
   _download_to_ramfile = ramfile;
   _download_dest = DD_ram;
-  _subdocument_resumes = (subdocument_resumes && _first_byte != 0);
+  _subdocument_resumes = (subdocument_resumes && _first_byte_requested != 0);
 
-  if (!reset_download_position()) {
+  if (!reset_download_position(_first_byte_requested)) {
     reset_download_to();
     return false;
   }
@@ -1427,8 +1429,8 @@ run_reading_header() {
     }
 
   } else {
-    _first_byte = 0;
-    _last_byte = 0;
+    _first_byte_delivered = 0;
+    _last_byte_delivered = 0;
   }
 
   // Set the _document_spec to reflect what we just retrieved.
@@ -1444,7 +1446,7 @@ run_reading_header() {
 
   // In case we've got a download in effect, reset the download
   // position to match our starting byte.
-  if (!reset_download_position()) {
+  if (!reset_download_position(_first_byte_delivered)) {
     _state = S_failure;
     return false;
   }
@@ -1457,7 +1459,7 @@ run_reading_header() {
   } else if (get_status_code() == 206) {
     // Well, we didn't get a content-length from the server, but we
     // can infer the number of bytes based on the range we're given.
-    _file_size = _last_byte - _first_byte + 1;
+    _file_size = _last_byte_delivered - _first_byte_delivered + 1;
   }
   _redirect = get_header_value("Location");
 
@@ -1888,8 +1890,8 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
   // connection.
   _want_ssl = _request.get_url().is_ssl();
 
-  _first_byte = first_byte;
-  _last_byte = last_byte;
+  _first_byte_requested = first_byte;
+  _last_byte_requested = last_byte;
   _connect_count = 0;
 
   reconsider_proxy();
@@ -2010,7 +2012,7 @@ finished_body(bool has_trailer) {
 //               the starting position is valid, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
-reset_download_position() {
+reset_download_position(size_t first_byte) {
   if (_subdocument_resumes) {
     if (_download_dest == DD_file) {
       // Windows doesn't complain if you try to seek past the end of
@@ -2018,38 +2020,38 @@ reset_download_position() {
       // difference.  Blecch.  That means we need to get the file size
       // first to check it ourselves.
       _download_to_file.seekp(0, ios::end);
-      if (_first_byte > (size_t)_download_to_file.tellp()) {
+      if (first_byte > (size_t)_download_to_file.tellp()) {
         downloader_cat.info()
-          << "Invalid starting position of byte " << _first_byte << " within "
-          << _download_to_filename << " (which has " 
+          << "Invalid starting position of byte " << first_byte
+          << " within " << _download_to_filename << " (which has " 
           << _download_to_file.tellp() << " bytes)\n";
         _download_to_file.close();
         return false;
       }
       
-      _download_to_file.seekp(_first_byte);
+      _download_to_file.seekp(first_byte);
       
     } else if (_download_dest == DD_ram) {
-      if (_first_byte > _download_to_ramfile->_data.length()) {
+      if (first_byte > _download_to_ramfile->_data.length()) {
         downloader_cat.info()
-          << "Invalid starting position of byte " << _first_byte 
+          << "Invalid starting position of byte " << first_byte 
           << " within Ramfile (which has " 
           << _download_to_ramfile->_data.length() << " bytes)\n";
         return false;
       }
 
-      if (_first_byte == 0) {
+      if (first_byte == 0) {
         _download_to_ramfile->_data = string();
       } else {
         _download_to_ramfile->_data = 
-          _download_to_ramfile->_data.substr(0, _first_byte);
+          _download_to_ramfile->_data.substr(0, first_byte);
       }
     }
 
   } else {
     // If _subdocument_resumes is false, we should be sure to reset to
     // the beginning of the file, regardless of the value of
-    // _first_byte.
+    // first_byte.
     if (_download_dest == DD_file) {
       _download_to_file.seekp(0);
     } else if (_download_dest == DD_ram) {
@@ -2391,8 +2393,9 @@ parse_http_header() {
 //     Function: HTTPChannel::parse_content_range
 //       Access: Private
 //  Description: Interprets the "Content-Range" header in the reply,
-//               and fills in _first_byte and _last_byte appropriately
-//               if the header response can be understood.
+//               and fills in _first_byte_delivered and
+//               _last_byte_delivered appropriately if the header
+//               response can be understood.
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 parse_content_range(const string &content_range) {
@@ -2420,8 +2423,8 @@ parse_content_range(const string &content_range) {
           p = endptr - c_str;
           
           if (last_byte >= first_byte) {
-            _first_byte = first_byte;
-            _last_byte = last_byte;
+            _first_byte_delivered = first_byte;
+            _last_byte_delivered = last_byte;
             return true;
           }
         }
@@ -2806,20 +2809,21 @@ make_header() {
     }
   }
 
-  if (_last_byte != 0) {
+  if (_last_byte_requested != 0) {
     stream 
-      << "Range: bytes=" << _first_byte << "-" << _last_byte << "\r\n";
+      << "Range: bytes=" << _first_byte_requested << "-" 
+      << _last_byte_requested << "\r\n";
 
-  } else if (_first_byte != 0) {
+  } else if (_first_byte_requested != 0) {
     stream 
-      << "Range: bytes=" << _first_byte << "-\r\n";
+      << "Range: bytes=" << _first_byte_requested << "-\r\n";
   }
 
   switch (_request.get_request_mode()) {
   case DocumentSpec::RM_any:
     // No particular request; give us any document that matches the
     // URL.  
-    if (_first_byte != 0) {
+    if (_first_byte_requested != 0) {
       // Unless we're requesting a subrange, in which case if the
       // exact document matches, retrieve the subrange indicated;
       // otherwise, retrieve the entire document.
