@@ -46,4 +46,9 @@ extern const string http_proxy;
 extern const string http_proxy_username;
 extern const double connect_timeout;
 
+// Later, we can make this conditional on NDEBUG or something along
+// those lines; for now, we define it always to be true so we get
+// error messages from OpenSSL wherever possible.
+#define REPORT_OPENSSL_ERRORS 1
+
 #endif

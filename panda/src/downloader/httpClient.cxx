@@ -28,10 +28,8 @@
 
 #ifdef HAVE_SSL
 
-#define REPORT_SSL_ERRORS 1
-
 #include <openssl/rand.h>
-#ifdef REPORT_SSL_ERRORS
+#ifdef REPORT_OPENSSL_ERRORS
 #include <openssl/err.h>
 #endif
 
@@ -256,7 +254,7 @@ load_certificates(const Filename &filename) {
   if (result <= 0) {
     downloader_cat.info()
       << "Could not load certificates from " << filename << ".\n";
-#ifdef REPORT_SSL_ERRORS
+#ifdef REPORT_OPENSSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
     return false;
@@ -671,7 +669,7 @@ generate_auth(const URLSpec &url, bool is_proxy, const string &challenge) {
 ////////////////////////////////////////////////////////////////////
 void HTTPClient::
 initialize_ssl() {
-#ifdef REPORT_SSL_ERRORS
+#ifdef REPORT_OPENSSL_ERRORS
   ERR_load_crypto_strings();
   ERR_load_SSL_strings();
 #endif
@@ -728,7 +726,7 @@ load_verify_locations(SSL_CTX *ctx, const Filename &ca_file) {
     // Could not scan certificates.
     downloader_cat.info()
       << "PEM_X509_INFO_read_bio() returned NULL.\n";
-#ifdef REPORT_SSL_ERRORS
+#ifdef REPORT_OPENSSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
     return 0;

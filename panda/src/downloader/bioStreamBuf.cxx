@@ -17,8 +17,13 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "bioStreamBuf.h"
+#include "config_downloader.h"
 
 #ifdef HAVE_SSL
+
+#ifdef REPORT_OPENSSL_ERRORS
+#include <openssl/err.h>
+#endif
 
 #ifndef HAVE_STREAMSIZE
 // Some compilers (notably SGI) don't define this for us
@@ -159,6 +164,16 @@ underflow() {
       // Oops, we didn't read what we thought we would.
       if (read_count <= 0) {
         _is_closed = !BIO_should_retry(*_source);
+        if (_is_closed) {
+          downloader_cat.info()
+            << "Socket error detected on " 
+            << _source->get_server_name() << ":" 
+            << _source->get_port() << ", return code "
+            << read_count << ".\n";
+#ifdef REPORT_OPENSSL_ERRORS
+          ERR_print_errors_fp(stderr);
+#endif
+        }
         gbump(num_bytes);
         return EOF;
       }

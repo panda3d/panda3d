@@ -26,6 +26,9 @@
 #include "buffer.h"  // for Ramfile
 
 #ifdef HAVE_SSL
+#ifdef REPORT_OPENSSL_ERRORS
+#include <openssl/err.h>
+#endif
 
 TypeHandle HTTPChannel::_type_handle;
 
@@ -622,7 +625,7 @@ run_connecting() {
     downloader_cat.info()
       << "Could not connect to " << _bio->get_server_name() << ":" 
       << _bio->get_port() << "\n";
-#ifdef REPORT_SSL_ERRORS
+#ifdef REPORT_OPENSSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
     _state = S_failure;
@@ -875,7 +878,7 @@ run_ssl_handshake() {
     downloader_cat.info()
       << "Could not establish SSL handshake with " 
       << _url.get_server() << ":" << _url.get_port() << "\n";
-#ifdef REPORT_SSL_ERRORS
+#ifdef REPORT_OPENSSL_ERRORS
     ERR_print_errors_fp(stderr);
 #endif
     // It seems to be an error to free sbio at this point; perhaps
