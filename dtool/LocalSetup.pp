@@ -56,6 +56,9 @@ $[cdefine HAVE_CRYPTO]
 /* Define if we have libjpeg installed.  */
 $[cdefine HAVE_JPEG]
 
+/* Define if we have libjasper installed.  */
+$[cdefine HAVE_JPEG2000]
+
 /* Define if we have libtiff installed.  */
 $[cdefine HAVE_TIFF]
 

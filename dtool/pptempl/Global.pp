@@ -154,6 +154,13 @@
   #define jpeg_libs $[JPEG_LIBS]
 #endif
 
+#if $[HAVE_JPEG2000]
+  #define jpeg2000_ipath $[wildcard $[JPEG2000_IPATH]]
+  #define jpeg2000_lpath $[wildcard $[JPEG2000_LPATH]]
+  #define jpeg2000_cflags $[JPEG2000_CFLAGS]
+  #define jpeg2000_libs $[JPEG2000_LIBS]
+#endif
+
 #if $[HAVE_TIFF]
   #define tiff_ipath $[wildcard $[TIFF_IPATH]]
   #define tiff_lpath $[wildcard $[TIFF_LPATH]]
@@ -253,6 +260,7 @@
      $[or $[not $[DIRECTORY_IF_PS2]],$[HAVE_PS2]], \
      $[or $[not $[DIRECTORY_IF_SGIGL]],$[HAVE_SGIGL]], \
      $[or $[not $[DIRECTORY_IF_JPEG]],$[HAVE_JPEG]], \
+     $[or $[not $[DIRECTORY_IF_JPEG2000]],$[HAVE_JPEG2000]], \
      $[or $[not $[DIRECTORY_IF_TIFF]],$[HAVE_TIFF]], \
      $[or $[not $[DIRECTORY_IF_FFTW]],$[HAVE_FFTW]], \
      $[or $[not $[DIRECTORY_IF_VRPN]],$[HAVE_VRPN]], \
@@ -284,6 +292,7 @@
      $[or $[not $[TARGET_IF_PS2]],$[HAVE_PS2]], \
      $[or $[not $[TARGET_IF_SGIGL]],$[HAVE_SGIGL]], \
      $[or $[not $[TARGET_IF_JPEG]],$[HAVE_JPEG]], \
+     $[or $[not $[TARGET_IF_JPEG2000]],$[HAVE_JPEG2000]], \
      $[or $[not $[TARGET_IF_TIFF]],$[HAVE_TIFF]], \
      $[or $[not $[TARGET_IF_FFTW]],$[HAVE_FFTW]], \
      $[or $[not $[TARGET_IF_VRPN]],$[HAVE_VRPN]], \
@@ -333,6 +342,7 @@
   $[if $[HAVE_FFTW],$[IF_FFTW_SOURCES]] \
   $[if $[HAVE_NURBSPP],$[IF_NURBSPP_SOURCES]] \
   $[if $[HAVE_JPEG], $[IF_JPEG_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_JPEG_INCLUDED_SOURCES], $[IF_JPEG_COMBINED_SOURCES]]] \
+  $[if $[HAVE_JPEG2000], $[IF_JPEG2000_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_JPEG2000_INCLUDED_SOURCES], $[IF_JPEG2000_COMBINED_SOURCES]]] \
   $[if $[HAVE_ZLIB], $[IF_ZLIB_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_ZLIB_INCLUDED_SOURCES], $[IF_ZLIB_COMBINED_SOURCES]]] \
   $[if $[HAVE_NET], $[IF_NET_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_NET_INCLUDED_SOURCES], $[IF_NET_COMBINED_SOURCES]]] \
   $[if $[HAVE_IPC],$[IF_IPC_SOURCES]] \
@@ -346,7 +356,8 @@
   $[IF_TIFF_SOURCES] \
   $[IF_FFTW_SOURCES] \
   $[IF_NURBSPP_SOURCES] \
-  $[if $[HAVE_JPEG], $[IF_JPEG_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_JPEG_INCLUDED_SOURCES], $[IF_JPEG_COMBINED_SOURCES]]] \  
+  $[if $[HAVE_JPEG], $[IF_JPEG_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_JPEG_INCLUDED_SOURCES], $[IF_JPEG_COMBINED_SOURCES]]] \
+  $[if $[HAVE_JPEG2000], $[IF_JPEG2000_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_JPEG2000_INCLUDED_SOURCES], $[IF_JPEG2000_COMBINED_SOURCES]]] \
   $[if $[HAVE_ZLIB], $[IF_ZLIB_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_ZLIB_INCLUDED_SOURCES], $[IF_ZLIB_COMBINED_SOURCES]]] \  
   $[if $[HAVE_NET], $[IF_NET_SOURCES] $[if $[ne $[NO_COMBINED_SOURCES],], $[IF_NET_INCLUDED_SOURCES], $[IF_NET_COMBINED_SOURCES]]] \    
   $[IF_IPC_SOURCES] \
@@ -431,6 +442,9 @@
   #if $[ne $[USE_JPEG] $[components $[USE_JPEG],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[jpeg_cflags]
   #endif 
+  #if $[ne $[USE_JPEG2000] $[components $[USE_JPEG2000],$[active_component_libs]],]
+    #set alt_cflags $[alt_cflags] $[jpeg2000_cflags]
+  #endif   
   #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[tiff_cflags]
   #endif 
@@ -502,6 +516,9 @@
   #if $[ne $[USE_JPEG] $[components $[USE_JPEG],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[jpeg_ipath]
   #endif
+  #if $[ne $[USE_JPEG2000] $[components $[USE_JPEG2000],$[active_component_libs]],]
+    #set alt_ipath $[alt_ipath] $[jpeg2000_ipath]
+  #endif  
   #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[tiff_ipath]
   #endif
@@ -576,6 +593,9 @@
   #if $[ne $[USE_JPEG] $[components $[USE_JPEG],$[active_component_libs] $[transitive_link]],]
     #set alt_lpath $[alt_lpath] $[jpeg_lpath]
   #endif
+  #if $[ne $[USE_JPEG2000] $[components $[USE_JPEG2000],$[active_component_libs] $[transitive_link]],]
+    #set alt_lpath $[alt_lpath] $[jpeg2000_lpath]
+  #endif  
   #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs] $[transitive_link]],]
     #set alt_lpath $[alt_lpath] $[tiff_lpath]
   #endif
@@ -648,6 +668,9 @@
   #if $[ne $[USE_JPEG] $[components $[USE_JPEG],$[active_component_libs] $[transitive_link]],]
     #set alt_libs $[alt_libs] $[jpeg_libs]
   #endif
+  #if $[ne $[USE_JPEG2000] $[components $[USE_JPEG2000],$[active_component_libs] $[transitive_link]],]
+    #set alt_libs $[alt_libs] $[jpeg2000_libs]
+  #endif  
   #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs] $[transitive_link]],]
     #set alt_libs $[alt_libs] $[tiff_libs]
   #endif
