@@ -622,7 +622,6 @@ simple_type_name:
   }
   $$ = simple_param;
 }
-	;
         | simple_type_name '%' number
 { 
   DCSimpleParameter *simple_param = $1->as_simple_parameter();
