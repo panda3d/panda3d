@@ -12,93 +12,23 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
     """DistributedLevelAI"""
     notify = DirectNotifyGlobal.directNotify.newCategory('DistributedLevelAI')
 
-    def __init__(self, air):
+    def __init__(self, air, zoneId):
         DistributedObjectAI.DistributedObjectAI.__init__(self, air)
         LevelBase.LevelBase.__init__(self)
+        self.uberZoneId = zoneId
 
-    def initializeLevel(self, spec, uberZoneId):
-        self.uberZoneId = uberZoneId
-
-        # We need a unique level ID to init the level system, and we need
-        # the level system to get the data for our required fields.
-        # Pre-allocate a doId.
-        self.preAllocateDoId()
-
-        # choose a scenario
-        wc = WeightedChoice.WeightedChoice(spec['scenarios'], 1)
-        scenario = wc.choose()
-        scenarioIndex = spec['scenarios'].index(scenario)
-
-        LevelBase.LevelBase.initializeLevel(self, self.doId,
-                                            spec, scenarioIndex)
-        self.aiEntities = {}
-        # get list of entity types we need to create
-        self.entTypes = self.entType2Ids.keys()
-
-        # create the levelMgr
-        self.levelMgr = self.createEntity(self.entType2Ids['levelMgr'][0])
-        self.entTypes.remove('levelMgr')
-
-        # allocate the rest of the zones; add one for the uber-zone
-        self.numZones = len(self.spec['zones']) + 1
-        self.zoneIds = [self.uberZoneId]
-        for i in range(1,self.numZones):
-            # there is error checking in air.allocateZone
-            self.zoneIds.append(self.air.allocateZone())
-
-        # record the level's start time so that we can sync the clients
-        self.startTime = globalClock.getRealTime()
-        self.startTimestamp = globalClockDelta.localToNetworkTime(
-            self.startTime, bits=32)
-
-    def makeEntityCreator(self):
-        """Create the object that will be used to create Entities.
-        Inheritors, override if desired."""
-        return EntityCreatorAI.EntityCreatorAI()
-
-    def createEntity(self, entId):
-        assert not self.aiEntities.has_key(entId)
-        spec = self.entId2Spec[entId]
-        self.notify.debug('creating %s %s' % (spec['type'], entId))
-        zone = spec.get('zone')
-        # we might attempt to create non-distributed entities before
-        # we've been generated
-        if zone is not None:
-            zone = self.getZoneId(zone)
-            entity = self.entityCreator.createEntity(
-                spec['type'], self, entId, self.air, zone)
-        else:
-            entity = self.entityCreator.createEntity(
-                spec['type'], self, entId)
-        if entity is not None:
-            self.aiEntities[entId] = entity
-        return entity
-
-    # required-field getters
-    def getZoneIds(self):
-        return self.zoneIds
-
-    def getStartTimestamp(self):
-        return self.startTimestamp
-
-    def getScenarioIndex(self):
-        return self.scenarioIndex
-
-    def generate(self):
+    def generate(self, spec):
         self.notify.debug('generate')
         DistributedObjectAI.DistributedObjectAI.generate(self)
 
-        # create the rest of the Entities
-        for entType in self.entTypes:
-            for entId in self.entType2Ids[entType]:
-                self.createEntity(entId)
+        self.initializeLevel(spec)
+
+        self.sendUpdate('setZoneIds', [self.zoneIds])
+        self.sendUpdate('setStartTimestamp', [self.startTimestamp])
+        self.sendUpdate('setScenarioIndex', [self.scenarioIndex])
 
     def delete(self):
         self.notify.debug('delete')
-        
-        for entId in self.aiEntities.keys():
-            self.aiEntities[entId].destroy()
-        del self.aiEntities
         
         # we do not allocate the uberZone for now, so don't deallocate it
         for zoneId in self.zoneIds[1:]:
@@ -107,6 +37,67 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         self.destroyLevel()
 
         DistributedObjectAI.DistributedObjectAI.delete(self)
+
+    def initializeLevel(self, spec):
+        # record the level's start time so that we can sync the clients
+        self.startTime = globalClock.getRealTime()
+        self.startTimestamp = globalClockDelta.localToNetworkTime(
+            self.startTime, bits=32)
+
+        # choose a scenario
+        wc = WeightedChoice.WeightedChoice(spec['scenarios'], 1)
+        scenario = wc.choose()
+        scenarioIndex = spec['scenarios'].index(scenario)
+
+        # this will hold the network zoneIds that we allocate
+        self.zoneIds = [self.uberZoneId]
+
+        LevelBase.LevelBase.initializeLevel(self, self.doId,
+                                            spec, scenarioIndex)
+
+    def createEntityCreator(self):
+        """Create the object that will be used to create Entities.
+        Inheritors, override if desired."""
+        return EntityCreatorAI.EntityCreatorAI(self.air, level=self)
+
+    def setupEntityCreationHandlers(self):
+        LevelBase.LevelBase.setupEntityCreationHandlers(self)
+        # listen for the creation of each zone object
+        self.accept(self.getEntityOfTypeCreateEvent('zone'),
+                    self.zoneEntCreated)
+
+    def removeEntityCreationHandlers(self):
+        LevelBase.LevelBase.removeEntityCreationHandlers(self)
+        self.ignore(self.getEntityOfTypeCreateEvent('zone'))
+
+    def zoneEntCreated(self, entId):
+        if entId == LevelBase.LevelBase.UberZoneEntId:
+            return
+        # there is error checking in air.allocateZone
+        self.zoneIds.append(self.air.allocateZone())
+
+    def getEntityZoneId(self, entId):
+        """figure out what network zoneId an entity is in"""
+        # TODO: where should the zone info come from? It could come
+        # from the 'parent' scene-graph info... but what about intangible
+        # distributed objects? I guess if they don't inherit from
+        # NodePathEntity et al, they'll just have an unused 'parent'
+        # attribute hanging around, which isn't the end of the world...
+
+        # this func is called before the entity has been created; look
+        # into the spec data, since we can't get a handle on the object itself
+        spec = self.entId2spec[entId]
+        type = spec['type']
+        if type == 'zone':
+            if not hasattr(self, 'zoneNum2zoneId'):
+                # we haven't even created our zone entities yet;
+                # we have no idea yet which zoneNums map to which
+                # network zoneIds. just return None.
+                return None
+            return self.zoneNum2zoneId[spec['modelZoneNum']]
+        if not spec.has_key('parent'):
+            return None
+        return self.getEntityZoneId(spec['parent'])
 
     if __debug__:
         # level editors should call this func to tweak attributes of level

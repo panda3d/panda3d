@@ -13,7 +13,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
     """DistributedLevel"""
     notify = DirectNotifyGlobal.directNotify.newCategory('DistributedLevel')
 
-    WantVisibility = config.GetBool('level-visibility', 0)
+    WantVisibility = config.GetBool('level-visibility', 1)
     HideZones = config.GetBool('level-hidezones', 1)
 
     def __init__(self, cr):
@@ -37,7 +37,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # all our entities at that time.
         toonbase.tcr.timeManager.synchronize('DistributedLevel.generate')
 
-    # required fields
+    # required fields (these ought to be required fields, but
+    # the AI level obj doesn't know the data values until it has been
+    # generated.)
     def setZoneIds(self, zoneIds):
         self.notify.debug('setZoneIds: %s' % zoneIds)
         self.zoneIds = zoneIds
@@ -48,22 +50,73 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def setScenarioIndex(self, scenarioIndex):
         self.scenarioIndex = scenarioIndex
+        # ugly hack: we treat these DC fields as if they were required,
+        # and use 'levelAnnounceGenerate()' in place of regular old
+        # announceGenerate(). Note that we have to call
+        # levelAnnounceGenerate() in the last 'faux-required' DC update
+        # handler. If you add another field, move this to the last one.
+        self.levelAnnounceGenerate()
+
+    def levelAnnounceGenerate(self):
+        pass
 
     def initializeLevel(self, spec):
         """subclass should call this as soon as it's located its spec data.
         Must be called after obj has been generated."""
         LevelBase.LevelBase.initializeLevel(self, self.doId,
                                             spec, self.scenarioIndex)
-        self.localEntities = {}
 
-        # get list of entity types we need to create
-        entTypes = self.entType2Ids.keys()
-
-        # create the levelMgr
-        self.levelMgr = self.createEntity(self.entType2Ids['levelMgr'][0])
-        entTypes.remove('levelMgr')
+        # there should not be any pending reparents left at this point
+        assert len(self.parent2ChildIds) == 0
+        # make sure the zoneNums from the model match the zoneNums from
+        # the zone entities
+        assert sameElements(self.zoneNums, self.zoneNum2entId.keys())
 
         # load stuff
+
+        # fix up the floor collisions for walkable zones
+        for zoneNum in self.zoneNums:
+            zoneNode = self.zoneNum2node[zoneNum]
+
+            # if this is a walkable zone, fix up the model
+            floorColls = zoneNode.findAllMatches('**/+CollisionNode').asList()
+            if len(floorColls) > 0:
+                # rename the floor collision nodes, and make sure no other
+                # nodes under the ZoneNode have that name
+                floorCollName = '%s' % zoneNum
+                others = zoneNode.findAllMatches(
+                    '**/%s' % floorCollName).asList()
+                for other in others:
+                    other.setName('%s_renamed' % floorCollName)
+                for floorColl in floorColls:
+                    floorColl.setName(floorCollName)
+
+                # listen for zone enter events from floor collisions
+                def handleZoneEnter(collisionEntry,
+                                    self=self, zoneNum=zoneNum):
+                    # eat the collisionEntry
+                    self.toonEnterZone(zoneNum)
+                self.accept('enter%s' % floorCollName, handleZoneEnter)
+
+        self.initVisibility()
+
+    def createEntityCreator(self):
+        """Create the object that will be used to create Entities.
+        Inheritors, override if desired."""
+        return EntityCreator.EntityCreator(level=self)
+
+    def setupEntityCreationHandlers(self):
+        LevelBase.LevelBase.setupEntityCreationHandlers(self)
+        # load up the model ASAP so that we can get zone info out of it
+        self.acceptOnce(self.getEntityTypeCreateEvent('levelMgr'),
+                        self.handleLevelMgrCreated)
+
+    def removeEntityCreationHandlers(self):
+        LevelBase.LevelBase.removeEntityCreationHandlers(self)
+
+    def handleLevelMgrCreated(self):
+        # as soon as the levelMgr has been created, load up the model
+        # and extract zone info
         self.geom = loader.loadModel(self.modelFilename)
 
         def findNumberedNodes(baseString, model=self.geom, self=self):
@@ -87,50 +140,13 @@ class DistributedLevel(DistributedObject.DistributedObject,
             return num2node
 
         # find the zones in the model and fix them up
-        self.zoneNum2Node = findNumberedNodes('Zone')
+        self.zoneNum2node = findNumberedNodes('Zone')
         # add the UberZone to the table
-        self.zoneNum2Node[0] = self.geom
+        self.zoneNum2node[0] = self.geom
 
-        self.zoneNums = self.zoneNum2Node.keys()
-        # take the UberZone out of the list
-        self.zoneNums.remove(0)
+        self.zoneNums = self.zoneNum2node.keys()
         self.zoneNums.sort()
         self.notify.debug('zones: %s' % self.zoneNums)
-        assert sameElements(self.zoneNums, self.spec['zones'].keys())
-
-        # fix up the floor collisions for walkable zones
-        for zoneNum in self.zoneNums:
-            zoneNode = self.zoneNum2Node[zoneNum]
-
-            # if this is a walkable zone, fix up the model
-            floorColls = zoneNode.findAllMatches('**/+CollisionNode').asList()
-            if len(floorColls) > 0:
-                # rename the floor collision nodes, and make sure no other
-                # nodes under the ZoneNode have that name
-                floorCollName = '%s' % zoneNum
-                others = zoneNode.findAllMatches(
-                    '**/%s' % floorCollName).asList()
-                for other in others:
-                    other.setName('%s_renamed' % floorCollName)
-                for floorColl in floorColls:
-                    floorColl.setName(floorCollName)
-
-                # listen for zone enter events from floor collisions
-                def handleZoneEnter(collisionEntry,
-                                    self=self, zoneNum=zoneNum):
-                    # eat the collisionEntry
-                    self.toonEnterZone(zoneNum)
-                self.accept('enter%s' % floorCollName, handleZoneEnter)
-
-        # listen for camera-ray/floor collision events
-        def handleCameraRayFloorCollision(collEntry, self=self):
-            name = collEntry.getIntoNode().getName()
-            try:
-                zoneNum = int(name)
-                self.camEnterZone(zoneNum)
-            except:
-                self.notify.warning('Invalid floor collision node: %s' % name)
-        self.accept('on-floor', handleCameraRayFloorCollision)
 
         # hack in another doorway
         dw = self.geom.attachNewNode('Doorway27')
@@ -140,47 +156,15 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # find the doorway nodes
         self.doorwayNum2Node = findNumberedNodes('Doorway')
 
-        self.initVisibility()
-
-        # create the rest of the client-side Entities
-        # TODO: only create client-side Entities for the
-        # currently-visible zones?
-        for entType in entTypes:
-            for entId in self.entType2Ids[entType]:
-                self.createEntity(entId)
-
-        # there should not be any pending reparents left at this point
-        assert len(self.parent2ChildIds) == 0
-
-    def makeEntityCreator(self):
-        """Create the object that will be used to create Entities.
-        Inheritors, override if desired."""
-        return EntityCreator.EntityCreator()
-
-    def createEntity(self, entId):
-        assert not self.localEntities.has_key(entId)
-        spec = self.entId2Spec[entId]
-        self.notify.debug('creating %s %s' % (spec['type'], entId))
-        entity = self.entityCreator.createEntity(spec['type'], self, entId)
-        if entity is not None:
-            self.localEntities[entId] = entity
-        return entity
-
     def announceGenerate(self):
         self.notify.debug('announceGenerate')
         DistributedObject.DistributedObject.announceGenerate(self)
 
     def disable(self):
         self.notify.debug('disable')
+        self.destroyLevel()
         DistributedObject.DistributedObject.disable(self)
         self.ignoreAll()
-
-        # destroy all of the local entities
-        for entId, entity in self.localEntities.items():
-            entity.destroy()
-        del self.localEntities
-
-        self.destroyLevel()
 
     def delete(self):
         self.notify.debug('delete')
@@ -190,66 +174,78 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # returns node that doors should parent themselves to
         return self.doorwayNum2Node[doorwayNum]
 
-    def requestReparent(self, entity, parent):
-        if parent is 'zone':
-            entity.reparentTo(self.zoneNum2Node[entity.zone])
+    def getZoneNode(self, zoneNum):
+        return self.zoneNum2node[zoneNum]
+
+    def requestReparent(self, entity, parentId):
+        assert(entity.entId != parentId)
+        if self.entities.has_key(parentId):
+            # parent has already been created
+            entity.reparentTo(self.entities[parentId].getNodePath())
         else:
-            parentId = parent
-            assert(entity.entId != parentId)
+            # parent hasn't been created yet; schedule the reparent
+            self.notify.debug(
+                'entity %s requesting reparent to %s, not yet created' %
+                (entity, parentId))
 
-            if self.entities.has_key(parentId):
-                # parent has already been created
-                entity.reparentTo(self.entities[parentId])
-            else:
-                # parent hasn't been created yet; schedule the reparent
-                self.notify.debug(
-                    'entity %s requesting reparent to %s, not yet created' %
-                    (entity, parent))
+            entId = entity.entId
+            entity.reparentTo(hidden)
 
-                entId = entity.entId
-                entity.reparentTo(hidden)
+            # if this parent doesn't already have another child pending,
+            # do some setup
+            if not self.parent2ChildIds.has_key(parentId):
+                self.parent2ChildIds[parentId] = []
 
-                # if this parent doesn't already have another child pending,
-                # do some setup
-                if not self.parent2ChildIds.has_key(parentId):
-                    self.parent2ChildIds[parentId] = []
+                # do the reparent once the parent is initialized
+                def doReparent(parentId=parentId, self=self):
+                    assert self.parent2ChildIds.has_key(parentId)
+                    parent=self.getEntity(parentId)
+                    for entId in self.parent2ChildIds[parentId]:
+                        entity=self.getEntity(entId)
+                        self.notify.debug(
+                            'performing pending reparent of %s to %s' %
+                            (entity, parent))
+                        entity.reparentTo(parent.getNodePath())
+                    del self.parent2ChildIds[parentId]
+                    
+                self.accept(self.getEntityCreateEvent(parentId), doReparent)
 
-                    # do the reparent once the parent is initialized
-                    def doReparent(parentId=parentId, self=self):
-                        assert self.parent2ChildIds.has_key(parentId)
-                        parent=self.getEntity(parentId)
-                        for entId in self.parent2ChildIds[parentId]:
-                            entity=self.getEntity(entId)
-                            self.notify.debug(
-                                'performing pending reparent of %s to %s' %
-                                (entity, parent))
-                            entity.reparentTo(parent)
-                        del self.parent2ChildIds[parentId]
-
-                    self.accept(self.getEntityCreateEvent(parentId), doReparent)
-
-                self.parent2ChildIds[parentId].append(entId)
+            self.parent2ChildIds[parentId].append(entId)
 
     def showZone(self, zoneNum):
-        self.zoneNum2Node[zoneNum].show()
+        self.zoneNum2node[zoneNum].show()
 
     def hideZone(self, zoneNum):
-        self.zoneNum2Node[zoneNum].hide()
+        self.zoneNum2node[zoneNum].hide()
 
     def setTransparency(self, alpha, zone=None):
         self.geom.setTransparency(1)
         if zone is None:
             node = self.geom
         else:
-            node = self.zoneNum2Node[zone]
+            node = self.zoneNum2node[zone]
         node.setAlphaScale(alpha)
 
     def initVisibility(self):
         # start out with every zone visible, since none of the zones have
         # been hidden
         self.curVisibleZoneNums = list2dict(self.zoneNums)
+        # the UberZone is always visible, so it's not included in the
+        # viz lists
+        del self.curVisibleZoneNums[0]
         # we have not entered any zone yet
         self.curZoneNum = None
+
+        # listen for camera-ray/floor collision events
+        def handleCameraRayFloorCollision(collEntry, self=self):
+            name = collEntry.getIntoNode().getName()
+            try:
+                zoneNum = int(name)
+            except:
+                self.notify.warning('Invalid floor collision node: %s' % name)
+            else:
+                self.camEnterZone(zoneNum)
+        self.accept('on-floor', handleCameraRayFloorCollision)
 
         # if no viz, listen to all the zones
         if not DistributedLevel.WantVisibility:
@@ -270,8 +266,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
         
         if zoneNum == self.curZoneNum:
             return
-        
-        zoneSpec = self.spec['zones'][zoneNum]
+
+        zoneEntId = self.zoneNum2entId[zoneNum]
+        zoneSpec = self.entId2spec[zoneEntId]
         # use dicts to efficiently ensure that there are no duplicates
         visibleZoneNums = list2dict([zoneNum])
         visibleZoneNums.update(list2dict(zoneSpec['visibility']))
@@ -310,10 +307,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # accepts list of visible zone numbers
         # convert the zone numbers into their actual zoneIds
         # always include Toontown and factory uberZones
-        factoryUberZone = self.getZoneId(0)
+        factoryUberZone = self.getZoneId(zoneNum=0)
         visibleZoneIds = [ToontownGlobals.UberZone, factoryUberZone]
         for vz in vizList:
-            visibleZoneIds.append(self.getZoneId(vz))
+            visibleZoneIds.append(self.getZoneId(zoneNum=vz))
         assert(uniqueElements(visibleZoneIds))
         self.notify.debug('new viz list: %s' % visibleZoneIds)
 

@@ -25,14 +25,11 @@ class Entity:
         if attribs is not None:
             self.attribs.update(attribs)
 
+        self.level.initializeEntity(self)
+
     def __str__(self):
         return 'ent%s(%s)' % (self.entId, self.level.getEntityType(self.entId))
     
-    def initializeEntity(self):
-        """Call this once on initialization to set this entity's
-        spec data"""
-        self.level.initializeEntity(self)
-
     def destroy(self):
         del self.level
         

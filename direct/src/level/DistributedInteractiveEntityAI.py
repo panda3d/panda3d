@@ -24,13 +24,13 @@ class DistributedInteractiveEntityAI(DistributedEntityAI.DistributedEntityAI):
     if __debug__:
         notify = DirectNotifyGlobal.directNotify.newCategory('DistributedInteractiveEntityAI')
 
-    def __init__(self, air, levelDoId, entId):
+    def __init__(self, air, level, entId):
         """entId: a unique identifier for this prop."""
         DistributedEntityAI.DistributedEntityAI.__init__(self, air,
-                                                         levelDoId, entId)
+                                                         level, entId)
         assert(self.debugPrint(
-                "DistributedInteractiveEntityAI(air=%s, entId=%s)"
-                %("the air", entId)))
+                "DistributedInteractiveEntityAI(entId=%s)"
+                %(entId)))
         self.fsm = FSM.FSM('DistributedInteractiveEntityAI',
                            [State.State('off',
                                         self.enterOff,

@@ -7,13 +7,10 @@ class DistributedEntityAI(DistributedObjectAI.DistributedObjectAI,
     notify = DirectNotifyGlobal.directNotify.newCategory(
         'DistributedEntityAI')
 
-    def __init__(self, air, levelDoId, entId):
+    def __init__(self, air, level, entId):
         DistributedObjectAI.DistributedObjectAI.__init__(self, air)
-        self.levelDoId = levelDoId
-        level = self.air.doId2do[self.levelDoId]
+        self.levelDoId = level.doId
         Entity.Entity.__init__(self, level, entId)
-        # get our spec data
-        self.initializeEntity()
 
     def generate(self):
         self.notify.debug('generate')

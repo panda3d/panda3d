@@ -6,4 +6,3 @@ class LevelMgrAI(Entity.Entity):
     """This class manages editable AI level attributes"""
     def __init__(self, level, entId):
         Entity.Entity.__init__(self, level, entId)
-        self.initializeEntity()

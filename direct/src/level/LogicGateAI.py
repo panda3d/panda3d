@@ -86,7 +86,6 @@ class LogicGateAI(Entity.Entity, PandaObject.PandaObject):
         self.input1 = None
         self.input2 = None
         Entity.Entity.__init__(self, level, entId)
-        self.initializeEntity()
         self.setLogicType(self.logicType)
         self.setInput_input1_bool(self.input_input1_bool)
         self.setInput_input2_bool(self.input_input2_bool)

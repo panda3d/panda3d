@@ -1,59 +1,54 @@
 """EntityCreatorAI module: contains the EntityCreatorAI class"""
 
-import DirectNotifyGlobal
+import EntityCreatorBase
 import LogicGateAI
 import LevelMgrAI
+import ZoneEntityAI
+from PythonUtil import Functor
 
 # some useful constructor functions
-# ctor functions for distributed entities must take
-#  (air, level doId, entId, zoneId)
-# ctor functions for non-distributed entities must take
-#  (level, entId)
-def createDistributedEntity(AIclass, air, levelDoId, entId, zoneId):
+# ctor functions for entities must take
+#  (air, level, entId, zoneId)
+
+# this func creates distributed entities whose constructors take
+#  (air, level doId, entId)
+# and do not generate themselves
+def createDistributedEntity(AIclass, air, level, entId, zoneId):
     """create a distributed entity and call generate"""
-    ent = AIclass(air, levelDoId, entId)
+    ent = AIclass(air, level, entId)
     ent.generateWithRequired(zoneId)
     return ent
 
-def nothing(air, levelDoId, entId, zoneId):
+# this func creates local entities whose constructors take
+#  (level, entId)
+def createLocalEntity(AIclass, air, level, entId, zoneId):
+    """create a local entity"""
+    ent = AIclass(level, entId)
+
+# take any number of args to support local and distributed entities
+def nothing(*args):
     """Create entity that doesn't have a server side representation."""
     return None
 
-class EntityCreatorAI:
+class EntityCreatorAI(EntityCreatorBase.EntityCreatorBase):
     """This class is responsible for creating instances of Entities on the AI.
     It can be subclassed to handle more Entity types."""
-    notify = DirectNotifyGlobal.directNotify.newCategory('EntityCreatorAI')
 
-    def __init__(self):
-        self.entType2Ctor = {}
+    def __init__(self, air, level):
+        EntityCreatorBase.EntityCreatorBase.__init__(self, level)
+        self.air = air
+
+        # create short aliases for ctor funcs
+        cLE = createLocalEntity
+
         self.privRegisterTypes({
-            'levelMgr': LevelMgrAI.LevelMgrAI,
-            'logicGate': LogicGateAI.LogicGateAI,
+            'levelMgr': Functor(cLE, LevelMgrAI.LevelMgrAI),
+            'logicGate': Functor(cLE, LogicGateAI.LogicGateAI),
             'nodepath': nothing,
+            'zone': Functor(cLE, ZoneEntityAI.ZoneEntityAI),
             })
 
-    def privRegisterType(self, entType, ctor):
-        if self.entType2Ctor.has_key(entType):
-            EntityCreatorAI.notify.warning(
-                'replacing %s ctor %s with %s' %
-                (entType, self.entType2Ctor[entType], ctor))
-        self.entType2Ctor[entType] = ctor
-
-    def privRegisterTypes(self, type2ctor):
-        for entType, ctor in type2ctor.items():
-            self.privRegisterType(entType, ctor)
-
-    def createEntity(self, entType, level, entId, air=None, zoneId=None):
-        """zoneId=None indicates a non-distributed entity"""
-        if not self.entType2Ctor.has_key(entType):
-            EntityCreatorAI.notify.warning(
-                'createEntity(entType=%s, levelDoId=%s, '
-                'entId=%s, zoneId=%s) not found' %
-                (entType, level.doId, entId, zoneId))
-            return None
-
-        if zoneId is None:
-            return self.entType2Ctor[entType](level, entId)
-        else:
-            levelDoId = level.doId
-            return self.entType2Ctor[entType](air, levelDoId, entId, zoneId)
+    def doCreateEntity(self, ctor, entId):
+        zoneId = self.level.getEntityZoneId(entId)
+        self.notify.debug('creating entity %s in zone %s' % (entId, zoneId))
+        return ctor(self.air, self.level, entId, zoneId)

@@ -32,8 +32,6 @@ class DistributedEntity(DistributedObject.DistributedObject, Entity.Entity):
         # ask our level obj for our spec data
         level = toonbase.tcr.doId2do[self.levelDoId]
         Entity.Entity.__init__(self, level, self.entId)
-        # this sets all of our initial spec parameters on ourselves
-        self.initializeEntity()
 
         DistributedObject.DistributedObject.announceGenerate(self)
 
