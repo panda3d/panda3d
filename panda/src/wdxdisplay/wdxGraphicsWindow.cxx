@@ -634,6 +634,15 @@ void wdxGraphicsWindow::handle_reshape(bool bDoDxReset) {
             return;
         }
 
+        // Clear the back/primary surface to black
+        DX_DECLARE_CLEAN(DDBLTFX, bltfx)
+        bltfx.dwDDFX |= DDBLTFX_NOTEARING;
+        hr = _dxgsg->_pri->Blt(NULL,NULL,NULL,DDBLT_COLORFILL | DDBLT_WAIT,&bltfx);
+        if(FAILED( hr )) {
+            wdxdisplay_cat.fatal() << "Blt to Black of Primary Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
+            exit(1);
+        }
+
         if(FAILED(hr = _dxgsg->_pDD->TestCooperativeLevel())) {
              wdxdisplay_cat.error() << "TestCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
              return;
@@ -1069,8 +1078,10 @@ void wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
         // WM_ERASEBKGND will be ignored, because _WindowAdjustingType!=NotAdjusting because 
         // we dont want to redraw as user is manually resizing window, so need to force explicit
         // background clear for the programmatic resize fn call
-        _WindowAdjustingType=NotAdjusting;
-        window_proc(_mwindow, WM_ERASEBKGND,(WPARAM)_hdc,0x0);
+         _WindowAdjustingType=NotAdjusting;
+        
+         // this doesnt seem to be working in toontown resize, so I put ddraw blackblt in handle_reshape instead
+         //window_proc(_mwindow, WM_ERASEBKGND,(WPARAM)_hdc,0x0);  
         handle_reshape(true);
         return;
    }
