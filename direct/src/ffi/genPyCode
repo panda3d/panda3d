@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 
 # This is just a helper script to generatePythonCode to cover
 # the three or four cases we use all the time
@@ -45,7 +45,7 @@ pyDir=$DIRECT/lib/py
 extDir=$DIRECT/src/extensions
 pSqueezer=$DIRECT/src/showbase/pandaSqueezer.py
 
-if [ $(uname | grep CYGWIN) ]; then
+if [ `uname | grep CYGWIN` ]; then
   install_dir="$(cygpath -aw $install_dir)"
   pyDir="$(cygpath -w $pyDir)"
   extDir="$(cygpath -w $extDir)"
