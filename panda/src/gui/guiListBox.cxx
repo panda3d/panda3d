@@ -76,8 +76,12 @@ void GuiListBox::visible_patching(void) {
       _arrow_top = false;
       _visible[0]->unmanage();
       _visible[0] = *(_top_stack.begin());
-      if (_mgr != (GuiManager*)0L)
-	_visible[0]->manage(_mgr, *_eh);
+      if (_mgr != (GuiManager*)0L) {
+	if (_alt_root.is_null())
+	  _visible[0]->manage(_mgr, *_eh);
+	else
+	  _visible[0]->manage(_mgr, *_eh, _alt_root);
+      }
       _top_stack.pop_back();
     }
   } else {
@@ -89,7 +93,10 @@ void GuiListBox::visible_patching(void) {
       _top_stack.push_back(_visible[0]);
       _visible[0] = _up_arrow;
       if (_mgr != (GuiManager*)0L) {
-	_up_arrow->manage(_mgr, *_eh);
+	if (_alt_root.is_null())
+	  _up_arrow->manage(_mgr, *_eh);
+	else
+	  _up_arrow->manage(_mgr, *_eh, _alt_root);
       }
     }
   }
@@ -102,8 +109,12 @@ void GuiListBox::visible_patching(void) {
       int last = _n_visible-1;
       _visible[last]->unmanage();
       _visible[last] = *(_bottom_stack.begin());
-      if (_mgr != (GuiManager*)0L)
-	_visible[last]->manage(_mgr, *_eh);
+      if (_mgr != (GuiManager*)0L) {
+	if (_alt_root.is_null())
+	  _visible[last]->manage(_mgr, *_eh);
+	else
+	  _visible[last]->manage(_mgr, *_eh, _alt_root);
+      }
       _bottom_stack.pop_back();
     }
   } else {
@@ -116,7 +127,10 @@ void GuiListBox::visible_patching(void) {
       _bottom_stack.push_back(_visible[last]);
       _visible[last] = _down_arrow;
       if (_mgr != (GuiManager*)0L) {
-	_down_arrow->manage(_mgr, *_eh);
+	if (_alt_root.is_null())
+	  _down_arrow->manage(_mgr, *_eh);
+	else
+	  _down_arrow->manage(_mgr, *_eh, _alt_root);
       }
     }
   }
@@ -189,8 +203,12 @@ void GuiListBox::scroll_down(void) {
     _visible[i] = _visible[i+1];
   // then add one from the bottom stack to the bottom
   _visible[last] = *(_bottom_stack.rbegin());
-  if (_mgr != (GuiManager*)0L)
-    _visible[last]->manage(_mgr, *_eh);
+  if (_mgr != (GuiManager*)0L) {
+    if (_alt_root.is_null())
+      _visible[last]->manage(_mgr, *_eh);
+    else
+      _visible[last]->manage(_mgr, *_eh, _alt_root);
+  }
   // and pop it off the bottom stack
   _bottom_stack.pop_back();
   // now patch-up any dangling items
@@ -219,8 +237,12 @@ void GuiListBox::scroll_up(void) {
     _visible[i] = _visible[i-1];
   // then add one from the top stack to the top
   _visible[first] = *(_top_stack.rbegin());
-  if (_mgr != (GuiManager*)0L)
-    _visible[first]->manage(_mgr, *_eh);
+  if (_mgr != (GuiManager*)0L) {
+    if (_alt_root.is_null())
+      _visible[first]->manage(_mgr, *_eh);
+    else
+      _visible[first]->manage(_mgr, *_eh, _alt_root);
+  }
   // and pop it off the top stack
   _top_stack.pop_back();
   // now patch-up any dangling item
@@ -237,8 +259,12 @@ void GuiListBox::add_item(GuiItem* item) {
   else {
     if (_visible.size() < _n_visible) {
       _visible.push_back(item);
-      if (_mgr != (GuiManager*)0L)
-	item->manage(_mgr, *_eh);
+      if (_mgr != (GuiManager*)0L) {
+	if (_alt_root.is_null())
+	  item->manage(_mgr, *_eh);
+	else
+	  item->manage(_mgr, *_eh, _alt_root);
+      }
     } else
       _bottom_stack.push_back(item);
   }
