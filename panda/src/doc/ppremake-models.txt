@@ -1,3 +1,7 @@
+                    DEFINING A MODEL TREE
+              What to put in your Sources.pp files 
+             to generate model and animation files
+
 The model tree contains model and animation files, for instance in
 MultiGen or SoftImage format, and contains rules for generating egg
 files, creating character model and animation files, palettizing and

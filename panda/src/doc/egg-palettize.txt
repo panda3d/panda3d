@@ -1,3 +1,5 @@
+                   HOW TO USE EGG_PALETTIZE
+
 The program egg-palettize is used when building models to optimize
 texture usage on all models before loading them into the show.  It is
 capable of collecting together several different small texture images
