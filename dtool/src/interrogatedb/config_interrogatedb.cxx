@@ -34,12 +34,38 @@ ConfigureFn(config_interrogatedb) {
   //  interrogate_request_library("types");
 
 #ifdef USE_WIN32_DBGHEAP
-  if(!config_interrogatedb.GetBool("use-win32-dbgheap", false)) {
+  string use_win32_dbgheap_str = config_interrogatedb.GetString("use-win32-dbgheap", "");
+  bool win32_report_leaks = config_interrogatedb.GetBool("win32-report-leaks", false);
+
+  int dbg_flags = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
+
+  if (use_win32_dbgheap_str == "full") {
+    // "full" means check the heap after *every* alloc/dealloc.
+    // Expensive.
+    dbg_flags |= (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_ALWAYS_DF |
+                  _CRTDBG_CHECK_CRT_DF);
+
+  } else {
+    // Otherwise, it's a bool flag.  true means check the heap
+    // normally, false means don't do any debug checking.
+    bool use_win32_dbgheap_bool = config_interrogatedb.GetBool("use-win32-dbgheap", false);
+
+    if (!use_win32_dbgheap_bool) {
       // deflt disable complete heap verify every 1024 allocations (VC7 deflt).
       // With vc7 stl small-string-optimization causing more allocs, 
       // this can cause order-of-magnitude slowdowns in dbg builds
-      ::_CrtSetDbgFlag(0x0);
+      dbg_flags = 0;
+    }
   }
+
+  if (win32_report_leaks) {
+    // Report memory still allocated at program termination.  Not sure
+    // how useful this is, as many things get allocated once and never
+    // freed, but they aren't really leaks.
+    dbg_flags |= _CRTDBG_LEAK_CHECK_DF;
+  }
+
+  _CrtSetDbgFlag(dbg_flags);
 #endif
 }
 
