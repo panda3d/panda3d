@@ -124,6 +124,8 @@ GeomNode::
 GeomNode(const string &name) :
   PandaNode(name)
 {
+  // GeomNodes have a certain set of bits on by default.
+  set_into_collide_mask(get_default_collide_mask());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -314,6 +316,22 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
   }
 
   return next_transform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::get_legal_collide_mask
+//       Access: Published, Virtual
+//  Description: Returns the subset of CollideMask bits that may be
+//               set for this particular type of PandaNode.  For most
+//               nodes, this is 0; it doesn't make sense to set a
+//               CollideMask for most kinds of nodes.
+//
+//               For nodes that can be collided with, such as GeomNode
+//               and CollisionNode, this returns all bits on.
+////////////////////////////////////////////////////////////////////
+CollideMask GeomNode::
+get_legal_collide_mask() const {
+  return CollideMask::all_on();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -39,7 +39,6 @@ CollisionLevelState(const CollisionLevelState &parent, PandaNode *child) :
   _node_path(parent._node_path, child),
   _colliders(parent._colliders),
   _current(parent._current),
-  _colliders_with_geom(parent._colliders_with_geom),
   _local_bounds(parent._local_bounds)
 {
 }
@@ -89,19 +88,6 @@ has_collider(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::has_collider_with_geom
-//       Access: Public
-//  Description: Returns true if the nth collider in the LevelState is
-//               still part of the level, and it has the
-//               "collide_geom" flag set.
-////////////////////////////////////////////////////////////////////
-INLINE bool CollisionLevelState::
-has_collider_with_geom(int n) const {
-  nassertr(n >= 0 && n < (int)_colliders.size(), false);
-  return (_current & _colliders_with_geom & get_mask(n)) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::has_any_collider
 //       Access: Public
 //  Description:
@@ -109,31 +95,6 @@ has_collider_with_geom(int n) const {
 INLINE bool CollisionLevelState::
 has_any_collider() const {
   return _current != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::has_any_collide_geom
-//       Access: Public
-//  Description: Returns true if any Collider in the level state has
-//               the "collide_geom" flag set, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool CollisionLevelState::
-has_any_collide_geom() const {
-  return (_current & _colliders_with_geom) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::reached_collision_node
-//       Access: Public
-//  Description: Called by the traverser when we reach a CollisionNode
-//               in the traversal.  At this point, we zero out our set
-//               of colliders with the "collide_geom" flag set,
-//               because no colliders will test against geometry
-//               parented beneath a CollisionNode.
-////////////////////////////////////////////////////////////////////
-INLINE void CollisionLevelState::
-reached_collision_node() {
-  _colliders_with_geom = 0;
 }
 
 ////////////////////////////////////////////////////////////////////

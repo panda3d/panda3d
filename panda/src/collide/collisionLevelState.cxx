@@ -31,7 +31,6 @@ clear() {
   _local_bounds.clear();
   _parent_bounds.clear();
   _current = 0;
-  _colliders_with_geom = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,9 +88,6 @@ prepare_collider(const ColliderDef &def) {
 
   _current |= get_mask(index);
 
-  if (def._node->get_collide_geom()) {
-    _colliders_with_geom |= get_mask(index);
-  }
   _parent_bounds = _local_bounds;
 }
 

@@ -47,6 +47,7 @@ public:
   virtual bool preserve_name() const;
   virtual void xform(const LMatrix4f &mat);
   virtual PandaNode *combine_with(PandaNode *other); 
+  virtual CollideMask get_legal_collide_mask() const;
 
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
@@ -55,13 +56,13 @@ public:
 
 PUBLISHED:
   INLINE void set_collide_mask(CollideMask mask);
-  INLINE void set_from_collide_mask(CollideMask mask);
+  void set_from_collide_mask(CollideMask mask);
   INLINE void set_into_collide_mask(CollideMask mask);
   INLINE CollideMask get_from_collide_mask() const;
   INLINE CollideMask get_into_collide_mask() const;
 
-  INLINE void set_collide_geom(bool flag);
-  INLINE bool get_collide_geom() const;
+  void set_collide_geom(bool flag);
+  bool get_collide_geom() const;
 
   INLINE void clear_solids();
   INLINE int get_num_solids() const;
@@ -70,8 +71,9 @@ PUBLISHED:
   INLINE void remove_solid(int n);
   INLINE int add_solid(CollisionSolid *solid);
 
+  INLINE static CollideMask get_default_collide_mask();
+
 protected:
-  virtual BoundingVolume *recompute_bound();
   virtual BoundingVolume *recompute_internal_bound();
 
 private:
@@ -81,13 +83,7 @@ private:
   // traversal will take place in App only.  Perhaps we will revisit
   // this later.
   CollideMask _from_collide_mask;
-  CollideMask _into_collide_mask;
-
-  enum Flags {
-    F_collide_geom = 0x0001,
-    // Presently only 8 bits are written to the bam file.
-  };
-  int _flags;
+  bool _collide_geom;
 
   typedef pvector< PT(CollisionSolid) > Solids;
   Solids _solids;

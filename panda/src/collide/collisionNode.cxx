@@ -30,6 +30,7 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "clockObject.h"
 
 TypeHandle CollisionNode::_type_handle;
 
@@ -42,12 +43,14 @@ TypeHandle CollisionNode::_type_handle;
 CollisionNode::
 CollisionNode(const string &name) :
   PandaNode(name),
-  _from_collide_mask(CollideMask::all_on()),
-  _into_collide_mask(CollideMask::all_on()),
-  _flags(0)
+  _from_collide_mask(get_default_collide_mask()),
+  _collide_geom(false)
 {
   // CollisionNodes are hidden by default.
   set_draw_mask(DrawMask::all_off());
+
+  // CollisionNodes have a certain set of bits on by default.
+  set_into_collide_mask(get_default_collide_mask());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,8 +62,6 @@ CollisionNode::
 CollisionNode(const CollisionNode &copy) :
   PandaNode(copy),
   _from_collide_mask(copy._from_collide_mask),
-  _into_collide_mask(copy._into_collide_mask),
-  _flags(copy._flags),
   _solids(copy._solids)
 {
 }
@@ -168,6 +169,22 @@ combine_with(PandaNode *other) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::get_legal_collide_mask
+//       Access: Published, Virtual
+//  Description: Returns the subset of CollideMask bits that may be
+//               set for this particular type of PandaNode.  For most
+//               nodes, this is 0; it doesn't make sense to set a
+//               CollideMask for most kinds of nodes.
+//
+//               For nodes that can be collided with, such as GeomNode
+//               and CollisionNode, this returns all bits on.
+////////////////////////////////////////////////////////////////////
+CollideMask CollisionNode::
+get_legal_collide_mask() const {
+  return CollideMask::all_on();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::has_cull_callback
 //       Access: Public, Virtual
 //  Description: Should be overridden by derived classes to return
@@ -260,22 +277,74 @@ output(ostream &out) const {
   out << " (" << _solids.size() << " solids)";
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::set_from_collide_mask
+//       Access: Published
+//  Description: Sets the "from" CollideMask.  In order for a
+//               collision to be detected from this object into
+//               another object, the intersection of this object's
+//               "from" mask and the other object's "into" mask must
+//               be nonzero.
+////////////////////////////////////////////////////////////////////
+void CollisionNode::
+set_from_collide_mask(CollideMask mask) {
+  _from_collide_mask = mask;
+
+  if (_collide_geom) {
+    _from_collide_mask |= GeomNode::get_default_collide_mask();
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::recompute_bound
-//       Access: Protected, Virtual
-//  Description: Recomputes the dynamic bounding volume for this
-//               object.  This is the bounding volume for the node and
-//               all of its children, and normally does not need to be
-//               specialized beyond PandaNode; we specialize this
-//               function just so we can piggyback on it the
-//               setting the _net_collide_mask bits.
+//     Function: CollisionNode::set_collide_geom
+//       Access: Published
+//  Description: Sets the state of the "collide geom" flag for this
+//               CollisionNode.  
+//
+//               This flag is now deprecated, now that GeomNodes have
+//               their own into_collide_mask, just like CollisionNodes
+//               do.  Instead of using set_collide_geom(), you should
+//               use the from_collide_mask to control which GeomNodes
+//               each CollisionNode will intersect with.  
+//
+//               In particular, you may be interested in setting
+//               from_collide_mask to the value returned by
+//               GeomNode::get_default_collide_mask(), which is the
+//               default into_collide_mask that all GeomNodes will be
+//               given (unless they are explicitly given some other
+//               mask).
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *CollisionNode::
-recompute_bound() {
-  BoundingVolume *result = PandaNode::recompute_bound();
-  add_net_collide_mask(get_into_collide_mask());
-  return result;
+void CollisionNode::
+set_collide_geom(bool flag) {
+  // Only repeat this warning every five seconds or so--no need to be
+  // completely spammy.
+  static double last_warning = -10.0;
+  double now = ClockObject::get_global_clock()->get_frame_time();
+  double elapsed = now - last_warning;
+  if (elapsed > 5.0) {
+    last_warning = now;
+    collide_cat.warning()
+      << "Using deprecated set_collide_geom().  Replace this with an appropriate call to set_from_collide_mask(), e.g. set_from_collide_mask(GeomNode::get_default_collide_mask()).\n";
+  }
+    
+  _collide_geom = flag;
+
+  if (_collide_geom) {
+    _from_collide_mask |= GeomNode::get_default_collide_mask();
+  } else {
+    _from_collide_mask &= ~GeomNode::get_default_collide_mask();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::get_collide_geom
+//       Access: Published
+//  Description: Returns the current state of the collide_geom flag.
+//               See set_collide_geom().
+////////////////////////////////////////////////////////////////////
+bool CollisionNode::
+get_collide_geom() const {
+  return _collide_geom;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -373,8 +442,6 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 
   dg.add_uint32(_from_collide_mask.get_word());
-  dg.add_uint32(_into_collide_mask.get_word());
-  dg.add_uint8(_flags);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -438,6 +505,24 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 
   _from_collide_mask.set_word(scan.get_uint32());
-  _into_collide_mask.set_word(scan.get_uint32());
-  _flags = scan.get_uint8();
+  if (manager->get_file_minor_ver() < 12) {
+    // Bam files prior to 4.12 stored the into_collide_mask here.
+    // (4.12 and later store this in the PandaNode base class
+    // instead.)
+    CollideMask into_collide_mask;
+    into_collide_mask.set_word(scan.get_uint32());
+
+    // We also introduced the concept of the CollisionNode-reserved
+    // bits and the GeomNode-reserved bits with version 4.12.  Prior
+    // to that, CollisionNodes tended to have all bits set.  Assume
+    // they only meant to have the CollisionNode bits set.
+    into_collide_mask &= get_default_collide_mask();
+    _from_collide_mask &= get_default_collide_mask();
+
+    set_into_collide_mask(into_collide_mask);
+
+    // Bam files prior to 4.12 also had a _flags member, which is no
+    // longer supported.
+    scan.get_uint8();
+  }
 }

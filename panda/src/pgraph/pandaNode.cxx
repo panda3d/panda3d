@@ -77,6 +77,7 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   manager->write_pointer(dg, _transform);
 
   dg.add_uint32(_draw_mask.get_word());
+  dg.add_uint32(_into_collide_mask.get_word());
 
   write_up_list(_up, manager, dg);
   write_down_list(_down, manager, dg);
@@ -142,6 +143,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan);
 
   _draw_mask.set_word(scan.get_uint32());
+  if (manager->get_file_minor_ver() >= 12) {
+    _into_collide_mask.set_word(scan.get_uint32());
+  }
 
   // Read the parent and child pointers.
   fillin_up_list(_up, scan, manager);
@@ -383,6 +387,7 @@ PandaNode(const PandaNode &copy) :
   cdata->_prev_transform = copy_cdata->_prev_transform;
   cdata->_tag_data = copy_cdata->_tag_data;
   cdata->_draw_mask = copy_cdata->_draw_mask;
+  cdata->_into_collide_mask = copy_cdata->_into_collide_mask;
   cdata->_fixed_internal_bound = copy_cdata->_fixed_internal_bound;
 }
 
@@ -1276,6 +1281,22 @@ list_tags(ostream &out, const string &separator) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_legal_collide_mask
+//       Access: Published, Virtual
+//  Description: Returns the subset of CollideMask bits that may be
+//               set for this particular type of PandaNode.  For most
+//               nodes, this is 0; it doesn't make sense to set a
+//               CollideMask for most kinds of nodes.
+//
+//               For nodes that can be collided with, such as GeomNode
+//               and CollisionNode, this returns all bits on.
+////////////////////////////////////////////////////////////////////
+CollideMask PandaNode::
+get_legal_collide_mask() const {
+  return CollideMask::all_off();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::output
 //       Access: Published, Virtual
 //  Description: 
@@ -1382,7 +1403,7 @@ recompute_bound() {
 
   // Also, recompute the net_collide_mask bits while we do this.
   CDWriter cdata(_cycler);
-  cdata->_net_collide_mask = CollideMask::all_off();
+  cdata->_net_collide_mask = cdata->_into_collide_mask;
 
   // Now actually compute the bounding volume by putting it around all
   // of our child bounding volumes.

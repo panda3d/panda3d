@@ -647,6 +647,9 @@ PUBLISHED:
   INLINE bool is_stashed() const;
   NodePath get_stashed_ancestor() const;
 
+  INLINE CollideMask get_collide_mask() const;
+  INLINE void set_collide_mask(CollideMask new_mask, CollideMask bits_to_change = CollideMask::all_on());
+
   // Comparison methods
   INLINE bool operator == (const NodePath &other) const;
   INLINE bool operator != (const NodePath &other) const;
@@ -707,6 +710,9 @@ private:
   void r_adjust_all_priorities(PandaNode *node, int adjustment);
 
   void r_force_recompute_bounds(PandaNode *node);
+
+  void r_set_collide_mask(PandaNode *node, 
+                          CollideMask and_mask, CollideMask or_mask);
 
   typedef pset<Texture *> Textures;
   Texture *r_find_texture(PandaNode *node, const RenderState *state,

@@ -1454,6 +1454,42 @@ is_stashed() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_collide_mask
+//       Access: Published
+//  Description: Returns the union of all of the into_collide_masks
+//               for nodes at this level and below.  This is the same
+//               thing as node()->get_net_collide_mask().
+//
+//               If you want to return what the into_collide_mask of
+//               this node itself is, without regard to its children,
+//               use node()->get_into_collide_mask().
+////////////////////////////////////////////////////////////////////
+INLINE CollideMask NodePath::
+get_collide_mask() const {
+  nassertr_always(!is_empty(), CollideMask::all_off());
+  return node()->get_net_collide_mask();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_collide_mask
+//       Access: Published
+//  Description: Recursively applies the indicated CollideMask to the
+//               into_collide_masks for all nodes at this level and
+//               below.
+//
+//               The default is to change all bits, but if
+//               bits_to_change is not all bits on, then only the bits
+//               that are set in bits_to_change are modified, allowing
+//               this call to change only a subset of the bits in the
+//               subgraph.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_collide_mask(CollideMask new_mask, CollideMask bits_to_change) {
+  nassertv_always(!is_empty());
+  r_set_collide_mask(node(), ~bits_to_change, new_mask & bits_to_change);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::operator ==
 //       Access: Published
 //  Description: Returns true if the two paths are equivalent; that

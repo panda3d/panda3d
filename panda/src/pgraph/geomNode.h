@@ -53,6 +53,7 @@ public:
     calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                       bool &found_any,
                       const TransformState *transform) const;
+  virtual CollideMask get_legal_collide_mask() const;
 
 PUBLISHED:
   INLINE int get_num_geoms() const;
@@ -68,6 +69,8 @@ PUBLISHED:
 
   void write_geoms(ostream &out, int indent_level) const;
   void write_verbose(ostream &out, int indent_level) const;
+
+  INLINE static CollideMask get_default_collide_mask();
 
 public:
   virtual void output(ostream &out) const;

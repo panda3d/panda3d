@@ -513,8 +513,6 @@ r_traverse(CollisionLevelState &level_state) {
 
   PandaNode *node = level_state.node();
   if (node->is_exact_type(CollisionNode::get_class_type())) {
-    level_state.reached_collision_node();
-
     CollisionNode *cnode;
     DCAST_INTO_V(cnode, node);
     const BoundingVolume &node_bv = cnode->get_bound();
@@ -548,7 +546,7 @@ r_traverse(CollisionLevelState &level_state) {
       }
     }
 
-  } else if (node->is_geom_node() && level_state.has_any_collide_geom()) {
+  } else if (node->is_geom_node()) {
 #ifndef NDEBUG
     if (collide_cat.is_spam()) {
       collide_cat.spam()
@@ -573,15 +571,19 @@ r_traverse(CollisionLevelState &level_state) {
 
     int num_colliders = level_state.get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
-      if (level_state.has_collider_with_geom(c)) {
+      if (level_state.has_collider(c)) {
         entry._from_node = level_state.get_collider_node(c);
-        entry._from_node_path = level_state.get_collider_node_path(c);
-        entry._from = level_state.get_collider(c);
 
-        compare_collider_to_geom_node(entry, 
-                                      level_state.get_parent_bound(c),
-                                      level_state.get_local_bound(c),
-                                      node_gbv);
+        if ((entry._from_node->get_from_collide_mask() &
+             gnode->get_into_collide_mask()) != 0) {
+          entry._from_node_path = level_state.get_collider_node_path(c);
+          entry._from = level_state.get_collider(c);
+
+          compare_collider_to_geom_node(entry, 
+                                        level_state.get_parent_bound(c),
+                                        level_state.get_local_bound(c),
+                                        node_gbv);
+        }
       }
     }
   }

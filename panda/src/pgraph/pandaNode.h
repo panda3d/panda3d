@@ -164,6 +164,10 @@ PUBLISHED:
   INLINE void set_draw_mask(DrawMask mask);
   INLINE DrawMask get_draw_mask() const;
 
+  INLINE void set_into_collide_mask(CollideMask mask);
+  INLINE CollideMask get_into_collide_mask() const;
+  virtual CollideMask get_legal_collide_mask() const;
+
   INLINE CollideMask get_net_collide_mask() const;
 
   virtual void output(ostream &out) const;
@@ -320,12 +324,18 @@ private:
     // This is the draw_mask of this particular node.
     DrawMask _draw_mask;
 
-    // This is the union of all into_collide_mask bits for any
-    // CollisionNodes at and below this level.  It's conceptually
-    // similar to a bounding volume--it represents the bounding volume
-    // of this node in the space of collision bits--and it needs to be
-    // updated for the same reasons the bounding volume needs to be
-    // updated.  So we update them together.
+    // This is the mask that indicates which CollisionNodes may detect
+    // a collision with this particular node.  By default it is zero
+    // for an ordinary PandaNode, and all bits on for a CollisionNode
+    // or GeomNode.
+    CollideMask _into_collide_mask;
+
+    // This is the union of all into_collide_mask bits for any nodes
+    // at and below this level.  It's conceptually similar to a
+    // bounding volume--it represents the bounding volume of this node
+    // in the space of collision bits--and it needs to be updated for
+    // the same reasons the bounding volume needs to be updated.  So
+    // we update them together.
     CollideMask _net_collide_mask;
 
     bool _fixed_internal_bound;

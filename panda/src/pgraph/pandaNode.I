@@ -120,6 +120,7 @@ CData() {
   _transform = TransformState::make_identity();
   _prev_transform = TransformState::make_identity();
   _draw_mask = DrawMask::all_on();
+  _into_collide_mask = CollideMask::all_off();
   _net_collide_mask = CollideMask::all_off();
   _fixed_internal_bound = false;
 }
@@ -141,6 +142,7 @@ CData(const PandaNode::CData &copy) :
   _prev_transform(copy._prev_transform),
   _tag_data(copy._tag_data),
   _draw_mask(copy._draw_mask),
+  _into_collide_mask(copy._into_collide_mask),
   _fixed_internal_bound(copy._fixed_internal_bound)
 {
   _net_collide_mask = CollideMask::all_off();
@@ -813,6 +815,45 @@ get_draw_mask() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_into_collide_mask
+//       Access: Published
+//  Description: Sets the "into" CollideMask.  
+//
+//               This specifies the set of bits that must be shared
+//               with a CollisionNode's "from" CollideMask in order
+//               for the CollisionNode to detect a collision with this
+//               particular node.
+//
+//               The actual CollideMask that will be set is masked by
+//               the return value from get_legal_collide_mask().
+//               Thus, the into_collide_mask cannot be set to anything
+//               other than nonzero except for those types of nodes
+//               that can be collided into, such as CollisionNodes and
+//               GeomNodes.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+set_into_collide_mask(CollideMask mask) {
+  CDWriter cdata(_cycler);
+  cdata->_into_collide_mask = mask & get_legal_collide_mask();
+
+  // We mark the bound stale when this changes, not because the actual
+  // bounding volume changes, but rather because we piggyback the
+  // computing of the _net_collide_mask on the bounding volume.
+  mark_bound_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_into_collide_mask
+//       Access: Published
+//  Description: Returns the "into" collide mask for this node.
+////////////////////////////////////////////////////////////////////
+INLINE CollideMask PandaNode::
+get_into_collide_mask() const {
+  CDReader cdata(_cycler);
+  return cdata->_into_collide_mask;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_net_collide_mask
 //       Access: Published
 //  Description: Returns the union of all into_collide_mask() values
@@ -895,19 +936,6 @@ get_internal_bound() const {
 INLINE void PandaNode::
 changed_internal_bound() {
   BoundedObject::mark_bound_stale();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::add_net_collide_mask
-//       Access: Protected
-//  Description: Adds the indicated bits into the net_collide_mask for
-//               this node.  This is normally called only by
-//               CollisionNode::recompute_bound().
-////////////////////////////////////////////////////////////////////
-INLINE void PandaNode::
-add_net_collide_mask(CollideMask mask) {
-  CDWriter cdata(_cycler);
-  cdata->_net_collide_mask |= mask;
 }
 
 ////////////////////////////////////////////////////////////////////

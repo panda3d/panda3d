@@ -34,7 +34,7 @@ static const unsigned short _bam_major_ver = 4;
 // Bumped to major version 3 on 12/8/00 to change float64's to float32's.
 // Bumped to major version 4 on 4/10/02 to store new scene graph.
 
-static const unsigned short _bam_minor_ver = 11;
+static const unsigned short _bam_minor_ver = 12;
 // Bumped to minor version 1 on 4/10/03 to add CullFaceAttrib::reverse.
 // Bumped to minor version 1 on 4/10/03 to add CullFaceAttrib::reverse.
 // Bumped to minor version 2 on 4/12/03 to add num_components to texture.
@@ -47,6 +47,7 @@ static const unsigned short _bam_minor_ver = 11;
 // Bumped to minor version 9 on 12/02/03 to change CollisionPolygon internals.
 // Bumped to minor version 10 on 04/23/04 to make ComputedVertices use uint32's.
 // Bumped to minor version 11 on 07/26/04 to add multitexture pointers.
+// Bumped to minor version 12 on 09/22/04 to add PandaNode::into_collide_mask.
 
 
 #endif

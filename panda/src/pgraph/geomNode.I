@@ -167,3 +167,14 @@ remove_all_geoms() {
   cdata->_geoms.clear();
   mark_bound_stale();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::get_default_collide_mask
+//       Access: Published, Static
+//  Description: Returns the default into_collide_mask assigned to new
+//               GeomNodes.
+////////////////////////////////////////////////////////////////////
+INLINE CollideMask GeomNode::
+get_default_collide_mask() {
+  return default_geom_node_collide_mask;
+}

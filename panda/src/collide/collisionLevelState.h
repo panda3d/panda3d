@@ -63,11 +63,7 @@ public:
 
   INLINE int get_num_colliders() const;
   INLINE bool has_collider(int n) const;
-  INLINE bool has_collider_with_geom(int n) const;
   INLINE bool has_any_collider() const;
-  INLINE bool has_any_collide_geom() const;
-
-  INLINE void reached_collision_node();
 
   INLINE CollisionSolid *get_collider(int n) const;
   INLINE CollisionNode *get_collider_node(int n) const;
@@ -92,7 +88,6 @@ private:
   typedef PTA(ColliderDef) Colliders;
   Colliders _colliders;
   ColliderMask _current;
-  ColliderMask _colliders_with_geom;
 
   typedef PTA(CPT(GeometricBoundingVolume)) BoundingVolumes;
   BoundingVolumes _local_bounds;

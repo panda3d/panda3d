@@ -4945,6 +4945,26 @@ r_force_recompute_bounds(PandaNode *node) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_set_collide_mask
+//       Access: Private
+//  Description: Recursively applies the indicated collide mask to the
+//               nodes at and below this node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+r_set_collide_mask(PandaNode *node, 
+                   CollideMask and_mask, CollideMask or_mask) {
+  CollideMask into_collide_mask = node->get_into_collide_mask();
+  into_collide_mask = (into_collide_mask & and_mask) | or_mask;
+  node->set_into_collide_mask(into_collide_mask);
+
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    r_set_collide_mask(cr.get_child(i), and_mask, or_mask);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_find_texture
 //       Access: Private
 //  Description: 

@@ -30,20 +30,6 @@ set_collide_mask(CollideMask mask) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::set_from_collide_mask
-//       Access: Published
-//  Description: Sets the "from" CollideMask.  In order for a
-//               collision to be detected from this object into
-//               another object, the intersection of this object's
-//               "from" mask and the other object's "into" mask must
-//               be nonzero.
-////////////////////////////////////////////////////////////////////
-INLINE void CollisionNode::
-set_from_collide_mask(CollideMask mask) {
-  _from_collide_mask = mask;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::set_into_collide_mask
 //       Access: Published
 //  Description: Sets the "into" CollideMask.  In order for a
@@ -54,12 +40,8 @@ set_from_collide_mask(CollideMask mask) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionNode::
 set_into_collide_mask(CollideMask mask) {
-  _into_collide_mask = mask;
-
-  // We mark the bound stale when this changes, not because the actual
-  // bounding volume changes, but rather because we piggyback the
-  // computing of the _net_collide_mask on the bounding volume.
-  mark_bound_stale();
+  // This is now inherited from the PandaNode base class.
+  PandaNode::set_into_collide_mask(mask);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,42 +69,8 @@ get_from_collide_mask() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CollideMask CollisionNode::
 get_into_collide_mask() const {
-  return _into_collide_mask;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::set_collide_geom
-//       Access: Published
-//  Description: Sets the state of the "collide geom" flag for this
-//               CollisionNode.  Normally, this is false; when this is
-//               set true, the CollisionSolids in this node will test
-//               for collisions with actual renderable geometry, in
-//               addition to whatever CollisionSolids may be indicated
-//               by the from_collide_mask.
-//
-//               Setting this to true causes this to test *all*
-//               GeomNodes for collisions.  It is an all-or-none
-//               thing; there is no way to collide with only some
-//               GeomNodes, as GeomNodes have no into_collide_mask.
-////////////////////////////////////////////////////////////////////
-INLINE void CollisionNode::
-set_collide_geom(bool flag) {
-  if (flag) {
-    _flags |= F_collide_geom;
-  } else {
-    _flags &= ~F_collide_geom;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::get_collide_geom
-//       Access: Published
-//  Description: Returns the current state of the collide_geom flag.
-//               See set_collide_geom().
-////////////////////////////////////////////////////////////////////
-INLINE bool CollisionNode::
-get_collide_geom() const {
-  return (_flags & F_collide_geom) != 0;
+  // This is now inherited from the PandaNode base class.
+  return PandaNode::get_into_collide_mask();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -194,4 +142,15 @@ add_solid(CollisionSolid *solid) {
   _solids.push_back(solid);
   mark_bound_stale();
   return _solids.size() - 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::get_default_collide_mask
+//       Access: Published, Static
+//  Description: Returns the default into_collide_mask assigned to new
+//               CollisionNodes.
+////////////////////////////////////////////////////////////////////
+INLINE CollideMask CollisionNode::
+get_default_collide_mask() {
+  return default_collision_node_collide_mask;
 }
