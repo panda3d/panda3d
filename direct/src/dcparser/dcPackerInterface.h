@@ -36,7 +36,9 @@ enum DCPackType {
   // pack_int(), etc.
   PT_double,
   PT_int,
+  PT_uint,
   PT_int64,
+  PT_uint64,
   PT_string,
 
   // The remaining PackTypes imply a need to call push() and pop().
@@ -82,13 +84,40 @@ public:
 
   virtual bool pack_double(DCPackData &pack_data, double value) const;
   virtual bool pack_int(DCPackData &pack_data, int value) const;
+  virtual bool pack_uint(DCPackData &pack_data, unsigned int value) const;
   virtual bool pack_int64(DCPackData &pack_data, PN_int64 value) const;
+  virtual bool pack_uint64(DCPackData &pack_data, PN_uint64 value) const;
   virtual bool pack_string(DCPackData &pack_data, const string &value) const;
 
   virtual bool unpack_double(const char *data, size_t length, size_t &p, double &value) const;
   virtual bool unpack_int(const char *data, size_t length, size_t &p, int &value) const;
+  virtual bool unpack_uint(const char *data, size_t length, size_t &p, unsigned int &value) const;
   virtual bool unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const;
+  virtual bool unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value) const;
   virtual bool unpack_string(const char *data, size_t length, size_t &p, string &value) const;
+
+  // These are the low-level interfaces for packing and unpacking
+  // numbers from a buffer.  You're responsible for making sure the
+  // buffer has enough room, and for incrementing the pointer.
+  INLINE static void do_pack_int8(char *buffer, int value);
+  INLINE static void do_pack_int16(char *buffer, int value);
+  INLINE static void do_pack_int32(char *buffer, int value);
+  INLINE static void do_pack_int64(char *buffer, PN_int64 value);
+  INLINE static void do_pack_uint8(char *buffer, unsigned int value);
+  INLINE static void do_pack_uint16(char *buffer, unsigned int value);
+  INLINE static void do_pack_uint32(char *buffer, unsigned int value);
+  INLINE static void do_pack_uint64(char *buffer, PN_uint64 value);
+  INLINE static void do_pack_float64(char *buffer, double value);
+
+  INLINE static int do_unpack_int8(const char *buffer);
+  INLINE static int do_unpack_int16(const char *buffer);
+  INLINE static int do_unpack_int32(const char *buffer);
+  INLINE static PN_int64 do_unpack_int64(const char *buffer);
+  INLINE static unsigned int do_unpack_uint8(const char *buffer);
+  INLINE static unsigned int do_unpack_uint16(const char *buffer);
+  INLINE static unsigned int do_unpack_uint32(const char *buffer);
+  INLINE static PN_uint64 do_unpack_uint64(const char *buffer);
+  INLINE static double do_unpack_float64(const char *buffer);
 
 protected:
   string _name;
@@ -99,5 +128,7 @@ protected:
   int _num_nested_fields;
   DCPackType _pack_type;
 };
+
+#include "dcPackerInterface.I"
 
 #endif

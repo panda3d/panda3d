@@ -34,8 +34,10 @@ PUBLISHED:
   INLINE void clear();
 
   INLINE void append_data(const char *buffer, size_t size);
+  INLINE char *get_write_pointer(size_t size);
   INLINE void append_junk(size_t size);
   INLINE void rewrite_data(size_t position, const char *buffer, size_t size);
+  INLINE char *get_rewrite_pointer(size_t position, size_t size);
 
   INLINE string get_string() const;
   INLINE size_t get_length() const;

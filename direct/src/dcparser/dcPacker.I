@@ -124,6 +124,25 @@ pack_int(int value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::pack_uint
+//       Access: Published
+//  Description: Packs the indicated numeric or string value into the
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+pack_uint(unsigned int value) {
+  nassertv(_mode == M_pack);
+  if (_current_field == NULL) {
+    _pack_error = true;
+  } else {
+    if (!_current_field->pack_uint(_pack_data, value)) {
+      _pack_error = true;
+    }
+    advance();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::pack_int64
 //       Access: Published
 //  Description: Packs the indicated numeric or string value into the
@@ -136,6 +155,25 @@ pack_int64(PN_int64 value) {
     _pack_error = true;
   } else {
     if (!_current_field->pack_int64(_pack_data, value)) {
+      _pack_error = true;
+    }
+    advance();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::pack_uint64
+//       Access: Published
+//  Description: Packs the indicated numeric or string value into the
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+pack_uint64(PN_uint64 value) {
+  nassertv(_mode == M_pack);
+  if (_current_field == NULL) {
+    _pack_error = true;
+  } else {
+    if (!_current_field->pack_uint64(_pack_data, value)) {
       _pack_error = true;
     }
     advance();
@@ -226,6 +264,29 @@ unpack_int() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_uint
+//       Access: Published
+//  Description: Unpacks the current numeric or string value from the
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned int DCPacker::
+unpack_uint() {
+  unsigned int value = 0;
+  nassertr(_mode == M_unpack, value);
+  if (_current_field == NULL) {
+    _pack_error = true;
+
+  } else {
+    if (!_current_field->unpack_uint(_unpack_data, _unpack_length, _unpack_p, value)) {
+      _pack_error = true;
+    }
+    advance();
+  }
+
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::unpack_int64
 //       Access: Published
 //  Description: Unpacks the current numeric or string value from the
@@ -240,6 +301,29 @@ unpack_int64() {
 
   } else {
     if (!_current_field->unpack_int64(_unpack_data, _unpack_length, _unpack_p, value)) {
+      _pack_error = true;
+    }
+    advance();
+  }
+
+  return value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::unpack_uint64
+//       Access: Published
+//  Description: Unpacks the current numeric or string value from the
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE PN_uint64 DCPacker::
+unpack_uint64() {
+  PN_uint64 value = 0;
+  nassertr(_mode == M_unpack, value);
+  if (_current_field == NULL) {
+    _pack_error = true;
+
+  } else {
+    if (!_current_field->unpack_uint64(_unpack_data, _unpack_length, _unpack_p, value)) {
       _pack_error = true;
     }
     advance();

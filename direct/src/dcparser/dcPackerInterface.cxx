@@ -206,6 +206,17 @@ pack_int(DCPackData &, int) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::pack_uint
+//       Access: Public, Virtual
+//  Description: Packs the indicated numeric or string value into the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+pack_uint(DCPackData &, unsigned int) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::pack_int64
 //       Access: Public, Virtual
 //  Description: Packs the indicated numeric or string value into the
@@ -213,6 +224,17 @@ pack_int(DCPackData &, int) const {
 ////////////////////////////////////////////////////////////////////
 bool DCPackerInterface::
 pack_int64(DCPackData &, PN_int64) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::pack_uint64
+//       Access: Public, Virtual
+//  Description: Packs the indicated numeric or string value into the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+pack_uint64(DCPackData &, PN_uint64) const {
   return false;
 }
 
@@ -250,6 +272,17 @@ unpack_int(const char *, size_t, size_t &, int &) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::unpack_uint
+//       Access: Public, Virtual
+//  Description: Unpacks the current numeric or string value from the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+unpack_uint(const char *, size_t, size_t &, unsigned int &) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::unpack_int64
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the
@@ -257,6 +290,17 @@ unpack_int(const char *, size_t, size_t &, int &) const {
 ////////////////////////////////////////////////////////////////////
 bool DCPackerInterface::
 unpack_int64(const char *, size_t, size_t &, PN_int64 &) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::unpack_uint64
+//       Access: Public, Virtual
+//  Description: Unpacks the current numeric or string value from the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+unpack_uint64(const char *, size_t, size_t &, PN_uint64 &) const {
   return false;
 }
 

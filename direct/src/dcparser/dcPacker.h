@@ -56,13 +56,17 @@ PUBLISHED:
 
   INLINE void pack_double(double value);
   INLINE void pack_int(int value);
+  INLINE void pack_uint(unsigned int value);
   INLINE void pack_int64(PN_int64 value);
+  INLINE void pack_uint64(PN_uint64 value);
   INLINE void pack_string(const string &value);
   INLINE void pack_literal_value(const string &value);
 
   INLINE double unpack_double();
   INLINE int unpack_int();
+  INLINE unsigned int unpack_uint();
   INLINE PN_int64 unpack_int64();
+  INLINE PN_uint64 unpack_uint64();
   INLINE string unpack_string();
 
 #ifdef HAVE_PYTHON

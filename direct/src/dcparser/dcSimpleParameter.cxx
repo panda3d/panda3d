@@ -134,25 +134,25 @@ DCSimpleParameter(DCSubatomicType type, int divisor) :
     break;
 
   case ST_uint8:
-    _pack_type = PT_int;
+    _pack_type = PT_uint;
     _has_fixed_byte_size = true;
     _fixed_byte_size = 1;
     break;
 
   case ST_uint16:
-    _pack_type = PT_int;
+    _pack_type = PT_uint;
     _has_fixed_byte_size = true;
     _fixed_byte_size = 2;
     break;
 
   case ST_uint32:
-    _pack_type = PT_int;
+    _pack_type = PT_uint;
     _has_fixed_byte_size = true;
     _fixed_byte_size = 4;
     break;
 
   case ST_uint64:
-    _pack_type = PT_int64;
+    _pack_type = PT_uint64;
     _has_fixed_byte_size = true;
     _fixed_byte_size = 8;
     break;
@@ -259,7 +259,8 @@ set_divisor(int divisor) {
 
   _divisor = divisor;
   if ((_divisor != 1) &&
-      (_pack_type == PT_int || _pack_type == PT_int64)) {
+      (_pack_type == PT_int || _pack_type == PT_int64 ||
+       _pack_type == PT_uint || _pack_type == PT_uint64)) {
     _pack_type = PT_double;
   }
 
@@ -306,62 +307,50 @@ get_nested_field(int) const {
 bool DCSimpleParameter::
 pack_double(DCPackData &pack_data, double value) const {
   double real_value = value * _divisor;
-  int int_value = (int)floor(real_value + 0.5);
-
-  char buffer[8];
 
   switch (_type) {
   case ST_int8:
-  case ST_uint8:
-    buffer[0] = (char)(int_value & 0xff);
-    pack_data.append_data(buffer, 1);
+    do_pack_int8(pack_data.get_write_pointer(1), 
+               (int)floor(real_value + 0.5));
     break;
 
   case ST_int16:
-  case ST_uint16:
-    buffer[0] = (char)(int_value & 0xff);
-    buffer[1] = (char)((int_value >> 8) & 0xff);
-    pack_data.append_data(buffer, 2);
+    do_pack_int16(pack_data.get_write_pointer(2), 
+               (int)floor(real_value + 0.5));
     break;
 
   case ST_int32:
-  case ST_uint32:
-    buffer[0] = (char)(int_value & 0xff);
-    buffer[1] = (char)((int_value >> 8) & 0xff);
-    buffer[2] = (char)((int_value >> 16) & 0xff);
-    buffer[3] = (char)((int_value >> 24) & 0xff);
-    pack_data.append_data(buffer, 4);
+    do_pack_int32(pack_data.get_write_pointer(4), 
+               (int)floor(real_value + 0.5));
     break;
 
   case ST_int64:
+    do_pack_int64(pack_data.get_write_pointer(8), 
+                (PN_int64)floor(real_value + 0.5));
+    break;
+
+  case ST_uint8:
+    do_pack_uint8(pack_data.get_write_pointer(1), 
+                (unsigned int)floor(real_value + 0.5));
+    break;
+
+  case ST_uint16:
+    do_pack_uint16(pack_data.get_write_pointer(2), 
+                (unsigned int)floor(real_value + 0.5));
+    break;
+
+  case ST_uint32:
+    do_pack_uint32(pack_data.get_write_pointer(4), 
+                (unsigned int)floor(real_value + 0.5));
+    break;
+
   case ST_uint64:
-    {
-      PN_int64 int64_value = (PN_int64)floor(real_value + 0.5);
-      buffer[0] = (char)(int64_value & 0xff);
-      buffer[1] = (char)((int64_value >> 8) & 0xff);
-      buffer[2] = (char)((int64_value >> 16) & 0xff);
-      buffer[3] = (char)((int64_value >> 24) & 0xff);
-      buffer[4] = (char)((int64_value >> 32) & 0xff);
-      buffer[5] = (char)((int64_value >> 40) & 0xff);
-      buffer[6] = (char)((int64_value >> 48) & 0xff);
-      buffer[7] = (char)((int64_value >> 56) & 0xff);
-      pack_data.append_data(buffer, 8);
-    }
+    do_pack_uint64(pack_data.get_write_pointer(8), 
+                (PN_uint64)floor(real_value + 0.5));
     break;
 
   case ST_float64:
-#ifdef WORDS_BIGENDIAN
-    {
-      // Reverse the byte ordering for big-endian machines.
-      char *p = (char *)real_value;
-      for (size_t i = 0; i < 8; i++) {
-        buffer[i] = p[7 - i];
-      }
-    }
-#else
-    memcpy(buffer, &real_value, 8);
-#endif
-    pack_data.append_data(buffer, 8);
+    do_pack_float64(pack_data.get_write_pointer(8), real_value);
     break;
 
   default:
@@ -381,70 +370,95 @@ bool DCSimpleParameter::
 pack_int(DCPackData &pack_data, int value) const {
   int int_value = value * _divisor;
 
-  char buffer[8];
-
   switch (_type) {
   case ST_int8:
-  case ST_uint8:
-    buffer[0] = (char)(int_value & 0xff);
-    pack_data.append_data(buffer, 1);
+    do_pack_int8(pack_data.get_write_pointer(1), int_value);
     break;
 
   case ST_int16:
-  case ST_uint16:
-    buffer[0] = (char)(int_value & 0xff);
-    buffer[1] = (char)((int_value >> 8) & 0xff);
-    pack_data.append_data(buffer, 2);
+    do_pack_int16(pack_data.get_write_pointer(2), int_value);
     break;
 
   case ST_int32:
-  case ST_uint32:
-    buffer[0] = (char)(int_value & 0xff);
-    buffer[1] = (char)((int_value >> 8) & 0xff);
-    buffer[2] = (char)((int_value >> 16) & 0xff);
-    buffer[3] = (char)((int_value >> 24) & 0xff);
-    pack_data.append_data(buffer, 4);
+    do_pack_int32(pack_data.get_write_pointer(4), int_value);
     break;
 
   case ST_int64:
-    buffer[0] = (char)(int_value & 0xff);
-    buffer[1] = (char)((int_value >> 8) & 0xff);
-    buffer[2] = (char)((int_value >> 16) & 0xff);
-    buffer[3] = (char)((int_value >> 24) & 0xff);
-    if ((int_value & 0x80000000) != 0) {
-      buffer[4] = buffer[5] = buffer[6] = buffer[7] = (char)0xff;
-    } else {
-      buffer[4] = buffer[5] = buffer[6] = buffer[7] = (char)0;
-    }
-    pack_data.append_data(buffer, 8);
+    do_pack_int64(pack_data.get_write_pointer(8), int_value);
+    break;
+
+  case ST_uint8:
+    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)int_value);
+    break;
+
+  case ST_uint16:
+    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)int_value);
+    break;
+
+  case ST_uint32:
+    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)int_value);
     break;
 
   case ST_uint64:
-    buffer[0] = (char)(int_value & 0xff);
-    buffer[1] = (char)((int_value >> 8) & 0xff);
-    buffer[2] = (char)((int_value >> 16) & 0xff);
-    buffer[3] = (char)((int_value >> 24) & 0xff);
-    buffer[4] = buffer[5] = buffer[6] = buffer[7] = (char)0;
-    pack_data.append_data(buffer, 8);
+    do_pack_uint64(pack_data.get_write_pointer(8), (unsigned int)int_value);
     break;
 
   case ST_float64:
-#ifdef WORDS_BIGENDIAN
-    {
-      // Reverse the byte ordering for big-endian machines.
-      double real_value = int_value;
-      char *p = (char *)real_value;
-      for (size_t i = 0; i < 8; i++) {
-        buffer[i] = p[7 - i];
-      }
-    }
-#else
-    {
-      double real_value = int_value;
-      memcpy(buffer, &real_value, 8);
-    }
-#endif
-    pack_data.append_data(buffer, 8);
+    do_pack_float64(pack_data.get_write_pointer(8), int_value);
+    break;
+
+  default:
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::pack_uint
+//       Access: Published, Virtual
+//  Description: Packs the indicated numeric or string value into the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleParameter::
+pack_uint(DCPackData &pack_data, unsigned int value) const {
+  unsigned int int_value = value * _divisor;
+
+  switch (_type) {
+  case ST_int8:
+    do_pack_int8(pack_data.get_write_pointer(1), (int)int_value);
+    break;
+
+  case ST_int16:
+    do_pack_int16(pack_data.get_write_pointer(2), (int)int_value);
+    break;
+
+  case ST_int32:
+    do_pack_int32(pack_data.get_write_pointer(4), (int)int_value);
+    break;
+
+  case ST_int64:
+    do_pack_int64(pack_data.get_write_pointer(8), (int)int_value);
+    break;
+
+  case ST_uint8:
+    do_pack_uint8(pack_data.get_write_pointer(1), int_value);
+    break;
+
+  case ST_uint16:
+    do_pack_uint16(pack_data.get_write_pointer(2), int_value);
+    break;
+
+  case ST_uint32:
+    do_pack_uint32(pack_data.get_write_pointer(4), int_value);
+    break;
+
+  case ST_uint64:
+    do_pack_uint64(pack_data.get_write_pointer(8), int_value);
+    break;
+
+  case ST_float64:
+    do_pack_float64(pack_data.get_write_pointer(8), (double)int_value);
     break;
 
   default:
@@ -464,63 +478,95 @@ bool DCSimpleParameter::
 pack_int64(DCPackData &pack_data, PN_int64 value) const {
   PN_int64 int_value = value * _divisor;
 
-  char buffer[8];
-
   switch (_type) {
   case ST_int8:
-  case ST_uint8:
-    buffer[0] = (char)(int_value & 0xff);
-    pack_data.append_data(buffer, 1);
+    do_pack_int8(pack_data.get_write_pointer(1), (int)int_value);
     break;
 
   case ST_int16:
-  case ST_uint16:
-    buffer[0] = (char)(int_value & 0xff);
-    buffer[1] = (char)((int_value >> 8) & 0xff);
-    pack_data.append_data(buffer, 2);
+    do_pack_int16(pack_data.get_write_pointer(2), (int)int_value);
     break;
 
   case ST_int32:
-  case ST_uint32:
-    buffer[0] = (char)(int_value & 0xff);
-    buffer[1] = (char)((int_value >> 8) & 0xff);
-    buffer[2] = (char)((int_value >> 16) & 0xff);
-    buffer[3] = (char)((int_value >> 24) & 0xff);
-    pack_data.append_data(buffer, 4);
+    do_pack_int32(pack_data.get_write_pointer(4), (int)int_value);
     break;
 
   case ST_int64:
+    do_pack_int64(pack_data.get_write_pointer(8), int_value);
+    break;
+
+  case ST_uint8:
+    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)(PN_uint64)int_value);
+    break;
+
+  case ST_uint16:
+    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)(PN_uint64)int_value);
+    break;
+
+  case ST_uint32:
+    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)(PN_uint64)int_value);
+    break;
+
   case ST_uint64:
-    {
-      buffer[0] = (char)(int_value & 0xff);
-      buffer[1] = (char)((int_value >> 8) & 0xff);
-      buffer[2] = (char)((int_value >> 16) & 0xff);
-      buffer[3] = (char)((int_value >> 24) & 0xff);
-      buffer[4] = (char)((int_value >> 32) & 0xff);
-      buffer[5] = (char)((int_value >> 40) & 0xff);
-      buffer[6] = (char)((int_value >> 48) & 0xff);
-      buffer[7] = (char)((int_value >> 56) & 0xff);
-      pack_data.append_data(buffer, 8);
-    }
+    do_pack_uint64(pack_data.get_write_pointer(8), (PN_uint64)int_value);
     break;
 
   case ST_float64:
-#ifdef WORDS_BIGENDIAN
-    {
-      // Reverse the byte ordering for big-endian machines.
-      double real_value = int_value;
-      char *p = (char *)real_value;
-      for (size_t i = 0; i < 8; i++) {
-        buffer[i] = p[7 - i];
-      }
-    }
-#else
-    {
-      double real_value = int_value;
-      memcpy(buffer, &real_value, 8);
-    }
-#endif
-    pack_data.append_data(buffer, 8);
+    do_pack_float64(pack_data.get_write_pointer(8), (double)int_value);
+    break;
+
+  default:
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::pack_uint64
+//       Access: Published, Virtual
+//  Description: Packs the indicated numeric or string value into the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleParameter::
+pack_uint64(DCPackData &pack_data, PN_uint64 value) const {
+  PN_uint64 int_value = value * _divisor;
+
+  switch (_type) {
+  case ST_int8:
+    do_pack_int8(pack_data.get_write_pointer(1), (int)(PN_int64)int_value);
+    break;
+
+  case ST_int16:
+    do_pack_int16(pack_data.get_write_pointer(2), (int)(PN_int64)int_value);
+    break;
+
+  case ST_int32:
+    do_pack_int32(pack_data.get_write_pointer(4), (int)(PN_int64)int_value);
+    break;
+
+  case ST_int64:
+    do_pack_int64(pack_data.get_write_pointer(8), (PN_int64)int_value);
+    break;
+
+  case ST_uint8:
+    do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)int_value);
+    break;
+
+  case ST_uint16:
+    do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)int_value);
+    break;
+
+  case ST_uint32:
+    do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)int_value);
+    break;
+
+  case ST_uint64:
+    do_pack_uint64(pack_data.get_write_pointer(8), int_value);
+    break;
+
+  case ST_float64:
+    do_pack_float64(pack_data.get_write_pointer(8), (double)int_value);
     break;
 
   default:
@@ -538,30 +584,16 @@ pack_int64(DCPackData &pack_data, PN_int64 value) const {
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleParameter::
 pack_string(DCPackData &pack_data, const string &value) const {
-  char buffer[4];
-
   switch (_type) {
   case ST_string:
   case ST_blob:
-    {
-      int length = value.length();
-      buffer[0] = (char)(length & 0xff);
-      buffer[1] = (char)((length >> 8) & 0xff);
-      pack_data.append_data(buffer, 2);
-      pack_data.append_data(value.data(), length);
-    }
+    do_pack_uint16(pack_data.get_write_pointer(2), value.length());
+    pack_data.append_data(value.data(), value.length());
     break;
 
   case ST_blob32:
-    {
-      int length = value.length();
-      buffer[0] = (char)(length & 0xff);
-      buffer[1] = (char)((length >> 8) & 0xff);
-      buffer[2] = (char)((length >> 16) & 0xff);
-      buffer[3] = (char)((length >> 24) & 0xff);
-      pack_data.append_data(buffer, 4);
-      pack_data.append_data(value.data(), length);
-    }
+    do_pack_uint32(pack_data.get_write_pointer(4), value.length());
+    pack_data.append_data(value.data(), value.length());
     break;
 
   default:
@@ -584,7 +616,7 @@ unpack_double(const char *data, size_t length, size_t &p, double &value) const {
     if (p + 1 > length) {
       return false;
     }
-    value = (double)(int)(signed char)data[p];
+    value = do_unpack_int8(data + p);
     p++;
     break;
 
@@ -592,8 +624,7 @@ unpack_double(const char *data, size_t length, size_t &p, double &value) const {
     if (p + 2 > length) {
       return false;
     }
-    value = (double)(int)((unsigned int)(unsigned char)data[p] |
-                          ((int)(signed char)data[p + 1] << 8));
+    value = do_unpack_int16(data + p);
     p += 2;
     break;
 
@@ -601,10 +632,7 @@ unpack_double(const char *data, size_t length, size_t &p, double &value) const {
     if (p + 4 > length) {
       return false;
     }
-    value = (double)(int)((unsigned int)(unsigned char)data[p] |
-                          ((unsigned int)(unsigned char)data[p + 1] << 8) |
-                          ((unsigned int)(unsigned char)data[p + 2] << 16) |
-                          ((int)(signed char)data[p + 3] << 24));
+    value = do_unpack_int32(data + p);
     p += 4;
     break;
 
@@ -612,14 +640,7 @@ unpack_double(const char *data, size_t length, size_t &p, double &value) const {
     if (p + 8 > length) {
       return false;
     }
-    value = (double)(PN_int64)((PN_uint64)(unsigned char)data[p] |
-                               ((PN_uint64)(unsigned char)data[p + 1] << 8) |
-                               ((PN_uint64)(unsigned char)data[p + 2] << 16) |
-                               ((PN_uint64)(unsigned char)data[p + 3] << 24) |
-                               ((PN_uint64)(unsigned char)data[p + 4] << 32) |
-                               ((PN_uint64)(unsigned char)data[p + 5] << 40) |
-                               ((PN_uint64)(unsigned char)data[p + 6] << 48) |
-                               ((PN_int64)(signed char)data[p + 7] << 54));
+    value = (double)do_unpack_int64(data + p);
     p += 8;
     break;
 
@@ -627,7 +648,7 @@ unpack_double(const char *data, size_t length, size_t &p, double &value) const {
     if (p + 1 > length) {
       return false;
     }
-    value = (double)(unsigned int)(unsigned char)data[p];
+    value = do_unpack_uint8(data + p);
     p++;
     break;
 
@@ -635,8 +656,7 @@ unpack_double(const char *data, size_t length, size_t &p, double &value) const {
     if (p + 2 > length) {
       return false;
     }
-    value = (double)(unsigned int)((unsigned int)(unsigned char)data[p] |
-                                   ((unsigned int)(unsigned char)data[p + 1] << 8));
+    value = do_unpack_uint16(data + p);
     p += 2;
     break;
 
@@ -644,10 +664,7 @@ unpack_double(const char *data, size_t length, size_t &p, double &value) const {
     if (p + 4 > length) {
       return false;
     }
-    value = (double)(unsigned int)((unsigned int)(unsigned char)data[p] |
-                                   ((unsigned int)(unsigned char)data[p + 1] << 8) |
-                                   ((unsigned int)(unsigned char)data[p + 2] << 16) |
-                                   ((unsigned int)(unsigned char)data[p + 3] << 24));
+    value = do_unpack_uint32(data + p);
     p += 4;
     break;
 
@@ -655,14 +672,7 @@ unpack_double(const char *data, size_t length, size_t &p, double &value) const {
     if (p + 8 > length) {
       return false;
     }
-    value = (double)(PN_uint64)((PN_uint64)(unsigned char)data[p] |
-                                ((PN_uint64)(unsigned char)data[p + 1] << 8) |
-                                ((PN_uint64)(unsigned char)data[p + 2] << 16) |
-                                ((PN_uint64)(unsigned char)data[p + 3] << 24) |
-                                ((PN_uint64)(unsigned char)data[p + 4] << 32) |
-                                ((PN_uint64)(unsigned char)data[p + 5] << 40) |
-                                ((PN_uint64)(unsigned char)data[p + 6] << 48) |
-                                ((PN_uint64)(unsigned char)data[p + 7] << 54));
+    value = (double)do_unpack_uint64(data + p);
     p += 8;
     break;
 
@@ -670,21 +680,7 @@ unpack_double(const char *data, size_t length, size_t &p, double &value) const {
     if (p + 8 > length) {
       return false;
     }
-    {
-      double *real_value;
-#ifdef WORDS_BIGENDIAN
-      char buffer[8];
-
-      // Reverse the byte ordering for big-endian machines.
-      for (size_t i = 0; i < 8; i++) {
-        buffer[i] = data[p + 7 - i];
-      }
-      real_value = (double *)buffer;
-#else
-      real_value = (double *)(data + p);
-#endif  // WORDS_BIGENDIAN 
-      value = (*real_value);
-    }
+    value = do_unpack_float64(data + p);
     p += 8;
     break;
 
@@ -712,7 +708,7 @@ unpack_int(const char *data, size_t length, size_t &p, int &value) const {
     if (p + 1 > length) {
       return false;
     }
-    value = (int)(signed char)data[p];
+    value = do_unpack_int8(data + p);
     p++;
     break;
 
@@ -720,8 +716,7 @@ unpack_int(const char *data, size_t length, size_t &p, int &value) const {
     if (p + 2 > length) {
       return false;
     }
-    value = (int)((unsigned int)(unsigned char)data[p] |
-                  ((int)(signed char)data[p + 1] << 8));
+    value = do_unpack_int16(data + p);
     p += 2;
     break;
 
@@ -729,10 +724,7 @@ unpack_int(const char *data, size_t length, size_t &p, int &value) const {
     if (p + 4 > length) {
       return false;
     }
-    value = (int)((unsigned int)(unsigned char)data[p] |
-                  ((unsigned int)(unsigned char)data[p + 1] << 8) |
-                  ((unsigned int)(unsigned char)data[p + 2] << 16) |
-                  ((int)(signed char)data[p + 3] << 24));
+    value = do_unpack_int32(data + p);
     p += 4;
     break;
 
@@ -740,10 +732,7 @@ unpack_int(const char *data, size_t length, size_t &p, int &value) const {
     if (p + 8 > length) {
       return false;
     }
-    value = (int)((unsigned int)(unsigned char)data[p] |
-                  ((unsigned int)(unsigned char)data[p + 1] << 8) |
-                  ((unsigned int)(unsigned char)data[p + 2] << 16) |
-                  ((unsigned int)(unsigned char)data[p + 3] << 24));
+    value = (int)do_unpack_int64(data + p);
     p += 8;
     break;
 
@@ -751,7 +740,7 @@ unpack_int(const char *data, size_t length, size_t &p, int &value) const {
     if (p + 1 > length) {
       return false;
     }
-    value = (unsigned int)(unsigned char)data[p];
+    value = (int)do_unpack_uint8(data + p);
     p++;
     break;
 
@@ -759,8 +748,7 @@ unpack_int(const char *data, size_t length, size_t &p, int &value) const {
     if (p + 2 > length) {
       return false;
     }
-    value = (unsigned int)((unsigned int)(unsigned char)data[p] |
-                           ((unsigned int)(unsigned char)data[p + 1] << 8));
+    value = (int)do_unpack_uint16(data + p);
     p += 2;
     break;
 
@@ -768,10 +756,7 @@ unpack_int(const char *data, size_t length, size_t &p, int &value) const {
     if (p + 4 > length) {
       return false;
     }
-    value = (unsigned int)((unsigned int)(unsigned char)data[p] |
-                           ((unsigned int)(unsigned char)data[p + 1] << 8) |
-                           ((unsigned int)(unsigned char)data[p + 2] << 16) |
-                           ((unsigned int)(unsigned char)data[p + 3] << 24));
+    value = (int)do_unpack_uint32(data + p);
     p += 4;
     break;
 
@@ -779,10 +764,7 @@ unpack_int(const char *data, size_t length, size_t &p, int &value) const {
     if (p + 8 > length) {
       return false;
     }
-    value = (unsigned int)((unsigned int)(unsigned char)data[p] |
-                           ((unsigned int)(unsigned char)data[p + 1] << 8) |
-                           ((unsigned int)(unsigned char)data[p + 2] << 16) |
-                           ((unsigned int)(unsigned char)data[p + 3] << 24));
+    value = (int)(unsigned int)do_unpack_uint64(data + p);
     p += 8;
     break;
 
@@ -790,21 +772,99 @@ unpack_int(const char *data, size_t length, size_t &p, int &value) const {
     if (p + 8 > length) {
       return false;
     }
-    {
-      double *real_value;
-#ifdef WORDS_BIGENDIAN
-      char buffer[8];
+    value = (int)do_unpack_float64(data + p);
+    p += 8;
+    break;
 
-      // Reverse the byte ordering for big-endian machines.
-      for (size_t i = 0; i < 8; i++) {
-        buffer[i] = data[p + 7 - i];
-      }
-      real_value = (double *)buffer;
-#else
-      real_value = (double *)(data + p);
-#endif  // WORDS_BIGENDIAN 
-      value = (int)(*real_value);
+  default:
+    return false;
+  }
+
+  if (_divisor != 1) {
+    value = value / _divisor;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::unpack_uint
+//       Access: Public, Virtual
+//  Description: Unpacks the current numeric or string value from the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleParameter::
+unpack_uint(const char *data, size_t length, size_t &p, unsigned int &value) const {
+  switch (_type) {
+  case ST_int8:
+    if (p + 1 > length) {
+      return false;
     }
+    value = (unsigned int)do_unpack_int8(data + p);
+    p++;
+    break;
+
+  case ST_int16:
+    if (p + 2 > length) {
+      return false;
+    }
+    value = (unsigned int)do_unpack_int16(data + p);
+    p += 2;
+    break;
+
+  case ST_int32:
+    if (p + 4 > length) {
+      return false;
+    }
+    value = (unsigned int)do_unpack_int32(data + p);
+    p += 4;
+    break;
+
+  case ST_int64:
+    if (p + 8 > length) {
+      return false;
+    }
+    value = (unsigned int)do_unpack_int64(data + p);
+    p += 8;
+    break;
+
+  case ST_uint8:
+    if (p + 1 > length) {
+      return false;
+    }
+    value = do_unpack_uint8(data + p);
+    p++;
+    break;
+
+  case ST_uint16:
+    if (p + 2 > length) {
+      return false;
+    }
+    value = do_unpack_uint16(data + p);
+    p += 2;
+    break;
+
+  case ST_uint32:
+    if (p + 4 > length) {
+      return false;
+    }
+    value = do_unpack_uint32(data + p);
+    p += 4;
+    break;
+
+  case ST_uint64:
+    if (p + 8 > length) {
+      return false;
+    }
+    value = (unsigned int)do_unpack_uint64(data + p);
+    p += 8;
+    break;
+
+  case ST_float64:
+    if (p + 8 > length) {
+      return false;
+    }
+    value = (unsigned int)do_unpack_float64(data + p);
     p += 8;
     break;
 
@@ -832,7 +892,7 @@ unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const 
     if (p + 1 > length) {
       return false;
     }
-    value = (int)(signed char)data[p];
+    value = do_unpack_int8(data + p);
     p++;
     break;
 
@@ -840,8 +900,7 @@ unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const 
     if (p + 2 > length) {
       return false;
     }
-    value = (int)((unsigned int)(unsigned char)data[p] |
-                  ((int)(signed char)data[p + 1] << 8));
+    value = do_unpack_int16(data + p);
     p += 2;
     break;
 
@@ -849,10 +908,7 @@ unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const 
     if (p + 4 > length) {
       return false;
     }
-    value = (int)((unsigned int)(unsigned char)data[p] |
-                  ((unsigned int)(unsigned char)data[p + 1] << 8) |
-                  ((unsigned int)(unsigned char)data[p + 2] << 16) |
-                  ((int)(signed char)data[p + 3] << 24));
+    value = do_unpack_int32(data + p);
     p += 4;
     break;
 
@@ -860,14 +916,7 @@ unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const 
     if (p + 8 > length) {
       return false;
     }
-    value = (PN_int64)((PN_uint64)(unsigned char)data[p] |
-                       ((PN_uint64)(unsigned char)data[p + 1] << 8) |
-                       ((PN_uint64)(unsigned char)data[p + 2] << 16) |
-                       ((PN_uint64)(unsigned char)data[p + 3] << 24) |
-                       ((PN_uint64)(unsigned char)data[p + 4] << 32) |
-                       ((PN_uint64)(unsigned char)data[p + 5] << 40) |
-                       ((PN_uint64)(unsigned char)data[p + 6] << 48) |
-                       ((PN_int64)(signed char)data[p + 7] << 54));
+    value = do_unpack_int64(data + p);
     p += 8;
     break;
 
@@ -875,7 +924,7 @@ unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const 
     if (p + 1 > length) {
       return false;
     }
-    value = (unsigned int)(unsigned char)data[p];
+    value = (int)do_unpack_uint8(data + p);
     p++;
     break;
 
@@ -883,8 +932,7 @@ unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const 
     if (p + 2 > length) {
       return false;
     }
-    value = (unsigned int)((unsigned int)(unsigned char)data[p] |
-                           ((unsigned int)(unsigned char)data[p + 1] << 8));
+    value = (int)do_unpack_uint16(data + p);
     p += 2;
     break;
 
@@ -892,10 +940,7 @@ unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const 
     if (p + 4 > length) {
       return false;
     }
-    value = (unsigned int)((unsigned int)(unsigned char)data[p] |
-                           ((unsigned int)(unsigned char)data[p + 1] << 8) |
-                           ((unsigned int)(unsigned char)data[p + 2] << 16) |
-                           ((unsigned int)(unsigned char)data[p + 3] << 24));
+    value = (int)do_unpack_uint32(data + p);
     p += 4;
     break;
 
@@ -903,14 +948,7 @@ unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const 
     if (p + 8 > length) {
       return false;
     }
-    value = (PN_int64)((PN_uint64)(unsigned char)data[p] |
-                       ((PN_uint64)(unsigned char)data[p + 1] << 8) |
-                       ((PN_uint64)(unsigned char)data[p + 2] << 16) |
-                       ((PN_uint64)(unsigned char)data[p + 3] << 24) |
-                       ((PN_uint64)(unsigned char)data[p + 4] << 32) |
-                       ((PN_uint64)(unsigned char)data[p + 5] << 40) |
-                       ((PN_uint64)(unsigned char)data[p + 6] << 48) |
-                       ((PN_uint64)(unsigned char)data[p + 7] << 54));
+    value = (PN_int64)do_unpack_uint64(data + p);
     p += 8;
     break;
 
@@ -918,21 +956,99 @@ unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const 
     if (p + 8 > length) {
       return false;
     }
-    {
-      double *real_value;
-#ifdef WORDS_BIGENDIAN
-      char buffer[8];
+    value = (PN_int64)do_unpack_float64(data + p);
+    p += 8;
+    break;
 
-      // Reverse the byte ordering for big-endian machines.
-      for (size_t i = 0; i < 8; i++) {
-        buffer[i] = data[p + 7 - i];
-      }
-      real_value = (double *)buffer;
-#else
-      real_value = (double *)(data + p);
-#endif  // WORDS_BIGENDIAN 
-      value = (PN_int64)(*real_value);
+  default:
+    return false;
+  }
+
+  if (_divisor != 1) {
+    value = value / _divisor;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::unpack_uint64
+//       Access: Public, Virtual
+//  Description: Unpacks the current numeric or string value from the
+//               stream.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleParameter::
+unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value) const {
+  switch (_type) {
+  case ST_int8:
+    if (p + 1 > length) {
+      return false;
     }
+    value = (unsigned int)do_unpack_int8(data + p);
+    p++;
+    break;
+
+  case ST_int16:
+    if (p + 2 > length) {
+      return false;
+    }
+    value = (unsigned int)do_unpack_int16(data + p);
+    p += 2;
+    break;
+
+  case ST_int32:
+    if (p + 4 > length) {
+      return false;
+    }
+    value = (unsigned int)do_unpack_int32(data + p);
+    p += 4;
+    break;
+
+  case ST_int64:
+    if (p + 8 > length) {
+      return false;
+    }
+    value = (PN_uint64)do_unpack_int64(data + p);
+    p += 8;
+    break;
+
+  case ST_uint8:
+    if (p + 1 > length) {
+      return false;
+    }
+    value = do_unpack_uint8(data + p);
+    p++;
+    break;
+
+  case ST_uint16:
+    if (p + 2 > length) {
+      return false;
+    }
+    value = do_unpack_uint16(data + p);
+    p += 2;
+    break;
+
+  case ST_uint32:
+    if (p + 4 > length) {
+      return false;
+    }
+    value = do_unpack_uint32(data + p);
+    p += 4;
+    break;
+
+  case ST_uint64:
+    if (p + 8 > length) {
+      return false;
+    }
+    value = do_unpack_uint64(data + p);
+    p += 8;
+    break;
+
+  case ST_float64:
+    if (p + 8 > length) {
+      return false;
+    }
+    value = (PN_uint64)do_unpack_float64(data + p);
     p += 8;
     break;
 
@@ -963,8 +1079,7 @@ unpack_string(const char *data, size_t length, size_t &p, string &value) const {
     if (p + 2 > length) {
       return false;
     }
-    string_length = (size_t)((unsigned int)(unsigned char)data[p] |
-                             ((unsigned int)(unsigned char)data[p + 1] << 8));
+    string_length = do_unpack_uint16(data + p);
     p += 2;
     break;
 
@@ -972,10 +1087,7 @@ unpack_string(const char *data, size_t length, size_t &p, string &value) const {
     if (p + 4 > length) {
       return false;
     }
-    string_length = (size_t)((unsigned int)(unsigned char)data[p] |
-                             ((unsigned int)(unsigned char)data[p + 1] << 8) |
-                             ((unsigned int)(unsigned char)data[p + 2] << 16) |
-                             ((unsigned int)(unsigned char)data[p + 3] << 24));
+    string_length = do_unpack_uint32(data + p);
     p += 4;
     break;
 

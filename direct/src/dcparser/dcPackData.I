@@ -64,6 +64,19 @@ append_data(const char *buffer, size_t size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackData::get_write_pointer
+//       Access: Published
+//  Description: Adds the indicated number of bytes to the end of the
+//               data without initializing them, and returns a pointer
+//               to the beginning of the new data.
+////////////////////////////////////////////////////////////////////
+INLINE char *DCPackData::
+get_write_pointer(size_t size) {
+  set_used_length(_used_length + size);
+  return _buffer + _used_length - size;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackData::append_junk
 //       Access: Published
 //  Description: Adds some uninitialized bytes to the end of the data.
@@ -84,6 +97,18 @@ INLINE void DCPackData::
 rewrite_data(size_t position, const char *buffer, size_t size) {
   nassertv(position + size <= _used_length);
   memcpy(_buffer + position, buffer, size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackData::get_rewrite_pointer
+//       Access: Published
+//  Description: Returns a pointer into the middle of the data at the
+//               indicated point.
+////////////////////////////////////////////////////////////////////
+INLINE char *DCPackData::
+get_rewrite_pointer(size_t position, size_t size) {
+  nassertr(position + size <= _used_length, NULL);
+  return _buffer + position;
 }
 
 ////////////////////////////////////////////////////////////////////

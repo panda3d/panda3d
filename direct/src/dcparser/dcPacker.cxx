@@ -209,15 +209,13 @@ push() {
         } else {
           size_t length;
           if (length_bytes == 4) {
-            length = (size_t)((size_t)(unsigned char)_unpack_data[_unpack_p + 0] |
-                              ((size_t)(unsigned char)_unpack_data[_unpack_p + 1] << 8) |
-                              ((size_t)(unsigned char)_unpack_data[_unpack_p + 2] << 16) |
-                              ((size_t)(unsigned char)_unpack_data[_unpack_p + 3] << 24));
+            length = DCPackerInterface::do_unpack_uint32
+              (_unpack_data + _unpack_p);
             _unpack_p += 4;
             _push_marker = _unpack_p + length;
           } else {
-            length = (size_t)((size_t)(unsigned char)_unpack_data[_unpack_p + 0] |
-                              ((size_t)(unsigned char)_unpack_data[_unpack_p + 1] << 8));
+            length = DCPackerInterface::do_unpack_uint16
+              (_unpack_data + _unpack_p);
             _unpack_p += 2;
           }
           _push_marker = _unpack_p + length;
@@ -280,18 +278,13 @@ pop() {
       size_t length_bytes = _current_parent->get_num_length_bytes();
       if (length_bytes != 0) {
         // Now go back and fill in the length of the array.
-        char buffer[4];
         size_t length = _pack_data.get_length() - _push_marker - length_bytes;
         if (length_bytes == 4) {
-          buffer[0] = (char)(length & 0xff);
-          buffer[1] = (char)((length >> 8) & 0xff);
-          buffer[2] = (char)((length >> 16) & 0xff);
-          buffer[3] = (char)((length >> 24) & 0xff);
-          _pack_data.rewrite_data(_push_marker, buffer, 4);
+          DCPackerInterface::do_pack_uint32
+            (_pack_data.get_rewrite_pointer(_push_marker, 4), length);
         } else {
-          buffer[0] = (char)(length & 0xff);
-          buffer[1] = (char)((length >> 8) & 0xff);
-          _pack_data.rewrite_data(_push_marker, buffer, 2);
+          DCPackerInterface::do_pack_uint16
+            (_pack_data.get_rewrite_pointer(_push_marker, 2), length);
         }
       }
     }
@@ -384,10 +377,28 @@ unpack_object() {
     }
     break;
       
+  case PT_uint:
+    {
+      unsigned int value = unpack_uint();
+      if (value & 0x80000000) {
+        object = PyLong_FromUnsignedLong(value);
+      } else {
+        object = PyInt_FromLong(value);
+      }
+    }
+    break;
+      
   case PT_int64:
     {
       PN_int64 value = unpack_int64();
       object = PyLong_FromLongLong(value);
+    }
+    break;
+      
+  case PT_uint64:
+    {
+      PN_uint64 value = unpack_uint64();
+      object = PyLong_FromUnsignedLongLong(value);
     }
     break;
 
@@ -494,8 +505,16 @@ unpack_and_format(ostream &out) {
     out << unpack_int();
     break;
       
+  case PT_uint:
+    out << unpack_uint();
+    break;
+      
   case PT_int64:
     out << unpack_int64();
+    break;
+      
+  case PT_uint64:
+    out << unpack_uint64();
     break;
 
   case PT_string:

@@ -20,7 +20,7 @@
      dcSubatomicType.h \
      dcPackData.h dcPackData.I \
      dcPacker.h dcPacker.I \
-     dcPackerInterface.h \
+     dcPackerInterface.h dcPackerInterface.I \
      dcParameter.h dcArrayParameter.h dcSimpleParameter.h \
      dcTypedef.h \
      dcbase.h dcindent.h hashGenerator.h  \

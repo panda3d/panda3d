@@ -52,12 +52,16 @@ public:
 
   virtual bool pack_double(DCPackData &pack_data, double value) const;
   virtual bool pack_int(DCPackData &pack_data, int value) const;
+  virtual bool pack_uint(DCPackData &pack_data, unsigned int value) const;
   virtual bool pack_int64(DCPackData &pack_data, PN_int64 value) const;
+  virtual bool pack_uint64(DCPackData &pack_data, PN_uint64 value) const;
   virtual bool pack_string(DCPackData &pack_data, const string &value) const;
 
   virtual bool unpack_double(const char *data, size_t length, size_t &p, double &value) const;
   virtual bool unpack_int(const char *data, size_t length, size_t &p, int &value) const;
+  virtual bool unpack_uint(const char *data, size_t length, size_t &p, unsigned int &value) const;
   virtual bool unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value) const;
+  virtual bool unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value) const;
   virtual bool unpack_string(const char *data, size_t length, size_t &p, string &value) const;
 
   virtual void output_instance(ostream &out, const string &prename, 
