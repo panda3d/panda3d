@@ -6,6 +6,7 @@ from direct.showbase.TkGlobal import *
 from direct.tkwidgets.AppShell import *
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
+from direct.directtools.DirectGlobals import ZERO_VEC, UNIT_VEC
 
 """
 TODO:
