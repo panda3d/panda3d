@@ -30,6 +30,11 @@ window-title Toontown
 compress-channels #t
 text-encoding utf8
 
+# The level editor requires this legacy setting for now, so we will
+# not generate dna files that are incompatible with the older
+# international branches.
+temp-hpr-fix 0
+
 # We must currently set this to avoid messing up some of
 # the suits' faces.
 egg-retesselate-coplanar	#f
