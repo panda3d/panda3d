@@ -35,11 +35,13 @@ TypeHandle TexGenAttrib::_type_handle;
 CPT(RenderAttrib) TexGenAttrib::
 make(Mode mode) {
   TexGenAttrib *attrib = new TexGenAttrib(mode);
+#if 0
   attrib->_texture = TexturePool::load_texture("/usr/masad/player/pmockup/maps/moon-card.rgb", 1);
   if (attrib->_texture)
     pgraph_cat.debug() << *(attrib->_texture) << endl;
   else
     return (TexGenAttrib *)NULL;
+#endif
   return return_new(attrib);
 }
 
