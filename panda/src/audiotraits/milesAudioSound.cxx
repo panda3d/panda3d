@@ -23,17 +23,42 @@
 #include "milesAudioSound.h"
 #include "milesAudioManager.h"
 
+#ifndef NDEBUG //[
+  namespace {
+    char
+    getStatusChar(HAUDIO audio) {
+      if (!audio) {
+        return '0'; // NULL.
+      }
+      switch (AIL_quick_status(audio)) {
+        case QSTAT_LOADED:
+        case QSTAT_DONE:
+          return 'r'; // Ready.
+        case QSTAT_PLAYING:
+          return 'p'; // Playing.
+        default:
+          return 'x'; // bad.
+      }
+    }
+  }
+  
+  #define miles_audio_debug(x) \
+      audio_debug("MilesAudioSound "<<getStatusChar(_audio)<<" \""<<get_name() \
+      <<"\" "<< x )
+#else //][
+  #define miles_audio_debug(x) ((void)0)
+#endif //]
 
 MilesAudioSound::
 MilesAudioSound(MilesAudioManager* manager,
-    HAUDIO audio, string file_name)
+    HAUDIO audio, string file_name, float length)
     : _manager(manager), _file_name(file_name),
     _start_time(0), _volume(1.0), _balance(0),
-    _loop_count(1),
+    _loop_count(1), _length(length),
     _active(true), _paused(false) {
   nassertv(audio);
   nassertv(!file_name.empty());
-  audio_debug("MilesAudioSound::MilesAudioSound(manager=0x"<<(void*)&manager
+  audio_debug("MilesAudioSound(manager=0x"<<(void*)&manager
       <<", audio=0x"<<(void*)audio<<", file_name="<<file_name<<")");
   // Make our own copy of the sound header data:
   _audio=AIL_quick_copy(audio);
@@ -41,14 +66,14 @@ MilesAudioSound(MilesAudioManager* manager,
 
 MilesAudioSound::
 ~MilesAudioSound() {
-  audio_debug("MilesAudioSound::~MilesAudioSound() "<<get_name());
+  miles_audio_debug("~MilesAudioSound()");
   _manager->release_sound(this);
   AIL_quick_unload(_audio);
 }
 
 void MilesAudioSound::
 play() {
-  audio_debug("MilesAudioSound::play() "<<get_name());
+  miles_audio_debug("play()");
   if (_active) {
     // Start playing:
     if (AIL_quick_play(_audio, _loop_count)) {
@@ -65,25 +90,25 @@ play() {
 
 void MilesAudioSound::
 stop() {
-  audio_debug("MilesAudioSound::stop() "<<get_name());
+  miles_audio_debug("stop()");
   AIL_quick_halt(_audio);
 }
 
 void MilesAudioSound::
 set_loop(bool loop) {
-  audio_debug("MilesAudioSound::set_loop(loop="<<loop<<") "<<get_name());
+  miles_audio_debug("set_loop(loop="<<loop<<")");
   set_loop_count((loop)?0:1);
 }
 
 bool MilesAudioSound::
 get_loop() const {
-  audio_debug("MilesAudioSound::get_loop() returning "<<(_loop_count==0));
+  miles_audio_debug("get_loop() returning "<<(_loop_count==0));
   return _loop_count == 0;
 }
 
 void MilesAudioSound::
 set_loop_count(unsigned long loop_count) {
-  audio_debug("MilesAudioSound::set_loop_count(loop_count="<<loop_count<<") "<<get_name());
+  miles_audio_debug("set_loop_count(loop_count="<<loop_count<<")");
   if (_loop_count!=loop_count) {
     _loop_count=loop_count;
     if (status()==PLAYING) {
@@ -102,13 +127,13 @@ set_loop_count(unsigned long loop_count) {
 
 unsigned long MilesAudioSound::
 get_loop_count() const {
-  audio_debug("MilesAudioSound::get_loop_count() returning "<<_loop_count);
+  miles_audio_debug("get_loop_count() returning "<<_loop_count);
   return _loop_count;
 }
 
 void MilesAudioSound::
 set_time(float start_time) {
-  audio_debug("MilesAudioSound::set_time(start_time="<<start_time<<") "<<get_name());
+  miles_audio_debug("set_time(start_time="<<start_time<<")");
   _start_time=start_time;
   S32 milisecond_start_time=S32(1000*_start_time);
   AIL_quick_set_ms_position(_audio, milisecond_start_time);
@@ -116,13 +141,13 @@ set_time(float start_time) {
 
 float MilesAudioSound::
 get_time() const {
-  audio_debug("MilesAudioSound::get_time() returning "<<_start_time);
+  miles_audio_debug("get_time() returning "<<_start_time);
   return _start_time;
 }
 
 void MilesAudioSound::
 set_volume(float volume) {
-  audio_debug("MilesAudioSound::set_volume(volume="<<volume<<") "<<get_name());
+  miles_audio_debug("set_volume(volume="<<volume<<")");
   // *Set the volume even if our volume is not changing, because the
   // *MilesAudioManager will call set_volume when *its* volume changes.
   // Set the volume:
@@ -151,13 +176,13 @@ set_volume(float volume) {
 
 float MilesAudioSound::
 get_volume() const {
-  audio_debug("MilesAudioSound::get_volume() returning "<<_volume);
+  miles_audio_debug("get_volume() returning "<<_volume);
   return _volume;
 }
 
 void MilesAudioSound::
 set_active(bool active) {
-  audio_debug("MilesAudioSound::set_active(active="<<active<<") "<<get_name());
+  miles_audio_debug("set_active(active="<<active<<")");
   if (_active!=active) {
     _active=active;
     if (_active) {
@@ -184,13 +209,13 @@ set_active(bool active) {
 
 bool MilesAudioSound::
 get_active() const {
-  audio_debug("MilesAudioSound::get_active() returning "<<_active);
+  miles_audio_debug("get_active() returning "<<_active);
   return _active;
 }
 
 void MilesAudioSound::
 set_balance(float balance_right) {
-  audio_debug("MilesAudioSound::set_balance(balance_right="<<balance_right<<") "<<get_name());
+  miles_audio_debug("set_balance(balance_right="<<balance_right<<")");
   _balance=balance_right;
   // Call set_volume to effect the change:
   set_volume(_volume);
@@ -204,9 +229,11 @@ get_balance() const {
 
 float MilesAudioSound::
 length() const {
-  float length=((float)AIL_quick_ms_length(_audio))*0.001;
-  audio_debug("MilesAudioSound::length() returning "<<length);
-  return length;
+  if (!_length) {
+    _length=((float)AIL_quick_ms_length(_audio))*0.001;
+  }
+  miles_audio_debug("length() returning "<<_length);
+  return _length;
 }
 
 const string& MilesAudioSound::

@@ -83,13 +83,14 @@ private:
   float _start_time; // 0..length()
   float _volume; // 0..1.0
   float _balance; // -1..1
+  mutable float _length; // in seconds.
   unsigned long _loop_count;
   string _file_name;
   bool _active;
   bool _paused;
 
   MilesAudioSound(MilesAudioManager* manager, 
-      HAUDIO audio, string file_name);
+      HAUDIO audio, string file_name, float length=0.0);
 
   friend class MilesAudioManager;
 };
