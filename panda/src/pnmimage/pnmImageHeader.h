@@ -61,6 +61,7 @@ public:
 
   INLINE bool has_type() const;
   INLINE PNMFileType *get_type() const;
+  INLINE void set_type(PNMFileType *type);
 
   bool read_header(const Filename &filename, PNMFileType *type = NULL);
 

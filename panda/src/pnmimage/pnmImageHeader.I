@@ -189,3 +189,18 @@ INLINE PNMFileType *PNMImageHeader::
 get_type() const {
   return _type;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::set_type
+//       Access: Public
+//  Description: Sets the file type of this PNMImage.  This will be
+//               the default type used when an image is read, if the
+//               type cannot be determined by magic number or inferred
+//               by extension, or the type used when the image is
+//               written, if the type cannot be inferred from the
+//               filename extension.
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImageHeader::
+set_type(PNMFileType *type) {
+  _type = type;
+}
