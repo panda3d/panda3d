@@ -5,6 +5,9 @@
 
 #begin lib_target
   #define TARGET dxgsg
+  #define LOCAL_LIBS \
+    cull gsgmisc gsgbase gobj sgattrib sgraphutil graph display light \
+    putil linmath sgraph mathutil pnmimage
 
   #define SOURCES \
     config_dxgsg.cxx config_dxgsg.h dxGraphicsStateGuardian.I \

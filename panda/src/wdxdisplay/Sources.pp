@@ -5,6 +5,8 @@
 
 #begin lib_target
   #define TARGET wdxdisplay
+  #define LOCAL_LIBS \
+    dxgsg
 
   #define SOURCES \
     config_wdxdisplay.cxx config_wdxdisplay.h wdxGraphicsPipe.cxx \
