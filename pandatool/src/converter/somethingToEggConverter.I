@@ -480,8 +480,8 @@ get_egg_data() {
 //     Function: SomethingToEggConverter::convert_texture_path
 //       Access: Public
 //  Description: Converts the indicated texture filename to a relative
-//               or absolute or whatever filename, according to _tpc
-//               and _tpc_directory.  See convert_path().
+//               or absolute or whatever filename, according to
+//               _path_replace.
 ////////////////////////////////////////////////////////////////////
 INLINE Filename SomethingToEggConverter::
 convert_texture_path(const Filename &orig_filename) {
@@ -492,8 +492,8 @@ convert_texture_path(const Filename &orig_filename) {
 //     Function: SomethingToEggConverter::convert_model_path
 //       Access: Public
 //  Description: Converts the indicated model filename to a relative
-//               or absolute or whatever filename, according to _mpc
-//               and _mpc_directory.  See convert_path().
+//               or absolute or whatever filename, according to
+//               _path_replace.
 ////////////////////////////////////////////////////////////////////
 INLINE Filename SomethingToEggConverter::
 convert_model_path(const Filename &orig_filename) {

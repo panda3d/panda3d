@@ -32,7 +32,6 @@ class FltHeader;
 class FltRecordReader;
 class FltRecordWriter;
 class DatagramIterator;
-class PathReplace;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltRecord
@@ -75,7 +74,7 @@ public:
   void check_remaining_size(const DatagramIterator &di, 
                             const string &name = string()) const;
 
-  virtual void convert_paths(PathReplace *path_replace);
+  virtual void apply_converted_filenames();
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;

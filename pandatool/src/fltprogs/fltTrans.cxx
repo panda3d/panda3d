@@ -79,7 +79,7 @@ run() {
     }
   }
 
-  PT(FltHeader) header = new FltHeader;
+  PT(FltHeader) header = new FltHeader(_path_replace);
 
   nout << "Reading " << _input_filename << "\n";
   FltError result = header->read_flt(_input_filename);
@@ -97,7 +97,7 @@ run() {
     header->set_flt_version(new_version);
   }
 
-  header->convert_paths(_path_replace);
+  header->apply_converted_filenames();
 
   result = header->write_flt(get_output());
   if (result != FE_ok) {

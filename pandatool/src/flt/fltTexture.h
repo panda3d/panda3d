@@ -19,12 +19,12 @@
 #ifndef FLTTEXTURE_H
 #define FLTTEXTURE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltRecord.h"
 
-#include <filename.h>
-#include <luse.h>
+#include "filename.h"
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltTexture
@@ -34,14 +34,16 @@ class FltTexture : public FltRecord {
 public:
   FltTexture(FltHeader *header);
 
-  virtual void convert_paths(PathReplace *path_replace);
+  virtual void apply_converted_filenames();
 
-  string _filename;
+  string _orig_filename;
+  Filename _converted_filename;
   int _pattern_index;
   int _x_location;
   int _y_location;
 
   Filename get_texture_filename() const;
+  void set_texture_filename(const Filename &filename);
   Filename get_attr_filename() const;
   FltError read_attr_data();
   FltError write_attr_data() const;

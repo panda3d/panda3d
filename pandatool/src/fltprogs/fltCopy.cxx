@@ -110,7 +110,7 @@ copy_file(const Filename &source, const Filename &dest,
 bool FltCopy::
 copy_flt_file(const Filename &source, const Filename &dest,
               CVSSourceDirectory *dir) {
-  PT(FltHeader) header = new FltHeader;
+  PT(FltHeader) header = new FltHeader(_path_replace);
 
   // We don't want to automatically generate .attr files--we'd rather
   // write them out explicitly.
@@ -132,8 +132,7 @@ copy_flt_file(const Filename &source, const Filename &dest,
   Refs::const_iterator ri;
   for (ri = refs.begin(); ri != refs.end(); ++ri) {
     FltExternalReference *ref = (*ri);
-    Filename ref_filename = 
-      _path_replace->convert_path(ref->get_ref_filename());
+    Filename ref_filename = ref->get_ref_filename();
 
     if (!ref_filename.exists()) {
       nout << "*** Warning: external reference " << ref_filename
@@ -150,8 +149,8 @@ copy_flt_file(const Filename &source, const Filename &dest,
 
       // Update the reference to point to the new flt filename, relative
       // to the base flt file.
-      ref->_filename = dir->get_rel_to(ref_dir) + "/" +
-        ref_filename.get_basename();
+      ref->set_ref_filename(dir->get_rel_to(ref_dir) + "/" +
+			    ref_filename.get_basename());
     }
   }
 
@@ -163,8 +162,7 @@ copy_flt_file(const Filename &source, const Filename &dest,
   Textures::const_iterator ti;
   for (ti = textures.begin(); ti != textures.end(); ++ti) {
     FltTexture *tex = (*ti);
-    Filename texture_filename = 
-      _path_replace->convert_path(tex->get_texture_filename());
+    Filename texture_filename = tex->get_texture_filename();
 
     if (!texture_filename.exists()) {
       nout << "*** Warning: texture " << texture_filename
@@ -182,8 +180,8 @@ copy_flt_file(const Filename &source, const Filename &dest,
 
       // Update the texture reference to point to the new texture
       // filename, relative to the flt file.
-      tex->_filename = dir->get_rel_to(texture_dir) + "/" +
-        texture_filename.get_basename();
+      tex->set_texture_filename(dir->get_rel_to(texture_dir) + "/" +
+				texture_filename.get_basename());
       header->add_texture(tex);
     }
   }

@@ -35,27 +35,18 @@ FltExternalReference(FltHeader *header) : FltBead(header) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FltExternalReference::convert_paths
+//     Function: FltExternalReference::apply_converted_filenames
 //       Access: Public, Virtual
-//  Description: Converts all of the paths referenced by this record
-//               and below according to the indicated path replace
-//               parameters.  If the resulting paths are absolute
-//               (beginning with a slash), they are converted to
-//               os-specific form before writing them out; otherwise,
-//               if they are relative, they are left in panda-specific
-//               form (under the assumption that a slash-delimited set
-//               of directory names is universally understood).
+//  Description: Walks the hierarchy at this record and below and
+//               copies the _converted_filename record into the
+//               _orig_filename record, so the flt file will be
+//               written out with the converted filename instead of
+//               what was originally read in.
 ////////////////////////////////////////////////////////////////////
 void FltExternalReference::
-convert_paths(PathReplace *path_replace) {
-  Filename new_filename = path_replace->convert_path(get_ref_filename());
-  if (new_filename.is_local()) {
-    _filename = new_filename;
-  } else {
-    _filename = new_filename.to_os_specific();
-  }
-  
-  FltRecord::convert_paths(path_replace);
+apply_converted_filenames() {
+  _orig_filename = _converted_filename.to_os_generic();
+  FltBead::apply_converted_filenames();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,20 +59,31 @@ convert_paths(PathReplace *path_replace) {
 ////////////////////////////////////////////////////////////////////
 void FltExternalReference::
 output(ostream &out) const {
-  out << "External " << _filename;
+  out << "External " << get_ref_filename();
   if (!_bead_id.empty()) {
     out << " (" << _bead_id << ")";
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FltTexture::get_ref_filename
+//     Function: FltExternalReference::get_ref_filename
 //       Access: Public
 //  Description: Returns the name of the referenced file.
 ////////////////////////////////////////////////////////////////////
 Filename FltExternalReference::
 get_ref_filename() const {
-  return Filename::from_os_specific(_filename);
+  return _converted_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltExternalReference::set_ref_filename
+//       Access: Public
+//  Description: Changes the name of the referenced file.
+////////////////////////////////////////////////////////////////////
+void FltExternalReference::
+set_ref_filename(const Filename &filename) {
+  _converted_filename = filename; 
+  _orig_filename = _converted_filename.to_os_generic();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -108,16 +110,17 @@ extract_record(FltRecordReader &reader) {
   iterator.skip_bytes(2);
   iterator.skip_bytes(2);   // Undocumented additional padding.
 
-  _filename = name;
+  _orig_filename = name;
 
   if (!name.empty() && name[name.length() - 1] == '>') {
     // Extract out the bead name.
     size_t open = name.rfind('<');
     if (open != string::npos) {
-      _filename = name.substr(0, open);
+      _orig_filename = name.substr(0, open);
       _bead_id = name.substr(open + 1, name.length() - open - 2);
     }
   }
+  _converted_filename = _header->convert_path(_orig_filename);
 
   check_remaining_size(iterator);
   return true;
@@ -140,7 +143,7 @@ build_record(FltRecordWriter &writer) const {
   writer.set_opcode(FO_external_ref);
   Datagram &datagram = writer.update_datagram();
 
-  string name = _filename;
+  string name = _orig_filename;
   if (!_bead_id.empty()) {
     name += "<" + _bead_id + ">";
   }

@@ -120,7 +120,7 @@ get_extension() const {
 ////////////////////////////////////////////////////////////////////
 bool FltToEggConverter::
 convert_file(const Filename &filename) {
-  PT(FltHeader) header = new FltHeader;
+  PT(FltHeader) header = new FltHeader(_path_replace);
 
   nout << "Reading " << filename << "\n";
   FltError result = header->read_flt(filename);
@@ -619,7 +619,8 @@ parse_comment(const FltBead *flt_bead, EggNode *egg_node) {
 ////////////////////////////////////////////////////////////////////
 bool FltToEggConverter::
 parse_comment(const FltTexture *flt_texture, EggNode *egg_node) {
-  return parse_comment(flt_texture->_comment, flt_texture->_filename, egg_node);
+  return parse_comment(flt_texture->get_comment(), 
+		       flt_texture->get_texture_filename(), egg_node);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -744,7 +745,7 @@ make_egg_texture(const FltTexture *flt_texture) {
 
   // Create a new one.
   string tref_name = format_string(flt_texture->_pattern_index);
-  Filename filename = convert_texture_path(flt_texture->get_texture_filename());
+  Filename filename = flt_texture->get_texture_filename();
 
   PT_EggTexture egg_texture = new EggTexture(tref_name, filename);
 

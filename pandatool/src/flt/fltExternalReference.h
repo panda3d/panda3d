@@ -34,7 +34,7 @@ class FltExternalReference : public FltBead {
 public:
   FltExternalReference(FltHeader *header);
 
-  virtual void convert_paths(PathReplace *path_replace);
+  virtual void apply_converted_filenames();
   virtual void output(ostream &out) const;
 
   enum Flags {
@@ -46,11 +46,13 @@ public:
     F_light_palette_override      = 0x04000000
   };
 
-  Filename _filename;
+  string _orig_filename;
+  Filename _converted_filename;
   string _bead_id;
   int _flags;
 
   Filename get_ref_filename() const;
+  void set_ref_filename(const Filename &filename);
 
 protected:
   virtual bool extract_record(FltRecordReader &reader);

@@ -22,7 +22,7 @@
 #include "fltUnsupportedRecord.h"
 #include "config_flt.h"
 
-#include <nearly_zero.h>
+#include "nearly_zero.h"
 
 #include <assert.h>
 #include <math.h>
@@ -32,10 +32,27 @@ TypeHandle FltHeader::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: FltHeader::Constructor
 //       Access: Public
-//  Description:
+//  Description: The FltHeader constructor accepts a PathReplace
+//               pointer; it uses this object to automatically convert
+//               all external filename and texture references.  (This
+//               is necessary because the FltHeader has to look in the
+//               same directory as the texture to find the .attr file,
+//               so it must pre-convert at least the texture
+//               references.)
+//
+//               Most of the other file converters do not have this
+//               requirement, so they do not need to pre-convert any
+//               pathname references.
 ////////////////////////////////////////////////////////////////////
 FltHeader::
-FltHeader() : FltBeadID(this) {
+FltHeader(PathReplace *path_replace) : FltBeadID(this) {
+  if (path_replace == (PathReplace *)NULL) {
+    _path_replace = new PathReplace;
+    _path_replace->_path_store = PS_absolute;
+  } else {
+    _path_replace = path_replace;
+  }
+
   _format_revision_level = 1570;
   _edit_revision_level = 1570;
   _next_group_id = 1;
@@ -91,7 +108,104 @@ FltHeader() : FltBeadID(this) {
   _got_eyepoint_trackplane_palette = false;
 
   _auto_attr_update = AU_if_missing;
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: FltHeader::apply_converted_filenames
+//       Access: Public, Virtual
+//  Description: Walks the hierarchy at this record and below and
+//               copies the _converted_filename record into the
+//               _orig_filename record, so the flt file will be
+//               written out with the converted filename instead of
+//               what was originally read in.
+////////////////////////////////////////////////////////////////////
+void FltHeader::
+apply_converted_filenames() {
+  Textures::const_iterator ti;
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    FltTexture *texture = (*ti).second;
+    texture->apply_converted_filenames();
+  }
+
+  FltBeadID::apply_converted_filenames();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltHeader::set_path_replace
+//       Access: Public
+//  Description: Replaces the PathReplace object (which specifies how
+//               to mangle paths from the source to the destination
+//               file) with a new one.
+////////////////////////////////////////////////////////////////////
+void FltHeader::
+set_path_replace(PathReplace *path_replace) {
+  _path_replace = path_replace;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltHeader::get_path_replace
+//       Access: Public
+//  Description: Returns a pointer to the PathReplace object
+//               associated with this converter.  If the converter is
+//               non-const, this returns a non-const pointer, which
+//               can be adjusted.
+////////////////////////////////////////////////////////////////////
+PathReplace *FltHeader::
+get_path_replace() {
+  return _path_replace;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltHeader::get_path_replace
+//       Access: Public
+//  Description: Returns a pointer to the PathReplace object
+//               associated with this converter.  If the converter is
+//               non-const, this returns a non-const pointer, which
+//               can be adjusted.
+////////////////////////////////////////////////////////////////////
+const PathReplace *FltHeader::
+get_path_replace() const {
+  return _path_replace;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltHeader::convert_path
+//       Access: Public
+//  Description: Uses the PathReplace object to convert the named
+//               filename as read from the flt record to its actual
+//               name.
+////////////////////////////////////////////////////////////////////
+Filename FltHeader::
+convert_path(const Filename &orig_filename, const DSearchPath &additional_path) {
+  DSearchPath file_path;
+  if (!_flt_filename.empty()) {
+    file_path.append_directory(_flt_filename.get_dirname());
+  }
+  file_path.append_path(additional_path);
+  return _path_replace->convert_path(orig_filename, file_path);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltHeader::set_flt_filename
+//       Access: Public
+//  Description: Sets the filename--especially the directory part--in
+//               which the flt file is considered to reside.  This is
+//               also implicitly set by read_flt().
+////////////////////////////////////////////////////////////////////
+void FltHeader::
+set_flt_filename(const Filename &flt_filename) {
+  _flt_filename = flt_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltHeader::get_flt_filename
+//       Access: Public
+//  Description: Returns the directory in which the flt file is
+//               considered to reside.
+////////////////////////////////////////////////////////////////////
+const Filename &FltHeader::
+get_flt_filename() const {
+  return _flt_filename;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -104,6 +218,7 @@ FltHeader() : FltBeadID(this) {
 FltError FltHeader::
 read_flt(Filename filename) {
   filename.set_binary();
+  _flt_filename = filename;
 
   ifstream in;
   if (!filename.open_read(in)) {

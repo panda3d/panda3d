@@ -105,8 +105,7 @@ public:
   virtual bool convert_file(const Filename &filename)=0;
 
   bool handle_external_reference(EggGroupNode *egg_parent,
-                                 const Filename &orig_filename,
-                                 const DSearchPath &searchpath = DSearchPath());
+                                 const Filename &ref_filename);
 
   INLINE Filename convert_texture_path(const Filename &orig_filename);
   INLINE Filename convert_model_path(const Filename &orig_filename);

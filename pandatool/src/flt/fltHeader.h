@@ -30,6 +30,8 @@
 #include "fltTrackplane.h"
 #include "fltInstanceDefinition.h"
 
+#include "pathReplace.h"
+#include "pointerTo.h"
 #include "filename.h"
 #include "dSearchPath.h"
 #include "distanceUnit.h"
@@ -49,7 +51,18 @@
 ////////////////////////////////////////////////////////////////////
 class FltHeader : public FltBeadID {
 public:
-  FltHeader();
+  FltHeader(PathReplace *path_replace);
+
+  virtual void apply_converted_filenames();
+
+  void set_path_replace(PathReplace *path_replace);
+  PathReplace *get_path_replace();
+  const PathReplace *get_path_replace() const;
+  Filename convert_path(const Filename &orig_filename,
+			const DSearchPath &additional_path = DSearchPath());
+
+  void set_flt_filename(const Filename &flt_filename);
+  const Filename &get_flt_filename() const;
 
   FltError read_flt(Filename filename);
   FltError read_flt(istream &in);
@@ -284,6 +297,9 @@ private:
   FltEyepoint _eyepoints[10];
   FltTrackplane _trackplanes[10];
 
+  // This pointer is used to resolve references in the flt file.
+  PT(PathReplace) _path_replace;
+  Filename _flt_filename;
 
 protected:
   virtual bool extract_record(FltRecordReader &reader);

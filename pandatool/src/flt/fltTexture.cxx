@@ -21,6 +21,7 @@
 #include "fltRecordWriter.h"
 #include "fltHeader.h"
 #include "pathReplace.h"
+#include "config_util.h"
 
 TypeHandle FltTexture::_type_handle;
 
@@ -89,27 +90,18 @@ FltTexture(FltHeader *header) : FltRecord(header) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FltTexture::convert_paths
+//     Function: FltTexture::apply_converted_filenames
 //       Access: Public, Virtual
-//  Description: Converts all of the paths referenced by this record
-//               and below according to the indicated path replace
-//               parameters.  If the resulting paths are absolute
-//               (beginning with a slash), they are converted to
-//               os-specific form before writing them out; otherwise,
-//               if they are relative, they are left in panda-specific
-//               form (under the assumption that a slash-delimited set
-//               of directory names is universally understood).
+//  Description: Walks the hierarchy at this record and below and
+//               copies the _converted_filename record into the
+//               _orig_filename record, so the flt file will be
+//               written out with the converted filename instead of
+//               what was originally read in.
 ////////////////////////////////////////////////////////////////////
 void FltTexture::
-convert_paths(PathReplace *path_replace) {
-  Filename new_filename = path_replace->convert_path(get_texture_filename());
-  if (new_filename.is_local()) {
-    _filename = new_filename;
-  } else {
-    _filename = new_filename.to_os_specific();
-  }
-  
-  FltRecord::convert_paths(path_replace);
+apply_converted_filenames() {
+  _orig_filename = _converted_filename.to_os_generic();
+  FltRecord::apply_converted_filenames();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,7 +111,18 @@ convert_paths(PathReplace *path_replace) {
 ////////////////////////////////////////////////////////////////////
 Filename FltTexture::
 get_texture_filename() const {
-  return Filename::from_os_specific(_filename);
+  return _converted_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltTexture::set_texture_filename
+//       Access: Public
+//  Description: Changes the name of the texture image file.
+////////////////////////////////////////////////////////////////////
+void FltTexture::
+set_texture_filename(const Filename &filename) {
+  _converted_filename = filename; 
+  _orig_filename = _converted_filename.to_os_generic();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -239,10 +242,11 @@ extract_record(FltRecordReader &reader) {
   DatagramIterator &iterator = reader.get_iterator();
 
   if (_header->get_flt_version() < 1420) {
-    _filename = iterator.get_fixed_string(80);
+    _orig_filename = iterator.get_fixed_string(80);
   } else {
-    _filename = iterator.get_fixed_string(200);
+    _orig_filename = iterator.get_fixed_string(200);
   }
+  _converted_filename = _header->convert_path(_orig_filename, get_texture_path());
   _pattern_index = iterator.get_be_int32();
   _x_location = iterator.get_be_int32();
   _y_location = iterator.get_be_int32();
@@ -272,7 +276,7 @@ build_record(FltRecordWriter &writer) const {
   writer.set_opcode(FO_texture);
   Datagram &datagram = writer.update_datagram();
 
-  datagram.add_fixed_string(_filename, 200);
+  datagram.add_fixed_string(_orig_filename, 200);
   datagram.add_be_int32(_pattern_index);
   datagram.add_be_int32(_x_location);
   datagram.add_be_int32(_y_location);

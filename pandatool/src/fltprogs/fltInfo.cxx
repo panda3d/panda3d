@@ -49,7 +49,7 @@ FltInfo() {
 ////////////////////////////////////////////////////////////////////
 void FltInfo::
 run() {
-  PT(FltHeader) header = new FltHeader;
+  PT(FltHeader) header = new FltHeader(_path_replace);
 
   nout << "Reading " << _input_filename << "\n";
   FltError result = header->read_flt(_input_filename);

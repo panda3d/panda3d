@@ -108,21 +108,16 @@ set_egg_data(EggData *egg_data, bool owns_egg_data) {
 ////////////////////////////////////////////////////////////////////
 bool SomethingToEggConverter::
 handle_external_reference(EggGroupNode *egg_parent,
-                          const Filename &orig_filename,
-                          const DSearchPath &searchpath) {
+                          const Filename &ref_filename) {
   if (_merge_externals) {
     SomethingToEggConverter *ext = make_copy();
     EggData egg_data;
     egg_data.set_coordinate_system(get_egg_data().get_coordinate_system());
     ext->set_egg_data(&egg_data, false);
 
-    // If we're reading references directly, we don't need to convert
-    // the pathname to something appropriate for storing, but we do
-    // need to hunt for it.
-    Filename as_found = _path_replace->match_path(orig_filename, searchpath);
-    if (!ext->convert_file(as_found)) {
+    if (!ext->convert_file(ref_filename)) {
       delete ext;
-      nout << "Unable to read external reference: " << orig_filename << "\n";
+      nout << "Unable to read external reference: " << ref_filename << "\n";
       if (!_allow_errors) {
         _error = true;
       }
@@ -135,8 +130,8 @@ handle_external_reference(EggGroupNode *egg_parent,
 
   } else {
     // If we're installing external references instead of reading
-    // them, we should massage the filename as specified.
-    Filename filename = _path_replace->convert_path(orig_filename, searchpath);
+    // them, we should make it into an egg filename.
+    Filename filename = ref_filename;
     filename.set_extension("egg");
 
     EggExternalReference *egg_ref = new EggExternalReference("", filename);
