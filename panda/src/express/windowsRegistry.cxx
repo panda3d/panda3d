@@ -137,7 +137,7 @@ get_string_value(const string &key, const string &name,
     return default_value;
   }
 
-  // Now we have to decode the MultiByte Unicode string, and re-encode
+  // Now we have to decode the MultiByte string to Unicode, and re-encode
   // it according to our own encoding.
   
   int wide_result_len =
