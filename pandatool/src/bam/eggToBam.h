@@ -21,6 +21,9 @@ public:
   void run();
 
   bool _keep_paths;
+  bool _has_compression_quality;
+  int _compression_quality;
+  bool _compression_off;
 };
 
 #endif

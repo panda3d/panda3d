@@ -323,18 +323,26 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
       rot.set(-rot.get_r(), -rot.get_i(), -rot.get_j(), -rot.get_k());
     }
 
-    /*
-    {
+    // This is a debug severity, and not a warning or error, because
+    // (a) some small errors in hpr are usually acceptable, and (b)
+    // sometimes two different hpr trios actually represent the same
+    // rotation, e.g. (180, 0, -180) vs. (0, 0, 0).
+    if (mathutil_cat.is_debug()) {
       LMatrix3f mat2;
       rot.extract_to_matrix(mat2);
       LVecBase3f scale, hpr;
       bool success = decompose_matrix(mat2, scale, hpr);
       nassertv(success);
-      if (!array[i].almost_equal(hpr, 0.001)) {
-	cerr << "array " << array[i] << " hpr " << hpr << "\n";
+      if (!array[i].almost_equal(hpr, 0.001) || 
+	  !scale.almost_equal(LVecBase3f(1.0, 1.0, 1.0), 0.001)) {
+	mathutil_cat.debug()
+	  << "Converted hpr to quaternion incorrectly!\n"
+	  << "  Source hpr: " << array[i] << "\n"
+	  << "  Quaternion: " << rot << "\n" 
+	  << "  Which represents: hpr " << hpr << " scale "
+	  << scale << "\n";
       }
     }
-    */
 
     qr.push_back(rot.get_r());
     qi.push_back(rot.get_i());
@@ -529,6 +537,7 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
       LVecBase3f scale, hpr;
       bool success = decompose_matrix(mat, scale, hpr);
       nassertr(success, false);
+      
       array.push_back(hpr);
     }
   }

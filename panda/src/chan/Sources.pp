@@ -31,7 +31,8 @@
     animChannelMatrixXfmTable.h animChannelScalarTable.I \
     animChannelScalarTable.h animControl.I animControl.h \
     animControlCollection.I animControlCollection.h animGroup.I \
-    animGroup.h auto_bind.h movingPart.I movingPart.h movingPartBase.I \
+    animGroup.h auto_bind.h config_chan.h \
+    movingPart.I movingPart.h movingPartBase.I \
     movingPartBase.h movingPartMatrix.I movingPartMatrix.h \
     movingPartScalar.I movingPartScalar.h partBundle.I partBundle.h \
     partBundleNode.I partBundleNode.h partGroup.I partGroup.h \

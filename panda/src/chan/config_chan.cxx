@@ -27,6 +27,33 @@ NotifyCategoryDef(chan, "");
 // Set this true to enable compress of animation channels when writing to
 // the bam file.  This is an experimental lossy compression.
 bool compress_channels = config_chan.GetBool("compress-channels", false);
+
+// The quality level is an integer number that generally ranges
+// between 0 and 100, where smaller numbers indicate greater
+// compression at the cost of quality, and larger numbers indicate
+// higher quality but less compression.  Generally, 95 is the highest
+// useful value; values between 95 and 100 produce substantially
+// larger, but not substantially better, output files.  This is akin
+// to the JPEG compression level.
+//
+// There are some special values above 100 which are generally only
+// useful for debugging (specifically, to research at what point a
+// particular animation artifact is being introduced):
+//
+//   101  Output numerically lossless data.  The output is not run
+//        through the FFTCompressor.  This can be used to check
+//        whether a particular artifact is due to the FFT conversion
+//        or not.  However, joint angles (HPR) are still converted to
+//        quaternions and normalized, discarding the fourth
+//        (redundant) component.
+//
+//   102  As above, but the fourth quaternion component is preserved.
+//
+//   103  Quaternions are not used; instead, the HPR values are written
+//        directly.  All output is now completely lossless; if some
+//        artifacts are being introduced at this point, check your
+//        sanity.
+//
 int compress_chan_quality = config_chan.GetInt("compress-chan-quality", 95);
 
 ConfigureFn(config_chan) {

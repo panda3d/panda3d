@@ -10,6 +10,7 @@
 #include <load_egg_file.h>
 #include <config_egg2sg.h>
 #include <config_gobj.h>
+#include <config_chan.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggToBam::Constructor
@@ -37,6 +38,23 @@ EggToBam() :
      "whatever is specified by the bam-texture-mode Configrc variable.",
      &EggToBam::dispatch_none, &_keep_paths);
 
+  add_option
+    ("C", "quality", 0,
+     "Specify the quality level for lossy channel compression.  If this "
+     "is specified, the animation channels will be compressed at this "
+     "quality level, which is normally an integer value between 0 and 100, "
+     "inclusive, where higher numbers produce larger files with greater "
+     "quality.  Generally, 95 is the highest useful quality level.  Use "
+     "-NC (described below) to disable channel compression.  If neither "
+     "option is specified, the default comes from the Configrc file.",
+     &EggToBam::dispatch_int, &_has_compression_quality, &_compression_quality);
+
+  add_option
+    ("NC", "", 0,
+     "Turn off lossy compression of animation channels.  Channels will be "
+     "written exactly as they are, losslessly.",
+     &EggToBam::dispatch_none, &_compression_off);
+
   redescribe_option
     ("cs",
      "Specify the coordinate system of the resulting " + _format_name +
@@ -57,6 +75,17 @@ run() {
     // variables directly to achieve this.
     egg_keep_texture_pathnames = true;
     bam_texture_mode = BTM_fullpath;
+  }
+
+  if (_compression_off) {
+    // If the user specified -NC, turn off channel compression.
+    compress_channels = false;
+
+  } else if (_has_compression_quality) {
+    // Otherwise, if the user specified a compression quality with -C,
+    // use that quality level.
+    compress_channels = true;
+    compress_chan_quality = _compression_quality;
   }
 
   if (!_got_coordinate_system) {
