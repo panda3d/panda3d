@@ -64,7 +64,7 @@ class Particles(ParticleSystem.ParticleSystem):
 
     def enable(self):
 	"""enable(self)"""
-	physicsMgr.attachPhysical(self.node)
+	physicsMgr.attachPhysical(self)
 	particleMgr.attachParticlesystem(self)
 
     def disable(self):

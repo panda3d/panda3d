@@ -658,9 +658,9 @@ class ParticlePanel(AppShell):
 
     def toggleParticleSystem(self):
         if self.systemActive.get():
-            self.particleEffect.activate()
+            self.particleEffect.enable()
         else:
-            self.particleEffect.deactivate()
+            self.particleEffect.disable()
 	return None
             
     ## SYSTEM PAGE ##

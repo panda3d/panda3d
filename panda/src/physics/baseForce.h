@@ -35,6 +35,7 @@ public:
 
   INLINE bool get_active(void) const;
   INLINE void set_active(bool active);
+  virtual bool is_linear(void) const = 0;
 
   INLINE ForceNode *get_force_node(void) const;
 

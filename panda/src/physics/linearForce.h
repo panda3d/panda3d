@@ -43,6 +43,8 @@ PUBLISHED:
 
   virtual LinearForce *make_copy(void) = 0;
 
+  virtual bool is_linear(void) const;
+
 public:
   static TypeHandle get_class_type(void) {
     return _type_handle;

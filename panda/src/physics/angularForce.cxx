@@ -46,3 +46,13 @@ get_vector(const PhysicsObject *po) {
   LVector3f v = get_child_vector(po);
   return v;
 }
+
+////////////////////////////////////////////////////////////////////
+//    Function : is_linear 
+//      Access : public
+// Description : access query
+////////////////////////////////////////////////////////////////////
+bool AngularForce::
+is_linear(void) const {
+  return false;
+}

@@ -20,11 +20,12 @@ protected:
   AngularForce(void);
   AngularForce(const AngularForce &copy);
 
-public:
+PUBLISHED:
   virtual ~AngularForce(void);
 
   virtual AngularForce *make_copy(void) const = 0;
   LVector3f get_vector(const PhysicsObject *po);
+  virtual bool is_linear(void) const;
 
 public:
   static TypeHandle get_class_type(void) {

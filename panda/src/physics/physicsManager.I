@@ -11,7 +11,10 @@
 INLINE void PhysicsManager::
 attach_physical(Physical *p) {
   p->_physics_manager = this;
-  _physicals.push_back(p);
+  vector< Physical * >::iterator found;
+  found = find(_physicals.begin(), _physicals.end(), p);
+  if (found == _physicals.end())
+    _physicals.push_back(p);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -21,7 +24,11 @@ attach_physical(Physical *p) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 add_linear_force(LinearForce *f) {
-  _linear_forces.push_back(f);
+  vector< PT(LinearForce) >::iterator found;
+  PT(LinearForce) ptlf = f;
+  found = find(_linear_forces.begin(), _linear_forces.end(), ptlf);
+  if (found == _linear_forces.end())
+    _linear_forces.push_back(f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,7 +59,11 @@ clear_linear_forces(void) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 add_angular_force(AngularForce *f) {
-  _angular_forces.push_back(f);
+  vector< PT(AngularForce) >::iterator found;
+  PT(AngularForce) ptaf = f;
+  found = find(_angular_forces.begin(), _angular_forces.end(), ptaf);
+  if (found == _angular_forces.end())
+    _angular_forces.push_back(f);
 }
 
 ////////////////////////////////////////////////////////////////////
