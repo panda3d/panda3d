@@ -27,6 +27,10 @@ R_FWD_BACK = 5
 R_TWIST = 6
 R_SLIDE = 7
 
+JOYBOX_MIN = ANALOG_MIN + ANALOG_DEADBAND
+JOYBOX_MAX = ANALOG_MAX - ANALOG_DEADBAND
+JOYBOX_RANGE = JOYBOX_MAX - JOYBOX_MIN
+
 class DirectJoybox(PandaObject):
     joyboxCount = 0
     xyzMultiplier = 1.0
@@ -150,17 +154,17 @@ class DirectJoybox(PandaObject):
         # Update analogs
         for chan in range(len(self.analogs)):
             val = self.analogs.getControlState(chan)
-            # Scale up slider values
+            # Zero out values in deadband
+            if (val < 0):
+                val = min(val + ANALOG_DEADBAND, 0.0)
+            else:
+                val = max(val - ANALOG_DEADBAND, 0.0)
+            # Scale up rotating knob values
             if (chan == 2) or (chan == 6):
                 val *= 3.0
-            # Zero out values in deadband
-            if val < 0:
-                val =  min(val + ANALOG_DEADBAND, 0.0)
-            else:
-                val =  max(val - ANALOG_DEADBAND, 0.0)
             # Now clamp value between minVal and maxVal
-            val = CLAMP(val, ANALOG_MIN, ANALOG_MAX)
-            self.aList[chan] = (2.0 * ((val - ANALOG_MIN) / ANALOG_RANGE)) - 1
+            val = CLAMP(val, JOYBOX_MIN, JOYBOX_MAX)
+            self.aList[chan] = 2.0*((val - JOYBOX_MIN)/JOYBOX_RANGE) - 1
         # Update buttons
         for i in range(len(self.buttons)):
             try:

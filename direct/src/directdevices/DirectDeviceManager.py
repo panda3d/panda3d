@@ -55,7 +55,7 @@ class DirectButtons(ButtonNode, DirectObject):
         self.nodePath = myBase.dataRoot.attachNewNode(self)
     
     def __getitem__(self, index):
-        if (index < 0) or (index > self.getNumButtons()):
+        if (index < 0) or (index >= self.getNumButtons()):
             raise IndexError
         return self.getButtonState(index)
     
@@ -93,7 +93,7 @@ class DirectAnalogs(AnalogNode, DirectObject):
         self.nodePath = myBase.dataRoot.attachNewNode(self)
     
     def __getitem__(self, index):
-        if (index < 0) or (index > self.getNumControls()):
+        if (index < 0) or (index >= self.getNumControls()):
             raise IndexError
         return self.getControlState(index)
     
@@ -113,6 +113,7 @@ class DirectAnalogs(AnalogNode, DirectObject):
         else:
             sign = 1
         # Zero out values in deadband
+        print ANALOG_DEADBAND
         val = sign * max(abs(val) - ANALOG_DEADBAND, 0.0)
         # Now clamp value between minVal and maxVal
         val = min( max( val, ANALOG_MIN ), ANALOG_MAX )
@@ -182,7 +183,7 @@ class DirectDials(DialNode, DirectObject):
         self.nodePath = myBase.dataRoot.attachNewNode(self)
     
     def __getitem__(self, index):
-        if (index < 0) or (index > self.getNumDials()):
+        if (index < 0) or (index >= self.getNumDials()):
             raise IndexError
         return self.readDial(index)
     
