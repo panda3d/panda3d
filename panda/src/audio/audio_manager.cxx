@@ -159,7 +159,7 @@ void AudioManager::ns_spawn_update(void) {
     if (_quit == (bool*)0L)
       _quit = new bool(false);
     *_quit = false;
-    _spawned = thread::create(spawned_update, _quit, thread::PRIORITY_NORMAL);
+    _spawned = thread::create(spawned_update, _quit, thread::PRIORITY_LOW);
   } else {
     audio_cat->error() << "tried to spawn 2 update threads" << endl;
   }

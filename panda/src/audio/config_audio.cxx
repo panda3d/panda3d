@@ -20,7 +20,7 @@ string* audio_driver_params;
 int audio_buffer_size = config_audio.GetInt("audio-buffer-size", 4096);
 string* audio_device;
 int audio_auto_update_delay = config_audio.GetInt("audio-auto-update-delay",
-						  100000);
+						  1000000);
 bool audio_is_active = config_audio.GetBool("audio-is-active", true);
 
 ConfigureFn(config_audio) {
