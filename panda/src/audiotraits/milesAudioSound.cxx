@@ -78,6 +78,12 @@ MilesAudioSound::
 
 void MilesAudioSound::
 play() {
+  #if 0
+  if(_file_name.find(".mid")!=string::npos) {
+        miles_audio_debug("play() midi");
+  }
+  #endif
+
   miles_audio_debug("play()");
   if (_active) {
     // Start playing:
@@ -95,21 +101,40 @@ play() {
 
 void MilesAudioSound::
 stop() {
+  #if 0
+  if(_file_name.find(".mid")!=string::npos) {
+        miles_audio_debug("stop() midi");
+  } 
+  #endif
   miles_audio_debug("stop()");
   _paused=false;
   AIL_quick_halt(_audio);
 }
 
 void MilesAudioSound::
+halt() {
+  #if 0
+  if(_file_name.find(".mid")!=string::npos) {
+        miles_audio_debug("halt() midi");
+        int i=1;
+  }
+  #endif
+
+  miles_audio_debug("halt()");
+  AIL_quick_halt(_audio);
+}
+
+void MilesAudioSound::
 set_loop(bool loop) {
   miles_audio_debug("set_loop(loop="<<loop<<")");
+  // loop count of 0 means always loop
   set_loop_count((loop)?0:1);
 }
 
 bool MilesAudioSound::
 get_loop() const {
   miles_audio_debug("get_loop() returning "<<(_loop_count==0));
-  return _loop_count == 0;
+  return (_loop_count == 0);
 }
 
 void MilesAudioSound::
@@ -125,7 +150,7 @@ set_loop_count(unsigned long loop_count) {
       // need to stop and start the sound, feel free.  Or, maybe I'll spend
       // time on it in the future.  Please set the loop option before starting
       // the sound.
-      stop();
+      halt();
       play();
     }
   }
@@ -225,7 +250,11 @@ set_active(bool active) {
           // ...we're pausing a looping sound.
           _paused=true;
         }
-        stop();
+
+        // unlike the user fn stop(), halt() does NOT alter the 'paused' status
+        // this is important, dont want to 'stop' infin looping sounds unless user
+        // explicitly uses "stop()"
+        halt();
       }
     }
   }
@@ -266,9 +295,17 @@ length() const {
         // sent them example code.  They've told me they're looking into it.
         // Until then, we'll play the sound to get the length.
 
-        // Miles 6.5c note:  seems to be fixed for .mid (but not 100% positive,
-        // we have noticed problems with midi not playing).
-        // definitely still not fixed for .mp3 files
+        // Miles 6.5c note:  seems to be fixed for .mid, .mp3 also seems mostly fixed,
+        // but not 100% positive (need to look for errors with CATCH_ERROR on)
+
+        // #define CATCH_MILES_LENGTH_ERROR
+        #ifdef CATCH_MILES_LENGTH_ERROR     
+        _length=((float)AIL_quick_ms_length(_audio))*0.001f;
+        if (_length == 0.0f) {
+            audio_error("ERROR: Miles returned length 0 for "<<_file_name << "!");
+            exit(1);
+        }
+        #endif
 
         if (AIL_quick_status(_audio)==QSTAT_PLAYING) {
           _length=((float)AIL_quick_ms_length(_audio))*0.001f;

@@ -37,7 +37,7 @@ public:
   // specific whether you get the results.
   void play();
   void stop();
-  
+
   // loop: false = play once; true = play forever.
   // inits to false.
   void set_loop(bool loop=true);
@@ -76,6 +76,12 @@ public:
 
   AudioSound::SoundStatus status() const;
 
+protected:
+    // halt is like stop(), except it should not be called by the user.
+    // halt() does not change the "paused" status of a sound, it just stops 
+    // it from playing.  This is useful when the sound needs to be deactivated
+    void halt(void);
+
 private:
   HAUDIO _audio;
   PT(MilesAudioManager) _manager;
@@ -90,6 +96,7 @@ private:
 
   MilesAudioSound(MilesAudioManager* manager, 
       HAUDIO audio, string file_name, float length=0.0f);
+
 
   friend class MilesAudioManager;
 };
