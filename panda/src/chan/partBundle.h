@@ -45,6 +45,19 @@ public:
   // do_update() call to specify the channels that are in effect.
   typedef pmap<AnimControl *, float> ChannelBlend;
 
+  typedef first_of_pair_iterator<ChannelBlend::const_iterator> control_iterator;
+  typedef ChannelBlend::size_type control_size_type;
+
+protected:
+  // The copy constructor is protected; use make_copy() or copy_subgraph().
+  PartBundle(const PartBundle &copy);
+
+public:
+  PartBundle(const string &name = "");
+  virtual PartGroup *make_copy() const;
+
+PUBLISHED:
+
   // This is the parameter to set_blend_type() and specifies the kind
   // of blending operation to be performed when multiple controls are
   // in effect simultaneously (see set_control_effect()).
@@ -71,25 +84,13 @@ public:
     // BT_normalized_linear is a compromise on BT_linear.  The matrix
     // is blended linearly without the scale component, and the
     // blended scale component is applied separately.  This keeps all
-    // of character's body parts in the correct size and shape.
+    // of the character's body parts in the correct size and shape.
     // However, if the hierarchy is disconnected, body parts can fly
     // off.  It's essential the skeleton hierarchy be completely
     // connected to use this blend mode successully.
     BT_normalized_linear,
   };
 
-  typedef first_of_pair_iterator<ChannelBlend::const_iterator> control_iterator;
-  typedef ChannelBlend::size_type control_size_type;
-
-protected:
-  // The copy constructor is protected; use make_copy() or copy_subgraph().
-  PartBundle(const PartBundle &copy);
-
-public:
-  PartBundle(const string &name = "");
-  virtual PartGroup *make_copy() const;
-
-PUBLISHED:
   void set_blend_type(BlendType bt);
   INLINE BlendType get_blend_type() const;
 
