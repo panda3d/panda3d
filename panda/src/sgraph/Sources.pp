@@ -13,14 +13,16 @@
     modelNode.h modelRoot.I modelRoot.cxx modelRoot.h \
     planeNode.I planeNode.cxx \
     planeNode.h projectionNode.I projectionNode.cxx projectionNode.h \
-    renderTraverser.I renderTraverser.cxx renderTraverser.h
+    renderTraverser.I renderTraverser.cxx renderTraverser.h \
+    switchNode.I switchNode.cxx switchNode.h
 
   #define INSTALL_HEADERS \
     camera.I camera.h config_sgraph.h \
     geomNode.I geomNode.h geomTransformer.I \
     geomTransformer.h modelNode.I modelNode.h modelRoot.I \
     modelRoot.h planeNode.I planeNode.h projectionNode.I \
-    projectionNode.h renderTraverser.I renderTraverser.h
+    projectionNode.h renderTraverser.I renderTraverser.h \
+    switchNode.I switchNode.h
 
   #define IGATESCAN all
 

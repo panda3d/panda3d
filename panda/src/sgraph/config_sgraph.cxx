@@ -11,6 +11,7 @@
 #include "modelNode.h"
 #include "modelRoot.h"
 #include "projectionNode.h"
+#include "switchNode.h"
 
 #include <dconfig.h>
 #include <config_graph.h>
@@ -47,6 +48,7 @@ init_libsgraph() {
   ModelNode::init_type();
   ModelRoot::init_type();
   ProjectionNode::init_type();
+  SwitchNode::init_type();
 
   //Registration of writeable object's creation
   //functions with BamReader's factory

@@ -2,27 +2,21 @@
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
-//
+
 #ifndef LODNODE_H
 #define LODNODE_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
+
 #include <pandabase.h>
 
-#include <namedNode.h>
-#include <LOD.h>
+#include "switchNodeOne.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
+#include <LOD.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LODNode
 // Description : A node that implements level of detail
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LODNode : public NamedNode {
+class EXPCL_PANDA LODNode : public SwitchNodeOne {
 PUBLISHED:
   INLINE LODNode(const string &name = "");
 
@@ -48,11 +42,7 @@ PUBLISHED:
 
 public:
   virtual void output(ostream &out) const;
-
-  virtual bool sub_render(const AllAttributesWrapper &attrib,
-			  AllTransitionsWrapper &trans,
-			  RenderTraverser *trav);
-  virtual bool has_sub_render() const;
+  virtual void compute_switch(RenderTraverser *trav);
 
 public:
   static void register_with_read_factory();
@@ -64,16 +54,16 @@ protected:
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
-  LOD    			_lod;
+  LOD _lod;
 
 public:
   static TypeHandle get_class_type( void ) {
       return _type_handle;
   }
   static void init_type( void ) {
-    NamedNode::init_type();
+    SwitchNodeOne::init_type();
     register_type( _type_handle, "LODNode",
-                NamedNode::get_class_type() );
+                SwitchNodeOne::get_class_type() );
   }
   virtual TypeHandle get_type( void ) const {
     return get_class_type();

@@ -30,7 +30,7 @@ TypeHandle SequenceNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 SequenceNode::
 SequenceNode(const string &initial_name) :
-  NamedNode(initial_name), TimedCycle()
+  SwitchNodeOne(initial_name), TimedCycle()
 {
 }
 
@@ -41,7 +41,7 @@ SequenceNode(const string &initial_name) :
 ////////////////////////////////////////////////////////////////////
 SequenceNode::
 SequenceNode(float switch_time, const string &initial_name) :
-   NamedNode(initial_name), TimedCycle(switch_time, 0)
+   SwitchNodeOne(initial_name), TimedCycle(switch_time, 0)
 {
 }
 
@@ -71,62 +71,22 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SequenceNode::sub_render
+//     Function: SequenceNode::compute_switch
 //       Access: Public, Virtual
-//  Description:
+//  Description: Computes the node's switching properties, to decide
+//               what children should be visible in the given
+//               rendering situation.
+//
+//               In the case of a SequenceNode, this simply selects
+//               the appropriate child based on the elapsed time.
 ////////////////////////////////////////////////////////////////////
-bool SequenceNode::
-sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans,
-	   RenderTraverser *trav) {
-  GraphicsStateGuardian *gsg = trav->get_gsg();
-
+void SequenceNode::
+compute_switch(RenderTraverser *) {
   // Determine which child to traverse
   int num_children = get_num_children(RenderRelation::get_class_type());
   set_element_count(num_children);
   int index = next_element();
-  if (index >= 0 && index < num_children) {
-    NodeRelation *arc = get_child(RenderRelation::get_class_type(), index);
-
-    if (switchnode_cat.is_debug()) {
-      switchnode_cat.debug()
-	<< "Selecting child " << index << " of " << *this << ": "
-	<< *arc->get_child() << "\n";
-    }
-
-    // We have to be sure to pick up any state transitions on the arc
-    // itself.
-    AllTransitionsWrapper arc_trans;
-    arc_trans.extract_from(arc);
-
-    AllTransitionsWrapper new_trans(trans);
-    new_trans.compose_in_place(arc_trans);
-
-    // Now render everything from this node and below.
-    gsg->render_subgraph(trav, arc->get_child(), attrib, new_trans);
-
-  } else {
-    if (switchnode_cat.is_debug()) {
-      switchnode_cat.debug()
-	<< "Cannot select child " << index << " of " << *this << "; only "
-	<< num_children << " children.\n";
-    }
-  }
-
-  // Short circuit the rest of the render pass below this node
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SequenceNode::has_sub_render
-//       Access: Public, Virtual
-//  Description: Should be redefined to return true if the function
-//               sub_render(), above, expects to be called during
-//               traversal.
-////////////////////////////////////////////////////////////////////
-bool SequenceNode::
-has_sub_render() const 
-{
-  return true;
+  select_child(index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,7 +96,7 @@ has_sub_render() const
 ////////////////////////////////////////////////////////////////////
 void SequenceNode::
 write_datagram(BamWriter *manager, Datagram &me) {
-  NamedNode::write_datagram(manager, me);
+  SwitchNodeOne::write_datagram(manager, me);
   TimedCycle::write_datagram(me);
 }
 
@@ -149,7 +109,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 ////////////////////////////////////////////////////////////////////
 void SequenceNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  NamedNode::fillin(scan, manager);
+  SwitchNodeOne::fillin(scan, manager);
   TimedCycle::fillin(scan);
 }
 

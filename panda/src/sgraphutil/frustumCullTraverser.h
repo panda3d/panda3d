@@ -9,6 +9,7 @@
 #include <pandabase.h>
 
 #include <node.h>
+#include <switchNode.h>
 #include <nodeRelation.h>
 #include <typedObject.h>
 #include <geometricBoundingVolume.h>

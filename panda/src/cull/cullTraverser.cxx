@@ -19,20 +19,18 @@
 #include <pruneTransition.h>
 #include <transformTransition.h>
 #include <nodeTransitionWrapper.h>
+#include <switchNode.h>
 #include <indent.h>
 #include <config_sgraphutil.h>  // for implicit_app_traversal
 #include <config_sgattrib.h>    // for support_decals
 #include <string_utils.h>
+#include <pStatTimer.h>
 
 TypeHandle CullTraverser::_type_handle;
 
-#ifdef DO_PSTATS
-#include <pStatTimer.h>
-
-PStatCollector CullTraverser::_cull_pcollector =
-  PStatCollector("Cull", RGBColorf(0,1,0), 10);
-PStatCollector CullTraverser::_draw_pcollector =
-  PStatCollector("Draw", RGBColorf(1,0,0), 20);
+#ifndef CPPPARSER
+PStatCollector CullTraverser::_cull_pcollector("Cull", RGBColorf(0,1,0), 10);
+PStatCollector CullTraverser::_draw_pcollector("Draw", RGBColorf(1,0,0), 20);
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -173,10 +171,8 @@ void CullTraverser::
 traverse(Node *root, 
 	 const AllAttributesWrapper &initial_state,
 	 const AllTransitionsWrapper &net_trans) {
-#ifdef DO_PSTATS
   // Statistics
   PStatTimer timer(_cull_pcollector);
-#endif
 
   if (cull_cat.is_debug()) {
     cull_cat.debug()
@@ -666,6 +662,11 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     return false;
   }
 #endif
+
+  if (node->is_of_type(SwitchNode::get_class_type())) {
+    SwitchNode *swnode = DCAST(SwitchNode, node);
+    swnode->compute_switch(this);
+  }
 
   return true;
 }

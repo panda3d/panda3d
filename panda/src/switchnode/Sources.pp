@@ -9,10 +9,12 @@
 
   #define SOURCES \
     LODNode.I LODNode.cxx LODNode.h config_switchnode.cxx \
-    config_switchnode.h sequenceNode.cxx sequenceNode.h
+    config_switchnode.h sequenceNode.cxx sequenceNode.h \
+    switchNodeOne.I switchNodeOne.cxx switchNodeOne.h
 
   #define INSTALL_HEADERS \
-    LODNode.I LODNode.h sequenceNode.h
+    config_switchnode.h LODNode.I LODNode.h sequenceNode.h \
+    switchNodeOne.I switchNodeOne.h
 
   #define IGATESCAN all
 

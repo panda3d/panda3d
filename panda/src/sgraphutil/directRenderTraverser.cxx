@@ -21,16 +21,16 @@
 #include <allTransitionsWrapper.h>
 #include <transformTransition.h>
 #include <nodeTransitionWrapper.h>
+#include <switchNode.h>
 #include <decalTransition.h>
 #include <decalAttribute.h>
 #include <config_sgattrib.h>   // for support_decals
+#include <pStatTimer.h>
 
 TypeHandle DirectRenderTraverser::_type_handle;
 
-#ifdef DO_PSTATS
-#include <pStatTimer.h>
-PStatCollector DirectRenderTraverser::_draw_pcollector =
-  PStatCollector("Draw", RGBColorf(1,0,0), 20);
+#ifndef CPPPARSER
+PStatCollector DirectRenderTraverser::_draw_pcollector("Draw", RGBColorf(1,0,0), 20);
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -66,10 +66,8 @@ void DirectRenderTraverser::
 traverse(Node *root, 
 	 const AllAttributesWrapper &initial_state,
 	 const AllTransitionsWrapper &net_trans) {
-#ifdef DO_PSTATS
   // Statistics
   PStatTimer timer(_draw_pcollector);
-#endif
 
   AllAttributesWrapper render_state;
   render_state.apply_from(initial_state, net_trans);
@@ -177,6 +175,10 @@ reached_node(Node *node, AllAttributesWrapper &render_state,
     } else {
       geom->draw(_gsg);
     }
+
+  } else if (node->is_of_type(SwitchNode::get_class_type())) {
+    SwitchNode *swnode = DCAST(SwitchNode, node);
+    swnode->compute_switch(this);
   }
   
   return true;

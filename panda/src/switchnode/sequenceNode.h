@@ -5,13 +5,11 @@
 
 #ifndef SEQUENCENODE_H
 #define SEQUENCENODE_H
-//
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
+
 #include <pandabase.h>
 
-#include <namedNode.h>
+#include "switchNodeOne.h"
+
 #include <timedCycle.h>
 #include <pointerToArray.h>
 
@@ -21,7 +19,7 @@
 //               what node is rendered based on time
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA SequenceNode : public NamedNode, public TimedCycle
+class EXPCL_PANDA SequenceNode : public SwitchNodeOne, public TimedCycle
 {
 PUBLISHED:
   SequenceNode(const string &initial_name = "");
@@ -31,11 +29,7 @@ PUBLISHED:
 
 public:
   virtual Node *make_copy() const;
-
-  virtual bool sub_render(const AllAttributesWrapper &attrib,
-			  AllTransitionsWrapper &trans,
-			  RenderTraverser *trav);
-  virtual bool has_sub_render() const;
+  virtual void compute_switch(RenderTraverser *trav);
 
 public:
   static void register_with_read_factory();
@@ -51,9 +45,9 @@ public:
       return _type_handle;
   }
   static void init_type( void ) {
-    NamedNode::init_type();
+    SwitchNodeOne::init_type();
     register_type( _type_handle, "SequenceNode",
-                NamedNode::get_class_type() );
+                SwitchNodeOne::get_class_type() );
   }
   virtual TypeHandle get_type( void ) const {
     return get_class_type();

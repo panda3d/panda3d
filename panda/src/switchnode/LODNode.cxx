@@ -57,20 +57,23 @@ xform(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 void LODNode::
 output(ostream &out) const {
-  NamedNode::output(out);
+  SwitchNodeOne::output(out);
   out << " ";
   _lod.output(out);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: sub_render
-//       Access:
-//  Description:
+//     Function: LODNode::compute_switch
+//       Access: Public, Virtual
+//  Description: Computes the node's switching properties, to decide
+//               what children should be visible in the given
+//               rendering situation.
+//
+//               In the case of an LODNode, this decides which child
+//               is visible based on the distance from the camera.
 ////////////////////////////////////////////////////////////////////
-bool LODNode::
-sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans,
-	   RenderTraverser *trav) {
-
+void LODNode::
+compute_switch(RenderTraverser *trav) {
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
   // Get the current camera position from the gsg
@@ -92,49 +95,7 @@ sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans,
   
   // Determine which child to traverse
   int index = _lod.compute_child(camera_pos, LOD_pos);
-  int num_children = get_num_children(RenderRelation::get_class_type());
-  if (index >= 0 && index < num_children) {
-    NodeRelation *arc = get_child(RenderRelation::get_class_type(), index);
-
-    if (switchnode_cat.is_debug()) {
-      switchnode_cat.debug()
-	<< "Selecting child " << index << " of " << *this << ": "
-	<< *arc->get_child() << "\n";
-    }
-
-    // We have to be sure to pick up any state transitions on the arc
-    // itself.
-    AllTransitionsWrapper arc_trans;
-    arc_trans.extract_from(arc);
-
-    AllTransitionsWrapper new_trans(trans);
-    new_trans.compose_in_place(arc_trans);
-
-    // Now render everything from this node and below.
-    gsg->render_subgraph(trav, arc->get_child(), attrib, new_trans);
-
-  } else {
-    if (switchnode_cat.is_debug()) {
-      switchnode_cat.debug()
-	<< "Cannot select child " << index << " of " << *this << "; only "
-	<< num_children << " children.\n";
-    }
-  }
-
-  // Short circuit the rest of the render pass below this node
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::has_sub_render
-//       Access: Public, Virtual
-//  Description: Should be redefined to return true if the function
-//               sub_render(), above, expects to be called during
-//               traversal.
-////////////////////////////////////////////////////////////////////
-bool LODNode::
-has_sub_render() const {
-  return true;
+  select_child(index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -155,7 +116,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void LODNode::
 write_datagram(BamWriter *manager, Datagram &me) {
-  NamedNode::write_datagram(manager, me);
+  SwitchNodeOne::write_datagram(manager, me);
   _lod.write_datagram(me);
 }
 
@@ -187,6 +148,6 @@ make_LODNode(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void LODNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  NamedNode::fillin(scan, manager);
+  SwitchNodeOne::fillin(scan, manager);
   _lod.read_datagram(scan);
 }

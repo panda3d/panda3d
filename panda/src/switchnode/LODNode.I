@@ -16,7 +16,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE LODNode::
-LODNode(const string &name) : NamedNode(name) {
+LODNode(const string &name) : SwitchNodeOne(name) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@ LODNode(const string &name) : NamedNode(name) {
 ////////////////////////////////////////////////////////////////////
 INLINE LODNode::
 LODNode(const LODNode &copy) : 
-  NamedNode(copy),
+  SwitchNodeOne(copy),
   _lod(copy._lod)
 {
 }

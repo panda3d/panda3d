@@ -46,12 +46,14 @@ FrustumCullTraverser(ArcChain &arc_chain, Node *root,
     local_frustum = DCAST(GeometricBoundingVolume, _view_frustum->make_copy());
     local_frustum->xform(rel_from_camera);
 
+#ifndef NDEBUG
     if (sgraphutil_cat.is_spam()) {
       sgraphutil_cat.spam()
 	<< "Beginning frustum cull, frustum is: " << *local_frustum << "\n"
 	<< "Transform is:\n";
       rel_from_camera.write(sgraphutil_cat.spam(false), 2);
     }
+#endif
   }
 
   bool needs_top_node = !_arc_chain.has_node();
@@ -114,11 +116,13 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
 	int result = local_frustum->contains(arc_gbv);
 	if (result == BoundingVolume::IF_no_intersection) {
 	  // No intersection at all.  Cull.
+#ifndef NDEBUG	
 	  if (sgraphutil_cat.is_spam() && !arc_volume.is_empty()) {
 	    sgraphutil_cat.spam()
 	      << "Culling " << *arc->get_child() << " with volume "
 	      << arc_volume << "\n";
 	  }
+#endif
 
 	  /*
 	  if (fake_view_frustum_cull) {
@@ -183,13 +187,15 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
 	    // be.
 	    nassertv(local_frustum != (GeometricBoundingVolume *)NULL);
 	    local_frustum->xform(tt->get_matrix());
-	    
+
+#ifndef NDEBUG	    
 	    if (sgraphutil_cat.is_spam()) {
 	      sgraphutil_cat.spam()
 		<< "Transforming frustum into local space of " << *arc << ": " << *local_frustum << "\n"
 		<< "Transform is:\n";
 	      tt->get_matrix().write(sgraphutil_cat.spam(false), 2);
 	    }
+#endif
 	  }
 	}
       }
@@ -237,9 +243,22 @@ traverse(Node *node, AttributeWrapper &render_state, LevelState &level_state,
       node->find_connection(_graph_type).get_down();
 
     // Now visit each of the children in turn.
-    DownRelationPointers::const_iterator drpi;
-    for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
-      traverse(*drpi, render_state, level_state, local_frustum, all_in);
+    if (node->is_of_type(SwitchNode::get_class_type())) {
+      SwitchNode *swnode = DCAST(SwitchNode, node);
+      // Presumably, the visitor called compute_switch() on the
+      // SwitchNode during the reached_node() call, above.  We can't
+      // call it directly since we don't have enough information.
+      size_t i = 0;
+      for (i = 0; i < drp.size(); i++) {
+	if (swnode->is_child_visible(_graph_type, i)) {
+	  traverse(drp[i], render_state, level_state, local_frustum, all_in);
+	}
+      }
+    } else {
+      DownRelationPointers::const_iterator drpi;
+      for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
+	traverse(*drpi, render_state, level_state, local_frustum, all_in);
+      }
     }
   }
 }
