@@ -369,9 +369,9 @@ class DirectJoybox(PandaObject):
                     DirectJoybox.hprMultiplier)
         posScale = (self.normalizeChannel(R_SLIDE, 0.1, 100) *
                     DirectJoybox.xyzMultiplier)
-        r = -0.01 * posScale * self.aList[R_FWD_BACK] * self.deltaTime
+        r = -0.01 * posScale * self.aList[R_TWIST] * self.deltaTime
         rx = hprScale * self.aList[R_LEFT_RIGHT] * self.deltaTime
-        ry = hprScale * self.aList[R_TWIST] * self.deltaTime
+        ry = -hprScale * self.aList[R_FWD_BACK] * self.deltaTime
         x = posScale * self.aList[L_LEFT_RIGHT] * self.deltaTime
         z = posScale * self.aList[L_FWD_BACK] * self.deltaTime
         h = -1 * hprScale * self.aList[L_TWIST] * self.deltaTime
