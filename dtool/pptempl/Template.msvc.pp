@@ -463,7 +463,7 @@ $[TAB] $[NT_COPYCMD] $[so_dir]\$[local] $[dest]
 lib$[TARGET]_igatescan = $[osfilename $[igatescan]]
 $[so_dir]\$[igatedb] $[so_dir]\$[igateoutput] : $[sort $[patsubst %.h,%.h,%.I,%.I,%.T,%.T,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]]
 // We use forward slash for interrogate because it prefers those.
-$[TAB] interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
+$[TAB] $[INTERROGATE] -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
 
 #define target $[igateoutput:%.cxx=$[so_dir]\%.obj]
 #define source $[so_dir]\$[igateoutput]
@@ -485,7 +485,7 @@ lib$[TARGET]_igatemscan = $[osfilename $[igatemscan]]
 #define target $[so_dir]\$[igatemout]
 #define sources $(lib$[TARGET]_igatemscan)
 $[target] : $[sources]
-$[TAB] interrogate_module -oc $[target] -module "$[igatemod]" -library "$[igatelib]" $[interrogate_module_options] $[sources]
+$[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[igatelib]" $[interrogate_module_options] $[sources]
 
 #define target $[igatemout:%.cxx=$[so_dir]\%.obj]
 #define source $[so_dir]\$[igatemout]

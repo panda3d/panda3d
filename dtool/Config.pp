@@ -131,6 +131,13 @@
 // probably don't want to mess with this.
 #define INTERROGATE_OPTIONS -fnames -string -refcount -assert
 
+// What's the name of the interrogate binary to run?  The default
+// specified is the one that is built as part of DTOOL.  If you have a
+// prebuilt binary standing by (for instance, one built opt4), specify
+// its name instead.
+#define INTERROGATE interrogate
+#define INTERROGATE_MODULE interrogate_module
+
 // Is Python installed, and should Python interfaces be generated?  If
 // Python is installed, which directory is it in?  (If the directory
 // is someplace standard like /usr/include, you may leave it blank.)
