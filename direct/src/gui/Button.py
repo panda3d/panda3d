@@ -51,9 +51,9 @@ class Button:
 
     
     def setWidth(self, width):
-        self.l1.setWidth(width / self.button.getScale())
-        self.l2.setWidth(width / self.button.getScale())
-        self.l3.setWidth(width / self.button.getScale())
+        self.l1.setWidth(width)
+        self.l2.setWidth(width)
+        self.l3.setWidth(width)
         
     def manage(self):
         self.button.manage(guiMgr, base.eventMgr.eventHandler)

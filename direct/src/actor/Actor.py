@@ -470,9 +470,9 @@ class Actor(PandaObject, NodePath):
         if (animControlDict.has_key(partName)):
             del(animControlDict[partName])
             
-    def hidePart(self, partName, lodName="lodName"):
+    def hidePart(self, partName, lodName="lodRoot"):
         """hidePart(self, string, key="lodName")
-        Make the given part of the optional given lod not render,
+        Make the given part of the optionally given lod not render,
         even though still in the tree.
         NOTE: this will affect child geometry"""
         if (self.__partBundleDict.has_key(lodName)):

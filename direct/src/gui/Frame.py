@@ -12,6 +12,7 @@ class Frame:
     def __init__(self, name):
         self.name = name
         self.managed = 0
+        self.offset = 0
         self.frame = GuiFrame.GuiFrame(name)
         self.items = []
 
@@ -42,6 +43,12 @@ class Frame:
     def setScale(self, scale):
         self.frame.setScale(scale)
 
+    def getOffset(self):
+        return self.offset
+
+    def setOffset(self, offset):
+        self.offset = offset
+        
     # content functions
     def addItem(self, item):
         self.frame.addItem(item.getGuiItem())
@@ -55,24 +62,24 @@ class Frame:
         
     def packItem(self, itemNum, relation, otherItemNum):
         self.frame.packItem(self.items[itemNum].getGuiItem(), relation,
-                            self.items[otherItemNum].getGuiItem())
+                            self.items[otherItemNum].getGuiItem(), self.offset)
 
     # convenience functions
     def makeVertical(self):
         # remove any previous packing
-        #self.frame.clearAllPacking()
+        self.frame.clearAllPacking()
         # make each item (except first) align under the last
         for itemNum in range(1, len(self.items)):
-            # self.frame.clearPacking(self.items[itemNum].getGuiItem())
             self.packItem(itemNum, GuiFrame.GuiFrame.UNDER, itemNum - 1)
-
+            self.packItem(itemNum, GuiFrame.GuiFrame.ALIGNLEFT, itemNum - 1)
+            
     def makeHorizontal(self):
         # remove any previous packing
-        #self.frame.clearAllPacking()        
+        self.frame.clearAllPacking()
         # make each item (except first) align right of the last
         for itemNum in range(1, len(self.items)):
-            #self.frame.clearPacking(self.items[itemNum].getGuiItem())
             self.packItem(itemNum, GuiFrame.GuiFrame.RIGHT, itemNum - 1)
+            self.packItem(itemNum, GuiFrame.GuiFrame.ALIGNABOVE, itemNum - 1)
             
     def makeWideAsWidest(self):
         # make all the buttons as wide as the widest button in
@@ -85,6 +92,9 @@ class Frame:
             if (thisWidth > widestWidth):
                 widest = self.items.index(item)
                 widestWidth = thisWidth
+
+        # re-pack based on new widths
+        self.frame.recompute()
 
         # make them all this wide
         for item in self.items:
