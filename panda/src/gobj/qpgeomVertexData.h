@@ -117,29 +117,11 @@ PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
 
 public:
-  void set_data(int array, const qpGeomVertexDataType *data_type,
-                int vertex, const float *data, int num_values);
-  void get_data(int array, const qpGeomVertexDataType *data_type,
-                int vertex, float *data, int num_values) const;
-  void set_data(int array, const qpGeomVertexDataType *data_type,
-                int vertex, const int *data, int num_values);
-  void get_data(int array, const qpGeomVertexDataType *data_type,
-                int vertex, int *data, int num_values) const;
-
   bool get_array_info(const InternalName *name, 
                       const qpGeomVertexArrayData *&array_data,
                       int &num_components,
                       qpGeomVertexDataType::NumericType &numeric_type, 
                       int &start, int &stride) const;
-
-  static void to_vec2(LVecBase2f &vec, const float *data, int num_values);
-  static void to_vec3(LVecBase3f &vec, const float *data, int num_values);
-  static void to_vec4(LVecBase4f &vec, const float *data, int num_values);
-
-  static unsigned int pack_argb(const float data[4]);
-  static void unpack_argb(float data[4], unsigned int packed_argb);
-  static unsigned int pack_argb(const int data[4]);
-  static void unpack_argb(int data[4], unsigned int packed_argb);
 
 private:
   string _name;

@@ -53,11 +53,12 @@ PUBLISHED:
 
   INLINE const qpGeomVertexData *get_vertex_data() const;
 
-  INLINE void set_data_type(int data_type);
-  INLINE void set_data_type(const string &name);
-  INLINE void set_data_type(const InternalName *name);
-  void set_data_type(int array, const qpGeomVertexDataType *data_type);
+  INLINE bool set_data_type(int data_type);
+  INLINE bool set_data_type(const string &name);
+  INLINE bool set_data_type(const InternalName *name);
+  bool set_data_type(int array, const qpGeomVertexDataType *data_type);
 
+  INLINE bool has_data_type() const;
   INLINE int get_array() const;
   INLINE const qpGeomVertexDataType *get_data_type() const;
 
@@ -65,6 +66,8 @@ PUBLISHED:
 
   INLINE int get_start_vertex() const;
   INLINE int get_read_vertex() const;
+  INLINE int get_num_vertices() const;
+  INLINE bool is_at_end() const;
 
   INLINE float get_data1f();
   INLINE const LVecBase2f &get_data2f();
@@ -76,7 +79,7 @@ PUBLISHED:
 private:
   class Reader;
 
-  INLINE void set_pointer();
+  INLINE void set_pointer(int vertex);
   INLINE const unsigned char *inc_pointer();
   Reader *make_reader() const;
 
@@ -90,6 +93,7 @@ private:
 
   int _start_vertex;
   int _read_vertex;
+  int _num_vertices;
 
   Reader *_reader;
 
@@ -126,9 +130,22 @@ private:
   };
 
   // This is a specialization on the generic Reader that handles
-  // points, which are special because the fourth component, if
-  // omitted, is 1.0.
+  // points, which are special because the fourth component, if not
+  // present in the data, is implicitly 1.0; and if it is present,
+  // than any three-component or smaller return is implicitly divided
+  // by the fourth component.
   class Reader_point : public Reader {
+  public:
+    virtual float get_data1f(const unsigned char *pointer);
+    virtual const LVecBase2f &get_data2f(const unsigned char *pointer);
+    virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
+    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+  };
+
+  // This is similar to Reader_point, in that the fourth component is
+  // implicitly 1.0 if it is not present in the data, but we never
+  // divide by alpha.
+  class Reader_color : public Reader {
   public:
     virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
   };
@@ -137,9 +154,64 @@ private:
   // These are the specializations on the generic Reader that handle
   // the direct code paths.
 
-  class Reader_float_3 : public Reader {
+  class Reader_float32_3 : public Reader {
   public:
     virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
+  };
+
+  class Reader_point_float32_2 : public Reader_point {
+  public:
+    virtual const LVecBase2f &get_data2f(const unsigned char *pointer);
+  };
+
+  class Reader_point_float32_3 : public Reader_point {
+  public:
+    virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
+  };
+
+  class Reader_point_float32_4 : public Reader_point {
+  public:
+    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+  };
+
+  class Reader_nativefloat_3 : public Reader {
+  public:
+    virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
+  };
+
+  class Reader_point_nativefloat_2 : public Reader_point {
+  public:
+    virtual const LVecBase2f &get_data2f(const unsigned char *pointer);
+  };
+
+  class Reader_point_nativefloat_3 : public Reader_point {
+  public:
+    virtual const LVecBase3f &get_data3f(const unsigned char *pointer);
+  };
+
+  class Reader_point_nativefloat_4 : public Reader_point {
+  public:
+    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+  };
+
+  class Reader_argb_packed_8888 : public Reader_color {
+  public:
+    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+  };
+
+  class Reader_rgba_uint8_4 : public Reader_color {
+  public:
+    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+  };
+
+  class Reader_rgba_float32_4 : public Reader_color {
+  public:
+    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
+  };
+
+  class Reader_rgba_nativefloat_4 : public Reader_color {
+  public:
+    virtual const LVecBase4f &get_data4f(const unsigned char *pointer);
   };
 
   class Reader_uint16_1 : public Reader {

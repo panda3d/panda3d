@@ -27,5 +27,5 @@
 #include "qpgeomVertexData.cxx"
 #include "qpgeomVertexDataType.cxx"
 #include "qpgeomVertexFormat.cxx"
-#include "qpgeomVertexIterator.cxx"
 #include "qpgeomVertexReader.cxx"
+#include "qpgeomVertexWriter.cxx"

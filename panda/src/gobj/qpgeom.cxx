@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeom.h"
+#include "qpgeomVertexReader.h"
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -405,6 +406,32 @@ draw(GraphicsStateGuardianBase *gsg, const qpGeomMunger *munger,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::calc_tight_bounds
+//       Access: Public, Virtual
+//  Description: Expands min_point and max_point to include all of the
+//               vertices in the Geom, if any.  found_any is set true
+//               if any points are found.  It is the caller's
+//               responsibility to initialize min_point, max_point,
+//               and found_any before calling this function.
+////////////////////////////////////////////////////////////////////
+void qpGeom::
+calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                  bool &found_any, 
+                  const qpGeomVertexData *vertex_data,
+                  bool got_mat, const LMatrix4f &mat) const {
+
+  CDReader cdata(_cycler);
+  
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    (*pi)->calc_tight_bounds(min_point, max_point, found_any, vertex_data,
+                             got_mat, mat);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::get_next_modified
 //       Access: Public, Static
 //  Description: Returns a monotonically increasing sequence.  Each
@@ -437,56 +464,22 @@ recompute_bound() {
 
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);
 
-  // Now actually compute the bounding volume by putting it around all
-  // of our vertices.
-  CDReader cdata(_cycler);
+  // Now actually compute the bounding volume.  We do this by using
+  // calc_tight_bounds to determine our minmax first.
+  LPoint3f points[2];
+  bool found_any = false;
+  calc_tight_bounds(points[0], points[1], found_any, get_vertex_data(),
+                    false, LMatrix4f::ident_mat());
+  if (found_any) {
+    // Then we put the bounding volume around both of those points.
+    // Technically, we should put it around the eight points at the
+    // corners of the rectangular solid, but we happen to know that
+    // the two diagonally opposite points is good enough to define any
+    // of our bound volume types.
 
-  const qpGeomVertexFormat *format = cdata->_data->get_format();
-
-  int array_index = format->get_array_with(InternalName::get_vertex());
-  if (array_index < 0) {
-    // No vertex data.
-    return bound;
-  }
-
-  const qpGeomVertexArrayFormat *array_format = format->get_array(array_index);
-  const qpGeomVertexDataType *data_type = 
-    array_format->get_data_type(InternalName::get_vertex());
-
-  int stride = array_format->get_stride();
-  int start = data_type->get_start();
-  int num_components = data_type->get_num_components();
-
-  CPTA_uchar array_data = cdata->_data->get_array(array_index)->get_data();
-
-  if (stride == 3 * sizeof(PN_float32) && start == 0 && num_components == 3 &&
-      (array_data.size() % stride) == 0) {
-    // Here's an easy special case: it's a standalone table of vertex
-    // positions, with nothing else in the middle, so we can use
-    // directly as an array of LPoint3f's.
-    const LPoint3f *vertices_begin = (const LPoint3f *)&array_data[0];
-    const LPoint3f *vertices_end = (const LPoint3f *)&array_data[array_data.size()];
-    gbv->around(vertices_begin, vertices_end);
-
-  } else {
-    // Otherwise, we have to copy the vertex positions out one at time.
-    pvector<LPoint3f> vertices;
-
-    size_t p = start;
-    while (p + stride <= array_data.size()) {
-      const PN_float32 *v = (const PN_float32 *)&array_data[p];
-
-      LPoint3f vertex;
-      qpGeomVertexData::to_vec3(vertex, v, num_components);
-
-      vertices.push_back(vertex);
-      p += stride;
-    }
-
-    const LPoint3f *vertices_begin = &vertices[0];
-    const LPoint3f *vertices_end = vertices_begin + vertices.size();
-
-    gbv->around(vertices_begin, vertices_end);
+    const LPoint3f *points_begin = &points[0];
+    const LPoint3f *points_end = points_begin + 2;
+    gbv->around(points_begin, points_end);
   }
 
   return bound;

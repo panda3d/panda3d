@@ -21,6 +21,7 @@
 #include "qpgeomVertexData.h"
 #include "qpgeomVertexArrayFormat.h"
 #include "qpgeomVertexDataType.h"
+#include "qpgeomVertexReader.h"
 #include "preparedGraphicsObjects.h"
 #include "internalName.h"
 #include "bamReader.h"
@@ -671,46 +672,55 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
 void qpGeomPrimitive::
 calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                   bool &found_any, 
-                  const qpGeomVertexData *vertex_data) const {
-  CDReader cdata(_cycler);
-
-  const qpGeomVertexFormat *format = vertex_data->get_format();
-
-  int array_index = format->get_array_with(InternalName::get_vertex());
-  if (array_index < 0) {
+                  const qpGeomVertexData *vertex_data,
+                  bool got_mat, const LMatrix4f &mat) const {
+  qpGeomVertexReader reader(vertex_data, InternalName::get_vertex());
+  if (!reader.has_data_type()) {
     // No vertex data.
     return;
   }
 
-  const qpGeomVertexArrayFormat *array_format = format->get_array(array_index);
-  const qpGeomVertexDataType *data_type = 
-    array_format->get_data_type(InternalName::get_vertex());
+  CDReader cdata(_cycler);
 
-  int stride = array_format->get_stride();
-  int start = data_type->get_start();
-  int num_components = data_type->get_num_components();
-
-  CPTA_uchar array_data = vertex_data->get_array(array_index)->get_data();
-
-  PTA_ushort::const_iterator ii;
-  for (ii = cdata->_vertices.begin(); ii != cdata->_vertices.end(); ++ii) {
-    int index = (int)(*ii);
-    const PN_float32 *v = (const PN_float32 *)&array_data[start + index * stride];
-
-    LPoint3f vertex;
-    qpGeomVertexData::to_vec3(vertex, v, num_components);
-
-    if (found_any) {
-      min_point.set(min(min_point[0], vertex[0]),
-                    min(min_point[1], vertex[1]),
-                    min(min_point[2], vertex[2]));
-      max_point.set(max(max_point[0], vertex[0]),
-                    max(max_point[1], vertex[1]),
-                    max(max_point[2], vertex[2]));
-    } else {
-      min_point = vertex;
-      max_point = vertex;
-      found_any = true;
+  if (got_mat) {
+    PTA_ushort::const_iterator ii;
+    for (ii = cdata->_vertices.begin(); ii != cdata->_vertices.end(); ++ii) {
+      int index = (int)(*ii);
+      reader.set_vertex(index);
+      const LVecBase3f &vertex = reader.get_data3f();
+      
+      if (found_any) {
+        min_point.set(min(min_point[0], vertex[0]),
+                      min(min_point[1], vertex[1]),
+                      min(min_point[2], vertex[2]));
+        max_point.set(max(max_point[0], vertex[0]),
+                      max(max_point[1], vertex[1]),
+                      max(max_point[2], vertex[2]));
+      } else {
+        min_point = vertex;
+        max_point = vertex;
+        found_any = true;
+      }
+    }
+  } else {
+    PTA_ushort::const_iterator ii;
+    for (ii = cdata->_vertices.begin(); ii != cdata->_vertices.end(); ++ii) {
+      int index = (int)(*ii);
+      reader.set_vertex(index);
+      LPoint3f vertex = mat.xform_point(reader.get_data3f());
+      
+      if (found_any) {
+        min_point.set(min(min_point[0], vertex[0]),
+                      min(min_point[1], vertex[1]),
+                      min(min_point[2], vertex[2]));
+        max_point.set(max(max_point[0], vertex[0]),
+                      max(max_point[1], vertex[1]),
+                      max(max_point[2], vertex[2]));
+      } else {
+        min_point = vertex;
+        max_point = vertex;
+        found_any = true;
+      }
     }
   }
 }

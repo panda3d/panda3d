@@ -162,9 +162,10 @@ private:
 public:
   virtual void draw(GraphicsStateGuardianBase *gsg) const=0;
 
-  virtual void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
-                                 bool &found_any, 
-                                 const qpGeomVertexData *vertex_data) const;
+  void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                         bool &found_any, 
+                         const qpGeomVertexData *vertex_data,
+                         bool got_mat, const LMatrix4f &mat) const;
 
 protected:
   virtual CPT(qpGeomPrimitive) decompose_impl() const;

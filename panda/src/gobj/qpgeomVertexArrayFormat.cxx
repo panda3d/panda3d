@@ -19,6 +19,7 @@
 #include "qpgeomVertexFormat.h"
 #include "qpgeomVertexDataType.h"
 #include "qpgeomVertexData.h"
+#include "qpgeomVertexReader.h"
 #include "indent.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -430,20 +431,24 @@ write_with_data(ostream &out, int indent_level,
                 const qpGeomVertexData *data, int array_index) const {
   consider_sort_data_types();
   int num_vertices = data->get_num_vertices();
+
+  qpGeomVertexReader reader(data);
+
   for (int i = 0; i < num_vertices; i++) {
     indent(out, indent_level)
       << "vertex index " << i << ":\n";
+    reader.set_vertex(i);
     DataTypes::const_iterator dti;
     for (dti = _data_types.begin(); dti != _data_types.end(); ++dti) {
       const qpGeomVertexDataType *data_type = (*dti);
       int num_values = min(data_type->get_num_values(), 4);
-      float data_values[4]; 
-      data->get_data(array_index, data_type, i, data_values, num_values);
+      reader.set_data_type(array_index, data_type);
+      const LVecBase4f &d = reader.get_data4f();
 
       indent(out, indent_level + 2) 
         << *data_type->get_name();
       for (int v = 0; v < num_values; v++) {
-        out << " " << data_values[v];
+        out << " " << d[v];
       }
       out << "\n";
     }

@@ -31,7 +31,7 @@
 #include "qpgeomTristrips.h"
 #include "qpgeomVertexData.h"
 #include "qpgeomVertexFormat.h"
-#include "qpgeomVertexIterator.h"
+#include "qpgeomVertexWriter.h"
 #include "texturePool.h"
 #include "textureAttrib.h"
 #include "colorAttrib.h"
@@ -635,26 +635,26 @@ load_default_model(const NodePath &parent) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
       (string(), qpGeomVertexFormat::get_v3n3cpt2(),
        qpGeomUsageHint::UH_static);
-    qpGeomVertexIterator vertex(vdata, InternalName::get_vertex());
-    qpGeomVertexIterator normal(vdata, InternalName::get_normal());
-    qpGeomVertexIterator color(vdata, InternalName::get_color());
-    qpGeomVertexIterator texcoord(vdata, InternalName::get_texcoord());
+    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+    qpGeomVertexWriter normal(vdata, InternalName::get_normal());
+    qpGeomVertexWriter color(vdata, InternalName::get_color());
+    qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
-    vertex.set_data3f(Vertexf::rfu(0.0, 0.0, 0.0));
-    vertex.set_data3f(Vertexf::rfu(1.0, 0.0, 0.0));
-    vertex.set_data3f(Vertexf::rfu(0.0, 0.0, 1.0));
+    vertex.add_data3f(Vertexf::rfu(0.0, 0.0, 0.0));
+    vertex.add_data3f(Vertexf::rfu(1.0, 0.0, 0.0));
+    vertex.add_data3f(Vertexf::rfu(0.0, 0.0, 1.0));
 
-    normal.set_data3f(Normalf::back());
-    normal.set_data3f(Normalf::back());
-    normal.set_data3f(Normalf::back());
+    normal.add_data3f(Normalf::back());
+    normal.add_data3f(Normalf::back());
+    normal.add_data3f(Normalf::back());
 
-    color.set_data4f(0.5, 0.5, 1.0, 1.0);
-    color.set_data4f(0.5, 0.5, 1.0, 1.0);
-    color.set_data4f(0.5, 0.5, 1.0, 1.0);
+    color.add_data4f(0.5, 0.5, 1.0, 1.0);
+    color.add_data4f(0.5, 0.5, 1.0, 1.0);
+    color.add_data4f(0.5, 0.5, 1.0, 1.0);
 
-    texcoord.set_data2f(0.0, 0.0);
-    texcoord.set_data2f(1.0, 0.0);
-    texcoord.set_data2f(0.0, 1.0);
+    texcoord.add_data2f(0.0, 0.0);
+    texcoord.add_data2f(1.0, 0.0);
+    texcoord.add_data2f(0.0, 1.0);
     
     PT(qpGeomTriangles) tri = new qpGeomTriangles(qpGeomUsageHint::UH_static);
     tri->add_consecutive_vertices(0, 3);
@@ -1062,18 +1062,18 @@ load_image_as_model(const Filename &filename) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
       (string(), qpGeomVertexFormat::get_v3t2(),
        qpGeomUsageHint::UH_static);
-    qpGeomVertexIterator vertex(vdata, InternalName::get_vertex());
-    qpGeomVertexIterator texcoord(vdata, InternalName::get_texcoord());
+    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+    qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
-    vertex.set_data3f(Vertexf::rfu(left, 0.02f, top));
-    vertex.set_data3f(Vertexf::rfu(left, 0.02f, bottom));
-    vertex.set_data3f(Vertexf::rfu(right, 0.02f, top));
-    vertex.set_data3f(Vertexf::rfu(right, 0.02f, bottom));
+    vertex.add_data3f(Vertexf::rfu(left, 0.02f, top));
+    vertex.add_data3f(Vertexf::rfu(left, 0.02f, bottom));
+    vertex.add_data3f(Vertexf::rfu(right, 0.02f, top));
+    vertex.add_data3f(Vertexf::rfu(right, 0.02f, bottom));
     
-    texcoord.set_data2f(0.0f, 1.0f);
-    texcoord.set_data2f(0.0f, 0.0f);
-    texcoord.set_data2f(1.0f, 1.0f);
-    texcoord.set_data2f(1.0f, 0.0f);
+    texcoord.add_data2f(0.0f, 1.0f);
+    texcoord.add_data2f(0.0f, 0.0f);
+    texcoord.add_data2f(1.0f, 1.0f);
+    texcoord.add_data2f(1.0f, 0.0f);
     
     PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_static);
     strip->add_consecutive_vertices(0, 4);

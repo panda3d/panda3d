@@ -97,6 +97,11 @@ public:
             const qpGeomMunger *munger,
             const qpGeomVertexData *vertex_data) const;
 
+  void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                         bool &found_any, 
+                         const qpGeomVertexData *vertex_data,
+                         bool got_mat, const LMatrix4f &mat) const;
+
   static UpdateSeq get_next_modified();
 
 protected:

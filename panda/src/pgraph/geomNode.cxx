@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "geomNode.h"
+#include "qpgeom.h"
 #include "geomTransformer.h"
 #include "sceneGraphReducer.h"
 #include "accumulatedAttribs.h"
@@ -351,25 +352,35 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
   int num_geoms = get_num_geoms();
   for (int i = 0; i < num_geoms; i++) {
     const Geom *geom = get_geom(i);
-    Geom::VertexIterator vi = geom->make_vertex_iterator();
-    int num_prims = geom->get_num_prims();
     
-    for (int p = 0; p < num_prims; p++) {
-      int length = geom->get_length(p);
-      for (int v = 0; v < length; v++) {
-        Vertexf vertex = geom->get_next_vertex(vi) * mat;
-        
-        if (found_any) {
-          min_point.set(min(min_point[0], vertex[0]),
-                        min(min_point[1], vertex[1]),
-                        min(min_point[2], vertex[2]));
-          max_point.set(max(max_point[0], vertex[0]),
-                        max(max_point[1], vertex[1]),
-                        max(max_point[2], vertex[2]));
-        } else {
-          min_point = vertex;
-          max_point = vertex;
-          found_any = true;
+    // Temporary test until the experimental Geom rewrite is final.
+    if (geom->is_exact_type(qpGeom::get_class_type())) {
+      const qpGeom *qpgeom = DCAST(qpGeom, geom);
+      qpgeom->calc_tight_bounds(min_point, max_point, found_any,
+                                qpgeom->get_vertex_data()->animate_vertices(),
+                                !transform->is_identity(), mat);
+
+    } else {
+      Geom::VertexIterator vi = geom->make_vertex_iterator();
+      int num_prims = geom->get_num_prims();
+      
+      for (int p = 0; p < num_prims; p++) {
+        int length = geom->get_length(p);
+        for (int v = 0; v < length; v++) {
+          Vertexf vertex = geom->get_next_vertex(vi) * mat;
+          
+          if (found_any) {
+            min_point.set(min(min_point[0], vertex[0]),
+                          min(min_point[1], vertex[1]),
+                          min(min_point[2], vertex[2]));
+            max_point.set(max(max_point[0], vertex[0]),
+                          max(max_point[1], vertex[1]),
+                          max(max_point[2], vertex[2]));
+          } else {
+            min_point = vertex;
+            max_point = vertex;
+            found_any = true;
+          }
         }
       }
     }

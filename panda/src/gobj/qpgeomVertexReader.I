@@ -31,6 +31,7 @@ qpGeomVertexReader(const qpGeomVertexData *vertex_data) :
   _pointer(NULL),
   _start_vertex(0),
   _read_vertex(0),
+  _num_vertices(0),
   _reader(NULL)
 {
 }
@@ -50,6 +51,7 @@ qpGeomVertexReader(const qpGeomVertexData *vertex_data, const string &name) :
   _pointer(NULL),
   _start_vertex(0),
   _read_vertex(0),
+  _num_vertices(0),
   _reader(NULL)
 {
   set_data_type(name);
@@ -71,6 +73,7 @@ qpGeomVertexReader(const qpGeomVertexData *vertex_data,
   _pointer(NULL),
   _start_vertex(0),
   _read_vertex(0),
+  _num_vertices(0),
   _reader(NULL)
 {
   set_data_type(name);
@@ -109,12 +112,14 @@ get_vertex_data() const {
 //               This also resets the read vertex number to the start
 //               vertex (the same value passed to a previous call to
 //               set_vertex(), or 0 if set_vertex() was never called.)
+//
+//               The return value is true if the data type is valid,
+//               false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE void qpGeomVertexReader::
+INLINE bool qpGeomVertexReader::
 set_data_type(int data_type) {
-  nassertv(_vertex_data->get_format()->get_array_with(data_type) >= 0);
-  set_data_type(_vertex_data->get_format()->get_array_with(data_type),
-                _vertex_data->get_format()->get_data_type(data_type));
+  return set_data_type(_vertex_data->get_format()->get_array_with(data_type),
+                       _vertex_data->get_format()->get_data_type(data_type));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -126,10 +131,13 @@ set_data_type(int data_type) {
 //               This also resets the read vertex number to the start
 //               vertex (the same value passed to a previous call to
 //               set_vertex(), or 0 if set_vertex() was never called.)
+//
+//               The return value is true if the data type is valid,
+//               false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE void qpGeomVertexReader::
+INLINE bool qpGeomVertexReader::
 set_data_type(const string &name) {
-  set_data_type(InternalName::make(name));
+  return set_data_type(InternalName::make(name));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -141,12 +149,26 @@ set_data_type(const string &name) {
 //               This also resets the read vertex number to the start
 //               vertex (the same value passed to a previous call to
 //               set_vertex(), or 0 if set_vertex() was never called.)
+//
+//               The return value is true if the data type is valid,
+//               false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE void qpGeomVertexReader::
+INLINE bool qpGeomVertexReader::
 set_data_type(const InternalName *name) {
-  nassertv(_vertex_data->get_format()->get_array_with(name) >= 0);
-  set_data_type(_vertex_data->get_format()->get_array_with(name),
-                _vertex_data->get_format()->get_data_type(name));
+  return set_data_type(_vertex_data->get_format()->get_array_with(name),
+                       _vertex_data->get_format()->get_data_type(name));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexReader::has_data_type
+//       Access: Published
+//  Description: Returns true if a valid data type has been
+//               successfully set, or false if the data type does not
+//               exist.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomVertexReader::
+has_data_type() const {
+  return (_data_type != (qpGeomVertexDataType *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -181,8 +203,9 @@ get_data_type() const {
 INLINE void qpGeomVertexReader::
 set_vertex(int vertex) {
   _start_vertex = vertex;
-  _read_vertex = vertex;
-  set_pointer();
+  if (_data_type != (qpGeomVertexDataType *)NULL) {
+    set_pointer(_start_vertex);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,6 +233,29 @@ get_read_vertex() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexReader::get_num_vertices
+//       Access: Published
+//  Description: Returns the number of vertices in the vertex data.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomVertexReader::
+get_num_vertices() const {
+  return _num_vertices;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexReader::is_at_end
+//       Access: Published
+//  Description: Returns true if the reader is currently at the end of
+//               the list of vertices, false otherwise.  If this is
+//               true, another call to get_data*() will result in a
+//               crash.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomVertexReader::
+is_at_end() const {
+  return _read_vertex >= _num_vertices;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::get_data1f
 //       Access: Published
 //  Description: Returns the data associated with the read vertex,
@@ -218,6 +264,7 @@ get_read_vertex() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float qpGeomVertexReader::
 get_data1f() {
+  nassertr(_data_type != (qpGeomVertexDataType *)NULL, 0.0f);
   return _reader->get_data1f(inc_pointer());
 }
 
@@ -230,6 +277,7 @@ get_data1f() {
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase2f &qpGeomVertexReader::
 get_data2f() {
+  nassertr(_data_type != (qpGeomVertexDataType *)NULL, LVecBase2f::zero());
   return _reader->get_data2f(inc_pointer());
 }
 
@@ -242,6 +290,7 @@ get_data2f() {
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase3f &qpGeomVertexReader::
 get_data3f() {
+  nassertr(_data_type != (qpGeomVertexDataType *)NULL, LVecBase3f::zero());
   return _reader->get_data3f(inc_pointer());
 }
 
@@ -254,6 +303,7 @@ get_data3f() {
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase4f &qpGeomVertexReader::
 get_data4f() {
+  nassertr(_data_type != (qpGeomVertexDataType *)NULL, LVecBase4f::zero());
   return _reader->get_data4f(inc_pointer());
 }
 
@@ -266,20 +316,24 @@ get_data4f() {
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomVertexReader::
 get_data1i() {
+  nassertr(_data_type != (qpGeomVertexDataType *)NULL, 0);
   return _reader->get_data1i(inc_pointer());
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexReader::set_pointer
 //       Access: Private
-//  Description: Sets up the internal pointer, etc. to use the vertex
-//               indicated by _start_vertex.
+//  Description: Sets up the internal write pointer, etc. to use the
+//               indicated vertex.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexReader::
-set_pointer() {
-  _read_vertex = _start_vertex;
-  _data = _vertex_data->get_array(_array)->get_data();
+set_pointer(int vertex) {
+  nassertv(_data_type != (qpGeomVertexDataType *)NULL);
+  _read_vertex = vertex;
+  CPT(qpGeomVertexArrayData) array_data = _vertex_data->get_array(_array);
+  _data = array_data->get_data();
   _pointer = _data.p() + _data_type->get_start() + _stride * _read_vertex;
+  _num_vertices = array_data->get_num_vertices();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -290,6 +344,9 @@ set_pointer() {
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *qpGeomVertexReader::
 inc_pointer() {
+  nassertr(_read_vertex < _num_vertices, NULL);
+  nassertr(_pointer == _vertex_data->get_array(_array)->get_data().p() + _data_type->get_start() + _stride * _read_vertex, NULL);
+
   const unsigned char *orig_pointer = _pointer;
   _pointer += _stride;
   ++_read_vertex;

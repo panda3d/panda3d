@@ -35,8 +35,8 @@
     qpgeomVertexData.h qpgeomVertexData.I \
     qpgeomVertexDataType.h qpgeomVertexDataType.I \
     qpgeomVertexFormat.h qpgeomVertexFormat.I \
-    qpgeomVertexIterator.h qpgeomVertexIterator.I \
     qpgeomVertexReader.h qpgeomVertexReader.I \
+    qpgeomVertexWriter.h qpgeomVertexWriter.I \
     indexBufferContext.I indexBufferContext.h \
     internalName.I internalName.h \
     material.I material.h materialPool.I materialPool.h  \
@@ -81,8 +81,8 @@
     qpgeomVertexData.cxx \
     qpgeomVertexDataType.cxx \
     qpgeomVertexFormat.cxx \
-    qpgeomVertexIterator.cxx \
     qpgeomVertexReader.cxx \
+    qpgeomVertexWriter.cxx \
     indexBufferContext.cxx \
     material.cxx  \
     internalName.cxx \
@@ -125,8 +125,8 @@
     qpgeomVertexData.h qpgeomVertexData.I \
     qpgeomVertexDataType.h qpgeomVertexDataType.I \
     qpgeomVertexFormat.h qpgeomVertexFormat.I \
-    qpgeomVertexIterator.h qpgeomVertexIterator.I \
     qpgeomVertexReader.h qpgeomVertexReader.I \
+    qpgeomVertexWriter.h qpgeomVertexWriter.I \
     indexBufferContext.I indexBufferContext.h \
     internalName.I internalName.h \
     material.I material.h \

@@ -197,7 +197,12 @@ update() {
   PStatTimer timer(_char_pcollector);
 
   // First, update all the joints and sliders.
-  bool any_changed = get_bundle()->update();
+  bool any_changed;
+  if (even_animation) {
+    any_changed = get_bundle()->force_update();
+  } else {
+    any_changed = get_bundle()->update();
+  }
 
   // Now update the vertices, if we need to.  This is likely to be a
   // slow operation.

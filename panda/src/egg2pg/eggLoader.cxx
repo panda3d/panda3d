@@ -36,7 +36,7 @@
 #include "qpgeomVertexFormat.h"
 #include "qpgeomVertexArrayFormat.h"
 #include "qpgeomVertexData.h"
-#include "qpgeomVertexIterator.h"
+#include "qpgeomVertexWriter.h"
 #include "qpgeom.h"
 #include "qpgeomTriangles.h"
 #include "qpgeomTristrips.h"
@@ -1987,21 +1987,21 @@ make_vertex_data(const EggRenderState *render_state,
   // And fill the data from the vertex pool.
   EggVertexPool::const_iterator vi;
   for (vi = vertex_pool->begin(); vi != vertex_pool->end(); ++vi) {
-    qpGeomVertexIterator gvi(vertex_data);
+    qpGeomVertexWriter gvi(vertex_data);
     EggVertex *vertex = (*vi);
     gvi.set_vertex(vertex->get_index());
 
     gvi.set_data_type(InternalName::get_vertex());
-    gvi.set_data4f(LCAST(float, vertex->get_pos4() * transform));
+    gvi.add_data4f(LCAST(float, vertex->get_pos4() * transform));
 
     if (vertex->has_normal()) {
       gvi.set_data_type(InternalName::get_normal());
-      gvi.set_data3f(LCAST(float, vertex->get_normal() * transform));
+      gvi.add_data3f(LCAST(float, vertex->get_normal() * transform));
     }
 
     if (vertex->has_color()) {
       gvi.set_data_type(InternalName::get_color());
-      gvi.set_data4f(vertex->get_color());
+      gvi.add_data4f(vertex->get_color());
     }
 
     EggVertex::const_uv_iterator uvi;
