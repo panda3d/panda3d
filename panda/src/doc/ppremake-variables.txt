@@ -5,6 +5,14 @@ heavily from that of GNU makefile syntax, with GNU make's parentheses
 replaced by square brackets to prevent confusion with actual makefile
 syntax.
 
+Note that the dollar sign and square brackets are not actually part of
+the variable names, but are simply the syntax used to reference the
+variable.  This syntax is included with each variable definition in
+this document, because that is how you are most likely to see the
+variable references.
+
+
+
 The general convention is for variables that are built into ppremake,
 or defined by the system ppremake scripts in the $DTOOL root
 directory, should be defined with uppercase letters.  User-defined
@@ -12,7 +20,6 @@ variables, such as those used by the scripts in the $DTOOL/pptempl
 directory to generate the various kinds of makefiles, are defined with
 lowercase letters.  However, following the GNU makefile convention,
 all built-in function names are lowercase.
-
 
 
 The following variables are built into the ppremake executable, and
