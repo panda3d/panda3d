@@ -318,7 +318,7 @@ sorts_less_than(const EggTexture &other, int eq) const {
       return (int)_magfilter < (int)other._magfilter;
     }
     if (_anisotropic_degree != other._anisotropic_degree) {
-      return _anisotropic_degree < other._anisotropic_degree);
+      return _anisotropic_degree < other._anisotropic_degree;
     }
     if (_env_type != other._env_type) {
       return (int)_env_type < (int)other._env_type;
