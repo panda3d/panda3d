@@ -100,9 +100,9 @@ config_downloader.GetBool("http-proxy-tunnel", false);
 const double http_connect_timeout =
 config_downloader.GetDouble("http-connect-timeout", 10.0);
 
-// This is the default amount of time to wait for the HTTP server to
-// finish sending its response to our request, in seconds.  It starts
-// counting after the TCP connection has been established
+// This is the default amount of time to wait for the HTTP server (or
+// proxy) to finish sending its response to our request, in seconds.
+// It starts counting after the TCP connection has been established
 // (http_connect_timeout, above) and the request has been sent.
 const double http_timeout =
 config_downloader.GetDouble("http-timeout", 20.0);

@@ -1080,6 +1080,7 @@ run_socks_proxy_greet() {
   if (!server_send(string(socks_greeting, socks_greeting_len), true)) {
     return true;
   }
+  _sent_request_time = ClockObject::get_global_clock()->get_real_time();
     
   // All done sending request.
   _state = S_socks_proxy_greet_reply;
@@ -1169,6 +1170,7 @@ run_socks_proxy_connect() {
   if (!server_send(connect, true)) {
     return true;
   }
+  _sent_request_time = ClockObject::get_global_clock()->get_real_time();
     
   _state = S_socks_proxy_connect_reply;
   return false;
