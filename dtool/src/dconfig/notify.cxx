@@ -248,6 +248,11 @@ get_top_category() {
 ////////////////////////////////////////////////////////////////////
 NotifyCategory *Notify::
 get_category(const string &basename, NotifyCategory *parent_category) {
+  // We have to ensure that config_notify has been at least created
+  // before we try to create any NotifyCategories, or we'll get an
+  // infinite recursion problem.  Calling this function is sufficient.
+  config_notify.AmInitializing();
+
   // The string should not contain colons.
   nassertr(basename.find(':') == string::npos, NULL);
 
