@@ -81,7 +81,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.DOIDnext = 0
         self.DOIDlast = 0
 
-    # Define uniqueName 
+    # Define uniqueName
     def uniqueName(self, desc):
         return desc
 

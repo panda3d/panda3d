@@ -146,7 +146,7 @@ class ServerRepository:
             if classDef == None:
                 className = dclass.getName()
                 classDef = dcImports.get(className)
-            
+
             if classDef == None:
                 self.notify.info("No class definition for %s." % (className))
             else:
