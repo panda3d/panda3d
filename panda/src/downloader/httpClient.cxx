@@ -224,6 +224,9 @@ get_http(const URLSpec &url, const string &body) {
 
   BIO *bio = BIO_new_connect((char *)server_str.c_str());
 
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug() << "connecting to " << server_str << "\n";
+  }
   if (BIO_do_connect(bio) <= 0) {
     downloader_cat.info()
       << "Could not contact server " << server_str << "\n";
@@ -257,6 +260,9 @@ get_https(const URLSpec &url, const string &body) {
 
   BIO_set_conn_hostname(sbio, server_str.c_str());
 
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug() << "connecting to " << server_str << "\n";
+  }
   if (BIO_do_connect(sbio) <= 0) {
     downloader_cat.info()
       << "Could not contact server " << server_str << "\n";
@@ -266,6 +272,10 @@ get_https(const URLSpec &url, const string &body) {
     return NULL;
   }
 
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "performing SSL handshake\n";
+  }
   if (BIO_do_handshake(sbio) <= 0) {
     downloader_cat.info()
       << "Could not establish SSL handshake with " << server_str << "\n";
@@ -293,6 +303,10 @@ get_http_proxy(const URLSpec &url, const string &body) {
 
   BIO *bio = BIO_new_connect((char *)proxy_server_str.c_str());
 
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "connecting to proxy " << proxy_server_str << "\n";
+  }
   if (BIO_do_connect(bio) <= 0) {
     downloader_cat.info()
       << "Could not contact proxy " << proxy_server_str << "\n";
@@ -321,6 +335,10 @@ get_https_proxy(const URLSpec &url, const string &body) {
 
   BIO *bio = BIO_new_connect((char *)proxy_server_str.c_str());
 
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "connecting to proxy " << proxy_server_str << "\n";
+  }
   if (BIO_do_connect(bio) <= 0) {
     downloader_cat.info()
       << "Could not contact proxy " << proxy_server_str << "\n";
@@ -373,6 +391,11 @@ get_https_proxy(const URLSpec &url, const string &body) {
     }
   }
 
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "connection established to " << url.get_authority() << "\n";
+  }
+
   // Ok, we now have a connection to our actual server, so start
   // speaking SSL and then ask for the document we really want.
 
@@ -384,6 +407,10 @@ get_https_proxy(const URLSpec &url, const string &body) {
   nassertr(ssl != (SSL *)NULL, NULL);
   SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
 
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "performing SSL handshake\n";
+  }
   if (BIO_do_handshake(sbio) <= 0) {
     downloader_cat.info()
       << "Could not establish SSL handshake with " 
