@@ -337,7 +337,7 @@ $[varname] = $[sources]
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
   #define mybasename $[basename $[notdir $[target]]]  
   #define tmpdirname_cyg $[install_lib_dir]/$[mybasename]
-  #define tmpdirname_win $[osfilename $[directory]]
+  #define tmpdirname_win $[osfilename $[tmpdirname_cyg]]
   
 // not parallel (requires gmake 3.79) because of link.exe conflicts in TMP dir (see audiotraits dir)
 #if $[GENERATE_BUILDDATE]
