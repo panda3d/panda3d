@@ -23,6 +23,31 @@ done
 PYTHONPATH=$NEWPYTHONPATH
 export PYTHONPATH
 
+
+# Lets also de-cygwinify the Project variables (so you can use file name 
+# completion)  This is hardcoded for the most popular trees
+if [ "$DTOOL" ]; then
+    DTOOL=`cygpath -w $DTOOL`
+    export DTOOL
+fi
+if [ "$PANDA" ]; then
+    PANDA=`cygpath -w $PANDA`
+    export PANDA
+fi
+if [ "$DIRECT" ]; then
+    DIRECT=`cygpath -w $DIRECT`
+    export DIRECT
+fi
+if [ "$TOONTOWN" ]; then
+    TOONTOWN=`cygpath -w $TOONTOWN`
+    export TOONTOWN
+fi
+
+# Export the proper home environment variable
+HOME=`cygpath -w $HOME`
+export HOME
+
+
 # We can't run with -u under windows for some reason.  But we do need to
 # make a distinction between python_d and python.  We'll accept the user
 # parameter -d to indicate we should run python_d.

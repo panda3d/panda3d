@@ -28,6 +28,7 @@ def addpackage(package):
     comments and empty lines are ok
     """
     tree = os.getenv(package)
+    
     lowerPackage = package.lower()
     fullname = os.path.join(tree, 'etc' + os.sep + (lowerPackage + '.pth'))
     try:

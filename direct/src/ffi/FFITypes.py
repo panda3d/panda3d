@@ -502,10 +502,10 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             for parentType in self.parentTypes:
                 # Copy all the parents instance methods
                 for method in parentType.instanceMethods:
-                    method.generateInheritedUpcastMethodCode(self, parentType, file, nesting)
+                    method.generateInheritedMethodCode(self, parentType, file, nesting, 1) # with downcast
                 # Copy all the parents upcast methods so we transitively pick them up
                 for method in parentType.upcastMethods:
-                    method.generateInheritedUpcastMethodCode(self, parentType, file, nesting)
+                    method.generateInheritedMethodCode(self, parentType, file, nesting, 0) # no downcast
                 # Do not copy the downcast methods
 
         # At multiple inheritance nodes, copy all the parent methods into
@@ -518,7 +518,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
             indent(file, nesting+1, '\n')
             for parentType in self.parentTypes:
                 for method in parentType.globalMethods:
-                    method.generateInheritedUpcastMethodCode(self, parentType, file, nesting)
+                    method.generateInheritedMethodCode(self, parentType, file, nesting, 1) # with downcast
 
         self.generateOverloadedMethods(file, nesting)
 

@@ -137,10 +137,10 @@ class GlobalFunctionSpecification(FunctionSpecification):
         self.outputMethodHeader(methodClass, file, nesting)
         self.outputMethodBody(methodClass, file, nesting)
         self.outputMethodFooter(methodClass, file, nesting)
-    def generateInheritedUpcastMethodCode(self, methodClass, parentClass, file, nesting):
-        self.outputInheritedUpcastMethodHeader(methodClass, parentClass, file, nesting)
-        self.outputInheritedUpcastMethodBody(methodClass, parentClass, file, nesting)
-        self.outputInheritedUpcastMethodFooter(methodClass, parentClass, file, nesting)
+    def generateInheritedMethodCode(self, methodClass, parentClass, file, nesting, needsDowncast):
+        self.outputInheritedMethodHeader(methodClass, parentClass, file, nesting, needsDowncast)
+        self.outputInheritedMethodBody(methodClass, parentClass, file, nesting, needsDowncast)
+        self.outputInheritedMethodFooter(methodClass, parentClass, file, nesting, needsDowncast)
         
     ##################################################
     ## Global Function Code Generation
@@ -220,7 +220,7 @@ class GlobalFunctionSpecification(FunctionSpecification):
     ##################################################
     ## Upcast Class Method Code Generation
     ##################################################
-    def outputInheritedUpcastMethodHeader(self, methodClass, parentClass, file, nesting):
+    def outputInheritedMethodHeader(self, methodClass, parentClass, file, nesting, needsDowncast):
         argTypes = self.typeDescriptor.argumentTypes
         thislessArgTypes = self.typeDescriptor.thislessArgTypes()
         indent(file, nesting+1, 'def ' + self.getFinalName() + '(self')
@@ -232,7 +232,7 @@ class GlobalFunctionSpecification(FunctionSpecification):
                     file.write(', ')
         file.write('):\n')
 
-    def outputInheritedUpcastMethodBody(self, methodClass, parentClass, file, nesting):
+    def outputInheritedMethodBody(self, methodClass, parentClass, file, nesting, needsDowncast):
         # The method body will look something like
         #     upcastSelf = self.upcastToParentClass()
         #     returnValue = ParentClass.method(upcastSelf, arg)
@@ -257,9 +257,10 @@ class GlobalFunctionSpecification(FunctionSpecification):
         file.write(')\n')
         returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()
         # Generate the return value code with no downcast instructions
-        returnType.generateReturnValueWrapper(file, self.typeDescriptor.userManagesMemory, 1, nesting+2)
+        returnType.generateReturnValueWrapper(file, self.typeDescriptor.userManagesMemory,
+                                              needsDowncast, nesting+2)
 
-    def outputInheritedUpcastMethodFooter(self, methodClass, parentClass, file, nesting):
+    def outputInheritedMethodFooter(self, methodClass, parentClass, file, nesting, needsDowncast):
         pass
 
 
@@ -287,10 +288,10 @@ class MethodSpecification(FunctionSpecification):
         self.outputStaticBody(methodClass, file, nesting)
         self.outputStaticFooter(methodClass, file, nesting)
 
-    def generateInheritedUpcastMethodCode(self, methodClass, parentClass, file, nesting):
-        self.outputInheritedUpcastMethodHeader(methodClass, parentClass, file, nesting)
-        self.outputInheritedUpcastMethodBody(methodClass, parentClass, file, nesting)
-        self.outputInheritedUpcastMethodFooter(methodClass, parentClass, file, nesting)
+    def generateInheritedMethodCode(self, methodClass, parentClass, file, nesting, needsDowncast):
+        self.outputInheritedMethodHeader(methodClass, parentClass, file, nesting, needsDowncast)
+        self.outputInheritedMethodBody(methodClass, parentClass, file, nesting, needsDowncast)
+        self.outputInheritedMethodFooter(methodClass, parentClass, file, nesting, needsDowncast)
         
     def generateDowncastMethodCode(self, methodClass, file, nesting):
         # The downcast method code is just like regular code, but the
@@ -455,7 +456,7 @@ class MethodSpecification(FunctionSpecification):
     ##################################################
     ## Upcast Method Code Generation
     ##################################################
-    def outputInheritedUpcastMethodHeader(self, methodClass, parentClass, file, nesting):
+    def outputInheritedMethodHeader(self, methodClass, parentClass, file, nesting, needsDowncast):
         argTypes = self.typeDescriptor.argumentTypes
         thislessArgTypes = self.typeDescriptor.thislessArgTypes()
         indent(file, nesting+1, 'def ' + self.getFinalName() + '(self')
@@ -467,7 +468,7 @@ class MethodSpecification(FunctionSpecification):
                     file.write(', ')
         file.write('):\n')
 
-    def outputInheritedUpcastMethodBody(self, methodClass, parentClass, file, nesting):
+    def outputInheritedMethodBody(self, methodClass, parentClass, file, nesting, needsDowncast):
         # The method body will look something like
         #     upcastSelf = self.upcastToParentClass()
         #     returnValue = libpanda.method(upcastSelf.this, arg)
@@ -490,9 +491,10 @@ class MethodSpecification(FunctionSpecification):
         file.write(')\n')
         returnType = self.typeDescriptor.returnType.recursiveTypeDescriptor()
         # Generate the return value code with no downcast instructions
-        returnType.generateReturnValueWrapper(file, self.typeDescriptor.userManagesMemory, 1, nesting+2)
+        returnType.generateReturnValueWrapper(file, self.typeDescriptor.userManagesMemory,
+                                              needsDowncast, nesting+2)
 
-    def outputInheritedUpcastMethodFooter(self, methodClass, parentClass, file, nesting):
+    def outputInheritedMethodFooter(self, methodClass, parentClass, file, nesting, needsDowncast):
         indent(file, nesting+1, '\n')        
 
 
