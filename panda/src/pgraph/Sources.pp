@@ -2,11 +2,12 @@
                    dtoolutil:c dtoolbase:c dtool:m
 #define LOCAL_LIBS \
     lerp event gsgbase gobj putil linmath \
-    downloader express pandabase pstatclient
+    downloader express pandabase pstatclient 
+ 
 
 #begin lib_target
   #define TARGET pgraph
-  
+
   #define SOURCES \
     accumulatedAttribs.I accumulatedAttribs.h \
     alphaTestAttrib.I alphaTestAttrib.h \  
@@ -78,6 +79,7 @@
     renderEffects.I renderEffects.h \
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
+    seaPatchNode.h seaPatchNode.I \
     sceneGraphAnalyzer.h \
     sceneGraphReducer.I sceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \
@@ -170,6 +172,7 @@
     sceneGraphAnalyzer.cxx \
     sceneGraphReducer.cxx \
     sceneSetup.cxx \
+    seaPatchNode.cxx \
     selectiveChildNode.cxx \
     sequenceNode.cxx \
     showBoundsEffect.cxx \
@@ -253,6 +256,7 @@
     renderEffects.I renderEffects.h \
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
+    seaPatchNode.I seaPatchNode.h \
     sceneGraphAnalyzer.h \
     sceneGraphReducer.I sceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \
