@@ -16,26 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(_DEBUG) || defined(COUNT_DRAWPRIMS)
-typedef enum {DrawPrim,DrawIndexedPrim} DP_Type;
-static const char *DP_Type_Strs[3] = {"DrawPrimitive","DrawIndexedPrimitive"};
-
-void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,IDirect3DDevice9 *pD3DDevice,DWORD nVerts,DWORD nTris) {
-        if(FAILED(hr)) {
-            // loss of exclusive mode is not a real DrawPrim problem, ignore it
-            HRESULT testcooplvl_hr = pD3DDevice->TestCooperativeLevel();
-            if((testcooplvl_hr != D3DERR_DEVICELOST)||(testcooplvl_hr != D3DERR_DEVICENOTRESET)) {
-                dxgsg9_cat.fatal() << DP_Type_Strs[dptype] << "() failed: result = " << D3DERRORSTRING(hr);
-                exit(1);
-            }
-        }
-
-        CountDPs(nVerts,nTris);
-}
-#else
-#define TestDrawPrimFailure(a,b,c,nVerts,nTris) CountDPs(nVerts,nTris);
-#endif
-
 INLINE DWORD
 Colorf_to_D3DCOLOR(const Colorf &cColorf) {
 // MS VC defines _M_IX86 for x86.  gcc should define _X86_
