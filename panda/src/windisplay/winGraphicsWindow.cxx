@@ -53,16 +53,6 @@ bool WinGraphicsWindow::_saved_mouse_vanish;
 
 static const char * const errorbox_title = "Panda3D Error";
 
-
-// because we dont have access to ModifierButtons, as a hack just
-// synchronize state of these keys on get/lose keybd focus
-#define NUM_MODIFIER_KEYS 16
-static unsigned int hardcoded_modifier_buttons[NUM_MODIFIER_KEYS] = {
-  VK_SHIFT, VK_MENU, VK_CONTROL, VK_SPACE, VK_TAB,
-  VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, VK_PRIOR, VK_NEXT, VK_HOME, VK_END,
-  VK_INSERT, VK_DELETE, VK_ESCAPE
-};
-
 ////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::Constructor
 //       Access: Public
@@ -81,6 +71,7 @@ WinGraphicsWindow(GraphicsPipe *pipe) :
   _ime_composition_w = false;
   _tracking_mouse_leaving = false;
   _maximized = false;
+  memset(_keyboard_state, 0, sizeof(BYTE) * num_virtual_keys);
 
   if (!_got_dynamic_fns) {
     // these fns arent defined on win95, so get dynamic ptrs to them
@@ -917,37 +908,54 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     handle_keyrelease(lookup_key(wparam));
     break;
 
+  case WM_KILLFOCUS: 
+    // Record the current state of the keyboard when the focus is
+    // lost, so we can check it for changes when we regain focus.
+    GetKeyboardState(_keyboard_state);
+    break;
+
   case WM_SETFOCUS: 
     {
       POINT point;
       GetCursorPos(&point);
       ScreenToClient(hwnd, &point);
-      
-      // this is a hack to make sure common modifier keys have proper
-      // state since at focus loss, app may never receive key-up event
-      // corresponding to a key-down. it would be better to know the
-      // exact set of ModifierButtons the user is using, since we may
-      // miss some here
-      int i;
-      for (i=0; i < NUM_MODIFIER_KEYS; i++) {
-        if (GetKeyState(hardcoded_modifier_buttons[i]) < 0) {
-          handle_keypress(lookup_key(hardcoded_modifier_buttons[i]),
-                          point.x, point.y);
-        }
-      }
-    }
-    return 0;
 
-  case WM_KILLFOCUS: 
-    {
-      int i;
-      for (i=0; i < NUM_MODIFIER_KEYS; i++) {
-        if (GetKeyState(hardcoded_modifier_buttons[i]) < 0) {
-          handle_keyrelease(lookup_key(hardcoded_modifier_buttons[i]));
+      // When we lose focus, the app may miss key-up events for keys
+      // that were formerly held down (and vice-versa).  Therefore,
+      // when focus is regained, compare the state of the keyboard to
+      // the last known state (stored above, when focus was lost) to
+      // regenerate the lost keyboard events.
+      BYTE new_keyboard_state[num_virtual_keys];
+      GetKeyboardState(new_keyboard_state);
+      for (int i = 0; i < num_virtual_keys; i++) {
+        // Filter out these particular three.  We don't want to test
+        // these, because these are virtual duplicates for
+        // VK_LSHIFT/VK_RSHIFT, etc.; and the left/right equivalent is
+        // also in the table.  If we respect both VK_LSHIFT as well as
+        // VK_SHIFT, we'll generate two keyboard messages when
+        // VK_LSHIFT changes state.
+        if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) {
+          if (((new_keyboard_state[i] ^ _keyboard_state[i]) & 0x80) != 0) {
+            // This key has changed state.
+            if ((new_keyboard_state[i] & 0x80) != 0) {
+              // The key is now held down.
+              handle_keypress(lookup_key(i), point.x, point.y);
+            } else {
+              // The key is now released.
+              handle_keyrelease(lookup_key(i));
+            }
+          }
         }
       }
+
+      // Save the new keyboard state, just for good measure.  This
+      // really shouldn't be necessary, but it protects against
+      // inadvertently getting WM_SETFOCUS twice in a row, for
+      // instance.
+      memcpy(_keyboard_state, new_keyboard_state,
+             sizeof(BYTE) * num_virtual_keys);
     }
-    return 0;
+    break;
   }
 
   return DefWindowProc(hwnd, msg, wparam, lparam);

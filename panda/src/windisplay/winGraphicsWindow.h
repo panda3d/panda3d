@@ -110,6 +110,11 @@ private:
   typedef BOOL (WINAPI *PFN_TRACKMOUSEEVENT)(LPTRACKMOUSEEVENT);
   static PFN_TRACKMOUSEEVENT _pfnTrackMouseEvent;
 
+  // This is used to remember the state of the keyboard when keyboard
+  // focus is lost.
+  static const int num_virtual_keys = 256;
+  BYTE _keyboard_state[num_virtual_keys];
+
 protected:
   static bool _loaded_custom_cursor;
   static HCURSOR _mouse_cursor;
