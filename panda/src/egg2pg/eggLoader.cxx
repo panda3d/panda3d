@@ -735,12 +735,6 @@ load_textures() {
   EggTextureCollection tc;
   tc.find_used_textures(&_data);
 
-  // Collapse the textures down by filename only.  Should we also
-  // differentiate by attributes?  Maybe.
-  EggTextureCollection::TextureReplacement replace;
-  tc.collapse_equivalent_textures(EggTexture::E_complete_filename,
-                                  replace);
-
   EggTextureCollection::iterator ti;
   for (ti = tc.begin(); ti != tc.end(); ++ti) {
     PT_EggTexture egg_tex = (*ti);
@@ -751,18 +745,6 @@ load_textures() {
       // Texture pointer given an EggTexture pointer, later.
       _textures[egg_tex] = def;
     }
-  }
-
-  // Finally, associate all of the removed texture references back to
-  // the same pointers as the others.
-  EggTextureCollection::TextureReplacement::const_iterator ri;
-  for (ri = replace.begin(); ri != replace.end(); ++ri) {
-    PT_EggTexture orig = (*ri).first;
-    PT_EggTexture repl = (*ri).second;
-
-    TextureDef &def = _textures[orig];
-    def = _textures[repl];
-    def._egg_tex = orig;
   }
 }
 

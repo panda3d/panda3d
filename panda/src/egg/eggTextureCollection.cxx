@@ -496,10 +496,11 @@ create_unique_texture(const EggTexture &copy, int eq) {
        ++oti) {
     EggTexture *tex = (*oti);
     if (copy.is_equivalent_to(*tex, eq)) {
+      //cout << "tex:" << tex->get_name() << "---copy:" << copy.get_name() << endl;
       return tex;
     }
   }
-
+  //cout << "adding a texture to collection: " << copy.get_name() << endl;
   EggTexture *new_texture = new EggTexture(copy);
   add_texture(new_texture);
   return new_texture;

@@ -284,10 +284,12 @@ write(ostream &out, int indent_level) const {
 bool EggTexture::
 is_equivalent_to(const EggTexture &other, int eq) const {
   if ((eq & E_complete_filename) == E_complete_filename) {
+    //cout << "compared by filename" << endl;
     if (get_filename() != other.get_filename()) {
       return false;
     }
   } else {
+    //cout << "compared by not complete filename" << endl;
     const Filename &a = get_filename();
     const Filename &b = other.get_filename();
 
@@ -309,6 +311,7 @@ is_equivalent_to(const EggTexture &other, int eq) const {
   }
 
   if (eq & E_transform) {
+    //cout << "compared by transform" << endl;
     if (transform_is_identity() != other.transform_is_identity()) {
       return false;
     }
@@ -321,6 +324,7 @@ is_equivalent_to(const EggTexture &other, int eq) const {
   }
 
   if (eq & E_attributes) {
+    //cout << "compared by attributes" << endl;
     if (_format != other._format ||
         _wrap_mode != other._wrap_mode ||
         _wrap_u != other._wrap_u ||
@@ -336,6 +340,7 @@ is_equivalent_to(const EggTexture &other, int eq) const {
   }
 
   if (eq & E_tref_name) {
+    //cout << "compared by tref_name" << endl;
     if (get_name() != other.get_name()) {
       return false;
     }
