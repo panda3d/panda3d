@@ -79,6 +79,8 @@ PUBLISHED:
   virtual void write_angular_forces(ostream &out, unsigned int indent=0) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 
+  virtual void debug_output(ostream &out, unsigned int indent=0) const;
+
 public:
   friend class Physical;
 

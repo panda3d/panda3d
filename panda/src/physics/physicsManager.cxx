@@ -76,9 +76,9 @@ remove_angular_force(AngularForce *f) {
   PT(BaseForce) ptbf = f;
   found = find(_angular_forces.begin(), _angular_forces.end(), ptbf);
 
-  if (found == _angular_forces.end())
+  if (found == _angular_forces.end()) {
     return;
-
+  }
   _angular_forces.erase(found);
 }
 
@@ -115,12 +115,14 @@ do_physics(float dt) {
     nassertv(physical);
 
     // do linear
-    if (_linear_integrator.is_null() == false) {
+    //if (_linear_integrator.is_null() == false) {
+    if (_linear_integrator) {
       _linear_integrator->integrate(physical, _linear_forces, dt);
     }
 
     // do angular
-    if (_angular_integrator.is_null() == false) {
+    //if (_angular_integrator.is_null() == false) {
+    if (_angular_integrator) {
       _angular_integrator->integrate(physical, _angular_forces, dt);
     }
 
@@ -236,6 +238,38 @@ write(ostream &out, unsigned int indent) const {
     _angular_integrator->write(out, indent+4);
   } else {
     out.width(indent+4); out<<""<<"null\n";
+  }
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PhysicsManager::
+debug_output(ostream &out, unsigned int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""<<"PhysicsManager li"<<(_linear_integrator?1:0)<<" ai"<<(_angular_integrator?1:0)<<"\n";
+  out<<"  _physicals "<<_physicals.size()<<"\n";
+  //_physicals._phys_body.write(out, indent+2);
+  
+
+  out.width(indent+2);
+  out<<""<<"_linear_forces ("<<_linear_forces.size()<<" forces)\n";
+  for (LinearForceVector::const_iterator i=_linear_forces.begin();
+       i != _linear_forces.end();
+       ++i) {
+    (*i)->write(out, indent+2);
+  }
+
+  out.width(indent+2);
+  out<<""<<"  _angular_forces "<<_angular_forces.size()<<"\n";
+  for (AngularForceVector::const_iterator i=_angular_forces.begin();
+       i != _angular_forces.end();
+       ++i) {
+    (*i)->write(out, indent+2);
   }
   #endif //] NDEBUG
 }
