@@ -4622,7 +4622,6 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow)
     }
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: show_frame 
 //       Access:
@@ -4655,7 +4654,10 @@ void DXGraphicsStateGuardian::show_frame(void) {
             }
 		
         } else {
-		    HRESULT hr = _pri->Blt( &_view_rect, _back,  NULL, DDBLT_WAIT, NULL );
+            DX_DECLARE_CLEAN(DDBLTFX, bltfx);
+
+            bltfx.dwDDFX |= DDBLTFX_NOTEARING;
+		    HRESULT hr = _pri->Blt( &_view_rect, _back,  NULL, DDBLT_DDFX | DDBLT_WAIT, &bltfx );
             if(hr!=DD_OK) {
     			if (hr == DDERR_SURFACELOST) {
                   // Check/restore the primary surface
@@ -4673,6 +4675,14 @@ void DXGraphicsStateGuardian::show_frame(void) {
                       exit(1);
                 }
             }
+
+            // right now, we want sync to v-blank  (time from now up to vblank is wasted)
+            // worry about triple-buffering l8r
+            hr =  _pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+			if (hr != DD_OK) {
+			      dxgsg_cat.error() << "DXGraphicsStateGuardian::WaitForVerticalBlank() failed : " << ConvD3DErrorToString(hr) << endl;
+                  exit(1);
+            }            
 		}
     }
 }
