@@ -91,11 +91,11 @@ die(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_angle
+//    Function : get_theta
 //      Access : public, virtual
 // Description :
 ////////////////////////////////////////////////////////////////////
 float ZSpinParticle::
-get_angle(void) const {
+get_theta(void) const {
   return _cur_angle;
 }
