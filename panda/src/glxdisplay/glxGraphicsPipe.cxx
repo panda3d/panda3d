@@ -48,7 +48,7 @@ glxGraphicsPipe(const string &display) {
   setlocale(LC_ALL, "");
 
   _is_valid = false;
-  _supported_types = OT_window;
+  _supported_types = OT_window | OT_buffer;
   _display = NULL;
   _screen = 0;
   _root = (Window)NULL;
