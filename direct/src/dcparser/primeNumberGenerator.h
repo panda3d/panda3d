@@ -20,6 +20,7 @@
 #define PRIMENUMBERGENERATOR_H
 
 #include "dcbase.h"
+#include "vector_int.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PrimeNumberGenerator
@@ -36,7 +37,7 @@ public:
   int operator [] (int n);
 
 private:
-  typedef pvector<int> Primes;
+  typedef vector_int Primes;
   Primes _primes;
 };
 
