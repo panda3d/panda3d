@@ -2064,6 +2064,13 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
     if(bVerboseMode)
        wdxdisplay_cat.info() << "searching for valid display modes at res: (" << RequestedXsize << "," << RequestedYsize << "), TotalModes: " << cNumModes<< endl;
 
+    // ignore memory based checks for min res 640x480.  some cards just dont give accurate memavails.
+    // (should I do the check anyway for 640x480 32bpp?)
+    bool bDoMemBasedChecks=((!((RequestedXsize==640)&&(RequestedXsize==480))) &&
+                            (_dxgsg->scrn.MaxAvailVidMem!=UNKNOWN_VIDMEM_SIZE) &&
+                            (!special_check_fullscreen_resolution(RequestedXsize,RequestedYsize)));
+
+
     for(int i=0;i<cNumModes;i++) {
         D3DDISPLAYMODE dispmode;
         hr = _dxgsg->scrn.pD3D8->EnumAdapterModes(_dxgsg->scrn.CardIDNum,i,&dispmode);
@@ -2102,8 +2109,8 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
         float RendTgtMinMemReqmt;
 
         // if we have a valid memavail value, try to determine if we have enough space
-        if( (_dxgsg->scrn.MaxAvailVidMem!=UNKNOWN_VIDMEM_SIZE) &&
-            (!(special_check_fullscreen_resolution(RequestedXsize,RequestedYsize)))) {
+        if( bDoMemBasedChecks) {
+
             // assume user is testing fullscreen, not windowed, so use the dwTotal value
             // see if 3 scrnbufs (front/back/z)at 16bpp at xsize*ysize will fit with a few
             // extra megs for texmem
@@ -2139,8 +2146,9 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
                 continue;
             }
 
-            if((_dxgsg->scrn.MaxAvailVidMem!=UNKNOWN_VIDMEM_SIZE) &&
-               (!(special_check_fullscreen_resolution(RequestedXsize,RequestedYsize)))) {
+            float MinMemReqmt = 0.0f;
+
+            if(bDoMemBasedChecks) {
                 // test memory again, this time including zbuf size
                 float zbytes_per_pixel = (IS_16BPP_ZBUFFER(zformat) ? 2 : 4);
                 float MinMemReqmt = RendTgtMinMemReqmt + ((float)RequestedXsize)*((float)RequestedYsize)*zbytes_per_pixel;
@@ -2155,22 +2163,22 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
                                                << " (" << (int)MinMemReqmt << " > " << _dxgsg->scrn.MaxAvailVidMem << ")\n";
                     continue;
                 }
+            }
 
-                if(MinMemReqmt<_dxgsg->scrn.MaxAvailVidMem) {
-                    if(!IS_16BPP_ZBUFFER(zformat)) {
-                        // see if things fit with a 16bpp zbuffer
+            if((!bDoMemBasedChecks) || (MinMemReqmt<_dxgsg->scrn.MaxAvailVidMem)) {
+               if(!IS_16BPP_ZBUFFER(zformat)) {
+                    // see if things fit with a 16bpp zbuffer
 
-                        if(!FindBestDepthFormat(_dxgsg->scrn,dispmode,&zformat,bWantStencil,true,bVerboseMode)) {
-                            if(bVerboseMode)
-                                wdxdisplay_cat.info() << "FindBestDepthFmt rejected Mode["<<i<<"] (" <<RequestedXsize<<"x" << RequestedYsize <<","<< D3DFormatStr(dispmode.Format) << endl;
-                            *pCouldntFindAnyValidZBuf=true;
-                            continue;
-                        }
-
-                        // right now I'm not going to use these flags, just let the create fail out-of-mem and retry at 16bpp
-                        *pSupportedScreenDepthsMask |= (IS_16BPP_DISPLAY_FORMAT(dispmode.Format) ? DISPLAY_16BPP_REQUIRES_16BPP_ZBUFFER_FLAG : DISPLAY_32BPP_REQUIRES_16BPP_ZBUFFER_FLAG);
+                    if(!FindBestDepthFormat(_dxgsg->scrn,dispmode,&zformat,bWantStencil,true,bVerboseMode)) {
+                        if(bVerboseMode)
+                            wdxdisplay_cat.info() << "FindBestDepthFmt rejected Mode["<<i<<"] (" <<RequestedXsize<<"x" << RequestedYsize <<","<< D3DFormatStr(dispmode.Format) << endl;
+                        *pCouldntFindAnyValidZBuf=true;
+                        continue;
                     }
-                }
+
+                    // right now I'm not going to use these flags, just let the create fail out-of-mem and retry at 16bpp
+                    *pSupportedScreenDepthsMask |= (IS_16BPP_DISPLAY_FORMAT(dispmode.Format) ? DISPLAY_16BPP_REQUIRES_16BPP_ZBUFFER_FLAG : DISPLAY_32BPP_REQUIRES_16BPP_ZBUFFER_FLAG);
+               }
             }
         }
 
@@ -2331,7 +2339,7 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
                                              {32000000,  800, 600},  // 32MB+ cards will choose this
                 #endif
                                             // some monitors have trouble w/1600x1200, so dont pick this by deflt,
-                                            // even though 64MB cards should handle it				
+                                            // even though 64MB cards should handle it              
                                              {64000000, 1280,1024}   // 64MB+ cards will choose this
                                            };
                 const NumResLims = (sizeof(MemRes)/sizeof(Memlimres));
@@ -3091,7 +3099,6 @@ get_depth_bitwidth(void) {
 //  return ddsd.ddpfPixelFormat.dwRGBBitCount;
 }
 
-/*
 void wdxGraphicsWindow::
 get_framebuffer_format(PixelBuffer::Type &fb_type, PixelBuffer::Format &fb_format) {
     assert(_dxgsg!=NULL);
@@ -3104,7 +3111,7 @@ get_framebuffer_format(PixelBuffer::Type &fb_type, PixelBuffer::Format &fb_forma
         fb_format = PixelBuffer::F_rgb5;
      else fb_format = PixelBuffer::F_rgb;
 }
-*/
+
 // Global system parameters we want to modify during our run
 static int iMouseTrails;
 static bool bCursorShadowOn,bMouseVanish;

@@ -91,6 +91,7 @@ public:
   virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
   bool special_check_fullscreen_resolution(UINT xsize,UINT ysize);
   virtual int get_depth_bitwidth(void);
+  virtual void get_framebuffer_format(PixelBuffer::Type &fb_type, PixelBuffer::Format &fb_format);
 
 protected:
   ButtonHandle lookup_key(WPARAM wparam) const;
