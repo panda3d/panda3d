@@ -69,7 +69,7 @@ add_object(CullableObject *object) {
       break;
 
     case TransparencyAttrib::M_dual:
-      {
+      if (m_dual) {
         // M_dual is implemented by drawing the opaque parts first,
         // without transparency, then drawing the transparent parts
         // later.  This means we must copy the object and add it to
@@ -81,15 +81,26 @@ add_object(CullableObject *object) {
             bin_attrib->get_bin_name().empty()) {
           // We make a copy of the object to draw the transparent part
           // without decals; this gets placed in the transparent bin.
-          CullableObject *transparent_part = new CullableObject(*object);
-          transparent_part->_state = state->compose(get_dual_transparent_state());
-          CullBin *bin = get_bin(transparent_part->_state->get_bin_index());
-          nassertv(bin != (CullBin *)NULL);
-          bin->add_object(transparent_part);
+#ifndef NDEBUG
+          if (m_dual_transparent) 
+#endif
+          {
+            CullableObject *transparent_part = new CullableObject(*object);
+            transparent_part->_state = state->compose(get_dual_transparent_state());
+            CullBin *bin = get_bin(transparent_part->_state->get_bin_index());
+            nassertv(bin != (CullBin *)NULL);
+            bin->add_object(transparent_part);
+          }
 
           // Now we can draw the opaque part, with decals.  This will
           // end up in the opaque bin.
           object->_state = state->compose(get_dual_opaque_state());
+#ifndef NDEBUG
+          if (!m_dual_opaque) {
+            delete object;
+            return;
+          }
+#endif
         }
       }
       break;

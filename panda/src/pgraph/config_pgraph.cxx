@@ -89,6 +89,14 @@ const bool fake_view_frustum_cull = config_pgraph.GetBool("fake-view-frustum-cul
 // trapped with assert-abort).
 const bool unambiguous_graph = config_pgraph.GetBool("unambiguous-graph", false);
 
+// Set this false to disable TransparencyAttrib::M_dual altogether
+// (and use M_alpha in its place).
+const bool m_dual = config_pgraph.GetBool("m-dual", true);
+// Set this false to disable just the opaque part of M_dual.
+const bool m_dual_opaque = config_pgraph.GetBool("m-dual-opaque", true);
+// Set this false to disable just the transparent part of M_dual.
+const bool m_dual_transparent = config_pgraph.GetBool("m-dual-transparent", true);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgraph
 //  Description: Initializes the library.  This must be called at

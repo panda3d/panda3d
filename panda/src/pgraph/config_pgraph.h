@@ -29,6 +29,10 @@ NotifyCategoryDecl(pgraph, EXPCL_PANDA, EXPTP_PANDA);
 extern const bool fake_view_frustum_cull;
 extern const bool unambiguous_graph;
 
+extern const bool m_dual;
+extern const bool m_dual_opaque;
+extern const bool m_dual_transparent;
+
 extern EXPCL_PANDA void init_libpgraph();
 
 #endif
