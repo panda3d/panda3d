@@ -18,6 +18,7 @@
 
 #include "config_physics.h"
 #include "linearCylinderVortexForce.h"
+#include <nearly_zero.h>
 
 TypeHandle LinearCylinderVortexForce::_type_handle;
 
@@ -98,17 +99,34 @@ get_child_vector(const PhysicsObject *po) {
   if (dist_squared > radius_squared)
     return force_vec;
 
+  if IS_NEARLY_ZERO(dist_squared)
+    return force_vec;
+
   float r = sqrtf(dist_squared);
 
-  LVector3f tangential = po->get_velocity();
+  if IS_NEARLY_ZERO(r)
+    return force_vec;
+
+  LVector3f tangential = point;
   tangential[2] = 0.0f;
+  tangential.normalize();
+  tangential = tangential.cross(LVector3f(0,0,1));
 
   LVector3f centripetal = -point;
   centripetal[2] = 0.0f;
   centripetal.normalize();
 
+  LVector3f combined = tangential + centripetal;
+  combined.normalize();
+
   //  a = v^2 / r
-  centripetal = centripetal * _coef * (tangential.length_squared() / r);
+  //centripetal = centripetal * _coef * (tangential.length_squared() /
+  //                                     (r + get_nearly_zero_value(r)));
+
+  centripetal = combined * _coef * po->get_velocity().length();
+
+  //centripetal = combined * _coef * (po->get_velocity().length() /
+  //                                  (r + get_nearly_zero_value(r)));
 
   return centripetal;
 }
