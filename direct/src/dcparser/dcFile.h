@@ -22,10 +22,10 @@ PUBLISHED:
   DCFile();
   ~DCFile();
 
-  bool read(const string &filename);
+  bool read(Filename filename);
   bool read(istream &in, const string &filename = string());
 
-  bool write(const string &filename) const;
+  bool write(Filename filename) const;
   bool write(ostream &out, const string &filename = string()) const;
 
   int get_num_classes();

@@ -28,9 +28,10 @@ class ClientRepository(DirectObject.DirectObject):
 
     def parseDcFile(self, dcFileName):
         self.dcFile = DCFile()
-        readResult = self.dcFile.read(dcFileName)
+        fname = Filename(dcFileName)
+        readResult = self.dcFile.read(fname)
         if not readResult:
-            self.notify.error("Could not read dcfile: " + str(dcFileName.cStr()))
+            self.notify.error("Could not read dcfile: " + dcFileName)
         return self.parseDcClasses(self.dcFile)
 
     def parseDcClasses(self, dcFile):

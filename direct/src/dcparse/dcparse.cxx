@@ -3,8 +3,8 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "dcbase.h"
-#include "dcFile.h"
+#include <dcbase.h>
+#include <dcFile.h>
 
 int
 main(int argc, char *argv[]) {

@@ -7,6 +7,10 @@
 #include "dcParserDefs.h"
 #include "dcLexerDefs.h"
 
+#ifdef WITHIN_PANDA
+#include <filename.h>
+#endif
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCFile::Constructor
@@ -43,8 +47,15 @@ DCFile::
 //               have been partially read).
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
-read(const string &filename) {
-  ifstream in(filename.c_str());
+read(Filename filename) {
+  ifstream in;
+
+#ifdef WITHIN_PANDA
+  filename.set_text();
+  filename.open_read(in);
+#else
+  in.open(filename.c_str());
+#endif
 
   if (!in) {
     cerr << "Cannot open " << filename << " for reading.\n";
@@ -90,8 +101,15 @@ read(istream &in, const string &filename) {
 //               written, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
-write(const string &filename) const {
-  ofstream out(filename.c_str());
+write(Filename filename) const {
+  ofstream out;
+
+#ifdef WITHIN_PANDA
+  filename.set_text();
+  filename.open_write(out);
+#else
+  out.open(filename.c_str());
+#endif
 
   if (!out) {
     cerr << "Can't open " << filename << " for output.\n";

@@ -19,6 +19,7 @@
 
 #include <directbase.h>
 #include <notify.h>
+#include <filename.h>
 
 #else
 
@@ -69,6 +70,10 @@ using namespace std;
 // them to nothing.
 #define EXPCL_DIRECT
 #define EXPTP_DIRECT
+
+// Panda defines a special Filename class.  We'll use an ordinary
+// string instead.
+typedef string Filename;
 
 #endif  // WITHIN_PANDA
 
