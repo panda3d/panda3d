@@ -588,7 +588,7 @@ render_scene(Node *root, ProjectionNode *projnode,
   _current_root_node = root;
 
   render_subgraph(_render_traverser, root, projnode, initial_state,
-          AllTransitionsWrapper());
+                  AllTransitionsWrapper());
 
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
