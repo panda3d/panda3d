@@ -139,9 +139,9 @@ make_faces() {
   float smooth_angle = -1.0;
 
   int num_polygons = _polygons->get_num_polygons();
-  for (int i = 0; i < num_polygons; i++) {
-    LwoPolygons::Polygon *poly = _polygons->get_polygon(i);
-    CLwoSurface *surface = get_surface(i);
+  for (int pindex = 0; pindex < num_polygons; pindex++) {
+    LwoPolygons::Polygon *poly = _polygons->get_polygon(pindex);
+    CLwoSurface *surface = get_surface(pindex);
     
     bool is_valid = true;
 
@@ -154,38 +154,50 @@ make_faces() {
     // clockwise ordering convention.  We also want to start with the
     // last vertex, so that the first convex angle is the first angle
     // in the EggPolygon (for determining correct normals).
-    int num_vertices = poly->_vertices.size();
     PT(EggPrimitive) egg_prim;
 
-    if (num_vertices == 1) {
+    if (poly->_vertices.size() == 1) {
       egg_prim = new EggPoint;
     } else {
       egg_prim = new EggPolygon;
     }
 
-    if (surface != (CLwoSurface *)NULL) {
-      surface->apply_properties(egg_prim, smooth_angle);
-    }
+    surface->check_texture();
 
+    // First, we have to create a temporary vector of vertices for the
+    // polygon, so we can possibly adjust the properties of these
+    // vertices (like the UV's) in the shader before we create them.
+    vector_PT_EggVertex egg_vertices;
+
+    int num_vertices = poly->_vertices.size();
     for (int vi = num_vertices; vi > 0; vi--) {
       int vindex = poly->_vertices[vi % num_vertices];
       if (vindex < 0 || vindex >= num_points) {
 	nout << "Invalid vertex index " << vindex << " in polygon.\n";
 	is_valid = false;
-
       } else {
-	EggVertex egg_vert;
+	PT(EggVertex) egg_vertex = new EggVertex;
 	LPoint3d pos = LCAST(double, points->get_point(vindex));
-	egg_vert.set_pos(pos);
-	if (surface != (CLwoSurface *)NULL && surface->has_uvs()) {
-	  egg_vert.set_uv(surface->get_uv(pos));
-	}
-	EggVertex *new_vert = egg_vpool->create_unique_vertex(egg_vert);
-	egg_prim->add_vertex(new_vert);
+	egg_vertex->set_pos(pos);
+
+	egg_vertices.push_back(egg_vertex);
       }
     }
 
     if (is_valid) {
+      if (surface != (CLwoSurface *)NULL) {
+	surface->apply_properties(egg_prim, egg_vertices, smooth_angle);
+      }
+
+      // Now add all the vertices officially to the primitive.
+      vector_PT_EggVertex::const_iterator evi;
+      for (evi = egg_vertices.begin(); evi != egg_vertices.end(); ++evi) {
+	EggVertex *egg_vertex = (*evi);
+	EggVertex *new_vertex = egg_vpool->create_unique_vertex(*egg_vertex);
+	egg_prim->add_vertex(new_vertex);
+      }
+      
+      // And add the primitive to its parent.
       _egg_group->add_child(egg_prim.p());
     }
   }

@@ -36,6 +36,16 @@ FltToEggConverter::
 FltToEggConverter() {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+FltToEggConverter::
+~FltToEggConverter() {
+  cleanup();
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltToEggConverter::get_name
@@ -103,7 +113,7 @@ convert_flt(const FltHeader *flt_header) {
 
   // Generate a default vertex pool.
   _main_egg_vpool = new EggVertexPool("vpool");
-  _egg_data->add_child(_main_egg_vpool);
+  _egg_data->add_child(_main_egg_vpool.p());
 
   // We could populate the vertex pool right away, but it's better to
   // defer each vertex until we encounter it, since some of the
@@ -118,10 +128,26 @@ convert_flt(const FltHeader *flt_header) {
   if (_main_egg_vpool->empty()) {
     // If we didn't get any global vertices, remove the vertex pool
     // just for cleanliness.
-    _egg_data->remove_child(_main_egg_vpool);
+    _egg_data->remove_child(_main_egg_vpool.p());
   }
 
+  cleanup();
+
   return !_error;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::cleanup
+//       Access: Private
+//  Description: Frees all the internal data structures after we're
+//               done converting, and resets the converter to its
+//               initial state.
+////////////////////////////////////////////////////////////////////
+void FltToEggConverter::
+cleanup() {  
+  _flt_header.clear();
+  _main_egg_vpool.clear();
+  _textures.clear();
 }
 
 ////////////////////////////////////////////////////////////////////

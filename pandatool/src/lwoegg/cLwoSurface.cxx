@@ -135,13 +135,14 @@ CLwoSurface::
 //               angle is greater than that specified.
 ////////////////////////////////////////////////////////////////////
 void CLwoSurface::
-apply_properties(EggPrimitive *egg_prim, float &smooth_angle) {
+apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
+		 float &smooth_angle) {
   if (!_surface->_source.empty()) {
     // This surface is derived from another surface; apply that one
     // first.
     CLwoSurface *parent = _converter->get_surface(_surface->_source);
     if (parent != (CLwoSurface *)NULL && parent != this) {
-      parent->apply_properties(egg_prim, smooth_angle);
+      parent->apply_properties(egg_prim, egg_vertices, smooth_angle);
     }
   }
 
@@ -165,6 +166,13 @@ apply_properties(EggPrimitive *egg_prim, float &smooth_angle) {
     // Texture overrides the primitive's natural color.
     egg_prim->set_texture(_egg_texture);
     egg_prim->clear_color();
+
+    // Assign UV's to the vertices.
+    vector_PT_EggVertex::const_iterator vi;
+    for (vi = egg_vertices.begin(); vi != egg_vertices.end(); ++vi) {
+      EggVertex *egg_vertex = (*vi);
+      egg_vertex->set_uv(get_uv(egg_vertex->get_pos3()));
+    }
   }
 
   if ((_flags & F_transparency) != 0) {

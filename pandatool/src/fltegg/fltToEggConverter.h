@@ -13,6 +13,7 @@
 #include <somethingToEggConverter.h>
 #include <fltHeader.h>
 #include <eggVertex.h>
+#include <eggVertexPool.h>
 #include <eggTexture.h>
 #include <pointerTo.h>
 
@@ -29,7 +30,6 @@ class FltExternalReference;
 class FltTexture;
 class EggGroupNode;
 class EggPrimitive;
-class EggVertexPool;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : FltToEggConverter
@@ -41,6 +41,7 @@ class EggVertexPool;
 class FltToEggConverter : public SomethingToEggConverter {
 public:
   FltToEggConverter();
+  ~FltToEggConverter();
 
   virtual string get_name() const;
   virtual string get_extension() const;
@@ -49,6 +50,8 @@ public:
   bool convert_flt(const FltHeader *flt_header);
 
 private:
+  void cleanup();
+
   typedef vector< PT(EggVertex) > EggVertices;
 
   void convert_record(const FltRecord *flt_record, FltToEggLevelState &state);
@@ -79,7 +82,7 @@ private:
 
   CPT(FltHeader) _flt_header;
 
-  EggVertexPool *_main_egg_vpool;
+  PT(EggVertexPool) _main_egg_vpool;
 
   typedef map<const FltTexture *, PT(EggTexture) > Textures;
   Textures _textures;

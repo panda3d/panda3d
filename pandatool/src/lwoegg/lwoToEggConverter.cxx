@@ -39,43 +39,7 @@ LwoToEggConverter() {
 ////////////////////////////////////////////////////////////////////
 LwoToEggConverter::
 ~LwoToEggConverter() {
-  if (_generic_layer != (CLwoLayer *)NULL) {
-    delete _generic_layer;
-  }
-
-  Layers::iterator li;
-  for (li = _layers.begin(); li != _layers.end(); ++li) {
-    CLwoLayer *layer = (*li);
-    if (layer != (CLwoLayer *)NULL) {
-      delete layer;
-    }
-  }
-
-  Clips::iterator ci;
-  for (ci = _clips.begin(); ci != _clips.end(); ++ci) {
-    CLwoClip *clip = (*ci);
-    if (clip != (CLwoClip *)NULL) {
-      delete clip;
-    }
-  }
-
-  Points::iterator pi;
-  for (pi = _points.begin(); pi != _points.end(); ++pi) {
-    CLwoPoints *points = (*pi);
-    delete points;
-  }
-
-  Polygons::iterator gi;
-  for (gi = _polygons.begin(); gi != _polygons.end(); ++gi) {
-    CLwoPolygons *polygons = (*gi);
-    delete polygons;
-  }
-
-  Surfaces::iterator si;
-  for (si = _surfaces.begin(); si != _surfaces.end(); ++si) {
-    CLwoSurface *surface = (*si).second;
-    delete surface;
-  }
+  cleanup();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,6 +128,7 @@ convert_lwo(const LwoHeader *lwo_header) {
   connect_egg();
 
   _egg_data->remove_unused_vertices();
+  cleanup();
 
   return !_error;
 }
@@ -210,6 +175,62 @@ get_surface(const string &name) const {
     return (*si).second;
   }
   return (CLwoSurface *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LwoToEggConverter::cleanup
+//       Access: Private
+//  Description: Frees all the internal data structures after we're
+//               done converting, and resets the converter to its
+//               initial state.
+////////////////////////////////////////////////////////////////////
+void LwoToEggConverter::
+cleanup() {  
+  _lwo_header.clear();
+
+  if (_generic_layer != (CLwoLayer *)NULL) {
+    delete _generic_layer;
+    _generic_layer = (CLwoLayer *)NULL;
+  }
+
+  Layers::iterator li;
+  for (li = _layers.begin(); li != _layers.end(); ++li) {
+    CLwoLayer *layer = (*li);
+    if (layer != (CLwoLayer *)NULL) {
+      delete layer;
+    }
+  }
+  _layers.clear();
+
+  Clips::iterator ci;
+  for (ci = _clips.begin(); ci != _clips.end(); ++ci) {
+    CLwoClip *clip = (*ci);
+    if (clip != (CLwoClip *)NULL) {
+      delete clip;
+    }
+  }
+  _clips.clear();
+
+  Points::iterator pi;
+  for (pi = _points.begin(); pi != _points.end(); ++pi) {
+    CLwoPoints *points = (*pi);
+    delete points;
+  }
+  _points.clear();
+
+  Polygons::iterator gi;
+  for (gi = _polygons.begin(); gi != _polygons.end(); ++gi) {
+    CLwoPolygons *polygons = (*gi);
+    delete polygons;
+  }
+  _polygons.clear();
+
+  Surfaces::iterator si;
+  for (si = _surfaces.begin(); si != _surfaces.end(); ++si) {
+    CLwoSurface *surface = (*si).second;
+    delete surface;
+  }
+  _surfaces.clear();
 }
 
 ////////////////////////////////////////////////////////////////////

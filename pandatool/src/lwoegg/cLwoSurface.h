@@ -11,6 +11,7 @@
 #include <lwoSurface.h>
 #include <luse.h>
 #include <eggTexture.h>
+#include <vector_PT_EggVertex.h>
 
 #include <map>
 
@@ -32,7 +33,9 @@ public:
 
   INLINE const string &get_name() const;
 
-  void apply_properties(EggPrimitive *egg_prim, float &smooth_angle);
+  void apply_properties(EggPrimitive *egg_prim,
+			vector_PT_EggVertex &egg_vertices,
+			float &smooth_angle);
   bool check_texture();
 
   INLINE bool has_uvs() const;

@@ -46,6 +46,8 @@ public:
   CLwoSurface *get_surface(const string &name) const;
 
 private:
+  void cleanup();
+
   void collect_lwo();
   void make_egg();
   void connect_egg();
