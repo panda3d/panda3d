@@ -28,6 +28,7 @@
 #ifdef CPPPARSER //[
 // hack for interrogate
 typedef int intptr_t;
+typedef int HANDLE;
 #endif //]
 
 
@@ -144,11 +145,19 @@ protected:
   ConnectionWriter _writer;
   QueuedConnectionListener _listener;
 
+  // Start of old stuff:
+  // This is used to switch to the original method of 
+  // starting applications.  It can be used on old systems
+  // that don't support job objects.  Eventually this stuff
+  // should be removed.
+  bool _useOldStuff;
   typedef pvector< long /*intptr_t*/ > PidStack;
   PidStack _pids;
+  // End of old stuff
+
   typedef pset< PT(Connection) > ConnectionSet;
   ConnectionSet _connections;
-
+  HANDLE _jobObject;
   bool _shutdown;
   
   void check_for_new_clients();
