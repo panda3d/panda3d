@@ -42,8 +42,10 @@ class GraphicsStateGuardian;
 //
 //               This can be used to generate real-time imagery of a
 //               3-d scene using a nonlinear camera, for instance a
-//               fisheye camera, even though the 3-d graphics engine
-//               only supports linear cameras.
+//               fisheye camera, even though the underlying graphics
+//               engine may only support linear cameras.  It can also
+//               pre-distort imagery to compensate for off-axis
+//               projectors, and/or curved screens of any complexity.
 //
 //               
 //               A NonlinearImager may be visualized as a dark room
@@ -56,9 +58,13 @@ class GraphicsStateGuardian;
 //
 //               There also exist in the room one or more (possibly
 //               nonlinear) cameras, called viewers, that observe
-//               these screens.  Each of these viewers is associated
-//               with a single DisplayRegion, where the final results
-//               are presented.
+//               these screens.  The image of the projection screens
+//               seen by each viewer is finally displayed on the
+//               viewer's associated DisplayRegion.  By placing the
+//               viewer(s) appropriately relative to the screens, and
+//               by choosing suitable lens properties for the
+//               viewer(s), you can achieve a wide variety of
+//               distortion effects.
 //
 //
 //               There are several different LensNode (Camera) objects
@@ -73,10 +79,15 @@ class GraphicsStateGuardian;
 //               seen from the screen's source camera is called a
 //               projector; these are set via the
 //               ProjectionScreen::set_projector() interface.
-//               Finally, the (possibly nonlinear) cameras that view
-//               the whole configuration of screens are called
-//               viewers; each of these is associated with a
-//               DisplayRegion, and they are set via set_viewer_camera().
+//               Finally, the cameras that view the whole
+//               configuration of screens are called viewers; each of
+//               these is associated with a DisplayRegion, and they
+//               are set via set_viewer_camera().
+//
+//               Of all these lenses, only the source cameras must use
+//               linear (that is, perspective or orthographic) lenses.
+//               The projectors and viewers may be any arbitrary lens,
+//               linear or otherwise.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAFX NonlinearImager {
 PUBLISHED:
