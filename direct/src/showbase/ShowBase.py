@@ -476,8 +476,7 @@ class ShowBase(DirectObject.DirectObject):
         self.openMainWindow()
 
         # Give the window a chance to truly open.
-        self.graphicsEngine.renderFrame()
-        self.graphicsEngine.renderFrame()
+        self.graphicsEngine.openWindows()
         if self.win != None and not self.isMainWindowOpen():
             self.notify.info("Window did not open, removing.")
             self.closeWindow(self.win)
@@ -490,8 +489,7 @@ class ShowBase(DirectObject.DirectObject):
                 self.pipe = self.pipeList[0]
                 self.openMainWindow()
 
-                self.graphicsEngine.renderFrame()
-                self.graphicsEngine.renderFrame()
+                self.graphicsEngine.openWindows()
                 if self.win != None and not self.isMainWindowOpen():
                     self.notify.info("Window did not open, removing.")
                     self.closeWindow(self.win)
