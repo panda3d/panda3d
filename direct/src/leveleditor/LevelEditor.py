@@ -65,10 +65,14 @@ OBJECT_SNAP_POINTS = {
                      (Vec3(0), Vec3(0))],
     'street_20x40': [(Vec3(20.0,0,0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
+    'street_20x40_15': [(Vec3(20.0,0,0), Vec3(0)),
+                     (Vec3(0), Vec3(0))],
     'street_30x40': [(Vec3(30.0,0,0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
     'street_40x40': [(Vec3(40.0,0,0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
+    'street_40x40_15': [(Vec3(40.0,0,0), Vec3(0)),
+                        (Vec3(0), Vec3(0))],
     'street_80x40': [(Vec3(80.0,0,0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
     'street_angle_30': [(Vec3(0), Vec3(-30,0,0)),
@@ -84,6 +88,8 @@ OBJECT_SNAP_POINTS = {
     'street_full_corner': [(Vec3(40.0,0,0), Vec3(0)),
                            (Vec3(0), Vec3(0))],
     'street_curved_corner': [(Vec3(40.0,0,0), Vec3(0)),
+                           (Vec3(0), Vec3(0))],
+    'street_curved_corner_15': [(Vec3(40.0,0,0), Vec3(0)),
                            (Vec3(0), Vec3(0))],
     'street_t_intersection': [(Vec3(40.0,0,0), Vec3(0)),
                               (Vec3(0), Vec3(0))],
@@ -101,6 +107,10 @@ OBJECT_SNAP_POINTS = {
                                   (Vec3(0), Vec3(0))],
     'street_divided_40x70': [(Vec3(40.0,0,0), Vec3(0)),
                              (Vec3(0), Vec3(0))],
+    'street_divided_transition_15': [(Vec3(40.0,0,0), Vec3(0)),
+                                  (Vec3(0), Vec3(0))],
+    'street_divided_40x70_15': [(Vec3(40.0,0,0), Vec3(0)),
+                             (Vec3(0), Vec3(0))],
     'street_stairs_40x10x5': [(Vec3(40.0,0,0), Vec3(0)),
                               (Vec3(0), Vec3(0))],
     'street_4way_intersection': [(Vec3(40.0,0,0), Vec3(0)),
@@ -114,6 +124,14 @@ OBJECT_SNAP_POINTS = {
     'street_courtyard_90': [(Vec3(0.0,0,0), Vec3(45,0,0)),
                             (Vec3(0), Vec3(0))],
     'street_courtyard_90_exit': [(Vec3(0.0,0,0), Vec3(45,0,0)),
+                                 (Vec3(0), Vec3(0))],
+    'street_courtyard_70_15': [(Vec3(0.0,0,0), Vec3(45,0,0)),
+                            (Vec3(0), Vec3(0))],
+    'street_courtyard_70_exit_15': [(Vec3(0.0,0,0), Vec3(45,0,0)),
+                                 (Vec3(0), Vec3(0))],
+    'street_courtyard_90_15': [(Vec3(0.0,0,0), Vec3(45,0,0)),
+                            (Vec3(0), Vec3(0))],
+    'street_courtyard_90_exit_15': [(Vec3(0.0,0,0), Vec3(45,0,0)),
                                  (Vec3(0), Vec3(0))],
     'street_50_transition': [(Vec3(10.0,0,0), Vec3(0)),
                              (Vec3(0), Vec3(0))],
@@ -140,7 +158,7 @@ except NameError:
     loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
     # Load all the neighborhood specific storage files
     #loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
-    #loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
+    loadDNAFile(DNASTORE, 'phase_6/dna/storage_DD.dna', CSDefault, 1)
     #loadDNAFile(DNASTORE, 'phase_6/dna/storage_MM.dna', CSDefault, 1)
     #loadDNAFile(DNASTORE, 'phase_8/dna/storage_BR.dna', CSDefault, 1)
     loadDNAFile(DNASTORE, 'phase_8/dna/storage_DG.dna', CSDefault, 1)
