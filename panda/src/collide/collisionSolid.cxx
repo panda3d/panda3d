@@ -91,6 +91,7 @@ void CollisionSolid::
 xform(const LMatrix4f &mat) {
   if (has_effective_normal()) {
     _effective_normal = _effective_normal * mat;
+    _effective_normal.normalize();
   }
 
   mark_viz_stale();
