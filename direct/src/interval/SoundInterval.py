@@ -45,6 +45,12 @@ class SoundInterval(Interval.Interval):
             #duration += 1.5
             # DCR - hack for Miles bug - adding 1.5 seconds caused
             # problems for MG_neg_buzzer.wav
+            # DCR - what this is all about: Miles is under-reporting the
+            # length of MP3 files, and they're getting cut off too early.
+            # This is a temporary hack. We could:
+            # - hack Miles to fix its MP3 length calculation
+            # - complain louder about this to RAD
+            # - precompute MP3 durations and store them in a table
             duration += min(duration * 2.4, 1.5)
         # Generate unique name if necessary
         if (name == None):
