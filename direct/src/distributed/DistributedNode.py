@@ -76,7 +76,7 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
         return None
 
     def setParent(self, parentString):
-        print "setting parent of %s to %s" % (self.getName(), parentString)
+        # print "setting parent of %s to %s" % (self.getName(), parentString)
         assert(self.cr.name2nodePath.has_key(parentString))
         parent = self.cr.name2nodePath[parentString]
         self.wrtReparentTo(parent)
