@@ -160,7 +160,7 @@
   #define TARGET test_uniqueIdAllocator
 
   #define SOURCES \
-    test_uniqueIdAllocator.cxx
+    uniqueIdAllocator.cxx test_uniqueIdAllocator.cxx
 
 #end test_bin_target
 
