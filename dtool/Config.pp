@@ -326,7 +326,7 @@
   #define USE_COMPILER MIPS
 #elif $[eq $[PLATFORM], Linux]
   #define USE_COMPILER GCC
-#elif $[eq $[PLATFORM], Windows]
+#elif $[eq $[PLATFORM], Win32]
   #define USE_COMPILER MSVC
 #endif
 
