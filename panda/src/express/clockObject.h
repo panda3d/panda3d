@@ -11,6 +11,18 @@
 #include "trueClock.h"
 #include "config_express.h"
 
+class EXPCL_PANDAEXPRESS TimeVal {
+PUBLISHED:
+  TimeVal();
+  ulong tv[2];
+};
+
+BEGIN_PUBLISH
+
+EXPCL_PANDAEXPRESS void get_time_of_day(TimeVal &tv);
+
+END_PUBLISH
+
 ////////////////////////////////////////////////////////////////////
 //       Class : ClockObject
 // Description : A ClockObject keeps track of elapsed real time and

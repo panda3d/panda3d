@@ -7,6 +7,7 @@
 #define TRUECLOCK_H
 
 #include <pandabase.h>
+#include "typedef.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TrueClock
@@ -33,6 +34,8 @@ protected:
 
   static TrueClock *_global_ptr;
 };
+
+void get_true_time_of_day(ulong &sec, ulong &usec);
 
 #include "trueClock.I"
   

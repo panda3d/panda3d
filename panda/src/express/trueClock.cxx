@@ -29,6 +29,12 @@ static PN_int64 _frequency;
 static PN_int64 _init_count;
 static long _init_sec;
 
+void get_true_time_of_day(ulong &sec, ulong &usec) {
+  struct timeb tb;
+  ftime(&tb);
+  sec = tb.time;
+  usec = (ulong)(tb.millitm * 1000.0);
+}
 
 double TrueClock::
 get_real_time() const {
@@ -105,6 +111,10 @@ timer_handler(int) {
   return -1;
 }
 
+void get_true_time_of_day(ulong &sec, ulong &msec) {
+  cerr << "get_true_time_of_day() not implemented!" << endl;
+}
+
 double TrueClock::
 get_real_time() const {
   return (double) _sec + ((double) _msec / 1000.0);
@@ -146,6 +156,25 @@ TrueClock() {
 
 static long _init_sec;
 
+void get_true_time_of_day(ulong &sec, ulong &msec) {
+  struct timeval tv;
+  int result;
+
+#ifdef GETTIMEOFDAY_ONE_PARAM
+  result = gettimeofday(&tv);
+#else
+  result = gettimeofday(&tv, (struct timezone *)NULL);
+#endif
+
+  if (result < 0) {
+    sec = 0;
+    msec = 0;
+    // Error in gettimeofday().
+    return;
+  }
+  sec = tv.tv_sec;
+  msec = tv.tv_usec; 
+}
 
 double TrueClock::
 get_real_time() const {
