@@ -1,0 +1,7 @@
+// Filename: guiLabel.I
+// Created by:  cary (26Oct00)
+// 
+////////////////////////////////////////////////////////////////////
+
+INLINE GuiLabel::GuiLabel(void) {
+}
