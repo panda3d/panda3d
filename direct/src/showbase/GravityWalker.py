@@ -307,13 +307,15 @@ class GravityWalker(DirectObject.DirectObject):
             onScreenDebug.add("impact", self.lifter.getImpactVelocity()) #*#
 
             onScreenDebug.add("velocity", self.lifter.getVelocity()) #*#
+            onScreenDebug.add("isAirborne", self.isAirborne) #*#
             onScreenDebug.add("jump", jump) #*#
         if self.lifter.isOnGround():
-            if self.falling:
-                self.falling = 0
+            if self.isAirborne:
+                self.isAirborne = 0
                 impact = self.lifter.getImpactVelocity()
                 if impact < -30.0:
-                    messenger.send("jumpHardLand")
+                    #messenger.send("jumpHardLand")
+                    messenger.send("jumpLand")
                     self.startJumpDelay(0.1)
                 else:
                     messenger.send("jumpLand")
@@ -325,9 +327,9 @@ class GravityWalker(DirectObject.DirectObject):
                 # enough to the ground to jump.
                 self.lifter.addVelocity(self.avatarControlJumpForce)
                 messenger.send("jumpStart")
-                self.falling = 1
+                self.isAirborne = 1
         else:
-            self.falling = 1
+            self.isAirborne = 1
         #    if self.lifter.getAirborneHeight() > 10000.0:
         #        assert(0)
 
@@ -409,18 +411,6 @@ class GravityWalker(DirectObject.DirectObject):
 
         if __debug__:
             self.ignore("control-f3") #*#
-
-    def enableAvatarJump(self):
-        """
-        Stop forcing the jump key to return 0's
-        """
-        inputState.unforce("jump")
-
-    def disableAvatarJump(self):
-        """
-        Force the jump key to return 0's
-        """
-        inputState.force("jump", 0)
 
     
     if __debug__:
