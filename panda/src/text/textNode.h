@@ -193,8 +193,8 @@ PUBLISHED:
 
   INLINE float calc_width(int character) const;
   INLINE float calc_width(const string &line) const;
-  INLINE string wordwrap_to(const string &text, float wordwrap_width,
-                            bool preserve_trailing_whitespace) const;
+  string wordwrap_to(const string &text, float wordwrap_width,
+                     bool preserve_trailing_whitespace) const;
 
   virtual void write(ostream &out, int indent_level = 0) const;
 

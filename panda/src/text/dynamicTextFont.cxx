@@ -258,11 +258,14 @@ write(ostream &out, int indent_level) const {
 //               code, as well as an optional scaling parameter that
 //               should be applied to the glyph's geometry and advance
 //               parameters.  Returns true if the glyph exists, false
-//               if it does not.
+//               if it does not.  Even if the return value is false,
+//               the value for glyph might be filled in with a
+//               printable glyph.
 ////////////////////////////////////////////////////////////////////
 bool DynamicTextFont::
 get_glyph(int character, const TextGlyph *&glyph, float &glyph_scale) {
   if (!_is_valid) {
+    glyph = (TextGlyph *)NULL;
     return false;
   }
 

@@ -105,6 +105,25 @@ set_text(const string &text) {
   rebuild(true);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::wordwrap_to
+//       Access: Published
+//  Description: Inserts newlines into the given text at the
+//               appropriate places in order to make each line be the
+//               longest possible line that is not longer than
+//               wordwrap_width (and does not break any words, if
+//               possible).  Returns the new string.
+////////////////////////////////////////////////////////////////////
+string TextNode::
+wordwrap_to(const string &text, float wordwrap_width,
+            bool preserve_trailing_whitespace) const {
+  nassertr(_font != (TextFont *)NULL, text);
+  wstring decoded = decode_text(text);
+  wstring wrapped = 
+    _font->wordwrap_to(decoded, wordwrap_width, preserve_trailing_whitespace);
+  return encode_wtext(wrapped);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::write
@@ -797,7 +816,7 @@ measure_row(wstring::iterator &si, const wstring::iterator &send) {
 
     if (character == ' ') {
       // A space is a special case.
-      xpos += 0.25f;
+      xpos += _font->get_space_advance();
 
     } else {
       // A printable character.

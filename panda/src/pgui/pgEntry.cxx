@@ -361,10 +361,11 @@ keystroke(const MouseWatcherParameter &param, bool background) {
           // three bytes, or it might remain a one-byte character.
           TextNode *text_node = get_text_def(S_focus);
           string new_char = text_node->encode_wchar(keycode);
-            
+
           if (get_max_chars() > 0 && (int)_text.length() >= get_max_chars()) {
             overflow(param);
           } else {
+            _cursor_position = min(_cursor_position, (int)_text.length());
             string new_text = 
               _text.substr(0, _cursor_position) + new_char +
               _text.substr(_cursor_position);
@@ -378,7 +379,7 @@ keystroke(const MouseWatcherParameter &param, bool background) {
             } else {
               measure_text = new_text;
             }
-            
+
             // Check the length.
             bool too_long = false;
             if (_max_width > 0.0f) {
@@ -435,7 +436,7 @@ keystroke(const MouseWatcherParameter &param, bool background) {
                 }
               }
             }
-            
+
             if (too_long) {
               overflow(param);
               
@@ -445,7 +446,7 @@ keystroke(const MouseWatcherParameter &param, bool background) {
                 _obscured_text = measure_text;
               }
               
-              _cursor_position += new_char.size();
+              _cursor_position += new_char.length();
               _cursor_stale = true;
               _text_geom_stale = true;
               type(param);

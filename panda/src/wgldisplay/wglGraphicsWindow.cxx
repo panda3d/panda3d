@@ -1199,7 +1199,9 @@ void wglGraphicsWindow::handle_reshape() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::handle_mouse_motion(int x, int y) {
-  _input_devices[0].set_pointer_in_window(x, y);
+  if (!_input_devices.empty()) {
+    _input_devices[0].set_pointer_in_window(x, y);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1209,7 +1211,9 @@ void wglGraphicsWindow::handle_mouse_motion(int x, int y) {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::handle_mouse_entry(int state) {
   if (state == MOUSE_EXITED) {
-    _input_devices[0].set_pointer_out_of_window();
+    if (!_input_devices.empty()) {
+      _input_devices[0].set_pointer_out_of_window();
+    }
   }
 }
 
@@ -1220,9 +1224,11 @@ void wglGraphicsWindow::handle_mouse_entry(int state) {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::
 handle_keypress(ButtonHandle key, int x, int y) {
-  _input_devices[0].set_pointer_in_window(x, y);
-  if (key != ButtonHandle::none()) {
-    _input_devices[0].button_down(key);
+  if (!_input_devices.empty()) {
+    _input_devices[0].set_pointer_in_window(x, y);
+    if (key != ButtonHandle::none()) {
+      _input_devices[0].button_down(key);
+    }
   }
 }
 
@@ -1234,7 +1240,9 @@ handle_keypress(ButtonHandle key, int x, int y) {
 void wglGraphicsWindow::
 handle_keyrelease(ButtonHandle key) {
   if (key != ButtonHandle::none()) {
-    _input_devices[0].button_up(key);
+    if (!_input_devices.empty()) {
+      _input_devices[0].button_up(key);
+    }
   }
 }
 
@@ -1647,31 +1655,35 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
     case WM_IME_COMPOSITION:
       if (lparam & GCS_RESULTSTR) {
-        HIMC hIMC = ImmGetContext(hwnd);
-        nassertr(hIMC != 0, 0);
-
-        static const int max_ime_result = 128;
-        static char ime_result[max_ime_result];
-
-        // There's a rumor that ImmGetCompositionStringW() doesn't
-        // work for Win95 or Win98; for these OS's we must use
-        // ImmGetCompositionStringA().  How does this affect the
-        // returning of multibyte characters?
-        DWORD result_size =
-          ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
-                                   ime_result, max_ime_result);
-        ImmReleaseContext(hwnd, hIMC);
-
-        // Add this string into the text buffer of the application.
-
-        // ImmGetCompositionStringW() returns a string, but it's
-        // filled in with wstring data: every two characters defines a
-        // 16-bit unicode char.  The docs aren't clear on the
-        // endianness of this.  I guess it's safe to assume all Win32
-        // machines are little-endian.
-        for (DWORD i = 0; i < result_size; i += 2) {
-          int result = ((int)ime_result[i + 1] << 8) | ime_result[i];
-          _input_devices[0].keystroke(result);
+        if (!_input_devices.empty()) {
+          HIMC hIMC = ImmGetContext(hwnd);
+          nassertr(hIMC != 0, 0);
+          
+          static const int max_ime_result = 128;
+          static char ime_result[max_ime_result];
+          
+          // There's a rumor that ImmGetCompositionStringW() doesn't
+          // work for Win95 or Win98; for these OS's we must use
+          // ImmGetCompositionStringA().  How does this affect the
+          // returning of multibyte characters?
+          DWORD result_size =
+            ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
+                                     ime_result, max_ime_result);
+          ImmReleaseContext(hwnd, hIMC);
+          
+          // Add this string into the text buffer of the application.
+          
+          // ImmGetCompositionStringW() returns a string, but it's
+          // filled in with wstring data: every two characters defines a
+          // 16-bit unicode char.  The docs aren't clear on the
+          // endianness of this.  I guess it's safe to assume all Win32
+          // machines are little-endian.
+          for (DWORD i = 0; i < result_size; i += 2) {
+            int result = 
+              ((int)(unsigned char)ime_result[i + 1] << 8) | 
+              (unsigned char)ime_result[i];
+            _input_devices[0].keystroke(result);
+          }
         }
         return 0;
       }

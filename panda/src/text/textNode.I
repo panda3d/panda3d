@@ -1079,22 +1079,6 @@ calc_width(const string &line) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::wordwrap_to
-//       Access: Published
-//  Description: Inserts newlines into the given text at the
-//               appropriate places in order to make each line be the
-//               longest possible line that is not longer than
-//               wordwrap_width (and does not break any words, if
-//               possible).  Returns the new string.
-////////////////////////////////////////////////////////////////////
-INLINE string TextNode::
-wordwrap_to(const string &text, float wordwrap_width,
-            bool preserve_trailing_whitespace) const {
-  nassertr(_font != (TextFont *)NULL, text);
-  return encode_wtext(_font->wordwrap_to(decode_text(text), wordwrap_width, preserve_trailing_whitespace));
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextNode::rebuild
 //       Access: Published
 //  Description: Updates the TextNode, if it is not frozen, or marks

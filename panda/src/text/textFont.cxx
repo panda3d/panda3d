@@ -34,6 +34,16 @@ isblank(int ch) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: isspacew
+//  Description: An internal function that works like isspace() but is
+//               safe to call for a wide character.
+////////////////////////////////////////////////////////////////////
+INLINE bool
+isspacew(int ch) {
+  return isascii(ch) && isspace(ch);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextFont::Constructor
 //       Access: Public
 //  Description: 
@@ -69,7 +79,8 @@ calc_width(int character) {
 
   const TextGlyph *glyph;
   float glyph_scale;
-  if (!get_glyph(character, glyph, glyph_scale)) {
+  get_glyph(character, glyph, glyph_scale);
+  if (glyph == (TextGlyph *)NULL) {
     // Unknown character.
     return 0.0f;
   }
@@ -266,7 +277,7 @@ wordwrap_to(const wstring &text, float wordwrap_width,
 
   // Preserve any initial whitespace and newlines.
   float initial_width = 0.0f;
-  while (p < text.length() && isspace(text[p])) {
+  while (p < text.length() && isspacew(text[p])) {
     if (text[p] == '\n') {
       initial_width = 0.0f;
     } else {
@@ -278,7 +289,7 @@ wordwrap_to(const wstring &text, float wordwrap_width,
   bool needs_newline = false;
 
   while (p < text.length()) {
-    nassertr(!isspace(text[p]), wstring());
+    nassertr(!isspacew(text[p]), wstring());
 
     // Scan the next n characters, until the end of the string or an
     // embedded newline character, or we exceed wordwrap_width.
@@ -289,7 +300,7 @@ wordwrap_to(const wstring &text, float wordwrap_width,
 
     float width = initial_width;
     while (q < text.length() && text[q] != '\n') {
-      if (isspace(text[q])) {
+      if (isspacew(text[q])) {
         any_spaces = true;
       }
 
@@ -303,11 +314,11 @@ wordwrap_to(const wstring &text, float wordwrap_width,
         break;
       }
     }
-
+    
     if (overflow && any_spaces) {
       // If we stopped because we exceeded the wordwrap width, then
       // back up to the end of the last complete word.
-      while (q > p && !isspace(text[q])) {
+      while (q > p && !isspacew(text[q])) {
         q--;
       }
     }
@@ -319,7 +330,7 @@ wordwrap_to(const wstring &text, float wordwrap_width,
     }
 
     // Trim off any more blanks on the end.
-    while (q > p && isspace(text[q - 1])) {
+    while (q > p && isspacew(text[q - 1])) {
       q--;
     }
 
@@ -356,7 +367,7 @@ wordwrap_to(const wstring &text, float wordwrap_width,
 
     // Preserve any initial whitespace and newlines.
     initial_width = 0.0f;
-    while (p < text.length() && isspace(text[p])) {
+    while (p < text.length() && isspacew(text[p])) {
       if (text[p] == '\n') {
         initial_width = 0.0f;
       } else {
