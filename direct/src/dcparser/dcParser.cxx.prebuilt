@@ -183,16 +183,16 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,    93,    95,    96,    97,   100,   100,   111,   125,   127,
-     133,   135,   141,   146,   146,   153,   155,   161,   166,   172,
-     174,   177,   184,   192,   194,   195,   196,   199,   199,   210,
-     226,   228,   231,   233,   236,   236,   248,   250,   254,   258,
-     264,   270,   276,   282,   292,   294,   297,   299,   302,   304,
-     307,   314,   320,   326,   332,   341,   350,   361,   366,   370,
-     374,   378,   382,   386,   390,   394,   398,   402,   406,   410,
-     414,   418,   422,   426,   430,   434,   440,   442,   446,   450,
-     454,   458,   462,   466,   470,   474,   480,   480,   491,   498,
-     511
+       0,    93,    95,    96,    97,   100,   100,   116,   130,   132,
+     138,   140,   146,   151,   151,   158,   160,   166,   171,   177,
+     179,   182,   189,   197,   199,   200,   201,   204,   204,   215,
+     231,   233,   236,   238,   241,   241,   253,   255,   259,   263,
+     269,   275,   281,   287,   297,   299,   302,   304,   307,   309,
+     312,   319,   325,   331,   337,   346,   355,   366,   371,   375,
+     379,   383,   387,   391,   395,   399,   403,   407,   411,   415,
+     419,   423,   427,   431,   435,   439,   445,   447,   451,   455,
+     459,   463,   467,   471,   475,   479,   485,   485,   496,   503,
+     516
 };
 #endif
 
@@ -1048,12 +1048,17 @@ case 5:
 {
   current_class = new DCClass(yyvsp[0].str);
   if (!dc_file->add_class(current_class)) {
-    yyerror("Duplicate class name: " + current_class->get_name());
+    DCClass *old_class = dc_file->get_class_by_name(current_class->get_name());
+    if (old_class->is_bogus_class()) {
+      yyerror("Base class defined after its first reference: " + current_class->get_name());
+    } else {
+      yyerror("Duplicate class name: " + current_class->get_name());
+    }
   }
 }
     break;
 case 7:
-#line 113 "dcParser.yxx"
+#line 118 "dcParser.yxx"
 {
   DCFile::ClassesByName::const_iterator ni;
   ni = dc_file->_classes_by_name.find(yyvsp[0].str);
@@ -1066,49 +1071,49 @@ case 7:
 }
     break;
 case 9:
-#line 128 "dcParser.yxx"
+#line 133 "dcParser.yxx"
 {
   yyval.str = yyvsp[-2].str + string("/") + yyvsp[0].str;
 }
     break;
 case 11:
-#line 136 "dcParser.yxx"
+#line 141 "dcParser.yxx"
 {
   yyval.str = yyvsp[-2].str + string(".") + yyvsp[0].str;
 }
     break;
 case 12:
-#line 143 "dcParser.yxx"
+#line 148 "dcParser.yxx"
 {
   dc_file->add_import_module(yyvsp[0].str);
 }
     break;
 case 13:
-#line 147 "dcParser.yxx"
+#line 152 "dcParser.yxx"
 {
   dc_file->add_import_module(yyvsp[-1].str);
 }
     break;
 case 16:
-#line 156 "dcParser.yxx"
+#line 161 "dcParser.yxx"
 {
   dc_file->add_import_symbol("*");
 }
     break;
 case 17:
-#line 163 "dcParser.yxx"
+#line 168 "dcParser.yxx"
 {
   dc_file->add_import_symbol(yyvsp[0].str);
 }
     break;
 case 18:
-#line 167 "dcParser.yxx"
+#line 172 "dcParser.yxx"
 {
   dc_file->add_import_symbol(yyvsp[0].str);
 }
     break;
 case 21:
-#line 179 "dcParser.yxx"
+#line 184 "dcParser.yxx"
 {
   if (yyvsp[0].u.dclass != (DCClass *)NULL) {
     current_class->add_parent(yyvsp[0].u.dclass);
@@ -1116,7 +1121,7 @@ case 21:
 }
     break;
 case 22:
-#line 185 "dcParser.yxx"
+#line 190 "dcParser.yxx"
 {
   if (yyvsp[0].u.dclass != (DCClass *)NULL) {
     current_class->add_parent(yyvsp[0].u.dclass);
@@ -1124,7 +1129,7 @@ case 22:
 }
     break;
 case 27:
-#line 201 "dcParser.yxx"
+#line 206 "dcParser.yxx"
 {
   current_atomic = new DCAtomicField(yyvsp[-1].str);
   if (!current_class->add_field(current_atomic)) {
@@ -1133,7 +1138,7 @@ case 27:
 }
     break;
 case 29:
-#line 212 "dcParser.yxx"
+#line 217 "dcParser.yxx"
 {
   DCField *field = current_class->get_field_by_name(yyvsp[0].str);
   yyval.u.atomic = (DCAtomicField *)NULL;
@@ -1148,32 +1153,32 @@ case 29:
 }
     break;
 case 34:
-#line 238 "dcParser.yxx"
+#line 243 "dcParser.yxx"
 {
   atomic_element = DCAtomicField::ElementType();
   atomic_element._type = yyvsp[0].u.subatomic;
 }
     break;
 case 35:
-#line 243 "dcParser.yxx"
+#line 248 "dcParser.yxx"
 {
   current_atomic->_elements.push_back(atomic_element);
 }
     break;
 case 37:
-#line 251 "dcParser.yxx"
+#line 256 "dcParser.yxx"
 {
   atomic_element._divisor = yyvsp[0].u.integer;
 }
     break;
 case 38:
-#line 255 "dcParser.yxx"
+#line 260 "dcParser.yxx"
 {
   atomic_element._name = yyvsp[0].str;
 }
     break;
 case 39:
-#line 259 "dcParser.yxx"
+#line 264 "dcParser.yxx"
 {
   if (!atomic_element.set_default_value(yyvsp[0].u.integer)) {
     yyerror("Invalid default value: " + yyvsp[0].str);
@@ -1181,7 +1186,7 @@ case 39:
 }
     break;
 case 40:
-#line 265 "dcParser.yxx"
+#line 270 "dcParser.yxx"
 {
   if (!atomic_element.set_default_value(yyvsp[0].u.real)) {
     yyerror("Invalid default value: " + yyvsp[0].str);
@@ -1189,7 +1194,7 @@ case 40:
 }
     break;
 case 41:
-#line 271 "dcParser.yxx"
+#line 276 "dcParser.yxx"
 {
   if (!atomic_element.set_default_value(yyvsp[0].str)) {
     yyerror("Invalid default value: \"" + yyvsp[0].str + "\"");
@@ -1197,7 +1202,7 @@ case 41:
 }
     break;
 case 42:
-#line 277 "dcParser.yxx"
+#line 282 "dcParser.yxx"
 {
   if (!atomic_element.set_default_value_literal(yyvsp[0].str)) {
     yyerror("Invalid default hex string value");
@@ -1205,7 +1210,7 @@ case 42:
 }
     break;
 case 43:
-#line 283 "dcParser.yxx"
+#line 288 "dcParser.yxx"
 {
   if (!atomic_element.end_array()) {
     yyerror("Array default value inappropriate");
@@ -1215,7 +1220,7 @@ case 43:
 }
     break;
 case 50:
-#line 309 "dcParser.yxx"
+#line 314 "dcParser.yxx"
 {
   if (!atomic_element.add_default_value(yyvsp[0].u.integer)) {
     yyerror("Invalid default value: " + yyvsp[0].str);
@@ -1223,7 +1228,7 @@ case 50:
 }
     break;
 case 51:
-#line 315 "dcParser.yxx"
+#line 320 "dcParser.yxx"
 {
   if (!atomic_element.add_default_value(yyvsp[0].u.real)) {
     yyerror("Invalid default value: " + yyvsp[0].str);
@@ -1231,7 +1236,7 @@ case 51:
 }
     break;
 case 52:
-#line 321 "dcParser.yxx"
+#line 326 "dcParser.yxx"
 {
   if (!atomic_element.add_default_value(yyvsp[0].str)) {
     yyerror("Invalid default value: " + yyvsp[0].str);
@@ -1239,7 +1244,7 @@ case 52:
 }
     break;
 case 53:
-#line 327 "dcParser.yxx"
+#line 332 "dcParser.yxx"
 {
   if (!atomic_element.add_default_value_literal(yyvsp[0].str)) {
     yyerror("Invalid hex literal in default array");
@@ -1247,7 +1252,7 @@ case 53:
 }
     break;
 case 54:
-#line 333 "dcParser.yxx"
+#line 338 "dcParser.yxx"
 {
   for (int i = 0; i < yyvsp[0].u.integer; i++) {
     if (!atomic_element.add_default_value(yyvsp[-2].u.integer)) {
@@ -1258,7 +1263,7 @@ case 54:
 }
     break;
 case 55:
-#line 342 "dcParser.yxx"
+#line 347 "dcParser.yxx"
 {
   for (int i = 0; i < yyvsp[0].u.integer; i++) {
     if (!atomic_element.add_default_value(yyvsp[-2].u.real)) {
@@ -1269,7 +1274,7 @@ case 55:
 }
     break;
 case 56:
-#line 351 "dcParser.yxx"
+#line 356 "dcParser.yxx"
 {
   for (int i = 0; i < yyvsp[0].u.integer; i++) {
     if (!atomic_element.add_default_value_literal(yyvsp[-2].str)) {
@@ -1280,175 +1285,175 @@ case 56:
 }
     break;
 case 57:
-#line 363 "dcParser.yxx"
+#line 368 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int8;
 }
     break;
 case 58:
-#line 367 "dcParser.yxx"
+#line 372 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int16;
 }
     break;
 case 59:
-#line 371 "dcParser.yxx"
+#line 376 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int32;
 }
     break;
 case 60:
-#line 375 "dcParser.yxx"
+#line 380 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int64;
 }
     break;
 case 61:
-#line 379 "dcParser.yxx"
+#line 384 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint8;
 }
     break;
 case 62:
-#line 383 "dcParser.yxx"
+#line 388 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint16;
 }
     break;
 case 63:
-#line 387 "dcParser.yxx"
+#line 392 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint32;
 }
     break;
 case 64:
-#line 391 "dcParser.yxx"
+#line 396 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint64;
 }
     break;
 case 65:
-#line 395 "dcParser.yxx"
+#line 400 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_float64;
 }
     break;
 case 66:
-#line 399 "dcParser.yxx"
+#line 404 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_string;
 }
     break;
 case 67:
-#line 403 "dcParser.yxx"
+#line 408 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_blob;
 }
     break;
 case 68:
-#line 407 "dcParser.yxx"
+#line 412 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_blob32;
 }
     break;
 case 69:
-#line 411 "dcParser.yxx"
+#line 416 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int8array;
 }
     break;
 case 70:
-#line 415 "dcParser.yxx"
+#line 420 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int16array;
 }
     break;
 case 71:
-#line 419 "dcParser.yxx"
+#line 424 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_int32array;
 }
     break;
 case 72:
-#line 423 "dcParser.yxx"
+#line 428 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint8array;
 }
     break;
 case 73:
-#line 427 "dcParser.yxx"
+#line 432 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint16array;
 }
     break;
 case 74:
-#line 431 "dcParser.yxx"
+#line 436 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint32array;
 }
     break;
 case 75:
-#line 435 "dcParser.yxx"
+#line 440 "dcParser.yxx"
 {
   yyval.u.subatomic = ST_uint32uint8array;
 }
     break;
 case 77:
-#line 443 "dcParser.yxx"
+#line 448 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_required;
 }
     break;
 case 78:
-#line 447 "dcParser.yxx"
+#line 452 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_broadcast;
 }
     break;
 case 79:
-#line 451 "dcParser.yxx"
+#line 456 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_p2p;
 }
     break;
 case 80:
-#line 455 "dcParser.yxx"
+#line 460 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_ram;
 }
     break;
 case 81:
-#line 459 "dcParser.yxx"
+#line 464 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_db;
 }
     break;
 case 82:
-#line 463 "dcParser.yxx"
+#line 468 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_clsend;
 }
     break;
 case 83:
-#line 467 "dcParser.yxx"
+#line 472 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_clrecv;
 }
     break;
 case 84:
-#line 471 "dcParser.yxx"
+#line 476 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_ownsend;
 }
     break;
 case 85:
-#line 475 "dcParser.yxx"
+#line 480 "dcParser.yxx"
 {
   current_atomic->_flags |= DCAtomicField::F_airecv;
 }
     break;
 case 86:
-#line 482 "dcParser.yxx"
+#line 487 "dcParser.yxx"
 {
   current_molecular = new DCMolecularField(yyvsp[-1].str);
   if (!current_class->add_field(current_molecular)) {
@@ -1457,7 +1462,7 @@ case 86:
 }
     break;
 case 88:
-#line 493 "dcParser.yxx"
+#line 498 "dcParser.yxx"
 {
   if (yyvsp[0].u.atomic != (DCAtomicField *)NULL) {
     current_molecular->_fields.push_back(yyvsp[0].u.atomic);
@@ -1465,7 +1470,7 @@ case 88:
 }
     break;
 case 89:
-#line 499 "dcParser.yxx"
+#line 504 "dcParser.yxx"
 {
   if (yyvsp[0].u.atomic != (DCAtomicField *)NULL) {
     current_molecular->_fields.push_back(yyvsp[0].u.atomic);
@@ -1710,4 +1715,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 513 "dcParser.yxx"
+#line 518 "dcParser.yxx"

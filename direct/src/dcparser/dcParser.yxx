@@ -102,7 +102,12 @@ dclass:
 {
   current_class = new DCClass($2);
   if (!dc_file->add_class(current_class)) {
-    yyerror("Duplicate class name: " + current_class->get_name());
+    DCClass *old_class = dc_file->get_class_by_name(current_class->get_name());
+    if (old_class->is_bogus_class()) {
+      yyerror("Base class defined after its first reference: " + current_class->get_name());
+    } else {
+      yyerror("Duplicate class name: " + current_class->get_name());
+    }
   }
 }
         dclass_derivation '{' dclass_fields '}'
