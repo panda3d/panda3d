@@ -4399,9 +4399,6 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
     return;
   }
 
-  // if ColorWriteAttrib::M_on, need to check other transp modes to see if they
-  // need blending before we use blending
-
   // Is there a color blend set?
   switch (color_blend_mode) {
   case ColorBlendAttrib::M_none:
