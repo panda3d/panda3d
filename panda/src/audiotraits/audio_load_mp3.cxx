@@ -107,8 +107,6 @@ static void set_synth_functions(struct frame* fr) {
 }
 
 static void initialize(void) {
-  if (initialized)
-    return;
   // make sure params say what we want
   param.quiet = TRUE;
   param.force_stereo = 1;
@@ -117,6 +115,10 @@ static void initialize(void) {
   memset(&mp, 0, sizeof(struct mpstr));
   audio_info_struct_init(&ai);
   audio_capabilities(&ai);
+
+  if (initialized)
+    return;
+
   set_synth_functions(&fr);
   make_decode_tables(param.outscale);
   init_layer2(); /* inits also shared tables with layer1 */
@@ -129,6 +131,36 @@ static void initialize(void) {
   initialized = true;
 }
 
+/*
+class BufferStuff {
+private:
+  typedef vector<unsigned char> Buffer;
+  typedef vector<Buffer> Buffers;
+  Buffers _bufs;
+public:
+  BufferStuff(void) {}
+  ~BufferStuff(void) {
+  }
+  void add(unsigned char* b, unsigned long l) {
+    _bufs.push_back(Buffer(b, b+l));
+  }
+  unsigned long length(void) const {
+    unsigned long ret = 0;
+    for (Buffers::const_iterator i=_bufs.begin(); i!=_bufs.end(); ++i)
+      ret += (*i).size();
+    return ret;
+  }
+  void output(unsigned char* b) {
+    for (Buffers::const_iterator i=_bufs.begin(); i!=_bufs.end(); ++i)
+      for (Buffer::const_iterator j=(*i).begin(); j!=(*i).end(); ++j)
+	*(b++) = (*j);
+  }
+};
+
+static BufferStuff* my_buf;
+*/
+
+/*
 class BufferPart {
 private:
   unsigned char* _ptr;
@@ -166,6 +198,9 @@ public:
 
 static BufferPart* my_buf_head;
 static BufferPart* my_buf_curr;
+*/
+
+string my_buf;
 
 extern "C" {
 int audio_open(struct audio_info_struct* ai) {
@@ -214,11 +249,22 @@ int audio_get_formats(struct audio_info_struct* ai) {
 
 int audio_play_samples(struct audio_info_struct* ai, unsigned char* buf,
 		       int len) {
+  /*
   if (my_buf_head == (BufferPart*)0L) {
     my_buf_head = my_buf_curr = new BufferPart(buf, len);
   } else {
     my_buf_curr = my_buf_curr->add(buf, len);
   }
+  */
+  /*
+  if (my_buf == (BufferStuff*)0L)
+    my_buf = new BufferStuff;
+  my_buf->add(buf, len);
+  */
+  string tmp;
+  for (int i=0; i<len; ++i)
+    tmp += buf[i];
+  my_buf += tmp;
   return len;
 }
 
@@ -373,7 +419,9 @@ static void read_file(Filename filename, unsigned char** buf,
   unsigned long frameNum = 0;
 
   initialize();
-  my_buf_head = my_buf_curr = (BufferPart*)0L;
+  //  my_buf_head = my_buf_curr = (BufferPart*)0L;
+  //  my_buf = (BufferStuff*)0L;
+  my_buf = "";
   if (open_stream((char*)(filename.to_os_specific().c_str()), -1)) {
     long leftFrames, newFrame;
 
@@ -424,10 +472,22 @@ static void read_file(Filename filename, unsigned char** buf,
     break;
   }
   // generate output
+  /*
   slen = my_buf_head->length();
   *buf = new byte[slen];
   my_buf_head->output(*buf);
   delete my_buf_head;
+  */
+  /*
+  slen = my_buf->length();
+  *buf = new byte[slen];
+  my_buf->output(*buf);
+  delete my_buf;
+  my_buf = (BufferStuff*)0L;
+  */
+  slen = my_buf.size();
+  *buf = new byte[slen];
+  memcpy(*buf, my_buf.data(), slen);
 }
 
 #ifdef AUDIO_USE_MIKMOD
