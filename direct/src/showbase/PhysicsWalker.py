@@ -28,7 +28,7 @@ class PhysicsWalker(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("PhysicsWalker")
     wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
-
+    
     # special methods
     def __init__(self, gravity = -32.1740, standableGround=0.707,
             hardLandingForce=16.0):
@@ -373,13 +373,19 @@ class PhysicsWalker(DirectObject.DirectObject):
                     onScreenDebug.add("physObject orien",
                         physObject.getOrientation().pPrintValues())
 
+                if 1:
+                    onScreenDebug.add("physObject vel",
+                        physObject.getVelocity().pPrintValues())
+                    onScreenDebug.add("physObject len",
+                        "% 10.4f"%physObject.getVelocity().length())
+
                 if 0:
                     onScreenDebug.add("posDelta4", 
                         self.priorParentNp.getRelativeVector(
                             render,
                             self.avatarNodePath.getPosDelta(render)).pPrintValues())
 
-                if 0:
+                if 1:
                     onScreenDebug.add("priorParent",
                         self.priorParent.getLocalVector().pPrintValues())
 
@@ -392,13 +398,15 @@ class PhysicsWalker(DirectObject.DirectObject):
                         self.__oldPosDelta.pPrintValues())
 
                 if 1:
-                    onScreenDebug.add("__oldContact",
-                        contact.pPrintValues())
                     onScreenDebug.add("contact",
                         contact.pPrintValues())
-                    onScreenDebug.add("__oldAirborneHeight", "% 10.4f"%(
-                        self.getAirborneHeight(),))
                     onScreenDebug.add("airborneHeight", "% 10.4f"%(
+                        self.getAirborneHeight(),))
+
+                if 0:
+                    onScreenDebug.add("__oldContact",
+                        contact.pPrintValues())
+                    onScreenDebug.add("__oldAirborneHeight", "% 10.4f"%(
                         self.getAirborneHeight(),))
         airborneHeight=self.getAirborneHeight()
         if airborneHeight > self.highMark:
@@ -407,7 +415,7 @@ class PhysicsWalker(DirectObject.DirectObject):
                 self.highMark,))
         #if airborneHeight < 0.1: #contact!=Vec3.zero():
         if 1:
-            if airborneHeight > 0.7:
+            if airborneHeight > 0.7: # Check stair angles before chaning this.
                 # ...the avatar is airborne (maybe a lot or a tiny amount).
                 self.isAirborne = 1
             else:
@@ -422,6 +430,7 @@ class PhysicsWalker(DirectObject.DirectObject):
                     else:
                         #print "jumpLand"
                         messenger.send("jumpLand")
+                    self.priorParent.setVector(Vec3.zero())
                     self.isAirborne = 0
                 elif self.__jumpButton:
                     #print "jump"
@@ -447,14 +456,11 @@ class PhysicsWalker(DirectObject.DirectObject):
                         # ...avatar was airborne.
                         self.jumpCount-=1
                         if contactLength>self.__hardLandingForce:
-                            print "jumpHardLand"
                             messenger.send("jumpHardLand")
                         else:
-                            print "jumpLand"
                             messenger.send("jumpLand")
                     elif self.__jumpButton:
                         self.jumpCount+=1
-                        print "jump"
                         self.__jumpButton=0
                         messenger.send("jumpStart")
                         jump=Vec3(contact+Vec3.up())
@@ -467,7 +473,15 @@ class PhysicsWalker(DirectObject.DirectObject):
             # We must copy the vector to preserve it:
             self.__oldContact=Vec3(contact)
         self.__oldAirborneHeight=airborneHeight
-        self.phys.doPhysics(dt)
+
+        moveToGround = Vec3.zero()
+        if self.isAirborne: 
+            # ...the airborne check is a hack to stop sliding.
+            self.phys.doPhysics(dt)
+        else:
+            physObject.setVelocity(Vec3.zero())
+            if airborneHeight>0.001 and contact==Vec3.zero():
+                moveToGround = Vec3(0.0, 0.0, -airborneHeight)
         # Check to see if we're moving at all:
         if self.__speed or self.__slideSpeed or self.__rotationSpeed:
             distance = dt * self.__speed
@@ -489,7 +503,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
             step=rotMat.xform(self.__vel)
             physObject.setPosition(Point3(
-                physObject.getPosition()+step))
+                physObject.getPosition()+step+moveToGround))
 
             # update hpr:
             o=physObject.getOrientation()
@@ -614,7 +628,12 @@ class PhysicsWalker(DirectObject.DirectObject):
     
     def setPriorParentVector(self):
         assert(self.debugPrint("doDeltaPos()"))
+        
         print "self.__oldDt", self.__oldDt, "self.__oldPosDelta", self.__oldPosDelta
+        onScreenDebug.add("__oldDt", "% 10.4f"%self.__oldDt)
+        onScreenDebug.add("self.__oldPosDelta",
+                        self.__oldPosDelta.pPrintValues())
+        
         velocity = self.__oldPosDelta*(1/self.__oldDt)
         assert(self.debugPrint("  __oldPosDelta=%s"%(self.__oldPosDelta,)))
         assert(self.debugPrint("  velocity=%s"%(velocity,)))
@@ -640,6 +659,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         Activate the arrow keys, etc.
         """
         assert(self.debugPrint("enableAvatarControls()"))
+        print id(self), "PW.enableAvatarControls()"
         self.accept("control", self.moveJump, [1])
         self.accept("control-up", self.moveJump, [0])
         self.accept("control-arrow_left", self.moveJumpLeft, [1])
@@ -659,6 +679,8 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.accept("arrow_up-up", self.moveForward, [0])
         self.accept("arrow_down", self.moveInReverse, [1])
         self.accept("arrow_down-up", self.moveInReverse, [0])
+        
+        self.collisionsOn()
 
         if __debug__:
             self.accept("control-f3", self.spawnTest) #*#
@@ -677,6 +699,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         Ignore the arrow keys, etc.
         """
         assert(self.debugPrint("disableAvatarControls()"))
+        print id(self), "PW.disableAvatarControls()"
         taskName = "AvatarControls%s"%(id(self),)
         taskMgr.remove(taskName)
 
@@ -702,7 +725,8 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.ignore("arrow_up-up")
         self.ignore("arrow_down")
         self.ignore("arrow_down-up")
-
+        
+        self.collisionsOff()
 
         if __debug__:
             self.ignore("control-f3") #*#

@@ -124,6 +124,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         del self.lifter
 
     def collisionsOff(self):
+        assert(self.debugPrint("collisionsOff"))
         self.cTrav.removeCollider(self.cSphereNode)
         self.cTrav.removeCollider(self.cRayNode)
 
@@ -132,6 +133,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         self.oneTimeCollide()
 
     def collisionsOn(self):
+        assert(self.debugPrint("collisionsOn"))
         self.cTrav.addCollider(self.cSphereNode, self.pusher)
         self.cTrav.addCollider(self.cRayNode, self.lifter)
 
@@ -193,6 +195,8 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         """
         Activate the arrow keys, etc.
         """
+        assert(self.debugPrint("enableAvatarControls"))
+        print id(self), "NPW.enableAvatarControls()"
         self.accept("control-arrow_left", self.moveTurnLeft, [1])
         self.accept("control-arrow_left-up", self.moveTurnLeft, [0])
         self.accept("control-arrow_right", self.moveTurnRight, [1])
@@ -210,6 +214,8 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         self.accept("arrow_up-up", self.moveForward, [0])
         self.accept("arrow_down", self.moveInReverse, [1])
         self.accept("arrow_down-up", self.moveInReverse, [0])
+        
+        self.collisionsOn()
 
         taskName = "AvatarControls%s"%(id(self),)
         # remove any old
@@ -221,6 +227,8 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         """
         Ignore the arrow keys, etc.
         """
+        assert(self.debugPrint("disableAvatarControls"))
+        print id(self), "NPW.enableAvatarControls()"
         taskName = "AvatarControls%s"%(id(self),)
         taskMgr.remove(taskName)
 
@@ -243,6 +251,8 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         self.ignore("arrow_up-up")
         self.ignore("arrow_down")
         self.ignore("arrow_down-up")
+        
+        self.collisionsOff()
 
         # reset state
         self.moveTurnLeft(0)
