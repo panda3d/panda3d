@@ -21,7 +21,7 @@ class VisibilityBlocker:
         """derived class should call this before the end of the frame in which
         they cause the visibility to be extended. okToUnblockVis (see below)
         will be called when it's safe to show the new zones."""
-        self.accept(self.level.tcr.getNextSetZoneDoneEvent(),
+        self.accept(self.level.cr.getNextSetZoneDoneEvent(),
                     self.okToUnblockVis)
 
     def okToUnblockVis(self):
