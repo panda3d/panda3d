@@ -64,15 +64,15 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
             self.sendUpdate("setParent", [parentToken])
 
     def setParentStr(self, parentTokenStr):
-        print 'setParentStr: %s' % parentTokenStr
-        print 'isGenerated: %s' % self.isGenerated()
+        assert(self.notify.debug('setParentStr: %s' % parentTokenStr))
+        assert(self.notify.debug('isGenerated: %s' % self.isGenerated()))
         self.do_setParent(parentTokenStr)
         if len(parentTokenStr) > 0:
             self.gotStringParentToken = 1
 
     def setParent(self, parentToken):
-        print 'setParent: %s' % parentToken
-        print 'isGenerated: %s' % self.isGenerated()
+        assert(self.notify.debug('setParent: %s' % parentToken))
+        assert(self.notify.debug('isGenerated: %s' % self.isGenerated()))
         # if we are not yet generated and we just got a parent token
         # as a string, ignore whatever value comes in here
         justGotRequiredParentAsStr = ((not self.isGenerated()) and
