@@ -22,7 +22,6 @@
 #include "dtoolbase.h"
 
 #include <memory>
-#include <vector>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : pallocator
