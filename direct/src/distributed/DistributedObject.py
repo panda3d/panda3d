@@ -49,6 +49,12 @@ class DistributedObject(PandaObject):
         Inheritors should redefine this to take appropriate action on generate
         """
         pass
+
+    def generateInit(self):
+        """generateInit(self)
+        This method is called when the DistributedObject is first introduced
+        to the world... Not when it is pulled from the cache.
+        """
     
     def getDoId(self):
         """getDoId(self)

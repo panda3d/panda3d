@@ -44,9 +44,33 @@ class EventInterval(FunctionInterval):
         # Create function interval
 	FunctionInterval.__init__(self, sendFunc, name = event)
 
+### FunctionInterval subclass for accepting hooks ###
+class AcceptInterval(FunctionInterval):
+    # Initialization
+    def __init__(self, dirObj, event, function, name):
+        """__init__(dirObj, event, function, name)
+        """
+        def acceptFunc(dirObj = dirObj, event = event, function = function):
+            print "accepting..."
+            dirObj.accept(event, function)
+        # Create function interval
+	FunctionInterval.__init__(self, acceptFunc, name = name)
+
+### FunctionInterval subclass for throwing events ###
+class IgnoreInterval(FunctionInterval):
+    # Initialization
+    def __init__(self, dirObj, event, name):
+        """__init__(dirObj, event, name)
+        """
+        def ignoreFunc(dirObj = dirObj, event = event):
+            print "ignoring..."
+            dirObj.ignore(event)
+        # Create function interval
+	FunctionInterval.__init__(self, ignoreFunc, name = name)
+
 ### Function Interval subclass for adjusting scene graph hierarchy ###
 class ParentInterval(FunctionInterval):
-    # PosInterval counter
+    # ParentInterval counter
     parentIntervalNum = 1
     # Initialization
     def __init__(self, nodePath, parent, name = None):
@@ -60,6 +84,23 @@ class ParentInterval(FunctionInterval):
 	    ParentInterval.parentIntervalNum += 1
         # Create function interval
 	FunctionInterval.__init__(self, reparentFunc, name = name)
+
+### Function Interval subclass for adjusting scene graph hierarchy ###
+class WrtParentInterval(FunctionInterval):
+    # WrtParentInterval counter
+    wrtParentIntervalNum = 1
+    # Initialization
+    def __init__(self, nodePath, parent, name = None):
+        """__init__(nodePath, parent, name)
+        """
+        def wrtReparentFunc(nodePath = nodePath, parent = parent):
+            nodePath.wrtReparentTo(parent)
+        # Determine name
+	if (name == None):
+	    name = 'WrtParentInterval-%d' % WrtParentInterval.wrtParentIntervalNum
+	    WrtParentInterval.wrtParentIntervalNum += 1
+        # Create function interval
+	FunctionInterval.__init__(self, wrtReparentFunc, name = name)
 
 ### Function Interval subclasses for instantaneous pose changes ###
 class PosInterval(FunctionInterval):
