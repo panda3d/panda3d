@@ -54,7 +54,7 @@ new_data(int thread_index, int frame_number) {
   PStatView &view = get_view(thread_index);
   const PStatThreadData *thread_data = view.get_thread_data();
 
-  if (frame_number = thread_data->get_latest_frame_number()) {
+  if (frame_number == thread_data->get_latest_frame_number()) {
     view.set_to_frame(frame_number);
     
     if (view.all_collectors_known()) {
