@@ -20,39 +20,16 @@
 #include <bamWriter.h>
 #include <boundingLine.h>
 #include <boundingSphere.h>
-#include <clockObject.h>
-#include <colorTransition.h>
-#include <cullFaceTransition.h>
 #include <datagram.h>
 #include <datagramIterator.h>
-#include <dconfig.h>
-#include <dftraverser.h>
-#include <eventParameter.h>
 #include <geom.h>
-#include <geometricBoundingVolume.h>
-#include <geomLine.h>
 #include <geomLinestrip.h>
 #include <geomNode.h>
-#include <geomPolygon.h>
-#include <geomQuad.h>
-#include <geomSphere.h>
-#include <get_rel_pos.h>
-#include <indent.h>
-#include <lightTransition.h>
-#include <nearly_zero.h>
-#include <nodePath.h>
-#include <omniBoundingVolume.h>
 #include <pointerToArray.h>
 #include <projection.h>
 #include <projectionNode.h>
-#include <pStatTimer.h>
-#include <renderModeTransition.h>
 #include <renderRelation.h>
-#include <textureTransition.h>
-#include <throw_event.h>
 #include <transformTransition.h>
-#include <transparencyTransition.h>
-#include <wrt.h>
 
 #include "collisionEntry.h"
 #include "collisionHandler.h"
@@ -61,7 +38,6 @@
 #include "collisionHandlerPhysical.h"
 #include "collisionHandlerPusher.h"
 #include "collisionHandlerQueue.h"
-#include "collisionLevelState.h"
 #include "collisionNode.h"
 #include "collisionPlane.h"
 #include "collisionPolygon.h"
@@ -69,7 +45,6 @@
 #include "collisionSegment.h"
 #include "collisionSolid.h"
 #include "collisionSphere.h"
-#include "collisionTraverser.h"
 #include "config_collide.h"
 
 #pragma hdrstop

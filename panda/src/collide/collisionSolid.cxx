@@ -16,8 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "collide_headers.h"
+#endif
+
 #pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "collisionSolid.h"
+#include "config_collide.h"
+#include "collisionEntry.h"
+#include "collisionSphere.h"
+#include "collisionRay.h"
+#include "collisionSegment.h"
+
+#include <renderRelation.h>
+#include <geomNode.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamReader.h>
+#include <bamWriter.h>
+#endif
+
+#include <indent.h>
+#include <cullFaceTransition.h>
+#include <colorTransition.h>
+#include <renderModeTransition.h>
+#include <lightTransition.h>
+#include <transparencyTransition.h>
+#include <textureTransition.h>
 
 TypeHandle CollisionSolid::_type_handle;
 

@@ -16,8 +16,30 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "collide_headers.h"
+#endif
+
 #pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "collisionSphere.h"
+#include "collisionRay.h"
+#include "collisionSegment.h"
+#include "collisionHandler.h"
+#include "collisionEntry.h"
+#include "config_collide.h"
+
+#include <boundingSphere.h>
+#include <geomNode.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamReader.h>
+#include <bamWriter.h>
+#endif
+
+#include <geomSphere.h>
+#include <nearly_zero.h>
 
 TypeHandle CollisionSphere::_type_handle;
 

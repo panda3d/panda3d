@@ -16,8 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "collide_headers.h"
+#endif
+
 #pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "collisionSolid.h"
+#include "collisionNode.h"
+#endif
+
+#include "collisionLevelState.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::clear

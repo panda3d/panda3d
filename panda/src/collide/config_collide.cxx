@@ -16,8 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "collide_headers.h"
+#endif
+
 #pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "config_collide.h"
+#include "collisionEntry.h"
+#include "collisionHandler.h"
+#include "collisionHandlerEvent.h"
+#include "collisionHandlerFloor.h"
+#include "collisionHandlerPhysical.h"
+#include "collisionHandlerPusher.h"
+#include "collisionHandlerQueue.h"
+#include "collisionNode.h"
+#include "collisionPlane.h"
+#include "collisionPolygon.h"
+#include "collisionRay.h"
+#include "collisionSegment.h"
+#include "collisionSolid.h"
+#include "collisionSphere.h"
+
+#endif
+
+#include <dconfig.h>
 
 Configure(config_collide);
 NotifyCategoryDef(collide, "");

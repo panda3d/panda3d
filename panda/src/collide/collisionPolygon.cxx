@@ -16,12 +16,37 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "collide_headers.h"
+#endif
+
 #pragma hdrstop
 
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "collisionPolygon.h"
+#include "collisionHandler.h"
+#include "collisionEntry.h"
+#include "collisionSphere.h"
+#include "collisionRay.h"
+#include "collisionSegment.h"
+#include "config_collide.h"
+
+#include <boundingSphere.h>
+#include <pointerToArray.h>
+#include <geomNode.h>
+#include <geom.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamReader.h>
+#include <bamWriter.h>
+#endif
+
 #include <algorithm>
+#include <geomPolygon.h>
 
 TypeHandle CollisionPolygon::_type_handle;
+
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: is_right

@@ -16,8 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#if defined(WIN32_VC) && !defined(NO_PCH)
 #include "collide_headers.h"
+#endif
+
 #pragma hdrstop
+
+#if !defined(WIN32_VC) || defined(NO_PCH)
+#include "collisionHandlerEvent.h"
+#include "config_collide.h"
+#endif
+
+#include <eventParameter.h>
+#include <throw_event.h>
+
 
 TypeHandle CollisionHandlerEvent::_type_handle;
 
