@@ -39,11 +39,15 @@ PUBLISHED:
   INLINE int get_y() const;
   INLINE bool get_in_window() const;
 
+  void output(ostream &out) const;
+
 public:
   bool _in_window;
   int _xpos;
   int _ypos;
 };
+
+INLINE ostream &operator << (ostream &out, const MouseData &md);
 
 #include "mouseData.I"
 

@@ -83,3 +83,9 @@ INLINE bool MouseData::
 get_in_window() const {
   return _in_window;
 }
+
+
+INLINE ostream &operator << (ostream &out, const MouseData &md) {
+  md.output(out);
+  return out;
+}

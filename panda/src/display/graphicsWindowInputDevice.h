@@ -54,7 +54,7 @@ public:
   INLINE bool has_pointer() const;
   INLINE bool has_keyboard() const;
 
-  INLINE const MouseData &get_mouse_data() const;
+  INLINE const MouseData &get_pointer() const;
 
   bool has_button_event() const;
   ButtonEvent get_button_event();

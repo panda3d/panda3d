@@ -69,6 +69,31 @@ glxGraphicsWindow::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::move_pointer
+//       Access: Published, Virtual
+//  Description: Forces the pointer to the indicated position within
+//               the window, if possible.  
+//
+//               Returns true if successful, false on failure.  This
+//               may fail if the mouse is not currently within the
+//               window, or if the API doesn't support this operation.
+////////////////////////////////////////////////////////////////////
+bool glxGraphicsWindow::
+move_pointer(int device, int x, int y) {
+  // Note: this is not thread-safe; it should be called only from App.
+  // Probably not an issue.
+  nassertr(device == 0, false);
+  if (!_input_devices[0].get_pointer().get_in_window()) {
+    // If the mouse isn't currently within the window, forget it.
+    return false;
+  }
+
+  XWarpPointer(_display, None, _xwindow, 0, 0, 0, 0, x, y);
+  _input_devices[0].set_pointer_in_window(x, y);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsWindow::make_context
 //       Access: Public, Virtual
 //  Description: If _needs_context is true, this will be called

@@ -63,9 +63,11 @@ PUBLISHED:
   bool has_pointer(int device) const;
   bool has_keyboard(int device) const;
 
+  MouseData get_pointer(int device) const;
+  virtual bool move_pointer(int device, int x, int y);
+
 public:
   // No need to publish these.
-  MouseData get_mouse_data(int device) const;
   bool has_button_event(int device) const;
   ButtonEvent get_button_event(int device);
 

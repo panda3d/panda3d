@@ -17,3 +17,17 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "mouseData.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseData::output
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void MouseData::
+output(ostream &out) const {
+  if (!_in_window) {
+    out << "MouseData: Not in window";
+  } else {
+    out << "MouseData: (" << _xpos << ", " << _ypos << ")";
+  }
+}

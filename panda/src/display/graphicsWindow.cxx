@@ -268,20 +268,35 @@ has_keyboard(int device) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::get_mouse_data
-//       Access: Public
+//     Function: GraphicsWindow::get_pointer
+//       Access: Published
 //  Description: Returns the MouseData associated with the nth input
-//               device.
+//               device's pointer.
 ////////////////////////////////////////////////////////////////////
 MouseData GraphicsWindow::
-get_mouse_data(int device) const {
+get_pointer(int device) const {
   MouseData result;
   {
     MutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), MouseData());
-    result = _input_devices[device].get_mouse_data();
+    result = _input_devices[device].get_pointer();
   }
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::move_pointer
+//       Access: Published, Virtual
+//  Description: Forces the pointer to the indicated position within
+//               the window, if possible.  
+//
+//               Returns true if successful, false on failure.  This
+//               may fail if the mouse is not currently within the
+//               window, or if the API doesn't support this operation.
+////////////////////////////////////////////////////////////////////
+bool GraphicsWindow::
+move_pointer(int, int, int) {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

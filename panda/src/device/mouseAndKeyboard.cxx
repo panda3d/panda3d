@@ -84,7 +84,7 @@ do_transmit_data(const DataNodeTransmit &, DataNodeTransmit &output) {
   }
 
   if (_window->has_pointer(_device)) {
-    const MouseData &mdata = _window->get_mouse_data(_device);
+    const MouseData &mdata = _window->get_pointer(_device);
 
     if (mdata._in_window) {
       // Get mouse motion in pixels.

@@ -57,13 +57,13 @@ has_keyboard() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::get_mouse_data
+//     Function: GraphicsWindowInputDevice::get_pointer
 //       Access: Public
-//  Description: Returns the MouseData associated with the nth input
-//               device.
+//  Description: Returns the MouseData associated with the input
+//               device's pointer.
 ////////////////////////////////////////////////////////////////////
 INLINE const MouseData &GraphicsWindowInputDevice::
-get_mouse_data() const {
+get_pointer() const {
   return _mouse_data;
 }
 
