@@ -43,9 +43,9 @@ get_minor_version() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatClientVersion::
-set_version(int major, int minor) {
-  _major_version = major;
-  _minor_version = minor;
+set_version(int major_version, int minor_version) {
+  _major_version = major_version;
+  _minor_version = minor_version;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ set_version(int major, int minor) {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool PStatClientVersion::
-is_at_least(int major, int minor) const {
-  return (_major_version > major ||
-          (_major_version == major && _minor_version >= minor));
+is_at_least(int major_version, int minor_version) const {
+  return (_major_version > major_version ||
+          (_major_version == major_version && _minor_version >= minor_version));
 }

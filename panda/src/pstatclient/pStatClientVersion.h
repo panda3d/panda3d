@@ -37,9 +37,9 @@ public:
   INLINE int get_major_version() const;
   INLINE int get_minor_version() const;
 
-  INLINE void set_version(int major, int minor);
+  INLINE void set_version(int major_version, int minor_version);
 
-  INLINE bool is_at_least(int major, int minor) const;
+  INLINE bool is_at_least(int major_version, int minor_version) const;
 
 private:
   int _major_version;
