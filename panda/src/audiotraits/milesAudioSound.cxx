@@ -87,6 +87,13 @@ set_loop_count(unsigned long loop_count) {
   if (_loop_count!=loop_count) {
     _loop_count=loop_count;
     if (status()==PLAYING) {
+      // hack:
+      // For now, the loop count is picked up when the sound starts playing.
+      // There may be a way to change the loop count of a playing sound, but
+      // I'm going to focus on other things.  If you would like to change the
+      // need to stop and start the sound, feel free.  Or, maybe I'll spend
+      // time on it in the future.  Please set the loop option before starting
+      // the sound.
       stop();
       play();
     }
@@ -99,19 +106,22 @@ get_loop_count() const {
   return _loop_count;
 }
 
-void MilesAudioSound::set_time(float start_time) {
+void MilesAudioSound::
+set_time(float start_time) {
   audio_debug("MilesAudioSound::set_time(start_time="<<start_time<<") "<<get_name());
   _start_time=start_time;
   S32 milisecond_start_time=S32(1000*_start_time);
   AIL_quick_set_ms_position(_audio, milisecond_start_time);
 }
 
-float MilesAudioSound::get_time() const {
+float MilesAudioSound::
+get_time() const {
   audio_debug("MilesAudioSound::get_time() returning "<<_start_time);
   return _start_time;
 }
 
-void MilesAudioSound::set_volume(float volume) {
+void MilesAudioSound::
+set_volume(float volume) {
   audio_debug("MilesAudioSound::set_volume(volume="<<volume<<") "<<get_name());
   // *Set the volume even if our volume is not changing, because the
   // *MilesAudioManager will call set_volume when *its* volume changes.
@@ -139,12 +149,14 @@ void MilesAudioSound::set_volume(float volume) {
   }
 }
 
-float MilesAudioSound::get_volume() const {
+float MilesAudioSound::
+get_volume() const {
   audio_debug("MilesAudioSound::get_volume() returning "<<_volume);
   return _volume;
 }
 
-void MilesAudioSound::set_active(bool active) {
+void MilesAudioSound::
+set_active(bool active) {
   audio_debug("MilesAudioSound::set_active(active="<<active<<") "<<get_name());
   if (_active!=active) {
     _active=active;
@@ -170,24 +182,33 @@ void MilesAudioSound::set_active(bool active) {
   }
 }
 
-bool MilesAudioSound::get_active() const {
+bool MilesAudioSound::
+get_active() const {
   audio_debug("MilesAudioSound::get_active() returning "<<_active);
   return _active;
 }
 
-void MilesAudioSound::set_balance(float balance_right) {
+void MilesAudioSound::
+set_balance(float balance_right) {
   audio_debug("MilesAudioSound::set_balance(balance_right="<<balance_right<<") "<<get_name());
   _balance=balance_right;
   // Call set_volume to effect the change:
   set_volume(_volume);
 }
 
-float MilesAudioSound::get_balance() const {
+float MilesAudioSound::
+get_balance() const {
   audio_debug("MilesAudioSound::get_balance() returning "<<_balance);
   return _balance;
 }
 
-float MilesAudioSound::length() const {
+float MilesAudioSound::
+length() const {
+  // hack:
+  // For now, the sound needs to be playing, in order to 
+  // get the right length.  I'm in contact with RAD about the problem.  I've
+  // sent them example code.  They've told me they're looking into it.
+  // Until then, we'll play the sound to get the length.
   float length;
   if (AIL_quick_status(_audio)==QSTAT_PLAYING) {
     length=((float)AIL_quick_ms_length(_audio))*0.001;
@@ -200,12 +221,14 @@ float MilesAudioSound::length() const {
   return length;
 }
 
-const string& MilesAudioSound::get_name() const {
+const string& MilesAudioSound::
+get_name() const {
   //audio_debug("MilesAudioSound::get_name() returning "<<_file_name);
   return _file_name;
 }
 
-AudioSound::SoundStatus MilesAudioSound::status() const {
+AudioSound::SoundStatus MilesAudioSound::
+status() const {
   if (!_audio) {
     return AudioSound::BAD;
   }
