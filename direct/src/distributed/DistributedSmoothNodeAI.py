@@ -3,8 +3,8 @@ import DistributedNodeAI
 import DistributedSmoothNodeBase
 
 class DistributedSmoothNodeAI(DistributedNodeAI.DistributedNodeAI,
-                              DistributedSmoothNodeBase.\
-                              DistributedSmoothNodeBase):
+                              DistributedSmoothNodeBase.DistributedSmoothNodeBase):
+    
     def __init__(self, air, name=None):
         DistributedNodeAI.DistributedNodeAI.__init__(self, air, name)
         DistributedSmoothNodeBase.DistributedSmoothNodeBase.__init__(self)
@@ -17,68 +17,54 @@ class DistributedSmoothNodeAI(DistributedNodeAI.DistributedNodeAI,
     # these are invoked by the DC system
     # 'send' (d_set*) versions are inherited from DistributedSmoothNodeBase
     def setSmStop(self, t):
-        self.setComponentT(t)
+        pass
+
+    # These have their FFI functions exposed for efficiency
     def setSmH(self, h, t):
-        self.setComponentH(h)
-        self.setComponentT(t)
+        self._NodePath__overloaded_setH_ptrNodePath_float(h)
+        
     def setSmXY(self, x, y, t):
-        self.setComponentX(x)
-        self.setComponentY(y)
-        self.setComponentT(t)
+        self._NodePath__overloaded_setX_ptrNodePath_float(x)
+        self._NodePath__overloaded_setY_ptrNodePath_float(y)
+        
     def setSmXZ(self, x, z, t):
-        self.setComponentX(x)
-        self.setComponentZ(z)
-        self.setComponentT(t)
+        self._NodePath__overloaded_setX_ptrNodePath_float(x)
+        self._NodePath__overloaded_setZ_ptrNodePath_float(z)
+        
     def setSmPos(self, x, y, z, t):
-        self.setComponentX(x)
-        self.setComponentY(y)
-        self.setComponentZ(z)
-        self.setComponentT(t)
+        self._NodePath__overloaded_setPos_ptrNodePath_float_float_float(x,y,z)
+        
     def setSmHpr(self, h, p, r, t):
-        self.setComponentH(h)
-        self.setComponentP(p)
-        self.setComponentR(r)
-        self.setComponentT(t)
+        self._NodePath__overloaded_setHpr_ptrNodePath_float_float_float(h,p,r)
+        
     def setSmXYH(self, x, y, h, t):
-        self.setComponentX(x)
-        self.setComponentY(y)
-        self.setComponentH(h)
-        self.setComponentT(t)
+        self._NodePath__overloaded_setX_ptrNodePath_float(x)
+        self._NodePath__overloaded_setY_ptrNodePath_float(y)
+        self._NodePath__overloaded_setH_ptrNodePath_float(h)
+        
     def setSmXYZH(self, x, y, z, h, t):
-        self.setComponentX(x)
-        self.setComponentY(y)
-        self.setComponentZ(z)
-        self.setComponentH(h)
-        self.setComponentT(t)
+        self._NodePath__overloaded_setPos_ptrNodePath_float_float_float(x,y,z)
+        self._NodePath__overloaded_setH_ptrNodePath_float(h)
+        
     def setSmPosHpr(self, x, y, z, h, p, r, t):
-        self.setComponentX(x)
-        self.setComponentY(y)
-        self.setComponentZ(z)
-        self.setComponentH(h)
-        self.setComponentP(p)
-        self.setComponentR(r)
-        self.setComponentT(t)
+        self._NodePath__overloaded_setPosHpr_ptrNodePath_float_float_float_float_float_float(x,y,z,h,p,r)
         
     def clearSmoothing(self, bogus = None):
         pass
     
-    ### component set pos and hpr functions ###
 
-    ### These are the component functions that are invoked
-    ### remotely by the above composite functions.
-
-    # on the AI, the components are assigned immediately
+    # Do we use these on the AIx?
     def setComponentX(self, x):
-        self.setX(x)
+        self._NodePath__overloaded_setX_ptrNodePath_float(x)
     def setComponentY(self, y):
-        self.setY(y)
+        self._NodePath__overloaded_setY_ptrNodePath_float(y)
     def setComponentZ(self, z):
-        self.setZ(z)
+        self._NodePath__overloaded_setZ_ptrNodePath_float(z)
     def setComponentH(self, h):
-        self.setH(h)
+        self._NodePath__overloaded_setH_ptrNodePath_float(h)
     def setComponentP(self, p):
-        self.setP(p)
+        self._NodePath__overloaded_setP_ptrNodePath_float(p)
     def setComponentR(self, r):
-        self.setR(r)
+        self._NodePath__overloaded_setR_ptrNodePath_float(r)
     def setComponentT(self, t):
         pass
