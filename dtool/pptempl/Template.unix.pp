@@ -756,7 +756,7 @@ clean-$[dirname] :
 #end dirname
 
 #formap dirname subdirs
-cleanall-$[dirname] :
+cleanall-$[dirname] : $[patsubst %,cleanall-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]
 	cd ./$[PATH]; $(MAKE) cleanall
 #end dirname
 

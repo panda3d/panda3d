@@ -790,7 +790,7 @@ clean-$[dirname] :
 #end dirname
 
 #formap dirname subdirs
-cleanall-$[dirname] :
+cleanall-$[dirname] : $[patsubst %,cleanall-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]
 	cd $[osfilename $[PATH]] && $(MAKE) /nologo cleanall
 #end dirname
 

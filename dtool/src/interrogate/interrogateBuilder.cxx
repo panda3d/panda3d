@@ -320,7 +320,7 @@ write_code(ostream &out, InterrogateModuleDef *def) {
   if (generate_spam) {
     out << "#include <config_interrogatedb.h>\n"
 	<< "#include <notifyCategoryProxy.h>\n\n"
-	<< "NotifyCategoryDecl(in_" << library_name << ", EXPCL_MISC, EXPTP_MISC);\n"
+	<< "NotifyCategoryDeclNoExport(in_" << library_name << ");\n"
 	<< "NotifyCategoryDef(in_" << library_name << ", interrogatedb_cat);\n\n";
   }
 
