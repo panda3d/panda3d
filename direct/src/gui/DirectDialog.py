@@ -205,8 +205,8 @@ class DirectDialog(DirectFrame):
         t = bounds[1][2]
         # Center text and geom around origin
         # How far is center of text from origin?
-        xOffset = -(l+r)/2.0
-        zOffset = -(b+t)/2.0
+        xOffset = -(l+r)*0.5
+        zOffset = -(b+t)*0.5
         # Update bounds to reflect text movement
         l += xOffset
         r += xOffset
@@ -269,7 +269,7 @@ class DirectDialog(DirectFrame):
             bWidth = br - bl
             # Add pad between buttons
             bSpacing = self['buttonPadSF'] * bWidth
-            bPos = -bSpacing * (self.numButtons - 1)/2.0
+            bPos = -bSpacing * (self.numButtons - 1)*0.5
             index = 0
             for button in self.buttonList:
                 button.setPos(bPos + index * bSpacing, 0,
@@ -291,7 +291,7 @@ class DirectDialog(DirectFrame):
         t = t + self['topPad'] + pad[1]
         self['image_scale'] = (r - l, 1, t - b)
         # Center frame about text and buttons
-        self['image_pos'] = ((l+r)/2.0, 0.0,(b+t)/2.0)
+        self['image_pos'] = ((l+r)*0.5, 0.0,(b+t)*0.5)
         self.resetFrameSize()
 
     def show(self):
