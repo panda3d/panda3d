@@ -33,7 +33,7 @@ class ActorInterval(Interval):
         # Record class specific variables
         self.actor = actor
         self.animName = animName
-        self.loop = loop
+        self.loopAnim = loop
         self.frameRate = self.actor.getFrameRate(self.animName)
         self.numFrames = self.actor.getNumFrames(self.animName)
         # Compute start time
@@ -62,7 +62,7 @@ class ActorInterval(Interval):
         Interval.__init__(self, name, duration, reverse=reverse)
         # Update stopEvent
         self.stopEvent = id + '_stopEvent'
-        if self.loop:
+        if self.loopAnim:
             self.stopEventList = [self.stopEvent]
 
     def calcFrame(self, t):
@@ -104,13 +104,13 @@ class ActorInterval(Interval):
         if (t >= self.getDuration()):
             self.actor.stop()
             frame = self.goToT(self.getDuration())
-            if self.loop:
+            if self.loopAnim:
                 self.ignore(self.stopEvent)
             # Print debug information
             self.notify.debug(
                 'updateFunc() - %s stoping at frame: ' % self.name +
                 '%d Num frames: %d' % (frame, self.numFrames))
-        elif self.loop == 1:
+        elif self.loopAnim == 1:
             if event == IVAL_INIT:
                 # Pose anim
                 self.goToT(t)
