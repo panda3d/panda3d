@@ -30,9 +30,6 @@ static char rcsid[] = "$Header$";
  * TIFF Library UNIX-specific Routines.
  */
 #include "tiffiop.h"
-#ifndef PENV_WIN32
-#include <unistd.h>
-#endif
 #include <stdlib.h>
 
 static tsize_t
