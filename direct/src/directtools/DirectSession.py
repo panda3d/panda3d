@@ -16,6 +16,7 @@ import EntryScale
 import SceneGraphExplorer
 import OnscreenText
 import types
+import string
 import __builtin__
 
 DIRECT_FLASH_DURATION = 1.5
@@ -86,20 +87,31 @@ class DirectSession(PandaObject):
         self.directMessageReadout.reparentTo( hidden )
 
         # Create a vrpn client vrpn-server or default
+        self.deviceManager = None
+        self.joybox = None
+        self.radamec = None
+        self.fastrak = []
         if base.config.GetBool('want-vrpn', 0):
             from DirectDeviceManager import *
             self.deviceManager = DirectDeviceManager()
             # Automatically create any devices specified in config file
             joybox = base.config.GetString('vrpn-joybox-device', '')
+            radamec = base.config.GetString('vrpn-radamec-device', '')
+            fastrak = base.config.GetString('vrpn-fastrak-device', '')
             if joybox:
                 from DirectJoybox import *
                 self.joybox = DirectJoybox(joybox)
-            else:
-                self.joybox = None
-        else:
-            self.deviceManager = None
-            self.joybox = None
-
+            if radamec:
+                from DirectRadamec import *
+                self.radamec = DirectRadamec(radamec)
+            if fastrak:
+                from DirectFastrak import *
+                # parse string into format device:N where N is the sensor name
+                fastrak = string.split(fastrak)
+                for i in range(len(fastrak))[1:]:
+                    self.fastrak.append(DirectFastrak(fastrak[0] + ':' + fastrak[i]))
+                
+            
         self.fControl = 0
         self.fAlt = 0
         self.fShift = 0
