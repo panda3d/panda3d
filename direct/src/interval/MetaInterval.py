@@ -50,6 +50,12 @@ class MetaInterval(CMetaInterval):
 
         # We must allow the old style: Track([ ival0, ival1, ... ]) as
         # well as the new style: Track(ival0, ival1, ...)
+
+        # Note: this breaks in the case of a Track with one tuple:
+        # Track((0, ival0),).  We could go through some effort to fix
+        # this case, but for now I prefer just to document it as a
+        # bug, since it will go away when we eventually remove support
+        # for the old interface.
         if len(ivals) == 1 and \
            (isinstance(ivals[0], types.TupleType) or \
             isinstance(ivals[0], types.ListType)):
