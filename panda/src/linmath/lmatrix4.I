@@ -887,7 +887,8 @@ invert_from(const LMatrix4<NumType> &other) {
   int index[4];
 
   if (!decompose_mat(index)) {
-    nout << "Tried to invert singular LMatrix4.\n";
+    linmath_cat.warning()
+      << "Tried to invert singular LMatrix4.\n";
     return false;
   }
   

@@ -101,13 +101,16 @@ NodePath(Node *top_node, TypeHandle graph_type) : NodePathBase(graph_type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Constructor
 //       Access: Public
-//  Description: Creates a NodePath that contains two nodes and one
-//               arc: the top arc.
+//  Description: This constructor creates a new NodePath given an
+//               ArcChain, which is a more primitive version of a
+//               NodePath.  Some graph-traversal operations generate
+//               ArcChains, so it's useful to be able to use one of
+//               these to create a NodePath.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
-NodePath(NodeRelation *top_arc) : NodePathBase(top_arc->get_type()) {
-  _top_node = top_arc->get_parent();
-  _head = new ArcComponent(top_arc, NULL);
+NodePath(const ArcChain &chain, TypeHandle graph_type) :
+  NodePathBase(chain, graph_type)
+{
   nassertv(verify_connectivity());
 }
 
@@ -118,64 +121,6 @@ NodePath(NodeRelation *top_arc) : NodePathBase(top_arc->get_type()) {
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
 NodePath(const NodePathBase &copy) : NodePathBase(copy) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::Copy-and-shorten constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE NodePath::
-NodePath(const NodePath &copy, int shorten_count) : NodePathBase(copy) {
-  shorten(shorten_count);
-  nassertv(verify_connectivity());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::Copy-and-extend constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE NodePath::
-NodePath(const NodePath &copy, NodeRelation *arc) :
-  NodePathBase(copy) 
-{
-  nassertv(verify_connectivity());
-  if (!extend_by(arc)) {
-    clear();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::Copy-and-extend-down constructor
-//       Access: Public
-//  Description: This implicitly does an extend_down_to() on the
-//               indicated node, so that it is not necessary that the
-//               node be an immediate child of the path.
-////////////////////////////////////////////////////////////////////
-INLINE NodePath::
-NodePath(const NodePath &copy, Node *node) :
-  NodePathBase(copy) 
-{
-  nassertv(verify_connectivity());
-  if (!extend_down_to(node)) {
-    clear();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::Copy-and-extend constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE NodePath::
-NodePath(const NodePath &copy, const string &path) :
-  NodePathBase(copy) 
-{
-  nassertv(verify_connectivity());
-  if (!extend_by(path)) {
-    clear();
-  }
 }
   
 ////////////////////////////////////////////////////////////////////
@@ -412,7 +357,9 @@ get_child(int n) const {
   nassertr(!is_empty(), NodePath());
   nassertr(n >= 0 && n < get_num_children(), NodePath());
 
-  return NodePath(*this, get_bottom_node()->get_child(_graph_type, n));
+  NodePath result(*this);
+  result.extend_by(get_bottom_node()->get_child(_graph_type, n));
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -451,7 +398,11 @@ get_parent() const {
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
 find_path_down_to(Node *node) const {
-  return NodePath(*this, node);
+  NodePath result(*this);
+  if (result.extend_down_to(node)) {
+    return result;
+  }
+  return NodePath();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -464,7 +415,11 @@ find_path_down_to(Node *node) const {
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
 find(const string &path) const {
-  return NodePath(*this, path);
+  NodePath result(*this);
+  if (result.extend_by(path)) {
+    return result;
+  }
+  return NodePath();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -14,8 +14,11 @@ TypeHandle PhysicsObject::_type_handle;
 ////////////////////////////////////////////////////////////////////
 PhysicsObject::
 PhysicsObject(void) :
-  _process_me(false), _mass(1.0f), _oriented(true),
-  _terminal_velocity(_default_terminal_velocity) {
+  _terminal_velocity(_default_terminal_velocity),
+  _mass(1.0f),
+  _process_me(false),
+  _oriented(true)
+{
   _position.set(0, 0, 0);
   _last_position = _position;
   _velocity.set(0, 0, 0);

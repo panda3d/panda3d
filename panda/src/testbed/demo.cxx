@@ -474,7 +474,7 @@ event_v(CPT_Event) {
   attach_sky();
 
   NodePath search(sky);
-  NodePath sky_search(search, "**/sun");
+  NodePath sky_search = search.find("**/sun");
 
   if (!is_color_scale) {
     sky_search.set_color_scale(1, 0.5, 0.5, 0.5);
@@ -536,7 +536,7 @@ event_L(CPT_Event) {
     flare->set_flare_falloff(45);
 
     NodePath search(sky);
-    NodePath sky_search(search, "**/sun");
+    NodePath sky_search = search.find("**/sun");
     PT_Node light = sky_search.get_bottom_node();
 
     flare->set_light_source(light);

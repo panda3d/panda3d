@@ -175,7 +175,7 @@ get_num_linear_forces(void) const {
 ////////////////////////////////////////////////////////////////////
 INLINE PT(LinearForce) Physical::
 get_linear_force(int index) const {
-  nassertr(index >= 0 && index < _linear_forces.size(), NULL);
+  nassertr(index >= 0 && index < (int)_linear_forces.size(), NULL);
   return _linear_forces[index];
 }
 
@@ -194,6 +194,6 @@ get_num_angular_forces(void) const {
 ////////////////////////////////////////////////////////////////////
 INLINE PT(AngularForce) Physical::
 get_angular_force(int index) const {
-  nassertr(index >= 0 && index < _angular_forces.size(), NULL);
+  nassertr(index >= 0 && index < (int)_angular_forces.size(), NULL);
   return _angular_forces[index];
 }

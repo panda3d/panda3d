@@ -15,7 +15,9 @@ TypeHandle LinearUserDefinedForce::_type_handle;
 LinearUserDefinedForce::
 LinearUserDefinedForce(LVector3f (*proc)(const PhysicsObject *),
 		 float a, bool md) :
-  _proc(proc), LinearForce(a, md) {
+  LinearForce(a, md), 
+  _proc(proc) 
+{
 }
 
 ////////////////////////////////////////////////////////////////////

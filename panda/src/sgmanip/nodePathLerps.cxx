@@ -15,7 +15,7 @@ TypeHandle ColorScaleLerpFunctor::_type_handle;
 
 
 PosLerpFunctor::PosLerpFunctor(const PosLerpFunctor& c)
-  : _node_path(c._node_path), LPoint3fLerpFunctor(c) {}
+  : LPoint3fLerpFunctor(c), _node_path(c._node_path) {}
 
 PosLerpFunctor::~PosLerpFunctor(void)
 {
@@ -35,7 +35,7 @@ void PosLerpFunctor::operator()(float t) {
 }
 
 HprLerpFunctor::HprLerpFunctor(const HprLerpFunctor& c)
-  : _node_path(c._node_path), LVecBase3fLerpFunctor(c) {}
+  : LVecBase3fLerpFunctor(c), _node_path(c._node_path) {}
 
 HprLerpFunctor::~HprLerpFunctor(void)
 {
@@ -55,7 +55,7 @@ void HprLerpFunctor::operator()(float t) {
 }
 
 ScaleLerpFunctor::ScaleLerpFunctor(const ScaleLerpFunctor& c)
-  : _node_path(c._node_path), LVecBase3fLerpFunctor(c) {}
+  : LVecBase3fLerpFunctor(c), _node_path(c._node_path) {}
 
 ScaleLerpFunctor::~ScaleLerpFunctor(void)
 {
@@ -75,7 +75,7 @@ void ScaleLerpFunctor::operator()(float t) {
 }
 
 ColorLerpFunctor::ColorLerpFunctor(const ColorLerpFunctor& c)
-  : _node_path(c._node_path), LVecBase4fLerpFunctor(c) {}
+  : LVecBase4fLerpFunctor(c), _node_path(c._node_path) {}
 
 ColorLerpFunctor::~ColorLerpFunctor(void)
 {
@@ -93,7 +93,7 @@ void ColorLerpFunctor::operator()(float t) {
 
 
 PosHprLerpFunctor::PosHprLerpFunctor(const PosHprLerpFunctor& c)
-  : _node_path(c._node_path), LerpFunctor(c) {}
+  : LerpFunctor(c), _node_path(c._node_path) {}
 
 PosHprLerpFunctor::~PosHprLerpFunctor(void)
 {
@@ -121,7 +121,7 @@ void PosHprLerpFunctor::operator()(float t) {
 }
 
 PosHprScaleLerpFunctor::PosHprScaleLerpFunctor(const PosHprScaleLerpFunctor& c)
-  : _node_path(c._node_path), LerpFunctor(c) {}
+  : LerpFunctor(c), _node_path(c._node_path) {}
 
 PosHprScaleLerpFunctor::~PosHprScaleLerpFunctor(void)
 {
@@ -154,7 +154,7 @@ void PosHprScaleLerpFunctor::operator()(float t) {
 }
 
 ColorScaleLerpFunctor::ColorScaleLerpFunctor(const ColorScaleLerpFunctor& c)
-  : _node_path(c._node_path), LVecBase4fLerpFunctor(c) {}
+  : LVecBase4fLerpFunctor(c), _node_path(c._node_path) {}
 
 ColorScaleLerpFunctor::~ColorScaleLerpFunctor(void)
 {

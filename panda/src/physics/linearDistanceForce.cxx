@@ -14,8 +14,9 @@ TypeHandle LinearDistanceForce::_type_handle;
 ////////////////////////////////////////////////////////////////////
 LinearDistanceForce::
 LinearDistanceForce(const LPoint3f& p, FalloffType ft, float r, float a, bool m) :
-  _falloff(ft), _radius(r), _force_center(p),
-  LinearForce(a, m) {
+  LinearForce(a, m),
+  _force_center(p), _falloff(ft), _radius(r)
+{
 }
 
 ////////////////////////////////////////////////////////////////////

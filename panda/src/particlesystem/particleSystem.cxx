@@ -340,7 +340,7 @@ resize_pool(int size) {
     if (po_delta > 0) {
       for (i = 0; i < po_delta; i++)
       {
-        int free_index = _physics_objects.size();
+	//        int free_index = _physics_objects.size();
 
         BaseParticle *new_particle = _factory->alloc_particle();
         if (new_particle) {

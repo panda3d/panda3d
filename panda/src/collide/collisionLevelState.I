@@ -3,6 +3,69 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionLevelState::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CollisionLevelState::
+CollisionLevelState(const ArcChain &arc_chain) :
+  _arc_chain(arc_chain)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionLevelState::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CollisionLevelState::
+CollisionLevelState(const CollisionLevelState &copy) :
+  _arc_chain(copy._arc_chain),
+  _colliders(copy._colliders),
+  _current(copy._current),
+  _colliders_with_geom(copy._colliders_with_geom),
+  _local_bounds(copy._local_bounds)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionLevelState::Copy Assignment
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionLevelState::
+operator = (const CollisionLevelState &copy) {
+  _arc_chain = copy._arc_chain;
+  _colliders = copy._colliders;
+  _current = copy._current;
+  _colliders_with_geom = copy._colliders_with_geom;
+  _local_bounds = copy._local_bounds;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionLevelState::forward_arc
+//       Access: Public
+//  Description: Records that we have traversed past another arc in
+//               the scene graph.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionLevelState::
+forward_arc(NodeRelation *arc) {
+  _arc_chain.push_back(arc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionLevelState::get_arc_chain
+//       Access: Public
+//  Description: Returns the chain of arcs traversed from the top of
+//               the scene graph.
+////////////////////////////////////////////////////////////////////
+INLINE const ArcChain &CollisionLevelState::
+get_arc_chain() const {
+  return _arc_chain;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::get_num_colliders
 //       Access: Public

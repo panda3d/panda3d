@@ -35,7 +35,7 @@
 //               wrt's).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ArcChain {
-private:
+protected:
   // We maintain our own linked list structure here instead of using
   // some STL structure, so we can efficiently copy-construct these
   // things by sharing the initial part of the list.

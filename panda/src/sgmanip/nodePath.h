@@ -100,12 +100,9 @@ class EXPCL_PANDA NodePath : public NodePathBase {
 PUBLISHED:
   INLINE NodePath(TypeHandle graph_type = RenderRelation::get_class_type());
   INLINE NodePath(Node *top_node, TypeHandle graph_type = RenderRelation::get_class_type());
-  INLINE NodePath(NodeRelation *top_arc);
+  INLINE NodePath(const ArcChain &chain, TypeHandle graph_type);
+
   INLINE NodePath(const NodePathBase &copy);
-  INLINE NodePath(const NodePath &copy, int shorten_count);
-  INLINE NodePath(const NodePath &copy, NodeRelation *arc);
-  INLINE NodePath(const NodePath &copy, Node *node);
-  INLINE NodePath(const NodePath &copy, const string &path);
   INLINE void operator = (const NodePath &copy);
   INLINE ~NodePath();
 

@@ -16,8 +16,9 @@ TypeHandle LinearCylinderVortexForce::_type_handle;
 LinearCylinderVortexForce::
 LinearCylinderVortexForce(float radius, float length, float coef, 
 		    float a, bool md) :
-  _radius(radius), _length(length), _coef(coef), 
-  LinearForce(a, md) {
+  LinearForce(a, md),
+  _radius(radius), _length(length), _coef(coef)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,7 +64,7 @@ get_child_vector(const PhysicsObject *po) {
   // get the force-space transform- this MUST be the relative matrix
   // from the point's local coordinate system to the attached node's
   // local system.
-  LMatrix4f force_space_xform = LMatrix4f::ident_mat();
+  //  LMatrix4f force_space_xform = LMatrix4f::ident_mat();
   LVector3f force_vec(0.0f, 0.0f, 0.0f);
 
   // project the point into force_space

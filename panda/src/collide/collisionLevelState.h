@@ -11,6 +11,7 @@
 #include <luse.h>
 #include <pointerToArray.h>
 #include <geometricBoundingVolume.h>
+#include <arcChain.h>
 
 #include <list>
 
@@ -33,10 +34,17 @@ public:
     LMatrix4f _inv_space;
   };
 
+  INLINE CollisionLevelState(const ArcChain &arc_chain);
+  INLINE CollisionLevelState(const CollisionLevelState &copy);
+  INLINE void operator = (const CollisionLevelState &copy);
+
   void clear();
   void reserve(int max_colliders);
   void prepare_collider(const ColliderDef &def);
   void xform(const LMatrix4f &mat);
+
+  INLINE void forward_arc(NodeRelation *arc);
+  INLINE const ArcChain &get_arc_chain() const;
 
   INLINE int get_num_colliders() const;
   INLINE bool has_collider(int n) const;
@@ -58,6 +66,8 @@ private:
   typedef int ColliderMask;
 
   INLINE ColliderMask get_mask(int n) const;
+
+  ArcChain _arc_chain;
 
   typedef PTA(ColliderDef) Colliders;
   Colliders _colliders;

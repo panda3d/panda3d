@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET collide
   #define LOCAL_LIBS \
-    light tform sgraphutil gobj graph putil
+    sgmanip light tform sgraphutil gobj graph putil
 
   #define SOURCES \
     collisionEntry.I collisionEntry.cxx collisionEntry.h \

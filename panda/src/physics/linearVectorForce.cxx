@@ -19,7 +19,9 @@ TypeHandle LinearVectorForce::_type_handle;
 ////////////////////////////////////////////////////////////////////
 LinearVectorForce::
 LinearVectorForce(const LVector3f& vec, float a, bool mass) : 
-  _fvec(vec), LinearForce(a, mass) {
+  LinearForce(a, mass),
+  _fvec(vec) 
+{
 }
 
 ////////////////////////////////////////////////////////////////////

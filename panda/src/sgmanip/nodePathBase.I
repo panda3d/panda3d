@@ -5,18 +5,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePathBase::ArcComponent::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE NodePathBase::ArcComponent::
-ArcComponent(NodeRelation *arc, ArcComponent *next) :
-  _arc(arc),
-  _next(next)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePathBase::Constructor
 //       Access: Public
 //  Description: 
@@ -28,13 +16,29 @@ NodePathBase(TypeHandle graph_type) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePathBase::Constructor
+//       Access: Public
+//  Description: This constructor creates a new NodePathBase given an
+//               ArcChain, which is a more primitive version of a
+//               NodePath.  Some graph-traversal operations generate
+//               ArcChains, so it's useful to be able to use one of
+//               these to create a NodePath.
+////////////////////////////////////////////////////////////////////
+INLINE NodePathBase::
+NodePathBase(const ArcChain &chain, TypeHandle graph_type) :
+  ArcChain(chain),
+  _graph_type(graph_type)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePathBase::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE NodePathBase::
 NodePathBase(const NodePathBase &copy) :
-  _head(copy._head),
+  ArcChain(copy),
   _top_node(copy._top_node),
   _graph_type(copy._graph_type)
 {
@@ -47,7 +51,7 @@ NodePathBase(const NodePathBase &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePathBase::
 operator = (const NodePathBase &copy) {
-  _head = copy._head;
+  ArcChain::operator = (copy);
   _top_node = copy._top_node;
   _graph_type = copy._graph_type;
 }

@@ -272,7 +272,9 @@ get_children() const {
     DownRelationPointers::const_iterator drpi;
     for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
       NodeRelation *arc = (*drpi);
-      result.add_path(NodePath(*this, arc));
+      NodePath child(*this);
+      child.extend_by(arc);
+      result.add_path(child);
     }
   }
 
@@ -306,7 +308,9 @@ get_siblings() const {
     for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
       NodeRelation *arc = (*drpi);
       if (arc != my_arc) {
-	result.add_path(NodePath(parent, arc));
+	NodePath sib(parent);
+	sib.extend_by(arc);
+	result.add_path(sib);
       }
     }
   }
@@ -1747,7 +1751,8 @@ look_at(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
 
   LPoint3f pos = get_pos();
 
-  NodePath parent(*this, 1);
+  NodePath parent(*this);
+  parent.shorten(1);
   LPoint3f rel_point = point * other.get_mat(parent);
 
   LMatrix4f mat;
@@ -1770,7 +1775,8 @@ heads_up(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
 
   LPoint3f pos = get_pos();
 
-  NodePath parent(*this, 1);
+  NodePath parent(*this);
+  parent.shorten(1);
   LPoint3f rel_point = point * other.get_mat(parent);
 
   LMatrix4f mat;
@@ -2268,7 +2274,8 @@ get_bounds() const {
     // matrix.  We'd rather return a bounding volume in the node's
     // space, so we have to untransform it now.  Ick.
     GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bv);
-    NodePath parent(*this, 1);
+    NodePath parent(*this);
+    parent.shorten(1);
     LMatrix4f mat = parent.get_mat(*this);
     gbv->xform(mat);
   }
@@ -2564,7 +2571,8 @@ r_list_descendants(ostream &out, int indent_level) const {
     DownRelationPointers::const_iterator drpi;
     for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
       NodeRelation *arc = (*drpi);
-      NodePath next(*this, arc);
+      NodePath next(*this);
+      next.extend_by(arc);
       next.r_list_descendants(out, indent_level + 2);
     }
   }
@@ -2591,7 +2599,8 @@ r_list_transitions(ostream &out, int indent_level) const {
     DownRelationPointers::const_iterator drpi;
     for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
       NodeRelation *arc = (*drpi);
-      NodePath next(*this, arc);
+      NodePath next(*this);
+      next.extend_by(arc);
 
       indent(out, indent_level + 2) << *arc << ":\n";
       arc->write_transitions(out, indent_level + 2);

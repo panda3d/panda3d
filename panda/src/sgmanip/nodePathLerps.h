@@ -16,8 +16,8 @@
 class EXPCL_PANDA PosLerpFunctor : public LPoint3fLerpFunctor {
 private:
   NodePath _node_path;
-  NodePath _wrt_path;
   bool _is_wrt;
+  NodePath _wrt_path;
 
 PUBLISHED:
   PosLerpFunctor(NodePath np, LPoint3f start, LPoint3f end)
@@ -70,8 +70,8 @@ private:
 class EXPCL_PANDA HprLerpFunctor : public LVecBase3fLerpFunctor {
 private:
   NodePath _node_path;
-  NodePath _wrt_path;
   bool _is_wrt;
+  NodePath _wrt_path;
 
 PUBLISHED:
   HprLerpFunctor(NodePath np, LVecBase3f start, LVecBase3f end)
@@ -122,8 +122,8 @@ private:
 class EXPCL_PANDA ScaleLerpFunctor : public LVecBase3fLerpFunctor {
 private:
   NodePath _node_path;
-  NodePath _wrt_path;
   bool _is_wrt;
+  NodePath _wrt_path;
 
 PUBLISHED:
   ScaleLerpFunctor(NodePath np, LVecBase3f start, LVecBase3f end)
@@ -174,8 +174,8 @@ private:
 class EXPCL_PANDA ColorLerpFunctor : public LVecBase4fLerpFunctor {
 private:
   NodePath _node_path;
-  NodePath _wrt_path;
   bool _is_wrt;
+  NodePath _wrt_path;
 
 PUBLISHED:
   ColorLerpFunctor(NodePath np, LVecBase4f start, LVecBase4f end)
@@ -232,8 +232,8 @@ private:
   LVecBase3f _hstart;
   LVecBase3f _hend;
   LVecBase3f _hdiff_cache;
-  NodePath _wrt_path;
   bool _is_wrt;
+  NodePath _wrt_path;
 
 PUBLISHED:
   PosHprLerpFunctor(NodePath np, LPoint3f pstart, LPoint3f pend,
@@ -305,8 +305,8 @@ private:
   LVecBase3f _sstart;
   LVecBase3f _send;
   LVecBase3f _sdiff_cache;
-  NodePath _wrt_path;
   bool _is_wrt;
+  NodePath _wrt_path;
 
 PUBLISHED:
   PosHprScaleLerpFunctor(NodePath np, LPoint3f pstart, LPoint3f pend,
@@ -378,8 +378,8 @@ private:
 class EXPCL_PANDA ColorScaleLerpFunctor : public LVecBase4fLerpFunctor {
 private:
   NodePath _node_path;
-  NodePath _wrt_path;
   bool _is_wrt;
+  NodePath _wrt_path;
 
 PUBLISHED:
   ColorScaleLerpFunctor(NodePath np, LVecBase4f start, LVecBase4f end)

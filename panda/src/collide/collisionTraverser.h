@@ -23,6 +23,7 @@
 
 class CollisionNode;
 class Geom;
+class NodePath;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : CollisionTraverser
@@ -43,6 +44,7 @@ PUBLISHED:
   void clear_colliders();
 
   void traverse(Node *root);
+  void traverse(const NodePath &root);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

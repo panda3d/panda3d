@@ -86,10 +86,28 @@ get_from_space() const {
 //               that was collided into.  This returns a NamedNode
 //               pointer instead of something more specific, because
 //               it might be either a CollisionNode or a GeomNode.
+//
+//               Also see get_into_node_path().
 ////////////////////////////////////////////////////////////////////
 INLINE NamedNode *CollisionEntry::
 get_into_node() const {
   return _into_node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_into_node_path
+//       Access: Public
+//  Description: Returns the NodePath that represents the specific
+//               CollisionNode or GeomNode instance that was collided
+//               into.  This is the same node returned by
+//               get_into_node(), represented as a NodePath; however,
+//               it may be more useful because the NodePath can
+//               resolve the particular instance of the node, if there
+//               is more than one.
+////////////////////////////////////////////////////////////////////
+INLINE const NodePath &CollisionEntry::
+get_into_node_path() const {
+  return _into_node_path;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -16,6 +16,7 @@
 #include <pStatTimer.h>
 #include <geomNode.h>
 #include <geom.h>
+#include <nodePath.h>
 
 
 PStatCollector CollisionTraverser::_collisions_pcollector =
@@ -210,7 +211,6 @@ clear_colliders() {
 }
 
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::traverse
 //       Access: Public
@@ -218,9 +218,21 @@ clear_colliders() {
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 traverse(Node *root) {
+  traverse(NodePath(root, _graph_type));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::traverse
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CollisionTraverser::
+traverse(const NodePath &root) {
+  nassertv(root.get_graph_type() == _graph_type);
+
   PStatTimer timer(_collisions_pcollector);
 
-  CollisionLevelState level_state;
+  CollisionLevelState level_state(root);
   prepare_colliders(level_state);
 
   Handlers::iterator hi;
@@ -228,8 +240,8 @@ traverse(Node *root) {
     (*hi).first->begin_group();
   }
 
-  df_traverse(root, *this, NullAttributeWrapper(), level_state,
-	      _graph_type);
+  df_traverse(root.get_bottom_node(), *this, NullAttributeWrapper(), 
+	      level_state, _graph_type);
 
   for (hi = _handlers.begin(); hi != _handlers.end(); ++hi) {
     (*hi).first->end_group();
@@ -336,7 +348,8 @@ reached_node(Node *node, NullAttributeWrapper &,
 
     CollisionEntry entry;
     entry._into_node = cnode;
-    get_rel_mat(node, NULL, entry._into_space, _graph_type);
+    entry._into_node_path = NodePath(level_state.get_arc_chain(), _graph_type);
+    entry._into_space = entry._into_node_path.get_mat(NodePath());
 
     int num_colliders = level_state.get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
@@ -447,6 +460,8 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     inv_mat.invert_from(tt->get_matrix());
     level_state.xform(inv_mat);
   }
+
+  level_state.forward_arc(arc);
 
   return true;
 }

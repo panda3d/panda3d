@@ -733,7 +733,8 @@ invert_from(const LMatrix3<NumType> &other) {
   NumType d = other.determinant();
 
   if (IS_NEARLY_ZERO(d)) {
-    nout << "Tried to invert singular LMatrix3.\n";
+    linmath_cat.warning()
+      << "Tried to invert singular LMatrix3.\n";
     (*this) = ident_mat();
     return false;
   }

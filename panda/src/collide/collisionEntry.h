@@ -15,6 +15,7 @@
 #include <luse.h>
 #include <pointerTo.h>
 #include <pt_NamedNode.h>
+#include <nodePath.h>
 
 ///////////////////////////////////////////////////////////////////
 // 	 Class : CollisionEntry
@@ -42,6 +43,7 @@ PUBLISHED:
 
   INLINE CollisionNode *get_from_node() const;
   INLINE NamedNode *get_into_node() const;
+  INLINE const NodePath &get_into_node_path() const;
 
   INLINE const LMatrix4f &get_from_space() const;
   INLINE const LMatrix4f &get_into_space() const;
@@ -69,6 +71,7 @@ private:
 
   PT(CollisionNode) _from_node;
   PT_NamedNode _into_node;
+  NodePath _into_node_path;
   LMatrix4f _from_space;
   LMatrix4f _into_space;
   LMatrix4f _wrt_space;
