@@ -48,7 +48,7 @@ throw_new_frame() {
 void
 take_snapshot(GraphicsWindow *win, const string &name) {
   GraphicsStateGuardian* gsg = win->get_gsg();
-  const RenderBuffer& rb = gsg->get_render_buffer(RenderBuffer::T_front);
+  RenderBuffer rb = gsg->get_render_buffer(RenderBuffer::T_front);
 
   CPT(DisplayRegion) dr = win->get_display_region(0);
   nassertv(dr != (DisplayRegion *)NULL);
