@@ -17,6 +17,7 @@
 #include <luse.h>
 
 class LwoToEggConverter;
+class CLwoSurfaceBlockTMap;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : CLwoSurfaceBlock
@@ -27,6 +28,7 @@ class LwoToEggConverter;
 class CLwoSurfaceBlock {
 public:
   CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block);
+  ~CLwoSurfaceBlock();
 
   IffId _block_type;
   IffId _channel_id;
@@ -50,6 +52,7 @@ public:
 
   LwoToEggConverter *_converter;
   CPT(LwoSurfaceBlock) _block;
+  CLwoSurfaceBlockTMap *_tmap;
 };
 
 #include "cLwoSurfaceBlock.I"

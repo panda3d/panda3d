@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cLwoSurfaceBlock.h"
+#include "cLwoSurfaceBlockTMap.h"
 #include "lwoToEggConverter.h"
 
 #include <lwoSurfaceBlockChannel.h>
@@ -36,6 +37,7 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
   _h_wrap = LwoSurfaceBlockWrap::M_repeat;
   _w_repeat = 1.0;
   _h_repeat = 1.0;
+  _tmap = (CLwoSurfaceBlockTMap *)NULL;
 
   // Scan the chunks in the header.
   int num_hchunks = _block->_header->get_num_chunks();
@@ -59,7 +61,15 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
   for (int i = 0; i < num_chunks; i++) {
     const IffChunk *chunk = _block->get_chunk(i);
 
-    if (chunk->is_of_type(LwoSurfaceBlockProjection::get_class_type())) {
+    if (chunk->is_of_type(LwoSurfaceBlockTMap::get_class_type())) {
+      const LwoSurfaceBlockTMap *lwo_tmap = DCAST(LwoSurfaceBlockTMap, chunk);
+      if (_tmap != (CLwoSurfaceBlockTMap *)NULL) {
+	nout << "Two TMAP chunks encountered within surface block.\n";
+	delete _tmap;
+      }
+      _tmap = new CLwoSurfaceBlockTMap(_converter, lwo_tmap);
+
+    } else if (chunk->is_of_type(LwoSurfaceBlockProjection::get_class_type())) {
       const LwoSurfaceBlockProjection *proj = DCAST(LwoSurfaceBlockProjection, chunk);
       _projection_mode = proj->_mode;
 
@@ -90,5 +100,42 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
       }
     }
   }
+
+  if (_tmap != (CLwoSurfaceBlockTMap *)NULL) {
+    _tmap->get_transform(_transform);
+  }
+
+  // Also rotate the transform if we specify some axis other than Y.
+  // (All the map_* uv mapping functions are written to assume Y is
+  // the dominant axis.)
+  switch (_axis) {
+  case LwoSurfaceBlockAxis::A_x:
+    _transform = LMatrix4d::rotate_mat(90.0, 
+				       LVecBase3d::unit_z(),
+				       CS_yup_left) * _transform;
+    break;
+
+  case LwoSurfaceBlockAxis::A_y:
+    break;
+
+  case LwoSurfaceBlockAxis::A_z:
+    _transform = LMatrix4d::rotate_mat(-90.0, 
+				       LVecBase3d::unit_x(),
+				       CS_yup_left) * _transform;
+    break;
+  }
+
+  _inv_transform.invert_from(_transform);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CLwoSurfaceBlock::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CLwoSurfaceBlock::
+~CLwoSurfaceBlock() {
+  if (_tmap != (CLwoSurfaceBlockTMap *)NULL) {
+    delete _tmap;
+  }
+}

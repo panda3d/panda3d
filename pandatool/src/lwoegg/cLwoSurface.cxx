@@ -298,11 +298,12 @@ generate_uvs(vector_PT_EggVertex &egg_vertices) {
   }
 
   centroid /= (double)egg_vertices.size();
+  centroid = centroid * _block->_inv_transform;
 
   // Now go back through and actually compute the UV's.
   for (vi = egg_vertices.begin(); vi != egg_vertices.end(); ++vi) {
     EggVertex *egg_vertex = (*vi);
-    LPoint3d pos = egg_vertex->get_pos3();
+    LPoint3d pos = egg_vertex->get_pos3() * _block->_inv_transform;
     LPoint2d uv = (this->*_map_uvs)(pos, centroid);
     egg_vertex->set_uv(uv);
   }

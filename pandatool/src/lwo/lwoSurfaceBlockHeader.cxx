@@ -8,6 +8,7 @@
 #include "lwoSurfaceBlockChannel.h"
 #include "lwoSurfaceBlockEnabled.h"
 #include "lwoSurfaceBlockOpacity.h"
+#include "lwoSurfaceBlockAxis.h"
 
 #include <indent.h>
 
@@ -74,6 +75,9 @@ make_new_chunk(IffInputFile *in, IffId id) {
 
   } else if (id == IffId("OPAC")) {
     return new LwoSurfaceBlockOpacity;
+
+  } else if (id == IffId("AXIS")) {
+    return new LwoSurfaceBlockAxis;
   
   } else {
     return IffChunk::make_new_chunk(in, id);

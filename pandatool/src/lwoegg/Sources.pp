@@ -14,6 +14,7 @@
     cLwoPolygons.I cLwoPolygons.cxx cLwoPolygons.h \
     cLwoSurface.I cLwoSurface.cxx cLwoSurface.h \
     cLwoSurfaceBlock.I cLwoSurfaceBlock.cxx cLwoSurfaceBlock.h \
+    cLwoSurfaceBlockTMap.I cLwoSurfaceBlockTMap.cxx cLwoSurfaceBlockTMap.h \
     lwoToEggConverter.I lwoToEggConverter.cxx lwoToEggConverter.h
 
   #define INSTALL_HEADERS \
