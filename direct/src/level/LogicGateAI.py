@@ -6,6 +6,34 @@ import DirectNotifyGlobal
 import Entity
 
 
+# Logic Gates:
+#
+#  and: 0 0 = 0     or: 0 0 = 0    xor: 0 0 = 0
+#       0 1 = 0         0 1 = 1         0 1 = 1
+#       1 0 = 0         1 0 = 1         1 0 = 1
+#       1 1 = 1         1 1 = 1         1 1 = 0
+#
+# nand: 0 0 = 1    nor: 0 0 = 1   xnor: 0 0 = 1
+#       0 1 = 1         0 1 = 0         0 1 = 0
+#       1 0 = 1         1 0 = 0         1 0 = 0
+#       1 1 = 0         1 1 = 0         1 1 = 1
+#
+# In the following:
+#   1: send a true message
+#   0: send a false message
+#   -: don't send a message
+#
+#   a b  and  or  xor  nand  nor  xnor
+#  (0 0)  (0) (0)  (0)   (1)  (1)   (1)  <--- initial state
+#   1 0    -   1    1     -    0     0
+#   0 0    -   0    0     -    1     1
+#   1 0    -   1    1     -    0     0
+#   1 1    1   -    0     0    -     1
+#   0 1    0   -    1     1    -     0
+#   1 1    1   -    0     0    -     1
+#   0 1    0   -    1     1    -     0
+#   0 0    -   0    0     -    1     1
+
 def andTest(self, a, b):
     assert(self.debugPrint("andTest(a=%s, b=%s)"%(a, b)))
     if b:
@@ -21,6 +49,21 @@ def xorTest(self, a, b):
     assert(self.debugPrint("xorTest(a=%s, b=%s)"%(a, b)))
     messenger.send(self.getName(), [(not (a and b)) and (a or b)])
 
+def nandTest(self, a, b):
+    assert(self.debugPrint("nandTest(a=%s, b=%s)"%(a, b)))
+    if b:
+        messenger.send(self.getName(), [not (a and b)])
+
+def norTest(self, a, b):
+    assert(self.debugPrint("norTest(a=%s, b=%s)"%(a, b)))
+    if not b:
+        messenger.send(self.getName(), [not (a or b)])
+    # else: ...we already sent the messege when b was set.
+
+def xnorTest(self, a, b):
+    assert(self.debugPrint("xnorTest(a=%s, b=%s)"%(a, b)))
+    messenger.send(self.getName(), [(a and b) or (not (a or b))])
+
 
 class LogicGateAI(Entity.Entity, PandaObject.PandaObject):
     if __debug__:
@@ -30,6 +73,9 @@ class LogicGateAI(Entity.Entity, PandaObject.PandaObject):
         "and": andTest,
         "or": orTest,
         "xor": xorTest,
+        "nand": nandTest,
+        "nor": norTest,
+        "xnor": xnorTest,
     }
 
     def __init__(self, air, levelDoId, entId, zoneId=None):
