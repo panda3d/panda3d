@@ -20,6 +20,12 @@ shift
 firstarg="$1"
 fi
 
+if [ "$firstarg" = "-tt" ]; then
+extra_genPyCode_libs="$extra_genPyCode_libs libttrader"
+shift
+firstarg="$1"
+fi
+
 if [ "$firstarg" = "-v" ]; then
 extra_genPyCode_libs="$extra_genPyCode_libs libvrpn"
 shift
