@@ -54,9 +54,17 @@ WinStatsStripChart(WinStatsMonitor *monitor, int thread_index,
   _right_margin = 32;
   _top_margin = 16;
   _bottom_margin = 8;
-  
-  if (!show_level || (get_guide_bar_units() & GBU_named) != 0) {
-    // Let's show the units on the guide bar labels.  There's room.
+
+  if (show_level) {
+    // If it's a level-type graph, show the appropriate units.
+    if (_unit_name.empty()) {
+      set_guide_bar_units(GBU_named);
+    } else {
+      set_guide_bar_units(GBU_named | GBU_show_units);
+    }
+
+  } else {
+    // If it's a time-type graph, show the ms/Hz units.
     set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
   }
 
