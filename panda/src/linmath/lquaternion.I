@@ -360,32 +360,62 @@ template<class NumType>
 void LQuaternionBase<NumType>::
 set(const LMatrix3<NumType> &m) {
   NumType m00 = m.get_cell(0, 0);
+  NumType m01 = m.get_cell(0, 1);
+  NumType m02 = m.get_cell(0, 2);
+  NumType m10 = m.get_cell(1, 0);
   NumType m11 = m.get_cell(1, 1);
+  NumType m12 = m.get_cell(1, 2);
+  NumType m20 = m.get_cell(2, 0);
+  NumType m21 = m.get_cell(2, 1);
   NumType m22 = m.get_cell(2, 2);
 
-  if (m00 != 0.0 && ((m11 + m22) != 0.0)) {
-    _r = 1.0 + m00 + m11 + m22;
-    _i = m.get_cell(2, 1) - m.get_cell(1, 2);
-    _j = m.get_cell(0, 2) - m.get_cell(2, 0);
-    _k = m.get_cell(1, 0) - m.get_cell(0, 1);
-  }
-  else if (m00 != 0.0 && ((m11 + m22) == 0.0)) {
-    _r = m.get_cell(2, 1) - m.get_cell(1, 2);
-    _i = 1.0 + m00 - m11 - m22;
-    _j = m.get_cell(1, 0) + m.get_cell(0, 1);
-    _k = m.get_cell(0, 2) + m.get_cell(2, 0);
-  }
-  else if (m00 == 0.0 && ((m11 - m22) != 0.0)) {
-    _r = m.get_cell(0, 2) - m.get_cell(2, 0);
-    _i = m.get_cell(1, 0) + m.get_cell(0, 1);
-    _j = 1.0 - m00 + m11 - m22;
-    _k = m.get_cell(2, 1) + m.get_cell(1, 2);
-  }
-  else {
-    _r = m.get_cell(1, 0) - m.get_cell(0, 1);
-    _i = m.get_cell(0, 2) + m.get_cell(2, 0);
-    _j = m.get_cell(2, 1) + m.get_cell(1, 2);
-    _k = 1.0 - m00 - m11 + m22;
+  NumType T = m00 + m11 + m22 + 1.;
+
+  if (T > 0.) {
+    // the easy case
+    NumType S = 0.5 / csqrt(T);
+    _r = 0.25 / S;
+    _i = (m21 - m12) * S;
+    _j = (m02 - m20) * S;
+    _k = (m10 - m01) * S;
+  } else {
+    // figure out which column to take as root
+    int c = 0;
+    if (cabs(m00) > cabs(m11)) {
+      if (cabs(m00) > cabs(m22))
+	c = 0;
+      else
+	c = 2;
+    } else if (cabs(m11) > cabs(m22))
+      c = 1;
+    else
+      c = 2;
+
+    NumType S;
+
+    switch (c) {
+    case 0:
+      S = csqrt(1. + m00 - m11 - m22) * 2.;
+      _r = (m12 + m21) / S;
+      _i = 0.5 / S;
+      _j = (m01 + m10) / S;
+      _k = (m02 + m20) / S;
+      break;
+    case 1:
+      S = csqrt(1. + m11 - m00 - m22) * 2.;
+      _r = (m02 + m20) / S;
+      _i = (m01 + m10) / S;
+      _j = 0.5 / S;
+      _k = (m12 + m21) / S;
+      break;
+    case 2:
+      S = csqrt(1. + m22 - m00 - m11) * 2.;
+      _r = (m01 + m10) / S;
+      _i = (m02 + m20) / S;
+      _j = (m12 + m21) / S;
+      _k = 0.5 / S;
+      break;
+    }
   }
 }
 
@@ -408,36 +438,18 @@ set(const LMatrix4<NumType> &m) {
 template<class NumType>
 void LQuaternionBase<NumType>::
 extract_to_matrix(LMatrix3<NumType> &m) const {
-  NumType tx, ty, tz, tq, tk, tk_denom;
+  NumType N = (_r * _r) + (_i * _i) + (_j * _j) + (_k * _k);
+  NumType s = (N == 0.) ? 0. : (2. / N);
+  NumType xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz;
 
-  tx = _i * _i;
-  ty = _j * _j;
-  tz = _k * _k;
-  tq = ty + tz;
+  xs = _i * s;   ys = _j * s;   zs = _k * s;
+  wx = _r * xs;  wy = _r * ys;  wz = _r * zs;
+  xx = _i * xs;  xy = _i * ys;  xz = _i * zs;
+  yy = _j * ys;  yz = _j * zs;  zz = _k * zs;
 
-  tk_denom = tq + tx + (_r * _r);
-  if (tk_denom == 0.0)
-    tk = 0.0;
-  else
-    tk = 2.0 / tk_denom;
-
-  m.set_cell(0, 0, 1.0 - (tk * tq));
-  m.set_cell(1, 1, 1.0 - (tk * (tx + tz)));
-  m.set_cell(2, 2, 1.0 - (tk * (tx + ty)));
-  tx = tk * _i;
-  ty = tk * _j;
-  tq = (tk * _k) * _r;
-  tk = tx * _j;
-  m.set_cell(0, 1, tk - tq);
-  m.set_cell(1, 0, tk + tq);
-  tq = ty * _r;
-  tk = tx * _k;
-  m.set_cell(0, 2, tk + tq);
-  m.set_cell(2, 0, tk - tq);
-  tq = tx * _r;
-  tk = ty * _k;
-  m.set_cell(1, 2, tk - tq);
-  m.set_cell(2, 1, tk + tq);
+  m = LMatrix3<NumType>((1. - (yy + zz)), (xy - wz), (xz + wy),
+			(xy + wz), (1. - (xx + zz)), (yz - wx),
+			(xz - wy), (yz + wx), (1. - (xx + yy)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -448,36 +460,19 @@ extract_to_matrix(LMatrix3<NumType> &m) const {
 template<class NumType>
 void LQuaternionBase<NumType>::
 extract_to_matrix(LMatrix4<NumType> &m) const {
-  NumType tx, ty, tz, tq, tk, tk_denom;
+  NumType N = (_r * _r) + (_i * _i) + (_j * _j) + (_k * _k);
+  NumType s = (N == 0.) ? 0. : (2. / N);
+  NumType xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz;
 
-  tx = _i * _i;
-  ty = _j * _j;
-  tz = _k * _k;
-  tq = ty + tz;
+  xs = _i * s;   ys = _j * s;   zs = _k * s;
+  wx = _r * xs;  wy = _r * ys;  wz = _r * zs;
+  xx = _i * xs;  xy = _i * ys;  xz = _i * zs;
+  yy = _j * ys;  yz = _j * zs;  zz = _k * zs;
 
-  tk_denom = tq + tx + (_r * _r);
-  if (tk_denom == 0.0)
-    tk = 0.0;
-  else
-    tk = 2.0 / tk_denom;
-
-  m.set_cell(0, 0, 1.0 - (tk * tq));
-  m.set_cell(1, 1, 1.0 - (tk * (tx + tz)));
-  m.set_cell(2, 2, 1.0 - (tk * (tx + ty)));
-  tx = tk * _i;
-  ty = tk * _j;
-  tq = (tk * _k) * _r;
-  tk = tx * _j;
-  m.set_cell(0, 1, tk - tq);
-  m.set_cell(1, 0, tk + tq);
-  tq = ty * _r;
-  tk = tx * _k;
-  m.set_cell(0, 2, tk + tq);
-  m.set_cell(2, 0, tk - tq);
-  tq = tx * _r;
-  tk = ty * _k;
-  m.set_cell(1, 2, tk - tq);
-  m.set_cell(2, 1, tk + tq);
+  m = LMatrix4<NumType>((1. - (yy + zz)), (xy - wz), (xz + wy), 0.,
+			(xy + wz), (1. - (xx + zz)), (yz - wx), 0.,
+			(xz - wy), (yz + wx), (1. - (xx + yy)), 0.,
+			0., 0., 0., 1.);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -519,7 +514,7 @@ INLINE LVecBase3<NumType> LQuaternionBase<NumType>::
 get_hpr() const {
   NumType heading, pitch, roll;
   NumType N = (_r * _r) + (_i * _i) + (_j * _j) + (_k * _k);
-  NumType s = (N == 0) ? 0 : (2. / N);
+  NumType s = (N == 0.) ? 0. : (2. / N);
   NumType xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz, c1, c2, c3, c4;
   NumType cr, sr, cp, sp, ch, sh;
 
