@@ -941,6 +941,7 @@ class LevelEditor(NodePath, PandaObject):
             else:
                 menuMode = 'prop_texture'
         elif DNAClassEqual(dnaObject, DNA_LANDMARK_BUILDING):
+            # INSERT HERE
             # LANDMARK BUILDING OPERATIONS
             self.DNATarget = DNAGetChildOfClass(dnaObject, DNA_DOOR)
             self.DNATargetParent = dnaObject
@@ -1094,7 +1095,7 @@ class LevelEditor(NodePath, PandaObject):
                 self.DNATarget = self.createCornice()
             elif (type == 'landmark_door'):
                 self.DNATarget = self.createDoor()
-            elif (type == 'doorToBeImplemented'):
+            elif (type == 'door'):
                 self.DNATarget = self.createDoor()
             elif (type == 'windows'):
                 # Make sure window_count n.e. 0
@@ -1104,7 +1105,8 @@ class LevelEditor(NodePath, PandaObject):
                         self.getRandomWindowCount())
                 # Now create the windows
                 self.DNATarget = self.createWindows()
-            self.DNATargetParent.add(self.DNATarget)
+            if self.DNATarget:
+                self.DNATargetParent.add(self.DNATarget)
         # Update visible representation
         self.replaceSelected()
         
