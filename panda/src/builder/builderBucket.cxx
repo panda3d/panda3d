@@ -60,7 +60,6 @@ BuilderBucket &BuilderBucket::
 operator = (const BuilderBucket &copy) {
   ((BuilderProperties &)*this) = (BuilderProperties &)copy;
 
-  //  setGState(copy._state);
   set_name(copy.get_name());
   set_coords(copy._coords);
   set_normals(copy._normals);

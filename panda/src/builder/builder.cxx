@@ -108,10 +108,10 @@ public:
 //               _node pointer was any other kind of node, a GeomNode
 //               will be created and parented to that node, and its
 //               name will be the name of the bucket.  In this case,
-//               the name of the bucket can also be used to different
-//               nodes: if two buckets reference the same node, but
-//               have different names, then two different GeomNodes
-//               are created, one with each name.
+//               the name of the bucket can also be used to
+//               differentiate nodes: if two buckets reference the
+//               same node, but have different names, then two
+//               different GeomNodes are created, one with each name.
 ////////////////////////////////////////////////////////////////////
 GeomNode *Builder::
 build(const string &default_name) {
@@ -130,7 +130,8 @@ build(const string &default_name) {
     //    const string &name = bucket->get_name();
     GeomNode *geom_node = NULL;
 
-    if (node!=NULL && node->is_of_type(GeomNode::get_class_type())) {
+    if (node != (PandaNode *)NULL && 
+        node->is_of_type(GeomNode::get_class_type())) {
       // The node is a GeomNode.  In this case, we simply use that
       // node.  We can't separate them out by name in this case; we'll
       // just assign to it the first nonempty name we encounter.
