@@ -20,7 +20,7 @@
 #include "baseParticle.h"
 
 #include "transformState.h"
-#include "colorAttrib.h"
+#include "colorScaleAttrib.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : GeomParticleRenderer
@@ -194,7 +194,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
           alpha_scalar *= get_user_alpha();
         }
         
-        cur_node->set_attrib(ColorAttrib::make_flat
+        cur_node->set_attrib(ColorScaleAttrib::make
                              (Colorf(1.0f, 1.0f, 1.0f, alpha_scalar)));
       }
 
