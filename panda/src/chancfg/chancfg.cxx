@@ -174,7 +174,7 @@ int ChanFindNextHWChan(int offset, const HardwareChannel::HWChanMap& hw_chans) {
 */
 
 SetupFOV ChanResolveFOV(SetupFOV& fov, float sizeX, float sizeY) {
-  float horiz = 45.;
+  float horiz = 45.0f;
   float vert;
   SetupFOV ret;
   switch (fov.getType()) {
@@ -185,7 +185,7 @@ SetupFOV ChanResolveFOV(SetupFOV& fov, float sizeX, float sizeY) {
                << horiz << endl;
   case SetupFOV::Default:
     horiz = chanconfig.GetFloat("fov", horiz);
-    vert = 2.*rad_2_deg(atan((sizeY/sizeX)*tan(0.5*deg_2_rad(horiz))));
+    vert = 2.0f*rad_2_deg(atan((sizeY/sizeX)*tan(0.5f*deg_2_rad(horiz))));
     if (chancfg_cat.is_debug())
       chancfg_cat->debug() << "ChanResolveFOV:: setting horiz = " << horiz
                << " and vert = " << vert << endl;
@@ -232,7 +232,7 @@ void ChanConfig::chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L,
      } else
        chan = win->get_channel((*k).getChan());
        // HW channels always start with the full area of the channel
-       v = ChanViewport(0., 1., 0., 1.);
+       v = ChanViewport(0.0f, 1.0f, 0.0f, 1.0f);
    } else {
      chan = win->get_channel(0);
    }
@@ -283,19 +283,19 @@ void ChanConfig::chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L,
        case SetupItem::Down:
          hFov = fov.getHoriz(); vFov = fov.getVert();
          orient = new TransformTransition(
-           LMatrix4f::rotate_mat_normaxis(180., LVector3f::forward()));
+           LMatrix4f::rotate_mat_normaxis(180.0f, LVector3f::forward()));
          break;
        case SetupItem::Left:
          // vertical and horizontal FOV are being switched
          hFov = fov.getVert(); vFov = fov.getHoriz();
          orient = new TransformTransition(
-           LMatrix4f::rotate_mat_normaxis(90., LVector3f::forward()));
+           LMatrix4f::rotate_mat_normaxis(90.0f, LVector3f::forward()));
          break;
        case SetupItem::Right:
          // vertical and horizontal FOV are being switched
          hFov = fov.getVert(); vFov = fov.getHoriz();
          orient = new TransformTransition(
-           LMatrix4f::rotate_mat_normaxis(-90., LVector3f::forward()));
+           LMatrix4f::rotate_mat_normaxis(-90.0f, LVector3f::forward()));
          break;
      }
 
@@ -425,7 +425,7 @@ ChanConfig::ChanConfig(GraphicsPipe* pipe, std::string cfg, Node *render,
   }
 
   // make channels and display regions
-  ChanViewport V(0., 1., 0., 1.);
+  ChanViewport V(0.0f, 1.0f, 0.0f, 1.0f);
   chan_eval(win, W, L, S, V, W.getChanOffset()+1, sizeX, sizeY, 
             render, want_cameras);
   for(size_t dr_index=0; dr_index<_display_region.size(); dr_index++)
