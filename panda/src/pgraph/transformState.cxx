@@ -87,6 +87,7 @@ TransformState::
   // Free the inverse matrix computation, if it has been stored.
   if (_inv_mat != (LMatrix4f *)NULL) {
     delete _inv_mat;
+    _inv_mat = (LMatrix4f *)NULL;
   }
 
   // Remove the deleted TransformState object from the global pool.
