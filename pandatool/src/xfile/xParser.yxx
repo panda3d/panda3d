@@ -184,7 +184,11 @@ template_restrictions:
 
 template_list:
         IDENTIFIER optional_guid
+{
+}
 	| template_list ',' IDENTIFIER optional_guid
+{
+}
 	;
 
 data_object:
@@ -204,12 +208,26 @@ data_object_members:
 
 data_object_member:
 	data_object
+{
+}
         | data_reference
+{
+}
 	| INTEGER
+{
+}
 	| REAL
+{
+}
         | STRING
+{
+}
         | ';'
+{
+}
         | ','
+{
+}
 	;
 
 data_reference:
