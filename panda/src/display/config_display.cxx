@@ -63,6 +63,9 @@ const string threading_model = config_display.GetString("threading-model", "");
 // until an explicit call to flip_frame() or the next render_frame().
 const bool auto_flip = config_display.GetBool("auto-flip", true);
 
+// This indicates if you want multiple window support for same GSG
+const bool multiple_windows = config_display.GetBool("multiple-windows", false);
+
 // Set this true to yield the timeslice at the end of the frame to be
 // more polite to other applications that are trying to run.
 const bool yield_timeslice = config_display.GetBool("yield-timeslice", false);

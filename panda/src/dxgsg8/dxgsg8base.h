@@ -191,6 +191,7 @@ typedef enum {
 
 typedef struct {
       LPDIRECT3DDEVICE8 pD3DDevice;
+      IDirect3DSwapChain8 *pSwapChain;
       LPDIRECT3D8       pD3D8;  // copied from DXGraphicsPipe8 for convenience
       HWND              hWnd;
       HMONITOR          hMon;

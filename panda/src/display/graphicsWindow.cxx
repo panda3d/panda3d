@@ -843,6 +843,18 @@ close_window() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::reset_window
+//       Access: Protected, Virtual
+//  Description: resets the window framebuffer from its derived
+//               children. Does nothing here.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+reset_window(bool swapchain) {
+  display_cat.info()
+    << "Resetting " << get_type() << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::open_window
 //       Access: Protected, Virtual
 //  Description: Opens the window right now.  Called from the window

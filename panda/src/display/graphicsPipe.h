@@ -28,6 +28,7 @@
 
 class HardwareChannel;
 class GraphicsWindow;
+class GraphicsDevice;
 class GraphicsStateGuardian;
 class FrameBufferProperties;
 
@@ -47,6 +48,11 @@ class FrameBufferProperties;
 //               The GraphicsPipe is used by the GraphicsEngine object
 //               to create and destroy windows; it keeps ownership of
 //               the windows it creates.
+//
+//               M. Asad added new/interim functionality where GraphicsPipe
+//               now contains a device interface to directx/opengl which
+//               will be used to handle multiple windows from same device.
+//
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsPipe : public TypedReferenceCount {
 protected:
@@ -84,8 +90,12 @@ protected:
   bool _supports_fullscreen;
   int _display_width;
   int _display_height;
+  PT(GraphicsDevice) _device;
 
 public:
+
+  virtual PT(GraphicsDevice) make_device(void *scrn = NULL);
+
   static TypeHandle get_class_type() {
     return _type_handle;
   }
@@ -98,6 +108,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  INLINE GraphicsDevice *get_device() const;
 
 private:
   static TypeHandle _type_handle;

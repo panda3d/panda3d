@@ -49,6 +49,7 @@ public:
   static PT(GraphicsPipe) pipe_constructor();
 
   virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties);
+  virtual PT(GraphicsDevice) make_device(void *scrn);
 
   bool find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &TestDisplayMode,
                        D3DFORMAT *pBestFmt, bool bWantStencil,

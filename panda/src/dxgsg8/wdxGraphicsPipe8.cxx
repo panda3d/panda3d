@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "wdxGraphicsPipe8.h"
+#include "dxGraphicsDevice8.h"
 #include "wdxGraphicsWindow8.h"
 #include "config_dxgsg8.h"
 
@@ -750,6 +751,51 @@ search_for_valid_displaymode(DXScreenData &scrn,
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsPipew8::make_device
+//       Access: Public, Virtual
+//  Description: Creates a new device.  ??????
+////////////////////////////////////////////////////////////////////
+
+PT(GraphicsDevice) wdxGraphicsPipe8::
+make_device(void *scrn) {
+
+  // FrameBufferProperties really belongs as part of the window/renderbuffer specification
+  // put here because of GLX multithreading requirement
+  PT(DXGraphicsDevice8) device = new DXGraphicsDevice8(this);
+  device->_pScrn = (DXScreenData*) scrn;
+  device->_pD3DDevice = device->_pScrn->pD3DDevice;
+
+  _device = device;
+  wdxdisplay8_cat.error() << "walla: device" << device << "\n";
+
+  return device.p();
+
+/*
+  nassertv(_gsg == (GraphicsStateGuardian *)NULL);
+  _dxgsg = new DXGraphicsStateGuardian8(this);
+  _gsg = _dxgsg;
+
+  // Tell the associated dxGSG about the window handle.
+  _dxgsg->scrn.hWnd = _hWnd;
+
+  if (pD3D8 == NULL) {
+    wdxdisplay8_cat.error()
+      << "Direct3DCreate8 failed!\n";
+    release_gsg();
+    return;
+  }
+
+  if (!choose_adapter(pD3D8)) {
+    wdxdisplay8_cat.error()
+      << "Unable to find suitable rendering device.\n";
+    release_gsg();
+    return;
+  }
+
+  create_screen_buffers_and_device(_dxgsg->scrn, dx_force_16bpp_zbuffer);
+  */
+}
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsPipew8::make_gsg
 //       Access: Public, Virtual

@@ -176,6 +176,7 @@ make_gsg(GraphicsPipe *pipe, const FrameBufferProperties &properties,
   if (gsg != (GraphicsStateGuardian *)NULL) {
     gsg->_threading_model = threading_model;
     gsg->_pipe = pipe;
+    gsg->_engine = this;
   }
 
   return gsg;
@@ -195,6 +196,7 @@ make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
             const GraphicsThreadingModel &threading_model) {
   if (gsg != (GraphicsStateGuardian *)NULL) {
     nassertr(pipe == gsg->get_pipe(), NULL);
+    nassertr(this == gsg->get_engine(), NULL);
     nassertr(threading_model.get_draw_name() ==
              gsg->get_threading_model().get_draw_name(), NULL);
   }
@@ -292,6 +294,24 @@ remove_all_windows() {
   _app.do_release(this);
   _app.do_close(this);
   terminate_threads();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::reset_all_windows
+//       Access: Published
+//  Description: Resets the framebuffer of the current window.  This
+//               is currently used by DirectX 8 only. It calls a
+//               reset_window function on each active window to 
+//               release/create old/new framebuffer
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+reset_all_windows(bool swapchain) {
+  Windows::iterator wi;
+  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
+    GraphicsWindow *win = (*wi);
+    //    if (win->is_active())
+    win->reset_window(swapchain);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

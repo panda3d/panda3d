@@ -39,6 +39,7 @@ GraphicsPipe() {
 
   _display_width = 0;
   _display_height = 0;
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,6 +100,19 @@ get_num_hw_channels() {
 HardwareChannel *GraphicsPipe::
 get_hw_channel(GraphicsWindow *, int) {
   return (HardwareChannel*)0L;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::make_device
+//       Access: Protected, Virtual
+//  Description: Creates a new device for the pipe. Only DirectX uses
+//               this device, for other api's it is NULL.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsDevice) GraphicsPipe::
+make_device(void *scrn) {
+  // shouldnt this method really be pure virtual?  it's an error for a pipe to not implement it
+  display_cat.error() << "Error: make_device() unimplemented by graphicsPipe!\n";
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

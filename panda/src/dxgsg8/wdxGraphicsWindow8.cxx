@@ -23,6 +23,7 @@
 #include "wdxGraphicsPipe8.h"
 #include "wdxGraphicsWindow8.h"
 #include "config_dxgsg8.h"
+#include "config_display.h"
 
 #include "keyboardButton.h"
 #include "mouseButton.h"
@@ -106,6 +107,8 @@ make_current(void) {
   // (We can't just call reset() when we construct the GSG, because
   // reset() requires having a current context.)
   dxgsg->reset_if_new();
+
+  //  wdxdisplay8_cat.debug() << "this is " << this << "\n";
 }
 
 /* BUGBUG:  need to reinstate these methods ASAP.  they were incorrectly moved from the GraphicsWindow to the GSG
@@ -233,7 +236,9 @@ begin_frame() {
     init_resized_window();
   }
 
-  return WinGraphicsWindow::begin_frame();
+  bool return_val = WinGraphicsWindow::begin_frame();
+  _dxgsg->set_render_target();
+  return return_val;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -249,6 +254,8 @@ begin_frame() {
 void wdxGraphicsWindow8::
 end_flip() {
   if (_dxgsg != (DXGraphicsStateGuardian8 *)NULL && is_active()) {
+    make_current();
+    //    wdxdisplay8_cat.debug() << "current swapchain from end_flip is " << _wcontext.pSwapChain << "\n";
     _dxgsg->show_frame();
   }
 }
@@ -723,6 +730,13 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
   pPresParams->BackBufferWidth = Display.DisplayMode.Width;
   pPresParams->BackBufferHeight = Display.DisplayMode.Height;
 
+#if 0
+  GetClientRect(GetDesktopWindow(), &view_rect);
+  pPresParams->BackBufferWidth = view_rect.right;
+  pPresParams->BackBufferHeight = view_rect.bottom;
+  wdxdisplay8_cat.debug()<<"width "<<view_rect.right<<" and height "<<view_rect.bottom<<"\n";
+#endif
+
   if (_wcontext.bIsTNLDevice) {
     dwBehaviorFlags|=D3DCREATE_HARDWARE_VERTEXPROCESSING;
     // note: we could create a pure device in this case if I eliminated the GetRenderState calls in dxgsg
@@ -801,7 +815,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
       pPresParams->SwapEffect = D3DSWAPEFFECT_DISCARD;
     }
 
-    assert((dwRenderWidth==pPresParams->BackBufferWidth)&&(dwRenderHeight==pPresParams->BackBufferHeight));
+    //    assert((dwRenderWidth==pPresParams->BackBufferWidth)&&(dwRenderHeight==pPresParams->BackBufferHeight));
 
     hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _hWnd,
                              dwBehaviorFlags, pPresParams, &Display.pD3DDevice);
@@ -811,6 +825,11 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
       exit(1);
     }
   }  // end create windowed buffers
+
+#if 0
+  pPresParams->BackBufferWidth = Display.DisplayMode.Width;
+  pPresParams->BackBufferHeight = Display.DisplayMode.Height;
+#endif
 
   //  ========================================================
 
@@ -1482,7 +1501,6 @@ search_for_device(wdxGraphicsPipe8 *dxpipe, DXDeviceInfo *device_info) {
   return true;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow8::reset_device_resize_window
 //       Access: Private
@@ -1495,18 +1513,20 @@ reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
   assert((new_xsize > 0) && (new_ysize > 0));
   bool bRetval = true;
 
+  DXScreenData *pScrn;
   D3DPRESENT_PARAMETERS d3dpp;
   memcpy(&d3dpp, &_wcontext.PresParams, sizeof(D3DPRESENT_PARAMETERS));
   d3dpp.BackBufferWidth = new_xsize;
   d3dpp.BackBufferHeight = new_ysize;
-  HRESULT hr = _dxgsg->reset_d3d_device(&d3dpp);
+  make_current();
+  HRESULT hr = _dxgsg->reset_d3d_device(&d3dpp, &pScrn);
   
   if (FAILED(hr)) {
     bRetval = false;
     wdxdisplay8_cat.error()
       << "reset_device_resize_window Reset() failed" << D3DERRORSTRING(hr);
     if (hr == D3DERR_OUTOFVIDEOMEMORY) {
-      hr = _dxgsg->reset_d3d_device(&_wcontext.PresParams);
+      hr = _dxgsg->reset_d3d_device(&_wcontext.PresParams, &pScrn);
       if (FAILED(hr)) {
         wdxdisplay8_cat.error()
           << "reset_device_resize_window Reset() failed OutOfVidmem, then failed again doing Reset w/original params:" << D3DERRORSTRING(hr);
@@ -1523,11 +1543,12 @@ reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
       exit(1);
     }
   }
-  
+  // before you init_resized_window you need to copy certain changes to _wcontext
+  _wcontext.pSwapChain = pScrn->pSwapChain;
+  wdxdisplay8_cat.debug() << "swapchain is " << _wcontext.pSwapChain << "\n";
   init_resized_window();
   return bRetval;
 }
-
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow8::init_resized_window
 //       Access: Private
@@ -1662,6 +1683,33 @@ is_badvidmem_card(D3DADAPTER_IDENTIFIER8 *pDevID) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow8::reset_window
+//       Access: Public, Virtual
+//  Description: Resets the window framebuffer right now.  Called 
+//               from graphicsEngine. It releases the current swap
+//               chain / creates a new one. If this is the initial
+//               window and swapchain is false, then it calls reset_
+//               main_device to Reset the device.
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsWindow8::
+reset_window(bool swapchain) {
+  DXGraphicsStateGuardian8 *dxgsg;
+  DCAST_INTO_V(dxgsg,_gsg);
+  if (swapchain) {
+    if (_wcontext.pSwapChain) {
+      dxgsg->create_swap_chain(&_wcontext);
+      wdxdisplay8_cat.debug() << "created swapchain " << _wcontext.pSwapChain << "\n";
+    }
+  }
+  else {
+    if (_wcontext.pSwapChain) {
+      dxgsg->release_swap_chain(&_wcontext);
+      wdxdisplay8_cat.debug() << "released swapchain " << _wcontext.pSwapChain << "\n";
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow8::open_window
 //       Access: Protected, Virtual
 //  Description: Opens the window right now.  Called from the window
@@ -1670,17 +1718,60 @@ is_badvidmem_card(D3DADAPTER_IDENTIFIER8 *pDevID) {
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow8::
 open_window(void) {
+  PT(DXGraphicsDevice8) dxdev;
+  DXGraphicsStateGuardian8 *dxgsg;
+  DCAST_INTO_R(dxgsg,_gsg,false);
+  WindowProperties props;
+
   if(!choose_device()) {
       return false;
   }
+  if (dxgsg->get_pipe()->get_device() && !multiple_windows)
+    return false;
 
+  wdxdisplay8_cat.debug() << "_wcontext.hWnd is " << _wcontext.hWnd << "\n";
   if (!WinGraphicsWindow::open_window()) {
     return false;
   }
-
   _wcontext.hWnd = _hWnd;
-  create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer);
 
+  wdxdisplay8_cat.debug() << "_wcontext.hWnd is " << _wcontext.hWnd << "\n";
+  
+  // Here check if a device already exists. If so, then this open_window
+  // call may be an extension to create multiple windows on same device
+  // In that case just create an additional swapchain for this window
+
+  if (dxgsg->get_pipe()->get_device() == NULL) {
+    create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer);
+    dxgsg->get_pipe()->make_device((void*)(&_wcontext));
+    dxgsg->copy_pres_reset(&_wcontext);
+    if (multiple_windows) // then we have no choice but to waist a framebuffer
+      dxgsg->create_swap_chain(&_wcontext);
+  }
+  else {
+
+    // fill in the DXScreenData from dxdevice here and change the reference to hWnd.
+    dxdev = (DXGraphicsDevice8*)dxgsg->get_pipe()->get_device();
+    props = get_properties();
+
+    memcpy(&_wcontext,dxdev->_pScrn,sizeof(DXScreenData));
+    _wcontext.hWnd = _hWnd;
+    _wcontext.PresParams.hDeviceWindow = _hWnd;
+    _wcontext.PresParams.BackBufferWidth = props.get_x_size();
+    _wcontext.PresParams.BackBufferHeight = props.get_y_size();
+
+    wdxdisplay8_cat.debug()<<"device width "<<_wcontext.PresParams.BackBufferWidth<<"\n";
+
+    init_resized_window();
+
+
+    if (wdxdisplay8_cat.is_debug()) {
+      wdxdisplay8_cat.debug() << "Current device is " << dxdev << "\n";
+      
+      dxgsg->create_swap_chain(&_wcontext);
+    }
+  }
+  wdxdisplay8_cat.debug() << "swapchain is " << _wcontext.pSwapChain << "\n";
   return true;
 }
 

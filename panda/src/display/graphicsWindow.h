@@ -137,6 +137,7 @@ public:
 protected:
   virtual void close_window();
   virtual bool open_window();
+  virtual void reset_window(bool swapchain);
   virtual bool do_reshape_request(int x_origin, int y_origin,
                                   int x_size, int y_size);
 

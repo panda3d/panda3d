@@ -78,3 +78,14 @@ INLINE int GraphicsPipe::
 get_display_height() const {
   return _display_height;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::get_device
+//       Access: Public
+//  Description: Returns a pointer to device object
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsDevice *GraphicsPipe::
+get_device() const {
+  return _device;
+}
+

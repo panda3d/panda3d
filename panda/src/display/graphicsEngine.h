@@ -77,6 +77,7 @@ PUBLISHED:
                               const GraphicsThreadingModel &threading_model);
   bool remove_window(GraphicsWindow *window);
   void remove_all_windows();
+  void reset_all_windows(bool swapchain);
   bool is_empty() const;
 
   void render_frame();

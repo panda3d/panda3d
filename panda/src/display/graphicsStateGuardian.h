@@ -48,6 +48,7 @@
 #include "pvector.h"
 
 class ClearableRegion;
+class GraphicsEngine;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsStateGuardian
@@ -74,6 +75,7 @@ PUBLISHED:
 public:
   INLINE const FrameBufferProperties &get_properties() const;
   INLINE GraphicsPipe *get_pipe() const;
+  INLINE GraphicsEngine *get_engine() const;
   INLINE const GraphicsThreadingModel &get_threading_model() const;
 
   INLINE void set_scene(SceneSetup *scene_setup);
@@ -333,6 +335,7 @@ private:
 
   FrameBufferProperties _properties;
   PT(GraphicsPipe) _pipe;
+  GraphicsEngine *_engine;
   GraphicsThreadingModel _threading_model;
 
 public:

@@ -42,6 +42,7 @@ public:
   wdxGraphicsWindow8(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
   virtual ~wdxGraphicsWindow8();
   virtual bool open_window(void);
+  virtual void reset_window(bool swapchain);
 
   virtual int verify_window_sizes(int numsizes, int *dimen);
 

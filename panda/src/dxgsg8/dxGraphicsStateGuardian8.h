@@ -152,6 +152,8 @@ public:
   // recreate_tex_callback needs these to be public
   DXScreenData *_pScrn;
   LPDIRECT3DDEVICE8 _pD3DDevice;  // same as pScrn->_pD3DDevice, cached for spd
+  IDirect3DSwapChain8 *_pSwapChain;
+  D3DPRESENT_PARAMETERS _PresReset;  // This is built during reset device
 
 protected:
   virtual void enable_lighting(bool enable);
@@ -337,6 +339,7 @@ public:
   static GraphicsStateGuardian*
   make_DXGraphicsStateGuardian8(const FactoryParams &params);
   void set_context(DXScreenData *pNewContextData);
+  void set_render_target();
 
   static TypeHandle get_class_type(void);
   static void init_type(void);
@@ -355,7 +358,7 @@ public:
 
   void  dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled);
   void reset_panda_gsg(void);
-  HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams);
+  HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, DXScreenData **pScrn=NULL);
 
   #define DO_REACTIVATE_WINDOW true
   bool CheckCooperativeLevel(bool bDoReactivateWindow = false);
@@ -364,6 +367,10 @@ public:
   void dx_init(void);
 
   void support_overlay_window(bool flag);
+
+  void create_swap_chain (DXScreenData *pNewContextData);
+  void release_swap_chain (DXScreenData *pNewContextData);
+  void copy_pres_reset(DXScreenData *pNewContextData);
 
 private:
   static TypeHandle _type_handle;

@@ -25,6 +25,7 @@
 #include "geomSphere.h"
 #include "geomIssuer.h"
 #include "graphicsWindow.h"
+#include "graphicsEngine.h"
 #include "graphicsChannel.h"
 #include "lens.h"
 #include "perspectiveLens.h"
@@ -46,6 +47,7 @@
 #include "fogAttrib.h"
 #include "depthOffsetAttrib.h"
 #include "fog.h"
+#include "throw_event.h"
 
 #ifdef DO_PSTATS
 #include "pStatTimer.h"
@@ -962,8 +964,10 @@ do_clear(const RenderBuffer &buffer) {
 
     HRESULT hr = _pD3DDevice->Clear(0, NULL, flags, _d3dcolor_clear_value,
                                          _depth_clear_value, (DWORD)_stencil_clear_value);
-    if(FAILED(hr))
+    if(FAILED(hr)) {
         dxgsg8_cat.error() << "clear_buffer failed:  Clear returned " << D3DERRORSTRING(hr);
+        throw_event("panda3d-render-error");
+    }
     /* The following line will cause the background to always clear to a medium red
     _color_clear_value[0] = .5;
     /* The following lines will cause the background color to cycle from black to red.
@@ -988,7 +992,7 @@ prepare_display_region() {
     
     int l, b, w, h;
     _actual_display_region->get_region_pixels(l, b, w, h);
-    
+
     // Create the viewport
     D3DVIEWPORT8 vp = {l,b,w,h,0.0f,1.0f};
     HRESULT hr = _pD3DDevice->SetViewport( &vp );
@@ -996,6 +1000,7 @@ prepare_display_region() {
       dxgsg8_cat.error()
         << "SetViewport(" << l << ", " << b << ", " << w << ", " << h
         << ") failed" << D3DERRORSTRING(hr);
+      throw_event("panda3d-render-error");
     }
     // Note: for DX9, also change scissor clipping state here
   }
@@ -4547,6 +4552,29 @@ set_context(DXScreenData *pNewContextData) {
     assert(pNewContextData!=NULL);
     _pScrn = pNewContextData;
     _pD3DDevice = _pScrn->pD3DDevice;   //copy this one field for speed of deref
+    _pSwapChain = _pScrn->pSwapChain;   //copy this one field for speed of deref
+ 
+    //    wdxdisplay8_cat.debug() << "SwapChain = "<< _pSwapChain << "\n";
+}
+
+void DXGraphicsStateGuardian8::  
+create_swap_chain(DXScreenData *pNewContextData) {
+    // Instead of creating a device and rendering as d3ddevice->present()
+    // we should render using SwapChain->present(). This is done to support
+    // multiple windows rendering. For that purpose, we need to set additional
+    // swap chains here.
+
+    HRESULT hr;
+    hr = pNewContextData->pD3DDevice->CreateAdditionalSwapChain(&pNewContextData->PresParams, &pNewContextData->pSwapChain);
+    if (FAILED(hr))
+      wdxdisplay8_cat.debug() << "Swapchain creation failed :"<<D3DERRORSTRING(hr)<<"\n";
+    //    set_context(pNewContextData);
+}
+
+void DXGraphicsStateGuardian8::  
+release_swap_chain(DXScreenData *pNewContextData) {
+    // Release the swap chain on this DXScreenData
+    pNewContextData->pSwapChain->Release();
 }
 
 bool refill_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
@@ -4623,6 +4651,7 @@ HRESULT DXGraphicsStateGuardian8::ReleaseAllDeviceObjects(void) {
     return S_OK;
 }
 
+#if 0
 ////////////////////////////////////////////////////////////////////
 //     Function: show_frame
 //       Access:
@@ -4666,8 +4695,101 @@ void DXGraphicsStateGuardian8::show_frame(bool bNoNewFrameDrawn) {
     }
   }
 }
+#endif
 
-HRESULT DXGraphicsStateGuardian8::reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams) {
+////////////////////////////////////////////////////////////////////
+//     Function: show_frame
+//       Access:
+//       Description:   redraw primary buffer
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::show_frame(bool bNoNewFrameDrawn) {
+  //  wdxdisplay8_cat.debug() << "d3ddevice is " << _pD3DDevice << "\n";
+  
+  if(_pD3DDevice==NULL)
+    return;
+
+  //  DO_PSTATS_STUFF(PStatTimer timer(_win->_swap_pcollector));  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
+  HRESULT hr;
+
+  if(bNoNewFrameDrawn) {
+      // a new frame has not been rendered, we just want to display the last thing
+      // that was drawn into backbuf, if backbuf is valid
+      if(_pScrn->PresParams.SwapEffect==D3DSWAPEFFECT_DISCARD) {
+          // in DISCARD mode, old backbufs are not guaranteed to have valid pixels,
+          // so we cant copy back->front here.  just give up.
+          return;
+      } else if(_pScrn->PresParams.SwapEffect==D3DSWAPEFFECT_FLIP) {
+         /* bugbug:  here we should use CopyRects here to copy backbuf to front (except in
+                     the case of frames 1 and 2 where we have no valid data in the backbuffer yet,
+                     for those cases give up and return).
+                     not implemented yet since right now we always do discard mode for fullscrn Present()
+                     for speed.
+          */
+          return;
+      }
+
+      // otherwise we have D3DSWAPEFFECT_COPY, so fall-thru to normal Present()
+      // may work ok as long as backbuf hasnt been touched
+  }
+
+  if (_pSwapChain)
+    hr = _pSwapChain->Present((CONST RECT*)NULL,(CONST RECT*)NULL,(HWND)NULL,NULL);
+  else
+    hr = _pD3DDevice->Present((CONST RECT*)NULL,(CONST RECT*)NULL,(HWND)NULL,NULL);
+
+  if(FAILED(hr)) {
+    if(hr == D3DERR_DEVICELOST) {
+        CheckCooperativeLevel();
+    } else {
+      dxgsg8_cat.error() << "show_frame() - Present() failed" << D3DERRORSTRING(hr);
+      exit(1);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_render_target
+//       Access:
+//       Description: Set render target to the backbuffer of
+//                    current swap chain.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::set_render_target() {
+  LPDIRECT3DSURFACE8 pBack=NULL, pStencil=NULL;
+
+  if (!_pSwapChain)  //maybe fullscreen mode or main/single window
+    _pD3DDevice->GetBackBuffer(0,D3DBACKBUFFER_TYPE_MONO,&pBack);
+  else
+    _pSwapChain->GetBackBuffer(0,D3DBACKBUFFER_TYPE_MONO,&pBack);
+
+  //wdxdisplay8_cat.debug() << "swapchain is " << _pSwapChain << "\n";
+  //wdxdisplay8_cat.debug() << "back buffer is " << pBack << "\n";
+
+  _pD3DDevice->GetDepthStencilSurface(&pStencil);
+  _pD3DDevice->SetRenderTarget(pBack,pStencil);
+  pBack->Release();
+  pStencil->Release();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: copy_pres_reset
+//       Access:
+//       Description: copies the PresReset from passed DXScreenData
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::copy_pres_reset(DXScreenData *pScrn) {
+  memcpy(&_PresReset, &_pScrn->PresParams,sizeof(D3DPRESENT_PARAMETERS));
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+//  Function: reset_d3d_device
+//  Access:
+//  Description: This function checks current device's framebuffer dimension against
+//               passed pPresParams backbuffer dimension to determine a device reset
+//               if there is only one window or it is the main window or fullscreen
+//               mode then, it resets the device. Finally it returns the new
+//               DXScreenData through parameter pScrn
+/////////////////////////////////////////////////////////////////////////////////////
+HRESULT DXGraphicsStateGuardian8::
+reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams, DXScreenData **pScrn) {
   HRESULT hr;
 
   assert(IS_VALID_PTR(pPresParams));
@@ -4683,11 +4805,41 @@ HRESULT DXGraphicsStateGuardian8::reset_d3d_device(D3DPRESENT_PARAMETERS *pPresP
        _pScrn->pD3D8->GetAdapterDisplayMode(_pScrn->CardIDNum, &_pScrn->DisplayMode);
        pPresParams->BackBufferFormat = _pScrn->DisplayMode.Format;
   }
+  // here we have to look at the device's frame buffer dimension
+  // if current window's dimension is bigger than device's frame buffer
+  // we have to reset the device before creating new swapchain.
+  // inorder to reset properly, we need to release all swapchains
+  D3DSURFACE_DESC DeviceDesc;
+  LPDIRECT3DSURFACE8 pDeviceBack;
+  _pD3DDevice->GetBackBuffer(0,D3DBACKBUFFER_TYPE_MONO,&pDeviceBack);
+  pDeviceBack->GetDesc(&DeviceDesc);
+  pDeviceBack->Release();
+  if ( !(_pScrn->pSwapChain)
+       || (DeviceDesc.Width < pPresParams->BackBufferWidth)
+       || (DeviceDesc.Height < pPresParams->BackBufferHeight) ) {
 
-  hr=_pD3DDevice->Reset(pPresParams);
+    get_engine()->reset_all_windows(false);// reset old swapchain by releasing
+
+    _PresReset.BackBufferWidth = pPresParams->BackBufferWidth;
+    _PresReset.BackBufferHeight = pPresParams->BackBufferHeight;
+    hr=_pD3DDevice->Reset(&_PresReset);
+    if (FAILED(hr)) {
+      return hr;
+    }
+
+    get_engine()->reset_all_windows(true);// reset with new swapchains by creating
+  }
+  // release the old swapchain and create a new one
+  if (_pScrn->pSwapChain) {
+    _pScrn->pSwapChain->Release();
+    _pScrn->pSwapChain = NULL;
+    hr=_pD3DDevice->CreateAdditionalSwapChain(pPresParams,&_pScrn->pSwapChain);
+  }
   if(SUCCEEDED(hr)) {
      if(pPresParams!=&_pScrn->PresParams)
          memcpy(&_pScrn->PresParams,pPresParams,sizeof(D3DPRESENT_PARAMETERS));
+     if (pScrn)
+       *pScrn = _pScrn;
   }
   return hr;
 }

@@ -28,6 +28,7 @@
     graphicsThreadingModel.I graphicsThreadingModel.h \
     graphicsWindow.h graphicsWindowInputDevice.I  \
     graphicsWindowInputDevice.h \
+    graphicsDevice.h graphicsDevice.i \
     windowProperties.I windowProperties.h \
     hardwareChannel.I  \
     hardwareChannel.h \
@@ -46,6 +47,7 @@
     graphicsStateGuardian.cxx  \
     graphicsThreadingModel.cxx \
     graphicsWindow.cxx graphicsWindowInputDevice.cxx  \
+    graphicsDevice.cxx \
     windowProperties.cxx \
     hardwareChannel.cxx \
     savedFrameBuffer.cxx
@@ -67,6 +69,7 @@
     graphicsStateGuardian.h graphicsWindow.I graphicsWindow.h \
     graphicsThreadingModel.I graphicsThreadingModel.h \
     graphicsWindowInputDevice.I graphicsWindowInputDevice.h \
+    graphicsDevice.I graphicsDevice.h \
     windowProperties.I windowProperties.h \
     hardwareChannel.I hardwareChannel.h \
     lensStack.I lensStack.h \
