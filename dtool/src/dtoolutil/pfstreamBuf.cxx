@@ -343,6 +343,8 @@ open_pipe(const string &cmd) {
 #ifndef NDEBUG
     cerr << "Unable to redirect stdout\n";
 #endif
+    CloseHandle(hChildStdoutRd);
+    CloseHandle(hChildStdoutWr);
     return false;
   }
  
@@ -357,6 +359,8 @@ open_pipe(const string &cmd) {
 #ifndef NDEBUG
     cerr << "DuplicateHandle failed\n";
 #endif
+    CloseHandle(hChildStdoutRd);
+    CloseHandle(hChildStdoutWr);
     return false;
   }
   CloseHandle(hChildStdoutRd);
@@ -377,7 +381,7 @@ open_pipe(const string &cmd) {
     cerr << "Unable to spawn process.\n";
 #endif
     close_pipe();
-    return false;
+    // Don't return yet, since we still need to clean up.
   }
 
   delete[] cmdline;
@@ -387,8 +391,6 @@ open_pipe(const string &cmd) {
 #ifndef NDEBUG
     cerr << "Unable to restore stdout\n";
 #endif
-    close_pipe();
-    return false;
   }
 
   // Close the write end of the pipe before reading from the 
@@ -397,11 +399,9 @@ open_pipe(const string &cmd) {
 #ifndef NDEBUG
     cerr << "Unable to close write end of pipe\n";
 #endif
-    close_pipe();
-    return false;
   }
 
-  return true;
+  return (_child_out != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
