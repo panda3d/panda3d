@@ -93,7 +93,6 @@ safe_to_transform() const {
   return false;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::app_traverse
 //       Access: Public, Virtual

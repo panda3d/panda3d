@@ -12,6 +12,7 @@
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
+#include <fftCompressor.h>
 
 TypeHandle AnimChannelScalarTable::_type_handle;
 
@@ -118,8 +119,14 @@ write_datagram(BamWriter *manager, Datagram &me)
 {
   AnimChannelScalar::write_datagram(manager, me);
 
-  me.add_bool(quantize_bam_channels);
-  if (!quantize_bam_channels) {
+  if (compress_channels && !FFTCompressor::is_compression_available()) {
+    chan_cat.error()
+      << "Compression is not available; writing uncompressed channels.\n";
+    compress_channels = false;
+  }
+
+  me.add_bool(compress_channels);
+  if (!compress_channels) {
     // Write out everything the old way, as floats.
     me.add_uint16(_table.size());
     for(int i = 0; i < (int)_table.size(); i++) {
@@ -127,12 +134,86 @@ write_datagram(BamWriter *manager, Datagram &me)
     }
 
   } else {
-    // Write out everything the compact way, as quantized integers.
+    // Some channels, particularly blink channels, may involve only a
+    // small number of discrete values.  If we come across one of
+    // those, write it out losslessly, since the lossy compression
+    // could damage it significantly (and we can achieve better
+    // compression directly anyway).  We consider the channel value
+    // only to the nearest 1000th for this purpose, because floats
+    // aren't very good at being precisely equal to each other.
+    static const int max_values = 16;
+    static const float scale = 1000.0;
 
-    // We quantize morphs within the range -100 .. 100.
-    me.add_uint16(_table.size());
-    for(int i = 0; i < (int)_table.size(); i++) {
-      me.add_int16((int)max(min(_table[i] * 32767.0 / 100.0, 32767.0), -32767.0));
+    map<int, int> index;
+    int i;
+    for (i = 0; 
+	 i < (int)_table.size() && (int)index.size() <= max_values;
+	 i++) {
+      int value = (int)floor(_table[i] * scale + 0.5);
+      index.insert(map<int, int>::value_type(value, index.size()));
+    }
+    int index_length = index.size();
+    if (index_length <= max_values) {
+      // All right, here's a blink channel.  Now we write out the
+      // index table, and then a table of all the index values, two
+      // per byte.
+      me.add_uint8(index_length);
+
+      if (index_length > 0) {
+	// We need to write the index in order by its index number; for
+	// this, we need to invert the index.
+	vector_float reverse_index(index_length);
+	map<int, int>::iterator mi;
+	for (mi = index.begin(); mi != index.end(); ++mi) {
+	  float f = (float)(*mi).first / scale;
+	  int i = (*mi).second;
+	  nassertv(i >= 0 && i < (int)reverse_index.size());
+	  reverse_index[i] = f;
+	}
+	
+	for (i = 0; i < index_length; i++) {
+	  me.add_float32(reverse_index[i]);
+	}
+	
+	// Now write out the actual channels.  We write these two at a
+	// time, in the high and low nibbles of each byte.
+	int table_length = _table.size();
+	me.add_uint16(table_length);
+	
+	if (index_length == 1) {
+	  // In fact, we don't even need to write the channels at all,
+	  // if there weren't at least two different values.
+
+	} else {
+	  for (i = 0; i < table_length - 1; i+= 2) {
+	    int value1 = (int)floor(_table[i] * scale + 0.5);
+	    int value2 = (int)floor(_table[i + 1] * scale + 0.5);
+	    int i1 = index[value1];
+	    int i2 = index[value2];
+	    
+	    me.add_uint8((i1 << 4) | i2);
+	  }
+	  
+	  // There might be one odd value.
+	  if (i < table_length) {
+	    int value1 = (int)floor(_table[i] * scale + 0.5);
+	    int i1 = index[value1];
+	    
+	    me.add_uint8(i1 << 4);
+	  }
+	}
+      }
+
+    } else {
+      // No, we have continuous channels.  Write them out using lossy
+      // compression.
+      me.add_uint8(0xff);
+
+      FFTCompressor compressor;
+      compressor.set_quality(compress_chan_quality);
+      compressor.write_header(me);
+
+      compressor.write_reals(me, _table, _table.size());
     }
   }
 }
@@ -150,26 +231,71 @@ fillin(DatagramIterator& scan, BamReader* manager)
 {
   AnimChannelScalar::fillin(scan, manager);
 
-  bool wrote_quantized = scan.get_bool();
+  bool wrote_compressed = scan.get_bool();
 
-  if (!wrote_quantized) {
+  PTA_float temp_table(0);
+
+  if (!wrote_compressed) {
     // Regular floats.
     int size = scan.get_uint16();
-    PTA_float temp_table;
     for(int i = 0; i < size; i++) {
       temp_table.push_back(scan.get_float32());
     }
-    _table = temp_table;
 
   } else {
-    // Quantized int16's and expand to floats.
-    int size = scan.get_uint16();
-    PTA_float temp_table;
-    for(int i = 0; i < size; i++) {
-      temp_table.push_back((double)scan.get_int16() * 100.0 / 32767.0);
+    // Compressed channels.
+    if (manager->get_file_minor_ver() < 1) {
+      chan_cat.error()
+	<< "Cannot read old-style quantized channels.\n";
+      return;
     }
-    _table = temp_table;
+
+    // Did we write them as discrete or continuous channel values?
+    int index_length = scan.get_uint8();
+
+    if (index_length < 0xff) {
+      // Discrete.  Read in the index.
+      if (index_length > 0) {
+	float index[index_length];
+
+	int i;
+	for (i = 0; i < index_length; i++) {
+	  index[i] = scan.get_float32();
+	}
+	
+	// Now read in the channel values.
+	int table_length = scan.get_uint16();
+	if (index_length == 1) {
+	  // With only one index value, we can infer the table.
+	  for (i = 0; i < table_length; i++) {
+	    temp_table.push_back(index[0]);
+	  }
+	} else {
+	  // Otherwise, we must read it.
+	  for (i = 0; i < table_length - 1; i+= 2) {
+	    int num = scan.get_uint8();
+	    int i1 = (num >> 4) & 0xf;
+	    int i2 = num & 0xf;
+	    temp_table.push_back(index[i1]);
+	    temp_table.push_back(index[i2]);
+	  }
+	  // There might be one odd value.
+	  if (i < table_length) {
+	    int num = scan.get_uint8();
+	    int i1 = (num >> 4) & 0xf;
+	    temp_table.push_back(index[i1]);
+	  }
+	}
+      }
+    } else {
+      // Continuous channels.
+      FFTCompressor compressor;
+      compressor.read_header(scan);
+      compressor.read_reals(scan, temp_table.v());
+    }
   }
+
+  _table = temp_table;
 }
 
 ////////////////////////////////////////////////////////////////////

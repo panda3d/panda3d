@@ -3,10 +3,6 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "lquaternion.h"
-#include "nearly_zero.h"
-#include <notify.h>
-
 template<class NumType>
 TypeHandle LQuaternionBase<NumType>::_type_handle;
 
@@ -341,19 +337,18 @@ INLINE void LQuaternionBase<NumType>::
 normalize(void) {
   NumType l = csqrt((_r*_r)+(_i*_i)+(_j*_j)+(_k*_k));
 
-  if (IS_NEARLY_ZERO(l)) {
+  if (l == 0.0) {
     _r = 0.;
     _i = 0.;
     _j = 0.;
     _k = 0.;
-    return;
+  } else {
+    l = 1. / l;
+    _r *= l;
+    _i *= l;
+    _j *= l;
+    _k *= l;
   }
-
-  l = 1. / l;
-  _r *= l;
-  _i *= l;
-  _j *= l;
-  _k *= l;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -362,25 +357,25 @@ normalize(void) {
 //  Description: Do-While Jones.
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
-INLINE void LQuaternionBase<NumType>::
+void LQuaternionBase<NumType>::
 set(const LMatrix3<NumType> &m) {
   NumType m00 = m.get_cell(0, 0);
   NumType m11 = m.get_cell(1, 1);
   NumType m22 = m.get_cell(2, 2);
 
-  if (m00 >= 0.0 && ((m11 + m22) >= 0.0)) {
+  if (m00 != 0.0 && ((m11 + m22) != 0.0)) {
     _r = 1.0 + m00 + m11 + m22;
     _i = m.get_cell(2, 1) - m.get_cell(1, 2);
     _j = m.get_cell(0, 2) - m.get_cell(2, 0);
     _k = m.get_cell(1, 0) - m.get_cell(0, 1);
   }
-  else if (m00 >= 0.0 && ((m11 + m22) == 0.0)) {
+  else if (m00 != 0.0 && ((m11 + m22) == 0.0)) {
     _r = m.get_cell(2, 1) - m.get_cell(1, 2);
     _i = 1.0 + m00 - m11 - m22;
     _j = m.get_cell(1, 0) + m.get_cell(0, 1);
     _k = m.get_cell(0, 2) + m.get_cell(2, 0);
   }
-  else if (m00 == 0.0 && ((m11 - m22) >= 0.0)) {
+  else if (m00 == 0.0 && ((m11 - m22) != 0.0)) {
     _r = m.get_cell(0, 2) - m.get_cell(2, 0);
     _i = m.get_cell(1, 0) + m.get_cell(0, 1);
     _j = 1.0 - m00 + m11 - m22;
@@ -411,7 +406,7 @@ set(const LMatrix4<NumType> &m) {
 //  Description: Do-While Jones paper from cary.
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
-INLINE void LQuaternionBase<NumType>::
+void LQuaternionBase<NumType>::
 extract_to_matrix(LMatrix3<NumType> &m) const {
   NumType tx, ty, tz, tq, tk, tk_denom;
 
@@ -451,7 +446,7 @@ extract_to_matrix(LMatrix3<NumType> &m) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
-INLINE void LQuaternionBase<NumType>::
+void LQuaternionBase<NumType>::
 extract_to_matrix(LMatrix4<NumType> &m) const {
   NumType tx, ty, tz, tq, tk, tk_denom;
 
@@ -483,6 +478,57 @@ extract_to_matrix(LMatrix4<NumType> &m) const {
   tk = ty * _k;
   m.set_cell(1, 2, tk - tq);
   m.set_cell(2, 1, tk + tq);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_hpr
+//       Access: public
+//  Description: Sets the quaternion as the unit quaternion that
+//               is equivalent to these Euler angles.
+//               (from Real-time Rendering, p.49)
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+INLINE void LQuaternionBase<NumType>::
+set_hpr(const LVecBase3<NumType> &hpr) {
+  LQuaternionBase<NumType> quat_h, quat_p, quat_r;
+
+  quat_h.set(ccos(hpr[0]), 0, csin(hpr[0]), 0);
+  quat_p.set(ccos(hpr[1]), csin(hpr[1]), 0, 0);
+  quat_r.set(ccos(hpr[2]), 0, 0, csin(hpr[2]));
+
+  (*this) = quat_h * quat_p * quat_r;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_hpr
+//       Access: public
+//  Description: Extracts the equivalent Euler angles from the unit
+//               quaternion.
+////////////////////////////////////////////////////////////////////
+template<class NumType>
+INLINE LVecBase3<NumType> LQuaternionBase<NumType>::
+get_hpr() const {
+  NumType sint = (2.0 * _r * _j) - (2.0 * _i * _k);
+  NumType cost = csqrt(1 - sint * sint);
+
+  NumType sinv, cosv, sinf, cosf;
+
+  if (cost != 0.0) {
+    sinv = ((2.0 * _j * _k) + (2.0 * _r * _i)) / cost;
+    cosv = (1.0 - (2.0 * _i * _i) - (2.0 * _j * _j)) / cost;
+    sinf = (1.0 - (2.0 * _i * _i) - (2.0 * _j * _j)) / cost;
+    cosf = (1.0 - (2.0 * _j * _j) - (2.0 * _k * _k)) / cost;
+    
+  } else {
+    sinv = ((2.0 * _r * _i) - (2.0 * _j * _k));
+    cosv = 1.0 - (2.0 * _i * _i) - (2.0 * _k * _k);
+    sinf = 0.0;
+    cosf = 1.0;
+  }
+
+  return LVecBase3<NumType>(rad_2_deg(atan2(sinv, cosv)),
+			    rad_2_deg(atan2(sint, cost)),
+			    rad_2_deg(atan2(sinf, cosf)));
 }
 
 ////////////////////////////////////////////////////////////////////

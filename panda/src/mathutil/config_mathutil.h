@@ -11,6 +11,10 @@
 
 NotifyCategoryDecl(mathutil, EXPCL_PANDA, EXPTP_PANDA);
 
+extern const double fft_offset;
+extern const double fft_factor;
+extern const double fft_exponent;
+
 #endif
 
 

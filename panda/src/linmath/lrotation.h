@@ -8,6 +8,9 @@
 
 #include <pandabase.h>
 #include "lquaternion.h"
+#include "cmath.h"
+
+#include <notify.h>
 
 ////////////////////////////////////////////////////////////////////////
 //       Class : LRotation
@@ -19,10 +22,10 @@ PUBLISHED:
   INLINE LRotation();
   INLINE LRotation(const LQuaternionBase<NumType>&);
   INLINE LRotation(NumType, NumType, NumType, NumType);
-  INLINE LRotation(const LVector3<NumType> &, float);
+  INLINE LRotation(const LVector3<NumType> &, NumType);
   INLINE LRotation(const LMatrix3<NumType> &);
   INLINE LRotation(const LMatrix4<NumType> &);
-  INLINE LRotation(float, float, float);
+  INLINE LRotation(NumType, NumType, NumType);
   virtual ~LRotation();
 
   INLINE LRotation<NumType>

@@ -43,6 +43,9 @@ PUBLISHED:
   INLINE int get_num_parts() const;
   INLINE PartGroup *get_part(int n) const;
 
+  INLINE void write_parts(ostream &out) const;
+  INLINE void write_part_values(ostream &out) const;
+
 public:
   virtual void app_traverse();
 

@@ -50,6 +50,27 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MovingPartBase::write_with_value
+//       Access: Public, Virtual
+//  Description: Writes a brief description of the channel and all of
+//               its descendants, along with their values.
+////////////////////////////////////////////////////////////////////
+void MovingPartBase::
+write_with_value(ostream &out, int indent_level) const {
+  indent(out, indent_level) << get_value_type() << " " << get_name() << "\n";
+  indent(out, indent_level);
+  output_value(out);
+
+  if (_children.empty()) {
+    out << "\n";
+  } else {
+    out << " {\n";
+    write_descendants_with_value(out, indent_level + 2);
+    indent(out, indent_level) << "}\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MovingPartBase::do_update
 //       Access: Public, Virtual
 //  Description: 

@@ -12,6 +12,7 @@
 // Configure variables for chan package.
 NotifyCategoryDecl(chan, EXPCL_PANDA, EXPTP_PANDA);
 
-EXPCL_PANDA extern const bool quantize_bam_channels;
+EXPCL_PANDA extern bool compress_channels;
+EXPCL_PANDA extern int compress_chan_quality;
 
 #endif

@@ -48,3 +48,27 @@ get_part(int n) const {
   nassertr(n >= 0 && n < (int)_parts.size(), NULL);
   return _parts[n];
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::write_parts
+//       Access: Public
+//  Description: Writes a list of the character's joints and sliders,
+//               in their hierchical structure, to the indicated
+//               output stream.
+////////////////////////////////////////////////////////////////////
+INLINE void Character::
+write_parts(ostream &out) const {
+  get_bundle()->write(out, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::write_part_values
+//       Access: Public
+//  Description: Writes a list of the character's joints and sliders,
+//               along with each current position, in their hierchical
+//               structure, to the indicated output stream.
+////////////////////////////////////////////////////////////////////
+INLINE void Character::
+write_part_values(ostream &out) const {
+  get_bundle()->write_with_value(out, 0);
+}

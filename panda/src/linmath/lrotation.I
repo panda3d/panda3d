@@ -3,10 +3,6 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "lrotation.h"
-#include <notify.h>
-#include <math.h>
-
 template<class NumType>
 TypeHandle LRotation<NumType>::_type_handle;
 
@@ -71,12 +67,12 @@ LRotation(const LMatrix4<NumType> &m) {
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 INLINE LRotation<NumType>::
-LRotation(const LVector3<NumType> &axis, float angle) {
-  float radians = angle * ((float) MathNumbers::pi / 180.0f);
-  float theta_over_2 = radians / 2.0f;
-  float sin_to2 = sinf(theta_over_2);
+LRotation(const LVector3<NumType> &axis, NumType angle) {
+  NumType radians = angle * ((NumType) MathNumbers::pi / (NumType)180.0);
+  NumType theta_over_2 = radians / (NumType)2.0;
+  NumType sin_to2 = csin(theta_over_2);
 
-  set_r(cosf(theta_over_2));
+  set_r(ccos(theta_over_2));
   set_i(axis[0] * sin_to2);
   set_j(axis[1] * sin_to2);
   set_k(axis[2] * sin_to2);
@@ -85,18 +81,12 @@ LRotation(const LVector3<NumType> &axis, float angle) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::Constructor
 //       Access: public
-//  Description: hpr (Real-time Rendering, p.49)
+//  Description: Sets the rotation from the given Euler angles.
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 INLINE LRotation<NumType>::
-LRotation(float h, float p, float r) {
-  LQuaternionBase<NumType> quat_h, quat_p, quat_r;
-
-  quat_h.set(cosf(h), 0, sinf(h), 0);
-  quat_p.set(cosf(p), sinf(p), 0, 0);
-  quat_r.set(cosf(r), 0, 0, sinf(r));
-
-  (*this) = quat_h * quat_p * quat_r;
+LRotation(NumType h, NumType p, NumType r) {
+  set_hpr(LVecBase3<NumType>(h, p, r));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -296,6 +296,20 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "}\n";
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::write_with_value
+//       Access: Public, Virtual
+//  Description: Writes a brief description of the group, showing its
+//               current value, and that of all of its descendants.
+////////////////////////////////////////////////////////////////////
+void PartGroup::
+write_with_value(ostream &out, int indent_level) const {
+  indent(out, indent_level)
+    << get_type() << " " << get_name() << " {\n";
+  write_descendants_with_value(out, indent_level + 2);
+  indent(out, indent_level) << "}\n";
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::do_update
@@ -324,6 +338,21 @@ write_descendants(ostream &out, int indent_level) const {
 
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     (*ci)->write(out, indent_level);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::write_descendants_with_value
+//       Access: Protected
+//  Description: Writes a brief description of all of the group's
+//               descendants and their values.
+////////////////////////////////////////////////////////////////////
+void PartGroup::
+write_descendants_with_value(ostream &out, int indent_level) const {
+  Children::const_iterator ci;
+
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    (*ci)->write_with_value(out, indent_level);
   }
 }
 

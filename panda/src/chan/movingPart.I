@@ -88,6 +88,18 @@ make_initial_channel() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MovingPart::output_value
+//       Access: Public, Virtual
+//  Description: Outputs a very brief description of the channel's
+//               current value.
+////////////////////////////////////////////////////////////////////
+template<class SwitchType>
+void MovingPart<SwitchType>::
+output_value(ostream &out) const {
+  SwitchType::output_value(out, _value);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MovingPart::write_datagram
 //       Access: Public
 //  Description: Function to write the important information in

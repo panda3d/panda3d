@@ -72,6 +72,8 @@ public:
   static const char *get_channel_type_name() { return "AnimChannelMatrix"; }
   static const char *get_fixed_channel_type_name() { return "AnimChannelMatrixFixed"; }
   static const char *get_part_type_name() { return "MovingPart<LMatrix4f>"; }
+  static void output_value(ostream &out, const ValueType &value);
+    
   static void write_datagram(Datagram &dest, ValueType& me)
   {
     me.write_datagram(dest);
@@ -92,6 +94,9 @@ public:
   static const char *get_channel_type_name() { return "AnimChannelScalar"; }
   static const char *get_fixed_channel_type_name() { return "AnimChannelScalarFixed"; }
   static const char *get_part_type_name() { return "MovingPart<float>"; }
+  static void output_value(ostream &out, ValueType value) {
+    out << value;
+  }
   static void write_datagram(Datagram &dest, ValueType& me)
   {
     dest.add_float32(me); 

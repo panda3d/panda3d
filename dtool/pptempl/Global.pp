@@ -145,6 +145,13 @@
   #define tiff_libs $[TIFF_LIBS]
 #endif
 
+#if $[HAVE_FFTW]
+  #define fftw_ipath $[wildcard $[FFTW_IPATH]]
+  #define fftw_lpath $[wildcard $[FFTW_LPATH]]
+  #define fftw_cflags $[FFTW_CFLAGS]
+  #define fftw_libs $[FFTW_LIBS]
+#endif
+
 #if $[HAVE_VRPN]
   #define vrpn_ipath $[wildcard $[VRPN_IPATH]]
   #define vrpn_lpath $[wildcard $[VRPN_LPATH]]
@@ -211,6 +218,7 @@
      $[or $[not $[DIRECTORY_IF_SGIGL]],$[HAVE_SGIGL]], \
      $[or $[not $[DIRECTORY_IF_JPEG]],$[HAVE_JPEG]], \
      $[or $[not $[DIRECTORY_IF_TIFF]],$[HAVE_TIFF]], \
+     $[or $[not $[DIRECTORY_IF_FFTW]],$[HAVE_FFTW]], \
      $[or $[not $[DIRECTORY_IF_VRPN]],$[HAVE_VRPN]], \
      $[or $[not $[DIRECTORY_IF_GTKMM]],$[HAVE_GTKMM]], \
      $[or $[not $[DIRECTORY_IF_MAYA]],$[HAVE_MAYA]], \
@@ -239,6 +247,7 @@
      $[or $[not $[TARGET_IF_SGIGL]],$[HAVE_SGIGL]], \
      $[or $[not $[TARGET_IF_JPEG]],$[HAVE_JPEG]], \
      $[or $[not $[TARGET_IF_TIFF]],$[HAVE_TIFF]], \
+     $[or $[not $[TARGET_IF_FFTW]],$[HAVE_FFTW]], \
      $[or $[not $[TARGET_IF_VRPN]],$[HAVE_VRPN]], \
      $[or $[not $[TARGET_IF_GTKMM]],$[HAVE_GTKMM]], \
      $[or $[not $[TARGET_IF_MAYA]],$[HAVE_MAYA]], \
@@ -274,6 +283,7 @@
   $[if $[HAVE_CRYPTO],$[IF_CRYPTO_SOURCES]] \
   $[if $[HAVE_JPEG],$[IF_JPEG_SOURCES]] \
   $[if $[HAVE_TIFF],$[IF_TIFF_SOURCES]] \
+  $[if $[HAVE_FFTW],$[IF_FFTW_SOURCES]] \
   $[if $[HAVE_ZLIB],$[IF_ZLIB_SOURCES]] \
   $[if $[HAVE_IPC],$[IF_IPC_SOURCES]] \
   $[if $[HAVE_NET],$[IF_NET_SOURCES]] \
@@ -284,6 +294,7 @@
   $[IF_CRYPTO_SOURCES] \
   $[IF_JPEG_SOURCES] \
   $[IF_TIFF_SOURCES] \
+  $[IF_FFTW_SOURCES] \
   $[IF_ZLIB_SOURCES] \
   $[IF_IPC_SOURCES] \
   $[IF_NET_SOURCES] \
@@ -359,6 +370,9 @@
   #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[tiff_cflags]
   #endif 
+  #if $[ne $[USE_FFTW] $[components $[USE_FFTW],$[active_component_libs]],]
+    #set alt_cflags $[alt_cflags] $[fftw_cflags]
+  #endif 
   #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[vrpn_cflags]
   #endif 
@@ -417,6 +431,9 @@
   #endif
   #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[tiff_ipath]
+  #endif
+  #if $[ne $[USE_FFTW] $[components $[USE_FFTW],$[active_component_libs]],]
+    #set alt_ipath $[alt_ipath] $[fftw_ipath]
   #endif
   #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[vrpn_ipath]
@@ -477,6 +494,9 @@
   #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs]],]
     #set alt_lpath $[alt_lpath] $[tiff_lpath]
   #endif
+  #if $[ne $[USE_FFTW] $[components $[USE_FFTW],$[active_component_libs]],]
+    #set alt_lpath $[alt_lpath] $[fftw_lpath]
+  #endif
   #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs]],]
     #set alt_lpath $[alt_lpath] $[vrpn_lpath]
   #endif
@@ -536,6 +556,9 @@
   #endif
   #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs]],]
     #set alt_libs $[alt_libs] $[tiff_libs]
+  #endif
+  #if $[ne $[USE_FFTW] $[components $[USE_FFTW],$[active_component_libs]],]
+    #set alt_libs $[alt_libs] $[fftw_libs]
   #endif
   #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs]],]
     #set alt_libs $[alt_libs] $[vrpn_libs]

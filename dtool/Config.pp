@@ -175,6 +175,13 @@
 #defer HAVE_TIFF $[libtest $[TIFF_LPATH],$[TIFF_LIBS]]
 
 
+// Is libfftw installed, and where?
+#define FFTW_IPATH /usr/local/include
+#define FFTW_LPATH /usr/local/lib
+#define FFTW_LIBS rfftw fftw
+#defer HAVE_FFTW $[libtest $[FFTW_LPATH],$[FFTW_LIBS]]
+
+
 // Is VRPN installed, and where?
 #define VRPN_IPATH
 #define VRPN_LPATH

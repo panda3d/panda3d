@@ -64,12 +64,14 @@ public:
 		       int hierarchy_match_flags = 0) const;
 
   virtual void write(ostream &out, int indent_level) const;
+  virtual void write_with_value(ostream &out, int indent_level) const;
 
   virtual void do_update(PartBundle *root, PartGroup *parent,
 			 bool parent_changed, bool anim_changed);
 
 protected:
   void write_descendants(ostream &out, int indent_level) const;
+  void write_descendants_with_value(ostream &out, int indent_level) const;
 
   virtual void pick_channel_index(list<int> &holes, int &next) const;
   virtual void bind_hierarchy(AnimGroup *anim, int channel_index);

@@ -11,10 +11,18 @@
     coordinateSystem.h deg_2_rad.h \
     ioPtaDatagramLinMath.I ioPtaDatagramLinMath.cxx \
     ioPtaDatagramLinMath.h lmatrix.cxx lmatrix.h luse.I luse.N luse.cxx \
-    luse.h mathNumbers.cxx mathNumbers.h pta_Colorf.cxx pta_Colorf.h \
+    luse.h lquaternion.I lquaternion.h lrotation.I lrotation.h \
+    lvec2_ops.I lvec2_ops.h lvec3_ops.I lvec3_ops.h lvec4_ops.I \
+    lvec4_ops.h lvecBase2.I lvecBase2.h lvecBase3.I lvecBase3.h \
+    lvecBase4.I lvecBase4.h lvector2.I lvector2.h lvector3.I lvector3.h \
+    lvector4.I lvector4.h \
+    mathNumbers.cxx mathNumbers.h nearly_zero.h \
+    pta_Colorf.cxx pta_Colorf.h \
     pta_Normalf.cxx pta_Normalf.h pta_TexCoordf.cxx pta_TexCoordf.h \
     pta_Vertexf.cxx pta_Vertexf.h vector_Colorf.cxx vector_Colorf.h \
-    vector_LPoint2f.cxx vector_LPoint2f.h vector_Normalf.cxx \
+    vector_LPoint2f.cxx vector_LPoint2f.h \
+    vector_LVecBase3f.cxx vector_LVecBase3f.h \
+    vector_Normalf.cxx \
     vector_Normalf.h vector_Vertexf.cxx vector_Vertexf.h
 
   #define INSTALL_HEADERS \
@@ -29,7 +37,8 @@
     lvecBase4.I lvecBase4.h lvector2.I lvector2.h lvector3.I lvector3.h \
     lvector4.I lvector4.h mathNumbers.h nearly_zero.h pta_Colorf.h \
     pta_Normalf.h pta_TexCoordf.h pta_Vertexf.h vector_Colorf.h \
-    vector_LPoint2f.h vector_Normalf.h vector_TexCoordf.h \
+    vector_LPoint2f.h vector_LVecBase3f.h \
+    vector_Normalf.h vector_TexCoordf.h \
     vector_Vertexf.h
 
   #define IGATESCAN all

@@ -25,6 +25,10 @@ INLINE float cabs(float v) {
   return fabs(v);
 }
 
+INLINE float catan2(float y, float x) {
+  return atan2f(y, x);
+}
+
 INLINE double csqrt(double v) {
   return sqrt(v);
 }
@@ -39,6 +43,10 @@ INLINE double ccos(double v) {
 
 INLINE double cabs(double v) {
   return fabs(v);
+}
+
+INLINE double catan2(double y, double x) {
+  return atan2(y, x);
 }
 
 INLINE bool cnan(double v) {

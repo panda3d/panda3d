@@ -31,6 +31,21 @@ has_table(char table_id) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixXfmTable::get_table
+//       Access: Public
+//  Description: Returns a pointer to the indicated subtable's data,
+//               if it exists, or NULL if it does not.
+////////////////////////////////////////////////////////////////////
+INLINE CPTA_float AnimChannelMatrixXfmTable::
+get_table(char table_id) const {
+  int table_index = get_table_index(table_id);
+  if (table_index < 0) {
+    return CPTA_float();
+  }
+  return _tables[table_index];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixXfmTable::clear_table
 //       Access: Public
 //  Description: Removes the indicated table from the definition.

@@ -32,6 +32,8 @@ public:
   virtual TypeHandle get_value_type() const=0;
   virtual AnimChannelBase *make_initial_channel() const=0;
   virtual void write(ostream &out, int indent_level) const;
+  virtual void write_with_value(ostream &out, int indent_level) const;
+  virtual void output_value(ostream &out) const=0;
 
   virtual void do_update(PartBundle *root, PartGroup *parent,
 			 bool parent_changed, bool anim_changed);

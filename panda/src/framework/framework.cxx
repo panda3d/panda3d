@@ -411,7 +411,7 @@ void event_esc(CPT_Event) {
 
 #ifdef HAVE_NET
   if (PStatClient::get_global_pstats()->is_connected()) {
-    nout << "Disconnecting from stats host" << endl;
+    framework_cat.info() << "Disconnecting from stats host" << endl;
     PStatClient::get_global_pstats()->disconnect();
   }
 #endif
@@ -438,23 +438,23 @@ void event_f(CPT_Event) {
 
 void event_S(CPT_Event) {
 #ifdef HAVE_NET
-  nout << "Connecting to stats host" << endl;
+  framework_cat.info() << "Connecting to stats host" << endl;
   PStatClient::get_global_pstats()->connect();
 #else
-  nout << "Stats host not supported." << endl;
+  framework_cat.error() << "Stats host not supported." << endl;
 #endif
 }
 
 void event_A(CPT_Event) {
 #ifdef HAVE_NET
   if (PStatClient::get_global_pstats()->is_connected()) {
-    nout << "Disconnecting from stats host" << endl;
+    framework_cat.info() << "Disconnecting from stats host" << endl;
     PStatClient::get_global_pstats()->disconnect();
   } else {
-    nout << "Stats host is already disconnected." << endl;
+    framework_cat.error() << "Stats host is already disconnected." << endl;
   }
 #else
-  nout << "Stats host not supported." << endl;
+  framework_cat.error() << "Stats host not supported." << endl;
 #endif
 }
 
@@ -842,7 +842,7 @@ void pause_draw(void) {
     return;
   run_render.lock();
   render_running = false;
-  nout << "draw thread paused" << endl;
+  framework_cat.info() << "draw thread paused" << endl;
 }
 
 void unpause_draw(void) {
@@ -850,7 +850,7 @@ void unpause_draw(void) {
     return;
   run_render.unlock();
   render_running = true;
-  nout << "draw thread continuing" << endl;
+  framework_cat.info() << "draw thread continuing" << endl;
 }
 
 void draw_loop(void*) {
@@ -859,7 +859,7 @@ void draw_loop(void*) {
     main_win->update();
     handle_framerate();
   }
-  nout << "draw thread exiting" << endl;
+  framework_cat.info() << "draw thread exiting" << endl;
 }
 
 void event_x(CPT_Event) {
@@ -925,30 +925,34 @@ int framework_main(int argc, char *argv[]) {
   // load display modules
   GraphicsPipe::resolve_modules();
 
-  nout << "Known pipe types:" << endl;
-  GraphicsPipe::_factory.write_types(nout, 2);
+  framework_cat.info() << "Known pipe types:" << endl;
+  GraphicsPipe::_factory.write_types(framework_cat.info(false), 2);
 
   // Create a window
   main_pipe = GraphicsPipe::_factory.
     make_instance(InteractiveGraphicsPipe::get_class_type());
 
   if (main_pipe == (GraphicsPipe*)0L) {
-    nout << "No interactive pipe is available!  Check your Configrc!\n";
+    framework_cat.error()
+      << "No interactive pipe is available!  Check your Configrc!\n";
     exit(1);
   }
 
-  cout << "Opened a '" << main_pipe->get_type().get_name()
-       << "' interactive graphics pipe." << endl;
+  framework_cat.info()
+    << "Opened a '" << main_pipe->get_type().get_name()
+    << "' interactive graphics pipe." << endl;
 
   rib_pipe = GraphicsPipe::_factory.
     make_instance(NoninteractiveGraphicsPipe::get_class_type());
 
   if (rib_pipe == (GraphicsPipe*)0L)
-    cout << "Did not open a non-interactive graphics pipe, features related"
-	 << " to that will\nbe disabled." << endl;
+    framework_cat.info()
+      << "Did not open a non-interactive graphics pipe, features related"
+      << " to that will\nbe disabled." << endl;
   else
-    cout << "Opened a '" << rib_pipe->get_type().get_name()
-	 << "' non-interactive graphics pipe." << endl;
+    framework_cat.info()
+      << "Opened a '" << rib_pipe->get_type().get_name()
+      << "' non-interactive graphics pipe." << endl;
 
   ChanCfgOverrides override;
 
@@ -1105,7 +1109,8 @@ int framework_main(int argc, char *argv[]) {
       PT_Node node = loader.load_sync(filename);
 
       if (node == (Node *)NULL) {
-	nout << "Unable to load file " << filename << "\n";
+	framework_cat.error()
+	  << "Unable to load file " << filename << "\n";
       } else {
 	new RenderRelation(root, node);
       }
@@ -1168,7 +1173,7 @@ int framework_main(int argc, char *argv[]) {
   }
 
   if (!main_win->supports_update()) {
-    nout
+    framework_cat.info()
       << "Window type " << main_win->get_type()
       << " supports only the glut-style main loop interface.\n";
 
@@ -1184,7 +1189,7 @@ int framework_main(int argc, char *argv[]) {
 
 #ifdef USE_IPC
     if (forked_draw) {
-      nout << "forking draw thread" << endl;
+      framework_cat.info() << "forking draw thread" << endl;
       draw_thread = thread::create(draw_loop);
       for (;;)
 	icb.idle();

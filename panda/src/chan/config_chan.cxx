@@ -24,10 +24,10 @@
 Configure(config_chan);
 NotifyCategoryDef(chan, "");
 
-// This is normally set true to quantize animation channels to 16-bit
-// integer values when writing to a Bam file; a cheesy way to
-// hopefully achieve greater compression ratios.
-const bool quantize_bam_channels = config_chan.GetBool("quantize-bam-channels", true);
+// Set this true to enable compress of animation channels when writing to
+// the bam file.  This is an experimental lossy compression.
+bool compress_channels = config_chan.GetBool("compress-channels", false);
+int compress_chan_quality = config_chan.GetInt("compress-chan-quality", 95);
 
 ConfigureFn(config_chan) {
   AnimBundle::init_type();

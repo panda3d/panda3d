@@ -32,6 +32,7 @@ public:
 
   virtual TypeHandle get_value_type() const;
   virtual AnimChannelBase *make_initial_channel() const;
+  virtual void output_value(ostream &out) const;
 
   ValueType _value;
   ValueType _initial_value;

@@ -35,6 +35,7 @@ public:
   void clear_all_tables();
   void set_table(char table_id, const CPTA_float &table);
   INLINE bool has_table(char table_id) const;
+  INLINE CPTA_float get_table(char table_id) const;
   INLINE void clear_table(char table_id);
 
   virtual void write(ostream &out, int indent_level) const;

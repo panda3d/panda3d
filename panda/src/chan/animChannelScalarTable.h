@@ -17,9 +17,7 @@
 //       Class : AnimChannelScalarTable
 // Description : An animation channel that issues a scalar each frame,
 //               read from a table such as might have been read from
-//               an egg file.  The table actually consists of nine
-//               sub-tables, each representing one component of the
-//               transform: scale, rotate, translate.
+//               an egg file.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AnimChannelScalarTable : public AnimChannelScalar {
 public:

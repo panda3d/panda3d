@@ -18,11 +18,13 @@ INLINE float csqrt(float v);
 INLINE float csin(float v);
 INLINE float ccos(float v);
 INLINE float cabs(float v);
+INLINE float catan2(float y, float x);
 
 INLINE double csqrt(double v);
 INLINE double csin(double v);
 INLINE double ccos(double v);
 INLINE double cabs(double v);
+INLINE double catan2(double y, double x);
 
 // Returns true if the number is nan, false if it's a genuine number
 // or infinity.

@@ -40,6 +40,9 @@ $[cdefine HAVE_JPEG]
 /* Define if we have libtiff installed.  */
 $[cdefine HAVE_TIFF]
 
+/* Define if we have libfftw installed.  */
+$[cdefine HAVE_FFTW]
+
 /* Define if we have VRPN installed.  */
 $[cdefine HAVE_VRPN]
 

@@ -7,6 +7,11 @@
 #define __LQUATERNION_H__
 
 #include "lmatrix.h"
+#include "nearly_zero.h"
+#include "cmath.h"
+#include "deg_2_rad.h"
+
+#include <notify.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LQuaternionBase
@@ -43,11 +48,14 @@ PUBLISHED:
 
   INLINE void set(NumType, NumType, NumType, NumType);
 
-  INLINE void set(const LMatrix3<NumType> &);
-  INLINE void set(const LMatrix4<NumType> &);
+  void set(const LMatrix3<NumType> &m);
+  INLINE void set(const LMatrix4<NumType> &m);
 
-  INLINE void extract_to_matrix(LMatrix3<NumType> &) const;
-  INLINE void extract_to_matrix(LMatrix4<NumType> &) const;
+  void extract_to_matrix(LMatrix3<NumType> &m) const;
+  void extract_to_matrix(LMatrix4<NumType> &m) const;
+
+  INLINE void set_hpr(const LVecBase3<NumType> &hpr);
+  LVecBase3<NumType> get_hpr() const;
 
   INLINE NumType get_r(void) const;
   INLINE NumType get_i(void) const;

@@ -15,7 +15,8 @@
     config_util.N config_util.cxx config_util.h configurable.cxx \
     configurable.h factoryBase.I factoryBase.cxx factoryBase.h \
     factoryParam.I factoryParam.cxx factoryParam.h factoryParams.I \
-    factoryParams.cxx factoryParams.h globPattern.I globPattern.cxx \
+    factoryParams.cxx factoryParams.h \
+    globPattern.I globPattern.cxx \
     globPattern.h globalPointerRegistry.I globalPointerRegistry.cxx \
     globalPointerRegistry.h ioPtaDatagramFloat.cxx ioPtaDatagramFloat.h \
     ioPtaDatagramInt.cxx ioPtaDatagramInt.h ioPtaDatagramShort.cxx \
@@ -46,7 +47,8 @@
     buttonRegistry.h collideMask.h \
     config_util.h configurable.h factory.I factory.h \
     factoryBase.I factoryBase.h factoryParam.I factoryParam.h \
-    factoryParams.I factoryParams.h globPattern.I globPattern.h \
+    factoryParams.I factoryParams.h \
+    globPattern.I globPattern.h \
     globalPointerRegistry.I globalPointerRegistry.h indirectCompareTo.I \
     indirectCompareTo.h ioPtaDatagramFloat.h ioPtaDatagramInt.h \
     ioPtaDatagramShort.h iterator_types.h keyboardButton.h lineStream.I \

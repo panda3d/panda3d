@@ -13,6 +13,7 @@
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
+#include <fftCompressor.h>
 
 TypeHandle AnimChannelMatrixXfmTable::_type_handle;
 
@@ -226,9 +227,15 @@ write_datagram(BamWriter *manager, Datagram &me)
 {
   AnimChannelMatrix::write_datagram(manager, me);
 
-  me.add_bool(quantize_bam_channels);
-  if (!quantize_bam_channels) {
-    // Write out everything the old way, as floats.
+  if (compress_channels && !FFTCompressor::is_compression_available()) {
+    chan_cat.error()
+      << "Compression is not available; writing uncompressed channels.\n";
+    compress_channels = false;
+  }
+
+  me.add_bool(compress_channels);
+  if (!compress_channels) {
+    // Write out everything uncompressed, as a stream of floats.
     for(int i = 0; i < num_tables; i++) {
       me.add_uint16(_tables[i].size());
       for(int j = 0; j < (int)_tables[i].size(); j++) {
@@ -237,32 +244,35 @@ write_datagram(BamWriter *manager, Datagram &me)
     }
 
   } else {
-    // Write out everything the compact way, as quantized integers.
+    // Write out everything using lossy compression.
 
-    // First, write out the scales.  These will be in the range 1/256 .. 255.
+    FFTCompressor compressor;
+    compressor.set_quality(compress_chan_quality);
+    compressor.write_header(me);
+
+    // First, write out the scales.
     int i;
     for(i = 0; i < 3; i++) {
-      me.add_uint16(_tables[i].size());
-      for(int j = 0; j < (int)_tables[i].size(); j++) {
-	me.add_uint16((int)max(min(_tables[i][j]*256.0, 65535.0), 0.0));
-      }
+      compressor.write_reals(me, _tables[i], _tables[i].size());
     }
 
-    // Now, write out the joint angles.  These are in the range 0 .. 360.
-    for(i = 3; i < 6; i++) {
-      me.add_uint16(_tables[i].size());
-      for(int j = 0; j < (int)_tables[i].size(); j++) {
-	me.add_uint16((unsigned int)(_tables[i][j] * 65536.0 / 360.0));
-      }
+    // Now, write out the joint angles.  For these we need to build up
+    // a HPR array.
+    vector_LVecBase3f hprs;
+    int hprs_length = 
+      max(max(_tables[3].size(), _tables[4].size()), _tables[5].size());
+    hprs.reserve(hprs_length);
+    for (i = 0; i < hprs_length; i++) {
+      float h = (i < (int)_tables[3].size()) ? _tables[3][i] : 0.0f;
+      float p = (i < (int)_tables[4].size()) ? _tables[4][i] : 0.0f;
+      float r = (i < (int)_tables[5].size()) ? _tables[5][i] : 0.0f;
+      hprs.push_back(LVecBase3f(h, p, r));
     }
+    compressor.write_hprs(me, &hprs[0], hprs_length);
 
-    // And now write out the translations.  These are in the range
-    // -1000 .. 1000.
+    // And now the translations.
     for(i = 6; i < 9; i++) {
-      me.add_uint16(_tables[i].size());
-      for(int j = 0; j < (int)_tables[i].size(); j++) {
-	me.add_int16((int)max(min(_tables[i][j] * 32767.0 / 1000.0, 32767.0), -32767.0));
-      }
+      compressor.write_reals(me, _tables[i], _tables[i].size());
     }
   }
 }
@@ -280,9 +290,9 @@ fillin(DatagramIterator& scan, BamReader* manager)
 {
   AnimChannelMatrix::fillin(scan, manager);
 
-  bool wrote_quantized = scan.get_bool();
+  bool wrote_compressed = scan.get_bool();
 
-  if (!wrote_quantized) {
+  if (!wrote_compressed) {
     // Regular floats.
     for(int i = 0; i < num_tables; i++) {
       int size = scan.get_uint16();
@@ -294,36 +304,43 @@ fillin(DatagramIterator& scan, BamReader* manager)
     }
 
   } else {
-    // Quantized int16's and expand to floats.
-    int i;
+    // Compressed channels.
+    if (manager->get_file_minor_ver() < 1) {
+      chan_cat.error()
+	<< "Cannot read old-style quantized channels.\n";
+      return;
+    }
 
+    FFTCompressor compressor;
+    compressor.read_header(scan);
+
+    int i;
     // First, read in the scales.
     for(i = 0; i < 3; i++) {
-      int size = scan.get_uint16();
-      PTA_float ind_table;
-      for(int j = 0; j < size; j++) {
-	ind_table.push_back((double)scan.get_uint16() / 256.0);
-      }
+      PTA_float ind_table(0);
+      compressor.read_reals(scan, ind_table.v());
       _tables[i] = ind_table;
     }
 
-    // Then, read in the joint angles.
-    for(i = 3; i < 6; i++) {
-      int size = scan.get_uint16();
-      PTA_float ind_table;
-      for(int j = 0; j < size; j++) {
-	ind_table.push_back((double)scan.get_uint16() * 360.0 / 65536.0);
-      }
-      _tables[i] = ind_table;
+    // Read in the HPR array and store it back in the joint angles.
+    vector_LVecBase3f hprs;
+    compressor.read_hprs(scan, hprs);
+    PTA_float h_table(hprs.size());
+    PTA_float p_table(hprs.size());
+    PTA_float r_table(hprs.size());
+    for (i = 0; i < (int)hprs.size(); i++) {
+      h_table[i] = hprs[i][0];
+      p_table[i] = hprs[i][1];
+      r_table[i] = hprs[i][2];
     }
+    _tables[3] = h_table;
+    _tables[4] = p_table;
+    _tables[5] = r_table;
 
     // Now read in the translations.
-    for(i = 6; i < 9; i++) {
-      int size = scan.get_uint16();
-      PTA_float ind_table;
-      for(int j = 0; j < size; j++) {
-	ind_table.push_back((double)scan.get_int16() * 1000.0 / 32767.0);
-      }
+    for (i = 6; i < 9; i++) {
+      PTA_float ind_table(0);
+      compressor.read_reals(scan, ind_table.v());
       _tables[i] = ind_table;
     }
   }
