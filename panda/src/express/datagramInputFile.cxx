@@ -6,6 +6,11 @@
 #include "datagramInputFile.h"
 #include "numeric_types.h"
 #include "datagramIterator.h"
+#include "profileTimer.h"
+#define SKYLER_TIMER 1
+#ifdef SKYLER_TIMER //[
+  EXPCL_PANDAEXPRESS ProfileTimer Skyler_timer_file;
+#endif //]
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::read_header
@@ -41,6 +46,9 @@ read_header(string &header, size_t num_bytes) {
 ////////////////////////////////////////////////////////////////////
 bool DatagramInputFile::
 get_datagram(Datagram &data) {
+  #ifdef SKYLER_TIMER //[
+    Skyler_timer_file.on();
+  #endif //]
   _read_first_datagram = true;
 
   // First, get the size of the upcoming datagram.  We do this with
@@ -48,6 +56,9 @@ get_datagram(Datagram &data) {
   char sizebuf[sizeof(PN_uint32)];
   _in.read(sizebuf, sizeof(PN_uint32));
   if (_in.fail() || _in.eof()) {
+    #ifdef SKYLER_TIMER //[
+      Skyler_timer_file.off("DatagramInputFile::get_datagram");
+    #endif //]
     return false;
   }
 
@@ -63,11 +74,17 @@ get_datagram(Datagram &data) {
   if (_in.fail() || _in.eof()) {
     _error = true;
     delete[] buffer;
+    #ifdef SKYLER_TIMER //[
+      Skyler_timer_file.off("DatagramInputFile::get_datagram");
+    #endif //]
     return false;
   }
 
   data = Datagram(buffer, num_bytes);
   delete[] buffer;
+  #ifdef SKYLER_TIMER //[
+    Skyler_timer_file.off("DatagramInputFile::get_datagram");
+  #endif //]
   return true;
 }
 
