@@ -32,6 +32,12 @@ class PickList(PandaObject.PandaObject):
         
         # display the menu
         self.__displayChoices(choiceList)
+
+    def __del__(self):
+	"""__del__(self)
+	"""
+	self.cleanup()
+	return None
         
     def cleanup(self):
         """cleanup(self)
