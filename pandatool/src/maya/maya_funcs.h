@@ -35,9 +35,17 @@
 
 class MObject;
 
+bool
+get_maya_plug(MObject &node, const string &attribute_name, MPlug &plug);
+
 template<class ValueType>
 bool
 get_maya_attribute(MObject &node, const string &attribute_name,
+                   ValueType &value);
+
+template<class ValueType>
+bool
+set_maya_attribute(MObject &node, const string &attribute_name,
                    ValueType &value);
 
 bool
@@ -59,6 +67,10 @@ get_vec2d_attribute(MObject &node, const string &attribute_name,
 bool
 get_string_attribute(MObject &node, const string &attribute_name,
                      string &value);
+
+bool
+set_string_attribute(MObject &node, const string &attribute_name,
+                     const string &value);
 
 void
 describe_maya_attribute(MObject &node, const string &attribute_name);

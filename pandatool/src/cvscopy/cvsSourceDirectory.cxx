@@ -186,7 +186,7 @@ find_relpath(const string &relpath) {
     return (CVSSourceDirectory *)NULL;
   }
 
-  // Check for a child named "first".
+  // Check for a child with the name indicated by first.
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     if ((*ci)->get_dirname() == first) {
@@ -247,6 +247,7 @@ scan(const Filename &directory, const string &key_filename) {
     // Is this possibly a subdirectory name?
     Filename next_path(directory, filename);
     Filename key(next_path, key_filename);
+
     if (key.exists()) {
       CVSSourceDirectory *subdir =
         new CVSSourceDirectory(_tree, this, filename);

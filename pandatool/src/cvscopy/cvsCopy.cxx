@@ -317,7 +317,7 @@ copy_binary_file(Filename source, Filename dest) {
     c = in.get();
   }
 
-  if (in.fail()) {
+  if (!in.eof() && in.fail()) {
     nout << "Error reading " << source << "\n";
     return false;
   }
@@ -341,6 +341,8 @@ cvs_add(const Filename &filename) {
   if (_no_cvs) {
     return true;
   }
+
+  Filename canon = filename;
 
   if (!CVSSourceTree::temp_chdir(filename.get_dirname())) {
     nout << "Invalid directory: " << filename.get_dirname() << "\n";

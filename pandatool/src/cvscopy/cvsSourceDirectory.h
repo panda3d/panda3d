@@ -19,8 +19,8 @@
 #ifndef CVSSOURCEDIRECTORY_H
 #define CVSSOURCEDIRECTORY_H
 
-#include <pandatoolbase.h>
-#include <filename.h>
+#include "pandatoolbase.h"
+#include "filename.h"
 
 #include "pvector.h"
 

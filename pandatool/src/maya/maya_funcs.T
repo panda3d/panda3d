@@ -27,32 +27,32 @@ template<class ValueType>
 bool
 get_maya_attribute(MObject &node, const string &attribute_name,
                    ValueType &value) {
-  MStatus status;
-  MFnDependencyNode node_fn(node, &status);
-  if (!status) {
-    maya_cat.error()
-      << "Object is a " << node.apiTypeStr() << ", not a DependencyNode.\n";
-    return false;
+  bool status = false;
+
+  MPlug plug;
+  if (get_maya_plug(node, attribute_name, plug)) {
+    status = plug.getValue(value);
   }
 
-  MObject attr = node_fn.attribute(attribute_name.c_str(), &status);
-  if (!status) {
-    maya_cat.error()
-      << "Object " << node_fn.name() << " does not support attribute "
-      << attribute_name << "\n";
-    return false;
-  }
+  return status;
+}
 
-  MFnAttribute attr_fn(attr, &status);
-  if (!status) {
-    maya_cat.error()
-      << "Attribute " << attribute_name << " on " << node_fn.name()
-      << " is a " << attr.apiTypeStr() << ", not an Attribute.\n";
-    return false;
-  }
+////////////////////////////////////////////////////////////////////
+//     Function: set_maya_attribute
+//  Description: A generic function to set an attribute of some
+//               type on an MObject.  This is used to implement
+//               set_bool_attribute(), etc.
+////////////////////////////////////////////////////////////////////
+template<class ValueType>
+bool
+set_maya_attribute(MObject &node, const string &attribute_name,
+                   ValueType &value) {
+  bool status = false;
 
-  MPlug plug(node, attr);
-  status = plug.getValue(value);
+  MPlug plug;
+  if (get_maya_plug(node, attribute_name, plug)) {
+    status = plug.setValue(value);
+  }
 
   return status;
 }

@@ -40,3 +40,18 @@
 
 #end bin_target
 
+
+#begin bin_target
+  #define USE_MAYA yes
+  #define TARGET mayacopy
+  #define LOCAL_LIBS cvscopy maya progbase
+
+  #define OTHER_LIBS \
+    linmath:c panda:m \
+    express:c pandaexpress:m \
+    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
+
+  #define SOURCES \
+    mayaCopy.cxx mayaCopy.h
+
+#end bin_target

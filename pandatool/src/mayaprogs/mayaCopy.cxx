@@ -17,9 +17,22 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "mayaCopy.h"
-
+#include "config_maya.h"
 #include "cvsSourceDirectory.h"
+#include "mayaShader.h"
 #include "dcast.h"
+
+#include "pre_maya_include.h"
+#include <maya/MStringArray.h>
+#include <maya/MFileIO.h>
+#include <maya/MItDag.h>
+#include <maya/MFnDagNode.h>
+#include <maya/MFnNurbsSurface.h>
+#include <maya/MFnMesh.h>
+#include <maya/MObject.h>
+#include <maya/MDagPath.h>
+#include <maya/MIntArray.h>
+#include "post_maya_include.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaCopy::Constructor
@@ -50,6 +63,12 @@ MayaCopy() {
 ////////////////////////////////////////////////////////////////////
 void MayaCopy::
 run() {
+  _maya = MayaApi::open_api(_program_name);
+  if (!_maya->is_valid()) {
+    nout << "Unable to initialize Maya.\n";
+    exit(1);
+  }
+
   SourceFiles::iterator fi;
   for (fi = _source_files.begin(); fi != _source_files.end(); ++fi) {
     ExtraData ed;
@@ -95,15 +114,76 @@ bool MayaCopy::
 copy_maya_file(const Filename &source, const Filename &dest,
                CVSSourceDirectory *dir) {
   if (!_maya->read(source)) {
-    mayaegg_cat.error()
+    maya_cat.error()
       << "Unable to read " << source << "\n";
     return false;
   }
 
+  // Get all the shaders so we can determine the set of textures.
+  _shaders.clear();
+  collect_shaders();
+  int num_shaders = _shaders.get_num_shaders();
+  for (int i = 0; i < num_shaders; i++) {
+    MayaShader *shader = _shaders.get_shader(i);
+    if (shader->_has_texture) {
+      Filename texture_filename = shader->_texture;
+      if (!texture_filename.exists()) {
+        nout << "*** Warning: texture " << texture_filename
+             << " does not exist.\n";
+      } else {
+        ExtraData ed;
+        ed._type = FT_texture;
+
+        CVSSourceDirectory *texture_dir =
+          import(texture_filename, &ed, _map_dir);
+        if (texture_dir == (CVSSourceDirectory *)NULL) {
+          return false;
+        }
+
+        // Update the texture reference to point to the new texture
+        // filename, relative to the flt file.  Not sure how to do
+        // this right now.
+        Filename new_filename = dir->get_rel_to(texture_dir) + "/" +
+          texture_filename.get_basename();
+        shader->reset_maya_texture(new_filename);
+      }
+    }
+  }
+
+  // Get the set of externally referenced Maya files.
+  MStringArray refs;
+  MStatus status = MFileIO::getReferences(refs);
+  if (!status) {
+    status.perror("MItDag constructor");
+    return false;
+  }
+
+  // Now write out the Maya file.
   if (!_maya->write(dest)) {
-    mayaegg_cat.error()
+    maya_cat.error()
       << "Cannot write " << dest << "\n";
     return false;
+  }
+
+  // Finally, copy in any referenced Maya files.  This is untested code.
+  unsigned int num_refs = refs.length();
+  if (num_refs != 0) {
+    maya_cat.warning()
+      << "External references are not yet properly supported by mayacopy!\n";
+  }
+  for (unsigned int ref_index = 0; ref_index < num_refs; ref_index++) {
+    Filename filename = refs[ref_index].asChar();
+    maya_cat.warning()
+      << "External ref: " << filename << "\n";
+    /*
+    ExtraData ed;
+    ed._type = FT_maya;
+
+    CVSSourceDirectory *dest = import(filename, &ed, _model_dir);
+    if (dest == (CVSSourceDirectory *)NULL) {
+      exit(1);
+    }
+    */
   }
 
   return true;
@@ -124,42 +204,95 @@ copy_texture(const Filename &source, const Filename &dest,
   return true;
 }
 
-/*
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaCopy::scan_maya
+//     Function: MayaCopy::collect_shaders
 //       Access: Private
-//  Description: Recursively walks through the maya file hierarchy,
-//               looking for texture references and external maya file
-//               references.
+//  Description: Recursively walks through the maya scene graph
+//               hierarchy, looking for shaders.
 ////////////////////////////////////////////////////////////////////
-void MayaCopy::
-scan_maya(MayaRecord *record, MayaCopy::Refs &refs, MayaCopy::Textures &textures) {
-  if (record->is_of_type(MayaFace::get_class_type())) {
-    MayaFace *face;
-    DCAST_INTO_V(face, record);
-    if (face->has_texture()) {
-      textures.insert(face->get_texture());
+bool MayaCopy::
+collect_shaders() {
+  MStatus status;
+
+  MItDag dag_iterator(MItDag::kDepthFirst, MFn::kTransform, &status);
+  if (!status) {
+    status.perror("MItDag constructor");
+    return false;
+  }
+
+  // This while loop walks through the entire Maya hierarchy, one node
+  // at a time.  Maya's MItDag object automatically performs a
+  // depth-first traversal of its scene graph.
+  bool all_ok = true;
+  while (!dag_iterator.isDone()) {
+    MDagPath dag_path;
+    status = dag_iterator.getPath(dag_path);
+    if (!status) {
+      status.perror("MItDag::getPath");
+    } else {
+      if (!collect_shader_for_node(dag_path)) {
+        all_ok = false;
+      }
     }
 
-  } else if (record->is_of_type(MayaExternalReference::get_class_type())) {
-    MayaExternalReference *ref;
-    DCAST_INTO_V(ref, record);
-
-    refs.insert(ref);
+    dag_iterator.next();
   }
 
-  int i;
-  int num_subfaces = record->get_num_subfaces();
-  for (i = 0; i < num_subfaces; i++) {
-    scan_maya(record->get_subface(i), refs, textures);
+  if (!all_ok) {
+    nout << "Errors encountered in traversal.\n";
+    return false;
   }
 
-  int num_children = record->get_num_children();
-  for (i = 0; i < num_children; i++) {
-    scan_maya(record->get_child(i), refs, textures);
-  }
+  return true;
 }
-*/
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaCopy::collect_shader_for_node
+//       Access: Private
+//  Description: Gets the relevant shader on the current node, if it
+//               has one.
+////////////////////////////////////////////////////////////////////
+bool MayaCopy::
+collect_shader_for_node(const MDagPath &dag_path) {
+  MStatus status;
+  MFnDagNode dag_node(dag_path, &status);
+  if (!status) {
+    status.perror("MFnDagNode constructor");
+    return false;
+  }
+
+  if (dag_path.hasFn(MFn::kNurbsSurface)) {
+    MFnNurbsSurface surface(dag_path, &status);
+    if (status) {
+      _shaders.find_shader_for_node(surface.object());
+    }
+
+  } else if (dag_path.hasFn(MFn::kMesh)) {
+    MFnMesh mesh(dag_path, &status);
+    if (status) {
+      // Meshes may have multiple different shaders.
+      MObjectArray shaders;
+      MIntArray poly_shader_indices;
+
+      status = mesh.getConnectedShaders(dag_path.instanceNumber(),
+                                        shaders, poly_shader_indices);
+      if (status) {
+        unsigned int num_shaders = shaders.length();
+        for (unsigned int shader_index = 0;
+             shader_index < num_shaders; 
+             shader_index++) {
+          MObject engine = shaders[shader_index];
+          _shaders.find_shader_for_shading_engine(engine);
+        }
+      }
+    }
+
+  } else {
+    // Ignoring other kinds of node.
+  }
+
+  return true;
+}
 
 
 int main(int argc, char *argv[]) {

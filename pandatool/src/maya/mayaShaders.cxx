@@ -125,7 +125,31 @@ find_shader_for_shading_engine(MObject engine) {
 
   // Record this for the future.
   _shaders.insert(Shaders::value_type(engine_name, shader));
+  _shaders_in_order.push_back(shader);
   return shader;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShaders::get_num_shaders
+//       Access: Public
+//  Description: Returns the number of unique MayaShaders that have
+//               been discovered so far.
+////////////////////////////////////////////////////////////////////
+int MayaShaders::
+get_num_shaders() const {
+  return _shaders_in_order.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShaders::get_shader
+//       Access: Public
+//  Description: Returns the nth MayaShader that has been discovered
+//               so far.
+////////////////////////////////////////////////////////////////////
+MayaShader *MayaShaders::
+get_shader(int n) const {
+  nassertr(n >= 0 && n < (int)_shaders_in_order.size(), NULL);
+  return _shaders_in_order[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,10 +160,11 @@ find_shader_for_shading_engine(MObject engine) {
 ////////////////////////////////////////////////////////////////////
 void MayaShaders::
 clear() {
-  Shaders::iterator si;
-  for (si = _shaders.begin(); si != _shaders.end(); ++si) {
-    delete (*si).second;
+  ShadersInOrder::iterator si;
+  for (si = _shaders_in_order.begin(); si != _shaders_in_order.end(); ++si) {
+    delete (*si);
   }
 
   _shaders.clear();
+  _shaders_in_order.clear();
 }

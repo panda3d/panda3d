@@ -20,15 +20,16 @@
 #define MAYACOPY_H
 
 #include "pandatoolbase.h"
-
 #include "cvsCopy.h"
-
+#include "mayaApi.h"
+#include "mayaShaders.h"
 #include "dSearchPath.h"
 #include "pointerTo.h"
 
 #include "pset.h"
 
 class MayaShader;
+class MDagPath;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MayaCopy
@@ -63,11 +64,11 @@ private:
   bool copy_texture(const Filename &source, const Filename &dest,
                     CVSSourceDirectory *dir);
 
+  bool collect_shaders();
+  bool collect_shader_for_node(const MDagPath &dag_path);
 
-  typedef pset< PT(MayaExternalReference) > Refs;
-  typedef pset< PT(MayaTexture) > Textures;
-
-  void scan_maya(MayaRecord *record, Refs &refs, Textures &textures);
+  PT(MayaApi) _maya;
+  MayaShaders _shaders;
 };
 
 #endif

@@ -28,6 +28,40 @@
 #include "post_maya_include.h"
 
 ////////////////////////////////////////////////////////////////////
+//     Function: get_maya_plug
+//  Description: Gets the named MPlug associated, if any.
+////////////////////////////////////////////////////////////////////
+bool
+get_maya_plug(MObject &node, const string &attribute_name, MPlug &plug) {
+  MStatus status;
+  MFnDependencyNode node_fn(node, &status);
+  if (!status) {
+    maya_cat.error()
+      << "Object is a " << node.apiTypeStr() << ", not a DependencyNode.\n";
+    return false;
+  }
+
+  MObject attr = node_fn.attribute(attribute_name.c_str(), &status);
+  if (!status) {
+    maya_cat.error()
+      << "Object " << node_fn.name() << " does not support attribute "
+      << attribute_name << "\n";
+    return false;
+  }
+
+  MFnAttribute attr_fn(attr, &status);
+  if (!status) {
+    maya_cat.error()
+      << "Attribute " << attribute_name << " on " << node_fn.name()
+      << " is a " << attr.apiTypeStr() << ", not an Attribute.\n";
+    return false;
+  }
+
+  plug = MPlug(node, attr);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: get_bool_attribute
 //  Description: Extracts the named boolean attribute from the
 //               MObject.
@@ -167,6 +201,52 @@ get_string_attribute(MObject &node, const string &attribute_name,
   }
 
   value = data.string().asChar();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_string_attribute
+//  Description: Sets the named string attribute on the
+//               MObject.
+////////////////////////////////////////////////////////////////////
+bool
+set_string_attribute(MObject &node, const string &attribute_name,
+                     const string &value) {
+  MStatus status;
+
+  // First, we get the string_object, then we set its string.
+  MObject string_object;
+  if (!get_maya_attribute(node, attribute_name, string_object)) {
+    maya_cat.error()
+      << "Attribute " << attribute_name
+      << " does not have an string object value.\n";
+    describe_maya_attribute(node, attribute_name);
+    return false;
+  }
+
+  MFnStringData data(string_object, &status);
+  if (!status) {
+    maya_cat.error()
+      << "Attribute " << attribute_name << " is of type "
+      << string_object.apiTypeStr() << ", not a StringData.\n";
+    return false;
+  }
+
+  MString mstring_value(value.data(), value.length());
+  status = data.set(mstring_value);
+  if (!status) {
+    status.perror(attribute_name.c_str());
+    return false;
+  }
+
+  // And it appears we now need to set the string object back.
+  if (!set_maya_attribute(node, attribute_name, string_object)) {
+    maya_cat.error()
+      << "Attribute " << attribute_name
+      << " suddenly does not have an string object value.\n";
+    return false;
+  }
+
   return true;
 }
 

@@ -161,7 +161,7 @@ read(const Filename &filename) {
 
   MStatus stat = MFileIO::open(os_filename.c_str());
   if (!stat) {
-    stat.perror(filename.c_str());
+    stat.perror(os_filename.c_str());
     return false;
   }
   return true;
@@ -175,8 +175,6 @@ read(const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 bool MayaApi::
 write(const Filename &filename) {
-  MFileIO::newFile(true);
-
   maya_cat.info() << "Writing " << filename << "\n";
   string os_filename = filename.to_os_specific();
 #ifdef WIN32
@@ -191,7 +189,7 @@ write(const Filename &filename) {
 
   MStatus stat = MFileIO::saveAs(os_filename.c_str(), type, true);
   if (!stat) {
-    stat.perror(filename.c_str());
+    stat.perror(os_filename.c_str());
     return false;
   }
   return true;

@@ -22,6 +22,7 @@
 #include "pandatoolbase.h"
 
 #include "pmap.h"
+#include "pvector.h"
 
 class MayaShader;
 class MObject;
@@ -38,11 +39,16 @@ public:
   MayaShader *find_shader_for_node(MObject node);
   MayaShader *find_shader_for_shading_engine(MObject engine);
 
+  int get_num_shaders() const;
+  MayaShader *get_shader(int n) const;
+
   void clear();
 
 private:
   typedef pmap<string, MayaShader *> Shaders;
   Shaders _shaders;
+  typedef pvector<MayaShader *> ShadersInOrder;
+  ShadersInOrder _shaders_in_order;
 };
 
 #endif

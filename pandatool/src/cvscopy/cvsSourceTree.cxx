@@ -19,21 +19,21 @@
 #include "cvsSourceTree.h"
 #include "cvsSourceDirectory.h"
 
-#include <filename.h>
-#include <executionEnvironment.h>
-#include <notify.h>
+#include "filename.h"
+#include "executionEnvironment.h"
+#include "notify.h"
 
 #include <algorithm>
 #include <ctype.h>
 #include <stdio.h> // for perror
 #include <errno.h>
 
-#if defined(WIN32_VC)
-#include <direct.h>
+#ifdef WIN32_VC
+#include <direct.h>  // for chdir
 #endif
 
 bool CVSSourceTree::_got_start_fullpath = false;
-string CVSSourceTree::_start_fullpath;
+Filename CVSSourceTree::_start_fullpath;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CVSSourceTree::Constructor
@@ -66,7 +66,7 @@ CVSSourceTree::
 //               than once.
 ////////////////////////////////////////////////////////////////////
 void CVSSourceTree::
-set_root(const string &root_path) {
+set_root(const Filename &root_path) {
   nassertv(_path.empty());
   _path = root_path;
 }
@@ -80,7 +80,7 @@ set_root(const string &root_path) {
 //               is an error.
 ////////////////////////////////////////////////////////////////////
 bool CVSSourceTree::
-scan(const string &key_filename) {
+scan(const Filename &key_filename) {
   nassertr(_root == (CVSSourceDirectory *)NULL, false);
   Filename root_fullpath = get_root_fullpath();
   _root = new CVSSourceDirectory(this, NULL, root_fullpath.get_basename());
@@ -105,7 +105,7 @@ get_root() const {
 //               the source tree.
 ////////////////////////////////////////////////////////////////////
 CVSSourceDirectory *CVSSourceTree::
-find_directory(const string &path) {
+find_directory(const Filename &path) {
   string root_fullpath = get_root_fullpath();
   string fullpath = get_actual_fullpath(path);
 
@@ -118,7 +118,7 @@ find_directory(const string &path) {
   }
 
   // The relative name is the part of fullpath not in root_fullpath.
-  string relpath = fullpath.substr(root_fullpath.length());
+  Filename relpath = fullpath.substr(root_fullpath.length());
 
   return _root->find_relpath(relpath);
 }
@@ -141,8 +141,8 @@ find_relpath(const string &relpath) {
   // Check for the root dirname at the front of the path, and remove
   // it if it's there.
   size_t slash = relpath.find('/');
-  string first = relpath.substr(0, slash);
-  string rest;
+  Filename first = relpath.substr(0, slash);
+  Filename rest;
   if (slash != string::npos) {
     rest = relpath.substr(slash + 1);
   }
@@ -177,7 +177,7 @@ find_dirname(const string &dirname) {
 //               directory, or uses suggested_dir.
 ////////////////////////////////////////////////////////////////////
 CVSSourceDirectory *CVSSourceTree::
-choose_directory(const string &filename, CVSSourceDirectory *suggested_dir,
+choose_directory(const Filename &filename, CVSSourceDirectory *suggested_dir,
                  bool force, bool interactive) {
   static Directories empty_dirs;
 
@@ -202,9 +202,9 @@ choose_directory(const string &filename, CVSSourceDirectory *suggested_dir,
 //  Description: Returns the full path from the root to the top of
 //               the source hierarchy.
 ////////////////////////////////////////////////////////////////////
-string CVSSourceTree::
+Filename CVSSourceTree::
 get_root_fullpath() {
-  nassertr(!_path.empty(), string());
+  nassertr(!_path.empty(), Filename());
   if (!_got_root_fullpath) {
     _root_fullpath = get_actual_fullpath(_path);
     _got_root_fullpath = true;
@@ -218,9 +218,9 @@ get_root_fullpath() {
 //  Description: Returns the local directory name of the root of the
 //               tree.
 ////////////////////////////////////////////////////////////////////
-string CVSSourceTree::
+Filename CVSSourceTree::
 get_root_dirname() const {
-  nassertr(_root != (CVSSourceDirectory *)NULL, string());
+  nassertr(_root != (CVSSourceDirectory *)NULL, Filename());
   return _root->get_dirname();
 }
 
@@ -232,7 +232,7 @@ get_root_dirname() const {
 //               should not be called directly by the user.
 ////////////////////////////////////////////////////////////////////
 void CVSSourceTree::
-add_file(const string &filename, CVSSourceDirectory *dir) {
+add_file(const Filename &filename, CVSSourceDirectory *dir) {
   _filenames[filename].push_back(dir);
 }
 
@@ -245,12 +245,13 @@ add_file(const string &filename, CVSSourceDirectory *dir) {
 //               original directory later.
 ////////////////////////////////////////////////////////////////////
 bool CVSSourceTree::
-temp_chdir(const string &path) {
+temp_chdir(const Filename &path) {
   // We have to call this first to guarantee that we have already
   // determined our starting directory.
   get_start_fullpath();
 
-  if (chdir(path.c_str()) < 0) {
+  string os_path = path.to_os_specific();
+  if (chdir(os_path.c_str()) < 0) {
     return false;
   }
   return true;
@@ -264,11 +265,12 @@ temp_chdir(const string &path) {
 ////////////////////////////////////////////////////////////////////
 void CVSSourceTree::
 restore_cwd() {
-  string start_fullpath = get_start_fullpath();
+  Filename start_fullpath = get_start_fullpath();
+  string os_path = start_fullpath.to_os_specific();
 
-  if (chdir(start_fullpath.c_str()) < 0) {
+  if (chdir(os_path.c_str()) < 0) {
     // Hey!  We can't get back to the directory we started from!
-    perror(start_fullpath.c_str());
+    perror(os_path.c_str());
     nout << "Can't continue, aborting.\n";
     exit(1);
   }
@@ -498,21 +500,13 @@ prompt(const string &message) {
 //     Function: CVSSourceTree::get_actual_fullpath
 //       Access: Private, Static
 //  Description: Determines the actual full path from the root to the
-//               named directory.  It does this essentially by cd'ing
-//               to the directory and doing pwd, then cd'ing back.
-//               Returns the empty string if the directory is invalid
-//               or cannot be cd'ed into.
+//               named directory.
 ////////////////////////////////////////////////////////////////////
-string CVSSourceTree::
-get_actual_fullpath(const string &path) {
-  if (!temp_chdir(path)) {
-    return string();
-  }
-
-  string cwd = ExecutionEnvironment::get_cwd();
-  restore_cwd();
-
-  return cwd;
+Filename CVSSourceTree::
+get_actual_fullpath(const Filename &path) {
+  Filename canon = path;
+  canon.make_canonical();
+  return canon;
 }
 
 
@@ -522,11 +516,11 @@ get_actual_fullpath(const string &path) {
 //  Description: Returns the full path from the root to the directory
 //               in which the user started the program.
 ////////////////////////////////////////////////////////////////////
-string CVSSourceTree::
+Filename CVSSourceTree::
 get_start_fullpath() {
   if (!_got_start_fullpath) {
-    _start_fullpath = ExecutionEnvironment::get_cwd();
-    _got_start_fullpath = true;
+    Filename cwd = ExecutionEnvironment::get_cwd();
+    _start_fullpath = cwd.to_os_specific();
   }
   return _start_fullpath;
 }

@@ -57,6 +57,8 @@ MayaShader(MObject engine) {
   _offset.set(0.0, 0.0);
   _rotate_uv = 0.0;
 
+  _color_object = (MObject *)NULL;
+
   MFnDependencyNode engine_fn(engine);
 
   _name = engine_fn.name().asChar();
@@ -76,6 +78,18 @@ MayaShader(MObject engine) {
       MObject shader = shader_pa[0].node();
       found_shader = read_surface_shader(shader);
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+MayaShader::
+~MayaShader() {
+  if (_color_object != (MObject *)NULL) {
+    delete _color_object;
   }
 }
 
@@ -124,6 +138,32 @@ output(ostream &out) const {
   } else if (_has_color) {
     out << "  color is " << _color << "\n";
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::reset_maya_texture
+//       Access: Public
+//  Description: Changes the texture filename stored in the Maya file
+//               for this particular shader.
+////////////////////////////////////////////////////////////////////
+bool MayaShader::
+reset_maya_texture(const Filename &texture) {
+  if (_color_object != (MObject *)NULL) {
+    _has_texture = set_string_attribute(*_color_object, "fileTextureName", 
+                                        texture);
+    _texture = texture;
+
+    if (!_has_texture) {
+      maya_cat.error()
+        << "Unable to reset texture filename.\n";
+    }
+
+    return _has_texture;
+  }
+
+  maya_cat.error()
+    << "Attempt to reset texture on Maya object that has no color set.\n";
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,6 +225,8 @@ read_surface_shader(MObject shader) {
 ////////////////////////////////////////////////////////////////////
 void MayaShader::
 read_surface_color(MObject color) {
+  _color_object = new MObject(color);
+
   if (color.hasFn(MFn::kFileTexture)) {
     string filename;
     _has_texture = get_string_attribute(color, "fileTextureName", filename);

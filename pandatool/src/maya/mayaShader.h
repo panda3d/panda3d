@@ -37,10 +37,12 @@ class MObject;
 class MayaShader {
 public:
   MayaShader(MObject engine);
+  ~MayaShader();
 
   LMatrix3d compute_texture_matrix() const;
 
   void output(ostream &out) const;
+  bool reset_maya_texture(const Filename &texture);
 
   string _name;
 
@@ -65,6 +67,8 @@ public:
   double _rotate_uv;
 
 private:
+  MObject *_color_object;
+
   bool read_surface_shader(MObject shader);
   void read_surface_color(MObject color);
 };

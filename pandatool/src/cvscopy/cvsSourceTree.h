@@ -19,10 +19,11 @@
 #ifndef CVSSOURCETREE_H
 #define CVSSOURCETREE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "pvector.h"
 #include "pmap.h"
+#include "filename.h"
 
 class CVSSourceDirectory;
 
@@ -36,26 +37,26 @@ public:
   CVSSourceTree();
   ~CVSSourceTree();
 
-  void set_root(const string &root_path);
-  bool scan(const string &key_filename);
+  void set_root(const Filename &root_path);
+  bool scan(const Filename &key_filename);
 
   CVSSourceDirectory *get_root() const;
-  CVSSourceDirectory *find_directory(const string &path);
+  CVSSourceDirectory *find_directory(const Filename &path);
   CVSSourceDirectory *find_relpath(const string &relpath);
   CVSSourceDirectory *find_dirname(const string &dirname);
 
-  CVSSourceDirectory *choose_directory(const string &filename,
+  CVSSourceDirectory *choose_directory(const Filename &filename,
                                        CVSSourceDirectory *suggested_dir,
                                        bool force, bool interactive);
 
-  string get_root_fullpath();
-  string get_root_dirname() const;
+  Filename get_root_fullpath();
+  Filename get_root_dirname() const;
 
-  static bool temp_chdir(const string &path);
+  static bool temp_chdir(const Filename &path);
   static void restore_cwd();
 
 public:
-  void add_file(const string &filename, CVSSourceDirectory *dir);
+  void add_file(const Filename &filename, CVSSourceDirectory *dir);
 
 private:
   typedef pvector<CVSSourceDirectory *> Directories;
@@ -74,20 +75,20 @@ private:
 
   string prompt(const string &message);
 
-  static string get_actual_fullpath(const string &path);
-  static string get_start_fullpath();
+  static Filename get_actual_fullpath(const Filename &path);
+  static Filename get_start_fullpath();
 
 private:
-  string _path;
+  Filename _path;
   CVSSourceDirectory *_root;
 
-  typedef pmap<string, Directories> Filenames;
+  typedef pmap<Filename, Directories> Filenames;
   Filenames _filenames;
 
   static bool _got_start_fullpath;
-  static string _start_fullpath;
+  static Filename _start_fullpath;
   bool _got_root_fullpath;
-  string _root_fullpath;
+  Filename _root_fullpath;
 };
 
 #endif
