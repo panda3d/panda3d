@@ -104,7 +104,7 @@ register_with_read_factory() {
 void MaterialTransition::
 write_datagram(BamWriter *manager, Datagram &me) {
   OnOffTransition::write_datagram(manager, me);
-  manager->write_pointer(me, _value);
+  manager->write_pointer(me, (Material *)_value.p());
 }
 
 ////////////////////////////////////////////////////////////////////
