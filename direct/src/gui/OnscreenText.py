@@ -250,10 +250,7 @@ class OnscreenText(PandaObject, NodePath):
         self.textNode.setTransform(mat)
 
     def getScale(self):
-        if self.scale[0] == self.scale[1]:
-            return self.scale[0]
-        else:
-            return self.scale
+        return self.scale
         
     def setWordwrap(self, wordwrap):
         if wordwrap:
