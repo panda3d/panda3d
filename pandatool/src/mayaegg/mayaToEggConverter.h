@@ -39,6 +39,7 @@ class EggVertexPool;
 class EggNurbsCurve;
 class EggPrimitive;
 class EggXfmSAnim;
+class MayaShaderColorDef;
 
 class MDagPath;
 class MFnNurbsSurface;
@@ -119,6 +120,10 @@ private:
   JointAnim *get_egg_table(const string &name, EggGroupNode *egg_root);
   void set_shader_attributes(EggPrimitive &primitive,
                              const MayaShader &shader);
+  void apply_texture_properties(EggTexture &tex, 
+                                const MayaShaderColorDef &color_def);
+  bool compare_texture_properties(EggTexture &tex, 
+                                  const MayaShaderColorDef &color_def);
 
   bool reparent_decals(EggGroupNode *egg_parent);
 

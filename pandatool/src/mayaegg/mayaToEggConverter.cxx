@@ -1388,11 +1388,13 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
       shader = default_shader;
     }
 
+    const MayaShaderColorDef &color_def = shader->_color;
+
     // Since a texture completely replaces a polygon or vertex color,
     // we need to know up front whether we have a texture.
     bool has_texture = false;
     if (shader != (MayaShader *)NULL) {
-      has_texture = shader->_has_texture;
+      has_texture = color_def._has_texture;
     }
 
     // Get the vertices for the polygon.
@@ -1400,7 +1402,7 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
     long i;
     LPoint3d centroid(0.0, 0.0, 0.0);
 
-    if (shader != (MayaShader *)NULL && shader->has_projection()) {
+    if (shader != (MayaShader *)NULL && color_def.has_projection()) {
       // If the shader has a projection, we may need to compute the
       // polygon's centroid to avoid seams at the edges.
       for (i = 0; i < num_verts; i++) {
@@ -1430,10 +1432,10 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
         vert.set_normal(n3d);
       }
 
-      if (shader != (MayaShader *)NULL && shader->has_projection()) {
+      if (shader != (MayaShader *)NULL && color_def.has_projection()) {
         // If the shader has a projection, use it instead of the
         // polygon's built-in UV's.
-        vert.set_uv(shader->project_uv(p3d, centroid));
+        vert.set_uv(color_def.project_uv(p3d, centroid));
 
       } else if (pi.hasUVs()) {
         // Get the UV's from the polygon.
@@ -1778,7 +1780,7 @@ get_egg_table(const MDagPath &dag_path, EggGroupNode *egg_root) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaShader::set_shader_attributes
-//       Access: Public
+//       Access: Private
 //  Description: Applies the known shader attributes to the indicated
 //               egg primitive.
 ////////////////////////////////////////////////////////////////////
@@ -1786,40 +1788,162 @@ void MayaToEggConverter::
 set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
   // In Maya, a polygon is either textured or colored.  The texture,
   // if present, replaces the color.
+  const MayaShaderColorDef &color_def = shader._color;
+  const MayaShaderColorDef &trans_def = shader._transparency;
+  if (color_def._has_texture || trans_def._has_texture) {
+    EggTexture tex(shader.get_name(), "");
 
-  if (shader._has_texture) {
-    Filename filename = Filename::from_os_specific(shader._texture);
-    Filename fullpath = 
-      _path_replace->match_path(filename, get_texture_path());
-    EggTexture tex(shader._name, _path_replace->store_path(fullpath));
-    tex.set_fullpath(fullpath);
+    if (color_def._has_texture) {
+      // If we have a texture on color, apply it as the filename.
+      Filename filename = Filename::from_os_specific(color_def._texture);
+      Filename fullpath = 
+        _path_replace->match_path(filename, get_texture_path());
+      tex.set_filename(_path_replace->store_path(fullpath));
+      tex.set_fullpath(fullpath);
+      apply_texture_properties(tex, color_def);
 
-    tex.set_wrap_u(shader._wrap_u ? EggTexture::WM_repeat : EggTexture::WM_clamp);
-    tex.set_wrap_v(shader._wrap_v ? EggTexture::WM_repeat : EggTexture::WM_clamp);
- 
-    // Let's mipmap all textures by default.
-    tex.set_minfilter(EggTexture::FT_linear_mipmap_linear);
-    tex.set_magfilter(EggTexture::FT_linear);
+      // If we also have a texture on transparency, apply it as the
+      // alpha filename.
+      if (trans_def._has_texture) {
+        if (color_def._wrap_u != trans_def._wrap_u ||
+            color_def._wrap_u != trans_def._wrap_u) {
+          mayaegg_cat.warning()
+            << "Shader " << shader.get_name()
+            << " has contradictory wrap modes on color and texture.\n";
+        }
+            
+        filename = Filename::from_os_specific(trans_def._texture);
+        fullpath = _path_replace->match_path(filename, get_texture_path());
+        tex.set_alpha_filename(_path_replace->store_path(fullpath));
+        tex.set_alpha_fullpath(fullpath);
+        tex.set_format(EggTexture::F_rgba);
 
-    LMatrix3d mat = shader.compute_texture_matrix();
-    if (!mat.almost_equal(LMatrix3d::ident_mat())) {
-      tex.set_transform(mat);
+        if (!compare_texture_properties(tex, trans_def)) {
+          // Only report each broken shader once.
+          static pset<string> bad_shaders;
+          if (bad_shaders.insert(shader.get_name()).second) {
+            mayaegg_cat.error()
+              << "Color and transparency texture properties differ on shader "
+              << shader.get_name() << "\n";
+          }
+        }
+
+      } else {
+        // Otherwise, we don't have any transparency, so tell the egg
+        // format to ignore any alpha channel that might be on the
+        // color texture.
+        tex.set_format(EggTexture::F_rgb);
+      }
+
+    } else {  // trans_def._has_texture
+      // We have a texture on transparency only.  Apply it as the
+      // primary filename, and set the format accordingly.
+      Filename filename = Filename::from_os_specific(trans_def._texture);
+      Filename fullpath = 
+        _path_replace->match_path(filename, get_texture_path());
+      tex.set_filename(_path_replace->store_path(fullpath));
+      tex.set_fullpath(fullpath);
+      tex.set_format(EggTexture::F_alpha);
+      apply_texture_properties(tex, trans_def);
     }
-
+  
     EggTexture *new_tex =
       _textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
-
+    
     primitive.set_texture(new_tex);
 
-  } else if (shader._has_color) {
-    primitive.set_color(Colorf(shader._color[0], shader._color[1], 
-                               shader._color[2], 1.0f));
+  }
+
+  // Also apply an overall color to the primitive.
+  Colorf rgba = shader.get_rgba();
+
+  // This is a placeholder for a parameter on the shader or group that
+  // we have yet to define.
+  static const bool modulate = false;
+  
+  if (!modulate) {
+    // If modulate is not specified, the existence of a texture on
+    // either color channel completely replaces the flat color.
+    if (color_def._has_texture) {
+      rgba[0] = 1.0f;
+      rgba[1] = 1.0f;
+      rgba[2] = 1.0f;
+    }
+    if (trans_def._has_texture) {
+      rgba[3] = 1.0f;
+    }
+  }
+
+  primitive.set_color(rgba);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::apply_texture_properties
+//       Access: Private
+//  Description: Applies all the appropriate texture properties to the
+//               EggTexture object, including wrap modes and texture
+//               matrix.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+apply_texture_properties(EggTexture &tex, const MayaShaderColorDef &color_def) {
+  // Let's mipmap all textures by default.
+  tex.set_minfilter(EggTexture::FT_linear_mipmap_linear);
+  tex.set_magfilter(EggTexture::FT_linear);
+
+  EggTexture::WrapMode wrap_u = color_def._wrap_u ? EggTexture::WM_repeat : EggTexture::WM_clamp;
+  EggTexture::WrapMode wrap_v = color_def._wrap_v ? EggTexture::WM_repeat : EggTexture::WM_clamp;
+
+  tex.set_wrap_u(wrap_u);
+  tex.set_wrap_v(wrap_v);
+  
+  LMatrix3d mat = color_def.compute_texture_matrix();
+  if (!mat.almost_equal(LMatrix3d::ident_mat())) {
+    tex.set_transform(mat);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::compare_texture_properties
+//       Access: Private
+//  Description: Compares the texture properties already on the
+//               texture (presumably set by a previous call to
+//               apply_texture_properties()) and returns false if they
+//               differ from that specified by the indicated color_def
+//               object, or true if they match.
+////////////////////////////////////////////////////////////////////
+bool MayaToEggConverter::
+compare_texture_properties(EggTexture &tex, 
+                           const MayaShaderColorDef &color_def) {
+  bool okflag = true;
+
+  EggTexture::WrapMode wrap_u = color_def._wrap_u ? EggTexture::WM_repeat : EggTexture::WM_clamp;
+  EggTexture::WrapMode wrap_v = color_def._wrap_v ? EggTexture::WM_repeat : EggTexture::WM_clamp;
+  
+  if (wrap_u != tex.determine_wrap_u()) {
+    // Choose the more general of the two.
+    if (wrap_u == EggTexture::WM_repeat) {
+      tex.set_wrap_u(wrap_u);
+    }
+    okflag = false;
+  }
+  if (wrap_v != tex.determine_wrap_v()) {
+    if (wrap_v == EggTexture::WM_repeat) {
+      tex.set_wrap_v(wrap_v);
+    }
+    okflag = false;
+  }
+  
+  LMatrix3d mat = color_def.compute_texture_matrix();
+  if (!mat.almost_equal(tex.get_transform())) {
+    okflag = false;
+  }
+
+  return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaShader::reparent_decals
-//       Access: Public
+//       Access: Private
 //  Description: Recursively walks the egg hierarchy, reparenting
 //               "decal" type nodes below their corresponding
 //               "decalbase" type nodes, and setting the flags.
@@ -1876,13 +2000,10 @@ reparent_decals(EggGroupNode *egg_parent) {
       // All the decal children get moved to be a child of decal base.
       // This usually will not affect the vertex positions, but it
       // could if the decal base has a transform and the decal child
-      // is an instance node.  So don't do that.  Also, we assume it's
-      // undesired to have a transform on a decal, so we flatten those
-      // out here--there's no real requirement to do this, however.
+      // is an instance node.  So don't do that.
       pvector<EggGroup *>::iterator di;
       for (di = decal_children.begin(); di != decal_children.end(); ++di) {
         EggGroup *child_group = (*di);
-        child_group->flatten_transforms();
         decal_base->add_child(child_group);
       }
 

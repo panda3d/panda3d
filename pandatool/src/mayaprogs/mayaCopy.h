@@ -29,6 +29,7 @@
 #include "pset.h"
 
 class MayaShader;
+class MayaShaderColorDef;
 class MDagPath;
 
 ////////////////////////////////////////////////////////////////////
@@ -63,6 +64,7 @@ private:
 
   bool copy_maya_file(const Filename &source, const Filename &dest,
                      CVSSourceDirectory *dir);
+  bool extract_texture(MayaShaderColorDef &color_def, CVSSourceDirectory *dir);
   bool copy_texture(const Filename &source, const Filename &dest,
                     CVSSourceDirectory *dir);
 

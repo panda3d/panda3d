@@ -20,6 +20,7 @@
 #include "maya_funcs.h"
 #include "config_maya.h"
 #include "string_utils.h"
+#include "pnmImageHeader.h"  // for lumin_red, etc.
 #include "pset.h"
 
 #include "pre_maya_include.h"
@@ -40,35 +41,13 @@
 ////////////////////////////////////////////////////////////////////
 MayaShader::
 MayaShader(MObject engine) {
-  _has_color = false;
-  _transparency = 0.0;
-
-  _has_texture = false;
-  _projection_type = PT_off;
-  _map_uvs = NULL;
-
-  _coverage.set(1.0, 1.0);
-  _translate_frame.set(0.0, 0.0);
-  _rotate_frame = 0.0;
-
-  _mirror = false;
-  _stagger = false;
-  _wrap_u = true;
-  _wrap_v = true;
-
-  _repeat_uv.set(1.0, 1.0);
-  _offset.set(0.0, 0.0);
-  _rotate_uv = 0.0;
-
-  _color_object = (MObject *)NULL;
-
   MFnDependencyNode engine_fn(engine);
 
-  _name = engine_fn.name().asChar();
+  set_name(engine_fn.name().asChar());
 
   if (maya_cat.is_debug()) {
     maya_cat.debug()
-      << "Reading shading engine " << _name << "\n";
+      << "Reading shading engine " << get_name() << "\n";
   }
 
   bool found_shader = false;
@@ -91,56 +70,6 @@ MayaShader(MObject engine) {
 ////////////////////////////////////////////////////////////////////
 MayaShader::
 ~MayaShader() {
-  if (_color_object != (MObject *)NULL) {
-    delete _color_object;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::compute_texture_matrix
-//       Access: Public
-//  Description: Returns a texture matrix corresponding to the texture
-//               transforms indicated by the shader.
-////////////////////////////////////////////////////////////////////
-LMatrix3d MayaShader::
-compute_texture_matrix() const {
-  LVector2d scale(_repeat_uv[0] / _coverage[0],
-                  _repeat_uv[1] / _coverage[1]);
-  LVector2d trans(_offset[0] - _translate_frame[0] / _coverage[0],
-                  _offset[1] - _translate_frame[1] / _coverage[1]);
-
-  return
-    (LMatrix3d::translate_mat(LVector2d(-0.5, -0.5)) *
-     LMatrix3d::rotate_mat(_rotate_frame) *
-     LMatrix3d::translate_mat(LVector2d(0.5, 0.5))) *
-    LMatrix3d::scale_mat(scale) *
-    LMatrix3d::translate_mat(trans);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::has_projection
-//       Access: Public
-//  Description: Returns true if the shader has a projection in effect.
-////////////////////////////////////////////////////////////////////
-bool MayaShader::
-has_projection() const {
-  return (_projection_type != PT_off);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::project_uv
-//       Access: Public
-//  Description: If the shader has a projection (has_projection()
-//               returns true), this computes the appropriate UV
-//               corresponding to the indicated 3-d point.  Seams that
-//               might be introduced on polygons that cross quadrants
-//               are closed up by ensuring the point is in the same
-//               quadrant as the indicated reference point.
-////////////////////////////////////////////////////////////////////
-TexCoordd MayaShader::
-project_uv(const LPoint3d &pos, const LPoint3d &centroid) const {
-  nassertr(_map_uvs != NULL, TexCoordd::zero());
-  return (this->*_map_uvs)(pos * _projection_matrix, centroid * _projection_matrix);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -150,49 +79,58 @@ project_uv(const LPoint3d &pos, const LPoint3d &centroid) const {
 ////////////////////////////////////////////////////////////////////
 void MayaShader::
 output(ostream &out) const {
-  out << "Shader " << _name << ":\n";
-  if (_has_texture) {
-    out << "  texture is " << _texture << "\n"
-        << "  coverage is " << _coverage << "\n"
-        << "  translate_frame is " << _translate_frame << "\n"
-        << "  rotate_frame is " << _rotate_frame << "\n"
-        << "  mirror is " << _mirror << "\n"
-        << "  stagger is " << _stagger << "\n"
-        << "  wrap_u is " << _wrap_u << "\n"
-        << "  wrap_v is " << _wrap_v << "\n"
-        << "  repeat_uv is " << _repeat_uv << "\n"
-        << "  offset is " << _offset << "\n"
-        << "  rotate_uv is " << _rotate_uv << "\n";
-
-  } else if (_has_color) {
-    out << "  color is " << _color << "\n";
-  }
+  out << "Shader " << get_name();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::reset_maya_texture
+//     Function: MayaShader::write
 //       Access: Public
-//  Description: Changes the texture filename stored in the Maya file
-//               for this particular shader.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-bool MayaShader::
-reset_maya_texture(const Filename &texture) {
-  if (_color_object != (MObject *)NULL) {
-    _has_texture = set_string_attribute(*_color_object, "fileTextureName", 
-                                        texture);
-    _texture = texture;
+void MayaShader::
+write(ostream &out) const {
+  out << "Shader " << get_name() << "\n"
+      << "  color:\n";
+  _color.write(out);
+  out << "  transparency:\n";
+  _transparency.write(out);
+}
 
-    if (!_has_texture) {
-      maya_cat.error()
-        << "Unable to reset texture filename.\n";
-    }
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::get_rgba
+//       Access: Public
+//  Description: Returns the overall color of the shader as a
+//               single-precision rgba value, where the alpha
+//               component represents transparency according to the
+//               Panda convention.  If no overall color is specified
+//               (_has_flat_color is not true), this returns white.
+//
+//               Normally, Maya makes texture color override the flat
+//               color, so if a texture is also applied (_has_texture
+//               is true), this value is not used by Maya.
+////////////////////////////////////////////////////////////////////
+Colorf MayaShader::
+get_rgba() const {
+  Colorf rgba(1.0f, 1.0f, 1.0f, 1.0f);
 
-    return _has_texture;
+  if (_color._has_flat_color) {
+    rgba[0] = (float)_color._flat_color[0];
+    rgba[1] = (float)_color._flat_color[1];
+    rgba[2] = (float)_color._flat_color[2];
   }
 
-  maya_cat.error()
-    << "Attempt to reset texture on Maya object that has no color set.\n";
-  return false;
+  if (_transparency._has_flat_color) {
+    // Maya supports colored transparency, but we only support
+    // grayscale transparency.  Use the pnmimage constants to
+    // convert color to grayscale.
+    double trans =
+      _transparency._flat_color[0] * lumin_red + 
+      _transparency._flat_color[1] * lumin_grn + 
+      _transparency._flat_color[2] * lumin_blu;
+    rgba[3] = 1.0f - (float)trans;
+  }
+
+  return rgba;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,25 +154,34 @@ read_surface_shader(MObject shader) {
   // shader says for color.
 
   MPlug color_plug = shader_fn.findPlug("color");
+  if (color_plug.isNull()) {
+    // Or maybe a connection to outColor.  Not sure how this differs
+    // from just color, but empirically it seems that either might be
+    // used.
+    color_plug = shader_fn.findPlug("outColor");
+  }
+    
   if (!color_plug.isNull()) {
     MPlugArray color_pa;
     color_plug.connectedTo(color_pa, true, false);
 
     for (size_t i = 0; i < color_pa.length(); i++) {
-      read_surface_color(color_pa[0].node());
+      _color.read_surface_color(color_pa[0].node());
     }
   }
 
-  // Or maybe a connection to outColor.  Not sure how this differs
-  // from just color, but empirically it seems that either might be
-  // used.
-  MPlug out_color_plug = shader_fn.findPlug("outColor");
-  if (!out_color_plug.isNull()) {
-    MPlugArray color_pa;
-    out_color_plug.connectedTo(color_pa, true, false);
+  // Transparency is stored separately.
+  MPlug trans_plug = shader_fn.findPlug("transparency");
+  if (trans_plug.isNull()) {
+    trans_plug = shader_fn.findPlug("outTransparency");
+  }
+    
+  if (!trans_plug.isNull()) {
+    MPlugArray trans_pa;
+    trans_plug.connectedTo(trans_pa, true, false);
 
-    for (size_t i = 0; i < color_pa.length(); i++) {
-      read_surface_color(color_pa[0].node());
+    for (size_t i = 0; i < trans_pa.length(); i++) {
+      _transparency.read_surface_color(trans_pa[0].node());
     }
   }
 
@@ -244,250 +191,26 @@ read_surface_shader(MObject shader) {
     MFnLambertShader lambert_fn(shader);
     MColor color = lambert_fn.color(&status);
     if (status) {
-      _color.set(color.r, color.g, color.b, color.a);
-      _has_color = true;
+      // Warning! The alpha component of color doesn't mean
+      // transparency in Maya.
+      _color._has_flat_color = true;
+      _color._flat_color.set(color.r, color.g, color.b, color.a);
+      _transparency._flat_color.set(0.0, 0.0, 0.0, 0.0);
+
+      // Get the transparency separately.
+      color = lambert_fn.transparency(&status);
+      if (status) {
+        _transparency._has_flat_color = true;
+        _transparency._flat_color.set(color.r, color.g, color.b, color.a);
+      }
     }
   }
 
-  if (!_has_color && !_has_texture) {
+  if (!_color._has_flat_color && !_color._has_texture) {
     if (maya_cat.is_spam()) {
       maya_cat.spam()
         << "  Color definition not found.\n";
     }
   }
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::read_surface_color
-//       Access: Private
-//  Description: Determines the surface color specified by the shader.
-//               This includes texturing and other advanced shader
-//               properties.
-////////////////////////////////////////////////////////////////////
-void MayaShader::
-read_surface_color(MObject color) {
-  if (color.hasFn(MFn::kFileTexture)) {
-    _color_object = new MObject(color);
-    string filename;
-    _has_texture = get_string_attribute(color, "fileTextureName", filename);
-    if (_has_texture) {
-      _texture = Filename::from_os_specific(filename);
-    }
-
-    get_vec2f_attribute(color, "coverage", _coverage);
-    get_vec2f_attribute(color, "translateFrame", _translate_frame);
-    get_angle_attribute(color, "rotateFrame", _rotate_frame);
-
-    get_bool_attribute(color, "mirror", _mirror);
-    get_bool_attribute(color, "stagger", _stagger);
-    get_bool_attribute(color, "wrapU", _wrap_u);
-    get_bool_attribute(color, "wrapV", _wrap_v);
-
-    get_vec2f_attribute(color, "repeatUV", _repeat_uv);
-    get_vec2f_attribute(color, "offset", _offset);
-    get_angle_attribute(color, "rotateUV", _rotate_uv);
-
-  } else if (color.hasFn(MFn::kProjection)) {
-    // This is a projected texture.  We will have to step one level
-    // deeper to find the actual texture.
-    MFnDependencyNode projection_fn(color);
-    MPlug image_plug = projection_fn.findPlug("image");
-    if (!image_plug.isNull()) {
-      MPlugArray image_pa;
-      image_plug.connectedTo(image_pa, true, false);
-      
-      for (size_t i = 0; i < image_pa.length(); i++) {
-        read_surface_color(image_pa[0].node());
-      }
-    }
-
-    if (!get_mat4d_attribute(color, "placementMatrix", _projection_matrix)) {
-      _projection_matrix = LMatrix4d::ident_mat();
-    }
-
-    // The uAngle and vAngle might be used for certain kinds of
-    // projections.
-    if (!get_angle_attribute(color, "uAngle", _u_angle)) {
-      _u_angle = 360.0;
-    }
-    if (!get_angle_attribute(color, "vAngle", _v_angle)) {
-      _v_angle = 180.0;
-    }
-
-    string type;
-    if (get_enum_attribute(color, "projType", type)) {
-      set_projection_type(type);
-    }
-
-  } else {
-    // This shader wasn't understood.
-    if (maya_cat.is_debug()) {
-      maya_cat.info()
-        << "**Don't know how to interpret color attribute type "
-        << color.apiTypeStr() << "\n";
-
-    } else {
-      // If we don't have a heavy verbose count, only report each type
-      // of unsupportted shader once.
-      static pset<MFn::Type> bad_types;
-      if (bad_types.insert(color.apiType()).second) {
-        maya_cat.info()
-          << "**Don't know how to interpret color attribute type "
-          << color.apiTypeStr() << "\n";
-      }
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::set_projection_type
-//       Access: Private
-//  Description: Sets up the shader to apply UV's according to the
-//               indicated projection type.
-////////////////////////////////////////////////////////////////////
-void MayaShader::
-set_projection_type(const string &type) {
-  if (cmp_nocase(type, "planar") == 0) {
-    _projection_type = PT_planar;
-    _map_uvs = &MayaShader::map_planar;
-
-    // The Planar projection normally projects to a range (-1, 1) in
-    // both axes.  Scale this into our UV range of (0, 1).
-    _projection_matrix = _projection_matrix * LMatrix4d(0.5, 0.0, 0.0, 0.0,
-                                                        0.0, 0.5, 0.0, 0.0,
-                                                        0.0, 0.0, 1.0, 0.0,
-                                                        0.5, 0.5, 0.0, 1.0);
-
-  } else if (cmp_nocase(type, "cylindrical") == 0) {
-    _projection_type = PT_cylindrical;
-    _map_uvs = &MayaShader::map_cylindrical;
-
-    // The cylindrical projection is orthographic in the Y axis; scale
-    // the range (-1, 1) in this axis into our UV range (0, 1).
-    _projection_matrix = _projection_matrix * LMatrix4d(1.0, 0.0, 0.0, 0.0,
-                                                        0.0, 0.5, 0.0, 0.0,
-                                                        0.0, 0.0, 1.0, 0.0,
-                                                        0.0, 0.5, 0.0, 1.0);
-
-  } else if (cmp_nocase(type, "spherical") == 0) {
-    _projection_type = PT_spherical;
-    _map_uvs = &MayaShader::map_spherical;
-
-  } else {
-    // Other projection types are currently unimplemented by the
-    // converter.
-    maya_cat.error()
-      << "Don't know how to handle type " << type << " projections.\n";
-    _projection_type = PT_off;
-    _map_uvs = NULL;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::map_planar
-//       Access: Private
-//  Description: Computes a UV based on the given point in space,
-//               using a planar projection.
-////////////////////////////////////////////////////////////////////
-LPoint2d MayaShader::
-map_planar(const LPoint3d &pos, const LPoint3d &) const {
-  // A planar projection is about as easy as can be.  We ignore the Z
-  // axis, and project the point into the XY plane.  Done.
-  return LPoint2d(pos[0], pos[1]);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::map_spherical
-//       Access: Private
-//  Description: Computes a UV based on the given point in space,
-//               using a spherical projection.
-////////////////////////////////////////////////////////////////////
-LPoint2d MayaShader::
-map_spherical(const LPoint3d &pos, const LPoint3d &centroid) const {
-  // To compute the x position on the frame, we only need to consider
-  // the angle of the vector about the Y axis.  Project the vector
-  // into the XZ plane to do this.
-
-  LVector2d xz(pos[0], pos[2]);
-  double xz_length = xz.length();
-
-  if (xz_length < 0.01) {
-    // If we have a point on or near either pole, we've got problems.
-    // This point maps to the entire bottom edge of the image, so
-    // which U value should we choose?  It does make a difference,
-    // especially if we have a number of polygons around the south
-    // pole that all share the common vertex.
-
-    // We choose the U value based on the polygon's centroid.
-    xz.set(centroid[0], centroid[2]);
-  }
-
-  // Now, if the polygon crosses the seam, we also have problems.
-  // Make sure that the u value is in the same half of the texture as
-  // the centroid's u value.
-  double u = rad_2_deg(atan2(xz[0], xz[1])) / (2.0 * _u_angle);
-  double c = rad_2_deg(atan2(centroid[0], centroid[2])) / (2.0 * _u_angle);
-
-  if (u - c > 0.5) {
-    u -= floor(u - c + 0.5);
-  } else if (u - c < -0.5) {
-    u += floor(c - u + 0.5);
-  }
-
-  // Now rotate the vector into the YZ plane, and the V value is based
-  // on the latitude: the angle about the X axis.
-  LVector2d yz(pos[1], xz_length);
-  double v = rad_2_deg(atan2(yz[0], yz[1])) / (2.0 * _v_angle);
-
-  LPoint2d uv(u - 0.5, v - 0.5);
-
-  nassertr(fabs(u - c) <= 0.5, uv);
-  return uv;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::map_cylindrical
-//       Access: Private
-//  Description: Computes a UV based on the given point in space,
-//               using a cylindrical projection.
-////////////////////////////////////////////////////////////////////
-LPoint2d MayaShader::
-map_cylindrical(const LPoint3d &pos, const LPoint3d &centroid) const {
-  // This is almost identical to the spherical projection, except for
-  // the computation of V.
-
-  LVector2d xz(pos[0], pos[2]);
-  double xz_length = xz.length();
-
-  if (xz_length < 0.01) {
-    // A cylindrical mapping has the same singularity problem at the
-    // pole as a spherical mapping does: points at the pole do not map
-    // to a single point on the texture.  (It's technically a slightly
-    // different problem: in a cylindrical mapping, points at the pole
-    // do not map to any point on the texture, while in a spherical
-    // mapping, points at the pole map to the top or bottom edge of
-    // the texture.  But this is a technicality that doesn't really
-    // apply to us.)  We still solve it the same way: if our point is
-    // at or near the pole, compute the angle based on the centroid of
-    // the polygon (which we assume is further from the pole).
-    xz.set(centroid[0], centroid[2]);
-  }
-
-  // And cylinders do still have a seam at the back.
-  double u = rad_2_deg(atan2(xz[0], xz[1])) / _u_angle;
-  double c = rad_2_deg(atan2(centroid[0], centroid[2])) / _u_angle;
-
-  if (u - c > 0.5) {
-    u -= floor(u - c + 0.5);
-  } else if (u - c < -0.5) {
-    u += floor(c - u + 0.5);
-  }
-
-  // For a cylindrical mapping, the V value comes directly from Y.
-  // Easy.
-  LPoint2d uv(u - 0.5, pos[1]);
-
-  nassertr(fabs(u - c) <= 0.5, uv);
-  return uv;
 }

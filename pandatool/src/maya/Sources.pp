@@ -14,6 +14,7 @@
     config_maya.cxx config_maya.h \
     mayaApi.cxx mayaApi.h \
     mayaShader.cxx mayaShader.h \
+    mayaShaderColorDef.cxx mayaShaderColorDef.h \
     mayaShaders.cxx mayaShaders.h \
     maya_funcs.I maya_funcs.cxx maya_funcs.h \
     post_maya_include.h pre_maya_include.h
