@@ -59,7 +59,7 @@ get_menu_handle() {
 //  Description: Adds the menu to the end of the indicated menu bar.
 ////////////////////////////////////////////////////////////////////
 void WinStatsChartMenu::
-add_to_menu_bar(HMENU menu_bar) {
+add_to_menu_bar(HMENU menu_bar, int before_menu_id) {
   const PStatClientData *client_data = _monitor->get_client_data();
   string thread_name;
   if (_thread_index == 0) {
@@ -77,7 +77,7 @@ add_to_menu_bar(HMENU menu_bar) {
   mii.fType = MFT_STRING; 
   mii.hSubMenu = _menu; 
   mii.dwTypeData = (char *)thread_name.c_str(); 
-  InsertMenuItem(menu_bar, GetMenuItemCount(menu_bar), TRUE, &mii);
+  InsertMenuItem(menu_bar, before_menu_id, FALSE, &mii);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -40,8 +40,6 @@ WinStatsStripChart(WinStatsMonitor *monitor, int thread_index,
   WinStatsGraph(monitor, thread_index)
 {
   _brush_origin = 0;
-  _drag_vscale = false;
-  _drag_vscale_start = 0.0f;
 
   // Let's show the units on the guide bar labels.  There's room.
   set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
@@ -284,7 +282,7 @@ end_draw(int from_x, int to_x) {
     const GuideBar &bar = get_guide_bar(i);
     int y = height_to_pixel(bar._height);
 
-    if (y >= 5) {
+    if (y > 0) {
       // Only draw it if it's not too close to the top.
       if (bar._is_target) {
         SelectObject(_bitmap_dc, _light_pen);
@@ -337,7 +335,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_LBUTTONDOWN:
     {
-      _drag_vscale = true;
+      _drag_mode = DM_vscale;
       PN_int16 y = HIWORD(lparam);
       _drag_vscale_start = pixel_to_height(y);
       SetCapture(_graph_window);
@@ -345,7 +343,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     return 0;
 
   case WM_MOUSEMOVE: 
-    if (_drag_vscale) {
+    if (_drag_mode == DM_vscale) {
       PN_int16 y = HIWORD(lparam);
       float ratio = 1.0f - ((float)y / (float)get_ysize());
       if (ratio > 0.0f) {
@@ -356,18 +354,12 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_LBUTTONUP:
-    if (_drag_vscale) {
-      PN_int16 y = HIWORD(lparam);
-      float ratio = 1.0f - ((float)y / (float)get_ysize());
-      if (ratio > 0.0f) {
-        set_vertical_scale(_drag_vscale_start / ratio);
-      }
-      _drag_vscale = false;
+    if (_drag_mode == DM_vscale) {
+      _drag_mode = DM_none;
       ReleaseCapture();
       return 0;
     }
     break;
-
 
   default:
     break;
@@ -448,7 +440,6 @@ create_window() {
   register_window_class(application);
 
   string window_title = get_title_text();
-  DWORD window_style = WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW | WS_VISIBLE;
 
   RECT win_rect = { 
     0, 0,
@@ -457,10 +448,10 @@ create_window() {
   };  
   
   // compute window size based on desired client area size
-  AdjustWindowRect(&win_rect, window_style, FALSE);
+  AdjustWindowRect(&win_rect, graph_window_style, FALSE);
 
   _window = 
-    CreateWindow(_window_class_name, window_title.c_str(), window_style,
+    CreateWindow(_window_class_name, window_title.c_str(), graph_window_style,
                  CW_USEDEFAULT, CW_USEDEFAULT,
                  win_rect.right - win_rect.left,
                  win_rect.bottom - win_rect.top,

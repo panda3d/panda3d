@@ -78,6 +78,7 @@ private:
 
   void create_window();
   void setup_options_menu();
+  void setup_frame_rate_label();
   static void register_window_class(HINSTANCE application);
 
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);

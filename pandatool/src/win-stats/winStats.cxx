@@ -62,7 +62,7 @@ create_toplevel_window(HINSTANCE application) {
   wc.lpfnWndProc = (WNDPROC)toplevel_window_proc;
   wc.hInstance = application;
   wc.lpszClassName = toplevel_class_name;
-  
+
   if (!RegisterClass(&wc)) {
     nout << "Could not register window class!\n";
     exit(1);
@@ -70,8 +70,11 @@ create_toplevel_window(HINSTANCE application) {
 
   DWORD window_style = WS_POPUP | WS_SYSMENU | WS_ICONIC;
 
+  char window_name[128];
+  sprintf(window_name, "PStats %d", pstats_port);
+
   HWND toplevel_window = 
-    CreateWindow(toplevel_class_name, "PStats", window_style,
+    CreateWindow(toplevel_class_name, window_name, window_style,
                  CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
                  NULL, NULL, application, 0);
   if (!toplevel_window) {
@@ -87,7 +90,7 @@ create_toplevel_window(HINSTANCE application) {
 // but it is sometimes more convenient during development to use
 // main() instead, which doesn't squelch the stderr output.
 
-#ifdef USE_WINMAIN
+#ifndef DEVELOP_WINSTATS
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) 
 #else
 int main(int argc, char *argv[])

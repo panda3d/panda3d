@@ -47,7 +47,6 @@ WinStatsMonitor() {
 ////////////////////////////////////////////////////////////////////
 WinStatsMonitor::
 ~WinStatsMonitor() {
-  cerr << "WinStatsMonitor destructor\n";
   Graphs::iterator gi;
   for (gi = _graphs.begin(); gi != _graphs.end(); ++gi) {
     delete (*gi);
@@ -65,8 +64,10 @@ WinStatsMonitor::
     _window = 0;
   }
 
-  // For now, exit when the first monitor closes.
+#ifdef DEVELOP_WINSTATS
+  // For Winstats developers, exit when the first monitor closes.
   exit(0);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,7 +94,6 @@ get_monitor_name() {
 ////////////////////////////////////////////////////////////////////
 void WinStatsMonitor::
 initialized() {
-  cerr << "Monitor initialized (refcount = " << get_ref_count() << ")\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -168,7 +168,7 @@ new_collector(int collector_index) {
 void WinStatsMonitor::
 new_thread(int thread_index) {
   WinStatsChartMenu *chart_menu = new WinStatsChartMenu(this, thread_index);
-  chart_menu->add_to_menu_bar(_menu_bar);
+  chart_menu->add_to_menu_bar(_menu_bar, MI_frame_rate_label);
   _chart_menus.push_back(chart_menu);
   DrawMenuBar(_window);
 }
@@ -202,8 +202,7 @@ new_data(int thread_index, int frame_number) {
 ////////////////////////////////////////////////////////////////////
 void WinStatsMonitor::
 lost_connection() {
-  cerr << "Lost connection to " << get_client_hostname()
-       << " (refcount = " << get_ref_count() << ")\n";
+  nout << "Lost connection to " << get_client_hostname() << "\n";
 
   if (_window) {
     DestroyWindow(_window);
@@ -224,6 +223,22 @@ idle() {
   ChartMenus::iterator mi;
   for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
     (*mi)->check_update();
+  }
+
+  // Update the frame rate label from the main thread (thread 0).
+  const PStatThreadData *thread_data = get_client_data()->get_thread_data(0);
+  float frame_rate = thread_data->get_frame_rate();
+  if (frame_rate != 0.0f) {
+    char buffer[128];
+    sprintf(buffer, "%0.1f ms / %0.1f Hz", 1000.0f / frame_rate, frame_rate);
+  
+    MENUITEMINFO mii;
+    memset(&mii, 0, sizeof(mii));
+    mii.cbSize = sizeof(mii);
+    mii.fMask = MIIM_STRING;
+    mii.dwTypeData = buffer;
+    SetMenuItemInfo(_menu_bar, MI_frame_rate_label, FALSE, &mii);
+    DrawMenuBar(_window);
   }
 }
 
@@ -326,7 +341,6 @@ set_time_units(int unit_mask) {
   memset(&mii, 0, sizeof(mii));
   mii.cbSize = sizeof(mii);
   mii.fMask = MIIM_STATE;
-  mii.fState = MFS_CHECKED;
 
   mii.fState = ((_time_units & PStatGraph::GBU_ms) != 0) ? 
     MFS_CHECKED : MFS_UNCHECKED;
@@ -379,10 +393,11 @@ create_window() {
   _menu_bar = CreateMenu();
 
   setup_options_menu();
+  setup_frame_rate_label();
 
   ChartMenus::iterator mi;
   for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
-    (*mi)->add_to_menu_bar(_menu_bar);
+    (*mi)->add_to_menu_bar(_menu_bar, MI_frame_rate_label);
   }
 
   _window_title = get_client_progname() + " on " + get_client_hostname();
@@ -439,7 +454,28 @@ setup_options_menu() {
   mii.wID = MI_time_hz;
   mii.dwTypeData = "Hz";
   InsertMenuItem(_options_menu, GetMenuItemCount(_options_menu), TRUE, &mii);
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: WinStatsMonitor::setup_frame_rate_label
+//       Access: Private
+//  Description: Creates the frame rate label on the right end of the
+//               menu bar.  This is used as a text label to display
+//               the main thread's frame rate to the user, although it
+//               is implemented as a right-justified toplevel menu
+//               item that doesn't open to anything.
+////////////////////////////////////////////////////////////////////
+void WinStatsMonitor::
+setup_frame_rate_label() {
+  MENUITEMINFO mii;
+  memset(&mii, 0, sizeof(mii));
+  mii.cbSize = sizeof(mii);
+
+  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+  mii.fType = MFT_STRING | MFT_RIGHTJUSTIFY; 
+  mii.wID = MI_frame_rate_label;
+  mii.dwTypeData = ""; 
+  InsertMenuItem(_menu_bar, GetMenuItemCount(_menu_bar), TRUE, &mii);
 }
 
 ////////////////////////////////////////////////////////////////////

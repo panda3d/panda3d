@@ -70,6 +70,8 @@ protected:
   HWND _graph_window;
   WinStatsLabelStack _label_stack;
 
+  HCURSOR _sizewe_cursor;
+
   HBITMAP _bitmap;
   HDC _bitmap_dc;
 
@@ -80,6 +82,18 @@ protected:
 
   HPEN _dark_pen;
   HPEN _light_pen;
+
+  // What is the user adjusting by dragging the mouse in a window?
+  enum DragMode {
+    DM_none,
+    DM_vscale,
+    DM_left_margin,
+    DM_right_margin,
+  };
+  DragMode _drag_mode;
+  DragMode _potential_drag_mode;
+  int _drag_start_x, _drag_start_y;
+  float _drag_vscale_start;
 
 private:
   void setup_bitmap(int xsize, int ysize);
@@ -93,6 +107,9 @@ private:
 
   static bool _graph_window_class_registered;
   static const char * const _graph_window_class_name;
+
+protected:
+  static DWORD graph_window_style;
 };
 
 #endif

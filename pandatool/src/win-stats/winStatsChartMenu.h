@@ -38,7 +38,7 @@ public:
   ~WinStatsChartMenu();
 
   HMENU get_menu_handle();
-  void add_to_menu_bar(HMENU menu_bar);
+  void add_to_menu_bar(HMENU menu_bar, int before_menu_id);
 
   void check_update();
   void do_update();

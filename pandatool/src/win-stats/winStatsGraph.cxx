@@ -23,6 +23,9 @@
 bool WinStatsGraph::_graph_window_class_registered = false;
 const char * const WinStatsGraph::_graph_window_class_name = "graph";
 
+DWORD WinStatsGraph::graph_window_style = 
+WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: WinStatsGraph::Constructor
 //       Access: Public
@@ -35,6 +38,7 @@ WinStatsGraph(WinStatsMonitor *monitor, int thread_index) :
 {
   _window = 0;
   _graph_window = 0;
+  _sizewe_cursor = LoadCursor(NULL, IDC_SIZEWE);
   _bitmap = 0;
   _bitmap_dc = 0;
 
@@ -49,6 +53,10 @@ WinStatsGraph(WinStatsMonitor *monitor, int thread_index) :
 
   _dark_pen = CreatePen(PS_SOLID, 1, RGB(51, 51, 51));
   _light_pen = CreatePen(PS_SOLID, 1, RGB(154, 154, 154));
+
+  _drag_mode = DM_none;
+  _potential_drag_mode = DM_none;
+  _drag_vscale_start = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,12 +164,6 @@ void WinStatsGraph::
 setup_label_stack() {
   _label_stack.setup(_window);
   move_label_stack();
-  /*
-  if (_label_stack()->get_ideal_width() > _label_stack->get_width()) {
-    _left_margin = _label_stack->get_ideal_width() + 16;
-    move_label_stack();
-  }
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -227,6 +229,64 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   case WM_SIZE:
     move_label_stack();
     InvalidateRect(hwnd, NULL, TRUE);
+    break;
+
+  case WM_SETCURSOR:
+    {
+      // Why is it so hard to ask what the cursor position within the
+      // window's client area is?
+      POINT point;
+      GetCursorPos(&point);
+      WINDOWINFO winfo;
+      GetWindowInfo(hwnd, &winfo);
+      const RECT &rect = winfo.rcClient;
+
+      // Display a double-headed arrow to drag the left or right margins.
+      if (point.x >= rect.left + _left_margin - 1 && point.x <= rect.left + _left_margin + 1) {
+        SetCursor(_sizewe_cursor);
+        _potential_drag_mode = DM_left_margin;
+        return TRUE;
+      }
+      if (point.x >= rect.right - _right_margin - 2 && point.x <= rect.right - _right_margin) {
+        SetCursor(_sizewe_cursor);
+        _potential_drag_mode = DM_right_margin;
+        return TRUE;
+      }
+
+      _potential_drag_mode = DM_none;
+    }
+    break;
+
+  case WM_LBUTTONDOWN:
+    if (_potential_drag_mode != DM_none) {
+      _drag_mode = _potential_drag_mode;
+      _drag_start_x = (PN_int16)LOWORD(lparam);
+      _drag_start_y = (PN_int16)HIWORD(lparam);
+      SetCapture(_window);
+    }
+    return 0;
+
+  case WM_MOUSEMOVE: 
+    if (_drag_mode == DM_left_margin) {
+      PN_int16 x = LOWORD(lparam);
+      _left_margin += (x - _drag_start_x);
+      _drag_start_x = x;
+      InvalidateRect(hwnd, NULL, TRUE);
+      move_label_stack();
+      return 0;
+
+    } else if (_drag_mode == DM_right_margin) {
+      PN_int16 x = LOWORD(lparam);
+      _right_margin += (_drag_start_x - x);
+      _drag_start_x = x;
+      InvalidateRect(hwnd, NULL, TRUE);
+      return 0;
+    }
+    break;
+
+  case WM_LBUTTONUP:
+    _drag_mode = DM_none;
+    ReleaseCapture();
     break;
 
   case WM_PAINT:

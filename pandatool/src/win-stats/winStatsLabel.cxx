@@ -214,7 +214,7 @@ register_window_class(HINSTANCE application) {
   WNDCLASS wc;
 
   ZeroMemory(&wc, sizeof(WNDCLASS));
-  wc.style = CS_DBLCLKS;
+  wc.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = application;
   wc.hCursor = LoadCursor(NULL, IDC_ARROW);
