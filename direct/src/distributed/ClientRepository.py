@@ -39,7 +39,8 @@ class ClientRepository(DirectObject.DirectObject):
         # This is a much better socket library, but it may be more
         # than you need for most applications; and the proxy support
         # is weak.
-        self.connectHttp = base.config.GetBool('connect-http', 1)
+        self.directConnectHttp = base.config.GetBool('direct-connect-http', 0)
+        self.proxyConnectHttp = base.config.GetBool('proxy-connect-http', 1)
 
         self.bootedIndex = None
         self.bootedText = None
@@ -78,9 +79,18 @@ class ClientRepository(DirectObject.DirectObject):
         the return status code giving reason for failure, if it is
         known.
         """
+
+        if self.hasProxy:
+            self.connectHttp = self.proxyConnectHttp
+            self.notify.info("Using proxy: %s" % (self.proxy.cStr()))
+        else:
+            self.connectHttp = self.directConnectHttp
+            self.notify.info("Not connecting via proxy.");
+        
         self.bootedIndex = None
         self.bootedText = None
         if self.connectHttp:
+            self.notify.info("Connecting via HTTP interface.")
             ch = self.http.makeChannel(0)
             ch.beginConnectTo(serverURL)
             ch.spawnTask(name = 'connect-to-server',
@@ -88,6 +98,7 @@ class ClientRepository(DirectObject.DirectObject):
                          extraArgs = [ch, successCallback, successArgs,
                                       failureCallback, failureArgs])
         else:
+            self.notify.info("Connecting directly via NSPR interface.")
             self.qcm = QueuedConnectionManager()
             # A big old 20 second timeout.
             gameServerTimeoutMs = base.config.GetInt("game-server-timeout-ms",
