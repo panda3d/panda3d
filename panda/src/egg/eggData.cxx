@@ -32,9 +32,14 @@ TypeHandle EggData::_type_handle;
 ////////////////////////////////////////////////////////////////////
 bool EggData::
 resolve_egg_filename(Filename &egg_filename, const DSearchPath &searchpath) {
-  egg_filename.resolve_filename(searchpath, "egg");
-  egg_filename.resolve_filename(get_egg_path(), "egg");
-  egg_filename.resolve_filename(get_model_path(), "egg");
+  if (egg_filename.is_fully_qualified() && egg_filename.exists()) {
+    return true;
+  }
+
+  egg_filename.resolve_filename(searchpath, "egg") ||
+    egg_filename.resolve_filename(get_egg_path(), "egg") ||
+    egg_filename.resolve_filename(get_model_path(), "egg");
+
   return egg_filename.exists();
 }
 

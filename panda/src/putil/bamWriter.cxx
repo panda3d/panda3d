@@ -10,59 +10,43 @@
 #include "bamWriter.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::Destructor
+//     Function: BamWriter::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-BamWriter::~BamWriter(void)
+BamWriter::
+BamWriter(DatagramSink *sink) : 
+  _target(sink)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::write_handle
+//     Function: BamWriter::Destructor
 //       Access: Public
-//  Description: Writes a type handle into the file.  If the handle 
-//               has already been encountered then a number 
-//               identifying that handle is written instead.  
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-void BamWriter::
-write_handle(Datagram &packet, TypeHandle type)
-{
-  //No class should have a type handle index of 0
-  nassertv(type.get_index() != 0);
-
-  packet.add_uint16(type.get_index());
-  if (_type_map.find(type.get_index()) == _type_map.end())
-  {
-    // This is the first time this TypeHandle has been written, so
-    // also write out its name.
-    _type_map.insert(type.get_index()); 
-    packet.add_string(type.get_name());
-
-    // We also need to write the derivation of the TypeHandle, in case
-    // the program reading this file later has never heard of this
-    // type before.
-    int num_parent_classes = type.get_num_parent_classes();
-    nassertv(num_parent_classes <= 255);  // Good grief!
-    packet.add_uint8(num_parent_classes);
-    for (int i = 0; i < num_parent_classes; i++) {
-      write_handle(packet, type.get_parent_class(i));
-    }
-  }
+BamWriter::
+~BamWriter() {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::init
 //       Access: Public
-//  Description: This function initializes the BamWriter, setting 
-//               up whatever needs to be set up before the BamWriter
-//               is ready to write out objects.  It returns true if
-//               successful, false on failure.
+//  Description: Initializes the BamWriter prior to writing any
+//               objects to its output stream.  This includes writing
+//               out the Bam header.
+//
+//               This returns true if the BamWriter successfully
+//               initialized, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool BamWriter::
-init(void)
-{
-  //Write out the current major and minor BAM file version numbers
+init() {
+  // Initialize the next object and PTA ID's.  These start counting at
+  // 1, since 0 is reserved for NULL.
+  _next_object_id = 1;
+  _next_pta_id = 1;
+
+  // Write out the current major and minor BAM file version numbers.
   Datagram header;
 
   header.add_uint16(_bam_major_ver);
@@ -79,205 +63,279 @@ init(void)
 ////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::write_object
 //       Access: Public
-//  Description: Main function for performing the processing of 
-//               writing an object to some Binary target.  Combined
-//               with write_pointer this function can correctly handle
-//               and break circular references, while still writing out
-//               the necessary information for re-constructing those
-//               references when the objects are read back in.
+//  Description: Writes a single object to the Bam file, so that the
+//               BamReader::read_object() can later correctly restore
+//               the object and all its pointers.
+//
+//               This implicitly also writes any additional objects
+//               this object references (if they haven't already been
+//               written), so that pointers may be fully resolved.
+//
+//               This may be called repeatedly to write a sequence of
+//               objects to the Bam file, but typically (especially
+//               for scene graph files, indicated with the .bam
+//               extension), only one object is written directly from
+//               the Bam file: the root of the scene graph.  The
+//               remaining objects will all be written recursively by
+//               the first object.
 //
 //               Returns true if the object is successfully written,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool BamWriter::
-write_object(TypedWriteable* obj) 
-{
-  Datagram objData;
+write_object(TypedWriteable *object) {
+  nassertr(_object_queue.empty(), false);
 
-  nassertr(obj != TypedWriteable::Null, false);
+  int object_id = enqueue_object(object);
+  nassertr(object_id != 0, false);
 
-  //No object should ever be written out that is not
-  //registered as a child of TypedWriteable.  The 
-  //only way this can get in here and have that true is
-  //if someone forgot to set the classes init_type correctly.
-  //So nassert on that to make it easy for them to track
-  //down the error, because that will be an error, but one
-  //that won't show up on the writing, it will show up in
-  //reading, so could be potentially difficult to track down
-  nassertr(obj->is_of_type(TypedWriteable::get_class_type()), false);
+  // Now we write out all the objects in the queue, in order.  The
+  // first one on the queue will, of course, be this object we just
+  // queued up, but each object we write may append more to the queue.
+  while (!_object_queue.empty()) {
+    object = _object_queue.front();
+    _object_queue.pop_front();
 
-  //Need to keep track of the state of any objects written
-  //or queued.  So every time write_object is called,
-  //check to see if has been encountered before, if not
-  //insert it into a map with a Key of the pointer to 
-  //the object and the value being a class that contains
-  //the unigue object ID for that object and a flag of
-  //whether it has been written yet or no   
-  if (_statemap.find(obj) == _statemap.end())
-  {
-   //If the object is not already in the map, then
-    //add it and assign it and unique object number
-    _statemap[obj].objId = _current;
-    _current++;
-    //We are making the assumption that there will never
-    //be more than the max of an unsigned short in objects
-    //in one file, but just in case, this nassert will make
-    //it easy to find that possible error
-    nassertr(_current != 0, false);
-  }
+    // Look up the object in the map.  It had better be there!
+    StateMap::iterator si = _state_map.find(object);
+    nassertr(si != _state_map.end(), false);
 
-  bool okflag = true;
+    int object_id = (*si).second._object_id;
+    bool already_written = (*si).second._written;
 
-  if (_writing) 
-  {
-    enqueue(obj);
-  }
-  else 
-  {
-    _writing = true;
+    Datagram dg;
 
-    if (!_statemap[obj].written)
-    {
-      //Write the type handle of the object
-      write_handle(objData, obj->get_type());
-      //Write the unique ID of the object into the datagram
-      //so that when it is read back, and there is a back
-      //reference to this object, we know what indices correspond
-      //to what objects
-      objData.add_uint16(_statemap[obj].objId);
-      obj->write_datagram(this, objData);
-      _statemap[obj].written = true;
-    }
-    else
-    {
-      //If it is in the map, then we don't want to try
-      //and write it again, so write the unique ID of the
-      //object into the datagram so that when we read in 
-      //later, we can resolve back references.  Write
-      //0 for the type handle to identify back references
-      objData.add_uint16(0);
-      objData.add_uint16(_statemap[obj].objId);
+    if (!already_written) {
+      // The first time we write a particular object, we do so by
+      // writing its TypeHandle (which had better not be
+      // TypeHandle::none(), since that's our code for a
+      // previously-written object), followed by the object ID number,
+      // followed by the object definition.
+
+      TypeHandle type = object->get_type();
+      nassertr(type != TypeHandle::none(), false);
+
+      write_handle(dg, type);
+      dg.add_uint16(object_id);
+
+      object->write_datagram(this, dg);
+      (*si).second._written = true;
+
+    } else {
+      // On subsequent times when we write a particular object, we
+      // write simply TypeHandle::none(), followed by the object ID.
+      // The occurrence of TypeHandle::none() is an indicator to the
+      // BamReader that this is a previously-written object.
+
+      write_handle(dg, TypeHandle::none());
+      dg.add_uint16(object_id);
     }
 
-    if (!_target->put_datagram(objData)) {
+    if (!_target->put_datagram(dg)) {
       util_cat.error() 
 	<< "Unable to write datagram to file.\n";
-      okflag = false;
-    }
-    _writing = false;
-    if (!_emptying)
-    {
-      if (!empty_queue()) {
-	okflag = false;
-      }
+      return false;
     }
   }
 
-  return okflag;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::write_pointer
 //       Access: Public
-//  Description: Utility function to be called by the objects writing
-//               themselves to a Datagram.  Basically amounts to a
-//               request to BamWriter to queue an object to be written
-//               and to write into the Datagram the necessary information
-//               to reference that object
+//  Description: The interface for writing a pointer to another object
+//               to a Bam file.  This is intended to be called by the
+//               various objects that write themselves to the Bam
+//               file, within the write_datagram() method.
+//
+//               This writes the pointer out in such a way that the
+//               BamReader will be able to restore the pointer later.
+//               If the pointer is to an object that has not yet
+//               itself been written to the Bam file, that object will
+//               automatically be written.
 ////////////////////////////////////////////////////////////////////
 void BamWriter::
-write_pointer(Datagram &packet , TypedWriteable *dest)
-{
-  //Write a zero for the object ID if the pointer is null
-  if (dest == TypedWriteable::Null)
-  {
+write_pointer(Datagram &packet, TypedWriteable *object) {
+  // If the pointer is NULL, we always simply write a zero for an
+  // object ID and leave it at that.
+  if (object == (TypedWriteable *)NULL) {
     packet.add_uint16(0);
-  }
-  else
-  {
-    if (_statemap.find(dest) == _statemap.end())
-    {
-      write_object(dest);
+
+  } else {
+    StateMap::iterator si = _state_map.find(object);
+    if (si == _state_map.end()) {
+      // We have not written this pointer out yet.  This means we must
+      // queue the object definition up for later.
+      int object_id = enqueue_object(object);
+      packet.add_uint16(object_id);
+
+    } else {
+      // We have already assigned this pointer an ID; thus, we can
+      // simply write out the ID.
+      packet.add_uint16((*si).second._object_id);
     }
-    
-    packet.add_uint16(_statemap[dest].objId);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::register_pta
 //       Access: Public
-//  Description: Utility function to be called by the objects writing
-//               themselves to a Datagram. Registers a PTA to be written
-//               into the Datagram, and allows for shared references
-//               to be captured in the datagram
+//  Description: Prepares to write a PointerToArray to the Bam file,
+//               unifying references to the same pointer across the
+//               Bam file.
+//
+//               The writing object should call this prior to writing
+//               out a PointerToArray.  It will return true if the
+//               same pointer has been previously, in which case the
+//               writing object need do nothing further; or it will
+//               return false if this particular pointer has not yet
+//               been written, in which case the writing object must
+//               then write out the contents of the array.
+//
+//               Also see the WRITE_PTA() macro, which consolidates
+//               the work that must be done to write a PTA.
 ////////////////////////////////////////////////////////////////////
 bool BamWriter::
-register_pta(Datagram &packet, void *ptr)
-{
-  if (ptr != (void*)NULL)
-  {
-    if (_ptamap.find(ptr) == _ptamap.end())
-    {
-      _ptamap[ptr] = _current_pta;
-      packet.add_uint16(_current_pta);
-      _current_pta++;
-      return false;
-    }
-
-    packet.add_uint16(_ptamap[ptr]);
-  }
-  else
-  {
-    //A zero for the PTA ID indicates a NULL ptr
+register_pta(Datagram &packet, void *ptr) {
+  if (ptr == (void *)NULL) {
+    // A zero for the PTA ID indicates a NULL pointer.  This is a
+    // special case.
     packet.add_uint16(0);
+
+    // We return false to indicate the user must now write out the
+    // "definition" of the NULL pointer.  This is necessary because of
+    // a quirk in the BamReader's design, which forces callers to read
+    // the definition of every NULL pointer.  Presumably, the caller
+    // will be able to write the definition in a concise way that will
+    // clearly indicate a NULL pointer; in the case of a
+    // PointerToArray, this will generally be simply a zero element
+    // count.
     return false;
   }  
 
-  return true;
+  PTAMap::iterator pi = _pta_map.find(ptr);
+  if (pi == _pta_map.end()) {
+    // We have not encountered this pointer before.
+    int pta_id = _next_pta_id;
+    _next_pta_id++;
+    
+    // Make sure our PTA ID will fit within the PN_uint16 we have
+    // allocated for it.
+    nassertr(pta_id <= 65535, 0);
+    
+    bool inserted = _pta_map.insert(PTAMap::value_type(ptr, pta_id)).second;
+    nassertr(inserted, false);
+    
+    packet.add_uint16(pta_id);
+    
+    // Return false to indicate the caller must now write out the
+    // array definition.
+    return false;
+    
+  } else {
+    // We have encountered this pointer before.
+    int pta_id = (*pi).second;
+    packet.add_uint16(pta_id);
+    
+    // Return true to indicate the caller need do nothing further.
+    return true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::enqueue
-//       Access: Private
-//  Description: Queue an object to be written
+//     Function: BamWriter::write_handle
+//       Access: Public
+//  Description: Writes a TypeHandle to the file in such a way that
+//               the BamReader can read the same TypeHandle later via
+//               read_handle().
 ////////////////////////////////////////////////////////////////////
 void BamWriter::
-enqueue(TypedWriteable *obj)
-{
-  _deferred.push_back(obj);
-}
+write_handle(Datagram &packet, TypeHandle type) {
+  // We encode TypeHandles within the Bam file by writing a unique
+  // index number for each one to the file.  When we write a
+  // particular TypeHandle for the first time, we assign it a new
+  // index number and then immediately follow it by its definition;
+  // when we write the same TypeHandle on subsequent times we only
+  // write the index number.
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::empty_queue
-//       Access: Private
-//  Description: For each object in the queue call write_object on it.
-//               Returns true of all write_object calls returned true,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-bool BamWriter::
-empty_queue(void)
-{
-  _emptying = true;
-  bool okflag = true;
-  while(!_deferred.empty())
-  {
-    if (!write_object(_deferred.front())) {
-      okflag = false;
+  // The unique number we choose is actually the internal index number
+  // of the TypeHandle.  Why not?
+  int index = type.get_index();
+
+  // Also make sure the index number fits within a PN_uint16.
+  nassertv(index <= 65535);
+
+  packet.add_uint16(index);
+
+  if (index != 0) {
+    bool inserted = _types_written.insert(index).second;
+
+    if (inserted) {
+      // This is the first time this TypeHandle has been written, so
+      // also write out its definition.
+      packet.add_string(type.get_name());
+      
+      // We also need to write the derivation of the TypeHandle, in case
+      // the program reading this file later has never heard of this
+      // type before.
+      int num_parent_classes = type.get_num_parent_classes();
+      nassertv(num_parent_classes <= 255);  // Good grief!
+      packet.add_uint8(num_parent_classes);
+      for (int i = 0; i < num_parent_classes; i++) {
+	write_handle(packet, type.get_parent_class(i));
+      }
     }
-    _deferred.pop_front();
   }
-  _emptying = false;
-  return okflag;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::enqueue_object
+//       Access: Private
+//  Description: Assigns an object ID to the object and queues it up
+//               for later writing to the Bam file.  
+//
+//               The return value is the object ID, or 0 if there is
+//               an error.
+////////////////////////////////////////////////////////////////////
+int BamWriter::
+enqueue_object(TypedWriteable *object) {
+  Datagram dg;
 
+  nassertr(object != TypedWriteable::Null, 0);
 
+  // No object should ever be written out that is not registered as a
+  // child of TypedWriteable.  The only way this can happen is if
+  // someone failed to initialize their type correctly in init_type().
+  nassertr(object->is_of_type(TypedWriteable::get_class_type()), 0);
 
+  // We need to assign a unique index number to every object we write
+  // out.  Has this object been assigned a number yet?
+  int object_id;
+  bool already_written;
 
+  StateMap::iterator si = _state_map.find(object);
+  if (si == _state_map.end()) {
+    // No, it hasn't, so assign it the next number in sequence
+    // arbitrarily.
+    object_id = _next_object_id;
+    already_written = false;
+    
+    // Make sure our object ID will fit within the PN_uint16 we have
+    // allocated for it.
+    nassertr(object_id <= 65535, 0);
 
+    bool inserted = 
+      _state_map.insert(StateMap::value_type(object, StoreState(_next_object_id))).second;
+    nassertr(inserted, false);
+    _next_object_id++;
 
+  } else {
+    // Yes, it has; get the object ID.
+    object_id = (*si).second._object_id;
+    already_written = (*si).second._written;
+  }
 
-
-
-
+  _object_queue.push_back(object);
+  return object_id;
+}

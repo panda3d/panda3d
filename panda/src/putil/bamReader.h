@@ -18,7 +18,7 @@
 #include <algorithm>
 
 
-//Useful define for reading pta's
+// A handy macro for reading PointerToArrays.
 #define READ_PTA(Manager, source, Read_func, array)   \
 {                                                     \
   void *t;                                            \
@@ -44,7 +44,8 @@
 //               that inherits, directly or indirectly, from
 //               TypedWriteable.  The objects may include pointers to
 //               other objects within the Bam file; the BamReader
-//               automatically manages these and restores the pointers
+//               automatically manages these (with help from code
+//               within each class) and restores the pointers
 //               correctly.
 //
 //               This is the abstract interface and does not
@@ -148,7 +149,7 @@ private:
   // These are used by get_pta() and register_pta() to unify multiple
   // references to the same PointerToArray.
   typedef map<int, void *> PTAMap;
-  PTAMap _ptamap;
+  PTAMap _pta_map;
   int _pta_id;
 
   int _file_major, _file_minor;

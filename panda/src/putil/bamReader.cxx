@@ -45,7 +45,8 @@ BamReader::
 //     Function: BamReader::init
 //       Access: Public
 //  Description: Initializes the BamReader prior to reading any
-//               objects from its source.
+//               objects from its source.  This includes reading the
+//               Bam header.
 //
 //               This returns true if the BamReader successfully
 //               initialized, false otherwise.
@@ -277,7 +278,7 @@ TypeHandle BamReader::
 read_handle(DatagramIterator &scan) {
   // We encode TypeHandles within the Bam file by writing a unique
   // index number for each one to the file.  When we write a
-  // particular TypeHandle for the first type, we assign it a new
+  // particular TypeHandle for the first time, we assign it a new
   // index number and then immediately follow it by its definition;
   // when we write the same TypeHandle on subsequent times we only
   // write the index number.
@@ -291,15 +292,6 @@ read_handle(DatagramIterator &scan) {
   
   if (id == 0) {
     // Index number 0 is always, by convention, TypeHandle::none().
-
-    // This indicates an object that should have already been read in,
-    // so return TypeHandle::none() to indicate this.
-#ifndef NDEBUG
-    if (bam_cat.is_spam()) {
-      bam_cat.spam()
-	<< "Read TypeHandle::none().\n";
-    }
-#endif
     return TypeHandle::none();
   }
 
@@ -309,13 +301,6 @@ read_handle(DatagramIterator &scan) {
     // no type definition following the id.  Simply return the
     // TypeHandle we previously associated with the id.
     TypeHandle type = (*mi).second;
-
-#ifndef NDEBUG
-    if (bam_cat.is_spam()) {
-      bam_cat.spam()
-	<< "Read TypeHandle for " << type << ".\n";
-    }
-#endif
     return type;
   }
 
@@ -510,8 +495,8 @@ get_pta(DatagramIterator &scan) {
     return (void *)NULL;
   }
 
-  PTAMap::iterator pi = _ptamap.find(id);
-  if (pi == _ptamap.end()) {
+  PTAMap::iterator pi = _pta_map.find(id);
+  if (pi == _pta_map.end()) {
     // This is the first time we've encountered this particular ID,
     // meaning we need to read the data now and register it.
     _pta_id = id;
@@ -537,7 +522,7 @@ get_pta(DatagramIterator &scan) {
 void BamReader::
 register_pta(void *ptr) {
   if (_pta_id != -1) {
-    bool inserted = _ptamap.insert(PTAMap::value_type(_pta_id, ptr)).second;
+    bool inserted = _pta_map.insert(PTAMap::value_type(_pta_id, ptr)).second;
     _pta_id = -1;
     nassertv(inserted);
   }
@@ -639,13 +624,6 @@ p_read_object() {
 #endif
     }
   }
-
-#ifndef NDEBUG
-  if (bam_cat.is_spam()) {
-    bam_cat.spam()
-      << "Emptying queue.\n";
-  }
-#endif
 
   return object_id;
 }
