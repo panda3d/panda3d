@@ -19,18 +19,18 @@
 ////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
+#include "pandabase.h"
 #include "texture.h"
 #include "config_gobj.h"
+#include "texturePool.h"
+#include "textureContext.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 #include <stddef.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
 
-//Should this be here?
-#include "texturePool.h"
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -123,6 +123,7 @@ Texture() : ImageBuffer() {
   _anisotropic_degree = 1;
   _pbuffer = new PixelBuffer;
   _has_requested_size = false;
+  _all_dirty_flags = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -223,6 +224,79 @@ write(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: set_wrapu
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_wrapu(Texture::WrapMode wrap) {
+  if (_wrapu != wrap) {
+    mark_dirty(DF_wrap);
+    _wrapu = wrap;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_wrapv
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_wrapv(Texture::WrapMode wrap) {
+  if (_wrapv != wrap) {
+    mark_dirty(DF_wrap); 
+    _wrapv = wrap;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_minfilter
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_minfilter(Texture::FilterType filter) {
+  if (_minfilter != filter) {
+    if (is_mipmap(_minfilter) != is_mipmap(filter)) {
+      mark_dirty(DF_filter | DF_mipmap);
+    } else {
+      mark_dirty(DF_filter);
+    }
+    _minfilter = filter;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_magfilter
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_magfilter(Texture::FilterType filter) {
+  if (_magfilter != filter) {
+    mark_dirty(DF_filter);
+    _magfilter = filter;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_anisotropic_degree
+//       Access: Published
+//  Description: Specifies the level of anisotropic filtering to apply
+//               to the texture.  Normally, this is 1, to indicate
+//               anisotropic filtering is disabled.  This may be set
+//               to a number higher than one to enable anisotropic
+//               filtering, if the rendering backend supports this.
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_anisotropic_degree(int anisotropic_degree) {
+  if (_anisotropic_degree != anisotropic_degree) {
+    mark_dirty(DF_filter);
+    _anisotropic_degree = anisotropic_degree;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: load
 //       Access: Public
 //  Description: Creates the texture from the already-read PNMImage.
@@ -232,11 +306,7 @@ load(const PNMImage &pnmimage) {
   if (!_pbuffer->load(pnmimage))
     return false;
 
-  // It's not a good idea to call this here, since this function might
-  // be called from within the GSG itself--which won't expect the
-  // texture to suddenly unprepare itself.  Better to have the user
-  // explicitly unprepare() the texture if she loads a new file.
-  //  unprepare();
+  mark_dirty(DF_image);
 
   return true;
 }
@@ -250,6 +320,26 @@ load(const PNMImage &pnmimage) {
 bool Texture::
 store(PNMImage &pnmimage) const {
   return _pbuffer->store( pnmimage );
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::is_mipmap
+//       Access: Public, Static
+//  Description: Returns true if the indicated filter type requires
+//               the use of mipmaps, or false if it does not.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+is_mipmap(FilterType type) {
+  switch (type) {
+  case FT_nearest_mipmap_nearest:
+  case FT_linear_mipmap_nearest:
+  case FT_nearest_mipmap_linear:
+  case FT_linear_mipmap_linear:
+    return true;
+    
+  default:
+    return false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -269,6 +359,12 @@ prepare(GraphicsStateGuardianBase *gsg) {
 
   TextureContext *tc = gsg->prepare_texture(this);
   _contexts[gsg] = tc;
+
+  // Now that we have a new TextureContext with zero dirty flags, our
+  // intersection of all dirty flags must be zero.  This doesn't mean
+  // that some other contexts aren't still dirty, but at least one
+  // context isn't.
+  _all_dirty_flags = 0;
 
   if (!keep_texture_ram) {
     // Once we have prepared the texture, we can generally safely
@@ -409,72 +505,46 @@ void Texture::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_wrapu
-//       Access: Published
-//  Description:
+//     Function: Texture::mark_dirty
+//       Access: Public
+//  Description: Sets the indicated dirty bits on for all texture
+//               contexts that share this Texture.  Does not change
+//               the bits that are not on.  This presumably will
+//               inform the GSG that the texture properties have
+//               changed.  See also TextureContext::mark_dirty().
+//
+//               Normally, this does not need to be called directly;
+//               changing the properties on the texture will
+//               automatically call this.  However, if you fiddle with
+//               the texture image directly, for instance by meddling
+//               with the _pbuffer member, you may need to explicitly
+//               call mark_dirty(Texture::DF_image).
 ////////////////////////////////////////////////////////////////////
 void Texture::
-set_wrapu(Texture::WrapMode wrap) {
-  if (_wrapu != wrap) {
-    unprepare();
-    _wrapu = wrap;
+mark_dirty(int flags_to_set) {
+  if ((_all_dirty_flags & flags_to_set) == flags_to_set) {
+    // If all the texture contexts already share these bits, no need
+    // to do anything else.
+    return;
   }
+
+  // Otherwise, iterate through the contexts and mark them all dirty.
+  Contexts::iterator ci;
+  for (ci = _contexts.begin(); ci != _contexts.end(); ++ci) {
+    (*ci).second->mark_dirty(flags_to_set);
+  }
+
+  _all_dirty_flags |= flags_to_set;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_wrapv
-//       Access: Published
-//  Description:
+//     Function: Texture::register_with_read_factory
+//       Access: Public, Static
+//  Description: Factory method to generate a Texture object
 ////////////////////////////////////////////////////////////////////
 void Texture::
-set_wrapv(Texture::WrapMode wrap) {
-  if (_wrapv != wrap) {
-    unprepare();
-    _wrapv = wrap;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: set_minfilter
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_minfilter(Texture::FilterType filter) {
-  if (_minfilter != filter) {
-    unprepare();
-    _minfilter = filter;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: set_magfilter
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_magfilter(Texture::FilterType filter) {
-  if (_magfilter != filter) {
-    unprepare();
-    _magfilter = filter;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: set_anisotropic_degree
-//       Access: Published
-//  Description: Specifies the level of anisotropic filtering to apply
-//               to the texture.  Normally, this is 1, to indicate
-//               anisotropic filtering is disabled.  This may be set
-//               to a number higher than one to enable anisotropic
-//               filtering, if the rendering backend supports this.
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_anisotropic_degree(int anisotropic_degree) {
-  if (_anisotropic_degree != anisotropic_degree) {
-    unprepare();
-    _anisotropic_degree = anisotropic_degree;
-  }
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_Texture);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -502,53 +572,6 @@ write_datagram(BamWriter *manager, Datagram &me) {
   if (has_pbuffer) {
     me.add_uint8(_pbuffer->get_format());
     me.add_uint8(_pbuffer->get_num_components());
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
-void Texture::
-fillin(DatagramIterator &scan, BamReader *manager) {
-  //We don't want to call ImageBuffer::fillin, like we
-  //would normally, since due to needing to know the name
-  //of the Texture before creating it, we have already read
-  //that name in.  This is something of a problem as it forces
-  //Texture to know how the parent write_datagram works.  And
-  //makes the assumption that the only data being written is
-  //the name
-  scan.get_uint32();  // For historical purposes
-  _wrapu = (enum WrapMode) scan.get_uint8();
-  _wrapv = (enum WrapMode) scan.get_uint8();
-  _minfilter = (enum FilterType) scan.get_uint8();
-  _magfilter = (enum FilterType) scan.get_uint8();
-  _magfiltercolor = (enum FilterType) scan.get_uint8();
-  _magfilteralpha = (enum FilterType) scan.get_uint8();
-
-  _anisotropic_degree = scan.get_int16();
-
-  if (scan.get_remaining_size() > 0) {
-    bool has_pbuffer = scan.get_bool();
-    if (has_pbuffer) {
-      PixelBuffer::Format format = (PixelBuffer::Format)scan.get_uint8();
-      int num_components = -1;
-      if (scan.get_remaining_size() > 0) {
-        num_components = scan.get_uint8();
-      }
-
-      if (_pbuffer != (PixelBuffer *)NULL) {
-        if (num_components == _pbuffer->get_num_components()) {
-          // Only reset the format if the number of components hasn't
-          // changed.
-          _pbuffer->set_format(format);
-        }
-      }
-    }
   }
 }
 
@@ -598,13 +621,50 @@ make_Texture(const FactoryParams &params) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::register_with_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a Texture object
+//     Function: Texture::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
 ////////////////////////////////////////////////////////////////////
 void Texture::
-register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_Texture);
+fillin(DatagramIterator &scan, BamReader *manager) {
+  //We don't want to call ImageBuffer::fillin, like we
+  //would normally, since due to needing to know the name
+  //of the Texture before creating it, we have already read
+  //that name in.  This is something of a problem as it forces
+  //Texture to know how the parent write_datagram works.  And
+  //makes the assumption that the only data being written is
+  //the name
+  scan.get_uint32();  // For historical purposes
+  _wrapu = (enum WrapMode) scan.get_uint8();
+  _wrapv = (enum WrapMode) scan.get_uint8();
+  _minfilter = (enum FilterType) scan.get_uint8();
+  _magfilter = (enum FilterType) scan.get_uint8();
+  _magfiltercolor = (enum FilterType) scan.get_uint8();
+  _magfilteralpha = (enum FilterType) scan.get_uint8();
+
+  _anisotropic_degree = scan.get_int16();
+
+  if (scan.get_remaining_size() > 0) {
+    bool has_pbuffer = scan.get_bool();
+    if (has_pbuffer) {
+      PixelBuffer::Format format = (PixelBuffer::Format)scan.get_uint8();
+      int num_components = -1;
+      if (scan.get_remaining_size() > 0) {
+        num_components = scan.get_uint8();
+      }
+
+      if (_pbuffer != (PixelBuffer *)NULL) {
+        if (num_components == _pbuffer->get_num_components()) {
+          // Only reset the format if the number of components hasn't
+          // changed.
+          _pbuffer->set_format(format);
+        }
+      }
+    }
+  }
 }
 
 

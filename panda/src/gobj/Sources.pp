@@ -16,7 +16,10 @@
      material.I material.h materialPool.I materialPool.h  \
      orthoProjection.I orthoProjection.h perspectiveProjection.I  \
      perspectiveProjection.h pixelBuffer.I pixelBuffer.N  \
-     pixelBuffer.h projection.h texture.I texture.N texture.h \
+     pixelBuffer.h projection.h \
+     savedContext.I savedContext.h \
+     texture.I texture.N texture.h \
+     textureContext.I textureContext.h \
      texturePool.I texturePool.h
     
   #define INCLUDED_SOURCES \
@@ -26,7 +29,7 @@
      geomTrifan.cxx geomTristrip.cxx imageBuffer.cxx material.cxx  \
      materialPool.cxx orthoProjection.cxx  \
      perspectiveProjection.cxx pixelBuffer.cxx projection.cxx  \
-     texture.cxx texturePool.cxx
+     savedContext.cxx texture.cxx textureContext.cxx texturePool.cxx
 
   #define INSTALL_HEADERS \
     LOD.I LOD.h config_gobj.h \
@@ -37,7 +40,10 @@
     materialPool.I materialPool.h \
     orthoProjection.I orthoProjection.h perspectiveProjection.I \
     perspectiveProjection.h pixelBuffer.I pixelBuffer.h projection.h \
-    texture.I texture.h texturePool.I texturePool.h
+    savedContext.I savedContext.h \
+    texture.I texture.h \
+    textureContext.I textureContext.h \
+    texturePool.I texturePool.h
 
   #define IGATESCAN all
 

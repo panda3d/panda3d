@@ -1793,11 +1793,18 @@ apply_texture(TextureContext *tc) {
   add_to_texture_record(tc);
   bind_texture(tc);
 
-  /*
-    To render in immediate mode:
-    specify_texture(tex);
-    apply_texture_immediate(tex);
-  */
+  int dirty = tc->get_dirty_flags();
+  if ((dirty & (Texture::DF_wrap | Texture::DF_filter)) != 0) {
+    // We need to re-specify the texture properties.
+    specify_texture(tc->_texture);
+  }
+  if ((dirty & (Texture::DF_image | Texture::DF_mipmap)) != 0) {
+    // We need to re-apply the image.
+    apply_texture_immediate(tc->_texture);
+  }
+
+  tc->clear_dirty_flags();
+
   report_errors();
 }
 
@@ -3857,20 +3864,7 @@ apply_texture_immediate(Texture *tex) {
 #endif
 
   if (!gl_ignore_mipmaps || gl_force_mipmaps) {
-    bool use_mipmaps;
-    switch (tex->get_minfilter()) {
-    case Texture::FT_nearest_mipmap_nearest:
-    case Texture::FT_linear_mipmap_nearest:
-    case Texture::FT_nearest_mipmap_linear:
-    case Texture::FT_linear_mipmap_linear:
-      use_mipmaps = true;
-      break;
-
-    default:
-      use_mipmaps = false;
-      break;
-    }
-    if (use_mipmaps || gl_force_mipmaps) {
+    if (tex->uses_mipmaps() || gl_force_mipmaps) {
 #ifndef NDEBUG
       if (gl_show_mipmaps) {
         build_phony_mipmaps(tex);

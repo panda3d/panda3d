@@ -18,8 +18,8 @@
 
 #include "textureContext.h"
 
-#include <pixelBuffer.h>
-#include <texture.h>
+#include "pixelBuffer.h"
+#include "texture.h"
 
 TypeHandle TextureContext::_type_handle;
 

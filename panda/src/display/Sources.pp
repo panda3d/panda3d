@@ -21,9 +21,7 @@
      hardwareChannel.h interactiveGraphicsPipe.I  \
      interactiveGraphicsPipe.h noninteractiveGraphicsPipe.I  \
      noninteractiveGraphicsPipe.h pipeSpec.I pipeSpec.h  \
-     savedContext.I savedContext.h \
-     savedFrameBuffer.I savedFrameBuffer.h textureContext.I  \
-     textureContext.h  
+     savedFrameBuffer.I savedFrameBuffer.h
      
  #define INCLUDED_SOURCES  \
      config_display.cxx displayRegion.cxx \
@@ -32,8 +30,7 @@
      graphicsWindow.cxx graphicsWindowInputDevice.cxx  \
      hardwareChannel.cxx interactiveGraphicsPipe.cxx  \
      noninteractiveGraphicsPipe.cxx pipeSpec.cxx  \
-     savedContext.cxx \
-     savedFrameBuffer.cxx textureContext.cxx 
+     savedFrameBuffer.cxx
 
   #define INSTALL_HEADERS \
     config_display.h \
@@ -47,9 +44,7 @@
     hardwareChannel.I hardwareChannel.h interactiveGraphicsPipe.I \
     interactiveGraphicsPipe.h noninteractiveGraphicsPipe.I \
     noninteractiveGraphicsPipe.h pipeSpec.I pipeSpec.h renderBuffer.h \
-    savedContext.I savedContext.h \
-    savedFrameBuffer.I savedFrameBuffer.h textureContext.I \
-    textureContext.h
+    savedFrameBuffer.I savedFrameBuffer.h
 
   #define IGATESCAN all
 

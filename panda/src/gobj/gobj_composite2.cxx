@@ -9,5 +9,7 @@
 #include "perspectiveProjection.cxx"
 #include "pixelBuffer.cxx"
 #include "projection.cxx"
+#include "savedContext.cxx"
 #include "texture.cxx"
+#include "textureContext.cxx"
 #include "texturePool.cxx"

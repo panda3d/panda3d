@@ -384,20 +384,7 @@ collect_statistics(Texture *texture) {
         pb->get_xsize() * pb->get_ysize() * pb->get_num_components() *
         pb->get_component_width();
 
-      bool is_mipmapped = false;
-      switch (texture->get_minfilter()) {
-      case Texture::FT_nearest_mipmap_nearest:
-      case Texture::FT_linear_mipmap_nearest:
-      case Texture::FT_nearest_mipmap_linear:
-      case Texture::FT_linear_mipmap_linear:
-        is_mipmapped = true;
-        break;
-
-      default:
-        break;
-      }
-
-      if (is_mipmapped) {
+      if (texture->uses_mipmaps()) {
         bytes *= 4/3;
       }
 

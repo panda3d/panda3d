@@ -33,6 +33,7 @@
 ////////////////////////////////////////////////////////////////////
 
 class PNMImage;
+class TextureContext;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Texture
@@ -78,9 +79,24 @@ PUBLISHED:
   virtual bool read(const string &name, const string &gray);
   virtual bool write(const string &name = "") const;
 
+  void set_wrapu(WrapMode wrap);
+  void set_wrapv(WrapMode wrap);
+  void set_minfilter(FilterType filter);
+  void set_magfilter(FilterType filter);
+  void set_anisotropic_degree(int anisotropic_degree);
+
+  INLINE WrapMode get_wrapu() const;
+  INLINE WrapMode get_wrapv() const;
+  INLINE FilterType get_minfilter() const;
+  INLINE FilterType get_magfilter() const;
+  INLINE int get_anisotropic_degree() const;
+  INLINE bool uses_mipmaps() const;
+
 public:
   bool load(const PNMImage &pnmimage);
   bool store(PNMImage &pnmimage) const;
+
+  static bool is_mipmap(FilterType type);
 
   TextureContext *prepare(GraphicsStateGuardianBase *gsg);
   void unprepare();
@@ -100,19 +116,55 @@ public:
   virtual void draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
                     const RenderBuffer &rb);
 
-PUBLISHED:
-  void set_wrapu(WrapMode wrap);
-  void set_wrapv(WrapMode wrap);
-  void set_minfilter(FilterType filter);
-  void set_magfilter(FilterType filter);
-  void set_anisotropic_degree(int anisotropic_degree);
+  // These bits are used as parameters to Texture::mark_dirty() and
+  // also TextureContext::mark_dirty() (and related functions in
+  // TextureContext).
+  enum DirtyFlags {
+    DF_image      = 0x001,  // The image pixels have changed.
+    DF_wrap       = 0x002,  // The wrap properties have changed.
+    DF_filter     = 0x004,  // The minfilter or magfilter have changed.
+    DF_mipmap     = 0x008,  // The use of mipmaps or not has changed.
+  };
 
-  INLINE WrapMode get_wrapu() const;
-  INLINE WrapMode get_wrapv() const;
-  INLINE FilterType get_minfilter() const;
-  INLINE FilterType get_magfilter() const;
-  INLINE int get_anisotropic_degree() const;
+  void mark_dirty(int flags_to_set);
 
+private:
+  WrapMode _wrapu;
+  WrapMode _wrapv;
+  FilterType _minfilter;
+  FilterType _magfilter;
+  FilterType _magfiltercolor;
+  FilterType _magfilteralpha;
+  int _anisotropic_degree;
+
+  // A Texture keeps a list (actually, a map) of all the GSG's that it
+  // has been prepared into.  Each GSG conversely keeps a list (a set)
+  // of all the Textures that have been prepared there.  When either
+  // destructs, it removes itself from the other's list.
+  typedef pmap<GraphicsStateGuardianBase *, TextureContext *> Contexts;
+  Contexts _contexts;
+
+  // This value represents the intersection of all the dirty flags of
+  // the various TextureContexts that might be associated with this
+  // texture.
+  int _all_dirty_flags;
+
+public:
+  // These are public to allow direct manipulation of the underlying
+  // pixel buffer when needed.  Know what you are doing!
+  PT(PixelBuffer) _pbuffer;
+
+  // If you request a region from the framebuffer that is not a power of 2,
+  // we need to grab a larger region that is a power of 2 that contains the
+  // requested region and set the pixel buffer size accordingly.  We store
+  // the size you requested in the members below.
+  bool _has_requested_size;
+  int _requested_w;
+  int _requested_h;
+
+
+
+  // Datagram stuff
 public:
   static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);
@@ -140,38 +192,7 @@ private:
 
   static TypeHandle _type_handle;
 
-  ////////////////////////////////////////////////////////////////////
-
-protected:
-
-  WrapMode _wrapu;
-  WrapMode _wrapv;
-  FilterType _minfilter;
-  FilterType _magfilter;
-  FilterType _magfiltercolor;
-  FilterType _magfilteralpha;
-  int _anisotropic_degree;
-
-  // A Texture keeps a list (actually, a map) of all the GSG's that it
-  // has been prepared into.  Each GSG conversely keeps a list (a set)
-  // of all the Texture's that have been prepared there.  When either
-  // destructs, it removes itself from the other's list.
-  typedef pmap<GraphicsStateGuardianBase *, TextureContext *> Contexts;
-  Contexts _contexts;
-
-
-  // These are public to allow direct manipulation of the underlying
-  // pixel buffer when needed.  Know what you are doing!
-public:
-  PT(PixelBuffer) _pbuffer;
-
-  // If you request a region from the framebuffer that is not a power of 2,
-  // we need to grab a larger region that is a power of 2 that contains the
-  // requested region and set the pixel buffer size accordingly.  We store
-  // the size you requested in the members below.
-  bool _has_requested_size;
-  int _requested_w;
-  int _requested_h;
+  friend TextureContext;
 };
 
 #include "texture.I"

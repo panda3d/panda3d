@@ -18,29 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::has_ram_image
-//       Access: Public
-//  Description: Returns true if the Texture keeps has its image
-//               contents available in main RAM, false if it exists
-//               only in texture memory or in the prepared GSG
-//               context.
-////////////////////////////////////////////////////////////////////
-INLINE bool Texture::
-has_ram_image() const {
-  return !_pbuffer->_image.empty();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::apply
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void Texture::
-apply(GraphicsStateGuardianBase *gsg) {
-  gsg->apply_texture(prepare(gsg));
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_wrapu
 //       Access: Published
 //  Description:
@@ -93,4 +70,39 @@ get_magfilter() const {
 INLINE int Texture::
 get_anisotropic_degree() const {
   return _anisotropic_degree;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::uses_mipmaps
+//       Access: Public
+//  Description: Returns true if the minfilter settings on this
+//               texture require the use of mipmapping, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+uses_mipmaps() const {
+  return is_mipmap(get_minfilter());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::has_ram_image
+//       Access: Public
+//  Description: Returns true if the Texture keeps has its image
+//               contents available in main RAM, false if it exists
+//               only in texture memory or in the prepared GSG
+//               context.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+has_ram_image() const {
+  return !_pbuffer->_image.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::apply
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+apply(GraphicsStateGuardianBase *gsg) {
+  gsg->apply_texture(prepare(gsg));
 }

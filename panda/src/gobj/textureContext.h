@@ -19,11 +19,10 @@
 #ifndef TEXTURECONTEXT_H
 #define TEXTURECONTEXT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "savedContext.h"
-
-class Texture;
+#include "texture.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextureContext
@@ -48,6 +47,14 @@ public:
   // both own their TextureContexts!  That would create a circular
   // reference count.
   Texture *_texture;
+
+  INLINE void mark_dirty(int flags_to_set);
+  INLINE void clear_dirty_flags(int flags_to_clear = ~0);
+  INLINE int get_dirty_flags() const;
+
+private:
+  int _dirty_flags;
+
 
 public:
   static TypeHandle get_class_type() {
