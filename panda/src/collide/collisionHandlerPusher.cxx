@@ -19,7 +19,9 @@
 #include "collisionHandlerPusher.h"
 #include "collisionNode.h"
 #include "collisionEntry.h"
+#include "collisionPolygon.h"
 #include "config_collide.h"
+#include "dcast.h"
 
 TypeHandle CollisionHandlerPusher::_type_handle;
 
@@ -35,6 +37,7 @@ public:
   LVector3f _vector;
   float _length;
   bool _valid;
+  CollisionEntry *_entry;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -140,6 +143,7 @@ handle_entries() {
               sd._vector = normal;
               sd._length = entry->get_into_depth();
               sd._valid = true;
+              sd._entry = entry;
               
 #ifndef NDEBUG          
               if (collide_cat.is_debug()) {
@@ -156,8 +160,11 @@ handle_entries() {
         }
         
         if (!shoves.empty()) {
-          // Now we combine any two shoves that shove in largely the
-          // same direction.  Hacky.
+          // Now we look for two shoves that are largely in the same
+          // direction, so we can combine them into a single shove of
+          // the same magnitude; we also check for two shoves at 90
+          // degrees, so we can detect whether we are hitting an inner
+          // or an outer corner.
 
           Shoves::iterator si;
           for (si = shoves.begin(); si != shoves.end(); ++si) {
@@ -180,6 +187,49 @@ handle_entries() {
                     sd2._valid = false;
                   } else {
                     sd._valid = false;
+                  }
+
+                } else if (fabs(d) < 0.1) {
+                  // These two shoves are largely at 90 degress to
+                  // each other.  If they are both from polygons
+                  // that are a child of the same node, try to
+                  // determine the shape of the corner (convex or
+                  // concave).
+                  const CollisionSolid *s1 = sd._entry->get_into();
+                  const CollisionSolid *s2 = sd2._entry->get_into();
+                  if (s1 != (CollisionSolid *)NULL &&
+                      s2 != (CollisionSolid *)NULL &&
+                      s1->is_exact_type(CollisionPolygon::get_class_type()) &&
+                      s2->is_exact_type(CollisionPolygon::get_class_type()) &&
+                      sd._entry->get_into_node_path() ==
+                      sd2._entry->get_into_node_path()) {
+                    const CollisionPolygon *p1 = DCAST(CollisionPolygon, s1);
+                    const CollisionPolygon *p2 = DCAST(CollisionPolygon, s2);
+                    if (p1->dist_to_plane(p2->get_collision_origin()) < 0 &&
+                        p2->dist_to_plane(p1->get_collision_origin()) < 0) {
+                      // Each polygon is behind the other one.  That
+                      // means we have a convex corner, and therefore
+                      // we should discard one of the shoves (or the
+                      // user will get stuck coming at a convex
+                      // corner).
+                      if (collide_cat.is_debug()) {
+                        collide_cat.debug()
+                          << "Discarding shove from convex corner.\n";
+                      }
+
+                      // This time, unlike the case of two parallel
+                      // walls above, we discard the larger of the two
+                      // shoves, not the smaller.  This is because as
+                      // we slide off the convex corner, the wall we
+                      // are sliding away from will get a bigger and
+                      // bigger shove--and we need to keep ignoring
+                      // the same wall as we slide.
+                      if (sd2._length < sd._length) {
+                        sd._valid = false;
+                      } else {
+                        sd2._valid = false;
+                      }
+                    }
                   }
                 }
               }
