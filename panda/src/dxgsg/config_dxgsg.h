@@ -13,7 +13,6 @@ NotifyCategoryDecl(dxgsg, EXPCL_PANDADX, EXPTP_PANDADX);
 
 extern bool dx_show_transforms;
 extern bool dx_full_screen;
-extern bool dx_cheap_textures;
 extern bool dx_cull_traversal;
 extern bool dx_ignore_mipmaps;
 

@@ -20,10 +20,6 @@ bool dx_show_transforms = config_dxgsg.GetBool("dx-show-transforms", false);
 //  If false, it will just blit into a window.
 bool dx_full_screen = config_dxgsg.GetBool("dx-full-screen", false);
 
-// Configure this true to glHint the textures into the cheapest
-// possible mode.  (this does nothing in dx currently)
-bool dx_cheap_textures = config_dxgsg.GetBool("dx-cheap-textures", false);
-
 // Configure this true to perform a cull traversal over the geometry
 // by default, false otherwise.  The cull traversal provides support
 // for state-sorting, z-sorting, and binning.
