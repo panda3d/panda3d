@@ -75,7 +75,7 @@ INLINE ConfigVariable::
 ////////////////////////////////////////////////////////////////////
 INLINE const ConfigDeclaration *ConfigVariable::
 get_default_value() const {
-  nassertr(_core != (ConfigVariableCore *)NULL, NULL);
+  nassertr(_core != (ConfigVariableCore *)NULL, (ConfigDeclaration *)NULL);
   return _core->get_default_value();
 }
 
