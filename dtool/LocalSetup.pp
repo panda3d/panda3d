@@ -273,6 +273,9 @@ $[cdefine HAVE_IOSTREAM]
 /* Define if you have the <malloc.h> header file.  */
 $[cdefine HAVE_MALLOC_H]
 
+/* Define if you have the <sys/malloc.h> header file.  */
+$[cdefine HAVE_SYS_MALLOC_H]
+
 /* Define if you have the <alloca.h> header file.  */
 $[cdefine HAVE_ALLOCA_H]
 
