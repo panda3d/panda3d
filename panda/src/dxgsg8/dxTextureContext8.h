@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef DXTEXTURECONTEXT8_H
-#define DXTEXTURECONTEXT8_H
+#ifndef DXTEXTURECONTEXT_H
+#define DXTEXTURECONTEXT_H
 
 #include <pandabase.h>
 
@@ -32,13 +32,23 @@
 #include <ddraw.h>
 
 #define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
-#include <d3d.h>
+#include <d3d8.h>
 #undef WIN32_LEAN_AND_MEAN
+
+#ifndef D3DERRORSTRING
+#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__"), hr=" <<  DXGetErrorString8(HRESULT) << ": " << DXGetErrorDescription8(HRESULT) << endl
+#endif
 
 #include <texture.h>
 #include <textureContext.h>
 
+//#define USE_TEXFMTVEC  // doesnt work now, crashes in destructor
+
+#ifdef USE_TEXFMTVEC
+typedef pvector<DDPIXELFORMAT> DDPixelFormatVec;
+#else
 #define MAX_DX_TEXPIXFMTS 20    // should be enough for any card
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //   Class : DXTextureContext
@@ -55,7 +65,13 @@ public:
   LPDIRECTDRAWSURFACE7  _surface;
   Texture *_tex;            // ptr to parent, primarily for access to namestr
 
-  LPDIRECTDRAWSURFACE7 CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT pTexPixFmts);
+//  static is_unused_texpixelformat(DDPIXELFORMAT *)
+
+#ifdef USE_TEXFMTVEC
+  LPDIRECTDRAWSURFACE7 CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, DDPixelFormatVec &TexFmts,LPD3DDEVICEDESC7 pD3DDevDesc);
+#else
+  LPDIRECTDRAWSURFACE7 CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, DDPIXELFORMAT *pTexFmts,LPD3DDEVICEDESC7 pD3DDevDesc);
+#endif
 
   bool _bHasMipMaps;
   DWORD _PixBufConversionType;  // enum ConversionType
@@ -84,6 +100,7 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
 
 #endif
 

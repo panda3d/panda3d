@@ -33,7 +33,15 @@
 #include "pvector.h"
 
 #define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
-#include <d3d.h>
+#include <d3d8.h>
+
+#if DIRECT3D_VERSION != 0x0800
+#error DX8.1 headers not available, you need to install newer MS Platform SDK!
+#endif
+
+#if D3D_SDK_VERSION != 220
+#error you have DX 8.0 headers, not DX 8.1, you need to install newer MS Platform SDK!
+#endif
 
 typedef struct {
      DWORD nVerts;

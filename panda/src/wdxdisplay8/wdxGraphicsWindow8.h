@@ -15,9 +15,9 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#ifndef WDXGRAPHICSWINDOW8_H
-#define WDXGRAPHICSWINDOW8_H
-//#define WBD_GL_MODE 1    // if setting this, do it in dxGraphicsStateGuardian.h too
+#ifndef WDXGRAPHICSWINDOW_H
+#define WDXGRAPHICSWINDOW_H
+//#define WBD_GL_MODE 1    // if setting this, do it in wdxGraphicsStateGuardian.h too
 //
 ////////////////////////////////////////////////////////////////////
 // Includes
@@ -28,15 +28,30 @@
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 #undef WINDOWS_LEAN_AND_MEAN
-#include <d3d.h>
+#include <d3d8.h>
+#include <dxerr8.h>
+
+#include "dxGraphicsStateGuardian8.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defines
 ////////////////////////////////////////////////////////////////////
 class wdxGraphicsPipe;
+class wdxGraphicsWindowGroup;
 
-const int WDXWIN_CONFIGURE =    4;
-const int WDXWIN_EVENT =    8;
+const int WDXWIN_CONFIGURE = 4;
+const int WDXWIN_EVENT = 8;
+
+typedef HRESULT (WINAPI * LPDIRECTDRAWCREATEEX)(GUID FAR * lpGuid, LPVOID  *lplpDD, REFIID  iid,IUnknown FAR *pUnkOuter);
+
+typedef struct {
+   UINT    cardID;
+   char    szDriver[MAX_DDDEVICEID_STRING];
+   char    szDescription[MAX_DDDEVICEID_STRING];
+   GUID    guidDeviceIdentifier;
+   HMONITOR hMon;
+} DXDeviceInfo;
+typedef vector<DXDeviceInfo> DXDeviceInfoVec;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : wdxGraphicsWindow
@@ -45,31 +60,29 @@ const int WDXWIN_EVENT =    8;
 class EXPCL_PANDADX wdxGraphicsWindow : public GraphicsWindow {
  friend class DXGraphicsStateGuardian;
  friend class DXTextureContext;
+ friend class wdxGraphicsWindowGroup;
 
 public:
   wdxGraphicsWindow(GraphicsPipe* pipe);
-  wdxGraphicsWindow(GraphicsPipe* pipe,
-             const GraphicsWindow::Properties& props);
-  virtual ~wdxGraphicsWindow(void);
+  wdxGraphicsWindow(GraphicsPipe* pipe,const GraphicsWindow::Properties& props);
 
+  // this constructor will not initialize the wdx stuff, only the panda graphicswindow stuff
+  wdxGraphicsWindow(GraphicsPipe* pipe,const GraphicsWindow::Properties& props,wdxGraphicsWindowGroup *pParentGroup);
+
+  virtual ~wdxGraphicsWindow(void);
   virtual bool supports_update() const;
   virtual void update(void);
   virtual void end_frame( void );
 
   virtual TypeHandle get_gsg_type() const;
   static GraphicsWindow* make_wdxGraphicsWindow(const FactoryParams &params);
-  void CreateScreenBuffersAndDevice(DWORD dwRenderWidth, DWORD dwRenderHeight,
-                                    LPDIRECTDRAW7 pDD,LPDIRECT3D7 pD3DI,
-                                    D3DDEVICEDESC7 *pD3DDevDesc);
 
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   void process_events(void);
 
   INLINE bool mouse_entry_enabled(void) { return _mouse_entry_enabled; }
   INLINE bool mouse_motion_enabled(void) { return _mouse_motion_enabled; }
-  INLINE bool mouse_passive_motion_enabled(void) {
-    return _mouse_passive_motion_enabled;
-  }
+  INLINE bool mouse_passive_motion_enabled(void) { return _mouse_passive_motion_enabled; }
   void handle_window_move( int x, int y );
   void handle_mouse_motion( int x, int y );
   void handle_mouse_entry( int state, HCURSOR hMouseCursor );
@@ -78,8 +91,6 @@ public:
   void dx_setup();
   virtual void begin_frame( void );
   void show_frame();
-  DXGraphicsStateGuardian *_dxgsg;
-  
   virtual void resize(unsigned int xsize,unsigned int ysize);
   virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
   virtual int get_depth_bitwidth(void);
@@ -87,30 +98,30 @@ public:
 protected:
   void CreateScreenBuffersAndDevice(LPDIRECTDRAW7 pDD,LPDIRECT3D7 pD3DI);
   ButtonHandle lookup_key(WPARAM wparam) const;
-  virtual void config( void );
+//  virtual void config(void);
+  void config_single_window(void);
+  void config_window(wdxGraphicsWindowGroup *pParentGroup);
+  void finish_window_setup(void);
+  bool search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevinfo);
   void setup_colormap(void);
 
   void enable_mouse_input(bool val);
   void enable_mouse_motion(bool val);
   void enable_mouse_passive_motion(bool val);
   void enable_mouse_entry(bool val);
-  void check_for_color_cursor_support(void);
-  DDDEVICEIDENTIFIER2 _DXDeviceID;
 
 public:
-  HWND              _mwindow;
-  HWND              _hOldForegroundWindow;  
-  UINT_PTR          _PandaPausedTimer;
-
+  UINT_PTR _PandaPausedTimer;
+  DXGraphicsStateGuardian *_dxgsg;
+  void CreateScreenBuffersAndDevice(DXScreenData &Display);
+  
 private:
+  wdxGraphicsWindowGroup *_pParentWindowGroup;
   HDC               _hdc;
   HPALETTE          _colormap;
   typedef enum { NotAdjusting,MovingOrResizing,Resizing } WindowAdjustType;
-  WindowAdjustType _WindowAdjustingType;
-  bool              _bIsLowVidMemCard;
-  bool    _bLoadedCustomCursor;
-  HCURSOR _hMouseCursor;
-  bool    _bSizeIsMaximized;
+  WindowAdjustType  _WindowAdjustingType;
+  bool              _bSizeIsMaximized;
   bool              _mouse_input_enabled;
   bool              _mouse_motion_enabled;
   bool              _mouse_passive_motion_enabled;
@@ -135,6 +146,42 @@ public:
 
 private:
   static TypeHandle _type_handle;
+};
+
+// this class really belongs in panda, not here
+class EXPCL_PANDADX wdxGraphicsWindowGroup {
+// group of windows are all created at the same time
+    friend class wdxGraphicsWindow;
+
+PUBLISHED: 
+    wdxGraphicsWindowGroup(GraphicsPipe *,const GraphicsWindow::Properties&);
+    wdxGraphicsWindowGroup(GraphicsPipe *,const GraphicsWindow::Properties&,const GraphicsWindow::Properties&);
+    wdxGraphicsWindowGroup(GraphicsPipe *,const GraphicsWindow::Properties&,const GraphicsWindow::Properties&,
+                           const GraphicsWindow::Properties&);
+public:
+    wdxGraphicsWindowGroup(wdxGraphicsWindow *OneWindow);
+    // dont publish variable length one, since FFI wont support it
+    wdxGraphicsWindowGroup(GraphicsPipe *pipe,int num_windows,GraphicsWindow::Properties *WinPropArray);
+    ~wdxGraphicsWindowGroup();
+    void SetCoopLevelsAndDisplayModes(void);
+public:
+    void CreateWindows(void);
+    void make_windows(GraphicsPipe *,int num_windows,GraphicsWindow::Properties *pWinPropArray);
+    void initWindowGroup(void);
+
+    pvector<wdxGraphicsWindow *> _windows;
+    DXDeviceInfoVec *_pDeviceInfoVec;  // only used during init to store valid devices
+    HWND      _hParentWindow;
+    HWND      _hOldForegroundWindow;  
+    HCURSOR   _hMouseCursor;
+    bool      _bLoadedCustomCursor;
+    bool      _bClosingAllWindows;
+    bool      _bIsDX81;
+    UINT       _numMonitors,_numAdapters;
+    LPDIRECT3D8 _pD3D8;
+    HINSTANCE _hDDrawDLL,_hD3D8_DLL;
+    LPDIRECTDRAWCREATEEX  _pDDCreateEx;
+    DXDeviceInfoVec _DeviceInfoVec;
 };
 
 extern void set_global_parameters(void);

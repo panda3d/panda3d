@@ -6,26 +6,25 @@
 
 #if $[BUILD_DX8]
 #begin lib_target
-
-  #define TARGET dxgsg8
+  #define TARGET dxgsg
   #define LOCAL_LIBS \
     cull gsgmisc gsgbase gobj sgattrib sgraphutil graph display light \
     putil linmath sgraph mathutil pnmimage event
     
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
 
-  #define SOURCES \
-    config_dxgsg8.h dxGraphicsStateGuardian8.I \
-    dxGraphicsStateGuardian8.cxx dxGraphicsStateGuardian8.h \
-    dxSavedFrameBuffer8.I dxSavedFrameBuffer8.h \
+  // need to install these due to external projects that link directly with libpandadx (bartop)  
+  #define INSTALL_HEADERS \
+    config_dxgsg8.h dxGraphicsStateGuardian8.I dxGraphicsStateGuardian8.h \
     dxTextureContext8.h dxGeomNodeContext8.h dxGeomNodeContext8.I
+
+  // build dxGraphicsStateGuardian separately since its so big
+  
+  #define SOURCES \
+    dxGraphicsStateGuardian8.cxx dxSavedFrameBuffer8.I dxSavedFrameBuffer8.h $[INSTALL_HEADERS]
     
   #define INCLUDED_SOURCES \
     config_dxgsg8.cxx dxSavedFrameBuffer8.cxx dxTextureContext8.cxx dxGeomNodeContext8.cxx
-    
-  #define INSTALL_HEADERS \
-    dxGraphicsStateGuardian8.I dxGraphicsStateGuardian8.h \
-    dxSavedFrameBuffer8.I dxSavedFrameBuffer8.h dxTextureContext8.h
 
 #end lib_target
 #endif

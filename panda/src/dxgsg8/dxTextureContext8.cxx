@@ -18,9 +18,9 @@
 
 #include <assert.h>
 #include <time.h>
-#include "dxTextureContext8.h"
-#include "config_dxgsg8.h"
-#include "dxGraphicsStateGuardian8.h"
+#include "dxTextureContext.h"
+#include "config_dxgsg.h"
+#include "dxGraphicsStateGuardian.h"
 #include "pnmImage.h"
 
 //#define FORCE_16bpp_1555
@@ -971,24 +971,38 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
 //       gets the attributes of the texture from the bitmap, creates the
 //       texture, and then copies the bitmap into the texture.
 //-----------------------------------------------------------------------------
-LPDIRECTDRAWSURFACE7 DXTextureContext::
-CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT pTexPixFmts) {
+LPDIRECTDRAWSURFACE7 DXTextureContext::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, 
+#ifdef USE_TEXFMTVEC
+                                        DDPixelFormatVec &TexFmts,LPD3DDEVICEDESC7 pD3DDevDesc)
+#else
+                                        int cNumTexPixFmts, DDPIXELFORMAT *pTexFmts,LPD3DDEVICEDESC7 pD3DDevDesc)
+#endif
+   {
     HRESULT hr;
-    int i;
-    PixelBuffer *pbuf = _texture->_pbuffer;
-    int cNumAlphaBits;     //  number of alpha bits in texture pixfmt
-
+    int i,cNumAlphaBits;     //  number of alpha bits in texture pixfmt
     DDPIXELFORMAT *pDesiredPixFmt;
     LPDIRECTDRAWSURFACE7 pddsRender;
     LPDIRECTDRAW7        pDD = NULL;
-
-    DDPIXELFORMAT TexFmtsArr[MAX_DX_TEXPIXFMTS];
-
     ConversionType ConvNeeded;
 
+    assert(_texture!=NULL);
+
+    PixelBuffer *pbuf = _texture->_pbuffer;
+
+#ifdef USE_TEXFMTVEC
+    int cNumTexPixFmts=TexturePixelFormats.size();
+#endif
+    DDPIXELFORMAT *pTexPixFmts = new DDPIXELFORMAT[cNumTexPixFmts];
+
     // make local copy of array so I can muck with it during searches for this texture fmt
-    memcpy(TexFmtsArr,pTexPixFmts,cNumTexPixFmts*sizeof(DDPIXELFORMAT));
-    pTexPixFmts=TexFmtsArr;
+    // (such as marking pixfmts that no search will be interested in)
+    // probably should do this faster way
+
+#ifdef USE_TEXFMTVEC
+    memcpy(pTexPixFmts,&TexturePixelFormats[0],cNumTexPixFmts*sizeof(DDPIXELFORMAT));
+#else
+    memcpy(pTexPixFmts,pTexFmts,cNumTexPixFmts*sizeof(DDPIXELFORMAT));
+#endif
 
     // bpp indicates requested fmt, not pixbuf fmt
     DWORD bpp = get_bits_per_pixel(pbuf->get_format(), &cNumAlphaBits);
@@ -1006,12 +1020,10 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
     DWORD dwOrigWidth  = (DWORD)pbuf->get_xsize();
     DWORD dwOrigHeight = (DWORD)pbuf->get_ysize();
 
-    // Get the device caps so we can check if the device has any constraints
-    // when using textures
-    D3DDEVICEDESC7 devDesc;
-    if(FAILED( pd3dDevice->GetCaps( &devDesc ) )) {
-        goto error_exit;
-    }
+    // Use the device caps so we can check if the device has any constraints
+    // when using textures. 
+
+    assert((pD3DDevDesc->dwMaxTextureWidth>0) && (pD3DDevDesc->dwMaxTextureHeight>0));
 
     // Setup the new surface desc for the texture. Note how we are using the
     // texture manage attribute, so Direct3D does alot of dirty work for us
@@ -1056,31 +1068,31 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 
     if(!ISPOW2(ddsd.dwWidth) || !ISPOW2(ddsd.dwHeight)) {
         dxgsg_cat.error() << "ERROR: texture dimensions are not a power of 2 for " << _tex->get_name() << "!!!!! \n";
-#ifdef _DEBUG
-        exit(1);  // want to catch badtexsize errors
-#else
-        goto error_exit;
-#endif
+        #ifdef _DEBUG
+          exit(1);  // want to catch badtexsize errors
+        #else
+          goto error_exit;
+        #endif
     }
 
     bool bShrinkOriginal;
-
     bShrinkOriginal=false;
-    if((dwOrigWidth>devDesc.dwMaxTextureWidth)||(dwOrigHeight>devDesc.dwMaxTextureHeight)) {
-#ifdef _DEBUG
-        dxgsg_cat.error() << "WARNING: " <<_tex->get_name() << ": Image size exceeds max texture dimensions of (" << devDesc.dwMaxTextureWidth << "," << devDesc.dwMaxTextureHeight << ") !!\n"
-        << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<<  devDesc.dwMaxTextureWidth << "," << devDesc.dwMaxTextureHeight << ") !\n";
-#endif
 
-        if(dwOrigWidth>devDesc.dwMaxTextureWidth)
-            ddsd.dwWidth=devDesc.dwMaxTextureWidth;
-        if(dwOrigHeight>devDesc.dwMaxTextureHeight)
-            ddsd.dwHeight=devDesc.dwMaxTextureHeight;
+    if((dwOrigWidth>pD3DDevDesc->dwMaxTextureWidth)||(dwOrigHeight>pD3DDevDesc->dwMaxTextureHeight)) {
+        #ifdef _DEBUG
+           dxgsg_cat.error() << "WARNING: " <<_tex->get_name() << ": Image size exceeds max texture dimensions of (" << pD3DDevDesc->dwMaxTextureWidth << "," << pD3DDevDesc->dwMaxTextureHeight << ") !!\n"
+           << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<<  pD3DDevDesc->dwMaxTextureWidth << "," << pD3DDevDesc->dwMaxTextureHeight << ") !\n";
+        #endif
+
+        if(dwOrigWidth>pD3DDevDesc->dwMaxTextureWidth)
+            ddsd.dwWidth=pD3DDevDesc->dwMaxTextureWidth;
+        if(dwOrigHeight>pD3DDevDesc->dwMaxTextureHeight)
+            ddsd.dwHeight=pD3DDevDesc->dwMaxTextureHeight;
         bShrinkOriginal=true;
     }
 
     // checks for SQUARE reqmt (nvidia riva128 needs this)
-    if((ddsd.dwWidth != ddsd.dwHeight) && (devDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_SQUAREONLY )) {
+    if((ddsd.dwWidth != ddsd.dwHeight) && (pD3DDevDesc->dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_SQUAREONLY )) {
 
         // assume pow2 textures.   sum exponents, divide by 2 rounding down to get sq size
         int i,width_exp,height_exp;
@@ -1130,7 +1142,8 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 
     szErrorMsg = "CreateTexture failed: couldn't find compatible Tex DDPIXELFORMAT!\n";
 
-    dxgsg_cat.spam() << "CreateTexture handling bitdepth: " << bpp << " alphabits: " << cNumAlphaBits << "\n";
+    if(dxgsg_cat.is_spam())
+        dxgsg_cat.spam() << "CreateTexture handling bitdepth: " << bpp << " alphabits: " << cNumAlphaBits << "\n";
 
     // Mark formats I dont want to deal with
     for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
@@ -1220,9 +1233,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 
             assert(cNumAlphaBits==0);  // dont know how to handle non-zero alpha for 24bit total
 
-#ifdef _DEBUG
             if(!dx_force_16bpptextures)
-#endif
                 for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
                     if((pCurPixFmt->dwFlags & DDPF_RGB)&&(pCurPixFmt->dwRGBBitCount==24)) {
                         ConvNeeded=((cNumColorChannels==3) ? Conv24to24 : Conv32to24);
@@ -1230,13 +1241,10 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
                     }
                 }
 
-#ifdef _DEBUG
-            if(!dx_force_16bpptextures)
-#endif
-
-          // no 24-bit fmt.  look for 32 bit fmt  (note: this is memory-hogging choice
-          // instead I could look for memory-conserving 16-bit fmt).
-          // check mask to ensure ARGB, not RGBA (which I am not handling here)
+            if(!dx_force_16bpptextures) {
+                // no 24-bit fmt.  look for 32 bit fmt  (note: this is memory-hogging choice
+                // instead I could look for memory-conserving 16-bit fmt).
+                // check mask to ensure ARGB, not RGBA (which I am not handling here)
                 for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
                     if((pCurPixFmt->dwRGBBitCount==32) && (pCurPixFmt->dwFlags & DDPF_RGB)
                        && ((pCurPixFmt->dwRBitMask|pCurPixFmt->dwGBitMask|pCurPixFmt->dwBBitMask)==0xFFFFFF)
@@ -1246,6 +1254,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
                         goto found_matching_format;
                     }
                 }
+            }
 
           // no 24-bit or 32 fmt.  look for 16 bit fmt
             for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
@@ -1271,11 +1280,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 
             if(ddsd.ddpfPixelFormat.dwFlags & DDPF_LUMINANCE) {
            // look for native lum fmt
-#ifdef _DEBUG
-                if(!dx_force_16bpptextures)
-#endif
-                {
-
+                if(!dx_force_16bpptextures) {
                     for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
                         if((pCurPixFmt->dwRGBBitCount==16) && (pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS) &&
                            (pCurPixFmt->dwFlags & DDPF_LUMINANCE)) {
@@ -1375,9 +1380,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
               // look for native lum fmt
 
                 assert(cNumAlphaBits==0);  // dont handle those other 8bit lum fmts like 4-4, since 16 8-8 is usually supported too
-#ifdef _DEBUG
                 if(!dx_force_16bpptextures)
-#endif
                 {
                     for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
                         if((pCurPixFmt->dwRGBBitCount==8) && (pCurPixFmt->dwFlags & DDPF_LUMINANCE) &&
@@ -1404,15 +1407,16 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
                     }
                 }
 
-             // find compatible 16bpp fmt, just look for any 565, then 0555
+                // find compatible 16bpp fmt, just look for any 565, then 0555
                 DWORD dwMasks[2] = {0xF800, 0x7C00};
+                ConversionType ConvType[2] = {ConvLum8to16_0565,ConvLum8to16_0555};
 
                 for(DWORD modenum=0;modenum<2;modenum++)
                     for(i=0,pCurPixFmt=&pTexPixFmts[0];i<cNumTexPixFmts;i++,pCurPixFmt++) {
                         if((pCurPixFmt->dwRGBBitCount==16) && (pCurPixFmt->dwFlags & DDPF_RGB)
                            && (!(pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS))
                            && (pCurPixFmt->dwRBitMask==dwMasks[modenum])) {
-                            ConvNeeded=ConvLum8to16_0565;
+                            ConvNeeded=ConvType[modenum];
                             goto found_matching_format;
                         }
                     }
@@ -1481,7 +1485,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
         else ft=Texture::FT_linear;
     }
 
-    if((ft==Texture::FT_linear) && !(devDesc.dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_LINEAR))
+    if((ft==Texture::FT_linear) && !(pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_LINEAR))
         ft=Texture::FT_nearest;
     _tex->set_magfilter(ft);
 
@@ -1514,26 +1518,26 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
         ft=Texture::FT_linear;
     }
 
-    assert((devDesc.dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_NEAREST)!=0);
+    assert((pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_NEAREST)!=0);
 
     switch(ft) {
         case Texture::FT_nearest_mipmap_linear:
-            if(!(devDesc.dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_LINEARMIPNEAREST))
+            if(!(pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_LINEARMIPNEAREST))
                 ft=Texture::FT_nearest_mipmap_nearest;
             break;
         case Texture::FT_linear_mipmap_nearest:
-            if(!(devDesc.dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_MIPLINEAR))
+            if(!(pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_MIPLINEAR))
                 ft=Texture::FT_nearest_mipmap_nearest;
             break;
         case Texture::FT_linear_mipmap_linear:
-            if(!(devDesc.dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_LINEARMIPLINEAR)) {
-                if(devDesc.dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_MIPLINEAR)
+            if(!(pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_LINEARMIPLINEAR)) {
+                if(pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_MIPLINEAR)
                     ft=Texture::FT_linear_mipmap_nearest;
                 else ft=Texture::FT_nearest_mipmap_nearest;  // if you cant do linear in a level, you probably cant do linear b/w levels, so just do nearest-all
             }
             break;
         case Texture::FT_linear:
-            if(!(devDesc.dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_LINEAR))
+            if(!(pD3DDevDesc->dpcTriCaps.dwTextureFilterCaps & D3DPTFILTERCAPS_LINEAR))
                 ft=Texture::FT_nearest;
             break;
     }
@@ -1543,14 +1547,14 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
     uint aniso_degree;
 
     aniso_degree=1;
-    if(devDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ANISOTROPY) {
+    if(pD3DDevDesc->dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ANISOTROPY) {
         aniso_degree=_tex->get_anisotropic_degree();
-        if((aniso_degree>devDesc.dwMaxAnisotropy)
+        if((aniso_degree>pD3DDevDesc->dwMaxAnisotropy)
 #ifdef _DEBUG
            || dx_force_anisotropic_filtering
 #endif
           )
-            aniso_degree=devDesc.dwMaxAnisotropy;
+            aniso_degree=pD3DDevDesc->dwMaxAnisotropy;
     }
     _tex->set_anisotropic_degree(aniso_degree);
 #ifdef _DEBUG
@@ -1564,7 +1568,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
         dxgsg_cat.debug() << "CreateTexture: generating mipmaps for "<< _tex->get_name() << endl;
     }
 
-    if(devDesc.dwDevCaps & D3DDEVCAPS_SEPARATETEXTUREMEMORIES) {
+    if(pD3DDevDesc->dwDevCaps & D3DDEVCAPS_SEPARATETEXTUREMEMORIES) {
         // must assign a texture to a specific stage
         // for now I'm just going to use stage 0 for all
         ddsd.dwTextureStage=0;
@@ -1594,6 +1598,8 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
     // Done with DDraw
     pDD->Release();
 
+    delete [] pTexPixFmts;
+
     // Return the newly created texture
     return _surface;
 
@@ -1606,6 +1612,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
         _surface = NULL;
     }
 
+    delete [] pTexPixFmts;
     return NULL;
 }
 

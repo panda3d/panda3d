@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_dxgsg8.h"
-#include "dxGraphicsStateGuardian8.h"
-#include "dxSavedFrameBuffer8.h"
-#include "dxTextureContext8.h"
+#include "config_dxgsg.h"
+#include "dxGraphicsStateGuardian.h"
+#include "dxSavedFrameBuffer.h"
+#include "dxTextureContext.h"
 
 #include <dconfig.h>
 
@@ -74,11 +74,12 @@ bool dx_ignore_mipmaps = config_dxgsg.GetBool("dx-ignore-mipmaps", false);
 
 // if this is set, more accurate but more expensive fog computations are performed
 bool dx_use_rangebased_fog = config_dxgsg.GetBool("dx-use-rangebased-fog", false);
+bool dx_force_16bpptextures = config_dxgsg.GetBool("dx-force-16bpptextures", false);
+bool dx_no_dithering = config_dxgsg.GetBool("dx-no-dithering", false);
 
 #ifdef _DEBUG
 float dx_global_miplevel_bias = config_dxgsg.GetFloat("dx-global-miplevel-bias", 0.0);
 bool dx_debug_view_mipmaps = config_dxgsg.GetBool("dx-debug-view-mipmaps", false);
-bool dx_force_16bpptextures = config_dxgsg.GetBool("dx-force-16bpptextures", false);
 bool dx_force_anisotropic_filtering = config_dxgsg.GetBool("dx-force-anisotropic-filtering", false);
 //int dx_print_texstats = config_dxgsg.GetBool("dx-print-texstats", 0);
 #endif
@@ -104,7 +105,7 @@ parse_decal_type(const string &type) {
 }
 
 ConfigureFn(config_dxgsg) {
-  init_libdxgsg8();
+  init_libdxgsg();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,7 +116,8 @@ ConfigureFn(config_dxgsg) {
 //               called by the static initializers and need not be
 //               called explicitly, but special cases exist.
 ////////////////////////////////////////////////////////////////////
-void init_libdxgsg8() {
+void
+init_libdxgsg() {
   static bool initialized = false;
   if (initialized) {
     return;

@@ -6,15 +6,24 @@
 
 #if $[BUILD_DX8]
 #begin lib_target
-  #define TARGET wdxdisplay8
-  #define LOCAL_LIBS dxgsg8
+  #define TARGET wdxdisplay
+  #define LOCAL_LIBS \
+    dxgsg
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
+  
+  // need to install these due to external projects that link directly with libpandadx (bartop)    
+  #define INSTALL_HEADERS \
+    config_wdxdisplay8.h wdxGraphicsPipe8.h wdxGraphicsWindow8.h
     
-  #define SOURCES \
-    config_wdxdisplay8.h wdxGraphicsPipe8.h wdxGraphicsWindow8.cxx wdxGraphicsWindow8.h
+  #define INCLUDED_SOURCES \
+    config_wdxdisplay8.cxx wdxGraphicsPipe8.cxx 
     
-  #define INCLUDED_SOURCES config_wdxdisplay8.cxx wdxGraphicsPipe8.cxx 
+  // note SOURCES shoult NOT include INCLUDED_SOURCES, that would cause a double build
+  // SOURCES should be headers and separately-built cxx files
+  // build wdxGraphicsWindow.cxx separately since its big
+  
+  #define SOURCES wdxGraphicsWindow8.cxx $[INSTALL_HEADERS]
     
 #end lib_target
 #endif
