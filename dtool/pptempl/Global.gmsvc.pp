@@ -178,6 +178,9 @@
 #defer DLLNAMEBASE lib$[TARGET]$[dllext]
 #defer DLLBASEADDRFILENAME dllbase.txt
 #defer DLLBASEARG "/BASE:@$[dtool_ver_dir]\$[DLLBASEADDRFILENAME],$[DLLNAMEBASE]"
+#else
+// requires dtool envvar
+#define GENERATE_BUILDDATE
 #endif
 
 //#defer ver_resource $[directory]\ver.res
