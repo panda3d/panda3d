@@ -54,10 +54,10 @@ using namespace std;
 #define TYPENAME typename
 
 
-#if defined(WIN32_VC) && defined(TEST_INLINING)
-// If TEST_INLINING is defined, we use the keyword __forceinline,
-// which tells VC++ that we really mean it when we say inline.  Of
-// course, that doesn't seem to have any additional persuasive effect.
+#if defined(WIN32_VC) && defined(FORCE_INLINING)
+// If FORCE_INLINING is defined, we use the keyword __forceinline,
+// which tells MS VC++ to override its internal benefit heuristic 
+// and inline the fn if it is technically possible to do so.
 #define INLINE __forceinline
 #else
 #define INLINE inline
