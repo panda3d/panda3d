@@ -315,6 +315,25 @@ $[TAB]$[COMMAND]
   #end egg
 #end filter_egg
 
+// Generic character egg filter; applies an effect to all models and
+// animations of a particular character.
+#forscopes filter_char_egg
+  #define sources $[SOURCES:%=$[source_prefix]%]
+  #define target $[TARGET_DIR]/$[notdir $[firstword $[SOURCES]]]
+
+   // A bunch of rules to make each generated egg file depend on the
+   // first one.
+  #foreach egg $[notdir $[wordlist 2,9999,$[SOURCES]]]
+$[TARGET_DIR]/$[egg] : $[target] $[TARGET_DIR]/stamp
+$[TAB]touch $[TARGET_DIR]/$[egg]
+  #end egg
+
+   // And this is the actual optchar pass.
+$[target] : $[sources] $[TARGET_DIR]/stamp
+$[TAB]$[COMMAND]
+#end filter_char_egg
+
+
 // Character optimization.
 #forscopes optchar_egg
   #define sources $[SOURCES:%=$[source_prefix]%]
