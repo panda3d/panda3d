@@ -20,6 +20,7 @@
 TypeHandle MouseWatcher::_type_handle;
 
 TypeHandle MouseWatcher::_xyz_type;
+TypeHandle MouseWatcher::_pixel_xyz_type;
 TypeHandle MouseWatcher::_button_events_type;
 
 ////////////////////////////////////////////////////////////////////
@@ -282,19 +283,26 @@ transmit_data(NodeAttributes &data) {
     }
   }
 
+  bool suppress_below = false;
+
   if (_button_down_region != (MouseWatcherRegion *)NULL) {
     // We're currently holding down a button.  This is the effective
     // region that determines whether we suppress below.
-    if (_button_down_region->get_suppress_below()) {
-      data.clear();
-    }
+    suppress_below = _button_down_region->get_suppress_below();
 
   } else if (_current_region != (MouseWatcherRegion *)NULL) {
     // We're not holding down a button, but we are within a region.
     // Use this region to determine whether we suppress below.
-    if (_current_region->get_suppress_below()) {
-      data.clear();
-    }
+    suppress_below = _current_region->get_suppress_below();
+  }
+
+  if (suppress_below) {
+    // We used to suppress *everything* below, but on reflection we
+    // really only want to suppress the mouse position information.
+    // Button events must still get through.
+
+    data.clear_attribute(_xyz_type);
+    data.clear_attribute(_pixel_xyz_type);
   }
 }
 
@@ -312,6 +320,8 @@ init_type() {
 
   Vec3DataTransition::init_type();
   register_data_transition(_xyz_type, "XYZ",
+			   Vec3DataTransition::get_class_type());
+  register_data_transition(_pixel_xyz_type, "PixelXYZ",
 			   Vec3DataTransition::get_class_type());
   ButtonEventDataTransition::init_type();
   register_data_transition(_button_events_type, "ButtonEvents",

@@ -111,6 +111,7 @@ public:
 
   // inputs & outputs 
   static TypeHandle _xyz_type;
+  static TypeHandle _pixel_xyz_type;
   static TypeHandle _button_events_type;
 
 
