@@ -14,6 +14,8 @@
     downloadDb.cxx downloadDb.h						\
     downloader.I downloader.cxx downloader.h extractor.cxx extractor.h	\
     hashVal.cxx hashVal.I hashVal.h \
+    multiplexStream.I multiplexStream.cxx multiplexStream.h \
+    multiplexStreamBuf.I multiplexStreamBuf.cxx multiplexStreamBuf.h \
     patcher.cxx								\
     patcher.h
 
@@ -24,12 +26,18 @@
   #define IF_CRYPTO_SOURCES \
     crypto_utils.cxx crypto_utils.h
 
-  #define INSTALL_HEADERS					\
-    downloader.h downloader.I					\
-    config_downloader.h zcompressor.I zcompressor.h		\
-    asyncUtility.h asyncUtility.I decompressor.h		\
-    extractor.h download_utils.h downloadDb.h downloadDb.I	\
-    hashVal.I hashVal.h patcher.h
+  #define INSTALL_HEADERS \
+    asyncUtility.h asyncUtility.I \
+    config_downloader.h \
+    decompressor.h \
+    download_utils.h downloadDb.h downloadDb.I \
+    downloader.h downloader.I \
+    extractor.h \
+    hashVal.I hashVal.h \
+    multiplexStream.I multiplexStream.h \
+    multiplexStreamBuf.I multiplexStreamBuf.I \
+    patcher.h \
+    zcompressor.I zcompressor.h
 
   #define IGATESCAN all
 

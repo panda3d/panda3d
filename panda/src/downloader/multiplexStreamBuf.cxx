@@ -108,25 +108,44 @@ MultiplexStreamBuf::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MultiplexStreamBuf::sync
-//       Access: Public, Virtual
-//  Description: Called by the system ostream implementation when the
-//               buffer should be flushed to output (for instance, on
-//               destruction).
+//     Function: MultiplexStreamBuf::add_output
+//       Access: Public
+//  Description: Adds the indicated output destinition to the set of
+//               things that will be written to when characters are
+//               output to the MultiplexStream.
 ////////////////////////////////////////////////////////////////////
-int MultiplexStreamBuf::
-sync() { 
-  streamsize n = pptr() - pbase();
+void MultiplexStreamBuf::
+add_output(MultiplexStreamBuf::BufferType buffer_type,
+	   MultiplexStreamBuf::OutputType output_type,
+	   ostream *out, FILE *fout, bool owns_obj) {
+#ifdef HAVE_IPC
+  // Ensure that we have the mutex while we fiddle with the list of
+  // outputs.
+  mutex_lock m(_lock);
+#endif
 
-  // We pass in false for the flush value, even though our
-  // transmitting ostream said to sync.  This allows us to get better
-  // line buffering, since our transmitting ostream is often set
-  // unitbuf, and might call sync multiple times in one line.  We
-  // still have an explicit flush() call to force the issue.
-  write_chars(pbase(), n, false);
-  pbump(-n);
+  Output o;
+  o._buffer_type = buffer_type;
+  o._output_type = output_type;
+  o._out = out;
+  o._fout = fout;
+  o._owns_obj = owns_obj;
+  _outputs.push_back(o);
+}
 
-  return 0;  // Return 0 for success, EOF to indicate write full.
+
+////////////////////////////////////////////////////////////////////
+//     Function: MultiplexStreamBuf::flush
+//       Access: Public
+//  Description: Forces out all output that hasn't yet been written.
+////////////////////////////////////////////////////////////////////
+void MultiplexStreamBuf::
+flush() {
+#ifdef HAVE_IPC
+  mutex_lock m(_lock);
+#endif
+
+  write_chars("", 0, true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,6 +156,10 @@ sync() {
 ////////////////////////////////////////////////////////////////////
 int MultiplexStreamBuf::
 overflow(int ch) { 
+#ifdef HAVE_IPC
+  mutex_lock m(_lock);
+#endif
+
   streamsize n = pptr() - pbase();
 
   if (n != 0) {
@@ -154,11 +177,41 @@ overflow(int ch) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MultiplexStreamBuf::sync
+//       Access: Public, Virtual
+//  Description: Called by the system ostream implementation when the
+//               buffer should be flushed to output (for instance, on
+//               destruction).
+////////////////////////////////////////////////////////////////////
+int MultiplexStreamBuf::
+sync() { 
+#ifdef HAVE_IPC
+  mutex_lock m(_lock);
+#endif
+
+  streamsize n = pptr() - pbase();
+
+  // We pass in false for the flush value, even though our
+  // transmitting ostream said to sync.  This allows us to get better
+  // line buffering, since our transmitting ostream is often set
+  // unitbuf, and might call sync multiple times in one line.  We
+  // still have an explicit flush() call to force the issue.
+  write_chars(pbase(), n, false);
+  pbump(-n);
+
+  return 0;  // Return 0 for success, EOF to indicate write full.
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MultiplexStreamBuf::write_chars
 //       Access: Private
 //  Description: An internal function called by sync() and overflow()
 //               to store one or more characters written to the stream
 //               into the memory buffer.
+//
+//               It is assumed that there is only one thread at a time
+//               running this code; it is the responsibility of the
+//               caller to grab the _lock mutex before calling this.
 ////////////////////////////////////////////////////////////////////
 void MultiplexStreamBuf::
 write_chars(const char *start, int length, bool flush) {

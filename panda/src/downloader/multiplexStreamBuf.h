@@ -8,6 +8,10 @@
 
 #include <pandabase.h>
 
+#ifdef HAVE_IPC
+#include <ipc_mutex.h>
+#endif
+
 #include <vector>
 #include <stdio.h>
 
@@ -33,12 +37,12 @@ public:
     OT_system_debug,
   };
 
-  INLINE void add_output(BufferType buffer_type, OutputType output_type,
-			 ostream *out = (ostream *)NULL, 
-			 FILE *fout = (FILE *)NULL, 
-			 bool owns_obj = false);
+  void add_output(BufferType buffer_type, OutputType output_type,
+		  ostream *out = (ostream *)NULL, 
+		  FILE *fout = (FILE *)NULL, 
+		  bool owns_obj = false);
 
-  INLINE void flush();
+  void flush();
 
 protected:
   virtual int overflow(int c);
@@ -64,6 +68,10 @@ private:
   Outputs _outputs;
 
   string _line_buffer;
+
+#ifdef HAVE_IPC
+  mutex _lock;
+#endif
 };
 
 #include "multiplexStreamBuf.I"
