@@ -31,6 +31,7 @@ class glxGraphicsWindow;
 typedef int Display;
 typedef int Window;
 typedef int XErrorEvent;
+typedef int Atom;
 #endif
 
 ////////////////////////////////////////////////////////////////////
