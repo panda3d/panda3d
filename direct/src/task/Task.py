@@ -15,6 +15,10 @@ exit = -1
 done = 0
 cont = 1
 
+# Task needs this because it might run before __builtin__.globalClock
+# can be set.
+globalClock = ClockObject.getGlobalClock()
+
 def print_exc_plus():
     """
     Print the usual traceback information, followed by a listing of all the
@@ -50,11 +54,6 @@ def print_exc_plus():
                 print value
             except:
                 print "<ERROR WHILE PRINTING VALUE>"
-
-
-# Store the global clock
-globalClock = ClockObject.getGlobalClock()
-
 
 class Task:
     count = 0

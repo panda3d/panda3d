@@ -26,7 +26,6 @@ import __builtin__
 __builtin__.FADE_SORT_INDEX = 1000
 __builtin__.NO_FADE_SORT_INDEX = 2000
 
-globalClock = ClockObject.getGlobalClock()
 class ShowBase:
 
     notify = directNotify.newCategory("ShowBase")
@@ -35,6 +34,14 @@ class ShowBase:
 
         # Get the dconfig object
         self.config = ConfigConfigureGetConfigConfigShowbase
+
+        if self.config.GetBool('use-vfs', 1):
+            try:  # temporary try .. except for old Pandas
+                vfs = VirtualFileSystem.getGlobalPtr()
+            except:
+                vfs = None
+        else:
+            vfs = None
 
         # Store dconfig variables
         self.wantTk = self.config.GetBool('want-tk', 0)
@@ -147,6 +154,8 @@ class ShowBase:
         __builtin__.run = self.run
         __builtin__.ostream = Notify.out()
         __builtin__.directNotify = directNotify
+        __builtin__.globalClock = ClockObject.getGlobalClock()
+        __builtin__.vfs = vfs
 
         # Transition effects (fade, iris, etc)
         import Transitions

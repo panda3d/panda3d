@@ -22,7 +22,9 @@
 #include "hashGenerator.h"
 
 #ifdef WITHIN_PANDA
-#include <filename.h>
+#include "filename.h"
+#include "config_express.h"
+#include "virtualFileSystem.h"
 #endif
 
 
@@ -66,6 +68,17 @@ read(Filename filename) {
 
 #ifdef WITHIN_PANDA
   filename.set_text();
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    istream *in = vfs->open_read_file(filename);
+    if (in == (istream *)NULL) {
+      cerr << "Cannot open " << filename << " for reading.\n";
+      return false;
+    }
+    bool okflag = read(*in, filename);
+    delete in;
+    return okflag;
+  }
   filename.open_read(in);
 #else
   in.open(filename.c_str());

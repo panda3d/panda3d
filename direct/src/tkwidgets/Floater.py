@@ -10,8 +10,6 @@ import Task
 import math
 import string
 
-globalClock = ClockObject.getGlobalClock()
-
 FLOATER_WIDTH = 22
 FLOATER_HEIGHT = 18
 

@@ -291,7 +291,7 @@
                 functor = task.functorFunc()
                 task.lerp = Lerp(functor, task.duration, task.blendType)
                 task.init = 0
-            dt = ClockObject.getGlobalClock().getDt()
+            dt = globalClock.getDt()
             task.lerp.setStepSize(dt)
             task.lerp.step()
             if (task.lerp.isDone()):

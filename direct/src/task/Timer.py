@@ -8,7 +8,6 @@ class Timer:
     def __init__(self, name=None):
         """ __init__()
         """
-        self.clock = ClockObject.getGlobalClock()
         self.finalT = 0.0
         self.currT = 0.0
         if (name == None):
@@ -26,7 +25,7 @@ class Timer:
         self.callback = None
         self.finalT = t
         self.name = name
-        self.startT = self.clock.getFrameTime()
+        self.startT = globalClock.getFrameTime()
         self.currT = 0.0
         taskMgr.add(self.__timerTask, self.name + '-run')
         self.started = 1
@@ -38,7 +37,7 @@ class Timer:
             self.stop()
         self.callback = callback 
         self.finalT = t
-        self.startT = self.clock.getFrameTime()
+        self.startT = globalClock.getFrameTime()
         self.currT = 0.0
         taskMgr.add(self.__timerTask, self.name + '-run')
         self.started = 1
@@ -88,7 +87,7 @@ class Timer:
         return (self.finalT - self.currT)
 
     def __timerTask(self, task):
-        t = self.clock.getFrameTime()
+        t = globalClock.getFrameTime()
         te = t - self.startT 
         self.currT = te
         if (te >= self.finalT):

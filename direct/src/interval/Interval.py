@@ -17,8 +17,6 @@ class Interval(DirectObject):
 
     playbackCounter = 0
 
-    clock = ClockObject.getGlobalClock()
-
     # Class methods
     def __init__(self, name, duration, openEnded=1, reverse=0):
         """__init__(name, duration, openEnded, reverse)
@@ -96,7 +94,7 @@ class Interval(DirectObject):
         taskMgr.remove(self.name + '-play')
         # Start new one
         self.offset = t0
-        self.startT = self.clock.getFrameTime()
+        self.startT = globalClock.getFrameTime()
         assert(scale > 0.0)
         self.scale = scale
         self.firstTime = 1
@@ -135,7 +133,7 @@ class Interval(DirectObject):
     def __playTask(self, task):
         """ __playTask(task)
         """
-        t = self.clock.getFrameTime()
+        t = globalClock.getFrameTime()
         te = self.offset + ((t - self.startT) * self.scale)
         if (te < self.endTime):
             if (self.firstTime):

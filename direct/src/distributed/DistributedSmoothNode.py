@@ -5,8 +5,6 @@ from ClockDelta import *
 import DistributedNode
 import Task
 
-globalClock = ClockObject.getGlobalClock()
-
 # This number defines our tolerance for out-of-sync telemetry packets.
 # If a packet appears to have originated from more than MaxFuture
 # seconds in the future, assume we're out of sync with the other

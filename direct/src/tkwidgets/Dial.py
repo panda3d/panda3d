@@ -19,8 +19,6 @@ INNER_SF = 0.2
 DIAL_FULL_SIZE = 45
 DIAL_MINI_SIZE = 30
 
-globalClock = ClockObject.getGlobalClock()
-
 class Dial(Valuator):
     """
     Valuator widget which includes an angle dial and an entry for setting

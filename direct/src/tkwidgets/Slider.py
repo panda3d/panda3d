@@ -11,8 +11,6 @@ import string
 import operator
 from PandaModules import ClockObject
 
-globalClock = ClockObject.getGlobalClock()
-
 class Slider(Valuator):
     """
     Valuator widget which includes an min/max slider and an entry for setting

@@ -211,7 +211,10 @@ class ParticleEffect(NodePath):
 
     def loadConfig(self, filename):
         """loadConfig(filename)"""
-        execfile(filename.toOsSpecific())
+        if vfs:
+            exec vfs.readFile(filename)
+        else:
+            execfile(filename.toOsSpecific())
 
 
 
