@@ -52,18 +52,18 @@ class ClockDelta(DirectObject.DirectObject):
         self.delta += timeDelta
 
     def resynchronize(self, localTime, networkTime):
-        """resynchronize(self, float localTime, int networkTime)
+        """resynchronize(self, float localTime, uint32 networkTime)
 
         Resets the relative delta so that the indicated networkTime
         and localTime map to the same instant.  The return value is
         the amount by which the clock changes, in seconds.
         """
-
-        newDelta = float(localTime) - float(networkTime) / NetworkTimePrecision
+        newDelta = (float(localTime) -
+                    (float(networkTime) / NetworkTimePrecision))
         change = newDelta - self.delta
         self.delta = newDelta
 
-        return self.networkToLocalTime(self.localToNetworkTime(change), 0.0)
+        return change
 
 
     ### Primary interface functions ###
@@ -120,21 +120,23 @@ class ClockDelta(DirectObject.DirectObject):
 
     ### Convenience functions ###
 
-    def getRealNetworkTime(self):
+    def getRealNetworkTime(self, bits=16):
         """getRealNetworkTime(self)
 
         Returns the current getRealTime() expressed as a network time.
         """
-        return self.localToNetworkTime(self.globalClock.getRealTime())
+        return self.localToNetworkTime(self.globalClock.getRealTime(),
+                                       bits=bits)
 
-    def getFrameNetworkTime(self):
+    def getFrameNetworkTime(self, bits=16):
         """getFrameNetworkTime(self)
 
         Returns the current getFrameTime() expressed as a network time.
         """
-        return self.localToNetworkTime(self.globalClock.getFrameTime())
+        return self.localToNetworkTime(self.globalClock.getFrameTime(),
+                                       bits=bits)
 
-    def localElapsedTime(self, networkTime):
+    def localElapsedTime(self, networkTime, bits=16):
         """localElapsedTime(self, int networkTime)
 
         Returns the amount of time elapsed (in seconds) on the client
@@ -143,7 +145,7 @@ class ClockDelta(DirectObject.DirectObject):
         
         """
         now = self.globalClock.getFrameTime()
-        dt = now - self.networkToLocalTime(networkTime, now)
+        dt = now - self.networkToLocalTime(networkTime, now, bits=bits)
 
         if (dt >= 0.0):
             return dt
