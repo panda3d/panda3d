@@ -2609,8 +2609,6 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 bool DXGraphicsStateGuardian8::
 begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
                       const qpGeomVertexData *vertex_data) {
-  DO_PSTATS_STUFF(_draw_primitive_pcollector.start());
-
   if (!GraphicsStateGuardian::begin_draw_primitives(geom, munger, vertex_data)) {
     return false;
   }
@@ -2718,7 +2716,6 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 void DXGraphicsStateGuardian8::
 end_draw_primitives() {
   GraphicsStateGuardian::end_draw_primitives();
-  DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 
 ////////////////////////////////////////////////////////////////////

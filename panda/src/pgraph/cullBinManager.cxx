@@ -20,6 +20,7 @@
 #include "cullBinBackToFront.h"
 #include "cullBinFrontToBack.h"
 #include "cullBinFixed.h"
+#include "cullBinStateSorted.h"
 #include "cullBinUnsorted.h"
 #include "renderState.h"
 #include "cullResult.h"
@@ -211,6 +212,9 @@ make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg) {
 
   case BT_fixed:
     return new CullBinFixed(name, gsg);
+
+  case BT_state_sorted:
+    return new CullBinStateSorted(name, gsg);
 
   default:
     return new CullBinUnsorted(name, gsg);

@@ -36,6 +36,7 @@
 #include "cullBinBackToFront.h"
 #include "cullBinFixed.h"
 #include "cullBinFrontToBack.h"
+#include "cullBinStateSorted.h"
 #include "cullBinUnsorted.h"
 #include "cullTraverser.h"
 #include "cullableObject.h"
@@ -236,6 +237,7 @@ init_libpgraph() {
   CullBinBackToFront::init_type();
   CullBinFixed::init_type();
   CullBinFrontToBack::init_type();
+  CullBinStateSorted::init_type();
   CullBinUnsorted::init_type();
   CullTraverser::init_type();
   CullableObject::init_type();

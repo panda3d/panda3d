@@ -36,6 +36,7 @@
 
 PStatCollector CullTraverser::_nodes_pcollector("Nodes");
 PStatCollector CullTraverser::_geom_nodes_pcollector("Nodes:GeomNodes");
+PStatCollector CullTraverser::_geoms_pcollector("Geoms");
 
 TypeHandle CullTraverser::_type_handle;
 
@@ -210,6 +211,7 @@ traverse_below(CullTraverserData &data) {
       
       // Get all the Geoms, with no decalling.
       int num_geoms = geom_node->get_num_geoms();
+      _geoms_pcollector.add_level(num_geoms);
       for (int i = 0; i < num_geoms; i++) {
         CullableObject *object = new CullableObject(data, geom_node, i);
         _cull_handler->record_object(object);
@@ -264,6 +266,7 @@ show_bounds(CullTraverserData &data) {
 
   PT(Geom) bounds_viz = make_bounds_viz(node->get_bound());
   if (bounds_viz != (Geom *)NULL) {
+    _geoms_pcollector.add_level(2);
     CullableObject *outer_viz = 
       new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
                          data._render_transform);
@@ -417,6 +420,7 @@ start_decal(const CullTraverserData &data) {
   CullableObject *object = separator;
   GeomNode *geom_node = DCAST(GeomNode, node);
   int num_geoms = geom_node->get_num_geoms();
+  _geoms_pcollector.add_level(num_geoms);
   for (int i = num_geoms - 1; i >= 0; i--) {
     object = new CullableObject(data, geom_node, i, object);
   }
@@ -474,6 +478,7 @@ r_get_decals(CullTraverserData &data, CullableObject *decals) {
       GeomNode *geom_node = DCAST(GeomNode, node);
       
       int num_geoms = geom_node->get_num_geoms();
+      _geoms_pcollector.add_level(num_geoms);
       for (int i = num_geoms - 1; i >= 0; i--) {
         decals = new CullableObject(data, geom_node, i, decals);
       }

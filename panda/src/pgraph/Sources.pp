@@ -31,6 +31,7 @@
     cullBinFixed.I cullBinFixed.h \
     cullBinFrontToBack.I cullBinFrontToBack.h \
     cullBinManager.I cullBinManager.h \
+    cullBinStateSorted.I cullBinStateSorted.h \
     cullBinUnsorted.I cullBinUnsorted.h \
     cullFaceAttrib.I cullFaceAttrib.h \
     cullHandler.I cullHandler.h \
@@ -127,6 +128,7 @@
     cullBinFixed.cxx \
     cullBinFrontToBack.cxx \
     cullBinManager.cxx \
+    cullBinStateSorted.cxx \
     cullBinUnsorted.cxx \
     cullFaceAttrib.cxx \
     cullHandler.cxx \
@@ -221,6 +223,7 @@
     cullBinFixed.I cullBinFixed.h \
     cullBinFrontToBack.I cullBinFrontToBack.h \
     cullBinManager.I cullBinManager.h \
+    cullBinStateSorted.I cullBinStateSorted.h \
     cullBinUnsorted.I cullBinUnsorted.h \
     cullFaceAttrib.I cullFaceAttrib.h \
     cullHandler.I cullHandler.h \

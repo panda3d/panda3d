@@ -393,7 +393,7 @@ set_state(const RenderState *state) {
   if (state != _state) {
 #ifndef NDEBUG
     if (gsg_cat.is_spam()) {
-      gsg_cat.spam() << "Setting GSG state to:\n";
+      gsg_cat.spam() << "Setting GSG state to " << (void *)state << ":\n";
       state->write(gsg_cat.spam(false), 2);
     }
 #endif

@@ -19,6 +19,7 @@
 #include "cullBinFixed.cxx"
 #include "cullBinFrontToBack.cxx"
 #include "cullBinManager.cxx"
+#include "cullBinStateSorted.cxx"
 #include "cullBinUnsorted.cxx"
 #include "cullFaceAttrib.cxx"
 #include "cullHandler.cxx"

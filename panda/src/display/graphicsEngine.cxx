@@ -499,6 +499,7 @@ render_frame() {
   // Reset our pcollectors that track data across the frame.
   CullTraverser::_nodes_pcollector.clear_level();
   CullTraverser::_geom_nodes_pcollector.clear_level();
+  CullTraverser::_geoms_pcollector.clear_level();
   
   _transform_states_pcollector.set_level(TransformState::get_num_states());
   _render_states_pcollector.set_level(RenderState::get_num_states());

@@ -165,6 +165,7 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "Vertices:Display lists",           { 0.8, 0.5, 1.0 } },
   { 1, "Nodes",                            { 0.4, 0.2, 0.8 },  "", 500.0 },
   { 1, "Nodes:GeomNodes",                  { 0.8, 0.2, 0.0 } },
+  { 1, "Geoms",                            { 0.4, 0.8, 0.3 },  "", 500.0 },
   { 1, "Cull volumes",                     { 0.7, 0.6, 0.9 },  "", 500.0 },
   { 1, "Cull volumes:Transforms",          { 0.9, 0.6, 0.0 } },
   { 1, "State changes",                    { 1.0, 0.5, 0.2 },  "", 500.0 },
