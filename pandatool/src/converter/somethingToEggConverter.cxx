@@ -30,6 +30,7 @@ SomethingToEggConverter::
 SomethingToEggConverter() {
   _allow_errors = false;
   _path_replace = new PathReplace;
+  _path_replace->_path_store = PS_absolute;
   _animation_convert = AC_none;
   _start_frame = 0.0;
   _end_frame = 0.0;

@@ -89,6 +89,11 @@ load_file(const Filename &path, bool) const {
 
   EggData egg_data;
   _converter->set_egg_data(&egg_data, false);
+
+  DSearchPath file_path;
+  file_path.append_directory(path.get_dirname());
+  _converter->get_path_replace()->_path = file_path;
+
   if (_converter->convert_file(path)) {
     egg_data.set_coordinate_system(CS_default);
     result = load_egg_data(egg_data);
