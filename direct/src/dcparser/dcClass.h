@@ -26,7 +26,15 @@
 
 #ifdef WITHIN_PANDA
 #include "pStatCollector.h"
-#endif
+#include "configVariableBool.h"
+
+extern ConfigVariableBool dc_multiple_inheritance;
+
+#else  // WITHIN_PANDA
+
+static const bool dc_multiple_inheritance = true;
+
+#endif  // WITHIN_PANDA
 
 class HashGenerator;
 class DCParameter;
@@ -38,12 +46,15 @@ class DCParameter;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCClass : public DCDeclaration {
 public:
-  DCClass(const string &name, bool is_struct, bool bogus_class);
+  DCClass(DCFile *dc_file, const string &name, 
+          bool is_struct, bool bogus_class);
   ~DCClass();
 
 PUBLISHED:
   virtual DCClass *as_class();
   virtual const DCClass *as_class() const;
+
+  INLINE DCFile *get_dc_file() const;
 
   const string &get_name() const;
   int get_number() const;
@@ -57,6 +68,7 @@ PUBLISHED:
   int get_num_fields() const;
   DCField *get_field(int n) const;
   DCField *get_field_by_name(const string &name) const;
+  DCField *get_field_by_index(int index_number) const;
 
   int get_num_inherited_fields() const;
   DCField *get_inherited_field(int n) const;
@@ -124,6 +136,8 @@ private:
   static PStatCollector _generate_pcollector;
 #endif
 
+  DCFile *_dc_file;
+
   string _name;
   bool _is_struct;
   bool _bogus_class;
@@ -139,6 +153,9 @@ private:
 
   typedef pmap<string, DCField *> FieldsByName;
   FieldsByName _fields_by_name;
+
+  typedef pmap<int, DCField *> FieldsByIndex;
+  FieldsByIndex _fields_by_index;
 
 #ifdef HAVE_PYTHON
   PyObject *_class_def;

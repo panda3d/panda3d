@@ -2475,7 +2475,7 @@ create_nested_field(DCSubatomicType type, unsigned int divisor) {
 DCPackerInterface *DCSimpleParameter::
 create_uint32uint8_type() {
   if (_uint32uint8_type == NULL) {
-    DCClass *dclass = new DCClass("", true, false);
+    DCClass *dclass = new DCClass(NULL, "", true, false);
     dclass->add_field(new DCSimpleParameter(ST_uint32));
     dclass->add_field(new DCSimpleParameter(ST_uint8));
     _uint32uint8_type = new DCClassParameter(dclass);

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcClass.h"
+#include "dcFile.h"
 #include "dcAtomicField.h"
 #include "hashGenerator.h"
 #include "dcindent.h"
@@ -31,6 +32,14 @@
 PStatCollector DCClass::_update_pcollector("App:Show code:readerPollTask:Update");
 PStatCollector DCClass::_generate_pcollector("App:Show code:readerPollTask:Generate");
 #endif  // CPPPARSER
+
+ConfigVariableBool dc_multiple_inheritance
+("dc-multiple-inheritance", false,
+ PRC_DESC("Set this true to support multiple inheritance in the dc file.  "
+          "If this is false, the old way, multiple inheritance is not "
+          "supported, but field numbers will be numbered sequentially, "
+          "which may be required to support old code that assumed this."));
+
 #endif  // WITHIN_PANDA
 
 ////////////////////////////////////////////////////////////////////
@@ -39,11 +48,12 @@ PStatCollector DCClass::_generate_pcollector("App:Show code:readerPollTask:Gener
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DCClass::
-DCClass(const string &name, bool is_struct, bool bogus_class) : 
+DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) : 
 #ifdef WITHIN_PANDA
   _class_update_pcollector(_update_pcollector, name),
   _class_generate_pcollector(_generate_pcollector, name),
 #endif
+  _dc_file(dc_file),
   _name(name),
   _is_struct(is_struct),
   _bogus_class(bogus_class)
@@ -231,6 +241,39 @@ get_field_by_name(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCClass::get_field_by_index
+//       Access: Published
+//  Description: Returns a pointer to the DCField that has the
+//               indicated index number.  If the numbered field is not
+//               found in the current class, the parent classes will
+//               be searched, so the value returned may not actually
+//               be a field within this class.  Returns NULL if there
+//               is no such field defined.
+////////////////////////////////////////////////////////////////////
+DCField *DCClass::
+get_field_by_index(int index_number) const {
+  FieldsByIndex::const_iterator ni;
+  ni = _fields_by_index.find(index_number);
+  if (ni != _fields_by_index.end()) {
+    return (*ni).second;
+  }
+
+  // We didn't have such a field, so check our parents.
+  Parents::const_iterator pi;
+  for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
+    DCField *result = (*pi)->get_field_by_index(index_number);
+    if (result != (DCField *)NULL) {
+      // Cache this result for future lookups.
+      ((DCClass *)this)->_fields_by_index[index_number] = result;
+      return result;
+    }
+  }
+
+  // Nobody knew what this field is.
+  return (DCField *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCClass::get_num_inherited_fields
 //       Access: Published
 //  Description: Returns the total number of field fields defined in
@@ -238,33 +281,40 @@ get_field_by_name(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 int DCClass::
 get_num_inherited_fields() const {
-  if (!_parents.empty()) {
-    // This won't work for multiple dclass inheritance.
-    return _parents.front()->get_num_inherited_fields() + get_num_fields();
+  int num_fields = get_num_fields();
+
+  Parents::const_iterator pi;
+  for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
+    num_fields += (*pi)->get_num_inherited_fields();
   }
-  return get_num_fields();
+
+  return num_fields;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::get_inherited_field
 //       Access: Published
 //  Description: Returns the nth field field in the class and all of
-//               its ancestors.  This *is* the field corresponding to
-//               the given index number, since the fields are ordered
-//               consecutively beginning at the earliest inherited
-//               fields.
+//               its ancestors.  
+//
+//               This *used* to be the same thing as
+//               get_field_by_index(), back when the fields were
+//               numbered sequentially within a class's inheritance
+//               hierarchy.  Now that fields have a globally unique
+//               index number, this is no longer true.
 ////////////////////////////////////////////////////////////////////
 DCField *DCClass::
 get_inherited_field(int n) const {
-  if (!_parents.empty()) {
-    // This won't work for multiple dclass inheritance.
-    int psize = _parents.front()->get_num_inherited_fields();
+  Parents::const_iterator pi;
+  for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
+    int psize = (*pi)->get_num_inherited_fields();
     if (n < psize) {
-      return _parents.front()->get_inherited_field(n);
+      return (*pi)->get_inherited_field(n);
     }
 
     n -= psize;
   }
+
   return get_field(n);
 }
 
@@ -351,8 +401,16 @@ receive_update(PyObject *distobj, DatagramIterator &di) const {
   packer.set_unpack_data(di.get_remaining_bytes());
 
   int field_id = packer.raw_unpack_uint16();
-  DCField *field = get_inherited_field(field_id);
-  nassertv_always(field != NULL);
+  DCField *field = get_field_by_index(field_id);
+  if (field == (DCField *)NULL) {
+    ostringstream strm;
+    strm
+      << "Received update for field " << field_id << ", not in class "
+      << get_name();
+    nassert_raise(strm.str());
+    return;
+  }
+
   packer.begin_unpack(field);
   field->receive_update(packer, distobj);
   packer.end_unpack();
@@ -750,7 +808,7 @@ client_format_generate(PyObject *distobj, int do_id,
 
   // Specify all of the required fields.
   int num_fields = get_num_inherited_fields();
-  for (int i = 0; i < num_fields; i++) {
+  for (int i = 0; i < num_fields; ++i) {
     DCField *field = get_inherited_field(i);
     if (field->is_required() && field->as_molecular_field() == NULL) {
       packer.begin_pack(field);
@@ -1104,8 +1162,19 @@ add_field(DCField *field) {
   }
 
   if (!is_struct()) {
-    field->set_number(get_num_inherited_fields());
+    if (dc_multiple_inheritance) {
+      _dc_file->set_new_index_number(field);
+    } else {
+      field->set_number(get_num_inherited_fields());
+    }
+
+    bool inserted = _fields_by_index.insert
+      (FieldsByIndex::value_type(field->get_number(), field)).second;
+
+    // It shouldn't be possible for that to fail.
+    nassertr(inserted, false);
   }
+
   _fields.push_back(field);
   return true;
 }

@@ -14,6 +14,7 @@ from direct.distributed.PyDatagram import PyDatagram
 from direct.distributed.PyDatagramIterator import PyDatagramIterator
 #from PointerToConnection import PointerToConnection
 import time
+import types
 
 class ServerRepository:
 
@@ -265,7 +266,12 @@ class ServerRepository:
         doid = dgi.getUint32()
         fieldid = dgi.getUint16()
         dclass = self.DOIDtoDClass[doid]
-        dcfield = dclass.getField(fieldid)
+        dcfield = dclass.getFieldByIndex(fieldid)
+        if dcfield == None:
+          self.notify.error(
+              "Received update for field %s on object %s; no such field for class %s." % (
+              fieldid, doid, dclass.getName()))
+          return
         if (dcfield.isBroadcast()):
           if (dcfield.isP2p()):
             self.sendToZoneExcept(self.DOIDtoZones[doid], datagram, 0)

@@ -276,7 +276,7 @@ dclass:
         KW_DCLASS optional_name 
 {
   $$ = current_class;
-  current_class = new DCClass($2, false, false);
+  current_class = new DCClass(dc_file, $2, false, false);
 }
         dclass_derivation '{' dclass_fields '}'
 {
@@ -296,7 +296,7 @@ dclass_name:
     DCClass *dclass = dc_file->get_class_by_name($1);
     if (dclass == (DCClass *)NULL) {
       // Create a bogus class as a forward reference.
-      dclass = new DCClass($1, false, true);
+      dclass = new DCClass(dc_file, $1, false, true);
       dc_file->add_class(dclass);
     }
     if (dclass->is_struct()) {
@@ -322,8 +322,13 @@ dclass_base_list:
 }
         | dclass_base_list ',' dclass_name
 {
-  if ($3 != (DCClass *)NULL) {
-    current_class->add_parent($3);
+  if (!dc_multiple_inheritance) {
+    yyerror("Multiple inheritance is not supported without \"dc-multiple-inheritance 1\" in your Config.prc file.");
+
+  } else {
+    if ($3 != (DCClass *)NULL) {
+      current_class->add_parent($3);
+    }
   }
 }
         ;
@@ -376,7 +381,7 @@ struct:
         KW_STRUCT optional_name 
 {
   $$ = current_class;
-  current_class = new DCClass($2, true, false);
+  current_class = new DCClass(dc_file, $2, true, false);
 }
         struct_derivation '{' struct_fields '}'
 {
@@ -396,7 +401,7 @@ struct_name:
     DCClass *dstruct = dc_file->get_class_by_name($1);
     if (dstruct == (DCClass *)NULL) {
       // Create a bogus class as a forward reference.
-      dstruct = new DCClass($1, false, true);
+      dstruct = new DCClass(dc_file, $1, false, true);
       dc_file->add_class(dstruct);
     }
     if (!dstruct->is_struct()) {

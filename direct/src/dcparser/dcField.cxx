@@ -645,6 +645,12 @@ generate_hash(HashGenerator &hashgen) const {
   // field with the other fields, so adding it explicitly will be
   // redundant.  However, the field name is significant.
   hashgen.add_string(_name);
+
+  // Actually, we add _number anyway, since we need to ensure the hash
+  // code comes out different in the dc_multiple_inheritance case.
+  if (dc_multiple_inheritance) {
+    hashgen.add_int(_number);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

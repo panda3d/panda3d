@@ -91,7 +91,8 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
 read_all() {
-  ConfigVariableList dc_files("dc-file", "The list of dc files to load.");
+  static ConfigVariableList dc_files
+    ("dc-file", PRC_DESC("The list of dc files to load."));
 
   if (dc_files.size() == 0) {
     cerr << "No files specified via dc-file Config.prc variable!\n";
@@ -129,36 +130,28 @@ read_all() {
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
 read(Filename filename) {
-  ifstream in;
-
-  #ifdef WITHIN_PANDA
+#ifdef WITHIN_PANDA
   filename.set_text();
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    istream *in = vfs->open_read_file(filename);
-    if (in == (istream *)NULL) {
-      cerr << "Cannot open " << filename << " for reading.\n";
-      return false;
-    }
-    bool okflag = read(*in, filename);
-
-    // For some reason--compiler bug in gcc 3.2?--explicitly deleting
-    // the in pointer does not call the appropriate global delete
-    // function; instead apparently calling the system delete
-    // function.  So we call the delete function by hand instead.
-    #ifndef NDEBUG
-    in->~istream();
-    (*global_operator_delete)(in);
-    #else
-    delete in;
-    #endif
-
-    return okflag;
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  istream *in = vfs->open_read_file(filename);
+  if (in == (istream *)NULL) {
+    cerr << "Cannot open " << filename << " for reading.\n";
+    return false;
   }
-  filename.open_read(in);
-  #else
+  bool okflag = read(*in, filename);
+  
+  // For some reason--compiler bug in gcc 3.2?--explicitly deleting
+  // the in pointer does not call the appropriate global delete
+  // function; instead apparently calling the system delete
+  // function.  So we call the delete function by hand instead.
+  vfs->close_read_file(in);
+  
+  return okflag;
+
+#else  // WITHIN_PANDA
+
+  ifstream in;
   in.open(filename.c_str());
-  #endif
 
   if (!in) {
     cerr << "Cannot open " << filename << " for reading.\n";
@@ -166,6 +159,8 @@ read(Filename filename) {
   }
 
   return read(in, filename);
+
+#endif  // WITHIN_PANDA
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -317,6 +312,29 @@ get_switch_by_name(const string &name) const {
   }
 
   return (DCSwitch *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::get_field_by_index
+//       Access: Published, Static
+//  Description: Returns a pointer to the one DCField that has the
+//               indicated index number, of all the DCFields across
+//               all classes in the file.
+//
+//               This method is only valid if dc-multiple-inheritance
+//               is set true in the Config.prc file.  Without this
+//               setting, different DCFields may share the same index
+//               number, so this global lookup is not possible.
+////////////////////////////////////////////////////////////////////
+DCField *DCFile::
+get_field_by_index(int index_number) const {
+  nassertr(dc_multiple_inheritance, NULL);
+
+  if (index_number >= 0 && index_number < (int)_fields_by_index.size()) {
+    return _fields_by_index[index_number];
+  }
+  
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -591,4 +609,18 @@ add_typedef(DCTypedef *dtypedef) {
 void DCFile::
 add_thing_to_delete(DCDeclaration *decl) {
   _things_to_delete.push_back(decl);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::set_new_index_number
+//       Access: Public
+//  Description: Sets the next sequential available index number on
+//               the indicated field.  This is only meant to be called
+//               by DCClass::add_field(), while the dc file is being
+//               parsed.
+////////////////////////////////////////////////////////////////////
+void DCFile::
+set_new_index_number(DCField *field) {
+  field->set_number((int)_fields_by_index.size());
+  _fields_by_index.push_back(field);
 }

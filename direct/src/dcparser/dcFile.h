@@ -23,6 +23,7 @@
 
 class DCClass;
 class DCSwitch;
+class DCField;
 class HashGenerator;
 class DCTypedef;
 class DCDeclaration;
@@ -54,6 +55,8 @@ PUBLISHED:
   DCClass *get_class_by_name(const string &name) const;
   DCSwitch *get_switch_by_name(const string &name) const;
 
+  DCField *get_field_by_index(int index_number) const;
+
   bool all_objects_valid() const;
 
   int get_num_import_modules() const;
@@ -75,6 +78,8 @@ public:
   void add_import_symbol(const string &import_symbol);
   bool add_typedef(DCTypedef *dtypedef);
   void add_thing_to_delete(DCDeclaration *decl);
+
+  void set_new_index_number(DCField *field);
 
 private:
   typedef pvector<DCClass *> Classes;
@@ -102,6 +107,9 @@ private:
   typedef pvector<DCDeclaration *> Declarations;
   Declarations _declarations;
   Declarations _things_to_delete;
+
+  typedef pvector<DCField *> FieldsByIndex;
+  FieldsByIndex _fields_by_index;
 
   bool _all_objects_valid;
 };

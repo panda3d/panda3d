@@ -510,11 +510,11 @@ describe_message(ostream &out, const string &prefix,
     } else {
       out << prefix << "update for " << dclass->get_name()
           << " " << do_id << ": ";
-      if (field_id < 0 || field_id >= dclass->get_num_inherited_fields()) {
+      DCField *field = dclass->get_field_by_index(field_id);
+      if (field == (DCField *)NULL) {
         out << "unknown field " << field_id << "\n";
         
       } else {
-        DCField *field = dclass->get_inherited_field(field_id);
         out << field->get_name();
         packer.begin_unpack(field);
         packer.unpack_and_format(out);
