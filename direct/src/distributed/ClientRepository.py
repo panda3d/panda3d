@@ -138,13 +138,24 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         it should be accurate plus or minus a couple of seconds.
         """
         return time.time() + self.serverDelta
+       
+    def handleObjectLocation(self, di):
+        # CLEINT_OBJECT_LOCATION        
+        ThedoId = di.getUint32()
+        TheParent = di.getUint32()
+        TheZone = di.getUint32()    
+        print "Object Location->Id=%s Parent=%s Zone=%s"%(ThedoId,TheParent, TheZone)
+        
 
     def handleGenerateWithRequired(self, di):
+        if  wantOtpServer:        
+            TheParent = di.getUint32()
+            TheZone = di.getUint32()    
         # Get the class Id
         classId = di.getUint16();
         # Get the DO Id
         doId = di.getUint32()
-        # Look up the dclass
+        # Look up the dclass                       
         dclass = self.dclassesByNumber[classId]
         dclass.startGenerate()
         # Create a new distributed object, and put it in the dictionary
@@ -152,6 +163,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         dclass.stopGenerate()
 
     def handleGenerateWithRequiredOther(self, di):
+        if wantOtpServer:        
+            TheParent = di.getUint32()
+            TheZone = di.getUint32()            
         # Get the class Id
         classId = di.getUint16();
         # Get the DO Id
@@ -165,6 +179,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def handleQuietZoneGenerateWithRequired(self, di):
         # Special handler for quiet zone generates -- we need to filter
+        if wantOtpServer:        
+            TheParent = di.getUint32()
+            TheZone = di.getUint32()                    
         # Get the class Id
         classId = di.getUint16();
         # Get the DO Id
@@ -184,6 +201,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def handleQuietZoneGenerateWithRequiredOther(self, di):
         # Special handler for quiet zone generates -- we need to filter
+        if wantOtpServer:        
+            TheParent = di.getUint32()
+            TheZone = di.getUint32()                    
         # Get the class Id
         classId = di.getUint16();
         # Get the DO Id
@@ -424,7 +444,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.notify.info('Message from server: %s' % (message))
         return message
 
-    def handleUnexpectedMsgType(self, msgType, di):
+    def handleUnexpectedMsgType(self, msgType, di):        
         if msgType == CLIENT_CREATE_OBJECT_REQUIRED:
             self.handleGenerateWithRequired(di)
         elif msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:
@@ -443,10 +463,12 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             self.handleSystemMessage(di)
         elif wantOtpServer and msgType == CLIENT_CREATE_OBJECT_REQUIRED:
             self.handleGenerateWithRequired(di)
-        elif wantOtpServer and dmsgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:
+        elif wantOtpServer and msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:
             self.handleGenerateWithRequiredOther(di)
         elif wantOtpServer and msgType == CLIENT_DONE_SET_ZONE_RESP:
-            self.handleSetZoneDone()
+            self.handleSetZoneDone()                    
+        elif  wantOtpServer and msgType ==  CLEINT_OBJECT_LOCATION:        
+            self.handleObjectLocation(di)
         else:
             currentLoginState = self.loginFSM.getCurrentState()
             if currentLoginState:
