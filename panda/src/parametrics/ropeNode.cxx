@@ -311,7 +311,8 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
 
   colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
   
-  PT(Geom) geom = new GeomLinestrip;
+  PT(GeomLinestrip) geom = new GeomLinestrip;
+  geom->set_width(get_thickness());
   geom->set_num_prims(num_segments);
   geom->set_coords(verts);
   if (uv_mode != UV_none) {
