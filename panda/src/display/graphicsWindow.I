@@ -108,18 +108,6 @@ set_border(bool border) {
   _border = border;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::Properties::set_fullscreen
-//       Access: Published
-//  Description: Specifies whether the window should be opened in
-//               fullscreen mode (true) or normal windowed mode
-//               (false, the default).
-////////////////////////////////////////////////////////////////////
-INLINE void GraphicsWindow::Properties::
-set_fullscreen(bool fullscreen) {
-  _fullscreen = fullscreen;
-}
-
 /*
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::Properties::set_cursor_visible
@@ -207,6 +195,11 @@ get_xorg() const {
 INLINE int GraphicsWindow::
 get_yorg() const {
   return (_props._yorg);
+}
+
+INLINE bool GraphicsWindow::
+is_fullscreen() const {
+  return (_props._fullscreen);
 }
 
 ////////////////////////////////////////////////////////////////////

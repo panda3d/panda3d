@@ -84,7 +84,6 @@ PUBLISHED:
     INLINE void set_size(int xsize, int ysize);
     INLINE void set_title(const string &title);
     INLINE void set_border(bool border);
-    INLINE void set_fullscreen(bool fullscreen);
     INLINE void set_mask(uint mask);
     INLINE void set_bit_depth(int want_depth_bits, int want_color_bits);
 
