@@ -599,11 +599,13 @@ finish_decal() {
 //       Access: Public, Virtual
 //  Description: Called before a sequence of draw_primitive()
 //               functions are called, this should prepare the vertex
-//               data for rendering.
+//               data for rendering.  It returns true if the vertices
+//               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
+bool GraphicsStateGuardian::
 begin_draw_primitives(const qpGeomVertexData *data) {
   _vertex_data = get_geom_munger()->munge_data(data);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

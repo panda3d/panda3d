@@ -89,7 +89,7 @@ public:
   virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc);
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
 
-  virtual void begin_draw_primitives(const qpGeomVertexData *vertex_data);
+  virtual bool begin_draw_primitives(const qpGeomVertexData *vertex_data);
   virtual void draw_triangles(qpGeomTriangles *primitive);
   virtual void end_draw_primitives();
 
@@ -152,6 +152,7 @@ protected:
   virtual void bind_clip_plane(PlaneNode *plane, int plane_id);
 
   virtual void set_blend_mode();
+  virtual void setup_geom_munger(PT(qpGeomMunger) munger);
 
   void free_nondx_resources();            // free local internal buffers
   void free_d3d_device(void);

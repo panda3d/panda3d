@@ -142,7 +142,7 @@ public:
   virtual CPT(RenderState) begin_decal_base_second();
   virtual void finish_decal();
 
-  virtual void begin_draw_primitives(const qpGeomVertexData *vertex_data);
+  virtual bool begin_draw_primitives(const qpGeomVertexData *vertex_data);
   virtual void draw_triangles(qpGeomTriangles *primitive);
   virtual void draw_tristrips(qpGeomTristrips *primitive);
   virtual void draw_trifans(qpGeomTrifans *primitive);

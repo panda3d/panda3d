@@ -53,6 +53,7 @@
 #include "qpgeomTriangles.h"
 #include "qpgeomTristrips.h"
 #include "qpgeomTrifans.h"
+#include "dxGeomMunger8.h"
 
 #ifdef DO_PSTATS
 #include "pStatTimer.h"
@@ -2585,39 +2586,74 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 //       Access: Public, Virtual
 //  Description: Called before a sequence of draw_primitive()
 //               functions are called, this should prepare the vertex
-//               buffer if necessary.
+//               data for rendering.  It returns true if the vertices
+//               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian8::
+bool DXGraphicsStateGuardian8::
 begin_draw_primitives(const qpGeomVertexData *vertex_data) {
   DO_PSTATS_STUFF(_draw_primitive_pcollector.start());
 
   GraphicsStateGuardian::begin_draw_primitives(vertex_data);
 
   const qpGeomVertexFormat *format = _vertex_data->get_format();
+
+  // The munger should have put the "vertex" data at the beginning of
+  // the first array.
+  const qpGeomVertexArrayFormat *array_format = format->get_array(0);
+
+  // Now we have to start with the vertex data, and work up from there
+  // in order, since that's the way the FVF is defined.
+  int n = 0;
+  int num_data_types = array_format->get_num_data_types();
+
+  DWORD fvf = 0;
   
-  if (format == qpGeomVertexFormat::get_v3()) {
-    set_vertex_format(D3DFVF_XYZ);
-  } else if (format == qpGeomVertexFormat::get_v3n3()) {
-    set_vertex_format(D3DFVF_XYZ | D3DFVF_NORMAL);
-  } else if (format == qpGeomVertexFormat::get_v3t2()) {
-    set_vertex_format(D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
-  } else if (format == qpGeomVertexFormat::get_v3n3t2()) {
-    set_vertex_format(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
-  } else if (format == qpGeomVertexFormat::get_v3cp() ||
-             format == qpGeomVertexFormat::get_v3c4()) {
-    set_vertex_format(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-  } else if (format == qpGeomVertexFormat::get_v3n3cp() ||
-             format == qpGeomVertexFormat::get_v3n3c4()) {
-    set_vertex_format(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_NORMAL);
-  } else if (format == qpGeomVertexFormat::get_v3cpt2() ||
-             format == qpGeomVertexFormat::get_v3c4t2()) {
-    set_vertex_format(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
-  } else if (format == qpGeomVertexFormat::get_v3n3cpt2() ||
-             format == qpGeomVertexFormat::get_v3n3c4t2()) {
-    set_vertex_format(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
+  if (n < num_data_types && 
+      array_format->get_data_type(n)->get_name() == InternalName::get_vertex()) {
+    fvf |= D3DFVF_XYZ;
+    ++n;
   } else {
-    nassert_raise("Unexpected vertex format");
+    // No vertex data, no vertices.
+    return false;
   }
+  if (n < num_data_types && 
+      array_format->get_data_type(n)->get_name() == InternalName::get_normal()) {
+    fvf |= D3DFVF_NORMAL;
+    ++n;
+  }
+  if (n < num_data_types && 
+      array_format->get_data_type(n)->get_name() == InternalName::get_color()) {
+    fvf |= D3DFVF_DIFFUSE;
+    ++n;
+  }
+
+  // For multitexture support, we will need to look for all of the
+  // texcoord names and enable them in order.
+  if (n < num_data_types && 
+      array_format->get_data_type(n)->get_name() == InternalName::get_texcoord()) {
+    const qpGeomVertexDataType *data_type = array_format->get_data_type(n);
+    switch (data_type->get_num_values()) {
+    case 1:
+      fvf |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE1(0);
+      ++n;
+      break;
+    case 2:
+      fvf |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0);
+      ++n;
+      break;
+    case 3:
+      fvf |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE3(0);
+      ++n;
+      break;
+    case 4:
+      fvf |= D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE4(0);
+      ++n;
+      break;
+    }
+  }
+
+  set_vertex_format(fvf);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4014,6 +4050,19 @@ set_blend_mode() {
 
   // Nothing's set, so disable blending.
   enable_blend(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::setup_geom_munger
+//       Access: Protected, Virtual
+//  Description: Called after finish_modify_state has completed, this
+//               method sets up the GeomMunger for rendering with the
+//               current state.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+setup_geom_munger(PT(qpGeomMunger) munger) {
+  munger = new DXGeomMunger8;
+  GraphicsStateGuardian::setup_geom_munger(munger);
 }
 
 TypeHandle DXGraphicsStateGuardian8::get_type(void) const {

@@ -2013,9 +2013,10 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 //       Access: Public, Virtual
 //  Description: Called before a sequence of draw_primitive()
 //               functions are called, this should prepare the vertex
-//               buffer if necessary.
+//               data for rendering.  It returns true if the vertices
+//               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
+bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const qpGeomVertexData *vertex_data) {
   DO_PSTATS_STUFF(_draw_primitive_pcollector.start());
 
@@ -2034,7 +2035,8 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
                        stride, array_data + start);
     GLP(EnableClientState)(GL_VERTEX_ARRAY);
   } else {
-    GLP(DisableClientState)(GL_VERTEX_ARRAY);
+    // No vertex data?  No primitives!
+    return false;
   }
 
   bool has_normals = false;
@@ -2096,6 +2098,8 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
   }
 
   issue_scene_graph_color();
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

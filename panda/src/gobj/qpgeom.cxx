@@ -207,19 +207,17 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void qpGeom::
 draw(GraphicsStateGuardianBase *gsg) const {
-  //  PreparedGraphicsObjects *prepared_objects = gsg->get_prepared_objects();
   CDReader cdata(_cycler);
 
-  gsg->begin_draw_primitives(cdata->_data);
-
-  Primitives::const_iterator pi;
-  for (pi = cdata->_primitives.begin(); 
-       pi != cdata->_primitives.end();
-       ++pi) {
-    (*pi)->draw(gsg);
+  if (gsg->begin_draw_primitives(cdata->_data)) {
+    Primitives::const_iterator pi;
+    for (pi = cdata->_primitives.begin(); 
+         pi != cdata->_primitives.end();
+         ++pi) {
+      (*pi)->draw(gsg);
+    }
+    gsg->end_draw_primitives();
   }
-
-  gsg->end_draw_primitives();
 }
 
 ////////////////////////////////////////////////////////////////////
