@@ -91,6 +91,8 @@ init(PT(Buffer) buffer) {
   _token_board = new DownloaderTokenBoard;
   _buffer = buffer; 
   _download_enabled = true;
+  // We need to flush after every write in case we're interrupted
+  _dest_stream.setf(ios::unitbuf, 0);
 
 #if defined(WIN32)
   WSAData mydata;
@@ -676,8 +678,6 @@ write_to_disk(DownloadStatus &status) {
       << status._bytes_in_buffer << " to disk" << endl;
       
     _dest_stream.write(status._start, status._bytes_in_buffer);
-    // We need to explicitly flush in case we're interrupted
-    _dest_stream.flush();
     status._total_bytes_written += status._bytes_in_buffer;
 
     // Throw an event to indicate how many bytes have been written so far
