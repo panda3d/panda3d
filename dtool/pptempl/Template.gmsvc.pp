@@ -608,6 +608,7 @@ $[ODIR]/$[TARGET].pdb : $[ODIR]/$[TARGET].exe
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
+    $[if $[bin_postprocess_target],$[install_bin_dir]/$[bin_postprocess_target].exe] \  
     $[INSTALL_CONFIG:%=$[install_config_dir]/%]
 
 install-$[TARGET] : $[installed_files]
@@ -629,9 +630,19 @@ $[install_bin_dir]/$[TARGET].pdb : $[ODIR]/$[TARGET].pdb
 $[TAB] cp -f $[ODIR]/$[local] $[dest]
 #endif
 
+#if $[bin_postprocess_target]
+
+#define exename $[bin_postprocess_target].exe
+#define dest $[install_bin_dir]
+
+$[ODIR]/$[bin_postprocess_target].exe : $[ODIR]/$[TARGET].exe
+$[TAB] $[bin_postprocess_cmd] $[ODIR]/$[TARGET].exe $[ODIR]/$[exename]
+
+$[install_bin_dir]/$[bin_postprocess_target].exe : $[ODIR]/$[exename]
+$[TAB] cp -f $[ODIR]/$[exename] $[dest]
+#endif
+
 #end bin_target
-
-
 
 /////////////////////////////////////////////////////////////////////
 // The noinst_bin_targets and the test_bin_targets share the property
@@ -653,8 +664,6 @@ $[TAB] $[LINK_BIN_C]
 #endif
 
 #end noinst_bin_target test_bin_target
-
-
 
 /////////////////////////////////////////////////////////////////////
 // Rules to run bison and/or flex as needed.
