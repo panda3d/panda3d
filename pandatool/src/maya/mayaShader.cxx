@@ -146,7 +146,7 @@ read_surface_shader(MObject shader) {
 
   if (maya_cat.is_spam()) {
     maya_cat.spam()
-      << "  Reading surface shader " << shader_fn.name() << "\n";
+      << "  Reading surface shader " << shader_fn.name().asChar() << "\n";
   }
 
   // First, check for a connection to the color attribute.  This could

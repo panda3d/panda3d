@@ -56,7 +56,7 @@ get_maya_plug(MObject &node, const string &attribute_name, MPlug &plug) {
   MFnAttribute attr_fn(attr, &status);
   if (!status) {
     maya_cat.error()
-      << "Attribute " << attribute_name << " on " << node_fn.name()
+      << "Attribute " << attribute_name << " on " << node_fn.name().asChar()
       << " is a " << attr.apiTypeStr() << ", not an Attribute.\n";
     return false;
   }
@@ -130,7 +130,7 @@ remove_attribute(MObject &node, const string &attribute_name) {
     MFnAttribute attr_fn(attr, &status);
     if (!status) {
       maya_cat.error()
-        << "Attribute " << attribute_name << " on " << node_fn.name()
+        << "Attribute " << attribute_name << " on " << node_fn.name().asChar()
         << " is a " << attr.apiTypeStr() << ", not an Attribute.\n";
       return false;
     }
@@ -140,7 +140,7 @@ remove_attribute(MObject &node, const string &attribute_name) {
   if (!status) {
     maya_cat.error()
       << "Couldn't get class of attribute " << attribute_name << " on "
-      << node_fn.name() << ".\n";
+      << node_fn.name().asChar() << ".\n";
     return false;
   }
 
@@ -148,7 +148,7 @@ remove_attribute(MObject &node, const string &attribute_name) {
   if (!status) {
     maya_cat.error()
       << "Couldn't remove attribute " << attribute_name << " from "
-      << node_fn.name() << ".\n";
+      << node_fn.name().asChar() << ".\n";
     return false;
   }
 
@@ -516,14 +516,14 @@ describe_maya_attribute(MObject &node, const string &attribute_name) {
   MObject attr = node_fn.attribute(attribute_name.c_str(), &status);
   if (!status) {
     maya_cat.error()
-      << "Object " << node_fn.name() << " does not support attribute "
+      << "Object " << node_fn.name().asChar() << " does not support attribute "
       << attribute_name << "\n";
     return;
   }
 
   maya_cat.error()
     << "Attribute " << attribute_name << " on object "
-    << node_fn.name() << " has type " << attr.apiTypeStr() << "\n";
+    << node_fn.name().asChar() << " has type " << attr.apiTypeStr() << "\n";
 }
 
 string
