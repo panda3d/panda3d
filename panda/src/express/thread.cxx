@@ -18,6 +18,7 @@
 
 #include "thread.h"
 
+TypeHandle Thread::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Thread::Destructor

@@ -20,7 +20,7 @@
 #define THREAD_H
 
 #include "pandabase.h"
-#include "referenceCount.h"
+#include "typedReferenceCount.h"
 #include "threadPriority.h"
 #include "threadImpl.h"
 #include "notify.h"
@@ -37,7 +37,7 @@
 //               will automatically be destructed if no other pointers
 //               are referencing it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS Thread : public ReferenceCount {
+class EXPCL_PANDAEXPRESS Thread : public TypedReferenceCount {
 public:
   INLINE Thread(const string &name);
   virtual ~Thread();
@@ -66,6 +66,20 @@ private:
   string _name;
   ThreadImpl _impl;
   friend ThreadImpl;
+
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "Thread",
+                  TypedReferenceCount::get_class_type());
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "thread.I"

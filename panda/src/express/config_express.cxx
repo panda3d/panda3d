@@ -20,6 +20,7 @@
 #include "config_express.h"
 #include "datagram.h"
 #include "referenceCount.h"
+#include "thread.h"
 #include "typedObject.h"
 #include "typedReferenceCount.h"
 #include "virtualFile.h"
@@ -40,6 +41,7 @@ extern void init_system_type_handles();
 ConfigureFn(config_express) {
   Datagram::init_type();
   ReferenceCount::init_type();
+  Thread::init_type();
   TypedObject::init_type();
   TypedReferenceCount::init_type();
   VirtualFile::init_type();
