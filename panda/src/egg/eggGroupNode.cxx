@@ -939,6 +939,7 @@ r_load_externals(const DSearchPath &searchpath, CoordinateSystem coordsys) {
         // reference, and load it.
         EggData ext_data;
         ext_data.set_coordinate_system(coordsys);
+        ext_data.set_auto_resolve_externals(true);
         if (ext_data.read(filename)) {
           // The external file was read correctly.  Add its contents
           // into the tree at this point.
