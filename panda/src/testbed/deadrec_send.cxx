@@ -67,7 +67,7 @@ static inline void send(NetDatagram& d) {
 static void event_frame(CPT_Event) {
   // send deadrec data
   NetDatagram d;
-  send(add_pos(d));
+  send(add_time(add_pos(d)));
 }
 
 static void sync_clock(void) {
