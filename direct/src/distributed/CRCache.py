@@ -89,5 +89,5 @@ class CRCache:
         from PandaModules import NodePath
         for obj in self.dict.values():
             if isinstance(obj, NodePath):
-                assert(not obj.isEmpty() and obj.getTopNode() == hidden.node())
+                assert(not obj.isEmpty() and obj.getTopNode() != render.node())
         return 1
