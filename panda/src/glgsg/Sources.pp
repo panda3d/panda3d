@@ -14,7 +14,8 @@
     config_glgsg.cxx config_glgsg.h glGraphicsStateGuardian.I \
     glGraphicsStateGuardian.cxx glGraphicsStateGuardian.h \
     glSavedFrameBuffer.I glSavedFrameBuffer.cxx glSavedFrameBuffer.h \
-    glTextureContext.I glTextureContext.cxx glTextureContext.h
+    glTextureContext.I glGeomNodeContext.I glGeomNodeContext.cxx \
+    glGeomNodeContext.h glTextureContext.cxx glTextureContext.h
 
   #define INSTALL_HEADERS \
     config_glgsg.h glGraphicsStateGuardian.I glGraphicsStateGuardian.h

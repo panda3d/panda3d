@@ -19,6 +19,7 @@
 #include "glGraphicsStateGuardian.h"
 #include "glSavedFrameBuffer.h"
 #include "glTextureContext.h"
+#include "glGeomNodeContext.h"
 #include "config_glgsg.h"
 
 #include <config_util.h>
@@ -1769,6 +1770,130 @@ release_texture(TextureContext *tc) {
 
   delete gtc;
   report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::prepare_geom_node
+//       Access: Public, Virtual
+//  Description: Prepares the indicated GeomNode for retained-mode
+//               rendering.  If this function returns non-NULL, the
+//               value returned will be passed back to a future call
+//               to draw_geom_node(), which is expected to draw the
+//               contents of the node.
+////////////////////////////////////////////////////////////////////
+GeomNodeContext *GLGraphicsStateGuardian::
+prepare_geom_node(GeomNode *node) {
+  // Make sure we have at least some static Geoms in the GeomNode;
+  // otherwise there's no point in building a display list.
+  int num_geoms = node->get_num_geoms();
+  bool all_dynamic = true;
+  for (int i = 0; i < num_geoms && all_dynamic; i++) {
+    dDrawable *geom = node->get_geom(i);
+    all_dynamic = geom->is_dynamic();
+  }
+  if (all_dynamic) {
+    // Never mind.
+    return (GeomNodeContext *)NULL;
+  }
+
+  // Ok, we've got something; use it.
+  GLGeomNodeContext *ggnc = new GLGeomNodeContext(node);
+  ggnc->_index = glGenLists(1);
+  if (ggnc->_index == 0) {
+    glgsg_cat.error()
+      << "Ran out of display list indices.\n";
+    delete ggnc;
+    return (GeomNodeContext *)NULL;
+  }
+
+  // We need to temporarily force normals and UV's on, so the display
+  // list will have them built in.
+  bool old_normals_enabled = _normals_enabled;
+  bool old_texturing_enabled = _texturing_enabled;
+  _normals_enabled = true;
+  _texturing_enabled = true;
+
+  // Now define the display list.
+  glNewList(ggnc->_index, GL_COMPILE);
+  for (int i = 0; i < num_geoms; i++) {
+    dDrawable *geom = node->get_geom(i);
+    if (geom->is_dynamic()) {
+      // Wait, this is a dynamic Geom.  We can't safely put it in the
+      // display list, because it may change from one frame to the
+      // next; instead, we'll keep it out.
+      ggnc->_dynamic_geoms.push_back(geom);
+    } else {
+      // A static Geom becomes part of the display list.
+      geom->draw(this);
+    }
+  }
+  glEndList();
+
+  _normals_enabled = old_normals_enabled;
+  _texturing_enabled = old_texturing_enabled;
+
+  bool inserted = mark_prepared_geom_node(ggnc);
+
+  // If this assertion fails, the same GeomNode was prepared twice,
+  // which shouldn't be possible, since the GeomNode itself should
+  // detect this.
+  nassertr(inserted, NULL);
+
+  return ggnc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::draw_geom_node
+//       Access: Public, Virtual
+//  Description: Draws a GeomNode previously indicated by a call to
+//               prepare_geom_node().
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
+  if (gnc == (GeomNodeContext *)NULL) {
+    // We don't have a saved context; just draw the GeomNode in
+    // immediate mode.
+    int num_geoms = node->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      node->get_geom(i)->draw(this);
+    }
+
+  } else {
+    // We do have a saved context; use it.
+    add_to_geom_node_record(gnc);
+    GLGeomNodeContext *ggnc = DCAST(GLGeomNodeContext, gnc);
+    glCallList(ggnc->_index);
+
+    // Also draw all the dynamic Geoms.
+    int num_geoms = ggnc->_dynamic_geoms.size();
+    for (int i = 0; i < num_geoms; i++) {
+      ggnc->_dynamic_geoms[i]->draw(this);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::release_geom_node
+//       Access: Public, Virtual
+//  Description: Frees the resources previously allocated via a call
+//               to prepare_geom_node(), including deleting the
+//               GeomNodeContext itself, if necessary.
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+release_geom_node(GeomNodeContext *gnc) {
+  if (gnc != (GeomNodeContext *)NULL) {
+    GLGeomNodeContext *ggnc = DCAST(GLGeomNodeContext, gnc);
+    glDeleteLists(ggnc->_index, 1);
+
+    bool erased = unmark_prepared_geom_node(ggnc);
+
+    // If this assertion fails, a GeomNode was released that hadn't
+    // been prepared (or a GeomNode was released twice).
+    nassertv(erased);
+    
+    ggnc->_node->clear_gsg(this);
+    delete ggnc;
+  }
 }
 
 static int logs[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,

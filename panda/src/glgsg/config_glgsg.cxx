@@ -20,6 +20,7 @@
 #include "glGraphicsStateGuardian.h"
 #include "glSavedFrameBuffer.h"
 #include "glTextureContext.h"
+#include "glGeomNodeContext.h"
 
 #include <dconfig.h>
 
@@ -103,6 +104,7 @@ init_libglgsg() {
   GLGraphicsStateGuardian::init_type();
   GLSavedFrameBuffer::init_type();
   GLTextureContext::init_type();
+  GLGeomNodeContext::init_type();
 
   GraphicsStateGuardian::get_factory().register_factory
     (GLGraphicsStateGuardian::get_class_type(),

@@ -102,6 +102,10 @@ public:
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
+  virtual GeomNodeContext *prepare_geom_node(GeomNode *node);
+  virtual void draw_geom_node(GeomNode *node, GeomNodeContext *gnc);
+  virtual void release_geom_node(GeomNodeContext *gnc);
+
   virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr);
   virtual void copy_texture(TextureContext *tc, const DisplayRegion *dr,
                             const RenderBuffer &rb);
