@@ -15,6 +15,8 @@ class Mopath(PandaObject):
         self.tPoint = Point3(0)
         self.posPoint = Point3(0)
         self.hprPoint = Point3(0)
+        self.tangentVec = Vec3(0)
+        self.fFaceForward = 0
         self.reset()
 
     def getMaxT(self):
@@ -99,6 +101,9 @@ class Mopath(PandaObject):
         if (self.hprNurbsCurve != None):
             self.hprNurbsCurve.getPoint(self.playbackTime, self.hprPoint)
             node.setHpr(self.hprPoint)
+        elif (self.fFaceForward and (self.xyzNurbsCurve != None)):
+            self.xyzNurbsCurve.getTangent(self.playbackTime, self.tangentVec)
+            node.lookAt(Point3(self.posPoint + self.tangentVec))
 
     def play(self, node, time = 0.0, loop = 0):
         if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):

@@ -132,7 +132,7 @@ class DirectAnalogs(AnalogNode, DirectObject):
         val = min( max( val, self.analogMin ), self.analogMax )
         # Normalize values to given minVal and maxVal range
         return (((maxVal - minVal) *
-                 ((val - self.analogMin) / self.analogRange)) + minVal)
+                 ((val - self.analogMin) / float(self.analogRange))) + minVal)
 
 
     def normalize(self, val, minVal = -1, maxVal = 1, sf = 1.0):
@@ -148,12 +148,12 @@ class DirectAnalogs(AnalogNode, DirectObject):
         val *= sf
         # Clamp value between min and max and scale around center
         if (val >= center):
-            val = (val - center) / (max - center)
+            val = (val - center) / float(max - center)
         else:
-            val = (val - center) / (center - min)            
+            val = (val - center) / float(center - min)            
         # Normalize values to given minVal and maxVal range
         return (((maxVal - minVal) *
-                 ((val - min) / range)) + minVal)
+                 ((val - min) / float(range))) + minVal)
             
     def normalizeChannel(self, chan, minVal = -1, maxVal = 1, sf = 1.0):
         try:

@@ -352,8 +352,8 @@ class Interval(DirectObject):
             tl.title('Interval Controls')
         outerFrame = Frame(tl)
         def entryScaleCommand(t,s=self):
-            s.pause()
             s.setT(t)
+            s.pause()
         self.es = es = EntryScale.EntryScale(
             outerFrame, text = self.getName(),
             min = 0, max = math.floor(self.getDuration() * 100) / 100,
@@ -365,9 +365,11 @@ class Interval(DirectObject):
         def toStart(s=self, es=es):
             s.pause()
             s.setT(0.0)
+            s.pause()
         def toEnd(s=self):
             s.pause()
             s.setT(s.getDuration())
+            s.pause()
         jumpToStart = Button(bf, text = '<<', command = toStart)
         # Stop/play buttons
         def doPlay(s=self, es=es):
