@@ -52,24 +52,34 @@ class MopathRecorder(AppShell, PandaObject):
         self.recorderNodePath = direct.group.attachNewNode(self['name'])
         self.tempCS = self.recorderNodePath.attachNewNode(
             'mopathRecorderTempCS')
+        self.transitionCS = self.recorderNodePath.attachNewNode(
+            'mopathRecorderTransitionCS')
         self.playbackMarker = loader.loadModel('models/directmodels/happy')
         self.playbackMarker.reparentTo(self.recorderNodePath)
+        self.playbackNodePath = None
+        self.lastPlaybackNodePath = None
         # For node path selectors
         self.recNodePathDict = {}
         self.recNodePathDict['marker'] = self.playbackMarker
         self.recNodePathDict['camera'] = direct.camera
         self.recNodePathDict['widget'] = direct.widget
+        self.recNodePathDict['mopathRecorderTempCS'] = self.tempCS
         self.recNodePathNames = ['marker', 'camera', 'widget', 'selected']
         self.pbNodePathDict = {}
         self.pbNodePathDict['marker'] = self.playbackMarker
         self.pbNodePathDict['camera'] = direct.camera
         self.pbNodePathDict['widget'] = direct.widget
+        self.pbNodePathDict['mopathRecorderTempCS'] = self.tempCS
         self.pbNodePathNames = ['marker', 'camera', 'widget', 'selected']
         # Count of point sets recorded
         self.pointSet = []
+        self.prePoints = []
+        self.postPoints = []
         self.pointSetDict = {}
         self.pointSetCount = 0
         self.pointSetName = self['name'] + '-ps-' + `self.pointSetCount`
+        # User callback to call before recording point
+        self.preRecordFunc = None
         # Hook to start/stop recording
         self.startStopHook = 'f6'
         self.keyframeHook = 'f12'
@@ -83,13 +93,14 @@ class MopathRecorder(AppShell, PandaObject):
         self.numTicks = 1
         # Number of segments to represent each parametric unit
         # This just affects the visual appearance of the curve
-        self.numSegs = 2
+        self.numSegs = 5
         # The nurbs curves
         self.xyzNurbsCurve = None
         self.hprNurbsCurve = None
         # Curve drawers
         self.nurbsCurveDrawer = NurbsCurveDrawer(NurbsCurve())
         self.nurbsCurveDrawer.setNumSegs(self.numSegs)
+        self.nurbsCurveDrawer.setShowHull(0)
         self.curveNodePath = self.recorderNodePath.attachNewNode(
             self.nurbsCurveDrawer.getGeomNode())
         # Playback variables
@@ -99,6 +110,13 @@ class MopathRecorder(AppShell, PandaObject):
         self.fEven = 0
         self.desampleFrequency = 1
         self.numSamples = 100
+        # Refining curves
+        self.fRefine = 0
+        self.refineStart = 0.0
+        self.controlStart = 0.0
+        self.controlStop = 0.0
+        self.refineStop = 0.0
+        self.fAdjustingValues = 0
         # Set up event hooks
         self.undoEvents = [('undo', self.undoHook),
                            ('pushUndo', self.pushUndoHook),
@@ -136,7 +154,7 @@ class MopathRecorder(AppShell, PandaObject):
                                  variable = self.pathVis,
                                  command = self.setPathVis)
         self.hullVis = BooleanVar()
-        self.hullVis.set(1)
+        self.hullVis.set(0)
         self.menuBar.addmenuitem('Show/Hide', 'checkbutton',
                                  'Toggle Hull Visability',
                                  label = 'Toggle Hull Vis',
@@ -202,6 +220,66 @@ class MopathRecorder(AppShell, PandaObject):
             self.redoButton['state'] = 'disabled'
         self.redoButton.pack(side = LEFT, expand = 0)
         self.bind(self.redoButton, 'Redo last operation')
+
+        # Playback controls
+        playbackFrame = Frame(interior, relief = SUNKEN,
+                              borderwidth = 2)
+        Label(playbackFrame, text = 'PLAYBACK CONTROLS',
+              font=('MSSansSerif', 12, 'bold')).pack(fill = X)
+        # Playback modifiers
+        frame = Frame(playbackFrame)
+        # Playback node path
+        self.pbNodePathMenu = Pmw.ComboBox(
+            frame, labelpos = W, label_text = 'Playback Node Path:',
+            entry_width = 20,
+            selectioncommand = self.selectPlaybackNodePathNamed,
+            scrolledlist_items = self.pbNodePathNames)
+        self.pbNodePathMenu.selectitem('camera')
+        self.pbNodePathMenuEntry = (
+            self.pbNodePathMenu.component('entryfield_entry'))
+        self.pbNodePathMenuBG = (
+            self.pbNodePathMenuEntry.configure('background')[3])
+        self.pbNodePathMenu.pack(side = LEFT, fill = X, expand = 1)
+        self.bind(self.pbNodePathMenu,
+                  'Select node path to fly along path during playback')
+        # Duration entry
+        self.createLabeledEntry(frame, 'Resample', 'Path Duration',
+                                'Set total curve duration',
+                                command = self.setPathDuration)
+        frame.pack(fill = X, expand = 1)
+        frame = Frame(playbackFrame)
+        widget = self.createEntryScale(
+            frame, 'Playback', 'Time', 'Set current playback time',
+            resolution = 0.01, command = self.playbackGoTo, side = LEFT)
+        widget.component('hull')['relief'] = RIDGE
+        # Kill playback task if drag slider
+        widget.component('scale').bind(
+            '<ButtonPress-1>', lambda e = None, s = self: s.stopPlayback())
+        self.createCheckbutton(frame, 'Playback', 'Loop',
+                               'On: loop playback',
+                               self.setLoopPlayback, self.loopPlayback,
+                               side = LEFT, fill = BOTH, expand = 0)
+        frame.pack(fill = X, expand = 1)
+        # Start stop buttons
+        frame = Frame(playbackFrame)
+        widget = self.createButton(frame, 'Playback', '<<',
+                                   'Jump to start of playback',
+                                   self.jumpToStartOfPlayback,
+                                   side = LEFT, expand = 1)
+        widget['font'] = (('MSSansSerif', 12, 'bold'))
+        widget = self.createCheckbutton(frame, 'Playback', 'Play',
+                                        'Start/Stop playback',
+                                        self.startStopPlayback, 0,
+                                        side = LEFT, fill = BOTH, expand = 1)
+        widget.configure(anchor = 'center', justify = 'center',
+                         relief = RAISED, font = ('MSSansSerif', 12, 'bold'))
+        widget = self.createButton(frame, 'Playback', '>>',
+                                   'Jump to end of playback',
+                                   self.jumpToEndOfPlayback,
+                                   side = LEFT, expand = 1)
+        widget['font'] = (('MSSansSerif', 12, 'bold'))
+        frame.pack(fill = X, expand = 1)
+        playbackFrame.pack(fill = X, pady = 2)
 
         # Create notebook pages
         self.mainNotebook = Pmw.NoteBook(interior)
@@ -277,7 +355,6 @@ class MopathRecorder(AppShell, PandaObject):
             'Hook used to start/stop recording',
             initialValue = self.startStopHook,
             command = self.setStartStopHook)[0]
-        label['width'] = 14
         self.setStartStopHook()
         widget.pack_forget()
         widget.grid(row=3, column=0, sticky = NSEW)
@@ -286,73 +363,27 @@ class MopathRecorder(AppShell, PandaObject):
             'Hook used to add a new keyframe',
             initialValue = self.keyframeHook,
             command = self.setKeyframeHook)[0]
-        label['width'] = 14
         self.setKeyframeHook()
         widget.pack_forget()
         widget.grid(row=3, column=1, sticky = NSEW)
-        self.gridFrame.pack(fill = X, expand = 1)
-        # This gets the widgets to spread out
-        self.gridFrame.grid_columnconfigure(1,weight = 1)        
-        recordFrame.pack(fill = X, pady = 2)
-        # Playback controls
-        playbackFrame = Frame(self.recordPage, relief = SUNKEN,
-                              borderwidth = 2)
-        Label(playbackFrame, text = 'PLAYBACK CONTROLS',
-              font=('MSSansSerif', 12, 'bold')).pack(fill = X)
-        # Playback modifiers
-        frame = Frame(playbackFrame)
-        # Playback node path
-        self.pbNodePathMenu = Pmw.ComboBox(
-            frame, labelpos = W, label_text = 'Playback Node Path:',
-            entry_width = 20,
-            selectioncommand = self.selectPlaybackNodePathNamed,
-            scrolledlist_items = self.pbNodePathNames)
-        self.pbNodePathMenu.selectitem('camera')
-        self.pbNodePathMenuEntry = (
-            self.pbNodePathMenu.component('entryfield_entry'))
-        self.pbNodePathMenuBG = (
-            self.pbNodePathMenuEntry.configure('background')[3])
-        self.pbNodePathMenu.pack(side = LEFT, fill = X, expand = 1)
-        self.bind(self.pbNodePathMenu,
-                  'Select node path to fly along path during playback')
-        # Duration entry
-        self.createLabeledEntry(frame, 'Resample', 'Path Duration',
-                                'Set total curve duration',
-                                command = self.setPathDuration)
-        frame.pack(fill = X, expand = 1)
-        frame = Frame(playbackFrame)
-        widget = self.createEntryScale(
-            frame, 'Playback', 'Time', 'Set current playback time',
-            resolution = 0.01, command = self.setPlaybackTime, side = LEFT)
-        widget.component('hull')['relief'] = RIDGE
-        # Kill playback task if drag slider
-        widget.component('scale').bind(
-            '<ButtonPress-1>', lambda e = None, s = self: s.stopPlayback())
-        self.createCheckbutton(frame, 'Playback', 'Loop',
-                               'On: loop playback',
-                               self.setLoopPlayback, self.loopPlayback,
+        # PreRecordFunc
+        frame = Frame(self.gridFrame)
+        widget = self.createLabeledEntry(
+            frame, 'Recording', 'Pre Record Func',
+            'Function called before recording each point',
+            command = self.setPreRecordFunc)[0]
+        self.createCheckbutton(frame, 'Recording', 'PRF Active',
+                               'On: Pre Record Func enabled',
+                               None, 0,
                                side = LEFT, fill = BOTH, expand = 0)
-        frame.pack(fill = X, expand = 1)
-        # Start stop buttons
-        frame = Frame(playbackFrame)
-        widget = self.createButton(frame, 'Playback', '<<',
-                                   'Jump to start of playback',
-                                   self.jumpToStartOfPlayback,
-                                   side = LEFT, expand = 1)
-        widget['font'] = (('MSSansSerif', 12, 'bold'))
-        widget = self.createCheckbutton(frame, 'Playback', 'Play',
-                                        'Start/Stop playback',
-                                        self.startStopPlayback, 0,
-                                        side = LEFT, fill = BOTH, expand = 1)
-        widget.configure(anchor = 'center', justify = 'center',
-                         relief = RAISED, font = ('MSSansSerif', 12, 'bold'))
-        widget = self.createButton(frame, 'Playback', '>>',
-                                   'Jump to end of playback',
-                                   self.jumpToEndOfPlayback,
-                                   side = LEFT, expand = 1)
-        widget['font'] = (('MSSansSerif', 12, 'bold'))
-        frame.pack(fill = X, expand = 1)
-        playbackFrame.pack(fill = X, pady = 2)
+        frame.grid(row=4, column=0, columnspan = 2, sticky = NSEW)
+        
+        # Pack gridFrame
+        self.gridFrame.pack(fill = X, expand = 1)
+        
+        # This gets the widgets to spread out
+        self.gridFrame.grid_columnconfigure(1,weight = 1)
+        recordFrame.pack(fill = X, pady = 2)
         # Desample
         desampleFrame = Frame(
             self.recordPage, relief = SUNKEN, borderwidth = 2)
@@ -389,14 +420,31 @@ class MopathRecorder(AppShell, PandaObject):
         label = Label(refineFrame, text = 'REFINE CURVE',
                       font=('MSSansSerif', 12, 'bold'))
         label.pack(fill = X)
-        self.createEntryScale(refineFrame, 'Refine Page', 'From',
-                              'Begin time of refine pass',
-                              resolution = 0.01,
-                              command = self.setRefineStart)
-        self.createEntryScale(refineFrame, 'Refine Page', 'To',
-                              'Stop time of refine pass',
-                              resolution = 0.01,
-                              command = self.setRefineStop)
+        widget = self.createEntryScale(refineFrame,
+                                       'Refine Page', 'Refine From',
+                                       'Begin time of refine pass',
+                                       resolution = 0.01,
+                                       command = self.setRefineStart)
+        widget.onRelease = widget.onReturnRelease = self.getPrePoints
+        widget = self.createEntryScale(
+            refineFrame, 'Refine Page',
+            'Control Start',
+            'Time when full control of node path is given during refine pass',
+            resolution = 0.01,
+            command = self.setControlStart)
+        widget.onRelease = widget.onReturnRelease = self.setRefineFlag
+        widget = self.createEntryScale(
+            refineFrame, 'Refine Page',
+            'Control Stop',
+            'Time when node path begins transition back to original curve',
+            resolution = 0.01,
+            command = self.setControlStop)
+        widget.onRelease = widget.onReturnRelease = self.setRefineFlag
+        widget = self.createEntryScale(refineFrame, 'Refine Page', 'Refine To',
+                                       'Stop time of refine pass',
+                                       resolution = 0.01,
+                                       command = self.setRefineStop)
+        widget.onRelease = widget.onReturnRelease = self.getPostPoints
         refineFrame.pack(fill = X)
 
         offsetFrame = Frame(self.refinePage)
@@ -495,7 +543,6 @@ class MopathRecorder(AppShell, PandaObject):
         self.fHasPoints = 1
         # Compute curve
         self.computeCurves()
-    
 
     def setTraceVis(self):
         print self.traceVis.get()
@@ -576,18 +623,35 @@ class MopathRecorder(AppShell, PandaObject):
             self.nurbsCurveDrawer.hide()
             # Create a new point set to hold raw data
             self.createNewPointSet()
-            # Continuous or keyframe?
-            if self.recordType.get() == 'Continuous':
+            # Record nopath's parent
+            self.nodePathParent = self['nodePath'].getParent()
+            # Refine, Continuous or keyframe?
+            if self.fRefine | (self.recordType.get() == 'Continuous'):
+                if self.fRefine:
+                    # Turn off looping playback
+                    self.loopPlayback = 0
+                    # Update widget to reflect new value
+                    self.getVariable('Playback', 'Loop').set(0)
+                    # Select tempCS as playback nodepath
+                    self.lastPlaybackNodePath = self.playbackNodePath
+                    self.selectPlaybackNodePathNamed('mopathRecorderTempCS')
+                    # Parent record node path to temp
+                    self['nodePath'].reparentTo(self.tempCS)
+                    # Align with temp
+                    self['nodePath'].setPosHpr(0,0,0,0,0,0)
+                    # Set playback start to refineStart
+                    self.playbackGoTo(self.refineStart)
+                    # start flying nodePath along path
+                    self.startPlayback()
                 # Start new task
                 t = taskMgr.spawnMethodNamed(
                     self.recordTask, self['name'] + '-recordTask')
                 t.startTime = globalClock.getTime()
-                t.uponDeath = self.endRecordTask
             else:
                 # Add hook
                 self.acceptKeyframeHook()
                 # Record first point
-                self.startPos = self['nodePath'].getPos()
+                self.startPos = self['nodePath'].getPos(self.nodePathParent)
                 self.recordPoint(0.0)
 
             # Don't want to change record modes
@@ -604,8 +668,20 @@ class MopathRecorder(AppShell, PandaObject):
                 self.addKeyframe()
                 # Ignore hook
                 self.ignoreKeyframeHook()
-                # Compute curve
-                self.computeCurves()
+            if self.fRefine:
+                # Reparent node path back to parent
+                self['nodePath'].wrtReparentTo(self.nodePathParent)
+                # Restore playback Node Path
+                self.playbackNodePath = self.lastPlaybackNodePath
+                # Merge prePoints, pointSet, postPoints
+                self.mergePoints()
+                # Clear out pre and post list
+                self.prePoints = []
+                self.postPoints = []
+                # Reset flag
+                self.fRefine = 0
+            # Compute curve
+            self.computeCurves()
             # Now you can change record modes
             self.getWidget('Recording', 'Continuous Recording')['state'] = (
                 'normal')
@@ -614,26 +690,67 @@ class MopathRecorder(AppShell, PandaObject):
             
     def recordTask(self, state):
         # Record raw data point
-        time = globalClock.getTime() - state.startTime
+        time = self.refineStart + (globalClock.getTime() - state.startTime)
         self.recordPoint(time)
         return Task.cont
 
-    def endRecordTask(self, state):
-        self.computeCurves()
+    def addKeyframe(self):
+        time = (self.refineStart +
+                (Vec3(self['nodePath'].getPos(self.nodePathParent) -
+                      self.startPos).length()))
+        self.recordPoint(time)
+
+    def easeInOut(self, t):
+        x = t * t
+        return (3 * x) - (2 * t * x)
+
+    def setPreRecordFunc(self, event):
+        try:
+            self.preRecordFunc = eval(
+                self.getVariable('Recording', 'Pre Record Func').get())
+            # Update widget to reflect new value
+            self.getVariable('Recording', 'PRF Active').set(1)
+        except NameError:
+            # See if you can find func in the globals dictionary
+            # Note: need to set __builtins__.func at command line
+            self.preRecordFunc = eval(
+                self.getVariable('Recording', 'Pre Record Func').get(),
+                globals())
+            # Update widget to reflect new value
+            self.getVariable('Recording', 'PRF Active').set(1)
 
     def recordPoint(self, time):
-        pos = self['nodePath'].getPos()
-        hpr = self['nodePath'].getHpr()
+        # Call user define callback before recording point
+        if (self.getVariable('Recording', 'PRF Active').get() &
+            (self.preRecordFunc != None)):
+            self.preRecordFunc()
+        # Get point
+        pos = self['nodePath'].getPos(self.nodePathParent)
+        hpr = self['nodePath'].getHpr(self.nodePathParent)
+        # Blend between recordNodePath and self['nodePath']
+        if self.fRefine:
+            if (time < self.controlStart):
+                rPos = self.playbackNodePath.getPos(self.nodePathParent)
+                rHpr = self.playbackNodePath.getHpr(self.nodePathParent)
+                t = self.easeInOut(((time - self.refineStart)/
+                                    (self.controlStart - self.refineStart)))
+                # Transition between the recorded node path and the driven one
+                pos = (rPos * (1 - t)) + (pos * t)
+                hpr = (rHpr * (1 - t)) + (hpr * t)
+            elif (time > self.controlStop):
+                rPos = self.playbackNodePath.getPos(self.nodePathParent)
+                rHpr = self.playbackNodePath.getHpr(self.nodePathParent)
+                t = self.easeInOut(((time - self.controlStop)/
+                                    (self.refineStop - self.controlStop)))
+                # Transition between the recorded node path and the driven one
+                pos = (pos * (1 - t)) + (rPos * t)
+                hpr = (hpr * (1 - t)) + (rHpr * t)
         # Add it to the point set
         self.pointSet.append([time, pos, hpr])
         # Add it to the curve fitters
         self.xyzCurveFitter.addPoint(time, pos )
         self.hprCurveFitter.addPoint(time, hpr)
         self.fHasPoints = 1
-
-    def addKeyframe(self):
-        time = Vec3(self['nodePath'].getPos() - self.startPos).length()
-        self.recordPoint(time)
 
     def computeCurves(self):
         # MRM: Would be better if curvefitter had getNumPoints
@@ -642,11 +759,13 @@ class MopathRecorder(AppShell, PandaObject):
             return
         # Create curves
         # XYZ
+        self.xyzCurveFitter.sortPoints()
         self.xyzCurveFitter.computeTangents(1)
         self.xyzNurbsCurve = self.xyzCurveFitter.makeNurbs()
         self.nurbsCurveDrawer.setCurve(self.xyzNurbsCurve)
         self.nurbsCurveDrawer.draw()
         # HPR
+        self.hprCurveFitter.sortPoints()
         self.hprCurveFitter.wrapHpr()
         self.hprCurveFitter.computeTangents(1)
         self.hprNurbsCurve = self.hprCurveFitter.makeNurbs()
@@ -660,8 +779,18 @@ class MopathRecorder(AppShell, PandaObject):
         maxT = '%.2f' % self.xyzNurbsCurve.getMaxT()
         self.getWidget('Playback', 'Time').configure(max = maxT)
         self.getVariable('Resample', 'Path Duration').set(maxT)
-        self.getWidget('Refine Page', 'From').configure(max = maxT)
-        self.getWidget('Refine Page', 'To').configure(max = maxT)
+        widget = self.getWidget('Refine Page', 'Refine From')
+        widget.configure(max = maxT)
+        widget.set(0.0)
+        widget = self.getWidget('Refine Page', 'Control Start')
+        widget.configure(max = maxT)
+        widget.set(0.0)
+        widget = self.getWidget('Refine Page', 'Control Stop')
+        widget.configure(max = maxT)
+        widget.set(float(maxT))
+        widget = self.getWidget('Refine Page', 'Refine To')
+        widget.configure(max = maxT)
+        widget.set(float(maxT))
         self.maxT = float(maxT)
         # Widgets depending on number of knots
         numKnots = self.xyzNurbsCurve.getNumKnots()
@@ -767,7 +896,7 @@ class MopathRecorder(AppShell, PandaObject):
             return
         # Get node path's name
         name = nodePath.getName()
-        if name in ['parent', 'render', 'camera', 'marker']:
+        if name in ['mopathRecorderTempCS', 'widget', 'camera', 'marker']:
             dictName = name
         else:
             # Generate a unique name for the dict
@@ -784,9 +913,6 @@ class MopathRecorder(AppShell, PandaObject):
     def setLoopPlayback(self):
         self.loopPlayback = self.getVariable('Playback', 'Loop').get()
 
-    def setPlaybackTime(self, time):
-        self.playbackGoTo(time)
-
     def playbackGoTo(self, time):
         if (self.xyzNurbsCurve == None) & (self.hprNurbsCurve == None):
             return
@@ -794,7 +920,6 @@ class MopathRecorder(AppShell, PandaObject):
         if self.xyzNurbsCurve != None:
             pos = Vec3(0)
             self.xyzNurbsCurve.getPoint(self.playbackTime, pos)
-            self.playbackNodePath.setPos(pos)
             self.playbackNodePath.setPos(pos)
         if self.hprNurbsCurve != None:
             hpr = Vec3(0)
@@ -819,12 +944,18 @@ class MopathRecorder(AppShell, PandaObject):
         if self.loopPlayback:
             cTime = (state.startOffset + dTime) % self.maxT
         else:
-            cTime = CLAMP(state.startOffset + dTime, 0.0, self.maxT)
-        self.getWidget('Playback', 'Time').set(cTime)
+            cTime = state.startOffset + dTime
         # Stop task if not looping and at end of curve
-        if ((self.loopPlayback == 0) & ((cTime + 0.01) > self.maxT)):
+        # Or if refining curve and past refineStop
+        if (((self.loopPlayback == 0) & (cTime > self.maxT)) |
+            (self.fRefine & (cTime > self.refineStop))):
             self.stopPlayback()
+            if self.fRefine:
+                # Kill record task
+                self.toggleRecordVar()
             return Task.done
+        # Otherwise go to specified time
+        self.getWidget('Playback', 'Time').set(cTime)
         return Task.cont
 
     def stopPlayback(self):
@@ -902,11 +1033,119 @@ class MopathRecorder(AppShell, PandaObject):
         # Update info
         self.updateCurveInfo()
 
+    def setRefineFlag(self, val = 1):
+        self.fRefine = val
+
     def setRefineStart(self,value):
-        print 'refine start'
+        self.refineStart = value
+        # Someone else is adjusting values, let them take care of it
+        if self.fAdjustingValues:
+            return
+        self.fAdjustingValues = 1
+        if self.refineStart > self.controlStart:
+            self.getWidget('Refine Page', 'Control Start').set(
+                self.refineStart)
+        if self.refineStart > self.controlStop:
+            self.getWidget('Refine Page', 'Control Stop').set(
+                self.refineStart)
+        if self.refineStart > self.refineStop:
+            self.getWidget('Refine Page', 'Refine To').set(self.refineStart)
+        self.fAdjustingValues = 0
+
+    def getPrePoints(self):
+        # Set flag so we know to do a refine pass
+        self.setRefineFlag(1)
+        # Reset prePoints
+        self.prePoints = []
+        # See if we need to save any points before refineStart
+        for i in range(len(self.pointSet)):
+            # Have we passed refineStart?
+            if self.refineStart < self.pointSet[i][0]:
+                # Get a copy of the points prior to refineStart
+                self.prePoints = self.pointSet[:i-1]
+                break
+
+    def setControlStart(self, value):
+        self.controlStart = value
+        # Someone else is adjusting values, let them take care of it
+        if self.fAdjustingValues:
+            return
+        self.fAdjustingValues = 1
+        if self.controlStart < self.refineStart:
+            self.getWidget('Refine Page', 'Refine From').set(
+                self.controlStart)
+        if self.controlStart > self.controlStop:
+            self.getWidget('Refine Page', 'Control Stop').set(
+                self.controlStart)
+        if self.controlStart > self.refineStop:
+            self.getWidget('Refine Page', 'Refine To').set(
+                self.controlStart)
+        self.fAdjustingValues = 0
+
+    def setControlStop(self, value):
+        self.controlStop = value
+        # Someone else is adjusting values, let them take care of it
+        if self.fAdjustingValues:
+            return
+        self.fAdjustingValues = 1
+        if self.controlStop < self.refineStart:
+            self.getWidget('Refine Page', 'Refine From').set(
+                self.controlStop)
+        if self.controlStop < self.controlStart:
+            self.getWidget('Refine Page', 'Control Start').set(
+                self.controlStop)
+        if self.controlStop > self.refineStop:
+            self.getWidget('Refine Page', 'Refine To').set(
+                self.controlStop)
+        self.fAdjustingValues = 0
 
     def setRefineStop(self, value):
-        print 'refine stop'
+        self.refineStop = value
+        # Someone else is adjusting values, let them take care of it
+        if self.fAdjustingValues:
+            return
+        self.fAdjustingValues = 1
+        if self.refineStop < self.refineStart:
+            self.getWidget('Refine Page', 'Refine From').set(
+                self.refineStop)
+        if self.refineStop < self.controlStart:
+            self.getWidget('Refine Page', 'Control Start').set(
+                self.refineStop)
+        if self.refineStop < self.controlStop:
+            self.getWidget('Refine Page', 'Control Stop').set(
+                self.refineStop)
+        self.fAdjustingValues = 0
+
+    def getPostPoints(self):
+        # Set flag so we know to do a refine pass
+        self.setRefineFlag(1)
+        # Reset postPoints
+        self.postPoints = []
+        # See if we need to save any points after refineStop
+        for i in range(len(self.pointSet)):
+            # Have we reached refineStop?
+            if self.refineStop < self.pointSet[i][0]:
+                # Get a copy of the points after refineStop
+                self.postPoints = self.pointSet[i:]
+                break
+
+    def mergePoints(self):
+        # Merge in pre points
+        self.pointSet = self.prePoints + self.pointSet
+        for time, pos, hpr in self.prePoints:
+            # Add it to the curve fitters
+            self.xyzCurveFitter.addPoint(time, pos )
+            self.hprCurveFitter.addPoint(time, hpr)
+        # And post points
+        # What is end time of pointSet?
+        endTime = self.pointSet[-1][0]
+        for time, pos, hpr in self.postPoints:
+            adjustedTime = endTime + (time - self.refineStop)
+            # Add it to point set
+            self.pointSet.append([adjustedTime, pos, hpr])
+            # Add it to the curve fitters
+            self.xyzCurveFitter.addPoint(adjustedTime, pos)
+            self.hprCurveFitter.addPoint(adjustedTime, hpr)
 
     def resetOffset(self):
         print 'reset offset'
