@@ -143,6 +143,9 @@ string error_to_text(ErrorUtilCode err) {
   case EU_error_zlib:
     errmsg = "EU_error_zlib";
     break;
+  case EU_write_ram:
+    errmsg = "EU_write_ram";
+    break;
   }
 
   char msgbuf[1024];
