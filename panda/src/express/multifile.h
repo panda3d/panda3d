@@ -25,14 +25,6 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Multifile {
 PUBLISHED:
-  enum MfileCode {
-    MF_ok = 2,
-    MF_success = 1,
-    MF_error_abort = -1,
-    MF_error_write = -2,
-    MF_error_empty = -3,
-  };
-
   enum Type {
     T_unknown,
     T_valid,

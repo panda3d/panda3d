@@ -12,33 +12,11 @@
 #include <filename.h>
 #include <errno.h>
 #include <math.h>
-
-#if !defined(WIN32_VC)
-  #include <sys/time.h>
-  #include <netinet/in.h>
-  #include <arpa/inet.h>
-  #include <netdb.h>
-#else
-  #include <winsock2.h>
-#endif
+#include <error_utils.h>
 
 ////////////////////////////////////////////////////////////////////
 // Defines
 ////////////////////////////////////////////////////////////////////
-enum SafeSendCode {
-  SS_success = 1,
-  SS_error = -1,
-  SS_timeout = -2,
-};
-
-enum FastReceiveCode {
-  FR_eof = 2,
-  FR_success = 1,
-  FR_error = -1,
-  FR_timeout = -2,
-  FR_no_data = -3,
-};
-
 const int MAX_RECEIVE_BYTES = 16384;
 
 ////////////////////////////////////////////////////////////////////
@@ -101,7 +79,7 @@ connect_to_server(const string &name, uint port) {
       downloader_cat.error()
         << "Downloader::connect_to_server() - WSAStartup() - error: "
         << handle_socket_error() << endl;
-      return DL_error_abort;
+      return EU_error_abort;
     }
     _TCP_stack_initialized = true;
   }
@@ -143,7 +121,7 @@ connect_to_server(const string &name, uint port) {
 int Downloader::
 connect_to_server(void) {
   if (_connected == true)
-    return DL_success;
+    return EU_success;
 
   _socket = 0xffffffff;
   _socket = socket(PF_INET, SOCK_STREAM, 0);
@@ -164,7 +142,7 @@ connect_to_server(void) {
   }
 
   _connected = true;
-  return DL_success;
+  return EU_success;
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -195,7 +173,7 @@ safe_send(int socket, const char *data, int length, long timeout) {
   if (length == 0) {
     downloader_cat.error()
       << "Downloader::safe_send() - requested 0 length send!" << endl;
-    return DL_error_abort;
+    return EU_error_abort;
   }
   int bytes = 0;
   struct timeval tv;
@@ -210,7 +188,7 @@ safe_send(int socket, const char *data, int length, long timeout) {
       downloader_cat.error()
         << "Downloader::safe_send() - select timed out after: "
         << timeout << " seconds" << endl;
-      return DL_error_network_timeout;
+      return EU_error_network_timeout;
     } else if (sret == -1) {
       downloader_cat.error()
         << "Downloader::safe_send() - error: " << handle_socket_error() 
@@ -227,7 +205,7 @@ safe_send(int socket, const char *data, int length, long timeout) {
       return get_network_error();
     }
   }
-  return DL_success;
+  return EU_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -237,12 +215,12 @@ safe_send(int socket, const char *data, int length, long timeout) {
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 fast_receive(int socket, DownloadStatus *status, int rec_size) {
-  nassertr(status != NULL, FR_error);
+  nassertr(status != NULL, EU_error_abort);
   if (rec_size <= 0) {
     downloader_cat.error()
       << "Downloader::fast_receive() - Invalid receive size: " << rec_size
       << endl;
-    return DL_error_abort;
+    return EU_error_abort;
   }
 
   // Poll the socket with select() to see if there is any data
@@ -254,7 +232,7 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
   FD_SET(socket, &rset);
   int sret = select(socket, &rset, NULL, NULL, &tv);
   if (sret == 0) {
-    return DL_network_no_data;
+    return EU_network_no_data;
   } else if (sret == -1) {
     downloader_cat.error()
       << "Downloader::fast_receive() - select() error: " 
@@ -263,7 +241,7 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
   }
   int ret = recv(socket, status->_next_in, rec_size, 0);
   if (ret == 0) {
-    return DL_eof;
+    return EU_eof;
   } else if (ret == -1) {
     downloader_cat.error()
       << "Downloader::fast_receive() - recv() error: " 
@@ -277,7 +255,7 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
   status->_next_in += ret;
   status->_bytes_in_buffer += ret;
   status->_total_bytes += ret;
-  return DL_success;
+  return EU_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -304,7 +282,7 @@ initiate(const string &file_name, Filename file_dest,
     downloader_cat.error()
       << "Downloader::initiate() - Download has already been initiated"
       << endl;
-    return DL_error_abort;
+    return EU_error_abort;
   }
 
   // Connect to the server
@@ -363,7 +341,7 @@ initiate(const string &file_name, Filename file_dest,
   _got_any_data = false;
   _initiated = true;
   _ever_initiated = true;
-  return DL_success;
+  return EU_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -400,23 +378,23 @@ run(void) {
     downloader_cat.error()
       << "Downloader::run() - Download has not been initiated"
       << endl;
-    return DL_error_abort;
+    return EU_error_abort;
   }
 
-  nassertr(_current_status != NULL, DL_error_abort);
+  nassertr(_current_status != NULL, EU_error_abort);
 
   int connect_ret = connect_to_server();
   if (connect_ret < 0)
     return connect_ret;
 
-  int ret = DL_ok;
+  int ret = EU_ok;
   int write_ret;
   double t0 = _clock.get_real_time();
   if (_tfirst == 0.0) {
     _tfirst = t0;
   }
   if (t0 - _tlast < _frequency) 
-    return DL_ok;
+    return EU_ok;
 
   // Recompute the buffer size if necessary
   if (_recompute_buffer == true) {
@@ -430,7 +408,7 @@ run(void) {
       if (write_ret < 0)
 	return write_ret;
 
-      ret = DL_write;
+      ret = EU_write;
     }
 
     // Allocate a new buffer
@@ -456,7 +434,7 @@ run(void) {
     write_ret = write_to_disk(_current_status);
     if (write_ret < 0)
       return write_ret;
-    ret = DL_write;
+    ret = EU_write;
   }
 
   // Attempt to receive the bytes from the socket
@@ -476,9 +454,9 @@ run(void) {
         fret = fast_receive(_socket, _current_status, MAX_RECEIVE_BYTES);
       else if (remain > 0)
         fret = fast_receive(_socket, _current_status, remain);
-      if (fret == DL_eof || fret < 0) {
+      if (fret == EU_eof || fret < 0) {
 	break;
-      } else if (fret == DL_success) {
+      } else if (fret == EU_success) {
         _got_any_data = true;
       }
     }
@@ -491,7 +469,7 @@ run(void) {
   _tlast = _clock.get_real_time();
 
   // Check for end of file
-  if (fret == DL_eof) {
+  if (fret == EU_eof) {
     if (_got_any_data == true) {
       if (_current_status->_bytes_in_buffer > 0) {
 	write_ret = write_to_disk(_current_status);
@@ -502,14 +480,14 @@ run(void) {
         downloader_cat.debug()
 	  << "Downloader::run() - Got eof" << endl;
       cleanup();
-      return DL_success;
+      return EU_success;
     } else {
       if (downloader_cat.is_debug())
 	downloader_cat.debug()
 	  << "Downloader::run() - Got 0 bytes" << endl;
       return ret;
     }
-  } else if (fret == DL_network_no_data) {
+  } else if (fret == EU_network_no_data) {
     if (downloader_cat.is_debug())
       downloader_cat.debug()
 	<< "Downloader::run() - No data" << endl;
@@ -535,7 +513,7 @@ parse_http_response(const string &resp) {
     downloader_cat.error()
       << "Downloader::parse_http_response() - not HTTP/1.1 - got: "
       << httpstr << endl;
-    return DL_error_abort;
+    return EU_error_abort;
   }
   size_t ws2 = resp.find(" ", ws);
   string numstr = resp.substr(ws, ws2);
@@ -544,25 +522,25 @@ parse_http_response(const string &resp) {
   switch (num) {
     case 200:
     case 206:
-      return DL_success;
+      return EU_success;
     case 202:
       // Accepted - server may not honor request, though
       if (downloader_cat.is_debug())
         downloader_cat.debug()
           << "Downloader::parse_http_response() - got a 202 Accepted - "
           << "server does not guarantee to honor this request" << endl;
-      return DL_success;
+      return EU_success;
     case 201:
     case 203:
     case 204:
     case 205:
       break;
     case 408:
-      return DL_error_http_server_timeout;
+      return EU_error_http_server_timeout;
     case 503:
-      return DL_error_http_service_unavailable;
+      return EU_error_http_service_unavailable;
     case 504:
-      return DL_error_http_gateway_timeout;
+      return EU_error_http_gateway_timeout;
     default:
       break;
   }
@@ -570,7 +548,7 @@ parse_http_response(const string &resp) {
   downloader_cat.error()
     << "Downloader::parse_http_response() - Invalid response: "
     << resp << endl;
-  return DL_error_abort;
+  return EU_error_abort;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -583,15 +561,15 @@ parse_http_response(const string &resp) {
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 parse_header(DownloadStatus *status) {
-  nassertr(status != NULL, DL_error_abort);
+  nassertr(status != NULL, EU_error_abort);
 
   if (status->_header_is_complete == true)
-    return DL_success;
+    return EU_success;
 
   if (status->_bytes_in_buffer == 0) {
     downloader_cat.error()
       << "Downloader::parse_header() - Empty buffer!" << endl;
-    return DL_error_abort;
+    return EU_error_abort;
   }
 
   string bufstr((char *)status->_start, status->_bytes_in_buffer);
@@ -603,12 +581,12 @@ parse_header(DownloadStatus *status) {
       downloader_cat.error()
         << "Downloader::parse_header() - No newlines in buffer of "
         << "length: " << status->_bytes_in_buffer << endl;
-      return DL_error_abort;
+      return EU_error_abort;
     } else if (p == 0 && nl == p) {
       downloader_cat.error()
         << "Downloader::parse_header() - Buffer begins with newline!"
         << endl;
-        return DL_error_abort;
+        return EU_error_abort;
     }
 
     string component = bufstr.substr(p, nl - p);
@@ -618,7 +596,7 @@ parse_header(DownloadStatus *status) {
     if (status->_first_line_complete == false) {
       status->_first_line_complete = true;
       int parse_ret = parse_http_response(component);
-      if (parse_ret == DL_success) {
+      if (parse_ret == EU_success) {
         if (downloader_cat.is_debug())
           downloader_cat.debug()
             << "Downloader::parse_header() - Header is valid: "
@@ -644,7 +622,7 @@ parse_header(DownloadStatus *status) {
           << server_download_bytes << ", client size = "
           << client_download_bytes << " ("
           << status->_last_byte << "-" << status->_first_byte << ")" << endl;
-        return DL_error_abort;
+        return EU_error_abort;
       }
     }
 
@@ -665,7 +643,7 @@ parse_header(DownloadStatus *status) {
           << "Downloader::parse_header() - Stripping out header of size: "
           << header_length << endl;
 
-      return DL_success;
+      return EU_success;
     }
 
     p = nl + 2;
@@ -677,10 +655,10 @@ parse_header(DownloadStatus *status) {
         << "Downloader::parse_header() - Reached end of buffer without "
         << "successfully parsing the header - buffer size: "
         << status->_bytes_in_buffer << endl;
-    return DL_error_abort;
+    return EU_error_abort;
   }
 
-  return DL_success;
+  return EU_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -693,7 +671,7 @@ parse_header(DownloadStatus *status) {
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 write_to_disk(DownloadStatus *status) {
-  nassertr(status != NULL, DL_error_abort);
+  nassertr(status != NULL, EU_error_abort);
 
   // Ensure the header has been parsed successfully first
   int parse_ret = parse_header(status);
@@ -705,7 +683,7 @@ write_to_disk(DownloadStatus *status) {
       << "Downloader::write_to_disk() - Incomplete HTTP header - "
       << "(or header was larger than download buffer) - "
       << "try increasing download-buffer-size" << endl;
-    return DL_error_abort;
+    return EU_error_abort;
   }
 
   // Write what we have so far to disk
@@ -721,7 +699,7 @@ write_to_disk(DownloadStatus *status) {
 
   status->reset();
 
-  return DL_success;
+  return EU_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -755,135 +733,4 @@ reset(void) {
   _start = _buffer;
   _next_in = _start;
   _bytes_in_buffer = 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Downloader::handle_socket_error
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-char *Downloader::
-handle_socket_error(void) const {
-#ifndef WIN32
-  return strerror(errno);
-#else
-  switch (WSAGetLastError()) {
-    case 10022:
-      return "An invalid argument was supplied";
-    case 10036:
-      return "A blocking operation is currently executing";
-    case 10040:
-      return "Message was larger than internal buffer or network limit";
-    case 10050:
-      return "Network dead";
-    case 10051:
-      return "Network unreachable";
-    case 10052:
-      return "Connection broken because keep-alive detected a failure";
-    case 10053:
-      return "Connection aborted by local host software";
-    case 10054:
-      return "Connection closed by remote host";
-    case 10055:
-      return "Out of buffer space or queue overflowed";
-    case 10057:
-      return "Socket was not connected";
-    case 10058:
-      return "Socket was previously shut down";
-    case 10060:
-      return "Connection timed out";
-    case 10061:
-      return "Connection refused by remote host";
-    case 10064:
-      return "Remote host is down";
-    case 10065:
-      return "Remote host is unreachable";
-    case 10093:
-      return "WSAStartup() was not called";
-    default:
-      return "Unknown WSA error";
-  }
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Downloader::get_network_error
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-int Downloader::
-get_network_error(void) const {
-#ifndef WIN32
-  return DL_error_abort;
-#else
-  switch (WSAGetLastError()) {
-    case 10050:
-      return DL_error_network_dead;
-    case 10051:
-      return DL_error_network_unreachable;
-    case 10052:
-    case 10057:
-    case 10058:
-      return DL_error_network_disconnected;
-    case 10053:
-      return DL_error_network_disconnected_locally;
-    case 10054:
-    case 10061:
-      return DL_error_network_remote_host_disconnected;
-    case 10055:
-      return DL_error_network_buffer_overflow;
-    case 10060:
-      return DL_error_network_timeout;
-    case 10064:
-      return DL_error_network_remote_host_down;
-    case 10065:
-      return DL_error_network_remote_host_unreachable;
-    case 10069:
-      return DL_error_network_disk_quota_exceeded;
-    case 11001:
-      return DL_error_network_remote_host_not_found;
-    case 11002:
-      return DL_error_network_remote_host_no_response;
-    default:
-      return DL_error_abort;
-  }
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Downloader::get_write_error
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-int Downloader::
-get_write_error(void) const {
-#ifndef WIN32
-  return DL_error_abort;
-#else
-  switch (errno) {
-    case 4:
-    case 18:
-      return DL_error_write_out_of_files;
-    case 8:
-    case 14:
-      return DL_error_write_out_of_memory;
-    case 20:
-      return DL_error_write_disk_not_found;
-    case 25:
-    case 27:
-      return DL_error_write_disk_sector_not_found;
-    case 29:
-    case 30:
-    case 31:
-      return DL_error_write_disk_fault;
-    case 32:
-    case 33:
-    case 36:
-      return DL_error_write_sharing_violation;
-    case 39:
-      return DL_error_write_disk_full;
-    default:
-      return DL_error_abort;
-  }
-#endif
 }

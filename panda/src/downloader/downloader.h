@@ -31,51 +31,6 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Downloader {
 PUBLISHED:
-  enum DownloadCode {
-    DL_eof = 5,
-    DL_network_no_data = 4,
-
-    DL_ok = 3,
-    DL_write = 2,
-    DL_success = 1,
-
-    // General download errors
-    DL_error_abort = -1,
-
-    // General network errors
-    DL_error_network_dead = -30,
-    DL_error_network_unreachable = -31,
-    DL_error_network_disconnected = -32,
-    DL_error_network_timeout = -33,
-    DL_error_network_no_data = -34,
-
-    // Local network errors
-    DL_error_network_disconnected_locally = -40,
-    DL_error_network_buffer_overflow = -41,
-    DL_error_network_disk_quota_exceeded = -42,
-
-    // Remote host network errors
-    DL_error_network_remote_host_disconnected = -50,
-    DL_error_network_remote_host_down = -51,
-    DL_error_network_remote_host_unreachable = -52,
-    DL_error_network_remote_host_not_found = -53,
-    DL_error_network_remote_host_no_response = -54,
-
-    // General local errors
-    DL_error_write_out_of_files = -60,
-    DL_error_write_out_of_memory = -61,
-    DL_error_write_sharing_violation = -62,
-    DL_error_write_disk_full = -63,
-    DL_error_write_disk_not_found = -64,
-    DL_error_write_disk_sector_not_found = -65,
-    DL_error_write_disk_fault = -66,
-
-    // HTTP errors
-    DL_error_http_server_timeout = -70,
-    DL_error_http_gateway_timeout = -71,
-    DL_error_http_service_unavailable = -72,
-  };
-
   Downloader(void);
   virtual ~Downloader(void);
 
@@ -129,10 +84,6 @@ private:
   int write_to_disk(DownloadStatus *status);
 
   void cleanup(void);
-  char *handle_socket_error(void) const;
-
-  int get_network_error(void) const;
-  int get_write_error(void) const;
 
 private:
   bool _connected;

@@ -24,7 +24,7 @@
     referenceCount.cxx referenceCount.h tokenBoard.I tokenBoard.h	\
     trueClock.I trueClock.cxx trueClock.h typeHandle.I typeHandle.cxx	\
     typeHandle.h typedReferenceCount.I typedReferenceCount.cxx		\
-    typedReferenceCount.h typedef.h
+    typedReferenceCount.h typedef.h error_utils.cxx error_utils.h
 
   #define INSTALL_HEADERS						\
     bigEndian.I bigEndian.h buffer.I buffer.h circBuffer.I		\
@@ -40,7 +40,8 @@
     pointerTo.I pointerTo.h referenceCount.I referenceCount.h		\
     tokenBoard.h trueClock.I trueClock.h typeHandle.I typeHandle.h	\
     typedReferenceCount.I typedReferenceCount.h typedef.h		\
-    namable.I namable.h tokenBoard.I patchfile.h patchfile.I
+    namable.I namable.h tokenBoard.I patchfile.h patchfile.I		\
+    error_utils.h
 
   #define IGATESCAN all
 

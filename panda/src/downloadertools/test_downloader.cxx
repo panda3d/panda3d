@@ -1,5 +1,6 @@
 #include <pandabase.h>
 #include <downloader.h>
+#include <error_utils.h>
 
 int
 main(int argc, char *argv[]) {
@@ -24,10 +25,10 @@ main(int argc, char *argv[]) {
 
   for (;;) {
     ret = dl.run();
-    if (ret == Downloader::DL_success) {
+    if (ret == EU_success) {
       cerr << "bytes per second: " << dl.get_bytes_per_second() << endl;
       return 1;
-    } else if (ret == Downloader::DL_write) {
+    } else if (ret == EU_write) {
       cerr << "bytes per second: " << dl.get_bytes_per_second() << endl;
     } else if (ret < 0) {
       cerr << "error!" << endl;

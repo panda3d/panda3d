@@ -10,7 +10,7 @@
 #include "config_downloader.h"
 
 #include <filename.h>
-#include <errno.h>
+#include <error_utils.h>
 
 ////////////////////////////////////////////////////////////////////
 // Defines
@@ -73,7 +73,7 @@ initiate(Filename &source_file, const Filename &rel_path) {
     downloader_cat.error()
       << "Extractor::initiate() - Extraction has already been initiated" 
       << endl;
-    return EX_error_abort;
+    return EU_error_abort;
   }
 
   // Open source file
@@ -83,7 +83,7 @@ initiate(Filename &source_file, const Filename &rel_path) {
     downloader_cat.error()
       << "Extractor::extract() - Error opening source file: " 
       << _source_file << " : " << strerror(errno) << endl;
-    return EX_error_write;
+    return get_write_error();
   } 
 
   _rel_path = rel_path;
@@ -98,7 +98,7 @@ initiate(Filename &source_file, const Filename &rel_path) {
   _handled_all_input = false;
   _mfile = new Multifile();
   _initiated = true;
-  return EX_success;
+  return EU_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -133,7 +133,7 @@ run(void) {
     downloader_cat.error()
       << "Extractor::run() - Extraction has not been initiated" 
       << endl;
-    return EX_error_abort;
+    return EU_error_abort;
   }
 
   // See if there is anything left in the source file
@@ -152,16 +152,16 @@ run(void) {
 
   // Write to the out file
   int write_ret = _mfile->write(buffer_start, buffer_size, _rel_path);
-  if (write_ret == Multifile::MF_success) {
+  if (write_ret == EU_success) {
     cleanup();
-    return EX_success;
+    return EU_success;
   } else if (write_ret < 0) {
     downloader_cat.error()
       << "Extractor::run() - got error from Multifile: " << write_ret
       << endl;
     return write_ret;
   }
-  return EX_ok;
+  return EU_ok;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -176,7 +176,7 @@ extract(Filename &source_file, const Filename &rel_path) {
     return false;
   for (;;) {
     ret = run();
-    if (ret == EX_success)
+    if (ret == EU_success)
       return true;
     if (ret < 0)
       return false;

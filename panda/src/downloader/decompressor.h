@@ -21,15 +21,6 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Decompressor {
 PUBLISHED:
-  enum DecompressStatus {
-    DC_ok = 2,
-    DC_success = 1,
-    DC_error_abort = -1,
-    DC_error_write = -2,
-    DC_error_read = -3,
-    DC_error_zlib = -4,
-  };
-
   Decompressor(void);
   Decompressor(PT(Buffer) buffer);
   virtual ~Decompressor(void);

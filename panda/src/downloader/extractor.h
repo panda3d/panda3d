@@ -21,14 +21,6 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Extractor {
 PUBLISHED:
-  enum ExtractorStatus {
-    EX_ok = 2,
-    EX_success = 1,
-    EX_error_abort = -1,
-    EX_error_write = -2,
-    EX_error_empty = -3,
-  };
-
   Extractor(void);
   Extractor(PT(Buffer) buffer);
   virtual ~Extractor(void);

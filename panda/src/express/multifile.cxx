@@ -20,6 +20,7 @@
 #include "multifile.h"
 #include "config_express.h"
 #include <algorithm>
+#include "error_utils.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defines
@@ -302,7 +303,7 @@ int Multifile::Memfile::
 write(char *&start, int &size, const Filename &rel_path) {
   // Make sure we've got a complete header first
   if (parse_header(start, size) == false) {
-    return MF_ok;
+    return EU_ok;
   }
 
   // Try to open the file for writing
@@ -317,20 +318,20 @@ write(char *&start, int &size, const Filename &rel_path) {
     if ((_file_open = name.open_write(_write_stream)) == false) {
       express_cat.error()
         << "Multfile::Memfile::write() - Couldn't open file: "
-        << name << endl;
-      return MF_error_write;
+        << name << " : " << strerror(errno) << endl;
+      return get_write_error();
     }
     _file_open = true;
   }
 
   // Don't write more than the buffer length
-  int done = MF_ok;
+  int done = EU_ok;
   int tsize = size;
   nassertr(_buffer_length >= _bytes_written, false);
   int missing_bytes = _buffer_length - _bytes_written;
   if (size >= missing_bytes) {
     tsize = missing_bytes;
-    done = MF_success;
+    done = EU_success;
   }
 
   _write_stream.write(start, tsize);
@@ -339,7 +340,7 @@ write(char *&start, int &size, const Filename &rel_path) {
   nassertr(size >= tsize, false);
   size -= tsize;
 
-  if (done == MF_success) {
+  if (done == EU_success) {
     _write_stream.close();
     express_cat.debug()
       << "Multifile::Memfile::write() - Closing mem file" << endl;
@@ -409,13 +410,13 @@ evaluate(const char *start, int size) {
 int Multifile::
 parse_header(char *&start, int &size) {
   if (_header_parsed == true)
-    return MF_success;
+    return EU_success;
 
   int dgramsize = _datagram.get_length();
   int tsize = size;
 
   // Make sure we don't exceed the length of the header
-  nassertr(_header_length >= dgramsize, MF_error_abort);
+  nassertr(_header_length >= dgramsize, EU_error_abort);
   int missing_bytes = _header_length - dgramsize;
   if (size >= missing_bytes) {
     tsize = missing_bytes;
@@ -433,14 +434,14 @@ parse_header(char *&start, int &size) {
       express_cat.error()
 	<< "Multifile::parse_header() - Invalid magic number: " 
 	<< magic_number << " (" << _magic_number << ")" << endl;
-      return MF_error_abort;
+      return EU_error_abort;
     }
     _num_mfiles = di.get_int32();
     if (_num_mfiles <= 0) {
       express_cat.debug()
 	<< "Multifile::parse_header() - No memfiles in multifile"
 	<< endl;
-      return MF_error_empty;
+      return EU_error_file_empty;
     }
 
     // Advance start pointer to the end of the header
@@ -448,10 +449,10 @@ parse_header(char *&start, int &size) {
     nassertr(size >= tsize, false);
     size -= tsize;
     _datagram.clear();
-    return MF_success;
+    return EU_success;
   }
 
-  return MF_ok;
+  return EU_ok;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -603,7 +604,7 @@ write(char *&start, int &size, const Filename &rel_path) {
       _current_mfile = new Memfile;
     }
     int write_ret = _current_mfile->write(start, size, rel_path);
-    if (write_ret == MF_success) {
+    if (write_ret == EU_success) {
       _num_mfiles--;
       delete _current_mfile;
       _current_mfile = NULL;
@@ -616,7 +617,7 @@ write(char *&start, int &size, const Filename &rel_path) {
     }
   }
 
-  return MF_success;
+  return EU_success;
 }
 
 ////////////////////////////////////////////////////////////////////
