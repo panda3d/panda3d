@@ -41,7 +41,8 @@ PipelineCycler(Pipeline *pipeline) :
 template<class CycleDataType>
 INLINE PipelineCycler<CycleDataType>::
 PipelineCycler(const PipelineCycler<CycleDataType> &copy) :
-  PipelineCyclerBase(copy._data->make_copy(), copy)
+  // In the DO_PIPELINING copy constructor, the pointer value is ignored.
+  PipelineCyclerBase(NULL, copy)
 {
 }
 

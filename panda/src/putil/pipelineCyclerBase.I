@@ -44,8 +44,8 @@ PipelineCyclerBase(CycleData *initial_data, Pipeline *pipeline) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE PipelineCyclerBase::
-PipelineCyclerBase(CycleData *initial_data, const PipelineCyclerBase &copy) :
-  _data(initial_data),
+PipelineCyclerBase(CycleData *, const PipelineCyclerBase &copy) :
+  _data(copy._data->make_copy()),
   _pipeline(copy._pipeline),
   _read_count(0),
   _write_count(0)
