@@ -14,7 +14,7 @@
   #define INSTALL_HEADERS \
     ctattch.pl ctattch.pl.rnd ctunattach.pl ctquery.pl ctdelta.pl \
     ctdelta.pl.rnd unco.pl ctvspec.pl ctcm.pl ctccase.pl ctntool.pl \
-    ctcvs.pl
+    ctcvs.pl ctproj.pl ctutils.pl
 
   #define INSTALL_SCRIPTS \
     ctattach.drv ctunattach.drv ctquery ctdelta ctihave ctallihave \
