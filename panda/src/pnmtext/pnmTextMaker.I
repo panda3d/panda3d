@@ -131,12 +131,13 @@ get_interior() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMTextMaker::generate_into
 //       Access: Public
-//  Description: Generates text into the indicated image at the
-//               indicated position.
+//  Description: Generates a single line of text into the indicated
+//               image at the indicated position; the return value is
+//               the total width in pixels.
 ////////////////////////////////////////////////////////////////////
-INLINE void PNMTextMaker::
+INLINE int PNMTextMaker::
 generate_into(const string &text, PNMImage &dest_image, int x, int y) {
   TextEncoder encoder;
   encoder.set_text(text);
-  generate_into(encoder.get_wtext(), dest_image, x, y);
+  return generate_into(encoder.get_wtext(), dest_image, x, y);
 }

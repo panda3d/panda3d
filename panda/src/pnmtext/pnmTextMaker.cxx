@@ -60,10 +60,11 @@ PNMTextMaker::
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMTextMaker::generate_into
 //       Access: Public
-//  Description: Generates text into the indicated image at the
-//               indicated position.
+//  Description: Generates a single line of text into the indicated
+//               image at the indicated position; the return value is
+//               the total width in pixels.
 ////////////////////////////////////////////////////////////////////
-void PNMTextMaker::
+int PNMTextMaker::
 generate_into(const wstring &text, PNMImage &dest_image, int x, int y) {
   // First, measure the total width in pixels.
   int width = 0;
@@ -102,6 +103,8 @@ generate_into(const wstring &text, PNMImage &dest_image, int x, int y) {
     }
     xp += glyph->get_advance();
   }
+
+  return width;
 }
 
 ////////////////////////////////////////////////////////////////////

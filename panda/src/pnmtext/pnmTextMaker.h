@@ -66,10 +66,10 @@ public:
   INLINE void set_interior(const Colorf &interior);
   INLINE const Colorf &get_interior() const;
 
-  INLINE void generate_into(const string &text,
-                            PNMImage &dest_image, int x, int y);
-  void generate_into(const wstring &text,
-                     PNMImage &dest_image, int x, int y);
+  INLINE int generate_into(const string &text,
+                           PNMImage &dest_image, int x, int y);
+  int generate_into(const wstring &text,
+                    PNMImage &dest_image, int x, int y);
 
   PNMTextGlyph *get_glyph(int character);
 
