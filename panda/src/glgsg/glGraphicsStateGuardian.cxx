@@ -4164,8 +4164,6 @@ issue_transformed_color(const Colorf &color) const {
   //   glgsg_cat.debug() << "\tAlpha Transformed by " << get_current_alpha_offset() << " "
   //                     << get_current_alpha_scale() << "\n";
   glColor4fv(transformed.get_data());
-
-  report_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
