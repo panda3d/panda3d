@@ -11,14 +11,29 @@ class Timer:
         self.currT = 0.0
         self.name = 'default-timer'
         self.started = 0
+        self.callback = None
 
     def start(self, t, name):
         """ start(t, name)
         """
         if (self.started):
             self.stop()
+        self.callback = None
         self.finalT = t
         self.name = name
+        self.startT = self.clock.getFrameTime()
+        self.currT = 0.0
+        taskMgr.spawnMethodNamed(self.__timerTask, self.name + '-run')
+        self.started = 1
+
+    def startCallback(self, t, callback):
+        """ startCallback(t, callback)
+        """
+        if (self.started):
+            self.stop()
+        self.callback = callback 
+        self.finalT = t
+        self.name = 'default-timer'
         self.startT = self.clock.getFrameTime()
         self.currT = 0.0
         taskMgr.spawnMethodNamed(self.__timerTask, self.name + '-run')
@@ -70,6 +85,9 @@ class Timer:
         te = t - self.startT 
         self.currT = te
         if (te >= self.finalT):
-            messenger.send(self.name)
+            if (self.callback != None):
+                self.callback()
+            else:
+                messenger.send(self.name)
             return Task.done
         return Task.cont
