@@ -276,7 +276,7 @@ class ShowBase:
             if base.wantMusic:
                 if not interupt:
                     if not (music.status() == AudioSound.PLAYING):
-                        AudioManager.plsy(music, time)
+                        AudioManager.play(music, time)
                 else:
                     AudioManager.play(music, time)
                 if looping:
