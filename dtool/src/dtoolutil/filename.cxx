@@ -1204,6 +1204,17 @@ open_write(ofstream &stream) const {
 
   int open_mode = ios::out;
 
+#ifdef WIN32_VC
+  // Windows insists on having this set to prevent the file from being
+  // truncated when we open it.  Makes ios::trunc kind of pointless,
+  // doesn't it?  On the other hand, setting ios::in also seems to
+  // imply ios::nocreate (!), so we should only set this if the file
+  // already exists.
+  if (exists()) {
+    open_mode |= ios::in;
+  }
+#endif
+
 #ifdef HAVE_IOS_BINARY
   // For some reason, some systems (like Irix) don't define
   // ios::binary.
