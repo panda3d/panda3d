@@ -377,9 +377,11 @@ MemoryUsage() {
 
   // count-memory-usage is a much lighter-weight version, and only
   // tracks the total memory allocation.  However, it only works for
-  // certain build environments.
+  // certain build environments (in particular, only in an Opt1 or
+  // Opt2 build on Windows).
 #if defined(WIN32_VC) && defined(_DEBUG)
-  _count_memory_usage = config_express.GetBool("count-memory-usage", false);
+  _count_memory_usage = config_express.GetBool("count-memory-usage", 
+                                               _track_memory_usage);
 #else
   _count_memory_usage = false;
 #endif

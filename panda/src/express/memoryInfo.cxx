@@ -108,6 +108,8 @@ determine_dynamic_type() {
           << " and make sure that all are being initialized.\n";
         _dynamic_type = _static_type;
         _flags &= ~F_reconsider_dynamic_type;
+
+        nassert_raise("Unregistered type.");
         return;
       }
 
