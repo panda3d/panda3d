@@ -1420,7 +1420,7 @@ BOOL WINAPI DriverEnumCallback_MultiMon( GUID* pGUID, TCHAR* strDesc,TCHAR* strN
     return save_devinfo(pGUID,strDesc,strName,argptr,hm);
 }
 
-void wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
+bool wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
 
    if (!_props._fullscreen) {
        if(wdxdisplay_cat.is_debug())
@@ -1436,7 +1436,7 @@ void wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
          // this doesnt seem to be working in toontown resize, so I put ddraw blackblt in handle_reshape instead
          //window_proc(_mwindow, WM_ERASEBKGND,(WPARAM)_hdc,0x0);  
         handle_reshape(true);
-        return;
+        return true;
    }
 
    if(wdxdisplay_cat.is_info())
@@ -1469,7 +1469,7 @@ void wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
 
    if(FAILED(hr = _dxgsg->scrn.pDD->EnumDisplayModes(DDEDM_REFRESHRATES,&ddsd_search,&DMI,EnumDisplayModesCallBack))) {
        wdxdisplay_cat.fatal() << "resize() - EnumDisplayModes failed, result = " << ConvD3DErrorToString(hr) << endl;
-       return;
+       return false;
    }
 
    DMI.supportedBitDepths &= _dxgsg->scrn.D3DDevDesc.dwDeviceRenderBitDepth;
@@ -1489,13 +1489,13 @@ void wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
    } else {
        wdxdisplay_cat.error()
           << "resize failed, no fullScreen resolutions at " << xsize << "x" << ysize << endl;
-       return;
+       return false;
    }
 
    if(FAILED(hr = _dxgsg->scrn.pDD->TestCooperativeLevel())) {
         wdxdisplay_cat.error() << "TestCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
         wdxdisplay_cat.error() << "Full screen app failed to get exclusive mode on resize, exiting..\n";
-        return;
+        return false;
    }
 
    _dxgsg->free_dxgsg_objects();
@@ -1517,6 +1517,7 @@ void wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
    CreateScreenBuffersAndDevice(_dxgsg->scrn);
    _dxgsg->RecreateAllVideoSurfaces();
    _dxgsg->SetDXReady(true);
+   return true;
 }
 
 unsigned int wdxGraphicsWindow::

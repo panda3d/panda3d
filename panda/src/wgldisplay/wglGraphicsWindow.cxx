@@ -397,7 +397,8 @@ void wglGraphicsWindow::config() {
 
     if (!wc_registered) {
       // We only need to register the window class once per session.
-      wc.hCursor = _hMouseCursor;
+
+      wc.hCursor = _hMouseCursor;  // even if cursor isnt visible, we need to load it so its visible in client-area window border
       wc.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
       wc.lpszMenuName   = NULL;
       wc.lpszClassName  = WGL_WINDOWCLASSNAME;
@@ -1107,7 +1108,7 @@ void wglGraphicsWindow::swap() {
     SwapBuffers(_hdc);
 }
 
-void wglGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
+bool wglGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
     if (!_props._fullscreen) {
         // resizing windowed mode is easy
         SetWindowPos(_mwindow, NULL, 0,0, xsize,ysize, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSENDCHANGING);
@@ -1128,7 +1129,7 @@ void wglGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
       DEVMODE dm;
       if (!find_acceptable_display_mode(dwWidth,dwHeight,dwFullScreenBitDepth,dm)) {
           wgldisplay_cat.fatal() << "window resize(" << xsize << "," << ysize << ") failed, no compatible fullscreen display mode found!\n";
-          return;
+          return false;
       }
 
       // this causes WM_SIZE msg to be produced
@@ -1145,6 +1146,7 @@ void wglGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
       assert(_pCurrent_display_settings!=NULL);
       memcpy(_pCurrent_display_settings,&dm,sizeof(DEVMODE));
     }
+    return true;
 }
 
 unsigned int wglGraphicsWindow::
@@ -1588,7 +1590,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   switch (msg) {
 
-    case WM_MOUSEMOVE:
+    case WM_MOUSEMOVE: {
         // Win32 doesn't return the same numbers as X does when the mouse
         // goes beyond the upper or left side of the window
         #define SET_MOUSE_COORD(iVal,VAL) { \
@@ -1606,27 +1608,31 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         SET_MOUSE_COORD(y,HIWORD(lparam));
     
         handle_mouse_motion(x, y);
-        break;
-    
-    // if cursor is invisible, make it visible when moving in the window bars,etc
-    case WM_NCMOUSEMOVE: {
-        if(!_props._bCursorIsVisible) {
-            if(!_cursor_in_windowclientarea) {
-                ShowCursor(true);
-                _cursor_in_windowclientarea=true;
-            }
-        }
+
         break;
     }
 
+    // if cursor is invisible, make it visible when moving in the window bars,etc
+    case WM_NCMOUSEMOVE: {
+      if(!_props._bCursorIsVisible) {
+          if(!_cursor_in_windowclientarea) {
+             // wgldisplay_cat.error() << "NCMOUSEMOVE show=true\n";
+              ShowCursor(true);
+              _cursor_in_windowclientarea=true;
+          }
+      }
+      break;
+    }
+    
     case WM_NCMOUSELEAVE: {
         if(!_props._bCursorIsVisible) {
+            // wgldisplay_cat.error() << "NCMOUSELEAVE show=false\n";
             ShowCursor(false);
             _cursor_in_windowclientarea=false;
         }
         break;
     }
-    
+
     case WM_MOUSELEAVE: {
        _tracking_mouse_leaving=false;  
        handle_mouse_exit();

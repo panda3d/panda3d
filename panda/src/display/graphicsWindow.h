@@ -141,7 +141,7 @@ PUBLISHED:
   // virtual void set_cursor_visible(bool bIsVisible);  // should be overridden by gsg to implement
 
   // resize the window to the given size
-  virtual void resize(unsigned int xsize,unsigned int ysize);  
+  virtual bool resize(unsigned int xsize,unsigned int ysize);  
 
   virtual void swap();
 

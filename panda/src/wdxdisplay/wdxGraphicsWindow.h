@@ -80,7 +80,7 @@ public:
   void dx_setup();
   virtual void begin_frame( void );
   void show_frame();
-  virtual void resize(unsigned int xsize,unsigned int ysize);
+  virtual bool resize(unsigned int xsize,unsigned int ysize);
   virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
   virtual int get_depth_bitwidth(void);
 

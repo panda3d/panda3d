@@ -674,11 +674,20 @@ swap() {
   display_cat.warning() << "swap() unimplemented by " << get_type() << endl;
 }
 
-void GraphicsWindow::
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::resize
+//       Access: Public
+//  Description: Resizes the window to the given size.
+//               Should try to preserve current window bitdepths,
+//               if possible.  If it is not possible to resize window to
+//               the given size, return false and maintain current
+//               window size.
+////////////////////////////////////////////////////////////////////
+bool GraphicsWindow::
 resize(unsigned int xsize,unsigned int ysize) {
   display_cat.warning() << "resize() unimplemented by " << get_type() << endl;  
+  return false;
 }
-
 
 unsigned int GraphicsWindow::
 verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
@@ -693,6 +702,8 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
   //       but this way is somewhat simpler and will do the job 
   //       on most cards, assuming they handle the std sizes the app
   //       knows about.
+
+  // Also note this doesnt guarantee resize() will work, you still need to check its return value.
 
   display_cat.warning() << "verify_window_sizes() unimplemented by " << get_type() << endl; 
   return numsizes;
