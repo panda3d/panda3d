@@ -28,7 +28,7 @@
 #if $[LINK_IN_GL]
   #define BUILDING_DLL $[BUILDING_DLL] BUILDING_PANDAGL
   #define COMPONENT_LIBS $[COMPONENT_LIBS] \
-    glgsg glxdisplay wgldisplay glutdisplay
+    glgsg glxdisplay wgldisplay
 #endif
 
 #if $[LINK_IN_PHYSICS]
