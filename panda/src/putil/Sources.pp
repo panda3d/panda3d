@@ -12,8 +12,10 @@
      bamReaderParam.h bamWriter.I bamWriter.h bitMask.I \
      bitMask.h buttonEvent.I buttonEvent.h buttonHandle.I \
      buttonHandle.h buttonRegistry.I buttonRegistry.h \
-     collideMask.h config_util.N config_util.h \
-     configurable.h factoryBase.I factoryBase.h \
+     collideMask.h \
+     compareTo.I compareTo.h \
+     config_util.N config_util.h configurable.h \
+     factoryBase.I factoryBase.h \
      factoryParam.I factoryParam.h factoryParams.I \
      factoryParams.h \
      firstOfPairCompare.I firstOfPairCompare.h \
@@ -65,6 +67,7 @@
     bamWriter.I bamWriter.h bitMask.I bitMask.h buttonEvent.I \
     buttonEvent.h buttonHandle.I buttonHandle.h buttonRegistry.I \
     buttonRegistry.h collideMask.h \
+    compareTo.I compareTo.h \
     config_util.h configurable.h factory.I factory.h \
     factoryBase.I factoryBase.h factoryParam.I factoryParam.h \
     factoryParams.I factoryParams.h \
