@@ -85,7 +85,7 @@ bool keep_geom_ram = config_gobj.GetBool("keep-geom-ram", true);
 // buffers) with the GSG for static geometry, when supported by the
 // GSG.  Set it false to use only immediate mode, which sends the
 // vertices to the GSG every frame.
-bool retained_mode = config_gobj.GetBool("retained-mode", true);
+bool retained_mode = config_gobj.GetBool("retained-mode", false);
 
 
 // Set this to specify how textures should be written into Bam files.
