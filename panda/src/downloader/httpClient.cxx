@@ -60,6 +60,24 @@ HTTPClient() {
     set_username("*proxy", "", http_proxy_username);
   }
 
+  {
+    // Also load in the general usernames.
+    Config::ConfigTable::Symbol http_usernames;
+    config_downloader.GetAll("http-username", http_usernames);
+    
+    // When we use GetAll(), we might inadvertently read duplicate
+    // lines.  Filter them out with a set.
+    pset<string> already_read;
+    
+    Config::ConfigTable::Symbol::iterator si;
+    for (si = http_usernames.begin(); si != http_usernames.end(); ++si) {
+      string http_username = (*si).Val();
+      if (already_read.insert(http_username).second) {
+        add_http_username(http_username);
+      }
+    }
+  }
+
   // The first time we create an HTTPClient, we must initialize the
   // OpenSSL library.
   if (!_ssl_initialized) {
@@ -393,7 +411,7 @@ get_ssl_ctx() {
   {
     // Load in any default certificates listed in the Configrc file.
     Config::ConfigTable::Symbol expected_servers;
-    config_express.GetAll("expected-ssl-server", expected_servers);
+    config_downloader.GetAll("expected-ssl-server", expected_servers);
     
     // When we use GetAll(), we might inadvertently read duplicate
     // lines.  Filter them out with a set.
@@ -425,7 +443,7 @@ get_ssl_ctx() {
 
     // Load in any default certificates listed in the Configrc file.
     Config::ConfigTable::Symbol cert_files;
-    config_express.GetAll("ssl-certificates", cert_files);
+    config_downloader.GetAll("ssl-certificates", cert_files);
     
     // When we use GetAll(), we might inadvertently read duplicate
     // lines.  Filter them out with a set.
@@ -442,6 +460,52 @@ get_ssl_ctx() {
   }
 
   return _ssl_ctx;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::add_http_username
+//       Access: Private
+//  Description: Handles a Configrc definition for http-username as
+//               server:realm:username:password, where either or both
+//               of server and realm may be empty, or just
+//               server:username:password or username:password.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+add_http_username(const string &http_username) {
+  size_t c1 = http_username.find(':');
+  if (c1 != string::npos) {
+    size_t c2 = http_username.find(':', c1 + 1);
+    if (c2 != string::npos) {
+      size_t c3 = http_username.find(':', c2 + 1);
+      if (c3 != string::npos) {
+        size_t c4 = http_username.find(':', c3 + 1);
+        if (c4 != string::npos) {
+          // Oops, we have five?  Problem.
+          downloader_cat.error()
+            << "Invalid http-username " << http_username << "\n";
+
+        } else {
+          // Ok, we have four.
+          set_username(http_username.substr(0, c1),
+                       http_username.substr(c1 + 1, c2 - (c1 + 1)),
+                       http_username.substr(c2 + 1));
+        }
+
+      } else {
+        // We have only three.
+        set_username(string(),
+                     http_username.substr(0, c1),
+                     http_username.substr(c1 + 1));
+      }
+    } else {
+      // We have only two.
+      set_username(string(), string(), http_username);
+    }
+  } else {
+    // We have only one?  Problem.
+    downloader_cat.error()
+      << "Invalid http-username " << http_username << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

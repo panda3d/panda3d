@@ -98,6 +98,8 @@ public:
   SSL_CTX *get_ssl_ctx();
 
 private:
+  void add_http_username(const string &http_username);
+
   static void initialize_ssl();
   static int load_verify_locations(SSL_CTX *ctx, const Filename &ca_file);
 
