@@ -183,7 +183,7 @@ PointDef(const LPoint2f &p, const LVector2f &v) : _p(p), _v(v) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPolygon::PointDef::
-PointDef(float x, float y) : _p(x, y) {
+PointDef(float x, float y) : _p(x, y), _v(0.0f, 0.0f) {
 }
 
 ////////////////////////////////////////////////////////////////////
