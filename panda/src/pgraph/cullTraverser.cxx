@@ -93,7 +93,9 @@ traverse(const NodePath &root, bool python_cull_control) {
       
     // This local_frustum is in camera space
     PortalClipper portal_viewer(local_frustum, _scene_setup);
-    portal_viewer.draw_camera_frustum();
+    if (allow_portal_cull || python_cull_control) {
+      portal_viewer.draw_camera_frustum();
+    }
 
     if (allow_portal_cull || python_cull_control) {
       // for each portal draw its frustum
@@ -134,8 +136,7 @@ traverse(const NodePath &root, bool python_cull_control) {
     my_data._render_transform = my_data._render_transform->compose(transform);
     traverse(my_data);
     pgraph_cat.debug() << "finished portal culling\n";
-  }
-  else {
+  } else {
     CullTraverserData data(root, get_render_transform(),
                            TransformState::make_identity(),
                            _initial_state, _view_frustum, 
