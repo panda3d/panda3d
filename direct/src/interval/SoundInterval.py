@@ -18,7 +18,7 @@ class SoundInterval(Interval):
     # seems to be some timing in the audio such that the stop doesn't
     # kill the looping sound until the next time around if duration
     # of the interval equals duration of the sound
-    def __init__(self, sound, loop = 0, duration = 0.0, name = None):
+    def __init__(self, sound, loop = 0, duration = 0.0, name = None, volume = 1.0):
         """__init__(sound, loop, name)
         """
         # Generate unique name
@@ -27,6 +27,7 @@ class SoundInterval(Interval):
         # Record instance variables
         self.sound = sound
         self.loop = loop
+        self.volume = volume
         self.wantSound = base.wantSfx
         # If no duration given use sound's duration as interval's duration
         if duration == 0.0:
@@ -75,6 +76,7 @@ class SoundInterval(Interval):
             # Start sound
             self.sound.setTime(t)
             self.sound.setLoop(self.loop)
+            self.sound.setVolume(self.volume)
             self.sound.play()
             # Accept event to kill sound
             self.acceptOnce(self.stopEvent,
