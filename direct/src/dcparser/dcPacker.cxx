@@ -701,7 +701,13 @@ pack_object(PyObject *object) {
     }
 
   } else {
-    int size = PySequence_Size(object);
+
+    // For some reason, PySequence_Check() is incorrectly reporting
+    // that a class instance is a sequence, even if it doesn't provide
+    // __len__, so we double-check by testing for __len__ explicitly.
+    bool is_sequence = 
+      (PySequence_Check(object) != 0) &&
+      (PyObject_HasAttrString(object, "__len__") != 0);
     bool is_instance = false;
 
     const DCClass *dclass = NULL;
@@ -731,20 +737,20 @@ pack_object(PyObject *object) {
     // class object, it is considered to be a class object.
 
     // (2) Otherwise, if the supplied class object has a __len__()
-    // method (i.e. PySequence_Size() returns a number >= 0), then it
-    // is considered to be a sequence.
+    // method (i.e. PySequence_Check() returns true), then it is
+    // considered to be a sequence.
 
     // (3) Otherwise, it is considered to be a class object.
 
-    if (dclass != (DCClass *)NULL && (is_instance || size < 0)) {
+    if (dclass != (DCClass *)NULL && (is_instance || !is_sequence)) {
       // The supplied object is either an instance of the expected
-      // class object, or the size is less than 0--this is case (1) or
+      // class object, or it is not a sequence--this is case (1) or
       // (3).
       pack_class_object(dclass, object);
 
-    } else if (size >= 0) {
+    } else if (is_sequence) {
       // The supplied object is not an instance of the expected class
-      // object, but it does have a size.  This is case (2).
+      // object, but it is a sequence.  This is case (2).
       push();
       int size = PySequence_Size(object);
       for (int i = 0; i < size; i++) {
@@ -755,9 +761,9 @@ pack_object(PyObject *object) {
       pop();
 
     } else {
-      // The supplied object does not return a valid size, and we
-      // weren't expecting a class parameter.  This is none of the
-      // above, an error.
+      // The supplied object is not a sequence, and we weren't
+      // expecting a class parameter.  This is none of the above, an
+      // error.
       ostringstream strm;
       PyObject *str = PyObject_Str(object);
       strm << "Don't know how to pack object: "
