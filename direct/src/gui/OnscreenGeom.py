@@ -119,3 +119,5 @@ class OnscreenGeom(PandaObject, NodePath):
     # Allow index style refererences
     __getitem__ = cget
     
+    def destroy(self):
+        self.removeNode()

@@ -90,6 +90,8 @@ class DirectGuiBase(PandaObject):
         self.guiId = 'guiObject'
         # List of all active hooks
         self.hookDict = {}
+        # To avoid doing things redundantly during initialisation
+        self.fInit = 1
 	# Mapping from each megawidget option to a list of information
 	# about the option
 	#   - default value
@@ -218,10 +220,12 @@ class DirectGuiBase(PandaObject):
 	if self.__class__ is myClass:
 	    # Call the configuration callback function for every option.
 	    FUNCTION = _OPT_FUNCTION
+            self.fInit = 1
 	    for info in self._optionInfo.values():
 		func = info[FUNCTION]
 		if func is not None and func is not INITOPT:
 		    func()
+            self.fInit = 0
 
             # Now check if anything is left over
 	    unusedOptions = []
@@ -243,6 +247,11 @@ class DirectGuiBase(PandaObject):
 		    text = 'Unknown options "'
 		raise KeyError, text + string.join(unusedOptions, ', ') + \
 			'" for ' + myClass.__name__
+            # Can now call post init func
+            self.postInitialiseFunc()
+
+    def postInitialiseFunc(self):
+        pass
                     
     def isinitoption(self, option):
         """
@@ -609,6 +618,166 @@ class DirectGuiBase(PandaObject):
             del(self.hookDict[gEvent])
 
 
-class DirectGuiWidget(DirectGuiBase):
-    pass
+class DirectGuiWidget(DirectGuiBase, NodePath):
+    def __init__(self, parent = guiTop, **kw):
+        # Direct gui widgets are node paths
+        # Direct gui widgets have:
+        # -  stateNodePaths (to hold visible representation of widget)
+        # State node paths can have:
+        # -  a frame of type (None, FLAT, RAISED, GROOVE, RIDGE)
+        # -  arbitrary geometry for each state
+        # They inherit from DirectGuiWidget
+        # -  Can create components (with aliases and groups)
+        # -  Can bind to mouse events
+        # They inherit from NodePath
+        # -  Can position/scale them
+        optiondefs = (
+            # Widget's constructor
+            ('pgFunc',          PGItem,     None),
+            ('numStates',       1,          None),
+            ('invertedFrames',  (),         None),
+            # Widget's initial state
+            ('state',           NORMAL,     self.setState),
+            # Widget's frame characteristics
+            ('relief',          FLAT,       self.setRelief),
+            ('borderWidth',     (.1,.1),    self.setBorderWidth),
+            ('frameSize',       None,       self.setFrameSize),
+            ('frameColor',      (1,1,1,1),  self.setFrameColor),
+            ('pad',             (.25,.15),  self.resetFrameSize),
+            # Initial pos/scale of the widget
+            ('pos',             None,       INITOPT),
+            ('scale',           None,       INITOPT),
+            )
+        # Merge keyword options with default options
+        self.defineoptions(kw, optiondefs)
+
+        # Initialize the base classes (after defining the options).
+        DirectGuiBase.__init__(self)
+        NodePath.__init__(self)
+        # Create a button
+        self.guiItem = self['pgFunc']()
+        self.guiId = self.guiItem.getId()
+        # Attach button to parent and make that self
+        self.assign(parent.attachNewNode( self.guiItem ) )
+        # Update pose to initial values
+        if self['pos']:
+            pos = self['pos']
+            # Can either be a Point3 or a tuple of 3 values
+            if isinstance(pos, Point3):
+                self.setPos(pos)
+            else:
+                apply(self.setPos, pos)
+        if self['scale']:
+            scale = self['scale']
+            # Can either be a Vec3 or a tuple of 3 values
+            if (isinstance(scale, Vec3) or
+                (type(scale) == types.IntType) or
+                (type(scale) == types.FloatType)):
+                self.setScale(scale)
+            else:
+                apply(self.setScale, self['scale'])
+        # Initialize names
+        self.guiItem.setName(self.guiId)
+        self.setName(self.guiId + 'NodePath')
+        # Create
+        self.stateNodePath = []
+        for i in range(self['numStates']):
+            self.stateNodePath.append(NodePath(self.guiItem.getStateDef(i)))
+        # Initialize frame style
+        self.frameStyle = []
+        for i in range(self['numStates']):
+            self.frameStyle.append(PGFrameStyle())
+        # For holding bounds info
+        self.ll = Point3(0)
+        self.ur = Point3(0)
+        # Call option initialization functions
+        self.initialiseoptions(DirectGuiWidget)
+
+    def postInitialiseFunc(self):
+        # Now allow changes to take effect
+        self.updateFrameStyle()
+        if not self['frameSize']:
+            self.setFrameSize()
+
+    def setState(self):
+        if type(self['state']) == type(0):
+            self.guiItem.setActive(self['state'])
+        elif (self['state'] == NORMAL) or (self['state'] == 'normal'):
+            self.guiItem.setActive(1)
+        else:
+            self.guiItem.setActive(0)
+
+    def resetFrameSize(self):
+        if not self.fInit:
+            self.setFrameSize(fClearFrame = 1)
+        
+    def setFrameSize(self, fClearFrame = 0):
+        if self['frameSize']:
+            # Use user specified bounds
+            bounds = self['frameSize']
+        else:
+            # Use ready state to compute bounds
+            frameType = self.frameStyle[0].getType()
+            if fClearFrame and (frameType != PGFrameStyle.TNone):
+                self.frameStyle[0].setType(PGFrameStyle.TNone)
+                self.guiItem.setFrameStyle(0, self.frameStyle[0])
+                # To force an update of the button
+                self.guiItem.getStateDef(0)
+            # Clear out frame before computing bounds
+            self.stateNodePath[0].calcTightBounds(self.ll, self.ur)
+            # Scale bounds to give a pad around graphics
+            bounds = (self.ll[0] - self['pad'][0],
+                      self.ur[0] + self['pad'][0],
+                      self.ll[2] - self['pad'][1],
+                      self.ur[2] + self['pad'][1])
+            # Restore frame style if necessary
+            if (frameType != PGFrameStyle.TNone):
+                self.frameStyle[0].setType(frameType)
+                self.guiItem.setFrameStyle(0, self.frameStyle[0])
+        # Set frame to new dimensions
+        self.guiItem.setFrame(bounds[0], bounds[1],bounds[2], bounds[3])
+
+    def updateFrameStyle(self):
+        if not self.fInit:
+            for i in range(self['numStates']):
+                self.guiItem.setFrameStyle(i, self.frameStyle[i])
+
+    def setRelief(self, fSetStyle = 1):
+        relief = self['relief']
+        if relief == None:
+            for i in range(self['numStates']):
+                self.frameStyle[i].setType(PGFrameStyle.TNone)
+        elif (relief == FLAT) or (relief == 'flat'):
+            for i in range(self['numStates']):
+                self.frameStyle[i].setType(FLAT)
+        elif (relief == RAISED) or (relief == 'raised'):
+            for i in range(self['numStates']):
+                if i in self['invertedFrames']:
+                    self.frameStyle[1].setType(SUNKEN)
+                else:
+                    self.frameStyle[i].setType(RAISED)
+        elif (relief == SUNKEN) or (relief == 'sunken'):
+            for i in range(self['numStates']):
+                if i in self['invertedFrames']:
+                    self.frameStyle[1].setType(RAISED)
+                else:
+                    self.frameStyle[i].setType(SUNKEN)
+        self.updateFrameStyle()
+
+    def setFrameColor(self):
+        color = self['frameColor']
+        for i in range(self['numStates']):
+            self.frameStyle[i].setColor(color[0], color[1], color[2], color[3])
+        self.updateFrameStyle()
+
+    def setBorderWidth(self):
+        width = self['borderWidth']
+        for i in range(self['numStates']):
+            self.frameStyle[i].setWidth(width[0], width[1])
+        self.updateFrameStyle()
+            
+    def destroy(self):
+        DirectGuiBase.destroy(self)
+        # Get rid of node path
+        self.removeNode()
 

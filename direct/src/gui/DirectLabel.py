@@ -1,52 +1,156 @@
 from DirectGuiBase import *
 
-class DirectLabel(DirectGuiBase, PGItem):
-    def __init__(self, parent = None, **kw):
-        # Pass in a background texture, and/or a geometry object,
-        # and/or a text string to be used as the visible
-        # representation of the label
+class DirectLabel(DirectGuiWidget):
+    def __init__(self, parent = guiTop, **kw):
+        # Inherits from DirectGuiWidget
+        # A Direct Label can have:
+        # - A background texture (pass in path to image, or Texture Card)
+        # - A midground geometry item (pass in geometry)
+        # - A foreground text Node (pass in text string or Onscreen Text)
+        # Each of these has 1 or more states
+        # The same object can be used for all states or each
+        # state can have a different text/geom/image (for radio button
+        # and check button indicators, for example
         optiondefs = (
-            ('image',         None,       self.setImage),
-            ('geom',          None,       self.setGeom),
-            ('text',          None,       self.setText),
-            ('pos',           (0,0,0),    self.setPos),
-            ('scale',         (1,1,1),    self.setScale),
-            ('bounds',        None,       self.setBounds),
-            ('imagePos',      (0,0,0),    self.setImagePos),
-            ('imageScale',    (1,1,1),    self.setImagePos),
-            ('geomPos',       (0,0,0),    self.setGeomPos),
-            ('geomScale',     (1,1,1),    self.setGeomPos),
-            ('textPos',       (0,0,0),    self.setTextPos),
-            ('textScale',     (1,1,1),    self.setTextPos),
+            # Define type of DirectGuiWidget
+            ('pgFunc',          PGItem,     None),
+            ('numStates',       1,          None),
+            # Label can have:
+            # A background texture
+            ('image',           None,       self.setImage),
+            # A midground geometry item
+            ('geom',            None,       self.setGeom),
+            # A foreground text node
+            ('text',            None,       self.setText),
             )
-        apply(DirectGuiBase.__init__, (self, optiondefs, ()), kw)            
+        # Merge keyword options with default options
+        self.defineoptions(kw, optiondefs,
+                           dynamicGroups = ('text', 'geom', 'image'))
+
+        # Initialize superclasses
+        DirectGuiWidget.__init__(self, parent)
+        
+        # Call option initialization functions
         self.initialiseoptions(DirectLabel)
 
-    def setImage(self):
-        pass
-    def setGeom(self):
-        pass
     def setText(self):
-        pass
-    def setPos(self):
-        pass
-    def setScale(self):
-        pass
-    def setBounds(self):
-        pass
-    def setImagePos(self):
-        pass
-    def setImagePos(self):
-        pass
-    def setGeomPos(self):
-        pass
-    def setGeomPos(self):
-        pass
-    def setTextPos(self):
-        pass
-    def setTextPos(self):
-        pass
-    def setState(self):
-        pass
+        # Determine if user passed in single string or a sequence
+        if self['text'] == None:
+            textList = (None,) * self['numStates']
+        elif type(self['text']) == types.StringType:
+            # If just passing in a single string, make a tuple out of it
+            textList = (self['text'],) * self['numStates']
+        else:
+            # Otherwise, hope that the user has passed in a tuple/list
+            textList = self['text']
+        # Create/destroy components
+        for i in range(self['numStates']):
+            component = 'text' + `i`
+            # If fewer items specified than numStates,
+            # just repeat last item
+            try:
+                text = textList[i]
+            except IndexError:
+                text = textList[-1]
+                
+            if self.hascomponent(component):
+                if text == None:
+                    # Destroy component
+                    self.destroycomponent(component)
+                else:
+                    self[component + '_text'] = text
+            else:
+                if text == None:
+                    return
+                else:
+                    self.createcomponent(
+                        component, (), 'text',
+                        OnscreenText.OnscreenText,
+                        (), parent = self.stateNodePath[i],
+                        text = text, scale = 1,
+                        sort = TEXT_SORT_INDEX,
+                        mayChange = 1)
 
+    def setGeom(self):
+        # Determine argument type
+        if self['geom'] == None:
+            # Passed in None
+            geomList = (None,) * self['numStates']
+        elif isinstance(self['geom'], NodePath):
+            # Passed in a single node path, make a tuple out of it
+            geomList = (self['geom'],) * self['numStates']
+        else:
+            # Otherwise, hope that the user has passed in a tuple/list
+            geomList = self['geom']
+        # Create/destroy components
+        for i in range(self['numStates']):
+            component = 'geom' + `i`
+            # If fewer items specified than numStates,
+            # just repeat last item
+            try:
+                geom = geomList[i]
+            except IndexError:
+                geom = geomList[-1]
+                
+            if self.hascomponent(component):
+                if geom == None:
+                    # Destroy component
+                    self.destroycomponent(component)
+                else:
+                    self[component + '_geom'] = geom
+            else:
+                if geom == None:
+                    return
+                else:
+                    self.createcomponent(
+                        component, (), 'geom',
+                        OnscreenGeom.OnscreenGeom,
+                        (), parent = self.stateNodePath[i],
+                        geom = geom, scale = 1,
+                        sort = GEOM_SORT_INDEX)
 
+    def setImage(self):
+        # Determine argument type
+        arg = self['image']
+        if arg == None:
+            # Passed in None
+            imageList = (None,) * self['numStates']
+        elif type(arg) == types.StringType:
+            # Passed in a single node path, make a tuple out of it
+            imageList = (arg,) * self['numStates']
+        else:
+            # Otherwise, hope that the user has passed in a tuple/list
+            if ((len(arg) == 2) and
+                (type(arg[0]) == types.StringType) and
+                (type(arg[1]) == types.StringType)):
+                # Its a model/node pair of strings
+                image = (arg,) * self['numStates']
+            else:
+                # Assume its a list of node paths
+                imageList = arg
+        # Create/destroy components
+        for i in range(self['numStates']):
+            component = 'image' + `i`
+            # If fewer items specified than numStates,
+            # just repeat last item
+            try:
+                image = imageList[i]
+            except IndexError:
+                image = imageList[-1]
+                
+            if self.hascomponent(component):
+                if image == None:
+                    # Destroy component
+                    self.destroycomponent(component)
+                else:
+                    self[component + '_image'] = image
+            else:
+                if image == None:
+                    return
+                else:
+                    self.createcomponent(
+                        component, (), 'image',
+                        OnscreenImage.OnscreenImage,
+                        (), parent = self.stateNodePath[i],
+                        image = image, scale = 1,
+                        sort = IMAGE_SORT_INDEX)

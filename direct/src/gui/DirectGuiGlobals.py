@@ -16,6 +16,14 @@ import OnscreenImage
 import types
 
 # USEFUL GUI CONSTANTS
+# Constant used to indicate that an option can only be set by a call
+# to the constructor.
+INITOPT = ['initopt']
+
+# Mouse buttons
+LMB = 0
+MMB = 1
+RMB = 2
 
 # Widget state
 NORMAL = 'normal'
@@ -56,6 +64,8 @@ B1RELEASE = getGenericMouseEvent('release', 1)
 B2RELEASE = getGenericMouseEvent('release', 2)
 B3RELEASE = getGenericMouseEvent('release', 3)
 
-# Constant used to indicate that an option can only be set by a call
-# to the constructor.
-INITOPT = ['initopt']
+# For setting the sorting order of a widget's visible components
+IMAGE_SORT_INDEX = 10
+GEOM_SORT_INDEX = 20
+TEXT_SORT_INDEX = 30
+

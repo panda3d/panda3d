@@ -216,6 +216,9 @@ class OnscreenText(PandaObject, NodePath):
             if self.hasArcs():
                 self.removeNode()
 
+    def destroy(self):
+        self.cleanup()
+
     def freeze(self):
         self.textNode.freeze()
 
