@@ -838,5 +838,5 @@ insert(const ov_multiset<Key, Compare>::value_type &key) {
 template<class Key, class Compare>
 INLINE void ov_multiset<Key, Compare>::
 sort() {
-  return ordered_vector<Key, Compare>::sort_nonunique();
+  ordered_vector<Key, Compare>::sort_nonunique();
 }
