@@ -15,8 +15,8 @@ if sys.argv[1:]:
 # If you do not run from the command line, we just load all of them
 # or you can hack this up for your own purposes.
 else:
-    hoods = ['TT', 'DD', 'BR', 'DG', 'DL', 'MM']
-    # hoods = ['DL' ]
+    # hoods = ['TT', 'DD', 'BR', 'DG', 'DL', 'MM']
+    hoods = ['TT' ]
 
 print "Loading LevelEditor for hoods: ", hoods
 
@@ -1946,17 +1946,19 @@ class LevelEditor(NodePath, PandaObject):
         self.reset(fDeleteToplevel = 1, fCreateToplevel = 0)
         # Now load in new file
         node = loadDNAFile(DNASTORE, filename, CSDefault, 1)
-        # Make sure the node only has one parent
-        assert(node.getNumParents(RenderRelation.getClassType()) == 1)
-        # Make a new level editor node path using the arc that is already on this node
-        newNPToplevel = NodePath()
-        newNPToplevel.extendBy(node.getParent(RenderRelation.getClassType(), 0))
-        newNPToplevel.reparentTo(hidden)
+
+        if node.getNumParents(RenderRelation.getClassType()) == 1:
+            # If the node already has a parent arc when it's loaded, we must
+            # be using the level editor and we want to preserve that arc.
+            newNPToplevel = NodePath()
+            newNPToplevel.extendBy(node.getParent(RenderRelation.getClassType(), 0))
+            newNPToplevel.reparentTo(hidden)
+        else:
+            # Otherwise, we should create a new arc for the node.
+            newNPToplevel = hidden.attachNewNode(node)
+
         # Make sure the topmost file DNA object gets put under DNARoot
         newDNAToplevel = self.findDNANode(newNPToplevel)
-        
-        #import pdb
-        #pdb.set_trace()
         
         # reset the landmark block number:
         (self.landmarkBlock, needTraverse)=self.findHighestLandmarkBlock(
@@ -1973,6 +1975,9 @@ class LevelEditor(NodePath, PandaObject):
         self.hideSuitPaths()
         self.createBattleCells()
         self.hideBattleCells()
+        # Set the title bar to have the filename to make it easier
+        # to remember what file you are working on
+        self.panel["title"] = filename
 
     def outputDNADefaultFile(self):
         f = Filename(self.styleManager.stylePathPrefix +
@@ -3857,6 +3862,12 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                                       variable = self.fCells,
                                       command = self.toggleBattleCells)
         self.cellButton.pack(side = 'top', expand = 1, fill = 'x')
+
+        self.colorZoneButton = Button(battleCellPage,
+                                      text = 'Color Zones',
+                                      command = self.levelEditor.colorZones)
+        self.colorZoneButton.pack(side = 'top', expand = 1, fill = 'x')
+
         self.battleCellSelector = Pmw.ComboBox(
             battleCellPage,
             dropdown = 0,
