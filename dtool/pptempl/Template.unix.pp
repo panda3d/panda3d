@@ -175,7 +175,7 @@ all : $[all_targets]
 // The 'test' rule makes all the test_bin_targets.
 test : $[test_bin_targets]
 
-clean :
+clean : clean-igate
 #if $[st_sources]
 $[TAB] rm -f $[patsubst %,$[%_obj],$[st_sources]]
 #endif
