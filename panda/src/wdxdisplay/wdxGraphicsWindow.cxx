@@ -332,7 +332,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             if(!((wparam=='V') && (GetKeyState(VK_CONTROL) < 0))) {
                handle_keypress(lookup_key(wparam), point.x, point.y);
             } else {
-                HGLOBAL   hglb; 
+                HGLOBAL hglb; 
                 char    *lptstr; 
             
                 if (!IsClipboardFormatAvailable(CF_TEXT)) 
@@ -1794,23 +1794,24 @@ CreateScreenBuffersAndDevice(DWORD dwRenderWidth, DWORD dwRenderHeight,LPDIRECTD
             exit(1);
         }
 
+        #define SET_ZBUF_DEPTH(DEPTH) { assert(pz##DEPTH != NULL); _depth_buffer_bpp=DEPTH; ddsd.ddpfPixelFormat = *pz##DEPTH;}
+
         if(IS_NVIDIA(_DXDeviceID)) {
            DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd_pri)
             pPrimaryDDSurf->GetSurfaceDesc(&ddsd_pri);
 
             // must pick zbuf depth to match primary surface depth for nvidia
             if(ddsd_pri.ddpfPixelFormat.dwRGBBitCount==16) {
-                assert(pz16!=NULL);
-                ddsd.ddpfPixelFormat = *pz16;
+                SET_ZBUF_DEPTH(16);
             } else {
                 if(dx_force_16bpp_zbuffer) {
                     wdxdisplay_cat.fatal() << "'dx-force-16bpp-zbuffer #t' requires a 16bpp desktop on nvidia cards\n";
                     exit(1);
                 }
                 // take the smaller of 24 or 32.  (already assured to match stencil capability)
-                if(pz24!=NULL)
-                    ddsd.ddpfPixelFormat = *pz24; 
-                  else ddsd.ddpfPixelFormat = *pz32; 
+                if(pz24!=NULL) {
+                    SET_ZBUF_DEPTH(24);
+                } else SET_ZBUF_DEPTH(32);
             }
         } else {
             if(dx_force_16bpp_zbuffer) {
@@ -1819,7 +1820,9 @@ CreateScreenBuffersAndDevice(DWORD dwRenderWidth, DWORD dwRenderHeight,LPDIRECTD
                     exit(1);
                 }
 
-                wdxdisplay_cat.debug() << "forcing use of 16bpp Z-Buffer\n";
+                if(wdxdisplay_cat.is_debug())
+                   wdxdisplay_cat.debug() << "forcing use of 16bpp Z-Buffer\n";
+                SET_ZBUF_DEPTH(16);
                 ddsd.ddpfPixelFormat = *pz16;
             } else {
                 // pick the highest res zbuffer format avail.  Note: this is choosing to waste vid-memory
@@ -1829,15 +1832,14 @@ CreateScreenBuffersAndDevice(DWORD dwRenderWidth, DWORD dwRenderHeight,LPDIRECTD
 
                 if(bWantStencil && (pz32!=NULL)) {
                     // dont want to select 16/8 z/stencil over 24/8 z/stenc
-                    ddsd.ddpfPixelFormat = *pz32;
+                    SET_ZBUF_DEPTH(32);
                 } else {
                     if(pz24!=NULL) {
-                        ddsd.ddpfPixelFormat = *pz24;
+                        SET_ZBUF_DEPTH(24);
                     } else if(pz32!=NULL) {
-                        ddsd.ddpfPixelFormat = *pz32;
+                        SET_ZBUF_DEPTH(32);
                     } else {
-                        assert(pz16!=NULL);
-                        ddsd.ddpfPixelFormat = *pz16;
+                        SET_ZBUF_DEPTH(16);
                     }
                 }
             }
@@ -2197,7 +2199,7 @@ TypeHandle wdxGraphicsWindow::get_type(void) const {
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-ButtonHandle  wdxGraphicsWindow::
+ButtonHandle wdxGraphicsWindow::
 lookup_key(WPARAM wparam) const {
     switch(wparam) {
         case VK_BACK: return KeyboardButton::backspace();
@@ -2290,6 +2292,19 @@ lookup_key(WPARAM wparam) const {
             break;
     }
     return ButtonHandle::none();
+}
+
+int wdxGraphicsWindow::
+get_depth_bitwidth(void) {
+    if((_dxgsg==NULL) || (_dxgsg->_zbuf==NULL))
+      return -1;
+
+    return _depth_buffer_bpp;
+
+// this is not reliable, on GF2, GetSurfDesc returns 32bpp when you created a 24bpp zbuf
+//    DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
+//    _dxgsg->_zbuf->GetSurfaceDesc(&ddsd); 
+//  return ddsd.ddpfPixelFormat.dwRGBBitCount;
 }
 
 // Global system parameters we want to modify during our run

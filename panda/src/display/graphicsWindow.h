@@ -112,6 +112,8 @@ PUBLISHED:
   INLINE int get_xorg() const;
   INLINE int get_yorg() const;
 
+  virtual int get_depth_bitwidth(void);  // # of z bits/pixel
+
   INLINE GraphicsStateGuardian *get_gsg() const;
   INLINE GraphicsPipe *get_pipe() const;
 

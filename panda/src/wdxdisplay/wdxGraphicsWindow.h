@@ -83,6 +83,7 @@ public:
   
   virtual void resize(unsigned int xsize,unsigned int ysize);
   virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
+  virtual int get_depth_bitwidth(void);
 
 protected:
   void CreateScreenBuffersAndDevice(LPDIRECTDRAW7 pDD,LPDIRECT3D7 pD3DI);
@@ -119,6 +120,7 @@ private:
   bool              _window_inactive;
   bool              _active_minimized_fullscreen;
   bool              _return_control_to_app;
+  int               _depth_buffer_bpp;
 
 public:
   static TypeHandle get_class_type(void);

@@ -68,6 +68,7 @@ public:
   virtual void update(void);
   virtual void end_frame( void );
   virtual void swap( void );
+  virtual int get_depth_bitwidth(void);
 
   virtual TypeHandle get_gsg_type() const;
   static GraphicsWindow* make_wglGraphicsWindow(const FactoryParams &params);

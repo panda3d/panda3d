@@ -626,6 +626,12 @@ verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
   return numsizes;
 }
 
+int GraphicsWindow::
+get_depth_bitwidth(void) {
+    display_cat.warning() << "get_depth_bitwidth() unimplemented by " << get_type() << endl; 
+    return -1;
+}
+
 void GraphicsWindow::deactivate_window(void) { return; }
 void GraphicsWindow::reactivate_window(void) { return; }
 

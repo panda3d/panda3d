@@ -336,6 +336,7 @@ void wglGraphicsWindow::config(void) {
     _pCurrent_display_settings = NULL;
     _mwindow = NULL;
     _gsg = NULL;
+    ZeroMemory(&_pixelformat,sizeof(_pixelformat));
     _hOldForegroundWindow=GetForegroundWindow();
     
     WNDCLASS wc;
@@ -1336,6 +1337,10 @@ void wglGraphicsWindow::unmake_current(void) {
   if(!wglMakeCurrent(NULL, NULL)) {
       PrintErrorMessage(LAST_ERROR);
   }
+}
+
+int wglGraphicsWindow::get_depth_bitwidth(void) {
+    return _pixelformat.cDepthBits;
 }
 
 ////////////////////////////////////////////////////////////////////
