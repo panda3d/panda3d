@@ -1,5 +1,21 @@
 #!/bin/bash
 
+# This script is an experiment.  It is designed to automate the
+# Panda3D build process for users who have Cygwin installed on their
+# Windows machine.  It may also work for users on a Linux or Unix
+# machine.
+
+# You must still set up your Config.pp file and Config.prc files as
+# described in the INSTALL document before running this script.
+
+# As with any automatic process, this script may not work in every
+# environment.  An effort has been made to make the script as
+# trouble-free as possible, but things can always go wrong.  If you
+# have difficulty running this script, you are encouraged to follow
+# the step-by-step instructions in the INSTALL document to build
+# Panda3D by hand.
+
+
 usage="build [\"\"|new|uninstall|install|clean|only|genpy [\"\"|dtool|panda|direct|<relative path>] ]"
 usage=$(cat <<-EOS
 Usage: ./$(basename $0) [ mode [ module [ package ] ] ]
