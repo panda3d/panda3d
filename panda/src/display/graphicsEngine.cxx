@@ -55,7 +55,8 @@ GraphicsEngine(Pipeline *pipeline) :
     display_cat.info()
       << "Using threading model " << _threading_model << "\n";
   }
-  _needs_sync = false;
+  _auto_flip = auto_flip;
+  _flip_state = FS_flip;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -280,9 +281,8 @@ render_frame() {
   // don't do that.
   MutexHolder holder(_lock);
 
-  if (_needs_sync) {
-    // Flip the windows from the previous frame, if necessary.
-    do_sync_frame();
+  if (_flip_state != FS_flip) {
+    do_flip_frame();
   }
   
   // Grab each thread's mutex again after all windows have flipped.
@@ -310,17 +310,35 @@ render_frame() {
 
   // Some threads may still be drawing, so indicate that we have to
   // wait for those threads before we can flip.
-  _needs_sync = true;
+  _flip_state = FS_draw;
 
   // But if we don't have any threads, go ahead and flip the frame
   // now.  No point in waiting if we're single-threaded.
-  if (_threads.empty()) {
-    do_sync_frame();
+  if (_threads.empty() && _auto_flip) {
+    do_flip_frame();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::sync_frame
+//       Access: Published
+//  Description: Waits for all the threads that started drawing their
+//               last frame to finish drawing.  The windows are not
+//               yet flipped when this returns; see also flip_frame().
+//               It is not usually necessary to call this explicitly,
+//               unless you need to see the previous frame right away.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+sync_frame() {
+  MutexHolder holder(_lock);
+
+  if (_flip_state == FS_draw) {
+    do_sync_frame();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::flip_frame
 //       Access: Published
 //  Description: Waits for all the threads that started drawing their
 //               last frame to finish drawing, and then flips all the
@@ -329,14 +347,11 @@ render_frame() {
 //               right away.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-sync_frame() {
-  // We hold the GraphicsEngine mutex while we wait for all of the
-  // threads.  Doing this puts us at risk for deadlock if any of the
-  // threads tries to call any methods on the GraphicsEngine.  So
-  // don't do that.
+flip_frame() {
   MutexHolder holder(_lock);
-  if (_needs_sync) {
-    do_sync_frame();
+
+  if (_flip_state != FS_flip) {
+    do_flip_frame();
   }
 }
 
@@ -530,8 +545,32 @@ flip_windows(const GraphicsEngine::Windows &wlist) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 do_sync_frame() {
-  // First, wait for all the threads to finish their current frame.
-  // Grabbing the mutex should achieve that.
+  nassertv(_flip_state == FS_draw);
+
+  // Wait for all the threads to finish their current frame.  Grabbing
+  // and releasing the mutex should achieve that.
+  Threads::const_iterator ti;
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    thread->_cv_mutex.lock();
+    thread->_cv_mutex.release();
+  }
+
+  _flip_state = FS_sync;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::do_flip_frame
+//       Access: Private
+//  Description: The implementation of flip_frame().  We assume _lock
+//               is already held before this method is called.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+do_flip_frame() {
+  nassertv(_flip_state == FS_draw || _flip_state == FS_sync);
+
+  // First, wait for all the threads to finish their current frame, if
+  // necessary.  Grabbing the mutex should achieve that.
   Threads::const_iterator ti;
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
@@ -549,7 +588,7 @@ do_sync_frame() {
     thread->_cv_mutex.release();
   }
 
-  _needs_sync = false;
+  _flip_state = FS_flip;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -34,6 +34,7 @@ extern const bool view_frustum_cull;
 extern const bool pstats_unused_states;
 
 extern const string threading_model;
+extern const bool auto_flip;
 
 extern EXPCL_PANDA void init_libdisplay();
 

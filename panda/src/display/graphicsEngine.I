@@ -18,6 +18,44 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::set_auto_flip
+//       Access: Published
+//  Description: Set this flag true to indicate the GraphicsEngine
+//               should automatically cause windows to sync and flip
+//               at the end of render_frame().
+//
+//               This only applies to a single-threaded rendering
+//               model.  In the presence of threading, the windows are
+//               never auto-flipped, regardless of this flag.
+//
+//               This only affects the timing of when the flip occurs.
+//               If this is true (the default), the flip occurs before
+//               render_frame() returns.  If this is false, the flip
+//               occurs whenever flip_frame() is called, or at the
+//               beginning of the next call to render_frame(), if
+//               flip_frame() is never called.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsEngine::
+set_auto_flip(bool auto_flip) {
+  // We don't bother with the mutex here.  It's just a bool, after
+  // all.
+  _auto_flip = auto_flip;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::get_auto_flip
+//       Access: Published
+//  Description: Returns the current setting for the auto-flip flag.
+//               See set_auto_flip.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsEngine::
+get_auto_flip() const {
+  // We don't bother with the mutex here.  It's just a bool, after
+  // all.
+  return _auto_flip;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::make_window
 //       Access: Published
 //  Description: Creates a new window using the indicated GraphicsPipe

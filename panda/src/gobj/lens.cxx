@@ -998,7 +998,7 @@ throw_change_event() {
   ++_last_change;
 
   if (!_change_event.empty()) {
-    throw_event(_change_event);
+    throw_event(_change_event, this);
   }
 
   // Also update the _geom_coords, if it is in use.

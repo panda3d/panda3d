@@ -56,6 +56,9 @@ PUBLISHED:
   void set_threading_model(const string &threading_model);
   string get_threading_model() const;
 
+  INLINE void set_auto_flip(bool auto_flip);
+  INLINE bool get_auto_flip() const;
+
   INLINE GraphicsWindow *make_window(GraphicsPipe *pipe);
   GraphicsWindow *make_window(GraphicsPipe *pipe,
                               const string &threading_model);
@@ -64,6 +67,7 @@ PUBLISHED:
 
   void render_frame();
   void sync_frame();
+  void flip_frame();
   
   void render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr,
                        bool cull_sorting);
@@ -80,6 +84,7 @@ private:
   void process_events(const GraphicsEngine::Windows &wlist);
   void flip_windows(const GraphicsEngine::Windows &wlist);
   void do_sync_frame();
+  void do_flip_frame();
 
   PT(SceneSetup) setup_scene(const NodePath &camera, 
                              GraphicsStateGuardian *gsg);
@@ -143,8 +148,14 @@ private:
   typedef pmap<string, PT(RenderThread) > Threads;
   Threads _threads;
   string _threading_model;
+  bool _auto_flip;
 
-  bool _needs_sync;
+  enum FlipState {
+    FS_draw,  // Still drawing.
+    FS_sync,  // All windows are done drawing.
+    FS_flip,  // All windows are done drawing and have flipped.
+  };
+  FlipState _flip_state;
   Mutex _lock;
 
   static PStatCollector _cull_pcollector;

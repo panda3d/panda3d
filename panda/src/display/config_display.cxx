@@ -57,6 +57,12 @@ const bool pstats_unused_states = config_display.GetBool("pstats-unused-states",
 // system!
 const string threading_model = config_display.GetString("threading-model", "");
 
+// This indicates the initial setting of the auto-flip flag.  Set it
+// true (the default) to cause render_frame() to flip all the windows
+// before it returns (in single-threaded mode only), or false to wait
+// until an explicit call to flip_frame() or the next render_frame().
+const bool auto_flip = config_display.GetBool("auto-flip", true);
+
 // Use the variable load-display to specifiy the name of the default
 // graphics display library or GraphicsPipe to load.  It is the name
 // of a shared library (or * for all libraries named in aux-display),

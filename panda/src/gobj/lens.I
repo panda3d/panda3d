@@ -110,8 +110,12 @@ project(const LPoint3f &point3d, LPoint3f &point2d) const {
 //       Access: Published
 //  Description: Sets the name of the event that will be generated
 //               whenever any properties of the Lens have
-//               changed.  This can be used to automatically track
-//               changes to camera fov, etc. in the simulation.
+//               changed.  If this is not set for a particular lens,
+//               no event will be generated.
+//
+//               The event is thrown with one parameter, the lens
+//               itself.  This can be used to automatically track
+//               changes to camera fov, etc. in the application.
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
 set_change_event(const string &event) {
@@ -122,7 +126,7 @@ set_change_event(const string &event) {
 //     Function: Lens::get_change_event
 //       Access: Published
 //  Description: Returns the name of the event that will be generated
-//               whenever any properties of the Lens have
+//               whenever any properties of this particular Lens have
 //               changed.
 ////////////////////////////////////////////////////////////////////
 INLINE const string &Lens::
