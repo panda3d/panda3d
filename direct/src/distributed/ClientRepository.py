@@ -26,6 +26,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def __init__(self):
         ConnectionRepository.ConnectionRepository.__init__(self, base.config)
+
+        self.context=100000
         self.setClientDatagram(1)
 
         self.recorder = base.recorder
@@ -133,6 +135,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             if self.priorWorldPos != worldPos:
                 self.priorWorldPos = worldPos
                 self.sendWorldPos(worldPos[0], worldPos[1])
+
+    def allocateContext(self):
+        self.context+=1
+        return self.context
 
     def setServerDelta(self, delta):
         """
@@ -633,7 +639,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                     " login state: " +
                     currentLoginStateName +
                     " game state: " +
-                    currentGameStateName) 
+                    currentGameStateName)
         else:
             currentLoginState = self.loginFSM.getCurrentState()
             if currentLoginState:
@@ -808,8 +814,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         if self.notify.getDebug():
             print "ClientRepository received datagram:"
             di.getDatagram().dumpHex(ostream)
-            
-                        
+
+
         msgType = self.getMsgType()
 
         if not wantOtpServer:
