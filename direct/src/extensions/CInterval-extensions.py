@@ -35,11 +35,8 @@
         """ popupControls()
             Popup control panel for interval.
         """
-        import TkGlobal
+        from TkGlobal import Toplevel, Frame, Button, LEFT, X, Pmw
         import math
-        # I moved this here because Toontown does not ship Tk
-        from Tkinter import Toplevel, Frame, Button, LEFT, X
-        import Pmw
         import EntryScale
         if tl == None:
             tl = Toplevel()
