@@ -3,6 +3,7 @@ from libpandaexpressModules import *
 from DirectNotify import *
 from PythonUtil import *
 import time
+import fnmatch
 
 exit = -1
 done = 0
@@ -291,6 +292,29 @@ class TaskManager:
         # Find the tasks that match by name and make a list of them
         for task in self.taskList:
             if (task.name == taskName):
+                removedTasks.append(task)
+
+        # Now iterate through the tasks we need to remove and remove them
+        for task in removedTasks:
+            self.removeTask(task)
+
+        # Return the number of tasks removed
+        return len(removedTasks)
+
+    def removeTasksMatching(self, taskPattern):
+        """removeTasksMatching(self, string taskPattern)
+
+        Removes tasks whose names match the pattern, which can include
+        standard shell globbing characters like *, ?, and [].
+
+        """
+        
+        TaskManager.notify.debug('removing tasks matching: ' + taskPattern)
+        removedTasks = []
+
+        # Find the tasks that match by name and make a list of them
+        for task in self.taskList:
+            if (fnmatch.fnmatchcase(task.name, taskPattern)):
                 removedTasks.append(task)
 
         # Now iterate through the tasks we need to remove and remove them

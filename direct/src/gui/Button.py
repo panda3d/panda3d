@@ -3,7 +3,6 @@ from DirectObject import *
 import GuiManager
 import GuiLabel
 import GuiButton
-import Vec3
 
 guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(), base.renderGui.node())
 font = loader.loadModelNode("phase_3/models/fonts/ttf-comic")
@@ -88,8 +87,13 @@ class Button(DirectObject):
         self.button.unmanage()
         self.managed = 0
         
-    def setPos(self, x, y):
-        v3 = Vec3.Vec3(x, 0., y)
+    def setPos(self, x, y, node = None):
+        if node == None:
+            v3 = Vec3(x, 0., y)
+        else:
+            mat = node.getMat(base.render2d)
+            v3 = Vec3(mat.xformPoint(Point3(x, 0., y)))
+            
         self.button.setPos(v3)
 
     def setScale(self, scale):
