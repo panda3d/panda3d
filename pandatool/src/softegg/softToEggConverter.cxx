@@ -933,7 +933,7 @@ process_model_node(SoftNodeDesc *node_desc) {
     break;
   case SAA_MFACE:
     softegg_cat.debug() << "face\n";
-    break;
+    //break;
   case SAA_MSMSH:
     softegg_cat.debug() << "mesh\n";
     node_desc->get_transform(&scene, egg_group, TRUE);
