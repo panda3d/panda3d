@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "configVariableSearchPath.h"
+#include "executionEnvironment.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableSearchPath::Constructor
@@ -65,7 +66,9 @@ reload_search_path() {
   _value.append_path(_prefix);
   int num_unique_references = _core->get_num_unique_references();
   for (int i = 0; i < num_unique_references; i++) {
-    _value.append_directory(_core->get_unique_reference(i)->get_string_value());
+    string dirname = _core->get_unique_reference(i)->get_string_value();
+    string expanded = ExecutionEnvironment::expand_string(dirname);
+    _value.append_directory(Filename::from_os_specific(expanded));
   }
   _value.append_path(_postfix);
 
