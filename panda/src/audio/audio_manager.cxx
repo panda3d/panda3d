@@ -164,7 +164,24 @@ void AudioManager::ns_spawn_update(void) {
     if (_quit == (bool*)0L)
       _quit = new bool(false);
     *_quit = false;
-    _spawned = thread::create(spawned_update, _quit, thread::PRIORITY_LOW);
+    thread::priority_t pri;
+    switch (audio_thread_priority) {
+    case 0:
+      pri = thread::PRIORITY_LOW;
+      break;
+    case 1:
+      pri = thread::PRIORITY_NORMAL;
+      break;
+    case 2:
+      pri = thread::PRIORITY_HIGH;
+      break;
+    default:
+      audio_cat->error() << "audio-thread-priority set to something other "
+			 << "then low, normal, or high" << endl;
+      audio_thread_priority = 1;
+      pri = thread::PRIORITY_NORMAL;
+    }
+    _spawned = thread::create(spawned_update, _quit, pri);
   } else {
     audio_cat->error() << "tried to spawn 2 update threads" << endl;
   }

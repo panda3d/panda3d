@@ -46,6 +46,18 @@ ConfigureFn(config_audio) {
 
   audio_device = new string(config_audio.GetString("audio-device",
 						   "/dev/dsp"));
+
+  string stmp = config_audio.GetString("audio-thread-priority", "NORMAL");
+  for (string::iterator q=stmp.begin(); q!=stmp.end(); ++q)
+    (*q) = toupper(*q);
+  if (stmp == "LOW")
+    audio_thread_priority = 0;
+  else if (stmp == "NORMAL")
+    audio_thread_priority = 1;
+  else if (stmp == "HIGH")
+    audio_thread_priority = 2;
+  else
+    audio_thread_priority = -1;
 }
 
 void audio_load_loaders(void) {

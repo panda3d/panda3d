@@ -20,6 +20,7 @@ extern EXPCL_PANDA int audio_buffer_size;
 extern EXPCL_PANDA string* audio_device;
 extern EXPCL_PANDA int audio_auto_update_delay;
 extern EXPCL_PANDA bool audio_is_active;
+extern EXPCL_PANDA int audio_thread_priority;
 
 extern EXPCL_PANDA void audio_load_loaders(void);
 
