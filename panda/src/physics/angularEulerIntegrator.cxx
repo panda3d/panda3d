@@ -57,6 +57,7 @@ child_integrate(Physical *physical,
   // otherwise your transforms will be VERY bad.  No good.
   precompute_angular_matrices(physical, forces);
   const pvector< LMatrix4f > &matrices = get_precomputed_angular_matrices();
+  assert(matrices.size() == (forces.size() + physical->get_angular_forces().size()));
 
   // Loop through each object in the set.  This processing occurs in O(pf) time,
   // where p is the number of physical objects and f is the number of
@@ -91,7 +92,7 @@ child_integrate(Physical *physical,
 
     // global forces
     f_cur = forces.begin();
-    int index = 0;
+    unsigned int index = 0;
     for (; f_cur != forces.end(); ++f_cur) {
       AngularForce *cur_force = *f_cur;
 
@@ -103,6 +104,7 @@ child_integrate(Physical *physical,
       force_node = cur_force->get_force_node();
 
       // now we go from force space to our object's space.
+      assert(index >= 0 && index < matrices.size());
       f = cur_force->get_vector(current_object) * matrices[index++];
 
       // tally it into the accum vector, applying the inertial tensor.
@@ -122,11 +124,13 @@ child_integrate(Physical *physical,
       force_node = cur_force->get_force_node();
 
       // go from force space to object space
+      assert(index >= 0 && index < matrices.size());
       f = cur_force->get_vector(current_object) * matrices[index++];
 
       // tally it into the accum vectors
       accum_vec += f;
     }
+    assert(index == matrices.size());
 
     // apply the accumulated torque vector to the object's inertial tensor.
     // this matrix represents how much force the object 'wants' applied to it
@@ -142,19 +146,25 @@ child_integrate(Physical *physical,
     // imaginary quaternions where r = 0.  This vector NOW represents the
     // imaginary vector formed by (i, j, k).
 
-    LVector3f normalized_rot_vec = rot_vec;
     float len = rot_vec.length();
 
-    normalized_rot_vec *= 1.0f / len;
-    LRotationf rot_quat = LRotationf(normalized_rot_vec, len);
+    if (len) {
+      LVector3f normalized_rot_vec = rot_vec;
+      normalized_rot_vec *= 1.0f / len;
+      LRotationf rot_quat = LRotationf(normalized_rot_vec, len);
+      assert(!(rot_quat[0]==0.0f && rot_quat[1]==0.0f && rot_quat[2]==0.0f && rot_quat[3]==0.0f));
 
-    LOrientationf old_orientation = current_object->get_orientation();
-    LOrientationf new_orientation = old_orientation * rot_quat;
-    new_orientation.normalize();
+      LOrientationf old_orientation = current_object->get_orientation();
+      assert(!(old_orientation[0]==0.0f && old_orientation[1]==0.0f && old_orientation[2]==0.0f && old_orientation[3]==0.0f));
+      LOrientationf new_orientation = old_orientation * rot_quat;
+      assert(!(new_orientation[0]==0.0f && new_orientation[1]==0.0f && new_orientation[2]==0.0f && new_orientation[3]==0.0f));
+      new_orientation.normalize();
+      assert(!(new_orientation[0]==0.0f && new_orientation[1]==0.0f && new_orientation[2]==0.0f && new_orientation[3]==0.0f));
 
-    // and write the results back.
-    current_object->set_orientation(new_orientation);
-    current_object->set_rotation(rot_vec);
+      // and write the results back.
+      current_object->set_orientation(new_orientation);
+      current_object->set_rotation(rot_vec);
+    }
   }
 }
 
@@ -167,7 +177,7 @@ child_integrate(Physical *physical,
 void AngularEulerIntegrator::
 output(ostream &out) const {
   #ifndef NDEBUG //[
-  out<<"AngularEulerIntegrator";
+  out<<"AngularEulerIntegrator (id "<<this<<")";
   #endif //] NDEBUG
 }
 
