@@ -128,7 +128,7 @@ class ParticleEffect(NodePath):
         if (particles == None):
             self.notify.warning('removeParticles() - particles == None!')
             return
-        particles.nodePath.reparentTo(hidden)
+        particles.nodePath.detachNode()
         del self.particlesDict[particles.getName()]
 
         # Remove all forces from the particles
