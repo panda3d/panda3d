@@ -1,2 +1,1 @@
 forcetype MultiTransition<PT_Light, LightNameClass>
-forcetype MultiAttribute<PT_Light, LightNameClass>
