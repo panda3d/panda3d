@@ -92,13 +92,15 @@ any_in_bounds() {
     int num_colliders = get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
       if (has_collider(c)) {
+        qpCollisionNode *collider = get_node(c);
         bool is_in = false;
 
         // Don't even bother testing the bounding volume if there are
         // no collide bits in common between our collider and this
         // node.
-        CollideMask from_mask = get_node(c)->get_from_collide_mask();
-        if ((from_mask & node()->get_net_collide_mask()) != 0) {
+        CollideMask from_mask = collider->get_from_collide_mask();
+        if (collider->get_collide_geom() ||
+            (from_mask & node()->get_net_collide_mask()) != 0) {
           // There are bits in common, so go ahead and try the
           // bounding volume.
           const GeometricBoundingVolume *col_gbv =
