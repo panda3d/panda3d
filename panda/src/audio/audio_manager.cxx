@@ -62,7 +62,7 @@ void AudioManager::ns_play(AudioMusic* music) {
 void AudioManager::spawned_update(void*) {
   while (1) {
     AudioManager::update();
-    ipc_traits::sleep(0, 1000000);
+    ipc_traits::sleep(0, audio_auto_update_delay);
   }
 }
 

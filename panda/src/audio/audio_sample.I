@@ -9,10 +9,12 @@
 //  Description: initialize a new sample
 ////////////////////////////////////////////////////////////////////
 INLINE AudioSample::AudioSample(AudioTraits::SampleClass* sample,
+				AudioTraits::PlayingClass* state,
 				AudioTraits::PlayerClass* player,
 				AudioTraits::DeleteSampleFunc* destroy,
 				const string& filename) : Namable(filename),
 							  _sample(sample),
+							  _state(state),
 							  _player(player),
 							  _destroy(destroy) {}
 
@@ -23,6 +25,7 @@ INLINE AudioSample::AudioSample(AudioTraits::SampleClass* sample,
 ////////////////////////////////////////////////////////////////////
 INLINE AudioSample::AudioSample(const AudioSample& c) : Namable(c.get_name()),
 							_sample(c._sample),
+							_state(c._state),
 							_player(c._player),
 							_destroy(c._destroy) {}
 
@@ -34,6 +37,7 @@ INLINE AudioSample::AudioSample(const AudioSample& c) : Namable(c.get_name()),
 INLINE AudioSample& AudioSample::operator=(const AudioSample& c) {
   this->set_name(c.get_name());
   this->_sample = c._sample;
+  this->_state = c._state;
   this->_player = c._player;
   this->_destroy = c._destroy;
   return *this;

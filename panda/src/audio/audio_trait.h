@@ -21,7 +21,7 @@ public:
     SampleClass(void) {}
     virtual ~SampleClass(void);
 
-    enum SampleStatus { READY, PLAYING } ;
+    enum SampleStatus { BAD, READY, PLAYING } ;
 
     virtual float length(void) = 0;
     virtual SampleStatus status(void) = 0;
@@ -31,8 +31,18 @@ public:
     MusicClass(void) {}
     virtual ~MusicClass(void);
 
-    enum MusicStatus { READY, PLAYING };
+    enum MusicStatus { BAD, READY, PLAYING } ;
+
     virtual MusicStatus status(void) = 0;
+  };
+  class EXPCL_PANDA PlayingClass {
+  public:
+    PlayingClass(void) {}
+    virtual ~PlayingClass(void);
+
+    enum PlayingStatus { BAD, READY, PLAYING } ;
+
+    virtual PlayingStatus status(void) = 0;
   };
   class EXPCL_PANDA PlayerClass {
   public:
@@ -49,18 +59,14 @@ public:
 // this is really ugly.  But since we have to be able to include/compile
 // all of the driver files on any system, I need to centralize a switch
 // for which one is real.
-#ifdef HAVE_MIKMOD
-#define AUDIO_USE_MIKMOD
-#else /* HAVE_MIKMOD */
-#ifdef PENV_WIN32
-#define AUDIO_USE_WIN32
-#else /* PENV_WIN32 */
 #ifdef PENV_LINUX
 #define AUDIO_USE_LINUX
-#else /* PENV_LINUX */
+#elif defined(PENV_WIN32)
+#define AUDIO_USE_WIN32
+#elif defined(HAVE_MIKMOD)
+#define AUDIO_USE_MIKMOD
+#else
 #define AUDIO_USE_NULL
-#endif /* PENV_LINUX */
-#endif /* PENV_WIN32 */
-#endif /* HAVE_MIKMOD */
+#endif
 
 #endif /* __AUDIO_TRAIT_H__ */

@@ -16,11 +16,13 @@ class AudioManager;
 class EXPCL_PANDA AudioMusic : public TypedReferenceCount, public Namable {
 private:
   AudioTraits::MusicClass *_music;
+  AudioTraits::PlayingClass *_state;
   AudioTraits::PlayerClass *_player;
   AudioTraits::DeleteMusicFunc *_destroy;
 protected:
-  INLINE AudioMusic(AudioTraits::MusicClass*, AudioTraits::PlayerClass*,
-		    AudioTraits::DeleteMusicFunc*, const string&);
+  INLINE AudioMusic(AudioTraits::MusicClass*, AudioTraits::PlayingClass*,
+		    AudioTraits::PlayerClass*, AudioTraits::DeleteMusicFunc*,
+		    const string&);
   INLINE AudioMusic(const AudioMusic&);
   INLINE AudioMusic& operator=(const AudioMusic&);
 
@@ -33,7 +35,7 @@ public:
   virtual ~AudioMusic(void);
   INLINE bool operator==(const AudioMusic&) const;
 
-  enum MusicStatus { READY, PLAYING };
+  enum MusicStatus { BAD, READY, PLAYING };
 
   MusicStatus status(void);
 public:

@@ -27,6 +27,15 @@ AudioTraits::MusicClass::MusicStatus AudioTraits::MusicClass::status(void) {
   return READY;
 }
 
+AudioTraits::PlayingClass::~PlayingClass(void) {
+}
+
+AudioTraits::PlayingClass::PlayingStatus
+AudioTraits::PlayingClass::status(void) {
+  audio_cat->error() << "In abstract PlayingClass::status!" << endl;
+  return BAD;
+}
+
 AudioTraits::PlayerClass::~PlayerClass(void) {
 }
 

@@ -16,11 +16,13 @@ class AudioManager;
 class EXPCL_PANDA AudioSample : public TypedReferenceCount, public Namable {
 private:
   AudioTraits::SampleClass *_sample;
+  AudioTraits::PlayingClass *_state;
   AudioTraits::PlayerClass *_player;
   AudioTraits::DeleteSampleFunc *_destroy;
 protected:
-  INLINE AudioSample(AudioTraits::SampleClass*, AudioTraits::PlayerClass*,
-		     AudioTraits::DeleteSampleFunc*, const string&);
+  INLINE AudioSample(AudioTraits::SampleClass*, AudioTraits::PlayingClass*,
+		     AudioTraits::PlayerClass*, AudioTraits::DeleteSampleFunc*,
+		     const string&);
   INLINE AudioSample(const AudioSample&);
   INLINE AudioSample& operator=(const AudioSample&);
 
@@ -33,7 +35,7 @@ public:
   virtual ~AudioSample(void);
   INLINE bool operator==(const AudioSample&) const;
 
-  enum SampleStatus { READY, PLAYING } ;
+  enum SampleStatus { BAD, READY, PLAYING } ;
   
   float length(void);
   SampleStatus status(void);

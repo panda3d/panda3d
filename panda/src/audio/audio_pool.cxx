@@ -96,8 +96,9 @@ AudioSample* AudioPool::ns_load_sample(Filename filename) {
     audio_cat->error() << "could not load '" << filename << "'" << endl;
     return (AudioSample*)0L;
   }
-  PT(AudioSample) the_sample = new AudioSample(sample, player, destroy,
-					       filename);
+  PT(AudioSample) the_sample = new AudioSample(sample,
+					       (AudioTraits::PlayingClass*)0L,
+					       player, destroy, filename);
   _samples[filename] = the_sample;
   return the_sample;
 }
@@ -195,7 +196,9 @@ AudioMusic* AudioPool::ns_load_music(Filename filename) {
     audio_cat->error() << "could not load '" << filename << "'" << endl;
     return (AudioMusic*)0L;
   }
-  PT(AudioMusic) the_music = new AudioMusic(music, player, destroy, filename);
+  PT(AudioMusic) the_music = new AudioMusic(music,
+					    (AudioTraits::PlayingClass*)0L,
+					    player, destroy, filename);
   _music[filename] = the_music;
   return the_music;
 }

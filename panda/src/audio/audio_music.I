@@ -9,12 +9,14 @@
 //  Description: initialize a new music
 ////////////////////////////////////////////////////////////////////
 INLINE AudioMusic::AudioMusic(AudioTraits::MusicClass* music,
-				AudioTraits::PlayerClass* player,
-				AudioTraits::DeleteMusicFunc* destroy,
-				const string& filename) : Namable(filename),
-							  _music(music),
-							  _player(player),
-							  _destroy(destroy) {}
+			      AudioTraits::PlayingClass* state,
+			      AudioTraits::PlayerClass* player,
+			      AudioTraits::DeleteMusicFunc* destroy,
+			      const string& filename) : Namable(filename),
+							_music(music),
+							_state(state),
+							_player(player),
+							_destroy(destroy) {}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioMusic::copy constructor
@@ -22,9 +24,10 @@ INLINE AudioMusic::AudioMusic(AudioTraits::MusicClass* music,
 //  Description: copy a music, but we don't really want to allow this
 ////////////////////////////////////////////////////////////////////
 INLINE AudioMusic::AudioMusic(const AudioMusic& c) : Namable(c.get_name()),
-							_music(c._music),
-							_player(c._player),
-							_destroy(c._destroy) {}
+						     _music(c._music),
+						     _state(c._state),
+						     _player(c._player),
+						     _destroy(c._destroy) {}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioMusic::assignment operator
@@ -34,6 +37,7 @@ INLINE AudioMusic::AudioMusic(const AudioMusic& c) : Namable(c.get_name()),
 INLINE AudioMusic& AudioMusic::operator=(const AudioMusic& c) {
   this->set_name(c.get_name());
   this->_music = c._music;
+  this->_state = c._state;
   this->_player = c._player;
   this->_destroy = c._destroy;
   return *this;

@@ -24,13 +24,19 @@ AudioMusic::~AudioMusic(void) {
 //  Description: return the current play status of this music
 ////////////////////////////////////////////////////////////////////
 AudioMusic::MusicStatus AudioMusic::status(void) {
+  //  AudioTraits::PlayingClass::PlayingStatus stat = _state->status();
   AudioTraits::MusicClass::MusicStatus stat = _music->status();
   switch (stat) {
+    //  case AudioTraits::PlayingClass::BAD:
+  case AudioTraits::MusicClass::BAD:
+    return BAD;
+    //  case AudioTraits::PlayingClass::READY:
   case AudioTraits::MusicClass::READY:
     return READY;
+    //  case AudioTraits::PlayingClass::PLAYING:
   case AudioTraits::MusicClass::PLAYING:
     return PLAYING;
   }
   audio_cat->error() << "unknown status for music" << endl;
-  return READY;
+  return BAD;
 }

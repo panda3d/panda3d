@@ -20,6 +20,8 @@ int audio_driver_select = config_audio.GetInt("audio-driver-select", 0);
 string* audio_driver_params;
 int audio_buffer_size = config_audio.GetInt("audio-buffer-size", 4096);
 string* audio_device;
+int audio_auto_update_delay = config_audio.GetInt("audio-auto-update-delay",
+						  100000);
 
 ConfigureFn(config_audio) {
   AudioSample::init_type();

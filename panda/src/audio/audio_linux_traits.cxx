@@ -188,7 +188,7 @@ static void internal_update(void*) {
   }
   while (1) {
     if (have_buffers == 0) {
-      ipc_traits::sleep(0, 10000);
+      ipc_traits::sleep(0, audio_auto_update_delay);
     } else {
       write(output_fd, current_buffer, audio_buffer_size);
       {
@@ -248,7 +248,8 @@ void LinuxSample::destroy(AudioTraits::SampleClass* sample) {
 }
 
 LinuxSample* LinuxSample::load_raw(byte* data, unsigned long size) {
-  return new LinuxSample(new Buffer(data, size));
+  LinuxSample* ret = new LinuxSample(new Buffer(data, size));
+  return ret;
 }
 
 LinuxMusic::~LinuxMusic(void) {

@@ -33,13 +33,19 @@ float AudioSample::length(void) {
 //  Description: return the current play status of this sample
 ////////////////////////////////////////////////////////////////////
 AudioSample::SampleStatus AudioSample::status(void) {
+  //  AudioTraits::PlayingClass::PlayingStatus stat = _state->status();
   AudioTraits::SampleClass::SampleStatus stat = _sample->status();
   switch (stat) {
+    //  case AudioTraits::PlayingClass::BAD:
+  case AudioTraits::SampleClass::BAD:
+    return BAD;
+    //  case AudioTraits::PlayingClass::READY:
   case AudioTraits::SampleClass::READY:
     return READY;
+    //  case AudioTraits::PlayingClass::PLAYING:
   case AudioTraits::SampleClass::PLAYING:
     return PLAYING;
   }
   audio_cat->error() << "unknown status for sample" << endl;
-  return READY;
+  return BAD;
 }

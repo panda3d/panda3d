@@ -18,5 +18,6 @@ extern int audio_driver_select;
 extern string* audio_driver_params;
 extern int audio_buffer_size;
 extern string* audio_device;
+extern int audio_auto_update_delay;
 
 #endif /* __CONFIG_AUDIO_H__ */
