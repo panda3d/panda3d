@@ -1,5 +1,10 @@
 from DirectFrame import *
 
+# DirectEntry States:
+ENTRY_FOCUS_STATE    = PGEntry.SFocus      # 0
+ENTRY_NO_FOCUS_STATE = PGEntry.SNoFocus    # 1
+ENTRY_INACTIVE_STATE = PGEntry.SInactive   # 2
+
 class DirectEntry(DirectFrame):
     """
     DirectEntry(parent) - Create a DirectGuiWidget which responds
@@ -18,12 +23,16 @@ class DirectEntry(DirectFrame):
         # State transitions happen automatically based upon mouse interaction
         optiondefs = (
             # Define type of DirectGuiWidget
-            ('pgFunc',          PGEntry,   None),
-            ('numStates',       3,         None),
-            ('font',     getDefaultFont(), self.setFont),
-            ('width',           10,        self.setup),
-            ('numLines',        5,         self.setup),
-            ('contents',        '',        self.setContents),
+            ('pgFunc',          PGEntry,          None),
+            ('numStates',       3,                None),
+            ('font',            getDefaultFont(), self.setFont),
+            ('width',           10,               self.setup),
+            ('numLines',        5,                self.setup),
+            ('focus',           0,                self.setFocus),
+            ('initialText',     '',               INITOPT),
+            # Command to be called on hitting Enter
+            ('command',        None,       None),
+            ('extraArgs',      [],         None),
             # Sounds to be used for button events
             ('rolloverSound',   getDefaultRolloverSound(), self.setRolloverSound),
             )
@@ -33,8 +42,15 @@ class DirectEntry(DirectFrame):
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
 
+        # Bind command function
+        self.bind(ACCEPT, self.commandFunc)
+
         # Call option initialization functions
         self.initialiseoptions(DirectEntry)
+
+        # Update entry if init text specified
+        if self['initialText']:
+            self.guiItem.setText(self['initialText'])
 
     def setup(self):
         self.node().setup(self['width'], self['numLines'])
@@ -42,8 +58,8 @@ class DirectEntry(DirectFrame):
     def setFont(self):
         self.guiItem.getTextNode().setFont(self['font'])
 
-    def setContents(self):
-        self.guiItem.setText(self['contents'])
+    def setFocus(self):
+        PGEntry.setFocus(self.guiItem, self['focus'])
 
     def setRolloverSound(self):
         if base.wantSfx:
@@ -52,5 +68,16 @@ class DirectEntry(DirectFrame):
                 self.guiItem.setSound(ENTER + self.guiId, rolloverSound)
             else:
                 self.guiItem.clearSound(ENTER + self.guiId)
+
+    def commandFunc(self, event):
+        if self['command']:
+            # Pass any extra args to command
+            apply(self['command'], [self.get()] + self['extraArgs'])
+            
+    def set(self, text):
+        self.guiItem.setText(text)
+
+    def get(self):
+        return self.guiItem.getText()
 
 

@@ -827,24 +827,34 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
                 # To force an update of the button
                 self.guiItem.getStateDef(0)
             # Clear out frame before computing bounds
-            self.stateNodePath[0].calcTightBounds(self.ll, self.ur)
-            # Scale bounds to give a pad around graphics
-            self.bounds = (self.ll[0] - self['pad'][0],
-                           self.ur[0] + self['pad'][0],
-                           self.ll[2] - self['pad'][1],
-                           self.ur[2] + self['pad'][1])
+            self.getBounds()
             # Restore frame style if necessary
             if (frameType != PGFrameStyle.TNone):
                 self.frameStyle[0].setType(frameType)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
         # Set frame to new dimensions
-        self.guiItem.setFrame(self.bounds[0], self.bounds[1],self.bounds[2], self.bounds[3])
+        self.guiItem.setFrame(self.bounds[0], self.bounds[1],
+                              self.bounds[2], self.bounds[3])
+
+    def getBounds(self, state = 0):
+        self.stateNodePath[state].calcTightBounds(self.ll, self.ur)
+        # Scale bounds to give a pad around graphics
+        self.bounds = (self.ll[0] - self['pad'][0],
+                       self.ur[0] + self['pad'][0],
+                       self.ll[2] - self['pad'][1],
+                       self.ur[2] + self['pad'][1])
+        return self.bounds
 
     def getWidth(self):
         return self.bounds[1] - self.bounds[0] 
     
     def getHeight(self):
         return self.bounds[3] - self.bounds[2]
+
+    def getCenter(self):
+        x = self.bounds[0] + (self.bounds[1] - self.bounds[0])/2.0
+        y = self.bounds[2] + (self.bounds[3] - self.bounds[2])/2.0
+        return (x,y)
 
     def updateFrameStyle(self):
         if not self.fInit:
