@@ -55,7 +55,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.groupParent = self.levelObjects = self.attachNewNode(
             NamedNode('LevelObjects'))
 	# Create a top level group
-	#self.createTopLevelGroup()
+	self.createTopLevelGroup()
 
 	self.selectedLevelObject = None
 	self.targetDNAObject = None
@@ -410,7 +410,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.levelDictionary = {}
 
 	# Create root node
-	#self.createTopLevelGroup()
+	self.createTopLevelGroup()
 
 	self.grid.setPosHpr(0,0,0,0,0,0)
 
