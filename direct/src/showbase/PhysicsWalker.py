@@ -29,6 +29,9 @@ class PhysicsWalker(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("PhysicsWalker")
     wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     
+    useLifter = 0
+    useHeightRay = 0
+    
     # special methods
     def __init__(self, gravity = -32.1740, standableGround=0.707,
             hardLandingForce=16.0):
@@ -114,25 +117,83 @@ class PhysicsWalker(DirectObject.DirectObject):
         #assert(self.debugPrint("getSpeeds()"))
         return (self.__speed, self.__rotationSpeed)
 
-    def initializeCollisions(self, collisionTraverser, avatarNodePath, 
-            wallBitmask, floorBitmask, 
-            avatarRadius = 1.4, floorOffset = 1.0):
-        """
-        Set up the avatar collisions
-        """
-        assert(self.debugPrint("initializeCollisions()"))
-        
-        assert not avatarNodePath.isEmpty()
-        
-        self.cTrav = collisionTraverser
+    def setupRay(self, floorBitmask, floorOffset):
+        # This is a ray cast from your head down to detect floor polygons
+        # A toon is about 4.0 feet high, so start it there
+        self.cRay = CollisionRay(0.0, 0.0, 4.0, 0.0, 0.0, -1.0)
+        cRayNode = CollisionNode('cRayNode')
+        cRayNode.addSolid(self.cRay)
+        self.cRayNodePath = self.avatarNodePath.attachNewNode(cRayNode)
+        self.cRayBitMask = floorBitmask
+        cRayNode.setFromCollideMask(self.cRayBitMask)
+        cRayNode.setIntoCollideMask(BitMask32.allOff())
 
-        # Set up the collision sphere
+        if self.useLifter:
+            # set up floor collision mechanism
+            self.lifter = CollisionHandlerFloor()
+            self.lifter.setInPattern("enter%in")
+            self.lifter.setOutPattern("exit%in")
+            self.lifter.setOffset(floorOffset)
+
+            # Limit our rate-of-fall with the lifter.
+            # If this is too low, we actually "fall" off steep stairs
+            # and float above them as we go down. I increased this
+            # from 8.0 to 16.0 to prevent this
+            self.lifter.setMaxVelocity(16.0)
+
+            #self.bobNodePath = self.avatarNodePath.attachNewNode("bob")
+            self.lifter.addCollider(self.cRayNodePath, self.cRayNodePath)
+        else: # useCollisionHandlerQueue
+            self.cRayQueue = CollisionHandlerQueue()
+            self.cTrav.addCollider(self.cRayNodePath, self.cRayQueue)
+        self.cRayNodePath.show()
+
+    def determineHeight(self):
+        """
+        returns the height of the avatar above the ground.
+        If there is no floor below the avatar, 0.0 is returned.
+        aka get airborne height.
+        """
+        if self.useLifter:
+            height = self.avatarNodePath.getPos(self.cRayNodePath)
+            # If the shadow where not pointed strait down, we would need to
+            # get magnitude of the vector.  Since it is strait down, we'll
+            # just get the z:
+            #spammy --> assert self.debugPrint("getAirborneHeight() returning %s"%(height.getZ(),))
+            assert onScreenDebug.add("height", height.getZ())
+            return height.getZ() - self.floorOffset
+        else: # useCollisionHandlerQueue
+            """
+            returns the height of the avatar above the ground.
+            If there is no floor below the avatar, 0.0 is returned.
+            aka get airborne height.
+            """
+            height = 0.0
+            #*#self.cRayTrav.traverse(render)
+            if self.cRayQueue.getNumEntries() != 0:
+                # ...we have a floor.
+                # Choose the highest of the possibly several floors we're over:
+                self.cRayQueue.sortEntries()
+                floorPoint = self.cRayQueue.getEntry(0).getFromIntersectionPoint()
+                height = -floorPoint.getZ()
+            self.cRayQueue.clearEntries()
+            onScreenDebug.add("height", height)
+            return height
+
+    def setupSphere(self, bitmask, avatarRadius):
+        """
+        Set up the collision sphere
+        """
         # This is a sphere on the ground to detect barrier collisions
-        self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius, avatarRadius)
+        self.avatarRadius = avatarRadius
+        centerHeight = avatarRadius
+        if self.useHeightRay:
+            centerHeight *= 2.0
+        self.cSphere = CollisionSphere(0.0, 0.0, centerHeight, avatarRadius)
         cSphereNode = CollisionNode('cSphereNode')
         cSphereNode.addSolid(self.cSphere)
-        self.cSphereNodePath = avatarNodePath.attachNewNode(cSphereNode)
-        self.cSphereBitMask = wallBitmask|floorBitmask
+        self.cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
+        self.cSphereBitMask = bitmask
 
         cSphereNode.setFromCollideMask(self.cSphereBitMask)
         cSphereNode.setIntoCollideMask(BitMask32.allOff())
@@ -142,6 +203,10 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.pusher.setInPattern("enter%in")
         self.pusher.setOutPattern("exit%in")
 
+        self.pusher.addCollider(self.cSphereNodePath, self.avatarNodePath)
+
+    def setupPhysics(self, avatarNodePath):
+        assert(self.debugPrint("setupPhysics()"))
         # Connect to Physics Manager:
         self.actorNode=ActorNode("physicsActor")
         self.actorNode.getPhysicsObject().setOriented(1)
@@ -189,12 +254,27 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.phys.addLinearForce(self.acForce)
         #self.phys.removeLinearForce(self.acForce)
         #fnp.remove()
+        return avatarNodePath
 
-        # activate the collider with the traverser and pusher
-        self.collisionsOn()
-        self.pusher.addCollider(self.cSphereNodePath, avatarNodePath)
+    def initializeCollisions(self, collisionTraverser, avatarNodePath, 
+            wallBitmask, floorBitmask, 
+            avatarRadius = 1.4, floorOffset = 1.0):
+        """
+        Set up the avatar collisions
+        """
+        assert(self.debugPrint("initializeCollisions()"))
         
-        self.avatarNodePath = avatarNodePath
+        assert not avatarNodePath.isEmpty()
+        
+        self.cTrav = collisionTraverser
+        self.floorOffset = floorOffset = 7.0
+
+        self.avatarNodePath = self.setupPhysics(avatarNodePath)
+        if self.useHeightRay:
+            self.setupRay(floorBitmask, avatarRadius)
+        self.setupSphere(wallBitmask|floorBitmask, avatarRadius)
+
+        self.collisionsOn()
 
     def setAirborneHeightFunc(self, getAirborneHeight):
         self.getAirborneHeight = getAirborneHeight
@@ -258,6 +338,11 @@ class PhysicsWalker(DirectObject.DirectObject):
         assert(self.debugPrint("deleteCollisions()"))
         del self.cTrav
 
+        if self.useHeightRay:
+            del self.cRayQueue
+            self.cRayNodePath.removeNode()
+            del self.cRayNodePath
+
         del self.cSphere
         self.cSphereNodePath.removeNode()
         del self.cSphereNodePath
@@ -267,6 +352,8 @@ class PhysicsWalker(DirectObject.DirectObject):
     def collisionsOff(self):
         assert(self.debugPrint("collisionsOff()"))
         self.cTrav.removeCollider(self.cSphereNodePath)
+        if self.useHeightRay:
+            self.cTrav.removeCollider(self.cRayNodePath)
         # Now that we have disabled collisions, make one more pass
         # right now to ensure we aren't standing in a wall.
         self.oneTimeCollide()
@@ -274,6 +361,11 @@ class PhysicsWalker(DirectObject.DirectObject):
     def collisionsOn(self):
         assert(self.debugPrint("collisionsOn()"))
         self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
+        if self.useHeightRay:
+            if self.useLifter:
+                self.cTrav.addCollider(self.cRayNodePath, self.lifter)
+            else:
+                self.cTrav.addCollider(self.cRayNodePath, self.cRayQueue)
 
     def oneTimeCollide(self):
         """
@@ -293,7 +385,6 @@ class PhysicsWalker(DirectObject.DirectObject):
         if self.wantAvatarPhysicsIndicator:
             onScreenDebug.append("localToon pos = %s\n"%(toonbase.localToon.getPos().pPrintValues(),))
             onScreenDebug.append("localToon h = % 10.4f\n"%(toonbase.localToon.getH(),))
-            #onScreenDebug.append("localToon name = %s\n"%(toonbase.localToon.getName(),))
             onScreenDebug.append("localToon anim = %s\n"%(toonbase.localToon.animFSM.getCurrentState().getName(),))
         #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
         physObject=self.actorNode.getPhysicsObject()
@@ -350,14 +441,6 @@ class PhysicsWalker(DirectObject.DirectObject):
                 onScreenDebug.add("posDelta1",
                     self.avatarNodePath.getPosDelta(render).pPrintValues())
                 
-                # is same as posDelta1:
-                #onScreenDebug.add("posDelta2",
-                #    self.avatarNodePath.getPosDelta(self.priorParentNp).pPrintValues())
-                
-                # is always zero:
-                #onScreenDebug.add("posDelta2.5",
-                #    self.avatarNodePath.getPosDelta(self.avatarNodePath).pPrintValues())
-                
                 if 0:
                     onScreenDebug.add("posDelta3",
                         render.getRelativeVector(
@@ -406,8 +489,8 @@ class PhysicsWalker(DirectObject.DirectObject):
                 if 1:
                     onScreenDebug.add("contact",
                         contact.pPrintValues())
-                    onScreenDebug.add("airborneHeight", "% 10.4f"%(
-                        self.getAirborneHeight(),))
+                    #onScreenDebug.add("airborneHeight", "% 10.4f"%(
+                    #    self.getAirborneHeight(),))
 
                 if 0:
                     onScreenDebug.add("__oldContact",
@@ -421,7 +504,9 @@ class PhysicsWalker(DirectObject.DirectObject):
                 self.highMark,))
         #if airborneHeight < 0.1: #contact!=Vec3.zero():
         if 1:
-            if airborneHeight > 0.7: # Check stair angles before chaning this.
+            if (airborneHeight > self.avatarRadius*0.5
+                    or physObject.getVelocity().getZ() > 0.0
+                    ): # Check stair angles before chaning this.
                 # ...the avatar is airborne (maybe a lot or a tiny amount).
                 self.isAirborne = 1
             else:
@@ -448,6 +533,8 @@ class PhysicsWalker(DirectObject.DirectObject):
                     jumpVec*=self.avatarControlJumpForce
                     physObject.addImpulse(Vec3(jumpVec))
                     self.isAirborne = 1 # Avoid double impulse before fully airborne.
+                else:
+                    self.isAirborne = 0
             onScreenDebug.add("isAirborne", "%d"%(self.isAirborne,))
         else:
             if contact!=Vec3.zero():
@@ -481,21 +568,25 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.__oldAirborneHeight=airborneHeight
 
         moveToGround = Vec3.zero()
-        if self.isAirborne: 
+        if not self.useHeightRay or self.isAirborne: 
             # ...the airborne check is a hack to stop sliding.
             self.phys.doPhysics(dt)
+            onScreenDebug.add("phys", "on")
         else:
             physObject.setVelocity(Vec3.zero())
-            if airborneHeight>0.001 and contact==Vec3.zero():
-                moveToGround = Vec3(0.0, 0.0, -airborneHeight)
+            #if airborneHeight>0.001 and contact==Vec3.zero():
+            #    moveToGround = Vec3(0.0, 0.0, -airborneHeight)
+            #moveToGround = Vec3(0.0, 0.0, -airborneHeight)
+            moveToGround = Vec3(0.0, 0.0, -self.determineHeight())
+            onScreenDebug.add("phys", "off")
         # Check to see if we're moving at all:
-        if self.__speed or self.__slideSpeed or self.__rotationSpeed:
+        if 1 or self.__speed or self.__slideSpeed or self.__rotationSpeed:
             distance = dt * self.__speed
             slideDistance = dt * self.__slideSpeed
             rotation = dt * self.__rotationSpeed
 
             #debugTempH=self.avatarNodePath.getH()
-            assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
+            assert self.avatarNodePath.getHpr().getStandardizedHpr().almostEqual(physObject.getOrientation().getHpr().getStandardizedHpr(), 0.0001)
             assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
 
             # update pos:
@@ -520,7 +611,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             # sync the change:
             self.actorNode.updateTransform()
 
-            assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
+            assert self.avatarNodePath.getHpr().getStandardizedHpr().almostEqual(physObject.getOrientation().getHpr().getStandardizedHpr(), 0.0001)
             assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
             #assert self.avatarNodePath.getH()==debugTempH-rotation
             messenger.send("avatarMoving")
@@ -529,105 +620,6 @@ class PhysicsWalker(DirectObject.DirectObject):
         # Clear the contact vector so we can tell if we contact something next frame:
         self.actorNode.setContactVector(Vec3.zero())
         return Task.cont
-
-    #def handleAvatarControls_wip(self, task):
-    #    """
-    #    Check on the arrow keys and update the avatar.
-    #    """
-    #    #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
-    #    physObject=self.actorNode.getPhysicsObject()
-    #    #rotAvatarToPhys=Mat3.rotateMatNormaxis(-self.avatarNodePath.getH(), Vec3.up())
-    #    #rotPhysToAvatar=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
-    #    contact=self.actorNode.getContactVector()
-    #    
-    #    # hack fix for falling through the floor:
-    #    if contact==Vec3.zero() and self.avatarNodePath.getZ()<-50.0:
-    #        # reset:
-    #        self.avatarNodePath.setPos(Vec3(0.0, 0.0, 20.0))
-    #
-    #    # Determine what the speeds are based on the buttons:
-    #    buttons = inputState.state
-    #    self.__speed=(buttons["forward"] and self.avatarControlForwardSpeed or 
-    #                self.__reverseButton and -self.avatarControlReverseSpeed)
-    #    self.__slideSpeed=self.__slideButton and (
-    #            (self.__leftButton and -self.avatarControlForwardSpeed) or 
-    #            (self.__rightButton and self.avatarControlForwardSpeed))
-    #    self.__rotationSpeed=not self.__slideButton and (
-    #            (inputState.isSet("turnLeft") and self.avatarControlRotateSpeed) or
-    #            (self.__rightButton and -self.avatarControlRotateSpeed))
-    #    # How far did we move based on the amount of time elapsed?
-    #    dt=min(ClockObject.getGlobalClock().getDt(), 0.1)
-    #
-    #    doPhysics=1
-    #    if not contact.almostEqual(Vec3.zero()):
-    #        contactLength = contact.length()
-    #        contact.normalize()
-    #        angle=contact.dot(Vec3.up())
-    #        if angle>self.__standableGround:
-    #            # ...avatar is on standable ground.
-    #            #print "standableGround"
-    #            if self.__oldContact==Vec3.zero():
-    #                if contactLength>self.__hardLandingForce:
-    #                    # ...avatar was airborne.
-    #                    messenger.send("jumpHardLand")
-    #                else:
-    #                    messenger.send("jumpLand")
-    #            if self.__jumpButton:
-    #                self.__jumpButton=0
-    #                messenger.send("jumpStart")
-    #                jump=Vec3(contact+Vec3.up())
-    #                #jump=Vec3(rotAvatarToPhys.xform(jump))
-    #                jump.normalize()
-    #               jump*=self.avatarControlJumpForce
-    #                physObject.addImpulse(Vec3(jump))
-    #            else:
-    #                physObject.setVelocity(Vec3(0.0))
-    #                self.__vel.set(0.0, 0.0, 0.0)
-    #                doPhysics=0
-    #    if contact!=self.__oldContact:
-    #        # We must copy the vector to preserve it:
-    #        self.__oldContact=Vec3(contact)
-    #    #print "doPhysics", doPhysics
-    #    #print "contact", contact
-    #    if doPhysics:
-    #        self.phys.doPhysics(dt)
-    #    # Check to see if we're moving at all:
-    #    if self.__speed or self.__slideSpeed or self.__rotationSpeed:
-    #        distance = dt * self.__speed
-    #        slideDistance = dt * self.__slideSpeed
-    #        rotation = dt * self.__rotationSpeed
-    #
-    #        #debugTempH=self.avatarNodePath.getH()
-    #        assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
-    #        assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
-    #
-    #        # update pos:
-    #        # Take a step in the direction of our previous heading.
-    #        self.__vel=Vec3(Vec3.forward() * distance + 
-    #                      Vec3.right() * slideDistance)
-    #        # rotMat is the rotation matrix corresponding to
-    #        # our previous heading.
-    #        rotMat=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
-    #        step=rotMat.xform(self.__vel)
-    #        physObject.setPosition(Point3(
-    #            physObject.getPosition()+step))
-    #        # update hpr:
-    #        o=physObject.getOrientation()
-    #        r=LOrientationf()
-    #        r.setHpr(Vec3(rotation, 0.0, 0.0))
-    #        physObject.setOrientation(o*r)
-    #        # sync the change:
-    #        self.actorNode.updateTransform()
-    #
-    #        assert self.avatarNodePath.getHpr().almostEqual(physObject.getOrientation().getHpr(), 0.0001)
-    #        assert self.avatarNodePath.getPos().almostEqual(physObject.getPosition(), 0.0001)
-    #        #assert self.avatarNodePath.getH()==debugTempH-rotation
-    #        messenger.send("avatarMoving")
-    #    else:
-    #        self.__vel.set(0.0, 0.0, 0.0)
-    #    # Clear the contact vector so we can tell if we contact something next frame:
-    #    self.actorNode.setContactVector(Vec3.zero())
-    #    return Task.cont
     
     def doDeltaPos(self):
         assert(self.debugPrint("doDeltaPos()"))
