@@ -575,11 +575,7 @@ measure_row(const char *&source) {
       // A printable character.
 
       const TextFont::CharDef *def = _font->get_char(character);
-      if (def == (const TextFont::CharDef *)NULL) {
-        text_cat.warning()
-          << "No definition for character " << character << endl;
-
-      } else {
+      if (def != (const TextFont::CharDef *)NULL) {
         float char_width = def->_width;
         xpos += char_width;
       }
