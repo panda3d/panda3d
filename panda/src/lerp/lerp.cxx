@@ -19,8 +19,8 @@
 
 #include "lerp.h"
 
-#include <clockObject.h>
-#include <throw_event.h>
+#include "clockObject.h"
+#include "throw_event.h"
 
 TypeHandle Lerp::_type_handle;
 TypeHandle AutonomousLerp::_type_handle;

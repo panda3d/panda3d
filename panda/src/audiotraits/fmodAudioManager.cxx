@@ -54,6 +54,7 @@ FmodAudioManager() {
 
   _active = audio_active;
   _cache_limit = audio_cache_limit;
+  _concurrent_sound_limit = 0;
 
   // Initialize FMOD, if this is the first manager created.
   _is_valid = true;
@@ -62,20 +63,19 @@ FmodAudioManager() {
       audio_debug("Initializing FMOD for real.");
       float fmod_dll_version = FSOUND_GetVersion();
       if (fmod_dll_version < FMOD_VERSION) {
-	audio_error("Wrong FMOD DLL version.  You have "<<fmod_dll_version
-		    <<".  You need "<<FMOD_VERSION);
-	_is_valid = false;
-	break;
+        audio_error("Wrong FMOD DLL version.  You have "<<fmod_dll_version
+            <<".  You need "<<FMOD_VERSION);
+        _is_valid = false;
+        break;
       }
       
       if (FSOUND_Init(44100, 32, 0) == 0) {
-	audio_error("Fmod initialization failure.");
-	_is_valid = false;
-	break;
+        audio_error("Fmod initialization failure.");
+        _is_valid = false;
+        break;
       }
-
     }
-    while(0);
+    while(0); // curious -- why is there a non-loop here?
   }
 
   // increment regardless of whether an error has occured -- the
@@ -222,7 +222,7 @@ get_sound(const string &file_name) {
   // Build a new AudioSound from the audio data.
   PT(AudioSound) audioSound = 0;
   PT(FmodAudioSound) fmodAudioSound = new FmodAudioSound(this, stream, path,
-							 length);
+               length);
   fmodAudioSound->set_active(_active);
   _soundsOnLoan.insert(fmodAudioSound);
   audioSound = fmodAudioSound;
@@ -263,7 +263,7 @@ uncache_sound(const string& file_name) {
     // If the refcount is already zero, it can be
     // purged right now!
     audio_debug("FmodAudioManager::uncache_sound: purging "<<path
-		<< " from the cache.");
+    << " from the cache.");
     delete [] entry->data;
 
     // Erase the sound from the LRU list as well.
@@ -324,7 +324,7 @@ most_recently_used(const string& path) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::clear_cache
 //       Access: Public
-//  Description: 
+//  Description: Clear out the sound cache.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 clear_cache() {
@@ -340,7 +340,7 @@ clear_cache() {
     SoundCacheEntry *entry = &(*itor).second;
     if (entry->refcount == 0) {
       audio_debug("FmodAudioManager::clear_cache: purging "<< (*itor).first
-		  << " from the cache.");
+      << " from the cache.");
       delete [] entry->data;
 
       // Erase the sound from the LRU list as well.
@@ -361,18 +361,15 @@ clear_cache() {
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::set_cache_limit
 //       Access: Public
-//  Description: 
+//  Description: Set the number of sounds that the cache can hold.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
-set_cache_limit(int count) {
-  audio_debug("FmodAudioManager::set_cache_limit(count="
-      <<count<<")");
+set_cache_limit(unsigned int count) {
+  audio_debug("FmodAudioManager::set_cache_limit(count="<<count<<")");
   assert(is_valid());
-  
-  while (_lru.size() > (unsigned int) count) {
+  while (_lru.size() > count) {
     uncache_a_sound();
   }
-
   _cache_limit = count;
   assert(is_valid());
 }
@@ -385,7 +382,7 @@ set_cache_limit(int count) {
 int FmodAudioManager::
 get_cache_limit() {
   audio_debug("FmodAudioManager::get_cache_limit() returning "
-	      <<_cache_limit);
+        <<_cache_limit);
   return _cache_limit;
 }
 
@@ -452,17 +449,55 @@ get_active() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::set_concurrent_sound_limit
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void FmodAudioManager::
+set_concurrent_sound_limit(unsigned int limit) {
+  _concurrent_sound_limit = limit;
+  reduce_sounds_playing_to(_concurrent_sound_limit);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::get_concurrent_sound_limit
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+unsigned int FmodAudioManager::
+get_concurrent_sound_limit() const {
+  return _concurrent_sound_limit;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::reduce_sounds_playing_to
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void FmodAudioManager::
+reduce_sounds_playing_to(unsigned int count) {
+  // This is an example from Miles audio, this should be done for fmod:
+  //int limit = _sounds_playing.size() - count;
+  //while (limit-- > 0) {
+  //  SoundsPlaying::iterator sound = _sounds_playing.begin();
+  //  assert(sound != _sounds_playing.end());
+  //  (**sound).stop();
+  //}
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::stop_all_sounds
 //       Access: Public
 //  Description: Stop playback on all sounds managed by this manager.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
-stop_all_sounds(void) {
+stop_all_sounds() {
   audio_debug("FmodAudioManager::stop_all_sounds()");
   AudioSet::iterator i=_soundsOnLoan.begin();
   for (; i!=_soundsOnLoan.end(); ++i) {
-    if((**i).status()==AudioSound::PLAYING)
+    if ((**i).status()==AudioSound::PLAYING) {
       (**i).stop();
+    }
   }
 }
 
@@ -484,7 +519,7 @@ inc_refcount(const string& file_name) {
   entry->refcount++;
   entry->stale = false; // definitely not stale!
   audio_debug("FmodAudioManager: "<<path<<" has a refcount of "
-	      << entry->refcount);
+        << entry->refcount);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -502,7 +537,7 @@ dec_refcount(const string& file_name) {
     SoundCacheEntry *entry = &(*itor).second;
     entry->refcount--;
     audio_debug("FmodAudioManager: "<<path<<" has a refcount of "
-		<< entry->refcount);
+    << entry->refcount);
     if (entry->refcount == 0 && entry->stale) {
       audio_debug("FmodAudioManager::dec_refcount: purging "<<path<< " from the cache.");
       delete [] entry->data;
@@ -537,7 +572,7 @@ load(const Filename& filename, size_t &size) const {
   }
   if (!bSupported) {
     audio_error("FmodAudioManager::load: "<<filename
-		<<" is not a supported file format.");
+    <<" is not a supported file format.");
     audio_error("Supported formats are: WAV, MP3, MIDI");
     return NULL;
   }

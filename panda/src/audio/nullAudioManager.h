@@ -37,14 +37,21 @@ public:
   virtual PT(AudioSound) get_sound(const string&);
   virtual void uncache_sound(const string&);
   virtual void clear_cache();
-  virtual void set_cache_limit(int);
-  virtual int get_cache_limit();
+  virtual void set_cache_limit(unsigned int);
+  virtual unsigned int get_cache_limit() const;
 
   virtual void set_volume(float);
-  virtual float get_volume();
+  virtual float get_volume() const;
   
   virtual void set_active(bool);
-  virtual bool get_active();
+  virtual bool get_active() const;
+
+  virtual void set_concurrent_sound_limit(unsigned int limit);
+  virtual unsigned int get_concurrent_sound_limit() const;
+
+  virtual void reduce_sounds_playing_to(unsigned int count);
+
+  virtual void stop_all_sounds();
 };
 
 #endif /* __NULL_AUDIO_MANAGER_H__ */

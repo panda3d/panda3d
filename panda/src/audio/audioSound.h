@@ -84,6 +84,11 @@ PUBLISHED:
   // inits to manager's state.
   virtual void set_active(bool flag=true) = 0;
   virtual bool get_active() const = 0;
+
+  // Set (or clear) the event that will be thrown when the sound
+  // finishes playing.  To clear the event, pass an empty string.
+  virtual void set_finished_event(const string& event) = 0;
+  virtual const string& get_finished_event() const = 0;
   
   // There is no set_name(), this is intentional.
   virtual const string& get_name() const = 0;

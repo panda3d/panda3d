@@ -20,6 +20,10 @@
 #include "nullAudioSound.h"
 
 
+namespace {
+  static const string blank="";
+}
+
 NullAudioSound::NullAudioSound() {
   // Intentionally blank.
 }
@@ -84,8 +88,15 @@ bool NullAudioSound::get_active() const {
   return false; 
 }
 
+void NullAudioSound::set_finished_event(const string& event) {
+  // Intentionally blank.
+}
+
+const string& NullAudioSound::get_finished_event() const {
+  return blank;
+}
+
 const string& NullAudioSound::get_name() const {
-  static const string blank="";
   return blank;
 }
 

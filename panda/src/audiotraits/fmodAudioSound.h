@@ -69,6 +69,9 @@ public:
   // inits to manager's state.
   void set_active(bool active=true);
   bool get_active() const;
+
+  void set_finished_event(const string& event);
+  const string& get_finished_event() const;
   
   const string& get_name() const;
   
@@ -92,7 +95,7 @@ private:
   int _channel;
 
   FmodAudioSound(FmodAudioManager* manager, FSOUND_STREAM *audio_data,
-		 string file_name, float length=0.0f);
+     string file_name, float length=0.0f);
 
   // forbidden functions!
   FmodAudioSound(const FmodAudioSound& rhs) {}

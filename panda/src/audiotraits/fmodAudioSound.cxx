@@ -34,14 +34,14 @@
 
 FmodAudioSound::
 FmodAudioSound(FmodAudioManager* manager, FSOUND_STREAM *audio_data,
-	       string file_name, float length)
+         string file_name, float length)
   : _manager(manager), _audio(audio_data), _file_name(file_name),
     _volume(1.0f), _balance(0), _loop_count(1), _length(length),
     _active(true), _paused(false), _channel(-1) {
   nassertv(!file_name.empty());
   nassertv(audio_data != NULL);
   audio_debug("FmodAudioSound(manager=0x"<<(void*)&manager
-	      <<", file_name="<<file_name<<")");
+        <<", file_name="<<file_name<<")");
 }
 
 FmodAudioSound::
@@ -56,15 +56,13 @@ play() {
   if (!_active) {
     return;
   }
-
-  if(_manager->_bExclusive) {
-    // stop any other sound that parent mgr is playing
-    _manager->stop_all_sounds();
-  }
-
   // If the sound is already playing, stop it.
   if (this->status() == AudioSound::PLAYING) {
     this->stop();
+  }
+  if (_manager->stop_a_sound()) {
+    // stop another sound that parent mgr is playing
+    _manager->stop_all_sounds();
   }
 
   // Play the stream, but start it paused so we can set the volume and
@@ -92,7 +90,9 @@ play() {
   // Delay until the channel is actually playing.  This shouldn't
   // result in a noticeable delay, and allows you to immediately test
   // the status of the sound after initiating playback.
-  while (!FSOUND_IsPlaying(_channel));
+  while (!FSOUND_IsPlaying(_channel)) {
+    // intentinaly empty loop.
+  }
 }
 
 void FmodAudioSound::stop() {

@@ -83,6 +83,12 @@ public:
   // inits to manager's state.
   void set_active(bool active=true);
   bool get_active() const;
+
+  // This is the string that throw_event() will throw
+  // when the sound finishes playing.  It is not triggered
+  // when the sound is stopped with stop().
+  void set_finished_event(const string& event);
+  const string& get_finished_event() const;
   
   const string& get_name() const;
   
@@ -91,11 +97,7 @@ public:
 
   AudioSound::SoundStatus status() const;
 
-protected:
-    // halt is like stop(), except it should not be called by the user.
-    // halt() does not change the "paused" status of a sound, it just stops 
-    // it from playing.  This is useful when the sound needs to be deactivated
-    void halt(void);
+  void finished();
 
 private:
   HAUDIO _audio;
@@ -104,13 +106,27 @@ private:
   float _balance; // -1..1
   mutable float _length; // in seconds.
   unsigned long _loop_count;
+  
+  // This is the string that throw_event() will throw
+  // when the sound finishes playing.  It is not triggered
+  // when the sound is stopped with stop().
+  string _finished_event;
+  
   string _file_name;
+  
+  // _active is for things like a 'turn off sound effects' in
+  // a preferences pannel.
+  // _active is not about whether a sound is currently playing.
+  // Use status() for info on whether the sound is playing.
   bool _active;
+  
+  // _paused is not like the Pause button on a cd/dvd player.
+  // It is used as a flag to say that the sound was looping when
+  // itwas set inactive.
   bool _paused;
 
   MilesAudioSound(MilesAudioManager* manager, 
       HAUDIO audio, string file_name, float length=0.0f);
-
 
   friend class MilesAudioManager;
 };

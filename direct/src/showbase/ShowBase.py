@@ -716,7 +716,8 @@ class ShowBase(DirectObject.DirectObject):
         self.musicManagerIsValid=self.musicManager!=None \
                 and self.musicManager.isValid()
         if self.musicManagerIsValid:
-            self.musicManager.setMutuallyExclusive(1)  # ensure only 1 midi song is playing at a time
+            # ensure only 1 midi song is playing at a time:
+            self.musicManager.setConcurrentSoundLimit(1)
             self.musicManager.setActive(self.musicActive)
 
     # enableMusic/enableSoundEffects are meant to be called in response to a user request

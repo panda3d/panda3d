@@ -86,7 +86,7 @@ clear_cache() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NullAudioManager::
-set_cache_limit(int) {
+set_cache_limit(unsigned int) {
   // intentionally blank.
 }
 
@@ -95,8 +95,8 @@ set_cache_limit(int) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-int NullAudioManager::
-get_cache_limit() {
+unsigned int NullAudioManager::
+get_cache_limit() const {
   // intentionally blank.
   return 0;
 }
@@ -117,7 +117,7 @@ set_volume(float) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 float NullAudioManager::
-get_volume() {
+get_volume() const {
   return 0;
 }
 
@@ -137,6 +137,46 @@ set_active(bool) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 bool NullAudioManager::
-get_active() {
+get_active() const {
   return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::set_concurrent_sound_limit
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NullAudioManager::
+set_concurrent_sound_limit(unsigned int) {
+  // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::get_concurrent_sound_limit
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+unsigned int NullAudioManager::
+get_concurrent_sound_limit() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::reduce_sounds_playing_to
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NullAudioManager::
+reduce_sounds_playing_to(unsigned int) {
+  // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::stop_all_sounds
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NullAudioManager::
+stop_all_sounds() {
+  // intentionally blank.
 }

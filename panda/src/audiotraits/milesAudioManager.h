@@ -20,7 +20,7 @@
 #ifndef __MILES_AUDIO_MANAGER_H__ //[
 #define __MILES_AUDIO_MANAGER_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 #ifdef HAVE_RAD_MSS //[
 
 #include "audioManager.h"
@@ -43,16 +43,21 @@ public:
   PT(AudioSound) get_sound(const string& file_name);
   void uncache_sound(const string& file_name);
   void clear_cache();
-  void set_cache_limit(int count);
-  int get_cache_limit();
+  void set_cache_limit(unsigned int count);
+  unsigned int get_cache_limit() const;
 
   void set_volume(float volume);
-  float get_volume();
+  float get_volume() const;
   
   void set_active(bool active);
-  bool get_active();
+  bool get_active() const;
+
+  void set_concurrent_sound_limit(unsigned int limit = 0);
+  unsigned int get_concurrent_sound_limit() const;
+
+  void reduce_sounds_playing_to(unsigned int count);
+
   void stop_all_sounds();
-  void forceMidiReset();
 
   // Optional Downloadable Sound field for software midi:
   // made public so C atexit fn can access it
@@ -65,7 +70,11 @@ private:
 
   typedef pset<MilesAudioSound* > AudioSet;
   // The offspring of this manager:
-  AudioSet _soundsOnLoan;
+  AudioSet _sounds_on_loan;
+
+  typedef pset<MilesAudioSound* > SoundsPlaying;
+  // The sounds from this manager that are currently playing:
+  SoundsPlaying _sounds_playing;
 
   // The Least Recently Used mechanism:
   typedef pdeque<const string* > LRU;
@@ -76,9 +85,10 @@ private:
   int _cache_limit;
   // keep a count for startup and shutdown:
   static int _active_managers;
+  unsigned int _concurrent_sound_limit;
   
   bool _is_valid;
-  bool _bHasMidiSounds;
+  bool _hasMidiSounds;
   
   HAUDIO load(Filename file_name);
   // Tell the manager that the sound dtor was called.
@@ -86,6 +96,9 @@ private:
   
   void most_recently_used(const string& path);
   void uncache_a_sound();
+
+  void starting_sound(MilesAudioSound* audio);
+  void stoping_sound(MilesAudioSound* audio);
 
   // utility function that should be moved to another class:
   bool get_registry_entry(HKEY base, 
@@ -95,6 +108,8 @@ private:
   // get the default dls file path:
   void get_gm_file_path(string& result);
 
+  void force_midi_reset();
+
   // These are "callback" functions that implement vfs-style I/O for
   // Miles.
   static U32 AILCALLBACK vfs_open_callback(const char *filename, U32 *file_handle);
@@ -102,7 +117,7 @@ private:
   static S32 AILCALLBACK vfs_seek_callback(U32 file_handle, S32 offset, U32 type);
   static void AILCALLBACK vfs_close_callback(U32 file_handle);
   
-  friend MilesAudioSound;
+  friend class MilesAudioSound;
 };
 
 EXPCL_MILES_AUDIO PT(AudioManager) Create_AudioManager();

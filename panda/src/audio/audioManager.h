@@ -38,6 +38,14 @@ PUBLISHED:
 
   static PT(AudioManager) create_AudioManager();
   virtual ~AudioManager() {}
+  
+  // If you're interested in knowing whether this audio manager
+  // is valid, here's the call to do it.  It is not necessary
+  // to check whether the audio manager is valid before making other
+  // calls.  You are free to use an invalid sound manager, you
+  // may get silent sounds from it though.  The sound manager and
+  // the sounds it creates should not crash the application even
+  // when the objects are not valid.
   virtual bool is_valid() = 0;
   
   // Get a sound:
@@ -51,12 +59,8 @@ PUBLISHED:
   // in its pool/cache.
   virtual void uncache_sound(const string& file_name) = 0;
   virtual void clear_cache() = 0;
-  virtual void set_cache_limit(int count) = 0;
-  virtual int get_cache_limit() = 0;
-
-  // if set, turn off any currently-playing sounds before playing
-  // a new one (useful for midi songs)
-  void set_mutually_exclusive(bool bExclusive);
+  virtual void set_cache_limit(unsigned int count) = 0;
+  virtual unsigned int get_cache_limit() const = 0;
 
   // Control volume:
   // FYI:
@@ -65,7 +69,7 @@ PUBLISHED:
   // 0 = minimum; 1.0 = maximum.
   // inits to 1.0.
   virtual void set_volume(float volume) = 0;
-  virtual float get_volume() = 0;
+  virtual float get_volume() const = 0;
   
   // Turn the manager on or off.
   // If you play a sound while the manager is inactive, it won't start.
@@ -76,14 +80,42 @@ PUBLISHED:
   // they will start playing from the begining of their loop.
   // inits to true.
   virtual void set_active(bool flag) = 0;
-  virtual bool get_active() = 0;
+  virtual bool get_active() const = 0;
+  
+  // This controls the number of sounds that you allow at once.  This
+  // is more of a user choice -- it avoids talk over and the creation
+  // of a cacophony.
+  // It can also be used to help performance.
+  // 0 == unlimited.
+  // 1 == mutually exclusive (one sound at a time).  Which is an example of:
+  // n == allow n sounds to be playing at the same time.
+  virtual void set_concurrent_sound_limit(unsigned int limit = 0) = 0;
+  virtual unsigned int get_concurrent_sound_limit() const = 0;
+  
+  // This is likely to be a utility function for the concurrent_sound_limit
+  // options.  It is exposed as an API, because it's reasonable that it
+  // may be useful to be here.  It reduces the number of concurrently
+  // playing sounds to count by some implementation specific means.
+  // If the number of sounds currently playing is at or below count then
+  // there is no effect.
+  virtual void reduce_sounds_playing_to(unsigned int count) = 0;
+
+  // Stop playback on all sounds managed by this manager.
+  // This is effectively the same as reduce_sounds_playing_to(0), but
+  // this call may be for efficient on some implementations.
+  virtual void stop_all_sounds() = 0;
 
 public:
   static void register_AudioManager_creator(Create_AudioManager_proc* proc);
 
 protected:
+  friend class AudioSound;
+  
+  // Avoid adding data members (instance variables) to this mostly abstract
+  // base class.  This allows implementors of various sound systems the
+  // best flexibility.
+  
   static Create_AudioManager_proc* _create_AudioManager;
-  bool _bExclusive;
   PT(AudioSound) _null_sound;
 
   AudioManager() {

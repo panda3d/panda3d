@@ -19,7 +19,7 @@
 #ifndef THROW_EVENT_H
 #define THROW_EVENT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eventQueue.h"
 #include "pt_Event.h"

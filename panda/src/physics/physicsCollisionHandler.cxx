@@ -73,8 +73,8 @@ apply_linear_force(ColliderDef &def, const LVector3f &force) {
   LVector3f adjustment=force;
   physics_debug("  adjustment set "<<adjustment<<" len "<<adjustment.length());
 
-  NodePath np(def._node);
-  CPT(TransformState) trans = np.get_net_transform();
+  //NodePath np(def._node);
+  //CPT(TransformState) trans = np.get_net_transform();
   //adjustment=adjustment*trans->get_mat();
   physics_debug("  adjustment trn "<<adjustment<<" len "<<adjustment.length());
 
@@ -112,7 +112,10 @@ apply_linear_force(ColliderDef &def, const LVector3f &force) {
       physics_debug("  vel pre  friction "<<vel<<" len "<<vel.length());
       float friction=frictionCoefficient*angle;
       physics_debug("  friction "<<friction);
-      assert(friction>=0.0f && friction<=1.0f);
+      if (friction<0.0f && friction>1.0f) {
+        cerr<<"\n\nfriction error "<<friction<<endl;
+        friction=1.0f;
+      }
       #if 0
       float dt=ClockObject::get_global_clock()->get_dt();
       vel *= (1.0f-friction) * dt * dt;

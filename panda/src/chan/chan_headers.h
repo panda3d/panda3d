@@ -16,15 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <compose_matrix.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <event.h>
-#include <fftCompressor.h>
-#include <indent.h>
-#include <throw_event.h>
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "compose_matrix.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "event.h"
+#include "fftCompressor.h"
+#include "indent.h"
+#include "throw_event.h"
 
 #include "animBundle.h"
 #include "animBundleNode.h"

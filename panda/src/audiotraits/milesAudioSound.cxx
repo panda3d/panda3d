@@ -16,9 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 #ifdef HAVE_RAD_MSS //[
 
+#include "throw_event.h"
 #include "milesAudioSound.h"
 #include "milesAudioManager.h"
 
@@ -45,6 +46,72 @@
           return 'x'; // bad.
       }
     }
+
+    AILSEQUENCECB sequence_callback = 0;
+    AILSAMPLECB sample_callback = 0;
+    const user_data_index = 7;
+
+    void AILCALLBACK
+    pandaAudioAilCallback_Sequence(HSEQUENCE S) {
+      assert(S);
+      audio_debug("pandaAudioAilCallback_Sequence(HSEQUENCE="<<((void*)S)<<")");
+      MilesAudioSound* sound = (MilesAudioSound*)AIL_sequence_user_data(
+          S, user_data_index);
+      assert(sound);
+      sound->finished();
+      if (sequence_callback) {
+        sequence_callback(S);
+      }
+    }
+
+    void AILCALLBACK
+    pandaAudioAilCallback_Sample(HSAMPLE S) {
+      assert(S);
+      audio_debug("pandaAudioAilCallback_Sample(HSAMPLE="<<((void*)S)<<")");
+      MilesAudioSound* sound = (MilesAudioSound*)AIL_sample_user_data(
+          S, user_data_index);
+      assert(sound);
+      sound->finished();
+      if (sample_callback) {
+        sample_callback(S);
+      }
+    }
+    
+    void
+    panda_AIL_quick_set_finished_callback(HAUDIO audio, MilesAudioSound* sound) {
+      audio_debug("panda_AIL_quick_set_finished_callback(audio="<<((void*)audio)
+          <<", sound="<<((void*)sound)<<")");
+      if (!audio || !sound) {
+        return;
+      }
+      AIL_lock();
+      if (audio->handle != NULL) {
+        switch (audio->type) {
+        case AIL_QUICK_XMIDI_TYPE:
+          audio_debug("  AIL_register_sequence_callback");
+          AIL_set_sequence_user_data(
+              (HSEQUENCE)audio->handle, user_data_index, (long)sound);
+          sequence_callback=AIL_register_sequence_callback(
+              (HSEQUENCE)audio->handle, pandaAudioAilCallback_Sequence);
+          audio_debug(  "AILCALLBACK "<<((void*)sequence_callback));
+          break;
+        case AIL_QUICK_DIGITAL_TYPE:
+        case AIL_QUICK_MPEG_DIGITAL_TYPE:
+          audio_debug("  AIL_register_EOS_callback");
+          AIL_set_sample_user_data(
+              (HSAMPLE)audio->handle, user_data_index, (long)sound);
+          sample_callback=AIL_register_EOS_callback(
+              (HSAMPLE)audio->handle, pandaAudioAilCallback_Sample);
+          audio_debug("  AILCALLBACK "<<((void*)sample_callback));
+          break;
+        default:
+          audio_debug("  unknown audio type");
+          break;
+        }
+      }
+      AIL_unlock();
+    }
+
   }
 
   #define miles_audio_debug(x) \
@@ -72,6 +139,7 @@ MilesAudioSound(MilesAudioManager* manager,
 MilesAudioSound::
 ~MilesAudioSound() {
   miles_audio_debug("~MilesAudioSound()");
+  stop();
   _manager->release_sound(this);
   AIL_quick_unload(_audio);
 }
@@ -86,12 +154,14 @@ play() {
   
   miles_audio_debug("play()");
   if (_active) {
-    if(_manager->_bExclusive) {
-        // stop any other sound that parent mgr is playing
-        _manager->stop_all_sounds();
+    if (status() == AudioSound::PLAYING) {
+      stop();
     }
+    _manager->starting_sound(this);
     // Start playing:
     if (AIL_quick_play(_audio, _loop_count)) {
+      panda_AIL_quick_set_finished_callback(_audio, this);
+      assert(status()==PLAYING);
       audio_debug("  started sound " << _file_name );
     } else {
       audio_debug("  sound " << _file_name<<" failed to start, err: " <<AIL_last_error());
@@ -105,27 +175,25 @@ play() {
 
 void MilesAudioSound::
 stop() {
-  #if 0
-  if(_file_name.find(".mid")!=string::npos) {
-        miles_audio_debug("stop() midi");
-  } 
-  #endif
-  miles_audio_debug("stopping snd " << _file_name);
-  _paused=false;
+  miles_audio_debug("stop()");
+  _manager->stoping_sound(this);
+  // The _paused flag should not be cleared here.  _paused is not like
+  // the Pause button on a cd/dvd player.  It is used as a flag to say
+  // that it was looping when it was set inactive.  There is no need to
+  // make this symetrical with play().  set_active() is the 'owner' of
+  // _paused.  play() accesses _paused to help in the situation where
+  // someone calls play on an inactive sound().
+  // removing --> _paused=false;
   AIL_quick_halt(_audio);
 }
 
 void MilesAudioSound::
-halt() {
-  #if 0
-  if(_file_name.find(".mid")!=string::npos) {
-        miles_audio_debug("halt() midi");
-        int i=1;
+finished() {
+  miles_audio_debug("finished()");
+  _manager->stoping_sound(this);
+  if (!_finished_event.empty()) {
+    throw_event(_finished_event);
   }
-  #endif
-
-  miles_audio_debug("halt()");
-  AIL_quick_halt(_audio);
 }
 
 void MilesAudioSound::
@@ -154,7 +222,7 @@ set_loop_count(unsigned long loop_count) {
       // need to stop and start the sound, feel free.  Or, maybe I'll spend
       // time on it in the future.  Please set the loop option before starting
       // the sound.
-      halt();
+      stop();
       play();
     }
   }
@@ -235,43 +303,6 @@ get_volume() const {
 }
 
 void MilesAudioSound::
-set_active(bool active) {
-  miles_audio_debug("set_active(active="<<active<<")");
-  if (_active!=active) {
-    _active=active;
-    if (_active) {
-      // ...activate the sound.
-      if (_paused
-          &&
-          _loop_count==0) {
-        // ...this sound was looping when it was paused.
-        _paused=false;
-        play();
-      }
-    } else {
-      // ...deactivate the sound.
-      if (status()==PLAYING) {
-        if (_loop_count==0) {
-          // ...we're pausing a looping sound.
-          _paused=true;
-        }
-
-        // unlike the user fn stop(), halt() does NOT alter the 'paused' status
-        // this is important, dont want to 'stop' infin looping sounds unless user
-        // explicitly uses "stop()"
-        halt();
-      }
-    }
-  }
-}
-
-bool MilesAudioSound::
-get_active() const {
-  miles_audio_debug("get_active() returning "<<_active);
-  return _active;
-}
-
-void MilesAudioSound::
 set_balance(float balance_right) {
   miles_audio_debug("set_balance(balance_right="<<balance_right<<")");
   _balance=balance_right;
@@ -325,6 +356,51 @@ length() const {
   //audio_cat->info() << "MilesAudioSound::length() returning " << _length << endl;
   audio_debug("MilesAudioSound::length() returning "<<_length);
   return _length;
+}
+
+void MilesAudioSound::
+set_active(bool active) {
+  miles_audio_debug("set_active(active="<<active<<")");
+  if (_active!=active) {
+    _active=active;
+    if (_active) {
+      // ...activate the sound.
+      if (_paused
+          &&
+          _loop_count==0) {
+        // ...this sound was looping when it was paused.
+        _paused=false;
+        play();
+      }
+    } else {
+      // ...deactivate the sound.
+      if (status()==PLAYING) {
+        if (_loop_count==0) {
+          // ...we're pausing a looping sound.
+          _paused=true;
+        }
+        stop();
+      }
+    }
+  }
+}
+
+bool MilesAudioSound::
+get_active() const {
+  miles_audio_debug("get_active() returning "<<_active);
+  return _active;
+}
+
+void MilesAudioSound::
+set_finished_event(const string& event) {
+  miles_audio_debug("set_finished_event(event="<<event<<")");
+  _finished_event = event;
+}
+
+const string& MilesAudioSound::
+get_finished_event() const {
+  miles_audio_debug("get_finished_event() returning "<<_finished_event);
+  return _finished_event;
 }
 
 const string& MilesAudioSound::

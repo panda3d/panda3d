@@ -79,7 +79,6 @@ create_AudioManager() {
   if (!am->is_valid()) {
     am = create_NullAudioManger();
   }
-  am->_bExclusive = false;
   return am;
 }
 
@@ -99,7 +98,3 @@ get_null_sound() {
   return _null_sound;
 }
 
-void AudioManager::
-set_mutually_exclusive(bool bExclusive) {
-  _bExclusive = bExclusive;
-}

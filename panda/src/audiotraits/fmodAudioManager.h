@@ -20,7 +20,7 @@
 #ifndef __FMOD_AUDIO_MANAGER_H__
 #define __FMOD_AUDIO_MANAGER_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 #ifdef HAVE_FMOD //[
 
 #include "audioManager.h"
@@ -30,7 +30,7 @@ class FmodAudioSound;
 #include "pmap.h"
 #include "pset.h"
 
-#include <fmod.h>
+#include <fmod.h> // Is fmod.h really a system file?  I think maybe this should be "fmod.h".
 
 class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   // All of these methods are stubbed out to some degree.
@@ -46,7 +46,7 @@ public:
   virtual PT(AudioSound) get_sound(const string&);
   virtual void uncache_sound(const string&);
   virtual void clear_cache();
-  virtual void set_cache_limit(int);
+  virtual void set_cache_limit(unsigned int count);
   virtual int get_cache_limit();
 
   // Indicates that the given sound was the most recently used.
@@ -60,7 +60,13 @@ public:
   
   virtual void set_active(bool);
   virtual bool get_active();
-  void stop_all_sounds();
+
+  virtual void set_concurrent_sound_limit(unsigned int limit = 0);
+  virtual unsigned int get_concurrent_sound_limit() const;
+
+  virtual void reduce_sounds_playing_to(unsigned int count);
+
+  virtual void stop_all_sounds();
 
 protected:
   // increment or decrement the refcount of the given file's cache entry.
@@ -80,6 +86,7 @@ private:
   typedef pset<FmodAudioSound* > AudioSet;
   // The offspring of this manager:
   AudioSet _soundsOnLoan;
+  unsigned int _concurrent_sound_limit;
 
   // The Least Recently Used mechanism:
   typedef pdeque<string> LRU;

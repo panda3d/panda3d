@@ -54,6 +54,9 @@ public:
 
   void set_active(bool);
   bool get_active() const;
+
+  void set_finished_event(const string& event);
+  const string& get_finished_event() const;
   
   const string& get_name() const;
   
