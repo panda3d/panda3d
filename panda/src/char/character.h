@@ -60,7 +60,7 @@ PUBLISHED:
   INLINE void write_part_values(ostream &out) const;
 
 public:
-  virtual void app_traverse();
+  virtual void app_traverse(const ArcChain &chain);
 
 PUBLISHED:
   void update();

@@ -288,6 +288,42 @@ get_child(TypeHandle type, int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Node::app_traverse
+//       Access: Public, Virtual
+//  Description: This hook function is called on each node visited
+//               during the App traversal.  The ArcChain passed in
+//               represents the complete chain from the root of the
+//               graph to this node, if it is known.
+////////////////////////////////////////////////////////////////////
+void Node::
+app_traverse(const ArcChain &) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Node::draw_traverse
+//       Access: Public, Virtual
+//  Description: This hook function is called on each node visited
+//               during the Draw traversal.  The ArcChain passed in
+//               represents the complete chain from the root of the
+//               graph to this node, if it is known.
+////////////////////////////////////////////////////////////////////
+void Node::
+draw_traverse(const ArcChain &) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Node::dgraph_traverse
+//       Access: Public, Virtual
+//  Description: This hook function is called on each node visited
+//               during the data graph traversal.  The ArcChain passed
+//               in represents the complete chain from the root of the
+//               graph to this node, if it is known.
+////////////////////////////////////////////////////////////////////
+void Node::
+dgraph_traverse(const ArcChain &) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Node::sub_render
 //       Access: Public, Virtual
 //  Description:

@@ -63,7 +63,7 @@ PUBLISHED:
   INLINE int add_solid(CollisionSolid *solid);
 
 public:
-  virtual void draw_traverse();
+  virtual void draw_traverse(const ArcChain &chain);
   virtual void output(ostream &out) const;
 
 protected:

@@ -19,20 +19,27 @@
 #ifndef GET_REL_POS_H
 #define GET_REL_POS_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <luse.h>
-#include <lmatrix.h>
-#include <coordinateSystem.h>
-#include <renderRelation.h>
+#include "luse.h"
+#include "lmatrix.h"
+#include "coordinateSystem.h"
+#include "renderRelation.h"
+
 
 class Node;
+class ArcChain;
 
-INLINE LPoint3f EXPCL_PANDA
+LPoint3f EXPCL_PANDA
 get_rel_pos(const Node *node, const Node *relative_to,
             TypeHandle graph_type = RenderRelation::get_class_type());
-INLINE void EXPCL_PANDA
+void EXPCL_PANDA
 get_rel_mat(const Node *node, const Node *relative_to,
+            LMatrix4f &mat,
+            TypeHandle graph_type = RenderRelation::get_class_type());
+void EXPCL_PANDA
+get_rel_mat(const Node *from, const ArcChain &from_arcs,
+            const Node *to, const ArcChain &to_arcs,
             LMatrix4f &mat,
             TypeHandle graph_type = RenderRelation::get_class_type());
 void EXPCL_PANDA

@@ -148,9 +148,9 @@ bool DirectRenderTraverser::
 reached_node(Node *node, AllAttributesWrapper &render_state,
              DirectRenderLevelState &level_state) {
   if (implicit_app_traversal) {
-    node->app_traverse();
+    node->app_traverse(_arc_chain);
   }
-  node->draw_traverse();
+  node->draw_traverse(_arc_chain);
 
   level_state._decal_mode = false;
 

@@ -586,9 +586,9 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
   Node *node = arc->get_child();
 
   if (implicit_app_traversal) {
-    node->app_traverse();
+    node->app_traverse(_arc_chain);
   }
-  node->draw_traverse();
+  node->draw_traverse(_arc_chain);
 
   // We have to get a new _now timestamp, just in case either of the
   // above traversals changed it.

@@ -619,7 +619,7 @@ convert_to_nurbs(ParametricCurve *nc) const {
 //               geometry is up-to-date.
 ////////////////////////////////////////////////////////////////////
 void ParametricCurve::
-draw_traverse() {
+draw_traverse(const ArcChain &) {
   if (_implicit_drawer == (ParametricCurveDrawer *)NULL) {
     _implicit_drawer = new ParametricCurveDrawer();
     _implicit_drawer->set_curve(this);

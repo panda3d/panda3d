@@ -166,9 +166,9 @@ set_mouse_watcher(MouseWatcher *watcher) {
 void PGTop::
 r_traverse(Node *node, const ArcChain &chain) {
   if (implicit_app_traversal) {
-    node->app_traverse();
+    node->app_traverse(chain);
   }
-  node->draw_traverse();
+  node->draw_traverse(chain);
   _gsg->_nodes_pcollector.add_level(1);
 
 

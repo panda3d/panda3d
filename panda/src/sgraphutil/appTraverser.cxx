@@ -41,7 +41,8 @@ traverse(Node *root) {
 ////////////////////////////////////////////////////////////////////
 bool AppTraverser::
 reached_node(Node *node, NullAttributeWrapper &, NullLevelState &) {
-  node->app_traverse();
+  ArcChain bogus;
+  node->app_traverse(bogus);
 
   return true;
 }

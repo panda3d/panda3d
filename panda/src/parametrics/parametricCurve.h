@@ -114,7 +114,7 @@ public:
   virtual bool convert_to_hermite(HermiteCurve *hc) const;
   virtual bool convert_to_nurbs(ParametricCurve *nc) const;
 
-  virtual void draw_traverse();
+  virtual void draw_traverse(const ArcChain &chain);
 
   void register_drawer(ParametricCurveDrawer *drawer);
   void unregister_drawer(ParametricCurveDrawer *drawer);

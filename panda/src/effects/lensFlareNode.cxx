@@ -18,32 +18,29 @@
 
 #include "lensFlareNode.h"
 #include "config_effects.h"
-#include <sequenceNode.h>
 
-#include <geomNode.h>
-#include <geomSprite.h>
-
-#include <textureTransition.h>
-#include <billboardTransition.h>
-#include <transformAttribute.h>
-#include <transparencyTransition.h>
-#include <renderTraverser.h>
-
-#include <orthoProjection.h>
-#include <perspectiveProjection.h>
-#include <get_rel_pos.h>
-#include <clockObject.h>
-
-#include <allAttributesWrapper.h>
-#include <allTransitionsWrapper.h>
-#include <graphicsStateGuardian.h>
-
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <ioPtaDatagramFloat.h>
-#include <ioPtaDatagramLinMath.h>
+#include "sequenceNode.h"
+#include "geomNode.h"
+#include "geomSprite.h"
+#include "textureTransition.h"
+#include "transformTransition.h"
+#include "billboardTransition.h"
+#include "transformAttribute.h"
+#include "transparencyTransition.h"
+#include "renderTraverser.h"
+#include "orthoProjection.h"
+#include "perspectiveProjection.h"
+#include "get_rel_pos.h"
+#include "clockObject.h"
+#include "allAttributesWrapper.h"
+#include "allTransitionsWrapper.h"
+#include "graphicsStateGuardian.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "ioPtaDatagramFloat.h"
+#include "ioPtaDatagramLinMath.h"
 
 ////////////////////////////////////////////////////////////////////
 // Static variables

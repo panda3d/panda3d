@@ -19,15 +19,17 @@
 #include "projectionNode.h"
 #include "config_switchnode.h"
 
-#include <graphicsStateGuardian.h>
-#include <displayRegion.h>
-#include <get_rel_pos.h>
-#include <luse.h>
-#include <renderRelation.h>
-#include <transformTransition.h>
-#include <allAttributesWrapper.h>
-#include <allTransitionsWrapper.h>
-#include <renderTraverser.h>
+#include "graphicsStateGuardian.h"
+#include "displayRegion.h"
+#include "get_rel_pos.h"
+#include "luse.h"
+#include "renderRelation.h"
+#include "transformTransition.h"
+#include "allAttributesWrapper.h"
+#include "allTransitionsWrapper.h"
+#include "nodeTransitionWrapper.h"
+#include "renderTraverser.h"
+#include "wrt.h"
 
 ////////////////////////////////////////////////////////////////////
 // Static variables

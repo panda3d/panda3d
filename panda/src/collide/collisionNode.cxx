@@ -182,7 +182,7 @@ preserve_name() const {
 //               geometry is up-to-date.
 ////////////////////////////////////////////////////////////////////
 void CollisionNode::
-draw_traverse() {
+draw_traverse(const ArcChain &) {
   Solids::iterator si;
   for (si = _solids.begin(); si != _solids.end(); ++si) {
     (*si)->update_viz(this);

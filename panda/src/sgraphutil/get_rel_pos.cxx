@@ -18,9 +18,77 @@
 
 #include "get_rel_pos.h"
 
-#include <transformTransition.h>
-#include <nodeTransitionWrapper.h>
-#include <wrt.h>
+#include "transformTransition.h"
+#include "nodeTransitionWrapper.h"
+#include "wrt.h"
+#include "arcChain.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_rel_pos
+//  Description: Returns the position in space of the node's origin,
+//               relative to another node (such as render).
+////////////////////////////////////////////////////////////////////
+LPoint3f
+get_rel_pos(const Node *node, const Node *relative_to,
+            TypeHandle graph_type) {
+  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
+  wrt(node, relative_to, ntw, graph_type);
+  const TransformTransition *tt;
+
+  if (!get_transition_into(tt, ntw)) {
+    // No relative transform.
+    return LPoint3f(0.0, 0.0, 0.0);
+  }
+
+  LVector3f pos;
+  tt->get_matrix().get_row3(pos,3);
+  return pos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_rel_mat
+//  Description: Returns the net transform of the node, relative to
+//               another node (such as render).
+////////////////////////////////////////////////////////////////////
+void
+get_rel_mat(const Node *node, const Node *relative_to,
+            LMatrix4f &mat, TypeHandle graph_type) {
+  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
+  wrt(node, relative_to, ntw, graph_type);
+  const TransformTransition *tt;
+  if (!get_transition_into(tt, ntw)) {
+    // No relative transform.
+    mat = LMatrix4f::ident_mat();
+    return;
+  }
+
+  mat = tt->get_matrix();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_rel_mat
+//  Description: Returns the net transform of the node, relative to
+//               another node (such as render).  This flavor of
+//               get_rel_mat() uses ArcChains to resolve ambiguities
+//               due to instancing.
+////////////////////////////////////////////////////////////////////
+void
+get_rel_mat(const Node *from, const ArcChain &from_arcs,
+            const Node *to, const ArcChain &to_arcs,
+            LMatrix4f &mat, TypeHandle graph_type) {
+  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
+  wrt(from, from_arcs.begin(), from_arcs.end(),
+      to, to_arcs.begin(), to_arcs.end(),
+      ntw, graph_type);
+  const TransformTransition *tt;
+  if (!get_transition_into(tt, ntw)) {
+    // No relative transform.
+    mat = LMatrix4f::ident_mat();
+    return;
+  }
+
+  mat = tt->get_matrix();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_rot_mat

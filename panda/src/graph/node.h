@@ -37,6 +37,7 @@ class BamWriter;
 class BamReader;
 class Datagram;
 class DatagramIterator;
+class ArcChain;
 
 // This is the maximum number of graph types a node may simultaneously
 // exist in.
@@ -83,9 +84,9 @@ PUBLISHED:
 public:
   // These functions will be called when the node is visited during
   // the indicated traversal.
-  virtual void app_traverse() { }
-  virtual void draw_traverse() { }
-  virtual void dgraph_traverse() { }
+  virtual void app_traverse(const ArcChain &chain);
+  virtual void draw_traverse(const ArcChain &chain);
+  virtual void dgraph_traverse(const ArcChain &chain);
 
   // This function is similar to another function in NodeTransition.
   // It may or may not intercept the render traversal.

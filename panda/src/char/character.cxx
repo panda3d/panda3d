@@ -115,7 +115,7 @@ safe_to_transform() const {
 //               character node's being present in the scene graph.
 ////////////////////////////////////////////////////////////////////
 void Character::
-app_traverse() {
+app_traverse(const ArcChain &) {
   double now = ClockObject::get_global_clock()->get_frame_time();
   get_bundle()->advance_time(now);
 
