@@ -224,6 +224,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def delete(self):
         self.notify.debug('delete')
         DistributedObject.DistributedObject.delete(self)
+        # remove factory menu to SpeedChat
+        toonbase.localToon.chatMgr.chatInputSpeedChat.removeFactoryMenu()
+
     def getDoorwayNode(self, doorwayNum):
         # returns node that doors should parent themselves to
         return self.doorwayNum2Node[doorwayNum]
