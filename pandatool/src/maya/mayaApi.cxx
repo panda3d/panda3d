@@ -27,6 +27,10 @@
 #include <maya/MStatus.h>
 #include "post_maya_include.h"
 
+#ifdef WIN32_VC
+#include <direct.h>  // for chdir()
+#endif
+
 MayaApi *MayaApi::_global_api = (MayaApi *)NULL;
 
 ////////////////////////////////////////////////////////////////////
@@ -37,7 +41,19 @@ MayaApi *MayaApi::_global_api = (MayaApi *)NULL;
 ////////////////////////////////////////////////////////////////////
 MayaApi::
 MayaApi(const string &program_name) {
+  // Beginning with Maya4.5, the call to initialize seems to change
+  // the current directory!  Yikes!
+  Filename cwd = ExecutionEnvironment::get_cwd();
   MStatus stat = MLibrary::initialize((char *)program_name.c_str());
+  
+  // Restore the current directory.
+  string dirname = cwd.to_os_specific();
+  if (chdir(dirname.c_str()) < 0) {
+    maya_cat.warning()
+      << "Unable to restore current directory to " << cwd
+      << " after initializing Maya.\n";
+  }
+
   if (!stat) {
     stat.perror("MLibrary::initialize");
     _is_valid = false;
@@ -151,6 +167,7 @@ read(const Filename &filename) {
   MFileIO::newFile(true);
 
   maya_cat.info() << "Reading " << filename << "\n";
+
   // Load the file into Maya
   string os_filename = filename.to_os_specific();
 

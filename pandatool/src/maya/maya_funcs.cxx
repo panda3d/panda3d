@@ -77,7 +77,7 @@ get_bool_attribute(MObject &node, const string &attribute_name,
   if (!get_maya_attribute(node, attribute_name, value)) {
     maya_cat.error()
       << "Attribute " << attribute_name
-      << " does not have an bool value.\n";
+      << " does not have a bool value.\n";
     describe_maya_attribute(node, attribute_name);
     return false;
   }
@@ -267,7 +267,7 @@ set_string_attribute(MObject &node, const string &attribute_name,
   if (!get_maya_attribute(node, attribute_name, string_object)) {
     maya_cat.error()
       << "Attribute " << attribute_name
-      << " does not have an string object value.\n";
+      << " does not have a string object value.\n";
     describe_maya_attribute(node, attribute_name);
     return false;
   }
@@ -291,7 +291,7 @@ set_string_attribute(MObject &node, const string &attribute_name,
   if (!set_maya_attribute(node, attribute_name, string_object)) {
     maya_cat.error()
       << "Attribute " << attribute_name
-      << " suddenly does not have an string object value.\n";
+      << " suddenly does not have a string object value.\n";
     return false;
   }
 
