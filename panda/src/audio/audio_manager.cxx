@@ -73,6 +73,7 @@ void AudioManager::ns_update(void) {
 	  audio_cat->debug() << "AudioManager::ns_update looping '"
 			     << sound->get_name() << "'" << endl;
 	AudioManager::play(sound);
+	AudioManager::set_loop(sound, true);
       } else if (AudioManager::_master_volume_change)
 	sound->get_player()->adjust_volume(sound->get_state());
     }
