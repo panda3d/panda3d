@@ -46,6 +46,7 @@ public:
   EggMaterialCollection();
   EggMaterialCollection(const EggMaterialCollection &copy);
   EggMaterialCollection &operator = (const EggMaterialCollection &copy);
+  ~EggMaterialCollection();
 
   void clear();
 

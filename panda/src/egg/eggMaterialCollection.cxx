@@ -46,6 +46,15 @@ operator = (const EggMaterialCollection &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggMaterialCollection::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+EggMaterialCollection::
+~EggMaterialCollection() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggMaterialCollection::clear
 //       Access: Public
 //  Description: Removes all materials from the collection.
