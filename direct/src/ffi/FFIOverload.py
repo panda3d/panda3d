@@ -187,12 +187,12 @@ def subclass(type1, type2):
         return 1
     elif (type2 == 0):
         return -1
-    # If class1 inherits from class2 return 1
+    # If class1 inherits from class2 return -1
     elif inheritsFrom(type1, type2):
-        return 1
-    # If class2 inherits from class1 return -1
-    elif inheritsFrom(type2, type1):
         return -1
+    # If class2 inherits from class1 return 1
+    elif inheritsFrom(type2, type1):
+        return 1
     else:
         # This is the dont care case. We must specify a sorting
         # rule just so it is not arbitrary
@@ -343,7 +343,7 @@ class FFIMethodArgumentTree:
         typeNameList = []
         # Make a copy of the keys so we can sort them in place
         sortedKeys = self.tree.keys()
-        # Sort the keys based on inheritance hierarchy, most generic classes first
+        # Sort the keys based on inheritance hierarchy, most specific classes first
         sortedKeys.sort(subclass)
         # Import everybody we need
         for i in range(len(sortedKeys)):
