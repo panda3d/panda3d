@@ -640,11 +640,12 @@ track_mouse_leaving(HWND hwnd) {
 ////////////////////////////////////////////////////////////////////
 LONG WinGraphicsWindow::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-  /*
-  cerr << ClockObject::get_global_clock()->get_real_time() 
-       << " window_proc(" << (void *)this << ", " << hwnd << ", "
-       << msg << ", " << wparam << ", " << lparam << ")\n";
-  */
+  if (windisplay_cat.is_spam()) {
+    windisplay_cat.spam()
+      << ClockObject::get_global_clock()->get_real_time() 
+      << " window_proc(" << (void *)this << ", " << hwnd << ", "
+      << msg << ", " << wparam << ", " << lparam << ")\n";
+  }
   WindowProperties properties;
   int button = -1;
 
@@ -1105,6 +1106,8 @@ process_1_event() {
     //    DestroyAllWindows(false);
     exit(msg.wParam);  // this will invoke AtExitFn
   }
+
+  // consider DWORD msg.time for time of keypress/keyrelease event.
 
   // Translate virtual key messages
   TranslateMessage(&msg);
