@@ -60,7 +60,7 @@ private:
 
 public:
   virtual PandaNode *make_copy() const;
-  PandaNode *copy_subgraph() const;
+  PT(PandaNode) copy_subgraph() const;
 
   virtual bool safe_to_flatten() const;
   virtual bool safe_to_transform() const;
@@ -152,6 +152,10 @@ protected:
   virtual void parents_changed();
   virtual void children_changed();
 
+  typedef pmap<PandaNode *, PandaNode *> InstanceMap;
+  virtual PT(PandaNode) r_copy_subgraph(InstanceMap &inst_map) const;
+  virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map);
+
   // This is the bounding volume around the contents of the node
   // itself (without including all of the node's children).
   // BoundedObject is itself cycled, so we don't need to protect it.
@@ -220,6 +224,19 @@ private:
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
+
+    void write_up_list(const Up &up_list,
+                       BamWriter *manager, Datagram &dg) const;
+    void write_down_list(const Down &down_list,
+                         BamWriter *manager, Datagram &dg) const;
+    int complete_up_list(Up &up_list,
+                         TypedWritable **p_list, BamReader *manager);
+    int complete_down_list(Down &down_list,
+                           TypedWritable **p_list, BamReader *manager);
+    void fillin_up_list(Up &up_list,
+                        DatagramIterator &scan, BamReader *manager);
+    void fillin_down_list(Down &down_list,
+                          DatagramIterator &scan, BamReader *manager);
 
     Down _down;
     Down _stashed;

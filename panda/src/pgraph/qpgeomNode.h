@@ -43,6 +43,7 @@ protected:
   qpGeomNode(const qpGeomNode &copy);
 public:
   virtual ~qpGeomNode();
+  virtual PandaNode *make_copy() const;
 
 PUBLISHED:
   INLINE int get_num_geoms() const;

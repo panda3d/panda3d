@@ -265,16 +265,22 @@ instance_to(const qpNodePath &other, int sort) const {
 //               node.  A qpNodePath to the newly created copy is
 //               returned.
 //
-//               Certain kinds of nodes may not be copied; if one of
-//               these is encountered, the node will be "copied" as
-//               the nearest copyable base class.  For instance, a
-//               Camera node in the graph will become a simple
-//               NamedNode.
+//               Certain kinds of nodes (like a Camera, for instance,
+//               whose pointer value is important) may not be copied;
+//               if one of these is encountered, the node will be
+//               instanced, instead of actually copied.
 ////////////////////////////////////////////////////////////////////
 qpNodePath qpNodePath::
 copy_to(const qpNodePath &other, int sort) const {
-  //*****
-  return instance_to(other, sort);
+  nassertr(verify_complete(), fail());
+  nassertr(!is_empty(), fail());
+  nassertr(!other.is_empty(), fail());
+
+  PandaNode *source_node = node();
+  PT(PandaNode) copy_node = source_node->copy_subgraph();
+  nassertr(copy_node != (PandaNode *)NULL, fail());
+
+  return other.attach_new_node(copy_node, sort);
 }
 
 ////////////////////////////////////////////////////////////////////

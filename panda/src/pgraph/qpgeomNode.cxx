@@ -140,6 +140,20 @@ qpGeomNode::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomNode::make_copy
+//       Access: Public, Virtual
+//  Description: Returns a newly-allocated PandaNode that is a shallow
+//               copy of this one.  It will be a different pointer,
+//               but its internal data may or may not be shared with
+//               that of the original PandaNode.  No children will be
+//               copied.
+////////////////////////////////////////////////////////////////////
+PandaNode *qpGeomNode::
+make_copy() const {
+  return new qpGeomNode(*this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomNode::write_geoms
 //       Access: Published
 //  Description: Writes a short description of all the Geoms in the

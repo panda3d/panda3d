@@ -51,56 +51,9 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
 
   dg.add_uint32(_draw_mask.get_word());
 
-  // When we write a PandaNode, we write out its complete list of
-  // child node pointers, but we only write out the parent node
-  // pointers that have already been added to the bam file by a
-  // previous write operation.  This is a bit of trickery that allows
-  // us to write out just a subgraph (instead of the complete graph)
-  // when we write out an arbitrary node in the graph, yet also allows
-  // us to keep nodes completely in sync when we use the bam format
-  // for streaming scene graph operations over the network.
-
-  int num_parents = 0;
-  Up::const_iterator ui;
-  for (ui = _up.begin(); ui != _up.end(); ++ui) {
-    PandaNode *parent_node = (*ui).get_parent();
-    if (manager->has_object(parent_node)) {
-      num_parents++;
-    }
-  }
-  nassertv(num_parents == (int)(PN_uint16)num_parents);
-  dg.add_uint16(num_parents);
-  for (ui = _up.begin(); ui != _up.end(); ++ui) {
-    PandaNode *parent_node = (*ui).get_parent();
-    if (manager->has_object(parent_node)) {
-      manager->write_pointer(dg, parent_node);
-    }
-  }
-
-  int num_children = _down.size();
-  nassertv(num_children == (int)(PN_uint16)num_children);
-  dg.add_uint16(num_children);
-
-  // **** We should smarten up the writing of the sort number--most of
-  // the time these will all be zero.
-  Down::const_iterator di;
-  for (di = _down.begin(); di != _down.end(); ++di) {
-    PandaNode *child_node = (*di).get_child();
-    int sort = (*di).get_sort();
-    manager->write_pointer(dg, child_node);
-    dg.add_int32(sort);
-  }
-
-  int num_stashed = _stashed.size();
-  nassertv(num_stashed == (int)(PN_uint16)num_stashed);
-  dg.add_uint16(num_stashed);
-
-  for (di = _stashed.begin(); di != _stashed.end(); ++di) {
-    PandaNode *stashed_node = (*di).get_child();
-    int sort = (*di).get_sort();
-    manager->write_pointer(dg, stashed_node);
-    dg.add_int32(sort);
-  }
+  write_up_list(_up, manager, dg);
+  write_down_list(_down, manager, dg);
+  write_down_list(_stashed, manager, dg);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -118,33 +71,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   _state = DCAST(RenderState, p_list[pi++]);
   _transform = DCAST(TransformState, p_list[pi++]);
 
-  // Get the parent pointers.
-  Up::iterator ui;
-  for (ui = _up.begin(); ui != _up.end(); ++ui) {
-    PandaNode *parent_node = DCAST(PandaNode, p_list[pi++]);
-
-    // For some reason, VC++ won't accept UpConnection as an inline
-    // temporary constructor here ("C2226: unexpected type
-    // PandaNode::UpConnection"), so we must make this assignment
-    // using an explicit temporary variable.
-    UpConnection connection(parent_node);
-    (*ui) = connection;
-  }
-
-  // Get the child pointers.
-  Down::iterator di;
-  for (di = _down.begin(); di != _down.end(); ++di) {
-    int sort = (*di).get_sort();
-    PT(PandaNode) child_node = DCAST(PandaNode, p_list[pi++]);
-    (*di) = DownConnection(child_node, sort);
-  }
-
-  // Get the stashed pointers.
-  for (di = _stashed.begin(); di != _stashed.end(); ++di) {
-    int sort = (*di).get_sort();
-    PT(PandaNode) stashed_node = DCAST(PandaNode, p_list[pi++]);
-    (*di) = DownConnection(stashed_node, sort);
-  }
+  pi += complete_up_list(_up, p_list + pi, manager);
+  pi += complete_down_list(_down, p_list + pi, manager);
+  pi += complete_down_list(_stashed, p_list + pi, manager);
 
   return pi;
 }
@@ -164,6 +93,139 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _draw_mask.set_word(scan.get_uint32());
 
+  fillin_up_list(_up, scan, manager);
+  fillin_down_list(_down, scan, manager);
+  fillin_down_list(_stashed, scan, manager);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::write_up_list
+//       Access: Private
+//  Description: Writes the indicated list of parent node pointers to
+//               the datagram.
+////////////////////////////////////////////////////////////////////
+void PandaNode::CData::
+write_up_list(const PandaNode::Up &up_list,
+              BamWriter *manager, Datagram &dg) const {
+  // When we write a PandaNode, we write out its complete list of
+  // child node pointers, but we only write out the parent node
+  // pointers that have already been added to the bam file by a
+  // previous write operation.  This is a bit of trickery that allows
+  // us to write out just a subgraph (instead of the complete graph)
+  // when we write out an arbitrary node in the graph, yet also allows
+  // us to keep nodes completely in sync when we use the bam format
+  // for streaming scene graph operations over the network.
+
+  int num_parents = 0;
+  Up::const_iterator ui;
+  for (ui = up_list.begin(); ui != up_list.end(); ++ui) {
+    PandaNode *parent_node = (*ui).get_parent();
+    if (manager->has_object(parent_node)) {
+      num_parents++;
+    }
+  }
+  nassertv(num_parents == (int)(PN_uint16)num_parents);
+  dg.add_uint16(num_parents);
+  for (ui = up_list.begin(); ui != up_list.end(); ++ui) {
+    PandaNode *parent_node = (*ui).get_parent();
+    if (manager->has_object(parent_node)) {
+      manager->write_pointer(dg, parent_node);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::write_down_list
+//       Access: Private
+//  Description: Writes the indicated list of child node pointers to
+//               the datagram.
+////////////////////////////////////////////////////////////////////
+void PandaNode::CData::
+write_down_list(const PandaNode::Down &down_list,
+                BamWriter *manager, Datagram &dg) const {
+  int num_children = down_list.size();
+  nassertv(num_children == (int)(PN_uint16)num_children);
+  dg.add_uint16(num_children);
+
+  // Should we smarten up the writing of the sort number?  Most of the
+  // time these will all be zero.
+  Down::const_iterator di;
+  for (di = down_list.begin(); di != down_list.end(); ++di) {
+    PandaNode *child_node = (*di).get_child();
+    int sort = (*di).get_sort();
+    manager->write_pointer(dg, child_node);
+    dg.add_int32(sort);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::complete_up_list
+//       Access: Private
+//  Description: Calls complete_pointers() on the list of parent node
+//               pointers.
+////////////////////////////////////////////////////////////////////
+int PandaNode::CData::
+complete_up_list(PandaNode::Up &up_list,
+                 TypedWritable **p_list, BamReader *manager) {
+  int pi = 0;
+
+  // Get the parent pointers.
+  Up::iterator ui;
+  for (ui = up_list.begin(); ui != up_list.end(); ++ui) {
+    PandaNode *parent_node = DCAST(PandaNode, p_list[pi++]);
+
+    // For some reason, VC++ won't accept UpConnection as an inline
+    // temporary constructor here ("C2226: unexpected type
+    // PandaNode::UpConnection"), so we must make this assignment
+    // using an explicit temporary variable.
+    UpConnection connection(parent_node);
+    (*ui) = connection;
+  }
+
+  // Now we should sort the list, since the sorting is based on
+  // pointer order, which might be different from one session to the
+  // next.
+  up_list.sort();
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::complete_down_list
+//       Access: Private
+//  Description: Calls complete_pointers() on the list of child node
+//               pointers.
+////////////////////////////////////////////////////////////////////
+int PandaNode::CData::
+complete_down_list(PandaNode::Down &down_list,
+                   TypedWritable **p_list, BamReader *manager) {
+  int pi = 0;
+
+  Down::iterator di;
+  for (di = down_list.begin(); di != down_list.end(); ++di) {
+    int sort = (*di).get_sort();
+    PT(PandaNode) child_node = DCAST(PandaNode, p_list[pi++]);
+    (*di) = DownConnection(child_node, sort);
+  }
+
+  // Now we should sort the list, since the sorting is based on
+  // pointer order, which might be different from one session to the
+  // next.
+  down_list.sort();
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::fillin_up_list
+//       Access: Private
+//  Description: Reads the indicated list parent node pointers from
+//               the datagram (or at least calls read_pointer() for
+//               each one).
+////////////////////////////////////////////////////////////////////
+void PandaNode::CData::
+fillin_up_list(PandaNode::Up &up_list,
+               DatagramIterator &scan, BamReader *manager) {
   int num_parents = scan.get_uint16();
   // Read the list of parent nodes.  Push back a NULL for each one.
   _up.reserve(num_parents);
@@ -171,23 +233,25 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     manager->read_pointer(scan);
     _up.push_back(UpConnection(NULL));
   }
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::fillin_down_list
+//       Access: Private
+//  Description: Reads the indicated list child node pointers from
+//               the datagram (or at least calls read_pointer() for
+//               each one).
+////////////////////////////////////////////////////////////////////
+void PandaNode::CData::
+fillin_down_list(PandaNode::Down &down_list,
+                 DatagramIterator &scan, BamReader *manager) {
   int num_children = scan.get_uint16();
   // Read the list of child nodes.  Push back a NULL for each one.
-  _down.reserve(num_children);
+  down_list.reserve(num_children);
   for (int i = 0; i < num_children; i++) {
     manager->read_pointer(scan);
     int sort = scan.get_int32();
-    _down.push_back(DownConnection(NULL, sort));
-  }
-
-  int num_stashed = scan.get_uint16();
-  // Read the list of stashed nodes.  Push back a NULL for each one.
-  _stashed.reserve(num_stashed);
-  for (int i = 0; i < num_stashed; i++) {
-    manager->read_pointer(scan);
-    int sort = scan.get_int32();
-    _stashed.push_back(DownConnection(NULL, sort));
+    down_list.push_back(DownConnection(NULL, sort));
   }
 }
 
@@ -278,11 +342,10 @@ make_copy() const {
 //               original (e.g. vertex index tables), but nothing that
 //               will impede normal use of the PandaNode.
 ////////////////////////////////////////////////////////////////////
-PandaNode *PandaNode::
+PT(PandaNode) PandaNode::
 copy_subgraph() const {
-  // *** Do something here.
-  nassertr(false, (PandaNode *)NULL);
-  return (PandaNode *)NULL;
+  InstanceMap inst_map;
+  return r_copy_subgraph(inst_map);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1062,6 +1125,80 @@ parents_changed() {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 children_changed() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::r_copy_subgraph
+//       Access: Protected, Virtual
+//  Description: This is the recursive implementation of copy_subgraph().
+//               It returns a copy of the entire subgraph rooted at
+//               this node.
+//
+//               Note that it includes the parameter inst_map, which
+//               is a map type, and is not (and cannot be) exported
+//               from PANDA.DLL.  Thus, any derivative of PandaNode
+//               that is not also a member of PANDA.DLL *cannot*
+//               access this map.
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) PandaNode::
+r_copy_subgraph(PandaNode::InstanceMap &inst_map) const {
+  if (!safe_to_flatten()) {
+    // If this kind of node cannot be copied, quietly return the same
+    // pointer, making an instance instead of a copy.
+    return (PandaNode *)this;
+  }
+
+  PT(PandaNode) copy = make_copy();
+  nassertr(copy != (PandaNode *)NULL, NULL);
+  if (copy->get_type() != get_type()) {
+    pgraph_cat.warning()
+      << "Don't know how to copy nodes of type " << get_type() << "\n";
+  }
+
+  copy->r_copy_children(this, inst_map);
+  copy->set_state(get_state());
+  copy->set_transform(get_transform());
+  return copy;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::r_copy_children
+//       Access: Protected, Virtual
+//  Description: This is called by r_copy_subgraph(); the copy has
+//               already been made of this particular node (and this
+//               is the copy); this function's job is to copy all of
+//               the children from the original.
+//
+//               Note that it includes the parameter inst_map, which
+//               is a map type, and is not (and cannot be) exported
+//               from PANDA.DLL.  Thus, any derivative of PandaNode
+//               that is not also a member of PANDA.DLL *cannot*
+//               access this map, and probably should not even
+//               override this function.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map) {
+  CDReader from_cdata(from->_cycler);
+  Down::const_iterator di;
+  for (di = from_cdata->_down.begin(); di != from_cdata->_down.end(); ++di) {
+    PandaNode *source_child = (*di).get_child();
+    PT(PandaNode) dest_child;
+
+    // Check to see if we have already copied this child.  If we
+    // have, use the copy.  In this way, a subgraph that contains
+    // instances will be correctly duplicated into another subgraph
+    // that also contains its own instances.
+    InstanceMap::const_iterator ci;
+    ci = inst_map.find(source_child);
+    if (ci != inst_map.end()) {
+      dest_child = (*ci).second;
+    } else {
+      dest_child = source_child->r_copy_subgraph(inst_map);
+      inst_map[source_child] = dest_child;
+    }
+
+    add_child(dest_child);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
