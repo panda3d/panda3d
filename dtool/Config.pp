@@ -413,7 +413,7 @@
 
 // Is Maya installed?  This matters only to programs in PANDATOOL.
 #define MAYA_LOCATION /usr/aw/maya
-#defer MAYA_LIBS $[if $[WINDOWS_PLATFORM],Foundation.lib OpenMaya.lib OpenMayaAnim.lib,Foundation OpenMaya OpenMayaAnim]
+#defer MAYA_LIBS $[if $[WINDOWS_PLATFORM],Foundation.lib OpenMaya.lib OpenMayaAnim.lib,Foundation OpenMaya OpenMayaAnim OpenMayalib]
 // Optionally define this to the value of LM_LICENSE_FILE that should
 // be set before invoking Maya.
 #define MAYA_LICENSE_FILE
