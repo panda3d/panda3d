@@ -63,7 +63,6 @@ public:
 
 protected:
   virtual int compare_to_impl(const RenderEffect *other) const;
-  virtual RenderEffect *make_default_impl() const;
 
 private:
   bool _off;

@@ -39,7 +39,6 @@ PUBLISHED:
 protected:
   virtual bool safe_to_combine() const;
   virtual int compare_to_impl(const RenderEffect *other) const;
-  virtual RenderEffect *make_default_impl() const;
 
 public:
   static void register_with_read_factory();

@@ -197,22 +197,6 @@ compare_to_impl(const RenderEffect *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived BillboardEffect
-//               types to specify what the default property for a
-//               BillboardEffect of this type should be.
-//
-//               This should return a newly-allocated BillboardEffect of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of BillboardEffect is.
-////////////////////////////////////////////////////////////////////
-RenderEffect *BillboardEffect::
-make_default_impl() const {
-  return new BillboardEffect;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BillboardEffect::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type

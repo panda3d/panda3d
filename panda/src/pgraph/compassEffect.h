@@ -27,16 +27,57 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CompassEffect
-// Description : Indicates that geometry at this node should
-//               automatically rotate to face the camera, or any other
-//               arbitrary node.
+// Description : A CompassEffect causes a node to inherit its rotation
+//               (or pos or scale, if specified) from some other
+//               reference node in the graph, or more often from the
+//               root.
+//
+//               In its purest form, a CompassEffect is used to keep
+//               the node's rotation fixed relative to the top of the
+//               scene graph, despite other transforms that may exist
+//               above the node.  Hence the name: the node behaves
+//               like a magnetic compass, always pointing in the same
+//               direction.
+//
+//               As an couple of generalizing extensions, the
+//               CompassEffect may also be set up to always orient its
+//               node according to some other reference node than the
+//               root of the scene graph.  Furthermore, it may
+//               optionally adjust any of pos, rotation, or scale,
+//               instead of necessarily rotation; and it may adjust
+//               individual pos and scale components.  (Rotation may
+//               not be adjusted on an individual component basis;
+//               that's just asking for trouble.)
+//
+//               Be careful when using the pos and scale modes.  In
+//               these modes, it's possible for the CompassEffect to
+//               move its node far from its normal bounding volume,
+//               causing culling to fail.  If this is an issue, you
+//               may need to explicitly set a large (or infinite)
+//               bounding volume on the effect node.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CompassEffect : public RenderEffect {
 private:
   INLINE CompassEffect();
 
 PUBLISHED:
-  static CPT(RenderEffect) make(const NodePath &reference);
+  enum Properties {
+    P_x     = 0x001,
+    P_y     = 0x002,
+    P_z     = 0x004,
+    P_pos   = 0x007,
+    P_rot   = 0x008,
+    P_sx    = 0x010,
+    P_sy    = 0x020,
+    P_sz    = 0x040,
+    P_scale = 0x070,
+    P_all   = 0x07f,
+  };
+  static CPT(RenderEffect) make(const NodePath &reference, 
+                                int properties = P_rot);
+
+  INLINE const NodePath &get_reference() const;
+  INLINE int get_properties() const;
 
 public:
   virtual bool safe_to_transform() const;
@@ -48,10 +89,10 @@ public:
 
 protected:
   virtual int compare_to_impl(const RenderEffect *other) const;
-  virtual RenderEffect *make_default_impl() const;
 
 private:
   NodePath _reference;
+  int _properties;
 
 public:
   static void register_with_read_factory();

@@ -29,12 +29,19 @@ TypeHandle CompassEffect::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: CompassEffect::make
 //       Access: Published, Static
-//  Description: Constructs a new CompassEffect object.
+//  Description: Constructs a new CompassEffect object.  If the
+//               reference is an empty NodePath, it means the
+//               CompassEffect is relative to the root of the scene
+//               graph; otherwise, it's relative to the indicated
+//               node.  The properties bitmask specifies the set of
+//               properties that the compass node inherits from the
+//               reference instead of from its parent.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) CompassEffect::
-make(const NodePath &reference) {
+make(const NodePath &reference, int properties) {
   CompassEffect *effect = new CompassEffect;
   effect->_reference = reference;
+  effect->_properties = (properties & P_all);
   return return_new(effect);
 }
 
@@ -57,13 +64,41 @@ safe_to_transform() const {
 ////////////////////////////////////////////////////////////////////
 void CompassEffect::
 output(ostream &out) const {
-  if (!_reference.is_empty()) {
-    RenderEffect::output(out);
+  out << get_type() << ":";
+  if (_properties == 0) {
+    out << " none";
+  }
+  if ((_properties & P_pos) == P_pos) {
+    out << " xyz";
   } else {
-    out << get_type() << ":";
-    if (!_reference.is_empty()) {
-      out << " reference " << _reference;
+    if ((_properties & P_x) != 0) {
+      out << " x";
     }
+    if ((_properties & P_y) != 0) {
+      out << " y";
+    }
+    if ((_properties & P_z) != 0) {
+      out << " z";
+    }
+  }
+  if ((_properties & P_rot) != 0) {
+    out << " rot";
+  }
+  if ((_properties & P_scale) == P_scale) {
+    out << " scale";
+  } else {
+    if ((_properties & P_sx) != 0) {
+      out << " sx";
+    }
+    if ((_properties & P_sy) != 0) {
+      out << " sy";
+    }
+    if ((_properties & P_sz) != 0) {
+      out << " sz";
+    }
+  }
+  if (!_reference.is_empty()) {
+    out << " reference " << _reference;
   }
 }
 
@@ -77,35 +112,85 @@ output(ostream &out) const {
 CPT(TransformState) CompassEffect::
 do_compass(const TransformState *net_transform,
            const TransformState *node_transform) const {
-  if (!net_transform->has_components() || !node_transform->has_quat()) {
-    // If we don't have a decomposable transform, we can't do anything here.
-    pgraph_cat.warning()
-      << "CompassEffect unable to adjust non-decomposable transform\n";
+  if (_properties == 0) {
+    // Nothing to do.
     return TransformState::make_identity();
   }
 
-  // Compute just the rotation part of the transform we want.
-  CPT(TransformState) want_rot = TransformState::make_identity();
-  if (!_reference.is_empty()) {
-    CPT(TransformState) rel_transform = _reference.get_net_transform();
-    if (!rel_transform->has_quat()) {
-      pgraph_cat.warning()
-        << "CompassEffect unable to reference non-decomposable transform\n";
-    } else {
-      want_rot = TransformState::make_quat(rel_transform->get_quat());
-    }
+  // Compute the reference transform: our transform, as applied to the
+  // reference node.
+  CPT(TransformState) ref_transform;
+  if (_reference.is_empty()) {
+    ref_transform = node_transform;
+  } else {
+    ref_transform = _reference.get_net_transform()->compose(node_transform);
   }
 
-  want_rot = 
-    want_rot->compose(TransformState::make_quat(node_transform->get_quat()));
+  // Now compute the transform we actually want to achieve.  This is
+  // all of the components from the net transform we want to inherit
+  // normally from our parent, with all of the components from the ref
+  // transform we want to inherit from our reference.
+  CPT(TransformState) want_transform;
+  if (_properties == P_all) {
+    // If we want to steal the whole transform, that's easy.
+    want_transform = ref_transform;
 
-  // Now compute the net transform we want to achieve.  This is the
-  // same as the net transform we were given, except the rotation
-  // component is replaced by our desired rotation.
-  CPT(TransformState) want_transform = 
-    TransformState::make_pos_quat_scale(net_transform->get_pos(),
-                                        want_rot->get_quat(),
-                                        net_transform->get_scale());
+  } else {
+    // How much of the pos do we want to steal?  We can always
+    // determine a transform's pos, even if it's nondecomposable.
+    LVecBase3f want_pos = net_transform->get_pos();
+    const LVecBase3f &ref_pos = ref_transform->get_pos();
+    if ((_properties & P_x) != 0) {
+      want_pos[0] = ref_pos[0];
+    }
+    if ((_properties & P_y) != 0) {
+      want_pos[1] = ref_pos[1];
+    }
+    if ((_properties & P_z) != 0) {
+      want_pos[2] = ref_pos[2];
+    }
+
+    if ((_properties & ~P_pos) == 0) {
+      // If we only want to steal the pos, that's pretty easy.
+      want_transform = net_transform->set_pos(want_pos);
+  
+    } else if ((_properties & (P_rot | P_scale)) == (P_rot | P_scale)) {
+      // If we want to steal everything *but* the pos, also easy.
+      want_transform = ref_transform->set_pos(want_pos);
+      
+    } else {
+      // For any other combination, we have to be able to decompose both
+      // transforms.
+      if (!net_transform->has_components() || 
+          !ref_transform->has_components()) {
+        // If we can't decompose, just do the best we can: steal
+        // everything but the pos.
+        want_transform = ref_transform->set_pos(want_pos);
+
+      } else {
+        // If we can decompose, then take only the components we want.
+        LQuaternionf want_quat = net_transform->get_quat();
+        if ((_properties & P_rot) != 0) {
+          want_quat = ref_transform->get_quat();
+        }
+
+        LVecBase3f want_scale = net_transform->get_scale();
+        const LVecBase3f &ref_scale = ref_transform->get_scale();
+        if ((_properties & P_sx) != 0) {
+          want_scale[0] = ref_scale[0];
+        }
+        if ((_properties & P_sy) != 0) {
+          want_scale[1] = ref_scale[1];
+        }
+        if ((_properties & P_sz) != 0) {
+          want_scale[2] = ref_scale[2];
+        }
+
+        want_transform =
+          TransformState::make_pos_quat_scale(want_pos, want_quat, want_scale);
+      }
+    }
+  }
 
   // Now compute the transform that will convert net_transform to
   // want_transform.  This is inv(net_transform) * want_transform.
@@ -132,27 +217,14 @@ compare_to_impl(const RenderEffect *other) const {
   const CompassEffect *ta;
   DCAST_INTO_R(ta, other, 0);
 
+  if (_properties != ta->_properties) {
+    return _properties - ta->_properties;
+  }
   int compare = _reference.compare_to(ta->_reference);
   if (compare != 0) {
     return compare;
   }
   return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CompassEffect::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived CompassEffect
-//               types to specify what the default property for a
-//               CompassEffect of this type should be.
-//
-//               This should return a newly-allocated CompassEffect of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of CompassEffect is.
-////////////////////////////////////////////////////////////////////
-RenderEffect *CompassEffect::
-make_default_impl() const {
-  return new CompassEffect;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,6 +247,9 @@ register_with_read_factory() {
 void CompassEffect::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderEffect::write_datagram(manager, dg);
+  dg.add_uint16(_properties);
+  // *** We don't write out the _reference NodePath right now.  Maybe
+  // we should.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -207,4 +282,5 @@ make_from_bam(const FactoryParams &params) {
 void CompassEffect::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderEffect::fillin(scan, manager);
+  _properties = scan.get_uint16();
 }

@@ -35,11 +35,33 @@
 ////////////////////////////////////////////////////////////////////
 void CullTraverserData::
 apply_transform_and_state(CullTraverser *trav) {
-  const TransformState *node_transform = node()->get_transform();
+  CPT(TransformState) node_transform = node()->get_transform();
+
+  // First, compute the _net_transform, because we need it for the
+  // compass and billboard effects.
+  _net_transform = _net_transform->compose(node_transform);
+
+  const RenderEffects *node_effects = node()->get_effects();
+
+  const CompassEffect *compass = node_effects->get_compass();
+  if (compass != (const CompassEffect *)NULL) {
+    CPT(TransformState) compass_transform = 
+      compass->do_compass(_net_transform, node_transform);
+    _net_transform = _net_transform->compose(compass_transform);
+    node_transform = node_transform->compose(compass_transform);
+  }
+
+  const BillboardEffect *billboard = node_effects->get_billboard();
+  if (billboard != (const BillboardEffect *)NULL) {
+    CPT(TransformState) billboard_transform = 
+      billboard->do_billboard(_net_transform, trav->get_camera_transform());
+    _net_transform = _net_transform->compose(billboard_transform);
+    node_transform = node_transform->compose(billboard_transform);
+  }
+    
   if (!node_transform->is_identity()) {
     _render_transform = _render_transform->compose(node_transform);
-    _net_transform = _net_transform->compose(node_transform);
-    
+
     if ((_view_frustum != (GeometricBoundingVolume *)NULL) ||
         (_guard_band != (GeometricBoundingVolume *)NULL)) {
       // We need to move the viewing frustums into the node's
@@ -72,36 +94,6 @@ apply_transform_and_state(CullTraverser *trav) {
 
   const RenderState *node_state = node()->get_state();
   _state = _state->compose(node_state);
-
-  const RenderEffects *node_effects = node()->get_effects();
-
-  const CompassEffect *compass = node_effects->get_compass();
-  if (compass != (const CompassEffect *)NULL) {
-    // Got to apply a compass transform here.
-    CPT(TransformState) compass_transform = 
-      compass->do_compass(_net_transform, node_transform);
-    _render_transform = _render_transform->compose(compass_transform);
-    _net_transform = _net_transform->compose(compass_transform);
-
-    // We can't reliably cull within a compass, because the geometry
-    // might get rotated out of its bounding volume.  So once we get
-    // within a compass, we consider it all visible.
-    _view_frustum = (GeometricBoundingVolume *)NULL;
-  }
-
-  const BillboardEffect *billboard = node_effects->get_billboard();
-  if (billboard != (const BillboardEffect *)NULL) {
-    // Got to apply a billboard transform here.
-    CPT(TransformState) billboard_transform = 
-      billboard->do_billboard(_net_transform, trav->get_camera_transform());
-    _render_transform = _render_transform->compose(billboard_transform);
-    _net_transform = _net_transform->compose(billboard_transform);
-
-    // We can't reliably cull within a billboard, because the geometry
-    // might get rotated out of its bounding volume.  So once we get
-    // within a billboard, we consider it all visible.
-    _view_frustum = (GeometricBoundingVolume *)NULL;
-  }
 }
 
 

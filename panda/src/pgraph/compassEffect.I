@@ -25,4 +25,31 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CompassEffect::
 CompassEffect() {
+  _properties = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CompassEffect::get_reference
+//       Access: Published
+//  Description: Returns the reference node from which the
+//               CompassEffect inherits its transform.  If this is
+//               empty, it means the root of the scene graph.
+////////////////////////////////////////////////////////////////////
+INLINE const NodePath &CompassEffect::
+get_reference() const {
+  return _reference;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CompassEffect::get_properties
+//       Access: Published
+//  Description: 
+
+//               Returns the bitmask of properties that this
+//               CompassEffect object inherits from its reference node
+//               (or from the root).
+////////////////////////////////////////////////////////////////////
+INLINE int CompassEffect::
+get_properties() const {
+  return _properties;
 }
