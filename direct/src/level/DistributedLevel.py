@@ -51,6 +51,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
             align = TextNode.ARight,
             )
         self.zonesEnteredList = []
+        self.fColorZones = 0
 
     def generate(self):
         DistributedLevel.notify.debug('generate')
@@ -324,12 +325,22 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 self.accept(self.getEntityCreateEvent(parentId), doReparent)
 
             self.parent2ChildIds[parentId].append(entId)
-
+    
     def showZone(self, zoneNum):
-        self.zoneNum2node[zoneNum].show()
+        zone = self.zoneNum2node[zoneNum]
+        zone.show()
+        zone.clearColor()
+
+    def toggleColorZones(self):
+        self.fColorZones = 1 - self.fColorZones
 
     def hideZone(self, zoneNum):
-        self.zoneNum2node[zoneNum].hide()
+        zone = self.zoneNum2node[zoneNum]
+        if self.fColorZones:
+            zone.show()
+            zone.setColor(1,0,0)
+        else:
+            zone.hide()
 
     def setTransparency(self, alpha, zone=None):
         self.geom.setTransparency(1)
