@@ -18,6 +18,7 @@
 
 #include "qpgeom.h"
 #include "qpgeomVertexReader.h"
+#include "qpgeomVertexRewriter.h"
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -222,6 +223,43 @@ get_num_bytes() const {
   }
 
   return num_bytes;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::transform_vertices
+//       Access: Published, Virtual
+//  Description: Applies the indicated transform to all of the
+//               vertices in the Geom.  If the Geom happens to share a
+//               vertex table with another Geom, this operation will
+//               duplicate the vertex table instead of breaking the
+//               other Geom; however, if multiple Geoms with shared
+//               tables are transformed by the same matrix, they will
+//               no longer share tables after the operation.  Consider
+//               using the GeomTransformer if you will be applying the
+//               same transform to multiple Geoms.
+////////////////////////////////////////////////////////////////////
+void qpGeom::
+transform_vertices(const LMatrix4f &mat) {
+  PT(qpGeomVertexData) new_data = modify_vertex_data();
+  CPT(qpGeomVertexFormat) format = new_data->get_format();
+  
+  int ci;
+  for (ci = 0; ci < format->get_num_points(); ci++) {
+    qpGeomVertexRewriter data(new_data, format->get_point(ci));
+    
+    while (!data.is_at_end()) {
+      const LPoint3f &point = data.get_data3f();
+      data.set_data3f(point * mat);
+    }
+  }
+  for (ci = 0; ci < format->get_num_vectors(); ci++) {
+    qpGeomVertexRewriter data(new_data, format->get_vector(ci));
+    
+    while (!data.is_at_end()) {
+      const LVector3f &vector = data.get_data3f();
+      data.set_data3f(normalize(vector * mat));
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

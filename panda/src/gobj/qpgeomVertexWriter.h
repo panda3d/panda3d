@@ -152,6 +152,12 @@ private:
 
   Writer *_writer;
 
+#ifndef NDEBUG
+  // This is defined just for the benefit of having something non-NULL
+  // to return from a nassertr() call.
+  static unsigned char empty_buffer[100];
+#endif
+
   // This nested class provides the implementation for unpacking data
   // in a very general way, but also provides the hooks for
   // implementing the common, very direct code paths (for instance,

@@ -354,7 +354,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
     const Geom *geom = get_geom(i);
     
     // Temporary test until the experimental Geom rewrite is final.
-    if (geom->is_exact_type(qpGeom::get_class_type())) {
+    if (geom->is_of_type(qpGeom::get_class_type())) {
       const qpGeom *qpgeom = DCAST(qpGeom, geom);
       qpgeom->calc_tight_bounds(min_point, max_point, found_any,
                                 qpgeom->get_vertex_data()->animate_vertices(),

@@ -19,6 +19,7 @@
     dynamicTextPage.I dynamicTextPage.h \
     fontPool.I fontPool.h \
     geomTextGlyph.I geomTextGlyph.h \
+    qpgeomTextGlyph.I qpgeomTextGlyph.h \
     staticTextFont.I staticTextFont.h \
     textAssembler.I textAssembler.h \
     textFont.I textFont.h \
@@ -35,6 +36,7 @@
     dynamicTextPage.cxx \
     fontPool.cxx \
     geomTextGlyph.cxx \
+    qpgeomTextGlyph.cxx \
     staticTextFont.cxx \
     textAssembler.cxx \
     textFont.cxx textGlyph.cxx \
@@ -49,6 +51,7 @@
     dynamicTextPage.I dynamicTextPage.h \
     fontPool.I fontPool.h \
     geomTextGlyph.I geomTextGlyph.h \
+    qpgeomTextGlyph.I qpgeomTextGlyph.h \
     staticTextFont.I staticTextFont.h \
     textAssembler.I textAssembler.h \
     textFont.I textFont.h \

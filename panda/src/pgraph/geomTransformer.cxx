@@ -53,7 +53,7 @@ transform_vertices(Geom *geom, const LMatrix4f &mat) {
 
   nassertr(geom != (Geom *)NULL, false);
 
-  if (geom->is_exact_type(qpGeom::get_class_type())) {
+  if (geom->is_of_type(qpGeom::get_class_type())) {
     qpGeom *qpgeom = DCAST(qpGeom, geom);
 
     qpSourceVertices sv;
@@ -194,7 +194,7 @@ transform_texcoords(Geom *geom, const InternalName *from_name,
   bool transformed = false;
 
   nassertr(geom != (Geom *)NULL, false);
-  if (geom->is_exact_type(qpGeom::get_class_type())) {
+  if (geom->is_of_type(qpGeom::get_class_type())) {
     qpGeom *qpgeom = DCAST(qpGeom, geom);
 
     qpSourceTexCoords st;
@@ -314,7 +314,7 @@ bool GeomTransformer::
 set_color(Geom *geom, const Colorf &color) {
   bool transformed = false;
 
-  if (geom->is_exact_type(qpGeom::get_class_type())) {
+  if (geom->is_of_type(qpGeom::get_class_type())) {
     qpGeom *qpgeom = DCAST(qpGeom, geom);
 
     qpSourceColors sc;
@@ -389,7 +389,7 @@ transform_colors(Geom *geom, const LVecBase4f &scale) {
 
   nassertr(geom != (Geom *)NULL, false);
 
-  if (geom->is_exact_type(qpGeom::get_class_type())) {
+  if (geom->is_of_type(qpGeom::get_class_type())) {
     qpGeom *qpgeom = DCAST(qpGeom, geom);
 
     qpSourceColors sc;

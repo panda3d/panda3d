@@ -24,7 +24,6 @@
 #include "collisionRay.h"
 #include "collisionSegment.h"
 #include "config_collide.h"
-
 #include "cullTraverserData.h"
 #include "boundingSphere.h"
 #include "pointerToArray.h"
@@ -38,6 +37,10 @@
 #include "transformState.h"
 #include "clipPlaneAttrib.h"
 #include "nearly_zero.h"
+#include "qpgeom.h"
+#include "qpgeomTrifans.h"
+#include "qpgeomLinestrips.h"
+#include "qpgeomVertexWriter.h"
 
 #include <algorithm>
 
@@ -813,25 +816,62 @@ draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,
 
   LMatrix4f to_3d_mat;
   rederive_to_3d_mat(to_3d_mat);
-  PTA_Vertexf verts;
-  Points::const_iterator pi;
-  for (pi = points.begin(); pi != points.end(); ++pi) {
-    verts.push_back(to_3d((*pi)._p, to_3d_mat));
+
+  if (use_qpgeom) {
+    PT(qpGeomVertexData) vdata = new qpGeomVertexData
+      ("collision", qpGeomVertexFormat::get_v3cp(),
+       qpGeomUsageHint::UH_static);
+    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+
+    Points::const_iterator pi;
+    for (pi = points.begin(); pi != points.end(); ++pi) {
+      vertex.add_data3f(to_3d((*pi)._p, to_3d_mat));
+    }
+    
+    PT(qpGeomTrifans) body = new qpGeomTrifans(qpGeomUsageHint::UH_static);
+    body->add_consecutive_vertices(0, points.size());
+    body->close_primitive();
+
+    PT(qpGeomLinestrips) border = new qpGeomLinestrips(qpGeomUsageHint::UH_static);
+    border->add_consecutive_vertices(0, points.size());
+    border->add_vertex(0);
+    border->close_primitive();
+
+    PT(qpGeom) geom1 = new qpGeom;
+    geom1->set_vertex_data(vdata);
+    geom1->add_primitive(body);
+
+    PT(qpGeom) geom2 = new qpGeom;
+    geom2->set_vertex_data(vdata);
+    geom2->add_primitive(border);
+
+    _viz_geom->add_geom(geom1, ((CollisionPolygon *)this)->get_solid_viz_state());
+    _viz_geom->add_geom(geom2, ((CollisionPolygon *)this)->get_wireframe_viz_state());
+
+    _bounds_viz_geom->add_geom(geom1, ((CollisionPolygon *)this)->get_solid_bounds_viz_state());
+    _bounds_viz_geom->add_geom(geom2, ((CollisionPolygon *)this)->get_wireframe_bounds_viz_state());
+
+  } else {
+    PTA_Vertexf verts;
+    Points::const_iterator pi;
+    for (pi = points.begin(); pi != points.end(); ++pi) {
+      verts.push_back(to_3d((*pi)._p, to_3d_mat));
+    }
+    
+    PTA_int lengths;
+    lengths.push_back(points.size());
+    
+    GeomPolygon *polygon = new GeomPolygon;
+    polygon->set_coords(verts);
+    polygon->set_num_prims(1);
+    polygon->set_lengths(lengths);
+    
+    viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_solid_viz_state());
+    viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_wireframe_viz_state());
+    
+    bounds_viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_solid_bounds_viz_state());
+    bounds_viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_wireframe_bounds_viz_state());
   }
-
-  PTA_int lengths;
-  lengths.push_back(points.size());
-
-  GeomPolygon *polygon = new GeomPolygon;
-  polygon->set_coords(verts);
-  polygon->set_num_prims(1);
-  polygon->set_lengths(lengths);
-
-  viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_solid_viz_state());
-  viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_wireframe_viz_state());
-
-  bounds_viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_solid_bounds_viz_state());
-  bounds_viz_geom_node->add_geom(polygon, ((CollisionPolygon *)this)->get_wireframe_bounds_viz_state());
 }
 
 

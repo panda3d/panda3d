@@ -407,6 +407,7 @@ get_frame_actual() const {
 INLINE void TextNode::
 set_frame_line_width(float frame_width) {
   _frame_width = frame_width;
+  invalidate_no_measure();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -435,6 +436,7 @@ set_frame_corners(bool corners) {
   } else {
     _flags &= ~F_frame_corners;
   }
+  invalidate_no_measure();
 }
 
 ////////////////////////////////////////////////////////////////////

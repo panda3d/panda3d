@@ -84,8 +84,63 @@ qpGeomVertexArrayData::
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayData::modify_data
+//     Function: qpGeomVertexArrayData::set_num_vertices
 //       Access: Published
+//  Description: Sets the length of the array to n vertices.
+//               Normally, you would not call this directly, since all
+//               of the arrays in a particular GeomVertexData must
+//               have the same number of vertices; instead, call
+//               GeomVertexData::set_num_vertices().
+//
+//               The return value is true if the number of vertices
+//               was changed, false if the object already contained n
+//               vertices (or if there was some error).
+//
+//               The new vertex data is initialized to 0, including
+//               the "color" column (but see
+//               GeomVertexData::set_num_vertices()).
+////////////////////////////////////////////////////////////////////
+bool qpGeomVertexArrayData::
+set_num_vertices(int n) {
+  CDWriter cdata(_cycler);
+
+  int stride = _array_format->get_stride();
+  int delta = n - (cdata->_data.size() / stride);
+  
+  if (delta != 0) {
+    if (cdata->_data.get_ref_count() > 1) {
+      // Copy-on-write: the data is already reffed somewhere else,
+      // so we're just going to make a copy.
+      PTA_uchar new_data;
+      new_data.reserve(n * stride);
+      new_data.insert(new_data.end(), n * stride, 0);
+      memcpy(new_data, cdata->_data, 
+             min((size_t)(n * stride), cdata->_data.size()));
+      cdata->_data = new_data;
+      
+    } else {
+      // We've got the only reference to the data, so we can change
+      // it directly.
+      if (delta > 0) {
+        cdata->_data.insert(cdata->_data.end(), delta * stride, 0);
+        
+      } else {
+        cdata->_data.erase(cdata->_data.begin() + n * stride, 
+                           cdata->_data.end());
+      }
+    }
+
+    cdata->_modified = qpGeom::get_next_modified();
+
+    return true;
+  }
+  
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayData::modify_data
+//       Access: Public
 //  Description: Returns a modifiable pointer to the actual vertex
 //               array, so that application code may directly
 //               manipulate the vertices.
@@ -109,7 +164,7 @@ modify_data() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexArrayData::set_data
-//       Access: Published
+//       Access: Public
 //  Description: Replaces the vertex data array with a completely new
 //               array.
 ////////////////////////////////////////////////////////////////////
@@ -121,59 +176,8 @@ set_data(CPTA_uchar array) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayData::set_num_vertices
-//       Access: Published
-//  Description: Sets the length of the array to n vertices.
-//               Normally, you would not call this directly, since all
-//               of the arrays in a particular GeomVertexData must
-//               have the same number of vertices; instead, call
-//               GeomVertexData::set_num_vertices().
-//
-//               The return value is true if the number of vertices
-//               was changed, false if the object already contained n
-//               vertices (or if there was some error).
-////////////////////////////////////////////////////////////////////
-bool qpGeomVertexArrayData::
-set_num_vertices(int n) {
-  CDWriter cdata(_cycler);
-
-  int stride = _array_format->get_stride();
-  int delta = n - (cdata->_data.size() / stride);
-  
-  if (delta != 0) {
-    if (cdata->_data.get_ref_count() > 1) {
-      // Copy-on-write: the data is already reffed somewhere else,
-      // so we're just going to make a copy.
-      PTA_uchar new_data;
-      new_data.reserve(n * stride);
-      new_data.insert(new_data.end(), n * stride, uchar());
-      memcpy(new_data, cdata->_data, 
-             min((size_t)(n * stride), cdata->_data.size()));
-      cdata->_data = new_data;
-      
-    } else {
-      // We've got the only reference to the data, so we can change
-      // it directly.
-      if (delta > 0) {
-        cdata->_data.insert(cdata->_data.end(), delta * stride, uchar());
-        
-      } else {
-        cdata->_data.erase(cdata->_data.begin() + n * stride, 
-                           cdata->_data.end());
-      }
-    }
-
-    cdata->_modified = qpGeom::get_next_modified();
-
-    return true;
-  }
-  
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexArrayData::prepare
-//       Access: Published
+//       Access: Public
 //  Description: Indicates that the data should be enqueued to be
 //               prepared in the indicated prepared_objects at the
 //               beginning of the next frame.  This will ensure the

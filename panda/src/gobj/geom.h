@@ -135,7 +135,7 @@ public:
   virtual Geom *make_copy() const=0;
 
 PUBLISHED:
-  void transform_vertices(const LMatrix4f &mat);
+  virtual void transform_vertices(const LMatrix4f &mat);
 
   void set_coords(const PTA_Vertexf &coords,
                   const PTA_ushort &vindex = PTA_ushort());

@@ -25,11 +25,12 @@
 #include "textFont.h"
 #include "textGlyph.h"
 #include "pandaNode.h"
+#include "geom.h"
+#include "qpgeom.h"
 #include "pointerTo.h"
 #include "pmap.h"
 
 class Node;
-class Geom;
 class GeomPoint;
 
 ////////////////////////////////////////////////////////////////////
@@ -50,8 +51,9 @@ public:
   virtual bool get_glyph(int character, const TextGlyph *&glyph);
 
 private:
-  void find_character_gsets(PandaNode *root, const Geom *&ch, 
-                            const GeomPoint *&dot,
+  void find_character_gsets(PandaNode *root, CPT(Geom) &ch, 
+                            const GeomPoint *&dot1,
+                            CPT(qpGeom) &dot2,
                             const RenderState *&state, 
                             const RenderState *net_state);
   void find_characters(PandaNode *root,

@@ -25,7 +25,6 @@
 #include "collisionRay.h"
 #include "collisionSegment.h"
 #include "config_collide.h"
-
 #include "pointerToArray.h"
 #include "geomNode.h"
 #include "geom.h"
@@ -35,6 +34,10 @@
 #include "bamWriter.h"
 #include "omniBoundingVolume.h"
 #include "geomQuad.h"
+#include "qpgeom.h"
+#include "qpgeomTrifans.h"
+#include "qpgeomLinestrips.h"
+#include "qpgeomVertexWriter.h"
 
 TypeHandle CollisionPlane::_type_handle;
 
@@ -322,20 +325,56 @@ fill_viz_geom() {
 
   static const double plane_scale = 10.0;
 
-  PTA_Vertexf verts;
-  verts.push_back(cp + p1 * plane_scale);
-  verts.push_back(cp + p2 * plane_scale);
-  verts.push_back(cp + p3 * plane_scale);
-  verts.push_back(cp + p4 * plane_scale);
+  if (use_qpgeom) {
+    PT(qpGeomVertexData) vdata = new qpGeomVertexData
+      ("collision", qpGeomVertexFormat::get_v3cp(),
+       qpGeomUsageHint::UH_static);
+    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
 
-  GeomQuad *quad = new GeomQuad;
-  quad->set_coords(verts);
-  quad->set_num_prims(1);
+    vertex.add_data3f(cp + p1 * plane_scale);
+    vertex.add_data3f(cp + p2 * plane_scale);
+    vertex.add_data3f(cp + p3 * plane_scale);
+    vertex.add_data3f(cp + p4 * plane_scale);
+    
+    PT(qpGeomTrifans) body = new qpGeomTrifans(qpGeomUsageHint::UH_static);
+    body->add_consecutive_vertices(0, 4);
+    body->close_primitive();
 
-  _viz_geom->add_geom(quad, get_solid_viz_state());
-  _viz_geom->add_geom(quad, get_wireframe_viz_state());
-  _bounds_viz_geom->add_geom(quad, get_solid_bounds_viz_state());
-  _bounds_viz_geom->add_geom(quad, get_wireframe_bounds_viz_state());
+    PT(qpGeomLinestrips) border = new qpGeomLinestrips(qpGeomUsageHint::UH_static);
+    border->add_consecutive_vertices(0, 4);
+    border->add_vertex(0);
+    border->close_primitive();
+
+    PT(qpGeom) geom1 = new qpGeom;
+    geom1->set_vertex_data(vdata);
+    geom1->add_primitive(body);
+
+    PT(qpGeom) geom2 = new qpGeom;
+    geom2->set_vertex_data(vdata);
+    geom2->add_primitive(border);
+
+    _viz_geom->add_geom(geom1, get_solid_viz_state());
+    _viz_geom->add_geom(geom2, get_wireframe_viz_state());
+
+    _bounds_viz_geom->add_geom(geom1, get_solid_bounds_viz_state());
+    _bounds_viz_geom->add_geom(geom2, get_wireframe_bounds_viz_state());
+
+  } else {
+    PTA_Vertexf verts;
+    verts.push_back(cp + p1 * plane_scale);
+    verts.push_back(cp + p2 * plane_scale);
+    verts.push_back(cp + p3 * plane_scale);
+    verts.push_back(cp + p4 * plane_scale);
+    
+    GeomQuad *quad = new GeomQuad;
+    quad->set_coords(verts);
+    quad->set_num_prims(1);
+    
+    _viz_geom->add_geom(quad, get_solid_viz_state());
+    _viz_geom->add_geom(quad, get_wireframe_viz_state());
+    _bounds_viz_geom->add_geom(quad, get_solid_bounds_viz_state());
+    _bounds_viz_geom->add_geom(quad, get_wireframe_bounds_viz_state());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

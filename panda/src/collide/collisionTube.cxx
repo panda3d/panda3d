@@ -24,7 +24,6 @@
 #include "collisionHandler.h"
 #include "collisionEntry.h"
 #include "config_collide.h"
-
 #include "look_at.h"
 #include "geom.h"
 #include "geomNode.h"
@@ -36,6 +35,9 @@
 #include "bamWriter.h"
 #include "cmath.h"
 #include "transformState.h"
+#include "qpgeom.h"
+#include "qpgeomTristrips.h"
+#include "qpgeomVertexWriter.h"
 
 TypeHandle CollisionTube::_type_handle;
 
@@ -389,54 +391,108 @@ fill_viz_geom() {
   LVector3f direction = (_b - _a);
   float length = direction.length();
 
-  PTA_Vertexf verts;
-  PTA_int lengths;
+  if (use_qpgeom) {
+    PT(qpGeomVertexData) vdata = new qpGeomVertexData
+      ("collision", qpGeomVertexFormat::get_v3cp(),
+       qpGeomUsageHint::UH_static);
+    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+    
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+    // Generate the first endcap.
+    static const int num_slices = 8;
+    static const int num_rings = 4;
+    int ri, si;
+    for (ri = 0; ri < num_rings; ri++) {
+      for (si = 0; si <= num_slices; si++) {
+        vertex.add_data3f(calc_sphere1_vertex(ri, si, num_rings, num_slices));
+        vertex.add_data3f(calc_sphere1_vertex(ri + 1, si, num_rings, num_slices));
+      }
+      strip->add_next_vertices((num_slices + 1) * 2);
+      strip->close_primitive();
+    }
 
-  // Generate the first endcap.
-  static const int num_slices = 8;
-  static const int num_rings = 4;
-  int ri, si;
-  for (ri = 0; ri < num_rings; ri++) {
+    // Now the cylinder sides.
     for (si = 0; si <= num_slices; si++) {
-      verts.push_back(calc_sphere1_vertex(ri, si, num_rings, num_slices));
-      verts.push_back(calc_sphere1_vertex(ri + 1, si, num_rings, num_slices));
+      vertex.add_data3f(calc_sphere1_vertex(num_rings, si, num_rings, num_slices));
+      vertex.add_data3f(calc_sphere2_vertex(num_rings, si, num_rings, num_slices,
+                                          length));
+    }
+    strip->add_next_vertices((num_slices + 1) * 2);
+    strip->close_primitive();
+
+    // And the second endcap.
+    for (ri = num_rings - 1; ri >= 0; ri--) {
+      for (si = 0; si <= num_slices; si++) {
+        vertex.add_data3f(calc_sphere2_vertex(ri + 1, si, num_rings, num_slices, length));
+        vertex.add_data3f(calc_sphere2_vertex(ri, si, num_rings, num_slices, length));
+      }
+      strip->add_next_vertices((num_slices + 1) * 2);
+      strip->close_primitive();
+    }
+
+    PT(qpGeom) geom = new qpGeom;
+    geom->set_vertex_data(vdata);
+    geom->add_primitive(strip);
+
+    // Now transform the vertices to their actual location.
+    LMatrix4f mat;
+    look_at(mat, direction, LVector3f(0.0f, 0.0f, 1.0f), CS_zup_right);
+    mat.set_row(3, _a);
+    geom->transform_vertices(mat);
+
+    _viz_geom->add_geom(geom, get_solid_viz_state());
+    _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
+
+  } else {
+    PTA_Vertexf verts;
+    PTA_int lengths;
+
+    // Generate the first endcap.
+    static const int num_slices = 8;
+    static const int num_rings = 4;
+    int ri, si;
+    for (ri = 0; ri < num_rings; ri++) {
+      for (si = 0; si <= num_slices; si++) {
+        verts.push_back(calc_sphere1_vertex(ri, si, num_rings, num_slices));
+        verts.push_back(calc_sphere1_vertex(ri + 1, si, num_rings, num_slices));
+      }
+      lengths.push_back((num_slices + 1) * 2);
+    }
+
+    // Now the cylinder sides.
+    for (si = 0; si <= num_slices; si++) {
+      verts.push_back(calc_sphere1_vertex(num_rings, si, num_rings, num_slices));
+      verts.push_back(calc_sphere2_vertex(num_rings, si, num_rings, num_slices,
+                                          length));
     }
     lengths.push_back((num_slices + 1) * 2);
-  }
 
-  // Now the cylinder sides.
-  for (si = 0; si <= num_slices; si++) {
-    verts.push_back(calc_sphere1_vertex(num_rings, si, num_rings, num_slices));
-    verts.push_back(calc_sphere2_vertex(num_rings, si, num_rings, num_slices,
-                                        length));
-  }
-  lengths.push_back((num_slices + 1) * 2);
-
-  // And the second endcap.
-  for (ri = num_rings - 1; ri >= 0; ri--) {
-    for (si = 0; si <= num_slices; si++) {
-      verts.push_back(calc_sphere2_vertex(ri + 1, si, num_rings, num_slices, length));
-      verts.push_back(calc_sphere2_vertex(ri, si, num_rings, num_slices, length));
+    // And the second endcap.
+    for (ri = num_rings - 1; ri >= 0; ri--) {
+      for (si = 0; si <= num_slices; si++) {
+        verts.push_back(calc_sphere2_vertex(ri + 1, si, num_rings, num_slices, length));
+        verts.push_back(calc_sphere2_vertex(ri, si, num_rings, num_slices, length));
+      }
+      lengths.push_back((num_slices + 1) * 2);
     }
-    lengths.push_back((num_slices + 1) * 2);
+
+    // Now transform the vertices to their actual location.
+    LMatrix4f mat;
+    look_at(mat, direction, LVector3f(0.0f, 0.0f, 1.0f), CS_zup_right);
+    mat.set_row(3, _a);
+
+    for (size_t i = 0; i < verts.size(); i++) {
+      verts[i] = verts[i] * mat;
+    }
+
+    GeomTristrip *tube = new GeomTristrip;
+    tube->set_coords(verts);
+    tube->set_num_prims(lengths.size());
+    tube->set_lengths(lengths);
+
+    _viz_geom->add_geom(tube, get_solid_viz_state());
+    _bounds_viz_geom->add_geom(tube, get_solid_bounds_viz_state());
   }
-
-  // Now transform the vertices to their actual location.
-  LMatrix4f mat;
-  look_at(mat, direction, LVector3f(0.0f, 0.0f, 1.0f), CS_zup_right);
-  mat.set_row(3, _a);
-
-  for (size_t i = 0; i < verts.size(); i++) {
-    verts[i] = verts[i] * mat;
-  }
-
-  GeomTristrip *tube = new GeomTristrip;
-  tube->set_coords(verts);
-  tube->set_num_prims(lengths.size());
-  tube->set_lengths(lengths);
-
-  _viz_geom->add_geom(tube, get_solid_viz_state());
-  _bounds_viz_geom->add_geom(tube, get_solid_bounds_viz_state());
 }
 
 ////////////////////////////////////////////////////////////////////

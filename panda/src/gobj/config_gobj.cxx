@@ -167,6 +167,16 @@ ConfigVariableBool use_qpgeom
           "underway.  Set this true if you want to use the experimental "
           "code.  You don't really want to set this true."));
 
+ConfigVariableBool support_old_geom
+("support-old-geom", true,
+ PRC_DESC("A temporary variable while the experimental Geom rewrite is "
+          "underway.  Set this false if you DON't want to see anything "
+          "rendered from a legacy Geom.  This is intended to help "
+          "prove visually that the experimental Geoms are actually "
+          "being used.  You don't really want to set this false, and "
+          "you certainly don't want to monkey with it if you haven't "
+          "also set use-qpgeom true."));
+
 
 ConfigVariableEnum<BamTextureMode> bam_texture_mode
 ("bam-texture-mode", BTM_relative,

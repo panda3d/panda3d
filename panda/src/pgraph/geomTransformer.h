@@ -101,9 +101,9 @@ private:
   typedef pmap<qpSourceColors, CPT(qpGeomVertexData) > NewColors;
 
   // We have two concepts of colors: the "fixed" colors, which are
-  // slapped in complete replacement of the original colors (e.g. via
-  // a ColorAttrib), and the "transformed" colors, which are modified
-  // from the original colors (e.g. via a ColorScaleAttrib).
+  // slapped in as a complete replacement of the original colors
+  // (e.g. via a ColorAttrib), and the "transformed" colors, which are
+  // modified from the original colors (e.g. via a ColorScaleAttrib).
   NewColors _qpfcolors, _qptcolors;
 
 
@@ -138,9 +138,9 @@ private:
   TexCoords _texcoords;
 
   // We have two concepts of colors: the "fixed" colors, which are
-  // slapped in complete replacement of the original colors (e.g. via
-  // a ColorAttrib), and the "transformed" colors, which are modified
-  // from the original colors (e.g. via a ColorScaleAttrib).
+  // slapped in as a complete replacement of the original colors
+  // (e.g. via a ColorAttrib), and the "transformed" colors, which are
+  // modified from the original colors (e.g. via a ColorScaleAttrib).
   typedef pmap<Colorf, PTA_Colorf> FColors;
   FColors _fcolors;
 

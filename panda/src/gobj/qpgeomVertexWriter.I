@@ -686,8 +686,8 @@ set_pointer(int vertex) {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char *qpGeomVertexWriter::
 inc_pointer() {
-  nassertr(_write_vertex < _num_vertices, NULL);
-  nassertr(_pointer == _vertex_data->get_array(_array)->get_data() + _column->get_start() + _stride * _write_vertex, NULL);
+  nassertr(_write_vertex < _num_vertices, empty_buffer);
+  nassertr(_pointer == _vertex_data->get_array(_array)->get_data() + _column->get_start() + _stride * _write_vertex, empty_buffer);
 
   unsigned char *orig_pointer = _pointer;
   _pointer += _stride;

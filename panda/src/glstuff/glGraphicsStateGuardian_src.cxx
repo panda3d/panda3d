@@ -2635,7 +2635,7 @@ GeomContext *CLP(GraphicsStateGuardian)::
 prepare_geom(Geom *geom) {
   // Temporary test until the experimental Geom rewrite becomes the
   // actual Geom implementation.
-  if (geom->is_exact_type(qpGeom::get_class_type())) {
+  if (geom->is_of_type(qpGeom::get_class_type())) {
     CLP(GeomContext) *ggc = new CLP(GeomContext)(geom);
     return ggc;
 

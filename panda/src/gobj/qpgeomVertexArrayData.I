@@ -40,16 +40,15 @@ get_usage_hint() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayData::get_data
+//     Function: qpGeomVertexArrayData::has_column
 //       Access: Published
-//  Description: Returns a const pointer to the actual vertex data,
-//               for application code to directly examine (but not
-//               modify).
+//  Description: Returns true if the array has the named column,
+//               false otherwise.  This is really just a shortcut for
+//               asking the same thing from the format.
 ////////////////////////////////////////////////////////////////////
-INLINE CPTA_uchar qpGeomVertexArrayData::
-get_data() const {
-  CDReader cdata(_cycler);
-  return cdata->_data;
+INLINE bool qpGeomVertexArrayData::
+has_column(const InternalName *name) const {
+  return _array_format->has_column(name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,6 +97,19 @@ INLINE UpdateSeq qpGeomVertexArrayData::
 get_modified() const {
   CDReader cdata(_cycler);
   return cdata->_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayData::get_data
+//       Access: Public
+//  Description: Returns a const pointer to the actual vertex data,
+//               for application code to directly examine (but not
+//               modify).
+////////////////////////////////////////////////////////////////////
+INLINE CPTA_uchar qpGeomVertexArrayData::
+get_data() const {
+  CDReader cdata(_cycler);
+  return cdata->_data;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -170,7 +170,8 @@ clear_vertices() {
 //               array, so that application code may directly
 //               manipulate the vertices.  You should avoid changing
 //               the length of this array, since all of the arrays
-//               should be kept in sync--use add_vertices() instead.
+//               should be kept in sync--use set_num_vertices()
+//               instead.
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayData *qpGeomVertexData::
 modify_array(int i) {
@@ -1024,15 +1025,64 @@ do_set_num_vertices(int n, qpGeomVertexData::CDWriter &cdata) {
 
   bool any_changed = false;
 
+  int color_array = -1;
+  int orig_color_vertices = -1;
+
   for (size_t i = 0; i < cdata->_arrays.size(); i++) {
     if (cdata->_arrays[i]->get_num_vertices() != n) {
       // Copy-on-write.
       if (cdata->_arrays[i]->get_ref_count() > 1) {
         cdata->_arrays[i] = new qpGeomVertexArrayData(*cdata->_arrays[i]);
       }
+      if (cdata->_arrays[i]->has_column(InternalName::get_color())) {
+        color_array = i;
+        orig_color_vertices = cdata->_arrays[i]->get_num_vertices();
+      }
       cdata->_arrays[i]->set_num_vertices(n);
       any_changed = true;
     }
+  }
+
+  if (color_array >= 0 && orig_color_vertices < n) {
+    // We have just added some vertices, fill the "color" column with
+    // (1, 1, 1, 1), for the programmer's convenience.
+    qpGeomVertexArrayData *array_data = cdata->_arrays[color_array];
+    const qpGeomVertexColumn *column = 
+      array_data->get_array_format()->get_column(InternalName::get_color());
+    int stride = array_data->get_array_format()->get_stride();
+    unsigned char *start = 
+      array_data->modify_data() + column->get_start();
+    unsigned char *stop = start + array_data->get_data_size_bytes();
+    unsigned char *pointer = start + stride * orig_color_vertices;
+    int num_values = column->get_num_values();
+
+    switch (column->get_numeric_type()) {
+    case qpGeomVertexColumn::NT_packed_dcba:
+    case qpGeomVertexColumn::NT_packed_dabc:
+    case qpGeomVertexColumn::NT_uint8:
+      while (pointer < stop) {
+        memset(pointer, 0xff, num_values);
+        pointer += stride;
+      }
+      break;
+
+    case qpGeomVertexColumn::NT_uint16:
+      while (pointer < stop) {
+        memset(pointer, 0xff, num_values * 2);
+        pointer += stride;
+      }
+      break;
+
+    case qpGeomVertexColumn::NT_float32:
+      while (pointer < stop) {
+        PN_float32 *pi = (PN_float32 *)pointer;
+        for (int i = 0; i < num_values; i++) {
+          pi[i] = 1.0f;
+        }
+        pointer += stride;
+      }
+      break;
+    }          
   }
 
   if (any_changed) {

@@ -382,8 +382,8 @@ set_pointer(int vertex) {
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *qpGeomVertexReader::
 inc_pointer() {
-  nassertr(_read_vertex < _num_vertices, NULL);
-  nassertr(_pointer == _vertex_data->get_array(_array)->get_data() + _column->get_start() + _stride * _read_vertex, NULL);
+  nassertr(_read_vertex < _num_vertices, empty_buffer);
+  nassertr(_pointer == _vertex_data->get_array(_array)->get_data() + _column->get_start() + _stride * _read_vertex, empty_buffer);
 
   const unsigned char *orig_pointer = _pointer;
   _pointer += _stride;

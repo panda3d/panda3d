@@ -59,6 +59,7 @@ extern EXPCL_PANDA ConfigVariableBool display_list_animation;
 extern EXPCL_PANDA ConfigVariableBool connect_triangle_strips;
 
 extern EXPCL_PANDA ConfigVariableBool use_qpgeom;
+extern EXPCL_PANDA ConfigVariableBool support_old_geom;
 
 extern EXPCL_PANDA ConfigVariableEnum<BamTextureMode> bam_texture_mode;
 extern EXPCL_PANDA ConfigVariableEnum<AutoTextureScale> textures_power_2;

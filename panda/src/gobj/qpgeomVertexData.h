@@ -64,6 +64,12 @@ class qpGeomVertexColumn;
 //               single table of vertices, where each vertex is
 //               represented by one row of the table.
 //
+//               In general, application code should not attempt to
+//               directly manipulate the vertex data through this
+//               structure; instead, use the GeomVertexReader,
+//               GeomVertexWriter, and GeomVertexRewriter objects to
+//               read and write vertex data at a high level.
+//
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA qpGeomVertexData : public TypedWritableReferenceCount {

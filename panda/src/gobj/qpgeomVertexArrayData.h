@@ -47,8 +47,12 @@ class GraphicsStateGuardianBase;
 //               It also closely correlates with the concept of a
 //               vertex buffer.
 //
-//               This object is just a block of data.  See
-//               GeomVertexData for the organizing structure.
+//               This object is just a block of data.  In general, you
+//               should not be directly messing with this object from
+//               application code.  See GeomVertexData for the
+//               organizing structure, and see
+//               GeomVertexReader/Writer/Rewriter for high-level tools
+//               to manipulate the actual vertex data.
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
@@ -68,9 +72,7 @@ PUBLISHED:
   INLINE const qpGeomVertexArrayFormat *get_array_format() const;
   INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
 
-  INLINE CPTA_uchar get_data() const;
-  PTA_uchar modify_data();
-  void set_data(CPTA_uchar data);
+  INLINE bool has_column(const InternalName *name) const;
 
   INLINE int get_num_vertices() const;
   bool set_num_vertices(int n);
@@ -78,6 +80,11 @@ PUBLISHED:
 
   INLINE int get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
+
+public:
+  INLINE CPTA_uchar get_data() const;
+  PTA_uchar modify_data();
+  void set_data(CPTA_uchar data);
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
 

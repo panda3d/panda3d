@@ -101,7 +101,7 @@ add_vertex(int vertex) {
 
   int num_primitives = get_num_primitives();
   if (num_primitives > 0 &&
-      cdata->_vertices.size() == get_primitive_end(num_primitives - 1)) {
+      (int)cdata->_vertices.size() == get_primitive_end(num_primitives - 1)) {
     // If we are beginning a new primitive, give the derived class a
     // chance to insert some degenerate vertices.
     append_unused_vertices(cdata->_vertices, vertex);
@@ -145,6 +145,15 @@ add_consecutive_vertices(int start, int num_vertices) {
   nassertv((int)short_start == start && (int)short_end == end);
 
   CDWriter cdata(_cycler);
+
+  int num_primitives = get_num_primitives();
+  if (num_primitives > 0 &&
+      (int)cdata->_vertices.size() == get_primitive_end(num_primitives - 1)) {
+    // If we are beginning a new primitive, give the derived class a
+    // chance to insert some degenerate vertices.
+    append_unused_vertices(cdata->_vertices, start);
+  }
+
   for (unsigned short v = short_start; v <= short_end; ++v) {
     cdata->_vertices.push_back(v);
   }
@@ -167,6 +176,26 @@ add_consecutive_vertices(int start, int num_vertices) {
       nassertv((cdata->_mins.size() == cdata->_ends.size() + 1) &&
                (cdata->_maxs.size() == cdata->_ends.size() + 1));
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::add_next_vertices
+//       Access: Published
+//  Description: Adds the next n vertices in sequence, beginning from
+//               the last vertex added to the primitive + 1.
+//
+//               This is most useful when you are building up a
+//               primitive and a GeomVertexData at the same time, and
+//               you just want the primitive to reference the first n
+//               vertices from the data, then the next n, and so on.
+////////////////////////////////////////////////////////////////////
+void qpGeomPrimitive::
+add_next_vertices(int num_vertices) {
+  if (get_num_vertices() == 0) {
+    add_consecutive_vertices(0, num_vertices);
+  } else {
+    add_consecutive_vertices(get_vertex(get_num_vertices() - 1) + 1, num_vertices);
   }
 }
 

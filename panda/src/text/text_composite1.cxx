@@ -5,4 +5,5 @@
 #include "dynamicTextPage.cxx"
 #include "fontPool.cxx"
 #include "geomTextGlyph.cxx"
+#include "qpgeomTextGlyph.cxx"
 #include "staticTextFont.cxx"

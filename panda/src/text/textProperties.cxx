@@ -278,7 +278,7 @@ load_default_font() {
   if (!text_default_font.empty()) {
     // First, attempt to load the user-specified filename.
     _default_font = FontPool::load_font(text_default_font.get_value());
-    if (_default_font->is_valid()) {
+    if (_default_font != (TextFont *)NULL && _default_font->is_valid()) {
       return;
     }
   }

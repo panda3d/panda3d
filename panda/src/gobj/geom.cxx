@@ -303,7 +303,7 @@ operator = (const Geom &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::transform_vertices
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Applies the indicated transform to all of the
 //               vertices in the Geom.  If the Geom happens to share a
 //               vertex table with another Geom, this operation will
@@ -917,6 +917,9 @@ release_all() {
 void Geom::
 draw(GraphicsStateGuardianBase *gsg, 
      const qpGeomMunger *, const qpGeomVertexData *) const {
+  if (!support_old_geom) {
+    return;
+  }
   PreparedGraphicsObjects *prepared_objects = gsg->get_prepared_objects();
   if (is_dirty()) {
     ((Geom *)this)->config(); 

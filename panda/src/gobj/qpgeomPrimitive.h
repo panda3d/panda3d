@@ -116,6 +116,7 @@ PUBLISHED:
   INLINE int get_vertex(int i) const;
   void add_vertex(int vertex);
   void add_consecutive_vertices(int start, int num_vertices);
+  void add_next_vertices(int num_vertices);
   bool close_primitive();
   void clear_vertices();
 

@@ -18,6 +18,13 @@
 
 #include "qpgeomVertexWriter.h"
 
+
+#ifndef NDEBUG
+  // This is defined just for the benefit of having something non-NULL
+  // to return from a nassertr() call.
+unsigned char qpGeomVertexWriter::empty_buffer[100] = { 0 };
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexWriter::set_column
 //       Access: Published

@@ -84,6 +84,8 @@ PUBLISHED:
   int get_num_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
+  virtual void transform_vertices(const LMatrix4f &mat);
+
   void munge_geom(const qpGeomMunger *munger,
                   CPT(qpGeom) &result, CPT(qpGeomVertexData) &data) const;
 
