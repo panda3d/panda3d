@@ -944,9 +944,28 @@ run_socks_proxy_greet_reply() {
     return false;
   }
 
-  // TODO: don't ignore the login method.
-  
-  _state = S_socks_proxy_connect;
+  if (reply[1] == (char)0xff) {
+    downloader_cat.info()
+      << "Socks server does not accept our available login methods.\n";
+    // We plug in the phony status code of 407 here, which is the HTTP
+    // status code that indicates the proxy didn't like our
+    // authentication.  It's a close enough approximation.
+    _status_code = 407;
+    _state = S_try_next_proxy;
+    return false;
+  }
+
+  if (reply[1] == 0x00) {
+    // No login method required.
+    _state = S_socks_proxy_connect;
+    return false;
+  }
+
+  // The server accepted a login method we didn't offer!
+  downloader_cat.info()
+    << "Socks server accepted unrequested login method "
+    << (int)reply[1] << "\n";
+  _state = S_try_next_proxy;
   return false;
 }
 
