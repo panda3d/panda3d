@@ -69,7 +69,7 @@ class Particles(ParticleSystem.ParticleSystem):
 
     def disable(self):
 	"""disable(self)"""
-	physicsMgr.removePhysical(self.node)
+	physicsMgr.removePhysical(self)
 	particleMgr.removeParticlesystem(self)
 
     def setFactory(self, type):

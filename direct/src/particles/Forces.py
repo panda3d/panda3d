@@ -30,21 +30,21 @@ class Forces(DirectObject):
 
     def enable(self):
 	"""enable(self)"""
-	for i in self.node.getNumForces():
+	for i in range(self.node.getNumForces()):
 	    f = self.node.getForce(i)
 	    if (f.isLinear() == 1):
-		physicsManager.addLinearForce(f)
+		physicsMgr.addLinearForce(f)
 	    else:
-		physicsManager.addAngularForce(f)
+		physicsMgr.addAngularForce(f)
 
     def disable(self):
 	"""disable(self)"""
-	for i in self.node.getNumForces():
+	for i in range(self.node.getNumForces()):
 	    f = self.node.getForce(i)
 	    if (f.isLinear() == 1):
-		physicsManager.removeLinearForce(f)
+		physicsMgr.removeLinearForce(f)
 	    else:
-		physicsManager.removeAngularForce(f)
+		physicsMgr.removeAngularForce(f)
 
     def __getItem__(self, index):
 	"""__getItem__(self, index)"""
