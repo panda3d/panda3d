@@ -11,13 +11,13 @@
 
 NotifyCategoryDecl(audio, EXPCL_PANDA, EXPTP_PANDA);
 
-extern int audio_sample_voices;
-extern int audio_mix_freq;
-extern string* audio_mode_flags;
-extern int audio_driver_select;
-extern string* audio_driver_params;
-extern int audio_buffer_size;
-extern string* audio_device;
-extern int audio_auto_update_delay;
+extern EXPCL_PANDA int audio_sample_voices;
+extern EXPCL_PANDA int audio_mix_freq;
+extern EXPCL_PANDA string* audio_mode_flags;
+extern EXPCL_PANDA int audio_driver_select;
+extern EXPCL_PANDA string* audio_driver_params;
+extern EXPCL_PANDA int audio_buffer_size;
+extern EXPCL_PANDA string* audio_device;
+extern EXPCL_PANDA int audio_auto_update_delay;
 
 #endif /* __CONFIG_AUDIO_H__ */

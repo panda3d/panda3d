@@ -63,9 +63,13 @@ typedef unsigned char byte;
 #endif
 
 #ifdef __GNUC__
+#ifndef INLINE
 #define INLINE inline
+#endif /* INLINE */
 #else
+#ifndef INLINE
 #define INLINE
+#endif /* INLINE */
 #endif
 
 #include "mpgaudio.h"

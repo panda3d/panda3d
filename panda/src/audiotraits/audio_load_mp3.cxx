@@ -128,7 +128,43 @@ static void initialize(void) {
   initialized = true;
 }
 
-ostream* my_outstream;
+class BufferPart {
+private:
+  unsigned char* _ptr;
+  unsigned long _len;
+  BufferPart* _next;
+
+  BufferPart(void) : _ptr((unsigned char*)0L), _len(0), _next((BufferPart*)0L)
+	 {}
+public:
+  BufferPart(unsigned char* b, unsigned long l) : _next((BufferPart*)0L),
+                                                  _len(l) {
+    _ptr = new unsigned char[l];
+    memcpy(_ptr, b, l);
+  }
+  ~BufferPart(void) {
+    delete _next;
+    delete [] _ptr;
+  }
+  BufferPart* add(unsigned char* b, unsigned long l) {
+    _next = new BufferPart(b, l);
+    return _next;
+  }
+  unsigned long length(void) const {
+    unsigned long ret = _len;
+    if (_next != (BufferPart*)0L)
+      ret += _next->length();
+    return ret;
+  }
+  void output(unsigned char* b) {
+     memcpy(b, _ptr, _len);
+     if (_next != (BufferPart*)0L)
+	_next->output(b+_len);
+  }
+};
+
+static BufferPart* my_buf_head;
+static BufferPart* my_buf_curr;
 
 extern "C" {
 int audio_open(struct audio_info_struct* ai) {
@@ -177,8 +213,11 @@ int audio_get_formats(struct audio_info_struct* ai) {
 
 int audio_play_samples(struct audio_info_struct* ai, unsigned char* buf,
 		       int len) {
-  for (int i=0; i<len; ++i)
-    (*my_outstream) << buf[i];
+  if (my_buf_head == (BufferPart*)0L) {
+    my_buf_head = my_buf_curr = new BufferPart(buf, len);
+  } else {
+    my_buf_curr = my_buf_curr->add(buf, len);
+  }
   return len;
 }
 
@@ -331,10 +370,9 @@ static void read_file(Filename filename, unsigned char** buf,
 		      unsigned long& slen) {
   int init;
   unsigned long frameNum = 0;
-  ostringstream out;
 
   initialize();
-  my_outstream = &out;
+  my_buf_head = my_buf_curr = (BufferPart*)0L;
   if (open_stream((char*)(filename.c_str()), -1)) {
     long leftFrames, newFrame;
 
@@ -343,6 +381,9 @@ static void read_file(Filename filename, unsigned char** buf,
     newFrame = param.startFrame;
     leftFrames = numframes;
     for (frameNum=0; read_frame(&fr) && leftFrames && !intflag; ++frameNum) {
+      if ((frameNum % 100) == 0)
+        if (audio_cat->is_debug())
+          audio_cat->debug(false) << ".";
       if (frameNum < param.startFrame || (param.doublespeed &&
 					  (frameNum % param.doublespeed))) {
 	if (fr.lay == 3)
@@ -362,6 +403,8 @@ static void read_file(Filename filename, unsigned char** buf,
       intflag = FALSE;
     }
   }
+  if (audio_cat->is_debug())
+    audio_cat->debug(false) << endl;
   audio_flush(param.outmode, &ai);
   free(pcm_sample);
   switch (param.outmode) {
@@ -379,11 +422,10 @@ static void read_file(Filename filename, unsigned char** buf,
     break;
   }
   // generate output
-  string s = out.str();
-  slen = s.length();
+  slen = my_buf_head->length();
   *buf = new byte[slen];
-  memcpy(*buf, s.data(), slen);
-  my_outstream = (ostream*)0L;
+  my_buf_head->output(*buf);
+  delete my_buf_head;
 }
 
 #ifdef AUDIO_USE_MIKMOD
@@ -410,19 +452,26 @@ void AudioLoadMp3(AudioTraits::SampleClass** sample,
 
 #include "audio_win_traits.h"
 
-void AudioDestroyMp3(AudioTraits::SampleClass* sample) {
+void EXPCL_MISC AudioDestroyMp3(AudioTraits::SampleClass* sample) {
   delete sample;
 }
 
 void AudioLoadMp3(AudioTraits::SampleClass** sample,
 		  AudioTraits::PlayingClass** state,
 		  AudioTraits::PlayerClass** player,
-		  AudioTraits::DeleteSampleFunc** destroy, Filename) {
-  audio_cat->warning() << "win32 doesn't support reading mp3 data yet"
-		       << endl;
-  *sample = (AudioTraits::SampleClass*)0L;
-  *state = (AudioTraits::PlayingClass*)0L;
-  *player = (AudioTraits::PlayerClass*)0L;
+		  AudioTraits::DeleteSampleFunc** destroy, Filename filename) {
+  unsigned char* buf;
+  unsigned long len;
+  read_file(filename, &buf, len);
+  if (buf != (unsigned char*)0L) {
+    *sample = WinSample::load_raw(buf, len);
+    *state = ((WinSample*)(*sample))->get_state();
+    *player = WinPlayer::get_instance();
+  } else {
+    *sample = (AudioTraits::SampleClass*)0L;
+    *state = (AudioTraits::PlayingClass*)0L;
+    *player = (AudioTraits::PlayerClass*)0L;
+  }
   *destroy = AudioDestroyMp3;
 }
 
@@ -445,13 +494,12 @@ void AudioLoadMp3(AudioTraits::SampleClass** sample,
     *sample = LinuxSample::load_raw(buf, len);
     *state = ((LinuxSample*)(*sample))->get_state();
     *player = LinuxPlayer::get_instance();
-    *destroy = AudioDestroyMp3;
   } else {
     *sample = (AudioTraits::SampleClass*)0L;
     *state = (AudioTraits::PlayingClass*)0L;
     *player = (AudioTraits::PlayerClass*)0L;
-    *destroy = AudioDestroyMp3;
   }
+  *destroy = AudioDestroyMp3;
 }
 
 #elif defined(AUDIO_USE_NULL)

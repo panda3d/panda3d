@@ -408,11 +408,12 @@ WinSample* WinSample::load_raw(unsigned char* data, unsigned long size) {
   wavInfo.nBlockAlign = wavInfo.wBitsPerSample / 8 * wavInfo.nChannels;
   wavInfo.nAvgBytesPerSec = wavInfo.nSamplesPerSec * wavInfo.nBlockAlign;
 
-  if (data = (unsigned char*)0L)
+  if (data == (unsigned char*)0L)
     return ret;
 
   // create a direct sound channel for this data
   ret = new WinSample();
+
   DSBUFFERDESC dsbdDesc;
   ZeroMemory(&dsbdDesc, sizeof(DSBUFFERDESC));
   dsbdDesc.dwSize = sizeof(DSBUFFERDESC);
@@ -422,6 +423,7 @@ WinSample* WinSample::load_raw(unsigned char* data, unsigned long size) {
   dsbdDesc.lpwfxFormat->cbSize = sizeof(wavInfo);
   HRESULT result = soundDirectSound->CreateSoundBuffer(&dsbdDesc,
 						       &(ret->_channel), NULL);
+
   if (FAILED(result)) {
     delete ret;
     ret = (WinSample*)0L;
