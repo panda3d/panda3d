@@ -306,7 +306,7 @@
 // the target is not to be interrogated.
 #defer get_igatedb \
   $[if $[and $[run_interrogate],$[IGATESCAN]], \
-    lib$[TARGET]$[dllext].in]
+    $[st_dir]/lib$[TARGET]$[dllext].in]
 
 // This variable returns the name of the interrogate code file
 // that will be generated for a particular target, or empty string if

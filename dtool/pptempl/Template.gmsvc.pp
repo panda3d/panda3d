@@ -129,6 +129,24 @@
 // bison and flex (or copy from *.prebuilt if we don't have them).
 #define bison_prebuilt $[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_st_sources]]
 
+// Rather than making a rule to generate each install directory later,
+// we create the directories now.  This reduces problems from
+// multiprocess builds.
+#mkdir $[sort \
+    $[if $[install_lib],$[install_lib_dir]] \
+    $[if $[install_bin] $[install_scripts],$[install_bin_dir]] \
+    $[if $[install_headers],$[install_headers_dir]] \
+    $[if $[install_parser_inc],$[install_parser_inc_dir]] \
+    $[if $[install_data],$[install_data_dir]] \
+    $[if $[install_config],$[install_config_dir]] \
+    $[if $[install_igatedb],$[install_igatedb_dir]] \
+    ]
+
+// Similarly, we need to ensure that $[st_dir] exists.  Trying to make
+// the makefiles do this automatically just causes problems with
+// multiprocess builds.
+#mkdir $[st_dir]
+
 // Pre-compiled headers are one way to speed the compilation of many
 // C++ source files that include similar headers, but it turns out a
 // more effective (and more portable) way is simply to compile all the
@@ -227,7 +245,7 @@ $[TAB] rm -f $[igatemout] $[$[igatemout]_obj]
      $[INSTALL_CONFIG:%=$[install_config_dir]/%]
 
 #define installed_igate_files \
-     $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[install_igatedb_dir]/%]
+     $[get_igatedb(metalib_target lib_target ss_lib_target):$[st_dir]/%=$[install_igatedb_dir]/%]
 
 #define install_targets \
      $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=install-lib%] \
@@ -256,28 +274,10 @@ $[TAB] rm -f $[sort $[patsubst %,%.prebuilt,$[bison_prebuilt]]]
 #endif
 #endif
 
-// Rather than making a rule to generate each install directory later,
-// we create the directories now.  This reduces problems from
-// multiprocess builds.
-#mkdir $[sort \
-    $[if $[install_lib],$[install_lib_dir]] \
-    $[if $[install_bin] $[install_scripts],$[install_bin_dir]] \
-    $[if $[install_headers],$[install_headers_dir]] \
-    $[if $[install_parser_inc],$[install_parser_inc_dir]] \
-    $[if $[install_data],$[install_data_dir]] \
-    $[if $[install_config],$[install_config_dir]] \
-    $[if $[install_igatedb],$[install_igatedb_dir]] \
-    ]
-
-// Similarly, we need to ensure that $[st_dir] exists.  Trying to make
-// the makefiles do this automatically just causes problems with
-// multiprocess builds.
-#mkdir $[st_dir]
-
 // Now it's time to start generating the rules to make our actual
 // targets.
 
-igate : $[get_igatedb(metalib_target lib_target ss_lib_target):%=$[st_dir]/%]
+igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
 
 
 /////////////////////////////////////////////////////////////////////
@@ -382,7 +382,7 @@ $[st_dir]/lib$[TARGET]$[dllext].pdb : $[st_dir]/lib$[TARGET]$[dllext].dll
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
     $[INSTALL_CONFIG:%=$[install_config_dir]/%] \
-    $[igatedb:%=$[install_igatedb_dir]/%]
+    $[igatedb:$[st_dir]/%=$[install_igatedb_dir]/%]
 
 install-lib$[TARGET] : $[installed_files]
 
@@ -423,10 +423,10 @@ $[TAB] cp -f $[st_dir]/$[local] $[dest]
   #define igatemod $[TARGET]
 #endif
 
-$[install_igatedb_dir]/$[igatedb] : $[st_dir]/$[igatedb]
+$[igatedb:$[st_dir]/%=$[install_igatedb_dir]/%] : $[igatedb]
 #define local $[igatedb]
 #define dest $[install_igatedb_dir]
-$[TAB] cp -f $[st_dir]/$[local] $[dest]
+$[TAB] cp -f $[local] $[dest]
 
 // We have to split this out as a separate rule to properly support
 // parallel make.
@@ -717,8 +717,8 @@ $[TAB] cp $[target_prebuilt] $[target]
 #define flags $[cflags] $[building_var:%=/D%]
 #if $[ne $[file], $[notdir $file]]
   // If the source file is not in the current directory, tack on "."
-  // to the ipath.
-  #set ipath $[ipath] .
+  // to front of the ipath.
+  #set ipath . $[ipath]
 #endif
 
 $[target] : $[source] $[get_depends $[source]]
@@ -735,8 +735,8 @@ $[TAB] $[COMPILE_C]
 #define flags $[c++flags] $[building_var:%=/D%]
 #if $[ne $[file], $[notdir $file]]
   // If the source file is not in the current directory, tack on "."
-  // to the ipath.
-  #set ipath $[ipath] .
+  // to front of the ipath.
+  #set ipath . $[ipath]
 #endif
 
 // Yacc must run before some files can be compiled, so all files

@@ -77,7 +77,7 @@
       #if $[> $[words $[cxx_sources]], 1]
         // If we have multiple C++ files, put them together into one
         // composite file.
-        #define composite_file $[TARGET]_composite.cxx
+        #define composite_file $[st_dir]/$[TARGET]_composite.cxx
         #set composite_list $[composite_list] $[composite_file]
         #define $[composite_file]_sources $[cxx_sources]
         #push 1 $[composite_file]_sources
@@ -87,7 +87,7 @@
       #if $[> $[words $[c_sources]], 1]
         // If we have multiple C files, put them together into one
         // composite file also.
-        #define composite_file $[TARGET]_composite_c.c
+        #define composite_file $[st_dir]/$[TARGET]_composite_c.c
         #set composite_list $[composite_list] $[composite_file]
         #define $[composite_file]_sources $[c_sources]
         #push 1 $[composite_file]_sources
