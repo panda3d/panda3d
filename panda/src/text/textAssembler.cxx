@@ -1067,8 +1067,6 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
     tack_on_accent('~', CP_above, CT_none, min_vert, max_vert, centroid,
                    properties, placement) ||
       tack_on_accent('s', CP_above, CT_squash_mirror_diag, min_vert, max_vert, centroid,
-                     properties, placement) ||
-      tack_on_accent('S', CP_above, CT_small_squash_mirror_diag, min_vert, max_vert, centroid,
                      properties, placement);
 
     break;
@@ -1123,10 +1121,8 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
   case UnicodeLatinMap::AT_cedilla:
     tack_on_accent('c', CP_bottom, CT_tiny_mirror_x, min_vert, max_vert, centroid,
                    properties, placement);
-    /*
-    tack_on_accent(',', CP_bottom, CT_none, min_vert, max_vert, centroid,
-                   properties, placement);
-    */
+    //tack_on_accent(',', CP_bottom, CT_none, min_vert, max_vert, centroid,
+    //               properties, placement);
     break;
 
   case UnicodeLatinMap::AT_comma_below:
@@ -1169,7 +1165,8 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
   nassertr(font != (TextFont *)NULL, false);
   
   const TextGlyph *accent_glyph;
-  if (font->get_glyph(accent_mark, accent_glyph)) {
+  if (font->get_glyph(accent_mark, accent_glyph) ||
+      font->get_glyph(toupper(accent_mark), accent_glyph)) {
     PT(Geom) accent_geom = accent_glyph->get_geom();
     if (accent_geom != (Geom *)NULL) {
       LPoint3f min_accent, max_accent;
