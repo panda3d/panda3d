@@ -488,6 +488,7 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
 ////////////////////////////////////////////////////////////////////
 void FFTCompressor::
 free_storage() {
+#ifdef HAVE_FFTW
   RealPlans::iterator pi;
   for (pi = _real_compress_plans.begin(); 
        pi != _real_compress_plans.end();
@@ -502,6 +503,7 @@ free_storage() {
     rfftw_destroy_plan((*pi).second);
   }
   _real_decompress_plans.clear();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -575,7 +577,7 @@ write_run(Datagram &datagram, FFTCompressor::RunWidth run_width,
       // In the case of RW_double, we only write the numbers one at a
       // time, each time preceded by the RW_double flag.  Hopefully
       // this will happen only rarely.
-      datagram.add_int8((int)RW_double);
+      datagram.add_int8((PN_int8)RW_double);
       datagram.add_float64(*ri);
     }
     break;
