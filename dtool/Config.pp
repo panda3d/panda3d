@@ -403,10 +403,10 @@
 // options to interrogate, guaranteeing that the correct interfaces
 // are generated.  Do not include -D here; that will be supplied
 // automatically.
-#defer CDEFINES_OPT1 _DEBUG
-#defer CDEFINES_OPT2 _DEBUG
-#defer CDEFINES_OPT3
-#defer CDEFINES_OPT4 NDEBUG
+#defer CDEFINES_OPT1 _DEBUG DO_PSTATS
+#defer CDEFINES_OPT2 _DEBUG DO_PSTATS
+#defer CDEFINES_OPT3 DO_PSTATS
+#defer CDEFINES_OPT4 NDEBUG $[if $[ne $[DO_PSTATS],],DO_PSTATS]
 
 // What additional flags should be passed for each value of OPTIMIZE
 // (above)?  We separate out the compiler-optimization flags, above,

@@ -61,7 +61,6 @@
 
 #define CFLAGS_SHARED
 
-
 // Define LINK_ALL_STATIC to generate static libs instead of DLL's.
 #if $[ne $[LINK_ALL_STATIC],]
   #define dlink_all_static LINK_ALL_STATIC
@@ -77,10 +76,10 @@
 
 #include $[DTOOL]/pptempl/compilerSettings.pp
 
-#defer CDEFINES_OPT1 _DEBUG $[dlink_all_static]
-#defer CDEFINES_OPT2 _DEBUG $[dlink_all_static]
-#defer CDEFINES_OPT3 $[dlink_all_static]
-#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static]
+#defer CDEFINES_OPT1 _DEBUG $[dlink_all_static] DO_PSTATS
+#defer CDEFINES_OPT2 _DEBUG $[dlink_all_static] DO_PSTATS
+#defer CDEFINES_OPT3 $[dlink_all_static] DO_PSTATS
+#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[if $[ne $[DO_PSTATS],],DO_PSTATS]
 
 //  /GZ disables OPT flags, so OPT1 only
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[OPT1FLAGS] $[DEBUGFLAGS] 

@@ -78,10 +78,10 @@
 
 #include $[DTOOL]/pptempl/compilerSettings.pp
 
-#defer CDEFINES_OPT1 _DEBUG $[dlink_all_static]
-#defer CDEFINES_OPT2 _DEBUG $[dlink_all_static]
-#defer CDEFINES_OPT3 $[dlink_all_static]
-#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static]
+#defer CDEFINES_OPT1 _DEBUG $[dlink_all_static] DO_PSTATS
+#defer CDEFINES_OPT2 _DEBUG $[dlink_all_static] DO_PSTATS
+#defer CDEFINES_OPT3 $[dlink_all_static] DO_PSTATS
+#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[if $[ne $[DO_PSTATS],],DO_PSTATS]
 
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[OPT1FLAGS] $[DEBUGFLAGS]
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS]
