@@ -137,6 +137,9 @@ $[cdefine HAVE_NAMESPACE]
 /* Define if the C++ iostream library supports ios::binary.  */
 $[cdefine HAVE_IOS_BINARY]
 
+/* Define if the C++ compiler supports the typename keyword.  */
+$[cdefine HAVE_TYPENAME]
+
 /* Define if we can trust the compiler not to insert extra bytes in
    structs between base structs and derived structs. */
 $[cdefine SIMPLE_STRUCT_POINTERS]

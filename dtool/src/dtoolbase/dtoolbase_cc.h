@@ -68,7 +68,11 @@ using namespace std;
 using namespace std;
 #endif
 
+#ifdef HAVE_TYPENAME
 #define TYPENAME typename
+#else
+#define TYPENAME
+#endif
 
 
 #if defined(WIN32_VC) && defined(FORCE_INLINING)

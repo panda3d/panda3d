@@ -20,6 +20,9 @@
 // Does the C++ compiler support ios::binary?
 #define HAVE_IOS_BINARY 1
 
+// How about the typename keyword?
+#define HAVE_TYPENAME 1
+
 // Will the compiler avoid inserting extra bytes in structs between a
 // base struct and its derived structs?  It is safe to define this
 // false if you don't know, but if you know that you can get away with
