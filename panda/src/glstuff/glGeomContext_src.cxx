@@ -28,7 +28,7 @@ CLP(GeomContext)::
   nassertv(_display_lists.empty());
 }
 
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
 //     Function: CLP(GeomContext)::get_display_list
 //       Access: Public
 //  Description: Looks up the display list index associated with the
@@ -46,7 +46,9 @@ get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
   if (dl._index == 0) {
     dl._index = GLP(GenLists)(1);    
     list_current = false;
-    ((CLP(GeomMunger) *)munger)->_geom_contexts.insert(this);
+    if (munger != (CLP(GeomMunger) *)NULL) {
+      ((CLP(GeomMunger) *)munger)->_geom_contexts.insert(this);
+    }
   }
 
   index = dl._index;
@@ -78,7 +80,9 @@ release_display_lists() {
        ++dli) {
     CLP(GeomMunger) *munger = (*dli).first;
     const DisplayList &dl = (*dli).second;
-    munger->_geom_contexts.erase(this);
+    if (munger != (CLP(GeomMunger) *)NULL) {
+      munger->_geom_contexts.erase(this);
+    }
 
     if (GLCAT.is_debug()) {
       GLCAT.debug()

@@ -256,8 +256,11 @@ munge_geom(const qpGeomMunger *munger,
   PStatTimer timer(qpGeomMunger::_munge_pcollector);
 
   result = this;
-  data = munger->munge_data(get_vertex_data());
-  ((qpGeomMunger *)munger)->munge_geom_impl(result, data);
+  data = get_vertex_data();
+  if (munger != (qpGeomMunger *)NULL) {
+    data = munger->munge_data(data);
+    ((qpGeomMunger *)munger)->munge_geom_impl(result, data);
+  }
 
   {
     // Record the new result in the cache.

@@ -124,6 +124,49 @@ munge_data(const qpGeomVertexData *data) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomMunger::operator delete
+//       Access: Public
+//  Description: This balances do_operator_new(), below, and adds the
+//               deleted object to the stored deleted_chain, rather
+//               than returning its memory to the heap.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomMunger::
+operator delete(void *ptr) {
+  qpGeomMunger *obj = (qpGeomMunger *)ptr;
+  nassertv(obj->_deleted_chain != (qpGeomMunger **)NULL);
+  nassertv(obj->_next == (qpGeomMunger *)NULL);
+  obj->_next = (*obj->_deleted_chain);
+  (*obj->_deleted_chain) = obj;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomMunger::do_operator_new
+//       Access: Protected, Static
+//  Description: Intended to be called from a derived class's operator
+//               new method, this allocates a new object from the
+//               indicated deleted_chain, if there is an object
+//               available there, or from the heap if not.
+//
+//               In either case, the indicated deleted_chain pointer
+//               is cleverly stored on the new object, even before its
+//               constructor is called, so that it can be returned
+//               there when it is deleted.
+////////////////////////////////////////////////////////////////////
+INLINE void *qpGeomMunger::
+do_operator_new(size_t size, qpGeomMunger *&deleted_chain) {
+  qpGeomMunger *obj;
+  if (deleted_chain != (qpGeomMunger *)NULL) {
+    obj = deleted_chain;
+    deleted_chain = deleted_chain->_next;
+  } else {
+    obj = (qpGeomMunger *)::operator new(size);
+  }
+  obj->_deleted_chain = &deleted_chain;
+
+  return obj;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomMunger::get_registry
 //       Access: Private
 //  Description: Returns the global registry object.

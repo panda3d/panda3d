@@ -41,3 +41,15 @@ INLINE GraphicsStateGuardian *CLP(GeomMunger)::
 get_gsg() const {
   return _gsg;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GeomMunger)::operator new
+//       Access: Public
+//  Description: Calls up to do_operator_new() to implement the
+//               low-overhead allocation/deallocation for this type of
+//               GeomMunger.
+////////////////////////////////////////////////////////////////////
+INLINE void *CLP(GeomMunger)::
+operator new(size_t size) {
+  return do_operator_new(size, _deleted_chain);
+}

@@ -23,11 +23,13 @@
 #include "cullBin.h"
 #include "renderState.h"
 #include "cullableObject.h"
+#include "qpgeomMunger.h"
 
 #include "referenceCount.h"
 #include "pointerTo.h"
 #include "pvector.h"
 #include "pset.h"
+#include "pmap.h"
 
 
 class GraphicsStateGuardianBase;
@@ -63,6 +65,7 @@ public:
 
 private:
   CullBin *make_new_bin(int bin_index);
+  INLINE CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
 
   static CPT(RenderState) get_binary_state();
   static CPT(RenderState) get_dual_transparent_state();
@@ -70,6 +73,9 @@ private:
   static CPT(RenderState) get_dual_opaque_state();
 
   GraphicsStateGuardianBase *_gsg;
+
+  typedef pmap<CPT(RenderState), CPT(qpGeomMunger) > Mungers;
+  Mungers _mungers;
 
   typedef pvector< PT(CullBin) > Bins;
   Bins _bins;

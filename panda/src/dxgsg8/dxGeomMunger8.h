@@ -41,6 +41,12 @@ protected:
   virtual int compare_to_impl(const qpGeomMunger *other) const;
 
 public:
+  INLINE void *operator new(size_t size);
+
+private:
+  static qpGeomMunger *_deleted_chain;
+
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }

@@ -18,6 +18,7 @@
 
 #include "dxGeomMunger8.h"
 
+qpGeomMunger *DXGeomMunger8::_deleted_chain = NULL;
 TypeHandle DXGeomMunger8::_type_handle;
 
 ////////////////////////////////////////////////////////////////////

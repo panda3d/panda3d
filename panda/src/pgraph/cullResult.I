@@ -54,3 +54,22 @@ get_bin(int bin_index) {
   }
   return make_new_bin(bin_index);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullResult::get_geom_munger
+//       Access: Private
+//  Description: Returns a suitable GeomMunger for the indicated
+//               state.  This will ask the GSG to create a new munger
+//               if we haven't already created one for this state;
+//               otherwise, it will return the existing one.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(qpGeomMunger) CullResult::
+get_geom_munger(const RenderState *state) {
+  Mungers::iterator mi = _mungers.find(state);
+  if (mi != _mungers.end()) {
+    return (*mi).second;
+  }
+  CPT(qpGeomMunger) munger = _gsg->get_geom_munger(state);
+  _mungers.insert(Mungers::value_type(state, munger));
+  return munger;
+}

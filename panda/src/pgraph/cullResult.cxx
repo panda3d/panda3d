@@ -128,7 +128,7 @@ add_object(CullableObject *object) {
               get_dual_transparent_state_decals() : 
               get_dual_transparent_state();
             transparent_part->_state = state->compose(transparent_state);
-            transparent_part->munge_geom(_gsg);
+            transparent_part->munge_geom(get_geom_munger(transparent_part->_state));
             CullBin *bin = get_bin(transparent_part->_state->get_bin_index());
             nassertv(bin != (CullBin *)NULL);
             bin->add_object(transparent_part);
@@ -155,7 +155,7 @@ add_object(CullableObject *object) {
 
   // Munge vertices as needed for the GSG's requirements, and the
   // object's current state.
-  object->munge_geom(_gsg);
+  object->munge_geom(get_geom_munger(object->_state));
   
   CullBin *bin = get_bin(object->_state->get_bin_index());
   nassertv(bin != (CullBin *)NULL);

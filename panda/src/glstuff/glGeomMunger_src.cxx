@@ -18,6 +18,7 @@
 
 #include "dcast.h"
 
+qpGeomMunger *CLP(GeomMunger)::_deleted_chain = NULL;
 TypeHandle CLP(GeomMunger)::_type_handle;
 
 ////////////////////////////////////////////////////////////////////

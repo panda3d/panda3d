@@ -27,3 +27,15 @@ DXGeomMunger8(GraphicsStateGuardian *gsg, const RenderState *state) :
   ColorMunger(gsg, state, 1, qpGeomVertexDataType::NT_packed_argb)
 {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGeomMunger8::operator new
+//       Access: Public
+//  Description: Calls up to do_operator_new() to implement the
+//               low-overhead allocation/deallocation for this type of
+//               GeomMunger.
+////////////////////////////////////////////////////////////////////
+INLINE void *DXGeomMunger8::
+operator new(size_t size) {
+  return do_operator_new(size, _deleted_chain);
+}

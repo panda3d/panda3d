@@ -43,6 +43,9 @@ protected:
   virtual int compare_to_impl(const qpGeomMunger *other) const;
   virtual int geom_compare_to_impl(const qpGeomMunger *other) const;
 
+public:
+  INLINE void *operator new(size_t size);
+
 private:
   PT(GraphicsStateGuardian) _gsg;
   CPT(TextureAttrib) _texture;
@@ -50,6 +53,8 @@ private:
 
   typedef pset<CLP(GeomContext) *> GeomContexts;
   GeomContexts _geom_contexts;
+
+  static qpGeomMunger *_deleted_chain;
 
 public:
   static TypeHandle get_class_type() {

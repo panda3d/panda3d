@@ -35,7 +35,10 @@ qpGeomMunger::
 qpGeomMunger(const GraphicsStateGuardianBase *, const RenderState *) :
   _is_registered(false)
 {
+#ifndef NDEBUG
   _registered_key = get_registry()->_mungers.end();
+  _next = NULL;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -47,7 +50,10 @@ qpGeomMunger::
 qpGeomMunger(const qpGeomMunger &copy) :
   _is_registered(false)
 {
+#ifndef NDEBUG
   _registered_key = get_registry()->_mungers.end();
+  _next = NULL;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

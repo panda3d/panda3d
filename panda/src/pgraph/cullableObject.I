@@ -104,18 +104,6 @@ has_decals() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::munge_geom
-//       Access: Public
-//  Description: Gets a GeomMunger from the GSG to transform the
-//               geom and/or its vertices to meet the GSG's vertex
-//               requirements for the current state.
-////////////////////////////////////////////////////////////////////
-INLINE void CullableObject::
-munge_geom(GraphicsStateGuardianBase *gsg) {
-  munge_geom(gsg->get_geom_munger(_state));
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::draw
 //       Access: Public
 //  Description: Draws the cullable object on the GSG immediately, in
