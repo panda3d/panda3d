@@ -32,6 +32,7 @@ private:
 
   ItemVector _items;
   int _curr;
+  bool _loop;
   PT(GuiButton) _prev_button;
   PT(GuiButton) _next_button;
 
@@ -62,6 +63,9 @@ PUBLISHED:
   virtual void reset_behavior(void);
 
   virtual void output(ostream&) const;
+
+  INLINE void set_loop(bool);
+  INLINE bool get_loop(void) const;
 public:
   // type interface
   static TypeHandle get_class_type(void) {
